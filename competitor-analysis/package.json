@@ -1,0 +1,21 @@
+{
+  "name": "notisum-competitor-analysis",
+  "version": "1.0.0",
+  "description": "Autonomous Playwright crawler for Notisum competitive analysis",
+  "main": "index.js",
+  "scripts": {
+    "install-browser": "npx playwright install chromium",
+    "crawl": "ts-node src/crawler.ts",
+    "scrape-laglistor": "ts-node src/laglistor-scraper.ts",
+    "dev": "ts-node src/crawler.ts"
+  },
+  "keywords": ["playwright", "crawler", "competitor-analysis"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "playwright": "^1.40.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
