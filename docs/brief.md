@@ -1,0 +1,1016 @@
+# Project Brief: Laglig.se
+
+**Version:** 1.0
+**Date:** 2025-01-27
+**Status:** Draft
+
+---
+
+## Executive Summary
+
+**Laglig.se** is an AI-powered legal compliance platform that makes Swedish business law accessible and actionable for companies of all sizes. Unlike traditional legal databases that simply provide access to laws, Laglig.se transforms compliance from a reactive burden into proactive business infrastructure through personalized law lists, AI-powered guidance, and automated monitoring of regulatory changes.
+
+The platform targets Swedish SMBs (5-200 employees) who currently face two poor choices: expensive legal consultants or DIY compliance with outdated tools like Notisum. By combining comprehensive legal data (all SFS laws, court cases, EU regulations) with modern AI assistance and intuitive UX, Laglig.se positions compliance as "coolt med koll" - aspirational rather than obligatory.
+
+**Key value proposition:** Make the law free and public (SEO-indexed), then monetize AI-powered compliance tools, personalized workflows, and industry-specific guidance that save businesses from costly legal mistakes.
+
+---
+
+## Problem Statement
+
+**Current State:**
+
+Swedish businesses are legally obligated to comply with hundreds of laws spanning arbetsmiljö (workplace safety), arbetstträtt (employment law), avtalsrätt (contract law), miljörätt (environmental law), and sector-specific regulations. For most SMBs, compliance is:
+
+1. **Reactive rather than proactive** - Companies only address compliance when facing audits, employee complaints, or regulatory violations
+2. **Expensive when done right** - Legal consultants charge 1,500-3,000 SEK/hour, making routine compliance guidance prohibitively expensive
+3. **Risky when done wrong** - A single HR mistake (improper termination, arbetsmiljö violation) can cost 100,000-500,000+ SEK in fines and settlements
+4. **Difficult to navigate** - Existing tools (Notisum, InfoTorg Juridik) have outdated UX, no AI assistance, and require legal expertise to interpret
+
+**Impact & Cost:**
+
+- **Notisum generates ~40M SEK ARR at 60% margins** despite inferior product - validates strong market demand and healthy unit economics
+- **SMBs overpay for basic legal advice** - paying hourly consultant fees for questions that could be answered by RAG-powered AI with proper guardrails to prevent hallucinations
+- **Costly mistakes are common** - Arbetsmiljöverket fines, wrongful termination settlements, contract disputes
+- **Compliance anxiety is universal** - Business owners don't know what they don't know, creating constant legal risk
+
+**Why Existing Solutions Fall Short:**
+
+1. **Notisum** - Dated UX (looks like 1990s software), no AI assistance, just static document access, expensive (8,000+ SEK/year)
+2. **Legal consultants** - Expensive, slow, reactive (you pay per question rather than having ongoing guidance)
+3. **DIY/Google** - Unreliable, fragmented, no personalization, high risk of misinterpretation
+4. **Enterprise tools** (Visma, SAP) - Overkill for SMBs, expensive, require dedicated compliance staff
+
+**Urgency:**
+
+- **AI maturity** - RAG + LLM technology now enables zero-hallucination legal guidance (wasn't viable 2-3 years ago)
+- **Regulatory volatility** - Increasing EU regulations + Swedish law changes create recurring compliance updates businesses struggle to track
+- **Market timing** - Notisum's dominance despite poor UX shows market is ripe for disruption
+- **SMB digitalization** - Post-COVID, SMBs increasingly adopt SaaS tools (Fortnox, Visma, etc.) - compliance is logical next step
+
+---
+
+## Proposed Solution
+
+**Core Concept:**
+
+Laglig.se transforms legal compliance from a reactive burden into proactive business infrastructure by combining three elements:
+
+1. **Free, SEO-indexed legal content** - All Swedish laws (SFS), court cases (HD, HFD, AD, etc.), EU regulations publicly accessible and Google-indexed
+2. **AI-powered compliance tools** (paid) - RAG-based chatbot, personalized law lists, automated task generation, change monitoring
+3. **Industry-specific guidance** (paid) - Tailored compliance packs for construction, restaurants, tech, manufacturing, etc.
+
+**How It Works:**
+
+**For Discovery (Free - SEO Engine):**
+- Business owner Googles "arbetsmiljölagen anställd" → lands on Laglig.se law page (ranked #1)
+- Reads law for free in modern, clean UX
+- Sees "Want AI to explain this for your business? Try Laglig.se tools"
+
+**For Conversion (Paid - Onboarding Magic):**
+- Dynamic onboarding flow asks questions while building company profile
+- User provides: org-number, URL, industry, employee count
+- AI generates personalized law list in real-time (streaming preview)
+- Shows tailored workspace with Kanban-style compliance tracking
+- Call-to-action: "Start 14-day free trial to access full compliance tools"
+
+**For Retention (Paid - Ongoing Value):**
+- **AI Chatbot:** "Can I fire this employee for poor performance?" → RAG-powered answer citing specific laws + court cases
+- **Change Monitoring:** New arbetsmiljölagen amendment → automated notification + new compliance task
+- **Task Management:** Kanban board tracking compliance status (compliant, needs action, overdue)
+- **Industry Packs:** Construction module with building permits, safety requirements, contractor agreements
+- **Team Collaboration:** HR manager uses daily, CFO reviews quarterly, both on same account
+
+**Key Differentiators:**
+
+1. **Freemium SEO Moat** - Public content ranks for everything, drives organic traffic, impossible for competitors to replicate overnight
+2. **RAG-Powered AI** - Zero-hallucination through comprehensive Swedish law database (SFS + court cases + EU regulations)
+3. **Proactive, Not Reactive** - Monitors legal changes and pushes tasks BEFORE deadlines/violations
+4. **"Coolt med koll" Positioning** - Compliance as aspirational ("cool to be compliant") not burdensome
+5. **Personalization** - Every user sees THEIR specific laws and compliance needs, not generic guidance
+6. **Modern UX** - Jira-inspired Kanban, conversational AI, streaming onboarding vs. Notisum's 1990s interface
+
+**Why This Succeeds Where Others Haven't:**
+
+- **Notisum** charges for content access; Laglig.se gives content free, charges for tools (unbundling/rebundling strategy)
+- **Consultants** are reactive and expensive; Laglig.se is proactive and subscription-based
+- **Enterprise tools** require compliance staff; Laglig.se replaces the need for dedicated staff via AI
+- **DIY/Google** lacks reliability; Laglig.se provides source-cited AI answers with legal backing
+
+**High-Level Product Vision:**
+
+Transform Laglig.se into essential business infrastructure (like Fortnox for accounting) where Swedish businesses can't imagine operating without it - not because they're forced to comply, but because it makes compliance effortless and prevents costly mistakes.
+
+---
+
+## Target Users
+
+### Primary User Segment: SMB Owner / HR Manager (5-50 employees)
+
+**Demographics:**
+- Small-to-medium businesses in Sweden
+- 5-50 employees (sweet spot: 10-30)
+- Industries: Tech, restaurants, retail, services, small manufacturing
+- Typically one person wearing "HR hat" (owner, office manager, or part-time HR)
+
+**Current Behaviors:**
+- Googles legal questions when issues arise ("kan jag säga upp anställd")
+- Asks business network for advice
+- Occasionally pays lawyer 2,000-3,000 SEK/hour for simple questions
+- Uses spreadsheets or no system for tracking compliance
+- Reactive: addresses compliance only when facing problem (employee complaint, audit, fine)
+
+**Pain Points:**
+- **Fear of unknown costs:** "What legal obligation am I missing that could cost me 500,000 SEK?"
+- **Time drain:** Researching laws takes hours away from running business
+- **Uncertainty:** "Is this interpretation correct? Am I following the law?"
+- **HR questions constant:** Probation periods, parental leave, termination procedures, vacation rules
+- **Can't afford dedicated HR/legal:** Too small for full-time staff, consultants too expensive for routine questions
+
+**Goals:**
+- Avoid costly legal mistakes (fines, wrongful termination suits)
+- Quick, reliable answers to HR/compliance questions
+- Confidence they're "doing it right"
+- Minimal time investment ("set it and forget it")
+
+**Value Proposition:**
+- "Att inte ha koll kan kosta dig skjortan" - fear-based motivation
+- AI chatbot replaces expensive consultant for 90% of questions
+- Personalized law list shows exactly what applies to their business
+- Automated alerts prevent compliance lapses
+
+**Willingness to Pay:** 500-1,500 SEK/month (ROI: One avoided mistake pays for years of subscription)
+
+---
+
+### Secondary User Segment: ISO Compliance Manager (50-200 employees)
+
+**Demographics:**
+- Mid-sized companies (manufacturing, construction, tech)
+- Dedicated compliance/quality manager role
+- ISO 9001, ISO 14001, or ISO 45001 certified (or pursuing certification)
+- 50-200 employees
+
+**Current Behaviors:**
+- Uses Notisum or InfoTorg Juridik (paying 8,000-15,000 SEK/year)
+- Manages compliance in spreadsheets or basic project management tools
+- Conducts quarterly compliance reviews
+- Works with external ISO consultants for audits
+- Tracks regulatory changes manually
+
+**Pain Points:**
+- **Notisum's terrible UX:** Slow, outdated, no collaboration features
+- **Manual tracking is tedious:** Spreadsheets don't scale, no automation
+- **Audit prep is stressful:** Gathering compliance evidence takes weeks
+- **Regulatory changes slip through:** Easy to miss new requirements
+- **No team collaboration:** Compliance manager works in silo, hard to delegate tasks
+
+**Goals:**
+- Streamline ISO audit preparation
+- Automate compliance tracking and evidence collection
+- Collaborate with team (assign tasks, track completion)
+- Stay ahead of regulatory changes
+- Reduce time spent on compliance administration
+
+**Value Proposition:**
+- Jira-style Kanban for compliance workflows (familiar mental model)
+- Automated law list generation vs. manual curation
+- AI chatbot for edge cases and interpretation questions
+- Team collaboration features (assign, track, comment)
+- Audit-ready compliance status dashboard
+
+**Willingness to Pay:** 2,000-5,000 SEK/month (team tier) - Currently paying for Notisum + consultant time
+
+---
+
+### Tertiary User Segment: Public Sector Compliance Officer (Kommuner, Regioner, Statliga Bolag)
+
+**Demographics:**
+- Public sector organizations: municipalities (kommuner), regions (regioner), state-owned companies (statliga bolag)
+- Compliance officers, quality managers, or administrative staff
+- Organizations with 50-5,000+ employees
+- Subject to additional regulatory requirements beyond private sector
+
+**Current Behaviors:**
+- Uses Notisum or internal legal departments
+- Manages compliance with Offentlighets- och sekretesslagen (OSL), procurement laws (LOU/LUF), work environment regulations
+- Conducts regular audits and reporting to government oversight bodies
+- Heavy documentation requirements for transparency and accountability
+- Often works with external legal consultants for specialized questions
+
+**Pain Points:**
+- **More regulatory requirements than private sector:** Public procurement rules, transparency laws (offentlighetsprincipen), accessibility requirements
+- **Complex legal landscape:** Laws specific to public sector (kommunallagen, förvaltningslagen) + general business laws
+- **Audit intensity:** Frequent audits from multiple oversight bodies (Riksrevisionen, county administrative boards)
+- **Budget constraints:** Limited budgets despite extensive compliance needs
+- **Public scrutiny:** Mistakes are publicly visible and politically sensitive
+- **Siloed departments:** Multiple departments need compliance guidance (procurement, HR, IT, facilities)
+
+**Specific Compliance Areas:**
+- Offentlighets- och sekretesslagen (OSL) - Public access to information and secrecy
+- Förvaltningslagen - Administrative Procedure Act
+- Kommunallagen - Local Government Act
+- LOU/LUF - Public Procurement Acts
+- Arbetsmiljölagen - Work environment
+- GDPR + specific public sector data rules
+- Accessibility requirements (tillgänglighet)
+
+**Goals:**
+- Centralized compliance management across departments
+- Stay current with public sector-specific regulatory changes
+- Streamline audit preparation and evidence collection
+- Reduce reliance on expensive external legal consultants
+- Enable self-service compliance guidance for department staff
+
+**Value Proposition:**
+- **Public sector-specific law packs:** Pre-curated lists for kommuner, regioner, statliga bolag
+- **Multi-department access:** Procurement, HR, IT all use same platform
+- **OSL and transparency compliance:** Specific guidance on public access and secrecy rules
+- **Procurement law guidance:** LOU/LUF compliance for tenders and contracts
+- **Audit trail features:** Documentation and evidence collection for oversight bodies
+- **Network effects:** Once adopted by one kommun, word spreads to neighbors
+
+**Willingness to Pay:**
+- **Strategic pricing:** 5,000-8,000 SEK/month (60,000-96,000 SEK/year)
+- **Procurement advantage:** Priced under direktupphandling threshold - no full tender required
+- **Multi-user org tier:** Unlimited users across departments
+- **Market size:** 290 kommuner + 21 regioner + 50+ statliga bolag = ~360 organizations
+- **ARR potential at 50% penetration:** ~13M SEK from public sector alone
+
+**Strategic Value:**
+- Fast sales cycles (weeks not months) due to direktupphandling pricing
+- Word of mouth within kommun networks drives viral growth
+- Credibility boost: "Used by Swedish municipalities" validates product
+- Stable, recurring revenue with predictable budget cycles
+
+---
+
+## Goals & Success Metrics
+
+### Business Objectives
+
+**1. Revenue Goal:** Achieve 10M SEK ARR within 18 months of launch
+
+**Segment weighting:**
+- **SMB segment (direct):** 150 customers × 12,000 SEK/year avg = 1.8M SEK (18%)
+- **ISO segment:** 50 customers × 48,000 SEK/year avg = 2.4M SEK (24%)
+- **Public sector:** 60 organizations × 48,000 SEK/year (4,000 SEK/month) = 2.9M SEK (29%)
+- **Fortnox integration (SMB channel):** 500 customers × 4,500 SEK/year net (500 SEK/month total, 75/25 revenue share) = 2.25M SEK (22.5%)
+- **Additional growth:** 145 customers blended = ~650k SEK to reach 10M target
+
+**Fortnox Partnership Economics:**
+- Customer pays: 500 SEK/month
+- Laglig.se receives: 375 SEK/month (75%)
+- Fortnox receives: 125 SEK/month (25%)
+- Fortnox benefit: 750k SEK/year passive income at 500 customers + ecosystem value
+
+**Rationale for Fortnox weighting:**
+- Fortnox has 600k customers - massive distribution channel
+- 500 SEK/month = affordable for their smallest customers (1-5 employees)
+- 75/25 revenue share makes partnership attractive to both parties
+- Seamless integration with existing Fortnox data (org-number, employees, invoicing) = instant onboarding
+- Year 1 goal: Get integration live and pilot with 500 Fortnox customers
+
+**2. Customer Acquisition:** Acquire 760+ paying customers across all segments by Month 18
+- **Month 6:** 100 customers (50 direct SMB/ISO, 50 early Fortnox pilot)
+- **Month 12:** 350 customers (150 direct, 200 Fortnox)
+- **Month 18:** 760 customers (260 direct, 500 Fortnox)
+
+**3. Fortnox Partnership Goal:** Launch integration by Month 9, achieve 500 Fortnox customers by Month 18
+- **Month 9:** Integration launched in Fortnox marketplace
+- **Month 12:** 200 Fortnox customers (validated product-market fit in Fortnox ecosystem)
+- **Month 18:** 500 Fortnox customers (scaling through Fortnox channel)
+
+**4. Market Validation:** Achieve product-market fit indicators by Month 12
+- NPS score > 50
+- <5% monthly churn rate
+- >40% of new customers from referrals, word-of-mouth, or Fortnox channel
+
+**5. SEO Dominance:** Rank #1-3 for 100+ Swedish legal search terms by Month 12
+- Target terms: "arbetsmiljölagen", "anställningsavtal mall", "säga upp anställd", "NJA [year]", etc.
+- Organic traffic: 50,000+ monthly visitors by Month 12
+
+**6. Unit Economics:** Achieve positive unit economics by Month 6
+- CAC < 3 months of LTV (Fortnox channel: near-zero CAC via revenue share)
+- CAC payback period < 12 months
+- Gross margin > 80% (higher on Fortnox channel due to lower acquisition cost)
+
+### User Success Metrics
+
+1. **Activation:** 70% of signups complete onboarding and generate first personalized law list
+   - **Fortnox users:** 80%+ activation (pre-filled data from Fortnox API)
+
+2. **Engagement:** Active users access platform at least weekly
+   - SMB: Monthly active usage (quarterly for light users)
+   - Fortnox SMB: Monthly active (integrated into existing Fortnox workflow)
+   - ISO: Weekly active usage (compliance managers)
+   - Public sector: Weekly active usage across departments
+
+3. **AI Chatbot Adoption:** 60% of paying users use AI chatbot within first 30 days
+
+4. **Retention:** 90-day retention rate > 80% across all segments
+   - **Fortnox users:** Target 85%+ (embedded in existing workflow)
+
+5. **Value Realization:** Users report time savings and cost avoidance
+   - SMB: "Replaced 2+ hours/month of legal research"
+   - ISO: "Reduced audit prep time by 50%"
+   - Public sector: "Reduced external legal consultant spend by 30%+"
+   - **Fortnox users:** "Seamlessly integrated compliance into existing accounting workflow"
+
+### Key Performance Indicators (KPIs)
+
+**Acquisition Metrics:**
+- **Monthly signups:** Track free trial starts and conversion to paid (direct + Fortnox)
+- **Traffic sources:** Organic (SEO), direct, referral, paid, **Fortnox marketplace**
+- **Signup → Trial conversion:** Target >25%
+- **Trial → Paid conversion:**
+  - Direct SMB: >15%
+  - ISO/Public Sector (sales-assisted): >30%
+  - **Fortnox channel: >25%** (easier conversion due to existing Fortnox relationship)
+
+**Fortnox Partnership Metrics:**
+- **Fortnox integration activation:** Month 9 launch target
+- **Fortnox marketplace installs:** Track monthly install rate
+- **Fortnox user activation:** % who complete onboarding (target 80%+)
+- **Fortnox user retention:** Track churn separately (should be lower than direct SMB)
+
+**Engagement Metrics:**
+- **Daily Active Users (DAU) / Monthly Active Users (MAU):** Track stickiness
+- **Law pages viewed per session:** Indicates content discovery
+- **AI chatbot queries per user:** Indicates AI adoption
+- **Tasks created/completed:** Indicates compliance workflow adoption
+- **Fortnox integration usage:** % of Fortnox users who sync data monthly
+
+**Revenue Metrics:**
+- **Monthly Recurring Revenue (MRR):** Track growth trajectory across all channels
+- **Average Revenue Per Account (ARPA):**
+  - Blended: ~1,100 SEK/month
+  - Direct SMB: 1,000 SEK/month
+  - ISO: 4,000 SEK/month
+  - Public sector: 4,000 SEK/month
+  - Fortnox: 375 SEK/month net (75% of 500 SEK customer payment)
+- **Customer Lifetime Value (LTV):** Target >36 months average customer lifespan
+- **Churn rate:** Target <5% monthly
+- **Fortnox revenue share:** 75% to Laglig.se (375 SEK/month), 25% to Fortnox (125 SEK/month)
+
+**Product Metrics:**
+- **Time to first value:** How quickly users generate first law list
+  - Direct: Target <5 minutes
+  - **Fortnox: Target <2 minutes** (pre-filled data from API)
+- **Onboarding completion rate:** Target >70% (80%+ for Fortnox)
+- **Feature adoption:** % of users using chatbot, Kanban, change monitoring
+- **AI answer quality:** User ratings on AI responses (target >4.0/5.0)
+
+**SEO & Content Metrics:**
+- **Organic search rankings:** Track positions for target keywords
+- **Organic traffic:** Monthly visitors from Google
+- **Page views per visitor:** Indicates content depth
+- **Free-to-paid conversion:** % of organic visitors who convert to trial/paid
+
+---
+
+## MVP Scope
+
+### Core Features (Must Have)
+
+**1. Free Legal Content Platform (SEO Foundation)**
+- **Description:** All Swedish laws and court cases publicly accessible and Google-indexed
+- **Content included:** SFS (all Swedish laws/regulations), Court cases (HD, HFD, HovR), EU regulations and directives
+- **Technical approach:** Server-side rendered pages (SSR) for optimal SEO and performance
+- **Why must-have:** SEO moat - drives organic traffic, establishes brand authority
+- **Success criteria:** **10,000+ law pages indexed**, clean responsive UX, fast page loads
+
+**2. Dynamic Onboarding & Company Profile**
+- **Description:** Interactive onboarding that builds company profile while engaging user
+- **Flow:** User provides org-number → scrape Bolagsverket data → AI asks follow-up questions → streaming generation of personalized law list → preview workspace → CTA for 14-day trial
+- **Why must-have:** "Onboarding is the product" - conversion engine and personalization foundation
+- **Success criteria:** <5 minute onboarding, >70% completion rate
+
+**3. Personalized Law Lists with Contextual AI Commentary**
+- **Description:** AI-generated, tailored lists of laws with personalized explanations
+- **Features:** Industry-specific categorization, law priority/relevance scoring, **contextual AI-generated comments** ("What does this law mean to MY business?"), high personification ("As a 15-person tech company in Stockholm, this law requires you to..."), ability to manually add/remove laws
+- **Why must-have:** Core differentiation - not just lists, but contextualized guidance
+- **Success criteria:** Users feel laws are explained specifically for their situation
+
+**4. Highly Interactive RAG-Powered AI Chatbot with Component Streaming**
+- **Description:** Advanced conversational interface with drag-and-drop context and intelligent component streaming
+- **Capabilities:** Answer questions citing specific laws/court cases, zero-hallucination through RAG guardrails, show sources for transparency, disclaimers on all responses
+- **Advanced interaction features:**
+  - **Drag-and-drop components into chat:** Law cards, employee cards, task cards directly into chat to add context (CLI-like workflow)
+  - **Stream components to frontend:** Auto-stream law card if discussion reveals need, intelligent task generation, context-aware responses
+  - **Multi-modal context:** "I'm talking about THIS employee [card], under THIS law [card], for THIS task [card]"
+- **Why must-have:** Revolutionary UX - compliance as conversational workflow, not static database
+- **Success criteria:** >60% usage rate, >4.0/5.0 rating, users actively drag components into chat
+
+**5. Basic Kanban Compliance Workspace**
+- **Description:** Jira-style board for tracking compliance status
+- **Features:** Columns (Not started, In progress, Compliant), drag-and-drop law cards, add notes/comments, basic filtering
+- **Why must-have:** Visual, intuitive compliance tracking vs. Notisum's static lists
+- **Success criteria:** Users actively move cards and add notes
+
+**6. Change Monitoring & Notification System**
+- **Description:** Automated monitoring of legal changes with email notifications
+- **Features:**
+  - **Monitor changes to:** SFS laws/regulations (amendments, new, repeals), court cases (new precedents), EU regulations/directives
+  - **Smart filtering:** Only notify about changes relevant to user's personalized law list
+  - **Email notifications with triggers:** Configurable frequency (instant, daily digest, weekly digest)
+  - **In-app notifications:** Change feed showing recent updates
+  - **Automated task generation:** Critical changes automatically create compliance tasks in Kanban
+- **Why must-have:** **RETENTION ENGINE** - recurring value delivery, keeps users coming back, justifies ongoing subscription
+- **Success criteria:** Users configure notifications, >50% open rate on change emails, automated tasks generated
+
+**7. HR Module (Employee Management)**
+- **Description:** Employee database for context-aware HR compliance
+- **Features:** Employee profiles (name, hire date, contract type, salary, department, role), employee cards drag into chat, schema-based (database ready, needs frontend), context for AI, basic CRUD, GDPR-compliant
+- **Why must-have:** Dramatically improves AI chatbot value for HR questions (80% of SMB legal questions are HR-related)
+- **Success criteria:** >60% of Team/Org tier users add at least 5 employees, employees dragged into chat regularly
+
+**8. User Management & Tiered Subscription**
+- **Description:** Multi-user account management with role-based access and tiered billing
+- **Features:** Admin + additional users, role-based access, Stripe subscription management, three tiers (SMB 1,000 SEK/month up to 3 users, Team 4,000 SEK/month up to 10 users, Organization 4,000 SEK/month unlimited users), email/password auth, 14-day free trial
+- **Why must-have:** Team collaboration for ISO/Public sector segments, monetize higher tiers
+- **Success criteria:** Smooth admin invite flow, clear tier differentiation
+
+### Out of Scope for MVP
+
+**Features explicitly NOT in MVP (save for v2+):**
+- Fortnox integration (Month 6-9)
+- Advanced team collaboration (comments, @mentions, approval workflows)
+- Advanced HR features (performance reviews, time tracking, payroll integration)
+- Industry-specific compliance packs (AI generates dynamically)
+- Public sector-specific features (OSL guidance, LOU/LUF modules, audit trails)
+- Mobile app (web-only, mobile-responsive)
+- Advanced search & filtering
+- Document generation (contract templates, policy generators)
+- Audit preparation tools (evidence collection, compliance reports)
+- API access
+- White-label / multi-tenant
+- Advanced analytics (compliance dashboards, trend analysis)
+
+### MVP Success Criteria
+
+**MVP is successful when:**
+1. Users complete onboarding - >70% of sign-ups generate personalized law list with AI commentary
+2. AI delivers contextual value - >60% of trial users interact with chatbot, drag components, >4.0/5.0 rating
+3. HR module adoption - >60% of Team/Org tier users add employees, use for HR questions
+4. Personalization resonates - Users report law commentary feels "made for them"
+5. Change notifications drive engagement - >50% email open rate, users return after notifications
+6. Trial converts - >15% (SMB tier), >25% (Team/Org tier)
+7. Multi-user adoption - Team tier customers actively invite additional users
+8. SEO traction - 10+ Swedish legal terms ranking top 10 by Month 3, 10k+ pages indexed
+9. Component streaming works - Users naturally drag components into chat
+10. Product-market fit signals - NPS >40, users voluntarily refer others, retention >80% at 90 days
+
+---
+
+## Post-MVP Vision
+
+### Phase 2 Features (Months 6-12)
+
+**1. Fortnox Integration (Priority #1)**
+- **Timeline:** Month 6-9
+- **Description:** Full integration with Fortnox marketplace and API
+- **Features:** One-click install from Fortnox marketplace, pre-fill company data, <2 minute onboarding, 500 SEK/month pricing (75/25 revenue share), embedded in Fortnox UI
+- **Why Phase 2:** Requires partnership negotiation, API access, marketplace approval
+- **Business impact:** Access to 600k potential customers, 2.25M SEK ARR potential
+
+**2. Public Sector-Specific Features**
+- **Timeline:** Month 9-12
+- **Description:** Specialized modules for kommuner, regioner, statliga bolag
+- **Features:** OSL compliance guidance, LOU/LUF procurement modules, audit trail features, public sector law packs (förvaltningslagen, kommunallagen), multi-department access controls
+- **Why Phase 2:** Need MVP validation before building sector-specific features
+- **Business impact:** Unlock 60+ organizations at 4k/month = 2.9M SEK ARR
+
+**3. Advanced Team Collaboration**
+- **Timeline:** Month 9-12
+- **Description:** Enhanced multi-user features for teams
+- **Features:** @mentions, task assignment workflows, approval processes, activity feed, team performance dashboards
+- **Why Phase 2:** Basic multi-user in MVP, advanced collaboration once teams are using platform
+- **Business impact:** Increases Team/Org tier value, reduces churn
+
+**4. Industry-Specific Compliance Templates**
+- **Timeline:** Month 10-12
+- **Description:** Pre-built compliance packages for specific industries (Construction, Restaurants, Tech/SaaS, Manufacturing, Healthcare)
+- **Why Phase 2:** AI generates dynamically in MVP, templates for common patterns in Phase 2
+- **Business impact:** Faster onboarding, higher perceived value, potential upsell tier
+
+### Long-Term Vision (12-24 months)
+
+**Vision Statement:**
+"By 2027, Laglig.se is the default compliance platform for 10,000+ Swedish businesses, preventing millions of SEK in legal mistakes annually and making 'coolt med koll' the standard for Swedish business culture."
+
+**Key Pillars:**
+
+1. **AI Compliance Autopilot** - Proactive risk identification, automated policy generation, predictive compliance, integration with business operations
+
+2. **Network Intelligence** - Aggregate anonymized compliance data, industry benchmarks, common violation patterns, best practice recommendations based on peer data
+
+3. **Complete Ecosystem Integration** - Fortnox, Visma, Google Workspace/Microsoft 365, Slack, CRM systems
+
+4. **Expansion Beyond Compliance** - Contract lifecycle management, dispute resolution assistance, regulatory filing automation, legal document generation
+
+### Expansion Opportunities
+
+**Geographic:** Norway, Denmark, Finland (Nordic markets), EU markets (Germany, Netherlands)
+
+**Vertical:** Lawyers/law firms (research tool), consultants (multi-tenant), insurance partners, banks (SMB value-add)
+
+**Product:** Laglig.se Contracts, Laglig.se Audit, Laglig.se Academy, Laglig.se for Employees
+
+---
+
+## Constraints & Assumptions
+
+### Constraints
+
+**Budget:**
+- Bootstrap/self-funded development (solo founder)
+- Limited budget for initial AI API costs (OpenAI/Anthropic) - need to optimize token usage
+- Cannot afford large upfront infrastructure costs - leveraging serverless (Vercel) and generous free tiers
+- Fortnox partnership critical for growth without significant CAC spend
+
+**Timeline:**
+- **18-month target to 10M SEK ARR** (aggressive but achievable with focused execution)
+- MVP needs to launch within 4-6 months to start revenue generation
+- Change monitoring must be in MVP (retention engine) - no room for Phase 2 delay
+- Public sector sales cycles can be 1-3 months even with direktupphandling advantage
+
+**Resources:**
+- Solo founder/developer initially (full-stack + AI expertise required)
+- Time split between development, sales, and customer success
+- Limited capacity for manual customer onboarding - product must be self-serve where possible
+- Need to leverage AI code assistants and no-code tools where appropriate
+
+**Technical:**
+- **Database performance with 10,000+ SSR pages** - Need efficient caching/CDN strategy
+- **Vercel Edge functions timeout limits** (30s max) - Complex AI operations may need queue
+- **Real-time WebSocket limits on Vercel** - May need separate service for change monitoring
+- **Vector database costs** - Pinecone pricing scales with storage/queries (alternative: pgvector)
+- **AI API rate limits** - Need fallback strategies and graceful degradation
+- **Legal content accuracy** - Zero hallucination tolerance requires robust RAG guardrails
+- **Swedish language models** - May need model fine-tuning or prompt engineering for legal Swedish
+
+### Key Assumptions
+
+**Technical Assumptions:**
+
+1. **Semantic chunking for RAG will significantly outperform fixed token size** for Swedish legal documents (needs validation but highly likely based on legal document structure)
+
+2. **Vercel AI SDK component streaming is production-ready** for complex workflows (drag-and-drop components, contextual streaming)
+
+3. **Can build comprehensive RAG vector database for 10,000+ Swedish legal documents** with acceptable query performance (<2s response time)
+
+4. **PostgreSQL with pgvector can handle vector similarity search** at scale without needing separate Pinecone subscription (cost optimization assumption)
+
+5. **Next.js App Router SSR can handle 10,000+ dynamically rendered law pages** with acceptable SEO indexing rates and Core Web Vitals
+
+6. **OpenAI or Anthropic models have sufficient Swedish legal language understanding** without fine-tuning (may need prompt engineering)
+
+**Business Assumptions:**
+
+7. **Public sector will adopt at 4,000 SEK/month pricing point** (under direktupphandling threshold of ~100k SEK) without lengthy tender processes
+
+8. **Fortnox partnership achievable with 75/25 revenue share** (favorable to us) - Fortnox sees value in offering compliance to their 400k+ SMB customers
+
+9. **Network effects in public sector** - First few kommun customers will drive word-of-mouth to neighboring municipalities/regions
+
+10. **Freemium SEO model will drive significant organic B2B traffic** - Companies searching for laws will discover gated tools and convert
+
+11. **Change monitoring as retention engine is valid** - Users will see sufficient legal changes monthly to justify continued subscription
+
+12. **SMB segment willing to pay 1,000 SEK/month** (vs. Notisum's higher tiers) for AI-powered tools vs. static legal database
+
+**Product Assumptions:**
+
+13. **Multi-user/team features won't significantly increase MVP development complexity** - Core auth + role management is straightforward with NextAuth
+
+14. **HR module is "easy add" with existing schema** - Database structure designed, needs frontend implementation (~1-2 weeks work)
+
+15. **ISO compliance managers have budget authority** for 4,000 SEK/month tools without lengthy procurement
+
+16. **"Coolt med koll" brand positioning resonates** with Swedish SMB culture (anti-boring, practical, confident)
+
+17. **Drag-and-drop component-based chat UX is learnable** - Users will understand "drop law card into chat" interaction pattern
+
+**Market Assumptions:**
+
+18. **Notisum's 40M SEK ARR at 60% margins** indicates healthy market willingness to pay for legal information
+
+19. **Notisum's weaknesses are real** - AD database issues, JK outdated data, lack of AI features represent genuine competitive opportunities
+
+20. **AI-powered compliance is category-creating** - Not just "better legal database" but new category of proactive compliance tools
+
+21. **Public sector has 60+ organizations** reachable in 18 months through targeted outreach + word-of-mouth
+
+22. **Fortnox customer base of 400k+ includes 500+ potential Laglig.se customers** in year one willing to pay 500 SEK/month add-on
+
+### Critical Assumptions Requiring Early Validation
+
+🔴 **Highest Risk Assumptions (Validate in First 3 Months):**
+
+1. **Public sector procurement speed under direktupphandling** - Interview 3-5 kommun buyers
+2. **Fortnox partnership feasibility** - Outreach to Fortnox partnership team in Q1
+3. **RAG semantic chunking performance** - Technical validation sprint (week 2-3 of development)
+4. **SMB willingness to pay 1,000 SEK/month** - Landing page + pricing validation interviews
+5. **Change monitoring frequency creates retention** - Analyze historical SFS change data (monthly change rate)
+
+---
+
+## Risks & Open Questions
+
+### Key Risks
+
+**1. Market Risk: Notisum Responds with AI Features**
+- **Description:** Notisum (40M SEK ARR, established brand) adds AI chatbot and compliance tools before our MVP launch
+- **Impact:** HIGH - Removes our primary differentiation, makes customer acquisition significantly harder
+- **Likelihood:** MEDIUM - They have resources but may be slow to innovate (legacy codebase, organizational inertia)
+- **Mitigation:** Speed to market is critical (4-6 month MVP), establish "AI-first" positioning early, focus on superior UX (component streaming, drag-and-drop) that's harder to copy
+
+**2. Technical Risk: RAG Hallucination in Legal Context**
+- **Description:** AI generates incorrect legal advice despite RAG guardrails, leading to customer harm and liability
+- **Impact:** CRITICAL - Could destroy business reputation, potential legal liability, loss of trust
+- **Likelihood:** MEDIUM - Legal language is complex, Swedish legal AI less tested than English
+- **Mitigation:**
+  - Strict RAG-only responses (no generative content without source)
+  - Citation for every claim with SFS reference
+  - Human review of AI-generated compliance checklists before launch
+  - Clear disclaimers ("AI-assisted, not legal advice")
+  - Consider legal liability insurance
+
+**3. Technical Risk: Swedish Language Model Performance**
+- **Description:** OpenAI/Anthropic models struggle with Swedish legal terminology, producing poor quality responses
+- **Impact:** HIGH - Product quality suffers, customer satisfaction low, high churn
+- **Likelihood:** LOW-MEDIUM - Models handle Swedish but legal domain is specialized
+- **Mitigation:**
+  - Early technical validation (week 2-3) with real Swedish legal queries
+  - Prompt engineering with legal context
+  - Consider fine-tuning if base models insufficient
+  - Fallback to keyword search if AI confidence low
+
+**4. Go-to-Market Risk: Public Sector Sales Cycle Longer Than Expected**
+- **Description:** Even with direktupphandling pricing, public sector takes 6-12 months to buy (not 1-3 months)
+- **Impact:** MEDIUM - Cash flow delayed, may need to pivot to SMB-first strategy
+- **Likelihood:** MEDIUM - Procurement processes vary by organization size/sophistication
+- **Mitigation:**
+  - Early validation interviews with kommun buyers (month 1-2)
+  - Start with smaller kommuner (faster decision-making)
+  - Focus on SMB segment first for faster revenue
+  - Public sector becomes Phase 2 if sales cycle too long
+
+**5. Partnership Risk: Fortnox Partnership Doesn't Materialize**
+- **Description:** Fortnox declines partnership or wants unfavorable terms (50/50 split, or wants 50% revenue share to them)
+- **Impact:** HIGH - Loses 500 customers (2.25M SEK ARR) from plan, need alternative distribution
+- **Likelihood:** MEDIUM - Partnership teams are risk-averse, integration effort required
+- **Mitigation:**
+  - Outreach to Fortnox in Q1 to gauge interest early
+  - Alternative partnerships: Visma, PE Accounting, Björn Lundén
+  - Build standalone SMB acquisition machine (SEO + content marketing)
+  - Fortnox is "nice to have" not "must have" - SMB + public sector can reach 10M ARR alone
+
+**6. Product Risk: Change Monitoring Doesn't Drive Retention**
+- **Description:** Legal changes are too infrequent or irrelevant, users don't see value in notifications
+- **Impact:** HIGH - Primary retention engine fails, churn increases to 8-10%/month (vs. target 3-4%)
+- **Likelihood:** LOW - SFS changes regularly, but may need broader definition (EU law, court cases, regulatory updates)
+- **Mitigation:**
+  - Analyze historical SFS change frequency (first month)
+  - Expand monitoring beyond SFS: EU law, major court cases (HD/HFD), regulatory guidance
+  - Add "industry news" digests even if not formal law changes
+  - Proactive compliance task suggestions trigger retention too
+
+**7. Competitive Risk: Incumbent Locks Up Public Sector with Long-Term Contracts**
+- **Description:** Notisum or Karnov signs 3-5 year contracts with target public sector customers before our launch
+- **Impact:** MEDIUM - Reduces addressable public sector market, delays revenue
+- **Likelihood:** LOW - Public sector generally does annual renewals, hard to lock long-term
+- **Mitigation:**
+  - Even with contracts, can still demo and get on "next year" list
+  - Focus on kommuner/regioner not currently using paid legal tools
+  - Offer migration incentives (free first 3 months)
+
+**8. Execution Risk: Solo Founder Bandwidth**
+- **Description:** Development + sales + customer success too much for one person, progress slows or quality suffers
+- **Impact:** HIGH - MVP delays, customer success suffers, founder burnout
+- **Likelihood:** MEDIUM-HIGH - Common solo founder challenge
+- **Mitigation:**
+  - Ruthless MVP scope focus (must-haves only)
+  - Leverage AI tools for development speed (Claude Code, Cursor, v0.dev)
+  - Self-serve product design (minimize manual onboarding)
+  - Consider contractor for specific tasks (frontend polish, content creation)
+  - Set hard boundaries on feature creep
+
+**9. Financial Risk: AI API Costs Scale Faster Than Revenue**
+- **Description:** Vector database queries + AI chat costs exceed gross margins, unit economics break
+- **Impact:** CRITICAL - Business model doesn't work, need to raise prices or reduce AI usage
+- **Likelihood:** LOW-MEDIUM - Vector search + LLM calls can get expensive at scale
+- **Mitigation:**
+  - Track unit economics from day 1 (cost per active user)
+  - Implement aggressive caching (75%+ cache hit rate target)
+  - Rate limiting per user tier (10 AI queries/day for 1k tier, unlimited for 4k tier)
+  - Consider usage-based pricing for heavy users
+  - Optimize RAG retrieval (fewer embeddings queries per chat)
+
+**10. Data Risk: Legal Content Scraping/Parsing Errors**
+- **Description:** Automated scraping of Riksdagen data introduces errors, missing content, or outdated information
+- **Impact:** MEDIUM - Product quality issues, trust erosion
+- **Likelihood:** MEDIUM - Riksdagen data quality varies, APIs may change
+- **Mitigation:**
+  - Build validation pipeline (checksums, content comparison against source)
+  - Manual spot-checks of high-traffic laws (10-20 most viewed)
+  - User reporting mechanism for errors
+  - Regular re-scraping (weekly) to catch updates
+
+### Open Questions
+
+**Product & UX:**
+
+1. **What's the optimal AI chat context window?** How many messages of history do we maintain? Does drag-and-drop component context count against token limits?
+
+2. **How do we handle multi-law interactions?** User asks "which law applies to remote work AND GDPR?" - do we create composite view or separate cards?
+
+3. **What's the onboarding flow for non-technical users?** Do we need video tutorials? Interactive product tour? Or is "coolt med koll" personality + clean UX enough?
+
+4. **How granular should change monitoring be?** Entire law changed vs. specific paragraph? Do users want every small amendment or only "material changes"?
+
+5. **Should HR module include payroll integration?** Or stay focused on compliance (employment contracts, work environment, etc.)?
+
+**Technical:**
+
+6. **PostgreSQL pgvector vs. Pinecone - what's the tipping point?** At what scale (queries/day, vector count) does Pinecone become worth the cost?
+
+7. **How do we handle real-time change detection?** Polling Riksdagen daily? Webhook if available? What's the SLA for "law changed → user notified"?
+
+8. **What's the semantic chunking strategy exactly?** Split by paragraph? By section? Hybrid approach? Need to test multiple strategies.
+
+9. **Do we need separate vector embeddings for SFS vs. court cases vs. EU law?** Or one unified vector database?
+
+10. **How do we version control legal content?** Git-based? Database snapshots? Important for "show me what changed" feature.
+
+**Business & GTM:**
+
+11. **What's the ideal first customer profile?** 10-person SMB with in-house admin? 50-person company with HR manager? ISO consultant?
+
+12. **Should we offer annual upfront payment discount?** (e.g., 10 months for 12) to improve cash flow?
+
+13. **What's the competitor response timeline?** How fast can Notisum ship AI features if they decide to?
+
+14. **Are there regulatory compliance requirements for AI legal tools in Sweden?** GDPR obvious, but any specific legal tech regulations?
+
+15. **What's the churn benchmark for B2B SaaS in Sweden?** Is 3-4% monthly churn realistic or optimistic?
+
+**Partnerships:**
+
+16. **Beyond Fortnox, what's the priority order for partnerships?** Visma > PE Accounting > Björn Lundén? Or different GTM channel entirely (accountant network)?
+
+17. **Should we have affiliate program for accountants/consultants?** 20% recurring commission for referrals?
+
+18. **Do we need integration with Google Workspace / Microsoft 365 for adoption?** Or is standalone web app sufficient?
+
+### Areas Needing Further Research
+
+**Market Research:**
+
+- **Swedish legal tech funding landscape** - Are there grants (Vinnova, EU) for legal tech innovation? Nordic VCs interested in legal tech?
+- **Public sector budget cycles** - When do kommuner/regioner plan annual software budgets? Q4 for next year?
+- **ISO consultant market sizing** - How many active ISO consultants in Sweden? What tools do they currently use?
+- **Churn analysis of Notisum** - Can we find former customers? Why did they leave? (Product Hunt, Trustpilot, Reco)
+
+**Technical Research:**
+
+- **Swedish legal AI benchmarks** - Are there existing datasets for evaluating Swedish legal question answering?
+- **Riksdagen API reliability** - Uptime stats? Rate limits? Change notification mechanisms?
+- **Semantic chunking libraries** - LangChain semantic splitter? LlamaIndex? Custom implementation?
+- **Vercel AI SDK production case studies** - Who's using component streaming at scale? Any Swedish companies?
+
+**Competitive Research:**
+
+- **Notisum product roadmap** - Do they publish? Any hints about AI features in customer communications?
+- **Karnov AI capabilities** - They're larger (Nordic), do they have AI features already? How good are they?
+- **International legal AI tools** - What can we learn from Casetext, Harvey AI, LegalZoom's AI features?
+
+**User Research:**
+
+- **5-10 customer discovery interviews** - SMB owners, ISO consultants, kommun HR managers
+  - Current legal research workflow
+  - Pain points with existing tools (Notisum, Google, calling lawyers)
+  - Willingness to pay for AI-powered compliance
+  - Feature prioritization (what's truly "must have" vs. "nice to have")
+  - Change monitoring value proposition validation
+
+---
+
+## Next Steps
+
+### Immediate Actions (Week 1-2)
+
+**1. Technical Validation Sprint**
+- Set up development environment (Next.js 14, Vercel, PostgreSQL)
+- Prototype RAG pipeline with sample Swedish legal documents (10-20 SFS laws)
+- Test semantic chunking strategies (paragraph vs. section vs. hybrid)
+- Validate OpenAI/Anthropic Swedish legal language performance
+- Measure query response times and cost per query
+- **Success criteria:** <2s response time, accurate citations, no hallucinations on test queries
+- **Owner:** Solo founder (dev mode)
+- **Timeline:** Days 1-7
+
+**2. Analyze Historical SFS Change Data**
+- Scrape Riksdagen change history (past 12 months)
+- Calculate average changes per month (total and by law category)
+- Identify high-change categories (employment, tax, environment)
+- Validate "change monitoring as retention engine" assumption
+- **Success criteria:** ≥10 meaningful changes/month across typical SMB law list
+- **Owner:** Solo founder (data analysis)
+- **Timeline:** Days 3-5
+
+**3. Customer Discovery Interviews (Round 1)**
+- Identify 8-10 potential interview targets:
+  - 3 SMB owners (10-50 employees, construction/restaurant/tech)
+  - 2 ISO consultants
+  - 2 kommun HR managers
+  - 1-2 accountants (potential affiliate partners)
+- Prepare interview script focusing on:
+  - Current legal research workflow and pain points
+  - Existing tool usage (Notisum, Google, lawyer calls)
+  - Willingness to pay validation (1k-4k SEK/month range)
+  - Feature prioritization (drag-and-drop, change monitoring, HR module)
+- Conduct interviews (30-45 min each, remote)
+- **Success criteria:** 6+ completed interviews, clear MVP feature validation, pricing confirmed
+- **Owner:** Solo founder (customer dev mode)
+- **Timeline:** Days 5-14
+
+**4. Fortnox Partnership Outreach**
+- Research Fortnox partnership program and contact points
+- Prepare partnership pitch deck (1-pager):
+  - Value prop for Fortnox customers (compliance add-on)
+  - Proposed 75/25 revenue share
+  - Integration requirements (lightweight, OAuth + API)
+  - Pilot program proposal (100 customers, 3 months)
+- Cold outreach to Fortnox partnership/BD team (LinkedIn, email)
+- **Success criteria:** Meeting scheduled with Fortnox partnership team OR clear "no" to pivot to alternatives
+- **Owner:** Solo founder (BD mode)
+- **Timeline:** Days 7-14
+
+**5. Public Sector Procurement Research**
+- Identify 5 smaller kommuner (10k-30k residents) as initial targets
+- Research direktupphandling threshold (confirm ~100k SEK limit, current 2025 rules)
+- Map kommun budget planning cycles (when do they buy new software?)
+- Find 2-3 kommun buyers for informational interviews
+- **Success criteria:** Clear understanding of procurement process, 1-2 kommun buyer conversations
+- **Owner:** Solo founder (market research mode)
+- **Timeline:** Days 8-14
+
+### Short-Term Actions (Month 1)
+
+**6. MVP Development Kickoff**
+- Finalize MVP feature scope based on interview feedback
+- Set up project management (linear.app or similar)
+- Create development roadmap with weekly milestones
+- Week 1-2: Authentication, database schema, basic law page rendering (100 test laws)
+- Week 3-4: RAG pipeline integration, vector database setup
+- Week 5-6: AI chat interface, component streaming, drag-and-drop
+- Week 7-8: Change monitoring system, notification infrastructure
+- Week 9-10: HR module frontend, user management, subscription tiers
+- Week 11-12: Multi-user features, workspace management
+- Week 13-14: Testing, bug fixes, polish, SEO optimization
+- Week 15-16: Beta launch prep, initial customer onboarding flows
+- **Success criteria:** MVP launch in 4 months with 8 core features
+- **Owner:** Solo founder (dev mode)
+- **Timeline:** Month 1 start, ongoing
+
+**7. Legal Content Database Build**
+- Scrape and parse 10,000+ SFS laws from Riksdagen
+- Build content validation pipeline
+- Generate embeddings for vector database
+- Set up automated weekly re-scraping
+- **Success criteria:** 10,000+ laws indexed, clean rendering, searchable
+- **Owner:** Solo founder (dev mode, can run automated in background)
+- **Timeline:** Month 1-2 (parallel with MVP development)
+
+**8. Brand & Messaging Finalization**
+- Finalize "coolt med koll" brand voice and visual identity
+- Create landing page copy emphasizing AI-powered compliance tools
+- Write initial content marketing pieces (SEO blog posts on high-traffic legal topics)
+- Design UI components (law cards, employee cards, task cards)
+- **Success criteria:** Landing page ready, 5-10 SEO articles drafted
+- **Owner:** Solo founder (design/content mode) or contractor
+- **Timeline:** Month 1
+
+### Medium-Term Actions (Month 2-4)
+
+**9. Beta Launch & First 10 Customers**
+- Soft launch to interview participants (free 3-month beta)
+- Implement feedback loop (weekly check-ins, feature requests)
+- Iterate on UX based on real usage patterns
+- Transition beta users to paid (discounted annual: 8k SEK/year = 33% off)
+- **Success criteria:** 10 paying customers by end of Month 4
+- **Owner:** Solo founder (customer success mode)
+- **Timeline:** Month 3-4
+
+**10. SEO Content Marketing Engine**
+- Publish 2-3 high-quality legal explainer articles per week
+- Target high-volume keywords (arbetsmiljölagen, GDPR Sweden, anställningsavtal)
+- Ensure all 10k+ law pages are indexed and ranking
+- Build backlinks through legal forums, startup communities
+- **Success criteria:** 1,000+ organic visitors/month by Month 4
+- **Owner:** Solo founder (content mode) or contractor
+- **Timeline:** Month 2-4, ongoing
+
+**11. Alternative Partnership Outreach**
+- If Fortnox declines or delays, approach alternatives:
+  - Visma (larger, may be slower)
+  - PE Accounting (smaller, more agile)
+  - Björn Lundén (accounting software + content)
+- Explore accountant affiliate program (20% recurring commission)
+- **Success criteria:** 1-2 partnership pilots OR active affiliate program with 5+ accountants
+- **Owner:** Solo founder (BD mode)
+- **Timeline:** Month 2-3 (contingent on Fortnox response)
+
+### Long-Term Milestones (Month 5-18)
+
+**12. Scale to 100 Customers (Month 5-12)**
+- Breakdown: 50 SMB direct, 25 ISO consultants, 15 public sector, 10 via partnerships
+- Focus on retention (target 3-4% monthly churn)
+- Iterate on change monitoring to maximize retention value
+- Revenue target: ~1.8M SEK ARR by Month 12
+
+**13. Public Sector Expansion (Month 6-18)**
+- Target 60 public sector organizations (kommuner, regioner, statliga bolag)
+- Leverage case studies from first 3-5 customers
+- Build public sector-specific features (Phase 2: OSL guidance, LOU/LUF modules)
+- Revenue target: +2.9M SEK ARR from public sector by Month 18
+
+**14. Fortnox Integration Launch (Month 8-12)**
+- Complete integration development (OAuth, embedded UI)
+- Pilot with 100 Fortnox customers
+- Full launch to Fortnox's 400k+ customer base
+- Revenue target: 500 customers × 4.5k SEK/year net = 2.25M SEK ARR by Month 18
+
+**15. Reach 10M SEK ARR (Month 18)**
+- **Segment breakdown:**
+  - SMB direct: 150 customers × 12k SEK/year = 1.8M SEK
+  - ISO consultants: 50 customers × 48k SEK/year = 2.4M SEK
+  - Public sector: 60 organizations × 48k SEK/year = 2.9M SEK
+  - Fortnox: 500 customers × 4.5k SEK/year = 2.25M SEK
+  - **Total: 9.35M SEK ARR** (slightly below 10M target, buffer for churn)
+- Validate unit economics, product-market fit, retention metrics
+- Decision point: Raise growth capital vs. continue bootstrapping
+
+---
+
+## Appendix: Research Summary
+
+### Competitive Analysis Summary
+
+**Notisum** (Primary competitor)
+- 40M SEK ARR, 60% margins, established 20+ years
+- Strengths: Comprehensive legal database, brand recognition, court case coverage
+- Weaknesses: No AI features, poor AD database quality, outdated JK data (ends 2014), static content
+- Opportunity: AI-powered compliance tools, superior UX, change monitoring
+
+**Karnov Group** (Nordic leader)
+- Larger but more expensive, targets law firms and large enterprises
+- Less relevant for SMB segment
+
+**International comparables:**
+- Casetext (acquired by Thomson Reuters for $650M) - AI legal research
+- Harvey AI ($100M+ funding) - Legal AI for law firms
+- Rocket Lawyer - Consumer + SMB legal tools
+
+### Key Insights from Notisum Documentation
+
+From 18 detailed data mapping documents:
+- **Strong databases:** HD, HFD, HovR, MÖD, MIG (full case law)
+- **Broken databases:** AD (employment - critical gap!), JO (limited content), JK (outdated 2014)
+- **Missing AI layer:** Static search only, no contextual understanding
+- **No proactive tools:** No change monitoring, no personalized compliance checklists
+
+**Strategic implication:** Laglig.se can win by focusing on AI-powered proactive compliance (not just better legal search).
+
+---
+
+## PM Handoff
+
+This Project Brief provides comprehensive context for **Laglig.se** - an AI-powered legal compliance platform for Swedish SMBs, public sector, and ISO consultants.
+
+**Key Strategic Decisions:**
+- Freemium SEO model (10k+ free legal pages, gated AI tools)
+- Three customer segments: SMB (1k/month), ISO/Public Sector (4k/month), Fortnox integration (500/month)
+- Change monitoring as retention engine (must-have in MVP)
+- Component streaming UX (drag-and-drop law/employee/task cards into AI chat)
+- 18-month goal: 10M SEK ARR with 760+ customers
+- Solo founder, bootstrap, aggressive MVP timeline (4-6 months)
+
+**Next Phase:** Please review this brief thoroughly and begin **PRD (Product Requirements Document) creation**. The PRD should take these strategic decisions and translate them into detailed feature specifications, user stories, technical requirements, and acceptance criteria.
+
+Start with the 8 MVP core features documented in the "MVP Scope" section, focusing first on:
+1. Free Legal Content Platform (10k+ pages)
+2. RAG-Powered AI Chatbot with Component Streaming
+3. Change Monitoring & Notification System
+
+Ask clarifying questions as needed and suggest improvements where you see gaps or risks.
+
+---
+
+**Document Status:** ✅ COMPLETE
+**Version:** 1.0
+**Last Updated:** 2025-10-27
+**Next Document:** Product Requirements Document (PRD)
+
