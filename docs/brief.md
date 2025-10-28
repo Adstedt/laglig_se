@@ -765,19 +765,33 @@ We'll use riksdagens API, there is best practice for this inside the official do
 
 12. **Should we offer annual upfront payment discount?** (e.g., 10 months for 12) to improve cash flow?
 
+Yes, we can offer a 15% discount for annual signups simiar to many SAAS.
+
 13. **What's the competitor response timeline?** How fast can Notisum ship AI features if they decide to?
+
+Years.
 
 14. **Are there regulatory compliance requirements for AI legal tools in Sweden?** GDPR obvious, but any specific legal tech regulations?
 
+Not as far as we know.
+
 15. **What's the churn benchmark for B2B SaaS in Sweden?** Is 3-4% monthly churn realistic or optimistic?
+
+Unknown, will evaluate.
 
 **Partnerships:**
 
 16. **Beyond Fortnox, what's the priority order for partnerships?** Visma > PE Accounting > Björn Lundén? Or different GTM channel entirely (accountant network)?
 
+We can partner with ISO-certification organs and offer revenue-share
+
 17. **Should we have affiliate program for accountants/consultants?** 20% recurring commission for referrals?
 
+Yes, at 10-15% recurring revenue. We will evaluate.
+
 18. **Do we need integration with Google Workspace / Microsoft 365 for adoption?** Or is standalone web app sufficient?
+
+Standalone for now, will work on integrations in the future (teams, slack etc)
 
 ### Areas Needing Further Research
 
@@ -799,6 +813,7 @@ We'll use riksdagens API, there is best practice for this inside the official do
 
 - **Notisum product roadmap** - Do they publish? Any hints about AI features in customer communications?
 - **Karnov AI capabilities** - They're larger (Nordic), do they have AI features already? How good are they?
+Not for this use case, mainly for lawyers. If this is done correctly, Karnov is a very viable aqcusiotion partner.
 - **International legal AI tools** - What can we learn from Casetext, Harvey AI, LegalZoom's AI features?
 
 **User Research:**
@@ -1028,4 +1043,5 @@ Ask clarifying questions as needed and suggest improvements where you see gaps o
 **Version:** 1.0
 **Last Updated:** 2025-10-27
 **Next Document:** Product Requirements Document (PRD)
+**Author:** Alexander Adstedt
 

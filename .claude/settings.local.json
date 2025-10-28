@@ -6,7 +6,20 @@
       "WebFetch(domain:data.riksdagen.se)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git fetch)",
+      "Bash(git pull)",
+      "Bash(mkdir -p competitor-analysis/output/screenshots)",
+      "Bash(mkdir -p competitor-analysis/output/reports)",
+      "Bash(npm run install-browser)",
+      "Bash(npm run crawl)",
+      "Bash(timeout 3 bash -c \"sleep 3\")",
+      "Bash(npm run scrape-laglistor)",
+      "Bash(awk:*)",
+      "Read(//c/Users/audri/Desktop/dev/screenshots/laglig/**)",
+      "Read(//c/Users/audri/Desktop/dev/screenshots/**)",
+      "Bash(git push)"
     ],
     "deny": [],
     "ask": []
