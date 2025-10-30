@@ -147,6 +147,8 @@ The Dashboard/Workspace is the authenticated user's primary interface for:
 │                         │
 │ 👥 Team (Pro)           │← Multi-user features
 │                         │
+│ 📁 Mina Filer           │← Document storage (drag to AI chat)
+│                         │
 │ ⚙️ Inställningar        │← Account settings
 │                         │
 ├─────────────────────────┤
@@ -1366,6 +1368,450 @@ Ska jag skapa uppgifter för dessa i systemet? [Ja] [Nej]
 - `Shift + Enter` → New line
 - `Esc` → Close chat sidebar
 - `/` → Focus chat input (global shortcut)
+
+---
+
+## Mina Filer (Document Storage)
+
+### Purpose
+Central storage for company documents and files that can be dragged into AI chat for contextual analysis and compliance review.
+
+### Location
+**Navigate:** Left sidebar → "📁 Mina Filer"
+
+---
+
+### File Storage Interface
+
+**Layout:**
+```
+┌────────────────────────────────────────────────────────────────┐
+│ Mina Filer                           [🔍 Sök] [⬆️ Ladda upp]   │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│ [Mappar]                                                       │
+│ 📁 Anställningskontrakt (12 filer)                            │
+│ 📁 Riskbedömningar (8 filer)                                  │
+│ 📁 Policyer och rutiner (15 filer)                            │
+│ 📁 Certifikat och intyg (5 filer)                             │
+│ + Skapa ny mapp                                                │
+│                                                                │
+│ [Senaste filer]                                                │
+│ ┌─────────────────────────────────────────────────────────┐   │
+│ │ 📄 Arbetsmiljöpolicy_2025.pdf          2.3 MB  2 dagar  │   │
+│ │ 📊 Riskbedömning_Kontor.xlsx          145 KB   5 dagar  │   │
+│ │ 📝 Anställningsavtal_Anna.docx        890 KB   1 vecka  │   │
+│ │ 🖼️ Certifikat_ISO14001.jpg            1.2 MB   2 veckor │   │
+│ └─────────────────────────────────────────────────────────┘   │
+│                                                                │
+│ [Alla filer - Table view]                                     │
+├────┬──────────────────────────┬────────┬─────────────┬────────┤
+│ ☐  │ Filnamn                  │ Storlek│ Uppladdad   │ Åtgärd │
+├────┼──────────────────────────┼────────┼─────────────┼────────┤
+│ ☐  │ 📄 Arbetsmiljöpolicy.pdf │ 2.3 MB │ 2025-01-28  │ [···]  │
+│ ☐  │ 📊 Riskbedömning.xlsx    │ 145 KB │ 2025-01-26  │ [···]  │
+│ ☐  │ 📝 Anställningsavtal.docx│ 890 KB │ 2025-01-22  │ [···]  │
+├────┴──────────────────────────┴────────┴─────────────┴────────┤
+│ [Visa 24 av 52 filer] [Nästa sida →]                          │
+└────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Key Features
+
+#### 1. Folder Organization
+
+**Default folders (auto-created):**
+- **Anställningskontrakt** - Employment contracts
+- **Riskbedömningar** - Risk assessments
+- **Policyer och rutiner** - Policies and procedures
+- **Certifikat och intyg** - Certificates and attestations
+- **Allmänna dokument** - General documents
+
+**Custom folders:**
+- User can create custom folders
+- Nested folders (up to 3 levels)
+- Drag-and-drop files between folders
+
+---
+
+#### 2. File Upload
+
+**Upload methods:**
+- Click "⬆️ Ladda upp" button
+- Drag-and-drop files into interface
+- Upload multiple files simultaneously
+
+**Supported file types:**
+- Documents: PDF, DOCX, XLSX, TXT
+- Images: JPG, PNG
+- Archives: ZIP (auto-extracts contents)
+
+**File size limits:**
+- Basic tier: Max 10 MB per file, 1 GB total storage
+- Pro tier: Max 50 MB per file, 10 GB total storage
+- Enterprise tier: Custom limits
+
+**Upload UX:**
+```
+┌─────────────────────────────────────┐
+│ Laddar upp... (2/5 filer)           │
+│ ████████████░░░░░░░░ 60%            │
+│                                     │
+│ ✓ Arbetsmiljöpolicy.pdf (2.3 MB)   │
+│ → Riskbedömning.xlsx (145 KB)...   │
+│ ☐ Anställningsavtal.docx (890 KB)  │
+│ ☐ Policy_GDPR.pdf (1.5 MB)         │
+│ ☐ Certifikat.jpg (1.2 MB)          │
+└─────────────────────────────────────┘
+```
+
+---
+
+#### 3. File Management
+
+**File actions (··· dropdown menu):**
+- **Ladda ner** - Download to computer
+- **Förhandsgranska** - Preview in browser (PDF, images)
+- **Byt namn** - Rename file
+- **Flytta till mapp** - Move to different folder
+- **Kopiera länk** - Copy shareable link (Pro/Enterprise, with permissions)
+- **Dra till AI Chat** - Drag handle for chat integration
+- **Koppla till lag** - Link file to specific law card (creates reference)
+- **Koppla till uppgift** - Link file to specific task
+- **Radera** - Delete file (confirmation required)
+
+**Bulk actions:**
+- Select multiple files (checkboxes)
+- Bulk download (creates ZIP)
+- Bulk move to folder
+- Bulk delete
+
+---
+
+#### 4. Search & Filtering
+
+**Search:**
+```
+[🔍 Sök i filnamn och innehåll...]
+```
+- Full-text search in file names
+- OCR search in PDF content (future)
+- Instant results as user types
+
+**Filters:**
+- File type: PDF, DOCX, XLSX, Images, All
+- Upload date: Last 7 days, 30 days, 3 months, Year, All time
+- Folder: Filter by folder
+- Size: Small (<1 MB), Medium (1-10 MB), Large (>10 MB)
+- Linked to: Laws, Tasks, Unlinked
+
+**Sorting:**
+- Name (A-Z, Z-A)
+- Date uploaded (Newest, Oldest)
+- File size (Largest, Smallest)
+- File type
+
+---
+
+#### 5. Drag-and-Drop to AI Chat
+
+**The killer feature:**
+
+**User workflow:**
+1. Open "Mina Filer" page
+2. Find relevant document (e.g., "Riskbedömning_2025.pdf")
+3. Drag file to AI chat sidebar (right sidebar)
+4. File appears as attachment in chat
+5. AI receives file content for analysis
+
+**Chat interaction:**
+```
+[User drags Riskbedömning_2025.pdf to chat]
+
+📎 Riskbedömning_2025.pdf (2.3 MB)
+[✕ Remove]
+
+User: Är denna riskbedömning komplett enligt
+      Arbetsmiljölagen?
+
+AI: Jag har analyserat er riskbedömning.
+    Här är min bedömning:
+
+    ✅ Täcker fysiska risker (AML § 3)
+    ✅ Inkluderar psykosocial arbetsmiljö
+    ⚠️  SAKNAS: Dokumentation av åtgärdsplan
+    ⚠️  SAKNAS: Uppföljningsdatum
+
+    För att vara fullständig enligt AML behöver ni:
+    1. Lägga till konkreta åtgärder för varje risk
+    2. Sätta datum för uppföljning (minst årlig)
+
+    [Källa: Arbetsmiljölagen (1977:1160) § 3,
+     Arbetsmiljöverkets föreskrift AFS 2001:1]
+```
+
+**Why this is powerful:**
+- AI analyzes actual company documents (not just laws)
+- Provides specific, actionable compliance feedback
+- Reduces "does our policy comply?" questions to legal department
+- Creates audit trail (file + AI analysis + timestamp)
+
+---
+
+#### 6. File Preview
+
+**Click file name → Opens preview modal:**
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ Arbetsmiljöpolicy_2025.pdf                     [✕ Close] │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│ [PDF viewer with zoom, page navigation]                 │
+│                                                          │
+│ [Preview content rendered here]                          │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│ Fil-information:                                         │
+│ • Storlek: 2.3 MB                                        │
+│ • Uppladdad: 2025-01-28 av Alexander                    │
+│ • Mapp: Policyer och rutiner                            │
+│                                                          │
+│ Kopplad till:                                            │
+│ • Arbetsmiljölagen (1977:1160)                          │
+│ • Uppgift: "Uppdatera arbetsmiljöpolicy"                │
+│                                                          │
+│ [Ladda ner] [Dra till AI Chat] [Redigera info] [Radera]│
+└──────────────────────────────────────────────────────────┘
+```
+
+**Preview support:**
+- PDF: Full rendering with zoom, page navigation
+- Images: Zoom, rotate
+- DOCX: Converted to HTML preview (basic formatting)
+- XLSX: Sheet tabs, cell grid (read-only)
+- TXT: Plain text with syntax highlighting (if code)
+- Other: Download prompt
+
+---
+
+#### 7. Linking Files to Laws and Tasks
+
+**Create references between files and compliance work:**
+
+**Link file to law card:**
+1. Open file actions menu (···)
+2. Click "Koppla till lag"
+3. Search/select law (e.g., "Arbetsmiljölagen")
+4. File appears in law card modal under "Relaterade filer"
+5. Bidirectional link (law card ↔ file)
+
+**Link file to task:**
+1. Open file actions menu (···)
+2. Click "Koppla till uppgift"
+3. Search/select task
+4. File appears in task modal as attachment
+5. Use case: Evidence of task completion (ISO audit trail)
+
+**Use case - ISO Audit:**
+```
+Auditor: "Show proof of risk assessment compliance."
+
+User workflow:
+1. Open Arbetsmiljölagen law card
+2. See linked file: "Riskbedömning_2025.pdf"
+3. Click to preview
+4. See also linked task: "Genomför riskbedömning" (completed)
+5. Activity log shows: Anna completed task + uploaded file + date
+
+Result: Complete compliance evidence chain
+```
+
+---
+
+### Storage Quotas & Upgrades
+
+**Basic tier:**
+- 1 GB total storage
+- Max 10 MB per file
+- No version history
+- No shared folders
+
+**Pro tier:**
+- 10 GB total storage
+- Max 50 MB per file
+- Version history (last 10 versions per file)
+- Shared folders with team (Pro tier feature)
+
+**Enterprise tier:**
+- Custom storage limits (negotiated)
+- Max 500 MB per file
+- Unlimited version history
+- Advanced permissions (read/write/admin per folder)
+- SSO integration for file access
+
+**Upgrade prompts:**
+```
+⚠️ Du närmar dig din lagringsgräns
+   920 MB av 1 GB använt (92%)
+
+   Uppgradera till Pro för 10 GB lagring
+   [Uppgradera →] [Hantera filer]
+```
+
+---
+
+### File Permissions (Pro/Enterprise)
+
+**Shared folder permissions:**
+- **Owner:** Full control (upload, delete, manage permissions)
+- **Editor:** Can upload, rename, move files
+- **Viewer:** Can only view and download files
+
+**Share folder with team:**
+```
+┌─────────────────────────────────────┐
+│ Dela mapp: Policyer och rutiner     │
+├─────────────────────────────────────┤
+│ Bjud in teammedlemmar:              │
+│                                     │
+│ Anna    [Editor ▼]    [✕]          │
+│ Johan   [Viewer ▼]    [✕]          │
+│                                     │
+│ [+ Lägg till person]                │
+│                                     │
+│ [Spara] [Avbryt]                    │
+└─────────────────────────────────────┘
+```
+
+---
+
+### Integration with Other Features
+
+**1. Task attachments:**
+- Files uploaded to task modal → Auto-saved to "Mina Filer"
+- Folder: "Uppgiftsfiler" (auto-created)
+- Linked to task automatically
+
+**2. AI Chat file uploads:**
+- Files attached in chat → Saved to "AI Chat-filer" folder
+- Temporary vs. permanent save option
+- Can be moved to other folders later
+
+**3. Change monitoring alerts:**
+- Law updated → AI suggests: "Review your [Arbetsmiljöpolicy.pdf] to ensure compliance with new requirements"
+- Click → Opens file + law card side-by-side
+
+**4. HR module:**
+- Employee documents (contracts, certificates) → Auto-linked to employee cards
+- Folder: "HR-dokument/[Employee name]"
+
+---
+
+### Search & Discovery
+
+**Global search integration:**
+- Header search (🔍) includes files
+- Search results show: File name, preview snippet, location (folder), date
+
+**AI-powered file insights (future):**
+- "Vi upptäckte att din GDPR-policy är från 2020. Rekommenderar granskning."
+- "3 filer innehåller hänvisningar till Arbetsmiljölagen - vill du koppla dem?"
+
+---
+
+### Mobile Access
+
+**Desktop-first (post-MVP for mobile):**
+- Full file manager on desktop
+- Mobile: View and download files only
+- No upload or drag-and-drop on mobile (technical limitations)
+
+---
+
+### Technical Implementation
+
+**Storage:**
+- Cloud storage: AWS S3 or Vercel Blob Storage
+- CDN for fast downloads
+- Server-side virus scanning (ClamAV)
+
+**File processing:**
+- PDF: Render with pdf.js
+- Images: Thumbnail generation (256px, 1024px)
+- DOCX/XLSX: Convert to HTML with mammoth.js / SheetJS
+- OCR: Future (Tesseract for searchable PDFs)
+
+**Database:**
+```sql
+files:
+  - id
+  - user_id
+  - filename
+  - original_filename
+  - file_type (mime type)
+  - file_size (bytes)
+  - storage_path (S3 URL)
+  - folder_id (FK)
+  - uploaded_at
+  - uploaded_by (user_id FK)
+  - linked_law_id (optional FK)
+  - linked_task_id (optional FK)
+
+folders:
+  - id
+  - user_id
+  - name
+  - parent_folder_id (for nesting)
+  - created_at
+```
+
+---
+
+### Security & Privacy
+
+**Access control:**
+- Files scoped per user account (Basic tier)
+- Shared folders scoped per team (Pro/Enterprise)
+- No public file links (must be authenticated)
+
+**Encryption:**
+- Files encrypted at rest (S3 server-side encryption)
+- HTTPS for all transfers
+- Virus scanning on upload
+
+**Data retention:**
+- Deleted files → Soft delete (30-day recovery period)
+- After 30 days → Permanent deletion
+- Account cancellation → Files deleted after 90 days (grace period)
+
+---
+
+### Why "Mina Filer" is Strategic
+
+**1. Reduces external tool dependency:**
+- Users currently store docs in Google Drive/Dropbox
+- Keep everything in one place = stickier product
+
+**2. Creates compliance evidence chain:**
+- File → Linked to law → Linked to task → Activity log
+- Complete audit trail in one system
+
+**3. Enhances AI capabilities:**
+- AI can analyze actual company documents
+- More valuable, specific advice
+- "Does MY policy comply?" vs. "What does the law say?"
+
+**4. Competitive differentiation:**
+- Notisum/Karnov don't have document storage
+- Integrated workflow (law research + document management + AI)
+
+**5. Upsell opportunity:**
+- Storage limits drive Pro upgrades
+- Teams need shared folders
+- Advanced permissions = Enterprise feature
 
 ---
 
