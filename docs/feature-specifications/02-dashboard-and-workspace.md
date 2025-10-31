@@ -2131,7 +2131,7 @@ för att ge AI:n mer kontext."
 - Client Components for interactive features
 
 **UI Library:**
-- shadcn/ui + Tailwind CSS
+- shadcn/ui + Tailwind CSS + Animate UI (https://animate-ui.com/)
 - Radix UI primitives (modals, dropdowns, tooltips)
 - Framer Motion for animations
 
