@@ -1,11 +1,85 @@
 # Laglig.se Product Requirements Document (PRD)
 
-**Version:** 1.0
-**Status:** Draft - In Progress
-**Last Updated:** 2025-01-01
+**Version:** 1.2
+**Status:** Complete - Multi-Content-Type Architecture
+**Last Updated:** 2025-11-02
 **Owner:** Product Team
 
 ---
+## Changelog
+
+### Version 1.2 (2025-11-02)
+**Multi-Content-Type Architecture Update**
+
+**Major Changes:**
+- **Epic 2 Scope Expansion:** Changed from "10,000+ law database" to "170,000+ multi-content-type legal database"
+  - Added Swedish Court Cases (HD, HovR, HFD, MÖD, MIG): 9,000-16,000 pages
+  - Added EU Legislation (Regulations, Directives): 110,000+ pages
+  - Excluded AD (Labour Court) from MVP due to data quality issues - revisit post-MVP
+  - Excluded Propositioner, EU Court Cases to Phase 2
+
+- **Epic 2 Stories:** Restructured from 8 to 11 stories
+  - Story 2.1: NEW - Multi-content-type data model design
+  - Story 2.2: Updated - SFS laws ingestion (50,000+ documents)
+  - Story 2.3: NEW - Court cases ingestion (HD, HovR, HFD)
+  - Story 2.4: NEW - EU legislation ingestion (Regulations, Directives)
+  - Story 2.5: Updated - SEO pages for all content types with type-specific routes
+  - Story 2.6: Updated - Content-type-specific categorization
+  - Story 2.7: NEW - Multi-content-type search and filtering
+  - Story 2.8: NEW - Cross-document navigation system
+  - Story 2.9: Updated - SNI discovery with multi-content results
+  - Story 2.10: NEW - Content-type-specific RAG chunking strategies
+  - Story 2.11: Updated - Multi-content-type change history tracking
+
+- **Database Schema:** Polymorphic design to support multiple content types
+  - `legal_documents` table (polymorphic for all types)
+  - `court_cases` table (type-specific metadata)
+  - `eu_documents` table (CELEX, NIM data)
+  - `cross_references` table (laws ↔ cases ↔ EU directives)
+  - `amendments` table (SFS amendment tracking)
+  - `document_subjects` table (categorization)
+
+- **Functional Requirements Updated:**
+  - FR1: 10,000+ laws → 170,000+ legal documents
+  - FR4: RAG sources expanded to include court cases and EU legislation
+  - FR8: Change monitoring expanded to all content types
+  - FR24: Individual pages support content-type-appropriate tabs
+  - FR36: Categorization applies to all 170,000+ documents
+
+- **Architecture Requirements Updated:**
+  - Multi-source API dependencies: Riksdagen, Domstolsverket, EUR-Lex
+  - Content-type-specific indexing strategies for pgvector
+  - Multi-content-type change detection jobs
+
+**Rationale:** Competitive analysis of Notisum revealed their SEO strategy relies on comprehensive content coverage across 18+ document types. To compete, Laglig.se MVP must cover SFS laws, court precedent, and EU legislation (7 content types, ~170K pages) to drive sufficient SEO traffic.
+
+**Data Source Status:**
+- ✅ Riksdagen API: Available, confirmed
+- ✅ EUR-Lex API: Available, confirmed
+- ✅ Domstolsverket API: Available, confirmed
+- ❌ AD Labour Court: Data quality issues in Notisum, investigate alternative sources post-MVP
+
+### Version 1.1 (2025-11-01)
+**PRD Completion - Ready for Architect Handoff**
+
+**Changes:**
+- Added Post-MVP Roadmap section with explicit out-of-scope features
+- Added User Research & Validation Approach section
+- Added Technical Risk Areas section (6 high-complexity areas flagged)
+- Added Next Steps section with UX Expert and Architect handoff prompts
+- Updated status to "Complete - Ready for Architect"
+
+### Version 1.0 (2025-01-01)
+**Initial PRD Draft**
+
+- Complete epic structure (8 epics, 86 stories)
+- Functional and Non-Functional Requirements (41 FR, 26 NFR)
+- Goals, user research, competitive analysis
+- Technical stack defined
+- Revenue model and pricing tiers
+
+---
+
 
 ## Goals and Background Context
 
@@ -113,13 +187,13 @@ The project is **bootstrap-funded** with a **solo founder** handling development
 
 ### Functional Requirements
 
-**FR1:** The system SHALL provide public access to 10,000+ Swedish laws (SFS) via server-side rendered pages optimized for SEO, with no authentication required for viewing legal content.
+**FR1:** The system SHALL provide public access to 170,000+ legal documents (Swedish laws/SFS, Swedish court cases from HD/HovR/HFD, EU regulations, EU directives) via server-side rendered pages optimized for SEO, with no authentication required for viewing legal content.
 
 **FR2:** The system SHALL implement a dynamic onboarding flow that collects company org-number, scrapes Bolagsverket data, and generates a personalized law list via streaming AI in <5 minutes.
 
 **FR3:** The system SHALL generate personalized law lists with AI-powered contextual commentary explaining what each law means specifically for the user's business (industry, size, employee count).
 
-**FR4:** The system SHALL provide a RAG-powered AI chatbot that answers legal questions using ONLY verified legal sources (SFS, court cases, kollektivavtal) with mandatory inline citations, minimizing hallucinations through strict RAG grounding.
+**FR4:** The system SHALL provide a RAG-powered AI chatbot that answers legal questions using ONLY verified legal sources (SFS laws, Swedish court cases from HD/HovR/HFD, EU regulations/directives, kollektivavtal) with mandatory inline citations, minimizing hallucinations through strict RAG grounding.
 
 **FR5:** The system SHALL support drag-and-drop of law cards, employee cards, task cards, and files into the AI chat interface to build contextual queries.
 
@@ -127,7 +201,7 @@ The project is **bootstrap-funded** with a **solo founder** handling development
 
 **FR7:** The system SHALL provide a Kanban-style compliance workspace with columns (Not Started, In Progress, Blocked, Review, Compliant) where users can drag law cards and add notes.
 
-**FR8:** The system SHALL monitor Swedish laws daily via Riksdagen API and detect changes (amendments, new sections, repeals, metadata updates), storing complete change history indefinitely.
+**FR8:** The system SHALL monitor all legal content types daily (SFS laws via Riksdagen API, court cases via Domstolsverket API, EU legislation via EUR-Lex API) and detect changes (amendments, new sections, repeals, metadata updates), storing complete change history indefinitely.
 
 **FR9:** The system SHALL send email notifications (daily digest format) when laws in a user's law list change, with AI-generated plain-language summaries of what changed, minimizing hallucinations through strict RAG grounding and mandatory source citations.
 
@@ -159,7 +233,7 @@ The project is **bootstrap-funded** with a **solo founder** handling development
 
 **FR23:** The system SHALL integrate with Bolagsverket API during signup to auto-fill company name, address, SNI code, and legal form based on org-number.
 
-**FR24:** The system SHALL provide individual law pages with tabs: Overview (AI summary, key sections), Content (full SFS text), Change History (timeline visualization), Notes (team collaboration with @mentions).
+**FR24:** The system SHALL provide individual legal document pages (laws, court cases, EU legislation) with content-type-appropriate tabs: Overview (AI summary, key sections), Content (full SFS text), Change History (for laws: amendment timeline; for court cases: citation history; for EU: implementation status), Notes (team collaboration with @mentions).
 
 **FR25:** The system SHALL implement a global search (keyboard shortcut `/` or `Cmd+K`) across laws, tasks, employees, and comments with instant dropdown results.
 
@@ -183,7 +257,7 @@ The project is **bootstrap-funded** with a **solo founder** handling development
 
 **FR35:** The system SHALL provide SNI-based law discovery, allowing users to enter industry code and instantly receive 12-25 relevant laws for their sector.
 
-**FR36:** The system SHALL categorize all 10,000+ laws into 10 top-level categories (Arbetsrätt, Dataskydd, Skatterätt, Bolagsrätt, Miljö & Bygg, Livsmedel & Hälsa, Finans, Immaterialrätt, Konsumentskydd, Transport & Logistik) with AI-powered B2B/Private/Both classification.
+**FR36:** The system SHALL categorize all 170,000+ legal documents (laws, court cases, EU legislation) into 10 top-level categories (Arbetsrätt, Dataskydd, Skatterätt, Bolagsrätt, Miljö & Bygg, Livsmedel & Hälsa, Finans, Immaterialrätt, Konsumentskydd, Transport & Logistik) with AI-powered B2B/Private/Both classification.
 
 **FR37:** The system SHALL provide popular abbreviation search (e.g., "LAS" → Anställningsskyddslagen, "ABL" → Aktiebolagslagen) for quick law discovery.
 
@@ -693,7 +767,7 @@ The following areas involve significant technical complexity or external depende
 
 ---
 
-#### 2. Riksdagen API Dependency & Reliability
+#### 2. Multi-Source API Dependencies (Riksdagen, Domstolsverket, EUR-Lex) & Reliability
 
 **Complexity:** Medium - Critical external dependency for change detection
 
@@ -735,7 +809,7 @@ The following areas involve significant technical complexity or external depende
 
 ---
 
-#### 5. Daily Change Detection at Scale
+#### 5. Daily Multi-Content-Type Change Detection at Scale
 
 **Complexity:** High - Cron job processing 10k+ laws with AI generation
 
@@ -1130,182 +1204,629 @@ The following features are **explicitly NOT included in the MVP** and are planne
 **Epic 1 Complete: 10 stories, 3-4 weeks estimated**
 ## Epic 2: Legal Content Foundation (DETAILED)
 
-**Goal:** Build comprehensive 10,000+ law database with public SEO-optimized pages, category structure, search/discovery features, and begin recording law change history for future retention features.
+**Goal:** Build comprehensive multi-source legal content database with 170,000+ public SEO-optimized pages covering Swedish laws, court precedent, and EU legislation. Provide category structure, search/discovery features, and begin recording law change history for future retention features.
 
-**Value Delivered:** Complete legal content library driving SEO traffic + discovery tools enabling users to find relevant laws + historical data collection for Epic 8.
+**Content Types (MVP):**
+- **Swedish Laws (SFS):** 50,000-100,000 pages - Riksdagen API
+- **Swedish Court Cases:** 9,000-16,000 pages - Domstolsverket API
+  - HD (Supreme Court): 3,000-5,000 cases
+  - HovR (Courts of Appeal): 1,500-3,000 cases
+  - HFD (Supreme Administrative Court): 1,500-3,000 cases
+  - MÖD (Environmental Court): 600-1,200 cases [Post-MVP: Industry-specific]
+  - MIG (Migration Court): 200-500 cases [Post-MVP: Industry-specific]
+- **EU Legislation:** 110,000+ pages - EUR-Lex API
+  - EU Regulations: 100,000+ pages
+  - EU Directives: 10,000-15,000 pages
+
+**Total MVP Pages:** ~170,000-225,000 legal content pages
+
+**Excluded from MVP (Post-MVP/Phase 2):**
+- AD (Labour Court) - Data source quality issues, revisit post-MVP
+- Propositioner (Government Bills) - Phase 2 professional tier
+- EU Court Cases - Phase 2 for legal interpretation
+- SOU/Ds (Preparatory Works) - Low SMB value, Phase 3 or skip
+
+**Value Delivered:** Comprehensive multi-content-type legal library driving massive SEO traffic (170K+ indexable pages) + discovery tools enabling users to find relevant laws, court precedent, and EU compliance requirements + cross-document navigation (laws ↔ cases ↔ EU directives) + historical data collection for Epic 8.
+---
+
+### Story 2.1: Design Multi-Content-Type Data Model
+
+**As a** developer,
+**I want** to create a flexible database schema supporting multiple legal document types,
+**so that** we can store SFS laws, court cases, and EU legislation with type-specific metadata.
+
+**Acceptance Criteria:**
+
+1. `ContentType` enum created with values: SFS_LAW, HD_SUPREME_COURT, HOVR_COURT_APPEAL, HFD_ADMIN_SUPREME, MOD_ENVIRONMENT_COURT, MIG_MIGRATION_COURT, EU_REGULATION, EU_DIRECTIVE
+2. `legal_documents` table created with polymorphic schema:
+   - id (UUID), content_type (ContentType), document_number (VARCHAR unique), title (TEXT)
+   - summary (TEXT), full_text (TEXT), effective_date (DATE), publication_date (DATE)
+   - status (DocumentStatus enum), source_url (TEXT), metadata (JSONB)
+   - search_vector (tsvector), embedding (vector(1536))
+3. Type-specific tables created:
+   - `court_cases` (document_id, court_name, case_number, lower_court, decision_date, parties JSONB)
+   - `eu_documents` (document_id, celex_number, eut_reference, national_implementation_measures JSONB)
+4. `cross_references` table created (source_document_id, target_document_id, reference_type, context)
+5. `amendments` table created for SFS laws (base_document_id, amending_document_id, effective_date, description, sections_affected)
+6. `document_subjects` table created (document_id, subject_code, subject_name) for categorization
+7. Prisma schema updated with all models and relations
+8. Migration generated and applied successfully
+9. TypeScript types generated for all models
+10. Test data inserted for each content type validates schema
 
 ---
 
-### Story 2.1: Ingest 10,000+ Laws from Riksdagen API
+### Story 2.2: Ingest 50,000+ SFS Laws from Riksdagen API
 
 **As a** developer,
 **I want** to fetch all SFS laws from Riksdagen API and store them in the database,
-**so that** we have complete legal content for the platform.
+**so that** we have complete Swedish legal content for the platform.
 
 **Acceptance Criteria:**
 
 1. Node script created to fetch all SFS documents from Riksdagen API
-2. Script fetches: title, SFS number, full text, published date, metadata
+2. Script fetches: title, SFS number, full text, published date, ministry, metadata
 3. Rate limiting implemented (max 10 requests/second to respect API limits)
-4. Law data stored in `laws` table with fields: id, sfs_number, title, slug, content, published_date, category, metadata
-5. Script handles pagination for 10,000+ documents
-6. Duplicate detection: Skip laws already in database
-7. Error handling: Retry failed requests 3x before logging
-8. Progress logging: "Processed 500/10,000 laws..."
-9. Script completes full ingestion in <4 hours
-10. Verification: Database contains 10,000+ laws after completion
+4. Data stored in `legal_documents` table with content_type = SFS_LAW
+5. SFS-specific metadata stored in `metadata` JSONB field: ministry, law_type (lag/förordning), abbreviations
+6. Script handles pagination for 50,000+ documents
+7. Duplicate detection: Skip laws already in database (by document_number)
+8. Error handling: Retry failed requests 3x before logging to Sentry
+9. Progress logging: "Processed 5,000/50,000 laws..."
+10. Script completes full ingestion in <6 hours
+11. Verification: Database contains 50,000+ SFS documents after completion
 
 ---
 
-### Story 2.2: Generate SEO-Optimized Law Pages (SSR)
+### Story 2.3: Ingest Swedish Court Cases from Domstolsverket API
+
+**As a** developer,
+**I want** to fetch court cases from HD, HovR, and HFD,
+**so that** we have comprehensive Swedish case law precedent.
+
+**Acceptance Criteria:**
+
+1. Integration with Domstolsverket API endpoint (verify availability)
+2. Node script created to fetch cases from multiple courts:
+   - HD (Högsta Domstolen / Supreme Court): NJA series
+   - HovR (Hovrätterna / Courts of Appeal): RH series
+   - HFD (Högsta Förvaltningsdomstolen / Supreme Administrative Court): HFD/RÅ series
+3. For each court, script fetches: case number, decision date, court name, summary, full text, lower court, parties
+4. Data stored in `legal_documents` table with appropriate content_type (HD_SUPREME_COURT, HOVR_COURT_APPEAL, HFD_ADMIN_SUPREME)
+5. Court-specific metadata stored in `court_cases` table
+6. Case numbering formats preserved (NJA YYYY s NN, RH YYYY:N, HFD YYYY ref N)
+7. Script extracts cross-references to cited SFS laws and stores in `cross_references` table
+8. Rate limiting per API guidelines
+9. Progress logging per court: "HD: 500/3,000 cases, HovR: 200/1,500 cases..."
+10. Error handling with retry logic
+11. Script completes in <8 hours for all three courts
+12. Verification: Database contains 6,000-11,000 court cases after completion
+
+---
+
+### Story 2.4: Ingest EU Regulations and Directives from EUR-Lex API
+
+**As a** developer,
+**I want** to fetch EU regulations and directives in Swedish from EUR-Lex,
+**so that** we have comprehensive EU compliance content.
+
+**Acceptance Criteria:**
+
+1. Integration with EUR-Lex SPARQL/REST API
+2. Node script created to fetch EU documents in Swedish:
+   - Regulations: CELEX format 3YYYYRNNNN
+   - Directives: CELEX format 3YYYYLNNNN
+3. Script fetches: CELEX number, EU document number, title (Swedish), full text (Swedish), publication date, entry into force date, EUT reference
+4. Data stored in `legal_documents` table with content_type EU_REGULATION or EU_DIRECTIVE
+5. EU-specific metadata stored in `eu_documents` table
+6. For directives, fetch National Implementation Measures (NIM) from EUR-Lex NIM database
+7. NIM data stored in `eu_documents.national_implementation_measures` JSONB field
+8. Script extracts cross-references between EU directives and Swedish implementing SFS laws
+9. Cross-references stored in `cross_references` table
+10. Rate limiting per EUR-Lex API guidelines
+11. Progress logging: "Regulations: 10,000/100,000, Directives: 1,000/10,000..."
+12. Script completes in <12 hours for all EU documents
+13. Verification: Database contains 110,000+ EU documents after completion
+
+---
+
+### Story 2.5: Generate SEO-Optimized Pages for All Content Types
 
 **As a** visitor,
-**I want** to view any Swedish law on a public, SEO-optimized page,
+**I want** to view any legal document (law, court case, EU regulation) on a public, SEO-optimized page,
 **so that** I can discover Laglig.se through Google search.
 
 **Acceptance Criteria:**
 
-1. Dynamic route `/alla-lagar/[lawSlug]` renders all 10,000+ laws
-2. Law pages use Server-Side Rendering (SSR)
-3. URL structure: `/alla-lagar/anstallningsskyddslagen-1982-80`
-4. Each page displays: Law title, SFS number, full legal text, published date
-5. Meta tags optimized: `<title>`, `<meta name="description">`, Open Graph tags
-6. Structured data (JSON-LD) for legal documents
-7. Sitemap.xml auto-generated listing all law pages
-8. Canonical URLs set to prevent duplicate content
+1. Dynamic routes created for each content type:
+   - `/lagar/[lawSlug]` for SFS laws
+   - `/rattsfall/hd/[caseSlug]` for HD cases
+   - `/rattsfall/hovr/[caseSlug]` for HovR cases
+   - `/rattsfall/hfd/[caseSlug]` for HFD cases
+   - `/eu/forordningar/[regSlug]` for EU regulations
+   - `/eu/direktiv/[dirSlug]` for EU directives
+2. All pages use Server-Side Rendering (SSR) for SEO
+3. URL slugs generated from titles + document numbers
+4. Each page displays type-appropriate content:
+   - SFS: Law title, SFS number, full text, effective date, amendments
+   - Court cases: Case number, court, decision date, summary, full judgment, cited laws
+   - EU: Document number, CELEX, title, full text, national implementation (directives)
+5. Meta tags optimized per content type
+6. Structured data (JSON-LD) for legal documents and court cases
+7. Sitemap.xml auto-generated listing ALL 170,000+ pages (split into multiple sitemaps if needed)
+8. Canonical URLs set for all content types
 9. Core Web Vitals: LCP <2.5s, CLS <0.1, FID <100ms
-10. Mobile-responsive layout
+10. Mobile-responsive layout for all content types
 11. Legal disclaimer in footer: "AI-assisted guidance, not legal advice"
 
 ---
 
-### Story 2.3: Implement Law Categorization (10 Top-Level Categories)
+### Story 2.6: Implement Content Type-Specific Categorization
 
 **As a** visitor,
-**I want** to browse laws by category (Arbetsrätt, Dataskydd, etc.),
-**so that** I can discover relevant laws for my needs.
+**I want** to browse legal content by category and content type,
+**so that** I can discover relevant laws, court cases, and EU regulations for my needs.
 
 **Acceptance Criteria:**
 
-1. 10 top-level categories defined: Arbetsrätt, Dataskydd, Skatterätt, Bolagsrätt, Miljö & Bygg, Livsmedel & Hälsa, Finans, Immaterialrätt, Konsumentskydd, Transport & Logistik
-2. AI categorization script uses GPT-4 to classify each law
-3. Prompt includes: law title + first 500 chars → category + B2B/Private/Both classification
-4. Categories stored in `laws.category` and `laws.business_type` fields
-5. Category pages created: `/alla-lagar/kategorier/arbetsratt`
-6. Each category page lists all laws in that category
-7. Law count shown per category
-8. Category pages SEO-optimized with meta tags
-9. Verification: All 10,000+ laws have assigned category
-10. Manual review of 50 random categorizations shows >90% accuracy
+1. 10 top-level subject categories defined: Arbetsrätt, Dataskydd, Skatterätt, Bolagsrätt, Miljö & Bygg, Livsmedel & Hälsa, Finans, Immaterialrätt, Konsumentskydd, Transport & Logistik
+2. AI categorization script uses GPT-4 to classify ALL document types
+3. Categorization prompt adapted per content type:
+   - SFS laws: title + first 500 chars → category + B2B/Private/Both
+   - Court cases: case summary + decision → category + subject tags
+   - EU documents: title + recitals → category + industry applicability
+4. Categories stored in `document_subjects` table
+5. Category pages created for each content type:
+   - `/lagar/kategorier/arbetsratt` - SFS laws in category
+   - `/rattsfall/kategorier/arbetsratt` - Court cases in category
+   - `/eu/kategorier/arbetsratt` - EU legislation in category
+6. Document count shown per category per type
+7. Category pages SEO-optimized with meta tags
+8. Verification: All 170,000+ documents have assigned categories
+9. Manual review of 100 random categorizations (mixed types) shows >90% accuracy
+10. Content type filter on category pages: "Show only: Laws | Court Cases | EU Legislation"
 
 ---
 
-### Story 2.4: Build Law Search and Filtering
+### Story 2.7: Build Multi-Content-Type Search and Filtering
 
 **As a** user,
-**I want** to search for laws by title, SFS number, or abbreviation,
-**so that** I can quickly find specific legal content.
+**I want** to search across all legal content types with filtering,
+**so that** I can quickly find specific laws, court precedent, or EU regulations.
 
 **Acceptance Criteria:**
 
-1. Search bar on `/alla-lagar` page
-2. Full-text search implemented using PostgreSQL `tsvector` or Supabase text search
-3. Search queries match: law title, SFS number, abbreviations (e.g., "LAS" → Anställningsskyddslagen)
-4. Abbreviation mapping stored in database (50+ common abbreviations)
-5. Search results display: title, SFS number, snippet, category
-6. Results ranked by relevance
-7. Search performance <500ms for 10,000+ laws
-8. Filters available: Category, Business Type (B2B/Private/Both)
-9. No results state with suggestion: "Try searching for 'arbetsmiljö' or 'GDPR'"
-10. Mobile-responsive search interface
+1. Unified search page created: `/sok` (search)
+2. Full-text search implemented using PostgreSQL `tsvector` across all content types
+3. Search queries match: titles, document numbers, full text, summaries
+4. Search results display mixed content types with clear type badges
+5. Each result shows: title, document number, content type, category, snippet
+6. Results ranked by relevance using weighted ranking:
+   - Title match: weight 1.0
+   - Document number match: weight 0.9
+   - Full text match: weight 0.5
+7. Filters available:
+   - Content Type (Laws, HD Cases, HovR Cases, HFD Cases, EU Regulations, EU Directives)
+   - Category (Arbetsrätt, Dataskydd, etc.)
+   - Business Type (B2B/Private/Both)
+   - Date Range (publication date)
+8. Search performance <800ms for 170,000+ documents
+9. Pagination (20 results per page)
+10. No results state with suggestions
+11. Mobile-responsive search interface
+12. Search analytics tracked (query, results count, clicks)
 
 ---
 
-### Story 2.5: Create SNI Code-Based Law Discovery
+### Story 2.8: Implement Cross-Document Navigation System
 
-**As a** visitor,
-**I want** to enter my industry code (SNI) and see relevant laws,
-**so that** I understand my sector's compliance requirements.
+**As a** user,
+**I want** to navigate between related documents (law → cases citing it → EU directive requiring it),
+**so that** I understand the complete legal landscape.
 
 **Acceptance Criteria:**
 
-1. SNI discovery page created: `/alla-lagar/branscher`
+1. SFS law pages display "Referenced in Court Cases" section showing all court cases that cite this law
+2. Court case pages display "Cited Laws" section showing all SFS laws cited in the judgment
+3. EU directive pages display "Swedish Implementation" section showing SFS laws implementing the directive
+4. SFS law pages display "Implements EU Directive" section if law is implementing EU law
+5. Cross-references automatically extracted during ingestion (Stories 2.2, 2.3, 2.4)
+6. Manual cross-reference creation interface for authenticated users (link documents)
+7. Bidirectional navigation works (A → B means B → A link appears)
+8. Cross-reference links show context snippet: "This case interprets § 7 regarding..."
+9. Cross-reference counts shown: "Referenced in 12 court cases"
+10. Mobile-responsive cross-reference sections
+11. Verification: Sample SFS law shows all expected court case references
+
+---
+
+### Story 2.9: Create SNI Code-Based Multi-Content Discovery
+
+**As a** visitor,
+**I want** to enter my industry code (SNI) and see all relevant legal content,
+**so that** I understand my sector's complete compliance landscape (laws + court precedent + EU regulations).
+
+**Acceptance Criteria:**
+
+1. SNI discovery page created: `/upptack-lagar/bransch` (discover laws/industry)
 2. Input field for SNI code (5 digits)
 3. SNI code validation (format: XXXXX)
-4. Industry starter packs created for 15 common sectors (construction, restaurants, retail, tech, manufacturing, healthcare, transport, etc.)
-5. Each starter pack contains 12-25 curated laws relevant to that industry
-6. Results page shows: industry name, law list with titles + categories
-7. "Add to My List" CTA requires authentication (redirects to signup)
-8. SEO-optimized pages for each industry: `/alla-lagar/branscher/bygg-och-anlaggning`
-9. SNI mapping stored in database
-10. Mobile-responsive layout
+4. Industry starter packs created for 15 common sectors
+5. Each starter pack contains curated mix of content types:
+   - 12-25 SFS laws relevant to industry
+   - 3-8 key court cases showing precedent
+   - 5-12 EU regulations/directives affecting industry
+6. Results page shows tabbed view:
+   - "Lagar" tab: SFS laws
+   - "Rättsfall" tab: Court cases with brief summaries
+   - "EU-lagstiftning" tab: EU regulations and directives
+7. Each tab sortable by relevance, date, category
+8. "Lägg till i Min Lista" (Add to My List) CTA requires authentication
+9. SEO-optimized pages for each industry: `/upptack-lagar/bransch/bygg-och-anlaggning`
+10. SNI → content mapping stored in database
+11. Mobile-responsive layout with tab navigation
 
 ---
 
-### Story 2.6: Implement Individual Law Page Tabs (Overview, Content, Change History, Notes)
+### Story 2.10: Implement Content Type-Specific RAG Chunking Strategies
 
-**As a** user,
-**I want** to view different aspects of a law in organized tabs,
-**so that** I can access overview, full text, change history, and team notes separately.
+**As a** developer,
+**I want** to chunk different content types appropriately for RAG embeddings,
+**so that** semantic search retrieves optimal context for each document type.
 
 **Acceptance Criteria:**
 
-1. Individual law pages (`/alla-lagar/[lawSlug]`) implement tabbed interface
-2. **Overview tab:** AI-generated summary (200-300 words), key sections, applicability (who this affects)
-3. **Content tab:** Full SFS legal text (formatted for readability)
-4. **Change History tab:** Placeholder message "Change history coming soon" (functionality in Epic 8)
-5. **Notes tab:** Authenticated users can add notes, @mention teammates (requires Epic 5)
-6. Tab state persisted in URL hash (e.g., `#content`)
-7. Active tab highlighted in UI
-8. Mobile: Tabs convert to dropdown select
-9. Keyboard navigation: Tab key switches tabs
-10. AI summary generated on-demand (cached after first generation)
+1. Chunking strategy configuration defined per content type:
+   - **SFS laws:** Chunk by § (section), preserve chapter context, max 500 tokens
+   - **Court cases:** Chunk by semantic section (Facts, Analysis, Conclusion), max 800 tokens
+   - **EU regulations:** Chunk by article, preserve preamble context, max 500 tokens
+   - **EU directives:** Chunk by article, preserve recitals context, max 500 tokens
+2. Metadata preserved in each chunk:
+   - SFS: chapter number, section number, law title
+   - Court case: court name, case number, section type (Facts/Analysis/Conclusion)
+   - EU: article number, CELEX, document type
+3. Chunk overlap configured: 50 tokens overlap between adjacent chunks
+4. Embedding generation script processes all 170,000+ documents
+5. Embeddings generated using OpenAI `text-embedding-3-small` (1536 dimensions)
+6. Embeddings stored in `legal_documents.embedding` vector field
+7. Vector index created (HNSW) for fast similarity search
+8. Script handles rate limits (max 1,000 requests/minute)
+9. Progress logging per content type: "SFS: 5,000/50,000, HD: 200/3,000..."
+10. Script completes in <16 hours for all content types
+11. Test query: "employee sick leave rights" returns relevant chunks from SFS laws AND court cases
+12. Verification: Database contains 100,000-200,000 chunk embeddings
 
 ---
 
-### Story 2.7: Create Popular Laws Landing Page
-
-**As a** visitor,
-**I want** to see the most important/popular Swedish laws,
-**so that** I can quickly access commonly needed content.
-
-**Acceptance Criteria:**
-
-1. Landing page created: `/alla-lagar/populara`
-2. Display 20-30 curated "popular" laws
-3. Laws manually selected based on SMB relevance: LAS, Arbetsmiljölagen, GDPR, Semesterlagen, Bokföringslagen, etc.
-4. Each law displayed as card with: title, short description (1 sentence), category badge
-5. Cards link to individual law pages
-6. SEO-optimized meta tags
-7. Mobile-responsive grid layout (1 column mobile, 2-3 desktop)
-8. Call-to-action: "Få din personliga laglista" linking to onboarding
-
----
-
-### Story 2.8: Begin Recording Law Change History (Background Data Collection)
+### Story 2.11: Begin Recording Multi-Content-Type Change History
 
 **As a** product owner,
-**I want** to start collecting law change history NOW (even without UI),
-**so that** by Epic 8, we have 10+ weeks of historical data to show users.
+**I want** to start collecting change history for ALL content types NOW (even without UI),
+**so that** by Epic 8, we have 10+ weeks of historical data.
 
 **Acceptance Criteria:**
 
 1. Daily cron job created (runs 00:00 UTC)
-2. Job fetches current version of all 10,000+ laws from Riksdagen API
-3. For each law, compare current version to previous version (stored in database)
-4. Detect changes: Title changes, content changes, metadata changes, repeals
-5. Changes stored in `law_changes` table with fields: id, law_id, change_type, old_value, new_value, detected_at
-6. No user-facing UI (this is background data collection)
-7. Job logs: "Detected 12 changes today", errors to Sentry
-8. Job completes in <2 hours
-9. Database accumulates change history silently
-10. Verification: After 2 weeks, database contains change records
-
-**Note:** This story lays the foundation for Epic 8 (Change Monitoring). By running this daily from Epic 2 completion, we'll have substantial historical data when we build the change notification UI.
+2. Job monitors changes across all content types:
+   - **SFS laws:** Check for new amendments, repeals, title changes
+   - **Court cases:** Check for new published cases (HD, HovR, HFD)
+   - **EU regulations/directives:** Check for new EU legislation, amendments
+3. For each content type, compare current version to previous version
+4. Detect changes:
+   - New documents added (new SFS, new court cases, new EU acts)
+   - Content changes (SFS amendments, corrected court case text)
+   - Status changes (SFS repealed, EU directive superseded)
+5. Changes stored in `content_changes` table: id, document_id, change_type, old_value, new_value, detected_at, content_type
+6. No user-facing UI (background data collection)
+7. Job logs: "Detected 45 changes today: 12 new SFS, 8 new court cases, 25 new EU acts"
+8. Errors logged to Sentry
+9. Job completes in <3 hours
+10. Database accumulates change history silently
+11. Verification: After 2 weeks, database contains change records for all content types
+12. Change detection tested: Mock SFS amendment detected correctly
 
 ---
 
-**Epic 2 Complete: 8 stories, 2-3 weeks estimated**
+**Epic 2 Complete: 11 stories, 4-5 weeks estimated**
+**As a** developer,
+**I want** to create a flexible database schema supporting multiple legal document types,
+**so that** we can store SFS laws, court cases, and EU legislation with type-specific metadata.
+
+**Acceptance Criteria:**
+
+1. `ContentType` enum created with values: SFS_LAW, HD_SUPREME_COURT, HOVR_COURT_APPEAL, HFD_ADMIN_SUPREME, MOD_ENVIRONMENT_COURT, MIG_MIGRATION_COURT, EU_REGULATION, EU_DIRECTIVE
+2. `legal_documents` table created with polymorphic schema:
+   - id (UUID), content_type (ContentType), document_number (VARCHAR unique), title (TEXT)
+   - summary (TEXT), full_text (TEXT), effective_date (DATE), publication_date (DATE)
+   - status (DocumentStatus enum), source_url (TEXT), metadata (JSONB)
+   - search_vector (tsvector), embedding (vector(1536))
+3. Type-specific tables created:
+   - `court_cases` (document_id, court_name, case_number, lower_court, decision_date, parties JSONB)
+   - `eu_documents` (document_id, celex_number, eut_reference, national_implementation_measures JSONB)
+4. `cross_references` table created (source_document_id, target_document_id, reference_type, context)
+5. `amendments` table created for SFS laws (base_document_id, amending_document_id, effective_date, description, sections_affected)
+6. `document_subjects` table created (document_id, subject_code, subject_name) for categorization
+7. Prisma schema updated with all models and relations
+8. Migration generated and applied successfully
+9. TypeScript types generated for all models
+10. Test data inserted for each content type validates schema
+
+---
+
+### Story 2.2: Ingest 50,000+ SFS Laws from Riksdagen API
+
+**As a** developer,
+**I want** to fetch all SFS laws from Riksdagen API and store them in the database,
+**so that** we have complete Swedish legal content for the platform.
+
+**Acceptance Criteria:**
+
+1. Node script created to fetch all SFS documents from Riksdagen API
+2. Script fetches: title, SFS number, full text, published date, ministry, metadata
+3. Rate limiting implemented (max 10 requests/second to respect API limits)
+4. Data stored in `legal_documents` table with content_type = SFS_LAW
+5. SFS-specific metadata stored in `metadata` JSONB field: ministry, law_type (lag/förordning), abbreviations
+6. Script handles pagination for 50,000+ documents
+7. Duplicate detection: Skip laws already in database (by document_number)
+8. Error handling: Retry failed requests 3x before logging to Sentry
+9. Progress logging: "Processed 5,000/50,000 laws..."
+10. Script completes full ingestion in <6 hours
+11. Verification: Database contains 50,000+ SFS documents after completion
+
+---
+
+### Story 2.3: Ingest Swedish Court Cases from Domstolsverket API
+
+**As a** developer,
+**I want** to fetch court cases from HD, HovR, and HFD,
+**so that** we have comprehensive Swedish case law precedent.
+
+**Acceptance Criteria:**
+
+1. Integration with Domstolsverket API endpoint (verify availability)
+2. Node script created to fetch cases from multiple courts:
+   - HD (Högsta Domstolen / Supreme Court): NJA series
+   - HovR (Hovrätterna / Courts of Appeal): RH series
+   - HFD (Högsta Förvaltningsdomstolen / Supreme Administrative Court): HFD/RÅ series
+3. For each court, script fetches: case number, decision date, court name, summary, full text, lower court, parties
+4. Data stored in `legal_documents` table with appropriate content_type (HD_SUPREME_COURT, HOVR_COURT_APPEAL, HFD_ADMIN_SUPREME)
+5. Court-specific metadata stored in `court_cases` table
+6. Case numbering formats preserved (NJA YYYY s NN, RH YYYY:N, HFD YYYY ref N)
+7. Script extracts cross-references to cited SFS laws and stores in `cross_references` table
+8. Rate limiting per API guidelines
+9. Progress logging per court: "HD: 500/3,000 cases, HovR: 200/1,500 cases..."
+10. Error handling with retry logic
+11. Script completes in <8 hours for all three courts
+12. Verification: Database contains 6,000-11,000 court cases after completion
+
+---
+
+### Story 2.4: Ingest EU Regulations and Directives from EUR-Lex API
+
+**As a** developer,
+**I want** to fetch EU regulations and directives in Swedish from EUR-Lex,
+**so that** we have comprehensive EU compliance content.
+
+**Acceptance Criteria:**
+
+1. Integration with EUR-Lex SPARQL/REST API
+2. Node script created to fetch EU documents in Swedish:
+   - Regulations: CELEX format 3YYYYRNNNN
+   - Directives: CELEX format 3YYYYLNNNN
+3. Script fetches: CELEX number, EU document number, title (Swedish), full text (Swedish), publication date, entry into force date, EUT reference
+4. Data stored in `legal_documents` table with content_type EU_REGULATION or EU_DIRECTIVE
+5. EU-specific metadata stored in `eu_documents` table
+6. For directives, fetch National Implementation Measures (NIM) from EUR-Lex NIM database
+7. NIM data stored in `eu_documents.national_implementation_measures` JSONB field
+8. Script extracts cross-references between EU directives and Swedish implementing SFS laws
+9. Cross-references stored in `cross_references` table
+10. Rate limiting per EUR-Lex API guidelines
+11. Progress logging: "Regulations: 10,000/100,000, Directives: 1,000/10,000..."
+12. Script completes in <12 hours for all EU documents
+13. Verification: Database contains 110,000+ EU documents after completion
+
+---
+
+### Story 2.5: Generate SEO-Optimized Pages for All Content Types
+
+**As a** visitor,
+**I want** to view any legal document (law, court case, EU regulation) on a public, SEO-optimized page,
+**so that** I can discover Laglig.se through Google search.
+
+**Acceptance Criteria:**
+
+1. Dynamic routes created for each content type:
+   - `/lagar/[lawSlug]` for SFS laws
+   - `/rattsfall/hd/[caseSlug]` for HD cases
+   - `/rattsfall/hovr/[caseSlug]` for HovR cases
+   - `/rattsfall/hfd/[caseSlug]` for HFD cases
+   - `/eu/forordningar/[regSlug]` for EU regulations
+   - `/eu/direktiv/[dirSlug]` for EU directives
+2. All pages use Server-Side Rendering (SSR) for SEO
+3. URL slugs generated from titles + document numbers
+4. Each page displays type-appropriate content:
+   - SFS: Law title, SFS number, full text, effective date, amendments
+   - Court cases: Case number, court, decision date, summary, full judgment, cited laws
+   - EU: Document number, CELEX, title, full text, national implementation (directives)
+5. Meta tags optimized per content type
+6. Structured data (JSON-LD) for legal documents and court cases
+7. Sitemap.xml auto-generated listing ALL 170,000+ pages (split into multiple sitemaps if needed)
+8. Canonical URLs set for all content types
+9. Core Web Vitals: LCP <2.5s, CLS <0.1, FID <100ms
+10. Mobile-responsive layout for all content types
+11. Legal disclaimer in footer: "AI-assisted guidance, not legal advice"
+
+---
+
+### Story 2.6: Implement Content Type-Specific Categorization
+
+**As a** visitor,
+**I want** to browse legal content by category and content type,
+**so that** I can discover relevant laws, court cases, and EU regulations for my needs.
+
+**Acceptance Criteria:**
+
+1. 10 top-level subject categories defined: Arbetsrätt, Dataskydd, Skatterätt, Bolagsrätt, Miljö & Bygg, Livsmedel & Hälsa, Finans, Immaterialrätt, Konsumentskydd, Transport & Logistik
+2. AI categorization script uses GPT-4 to classify ALL document types
+3. Categorization prompt adapted per content type:
+   - SFS laws: title + first 500 chars → category + B2B/Private/Both
+   - Court cases: case summary + decision → category + subject tags
+   - EU documents: title + recitals → category + industry applicability
+4. Categories stored in `document_subjects` table
+5. Category pages created for each content type:
+   - `/lagar/kategorier/arbetsratt` - SFS laws in category
+   - `/rattsfall/kategorier/arbetsratt` - Court cases in category
+   - `/eu/kategorier/arbetsratt` - EU legislation in category
+6. Document count shown per category per type
+7. Category pages SEO-optimized with meta tags
+8. Verification: All 170,000+ documents have assigned categories
+9. Manual review of 100 random categorizations (mixed types) shows >90% accuracy
+10. Content type filter on category pages: "Show only: Laws | Court Cases | EU Legislation"
+
+---
+
+### Story 2.7: Build Multi-Content-Type Search and Filtering
+
+**As a** user,
+**I want** to search across all legal content types with filtering,
+**so that** I can quickly find specific laws, court precedent, or EU regulations.
+
+**Acceptance Criteria:**
+
+1. Unified search page created: `/sok` (search)
+2. Full-text search implemented using PostgreSQL `tsvector` across all content types
+3. Search queries match: titles, document numbers, full text, summaries
+4. Search results display mixed content types with clear type badges
+5. Each result shows: title, document number, content type, category, snippet
+6. Results ranked by relevance using weighted ranking:
+   - Title match: weight 1.0
+   - Document number match: weight 0.9
+   - Full text match: weight 0.5
+7. Filters available:
+   - Content Type (Laws, HD Cases, HovR Cases, HFD Cases, EU Regulations, EU Directives)
+   - Category (Arbetsrätt, Dataskydd, etc.)
+   - Business Type (B2B/Private/Both)
+   - Date Range (publication date)
+8. Search performance <800ms for 170,000+ documents
+9. Pagination (20 results per page)
+10. No results state with suggestions
+11. Mobile-responsive search interface
+12. Search analytics tracked (query, results count, clicks)
+
+---
+
+### Story 2.8: Implement Cross-Document Navigation System
+
+**As a** user,
+**I want** to navigate between related documents (law → cases citing it → EU directive requiring it),
+**so that** I understand the complete legal landscape.
+
+**Acceptance Criteria:**
+
+1. SFS law pages display "Referenced in Court Cases" section showing all court cases that cite this law
+2. Court case pages display "Cited Laws" section showing all SFS laws cited in the judgment
+3. EU directive pages display "Swedish Implementation" section showing SFS laws implementing the directive
+4. SFS law pages display "Implements EU Directive" section if law is implementing EU law
+5. Cross-references automatically extracted during ingestion (Stories 2.2, 2.3, 2.4)
+6. Manual cross-reference creation interface for authenticated users (link documents)
+7. Bidirectional navigation works (A → B means B → A link appears)
+8. Cross-reference links show context snippet: "This case interprets § 7 regarding..."
+9. Cross-reference counts shown: "Referenced in 12 court cases"
+10. Mobile-responsive cross-reference sections
+11. Verification: Sample SFS law shows all expected court case references
+
+---
+
+### Story 2.9: Create SNI Code-Based Multi-Content Discovery
+
+**As a** visitor,
+**I want** to enter my industry code (SNI) and see all relevant legal content,
+**so that** I understand my sector's complete compliance landscape (laws + court precedent + EU regulations).
+
+**Acceptance Criteria:**
+
+1. SNI discovery page created: `/upptack-lagar/bransch` (discover laws/industry)
+2. Input field for SNI code (5 digits)
+3. SNI code validation (format: XXXXX)
+4. Industry starter packs created for 15 common sectors
+5. Each starter pack contains curated mix of content types:
+   - 12-25 SFS laws relevant to industry
+   - 3-8 key court cases showing precedent
+   - 5-12 EU regulations/directives affecting industry
+6. Results page shows tabbed view:
+   - "Lagar" tab: SFS laws
+   - "Rättsfall" tab: Court cases with brief summaries
+   - "EU-lagstiftning" tab: EU regulations and directives
+7. Each tab sortable by relevance, date, category
+8. "Lägg till i Min Lista" (Add to My List) CTA requires authentication
+9. SEO-optimized pages for each industry: `/upptack-lagar/bransch/bygg-och-anlaggning`
+10. SNI → content mapping stored in database
+11. Mobile-responsive layout with tab navigation
+
+---
+
+### Story 2.10: Implement Content Type-Specific RAG Chunking Strategies
+
+**As a** developer,
+**I want** to chunk different content types appropriately for RAG embeddings,
+**so that** semantic search retrieves optimal context for each document type.
+
+**Acceptance Criteria:**
+
+1. Chunking strategy configuration defined per content type:
+   - **SFS laws:** Chunk by § (section), preserve chapter context, max 500 tokens
+   - **Court cases:** Chunk by semantic section (Facts, Analysis, Conclusion), max 800 tokens
+   - **EU regulations:** Chunk by article, preserve preamble context, max 500 tokens
+   - **EU directives:** Chunk by article, preserve recitals context, max 500 tokens
+2. Metadata preserved in each chunk:
+   - SFS: chapter number, section number, law title
+   - Court case: court name, case number, section type (Facts/Analysis/Conclusion)
+   - EU: article number, CELEX, document type
+3. Chunk overlap configured: 50 tokens overlap between adjacent chunks
+4. Embedding generation script processes all 170,000+ documents
+5. Embeddings generated using OpenAI `text-embedding-3-small` (1536 dimensions)
+6. Embeddings stored in `legal_documents.embedding` vector field
+7. Vector index created (HNSW) for fast similarity search
+8. Script handles rate limits (max 1,000 requests/minute)
+9. Progress logging per content type: "SFS: 5,000/50,000, HD: 200/3,000..."
+10. Script completes in <16 hours for all content types
+11. Test query: "employee sick leave rights" returns relevant chunks from SFS laws AND court cases
+12. Verification: Database contains 100,000-200,000 chunk embeddings
+
+---
+
+### Story 2.11: Begin Recording Multi-Content-Type Change History
+
+**As a** product owner,
+**I want** to start collecting change history for ALL content types NOW (even without UI),
+**so that** by Epic 8, we have 10+ weeks of historical data.
+
+**Acceptance Criteria:**
+
+1. Daily cron job created (runs 00:00 UTC)
+2. Job monitors changes across all content types:
+   - **SFS laws:** Check for new amendments, repeals, title changes
+   - **Court cases:** Check for new published cases (HD, HovR, HFD)
+   - **EU regulations/directives:** Check for new EU legislation, amendments
+3. For each content type, compare current version to previous version
+4. Detect changes:
+   - New documents added (new SFS, new court cases, new EU acts)
+   - Content changes (SFS amendments, corrected court case text)
+   - Status changes (SFS repealed, EU directive superseded)
+5. Changes stored in `content_changes` table: id, document_id, change_type, old_value, new_value, detected_at, content_type
+6. No user-facing UI (background data collection)
+7. Job logs: "Detected 45 changes today: 12 new SFS, 8 new court cases, 25 new EU acts"
+8. Errors logged to Sentry
+9. Job completes in <3 hours
+10. Database accumulates change history silently
+11. Verification: After 2 weeks, database contains change records for all content types
+12. Change detection tested: Mock SFS amendment detected correctly
+
+---
+
+**Epic 2 Complete: 11 stories, 4-5 weeks estimated**
+
+
 
 ---
 
@@ -2965,17 +3486,17 @@ YOUR DELIVERABLES:
 
 2. **Database Schema Design**
    - Complete Prisma schema with all tables, relationships, indexes
-   - Tables: workspaces, users, workspace_members, laws, law_embeddings, law_changes, employees, kollektivavtal, tasks, chat_messages, workspace_costs, activity_log
+   - Tables: workspaces, users, workspace_members, legal_documents (polymorphic for all content types), court_cases, eu_documents, cross_references, amendments, document_subjects, law_embeddings, content_changes, employees, kollektivavtal, tasks, chat_messages, workspace_costs, activity_log
    - Row-Level Security (RLS) policies for multi-tenancy
    - Migration strategy (Prisma Migrate, CI/CD integration)
    - Data retention and GDPR compliance mechanisms
 
 3. **Technical Risk Mitigation Plans**
    - **RAG Implementation:** Chunk size optimization, retrieval parameter tuning, hallucination detection strategy
-   - **Riksdagen API Dependency:** Fallback/retry logic, caching strategy, rate limit handling
+   - **Multi-Source API Dependencies (Riksdagen, Domstolsverket, EUR-Lex):** Fallback/retry logic, caching strategy, rate limit handling
    - **Vector Database Scaling:** pgvector → Pinecone migration triggers, query performance monitoring
    - **Drag-and-Drop Performance:** State management approach, virtualization if needed, mobile touch handling
-   - **Daily Change Detection:** Job architecture (BullMQ queue?), checkpoint/resume mechanism, parallel processing design
+   - **Daily Multi-Content-Type Change Detection:** Job architecture (BullMQ queue?), checkpoint/resume mechanism, parallel processing design
    - **Multi-Tenancy Security:** RLS policy testing, penetration testing plan, data isolation verification
 
 4. **API Specification**
@@ -3055,7 +3576,7 @@ After UX and Architecture phases complete:
 
 **Total Epic Summary:**
 - Epic 1: Foundation & Core Infrastructure (10 stories, 3-4 weeks)
-- Epic 2: Legal Content Foundation (8 stories, 2-3 weeks)
+- Epic 2: Legal Content Foundation (11 stories, 4-5 weeks)
 - Epic 3: RAG-Powered AI Chat Interface (12 stories, 3-4 weeks)
 - Epic 4: Dynamic Onboarding & Personalized Law Lists (10 stories, 3-4 weeks)
 - Epic 5: Workspace Management & Team Collaboration (12 stories, 3-4 weeks)
@@ -3063,7 +3584,7 @@ After UX and Architecture phases complete:
 - Epic 7: HR Module (Employee Management) (12 stories, 3-4 weeks)
 - Epic 8: Change Monitoring & Notification System (12 stories, 3-4 weeks)
 
-**TOTAL: 86 stories across 8 epics, estimated 22-28 weeks (5.5-7 months)**
+**TOTAL: 89 stories across 8 epics, estimated 24-30 weeks (5.5-7 months)**
 
 **Next Steps:**
 1. Architect review and technical design
