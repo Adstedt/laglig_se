@@ -853,17 +853,16 @@ The following areas involve significant technical complexity or external depende
 
 ---
 
-### Epic 2: Legal Content Foundation (Alla Lagar)
-**Goal:** Build comprehensive 10,000+ law database with public SEO-optimized pages, category structure, search/discovery features, and begin recording law change history.
+### Epic 2: Legal Content Foundation
+**Goal:** Build comprehensive multi-source legal content database with 170,000+ public SEO-optimized pages covering Swedish laws, court precedent, and EU legislation. Provide category structure, search/discovery features, and begin recording law change history.
 
-**Delivers:** 10,000+ law pages, categories, search, SNI discovery, change history recording (no UI yet)
+**Delivers:** 170,000+ legal content pages (SFS laws, court cases from HD/HovR/HFD/MÖD/MIG, EU regulations/directives), multi-content-type search, cross-document navigation, change history recording (no UI yet)
 
-**Requirements covered:** FR1, FR24, FR35, FR36, FR37, NFR1
+**Requirements covered:** FR1, FR4, FR8, FR24, FR35, FR36, FR37, NFR1
 
-**Estimated stories:** 6-8
+**Estimated stories:** 11
 
-**Note:** Modified to include background change history collection for Epic 8
-
+**Note:** Expanded from single-source (SFS laws only) to multi-content-type architecture based on competitive analysis. Court cases and EU legislation critical for SEO coverage.
 ---
 
 ### Epic 3: RAG-Powered AI Chat Interface
