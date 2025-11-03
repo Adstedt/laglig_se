@@ -19,7 +19,10 @@
       "Bash(awk:*)",
       "Read(//c/Users/audri/Desktop/dev/screenshots/laglig/**)",
       "Read(//c/Users/audri/Desktop/dev/screenshots/**)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(docs/prd_temp.md)",
+      "Bash(mv:*)",
+      "Bash(\"C:/Users/audri/Desktop/dev/laglig_se/docs/front-end-spec-temp.md\")"
     ],
     "deny": [],
     "ask": []
