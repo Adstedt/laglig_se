@@ -3108,10 +3108,18 @@ The following features are **explicitly NOT included in the MVP** and are planne
 
 ## Epic 8: Change Monitoring & Notification System (DETAILED)
 
-**Goal:** Implement retention engine that automatically detects law changes and notifies users.
+**Goal:** Implement retention engine that automatically detects law changes and notifies users with AI-powered plain language summaries and business impact assessment.
 
 **Value Delivered:** Users never miss critical law updates + AI summaries make changes understandable + retention improves through ongoing value delivery.
 
+**Competitive Context:** Notisum provides basic change notifications with raw legal text only (confirmed via live account testing). Laglig.se differentiates through:
+- AI plain language summaries explaining "what changed" in Swedish
+- Business impact assessment (High/Medium/Low priority)
+- Action guidance ("Review by [date]" vs "No action needed")
+- Visual GitHub-style diffs (not just grey text boxes)
+- Contextual help explaining legal notation (ändr:, nya §§, rubr:)
+
+**Reference:** See `docs/competitive-analysis/notisum-change-notification-analysis.md` for detailed competitor breakdown based on live email examples.
 ---
 
 ### Story 8.1: Build Change Detection UI (Changes Tab)
@@ -3125,17 +3133,18 @@ The following features are **explicitly NOT included in the MVP** and are planne
 1. Law List page → "Changes" tab (next to "All Laws" tab)
 2. Changes tab shows all unacknowledged changes for laws in workspace
 3. Each change displayed as card:
+   - 🔴/🟡/🟢 Priority badge (High/Medium/Low) - DIFFERENTIATION from Notisum
    - Law title, SFS number
    - Change detected date
    - Change type badge (Amendment, New Section, Repeal, Metadata Update)
-   - AI summary (1-2 sentences): "This amendment extends parental leave to 18 months"
+   - **AI Summary** (1-2 sentences in plain Swedish): "This amendment extends parental leave to 18 months" - DIFFERENTIATION from Notisum
+   - **Business Impact** (1 sentence): "Action required by Dec 1" or "FYI only - reference update" - DIFFERENTIATION from Notisum
    - "View Details" button → Opens diff view
    - "Mark as Reviewed" button
-4. Changes sorted by date (newest first)
+4. Changes sorted by priority (High → Medium → Low), then by date
 5. Unacknowledged count badge on "Changes" tab: "Changes (3)"
 6. Empty state: "No unacknowledged changes ✅"
-
----
+7. Filter by priority: "Show: All | High Priority | Medium | Low"
 
 ### Story 8.2: Implement GitHub-Style Diff View
 
@@ -3146,19 +3155,22 @@ The following features are **explicitly NOT included in the MVP** and are planne
 **Acceptance Criteria:**
 
 1. Clicking "View Details" on change card opens diff modal
-2. Diff view shows:
+2. **Diff view shows** (DIFFERENTIATION: Notisum only shows grey box with full text):
    - Law title, SFS number
    - Change type, detected date
-   - Side-by-side comparison: Old version | New version
-   - Changed sections highlighted (red for removed, green for added)
+   - **Side-by-side comparison:** Old version | New version (GitHub-style)
+   - **Changed sections highlighted:** Red background for removed text, green for added
    - Line numbers for reference
-3. AI summary at top: "Summary: Parental leave extended from 12 to 18 months"
+   - **Contextual explanation:** "§ 26 was modified - this section handles X"
+3. **AI summary at top** (2-3 sentences in plain Swedish):
+   - "Summary: Sick pay procedure references updated to align with new Försäkringskassan guidelines"
+   - "Impact: Low - Administrative reference update, no action required"
 4. "Mark as Reviewed" button in modal
-5. "View Full Law" link → Opens individual law page
-6. Mobile: Stack old/new versions vertically instead of side-by-side
-7. Diff library: Use `diff` npm package or similar
-
----
+5. **"View Full Law" link** → Opens individual law page
+6. **Link to official source:** "Riksdagen PDF" link
+7. Mobile: Stack old/new versions vertically instead of side-by-side
+8. Diff library: Use `diff` npm package or similar
+9. **Competitive note:** Notisum shows raw text in grey box - no visual diff, no before/after
 
 ### Story 8.3: Implement "Mark as Reviewed" Workflow
 
@@ -3189,20 +3201,39 @@ The following features are **explicitly NOT included in the MVP** and are planne
 
 **Acceptance Criteria:**
 
-1. When law change detected (Epic 2.8 cron job), trigger notification pipeline
-2. **Daily Digest Email** (sent 08:00 CET):
-   - Subject: "Lagändringar i din laglista - [Date]"
-   - Email body:
-     - Summary: "3 lagar har ändrats sedan igår"
-     - List of changed laws with AI summaries
-     - CTA button: "Granska ändringar" → Links to Changes tab
+1. When law change detected (Epic 2.11 cron job), trigger notification pipeline
+2. **Daily Digest Email** (sent 08:00-09:00 CET, morning batch):
+   - **Subject:** "🔔 [List Name] - X nya lagändringar att granska" (personalized per law list)
+   - **Email body structure** (inspired by Notisum, enhanced with AI):
+     - Greeting: "Hej [Name],"
+     - Context: "Följande lagar i din lista '[List Name]' har ändrats:"
+     - **For each changed law:**
+       - 🟢/🟡/🔴 Priority badge (Low/Medium/High)
+       - Law title with link to Laglig.se page
+       - SFS amendment number (e.g., "SFS 2025:938")
+       - **AI Summary** (2-3 sentences in plain Swedish)
+       - **Business Impact** (1 sentence: "No action required" or "Review by Dec 1")
+       - Changed sections: "ändr: 26 §" with explanation
+       - Effective date: "Ikraftträdande 1 december 2025"
+       - **Dual links:** [View on Laglig.se] [Official Riksdagen PDF]
+     - CTA button: "Granska alla ändringar"
+     - Footer with unsubscribe link
    - Sent only if changes detected in last 24 hours
-3. Email preferences in Workspace Settings (user can opt out)
-4. Unsubscribe link in footer
-5. Email template uses React Email, branded design
-6. Track email open rates (UTM parameters in links)
-
----
+   - **Multiple law lists:** Send separate email per list (like Notisum)
+3. **Email content differentiators** (vs Notisum):
+   - Plain language AI summaries (not just legal text)
+   - Priority indication (High/Medium/Low)
+   - Action guidance per change
+   - Contextual explanation of legal notation
+4. **Section-level granularity** (match Notisum):
+   - Show exact sections changed (§ numbers)
+   - List multiple recent amendments if applicable
+   - Include "Senaste ändringar" section for multi-amendment laws
+5. Email preferences in Workspace Settings (user can opt out)
+6. Unsubscribe link in footer: "Avbeställare är [email]"
+7. Email template uses React Email, branded design
+8. Track email open rates (UTM parameters in links)
+9. **Competitive validation:** Email structure validated against live Notisum examples (Nov 2025)
 
 ### Story 8.5: Implement In-App Notification Bell
 
