@@ -1,13 +1,56 @@
 # Laglig.se Product Requirements Document (PRD)
 
-**Version:** 1.2
-**Status:** Complete - Multi-Content-Type Architecture
-**Last Updated:** 2025-11-02
+**Version:** 1.3
+**Status:** Complete - Onboarding Flow Enhanced
+**Last Updated:** 2025-11-03
 **Owner:** Product Team
 
 ---
 ## Changelog
 
+
+### Version 1.3 (2025-11-03)
+**Dynamic Onboarding & Comprehensive Law Generation Update**
+
+**Major Changes:**
+- **Epic 4 Onboarding Flow Enhancement:** Updated from static Bolagsverket-only analysis to conversational dynamic questioning flow
+  - Added Story 4.2b: NEW - Dynamic contextual questioning (3-5 AI-selected questions based on industry + previous answers)
+  - Updated Story 4.3: Changed from "15-25 laws" to "two-phase generation (15-30 high-priority pre-signup, 60-80 total post-signup)"
+  - Added Story 4.4b: NEW - Post-signup Phase 2 background law generation
+
+- **Two-Phase Law Generation Strategy:**
+  - **Phase 1 (Pre-Signup):** Generate 15-30 highest-priority laws from Bolagsverket data + dynamic question answers to demonstrate value before signup
+  - **Phase 2 (Post-Signup):** Generate remaining 45-65 laws in background (30-60 seconds) for comprehensive 60-80 law coverage matching Notisum parity
+
+- **Dynamic Questioning Logic:**
+  - AI selects 3-5 contextual questions based on SNI code (industry), employee count, and previous answers
+  - Industry-specific questions (e.g., Restaurang → "Serverar ni alkohol?", Bygg → "Arbetar ni med farliga ämnen?")
+  - Employee-count-triggered questions (e.g., 10+ employees → "Har ni skyddsombud?")
+  - Follow-up questions based on answers (e.g., "Ja" to alcohol → "Vilken typ av serveringstillstånd?")
+  - Hard limit: 5 questions maximum to prevent interrogation fatigue
+
+- **Functional Requirements Updated:**
+  - FR2: Onboarding flow now includes dynamic questioning, not just Bolagsverket scraping
+  - FR3: Law lists expanded from 15-25 to 60-80 laws with two-phase generation
+
+- **UX Impact:**
+  - Pre-signup: Shows "+45-65 mer lagar efter registrering" badge to create conversion trigger
+  - Post-signup: Dashboard shows progress bar "Kompletterar din laglista... 23/68 lagar"
+  - User can interact with Dashboard during Phase 2 generation (non-blocking background process)
+  - Laws categorized into: Grundläggande, Arbetsmiljö, Branschspecifika, GDPR & Data, Ekonomi, Miljö, Övrigt
+
+**Rationale:**
+1. **Dynamic Questioning:** Bolagsverket data alone insufficient for accurate law selection. Industry-specific context (alcohol licensing, hazardous materials, subcontractors, etc.) dramatically affects applicable laws.
+2. **60-80 Law Coverage:** Competitive analysis of Notisum shows typical law lists contain 60-80 laws. Generating only 15-25 laws underserves users and misses compliance gaps.
+3. **Two-Phase Strategy:** Balances conversion (show value fast) with comprehensiveness (match competitor coverage). Phase 1 demonstrates "magic" in 2-3 minutes, Phase 2 completes coverage post-signup without blocking user.
+
+**Technical Implications:**
+- AI question selection requires GPT-4 with industry knowledge base
+- Phase 2 generation uses background job (not blocking request/response)
+- Session storage preserves partial onboarding state (24-hour expiry) for browser-close recovery
+- CompanyContext object stores all answers for downstream AI chat, notifications, and analytics
+
+---
 ### Version 1.2 (2025-11-02)
 **Multi-Content-Type Architecture Update**
 
@@ -189,9 +232,9 @@ The project is **bootstrap-funded** with a **solo founder** handling development
 
 **FR1:** The system SHALL provide public access to 170,000+ legal documents (Swedish laws/SFS, Swedish court cases from HD/HovR/HFD, EU regulations, EU directives) via server-side rendered pages optimized for SEO, with no authentication required for viewing legal content.
 
-**FR2:** The system SHALL implement a dynamic onboarding flow that collects company org-number, scrapes Bolagsverket data, and generates a personalized law list via streaming AI in <5 minutes.
+**FR2:** The system SHALL implement a dynamic onboarding flow that collects company org-number, scrapes Bolagsverket data, asks 3-5 AI-selected contextual questions based on industry and company size, and generates a personalized law list via streaming AI in two phases: Phase 1 (15-30 high-priority laws pre-signup in <3 minutes) and Phase 2 (remaining 45-65 laws post-signup in <60 seconds background generation) for comprehensive 60-80 law coverage.
 
-**FR3:** The system SHALL generate personalized law lists with AI-powered contextual commentary explaining what each law means specifically for the user's business (industry, size, employee count).
+**FR3:** The system SHALL generate personalized law lists containing 60-80 laws with AI-powered contextual commentary explaining what each law means specifically for the user's business (industry, size, employee count, contextual answers from dynamic questions), categorized into Grundläggande, Arbetsmiljö, Branschspecifika, GDPR & Data, Ekonomi, Miljö, and Övrigt groups.
 
 **FR4:** The system SHALL provide a RAG-powered AI chatbot that answers legal questions using ONLY verified legal sources (SFS laws, Swedish court cases from HD/HovR/HFD, EU regulations/directives, kollektivavtal) with mandatory inline citations, minimizing hallucinations through strict RAG grounding.
 
@@ -877,13 +920,13 @@ The following areas involve significant technical complexity or external depende
 ---
 
 ### Epic 4: Dynamic Onboarding & Personalized Law Lists
-**Goal:** Create conversion engine that transforms homepage visitors into trial users through streaming law list generation.
+**Goal:** Create conversion engine that transforms homepage visitors into trial users through AI-driven conversational onboarding, dynamic questioning, and two-phase comprehensive law list generation (60-80 laws).
 
-**Delivers:** Onboarding widget, Bolagsverket integration, streaming generation, trial signup, email verification
+**Delivers:** Onboarding widget, Bolagsverket integration, dynamic contextual questioning (3-5 AI-selected questions), two-phase streaming generation (Phase 1: 15-30 laws pre-signup, Phase 2: 45-65 laws post-signup background), trial signup, email verification
 
 **Requirements covered:** FR2, FR3, FR21, FR23, FR30, NFR4, NFR5
 
-**Estimated stories:** 8-10
+**Estimated stories:** 12
 
 ---
 
@@ -2137,27 +2180,105 @@ The following features are **explicitly NOT included in the MVP** and are planne
 9. Logging: Successful fetches, errors to Sentry
 10. Test with 10 real org-numbers (verify data accuracy)
 
----
 
-### Story 4.3: Implement AI-Powered Law List Generation
+### Story 4.2b: Implement Dynamic Contextual Questioning Flow
 
 **As a** visitor,
-**I want** the system to generate a personalized law list based on my company data,
-**so that** I see relevant compliance requirements.
+**I want** to answer 3-5 contextual questions about my business during onboarding,
+**so that** the AI can generate a highly accurate and comprehensive law list.
 
 **Acceptance Criteria:**
 
-1. API endpoint created: `POST /api/onboarding/generate-law-list`
-2. Request body: `{ sniCode, legalForm, employeeCount, companyName }`
-3. Backend retrieves industry starter pack (from Epic 2) based on SNI code
-4. GPT-4 prompt: "Given [company data], select 15-25 most relevant laws from this list of 50, prioritize by compliance risk"
-5. AI returns ranked law list with contextual commentary per law
-6. Commentary format: "This law applies because [reason specific to company]"
-7. Response format: `{ laws: [{ law_id, title, sfs_number, commentary, priority }] }`
-8. Generation time <5 seconds
-9. Fallback: If SNI code not in starter packs, use general "SMB starter pack"
-10. Test with 15 different industries (manual review: >90% relevant laws)
+1. After Bolagsverket data fetch, AI determines first question based on SNI code and employee count
+2. Question selection logic implemented with GPT-4 or rule-based decision tree:
+   - **Always ask:** "Hur många anställda har ni?" (if not in Bolagsverket data)
+   - **Industry-triggered questions:** Based on SNI code
+     - Restaurang (SNI 56.x): "Serverar ni alkohol?", "Har ni uteservering?", "Anställer ni personer under 18 år?"
+     - Bygg (SNI 41-43): "Arbetar ni med farliga ämnen?", "Har ni underentreprenörer?", "Arbetar ni på höjd?"
+     - E-handel (SNI 47.91): "Säljer ni till privatpersoner eller företag?", "Säljer ni till andra EU-länder?"
+     - Vårdgivare (SNI 86-88): "Privat eller kommunal vårdgivare?", "Hanterar ni patientjournaler?"
+   - **Employee-count-triggered questions:**
+     - 1-9 employees: "Har ni kollektivavtal?"
+     - 10-24 employees: "Har ni skyddsombud?" (required by law)
+     - 25+ employees: "Har ni skyddskommitté?" (required by law)
+   - **Follow-up questions:** Based on previous answers
+     - If "Ja" to alcohol: "Vilken typ av serveringstillstånd?"
+     - If "Ja" to subcontractors: "Kontrollerar ni deras F-skatt?"
+3. Question UI displays:
+   - Progress indicator: "Fråga 2 av ~4"
+   - Contextual intro: "Eftersom ni har 12 anställda:"
+   - Question text (large, clear Swedish)
+   - Answer options (radio buttons or large buttons)
+   - Educational tooltip: "💡 Med 10+ anställda krävs skyddsombud enligt Arbetsmiljölagen"
+4. Laws stream into list as questions are answered (progressive value demonstration)
+5. Each answer adds 3-8 new laws to streaming list with reason tags: "Gäller eftersom ni serverar alkohol"
+6. Hard limit: Maximum 5 questions, then force to Phase 1 completion
+7. User can go back to previous question, answers preserved, law list regenerates
+8. "Hoppa över" option available with warning: "Vi kanske missar relevanta lagar"
+9. "Vet inte" answer option includes law with "⚠️ Kan gälla dig - kontrollera" tag
+10. Answers stored in `CompanyContext` object for downstream use (AI chat, notifications, analytics)
+11. Session storage preserves partial progress (24-hour expiry) if user closes browser
+12. Mobile-responsive question UI (large touch targets)
+13. Question-answer flow completes in <2 minutes (target: avg 3-4 questions × 30 seconds each)
+14. Test with 10 different industries: Verify questions are relevant and law lists accurate
 
+**Technical Notes:**
+- Question selection can be rule-based initially (if/then logic), GPT-4 as enhancement later
+- Each question adds to streaming law generation, not batch at end
+- Educational tooltips position Laglig.se as educator, not just tool
+
+---
+---
+
+### Story 4.3: Implement Two-Phase AI-Powered Law List Generation
+
+**As a** visitor,
+**I want** the system to generate a comprehensive personalized law list in two phases,
+**so that** I see value quickly (Phase 1) and get complete coverage after signup (Phase 2).
+
+**Acceptance Criteria:**
+
+**Phase 1 (Pre-Signup - High-Priority Laws):**
+
+1. API endpoint created: `POST /api/onboarding/generate-law-list-phase1`
+2. Request body: `{ sniCode, legalForm, employeeCount, companyName, contextualAnswers }`
+3. Backend retrieves industry starter pack (from Epic 2) based on SNI code
+4. GPT-4 prompt: "Given [company data + contextual answers], select 15-30 HIGHEST-PRIORITY laws, prioritize by: (1) change frequency, (2) fine risk, (3) business-criticality, (4) industry-specificity"
+5. AI returns ranked law list with contextual commentary per law
+6. Commentary format: "Gäller eftersom ni har 12 anställda" or "Gäller eftersom ni serverar alkohol"
+7. Response format: `{ phase: 1, totalEstimated: 68, laws: [{ law_id, title, sfs_number, commentary, priority, category }] }`
+8. Generation time <3 minutes (including streaming during question answering)
+9. Laws categorized: Grundläggande, Arbetsmiljö, Branschspecifika (Phase 1 focuses on these 3)
+10. Fallback: If SNI code not in starter packs, use general "SMB starter pack"
+
+**Phase 2 (Post-Signup - Comprehensive Coverage):**
+
+11. API endpoint created: `POST /api/onboarding/generate-law-list-phase2`
+12. Triggered automatically after account creation, runs as background job
+13. Request body: `{ userId, workspaceId, phase1LawIds, contextualAnswers }`
+14. GPT-4 prompt: "Given [company data], generate REMAINING 45-65 laws for comprehensive 60-80 total coverage. Exclude Phase 1 laws. Include: nice-to-know laws, tangential regulations, environmental laws, specialized contexts."
+15. Categories added: GDPR & Data, Ekonomi, Miljö, Övrigt
+16. Generation time <60 seconds for 45-65 laws
+17. Laws stream into user's workspace in real-time (background process, non-blocking)
+18. Progress tracking: Database stores `phase2_generation_status` (pending/in_progress/complete)
+19. Frontend polls: `GET /api/onboarding/phase2-status/{workspaceId}` returns `{ progress: 45/68, complete: false }`
+20. Upon completion: Database marks `phase2_generation_status = complete`, sends completion event
+21. Error handling: If Phase 2 fails, retry up to 3 times, then notify user "Vi slutför din laglista, det kan ta några minuter till"
+
+**Testing:**
+
+22. Test Phase 1 with 15 different industries (manual review: >95% relevant for immediate compliance)
+23. Test Phase 2 with same industries (manual review: comprehensive coverage, minimal duplication)
+24. Verify Phase 1 + Phase 2 totals 60-80 laws per industry
+25. Compare generated lists against Notisum's industry lists (coverage parity check)
+
+**Technical Notes:**
+- Phase 1 laws prioritized for "conversion value" - show user we understand their business
+- Phase 2 adds breadth for Notisum parity (users expect comprehensive coverage)
+- contextualAnswers from Story 4.2b dramatically improve accuracy vs. Bolagsverket-only
+- Background job for Phase 2 uses job queue (BullMQ or similar) for reliability
+
+---
 ---
 
 ### Story 4.4: Build Streaming Law List UI
@@ -2178,6 +2299,96 @@ The following features are **explicitly NOT included in the MVP** and are planne
 8. Call-to-action: "Spara och fortsätt" button (triggers signup)
 9. Law cards interactive: Click to expand full details
 10. Mobile-responsive card layout (1 column mobile, 2-3 desktop)
+
+---
+
+### Story 4.4b: Build Post-Signup Phase 2 Completion UI
+
+**As a** new user,
+**I want** to see my law list complete in the background after signup,
+**so that** I have comprehensive 60-80 law coverage without waiting.
+
+**Acceptance Criteria:**
+
+**Dashboard Progress Indicator:**
+
+1. After signup, user lands on Dashboard with 15-30 Phase 1 laws visible immediately
+2. Progress bar displayed at top of Dashboard:
+   - "Kompletterar din laglista... 23/68 lagar"
+   - Animated progress bar fills as laws generate
+   - Estimated time remaining: "~45 sekunder kvar"
+   - Dismissible: Small [X] button hides bar, but generation continues in background
+3. Progress bar color: Primary brand color with subtle animation (shimmer or pulse)
+4. Mobile-responsive: Full-width on mobile, partial-width on desktop
+
+**Real-Time Law Streaming:**
+
+5. New laws from Phase 2 appear with fade-in animation as they're generated
+6. Each new law card tagged with "✨ NY GENERERAD" badge (disappears after 3 seconds)
+7. Laws auto-organize into categories as they populate:
+   - Grundläggande (23) - already populated from Phase 1
+   - Arbetsmiljö (12) - populates as generated
+   - Branschspecifika (8) - populates as generated
+   - GDPR & Data (5) - populates as generated
+   - Ekonomi (8) - populates as generated
+   - Miljö (3) - populates as generated
+   - Övrigt (2) - populates as generated
+8. Category counts update in real-time: "Arbetsmiljö (8)" → "Arbetsmiljö (9)" → "Arbetsmiljö (12)"
+9. Smooth transitions: No jarring reordering, laws append to bottom of each category
+
+**User Interaction During Generation:**
+
+10. User can interact with Dashboard during Phase 2 generation (NOT blocked)
+11. User can click law cards to view details (opens in new tab/modal, doesn't interrupt generation)
+12. User can set notification preferences while generation runs
+13. User can start AI chat while generation runs (Phase 1 laws already available as context)
+14. If user navigates away from Dashboard, generation continues in background
+15. Progress bar reappears if user returns to Dashboard before completion
+
+**Completion Experience:**
+
+16. When Phase 2 completes, show toast notification (top-right or center):
+    - "✅ Klar! 68 lagar i din lista är nu kompletta och aktiverade för ändringsbevakning"
+    - Auto-dismisses after 8 seconds
+    - Subtle confetti animation (optional, can be disabled in user settings)
+17. Progress bar transitions to success state: "✅ Din laglista är komplett med 68 lagar"
+18. Success banner auto-dismisses after 10 seconds or on manual close
+19. Database updates: workspace.phase2_generation_status = 'complete'
+20. Analytics event tracked: `phase2_generation_complete` with duration and law count
+
+**Error Handling:**
+
+21. If Phase 2 generation fails (API error, timeout):
+    - Progress bar shows: "⏸️ Kompletterar din laglista, tar lite längre tid än förväntat..."
+    - Retry mechanism: Automatic retry up to 3 times with exponential backoff
+    - If all retries fail: "Vi slutför din laglista snart. Du får ett mejl när det är klart."
+22. User can continue using app with Phase 1 laws while Phase 2 retries
+23. Email sent when Phase 2 eventually completes: "Din laglista med 68 lagar är nu klar!"
+
+**Frontend Polling:**
+
+24. Dashboard polls `GET /api/onboarding/phase2-status/{workspaceId}` every 2 seconds during generation
+25. Response format: `{ progress: 45, total: 68, complete: false, newLaws: [{law_id, title, ...}] }`
+26. Polling stops when `complete: true` or user navigates away (resumes on return)
+27. Efficient polling: Only fetch new laws since last poll (not full list every time)
+
+**Testing:**
+
+28. Test with slow network: Verify UI doesn't break, progress bar shows accurately
+29. Test browser close during Phase 2: Verify generation continues server-side, resumes UI on return
+30. Test with Phase 2 failure: Verify retry logic works, user isn't blocked
+
+**Performance:**
+
+31. Phase 2 generation target: <60 seconds for 45-65 laws
+32. Dashboard remains responsive (<100ms interactions) during background generation
+33. Category reorganization uses CSS transitions (smooth, not jarring)
+
+**Technical Notes:**
+- Background job uses job queue (BullMQ) for reliability
+- Frontend uses Server-Sent Events (SSE) or polling for real-time updates
+- Laws cached in client state to avoid refetching
+- Optimistic UI: Show laws immediately as they're generated, not batched
 
 ---
 
