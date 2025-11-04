@@ -1,0 +1,867 @@
+// Prisma Schema Preview - Laglig.se
+// This is a complete Prisma schema for all 29 entities
+// Generated from Architecture Document Section 4
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [pgvector(map: "vector")]
+}
+
+// ============================================================================
+// CORE AUTH
+// ============================================================================
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  name          String?
+  avatar_url    String?
+  created_at    DateTime @default(now())
+  last_login_at DateTime?
+
+  // Relationships
+  workspace_members   WorkspaceMember[]
+  chat_messages       AIChatMessage[]
+  owned_workspaces    Workspace[]          @relation("WorkspaceOwner")
+  created_law_lists   LawList[]
+  assigned_tasks      LawTask[]
+  audit_logs          WorkspaceAuditLog[]
+  uploaded_documents  EmployeeDocument[]
+  uploaded_kollektivavtal Kollektivavtal[]
+  sent_invitations    WorkspaceInvitation[] @relation("InvitedBy")
+
+  @@map("users")
+}
+
+// ============================================================================
+// WORKSPACE & MULTI-TENANCY
+// ============================================================================
+
+model Workspace {
+  id               String   @id @default(uuid()) @db.Uuid
+  name             String
+  slug             String   @unique
+  owner_id         String   @db.Uuid
+  company_logo     String?
+
+  // Company Data (from Bolagsverket)
+  org_number               String?
+  company_legal_name       String?
+  address                  String?
+  sni_code                 String?
+  legal_form               String?
+  employee_count_reported  Int?
+
+  // Onboarding Context
+  onboarding_context   Json? // CompanyContext - dynamic question answers
+  onboarding_completed Boolean  @default(false)
+  industry             String?
+  company_size         CompanySize?
+
+  // Subscription & Status
+  subscription_tier SubscriptionTier @default(FREE)
+  trial_ends_at     DateTime?
+  status            WorkspaceStatus  @default(ACTIVE)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relationships
+  owner               User                    @relation("WorkspaceOwner", fields: [owner_id], references: [id])
+  members             WorkspaceMember[]
+  subscription        Subscription?
+  usage               WorkspaceUsage?
+  invitations         WorkspaceInvitation[]
+  audit_logs          WorkspaceAuditLog[]
+  laws_in_workspace   LawInWorkspace[]
+  law_lists           LawList[]
+  employees           Employee[]
+  departments         Department[]
+  chat_messages       AIChatMessage[]
+  change_notifications ChangeNotification[]
+  kollektivavtal      Kollektivavtal[]
+  background_jobs     BackgroundJob[]
+
+  @@index([slug])
+  @@index([org_number])
+  @@index([sni_code])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id           String        @id @default(uuid()) @db.Uuid
+  workspace_id String        @db.Uuid
+  user_id      String        @db.Uuid
+  role         WorkspaceRole
+  invited_by   String?       @db.Uuid
+  joined_at    DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([workspace_id, user_id])
+  @@index([workspace_id])
+  @@index([user_id])
+  @@map("workspace_members")
+}
+
+model OnboardingSession {
+  id                  String   @id @default(uuid()) @db.Uuid
+  session_token       String   @unique
+  org_number          String?
+  bolagsverket_data   Json?
+  question_answers    Json?
+  phase1_laws         Json?
+  created_at          DateTime @default(now())
+  expires_at          DateTime
+
+  @@index([session_token])
+  @@index([expires_at]) // For cleanup cron
+  @@map("onboarding_sessions")
+}
+
+model WorkspaceInvitation {
+  id           String           @id @default(uuid()) @db.Uuid
+  workspace_id String           @db.Uuid
+  email        String
+  role         WorkspaceRole
+  token        String           @unique @default(uuid())
+  invited_by   String           @db.Uuid
+  status       InvitationStatus @default(PENDING)
+  created_at   DateTime         @default(now())
+  expires_at   DateTime // 7 days from creation
+
+  workspace   Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  inviter     User      @relation("InvitedBy", fields: [invited_by], references: [id])
+
+  @@index([token])
+  @@index([workspace_id])
+  @@index([expires_at]) // For cleanup cron
+  @@map("workspace_invitations")
+}
+
+model Subscription {
+  id                       String             @id @default(uuid()) @db.Uuid
+  workspace_id             String             @unique @db.Uuid
+  stripe_customer_id       String             @unique
+  stripe_subscription_id   String?            @unique
+  status                   SubscriptionStatus
+  plan                     SubscriptionTier
+  billing_interval         BillingInterval
+  current_period_start     DateTime
+  current_period_end       DateTime
+  cancel_at                DateTime?
+  trial_end                DateTime?
+  created_at               DateTime           @default(now())
+  updated_at               DateTime           @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([stripe_customer_id])
+  @@index([stripe_subscription_id])
+  @@map("subscriptions")
+}
+
+model WorkspaceUsage {
+  id                    String   @id @default(uuid()) @db.Uuid
+  workspace_id          String   @unique @db.Uuid
+  ai_queries_this_month Int      @default(0)
+  ai_queries_total      Int      @default(0)
+  employee_count        Int      @default(0)
+  storage_used_mb       Int      @default(0)
+  last_reset_at         DateTime @default(now())
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id])
+  @@map("workspace_usage")
+}
+
+model WorkspaceAuditLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  workspace_id  String   @db.Uuid
+  user_id       String   @db.Uuid
+  action_type   AuditAction
+  resource_type String
+  resource_id   String?  @db.Uuid
+  details       Json?
+  timestamp     DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id])
+
+  @@index([workspace_id, timestamp(sort: Desc)])
+  @@map("workspace_audit_logs")
+}
+
+// ============================================================================
+// LEGAL CONTENT
+// ============================================================================
+
+model LegalDocument {
+  id                 String         @id @default(uuid()) @db.Uuid
+  content_type       ContentType
+  document_number    String
+  title              String
+  slug               String         @unique
+  summary            String?        @db.Text
+  full_text          String         @db.Text
+  effective_date     DateTime?      @db.Date
+  publication_date   DateTime?      @db.Date
+  status             DocumentStatus @default(ACTIVE)
+  source_url         String
+  metadata           Json
+  search_vector      Unsupported("tsvector")?
+  summary_embedding  Unsupported("vector(1536)")?
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+
+  // Relationships
+  embeddings           LawEmbedding[]
+  court_case           CourtCase?
+  eu_document          EUDocument?
+  cross_references_source CrossReference[] @relation("SourceDocument")
+  cross_references_target CrossReference[] @relation("TargetDocument")
+  amendments_base      Amendment[]      @relation("BaseDocument")
+  amendments_amending  Amendment[]      @relation("AmendingDocument")
+  subjects             DocumentSubject[]
+  laws_in_workspace    LawInWorkspace[]
+  law_list_items       LawListItem[]
+  change_notifications ChangeNotification[]
+  change_history       LawChangeHistory[]
+
+  @@unique([content_type, document_number])
+  @@index([slug])
+  @@index([content_type])
+  @@index([status])
+  @@index([search_vector], type: Gin)
+  @@map("legal_documents")
+}
+
+model CourtCase {
+  id            String   @id @default(uuid()) @db.Uuid
+  document_id   String   @unique @db.Uuid
+  court_name    String
+  case_number   String
+  lower_court   String?
+  decision_date DateTime @db.Date
+  parties       Json
+
+  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@index([document_id])
+  @@index([case_number])
+  @@map("court_cases")
+}
+
+model EUDocument {
+  id                               String  @id @default(uuid()) @db.Uuid
+  document_id                      String  @unique @db.Uuid
+  celex_number                     String
+  eut_reference                    String?
+  national_implementation_measures Json?
+
+  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@index([document_id])
+  @@index([celex_number])
+  @@map("eu_documents")
+}
+
+model CrossReference {
+  id                   String        @id @default(uuid()) @db.Uuid
+  source_document_id   String        @db.Uuid
+  target_document_id   String        @db.Uuid
+  reference_type       ReferenceType
+  context              String?       @db.Text
+
+  source_document LegalDocument @relation("SourceDocument", fields: [source_document_id], references: [id], onDelete: Cascade)
+  target_document LegalDocument @relation("TargetDocument", fields: [target_document_id], references: [id], onDelete: Cascade)
+
+  @@index([source_document_id])
+  @@index([target_document_id])
+  @@map("cross_references")
+}
+
+model Amendment {
+  id                    String   @id @default(uuid()) @db.Uuid
+  base_document_id      String   @db.Uuid
+  amending_document_id  String   @db.Uuid
+  effective_date        DateTime @db.Date
+  description           String?  @db.Text
+  sections_affected     Json?
+
+  base_document     LegalDocument @relation("BaseDocument", fields: [base_document_id], references: [id], onDelete: Cascade)
+  amending_document LegalDocument @relation("AmendingDocument", fields: [amending_document_id], references: [id], onDelete: Cascade)
+
+  @@index([base_document_id])
+  @@index([amending_document_id])
+  @@map("amendments")
+}
+
+model DocumentSubject {
+  id           String @id @default(uuid()) @db.Uuid
+  document_id  String @db.Uuid
+  subject_code String
+  subject_name String
+
+  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@unique([document_id, subject_code])
+  @@index([subject_code])
+  @@map("document_subjects")
+}
+
+model LawEmbedding {
+  id          String                           @id @default(uuid()) @db.Uuid
+  law_id      String                           @db.Uuid
+  chunk_index Int
+  chunk_text  String                           @db.Text
+  embedding   Unsupported("vector(1536)")
+  metadata    Json? // Chapter, section, article metadata
+  created_at  DateTime                         @default(now())
+
+  law LegalDocument @relation(fields: [law_id], references: [id], onDelete: Cascade)
+
+  @@unique([law_id, chunk_index])
+  @@index([law_id])
+  // HNSW index created via raw SQL: CREATE INDEX ON law_embeddings USING hnsw (embedding vector_cosine_ops)
+  @@map("law_embeddings")
+}
+
+model LawList {
+  id           String   @id @default(uuid()) @db.Uuid
+  workspace_id String   @db.Uuid
+  name         String
+  description  String?  @db.Text
+  created_by   String   @db.Uuid
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  workspace Workspace     @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  creator   User          @relation(fields: [created_by], references: [id])
+  items     LawListItem[]
+
+  @@index([workspace_id])
+  @@map("law_lists")
+}
+
+model LawListItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  law_list_id String   @db.Uuid
+  law_id      String   @db.Uuid
+  position    Float
+  added_at    DateTime @default(now())
+
+  law_list LawList       @relation(fields: [law_list_id], references: [id], onDelete: Cascade)
+  law      LegalDocument @relation(fields: [law_id], references: [id], onDelete: Cascade)
+
+  @@unique([law_list_id, law_id])
+  @@index([law_list_id])
+  @@map("law_list_items")
+}
+
+model LawInWorkspace {
+  id                     String      @id @default(uuid()) @db.Uuid
+  workspace_id           String      @db.Uuid
+  law_id                 String      @db.Uuid
+  status                 LawStatus   @default(NOT_STARTED)
+  priority               Priority    @default(MEDIUM)
+  assigned_employee_ids  String[]    @db.Uuid // Array of Employee UUIDs
+  due_date               DateTime?   @db.Date
+  notes                  String?     @db.Text
+  tags                   String[]
+  position               Float
+  ai_commentary          String?     @db.Text // From onboarding AI
+  category               String? // Grundläggande, Arbetsmiljö, etc.
+  added_at               DateTime    @default(now())
+  updated_at             DateTime    @updatedAt
+
+  workspace Workspace      @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  law       LegalDocument  @relation(fields: [law_id], references: [id], onDelete: Cascade)
+  tasks     LawTask[]
+
+  @@unique([workspace_id, law_id])
+  @@index([workspace_id, status, position])
+  @@index([law_id])
+  @@map("law_in_workspace")
+}
+
+model LawTask {
+  id                   String    @id @default(uuid()) @db.Uuid
+  law_in_workspace_id  String    @db.Uuid
+  workspace_id         String    @db.Uuid
+  title                String
+  description          String?   @db.Text
+  assigned_to          String?   @db.Uuid
+  due_date             DateTime? @db.Date
+  completed            Boolean   @default(false)
+  completed_at         DateTime?
+  created_at           DateTime  @default(now())
+
+  law_in_workspace LawInWorkspace @relation(fields: [law_in_workspace_id], references: [id], onDelete: Cascade)
+  assignee         User?          @relation(fields: [assigned_to], references: [id])
+
+  @@index([law_in_workspace_id, completed])
+  @@index([workspace_id])
+  @@map("law_tasks")
+}
+
+// ============================================================================
+// AI CHAT
+// ============================================================================
+
+model AIChatMessage {
+  id                 String   @id @default(uuid()) @db.Uuid
+  workspace_id       String   @db.Uuid
+  user_id            String   @db.Uuid
+  role               ChatRole
+  content            String   @db.Text
+  retrieved_law_ids  String[] @db.Uuid
+  cost_usd           Float?
+  latency_ms         Int?
+  created_at         DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id])
+
+  @@index([workspace_id, created_at(sort: Desc)])
+  @@map("ai_chat_messages")
+}
+
+// ============================================================================
+// HR MODULE
+// ============================================================================
+
+model Employee {
+  id                      String            @id @default(uuid()) @db.Uuid
+  workspace_id            String            @db.Uuid
+  employee_number         String?
+  first_name              String
+  last_name               String
+  email                   String?
+  personnummer_encrypted  String? // AES-256 encrypted
+  phone                   String?
+  employment_date         DateTime          @db.Date
+  employment_end_date     DateTime?         @db.Date
+  employment_type         EmploymentType
+  contract_type           ContractType
+  role                    String // Free text
+  role_standardized       String? // GPT-4 fuzzy matched
+  department_id           String?           @db.Uuid
+  manager_id              String?           @db.Uuid // Self-reference
+  work_percentage         Int               @default(100)
+  compliance_status       ComplianceStatus  @default(NEEDS_ATTENTION)
+  fortnox_employee_id     String? // Future integration
+  created_at              DateTime          @default(now())
+  updated_at              DateTime          @updatedAt
+
+  workspace    Workspace                 @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  department   Department?               @relation("DepartmentEmployees", fields: [department_id], references: [id])
+  manager      Employee?                 @relation("EmployeeManager", fields: [manager_id], references: [id])
+  direct_reports Employee[]              @relation("EmployeeManager")
+  documents    EmployeeDocument[]
+  kollektivavtal EmployeeKollektivavtal[]
+  managed_departments Department[]       @relation("DepartmentManager")
+
+  @@index([workspace_id])
+  @@index([department_id])
+  @@index([manager_id])
+  @@map("employees")
+}
+
+model Department {
+  id                   String      @id @default(uuid()) @db.Uuid
+  workspace_id         String      @db.Uuid
+  name                 String
+  description          String?     @db.Text
+  manager_id           String?     @db.Uuid
+  parent_department_id String?     @db.Uuid
+  created_at           DateTime    @default(now())
+
+  workspace         Workspace   @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  manager           Employee?   @relation("DepartmentManager", fields: [manager_id], references: [id])
+  parent_department Department? @relation("SubDepartments", fields: [parent_department_id], references: [id])
+  sub_departments   Department[] @relation("SubDepartments")
+  employees         Employee[]  @relation("DepartmentEmployees")
+
+  @@index([workspace_id])
+  @@index([parent_department_id])
+  @@map("departments")
+}
+
+model EmployeeDocument {
+  id              String         @id @default(uuid()) @db.Uuid
+  employee_id     String         @db.Uuid
+  workspace_id    String         @db.Uuid
+  document_type   DocumentType
+  title           String
+  file_url        String
+  file_size_bytes Int
+  mime_type       String
+  issued_date     DateTime?      @db.Date
+  expiry_date     DateTime?      @db.Date
+  status          DocumentStatus @default(PENDING_REVIEW)
+  uploaded_by     String         @db.Uuid
+  created_at      DateTime       @default(now())
+
+  employee Employee @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+  uploader User     @relation(fields: [uploaded_by], references: [id])
+
+  @@index([employee_id])
+  @@index([workspace_id])
+  @@index([expiry_date]) // For expiration cron
+  @@map("employee_documents")
+}
+
+model Kollektivavtal {
+  id               String            @id @default(uuid()) @db.Uuid
+  workspace_id     String            @db.Uuid
+  name             String
+  union_name       String?
+  agreement_type   AgreementType
+  file_url         String
+  file_size_bytes  Int
+  valid_from       DateTime          @db.Date
+  valid_until      DateTime?         @db.Date
+  embedding_status EmbeddingStatus   @default(PENDING)
+  uploaded_by      String            @db.Uuid
+  created_at       DateTime          @default(now())
+
+  workspace  Workspace                  @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  uploader   User                       @relation(fields: [uploaded_by], references: [id])
+  embeddings KollektivavtalEmbedding[]
+  employees  EmployeeKollektivavtal[]
+
+  @@index([workspace_id])
+  @@map("kollektivavtal")
+}
+
+model EmployeeKollektivavtal {
+  id                 String   @id @default(uuid()) @db.Uuid
+  employee_id        String   @db.Uuid
+  kollektivavtal_id  String   @db.Uuid
+  assigned_at        DateTime @default(now())
+  assigned_by        String   @db.Uuid
+
+  employee       Employee       @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+  kollektivavtal Kollektivavtal @relation(fields: [kollektivavtal_id], references: [id], onDelete: Cascade)
+
+  @@unique([employee_id, kollektivavtal_id])
+  @@index([employee_id])
+  @@index([kollektivavtal_id])
+  @@map("employee_kollektivavtal")
+}
+
+model KollektivavtalEmbedding {
+  id                String                      @id @default(uuid()) @db.Uuid
+  kollektivavtal_id String                      @db.Uuid
+  chunk_index       Int
+  chunk_text        String                      @db.Text
+  embedding         Unsupported("vector(1536)")
+  created_at        DateTime                    @default(now())
+
+  kollektivavtal Kollektivavtal @relation(fields: [kollektivavtal_id], references: [id], onDelete: Cascade)
+
+  @@unique([kollektivavtal_id, chunk_index])
+  @@index([kollektivavtal_id])
+  // HNSW index created via raw SQL
+  @@map("kollektivavtal_embeddings")
+}
+
+// ============================================================================
+// CHANGE MONITORING
+// ============================================================================
+
+model ChangeNotification {
+  id                   String           @id @default(uuid()) @db.Uuid
+  workspace_id         String           @db.Uuid
+  law_id               String           @db.Uuid
+  notification_type    NotificationType
+  digest_batch_id      String?          @db.Uuid
+  change_detected_at   DateTime
+  change_summary       String           @db.Text
+  notification_sent    Boolean          @default(false)
+  notification_sent_at DateTime?
+  read_at              DateTime?
+
+  workspace Workspace     @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  law       LegalDocument @relation(fields: [law_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, read_at])
+  @@index([law_id])
+  @@map("change_notifications")
+}
+
+model LawChangeHistory {
+  id                       String     @id @default(uuid()) @db.Uuid
+  law_id                   String     @db.Uuid
+  changed_at               DateTime
+  change_type              ChangeType
+  full_text_snapshot       String     @db.Text
+  diff                     Json?
+  detected_by_cron_job_id  String?
+
+  law LegalDocument @relation(fields: [law_id], references: [id], onDelete: Cascade)
+
+  @@index([law_id, changed_at(sort: Desc)])
+  @@map("law_change_history")
+}
+
+// ============================================================================
+// BACKGROUND JOBS
+// ============================================================================
+
+model BackgroundJob {
+  id               String    @id @default(uuid()) @db.Uuid
+  job_type         JobType
+  workspace_id     String?   @db.Uuid
+  status           JobStatus @default(PENDING)
+  progress_current Int       @default(0)
+  progress_total   Int       @default(0)
+  result_data      Json?
+  error_message    String?   @db.Text
+  started_at       DateTime?
+  completed_at     DateTime?
+  created_at       DateTime  @default(now())
+
+  workspace Workspace? @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, status, created_at(sort: Desc)])
+  @@index([status, created_at])
+  @@map("background_jobs")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum CompanySize {
+  SIZE_1_10
+  SIZE_11_50
+  SIZE_51_200
+  SIZE_201_PLUS
+
+  @@map("company_size")
+}
+
+enum SubscriptionTier {
+  FREE
+  SOLO
+  TEAM
+  ENTERPRISE
+
+  @@map("subscription_tier")
+}
+
+enum WorkspaceStatus {
+  ACTIVE
+  PAUSED
+  DELETED
+
+  @@map("workspace_status")
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  HR_MANAGER
+  MEMBER
+  AUDITOR
+
+  @@map("workspace_role")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+
+  @@map("invitation_status")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  UNPAID
+
+  @@map("subscription_status")
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+
+  @@map("billing_interval")
+}
+
+enum AuditAction {
+  LAW_REVIEWED
+  EMPLOYEE_ADDED
+  EMPLOYEE_EDITED
+  EMPLOYEE_DELETED
+  MEMBER_INVITED
+  MEMBER_REMOVED
+  SETTINGS_CHANGED
+
+  @@map("audit_action")
+}
+
+enum ContentType {
+  SFS_LAW
+  HD_SUPREME_COURT
+  HOVR_COURT_APPEAL
+  HFD_ADMIN_SUPREME
+  MOD_ENVIRONMENT_COURT
+  MIG_MIGRATION_COURT
+  EU_REGULATION
+  EU_DIRECTIVE
+
+  @@map("content_type")
+}
+
+enum DocumentStatus {
+  ACTIVE
+  REPEALED
+  AMENDED
+
+  @@map("document_status")
+}
+
+enum ReferenceType {
+  CITES
+  AMENDS
+  IMPLEMENTS
+  REPEALS
+  RELATED
+
+  @@map("reference_type")
+}
+
+enum LawStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  REVIEW
+  COMPLIANT
+
+  @@map("law_status")
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+
+  @@map("priority")
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+  SYSTEM
+
+  @@map("chat_role")
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  TEMPORARY
+  CONSULTANT
+  INTERN
+
+  @@map("employment_type")
+}
+
+enum ContractType {
+  PERMANENT
+  FIXED_TERM
+  PROJECT_BASED
+
+  @@map("contract_type")
+}
+
+enum ComplianceStatus {
+  COMPLIANT
+  NEEDS_ATTENTION
+  NON_COMPLIANT
+
+  @@map("compliance_status")
+}
+
+enum DocumentType {
+  CONTRACT
+  ID_COPY
+  CERTIFICATE
+  INSURANCE
+  TRAINING
+  OTHER
+
+  @@map("document_type")
+}
+
+enum AgreementType {
+  ARBETARE
+  TJANSTEMAN
+  MIXED
+
+  @@map("agreement_type")
+}
+
+enum EmbeddingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+
+  @@map("embedding_status")
+}
+
+enum NotificationType {
+  EMAIL_DAILY_DIGEST
+  EMAIL_WEEKLY_DIGEST
+  IN_APP
+
+  @@map("notification_type")
+}
+
+enum ChangeType {
+  AMENDED
+  REPEALED
+  METADATA_UPDATE
+
+  @@map("change_type")
+}
+
+enum JobType {
+  PHASE2_LAW_GENERATION
+  CHANGE_DETECTION
+  EMBEDDING_GENERATION
+  COMPLIANCE_RECALC
+  KOLLEKTIVAVTAL_EMBEDDING
+
+  @@map("job_type")
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+
+  @@map("job_status")
+}
