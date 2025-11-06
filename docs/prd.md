@@ -1289,7 +1289,17 @@ The following features are **explicitly NOT included in the MVP** and are planne
    - `court_cases` (document_id, court_name, case_number, lower_court, decision_date, parties JSONB)
    - `eu_documents` (document_id, celex_number, eut_reference, national_implementation_measures JSONB)
 4. `cross_references` table created (source_document_id, target_document_id, reference_type, context)
-5. `amendments` table created for SFS laws (base_document_id, amending_document_id, effective_date, description, sections_affected)
+5. `amendments` table created for SFS laws with **enhanced metadata from competitive analysis**:
+   - base_document_id, amending_document_id (relations to legal_documents)
+   - amending_law_title (full title: "Lag (2025:732) om ändring i...")
+   - publication_date (when amending law published), effective_date (when takes effect, can be future)
+   - affected_sections_raw (Notisum format: "ändr. 6 kap. 17 §; upph. 8 kap. 4 §")
+   - affected_sections (JSON: {amended: ["6:17"], repealed: ["8:4"], new: [], renumbered: []})
+   - summary (2-3 sentence GPT-4 generated plain language summary)
+   - summary_generated_by (enum: GPT_4, HUMAN, SFSR, RIKSDAGEN)
+   - detected_method (enum: RIKSDAGEN_TEXT_PARSING, LAGEN_NU_SCRAPING, SFSR_REGISTER, LAGRUMMET_RINFO)
+   - metadata (JSONB for debugging), created_at, updated_at
+   - **See `docs/notisum-amendment-competitive-analysis.md` for feature parity rationale**
 6. `document_subjects` table created (document_id, subject_code, subject_name) for categorization
 7. Prisma schema updated with all models and relations
 8. Migration generated and applied successfully
@@ -1317,6 +1327,22 @@ The following features are **explicitly NOT included in the MVP** and are planne
 9. Progress logging: "Processed 5,000/50,000 laws..."
 10. Script completes full ingestion in <6 hours
 11. Verification: Database contains 50,000+ SFS documents after completion
+12. **Amendment extraction** (competitive feature - see `docs/historical-amendment-tracking-strategy.md`):
+    - For EACH SFS law, parse inline amendment references from full text (e.g., "Lag (2021:1112)")
+    - Create Amendment records linking original law → amending law
+    - Fetch amending law metadata (already in database from Step 1)
+    - Parse affected sections from amending law text: "föreskrivs att 1 kap. 3 § ska ha följande lydelse"
+    - Generate 2-3 sentence summary with GPT-4 (Swedish, plain language)
+    - Parse effective date from transition provisions: "träder i kraft den 1 juli 2011"
+    - Store all 7 data points per amendment (SFS number, title, pub date, affected sections, summary, effective date, user comments placeholder)
+13. **Amendment backfill** from lagen.nu (background job, separate from main ingestion):
+    - For laws with <5 amendments (suspected incomplete), scrape lagen.nu for complete list
+    - Rate limit: 1 request per 2 seconds (respectful)
+    - Run as separate background job, does not block main ingestion
+14. **Cost impact:** One-time GPT-4 cost ~$238 for summarizing 5,675 amending laws (2,600 tokens × $0.042/amendment)
+15. **Performance impact:** +1.6 hours for amendment parsing (regex + text processing), +1.3 hours for lagen.nu backfill
+16. **Database impact:** +90,000 Amendment records with full metadata (~45MB storage)
+17. Verification: Database contains 90,000+ Amendment records after completion with all 7 fields populated
 
 ---
 
@@ -1566,6 +1592,14 @@ The following features are **explicitly NOT included in the MVP** and are planne
 10. Database accumulates change history silently
 11. Verification: After 2 weeks, database contains change records for all content types
 12. Change detection tested: Mock SFS amendment detected correctly
+13. **NEW: Amendment enrichment** when SFS changes detected (competitive feature):
+    - For new/updated SFS laws, extract amendment references from full text
+    - Parse affected sections: "föreskrivs att 1 kap. 3 § ska ha följande lydelse"
+    - Generate 2-3 sentence GPT-4 summary in Swedish (plain language)
+    - Parse effective date from transition provisions
+    - Create/update Amendment records with all 7 fields
+    - Cost: ~$0.42/month for ~10 new amendments detected nightly
+    - See `docs/historical-amendment-tracking-strategy.md` Section 12.5 for implementation
 
 ---
 
@@ -1586,7 +1620,17 @@ The following features are **explicitly NOT included in the MVP** and are planne
    - `court_cases` (document_id, court_name, case_number, lower_court, decision_date, parties JSONB)
    - `eu_documents` (document_id, celex_number, eut_reference, national_implementation_measures JSONB)
 4. `cross_references` table created (source_document_id, target_document_id, reference_type, context)
-5. `amendments` table created for SFS laws (base_document_id, amending_document_id, effective_date, description, sections_affected)
+5. `amendments` table created for SFS laws with **enhanced metadata from competitive analysis**:
+   - base_document_id, amending_document_id (relations to legal_documents)
+   - amending_law_title (full title: "Lag (2025:732) om ändring i...")
+   - publication_date (when amending law published), effective_date (when takes effect, can be future)
+   - affected_sections_raw (Notisum format: "ändr. 6 kap. 17 §; upph. 8 kap. 4 §")
+   - affected_sections (JSON: {amended: ["6:17"], repealed: ["8:4"], new: [], renumbered: []})
+   - summary (2-3 sentence GPT-4 generated plain language summary)
+   - summary_generated_by (enum: GPT_4, HUMAN, SFSR, RIKSDAGEN)
+   - detected_method (enum: RIKSDAGEN_TEXT_PARSING, LAGEN_NU_SCRAPING, SFSR_REGISTER, LAGRUMMET_RINFO)
+   - metadata (JSONB for debugging), created_at, updated_at
+   - **See `docs/notisum-amendment-competitive-analysis.md` for feature parity rationale**
 6. `document_subjects` table created (document_id, subject_code, subject_name) for categorization
 7. Prisma schema updated with all models and relations
 8. Migration generated and applied successfully
@@ -1614,6 +1658,22 @@ The following features are **explicitly NOT included in the MVP** and are planne
 9. Progress logging: "Processed 5,000/50,000 laws..."
 10. Script completes full ingestion in <6 hours
 11. Verification: Database contains 50,000+ SFS documents after completion
+12. **Amendment extraction** (competitive feature - see `docs/historical-amendment-tracking-strategy.md`):
+    - For EACH SFS law, parse inline amendment references from full text (e.g., "Lag (2021:1112)")
+    - Create Amendment records linking original law → amending law
+    - Fetch amending law metadata (already in database from Step 1)
+    - Parse affected sections from amending law text: "föreskrivs att 1 kap. 3 § ska ha följande lydelse"
+    - Generate 2-3 sentence summary with GPT-4 (Swedish, plain language)
+    - Parse effective date from transition provisions: "träder i kraft den 1 juli 2011"
+    - Store all 7 data points per amendment (SFS number, title, pub date, affected sections, summary, effective date, user comments placeholder)
+13. **Amendment backfill** from lagen.nu (background job, separate from main ingestion):
+    - For laws with <5 amendments (suspected incomplete), scrape lagen.nu for complete list
+    - Rate limit: 1 request per 2 seconds (respectful)
+    - Run as separate background job, does not block main ingestion
+14. **Cost impact:** One-time GPT-4 cost ~$238 for summarizing 5,675 amending laws (2,600 tokens × $0.042/amendment)
+15. **Performance impact:** +1.6 hours for amendment parsing (regex + text processing), +1.3 hours for lagen.nu backfill
+16. **Database impact:** +90,000 Amendment records with full metadata (~45MB storage)
+17. Verification: Database contains 90,000+ Amendment records after completion with all 7 fields populated
 
 ---
 
@@ -1863,6 +1923,14 @@ The following features are **explicitly NOT included in the MVP** and are planne
 10. Database accumulates change history silently
 11. Verification: After 2 weeks, database contains change records for all content types
 12. Change detection tested: Mock SFS amendment detected correctly
+13. **NEW: Amendment enrichment** when SFS changes detected (competitive feature):
+    - For new/updated SFS laws, extract amendment references from full text
+    - Parse affected sections: "föreskrivs att 1 kap. 3 § ska ha följande lydelse"
+    - Generate 2-3 sentence GPT-4 summary in Swedish (plain language)
+    - Parse effective date from transition provisions
+    - Create/update Amendment records with all 7 fields
+    - Cost: ~$0.42/month for ~10 new amendments detected nightly
+    - See `docs/historical-amendment-tracking-strategy.md` Section 12.5 for implementation
 
 ---
 
@@ -3538,25 +3606,51 @@ The following features are **explicitly NOT included in the MVP** and are planne
 
 ---
 
-### Story 8.9: Add Change Timeline Visualization
+### Story 8.9: Add Amendment Timeline Visualization (Notisum Competitive Parity)
 
 **As a** user,
-**I want** to see a timeline of all changes to a specific law,
-**so that** I understand how it has evolved over time.
+**I want** to see a complete amendment history timeline for each law with rich metadata,
+**so that** I understand how the law has evolved and can track regulatory changes over time.
+
+**Competitive Context:** Notisum provides amendment timelines with 7 data points per amendment (see `docs/notisum-amendment-competitive-analysis.md`). This story implements **feature parity + automation advantages**.
 
 **Acceptance Criteria:**
 
 1. Individual Law Page → "Change History" tab (replace placeholder from Epic 2.6)
-2. Timeline visualization (vertical line with change markers)
-3. Each change marker shows:
-   - Date
-   - Change type badge
-   - AI summary
-   - "View Diff" button
-4. Timeline sorted chronologically (newest at top)
-5. Infinite scroll for laws with many changes
-6. Empty state (if no changes): "No changes detected yet. We're monitoring daily."
-7. Mobile-responsive timeline
+2. **Amendment Timeline Component** displays all historical amendments chronologically (newest first)
+3. **Each amendment card shows all 7 fields** (competitive requirement):
+   - **SFS Number** (clickable link to amending law): "SFS 2025:732"
+   - **Publication Date**: "2025-06-24"
+   - **Full Title**: "Lag (2025:732) om ändring i arbetsmiljölagen (1977:1160)"
+   - **Affected Sections** (Notisum format): "ändr. 6 kap. 17 §; upph. 8 kap. 4 §"
+   - **Summary** (2-3 sentences, GPT-4 generated): "Gränsen för att företrädas av elevskyddsombud höjs..."
+   - **Effective Date** (with future indicator): "2028-07-01" + badge "Framtida"
+   - **User Comments** (workspace-specific): Expandable text area for team notes
+4. **Visual Design** (inspired by Notisum, enhanced):
+   - Border-left-4 with blue accent
+   - Collapsible cards (click to expand full details)
+   - Color coding: Green (new sections), Yellow (amended), Red (repealed)
+   - Mobile-responsive (stack fields vertically on <768px)
+5. **Contextual Help** explaining Swedish legal notation:
+   - Tooltip on "ändr." → "Amended sections"
+   - Tooltip on "upph." → "Repealed sections"
+   - Tooltip on "nya" → "New sections added"
+   - Tooltip on "betecknas" → "Section renumbered"
+6. **Data Source Indicator**: Badge showing source (Riksdagen parsing, Lagen.nu, SFSR)
+7. **Link to Amending Law**: Click SFS number → Opens amending law detail page
+8. **Link to Official PDF**: "View Riksdagen PDF" button → Opens Notisum-hosted PDF or Riksdagen URL
+9. **Empty State** (if no amendments): "This law has not been amended since publication."
+10. **Loading State**: Skeleton cards while fetching 90K+ amendment records
+11. **Performance**: Timeline loads <500ms for laws with <50 amendments (90% of cases)
+12. **Verification**: Arbetsmiljölagen (1977:1160) displays all 77 amendments matching Notisum data
+
+**Competitive Advantages Beyond Notisum:**
+- ✅ **Automated Updates**: Nightly cron detects new amendments (Notisum requires manual updates)
+- ✅ **AI Summaries**: GPT-4 generated vs. manually written
+- ✅ **Workspace Comments**: Team collaboration (Notisum lacks this)
+- ✅ **Cross-Law Navigation**: Click SFS number → View amending law immediately
+
+**Reference Implementation:** See `docs/historical-amendment-tracking-strategy.md` Section 12.7 for React component code.
 
 ---
 

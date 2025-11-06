@@ -2399,31 +2399,63 @@ interface CrossReference {
 
 ---
 
-### 4.9 Amendment
+### 4.9 Amendment (Enhanced for Competitive Parity)
 
-**Purpose:** Tracks SFS law amendment history. One SFS law can amend multiple sections of another. Per PRD Story 2.1 line 1292.
+**Purpose:** Tracks SFS law amendment history with rich metadata for competitive parity with Notisum. One SFS law can amend multiple sections of another. Per PRD Story 2.1 line 1292 (updated) and `docs/notisum-amendment-competitive-analysis.md`.
+
+**Competitive Context:** Notisum provides 7 data points per amendment. This model achieves **feature parity + automation advantages**.
 
 **Key Attributes:**
 - `id`: UUID
 - `base_document_id`: UUID - FK to LegalDocument (law being amended)
 - `amending_document_id`: UUID - FK to LegalDocument (law making amendment)
-- `effective_date`: Date - When amendment takes effect
-- `description`: TEXT | null - What changed (GPT-4 generated summary)
-- `sections_affected`: JSONB - Which chapters/paragraphs changed
+- **Enhanced Metadata (competitive requirements):**
+  - `amending_law_title`: TEXT - Full title "Lag (2025:732) om ändring i..."
+  - `publication_date`: DATE - When amending law was published
+  - `effective_date`: DATE | null - When amendment takes effect (can be future)
+  - `affected_sections_raw`: TEXT | null - Notisum format "ändr. 6 kap. 17 §; upph. 8 kap. 4 §"
+  - `affected_sections`: JSONB - Structured sections `{amended: ["6:17"], repealed: ["8:4"], new: [], renumbered: []}`
+  - `summary`: TEXT | null - 2-3 sentence GPT-4 generated plain language summary
+  - `summary_generated_by`: ENUM - GPT_4 | HUMAN | SFSR | RIKSDAGEN
+  - `detected_method`: ENUM - RIKSDAGEN_TEXT_PARSING | LAGEN_NU_SCRAPING | SFSR_REGISTER | LAGRUMMET_RINFO
+  - `metadata`: JSONB | null - Raw data for debugging
+- `created_at`: TIMESTAMPTZ
+- `updated_at`: TIMESTAMPTZ
 
 **TypeScript Interface:**
 ```typescript
 interface Amendment {
   id: string
-  base_document_id: string // FK to LegalDocument
-  amending_document_id: string // FK to LegalDocument
-  effective_date: Date
-  description: string | null
-  sections_affected: {
-    chapters?: number[]
-    sections?: string[]
-    change_type?: "added" | "modified" | "removed"
-  }
+  base_document_id: string
+  amending_document_id: string
+
+  // Enhanced metadata
+  amending_law_title: string
+  publication_date: Date
+  effective_date: Date | null
+
+  // Affected sections (Notisum format)
+  affected_sections_raw: string | null // "ändr. 6 kap. 17 §"
+  affected_sections: {
+    amended: string[]      // ["6:17"]
+    repealed: string[]     // ["8:4"]
+    new: string[]          // ["6:17a", "6:17b"]
+    renumbered: Array<{    // [{from: "3:2b", to: "3:2c"}]
+      from: string
+      to: string
+    }>
+  } | null
+
+  // AI-generated summary
+  summary: string | null
+  summary_generated_by: 'GPT_4' | 'HUMAN' | 'SFSR' | 'RIKSDAGEN' | null
+
+  // Source tracking
+  detected_method: 'RIKSDAGEN_TEXT_PARSING' | 'LAGEN_NU_SCRAPING' | 'SFSR_REGISTER' | 'LAGRUMMET_RINFO'
+  metadata: Record<string, any> | null
+
+  created_at: Date
+  updated_at: Date
 }
 ```
 
@@ -2432,15 +2464,46 @@ interface Amendment {
 - Belongs to one `LegalDocument` (amending)
 
 **Design Decisions:**
-- Indexed on `base_document_id` for change history queries
-- Powers "Change History" tab on law pages
-- Populated during daily cron job (Riksdagen API provides amendment relationships)
+- Indexed on `base_document_id`, `amending_document_id`, and `publication_date`
+- Unique constraint on `(base_document_id, amending_document_id)` prevents duplicates
+- Powers "Change History" tab on law pages (Epic 8 Story 8.9)
+- Populated during initial SFS ingestion (Story 2.2) + nightly cron job (Story 2.11)
+- GPT-4 summaries generated during ingestion (~$238 one-time cost for 5,675 amendments)
+- Three-tier data source: Riksdagen text parsing (70-80%), Lagen.nu scraping (95-100%), SFSR validation (100%)
+- See `docs/historical-amendment-tracking-strategy.md` for complete implementation guide
 
-**Example:**
-- Base: SFS 1977:1160 (Arbetsmiljölagen)
-- Amending: SFS 2024:123
-- Sections affected: `{chapters: [5, 6], change_type: "modified"}`
-- Description: "Nya regler för skyddsombud i företag med 10-49 anställda"
+**Example (Realistic from Notisum competitive analysis):**
+```json
+{
+  "id": "uuid",
+  "base_document_id": "uuid-sfs-1977-1160",
+  "amending_document_id": "uuid-sfs-2010-856",
+  "amending_law_title": "Lag (2010:856) om ändring i arbetsmiljölagen (1977:1160)",
+  "publication_date": "2010-06-23",
+  "effective_date": "2011-07-01",
+  "affected_sections_raw": "ändr. 1 kap. 3 §, 6 kap. 17 §",
+  "affected_sections": {
+    "amended": ["1:3", "6:17"],
+    "repealed": [],
+    "new": [],
+    "renumbered": []
+  },
+  "summary": "Tillämpningsområdet för Arbetsmiljölagen förtydligas så att det framgår att barn i förskolan och elever i fritidshemmet inte anses genomgå utbildning i arbetsmiljölagens mening. Barnen i förskolan omfattas inte av Arbetsmiljölagen till skillnad mot elever fr.o.m. förskoleklassen.",
+  "summary_generated_by": "GPT_4",
+  "detected_method": "RIKSDAGEN_TEXT_PARSING",
+  "metadata": {
+    "parsing_confidence": "high",
+    "source_url": "https://data.riksdagen.se/dokument/sfs-2010-856.text"
+  },
+  "created_at": "2025-01-06T12:00:00Z",
+  "updated_at": "2025-01-06T12:00:00Z"
+}
+```
+
+**Database Impact:**
+- **Volume:** ~90,000 Amendment records for 11,351 SFS laws
+- **Storage:** ~45MB (500 bytes/record average)
+- **Performance:** Amendment timeline queries <500ms for 90% of laws (<50 amendments each)
 
 ---
 

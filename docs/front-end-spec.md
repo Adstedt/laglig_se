@@ -1155,15 +1155,88 @@ graph TD
    - "Kopiera paragraf med källa" button on each section (for ISO Manager persona)
    - Expandable annotations: AI explains legal jargon inline
 
-5. **Tab Content: Ändringshistorik:**
-   - Timeline visualization (vertical, chronological):
-     - 2024-12-01: SFS 2024:789 - "Ändring av § 26 om digitala arbetsmiljörisker"
-     - 2022-03-15: SFS 2022:123 - "Nya bestämmelser om arbetsmiljöpolicy"
-     - etc.
-   - Each amendment:
-     - AI summary: "Vad ändrades?" (2 sentences)
-     - [Se visuell diff] button → Opens visual GitHub-style diff
-     - [Läs fullständig ändringstext] → Links to SFS amendment document
+5. **Tab Content: Ändringshistorik (Amendment Timeline - Notisum Competitive Parity):**
+
+   **Component:** `AmendmentTimeline` - See `docs/historical-amendment-tracking-strategy.md` Section 12.7
+
+   **Purpose:** Display complete amendment history with 7 data points per amendment (competitive requirement)
+
+   **Layout:** Vertical timeline, newest first, each amendment as collapsible card
+
+   **Each Amendment Card Shows (7 fields - feature parity with Notisum):**
+   1. **SFS Number** (clickable link): "SFS 2025:732" → Opens amending law detail page
+   2. **Publication Date**: "2025-06-24"
+   3. **Full Title**: "Lag (2025:732) om ändring i arbetsmiljölagen (1977:1160)"
+   4. **Affected Sections** (Swedish notation): "ändr. 6 kap. 17 §; upph. 8 kap. 4 §"
+      - Contextual tooltips explain notation:
+        - "ändr." → "Amended sections"
+        - "upph." → "Repealed sections"
+        - "nya" → "New sections"
+        - "betecknas" → "Renumbered"
+   5. **Summary** (2-3 sentences, GPT-4 generated Swedish):
+      "Gränsen för att företrädas av elevskyddsombud höjs från årskurs 7 till årskurs 8. Denna ändring påverkar både grundskolan, specialskolan och i motsvarande utbildningar samt i sameskolan."
+   6. **Effective Date**: "2028-07-01" + badge "Framtida" if date > today
+   7. **User Comments** (workspace-specific): Expandable textarea for team notes
+
+   **Visual Design:**
+   - Border-left-4 with blue accent (#3B82F6)
+   - Collapsible cards (click header to expand/collapse)
+   - Color coding by change type:
+     - Green background tint: New sections added
+     - Yellow background tint: Sections amended
+     - Red background tint: Sections repealed
+   - Mobile responsive: Stack fields vertically on <768px
+
+   **Additional Features:**
+   - **Data Source Badge**: "Riksdagen" | "Lagen.nu" | "SFSR" (transparency)
+   - **Link to Official PDF**: "View Riksdagen PDF" button
+   - **Visual Diff Button**: "Se visuell diff" → Opens GitHub-style diff modal
+   - **Cross-law navigation**: Click SFS number → Navigate to amending law immediately
+
+   **Empty State:**
+   - "Denna lag har inte ändrats sedan den antogs. Ikraftträdde: 1977-07-01"
+
+   **Loading State:**
+   - Skeleton cards (3 shimmer placeholders) while fetching
+
+   **Performance Requirements:**
+   - Timeline loads <500ms for laws with <50 amendments (90% of cases)
+   - Lazy load amendments beyond 50 (infinite scroll)
+
+   **Competitive Advantages Beyond Notisum:**
+   - ✅ Automated updates (nightly cron vs. Notisum's manual process)
+   - ✅ AI-generated summaries (GPT-4 vs. manually written)
+   - ✅ Workspace comments (team collaboration - Notisum lacks this)
+   - ✅ Direct law navigation (click SFS → View amending law instantly)
+
+   **Example Amendment Card (Expanded State):**
+   ```
+   ┌─────────────────────────────────────────────────────┐
+   │ [▼] SFS 2010:856              2010-06-23      [...]│
+   ├─────────────────────────────────────────────────────┤
+   │ Lag (2010:856) om ändring i arbetsmiljölagen       │
+   │ (1977:1160)                                        │
+   │                                                     │
+   │ Påverkan: ändr. 1 kap. 3 §, 6 kap. 17 § (i)      │
+   │                                                     │
+   │ Tillämpningsområdet för Arbetsmiljölagen           │
+   │ förtydligas så att det framgår att barn i          │
+   │ förskolan och elever i fritidshemmet inte anses    │
+   │ genomgå utbildning i arbetsmiljölagens mening.     │
+   │                                                     │
+   │ Ikraftträdande: 2011-07-01                         │
+   │                                                     │
+   │ [View Riksdagen PDF] [Se visuell diff]            │
+   │                                                     │
+   │ Teamkommentarer: [Expand]                          │
+   │ Källa: Riksdagen                                   │
+   └─────────────────────────────────────────────────────┘
+   ```
+
+   **Verification Test Case:**
+   - Arbetsmiljölagen (1977:1160) must display all 77 amendments matching Notisum data
+   - Each amendment must show all 7 fields
+   - Timeline must load in <500ms
 
 6. **Tab Content: Relaterat Innehåll:**
    - Related laws (cross-links):
