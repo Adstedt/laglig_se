@@ -740,6 +740,7 @@ enum AuditAction {
 
 enum ContentType {
   SFS_LAW
+  AD_LABOUR_COURT          // Priority #1 court - Employment law (critical for all employers)
   HD_SUPREME_COURT
   HOVR_COURT_APPEAL
   HFD_ADMIN_SUPREME

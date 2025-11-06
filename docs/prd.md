@@ -56,15 +56,15 @@
 
 **Major Changes:**
 - **Epic 2 Scope Expansion:** Changed from "10,000+ law database" to "170,000+ multi-content-type legal database"
-  - Added Swedish Court Cases (HD, HovR, HFD, MÖD, MIG): 9,000-16,000 pages
+  - Added Swedish Court Cases (AD, HD, HovR, HFD, MÖD, MIG): 15,000-20,000 pages
   - Added EU Legislation (Regulations, Directives): 110,000+ pages
-  - Excluded AD (Labour Court) from MVP due to data quality issues - revisit post-MVP
+  - **UPDATED (v1.3):** AD (Arbetsdomstolen / Labour Court) IS included in MVP as Priority #1 court - Domstolsverket PUH API has working AD data (fixes Notisum's broken AD coverage)
   - Excluded Propositioner, EU Court Cases to Phase 2
 
 - **Epic 2 Stories:** Restructured from 8 to 11 stories
   - Story 2.1: NEW - Multi-content-type data model design
   - Story 2.2: Updated - SFS laws ingestion (50,000+ documents)
-  - Story 2.3: NEW - Court cases ingestion (HD, HovR, HFD)
+  - Story 2.3: NEW - Court cases ingestion (AD, HFD, HD, HovR - priority order)
   - Story 2.4: NEW - EU legislation ingestion (Regulations, Directives)
   - Story 2.5: Updated - SEO pages for all content types with type-specific routes
   - Story 2.6: Updated - Content-type-specific categorization
@@ -1349,26 +1349,28 @@ The following features are **explicitly NOT included in the MVP** and are planne
 ### Story 2.3: Ingest Swedish Court Cases from Domstolsverket API
 
 **As a** developer,
-**I want** to fetch court cases from HD, HovR, and HFD,
+**I want** to fetch court cases from AD, HFD, HD, and HovR (priority order),
 **so that** we have comprehensive Swedish case law precedent.
 
 **Acceptance Criteria:**
 
-1. Integration with Domstolsverket API endpoint (verify availability)
-2. Node script created to fetch cases from multiple courts:
-   - HD (Högsta Domstolen / Supreme Court): NJA series
-   - HovR (Hovrätterna / Courts of Appeal): RH series
-   - HFD (Högsta Förvaltningsdomstolen / Supreme Administrative Court): HFD/RÅ series
-3. For each court, script fetches: case number, decision date, court name, summary, full text, lower court, parties
-4. Data stored in `legal_documents` table with appropriate content_type (HD_SUPREME_COURT, HOVR_COURT_APPEAL, HFD_ADMIN_SUPREME)
+1. Integration with Domstolsverket PUH API endpoint (verify availability)
+2. Node script created to fetch cases from multiple courts (priority order):
+   - **AD (Arbetsdomstolen / Labour Court):** AD series - **PRIORITY #1** (employment law - critical for all employers)
+   - HFD (Högsta Förvaltningsdomstolen / Supreme Administrative Court): HFD/RÅ series - Priority #2 (tax/administrative law)
+   - HD (Högsta Domstolen / Supreme Court): NJA series - Priority #3 (general civil/criminal law)
+   - HovR (Hovrätterna / Courts of Appeal): RH series - Priority #4 (practical precedent)
+3. For each court, script fetches: case number, decision date, court name, summary, full text, lower court (if available), parties (extract from full text)
+4. Data stored in `legal_documents` table with appropriate content_type (AD_LABOUR_COURT, HFD_ADMIN_SUPREME, HD_SUPREME_COURT, HOVR_COURT_APPEAL)
 5. Court-specific metadata stored in `court_cases` table
-6. Case numbering formats preserved (NJA YYYY s NN, RH YYYY:N, HFD YYYY ref N)
-7. Script extracts cross-references to cited SFS laws and stores in `cross_references` table
-8. Rate limiting per API guidelines
-9. Progress logging per court: "HD: 500/3,000 cases, HovR: 200/1,500 cases..."
+6. Case numbering formats preserved (AD YYYY nr N, HFD YYYY ref N, NJA YYYY s NN, RH YYYY:N)
+7. Script extracts cross-references to cited SFS laws from `lagrumLista` field and stores in `cross_references` table
+8. Rate limiting per API guidelines (conservative 5 req/sec recommended)
+9. Progress logging per court: "AD: 500/2,500 cases, HFD: 300/2,000 cases, HD: 400/4,000 cases, HovR: 200/1,500 cases..."
 10. Error handling with retry logic
-11. Script completes in <8 hours for all three courts
-12. Verification: Database contains 6,000-11,000 court cases after completion
+11. Script completes in <12 hours for all four courts (run as multi-day background job if needed)
+12. Verification: Database contains 10,000-20,000 court cases after completion (increased from 6-11K to include AD)
+13. **Competitive Advantage:** AD data is working in Domstolsverket PUH API (Notisum's AD coverage is broken - empty case pages). This gives us THE MOST CRITICAL court for employers that competitors cannot provide.
 
 ---
 
@@ -1680,26 +1682,28 @@ The following features are **explicitly NOT included in the MVP** and are planne
 ### Story 2.3: Ingest Swedish Court Cases from Domstolsverket API
 
 **As a** developer,
-**I want** to fetch court cases from HD, HovR, and HFD,
+**I want** to fetch court cases from AD, HFD, HD, and HovR (priority order),
 **so that** we have comprehensive Swedish case law precedent.
 
 **Acceptance Criteria:**
 
-1. Integration with Domstolsverket API endpoint (verify availability)
-2. Node script created to fetch cases from multiple courts:
-   - HD (Högsta Domstolen / Supreme Court): NJA series
-   - HovR (Hovrätterna / Courts of Appeal): RH series
-   - HFD (Högsta Förvaltningsdomstolen / Supreme Administrative Court): HFD/RÅ series
-3. For each court, script fetches: case number, decision date, court name, summary, full text, lower court, parties
-4. Data stored in `legal_documents` table with appropriate content_type (HD_SUPREME_COURT, HOVR_COURT_APPEAL, HFD_ADMIN_SUPREME)
+1. Integration with Domstolsverket PUH API endpoint (verify availability)
+2. Node script created to fetch cases from multiple courts (priority order):
+   - **AD (Arbetsdomstolen / Labour Court):** AD series - **PRIORITY #1** (employment law - critical for all employers)
+   - HFD (Högsta Förvaltningsdomstolen / Supreme Administrative Court): HFD/RÅ series - Priority #2 (tax/administrative law)
+   - HD (Högsta Domstolen / Supreme Court): NJA series - Priority #3 (general civil/criminal law)
+   - HovR (Hovrätterna / Courts of Appeal): RH series - Priority #4 (practical precedent)
+3. For each court, script fetches: case number, decision date, court name, summary, full text, lower court (if available), parties (extract from full text)
+4. Data stored in `legal_documents` table with appropriate content_type (AD_LABOUR_COURT, HFD_ADMIN_SUPREME, HD_SUPREME_COURT, HOVR_COURT_APPEAL)
 5. Court-specific metadata stored in `court_cases` table
-6. Case numbering formats preserved (NJA YYYY s NN, RH YYYY:N, HFD YYYY ref N)
-7. Script extracts cross-references to cited SFS laws and stores in `cross_references` table
-8. Rate limiting per API guidelines
-9. Progress logging per court: "HD: 500/3,000 cases, HovR: 200/1,500 cases..."
+6. Case numbering formats preserved (AD YYYY nr N, HFD YYYY ref N, NJA YYYY s NN, RH YYYY:N)
+7. Script extracts cross-references to cited SFS laws from `lagrumLista` field and stores in `cross_references` table
+8. Rate limiting per API guidelines (conservative 5 req/sec recommended)
+9. Progress logging per court: "AD: 500/2,500 cases, HFD: 300/2,000 cases, HD: 400/4,000 cases, HovR: 200/1,500 cases..."
 10. Error handling with retry logic
-11. Script completes in <8 hours for all three courts
-12. Verification: Database contains 6,000-11,000 court cases after completion
+11. Script completes in <12 hours for all four courts (run as multi-day background job if needed)
+12. Verification: Database contains 10,000-20,000 court cases after completion (increased from 6-11K to include AD)
+13. **Competitive Advantage:** AD data is working in Domstolsverket PUH API (Notisum's AD coverage is broken - empty case pages). This gives us THE MOST CRITICAL court for employers that competitors cannot provide.
 
 ---
 
