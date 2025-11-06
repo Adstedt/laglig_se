@@ -1308,7 +1308,7 @@ The following features are **explicitly NOT included in the MVP** and are planne
 
 ---
 
-### Story 2.2: Ingest 50,000+ SFS Laws from Riksdagen API
+### Story 2.2: Ingest 11,351 SFS Laws (1968-Present) from Riksdagen API
 
 **As a** developer,
 **I want** to fetch all SFS laws from Riksdagen API and store them in the database,
@@ -1318,15 +1318,16 @@ The following features are **explicitly NOT included in the MVP** and are planne
 
 1. Node script created to fetch all SFS documents from Riksdagen API
 2. Script fetches: title, SFS number, full text, published date, ministry, metadata
-3. Rate limiting implemented (max 10 requests/second to respect API limits)
+3. Rate limiting implemented (conservative 5 requests/second to respect API limits)
 4. Data stored in `legal_documents` table with content_type = SFS_LAW
 5. SFS-specific metadata stored in `metadata` JSONB field: ministry, law_type (lag/förordning), abbreviations
-6. Script handles pagination for 50,000+ documents
+6. Script handles pagination for 11,351 documents (1968-present coverage)
 7. Duplicate detection: Skip laws already in database (by document_number)
 8. Error handling: Retry failed requests 3x before logging to Sentry
-9. Progress logging: "Processed 5,000/50,000 laws..."
-10. Script completes full ingestion in <6 hours
-11. Verification: Database contains 50,000+ SFS documents after completion
+9. Progress logging: "Processed 5,000/11,351 laws..."
+10. Script completes full ingestion in <48 hours (multi-day background job acceptable - ~38 hours estimated at 5 req/sec)
+11. Verification: Database contains 11,351 SFS documents (1968-present) after completion
+12. **Note:** Riksdagen API provides laws from 1968-present. Pre-1968 laws rarely relevant for SMB compliance. Can add Lagrummet as fallback source in Phase 2 if historical laws requested.
 12. **Amendment extraction** (competitive feature - see `docs/historical-amendment-tracking-strategy.md`):
     - For EACH SFS law, parse inline amendment references from full text (e.g., "Lag (2021:1112)")
     - Create Amendment records linking original law → amending law
@@ -1641,7 +1642,7 @@ The following features are **explicitly NOT included in the MVP** and are planne
 
 ---
 
-### Story 2.2: Ingest 50,000+ SFS Laws from Riksdagen API
+### Story 2.2: Ingest 11,351 SFS Laws (1968-Present) from Riksdagen API
 
 **As a** developer,
 **I want** to fetch all SFS laws from Riksdagen API and store them in the database,
@@ -1651,15 +1652,16 @@ The following features are **explicitly NOT included in the MVP** and are planne
 
 1. Node script created to fetch all SFS documents from Riksdagen API
 2. Script fetches: title, SFS number, full text, published date, ministry, metadata
-3. Rate limiting implemented (max 10 requests/second to respect API limits)
+3. Rate limiting implemented (conservative 5 requests/second to respect API limits)
 4. Data stored in `legal_documents` table with content_type = SFS_LAW
 5. SFS-specific metadata stored in `metadata` JSONB field: ministry, law_type (lag/förordning), abbreviations
-6. Script handles pagination for 50,000+ documents
+6. Script handles pagination for 11,351 documents (1968-present coverage)
 7. Duplicate detection: Skip laws already in database (by document_number)
 8. Error handling: Retry failed requests 3x before logging to Sentry
-9. Progress logging: "Processed 5,000/50,000 laws..."
-10. Script completes full ingestion in <6 hours
-11. Verification: Database contains 50,000+ SFS documents after completion
+9. Progress logging: "Processed 5,000/11,351 laws..."
+10. Script completes full ingestion in <48 hours (multi-day background job acceptable - ~38 hours estimated at 5 req/sec)
+11. Verification: Database contains 11,351 SFS documents (1968-present) after completion
+12. **Note:** Riksdagen API provides laws from 1968-present. Pre-1968 laws rarely relevant for SMB compliance. Can add Lagrummet as fallback source in Phase 2 if historical laws requested.
 12. **Amendment extraction** (competitive feature - see `docs/historical-amendment-tracking-strategy.md`):
     - For EACH SFS law, parse inline amendment references from full text (e.g., "Lag (2021:1112)")
     - Create Amendment records linking original law → amending law
