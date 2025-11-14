@@ -20,6 +20,7 @@
 ### Hero Section
 
 **Headline:**
+
 ```
 Vi håller koll på lagarna – du håller koll på affären
 AI-driven lagefterlevnad som anpassar sig efter just ditt företag
@@ -30,6 +31,7 @@ Compliance utan krångel.
 **Secondary CTA:** "Utforska funktioner" (scrolls to features section)
 
 **Hero Visual:**
+
 - Animated video of component streaming (can revisit post-MVP)
 - Video explainer further down page with illustrations/graphics
 
@@ -38,11 +40,13 @@ Compliance utan krångel.
 ### Stats Section
 
 **Verifiable Metrics:**
+
 - "10,000+ lagparagrafer indexerade"
 - "Uppdateras dagligen från Riksdagen"
 - **Post-launch:** "[X] unika laglistor genererade för svenska företag" (real number, add when >10 customers)
 
 **Trust Signals:**
+
 - Customer logos when available (focus on public sector)
 - Testimonials post-launch
 - Security/compliance badges (GDPR-compliant)
@@ -52,11 +56,13 @@ Compliance utan krångel.
 ### Pain Points Section
 
 **Financial Pain:**
+
 - ❌ Böter upp till 500,000 SEK för arbetsmiljöbrott
 - ❌ Juristkostnader: 2,000-5,000 SEK per timme
 - ❌ 5-10 timmar/månad i administrativt arbete
 
 **Emotional Pain:**
+
 - 😰 "Håller vi på rätt sida lagen?"
 - 😓 "Hinner vi hålla koll på alla ändringar?"
 - 😤 "Varför är det så krångligt att hitta rätt information?"
@@ -100,16 +106,19 @@ Compliance utan krångel.
 **Section: "Vem är Laglig.se för?"**
 
 **Tab 1: Små och medelstora företag (10-50 anställda)**
+
 - **Use case:** Restaurangägare som behöver koll på arbetsmiljö, livsmedel, alkohollagen
 - **Pain point:** Begränsad tid, ingen egen jurist
 - **Value:** AI-assistenten som juridisk rådgivare utan timpris
 
 **Tab 2: ISO-konsulter och kvalitetschefer**
+
 - **Use case:** Konsult som hanterar 10+ kunders ISO-certifieringar samtidigt
 - **Pain point:** Hålla koll på regeländringar för flera branscher
 - **Value:** Centraliserad ändringsbevakning, mallar för olika branscher
 
 **Tab 3: Offentlig sektor (kommuner, regioner, statliga bolag)**
+
 - **Use case:** Kommun HR-chef med 500+ anställda, måste följa OSL, LOU, arbetsmiljölagar
 - **Pain point:** Komplex lagefterlevnad, revisionsansvar
 - **Value:** Revision-redo dokumentation, ändringslogg, teamsamarbete
@@ -121,6 +130,7 @@ Compliance utan krångel.
 **Structure:** E-commerce category pattern with faceted search
 
 **URL Structure:**
+
 ```
 /lagar - Main hub
 /lagar/arbetsmiljo - Category page (e.g., Work Environment)
@@ -128,6 +138,7 @@ Compliance utan krångel.
 ```
 
 **Category Page Elements:**
+
 - H1: "Arbetsmiljölagar för svenska företag"
 - Intro text (200-300 words, SEO-rich)
 - Faceted filters: By industry, by company size, by relevance
@@ -136,6 +147,7 @@ Compliance utan krångel.
 - FAQ section (rich snippets)
 
 **Individual Law Page Elements:**
+
 - Full law text (SFS from Riksdagen)
 - AI-generated contextual comment (personalized if logged in, generic if not)
 - Related laws sidebar
@@ -150,6 +162,7 @@ Compliance utan krångel.
 ### Navigation
 
 **Top Nav (Sticky):**
+
 - Logo
 - Features
 - Pricing
@@ -158,11 +171,13 @@ Compliance utan krångel.
 - Sign up (CTA button style)
 
 **Footer:**
+
 - Links: About, Contact, Privacy, Terms, Blog/Resources
 - Newsletter signup (optional)
 - Social media links
 
 **Legal Disclaimer (Prominent in Footer):**
+
 ```
 ⚖️ Juridisk ansvarsfriskrivning
 Laglig.se tillhandahåller AI-stödd information baserad på svenska lagar och förordningar.
@@ -171,6 +186,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 ```
 
 **Also appears:**
+
 - Chat interface (before first AI message)
 - Terms of Service page
 - Onboarding completion screen
@@ -196,6 +212,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 ### Step 1: Initial Input Form
 
 **Visual:**
+
 ```
 ┌─────────────────────────────────────────────┐
 │  Se din personliga laglista på 60 sekunder  │
@@ -211,6 +228,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 ```
 
 **Fields:**
+
 - **Org-number:** Format validation (XXXXXX-XXXX), real-time check
 - **Website URL:** Optional but recommended, auto-add https:// if missing
 
@@ -221,6 +239,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 ### Step 2: Streaming Generation (The Magic Moment)
 
 **Visual State:**
+
 ```
 ┌─────────────────────────────────────────────┐
 │  Skapar din profil...                       │
@@ -239,14 +258,17 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 **Progress Stages (4 steps, ~15 seconds total):**
 
 **Stage 1: Fetch Company Data (0-25%)**
+
 - Call Bolagsverket API with org-number
 - Extract: Company name, industry (SNI code), registration date, size
 - Status: "✓ Hämtar företagsdata från Bolagsverket"
 
 **Stage 2: Analyze Business Context (25-50%)**
+
 - If URL provided: Scrape website meta description, key content
 - Map SNI code → industry category
 - **Dynamic questions appear:**
+
   ```
   "Vi ser att ni är ett [restaurangföretag]. Serverar ni alkohol?"
   [Ja] [Nej]
@@ -254,9 +276,11 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
   "Hur många anställda har ni?"
   [1-5] [6-20] [21-50] [50+]
   ```
+
 - Status: "→ Analyserar din bransch och verksamhet"
 
 **Stage 3: Generate Law List (50-85%)**
+
 - RAG query: "Swedish laws relevant to [industry] with [employee count]"
 - Retrieve 30-50 laws, rank by relevance
 - **Law cards stream in (one every 0.5 seconds):**
@@ -271,15 +295,18 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 - Status: "→ Genererar personlig laglista"
 
 **Stage 4: Generate Contextual Comments (85-100%)**
+
 - For each law, generate AI comment: "Som [restaurang med 12 anställda], denna lag innebär att..."
 - Status: "→ Skapar kontextuella kommentarer"
 
 **Animation Details:**
+
 - **Progress bar:** Smooth animation, brand color, shows percentage + time remaining
 - **Live streaming:** Cards "slide up" into view with fade-in effect
 - **After 10 cards:** Show "... och [X] lagar till"
 
 **Excitement Copy (appears at milestones):**
+
 ```
 [At 50%]: "Wow! Vi hittade redan 23 relevanta lagar för ditt företag"
 [At 85%]: "Nästan klart! Lägger till personliga kommentarer..."
@@ -291,6 +318,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 ### Step 3: Summary & Preview (The Hook)
 
 **Visual:**
+
 ```
 ┌─────────────────────────────────────────────┐
 │  ✓ Din laglista är klar!                    │
@@ -319,6 +347,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 ```
 
 **Preview Cards (5-10 shown):**
+
 - Law title + SFS number
 - Contextual comment (truncated, "... läs mer")
 - Relevance indicator (Hög/Medel)
@@ -329,6 +358,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 ### Step 4: Trial Gate (Email Capture)
 
 **Modal/Inline Form:**
+
 ```
 ┌─────────────────────────────────────────────┐
 │  Slutför registrering                       │
@@ -353,12 +383,14 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 ```
 
 **Fields:**
+
 - Email (validated, confirmation sent)
 - Password (min 8 characters, strength indicator)
 - Company name (pre-filled from Bolagsverket if available)
 - Tier selection (default to Pro for better conversion)
 
 **After Submission:**
+
 - Create account in database
 - Store generated law list
 - Send to dashboard with full trial access
@@ -371,6 +403,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 **Backend Workflow:**
 
 **API Endpoint:** `POST /api/onboarding/generate-profile`
+
 - **Input:** `{ orgNumber, websiteUrl, answers: {...} }`
 - **Process:**
   1. Fetch Bolagsverket data
@@ -380,11 +413,13 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 - **Output:** Streaming JSON with progress updates
 
 **Streaming:**
+
 - Vercel AI SDK `StreamingTextResponse`
 - Stream progress: `{ stage: "analyzing", progress: 40, message: "..." }`
 - Stream law cards as generated
 
 **Database:**
+
 - Create temporary profile (pre-signup) with UUID
 - Store in session or temp table
 - Convert to full account on trial signup
@@ -393,6 +428,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 **Frontend:**
 
 **Components:**
+
 - `OnboardingWidget.tsx` (parent)
 - `InputForm.tsx` (Step 1)
 - `StreamingGeneration.tsx` (Step 2)
@@ -400,11 +436,13 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 - `TrialGate.tsx` (Step 4)
 
 **Animation Libraries:**
+
 - Framer Motion for card animations
 - React Spring for progress bar
 - CSS transitions for state changes
 
 **State Management:**
+
 - useState for current step
 - Custom useStreaming hook
 - React Hook Form for validation
@@ -436,6 +474,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 ### Success Metrics (KPIs)
 
 **Track:**
+
 1. **Widget engagement rate:** % of visitors who start onboarding
 2. **Completion rate:** % who reach preview
 3. **Trial conversion rate:** % who sign up after preview
@@ -443,6 +482,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 5. **Drop-off points:** Where users abandon
 
 **Target Benchmarks:**
+
 - Widget engagement: 15-25%
 - Completion rate: 70-80%
 - Trial conversion: 30-50%
@@ -461,6 +501,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 **Target:** Solo SMB owners, freelancers, very small companies (1-10 employees)
 
 **Included:**
+
 - ✅ 1 användare
 - ✅ AI-assistent (RAG-baserad, hallucineringsfri)
 - ✅ Personlig laglista med kontextuella kommentarer
@@ -470,6 +511,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 - ✅ E-postsupport (svar inom 48h)
 
 **Limitations:**
+
 - ❌ Ingen HR-modul
 - ❌ Inget teamsamarbete
 - ❌ Begränsad AI-chathistorik (30 dagar)
@@ -481,6 +523,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 **Target:** Growing SMBs, ISO consultants, small HR teams
 
 **Included:**
+
 - ✅ 5 användare
 - ✅ Allt i Basic
 - ✅ HR-modul (medarbetarhantering)
@@ -499,6 +542,7 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 **Target:** Large companies (50+ employees), public sector, multi-site organizations
 
 **Included:**
+
 - ✅ Obegränsat antal användare
 - ✅ Allt i Pro
 - ✅ API-integration (Fortnox, Visma, etc.)
@@ -510,11 +554,13 @@ För specifika juridiska frågor eller tolkning av lagar i enskilda fall, konsul
 - ✅ Telefonsupport
 
 **Pricing Strategy:**
+
 - Base: 4,000 SEK/mån (public sector direktupphandling threshold)
 - Volume pricing: Negotiated based on users and requirements
 - Annual contracts preferred
 
 **Qualification Criteria:**
+
 ```
 Enterprise är för dig som har:
 • 50+ anställda
@@ -529,17 +575,19 @@ Enterprise är för dig som har:
 
 **Pricing Table:**
 
-| Tier | Monthly | Annual | Saving |
-|------|---------|--------|--------|
-| Basic | 399 SEK/mån | 3,990 SEK/år | 798 SEK (2 månader gratis) |
-| Pro | 899 SEK/mån | 8,990 SEK/år | 1,798 SEK (2 månader gratis) |
+| Tier  | Monthly     | Annual       | Saving                       |
+| ----- | ----------- | ------------ | ---------------------------- |
+| Basic | 399 SEK/mån | 3,990 SEK/år | 798 SEK (2 månader gratis)   |
+| Pro   | 899 SEK/mån | 8,990 SEK/år | 1,798 SEK (2 månader gratis) |
 
 **Benefits:**
+
 - ✅ Immediate cashflow (~300k SEK upfront in year 1)
 - ✅ Lower churn (annual commitment)
 - ✅ Customer saves 17% (2 months free)
 
 **Implementation:**
+
 - Toggle on pricing page: [Månadsvis] [Årsvis - Spara 17%]
 - Annual customers pay upfront
 - Offer annual option at trial-to-paid conversion
@@ -549,6 +597,7 @@ Enterprise är för dig som har:
 ### Pricing Page Design
 
 **Visual Structure:**
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │              Prissättning som passar ditt företag        │
@@ -580,6 +629,7 @@ Enterprise är för dig som har:
 ```
 
 **Below Pricing Tiers:**
+
 - FAQ section (address common objections)
 - Feature comparison table (detailed)
 - "Vilken plan passar mig?" guide
@@ -593,6 +643,7 @@ Enterprise är för dig som har:
 ### Trial Duration: 14 Days
 
 **Rationale:**
+
 - ✅ Sufficient time to explore all features
 - ✅ Experience AI chat across multiple use cases
 - ✅ Set up HR module and add employees
@@ -605,6 +656,7 @@ Enterprise är för dig som har:
 ### Trial Access & Limitations
 
 **Full Feature Access:**
+
 - All tier features unlocked (Basic, Pro, or Enterprise based on selection)
 - Complete law list access
 - HR module, team collaboration, Kanban workspace
@@ -613,9 +665,11 @@ Enterprise är för dig som har:
 **Rate Limit: 100 AI Chat Queries During Trial**
 
 **Implementation:**
+
 - Counter in chat interface: "47/100 frågor kvar i provperioden"
 - At 80 queries: "Du har använt 80% av dina provfrågor. Uppgradera för obegränsad åtkomst."
 - At 100 queries: Soft block with CTA:
+
   ```
   Du har nått gränsen för provfrågor (100)
 
@@ -631,17 +685,20 @@ Enterprise är för dig som har:
 ### Trial Signup (No Credit Card Required)
 
 **Signup Requirements:**
+
 - Email (verified via confirmation link)
 - Password (min 8 characters)
 - Company name (pre-filled from onboarding)
 - Tier selection (Basic or Pro trial)
 
 **Why No Credit Card:**
+
 - ✅ Lower friction = higher trial signups
 - ✅ Builds trust (no surprise charges)
 - ✅ Conversion via value demonstration + email nurture
 
 **After 14 Days:**
+
 - Trial expires → "expired trial" state
 - User can login and view data (read-only)
 - Banner: "Din provperiod har gått ut. Uppgradera för att fortsätta använda Laglig.se"
@@ -654,41 +711,49 @@ Enterprise är för dig som har:
 **Email Nurture Sequence (Automated):**
 
 **Day 1 - Welcome**
+
 - Subject: "Välkommen till Laglig.se! Här är dina första steg"
 - Content: Getting started guide, video tour, key features
 - CTA: "Utforska din laglista"
 
 **Day 3 - Feature Highlight**
+
 - Subject: "Visste du att AI-assistenten kan svara på specifika lagfrågor?"
 - Content: AI chat tutorial, example questions, best practices
 - CTA: "Prova AI-assistenten nu"
 
 **Day 7 - Mid-Trial Check-in**
+
 - Subject: "Du har 7 dagar kvar av din provperiod"
 - Content: Usage stats (X laws reviewed, Y questions asked), suggest unexplored features
 - CTA: "Utforska HR-modulen" (if not used yet)
 
 **Day 10 - Social Proof**
+
 - Subject: "Så här använder andra företag Laglig.se"
 - Content: Case study, testimonial, ROI example
 - CTA: "Uppgradera till Pro"
 
 **Day 12 - Urgency**
+
 - Subject: "2 dagar kvar av din provperiod - fortsätt med 17% rabatt"
 - Content: Annual discount offer, remind of value
 - CTA: "Uppgradera nu och spara"
 
 **Day 14 - Expiration**
+
 - Subject: "Din provperiod har gått ut - fortsätt använda Laglig.se"
 - Content: Summary of value, easy upgrade CTA
 - CTA: "Återaktivera mitt konto"
 
 **Day 16 - Post-Expiration**
+
 - Subject: "Vi saknar dig! Återkom med 10% rabatt på första månaden"
 - Content: Limited-time offer
 - CTA: "Kom tillbaka till Laglig.se"
 
 **Day 21 - Final Attempt**
+
 - Subject: "Sista chansen att återaktivera ditt konto"
 - Content: Data retention notice (deleted after 30 days)
 - CTA: "Återaktivera nu"
@@ -698,20 +763,24 @@ Enterprise är för dig som har:
 ### Pro Tier: Sales Team Lead Routing
 
 **Qualification Criteria for Sales Follow-up:**
+
 - Company size: 20+ employees (from Bolagsverket data)
 - Industry: High-value sectors (construction, manufacturing, healthcare)
 - Usage: >50 AI queries in first 7 days (high engagement)
 - Team: Invited 3+ team members (collaboration signal)
 
 **Sales Action (Day 5 of Trial):**
+
 - CRM notification: "High-value Pro trial: [Company Name]"
 - Sales rep sends personalized email:
+
   ```
   Hej [Name],
 
   Jag ser att ni utforskar Laglig.se Pro. Kan jag boka 15 minuter
   för att visa er hur vi kan skräddarsy lösningen för [industry]?
   ```
+
 - Offer: Personal demo, answer questions, discuss Enterprise if relevant
 
 **Goal:** Convert high-intent trials to annual contracts via human touch
@@ -723,6 +792,7 @@ Enterprise är för dig som har:
 **No Self-Serve Trial for Enterprise**
 
 **Flow:**
+
 1. User selects "Enterprise" on pricing page
 2. Redirect to Calendly: "Boka demo med vårt team"
 3. Demo call (30 min):
@@ -746,24 +816,29 @@ Enterprise är för dig som har:
 **Assumptions:** 30% of customers choose annual payment
 
 **Basic Tier (150 customers):**
+
 - 105 monthly: 105 × 399 × 12 = 502,740 SEK
 - 45 annual: 45 × 3,990 = 179,550 SEK
 - **Subtotal: 682,290 SEK**
 
 **Pro Tier (50 customers):**
+
 - 35 monthly: 35 × 899 × 12 = 377,580 SEK
 - 15 annual: 15 × 8,990 = 134,850 SEK
 - **Subtotal: 512,430 SEK**
 
 **Enterprise (60 organizations @ 4,000 SEK/mån):**
+
 - Mostly annual: 60 × 48,000 = 2,880,000 SEK
 
 **Fortnox (500 customers @ 375 SEK/mån net):**
+
 - 500 × 375 × 12 = 2,250,000 SEK
 
 **Total ARR: ~6.3M SEK** (conservative, midpoint to 18-month 10M target)
 
 **Annual Payment Benefits:**
+
 - Improved cashflow: ~300k SEK upfront in year 1
 - Lower churn (annual commitment)
 - Customer saves 17% (2 months free)
@@ -786,21 +861,25 @@ Enterprise är för dig som har:
 ### Implementation Priority
 
 **Phase 1 (Week 1-4):**
+
 - Homepage structure
 - Law pages (basic rendering)
 - Onboarding widget backend
 
 **Phase 2 (Week 5-8):**
+
 - Onboarding widget frontend (streaming)
 - Dashboard/Workspace
 - Trial signup flow
 
 **Phase 3 (Week 9-12):**
+
 - AI Chat interface
 - Change monitoring
 - HR module
 
 **Phase 4 (Week 13-16):**
+
 - User/team management
 - Billing integration (Stripe)
 - Email nurture sequences

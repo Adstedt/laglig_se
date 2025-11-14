@@ -8,25 +8,26 @@ Complete documentation for the laglig.se Swedish legal AI platform.
 
 ### 🎯 Start Here
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| **[PRD](./prd.md)** | Product Requirements Document - Complete feature specifications | Everyone |
-| **[Brief](./brief.md)** | Initial product brief and vision | Product/Strategy |
-| **[Architecture](./architecture.md)** | Technical architecture and system design | Engineering |
+| Document                              | Purpose                                                         | Audience         |
+| ------------------------------------- | --------------------------------------------------------------- | ---------------- |
+| **[PRD](./prd.md)**                   | Product Requirements Document - Complete feature specifications | Everyone         |
+| **[Brief](./brief.md)**               | Initial product brief and vision                                | Product/Strategy |
+| **[Architecture](./architecture.md)** | Technical architecture and system design                        | Engineering      |
 
 ### 🗄️ Data & Schema
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| **[Prisma Schema Preview](./prisma-schema-preview.prisma)** | Complete database schema (Prisma ORM) | Backend Developers |
-| **[Entity Relationship Diagram](./entity-relationship-diagram.md)** | Visual database structure | Everyone |
-| **[Data Model Verification](./data-model-verification.md)** | Schema validation against requirements | Backend/Product |
+| Document                                                            | Purpose                                | Audience           |
+| ------------------------------------------------------------------- | -------------------------------------- | ------------------ |
+| **[Prisma Schema Preview](./prisma-schema-preview.prisma)**         | Complete database schema (Prisma ORM)  | Backend Developers |
+| **[Entity Relationship Diagram](./entity-relationship-diagram.md)** | Visual database structure              | Everyone           |
+| **[Data Model Verification](./data-model-verification.md)**         | Schema validation against requirements | Backend/Product    |
 
 ### 🔌 External APIs
 
 **📂 [external-apis/](./external-apis/README.md)** - Complete API documentation
 
 Quick links:
+
 - **[Riksdagen API](./external-apis/riksdagen-api-comprehensive-analysis.md)** - SFS law ingestion (Epic 2.2)
 - **[Domstolsverket API](./external-apis/domstolsverket-api-comprehensive-analysis.md)** - Court case ingestion (Epic 2.3)
 - **[MVP Implementation](./external-apis/mvp-implementation/)** - Change detection, amendment tracking
@@ -34,14 +35,15 @@ Quick links:
 
 ### 🎨 Frontend Specifications
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| **[Front-End Spec](./front-end-spec.md)** | Complete UI/UX specifications | Frontend Developers |
+| Document                                                       | Purpose                           | Audience            |
+| -------------------------------------------------------------- | --------------------------------- | ------------------- |
+| **[Front-End Spec](./front-end-spec.md)**                      | Complete UI/UX specifications     | Frontend Developers |
 | **[Component Library](./front-end-spec-component-library.md)** | Reusable component specifications | Frontend Developers |
 
 **📂 [feature-specifications/](./feature-specifications/README.md)** - Detailed feature specs
 
 Quick links:
+
 - [01 - Homepage & Onboarding](./feature-specifications/01-homepage-and-onboarding.md)
 - [02 - Dashboard & Workspace](./feature-specifications/02-dashboard-and-workspace.md)
 - [03 - AI Chat Interface](./feature-specifications/03-ai-chat-interface.md)
@@ -67,10 +69,10 @@ Quick links:
 
 ### 🧠 Planning & Research
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| **[Market Research](./market-research.md)** | Market analysis and opportunity sizing | Product/Strategy |
-| **[Brainstorming Session Results](./brainstorming-session-results.md)** | Early ideation and concepts | Everyone |
+| Document                                                                | Purpose                                | Audience         |
+| ----------------------------------------------------------------------- | -------------------------------------- | ---------------- |
+| **[Market Research](./market-research.md)**                             | Market analysis and opportunity sizing | Product/Strategy |
+| **[Brainstorming Session Results](./brainstorming-session-results.md)** | Early ideation and concepts            | Everyone         |
 
 ---
 
@@ -79,16 +81,19 @@ Quick links:
 ### For Backend Developers (Epic 2.2 & 2.3)
 
 **Day 1: Setup & Schema**
+
 1. Read [PRD](./prd.md) Epic 2.2 & 2.3 (30 min)
 2. Review [Prisma Schema](./prisma-schema-preview.prisma) (30 min)
 3. Review [Architecture](./architecture.md) Section 3 (Backend Services) (30 min)
 
 **Week 1: API Understanding**
+
 1. Read [External APIs Deep Dive](./external-apis/external-apis-deep-dive.md) (30 min)
 2. Read [Riksdagen API Comprehensive Analysis](./external-apis/riksdagen-api-comprehensive-analysis.md) (2 hours)
 3. Read [Domstolsverket API Comprehensive Analysis](./external-apis/domstolsverket-api-comprehensive-analysis.md) (2 hours)
 
 **Week 2: Implementation**
+
 1. Review [SFS Change Detection Strategy](./external-apis/mvp-implementation/sfs-change-detection-strategy.md) (1 hour)
 2. Review [Amendment Tracking Strategy](./external-apis/mvp-implementation/historical-amendment-tracking-strategy.md) (1 hour)
 3. Start Epic 2.2 implementation using Section 12 code from Riksdagen API doc
@@ -96,11 +101,13 @@ Quick links:
 ### For Frontend Developers (Epic 1.x)
 
 **Day 1: Setup & Design**
+
 1. Read [PRD](./prd.md) Epic 1 (30 min)
 2. Review [Front-End Spec](./front-end-spec.md) (2 hours)
 3. Review [Component Library](./front-end-spec-component-library.md) (1 hour)
 
 **Week 1: Feature Implementation**
+
 1. Read [Homepage & Onboarding](./feature-specifications/01-homepage-and-onboarding.md) (1 hour)
 2. Read [Dashboard & Workspace](./feature-specifications/02-dashboard-and-workspace.md) (1 hour)
 3. Read [AI Chat Interface](./feature-specifications/03-ai-chat-interface.md) (1 hour)
@@ -109,16 +116,19 @@ Quick links:
 ### For Product/Strategy Team
 
 **Understanding the Vision:**
+
 1. Read [Brief](./brief.md) (30 min)
 2. Read [PRD](./prd.md) (2 hours)
 3. Review [Market Research](./market-research.md) (1 hour)
 
 **Competitive Intelligence:**
+
 1. Browse [Notisum Data Mapping](./notisum-data-mapping/README.md) (30 min)
 2. Read [Competitive Intelligence Addon](./competitive-intelligence-addon.md) (30 min)
 3. Read [Notisum Change Notification Analysis](./competitive-analysis/notisum-change-notification-analysis.md) (30 min)
 
 **Future Planning:**
+
 1. Read [Phase 2: Förarbeten Integration](./external-apis/future-phases/phase-2-forarbeten-integration.md) (1 hour)
 2. Read [Phase 3: Political Analytics](./external-apis/future-phases/phase-3-political-analytics.md) (1 hour)
 
@@ -129,6 +139,7 @@ Quick links:
 ### ✅ Documentation Complete (100% Implementation-Ready)
 
 **Epic 2.2: SFS Law Ingestion**
+
 - ✅ API documentation complete
 - ✅ Change detection strategy documented
 - ✅ Amendment tracking strategy documented
@@ -136,12 +147,14 @@ Quick links:
 - 🔄 Ready for development
 
 **Epic 2.3: Court Case Ingestion**
+
 - ✅ API documentation complete
 - ✅ Implementation guide provided
 - ✅ Competitive advantage identified (AD broken on Notisum)
 - 🔄 Ready for development
 
 **Frontend (Epic 1.x)**
+
 - ✅ Complete UI/UX specifications
 - ✅ Component library defined
 - ✅ Feature specs for all major features
@@ -150,10 +163,12 @@ Quick links:
 ### 📅 Future Phases
 
 **Phase 2: Förarbeten Integration** (Post-MVP, Q1-Q2 2025)
+
 - ✅ Complete planning documentation
 - ⏳ Deferred to post-MVP
 
 **Phase 3: Political Analytics** (Post-MVP, Q3-Q4 2025)
+
 - ✅ Complete planning documentation
 - ⏳ Deferred to post-MVP (after Phase 2)
 
@@ -166,6 +181,7 @@ Quick links:
 **Target market:** Swedish SMEs with 10-250 employees
 **Launch timeline:** Q4 2024 - Q1 2025
 **Pricing tiers:**
+
 - Basic: SEK 500/month (5 users)
 - Professional: SEK 1,500/month (15 users + change notifications)
 - Enterprise: Custom pricing (unlimited users + API access)
@@ -189,15 +205,15 @@ Quick links:
 
 ## 📈 Data Volume Overview
 
-| Data Type | Volume | Ingestion Time | Storage | Status |
-|-----------|--------|----------------|---------|--------|
-| **SFS Laws** | 11,351 laws (1968-present) | ~38 hours | ~400 MB | Epic 2.2 |
-| **Court Cases (AD)** | ~10,000 cases | ~18 hours | ~500 MB | Epic 2.3 Priority #1 |
-| **Court Cases (HFD)** | ~20,000 cases | ~36 hours | ~1 GB | Epic 2.3 Priority #2 |
-| **Court Cases (HD)** | ~15,000 cases | ~27 hours | ~750 MB | Epic 2.3 Priority #3 |
-| **Court Cases (HovR)** | ~5,000-55,000 cases | ~9-99 hours | ~250 MB-2.75 GB | Epic 2.3 Priority #4 |
-| **Förarbeten** | ~30,000 documents | ~24 hours | ~3 GB | Phase 2 |
-| **Political Metadata** | ~11,000 contexts | ~6 hours | ~12 MB | Phase 3 |
+| Data Type              | Volume                     | Ingestion Time | Storage         | Status               |
+| ---------------------- | -------------------------- | -------------- | --------------- | -------------------- |
+| **SFS Laws**           | 11,351 laws (1968-present) | ~38 hours      | ~400 MB         | Epic 2.2             |
+| **Court Cases (AD)**   | ~10,000 cases              | ~18 hours      | ~500 MB         | Epic 2.3 Priority #1 |
+| **Court Cases (HFD)**  | ~20,000 cases              | ~36 hours      | ~1 GB           | Epic 2.3 Priority #2 |
+| **Court Cases (HD)**   | ~15,000 cases              | ~27 hours      | ~750 MB         | Epic 2.3 Priority #3 |
+| **Court Cases (HovR)** | ~5,000-55,000 cases        | ~9-99 hours    | ~250 MB-2.75 GB | Epic 2.3 Priority #4 |
+| **Förarbeten**         | ~30,000 documents          | ~24 hours      | ~3 GB           | Phase 2              |
+| **Political Metadata** | ~11,000 contexts           | ~6 hours       | ~12 MB          | Phase 3              |
 
 **Total MVP:** ~50,000-100,000 documents, ~72-144 hours ingestion, ~2-6 GB storage
 
@@ -206,17 +222,20 @@ Quick links:
 ## 🔗 External Resources
 
 ### APIs
+
 - [Riksdagen API Documentation](https://data.riksdagen.se/dokumentation/)
 - [Domstolsverket PUH API](https://www.domstol.se/rattsfall/)
 - [Lagrummet RInfo](https://lagrummet.se/rinfo) (future consideration)
 
 ### Competitors
+
 - [Notisum](https://www.notisum.se/)
 - [Zeteo](https://www.zeteo.se/)
 - [Juno](https://www.juno.se/)
 - [Rättsnätet](https://www.rattsnatet.se/)
 
 ### Legal Resources
+
 - [Juridiska Föreningens förarbeteportal](https://foreningenjuridica.se/forarbeten/) (context for Phase 2)
 - [Swedish Parliament Legislative Process](https://www.riksdagen.se/sv/sa-funkar-riksdagen/demokrati/sa-stiftas-svenska-lagar/)
 
@@ -284,12 +303,14 @@ docs/
 **Documentation status:** 100% implementation-ready for MVP (Epic 1-3)
 
 **Key changes:**
+
 - 2025-11-06: Reorganized external-apis folder (mvp-implementation, future-phases, archive)
 - 2025-11-06: Added Phase 3 political analytics documentation
 - 2025-11-06: Completed Phase 2 förarbeten integration documentation
 - 2025-11-06: Fixed 2 critical blockers + 5 high-priority gaps (now 100% ready)
 
 **Next updates:**
+
 - [ ] Add actual implementation notes once Epic 2.2/2.3 development starts
 - [ ] Document API performance baselines from production testing
 - [ ] Add troubleshooting guides based on real issues

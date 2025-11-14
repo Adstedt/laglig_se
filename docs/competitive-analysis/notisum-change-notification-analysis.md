@@ -9,6 +9,7 @@
 ## Email Examples Received
 
 ### Email 1: Arbetsmiljö (Work Environment Law)
+
 - **Subject:** "Notisums laglistor - Ändring i laglistan 'Arbetsmiljö'"
 - **Law Changed:** Lag (1991:1047) om sjuklön (Sick Pay Act)
 - **Update Info:** SFS 2025:938
@@ -17,6 +18,7 @@
 - **Change Summary:** Ändrad hänvisning till socialförsäkringsbalken i fråga om Försäkringskassans handläggning av ärenden enligt 10, 11, 13, 14, 16 och 20 §§ samt 24 § andra stycket och 27 § andra stycket.
 
 ### Email 2: Hälsa och sjukvård Sverige (Health and Healthcare Sweden)
+
 - **Subject:** "Notisums laglistor - Ändring i laglistan 'Hälsa och sjukvård Sverige'"
 - **Multiple Laws Changed:**
   1. **Lag (2009:366) om handel med läkemedel** - SFS 2025:923
@@ -31,6 +33,7 @@
      - Latest: SFS 2025:937, ändr: 110 kap. 14, 20, 29, 31, 32, 33 §§, 115 kap. 4 §, rubr: närmast före 110 kap. 31, 33 §§; nya 110 kap. 31 a, 31 b, 31 c, 31 d §§, rubr: närmast före 31 a, 31 b, 31 c, 31 d §§
 
 ### Email 3: Arbetsmiljö för ett tjänsteföretag (Work Environment for a Service Company)
+
 - **Subject:** "Notisums laglistor - Ändring i laglistan 'Arbetsmiljö för ett tjänsteföretag'"
 - **Law Changed:** Same as Email 1 - Lag (1991:1047) om sjuklön
 - **Same details as Email 1**
@@ -40,6 +43,7 @@
 ## Email Structure Analysis
 
 ### Header
+
 ```
 Från: noreply@notisum.se
 Till: Alexander Adstedt
@@ -47,6 +51,7 @@ Datum: mån 2025-11-03 09:19
 ```
 
 ### Body Structure
+
 1. **Greeting:** "Hej"
 2. **Context Statement:** "I din bevakade laglista med namnet '[List Name]' finns ändringar att hantera."
 3. **Action Prompt:** "Du har följande ändringar att kvittera"
@@ -166,16 +171,19 @@ Datum: mån 2025-11-03 09:19
 ## Email Metadata
 
 ### Sender
+
 - **From:** noreply@notisum.se
 - **Reply-to:** noreply@notisum.se (can't reply)
 - **No personal account manager mentioned**
 
 ### Timing
+
 - **Sent:** Monday 2025-11-03 09:19 (morning)
 - **All three emails sent same time** (batch job)
 - Likely daily morning digest
 
 ### Security Warning
+
 - Outlook warning: "Om meddelandet inte visas som det ska kan du klicka här för att visa det i en webbläsare."
 - Note about auto-download blocked for security
 
@@ -184,6 +192,7 @@ Datum: mån 2025-11-03 09:19
 ## Change Detection Depth Analysis
 
 ### What Notisum Tracks
+
 - ✅ New SFS amendments
 - ✅ Section changes (which § changed)
 - ✅ Multiple amendments per law (shows all recent)
@@ -192,12 +201,14 @@ Datum: mån 2025-11-03 09:19
 - ✅ Effective dates
 
 ### What Notisum Shows
+
 - Full text of changed paragraphs (sometimes)
 - SFS number of amending law
 - Link to official PDF
 - List of all sections affected
 
 ### Granularity
+
 - **Good:** Shows specific section numbers
 - **Good:** Shows if new sections added
 - **Missing:** No before/after comparison
@@ -217,6 +228,7 @@ Datum: mån 2025-11-03 09:19
 8. **Repeat for each law changed**
 
 **Pain points in workflow:**
+
 - Must leave email to acknowledge
 - No way to see if change is urgent
 - No guidance on what to do about change
@@ -227,8 +239,10 @@ Datum: mån 2025-11-03 09:19
 ## Competitive Differentiation Opportunities for Laglig.se
 
 ### 1. AI-Powered Plain Language Summaries (HIGH IMPACT)
+
 **Notisum:** Shows raw legal text only
 **Laglig.se:** Add AI summary at top:
+
 ```
 📋 Summary: This change updates references to Försäkringskassan's
 handling procedures in sections 10, 11, 13, 14, 16, and 20.
@@ -240,8 +254,10 @@ no action required unless you handle sick pay claims directly.
 ```
 
 ### 2. Business Context & Action Guidance (HIGH IMPACT)
+
 **Notisum:** No context
 **Laglig.se:** Add impact assessment:
+
 ```
 🎯 What this means for restaurants:
 - If you process sick pay claims, note the updated Försäkringskassan references
@@ -252,8 +268,10 @@ no action required unless you handle sick pay claims directly.
 ```
 
 ### 3. Priority Levels (MEDIUM IMPACT)
+
 **Notisum:** All changes equal
 **Laglig.se:** Add visual priority:
+
 ```
 🔴 HIGH PRIORITY - Action required by Dec 1
 🟡 MEDIUM - Review recommended
@@ -261,8 +279,10 @@ no action required unless you handle sick pay claims directly.
 ```
 
 ### 4. Visual Diffs (MEDIUM IMPACT)
+
 **Notisum:** Full text in grey box
 **Laglig.se:** GitHub-style diff (as in PRD Story 8.5):
+
 ```
 - Ändrad hänvisning till socialförsäkringsbalken i fråga om
 - Försäkringskassans handläggning av ärenden enligt 10, 11, 13...
@@ -272,8 +292,10 @@ no action required unless you handle sick pay claims directly.
 ```
 
 ### 5. Related Changes (MEDIUM IMPACT)
+
 **Notisum:** Each law isolated
 **Laglig.se:** Show connections:
+
 ```
 🔗 This change also affects:
 - Lag (2009:366) om handel med läkemedel (in your list)
@@ -281,23 +303,29 @@ no action required unless you handle sick pay claims directly.
 ```
 
 ### 6. Inline Acknowledgment (LOW IMPACT, POST-MVP)
+
 **Notisum:** Must go to website
 **Laglig.se:** Email button (future):
+
 ```
 [Mark as Reviewed] [View Details] [Ask AI About This]
 ```
 
 ### 7. Smart Grouping (MEDIUM IMPACT)
+
 **Notisum:** Separate email per list
 **Laglig.se:** Could group:
+
 ```
 📧 Daily Digest - 3 laws changed across 2 lists
 HIGH PRIORITY (1) | MEDIUM (1) | LOW (1)
 ```
 
 ### 8. Contextual Help (HIGH IMPACT)
+
 **Notisum:** Assumes legal knowledge
 **Laglig.se:** Explain notation:
+
 ```
 📖 "ändr: 26 §" means section 26 was modified
 📖 "nya §§" means new sections were added
@@ -309,17 +337,20 @@ HIGH PRIORITY (1) | MEDIUM (1) | LOW (1)
 ## Technical Implementation Notes
 
 ### Email Format
+
 - **HTML email** (not plain text)
 - **Responsive design** (works on mobile based on structure)
 - **Links use query params:** `?id=19911047`
 - **PDF links:** Direct to Riksdagen PDF
 
 ### Data Sources Confirmed
+
 - Notisum monitors Riksdagen API for SFS updates
 - Pulls official PDFs from Riksdagen
 - Stores "uppdateringsinformationen" metadata
 
 ### Change Detection Logic Inferred
+
 1. Daily check of Riksdagen API for new SFS entries
 2. Match SFS numbers to laws in user's lists
 3. Extract changed sections from SFS metadata
@@ -333,6 +364,7 @@ HIGH PRIORITY (1) | MEDIUM (1) | LOW (1)
 These emails **validate** several PRD Epic 8 assumptions:
 
 ### ✅ Validated
+
 - **FR8:** Daily monitoring of law changes via Riksdagen API ✅
 - **FR9:** Email notifications when laws in user's list change ✅
 - **FR11:** "Changes" tab with "Mark as reviewed" workflow ✅ (Notisum has "kvittera")
@@ -340,6 +372,7 @@ These emails **validate** several PRD Epic 8 assumptions:
 - **FR38:** Display effective dates and source document links ✅
 
 ### 🆕 New Insights for PRD
+
 - **Multiple law lists per user** - Notisum supports this, we should too
 - **Batch notifications** - Send morning digest, not real-time per change
 - **Section-level granularity** - Show which § changed, not just "law updated"
@@ -351,6 +384,7 @@ These emails **validate** several PRD Epic 8 assumptions:
 ## Recommendations for Laglig.se Epic 8
 
 ### Must-Have (Core Parity)
+
 1. ✅ Daily Riksdagen API monitoring
 2. ✅ Email notifications per law list
 3. ✅ Section-level change detection (which § changed)
@@ -359,6 +393,7 @@ These emails **validate** several PRD Epic 8 assumptions:
 6. ✅ Acknowledgment workflow ("kvittera" / mark as reviewed)
 
 ### Differentiation (Competitive Advantage)
+
 1. 🚀 **AI plain language summaries** (GPT-4 generated)
 2. 🚀 **Business impact assessment** (High/Medium/Low priority)
 3. 🚀 **Action guidance** ("Review by Dec 1", "No action needed", etc.)
@@ -368,6 +403,7 @@ These emails **validate** several PRD Epic 8 assumptions:
 7. 🚀 **Industry-specific framing** (Tailor language to user's SNI)
 
 ### Post-MVP Enhancements
+
 8. 📧 Inline email buttons (mark as reviewed without login)
 9. 📧 Smart grouping (single digest with priority sorting)
 10. 🔔 Slack/Teams integration (FR mentioned but post-MVP)
@@ -425,6 +461,7 @@ PS: Du har inga fler ändringar att granska. Bra jobbat! 👍
 ## Conclusion
 
 Notisum's change notifications are **functional but basic**. They provide accurate technical information but lack:
+
 - Plain language explanations
 - Business context
 - Priority indication
@@ -438,9 +475,11 @@ The email structure and timing (morning batch digest) should be replicated, but 
 ---
 
 ## Files Created
+
 - This analysis document
 
 ## Next Steps
+
 1. ✅ Validate Epic 8 stories against these findings
 2. ✅ Update Story 8.2 (email notifications) to include Notisum patterns
 3. ✅ Add new story for AI plain language summaries if not already covered

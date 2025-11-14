@@ -5,6 +5,7 @@
 ### Section 13.2 - Initial Setup (UPDATED)
 
 **Prerequisites:**
+
 ```bash
 # Required versions
 node --version  # 20.x LTS required
@@ -17,6 +18,7 @@ supabase --version  # 1.142+ required
 ```
 
 **Environment Configuration:**
+
 ```bash
 # .env.local - Supabase Development Variables
 # For local development with Supabase CLI
@@ -43,6 +45,7 @@ UPSTASH_REDIS_REST_TOKEN="..."
 ### Section 13.3 - Local Development (UPDATED)
 
 **Start Supabase Services:**
+
 ```bash
 # Initialize Supabase project (first time only)
 supabase init
@@ -77,12 +80,14 @@ pnpm dev
 ```
 
 **Available URLs:**
+
 - Application: http://localhost:3000
 - Supabase Studio: http://localhost:54323
 - PostgreSQL: localhost:54322
 - Supabase API: http://localhost:54321
 
 **Stop Supabase:**
+
 ```bash
 # Stop all services
 supabase stop
@@ -102,23 +107,28 @@ supabase stop --no-backup
 Supabase provides two connection strings for different use cases:
 
 1. **Pooled Connection (Transaction Mode)** - For serverless functions
+
    ```
    postgresql://[user]:[password]@[host]:6543/postgres?pgbouncer=true
    ```
+
    - Uses PgBouncer in transaction mode
    - Maximum 100 concurrent connections per project
    - Use for: Server Components, API Routes, Server Actions
    - Set as: `DATABASE_URL`
 
 2. **Direct Connection** - For long-running operations
+
    ```
    postgresql://[user]:[password]@[host]:5432/postgres
    ```
+
    - Direct PostgreSQL connection
    - Use for: Migrations, Prisma CLI commands
    - Set as: `DIRECT_URL`
 
 **Prisma Configuration for Supabase:**
+
 ```prisma
 // prisma/schema.prisma
 datasource db {
@@ -129,6 +139,7 @@ datasource db {
 ```
 
 **Connection Pool Best Practices:**
+
 ```typescript
 // lib/prisma.ts - Optimized for Supabase
 import { PrismaClient } from '@prisma/client'
@@ -137,16 +148,16 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL
-    }
-  },
-  log: process.env.NODE_ENV === 'development'
-    ? ['error', 'warn']
-    : ['error'], // Reduce logs in production
-})
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'], // Reduce logs in production
+  })
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma
@@ -157,6 +168,7 @@ if (process.env.NODE_ENV !== 'production') {
 ```
 
 **Serverless Function Pattern:**
+
 ```typescript
 // app/api/data/route.ts
 import { prisma } from '@/lib/prisma'
@@ -164,7 +176,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   // PgBouncer handles connection pooling automatically
   const data = await prisma.law.findMany({
-    take: 10
+    take: 10,
   })
 
   // No need to close connection - PgBouncer handles it
@@ -180,16 +192,16 @@ export async function GET() {
 
 **Authentication Responsibility Matrix:**
 
-| Feature | Supabase Auth | NextAuth.js | Notes |
-|---------|---------------|-------------|-------|
-| User Registration | ✅ Primary | ❌ | Supabase handles user creation |
-| Magic Links | ✅ Primary | ❌ | Supabase email service |
-| OAuth Providers | ✅ Primary | 🔄 Wrapper | Supabase manages OAuth, NextAuth wraps session |
-| JWT Generation | ✅ Primary | ❌ | Supabase issues JWTs |
-| Session Management | 🔄 Issues JWT | ✅ Primary | NextAuth manages session in Next.js |
-| Server-side Access | ❌ | ✅ Primary | NextAuth for getServerSession() |
-| Client-side Access | ✅ Primary | 🔄 Via hook | Supabase client for real-time |
-| Middleware Protection | ❌ | ✅ Primary | NextAuth middleware |
+| Feature               | Supabase Auth | NextAuth.js | Notes                                          |
+| --------------------- | ------------- | ----------- | ---------------------------------------------- |
+| User Registration     | ✅ Primary    | ❌          | Supabase handles user creation                 |
+| Magic Links           | ✅ Primary    | ❌          | Supabase email service                         |
+| OAuth Providers       | ✅ Primary    | 🔄 Wrapper  | Supabase manages OAuth, NextAuth wraps session |
+| JWT Generation        | ✅ Primary    | ❌          | Supabase issues JWTs                           |
+| Session Management    | 🔄 Issues JWT | ✅ Primary  | NextAuth manages session in Next.js            |
+| Server-side Access    | ❌            | ✅ Primary  | NextAuth for getServerSession()                |
+| Client-side Access    | ✅ Primary    | 🔄 Via hook | Supabase client for real-time                  |
+| Middleware Protection | ❌            | ✅ Primary  | NextAuth middleware                            |
 
 **Implementation Pattern:**
 
@@ -209,8 +221,8 @@ export const supabaseAdmin = createClient(
   {
     auth: {
       autoRefreshToken: false,
-      persistSession: false
-    }
+      persistSession: false,
+    },
   }
 )
 ```
@@ -226,14 +238,14 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'Supabase',
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
         // Use Supabase for authentication
         const { data, error } = await supabase.auth.signInWithPassword({
           email: credentials?.email || '',
-          password: credentials?.password || ''
+          password: credentials?.password || '',
         })
 
         if (error || !data.user) return null
@@ -242,26 +254,28 @@ export const authOptions: NextAuthOptions = {
         return {
           id: data.user.id,
           email: data.user.email,
-          name: data.user.user_metadata?.name
+          name: data.user.user_metadata?.name,
         }
-      }
-    })
+      },
+    }),
   ],
   adapter: SupabaseAdapter({
     url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!
+    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
   }),
   callbacks: {
     async session({ session, token }) {
       // Add Supabase access token to session
-      const { data: { session: supabaseSession } } = await supabase.auth.getSession()
+      const {
+        data: { session: supabaseSession },
+      } = await supabase.auth.getSession()
 
       session.supabaseAccessToken = supabaseSession?.access_token
       session.user.id = token.sub!
 
       return session
-    }
-  }
+    },
+  },
 }
 ```
 
@@ -280,23 +294,29 @@ export default async function Page() {
 }
 
 // Client Component - Use Supabase for real-time
-"use client"
+;('use client')
 import { supabase } from '@/lib/auth/supabase-auth'
 
 export function RealtimeComponent() {
   useEffect(() => {
     const channel = supabase
       .channel('changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'tasks'
-      }, (payload) => {
-        console.log('Change:', payload)
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tasks',
+        },
+        (payload) => {
+          console.log('Change:', payload)
+        }
+      )
       .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 }
 ```
@@ -308,6 +328,7 @@ export function RealtimeComponent() {
 ### Section 11.5.5 - Supabase Storage Integration (NEW)
 
 **Storage Setup:**
+
 ```typescript
 // lib/storage/supabase-storage.ts
 import { supabase, supabaseAdmin } from '@/lib/auth/supabase-auth'
@@ -332,15 +353,15 @@ export class StorageService {
       .from(this.bucket)
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: false,
       })
 
     if (error) return { url: '', error }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from(this.bucket)
-      .getPublicUrl(filePath)
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(this.bucket).getPublicUrl(filePath)
 
     return { url: publicUrl, error: null }
   }
@@ -386,9 +407,10 @@ export const companyLogosStorage = new StorageService('company-logos')
 ```
 
 **Server Action with File Upload:**
+
 ```typescript
 // app/actions/employee-documents.ts
-"use server"
+'use server'
 
 import { employeeDocsStorage } from '@/lib/storage/supabase-storage'
 import { getServerSession } from 'next-auth'
@@ -397,7 +419,7 @@ import { z } from 'zod'
 const UploadSchema = z.object({
   employeeId: z.string().uuid(),
   documentType: z.enum(['CONTRACT', 'ID_COPY', 'CERTIFICATE']),
-  file: z.instanceof(File)
+  file: z.instanceof(File),
 })
 
 export async function uploadEmployeeDocument(formData: FormData) {
@@ -426,8 +448,8 @@ export async function uploadEmployeeDocument(formData: FormData) {
       fileUrl: url,
       fileSizeBytes: file.size,
       mimeType: file.type,
-      uploadedBy: session.user.id
-    }
+      uploadedBy: session.user.id,
+    },
   })
 
   return { success: true, document }
@@ -435,9 +457,10 @@ export async function uploadEmployeeDocument(formData: FormData) {
 ```
 
 **Client Component with Upload:**
+
 ```tsx
 // components/employee/document-upload.tsx
-"use client"
+'use client'
 
 import { uploadEmployeeDocument } from '@/app/actions/employee-documents'
 import { useState } from 'react'
@@ -466,12 +489,7 @@ export function DocumentUpload({ employeeId }: { employeeId: string }) {
 
   return (
     <form onSubmit={handleUpload}>
-      <input
-        type="file"
-        name="file"
-        accept=".pdf,.doc,.docx"
-        required
-      />
+      <input type="file" name="file" accept=".pdf,.doc,.docx" required />
       <select name="documentType" required>
         <option value="CONTRACT">Contract</option>
         <option value="ID_COPY">ID Copy</option>
@@ -486,6 +504,7 @@ export function DocumentUpload({ employeeId }: { employeeId: string }) {
 ```
 
 **Storage Bucket Policies (SQL):**
+
 ```sql
 -- Create storage buckets
 INSERT INTO storage.buckets (id, name, public) VALUES
@@ -632,6 +651,7 @@ pnpm test
 ```
 
 **Test Setup with Supabase:**
+
 ```typescript
 // tests/setup.ts
 import { execSync } from 'child_process'

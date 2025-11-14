@@ -6,31 +6,41 @@
 
 ```markdown
 ### Ingen SFS: 112
+
 **Ref:** Antal dokument
 **Beskrivning:** 112
+
 ---
 
 ### Ingen SFS: 2025-10-19 21:06
+
 **Ref:** Senast uppdaterad
 **Beskrivning:** 2025-10-19 21:06
+
 ---
 
 ### Ingen SFS: Datum för uppföljningsrapport
+
 **Ref:** Datum för kontrollrapport
 **Beskrivning:** Om inget anges så används dagens datum.
+
 ---
 
 ### Ingen SFS: Ändringar
+
 **Ref:** Ange kommentar till kvittensmeddelande (max 2000 tkn)
 **Beskrivning:** Välj ändringar
+
 ---
 
 ### Ingen SFS: Bifogade dokument
+
 **Ref:** Ange kommentar till kvittensmeddelande (max 2000 tkn)
 **Beskrivning:** Bifogade dokument
 ```
 
 **Problem:**
+
 - Ingen SFS-nummer ✗
 - Ingen lagtitel ✗
 - Bara metadata från formulär ✗
@@ -103,6 +113,7 @@ Arbetsmiljöverkets föreskrift om systematiskt arbetsmiljöarbete (AFS 2001:1).
 ```
 
 **Fördelar:**
+
 - ✅ Alla 112 lagar extraherade
 - ✅ Korrekt SFS-nummer (t.ex. "SFS 2021:890")
 - ✅ Fullständig beteckning (lagtitel)
@@ -115,22 +126,22 @@ Arbetsmiljöverkets föreskrift om systematiskt arbetsmiljöarbete (AFS 2001:1).
 
 ## 📊 Kvantitativ Jämförelse
 
-| Laglista | V1 Extraherade | V2 Förväntat | Förbättring |
-|----------|----------------|--------------|-------------|
-| Arbetsmiljö | 5 (metadata) | 112 lagar | +2140% |
-| Miljö | 5 (metadata) | 98 lagar | +1860% |
-| Lista-68381 | 27 | ~27* | Behöver verifiera kvalitet |
-| Lista-68304 | 39 | ~39* | Behöver verifiera kvalitet |
-| Lista-2172 | 75 | ~75* | Behöver verifiera kvalitet |
-| Lista-70895 | 79 | ~79* | Behöver verifiera kvalitet |
-| Lista-70894 | 25 | ~25* | Behöver verifiera kvalitet |
-| Lista-8467 | 33 | ~33* | Behöver verifiera kvalitet |
-| Lista-26487 | 20 | ~20* | Behöver verifiera kvalitet |
-| Lista-11145 | 51 | ~51* | Behöver verifiera kvalitet |
-| Lista-797 | 45 | ~45* | Behöver verifiera kvalitet |
-| Lista-1728 | 146 | ~146* | Behöver verifiera kvalitet |
+| Laglista    | V1 Extraherade | V2 Förväntat | Förbättring                |
+| ----------- | -------------- | ------------ | -------------------------- |
+| Arbetsmiljö | 5 (metadata)   | 112 lagar    | +2140%                     |
+| Miljö       | 5 (metadata)   | 98 lagar     | +1860%                     |
+| Lista-68381 | 27             | ~27\*        | Behöver verifiera kvalitet |
+| Lista-68304 | 39             | ~39\*        | Behöver verifiera kvalitet |
+| Lista-2172  | 75             | ~75\*        | Behöver verifiera kvalitet |
+| Lista-70895 | 79             | ~79\*        | Behöver verifiera kvalitet |
+| Lista-70894 | 25             | ~25\*        | Behöver verifiera kvalitet |
+| Lista-8467  | 33             | ~33\*        | Behöver verifiera kvalitet |
+| Lista-26487 | 20             | ~20\*        | Behöver verifiera kvalitet |
+| Lista-11145 | 51             | ~51\*        | Behöver verifiera kvalitet |
+| Lista-797   | 45             | ~45\*        | Behöver verifiera kvalitet |
+| Lista-1728  | 146            | ~146\*       | Behöver verifiera kvalitet |
 
-*Observera: För listor med fler extraherade poster i V1 behöver vi verifiera att de verkligen är korrekta lagar och inte metadata.
+\*Observera: För listor med fler extraherade poster i V1 behöver vi verifiera att de verkligen är korrekta lagar och inte metadata.
 
 ---
 
@@ -139,22 +150,29 @@ Arbetsmiljöverkets föreskrift om systematiskt arbetsmiljöarbete (AFS 2001:1).
 ### Snabbkontroll av V2 output:
 
 1. **Öppna JSON-filen:**
+
 ```bash
 cat output/laglistor-data/arbetsmiljo.json | jq '.entries[] | select(.sfs != "") | .sfs' | wc -l
 ```
+
 Ska visa ~112
 
 2. **Kontrollera kategorier:**
+
 ```bash
 cat output/laglistor-data/arbetsmiljo.json | jq '.entries[] | .category' | sort | uniq
 ```
+
 Ska visa flera kategorier (inte bara "Okategoriserad")
 
 3. **Granska första lagen:**
+
 ```bash
 cat output/laglistor-data/arbetsmiljo.json | jq '.entries[0]'
 ```
+
 Ska ha:
+
 - `sfs`: "SFS YYYY:NNN"
 - `beteckning`: "Lag (YYYY:NNN) om..."
 - `beskrivning`: Lång text (>50 tecken)
@@ -165,12 +183,14 @@ Ska ha:
 ## 📌 Sammanfattning
 
 **V1 Problem:**
+
 - Extraherade formulärfält och metadata
 - Ingen strukturerad lagdata
 - Saknade kategorier
 - Oanvändbar för produktutveckling
 
 **V2 Lösning:**
+
 - Extraherar faktiska lagar med fullständig info
 - Korrekt kategorisering
 - Tre format (JSON, CSV, Markdown)

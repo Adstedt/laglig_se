@@ -12,6 +12,7 @@
 **What:** Integrate Swedish legal preparatory works (förarbeten) to provide contextual depth for understanding WHY laws exist, not just WHAT they say.
 
 **Why:** Dramatically improves RAG quality by giving AI access to:
+
 - Legislative intent and reasoning
 - Examples from parliamentary debate
 - Committee discussions about edge cases
@@ -49,14 +50,17 @@ In Swedish legal practice, understanding a law requires studying its **förarbet
 ### Example: SFS 2006:545 (Lag om skyddsrum)
 
 **Footnote in law:**
+
 > "Prop. 2005/06:133, bet. 2005/06:FöU9, rskr. 2005/06:295"
 
 **Translation:**
+
 - Government proposed law via **Prop. 2005/06:133**
 - Defense Committee analyzed it → **Bet. 2005/06:FöU9**
 - Parliament approved → **Rskr. 2005/06:295**
 
 **To understand this law fully, a legal professional would read:**
+
 1. The law text itself (SFS 2006:545)
 2. **The proposition** (explains why Sweden needs modern shelter law)
 3. The committee report (how Parliament modified the proposal)
@@ -85,24 +89,25 @@ In Swedish legal practice, understanding a law requires studying its **förarbet
 {
   sources: [
     {
-      type: "SFS_LAW",
-      text: "3 kap. 2 a § Arbetsgivaren ska aktivt bedriva..."
+      type: 'SFS_LAW',
+      text: '3 kap. 2 a § Arbetsgivaren ska aktivt bedriva...',
     },
     {
-      type: "PROPOSITION",
-      doc: "Prop. 1976/77:149",
-      text: "Med rehabiliteringsansvar avses att arbetsgivaren ska vidta åtgärder i ett tidigt skede när arbetstagaren visar tecken på nedsatt arbetsförmåga. Exempel: Om en anställd är sjukskriven upprepade gånger ska arbetsgivaren inte vänta på att arbetstagaren söker hjälp, utan aktivt erbjuda arbetsanpassning, arbetsprövning eller omplacering..."
+      type: 'PROPOSITION',
+      doc: 'Prop. 1976/77:149',
+      text: 'Med rehabiliteringsansvar avses att arbetsgivaren ska vidta åtgärder i ett tidigt skede när arbetstagaren visar tecken på nedsatt arbetsförmåga. Exempel: Om en anställd är sjukskriven upprepade gånger ska arbetsgivaren inte vänta på att arbetstagaren söker hjälp, utan aktivt erbjuda arbetsanpassning, arbetsprövning eller omplacering...',
     },
     {
-      type: "COMMITTEE_REPORT",
-      doc: "Bet. 1976/77:AU23",
-      text: "Utskottet betonar att rehabiliteringsansvaret gäller ALLA arbetsgivare, även små företag. Dock kan omfattningen anpassas efter företagets storlek och resurser..."
-    }
+      type: 'COMMITTEE_REPORT',
+      doc: 'Bet. 1976/77:AU23',
+      text: 'Utskottet betonar att rehabiliteringsansvaret gäller ALLA arbetsgivare, även små företag. Dock kan omfattningen anpassas efter företagets storlek och resurser...',
+    },
   ]
 }
 ```
 
 **AI Response:** Contextually rich answer with:
+
 - What the law requires (from statute)
 - WHY it was introduced (from proposition)
 - HOW it should be applied (examples from förarbeten)
@@ -118,10 +123,10 @@ In Swedish legal practice, understanding a law requires studying its **förarbet
 
 ```typescript
 interface ForarbetenRefs {
-  proposition?: string       // "Prop. 2005/06:133"
-  committee_report?: string  // "Bet. 2005/06:FöU9"
-  riksdag_comm?: string      // "Rskr. 2005/06:295"
-  sou_references?: string[]  // ["SOU 2004:56", ...]
+  proposition?: string // "Prop. 2005/06:133"
+  committee_report?: string // "Bet. 2005/06:FöU9"
+  riksdag_comm?: string // "Rskr. 2005/06:295"
+  sou_references?: string[] // ["SOU 2004:56", ...]
 }
 
 function parseForarbeten(sfsHtml: string): ForarbetenRefs {
@@ -139,12 +144,13 @@ function parseForarbeten(sfsHtml: string): ForarbetenRefs {
     proposition: propMatch?.[1],
     committee_report: betMatch?.[1],
     riksdag_comm: rskrMatch?.[1],
-    sou_references: souMatches.map(m => `SOU ${m[1]}`)
+    sou_references: souMatches.map((m) => `SOU ${m[1]}`),
   }
 }
 ```
 
 **Expected coverage:**
+
 - ~70-80% of SFS laws will have proposition reference
 - ~50-60% will have committee report reference
 - ~20-30% will have SOU references
@@ -155,21 +161,21 @@ function parseForarbeten(sfsHtml: string): ForarbetenRefs {
 
 ```typescript
 // Fetch proposition
-const propId = convertToDocId("Prop. 2005/06:133") // → "prop-200506--133"
+const propId = convertToDocId('Prop. 2005/06:133') // → "prop-200506--133"
 const proposition = await fetch(
   `https://data.riksdagen.se/dokument/${propId}.json`
 )
 
 // Same API structure as SFS laws
 const propData = {
-  titel: "Lag om skyddsrum",
-  typ: "prop",           // Document type
-  rm: "2005/06",         // Parliamentary year
-  nummer: "133",
-  html: "<full proposition text>",
-  text: "plain text version",
-  organ: "Försvarsdepartementet",
-  datum: "2006-01-12"
+  titel: 'Lag om skyddsrum',
+  typ: 'prop', // Document type
+  rm: '2005/06', // Parliamentary year
+  nummer: '133',
+  html: '<full proposition text>',
+  text: 'plain text version',
+  organ: 'Försvarsdepartementet',
+  datum: '2006-01-12',
 }
 ```
 
@@ -206,18 +212,18 @@ async function linkForarbeten(law: LegalDocument, refs: ForarbetenRefs) {
     const prop = await prisma.legalDocument.findFirst({
       where: {
         content_type: 'PROPOSITION',
-        document_number: refs.proposition
-      }
+        document_number: refs.proposition,
+      },
     })
 
     if (prop) {
       await prisma.crossReference.create({
         data: {
-          source_document_id: law.id,         // SFS law
-          target_document_id: prop.id,        // Proposition
+          source_document_id: law.id, // SFS law
+          target_document_id: prop.id, // Proposition
           reference_type: 'HAS_PREPARATORY_WORK',
-          context: 'Original legislative proposal'
-        }
+          context: 'Original legislative proposal',
+        },
       })
     }
   }
@@ -256,26 +262,30 @@ function chunkProposition(propHtml: string): Chunk[] {
     extractSection(propHtml, /Nuvarande ordning/i),
     extractSection(propHtml, /Överväganden/i),
     extractSection(propHtml, /Författningskommentar/i),
-    extractSection(propHtml, /Konsekvensanalys/i)
+    extractSection(propHtml, /Konsekvensanalys/i),
   ].filter(Boolean)
 
-  return sections.map(section => ({
+  return sections.map((section) => ({
     text: section.content,
     metadata: {
       section_type: section.type,
       document_type: 'PROPOSITION',
-      related_law: "SFS 2006:545",
+      related_law: 'SFS 2006:545',
 
       // CRITICAL: Weight section types differently in RAG
-      weight: section.type === 'Överväganden' ? 1.5 :  // Reasoning most important
-              section.type === 'Författningskommentar' ? 1.3 :  // Article commentary
-              1.0
-    }
+      weight:
+        section.type === 'Överväganden'
+          ? 1.5 // Reasoning most important
+          : section.type === 'Författningskommentar'
+            ? 1.3 // Article commentary
+            : 1.0,
+    },
   }))
 }
 ```
 
 **Why section weighting matters:**
+
 - "Överväganden" (Reasoning) section has MOST interpretive value
 - "Författningskommentar" (Article commentary) explains each section
 - "Konsekvensanalys" (Impact analysis) helps understand practical effects
@@ -288,11 +298,10 @@ async function retrieveLegalContext(
   question: string,
   lawId?: string
 ): Promise<RAGContext> {
-
   // 1. Retrieve most relevant law text chunks
   const lawChunks = await vectorSearch(question, {
     filter: { content_type: 'SFS_LAW' },
-    limit: 3
+    limit: 3,
   })
 
   // 2. If specific law identified, get its förarbeten
@@ -300,28 +309,28 @@ async function retrieveLegalContext(
     const forarbeten = await prisma.crossReference.findMany({
       where: {
         source_document_id: lawId,
-        reference_type: 'HAS_PREPARATORY_WORK'
+        reference_type: 'HAS_PREPARATORY_WORK',
       },
       include: {
         target_document: {
-          include: { embeddings: true }
-        }
-      }
+          include: { embeddings: true },
+        },
+      },
     })
 
     // 3. Search WITHIN förarbeten for relevant context
     const propChunks = await vectorSearch(question, {
       filter: {
-        document_id: { in: forarbeten.map(f => f.target_document_id) },
-        content_type: { in: ['PROPOSITION', 'COMMITTEE_REPORT'] }
+        document_id: { in: forarbeten.map((f) => f.target_document_id) },
+        content_type: { in: ['PROPOSITION', 'COMMITTEE_REPORT'] },
       },
-      limit: 2  // Include 2 most relevant förarbeten chunks
+      limit: 2, // Include 2 most relevant förarbeten chunks
     })
 
     return {
       lawText: lawChunks,
       preparatoryWorks: propChunks,
-      courtCases: []  // Also retrieve if available
+      courtCases: [], // Also retrieve if available
     }
   }
 
@@ -388,12 +397,12 @@ Provide a comprehensive answer that:
 
 ### Estimated Document Counts
 
-| Document Type | Count | Avg Size | Total Storage |
-|---------------|-------|----------|---------------|
-| **Propositioner** | ~8,000-10,000 | 100 KB | ~800 MB - 1 GB |
-| **Betänkanden** | ~15,000-20,000 | 50 KB | ~750 MB - 1 GB |
-| **SOU** | ~5,000-7,000 | 150 KB | ~750 MB - 1 GB |
-| **Total** | **~30,000** | - | **~2.5-3 GB** |
+| Document Type     | Count          | Avg Size | Total Storage  |
+| ----------------- | -------------- | -------- | -------------- |
+| **Propositioner** | ~8,000-10,000  | 100 KB   | ~800 MB - 1 GB |
+| **Betänkanden**   | ~15,000-20,000 | 50 KB    | ~750 MB - 1 GB |
+| **SOU**           | ~5,000-7,000   | 150 KB   | ~750 MB - 1 GB |
+| **Total**         | **~30,000**    | -        | **~2.5-3 GB**  |
 
 ### RAG Embeddings Impact
 
@@ -452,9 +461,11 @@ Provide a comprehensive answer that:
 **User:** "Vad innebär arbetsgivarens rehabiliteringsansvar?"
 
 **Phase 1 Response (MVP - without förarbeten):**
+
 > "Enligt Arbetsmiljölagen 3 kap. 2 a § ska arbetsgivaren aktivt bedriva rehabiliteringsarbete. Det innebär att du ska vidta åtgärder för att förebygga och begränsa ohälsa."
 
 **Phase 2 Response (with förarbeten):**
+
 > "Enligt Arbetsmiljölagen 3 kap. 2 a § ska arbetsgivaren aktivt bedriva rehabiliteringsarbete.
 >
 > **Varför kravet finns:**
@@ -462,6 +473,7 @@ Provide a comprehensive answer that:
 >
 > **Vad det innebär i praktik:**
 > Regeringen gav följande exempel i propositionen:
+>
 > - Om en anställd är sjukskriven upprepade gånger ska du inte vänta passivt
 > - Du ska aktivt erbjuda arbetsanpassning, arbetsprövning eller omplacering
 > - Kontakta företagshälsovården för stöd i processen
@@ -478,6 +490,7 @@ Provide a comprehensive answer that:
 ### Notisum (Current Market Leader)
 
 **What they provide:**
+
 - ✅ Full access to propositioner, betänkanden, SOU
 - ✅ Chronological navigation by parliamentary year
 - ❌ No cross-linking between laws → förarbeten
@@ -489,6 +502,7 @@ Provide a comprehensive answer that:
 ### Laglig.se Phase 2 (Our Advantage)
 
 **What we'll provide:**
+
 - ✅ Automatic cross-linking: Law detail page → its förarbeten (one click)
 - ✅ AI chat that USES förarbeten to explain context
 - ✅ "Why this law exists" section auto-generated from proposition
@@ -589,6 +603,7 @@ Provide a comprehensive answer that:
 **Likelihood:** MEDIUM (~20-30% of laws may have unclear/missing references)
 
 **Mitigation:**
+
 1. Fallback: If no footnote, search Riksdagen for propositions mentioning the SFS number
 2. Manual curation: For top 1,000 most-viewed laws, manually verify förarbeten links
 3. User reporting: "Missing förarbeten? Report it" button
@@ -600,6 +615,7 @@ Provide a comprehensive answer that:
 **Impact:** $300-500 one-time embedding cost, ~$30-50/month storage
 
 **Mitigation:**
+
 - Phase 1: Ingest only propositions (most important)
 - Phase 2: Add betänkanden if user demand justifies cost
 - Selective chunking: Focus on "Överväganden" and "Författningskommentar" sections
@@ -609,6 +625,7 @@ Provide a comprehensive answer that:
 **Issue:** Adding förarbeten context increases token count in AI prompts. May hit context limits.
 
 **Mitigation:**
+
 - Implement tiered retrieval:
   1. Always include law text (highest priority)
   2. Include förarbeten only if query is interpretive ("varför", "syftet med", etc.)
@@ -654,17 +671,20 @@ Instead of ingesting full förarbeten, just **link out to Riksdagen.se:**
 ## Recommendation
 
 ### Short-term (MVP):
+
 ✅ Implement "Förarbeten External Links" quick win (1-2 days)
 ✅ Focus on SFS + court cases (90% of SMB value)
 ✅ Defer full förarbeten ingestion to Phase 2
 
 ### Phase 2 (Professional Tier):
+
 ✅ Full förarbeten integration (propositioner priority)
 ✅ Enhanced RAG with legislative intent
 ✅ "Why this law exists" auto-generated sections
 ✅ Position as premium legal research feature
 
 ### Success Criteria for Phase 2:
+
 - Professional tier conversion >10%
 - AI chat quality scores +20-30%
 - User testimonials about contextual depth

@@ -33,6 +33,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Primary draggable content unit displaying law metadata throughout the app
 
 **PRD Requirements:**
+
 - FR26: "Display law cards throughout the UI as draggable components with metadata (category, status badge, priority, assigned employees)"
 - Story 6.2: Law cards in Kanban show "title, category badge, priority (High/Medium/Low), assigned employee"
 - Story 6.3: Modal displays "law title, SFS number, category badge, AI summary (200 words), current status, priority dropdown, assigned employees, due date picker, notes textarea, tags input"
@@ -40,6 +41,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Variants:**
 
 ### 1a. Compact Law Card (List View)
+
 - Law title (truncated at 60 chars)
 - SFS number (small, gray)
 - Category badge (color-coded)
@@ -47,6 +49,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Status badge (from Kanban column)
 
 ### 1b. Standard Kanban Card
+
 - Law title
 - Category badge
 - Priority (High/Medium/Low)
@@ -56,6 +59,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Drag handle indicator
 
 ### 1c. Expanded Law Card Modal (Story 6.3)
+
 - Full law title + SFS number
 - Category badge
 - AI summary (200 words)
@@ -73,6 +77,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - "Ask AI About This" button → Opens chat with law pre-loaded
 
 ### 1d. Draggable Law Card (Stories 3.4, 6.5)
+
 - Made draggable using `@dnd-kit` or `react-beautiful-dnd`
 - Visual feedback: Card follows cursor during drag
 - Drop zones: Kanban columns, AI chat input area
@@ -80,6 +85,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Keyboard accessibility: Arrow keys + Enter to move
 
 **States:**
+
 - Default
 - Hover (elevated shadow)
 - Dragging (opacity 0.5, cursor grabbing)
@@ -87,6 +93,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Disabled
 
 **Interactions:**
+
 - Click → Opens Law Card Modal
 - Drag → Can be dropped in Kanban columns or AI Chat
 - Checkbox (for bulk select) → Shows bulk actions toolbar
@@ -98,22 +105,26 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Visual indicator for law change priority and compliance urgency
 
 **PRD Requirements:**
+
 - Story 8.1: "🔴/🟡/🟢 Priority badge (High/Medium/Low) - DIFFERENTIATION from Notisum"
 - Story 8.2: Priority shown in diff view
 - Story 8.4: Priority badges in email notifications
 
 **Variants:**
+
 - High Priority: 🔴 Red badge
 - Medium Priority: 🟡 Yellow badge
 - Low Priority: 🟢 Green badge
 
 **Usage Locations:**
+
 - Change notification cards (Story 8.1)
 - Law cards in Kanban (Story 6.2)
 - Email notifications (Story 8.4)
 - Diff view (Story 8.2)
 
 **Accessibility:**
+
 - Use emoji + text (not color alone)
 - Tooltip on hover explains priority reasoning
 
@@ -124,6 +135,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Visual compliance progress tracking with drag-and-drop workflow
 
 **PRD Requirements:**
+
 - Story 6.2: Five columns (Not Started, In Progress, Blocked, Review, Compliant)
 - Story 6.5: Drag-and-drop between columns with `@dnd-kit`
 - Story 6.6: Filtering by category, priority, assigned employee, tags
@@ -133,16 +145,19 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Structure:**
 
 ### Column Component
+
 - Column header with count: "In Progress (5)"
 - Drag-and-drop zone for cards
 - "Add Law" button
 - Empty state: "No laws in this column yet"
 
 ### Board Layout
+
 - Desktop: 5 columns side-by-side (horizontal scroll if needed)
 - Mobile: Vertical stack with section headers OR horizontal scroll
 
 ### Filter Bar (Story 6.6)
+
 - Category (multi-select dropdown)
 - Priority (High/Medium/Low)
 - Assigned employee (dropdown)
@@ -152,6 +167,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Filter state persisted in URL query params
 
 ### Bulk Actions Toolbar (Story 6.8)
+
 - Appears when ≥1 card selected
 - Actions: Move to column, Set priority, Assign to employee, Add tag, Delete
 - Confirmation modals for destructive actions
@@ -163,6 +179,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** RAG-powered chatbot with drag-and-drop context building
 
 **PRD Requirements:**
+
 - Story 3.3: "AI Chat sidebar (fixed right side, 400px width), streaming responses"
 - Story 3.4: "Drag law cards into chat → converts to context pill"
 - Story 3.5: "Drag employee cards into chat → adds employee context"
@@ -170,6 +187,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Story 3.7: "Drag documents (PDFs) into chat"
 
 ### Chat Sidebar
+
 - Fixed right side, 400px width (desktop)
 - Full-screen modal (mobile)
 - Message history (scrollable)
@@ -180,11 +198,13 @@ This document provides **complete implementation specifications** for all 55+ UI
 ### Message Components
 
 #### User Message
+
 - Right-aligned
 - Blue bubble
 - Avatar optional
 
 #### AI Message (Story 3.3)
+
 - Left-aligned
 - Gray bubble
 - Laglig.se logo
@@ -197,6 +217,7 @@ This document provides **complete implementation specifications** for all 55+ UI
   - "View law" link
 
 #### Loading State
+
 - Typing indicator: "AI skriver..."
 - Animated dots
 
@@ -205,6 +226,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Display dragged items as context above chat input
 
 **Types:**
+
 1. **Law Context Pill** (Story 3.4)
    - Law title
    - "X" button to remove
@@ -225,6 +247,7 @@ This document provides **complete implementation specifications** for all 55+ UI
    - "X" button to remove
 
 **Behavior:**
+
 - Context persists across chat messages (until manually removed)
 - Mobile: Tap item → "Add to chat context" button → pill appears
 
@@ -235,6 +258,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** GitHub-style visual diff for law amendments
 
 **PRD Requirements:**
+
 - Story 8.2: "Side-by-side comparison: Old version | New version (GitHub-style)"
 - Story 8.2: "Changed sections highlighted: Red background for removed text, green for added"
 - Story 8.2: "Contextual explanation: § 26 was modified - this section handles X"
@@ -243,6 +267,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Structure:**
 
 ### Desktop: Side-by-Side View
+
 - Left column: Old version
 - Right column: New version
 - Line numbers for reference
@@ -253,11 +278,13 @@ This document provides **complete implementation specifications** for all 55+ UI
   - Underline for added text
 
 ### Mobile: Stacked View
+
 - Old version (collapsed by default)
 - New version (expanded)
 - Vertical layout
 
 ### Header
+
 - Law title + SFS number
 - Change type badge (Amendment, New Section, Repeal, Metadata Update)
 - Detected date
@@ -265,11 +292,13 @@ This document provides **complete implementation specifications** for all 55+ UI
 - **Business Impact** (1 sentence)
 
 ### Footer
+
 - "Mark as Reviewed" button
 - "View Full Law" link
 - "Official Riksdagen PDF" link
 
 ### Legend
+
 - "- Borttaget | + Tillagt | ~ Ändrat"
 - Always visible
 
@@ -282,9 +311,11 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Display law change summary in Changes tab
 
 **PRD Requirements:**
+
 - Story 8.1: Each change displayed as card with priority badge, AI summary, business impact
 
 **Structure:**
+
 - 🔴/🟡/🟢 Priority badge (High/Medium/Low)
 - Law title + SFS number
 - Change detected date
@@ -295,10 +326,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 - "Mark as Reviewed" button
 
 **Sort Order:**
+
 - Priority (High → Medium → Low)
 - Then by date (newest first)
 
 **States:**
+
 - Unacknowledged (default, visible in Changes tab)
 - Acknowledged (removed from tab after "Mark as Reviewed")
 
@@ -309,6 +342,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** In-app notification indicator for unacknowledged changes
 
 **Structure:**
+
 - Bell icon in top navigation (right side)
 - Badge with count: "3" (unacknowledged changes)
 - Dropdown on click showing:
@@ -323,27 +357,33 @@ This document provides **complete implementation specifications** for all 55+ UI
 ## 8. Dashboard Widgets (Story 6.1, FR27)
 
 **PRD Requirements:**
+
 - FR27: "Compliance progress ring, AI insights, quick actions, recent activity feed"
 - Story 6.1: Circular progress chart, AI insights, quick actions, activity feed
 
 ### Compliance Progress Ring
+
 - Circular progress chart
 - Shows % of laws "Compliant" vs total
 - Interactive (click → Opens Kanban)
 
 ### AI Insights Section
+
 - Recent law changes (last 7 days) affecting workspace
 - New laws recommended for industry
 - AI-generated priority suggestions: "3 laws need urgent attention"
 
 ### Quick Actions
+
 - Buttons: "Ask AI", "Add Law", "Invite Team", "Add Employee"
 
 ### Recent Activity Feed
+
 - Last 10 actions: "Anna reviewed Law X", "Law Y changed yesterday"
 - Timestamp + user avatar
 
 ### Law List Preview
+
 - Top 5 prioritized laws with status badges
 
 **Performance:** Dashboard loads in <2 seconds (Story 6.1)
@@ -353,12 +393,14 @@ This document provides **complete implementation specifications** for all 55+ UI
 ## 9. Onboarding Components (Epic 4, Stories 4.1-4.4b)
 
 ### Org-Number Input (Story 4.1)
+
 - Input field: 10 digits, format: XXXXXX-XXXX
 - Client-side validation
 - Auto-formatting (adds hyphen after 6 digits)
 - Privacy note: "Vi hämtar endast publik info från Bolagsverket"
 
 ### Dynamic Question Card (Story 4.2b)
+
 - Progress indicator: "Fråga 2 av ~4"
 - Contextual intro: "Eftersom ni har 12 anställda:"
 - Question text (large, clear Swedish)
@@ -368,12 +410,14 @@ This document provides **complete implementation specifications** for all 55+ UI
 - "Hoppa över" link (small, de-emphasized)
 
 ### Streaming Law List (Stories 4.4, 4.4b)
+
 - Laws appear one-by-one with fade-in animation
 - Each card: Title, SFS number, category badge, AI commentary (1-2 sentences)
 - Progress indicator: "12/20 lagar valda..."
 - Badge at bottom: "🔒 +45-65 mer lagar väntar efter registrering" (Phase 1)
 
 ### Phase 2 Progress Bar (Story 4.4b)
+
 - "Kompletterar din laglista... 23/68 lagar"
 - Animated progress bar
 - Estimated time: "~45 sekunder kvar"
@@ -386,18 +430,21 @@ This document provides **complete implementation specifications** for all 55+ UI
 ## 10. Form Components
 
 ### Multi-Select Dropdown
+
 - Used for: Assigned employees, categories, tags
 - Checkbox-based selection
 - Search/filter within dropdown
 - "Select All" option
 
 ### Date Picker
+
 - Used for: Due dates, effective dates
 - Swedish date format (YYYY-MM-DD)
 - Calendar popup
 - Keyboard accessible
 
 ### Markdown Textarea
+
 - Used for: Notes (Story 6.3)
 - Markdown preview tab
 - Formatting toolbar
@@ -412,27 +459,32 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Library:** `@dnd-kit` or `react-beautiful-dnd`
 
 **Draggable Items:**
+
 - Law cards
 - Employee cards
 - Task cards
 - Documents (PDFs)
 
 **Drop Zones:**
+
 - Kanban columns
 - AI chat input area
 - Law lists
 
 **Visual Feedback:**
+
 - Dragging: Card opacity 0.5, cursor grabbing
 - Drop zone highlighted on hover
 - Smooth animation on drop
 
 **Accessibility:**
+
 - Keyboard: Arrow keys + Enter to move
 - Touch support for mobile
 - Screen reader announcements
 
 ### Toast Notifications
+
 - Success: "✅ Change marked as reviewed"
 - Error: "❌ Failed to update law"
 - Info: "💡 New law added to your list"
@@ -441,6 +493,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Undo action for reversible operations
 
 ### Loading States
+
 - Skeleton loaders for content placeholders
 - Circular spinner for indeterminate operations
 - Progress bars for determinate operations (file uploads, Phase 2 generation)
@@ -455,11 +508,13 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Draggable employee cards for AI chat context and visual employee directory
 
 **PRD Requirements:**
+
 - Story 7.6: "Employee List view includes card layout option (toggle: Table/Cards)"
 - Story 7.6: "Each card shows: Name, role, photo (if uploaded), compliance status badge"
 - Story 7.6: "Cards draggable (already implemented in Epic 3.5)"
 
 **Structure:**
+
 - Employee photo (or initials avatar fallback)
 - Employee name (bold)
 - Role badge
@@ -468,17 +523,20 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Employment date (small text)
 
 **States:**
+
 - Default
 - Hover (elevated shadow)
 - Dragging (opacity 0.5, follows cursor)
 - Selected (for bulk actions)
 
 **Interactions:**
+
 - Click → Opens Employee Profile page
 - Drag → Can be dropped into AI Chat (Story 3.5)
 - Checkbox → Enables bulk actions
 
 **Privacy:**
+
 - Story 7.6: "Only HR Manager/Admin/Owner can drag employee cards"
 
 ---
@@ -488,10 +546,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Centralized employee management with table and card layouts
 
 **PRD Requirements:**
+
 - Story 7.1: "HR Module page created at `/hr/employees`"
 - Story 7.1: "Table view shows all employees with columns: Name, Role, Employment Date, Contract Type, Status"
 
 **Table Columns:**
+
 1. Checkbox (for bulk actions)
 2. Photo (avatar thumbnail)
 3. Name (sortable, clickable → profile)
@@ -503,6 +563,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 9. Actions (Edit, Delete)
 
 **Filter Bar (Story 7.8):**
+
 - Department (multi-select dropdown)
 - Role (multi-select)
 - Contract Type (multi-select)
@@ -513,20 +574,24 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Filters persist in URL query params
 
 **Sorting (Story 7.8):**
+
 - Name (A-Z / Z-A)
 - Employment Date (newest/oldest)
 - Compliance Status (Non-Compliant → Needs Attention → Compliant)
 
 **View Toggle:**
+
 - Table view (default, data-dense)
 - Card view (visual, drag-enabled)
 
 **Actions:**
+
 - "Add Employee" button (opens Add Employee Modal)
 - "Import CSV" button (Story 7.3)
 - "Export filtered list" button (CSV download)
 
 **Empty State:**
+
 - "No employees yet. Add your first employee or import from CSV."
 
 ---
@@ -536,9 +601,11 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Form for creating new employee records
 
 **PRD Requirements:**
+
 - Story 7.1: "Add Employee button opens modal"
 
 **Form Fields:**
+
 1. **Name** (text input, required)
 2. **Personnummer** (Swedish SSN, 10 digits, required, encrypted at rest)
    - Format: YYYYMMDD-XXXX
@@ -554,10 +621,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 9. **Manager** (dropdown of existing employees, optional)
 
 **Actions:**
+
 - [Cancel] button (closes modal, no save)
 - [Save Employee] button (validates + creates record)
 
 **Validation:**
+
 - Red error messages below invalid fields
 - Disable Save button until required fields valid
 
@@ -568,10 +637,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Detailed employee information with tabbed interface
 
 **PRD Requirements:**
+
 - Story 7.2: "Clicking employee name opens profile page: `/hr/employees/[id]`"
 - Story 7.2: "Profile tabs: Overview, Documents, Compliance, Activity"
 
 **Header:**
+
 - Employee photo (large, left side)
 - Employee name (h1)
 - Role badge
@@ -580,6 +651,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - [Mark as Inactive] button (Story 7.10)
 
 **Tab 1: Overview**
+
 - Personal info card:
   - Name, Personnummer, Email, Phone
 - Employment details card:
@@ -588,6 +660,7 @@ This document provides **complete implementation specifications** for all 55+ UI
   - End date (if fixed-term contract)
 
 **Tab 2: Documents (Story 7.2)**
+
 - Document list table:
   - Columns: Filename, Upload Date, Uploader, Actions
   - Actions: Download, Delete
@@ -597,6 +670,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Empty state: "No documents uploaded yet"
 
 **Tab 3: Compliance (Story 7.2, 7.4, 7.5)**
+
 - Compliance status card:
   - Status badge (✅/⚠️/❌)
   - Compliance reasons: "Missing kollektivavtal assignment", "No contract document uploaded"
@@ -609,12 +683,14 @@ This document provides **complete implementation specifications** for all 55+ UI
   - Auto-suggested by AI based on role + department + kollektivavtal
 
 **Tab 4: Activity (Story 7.2)**
+
 - Audit log table:
   - Timestamp, User, Action
   - Example: "2025-10-15 14:30 - Anna Svensson edited employment date"
 - Sorted by date (newest first)
 
 **Notes Section (Story 7.11):**
+
 - Rich text editor (markdown supported)
 - @mention functionality:
   - Type @ → Dropdown of team members
@@ -630,18 +706,21 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Bulk employee import from spreadsheet
 
 **PRD Requirements:**
+
 - Story 7.3: "Import button on Employee List page"
 - Story 7.3: "Upload CSV file (max 10MB)"
 
 **Flow:**
 
 **Step 1: Upload**
+
 - Drag-and-drop zone or file picker
 - Accepts: CSV, Excel (.xlsx)
 - Max 10MB
 - Loading spinner during parse
 
 **Step 2: Preview & Mapping**
+
 - Preview table shows first 10 rows
 - Column mapping interface:
   - Left: CSV column headers
@@ -651,6 +730,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Date format selector (DD/MM/YYYY, YYYY-MM-DD, etc.)
 
 **Step 3: Validation (Story 7.3)**
+
 - Invalid rows highlighted in red
 - Validation errors shown:
   - Missing required fields (Name, Personnummer, Employment Date)
@@ -660,6 +740,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - "Skip invalid rows" checkbox (default: checked)
 
 **Step 4: Import**
+
 - [Cancel] button
 - [Import X Employees] button (shows valid count)
 - Progress bar during import
@@ -673,6 +754,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Visual indicator of employee compliance status
 
 **PRD Requirements:**
+
 - Story 7.4: "Compliance status calculated per employee"
 
 **Variants:**
@@ -691,10 +773,12 @@ This document provides **complete implementation specifications** for all 55+ UI
    - Examples: No employment date, invalid personnummer
 
 **Tooltip on Hover:**
+
 - Shows compliance reasons
 - Example: "Missing kollektivavtal assignment, No contract document uploaded"
 
 **Usage Locations:**
+
 - Employee List (table and card views)
 - Employee Profile header
 - Employee cards (draggable)
@@ -707,9 +791,11 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Upload and assign collective agreements to employees
 
 **PRD Requirements:**
+
 - Story 7.5: "Kollektivavtal page created at `/hr/kollektivavtal`"
 
 **Kollektivavtal List View:**
+
 - Table columns:
   - Name (e.g., "Byggnads Kollektivavtal 2024")
   - Type (Arbetare, Tjänstemän, Specialized)
@@ -718,6 +804,7 @@ This document provides **complete implementation specifications** for all 55+ UI
   - Actions (View PDF, Assign, Delete)
 
 **Upload Flow:**
+
 1. [Upload PDF] button
 2. Upload modal:
    - File picker (PDF only, max 20MB)
@@ -728,12 +815,14 @@ This document provides **complete implementation specifications** for all 55+ UI
 4. Success toast: "Kollektivavtal uploaded and indexed"
 
 **Assign to Employees:**
+
 - Checkbox list of employees
 - Bulk assign by department/role
 - Search filter
 - [Save Assignments] button
 
 **AI Chat Integration (Story 7.5):**
+
 - AI can query kollektivavtal: "What does our agreement say about vacation days?"
 - Citations distinguish between laws and kollektivavtal: `[Kollektivavtal: Byggnads 2024, §3.2]`
 
@@ -744,23 +833,28 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Visual employee avatars
 
 **PRD Requirements:**
+
 - Story 7.7: "Employee Profile → Photo upload section"
 
 **Upload Interface:**
+
 - Click to upload or drag-and-drop
 - Image requirements: Max 5MB, JPG/PNG, min 200x200px
 - Image cropping tool (square crop for avatar)
 - Preview before save
 
 **Storage:**
+
 - Photo stored in Supabase storage
 - Photo URL saved in `employees.photo_url`
 
 **Fallback:**
+
 - Initials avatar if no photo (e.g., "AS" for Anna Svensson)
 - Colored background (generated from name hash)
 
 **Usage:**
+
 - Employee List (card view)
 - Employee Profile header
 - Chat context pills (when employee dragged to chat)
@@ -773,9 +867,11 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Mark employees as inactive when they leave
 
 **PRD Requirements:**
+
 - Story 7.10: "Employee Profile → 'Mark as Inactive' button"
 
 **Modal Fields:**
+
 1. **Last Working Day** (date picker, required)
 2. **Offboarding Reason** (dropdown, required)
    - Options: Resignation, Termination, Retirement, End of contract
@@ -784,10 +880,12 @@ This document provides **complete implementation specifications** for all 55+ UI
    - "Export employee data (GDPR compliance)"
 
 **Actions:**
+
 - [Cancel] button
 - [Mark as Inactive] button
 
 **Post-Offboarding:**
+
 - Employee status set to "inactive"
 - Hidden from default Employee List view
 - "Show inactive employees" toggle to reveal
@@ -801,10 +899,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Auto-suggest relevant laws for each employee
 
 **PRD Requirements:**
+
 - Story 7.9: "When employee created, AI analyzes role + department + kollektivavtal"
 - Story 7.9: "System suggests 5-10 relevant laws"
 
 **Suggestions UI (Employee Profile → Compliance Tab):**
+
 - "Suggested Laws for [Name]" section
 - Each suggestion shows:
   - Law title + SFS number
@@ -814,10 +914,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Rejected suggestions hidden (not shown again)
 
 **Kanban Integration:**
+
 - Law cards in Kanban show assigned employee avatars
 - Filter Kanban by employee → Shows only their relevant laws
 
 ---
+
 ---
 
 ## 13. Legal Content Discovery Components (Epic 2, Stories 2.5-2.9)
@@ -827,12 +929,14 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** SEO-optimized public pages for viewing individual legal documents
 
 **PRD Requirements:**
+
 - Story 2.5: "Dynamic routes created for each content type"
 - Story 2.5: "All pages use Server-Side Rendering (SSR) for SEO"
 
 **Page Variants:**
 
 #### SFS Law Page (`/lagar/[lawSlug]`)
+
 - Law title (h1) + SFS number
 - Category badge
 - Status badge (Active, Repealed, Amended)
@@ -853,6 +957,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - **Official source link:** "Riksdagen PDF"
 
 #### Court Case Page (`/rattsfall/[court]/[caseSlug]`)
+
 - Case number (e.g., "NJA 2024 s. 123") + Court name
 - Decision date
 - Category badge
@@ -867,6 +972,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - **Official source link:** "Domstolsverket PDF"
 
 #### EU Document Page (`/eu/[type]/[docSlug]`)
+
 - Document title + EU number (e.g., "Regulation (EU) 2016/679")
 - CELEX number
 - Document type badge (Regulation, Directive)
@@ -882,6 +988,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - **Official source link:** "EUR-Lex"
 
 **Common Elements:**
+
 - Breadcrumb navigation
 - Meta tags (SEO-optimized)
 - Structured data (JSON-LD)
@@ -895,10 +1002,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Browse legal content by subject category and content type
 
 **PRD Requirements:**
+
 - Story 2.6: "Category pages created for each content type"
 - Story 2.6: "Content type filter on category pages"
 
 **Category Landing Page (`/lagar/kategorier/[category]`)**
+
 - Category name (h1): "Arbetsrätt"
 - Category description (AI-generated, 1-2 sentences)
 - Document count per type:
@@ -915,6 +1024,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - SEO-optimized meta tags
 
 **Supported Categories:**
+
 1. Arbetsrätt (Labour Law)
 2. Dataskydd (Data Protection)
 3. Skatterätt (Tax Law)
@@ -933,16 +1043,19 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Full-text search across all 170,000+ legal documents
 
 **PRD Requirements:**
+
 - Story 2.7: "Unified search page created: `/sok`"
 - Story 2.7: "Search performance <800ms for 170,000+ documents"
 
 **Search Interface:**
+
 - Large search input field (center of page)
 - Search button
 - Recent searches (cookie-based)
 - Suggested queries: "GDPR", "arbetsmiljö", "parental leave"
 
 **Search Results:**
+
 - Results count: "345 resultat för 'arbetsmiljö'"
 - Mixed content types with clear badges
 - Each result card:
@@ -955,6 +1068,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Pagination (20 results per page)
 
 **Filter Sidebar:**
+
 1. **Content Type** (multi-select checkboxes)
    - Lagar (SFS)
    - HD Rättsfall (Supreme Court)
@@ -970,17 +1084,20 @@ This document provides **complete implementation specifications** for all 55+ UI
    - Date pickers (from/to)
 
 **Sort Options:**
+
 - Relevance (default)
 - Date (newest first)
 - Date (oldest first)
 - Title (A-Z)
 
 **Empty State:**
+
 - "No results found for '[query]'"
 - Suggestions: "Did you mean '[similar query]'?"
 - "Try searching for: [popular queries]"
 
 **Performance:**
+
 - PostgreSQL full-text search with `tsvector`
 - Weighted ranking (title > document number > full text)
 - Results load in <800ms
@@ -992,10 +1109,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Industry-specific legal content discovery
 
 **PRD Requirements:**
+
 - Story 2.9: "SNI discovery page created: `/upptack-lagar/bransch`"
 - Story 2.9: "Results page shows tabbed view"
 
 **Landing Page (`/upptack-lagar/bransch`)**
+
 - Hero text: "Vilka lagar gäller för din bransch?"
 - SNI code input field (5 digits, format: XXXXX)
 - Client-side validation
@@ -1008,12 +1127,14 @@ This document provides **complete implementation specifications** for all 55+ UI
   - IT-konsult (SNI 62.x)
 
 **Results Page (`/upptack-lagar/bransch/[industry]`)**
+
 - Industry name (h1): "Bygg & Anläggning"
 - SNI code displayed
 - Total document count: "45 lagar, 8 rättsfall, 12 EU-förordningar"
 - **Three tabs:**
 
 **Tab 1: Lagar (SFS Laws)**
+
 - 12-25 curated SFS laws
 - Each law card:
   - Title + SFS number
@@ -1022,6 +1143,7 @@ This document provides **complete implementation specifications** for all 55+ UI
   - [Add to My List] button
 
 **Tab 2: Rättsfall (Court Cases)**
+
 - 3-8 key court cases showing precedent
 - Each case card:
   - Case number + Court
@@ -1031,6 +1153,7 @@ This document provides **complete implementation specifications** for all 55+ UI
   - [Add to My List] button
 
 **Tab 3: EU-lagstiftning (EU Legislation)**
+
 - 5-12 EU regulations/directives
 - Each EU doc card:
   - Title + EU number
@@ -1039,11 +1162,13 @@ This document provides **complete implementation specifications** for all 55+ UI
   - [Add to My List] button
 
 **Sort Options (per tab):**
+
 - Relevance (default)
 - Date (newest first)
 - Category
 
 **CTA:**
+
 - "Lägg till alla i Min Lista" (Add all to My List) → Requires authentication
 
 ---
@@ -1053,12 +1178,14 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Navigate between related legal documents
 
 **PRD Requirements:**
+
 - Story 2.8: "SFS law pages display 'Referenced in Court Cases' section"
 - Story 2.8: "Bidirectional navigation works"
 
 **Section Types:**
 
 **1. "Referenced in Court Cases" (on SFS Law Pages)**
+
 - Displayed if law cited in ≥1 court case
 - Section title: "Rättsfall som refererar till denna lag (12)"
 - List of court cases:
@@ -1069,6 +1196,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Sortable by: Date (newest first), Court (HD > HovR > HFD)
 
 **2. "Cited Laws" (on Court Case Pages)**
+
 - Section title: "Lagar som refereras i domen (5)"
 - List of SFS laws:
   - Law title + SFS number
@@ -1077,6 +1205,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Sortable by: Frequency of citation, Title (A-Z)
 
 **3. "Swedish Implementation" (on EU Directive Pages)**
+
 - Section title: "Svenska genomförandelagar"
 - Implementation status badge: ✅ Complete / ⚠️ Partial / ❌ Pending
 - List of SFS laws implementing directive:
@@ -1085,6 +1214,7 @@ This document provides **complete implementation specifications** for all 55+ UI
   - [View Law] link
 
 **4. "Implements EU Directive" (on SFS Law Pages)**
+
 - Section title: "Genomför EU-direktiv"
 - EU directive title + number
 - [View Directive] link
@@ -1098,15 +1228,18 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Multi-workspace context switching
 
 **PRD Requirements:**
+
 - Story 5.9: "Top navigation includes workspace switcher dropdown"
 - Story 5.9: "Dropdown shows all workspaces user belongs to"
 
 **Dropdown Trigger:**
+
 - Current workspace name (truncated at 20 chars)
 - Down arrow icon
 - Located in top navigation (left side)
 
 **Dropdown Menu:**
+
 - List of user's workspaces:
   - Workspace name (bold)
   - Role badge (Owner/Admin/HR Manager/Member/Auditor)
@@ -1117,6 +1250,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Max height: 400px, scrollable if >5 workspaces
 
 **Mobile:**
+
 - Switcher in hamburger menu
 - Full-screen modal for workspace list
 
@@ -1127,12 +1261,14 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Display and manage workspace team members
 
 **PRD Requirements:**
+
 - Story 5.7: "Team tab shows current members list"
 - Story 5.3: "Team settings page shows current members list"
 
 **Location:** Workspace Settings → Team tab
 
 **Member List Table:**
+
 - Columns:
   1. Photo (avatar)
   2. Name + Email
@@ -1144,12 +1280,14 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Search filter (by name or email)
 
 **Pending Invites Section:**
+
 - Separate table below active members
 - Columns: Email, Role, Invited By, Invited Date, Actions
 - Actions: Re-send Invite, Revoke Invite
 - Auto-delete after 7 days expiry
 
 **Role Permissions Display:**
+
 - Info tooltip explaining each role:
   - Owner: Full access + billing + workspace deletion
   - Admin: Full access except billing
@@ -1158,6 +1296,7 @@ This document provides **complete implementation specifications** for all 55+ UI
   - Auditor: Read-only multi-workspace access
 
 **Empty State:**
+
 - "No team members yet. Invite your first teammate!"
 
 ---
@@ -1167,10 +1306,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Send email invitations to join workspace
 
 **PRD Requirements:**
+
 - Story 5.3: "Invite Member button opens modal"
 - Story 5.3: "Invitation email sent to recipient"
 
 **Modal Fields:**
+
 1. **Email** (text input, required)
    - Validation: Valid email format
    - Check if user already in workspace (error)
@@ -1183,10 +1324,12 @@ This document provides **complete implementation specifications** for all 55+ UI
    - Placeholder: "I'd like to invite you to our compliance workspace..."
 
 **Actions:**
+
 - [Cancel] button
 - [Send Invite] button
 
 **Success Flow:**
+
 - Toast: "Invitation sent to [email]"
 - Email sent with:
   - Workspace name
@@ -1195,6 +1338,7 @@ This document provides **complete implementation specifications** for all 55+ UI
   - Invite link format: `/invite/[token]`
 
 **Invite Expiry:**
+
 - 7 days from sending
 - Auto-delete expired invites
 
@@ -1205,9 +1349,11 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Centralized workspace configuration
 
 **PRD Requirements:**
+
 - Story 5.7: "Workspace Settings page with tabs"
 
 **Tab Navigation:**
+
 1. General
 2. Team
 3. Billing
@@ -1215,6 +1361,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 5. Integrations
 
 **Tab 1: General**
+
 - Workspace name (editable text input)
 - Company logo upload:
   - Drag-and-drop or file picker
@@ -1226,12 +1373,14 @@ This document provides **complete implementation specifications** for all 55+ UI
 - [Save Changes] button
 
 **Tab 2: Team**
+
 - Team Members List (Component 14b)
 - [Invite Member] button → Opens Invite Modal (Component 14c)
 
 **Tab 3: Billing** (Component 14e)
 
 **Tab 4: Notifications**
+
 - Email preferences (toggles):
   - ✅ Daily change digest (08:00 CET)
   - ✅ Weekly industry digest
@@ -1244,10 +1393,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 - [Save Preferences] button
 
 **Tab 5: Integrations**
+
 - Placeholder card: "Fortnox integration coming soon"
 - Future: OAuth connections, API keys
 
 **Owner-Only Actions:**
+
 - Settings clearly marked with "Owner only" badge
 - Non-owners see disabled state with tooltip
 
@@ -1258,11 +1409,13 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Subscription management and usage tracking
 
 **PRD Requirements:**
+
 - Story 5.4: "Billing page shows: Current plan, next billing date, payment method, invoice history"
 - Story 5.5: "Usage tracked: ai_queries_this_month, employee_count, storage_used_mb"
 - Story 5.6: "Add-ons defined"
 
 **Current Plan Card:**
+
 - Plan name (Solo / Team / Enterprise)
 - Monthly price (e.g., "€899/månad")
 - Billing cycle: "Next payment: 2025-12-01"
@@ -1271,6 +1424,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - [Change Plan] button (opens plan selector modal)
 
 **Usage Limits Card (Story 5.5):**
+
 - **Users:** "3/5 users" + Progress bar
   - Warning at 80%: "You've used 4/5 users. Upgrade?"
   - Hard limit at 110%: "Upgrade to continue"
@@ -1280,6 +1434,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Usage resets: "Monthly limit resets on Dec 1"
 
 **Add-Ons Section (Story 5.6):**
+
 - Available add-ons:
   - **+10 employees:** €100/month (toggle switch)
   - **+5GB storage:** €50/month (toggle switch)
@@ -1288,17 +1443,20 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Prorated charges explained: "Charged immediately for current billing period"
 
 **Payment Method Card:**
-- Credit card info: "**** **** **** 4242"
+
+- Credit card info: "\***\* \*\*** \*\*\*\* 4242"
 - Expiry: "12/2027"
 - [Update Card] button → Stripe Checkout
 
 **Invoice History:**
+
 - Table:
   - Columns: Invoice Date, Amount, Status, PDF Link
   - Last 12 months visible
   - [View All Invoices] link
 
 **Billing Contact:**
+
 - Email for invoices (editable)
 - Company billing address (editable)
 
@@ -1309,10 +1467,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Temporarily pause or permanently delete workspace
 
 **PRD Requirements:**
+
 - Story 5.8: "Pause workspace button"
 - Story 5.8: "Confirmation modal requires typing workspace name"
 
 **Pause Workspace Modal:**
+
 - Warning text: "Your data will be preserved but access blocked until resumed. Stripe subscription will be canceled."
 - Consequences:
   - ✅ Data preserved indefinitely
@@ -1324,6 +1484,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Workspace Settings → [Resume Workspace] button appears
 
 **Delete Workspace Modal (Owner Only):**
+
 - **Step 1: Warning Screen**
   - Danger zone styling (red border)
   - Warning text: "This action cannot be undone. All data will be permanently deleted after 30 days."
@@ -1341,6 +1502,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Email sent to all team members: "Workspace deleted"
 
 **Recovery Flow (Owner Only, within 30 days):**
+
 - Email notification with [Restore Workspace] link
 - Restoration page: "Your workspace was deleted on [date]. You have [X] days left to restore."
 - [Restore Workspace] button
@@ -1352,10 +1514,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Guide new users through initial setup
 
 **PRD Requirements:**
+
 - Story 5.12: "After first login, onboarding checklist displayed in Dashboard"
 - Story 5.12: "Progress % shown"
 
 **Checklist Widget (Dashboard):**
+
 - Card title: "Kom igång med Laglig.se"
 - Progress indicator: "2/5 klar" + Progress bar (40%)
 - Checklist items:
@@ -1369,6 +1533,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Checklist state persisted in user preferences
 
 **Completion Celebration:**
+
 - When 100% complete: Confetti animation
 - Success toast: "🎉 Du är redo! Börja använda Laglig.se"
 - Checklist auto-dismisses after 5 seconds
@@ -1380,16 +1545,19 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Audit trail for compliance documentation
 
 **PRD Requirements:**
+
 - Story 5.11: "Activity Log page (Enterprise tier only)"
 - Story 5.11: "Filterable by: User, Action type, Date range"
 
 **Access:** Enterprise tier only, locked for Solo/Team tiers
 
 **Activity Log Page (`/workspace/activity`):**
+
 - Page title: "Workspace Activity Log"
 - Export button: [Export as CSV]
 
 **Filter Bar:**
+
 1. **User** (dropdown, all team members)
 2. **Action Type** (multi-select)
    - Law change reviewed
@@ -1401,6 +1569,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 4. [Clear Filters] button
 
 **Activity Table:**
+
 - Columns:
   1. Timestamp (YYYY-MM-DD HH:mm)
   2. User (avatar + name)
@@ -1412,10 +1581,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Indexed for fast queries
 
 **Retention:**
+
 - Logs retained for 2 years
 - Automatically archived after 2 years
 
 **Empty State:**
+
 - "No activity recorded yet"
 
 ---
@@ -1427,9 +1598,11 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** User authentication with multiple providers
 
 **PRD Requirements:**
+
 - Story 1.3: "Login page with email/password form and OAuth buttons"
 
 **Login Page (`/login`)**
+
 - Page title: "Logga in på Laglig.se"
 - **Email/Password Form:**
   - Email input (required, validated)
@@ -1439,19 +1612,23 @@ This document provides **complete implementation specifications** for all 55+ UI
   - Error messages (invalid credentials, account not verified, etc.)
 
 **OAuth Providers:**
+
 - [Fortsätt med Google] button (white, Google branding)
 - [Fortsätt med Microsoft] button (blue, Microsoft branding)
 - OAuth handled via Supabase Auth + NextAuth.js
 
 **Footer Links:**
+
 - "Inget konto? Skapa konto" → Signup Page
 - Privacy policy + Terms of Service links
 
 **Session Management:**
+
 - Session cookies: 30-day expiration, HTTP-only
 - Protected routes redirect here if not authenticated
 
 **Mobile:**
+
 - Full-screen layout
 - Large touch targets for OAuth buttons
 
@@ -1462,9 +1639,11 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** New user registration
 
 **PRD Requirements:**
+
 - Story 1.3: "Sign-up page with password complexity validation"
 
 **Signup Page (`/signup`)**
+
 - Page title: "Skapa konto"
 - **Registration Form:**
   1. **Full Name** (text input, required)
@@ -1481,15 +1660,18 @@ This document provides **complete implementation specifications** for all 55+ UI
   6. [Skapa konto] button (disabled until valid)
 
 **OAuth Options:**
+
 - Same Google/Microsoft buttons as Login Page
 - Note: "Snabbare registrering med Google eller Microsoft"
 
 **Success Flow:**
+
 - Account created → Email verification sent
 - Redirect to Email Verification page
 - Toast: "Konto skapat! Kolla din email för verifieringskod."
 
 **Footer Links:**
+
 - "Har redan konto? Logga in" → Login Page
 
 ---
@@ -1499,9 +1681,11 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Verify user email ownership
 
 **PRD Requirements:**
+
 - Story 1.3: "Email verification flow (6-digit code)"
 
 **Verification Page (`/verify-email`)**
+
 - Hero text: "Verifiera din email"
 - Subtitle: "Vi har skickat en 6-siffrig kod till [email@example.com]"
 - **6-digit code input:**
@@ -1513,10 +1697,12 @@ This document provides **complete implementation specifications** for all 55+ UI
 - [Skicka ny kod] link (cooldown: 1 minute between sends)
 
 **Success Flow:**
+
 - Code verified → Redirect to Dashboard or Onboarding
 - Success toast: "Email verifierad! Välkommen till Laglig.se ✓"
 
 **Resend Logic:**
+
 - [Skicka ny kod] available after 1 minute
 - Max 5 codes per hour (rate limiting)
 
@@ -1527,20 +1713,24 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Recover account access
 
 **PRD Requirements:**
+
 - Story 1.3: "Password reset flow"
 
 **Step 1: Request Reset (`/reset-password`)**
+
 - Page title: "Återställ lösenord"
 - Email input field
 - [Skicka återställningslänk] button
 - Instructions: "Vi skickar en länk till din email"
 
 **Step 2: Email Sent Confirmation**
+
 - Success message: "Kolla din email! Vi har skickat återställningsinstruktioner till [email]"
 - Note: "Länken är giltig i 1 timme"
 - [Tillbaka till inloggning] link
 
 **Step 3: Reset Password Page (`/reset-password/[token]`)**
+
 - Page title: "Välj nytt lösenord"
 - **New Password Form:**
   - New Password input (with validation, same as Signup)
@@ -1551,6 +1741,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - Error state: "Länken har gått ut, begär en ny"
 
 **Success Flow:**
+
 - Password updated → Redirect to Login
 - Success toast: "Lösenord uppdaterat! Logga in nu"
 
@@ -1561,14 +1752,17 @@ This document provides **complete implementation specifications** for all 55+ UI
 **Purpose:** Authentication wrapper for private pages
 
 **PRD Requirements:**
+
 - Story 1.3: "Protected routes redirect to login if not authenticated"
 
 **Middleware Logic:**
+
 - Check session: `req.cookies.get('session')`
 - If no session → Redirect to `/login?redirect=[current-page]`
 - After login → Redirect back to intended page
 
 **Protected Routes:**
+
 - `/dashboard`
 - `/lagar` (workspace law lists)
 - `/hr/*` (HR Module)
@@ -1577,6 +1771,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 - `/chat` (AI Chat)
 
 **Public Routes:**
+
 - `/` (Homepage)
 - `/lagar/[lawSlug]` (Public law pages)
 - `/upptack-lagar/*` (Discovery pages)
@@ -1588,6 +1783,7 @@ This document provides **complete implementation specifications** for all 55+ UI
 ## Component Priority for MVP
 
 **High Priority (Core UX):**
+
 1. **Login/Signup Pages** - **Gateway to product**
 2. Law Card (all variants)
 3. Kanban Board
@@ -1599,42 +1795,16 @@ This document provides **complete implementation specifications** for all 55+ UI
 9. Employee Card (draggable)
 10. Employee List View
 
-**Medium Priority (Key Features):**
-11. Diff Viewer
-12. Change Notification Card
-13. Notification Bell
-14. Dashboard Widgets
-15. Add Employee Modal
-16. Employee Profile Page
-17. Compliance Status Badge
-18. **Category Browse Pages** - **SEO value**
-19. **SNI Discovery Page** - **Onboarding funnel**
-20. **Cross-Document Navigation Sections** - **SEO + UX value**
-21. Workspace Switcher Dropdown
-22. Team Members List
-23. Invite Member Modal
-24. **Email Verification Flow**
-25. **Password Reset Flow**
+**Medium Priority (Key Features):** 11. Diff Viewer 12. Change Notification Card 13. Notification Bell 14. Dashboard Widgets 15. Add Employee Modal 16. Employee Profile Page 17. Compliance Status Badge 18. **Category Browse Pages** - **SEO value** 19. **SNI Discovery Page** - **Onboarding funnel** 20. **Cross-Document Navigation Sections** - **SEO + UX value** 21. Workspace Switcher Dropdown 22. Team Members List 23. Invite Member Modal 24. **Email Verification Flow** 25. **Password Reset Flow**
 
-**Low Priority (Nice-to-Have):**
-26. CSV Import
-27. Kollektivavtal Management
-28. Employee Photo Upload
-29. Employee Offboarding Modal
-30. Workspace Settings Page (General, Notifications, Integrations tabs)
-31. Billing Page (usage limits, add-ons)
-32. Pause/Delete Workspace Modals
-33. Onboarding Checklist Widget
-34. Activity Log (Enterprise only)
-35. Advanced filters (law and employee)
-36. Bulk actions
-37. Column customization
+**Low Priority (Nice-to-Have):** 26. CSV Import 27. Kollektivavtal Management 28. Employee Photo Upload 29. Employee Offboarding Modal 30. Workspace Settings Page (General, Notifications, Integrations tabs) 31. Billing Page (usage limits, add-ons) 32. Pause/Delete Workspace Modals 33. Onboarding Checklist Widget 34. Activity Log (Enterprise only) 35. Advanced filters (law and employee) 36. Bulk actions 37. Column customization
 
 ---
 
 ## Total Component Count: 15 Component Groups, 55+ Individual Components
 
 **By Epic:**
+
 - **Epic 1 (Authentication):** 1 component group (Login, Signup, Verification, Reset Password, Protected Routes)
 - **Epic 2 (Legal Content Discovery):** 5 component groups (Law pages, search, categories, SNI, cross-refs)
 - **Epic 3 (AI Chat):** 1 component group (Chat interface, context pills, streaming responses)

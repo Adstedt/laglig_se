@@ -67,7 +67,6 @@
 
 ---
 
-
 ## Introduction
 
 This document defines the user experience goals, information architecture, user flows, and visual design specifications for Laglig.se's user interface. It serves as the foundation for visual design and frontend development, ensuring a cohesive and user-centered experience.
@@ -79,6 +78,7 @@ Laglig.se democratizes access to Swedish legal compliance by combining AI-powere
 #### Target User Personas
 
 **Primary: SMB Owner/Manager**
+
 - **Profile:** Runs 5-50 person company, no dedicated legal team
 - **Pain Points:** "I don't know what I don't know" - unaware of compliance gaps, overwhelmed by legal language
 - **Goals:** Stay compliant without hiring expensive consultants, understand changes that affect my business
@@ -86,6 +86,7 @@ Laglig.se democratizes access to Swedish legal compliance by combining AI-powere
 - **Success Metric:** Can identify compliance actions within 5 minutes of daily review
 
 **Secondary: HR Manager**
+
 - **Profile:** Manages employment compliance for mid-size company (50-200 employees)
 - **Pain Points:** Laws change frequently (arbetsmiljö, discrimination, parental leave), hard to track what's new
 - **Goals:** Proactive compliance, clear audit trails, plain language explanations for internal training
@@ -93,6 +94,7 @@ Laglig.se democratizes access to Swedish legal compliance by combining AI-powere
 - **Success Metric:** Can export change summaries for quarterly board reports
 
 **Tertiary: ISO Compliance Manager**
+
 - **Profile:** Manages ISO 27001/9001 certification, needs to reference legal requirements
 - **Goals:** Map legal requirements to ISO controls, demonstrate due diligence to auditors
 - **Pain Points:** Needs precise legal citations (not just summaries), cross-referencing between laws
@@ -110,42 +112,42 @@ Laglig.se democratizes access to Swedish legal compliance by combining AI-powere
 #### Design Principles
 
 1. **Plain Swedish with Legal Transparency**
-   *Rationale:* Competitors (Notisum) assume legal expertise with raw legal text only. We democratize access through AI-powered plain Swedish summaries while building trust through layered disclosure:
+   _Rationale:_ Competitors (Notisum) assume legal expertise with raw legal text only. We democratize access through AI-powered plain Swedish summaries while building trust through layered disclosure:
    - **Primary Layer (Default):** AI-generated plain Swedish explanation of "what this means" in business terms
    - **Secondary Layer (Expandable):** Full legal text with proper citations, section references, official SFS numbering
    - **Purpose:** Serve novice users (need simplicity) AND expert users (need precision), prevent "black box" AI distrust by showing sources
 
-   *Implementation Examples:*
+   _Implementation Examples:_
    - Law pages: AI summary card at top, "Visa fullständig lagtext" accordion below
    - Change notifications: Plain impact statement (1-2 sentences) + "Se juridiska detaljer" expandable section
    - AI chat responses: Conversational answer in Swedish + "Källor och fullständig lagtext" disclosure footer
    - Business impact: "This means you must update your employee handbook by Dec 1" + legal citation below
 
 2. **Contextual Intelligence, Not Generic AI**
-   *Rationale:* Generic AI chatbots give vague answers. Our drag-and-drop context builder (company info, specific laws, uploaded documents) produces tailored compliance guidance.
+   _Rationale:_ Generic AI chatbots give vague answers. Our drag-and-drop context builder (company info, specific laws, uploaded documents) produces tailored compliance guidance.
 
-   *Trade-off:* Requires user to build context upfront (onboarding friction), but yields 10x more valuable responses than "Ask AI anything" approach. Progressive disclosure helps - show basic chat first, introduce context building after first question.
+   _Trade-off:_ Requires user to build context upfront (onboarding friction), but yields 10x more valuable responses than "Ask AI anything" approach. Progressive disclosure helps - show basic chat first, introduce context building after first question.
 
 3. **Proactive Over Reactive**
-   *Rationale:* Compliance failures happen when users don't know to check. Push value through change monitoring with AI summaries before users think to look.
+   _Rationale:_ Compliance failures happen when users don't know to check. Push value through change monitoring with AI summaries before users think to look.
 
-   *Implementation:* Daily digest emails (08:00 CET), in-app notification badges, SMS for high-priority changes (opt-in). Never make users hunt for "what's new."
+   _Implementation:_ Daily digest emails (08:00 CET), in-app notification badges, SMS for high-priority changes (opt-in). Never make users hunt for "what's new."
 
 4. **Visual Hierarchy for Complex Content**
-   *Rationale:* Legal documents are inherently dense. Use color-coded content types (orange=SFS laws, blue=court cases, purple=EU directives), priority badges (🔴/🟡/🟢), progressive disclosure (summaries → details) to create scannable interfaces.
+   _Rationale:_ Legal documents are inherently dense. Use color-coded content types (orange=SFS laws, blue=court cases, purple=EU directives), priority badges (🔴/🟡/🟢), progressive disclosure (summaries → details) to create scannable interfaces.
 
-   *Competitive Advantage:* Notisum shows grey text boxes with no visual hierarchy. We use GitHub-style diffs, color coding, badges for instant comprehension.
+   _Competitive Advantage:_ Notisum shows grey text boxes with no visual hierarchy. We use GitHub-style diffs, color coding, badges for instant comprehension.
 
 5. **Progressive Disclosure in Onboarding**
-   *Rationale:* Feature-rich product risks overwhelming new users. Show AI "magic moment" immediately (paste law link → get summary), introduce advanced features gradually (law lists on day 2, context builder on day 7).
+   _Rationale:_ Feature-rich product risks overwhelming new users. Show AI "magic moment" immediately (paste law link → get summary), introduce advanced features gradually (law lists on day 2, context builder on day 7).
 
-   *Assumption:* SMB Owner persona has 2-minute attention span during signup. If we don't deliver value fast, they churn before seeing full power.
+   _Assumption:_ SMB Owner persona has 2-minute attention span during signup. If we don't deliver value fast, they churn before seeing full power.
 
 ### Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2025-11-03 | 0.1 | Initial draft - Introduction, Personas, Goals, Principles | Sally (UX Expert) |
+| Date       | Version | Description                                               | Author            |
+| ---------- | ------- | --------------------------------------------------------- | ----------------- |
+| 2025-11-03 | 0.1     | Initial draft - Introduction, Personas, Goals, Principles | Sally (UX Expert) |
 
 ---
 
@@ -209,6 +211,7 @@ graph TD
 **Primary Navigation:** Fixed top navigation bar with logo (left), main menu items (center), and account menu (right)
 
 **Main Menu Items:**
+
 - **Dashboard** - Default landing after login, shows personalized overview
 - **AI Assistent** - Opens AI chat interface (can also be triggered from any page via floating button)
 - **Lagbibliotek** (Law Library) - Browse/search all 170K+ legal content pages
@@ -216,11 +219,13 @@ graph TD
 - **Ändringar** (Changes) - Unified feed of all detected changes across user's law lists
 
 **Secondary Navigation:**
+
 - **Law Detail Pages:** Tabs for AI Summary / Full Text / Change History / Related Content
 - **Dashboard:** Quick-access cards for recent changes, saved searches, frequently accessed laws
 - **Law Lists:** In-page tabs for Overview / Notification Settings / Activity Log
 
 **Breadcrumb Strategy:**
+
 - **Enable on:** Law Library (Category > Subcategory > Law), Change Detail (My Lists > List Name > Change)
 - **Disable on:** Dashboard (top-level), AI Chat (conversational flow), Settings (flat hierarchy)
 - **Format:** `Home > Lagbibliotek > Arbetsmiljö > Arbetsmiljölagen (1977:1160)`
@@ -409,6 +414,7 @@ graph TD
 
 2. **After final question (Phase 1 - Pre-Signup):**
    - Summary screen showing TOP PRIORITY laws only:
+
      ```
      ✅ Analys klar! 23 högprioriterade lagar för Restaurang Söder AB
 
@@ -445,6 +451,7 @@ graph TD
 **Phase 1 vs Phase 2 Law Prioritization:**
 
 **Phase 1 (Pre-Signup, 15-30 Laws):**
+
 - Show highest-impact laws to demonstrate value
 - Prioritize laws with:
   - High change frequency (Arbetsmiljölagen, Diskrimineringslagen)
@@ -453,6 +460,7 @@ graph TD
   - Industry-specific (based on SNI code + question answers)
 
 **Phase 2 (Post-Signup, 45-65 Additional Laws):**
+
 - Comprehensive coverage, including:
   - "Nice to know" laws (lower change frequency)
   - Tangential regulations (Marknadsföringslagen, Varumärkeslagen)
@@ -809,6 +817,7 @@ graph TD
    - Rows: Setup time, Personalization, AI summaries, Change monitoring
 
 **Interaction Notes:**
+
 - Org-number field auto-formats (adds hyphen after 6 digits)
 - Website field shows tooltip: "Hjälper oss förstå din verksamhet bättre"
 - Pressing Enter in org-number field triggers analysis (no need to click button)
@@ -879,6 +888,7 @@ graph TD
    - Explains why we're asking: "Detta påverkar Alkohollagen och Tobakslagen"
 
 **Interaction Notes:**
+
 - Radio buttons automatically advance to next question after 1-second delay (or user clicks Fortsätt)
 - Back button allows editing previous answers, regenerates law list based on updated context
 - Skip button shows warning: "Vi kanske missar relevanta lagar" before allowing skip
@@ -960,6 +970,7 @@ graph TD
      - "⭐ 'Äntligen förstår jag vilka lagar som gäller mitt företag' - Maria, VD Café Stockholm"
 
 **Interaction Notes:**
+
 - Clicking any law card's "Se fullständig AI-sammanfattning" triggers signup modal (not error message)
 - Scrolling to bottom of 23 laws shows sticky CTA bar: "Skapa konto för att se alla ~70 lagar"
 - User can edit answers: "← Ändra mina svar" link at top (re-runs analysis)
@@ -1051,6 +1062,7 @@ graph TD
    - Confetti animation (subtle)
 
 **Interaction Notes:**
+
 - User can interact with Dashboard during Phase 2 generation (not blocked)
 - Clicking law cards opens Law Detail page in new tab (doesn't interrupt generation)
 - Progress bar updates in real-time as each law is generated
@@ -1210,6 +1222,7 @@ graph TD
    - ✅ Direct law navigation (click SFS → View amending law instantly)
 
    **Example Amendment Card (Expanded State):**
+
    ```
    ┌─────────────────────────────────────────────────────┐
    │ [▼] SFS 2010:856              2010-06-23      [...]│
@@ -1248,6 +1261,7 @@ graph TD
      - "EU 89/391/EEG" - Framework Directive on Safety and Health at Work
 
 **Interaction Notes:**
+
 - Tab navigation persists scroll position (switching tabs doesn't reset scroll)
 - AI Summary sections use progressive disclosure (collapsed by default except "Vad är denna lag?")
 - Full Text tab has floating "Back to top" button
@@ -1360,6 +1374,7 @@ graph TD
    - Secondary: [Fråga AI om detta] [Exportera Sammanfattning] [Sätt Påminnelse]
 
 **Interaction Notes:**
+
 - Sections 1-2 visible by default (AI summary + Business Impact)
 - Sections 3-4 collapsed by default (Visual Diff + Full Text available on expand)
 - "Markera som Granskad" triggers confirmation: "Bra! Vi uppdaterar alla dina listor."
@@ -1429,6 +1444,7 @@ This section provides a high-level overview of all UI components required for La
 ## 5.1 Component Overview by Epic
 
 ### Epic 1: Authentication (5 Components)
+
 **Critical Path:** Gateway to product access
 
 - **Login Page** - Email/password + Google/Microsoft OAuth (Story 1.3)
@@ -1438,6 +1454,7 @@ This section provides a high-level overview of all UI components required for La
 - **Protected Route Component** - Authentication middleware (Story 1.3)
 
 **Key Features:**
+
 - OAuth via Supabase Auth + NextAuth.js
 - Session cookies (30-day, HTTP-only)
 - Password complexity validation (8+ chars, uppercase, number, special char)
@@ -1446,10 +1463,13 @@ This section provides a high-level overview of all UI components required for La
 ---
 
 ### Epic 2: Legal Content Discovery (5 Component Groups)
+
 **SEO-Critical:** 170,000+ public pages for organic traffic
 
 #### 2.1 Law Detail Page (Story 2.5)
+
 **Three Variants:**
+
 - **SFS Law Page** (`/lagar/[lawSlug]`)
   - Layered disclosure (AI summary + full legal text)
   - Amendments section with dates
@@ -1470,24 +1490,28 @@ This section provides a high-level overview of all UI components required for La
 **Common Elements:** Breadcrumbs, meta tags, JSON-LD, share buttons
 
 #### 2.2 Category Browse Pages (Story 2.6)
+
 - 10 categories: Arbetsrätt, Dataskydd, Skatterätt, Bolagsrätt, Miljö & Bygg, Livsmedel & Hälsa, Finans, Immaterialrätt, Konsumentskydd, Transport & Logistik
 - Content type filter tabs (All | Lagar | Rättsfall | EU-lagstiftning)
 - Document cards with type badges + snippets
 - Pagination (20/page)
 
 #### 2.3 Unified Search Page (Story 2.7)
+
 - Full-text search across 170,000+ documents (<800ms performance)
 - PostgreSQL `tsvector` with weighted ranking
 - Filter sidebar: Content Type (7 types), Category (10), Business Type, Date Range
 - Mixed results with clear type badges
 
 #### 2.4 SNI Discovery Page (Story 2.9)
+
 - Landing: Org-number/SNI code input
 - Results: Tabbed view (Lagar | Rättsfall | EU-lagstiftning)
 - Curated starter packs per industry (12-25 laws + 3-8 cases + 5-12 EU docs)
 - Popular industries: Restaurang, Bygg, E-handel, Vårdgivare, IT-konsult
 
 #### 2.5 Cross-Document Navigation (Story 2.8)
+
 - "Referenced in Court Cases" (on SFS pages)
 - "Cited Laws" (on Court Case pages)
 - "Swedish Implementation" (on EU Directive pages)
@@ -1498,20 +1522,24 @@ This section provides a high-level overview of all UI components required for La
 ### Epic 3: AI Chat (1 Component Group)
 
 #### 3.1 AI Chat Interface (Stories 3.3-3.8)
+
 **Fixed right sidebar (400px desktop) or full-screen modal (mobile)**
 
 **Core Features:**
+
 - Streaming responses with Vercel AI SDK `useChat` hook
 - Citations: Inline `[1]`, `[2]` with hover tooltips (law title, SFS number, snippet)
 - Keyboard shortcut: `Cmd+K` or `/` opens chat
 
 **Context Pills (Draggable Items):**
+
 - Law Context Pill (Story 3.4) - Max 10 items
 - Employee Context Pill (Story 3.5) - Name, role
 - Task Context Pill (Story 3.6)
 - Document Context Pill (Story 3.7) - PDF uploads
 
 **Message Components:**
+
 - User Message: Right-aligned, blue bubble
 - AI Message: Left-aligned, gray bubble, streaming animation, Laglig.se logo
 - Loading State: "AI skriver..." with animated dots
@@ -1521,27 +1549,34 @@ This section provides a high-level overview of all UI components required for La
 ### Epic 4: Onboarding (4 Components)
 
 #### 4.1 Org-Number Input Widget (Story 4.1)
+
 - Homepage hero widget: "Se vilka lagar som gäller för ditt företag"
 - 10-digit format (XXXXXX-XXXX), client-side validation
 - Bolagsverket API integration (Story 4.2)
 - Privacy note: "Vi hämtar endast publik info"
 
 #### 4.2 Dynamic Question Card (Story 4.2b)
+
 **Contextual 3-5 Questions Flow:**
+
 - Progress indicator: "Fråga 2 av ~4"
 - Industry-triggered questions (Restaurang: "Serverar ni alkohol?", Bygg: "Arbetar ni med farliga ämnen?")
 - Educational tooltips: "💡 Med 10+ anställda krävs skyddsombud"
 - [Hoppa över] and [← Tillbaka] navigation
 
 #### 4.3 Streaming Law List (Stories 4.3, 4.4, 4.4b)
+
 **Two-Phase Generation:**
+
 - **Phase 1 (Pre-Signup):** 15-30 high-priority laws stream in (<3 min)
 - Laws appear with fade-in animation + AI commentary (1-2 sentences)
 - Progress indicator: "12/20 lagar valda..."
 - Badge: "🔒 +45-65 mer lagar efter registrering"
 
 #### 4.4 Phase 2 Progress Bar (Story 4.4b)
+
 **Post-Signup Background Generation:**
+
 - "Kompletterar din laglista... 23/68 lagar"
 - Animated progress bar + estimated time: "~45 sekunder kvar"
 - Dismissible (X button, generation continues)
@@ -1553,23 +1588,28 @@ This section provides a high-level overview of all UI components required for La
 ### Epic 5: Workspace & Team Collaboration (8 Component Groups)
 
 #### 5.1 Workspace Switcher Dropdown (Story 5.9)
+
 - Top nav dropdown showing all user workspaces
 - Role badges (Owner/Admin/HR Manager/Member/Auditor)
 - [+ Create New Workspace] option
 - Mobile: Hamburger menu placement
 
 #### 5.2 Team Members List (Stories 5.3, 5.7)
+
 - Table: Photo, Name+Email, Role (dropdown), Joined Date, Status, Actions
 - Pending Invites section (7-day expiry)
 - Role tooltips explaining permissions
 
 #### 5.3 Invite Member Modal (Story 5.3)
+
 - Email input + Role dropdown + Personal Message (optional)
 - Invite link: `/invite/[token]` (7-day expiry)
 - Email sent with workspace name + inviter name
 
 #### 5.4 Workspace Settings (Story 5.7)
+
 **5 Tabs:**
+
 1. **General:** Workspace name, logo upload (2MB max), SNI code (readonly)
 2. **Team:** Members list + [Invite Member] button
 3. **Billing:** (Component 5.5)
@@ -1577,17 +1617,21 @@ This section provides a high-level overview of all UI components required for La
 5. **Integrations:** "Fortnox coming soon" placeholder
 
 #### 5.5 Billing Page (Stories 5.4, 5.5, 5.6)
+
 **Current Plan Card:**
+
 - Solo (€399/mo) | Team (€899/mo) | Enterprise (€2,000+/mo)
 - Next billing date, features list, [Upgrade] button
 
 **Usage Limits (Story 5.5):**
+
 - Users: "3/5 users" + progress bar (warning at 80%, hard limit at 110%)
 - Employees: "42/50 employees"
 - AI Queries: "387/500 queries this month"
 - Storage: "7.2GB/10GB used"
 
 **Add-Ons (Story 5.6):**
+
 - +10 employees: €100/mo (toggle switch)
 - +5GB storage: €50/mo
 - Prorated charges
@@ -1595,24 +1639,30 @@ This section provides a high-level overview of all UI components required for La
 **Payment Method:** Card display + [Update Card] via Stripe Checkout
 
 #### 5.6 Pause/Delete Workspace Modals (Story 5.8)
+
 **Pause Modal:**
+
 - Warning: Data preserved, access blocked, subscription canceled
 - [Pause Workspace] button (red)
 
 **Delete Modal (Owner Only):**
+
 - Step 1: Warning screen with consequences
 - Step 2: Type workspace name to confirm
 - 30-day recovery period
 - Email sent to all team members
 
 #### 5.7 Onboarding Checklist (Story 5.12)
+
 **Dashboard Widget:**
+
 - Progress: "2/5 klar" + 40% progress bar
 - Items: ✅ Law list | ⬜ Invite team | ⬜ Add employee | ⬜ Ask AI | ⬜ Customize list
 - Clickable (links to pages)
 - Confetti when 100% complete
 
 #### 5.8 Activity Log (Story 5.11 - Enterprise Only)
+
 - Filter bar: User, Action Type, Date Range
 - Table: Timestamp, User (avatar), Action, Resource, Details (expandable JSON)
 - Export as CSV
@@ -1623,9 +1673,11 @@ This section provides a high-level overview of all UI components required for La
 ### Epic 6: Compliance Workspace - Kanban & Dashboard (4 Components)
 
 #### 6.1 Kanban Board (Stories 6.2-6.8)
+
 **5 Columns:** Not Started | In Progress | Blocked | Review | Compliant
 
 **Features:**
+
 - Drag-and-drop with `@dnd-kit` or `react-beautiful-dnd` (Story 6.5)
 - Law cards show: Title, category badge, priority, assigned employee avatars, task progress ("3/5 tasks")
 - Filter bar (Story 6.6): Category, priority, assigned employee, tags, search
@@ -1635,7 +1687,9 @@ This section provides a high-level overview of all UI components required for La
 **Empty State:** "No laws in this column yet"
 
 #### 6.2 Law Card Modal (Story 6.3)
+
 **Expanded Modal on Card Click:**
+
 - Full title + SFS number + Category badge
 - AI summary (200 words)
 - Status dropdown (Kanban column)
@@ -1651,29 +1705,37 @@ This section provides a high-level overview of all UI components required for La
 - [Ask AI About This] button → Opens chat
 
 #### 6.3 Dashboard Widgets (Story 6.1, FR27)
+
 **Compliance Progress Ring:**
+
 - Circular chart: % "Compliant" vs total
 - Interactive (click → Opens Kanban)
 
 **AI Insights Section:**
+
 - Recent changes (last 7 days)
 - New laws recommended for industry
 - "3 laws need urgent attention"
 
 **Quick Actions:**
+
 - [Ask AI] [Add Law] [Invite Team] [Add Employee]
 
 **Recent Activity Feed:**
+
 - Last 10 actions: "Anna reviewed Law X", "Law Y changed yesterday"
 - Timestamp + user avatar
 
 **Law List Preview:**
+
 - Top 5 prioritized laws with status badges
 
 **Performance:** Dashboard loads in <2 seconds
 
 #### 6.4 Priority Badge (Story 8.1, 8.2)
+
 **3 Variants:**
+
 - 🔴 High Priority (Red badge)
 - 🟡 Medium Priority (Yellow badge)
 - 🟢 Low Priority (Green badge)
@@ -1686,6 +1748,7 @@ This section provides a high-level overview of all UI components required for La
 ### Epic 7: HR Module - Employee Management (10 Component Groups)
 
 **See `docs/front-end-spec-component-library.md` Section 12 for complete HR component specifications including:**
+
 - Employee Card (draggable to AI chat)
 - Employee List View (table/card toggle, filters)
 - Add Employee Modal (9 fields with validation)
@@ -1702,7 +1765,9 @@ This section provides a high-level overview of all UI components required for La
 ### Epic 8: Change Monitoring (3 Component Groups)
 
 #### 8.1 Change Notification Card (Story 8.1)
+
 **Displayed in "Changes" Tab:**
+
 - 🔴/🟡/🟢 Priority badge (High/Medium/Low) - **Differentiation from Notisum**
 - Law title + SFS number
 - Change detected date
@@ -1716,14 +1781,17 @@ This section provides a high-level overview of all UI components required for La
 **Empty State:** "No unacknowledged changes ✅"
 
 #### 8.2 GitHub-Style Diff Viewer (Story 8.2)
+
 **Modal on "View Details" Click:**
 
 **Header:**
+
 - Law title + SFS number + Change type + Detected date
 - **AI Summary** (2-3 sentences in plain Swedish): "Summary: Sick pay procedure references updated..."
 - **Business Impact** (1 sentence): "Low - Administrative reference, no action required"
 
 **Desktop: Side-by-Side View**
+
 - Left: Old version | Right: New version
 - Line numbers
 - Highlighting:
@@ -1732,10 +1800,12 @@ This section provides a high-level overview of all UI components required for La
 - Contextual explanation: "§ 26 was modified - this section handles X"
 
 **Mobile: Stacked View**
+
 - Old version (collapsed by default)
 - New version (expanded)
 
 **Footer:**
+
 - [Mark as Reviewed ✓] button
 - [View Full Law] link
 - [Official Riksdagen PDF] link
@@ -1745,7 +1815,9 @@ This section provides a high-level overview of all UI components required for La
 **Competitive Note:** Notisum shows raw text in grey box - no visual diff
 
 #### 8.3 Notification Bell (Story 8.5)
+
 **Top Navigation (Right Side):**
+
 - Bell icon with badge count: "3" (unacknowledged changes)
 - Dropdown on click:
   - Last 5 recent changes
@@ -1759,6 +1831,7 @@ This section provides a high-level overview of all UI components required for La
 ## 5.2 Component Priority Summary
 
 **High Priority (Core UX) - 10 Components:**
+
 1. Login/Signup Pages (Epic 1)
 2. Law Card (all variants) (Epic 6)
 3. Kanban Board (Epic 6)
@@ -1781,45 +1854,55 @@ This section provides a high-level overview of all UI components required for La
 ## 5.3 Technical Implementation Notes
 
 ### Drag-and-Drop System (Stories 3.4-3.7, 6.5)
+
 **Library:** `@dnd-kit` or `react-beautiful-dnd`
 
 **Draggable Items:**
+
 - Law cards → Kanban columns, AI chat
 - Employee cards → AI chat
 - Task cards → AI chat
 - Documents (PDFs) → AI chat
 
 **Visual Feedback:**
+
 - Dragging: Opacity 0.5, cursor grabbing
 - Drop zone highlighted on hover
 - Smooth animation on drop
 
 **Accessibility:**
+
 - Keyboard: Arrow keys + Enter to move
 - Touch support for mobile
 - Screen reader announcements
 
 ### Form Components
+
 **Multi-Select Dropdown:**
+
 - Used for: Assigned employees, categories, tags
 - Checkbox-based selection + search/filter + "Select All"
 
 **Date Picker:**
+
 - Swedish format (YYYY-MM-DD)
 - Calendar popup
 - Keyboard accessible
 
 **Markdown Textarea:**
+
 - Used for: Notes (Story 6.3, 7.11)
 - Markdown preview tab + formatting toolbar + auto-save
 
 ### Loading States
+
 - Skeleton loaders for content placeholders
 - Circular spinner for indeterminate operations
 - Progress bars for determinate operations (file uploads, Phase 2 generation)
 - Inline loading: "Saving..." text + spinner
 
 ### Toast Notifications
+
 - Success: "✅ Change marked as reviewed"
 - Error: "❌ Failed to update law"
 - Info: "💡 New law added to your list"
@@ -1834,6 +1917,7 @@ This section provides a high-level overview of all UI components required for La
 **15 Component Groups | 55+ Individual Components**
 
 **Coverage by Epic:**
+
 - ✅ Epic 1 (Authentication): 5 components
 - ✅ Epic 2 (Legal Content Discovery): 5 component groups (Law pages, search, categories, SNI, cross-refs)
 - ✅ Epic 3 (AI Chat): 1 component group (chat, context pills, streaming)
@@ -1846,6 +1930,7 @@ This section provides a high-level overview of all UI components required for La
 **All 8 PRD epics documented with complete component specifications extracted from user stories.**
 
 **Detailed Specifications:** See `docs/front-end-spec-component-library.md` for:
+
 - Full component variants and states
 - Interaction patterns and behaviors
 - Accessibility requirements
@@ -1853,6 +1938,7 @@ This section provides a high-level overview of all UI components required for La
 - Implementation notes and technical details
 
 ---
+
 ---
 
 # 6. Branding & Style Guide
@@ -1860,12 +1946,14 @@ This section provides a high-level overview of all UI components required for La
 ## 6.1 Visual Identity Overview
 
 **Brand Personality:**
+
 - **Trustworthy:** Professional, reliable, accurate legal information
 - **Approachable:** Plain Swedish language, demystifies complexity
 - **Modern:** AI-powered, forward-thinking compliance
 - **Swedish:** Clean Nordic aesthetic, local context
 
 **Visual Direction:**
+
 - Clean, minimalist Scandinavian design with generous white space
 - Professional but not intimidating (unlike traditional legal services)
 - Bright and optimistic (compliance doesn't have to be scary)
@@ -1873,6 +1961,7 @@ This section provides a high-level overview of all UI components required for La
 - Elegant simplicity - every element earns its place
 
 **Design Influences:**
+
 - **OpenAI (ChatGPT):** Minimalist sophistication, generous spacing, subtle micro-interactions, thoughtful typography hierarchy, clean AI interface patterns
 - **Fortnox/Visma:** Professional B2B SaaS trust
 - **Hemnet/Blocket:** Swedish-friendly accessibility
@@ -1880,6 +1969,7 @@ This section provides a high-level overview of all UI components required for La
 - **Stripe/Vercel:** Technical precision with elegance
 
 **Key Minimalist Principles (OpenAI-inspired):**
+
 - **Breathing Room:** Generous padding (24px+), avoid visual clutter
 - **Content First:** UI fades into background, content takes center stage
 - **Subtle Sophistication:** Micro-interactions over flashy animations
@@ -1895,12 +1985,14 @@ This section provides a high-level overview of all UI components required for La
 ### Primary Colors
 
 **Laglig Blue (Primary Brand Color)**
+
 - `#2563EB` - Primary 600
 - **Usage:** Primary buttons, links, active states, brand accents
 - **Rationale:** Trust, professionalism, Swedish flag association
 - **Accessibility:** WCAG AA compliant on white background (contrast ratio 4.73:1)
 
 **Laglig Blue Scale:**
+
 ```
 Blue-50:  #EFF6FF (backgrounds, hover states)
 Blue-100: #DBEAFE (light backgrounds)
@@ -1917,16 +2009,19 @@ Blue-900: #1E3A8A (headings, emphasis)
 ### Secondary Colors
 
 **Gold (Premium/Enterprise Accent)**
+
 - `#F59E0B` - Amber 500
 - **Usage:** Premium badges, Enterprise tier highlights, success celebrations
 - **Rationale:** Value, quality, Swedish Gold (national color)
 
 **Slate Gray (Neutral Foundation)**
+
 - `#64748B` - Slate 500
 - **Usage:** Body text, secondary UI elements, borders
 - **Rationale:** Professional, readable, pairs well with blue
 
 **Slate Gray Scale:**
+
 ```
 Slate-50:  #F8FAFC (page backgrounds)
 Slate-100: #F1F5F9 (card backgrounds)
@@ -1943,24 +2038,28 @@ Slate-900: #0F172A (maximum contrast)
 ### Semantic Colors
 
 **Success (Green)**
+
 - `#10B981` - Emerald 500
 - **Usage:** Success toasts, "Compliant" status badges, completed tasks
 - **Light variant:** `#D1FAE5` (Emerald 100) for backgrounds
 - **Dark variant:** `#047857` (Emerald 700) for text on light backgrounds
 
 **Warning (Yellow)**
+
 - `#F59E0B` - Amber 500
 - **Usage:** "Needs Attention" badges, caution alerts, medium priority
 - **Light variant:** `#FEF3C7` (Amber 100) for backgrounds
 - **Dark variant:** `#D97706` (Amber 600) for text on light backgrounds
 
 **Error (Red)**
+
 - `#EF4444` - Red 500
 - **Usage:** Error states, "Non-Compliant" badges, destructive actions, high priority
 - **Light variant:** `#FEE2E2` (Red 100) for backgrounds
 - **Dark variant:** `#DC2626` (Red 600) for text on light backgrounds
 
 **Info (Cyan)**
+
 - `#06B6D4` - Cyan 500
 - **Usage:** Info toasts, educational tooltips, low priority
 - **Light variant:** `#CFFAFE` (Cyan 100) for backgrounds
@@ -1996,18 +2095,21 @@ Link Hover:       #1D4ED8 (Blue 700) - Hovered links
 ### Font Families
 
 **Primary Font (UI/Body Text):**
+
 - **Font:** `Inter` (Google Fonts)
 - **Fallback:** `system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`
 - **Rationale:** Excellent readability, wide language support (Swedish characters), optimized for screens
 - **License:** Open Font License (free for commercial use)
 
 **Monospace Font (Code/Technical):**
+
 - **Font:** `JetBrains Mono`
 - **Fallback:** `Consolas, Monaco, "Courier New", monospace`
 - **Usage:** SFS numbers, legal citations, code snippets, technical IDs
 - **Rationale:** Clear distinction for technical content, excellent legibility
 
 **Swedish Language Support:**
+
 - Both fonts fully support Swedish characters: Å, Ä, Ö, å, ä, ö
 - No special configuration needed
 
@@ -2063,6 +2165,7 @@ Body remains same (16px minimum for readability)
 ### Usage Guidelines
 
 **Headings:**
+
 - h1: Page titles, hero headlines (1 per page)
 - h2: Section titles, major divisions
 - h3: Subsection titles, card headers
@@ -2071,12 +2174,14 @@ Body remains same (16px minimum for readability)
 - h6: Inline headings, minimal emphasis
 
 **Body Text:**
+
 - Use 16px (1rem) for all body paragraphs
 - Line height 1.6 (26px) for readability
 - Max line length: 65-75 characters (~600-700px width)
 - Paragraph spacing: 1.5em (24px)
 
 **Legal Text Specific:**
+
 - § symbols: Same size as body text, no special styling
 - SFS numbers: Monospace font, slightly smaller (14px), gray color (#64748B)
 - Law titles: SemiBold (600), slightly larger than body (18px)
@@ -2108,24 +2213,28 @@ Body remains same (16px minimum for readability)
 ### Component Spacing
 
 **Buttons:**
+
 - Padding: `12px 20px` (3 units vertical, 5 units horizontal)
 - Small button: `8px 12px`
 - Large button: `16px 28px`
 - Icon-only button: `12px 12px` (square)
 
 **Form Fields:**
+
 - Input padding: `12px 16px`
 - Label margin-bottom: `8px`
 - Field margin-bottom: `20px`
 - Error message margin-top: `4px`
 
 **Cards:**
+
 - Card padding: `24px`
 - Compact card padding: `16px`
 - Card margin-bottom: `16px`
 - Card border-radius: `8px`
 
 **Sections:**
+
 - Section padding-top: `48px` (desktop), `32px` (mobile)
 - Section padding-bottom: `48px` (desktop), `32px` (mobile)
 - Content max-width: `1280px`
@@ -2134,17 +2243,20 @@ Body remains same (16px minimum for readability)
 ### Layout Grid
 
 **Desktop (>= 1024px):**
+
 - Max content width: `1280px`
 - Container padding: `24px` (sides)
 - Column gap: `24px`
 - Grid columns: 12-column system
 
 **Tablet (768px - 1023px):**
+
 - Container padding: `20px`
 - Column gap: `20px`
 - Grid columns: 8-column system
 
 **Mobile (< 768px):**
+
 - Container padding: `16px`
 - Column gap: `16px`
 - Grid columns: 4-column system
@@ -2156,6 +2268,7 @@ Body remains same (16px minimum for readability)
 ### Icon Library
 
 **Primary Icon Set:** [Lucide Icons](https://lucide.dev/)
+
 - **Rationale:** Clean, consistent, open-source, excellent Swedish character support
 - **Style:** 2px stroke width, rounded caps
 - **License:** ISC (free for commercial use)
@@ -2174,26 +2287,31 @@ Huge:        48px   (onboarding illustrations)
 ### Icon Usage Guidelines
 
 **Navigation:**
+
 - Use icons WITH text labels (not icon-only) for main navigation
 - Icon size: 20px
 - Color: Slate 600, active: Blue 600
 
 **Buttons:**
+
 - Icons should be 16px (small button) or 20px (default button)
 - Position: Left of text (8px gap) or icon-only (centered)
 - Use icons sparingly - only when they add clarity
 
 **Status Indicators:**
+
 - Priority badges: Emoji (🔴 🟡 🟢) + text for accessibility
 - Status icons: Checkmark (✓), Warning (⚠️), Error (✗)
 - Size: 16px inline with text
 
 **Empty States:**
+
 - Large illustrative icons: 48px
 - Color: Slate 400 (muted)
 - Paired with helpful text
 
 **Common Icons to Use:**
+
 - Navigation: `Home`, `Search`, `Settings`, `Bell`, `User`, `Menu`, `ChevronDown`
 - Actions: `Plus`, `Edit`, `Trash2`, `Download`, `Upload`, `Copy`, `ExternalLink`
 - Status: `CheckCircle`, `AlertCircle`, `XCircle`, `Info`, `AlertTriangle`
@@ -2259,6 +2377,7 @@ focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.1) /* Blue 600 @ 10% opacity */
 ```
 
 **Usage Guidelines:**
+
 - Cards on page: `shadow-sm`
 - Interactive cards (hover): `shadow` → `shadow-md` (on hover)
 - Dropdowns, selects: `shadow-md`
@@ -2272,26 +2391,31 @@ focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.1) /* Blue 600 @ 10% opacity */
 ### Logo Variants
 
 **Primary Logo (Full Color):**
+
 - Usage: Homepage hero, marketing materials, light backgrounds
 - Min width: 120px
 - Clear space: Equal to height of logo on all sides
 
 **Logo Mark (Icon Only):**
+
 - Usage: Favicon, app icons, small spaces (<200px)
 - Min size: 32px × 32px
 - Square format
 
 **Monochrome Logo (White):**
+
 - Usage: Dark backgrounds, footer, photography overlays
 - Same sizing rules as primary
 
 **Monochrome Logo (Dark):**
+
 - Usage: Watermarks, print materials
 - Same sizing rules as primary
 
 ### Logo Clear Space
 
 Minimum clear space = 1x the height of the logo mark
+
 - No text, graphics, or UI elements within clear space
 - Ensures visual breathing room
 
@@ -2310,6 +2434,7 @@ Minimum clear space = 1x the height of the logo mark
 ### Buttons
 
 **Primary Button:**
+
 ```css
 background: #2563EB (Blue 600)
 color: #FFFFFF (White)
@@ -2334,6 +2459,7 @@ disabled:
 ```
 
 **Secondary Button:**
+
 ```css
 background: #FFFFFF (White)
 color: #2563EB (Blue 600)
@@ -2350,6 +2476,7 @@ active:
 ```
 
 **Ghost Button:**
+
 ```css
 background: transparent
 color: #64748B (Slate 500)
@@ -2361,6 +2488,7 @@ hover:
 ```
 
 **Destructive Button:**
+
 ```css
 background: #EF4444 (Red 500)
 color: #FFFFFF
@@ -2372,6 +2500,7 @@ hover:
 ### Form Fields
 
 **Text Input:**
+
 ```css
 background: #FFFFFF
 border: 1px solid #E2E8F0 (Slate 200)
@@ -2396,6 +2525,7 @@ disabled:
 ```
 
 **Placeholder Text:**
+
 ```css
 color: #94A3B8 (Slate 400)
 font-style: italic (optional)
@@ -2404,6 +2534,7 @@ font-style: italic (optional)
 ### Cards
 
 **Default Card:**
+
 ```css
 background: #FFFFFF
 border: 1px solid #E2E8F0 (Slate 200)
@@ -2413,6 +2544,7 @@ box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05)
 ```
 
 **Interactive Card (Clickable):**
+
 ```css
 /* Base state (same as default) */
 
@@ -2430,6 +2562,7 @@ active:
 ### Badges
 
 **Status Badge (High Priority):**
+
 ```css
 background: #FEE2E2 (Red 100)
 color: #DC2626 (Red 600)
@@ -2447,6 +2580,7 @@ gap: 4px
 ```
 
 **Category Badge:**
+
 ```css
 background: #DBEAFE (Blue 100)
 color: #1E40AF (Blue 800)
@@ -2480,6 +2614,7 @@ arrow-color: #1E293B
 **Post-MVP:** Dark mode support planned
 
 **When implementing dark mode later:**
+
 - Use CSS custom properties for easy theme switching
 - Maintain WCAG AA contrast in both modes
 - Adjust shadows for dark backgrounds (lighter, more subtle)
@@ -2494,21 +2629,21 @@ arrow-color: #1E293B
 ```css
 :root {
   /* Colors - Primary */
-  --color-primary-50: #EFF6FF;
-  --color-primary-600: #2563EB;
-  --color-primary-700: #1D4ED8;
+  --color-primary-50: #eff6ff;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
 
   /* Colors - Semantic */
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-  --color-info: #06B6D4;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #06b6d4;
 
   /* Colors - Text */
-  --color-text-heading: #0F172A;
+  --color-text-heading: #0f172a;
   --color-text-body: #475569;
-  --color-text-secondary: #64748B;
-  --color-text-disabled: #CBD5E1;
+  --color-text-secondary: #64748b;
+  --color-text-disabled: #cbd5e1;
 
   /* Spacing */
   --space-1: 4px;
@@ -2535,6 +2670,7 @@ arrow-color: #1E293B
 ```
 
 **Benefits:**
+
 - Easy theme switching (light/dark mode)
 - Consistent styling across components
 - Single source of truth for design values
@@ -2547,17 +2683,20 @@ arrow-color: #1E293B
 ### Photography & Imagery
 
 **Style:**
+
 - Authentic Swedish workplace photography (no stock "handshake" clichés)
 - Natural lighting, candid moments
 - Diverse representation (age, gender, industry)
 - Modern Swedish offices (Scandinavian design aesthetic)
 
 **Usage:**
+
 - Homepage hero: Large inspirational image (1920×1080)
 - Industry landing pages: Specific industry imagery (restaurang, bygg, vårdgivare)
 - Testimonials: Real customer photos (with permission)
 
 **Avoid:**
+
 - Generic stock photos
 - Overly posed corporate imagery
 - Non-Swedish contexts (US/UK office culture)
@@ -2566,17 +2705,20 @@ arrow-color: #1E293B
 ### Illustrations
 
 **Style:**
+
 - Minimalist line art (if used)
 - Matches Lucide icon style (2px stroke)
 - Color: Single accent color (Blue 600) on white background
 - Purpose: Empty states, onboarding steps, 404 pages
 
 **Usage:**
+
 - Onboarding flow illustrations (3-4 simple diagrams)
 - Empty state graphics (no laws yet, no employees)
 - Error pages (404, 500)
 
 **Avoid:**
+
 - Overly detailed illustrations
 - Mascots or characters
 - Cartoon style (conflicts with professional tone)
@@ -2584,12 +2726,14 @@ arrow-color: #1E293B
 ### Data Visualization
 
 **Charts & Graphs:**
+
 - Color palette: Blue 600 (primary data), Slate 400 (secondary), semantic colors for status
 - Style: Clean, minimal gridlines, clear labels
 - Library recommendation: Recharts or Chart.js
 - Accessibility: Patterns + colors (not color alone)
 
 **Dashboard Widgets:**
+
 - Circular progress rings (compliance %)
 - Simple bar charts (laws by category)
 - Trend lines (change frequency over time)
@@ -2600,6 +2744,7 @@ arrow-color: #1E293B
 ## 6.12 Brand Voice & Tone (UX Copy)
 
 **Voice Attributes:**
+
 - **Knowledgeable but not condescending:** "Here's what this means for your business" (not "Obviously...")
 - **Plain Swedish:** Avoid legal jargon, explain technical terms
 - **Encouraging:** "You've got this!" not "You must comply or face fines"
@@ -2607,21 +2752,23 @@ arrow-color: #1E293B
 
 **Tone by Context:**
 
-| Context | Tone | Example |
-|---------|------|---------|
-| Onboarding | Welcoming, encouraging | "Välkommen! Vi genererar din personliga laglista nu..." |
-| AI Summaries | Clear, explanatory | "Detta innebär att ni måste..." (This means you must...) |
-| Error Messages | Helpful, apologetic | "Hoppsan! Något gick fel. Försök igen eller kontakta support." |
-| Success States | Celebratory, affirming | "Bra jobbat! Alla ändringar granskade ✓" |
-| High Priority Changes | Urgent but calm | "⚠️ Viktig ändring: Åtgärd krävs senast [datum]" |
-| Legal Citations | Formal, precise | "Arbetsmiljölagen (1977:1160), 3 kap. 2 §" |
+| Context               | Tone                   | Example                                                        |
+| --------------------- | ---------------------- | -------------------------------------------------------------- |
+| Onboarding            | Welcoming, encouraging | "Välkommen! Vi genererar din personliga laglista nu..."        |
+| AI Summaries          | Clear, explanatory     | "Detta innebär att ni måste..." (This means you must...)       |
+| Error Messages        | Helpful, apologetic    | "Hoppsan! Något gick fel. Försök igen eller kontakta support." |
+| Success States        | Celebratory, affirming | "Bra jobbat! Alla ändringar granskade ✓"                       |
+| High Priority Changes | Urgent but calm        | "⚠️ Viktig ändring: Åtgärd krävs senast [datum]"               |
+| Legal Citations       | Formal, precise        | "Arbetsmiljölagen (1977:1160), 3 kap. 2 §"                     |
 
 **Button & CTA Language:**
+
 - Use action verbs: "Generera laglista", "Granska ändringar", "Fråga AI"
 - Be specific: "Visa fullständig lagtext" (not just "Läs mer")
 - Swedish conventions: Capitalize first word only (not title case)
 
 **Empty States:**
+
 - Helpful, action-oriented: "Inga lagar ännu. Lägg till din första lag!"
 - Not negative: Avoid "No results found" → "Inga resultat. Prova ett annat sökord?"
 
@@ -2630,6 +2777,7 @@ arrow-color: #1E293B
 ## 6.13 Accessibility Integration
 
 **Color Contrast:**
+
 - All text meets WCAG AA: 4.5:1 (normal text), 3:1 (large text 18px+)
 - Tested combinations:
   - Blue 600 on White: ✅ 4.73:1
@@ -2637,16 +2785,19 @@ arrow-color: #1E293B
   - White on Blue 600: ✅ 4.73:1
 
 **Interactive States:**
+
 - Focus rings: 3px solid Blue 600 @ 10% opacity
 - Visible on keyboard navigation (not just mouse hover)
 - Never remove `:focus` outlines without replacement
 
 **Color Independence:**
+
 - Priority badges: Emoji (🔴 🟡 🟢) + text label
 - Status indicators: Icon + color (not color alone)
 - Charts: Patterns + colors
 
 **Typography:**
+
 - Minimum font size: 14px (12px only for metadata/captions)
 - Line height: 1.5+ for readability
 - Avoid all-caps for long text (max 3 words for badges)
@@ -2656,6 +2807,7 @@ arrow-color: #1E293B
 This style guide ensures consistent, professional, and accessible design across all Laglig.se interfaces while maintaining a modern Swedish aesthetic that builds trust with SMB users.
 
 ---
+
 ---
 
 # 7. Accessibility Requirements
@@ -2665,12 +2817,14 @@ This style guide ensures consistent, professional, and accessible design across 
 **Target Compliance Level:** WCAG 2.1 Level AA
 
 **Rationale:**
+
 - **Legal Requirement:** Swedish accessibility law (Lagen om tillgänglighet till digital offentlig service) applies to B2B tools used by public sector
 - **Business Case:** 15-20% of Swedish population has some form of disability - accessible design expands our addressable market
 - **Brand Alignment:** "Plain Swedish with Legal Transparency" principle extends to accessible interfaces for all users
 - **SEO Benefit:** Accessible HTML improves search engine indexing
 
 **Success Criteria:**
+
 - Pass WAVE accessibility checker with 0 errors
 - Pass axe DevTools automated tests
 - Manual keyboard navigation testing on all core flows
@@ -2684,9 +2838,11 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Perceivable (Users can perceive the content)
 
 #### 1.1 Text Alternatives
+
 **Requirement:** All non-text content has text alternatives
 
 **Implementation:**
+
 - **Images:** All `<img>` tags have descriptive `alt` text
   - Law category icons: `alt="Arbetsrätt category icon"`
   - Decorative images: `alt=""` (empty alt for screen readers to skip)
@@ -2703,21 +2859,28 @@ This style guide ensures consistent, professional, and accessible design across 
   ```
 
 #### 1.3 Adaptable Content
+
 **Requirement:** Content can be presented in different ways without losing information
 
 **Implementation:**
+
 - **Semantic HTML:** Use heading hierarchy (h1→h2→h3, no skips)
   - Page title: `<h1>` (only one per page)
   - Section titles: `<h2>`
   - Subsections: `<h3>`, etc.
 
 - **Landmark regions:**
+
   ```html
   <header role="banner">
-  <nav role="navigation" aria-label="Main navigation">
-  <main role="main">
-  <aside role="complementary" aria-label="AI Chat">
-  <footer role="contentinfo">
+    <nav role="navigation" aria-label="Main navigation">
+      <main role="main">
+        <aside role="complementary" aria-label="AI Chat">
+          <footer role="contentinfo"></footer>
+        </aside>
+      </main>
+    </nav>
+  </header>
   ```
 
 - **Lists:** Use `<ul>`, `<ol>`, `<dl>` for list content (not just `<div>`)
@@ -2729,9 +2892,11 @@ This style guide ensures consistent, professional, and accessible design across 
   - Complex tables: Use `aria-describedby` for additional context
 
 #### 1.4 Distinguishable
+
 **Requirement:** Make it easy to see and hear content
 
 **Color Contrast (WCAG AA):**
+
 - **Normal text (16px):** Minimum 4.5:1 contrast ratio
   - Body text (#475569) on White (#FFFFFF): ✅ 7.52:1
   - Secondary text (#64748B) on White: ✅ 5.74:1
@@ -2743,6 +2908,7 @@ This style guide ensures consistent, professional, and accessible design across 
   - Buttons, form borders, focus indicators all meet 3:1+
 
 **Verified Combinations:**
+
 ```
 ✅ Blue 600 (#2563EB) on White (#FFFFFF): 4.73:1 (AA compliant)
 ✅ Slate 600 (#475569) on White: 7.52:1 (AAA compliant)
@@ -2752,6 +2918,7 @@ This style guide ensures consistent, professional, and accessible design across 
 ```
 
 **Color Independence:**
+
 - Never rely on color alone to convey information
 - Priority badges: Emoji (🔴 🟡 🟢) + text label "High Priority"
 - Status indicators: Icon + color (checkmark ✓, warning ⚠️, error ✗)
@@ -2759,12 +2926,14 @@ This style guide ensures consistent, professional, and accessible design across 
 - Links: Underlined by default (not just color difference)
 
 **Resize Text:**
+
 - UI remains functional at 200% zoom (browser zoom)
 - Text doesn't truncate or overlap at larger sizes
 - Use relative units (rem, em) not fixed pixels for font sizes
 - Max line length remains readable (65-75 characters) at all zoom levels
 
 **Reflow:**
+
 - Content reflows at 400% zoom without horizontal scrolling
 - Mobile-first responsive design ensures reflow works
 - No fixed-width containers that cause horizontal scroll
@@ -2774,9 +2943,11 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Operable (Users can operate the interface)
 
 #### 2.1 Keyboard Accessible
+
 **Requirement:** All functionality available from keyboard
 
 **Tab Order:**
+
 - Logical tab order follows visual flow (left-to-right, top-to-bottom)
 - Skip to main content link (first focusable element):
   ```html
@@ -2787,6 +2958,7 @@ This style guide ensures consistent, professional, and accessible design across 
 - Dropdowns: Arrow keys navigate options, Enter selects
 
 **Keyboard Shortcuts:**
+
 - `Cmd/Ctrl + K`: Open AI chat
 - `/`: Open AI chat (alternative)
 - `Esc`: Close modals, dropdowns, popovers
@@ -2797,47 +2969,57 @@ This style guide ensures consistent, professional, and accessible design across 
 - `Shift + Tab`: Move backward
 
 **Focus Management:**
+
 - When modal opens: Focus moves to first interactive element (or close button)
 - When modal closes: Focus returns to trigger element
 - When deleting item: Focus moves to next item in list (or previous if last)
 - When navigating pages: Focus moves to `<h1>` of new page
 
 **No Keyboard Trap:**
+
 - Users can navigate away from any component using only keyboard
 - Modals can be closed with `Esc` key
 - Chat sidebar can be closed with `Esc` or `Cmd+K` toggle
 
 #### 2.2 Enough Time
+
 **Requirement:** Users have enough time to read and use content
 
 **Session Timeout:**
+
 - Session expires after 30 days (not during active use)
 - No automatic logout during form filling
 - If session expires: Save draft state, show re-login modal
 - After re-login: Restore user to previous state
 
 **Auto-Save:**
+
 - Forms auto-save every 30 seconds (notes, employee edits)
 - Loading indicator: "Saving..." (not disruptive)
 - No time limits on completing tasks
 
 **Animations:**
+
 - Auto-playing animations pause after 5 seconds (or provide pause button)
 - Respect `prefers-reduced-motion` media query
 - No flashing content (risk of seizures)
 
 #### 2.3 Seizures and Physical Reactions
+
 **Requirement:** Do not design content that causes seizures
 
 **No Flashing Content:**
+
 - No content flashes more than 3 times per second
 - Avoid rapid transitions, strobing effects
 - Confetti animation (onboarding complete): Gentle, non-flashing
 
 #### 2.4 Navigable
+
 **Requirement:** Provide ways to help users navigate and find content
 
 **Page Titles:**
+
 - Unique, descriptive `<title>` for each page
 - Format: `[Page Name] - Laglig.se`
 - Examples:
@@ -2846,19 +3028,21 @@ This style guide ensures consistent, professional, and accessible design across 
   - `Ändringar - Laglig.se`
 
 **Focus Indicators:**
+
 - Visible focus ring on all interactive elements
 - Default focus style:
   ```css
   :focus {
     outline: none; /* Remove browser default */
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Blue 600 @ 10% */
-    border-color: #2563EB; /* Blue 600 */
+    border-color: #2563eb; /* Blue 600 */
   }
   ```
 - Focus visible on keyboard navigation, hidden on mouse click (use `:focus-visible`)
 - High contrast focus indicator (3:1 contrast with background)
 
 **Link Purpose:**
+
 - Link text describes destination (not "click here" or "read more")
 - Good: "View Arbetsmiljölagen details"
 - Bad: "Click here"
@@ -2868,12 +3052,14 @@ This style guide ensures consistent, professional, and accessible design across 
   - Links: Navigate to new page/section
 
 **Multiple Ways to Navigate:**
+
 - Main navigation menu (always visible)
 - Breadcrumbs (on deep pages)
 - Search (global search in header)
 - Sitemap (in footer)
 
 **Headings and Labels:**
+
 - Descriptive section headings (h1-h6 hierarchy)
 - Form labels clearly describe input purpose
 - Button labels describe action ("Spara ändringar", not "OK")
@@ -2883,49 +3069,60 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Understandable (Users can understand the content)
 
 #### 3.1 Readable
+
 **Requirement:** Make text readable and understandable
 
 **Language of Page:**
+
 - `<html lang="sv">` (Swedish)
 - Changes in language marked: `<span lang="en">Compliance</span>` (if mixing English)
 
 **Reading Level:**
+
 - Plain Swedish: Target 8th-grade reading level (age 14-15)
 - Avoid legal jargon in AI summaries
 - Define technical terms on first use
 - Legal citations can be complex (that's expected context)
 
 **Pronunciation:**
+
 - Abbreviations explained on first use
   - SFS: "Svensk författningssamling (SFS)"
   - SNI: "Standard för svensk näringsgrensindelning (SNI)"
 - Acronyms wrapped: `<abbr title="Arbetsmiljöverket">AV</abbr>`
 
 #### 3.2 Predictable
+
 **Requirement:** Pages operate in predictable ways
 
 **On Focus:**
+
 - No automatic form submission when field receives focus
 - Dropdowns don't auto-select on focus (only on Enter/click)
 
 **On Input:**
+
 - Form doesn't submit when last field filled (requires explicit Submit click)
 - Changing a dropdown doesn't trigger navigation (unless explicitly "Go" button provided)
 
 **Consistent Navigation:**
+
 - Main navigation in same location on all pages
 - Breadcrumbs in same location (below header)
 - Footer links in same order
 
 **Consistent Identification:**
+
 - Icons used consistently (e.g., trash icon always means delete)
 - Buttons styled consistently (primary = blue, destructive = red)
 - Status badges use same color scheme across app
 
 #### 3.3 Input Assistance
+
 **Requirement:** Help users avoid and correct mistakes
 
 **Error Identification:**
+
 - Form errors clearly identified with:
   - Red border on invalid field
   - Error icon (✗) next to field
@@ -2934,12 +3131,14 @@ This style guide ensures consistent, professional, and accessible design across 
   - `aria-describedby="field-error"` linking to error message
 
 **Labels or Instructions:**
+
 - All form fields have visible labels (not just placeholder text)
 - Required fields marked with `*` and `aria-required="true"`
 - Format examples provided: "Format: XXXXXX-XXXX" for org-number
 - Password requirements shown before user types (not after error)
 
 **Error Suggestions:**
+
 - Specific error messages:
   - Good: "Organisationsnummer måste vara 10 siffror (XXXXXX-XXXX)"
   - Bad: "Invalid input"
@@ -2947,6 +3146,7 @@ This style guide ensures consistent, professional, and accessible design across 
 - Inline validation (after blur, not on every keystroke)
 
 **Error Prevention (Legal/Financial):**
+
 - Confirmation dialogs for destructive actions
   - Delete workspace: Requires typing workspace name
   - Remove employee: "Are you sure?" confirmation
@@ -2958,15 +3158,18 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Robust (Content works with assistive technologies)
 
 #### 4.1 Compatible
+
 **Requirement:** Maximize compatibility with current and future tools
 
 **Valid HTML:**
+
 - No parsing errors (validate with W3C validator)
 - Properly nested elements
 - Unique IDs (no duplicate `id` attributes)
 - Close all tags properly
 
 **Name, Role, Value:**
+
 - All UI components have accessible names
 - Roles defined for custom components:
   ```html
@@ -2980,6 +3183,7 @@ This style guide ensures consistent, professional, and accessible design across 
   - `aria-hidden="true"` (decorative elements)
 
 **Status Messages:**
+
 - Screen reader announces status changes
 - Use ARIA live regions:
   ```html
@@ -2997,6 +3201,7 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Navigation (Header)
 
 **Tab Order:**
+
 1. Skip to main content link (hidden until focused)
 2. Logo (link to homepage)
 3. Main navigation links (Dashboard, Lagar, HR, Kanban, etc.)
@@ -3005,6 +3210,7 @@ This style guide ensures consistent, professional, and accessible design across 
 6. User profile menu (arrow keys navigate options)
 
 **Dropdowns:**
+
 - `Enter` or `Space`: Open dropdown
 - `Arrow Up/Down`: Navigate options
 - `Enter`: Select option
@@ -3014,11 +3220,13 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Forms
 
 **Text Inputs:**
+
 - `Tab`: Move to next field
 - `Shift+Tab`: Move to previous field
 - `Esc`: Clear field (optional enhancement)
 
 **Dropdowns (Select):**
+
 - `Tab`: Focus select
 - `Space` or `Arrow Down`: Open options
 - `Arrow Up/Down`: Navigate options
@@ -3027,10 +3235,12 @@ This style guide ensures consistent, professional, and accessible design across 
 - Type first letter: Jump to matching option
 
 **Checkboxes/Radio Buttons:**
+
 - `Space`: Toggle checkbox
 - `Arrow keys`: Navigate radio group (auto-selects)
 
 **Date Picker:**
+
 - `Tab`: Focus date input
 - `Enter` or `Space`: Open calendar
 - `Arrow keys`: Navigate dates
@@ -3040,12 +3250,14 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Modals
 
 **Focus Trap:**
+
 - Modal opens: Focus moves to first interactive element
 - `Tab`: Cycles through modal elements only (doesn't escape)
 - `Shift+Tab`: Reverse cycle
 - `Esc`: Close modal, return focus to trigger element
 
 **Modal Structure:**
+
 ```html
 <div role="dialog" aria-labelledby="modal-title" aria-modal="true">
   <h2 id="modal-title">Modal Title</h2>
@@ -3058,6 +3270,7 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Kanban Board
 
 **Keyboard Drag-and-Drop:**
+
 - `Tab`: Focus law card
 - `Enter` or `Space`: Pick up card ("Grabbed Arbetsmiljölagen")
 - `Arrow keys`: Move card to different column
@@ -3065,10 +3278,15 @@ This style guide ensures consistent, professional, and accessible design across 
 - `Esc`: Cancel drag
 
 **Screen Reader Announcements:**
+
 ```html
 <div role="region" aria-label="Kanban board">
   <div role="list" aria-label="Not Started column, 5 items">
-    <div role="listitem" tabindex="0" aria-label="Arbetsmiljölagen, High priority">
+    <div
+      role="listitem"
+      tabindex="0"
+      aria-label="Arbetsmiljölagen, High priority"
+    >
       <!-- Card content -->
     </div>
   </div>
@@ -3078,6 +3296,7 @@ This style guide ensures consistent, professional, and accessible design across 
 ### AI Chat
 
 **Keyboard Interaction:**
+
 - `Cmd/Ctrl+K` or `/`: Open chat sidebar
 - `Tab`: Focus message input
 - Type message → `Enter`: Send message
@@ -3086,6 +3305,7 @@ This style guide ensures consistent, professional, and accessible design across 
 - `Arrow Up/Down`: Navigate message history (when input empty)
 
 **Screen Reader:**
+
 - New AI messages announced via `aria-live="polite"`
 - Streaming message updates not announced until complete
 - Citations announced: "Reference 1, Arbetsmiljölagen paragraph 7"
@@ -3097,6 +3317,7 @@ This style guide ensures consistent, professional, and accessible design across 
 ### ARIA Labels and Descriptions
 
 **Buttons Without Text:**
+
 ```html
 <button aria-label="Stäng" class="close-button">×</button>
 <button aria-label="Sök">
@@ -3105,6 +3326,7 @@ This style guide ensures consistent, professional, and accessible design across 
 ```
 
 **Icons:**
+
 ```html
 <span aria-label="Hög prioritet" role="img">🔴</span>
 <svg aria-label="Checkmark icon" aria-hidden="false">
@@ -3113,6 +3335,7 @@ This style guide ensures consistent, professional, and accessible design across 
 ```
 
 **Complex Widgets:**
+
 ```html
 <!-- Law Card -->
 <article aria-labelledby="law-title-123" aria-describedby="law-summary-123">
@@ -3131,6 +3354,7 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Live Regions
 
 **Toast Notifications:**
+
 ```html
 <div role="status" aria-live="polite" aria-atomic="true">
   ✅ Ändringar sparade
@@ -3142,13 +3366,13 @@ This style guide ensures consistent, professional, and accessible design across 
 ```
 
 **Loading States:**
+
 ```html
-<div aria-live="polite" aria-busy="true">
-  Laddar lagar...
-</div>
+<div aria-live="polite" aria-busy="true">Laddar lagar...</div>
 ```
 
 **Streaming AI Response:**
+
 ```html
 <!-- Don't announce each token, announce when complete -->
 <div role="region" aria-label="AI svar" aria-live="off">
@@ -3160,21 +3384,25 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Screen Reader Testing Checklist
 
 **NVDA (Free, Windows):**
+
 - Navigate entire onboarding flow with eyes closed
 - Fill out employee form using only keyboard + NVDA
 - Review law change using NVDA announcements
 - Verify all buttons, links, form fields have proper labels
 
 **JAWS (Paid, Windows):**
+
 - Test with JAWS if budget allows (common in enterprise)
 
 **VoiceOver (Built-in, macOS/iOS):**
+
 - Test on Safari (most common Swedish screen reader combo)
 - `Cmd+F5`: Toggle VoiceOver
 - `Ctrl+Option+Arrow keys`: Navigate
 - `Ctrl+Option+Space`: Activate element
 
 **Testing Priority:**
+
 1. Authentication flow (login, signup, password reset)
 2. Onboarding flow (org-number → questions → law list preview)
 3. Dashboard view (can user understand their compliance status?)
@@ -3188,15 +3416,17 @@ This style guide ensures consistent, professional, and accessible design across 
 ### Focus Order
 
 **Page Load:**
+
 - Focus starts at "Skip to main content" link (for screen reader users)
 - Sighted keyboard users can Tab to skip link if desired
 - After skip link: Focus moves to first interactive element (search or main nav)
 
 **SPA Navigation (Client-Side Routing):**
+
 - On route change: Focus moves to `<h1>` of new page
   ```javascript
   // After route change
-  document.querySelector('h1').focus();
+  document.querySelector('h1').focus()
   ```
 - Announce page change to screen readers:
   ```html
@@ -3206,37 +3436,41 @@ This style guide ensures consistent, professional, and accessible design across 
   ```
 
 **Modal Opens:**
+
 ```javascript
 // Save reference to trigger element
-const triggerElement = document.activeElement;
+const triggerElement = document.activeElement
 
 // Open modal
-modal.showModal();
+modal.showModal()
 
 // Focus first interactive element (or close button)
-modal.querySelector('button, input, select, textarea').focus();
+modal.querySelector('button, input, select, textarea').focus()
 
 // On close, return focus
 modal.addEventListener('close', () => {
-  triggerElement.focus();
-});
+  triggerElement.focus()
+})
 ```
 
 **Delete Item from List:**
+
 ```javascript
 // After deleting item
-const nextItem = deletedItem.nextElementSibling || deletedItem.previousElementSibling;
+const nextItem =
+  deletedItem.nextElementSibling || deletedItem.previousElementSibling
 if (nextItem) {
-  nextItem.focus();
+  nextItem.focus()
 } else {
   // List is empty, focus "Add" button
-  addButton.focus();
+  addButton.focus()
 }
 ```
 
 ### Focus Indicators
 
 **Default Focus Ring:**
+
 ```css
 *:focus-visible {
   outline: 3px solid rgba(37, 99, 235, 0.5); /* Blue 600 @ 50% */
@@ -3253,27 +3487,29 @@ if (nextItem) {
 ```
 
 **Component-Specific Focus:**
+
 ```css
 /* Buttons */
 button:focus-visible {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  border-color: #2563EB;
+  border-color: #2563eb;
 }
 
 /* Inputs */
 input:focus-visible {
-  border-color: #2563EB;
+  border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* Cards (clickable) */
 .card:focus-visible {
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-  border-color: #2563EB;
+  border-color: #2563eb;
 }
 ```
 
 **Skip Focus on Mouse Click:**
+
 ```css
 /* Only show focus ring for keyboard navigation */
 *:focus:not(:focus-visible) {
@@ -3289,6 +3525,7 @@ input:focus-visible {
 ### Inline Validation (After Blur)
 
 **Structure:**
+
 ```html
 <div class="form-field">
   <label for="org-number">Organisationsnummer *</label>
@@ -3308,13 +3545,14 @@ input:focus-visible {
 ```
 
 **CSS:**
+
 ```css
-.form-field input[aria-invalid="true"] {
-  border-color: #EF4444; /* Red 500 */
+.form-field input[aria-invalid='true'] {
+  border-color: #ef4444; /* Red 500 */
 }
 
 .error-message {
-  color: #DC2626; /* Red 600 */
+  color: #dc2626; /* Red 600 */
   font-size: 14px;
   margin-top: 4px;
   display: flex;
@@ -3331,6 +3569,7 @@ input:focus-visible {
 ### Required Fields
 
 **Visual Indicator:**
+
 - Asterisk `*` after label text
 - Color: Red 500 `#EF4444`
 - Also include "required" in ARIA
@@ -3346,6 +3585,7 @@ input:focus-visible {
 ### Password Strength
 
 **Accessible Password Requirements:**
+
 ```html
 <label for="password">Välj lösenord *</label>
 <input
@@ -3364,18 +3604,14 @@ input:focus-visible {
     <li aria-label="Stor bokstav">
       <span aria-hidden="true">✗</span> En stor bokstav
     </li>
-    <li aria-label="Siffra">
-      <span aria-hidden="true">✗</span> En siffra
-    </li>
+    <li aria-label="Siffra"><span aria-hidden="true">✗</span> En siffra</li>
     <li aria-label="Specialtecken">
       <span aria-hidden="true">✗</span> Ett specialtecken
     </li>
   </ul>
 </div>
 
-<div id="password-strength" aria-live="polite">
-  Lösenordsstyrka: Svag
-</div>
+<div id="password-strength" aria-live="polite">Lösenordsstyrka: Svag</div>
 ```
 
 As requirements are met, checkmarks (✓) replace crosses (✗) and aria-labels update.
@@ -3383,6 +3619,7 @@ As requirements are met, checkmarks (✓) replace crosses (✗) and aria-labels 
 ### Form Error Summary
 
 **At Top of Form (on Submit with Errors):**
+
 ```html
 <div role="alert" class="error-summary" tabindex="-1" id="error-summary">
   <h2>Det finns 3 fel i formuläret:</h2>
@@ -3396,8 +3633,8 @@ As requirements are met, checkmarks (✓) replace crosses (✗) and aria-labels 
 
 ```javascript
 // On submit with errors
-const errorSummary = document.getElementById('error-summary');
-errorSummary.focus(); // Move focus to error summary
+const errorSummary = document.getElementById('error-summary')
+errorSummary.focus() // Move focus to error summary
 // Screen reader reads "Det finns 3 fel i formuläret"
 ```
 
@@ -3431,6 +3668,7 @@ errorSummary.focus(); // Move focus to error summary
 ```
 
 **Keyboard:**
+
 - `Enter` or `Space`: Toggle expansion
 - `Tab`: Move to next accordion button
 
@@ -3439,13 +3677,28 @@ errorSummary.focus(); // Move focus to error summary
 ```html
 <div class="tabs">
   <div role="tablist" aria-label="Employee profile tabs">
-    <button role="tab" aria-selected="true" aria-controls="tab-overview" id="tab-1">
+    <button
+      role="tab"
+      aria-selected="true"
+      aria-controls="tab-overview"
+      id="tab-1"
+    >
       Overview
     </button>
-    <button role="tab" aria-selected="false" aria-controls="tab-documents" id="tab-2">
+    <button
+      role="tab"
+      aria-selected="false"
+      aria-controls="tab-documents"
+      id="tab-2"
+    >
       Documents
     </button>
-    <button role="tab" aria-selected="false" aria-controls="tab-compliance" id="tab-3">
+    <button
+      role="tab"
+      aria-selected="false"
+      aria-controls="tab-compliance"
+      id="tab-3"
+    >
       Compliance
     </button>
   </div>
@@ -3463,6 +3716,7 @@ errorSummary.focus(); // Move focus to error summary
 ```
 
 **Keyboard:**
+
 - `Arrow Left/Right`: Navigate between tabs (auto-selects)
 - `Tab`: Move focus into tab panel content
 - `Home`: Jump to first tab
@@ -3476,16 +3730,13 @@ errorSummary.focus(); // Move focus to error summary
   <svg aria-hidden="true"><!-- Question mark icon --></svg>
 </button>
 
-<div
-  id="tooltip-1"
-  role="tooltip"
-  class="tooltip"
->
+<div id="tooltip-1" role="tooltip" class="tooltip">
   Med 10+ anställda krävs skyddsombud enligt Arbetsmiljölagen
 </div>
 ```
 
 **Keyboard:**
+
 - `Focus on button`: Tooltip appears
 - `Blur from button`: Tooltip disappears
 - `Esc`: Dismiss tooltip (if persistent)
@@ -3506,11 +3757,7 @@ errorSummary.focus(); // Move focus to error summary
   aria-activedescendant=""
 />
 
-<ul
-  id="law-suggestions"
-  role="listbox"
-  hidden
->
+<ul id="law-suggestions" role="listbox" hidden>
   <li role="option" id="option-1">Arbetsmiljölagen (1977:1160)</li>
   <li role="option" id="option-2">Arbetstidslagen (1982:673)</li>
   <li role="option" id="option-3">Arbetsmiljöförordningen (1977:1166)</li>
@@ -3518,6 +3765,7 @@ errorSummary.focus(); // Move focus to error summary
 ```
 
 **Keyboard:**
+
 - Type → Suggestions appear, `aria-expanded="true"`
 - `Arrow Down`: Navigate suggestions, `aria-activedescendant` updates
 - `Enter`: Select highlighted suggestion
@@ -3544,6 +3792,7 @@ errorSummary.focus(); // Move focus to error summary
 ```
 
 **Users Affected:**
+
 - Vestibular disorders (motion sickness from animations)
 - ADHD (distracted by movement)
 - Epilepsy (flashing triggers seizures)
@@ -3551,18 +3800,21 @@ errorSummary.focus(); // Move focus to error summary
 ### Safe Animation Guidelines
 
 **Allowed:**
+
 - Fade in/out (opacity transitions)
 - Subtle scale changes (1.0 → 1.05 on hover)
 - Color transitions
 - Smooth scrolling (if `prefers-reduced-motion: no-preference`)
 
 **Avoid:**
+
 - Parallax scrolling effects
 - Auto-playing carousels
 - Rapid transitions (<0.3s can be jarring)
 - Infinite animations (without pause button)
 
 **Example:**
+
 ```css
 /* Hover effect respects motion preference */
 .card {
@@ -3591,12 +3843,14 @@ errorSummary.focus(); // Move focus to error summary
 ### Automated Testing (Run on Every Build)
 
 **Tools:**
+
 - **axe DevTools** (browser extension) - Free, comprehensive
 - **WAVE** (WebAIM) - Visual feedback on errors
 - **Lighthouse** (Chrome DevTools) - Accessibility score
 - **Pa11y** (CI integration) - Automated command-line testing
 
 **Run Tests:**
+
 ```bash
 # Install Pa11y
 npm install -g pa11y
@@ -3609,6 +3863,7 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
 ```
 
 **Pass Criteria:**
+
 - 0 errors in axe DevTools
 - Lighthouse accessibility score > 95
 - WAVE shows 0 errors (warnings acceptable if justified)
@@ -3616,6 +3871,7 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
 ### Manual Testing (Before Release)
 
 **Keyboard Navigation:**
+
 - [ ] Can complete onboarding flow without mouse
 - [ ] Can navigate entire dashboard with keyboard
 - [ ] All modals can be closed with `Esc`
@@ -3624,6 +3880,7 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
 - [ ] No keyboard traps
 
 **Screen Reader (NVDA/JAWS/VoiceOver):**
+
 - [ ] All images have descriptive alt text
 - [ ] Form labels are read correctly
 - [ ] Error messages are announced
@@ -3632,16 +3889,19 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
 - [ ] Success/error toasts announced
 
 **Color Contrast:**
+
 - [ ] All text meets 4.5:1 contrast (normal) or 3:1 (large)
 - [ ] UI components meet 3:1 contrast
 - [ ] Focus indicators meet 3:1 contrast with background
 
 **Resize/Zoom:**
+
 - [ ] UI functional at 200% zoom (browser zoom)
 - [ ] Content reflows at 400% zoom (no horizontal scroll)
 - [ ] Text doesn't truncate or overlap
 
 **Forms:**
+
 - [ ] All inputs have visible labels
 - [ ] Required fields marked and announced
 - [ ] Error messages specific and helpful
@@ -3650,11 +3910,13 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
 ### User Testing (Ideal)
 
 **Recruit 2-3 users with disabilities:**
+
 - 1 screen reader user (blind or low vision)
 - 1 keyboard-only user (motor impairment)
 - 1 user with cognitive disability
 
 **Test Critical Paths:**
+
 1. Sign up for account
 2. Generate law list via onboarding
 3. Review a law change notification
@@ -3662,6 +3924,7 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
 5. Add an employee to HR module
 
 **Gather Feedback:**
+
 - What was confusing?
 - What accessibility features helped?
 - What barriers prevented task completion?
@@ -3688,6 +3951,7 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
 ### Code Examples (Developer Reference)
 
 **Accessible Button:**
+
 ```tsx
 // Good
 <button
@@ -3702,6 +3966,7 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
 ```
 
 **Accessible Form Field:**
+
 ```tsx
 // Good
 <div className="form-field">
@@ -3726,6 +3991,7 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
 ```
 
 **Accessible Modal:**
+
 ```tsx
 // Good
 <Dialog
@@ -3735,9 +4001,7 @@ pa11y-ci --sitemap https://laglig.se/sitemap.xml
   aria-describedby="modal-description"
 >
   <h2 id="modal-title">Bekräfta borttagning</h2>
-  <p id="modal-description">
-    Är du säker på att du vill ta bort denna lag?
-  </p>
+  <p id="modal-description">Är du säker på att du vill ta bort denna lag?</p>
   <button onClick={handleDelete}>Ta bort</button>
   <button onClick={handleClose}>Avbryt</button>
 </Dialog>
@@ -3787,6 +4051,7 @@ support@laglig.se
 This accessibility specification ensures Laglig.se is usable by all Swedish businesses, regardless of their employees' abilities, while meeting legal requirements and improving overall UX quality.
 
 ---
+
 ---
 
 # 8. Responsiveness Strategy
@@ -3796,6 +4061,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 **Design Philosophy:** Desktop-First
 
 **Rationale:**
+
 - **Primary Use Case:** B2B compliance work happens during office hours on desktop computers
 - **Complex Workflows:** Kanban boards, HR management, law review require large screens and precision input (mouse/keyboard)
 - **Power Users:** SMB owners, HR managers, compliance officers need data-dense interfaces with multiple panels
@@ -3803,12 +4069,14 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 - **Analytics Validation:** Expect 75-80% desktop traffic, 15-20% tablet, 5-10% mobile (typical B2B SaaS pattern)
 
 **Strategy:**
+
 - Design and build for desktop (1280px - 1920px) as primary experience
 - Adapt down to tablet (768px - 1023px) with simplified layouts
 - Provide essential-tasks-only mobile experience (320px - 767px)
 - Progressive degradation: Remove complexity as screen size decreases, not add features as size increases
 
 **NOT Mobile-First:**
+
 - We're NOT building "mobile app with desktop bonus features"
 - We're building "desktop power tool with mobile companion"
 - Mobile users can perform critical tasks but will prefer desktop for daily work
@@ -3871,12 +4139,14 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 ### Desktop (1024px+) - PRIMARY EXPERIENCE
 
 **Layout Philosophy:**
+
 - **Data-Dense:** Show maximum information without scrolling (Kanban columns, law lists, dashboard widgets)
 - **Multi-Panel:** Sidebars, main content, chat panel visible simultaneously
 - **Horizontal Real Estate:** Use width for sidebars, toolbars, context panels
 - **Hover Interactions:** Tooltips, dropdown menus, hover states optimized for mouse precision
 
 **Container Widths:**
+
 ```css
 /* Desktop Standard (1024px - 1439px) */
 .container {
@@ -3895,6 +4165,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 ```
 
 **Grid System:**
+
 ```css
 /* 12-column grid (Desktop) */
 .grid {
@@ -3905,32 +4176,41 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 
 /* Example: Dashboard layout */
 .dashboard {
-  grid-template-areas:
-    "sidebar main main main main main main main main chat chat chat";
+  grid-template-areas: 'sidebar main main main main main main main main chat chat chat';
 }
 
-.sidebar { grid-area: sidebar; } /* 1 column (filters) */
-.main { grid-area: main; } /* 6 columns (content) */
-.chat { grid-area: chat; } /* 3 columns (AI chat) */
+.sidebar {
+  grid-area: sidebar;
+} /* 1 column (filters) */
+.main {
+  grid-area: main;
+} /* 6 columns (content) */
+.chat {
+  grid-area: chat;
+} /* 3 columns (AI chat) */
 ```
 
 **Sidebars:**
+
 - **Left Sidebar (Filters/Navigation):** 240px - 280px width, sticky position
 - **Right Sidebar (AI Chat):** 400px width, fixed position, toggleable
 - **Both sidebars visible on 1440px+**, chat collapses on 1024px-1439px
 
 **Tables:**
+
 - Full-width tables with 8-12 columns visible (Employee List: Photo, Name, Role, Department, Date, Contract, Status, Actions)
 - Horizontal scroll NOT acceptable on desktop (design for all columns visible)
 - Sortable columns with arrow indicators
 
 **Kanban Board:**
+
 - 5 columns visible simultaneously (Not Started, In Progress, Blocked, Review, Compliant)
 - Each column: 240px - 280px width
 - Horizontal scrolling if >5 columns created (custom columns)
 - Drag-and-drop optimized for mouse (smooth animations, clear drop zones)
 
 **Modals:**
+
 - Centered overlays (not full-screen)
 - Max width: 600px (forms), 800px (law card details), 1000px (diff viewer)
 - Backdrop blur or dark overlay
@@ -3940,6 +4220,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 ### Tablet (768px - 1023px) - SIMPLIFIED DESKTOP
 
 **Layout Philosophy:**
+
 - **Simplified Desktop:** Not a separate mobile UI, just condensed desktop
 - **Single Sidebar:** Only one sidebar visible at a time (filters OR chat, not both)
 - **Reduced Columns:** 8-column grid instead of 12
@@ -3948,6 +4229,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 **Adaptations:**
 
 **Sidebars:**
+
 ```css
 @media (max-width: 1023px) {
   /* Left sidebar (filters) becomes drawer */
@@ -3977,24 +4259,29 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 ```
 
 **Navigation:**
+
 - Hamburger menu (☰) reveals left sidebar
 - Chat icon reveals right sidebar
 - Only one sidebar open at a time (close others when opening)
 
 **Tables:**
+
 - Hide less critical columns (keep Photo, Name, Role, Status, Actions)
 - "View More" button to see full details in modal
 
 **Kanban:**
+
 - Show 3 columns at a time (swipe/scroll to see others)
 - Horizontal scroll with momentum (iOS-style)
 - Or: Dropdown to select which 3 columns to display
 
 **Modals:**
+
 - Slightly narrower (max 90vw instead of fixed 600px)
 - More padding reduction
 
 **Grid System:**
+
 ```css
 @media (max-width: 1023px) {
   .grid {
@@ -4003,8 +4290,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
   }
 
   .dashboard {
-    grid-template-areas:
-      "main main main main main main main main";
+    grid-template-areas: 'main main main main main main main main';
     /* Sidebars become overlays, not in grid */
   }
 }
@@ -4015,6 +4301,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 ### Mobile (320px - 767px) - ESSENTIAL TASKS ONLY
 
 **Layout Philosophy:**
+
 - **Task-Focused:** Not full productivity tool, just critical tasks
 - **Single Column:** No side-by-side layouts
 - **Full-Screen Interactions:** Modals take full screen, not overlays
@@ -4022,6 +4309,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 - **Read-Only Heavy:** Mobile optimized for reviewing/reading, not creating/editing
 
 **What Works Well on Mobile:**
+
 - ✅ View daily change digest
 - ✅ Review law change (read AI summary, mark as reviewed)
 - ✅ Read law detail page (plain Swedish summary)
@@ -4030,11 +4318,13 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 - ✅ Check notifications
 
 **What's Limited on Mobile:**
+
 - ⚠️ Kanban board (view-only, simple list view)
 - ⚠️ Employee management (view employees, limited editing)
 - ⚠️ Form filling (possible but not optimal)
 
 **What Requires Desktop:**
+
 - ❌ Full Kanban workflow (drag-and-drop)
 - ❌ CSV import (file upload limitations)
 - ❌ Complex multi-step workflows
@@ -4043,6 +4333,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 **Adaptations:**
 
 **Navigation:**
+
 ```css
 @media (max-width: 767px) {
   /* Bottom tab bar navigation */
@@ -4055,7 +4346,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
     display: flex;
     justify-content: space-around;
     background: white;
-    border-top: 1px solid #E2E8F0;
+    border-top: 1px solid #e2e8f0;
     z-index: 100;
   }
 
@@ -4071,6 +4362,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 ```
 
 **Layout:**
+
 ```css
 @media (max-width: 767px) {
   .container {
@@ -4095,6 +4387,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 ```
 
 **Modals → Full-Screen:**
+
 ```css
 @media (max-width: 767px) {
   .modal {
@@ -4122,6 +4415,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
 ```
 
 **Tables → Cards:**
+
 ```css
 @media (max-width: 767px) {
   /* Convert table to stacked cards */
@@ -4142,7 +4436,7 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
     margin-bottom: 16px;
     padding: 16px;
     background: white;
-    border: 1px solid #E2E8F0;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
   }
 
@@ -4155,12 +4449,13 @@ This accessibility specification ensures Laglig.se is usable by all Swedish busi
   .table td::before {
     content: attr(data-label);
     font-weight: 600;
-    color: #64748B;
+    color: #64748b;
   }
 }
 ```
 
 Example:
+
 ```html
 <tr>
   <td data-label="Name">Anna Svensson</td>
@@ -4172,6 +4467,7 @@ Example:
 ```
 
 **Kanban → List View:**
+
 ```css
 @media (max-width: 767px) {
   /* Kanban columns stacked vertically */
@@ -4188,12 +4484,13 @@ Example:
   .kanban-tabs {
     display: flex;
     overflow-x: auto;
-    border-bottom: 1px solid #E2E8F0;
+    border-bottom: 1px solid #e2e8f0;
   }
 }
 ```
 
 **Forms:**
+
 - Full-width inputs (easier to tap)
 - Larger labels (16px instead of 14px)
 - More vertical spacing (20px between fields instead of 16px)
@@ -4204,6 +4501,7 @@ Example:
 ## 8.4 Touch Targets & Interactive Elements
 
 **Minimum Touch Target Size:**
+
 - **Desktop:** 32×32px (mouse precision)
 - **Tablet:** 44×44px (finger tap, hybrid devices)
 - **Mobile:** 48×48px (thumb tap, one-handed use)
@@ -4245,6 +4543,7 @@ Example:
 ```
 
 **Icon Buttons:**
+
 ```css
 .icon-button {
   width: 32px;
@@ -4270,6 +4569,7 @@ Example:
 ```
 
 **Links in Text:**
+
 - Desktop: Underline on hover
 - Mobile: Always underlined (no hover state)
 - Larger tap area on mobile (padding around link)
@@ -4279,33 +4579,53 @@ Example:
 ## 8.5 Typography Scaling
 
 **Desktop Typography (Base):**
+
 ```css
 /* See Section 6.3 for full scale */
-h1 { font-size: 36px; }
-h2 { font-size: 30px; }
-body { font-size: 16px; }
+h1 {
+  font-size: 36px;
+}
+h2 {
+  font-size: 30px;
+}
+body {
+  font-size: 16px;
+}
 ```
 
 **Tablet Adjustments:**
+
 ```css
 @media (max-width: 1023px) {
-  h1 { font-size: 32px; } /* Slightly smaller */
-  h2 { font-size: 28px; }
+  h1 {
+    font-size: 32px;
+  } /* Slightly smaller */
+  h2 {
+    font-size: 28px;
+  }
   /* body remains 16px */
 }
 ```
 
 **Mobile Adjustments:**
+
 ```css
 @media (max-width: 767px) {
-  h1 { font-size: 28px; } /* Scaled down */
-  h2 { font-size: 24px; }
-  h3 { font-size: 20px; }
+  h1 {
+    font-size: 28px;
+  } /* Scaled down */
+  h2 {
+    font-size: 24px;
+  }
+  h3 {
+    font-size: 20px;
+  }
   /* body remains 16px (minimum for readability) */
 }
 ```
 
 **Line Length:**
+
 - Desktop: Max 75 characters (~700px at 16px)
 - Tablet: Max 65 characters (~600px)
 - Mobile: Full width (naturally limited by viewport)
@@ -4328,17 +4648,19 @@ body { font-size: 16px; }
 
 <!-- Picture element for art direction -->
 <picture>
-  <source media="(max-width: 767px)" srcset="hero-mobile.jpg">
-  <source media="(max-width: 1023px)" srcset="hero-tablet.jpg">
-  <img src="hero-desktop.jpg" alt="Laglig.se hero">
+  <source media="(max-width: 767px)" srcset="hero-mobile.jpg" />
+  <source media="(max-width: 1023px)" srcset="hero-tablet.jpg" />
+  <img src="hero-desktop.jpg" alt="Laglig.se hero" />
 </picture>
 ```
 
 **SVG Icons:**
+
 - Use SVG for all icons (scales perfectly)
 - Adjust size via CSS (not inline width/height)
 
 **Charts/Graphs:**
+
 - Desktop: Full complexity (all data points, labels)
 - Tablet: Simplified (fewer labels, larger touch targets)
 - Mobile: Simplified or data table alternative
@@ -4350,6 +4672,7 @@ body { font-size: 16px; }
 ### Dashboard Layout
 
 **Desktop (1024px+):**
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │ Header (Logo, Nav, Workspace, Bell, Profile)       │
@@ -4367,6 +4690,7 @@ body { font-size: 16px; }
 ```
 
 **Tablet (768px - 1023px):**
+
 ```
 ┌─────────────────────────────────────┐
 │ Header (☰ Nav, Bell, Profile)      │
@@ -4380,6 +4704,7 @@ body { font-size: 16px; }
 ```
 
 **Mobile (320px - 767px):**
+
 ```
 ┌───────────────┐
 │ Header (☰, 🔔)│
@@ -4398,15 +4723,18 @@ body { font-size: 16px; }
 ### Kanban Layout
 
 **Desktop:**
+
 - 5 columns side-by-side (Not Started | In Progress | Blocked | Review | Compliant)
 - Each column scrolls vertically independently
 - Horizontal scroll if custom columns added
 
 **Tablet:**
+
 - 3 columns visible (swipe to see others)
 - Or dropdown to select which columns to view
 
 **Mobile:**
+
 - Tabs to switch between columns (one at a time)
 - Or list view grouped by status
 
@@ -4417,16 +4745,19 @@ body { font-size: 16px; }
 ### AI Chat Sidebar
 
 **Desktop:**
+
 - Fixed 400px sidebar on right
 - Always visible (can be collapsed)
 - Side-by-side with main content
 
 **Tablet:**
+
 - Overlay drawer (slides in from right)
 - Overlays main content (doesn't push)
 - Full height, 400px width
 
 **Mobile:**
+
 - Full-screen modal
 - Bottom sheet (slides up from bottom)
 - Or dedicated tab in bottom navigation
@@ -4434,15 +4765,18 @@ body { font-size: 16px; }
 ### Law Card Modal
 
 **Desktop:**
+
 - Centered overlay, max 800px width
 - Backdrop blur effect
 - Tabs for sections (Overview, Documents, Compliance)
 
 **Tablet:**
+
 - Slightly narrower (90vw max)
 - Same tab structure
 
 **Mobile:**
+
 - Full-screen (100vw × 100vh)
 - Tabs become accordion sections (stacked vertically)
 - Scroll vertically through all content
@@ -4450,15 +4784,18 @@ body { font-size: 16px; }
 ### Diff Viewer
 
 **Desktop:**
+
 - Side-by-side comparison (Old | New)
 - Syntax highlighting, line numbers
 - Full legal text visible
 
 **Tablet:**
+
 - Same side-by-side but narrower columns
 - Horizontal scroll if needed
 
 **Mobile:**
+
 - Stacked (Old above, New below)
 - Or tabs to switch between Old/New
 - Simplified view (no line numbers, less syntax highlighting)
@@ -4468,33 +4805,37 @@ body { font-size: 16px; }
 ## 8.9 Performance Considerations by Device
 
 **Desktop:**
+
 - Assume modern hardware (8GB+ RAM, dedicated GPU)
 - Can handle complex animations, large data tables
 - Parallax, subtle motion effects acceptable
 
 **Tablet:**
+
 - Mid-range hardware assumption
 - Simpler animations (fade, slide, no parallax)
 - Limit simultaneous animations
 
 **Mobile:**
+
 - Conservative performance budget
 - Minimal animations (respect `prefers-reduced-motion`)
 - Lazy load images, virtualize long lists
 - Smaller JS bundles (code-split desktop-only features)
 
 **Code Splitting:**
+
 ```javascript
 // Desktop-only features loaded conditionally
 if (window.innerWidth >= 1024) {
-  import('./kanban-drag-drop.js').then(module => {
-    module.initKanban();
-  });
+  import('./kanban-drag-drop.js').then((module) => {
+    module.initKanban()
+  })
 } else {
   // Use simple list view on mobile
-  import('./kanban-simple.js').then(module => {
-    module.initSimpleKanban();
-  });
+  import('./kanban-simple.js').then((module) => {
+    module.initSimpleKanban()
+  })
 }
 ```
 
@@ -4505,16 +4846,19 @@ if (window.innerWidth >= 1024) {
 ### Device Testing Matrix
 
 **Priority 1 (Must Test):**
+
 - **Desktop:** Chrome/Edge (1920×1080), Safari (MacBook Pro 16" - 1728×1117)
 - **Tablet:** iPad Pro 12.9" (1024×1366), iPad Air (820×1180)
 - **Mobile:** iPhone 14 Pro (393×852), iPhone SE (375×667)
 
 **Priority 2 (Should Test):**
+
 - **Desktop:** Firefox (1920×1080), Safari (iMac 27" - 2560×1440)
 - **Tablet:** iPad Mini (744×1133), Surface Pro (912×1368)
 - **Mobile:** iPhone 14 Pro Max (430×932), Samsung Galaxy S23 (360×800)
 
 **Priority 3 (Nice to Test):**
+
 - **Ultrawide Desktop:** 3440×1440 (ensure max-width constrains layout)
 - **Small Laptop:** 1366×768 (common budget laptop resolution)
 - **Android Tablet:** Pixel Tablet (1024×600)
@@ -4522,12 +4866,14 @@ if (window.innerWidth >= 1024) {
 ### Browser DevTools Testing
 
 **Chrome DevTools:**
+
 - Device mode (Cmd+Shift+M)
 - Test responsive breakpoints by dragging viewport
 - Network throttling (Slow 3G for mobile testing)
 - CPU throttling (6x slowdown to simulate low-end devices)
 
 **Responsive Design Testing Checklist:**
+
 - [ ] All breakpoints tested (1440px, 1024px, 768px, 428px, 320px)
 - [ ] Content reflows correctly (no horizontal scroll)
 - [ ] Images scale appropriately (no pixelation or overflow)
@@ -4545,11 +4891,13 @@ if (window.innerWidth >= 1024) {
 **Change Notification Emails:**
 
 **Desktop Email Client:**
+
 - Max width: 600px (standard email width)
 - Two-column layout possible (law details | AI summary)
 - Hover states on buttons
 
 **Mobile Email Client:**
+
 - Single column layout
 - Large CTA buttons (min 44px height)
 - Simplified tables (stack rows)
@@ -4562,7 +4910,10 @@ if (window.innerWidth >= 1024) {
     <td style="padding: 20px;">
       <h2 style="font-size: 24px;">Ny lagändring</h2>
       <p style="font-size: 16px;">Arbetsmiljölagen har uppdaterats...</p>
-      <a href="#" style="display: inline-block; padding: 14px 28px; background: #2563EB; color: white; text-decoration: none; border-radius: 8px;">
+      <a
+        href="#"
+        style="display: inline-block; padding: 14px 28px; background: #2563EB; color: white; text-decoration: none; border-radius: 8px;"
+      >
         Granska ändring
       </a>
     </td>
@@ -4589,6 +4940,7 @@ For each component, verify:
 This desktop-first responsive strategy ensures Laglig.se delivers a powerful productivity tool for desktop users while providing essential mobile access for on-the-go reviews and quick tasks.
 
 ---
+
 ---
 
 # 9. Animation & Performance
@@ -4598,6 +4950,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 **Design Principle:** Subtle Sophistication (OpenAI-Inspired)
 
 **Core Beliefs:**
+
 - **Purpose Over Decoration:** Every animation must serve a functional purpose (feedback, guidance, delight)
 - **Subtlety Over Flash:** Gentle transitions that feel natural, not attention-grabbing effects
 - **Performance First:** Smooth 60fps animations, degrade gracefully on low-end devices
@@ -4613,6 +4966,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 5. **Delight:** Celebrate success (confetti on onboarding complete, checkmark animation)
 
 **Not Animation Purposes:**
+
 - ❌ Decoration (spinning logos, pulsing badges for no reason)
 - ❌ Distraction (auto-playing carousels, infinite loading spinners)
 - ❌ Impatience (slow loading animations that make users wait)
@@ -4624,39 +4978,43 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### Button States
 
 **Hover (Desktop Only):**
+
 ```css
 .button {
-  background: #2563EB; /* Blue 600 */
+  background: #2563eb; /* Blue 600 */
   transition: all 150ms ease-out;
 }
 
 .button:hover {
-  background: #1D4ED8; /* Blue 700 */
+  background: #1d4ed8; /* Blue 700 */
   transform: translateY(-1px); /* Subtle lift */
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Elevated shadow */
 }
 ```
 
 **Active (Click/Tap):**
+
 ```css
 .button:active {
-  background: #1E40AF; /* Blue 800 */
+  background: #1e40af; /* Blue 800 */
   transform: translateY(0); /* Return to base */
   transition: all 50ms ease-out; /* Faster response */
 }
 ```
 
 **Focus (Keyboard Navigation):**
+
 ```css
 .button:focus-visible {
   outline: none;
   box-shadow:
-    0 0 0 3px rgba(37, 99, 235, 0.1), /* Blue 600 glow */
-    0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Elevated shadow */
+    0 0 0 3px rgba(37, 99, 235, 0.1),
+    /* Blue 600 glow */ 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Elevated shadow */
 }
 ```
 
 **Loading State:**
+
 ```css
 .button.loading {
   position: relative;
@@ -4679,26 +5037,29 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 ```
 
 ### Checkbox/Toggle Animation
 
 **Checkbox:**
+
 ```css
 .checkbox {
   position: relative;
   width: 20px;
   height: 20px;
-  border: 2px solid #CBD5E1; /* Slate 300 */
+  border: 2px solid #cbd5e1; /* Slate 300 */
   border-radius: 4px;
   transition: all 150ms ease-out;
 }
 
 .checkbox:checked {
-  background: #2563EB; /* Blue 600 */
-  border-color: #2563EB;
+  background: #2563eb; /* Blue 600 */
+  border-color: #2563eb;
 }
 
 /* Checkmark animation */
@@ -4727,11 +5088,12 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ```
 
 **Toggle Switch:**
+
 ```css
 .toggle {
   width: 44px;
   height: 24px;
-  background: #CBD5E1; /* Slate 300 - Off state */
+  background: #cbd5e1; /* Slate 300 - Off state */
   border-radius: 12px;
   position: relative;
   transition: background 200ms ease-out;
@@ -4752,7 +5114,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 }
 
 .toggle.on {
-  background: #2563EB; /* Blue 600 - On state */
+  background: #2563eb; /* Blue 600 - On state */
 }
 
 .toggle.on::after {
@@ -4764,12 +5126,14 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 
 ```css
 .input {
-  border: 1px solid #E2E8F0; /* Slate 200 */
-  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+  border: 1px solid #e2e8f0; /* Slate 200 */
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out;
 }
 
 .input:focus {
-  border-color: #2563EB; /* Blue 600 */
+  border-color: #2563eb; /* Blue 600 */
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   outline: none;
 }
@@ -4779,7 +5143,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
   position: absolute;
   top: 16px;
   left: 16px;
-  color: #94A3B8; /* Slate 400 */
+  color: #94a3b8; /* Slate 400 */
   transition: all 150ms ease-out;
   pointer-events: none;
 }
@@ -4789,7 +5153,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
   top: -8px;
   left: 12px;
   font-size: 12px;
-  color: #2563EB; /* Blue 600 */
+  color: #2563eb; /* Blue 600 */
   background: white;
   padding: 0 4px;
 }
@@ -4799,13 +5163,13 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 
 ```css
 .card {
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   transition: all 200ms ease-out;
 }
 
 .card:hover {
-  border-color: #BFDBFE; /* Blue 200 */
+  border-color: #bfdbfe; /* Blue 200 */
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
@@ -4813,7 +5177,9 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .card {
-    transition: box-shadow 200ms ease-out, border-color 200ms ease-out;
+    transition:
+      box-shadow 200ms ease-out,
+      border-color 200ms ease-out;
   }
 
   .card:hover {
@@ -4828,7 +5194,9 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 .tooltip {
   opacity: 0;
   transform: translateY(4px);
-  transition: opacity 150ms ease-out, transform 150ms ease-out;
+  transition:
+    opacity 150ms ease-out,
+    transform 150ms ease-out;
   pointer-events: none;
 }
 
@@ -4846,12 +5214,14 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### Philosophy
 
 **Loading is Communication:**
+
 - Immediate feedback (<100ms): No indicator needed, action feels instant
 - Quick actions (100ms - 1s): Inline spinner, disable button
 - Medium actions (1-3s): Progress indicator, keep UI interactive
 - Long actions (3s+): Progress bar with percentage, allow cancel
 
 **Progressive Loading:**
+
 - Show skeleton content immediately (0ms)
 - Load critical content first (above-fold)
 - Lazy load below-fold content
@@ -4860,14 +5230,15 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### Skeleton Loaders
 
 **Law Card Skeleton:**
+
 ```css
 .skeleton {
   background: linear-gradient(
     90deg,
-    #F1F5F9 0%,   /* Slate 100 */
-    #E2E8F0 20%,  /* Slate 200 */
-    #F1F5F9 40%,  /* Slate 100 */
-    #F1F5F9 100%
+    #f1f5f9 0%,
+    /* Slate 100 */ #e2e8f0 20%,
+    /* Slate 200 */ #f1f5f9 40%,
+    /* Slate 100 */ #f1f5f9 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
@@ -4886,7 +5257,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 /* Skeleton structure */
 .law-card-skeleton {
   padding: 16px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
 }
 
@@ -4908,6 +5279,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ```
 
 **Usage:**
+
 ```html
 <div class="law-card-skeleton">
   <div class="skeleton skeleton-title"></div>
@@ -4920,6 +5292,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### Inline Spinners
 
 **Button Spinner:**
+
 ```html
 <button class="button loading">
   <span class="button-text">Sparar ändringar</span>
@@ -4949,6 +5322,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ```
 
 **Inline Text Spinner:**
+
 ```html
 <div class="inline-loading">
   <span class="spinner-small"></span>
@@ -4961,8 +5335,8 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid #CBD5E1; /* Slate 300 */
-  border-top-color: #2563EB; /* Blue 600 */
+  border: 2px solid #cbd5e1; /* Slate 300 */
+  border-top-color: #2563eb; /* Blue 600 */
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
   vertical-align: middle;
@@ -4973,6 +5347,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### Progress Bars
 
 **Determinate Progress (Known Duration):**
+
 ```html
 <div class="progress-bar">
   <div class="progress-fill" style="width: 65%"></div>
@@ -4984,14 +5359,14 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: #E2E8F0; /* Slate 200 */
+  background: #e2e8f0; /* Slate 200 */
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2563EB, #3B82F6); /* Blue gradient */
+  background: linear-gradient(90deg, #2563eb, #3b82f6); /* Blue gradient */
   border-radius: 4px;
   transition: width 300ms ease-out;
   position: relative;
@@ -5016,11 +5391,12 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ```
 
 **Indeterminate Progress (Unknown Duration):**
+
 ```css
 .progress-bar-indeterminate {
   width: 100%;
   height: 4px;
-  background: #E2E8F0;
+  background: #e2e8f0;
   border-radius: 2px;
   overflow: hidden;
   position: relative;
@@ -5033,7 +5409,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
   left: 0;
   bottom: 0;
   width: 30%;
-  background: #2563EB; /* Blue 600 */
+  background: #2563eb; /* Blue 600 */
   border-radius: 2px;
   animation: indeterminateProgress 1.5s ease-in-out infinite;
 }
@@ -5051,6 +5427,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### Streaming AI Response
 
 **Typing Indicator (While AI Thinks):**
+
 ```html
 <div class="typing-indicator">
   <span></span>
@@ -5064,7 +5441,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
   display: flex;
   gap: 4px;
   padding: 12px 16px;
-  background: #F1F5F9; /* Slate 100 */
+  background: #f1f5f9; /* Slate 100 */
   border-radius: 12px;
   width: fit-content;
 }
@@ -5072,7 +5449,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 .typing-indicator span {
   width: 8px;
   height: 8px;
-  background: #94A3B8; /* Slate 400 */
+  background: #94a3b8; /* Slate 400 */
   border-radius: 50%;
   animation: typingBounce 1.4s ease-in-out infinite;
 }
@@ -5086,7 +5463,9 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 }
 
 @keyframes typingBounce {
-  0%, 60%, 100% {
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
   }
   30% {
@@ -5096,17 +5475,24 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ```
 
 **Streaming Text (Token by Token):**
+
 ```css
 /* Cursor blink at end of streaming text */
 .streaming-text::after {
   content: '▋';
   animation: blink 1s step-end infinite;
-  color: #2563EB; /* Blue 600 */
+  color: #2563eb; /* Blue 600 */
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
 }
 ```
 
@@ -5117,6 +5503,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### SPA Route Transitions
 
 **Fade Transition (Default):**
+
 ```css
 .page-transition-enter {
   opacity: 0;
@@ -5138,6 +5525,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ```
 
 **Slide Transition (Hierarchical Navigation):**
+
 ```css
 /* Forward navigation (Dashboard → Law Detail) */
 .slide-forward-enter {
@@ -5156,7 +5544,9 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 .slide-forward-exit-active {
   transform: translateX(-20%);
   opacity: 0.5;
-  transition: transform 300ms ease-out, opacity 300ms ease-out;
+  transition:
+    transform 300ms ease-out,
+    opacity 300ms ease-out;
 }
 
 /* Backward navigation (Law Detail → Dashboard) */
@@ -5168,7 +5558,9 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 .slide-backward-enter-active {
   transform: translateX(0);
   opacity: 1;
-  transition: transform 300ms ease-out, opacity 300ms ease-out;
+  transition:
+    transform 300ms ease-out,
+    opacity 300ms ease-out;
 }
 
 .slide-backward-exit {
@@ -5184,6 +5576,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### Modal Animations
 
 **Modal Appear:**
+
 ```css
 .modal-backdrop {
   opacity: 0;
@@ -5197,7 +5590,9 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 .modal {
   opacity: 0;
   transform: scale(0.95) translateY(-10px);
-  transition: opacity 200ms ease-out, transform 200ms ease-out;
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out;
 }
 
 .modal.visible {
@@ -5207,6 +5602,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ```
 
 **Mobile Full-Screen Modal (Slide Up):**
+
 ```css
 @media (max-width: 767px) {
   .modal {
@@ -5228,7 +5624,9 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
   opacity: 0;
   transform: translateY(-8px);
   transform-origin: top;
-  transition: opacity 150ms ease-out, transform 150ms ease-out;
+  transition:
+    opacity 150ms ease-out,
+    transform 150ms ease-out;
   pointer-events: none;
 }
 
@@ -5257,7 +5655,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
   transition: transform 200ms ease-out;
 }
 
-.accordion-trigger[aria-expanded="true"] svg {
+.accordion-trigger[aria-expanded='true'] svg {
   transform: rotate(180deg);
 }
 ```
@@ -5269,12 +5667,14 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### Duration Guidelines
 
 **Instant (<100ms):**
+
 - Hover state changes
 - Focus indicators
 - Checkbox checks
 - Use: `50ms - 100ms`
 
 **Quick (100ms - 300ms):**
+
 - Button presses
 - Dropdown opens
 - Tooltip appears
@@ -5282,6 +5682,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 - Use: `150ms - 200ms`
 
 **Medium (300ms - 500ms):**
+
 - Page transitions
 - Accordion expand
 - Card movements
@@ -5289,6 +5690,7 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 - Use: `300ms - 400ms`
 
 **Slow (500ms+):**
+
 - Large layout shifts
 - Onboarding celebrations (confetti)
 - Success animations
@@ -5298,22 +5700,27 @@ This desktop-first responsive strategy ensures Laglig.se delivers a powerful pro
 ### Easing Functions
 
 **Default: `ease-out`** (Use for 90% of animations)
+
 ```css
 transition: all 200ms ease-out;
 ```
+
 - Starts fast, ends slow
 - Feels responsive (immediate feedback)
 - Natural deceleration
 
 **Alternative: `ease-in-out`** (Symmetric movements)
+
 ```css
 transition: transform 300ms ease-in-out;
 ```
+
 - Starts slow, fast in middle, ends slow
 - Good for: Slide transitions, scale animations
 - Feels balanced
 
 **Special: `cubic-bezier()` Custom Easing**
+
 ```css
 /* OpenAI-style subtle bounce */
 transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -5326,6 +5733,7 @@ transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
 ```
 
 **Avoid:**
+
 - `linear` (robotic, unnatural)
 - `ease-in` (slow start feels unresponsive)
 - Extreme cubic-bezier values (looks broken)
@@ -5341,7 +5749,7 @@ transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  border: 3px solid #10B981; /* Green 500 */
+  border: 3px solid #10b981; /* Green 500 */
   position: relative;
   animation: checkmarkCircle 400ms ease-out;
 }
@@ -5352,7 +5760,7 @@ transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0);
-  color: #10B981;
+  color: #10b981;
   font-size: 32px;
   font-weight: bold;
   animation: checkmarkPop 300ms ease-out 200ms forwards;
@@ -5376,9 +5784,10 @@ transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
 ### Confetti Animation (Onboarding Complete)
 
 **Subtle Confetti (Not Overwhelming):**
+
 ```javascript
 // Use canvas-confetti library (lightweight)
-import confetti from 'canvas-confetti';
+import confetti from 'canvas-confetti'
 
 function celebrateOnboardingComplete() {
   confetti({
@@ -5387,7 +5796,7 @@ function celebrateOnboardingComplete() {
     origin: { y: 0.6 },
     colors: ['#2563EB', '#10B981', '#F59E0B'], // Blue, Green, Gold
     disableForReducedMotion: true, // Respect prefers-reduced-motion
-  });
+  })
 }
 ```
 
@@ -5400,7 +5809,9 @@ function celebrateOnboardingComplete() {
   right: 16px;
   transform: translateX(400px);
   opacity: 0;
-  transition: transform 300ms ease-out, opacity 300ms ease-out;
+  transition:
+    transform 300ms ease-out,
+    opacity 300ms ease-out;
 }
 
 .toast.visible {
@@ -5421,6 +5832,7 @@ function celebrateOnboardingComplete() {
 ### Page Load Performance
 
 **Target Metrics (Desktop):**
+
 - **First Contentful Paint (FCP):** <1.0s
 - **Largest Contentful Paint (LCP):** <2.0s
 - **Time to Interactive (TTI):** <3.0s
@@ -5428,6 +5840,7 @@ function celebrateOnboardingComplete() {
 - **First Input Delay (FID):** <100ms
 
 **Target Metrics (Mobile 3G):**
+
 - **FCP:** <2.0s
 - **LCP:** <3.0s
 - **TTI:** <5.0s
@@ -5435,21 +5848,25 @@ function celebrateOnboardingComplete() {
 ### Bundle Size Budget
 
 **JavaScript Bundles:**
+
 - Main bundle: <200KB (gzipped)
 - Vendor bundle: <150KB (gzipped)
 - Route-based chunks: <50KB each (gzipped)
 - Total initial load: <350KB (gzipped)
 
 **CSS:**
+
 - Critical CSS (inlined): <14KB
 - Main stylesheet: <50KB (gzipped)
 
 **Images:**
+
 - Hero images: <100KB (WebP format)
 - Law category icons: <10KB (SVG)
 - Avatars: <30KB (WebP, lazy loaded)
 
 **Fonts:**
+
 - Inter (WOFF2): ~20KB per weight
 - Load only needed weights: 400, 500, 600, 700
 - Total fonts: <100KB
@@ -5458,15 +5875,21 @@ function celebrateOnboardingComplete() {
 
 ```html
 <!-- Preconnect to external domains -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://api.laglig.se">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://api.laglig.se" />
 
 <!-- Preload critical resources -->
-<link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/critical.css" as="style">
+<link
+  rel="preload"
+  href="/fonts/inter-var.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+<link rel="preload" href="/critical.css" as="style" />
 
 <!-- DNS prefetch for analytics -->
-<link rel="dns-prefetch" href="https://analytics.laglig.se">
+<link rel="dns-prefetch" href="https://analytics.laglig.se" />
 ```
 
 ---
@@ -5476,35 +5899,40 @@ function celebrateOnboardingComplete() {
 ### Code Splitting
 
 **Route-Based Splitting:**
+
 ```javascript
 // Next.js dynamic imports
-import dynamic from 'next/dynamic';
+import dynamic from 'next/dynamic'
 
 // Heavy components loaded only when needed
 const KanbanBoard = dynamic(() => import('./KanbanBoard'), {
   loading: () => <KanbanSkeleton />,
   ssr: false, // Client-side only
-});
+})
 
 const EmployeeCSVImport = dynamic(() => import('./CSVImport'), {
   loading: () => <p>Laddar...</p>,
-});
+})
 ```
 
 **Component-Based Splitting:**
+
 ```javascript
 // Load AI chat only when user opens it
 const AIChat = dynamic(() => import('./AIChat'), {
   loading: () => <div>Laddar chat...</div>,
-});
+})
 
 // Conditionally render based on user action
-{isChatOpen && <AIChat />}
+{
+  isChatOpen && <AIChat />
+}
 ```
 
 ### Image Optimization
 
 **Next.js Image Component:**
+
 ```jsx
 import Image from 'next/image';
 
@@ -5527,17 +5955,19 @@ import Image from 'next/image';
 ```
 
 **WebP Format:**
+
 ```html
 <picture>
-  <source srcset="hero.webp" type="image/webp">
-  <source srcset="hero.jpg" type="image/jpeg">
-  <img src="hero.jpg" alt="Hero image">
+  <source srcset="hero.webp" type="image/webp" />
+  <source srcset="hero.jpg" type="image/jpeg" />
+  <img src="hero.jpg" alt="Hero image" />
 </picture>
 ```
 
 ### Font Loading Strategy
 
 **Font Display Swap:**
+
 ```css
 @font-face {
   font-family: 'Inter';
@@ -5549,36 +5979,40 @@ import Image from 'next/image';
 ```
 
 **Subset Fonts (Swedish Characters Only):**
+
 ```css
 /* Include only Latin + Swedish characters */
-unicode-range: U+0000-00FF, U+0100-017F, U+00C5, U+00E5, U+00C4, U+00E4, U+00D6, U+00F6;
+unicode-range:
+  U+0000-00FF, U+0100-017F, U+00C5, U+00E5, U+00C4, U+00E4, U+00D6, U+00F6;
 ```
 
 ### Lazy Loading
 
 **Intersection Observer for Lazy Content:**
+
 ```javascript
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
       // Load content when visible
-      entry.target.src = entry.target.dataset.src;
-      observer.unobserve(entry.target);
+      entry.target.src = entry.target.dataset.src
+      observer.unobserve(entry.target)
     }
-  });
-});
+  })
+})
 
 document.querySelectorAll('img[data-src]').forEach((img) => {
-  observer.observe(img);
-});
+  observer.observe(img)
+})
 ```
 
 **Virtualized Lists (React Window):**
+
 ```jsx
-import { FixedSizeList } from 'react-window';
+import { FixedSizeList } from 'react-window'
 
 // Render only visible rows (efficient for 1000+ items)
-<FixedSizeList
+;<FixedSizeList
   height={600}
   itemCount={lawList.length}
   itemSize={80}
@@ -5595,27 +6029,29 @@ import { FixedSizeList } from 'react-window';
 ### Debouncing & Throttling
 
 **Search Input Debounce:**
+
 ```javascript
-import { debounce } from 'lodash';
+import { debounce } from 'lodash'
 
 const handleSearch = debounce((query) => {
   // API call only after 300ms of no typing
-  fetchSearchResults(query);
-}, 300);
+  fetchSearchResults(query)
+}, 300)
 
-<input onChange={(e) => handleSearch(e.target.value)} />
+;<input onChange={(e) => handleSearch(e.target.value)} />
 ```
 
 **Scroll Event Throttle:**
+
 ```javascript
-import { throttle } from 'lodash';
+import { throttle } from 'lodash'
 
 const handleScroll = throttle(() => {
   // Update scroll position max once per 100ms
-  updateScrollIndicator();
-}, 100);
+  updateScrollIndicator()
+}, 100)
 
-window.addEventListener('scroll', handleScroll);
+window.addEventListener('scroll', handleScroll)
 ```
 
 ---
@@ -5625,10 +6061,13 @@ window.addEventListener('scroll', handleScroll);
 ### `prefers-reduced-motion` Support
 
 **Respect User Preference:**
+
 ```css
 /* Default: Animations enabled */
 .card {
-  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+  transition:
+    transform 200ms ease-out,
+    box-shadow 200ms ease-out;
 }
 
 .card:hover {
@@ -5655,26 +6094,33 @@ window.addEventListener('scroll', handleScroll);
 ```
 
 **JavaScript Detection:**
+
 ```javascript
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = window.matchMedia(
+  '(prefers-reduced-motion: reduce)'
+).matches
 
 if (prefersReducedMotion) {
   // Skip confetti animation
-  return;
+  return
 } else {
-  confetti({ /* ... */ });
+  confetti({
+    /* ... */
+  })
 }
 ```
 
 ### Animation Safety Guidelines
 
 **Safe Animations (Keep Even with Reduced Motion):**
+
 - ✅ Opacity fades
 - ✅ Color changes
 - ✅ Box shadow changes
 - ✅ Border color changes
 
 **Unsafe Animations (Disable with Reduced Motion):**
+
 - ❌ Transform (scale, translate, rotate)
 - ❌ Parallax scrolling
 - ❌ Auto-playing carousels
@@ -5687,6 +6133,7 @@ if (prefersReducedMotion) {
 ### Core Web Vitals Tracking
 
 **Google Lighthouse (CI Integration):**
+
 ```bash
 # Install Lighthouse CI
 npm install -g @lhci/cli
@@ -5698,9 +6145,10 @@ lhci autorun --collect.url=https://laglig.se/dashboard
 ```
 
 **Real User Monitoring (RUM):**
+
 ```javascript
 // web-vitals library
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
 
 function sendToAnalytics(metric) {
   // Send to analytics service
@@ -5708,19 +6156,20 @@ function sendToAnalytics(metric) {
     name: metric.name,
     value: metric.value,
     id: metric.id,
-  });
+  })
 }
 
-getCLS(sendToAnalytics);
-getFID(sendToAnalytics);
-getFCP(sendToAnalytics);
-getLCP(sendToAnalytics);
-getTTFB(sendToAnalytics);
+getCLS(sendToAnalytics)
+getFID(sendToAnalytics)
+getFCP(sendToAnalytics)
+getLCP(sendToAnalytics)
+getTTFB(sendToAnalytics)
 ```
 
 ### Performance Budget Enforcement
 
 **Webpack Bundle Analyzer:**
+
 ```bash
 npm install --save-dev webpack-bundle-analyzer
 
@@ -5729,6 +6178,7 @@ npm run build -- --analyze
 ```
 
 **Fail Build on Budget Exceed:**
+
 ```javascript
 // next.config.js
 module.exports = {
@@ -5751,11 +6201,11 @@ module.exports = {
             maxSize: 150000, // 150KB max (gzipped ~50KB)
           },
         },
-      };
+      }
     }
-    return config;
+    return config
   },
-};
+}
 ```
 
 ### Monitoring Checklist
@@ -5773,6 +6223,7 @@ module.exports = {
 ### Pre-Launch Checklist
 
 **Animations:**
+
 - [ ] All animations have a purpose (feedback, guidance, delight)
 - [ ] Animation durations appropriate (<300ms for UI, <500ms for page transitions)
 - [ ] `prefers-reduced-motion` respected (disable transforms, keep opacity/color)
@@ -5781,6 +6232,7 @@ module.exports = {
 - [ ] Mobile animations simpler than desktop
 
 **Performance:**
+
 - [ ] Lighthouse score >90 for all core pages
 - [ ] Core Web Vitals meet targets (LCP <2.5s, FID <100ms, CLS <0.1)
 - [ ] JavaScript bundles within budget (<350KB initial gzipped)
@@ -5791,6 +6243,7 @@ module.exports = {
 - [ ] Virtualized lists for 100+ items
 
 **Loading States:**
+
 - [ ] Skeleton loaders for initial page load
 - [ ] Inline spinners for button actions
 - [ ] Progress bars for multi-step processes
@@ -5808,6 +6261,7 @@ This animation and performance specification ensures Laglig.se feels fast, respo
 ### 10.1 Implementation Phases
 
 **Phase 1: Design System Foundation (Week 1-2)**
+
 - Set up design tokens (colors, typography, spacing)
 - Implement base layout components (Container, Grid, Stack)
 - Create core UI primitives (Button, Input, Select, Checkbox, Radio)
@@ -5815,24 +6269,28 @@ This animation and performance specification ensures Laglig.se feels fast, respo
 - Establish component documentation structure (Storybook recommended)
 
 **Phase 2: Core User Flows (Week 3-4)**
+
 - Authentication flows (Onboarding, Login, Password Reset)
 - Dashboard and navigation (Sidebar, TopNav, Mobile Menu)
 - Law Change Feed (LawChangeCard, Filters, Digest View)
 - Law Detail Page (layout, AI Summary, metadata display)
 
 **Phase 3: Content Management (Week 5-6)**
+
 - Content Editor and publishing system
 - Smart Search with AI
 - AI Chat Interface (streaming responses, context awareness)
 - Form components (multi-step forms, validation, error states)
 
 **Phase 4: Collaboration & Advanced Features (Week 7-8)**
+
 - Kanban Board (drag-and-drop, desktop-first)
 - Employee Management and Role Assignment
 - Notifications system (in-app, email preferences)
 - Settings and account management
 
 **Phase 5: Polish & Optimization (Week 9-10)**
+
 - Accessibility audit (WCAG 2.1 AA compliance)
 - Performance optimization (code splitting, lazy loading)
 - Responsive refinement (tablet and mobile testing)
@@ -5844,6 +6302,7 @@ This animation and performance specification ensures Laglig.se feels fast, respo
 ### 10.2 Design Handoff Checklist
 
 **Before Development Begins:**
+
 - [ ] All PRD epics reviewed and understood by dev team
 - [ ] Component Library specifications reviewed (all 55+ components)
 - [ ] Design tokens documented and approved
@@ -5853,6 +6312,7 @@ This animation and performance specification ensures Laglig.se feels fast, respo
 - [ ] Performance budgets established and agreed upon
 
 **During Development:**
+
 - [ ] Regular design reviews (weekly recommended)
 - [ ] Component library demos in Storybook
 - [ ] QA testing with accessibility tools (axe DevTools, NVDA, VoiceOver)
@@ -5860,6 +6320,7 @@ This animation and performance specification ensures Laglig.se feels fast, respo
 - [ ] Responsive testing on real devices
 
 **Before Launch:**
+
 - [ ] Full accessibility audit completed
 - [ ] Performance benchmarks met (LCP <2.0s, FCP <1.0s)
 - [ ] Cross-browser testing passed
@@ -5872,6 +6333,7 @@ This animation and performance specification ensures Laglig.se feels fast, respo
 ### 10.3 Development Workflow Recommendations
 
 **Tech Stack (from PRD):**
+
 - **Frontend:** Next.js 14 (App Router), React, TypeScript
 - **Styling:** Tailwind CSS with design tokens (CSS custom properties)
 - **Component Development:** Storybook (isolated component development)
@@ -5882,6 +6344,7 @@ This animation and performance specification ensures Laglig.se feels fast, respo
 - **State Management:** React Context + Zustand (for complex state)
 
 **Recommended Tools:**
+
 - **Design Tokens:** Style Dictionary (generate tokens from JSON)
 - **Accessibility:** axe DevTools, pa11y CI, NVDA screen reader
 - **Performance:** Lighthouse CI, web-vitals, webpack-bundle-analyzer
@@ -5889,6 +6352,7 @@ This animation and performance specification ensures Laglig.se feels fast, respo
 - **Linting:** ESLint (accessibility rules), Prettier, Stylelint
 
 **Component Structure:**
+
 ```
 src/
 ├── components/
@@ -5916,6 +6380,7 @@ src/
 ```
 
 **Git Workflow:**
+
 - Feature branches: `feature/component-name`
 - PR reviews required before merge
 - Conventional commits: `feat:`, `fix:`, `docs:`, `style:`, `refactor:`
@@ -5927,12 +6392,14 @@ src/
 ### 10.4 Testing & QA Strategy
 
 **Unit Testing (Vitest + React Testing Library):**
+
 - All interactive components (buttons, forms, modals)
 - Accessibility: keyboard navigation, ARIA attributes, focus management
 - Edge cases: empty states, error states, loading states
 - Target: 80%+ coverage for UI components
 
 **Integration Testing (Playwright):**
+
 - Complete user flows (onboarding → dashboard → law review)
 - Form submissions and validation
 - Search and filtering
@@ -5940,6 +6407,7 @@ src/
 - Cross-browser: Chrome, Firefox, Safari, Edge
 
 **Accessibility Testing:**
+
 - **Automated:** axe DevTools, pa11y CI (catches ~30-40% of issues)
 - **Manual Screen Reader Testing:**
   - NVDA (Windows) - primary test
@@ -5951,12 +6419,14 @@ src/
 - **Responsive Text:** Zoom to 200% without horizontal scroll
 
 **Performance Testing:**
+
 - Lighthouse CI on every PR (target score >90)
 - Core Web Vitals monitoring (LCP, FID, CLS)
 - Bundle size checks (fail if >350KB gzipped)
 - Mobile network throttling (Fast 3G simulation)
 
 **Visual Regression Testing (Optional but Recommended):**
+
 - Percy or Chromatic for visual diffs
 - Catch unintended UI changes
 - Desktop and mobile viewports
@@ -5966,23 +6436,27 @@ src/
 ### 10.5 Design System Maintenance
 
 **Living Documentation:**
+
 - Storybook as source of truth for component library
 - Document component variants, states, and usage guidelines
 - Include accessibility notes and keyboard shortcuts
 - Link to PRD stories for context
 
 **Version Control:**
+
 - Semantic versioning for design system (`@laglig/ui-components`)
 - Changelog for breaking changes
 - Migration guides for major updates
 
 **Regular Audits:**
+
 - **Quarterly:** Accessibility audit (WCAG 2.1 AA compliance)
 - **Quarterly:** Performance review (Core Web Vitals, bundle size)
 - **Bi-annual:** Design system review (remove unused components, update patterns)
 - **Annual:** Full UX research and usability testing
 
 **Feedback Loop:**
+
 - Developer feedback on component APIs
 - Designer feedback on implementation fidelity
 - User feedback on usability and accessibility
@@ -5993,6 +6467,7 @@ src/
 ### 10.6 Future Iterations
 
 **Post-MVP Enhancements (v1.1+):**
+
 - Dark mode support (full design token system)
 - Advanced AI features (law comparison, impact analysis)
 - Collaboration features (comments, @mentions, activity feed)
@@ -6001,18 +6476,21 @@ src/
 - Advanced analytics and reporting
 
 **Design System Evolution:**
+
 - Expand component library based on usage patterns
 - Create industry-specific templates (Retail, Healthcare, Finance)
 - Build design system documentation site (separate from Storybook)
 - Open-source component library (optional, if applicable)
 
 **Performance Optimization:**
+
 - Service Worker for offline support
 - Incremental Static Regeneration (ISR) for law pages
 - Edge caching for AI summaries
 - Progressive Web App (PWA) features
 
 **Accessibility Beyond WCAG 2.1 AA:**
+
 - WCAG 2.2 compliance (additional success criteria)
 - AAA contrast ratios (7:1) as option
 - Cognitive accessibility (Plain Language Summit standards)
@@ -6023,18 +6501,21 @@ src/
 ### 10.7 Key Success Metrics
 
 **User Experience:**
+
 - **Task Success Rate:** >90% for core tasks (review law, ask AI question)
 - **Time on Task:** <2 minutes to review a law change
 - **User Satisfaction:** NPS score >50
 - **Accessibility:** Zero critical accessibility issues in production
 
 **Performance:**
+
 - **Lighthouse Score:** >90 for all pages
 - **LCP:** <2.0s on desktop, <3.0s on mobile
 - **FCP:** <1.0s on desktop, <2.0s on mobile
 - **CLS:** <0.1 (no layout shifts)
 
 **Business:**
+
 - **Adoption Rate:** 70% of invited users complete onboarding
 - **Retention:** 80% monthly active usage
 - **Feature Usage:** 60% of users engage with AI Chat weekly
@@ -6045,6 +6526,7 @@ src/
 ### 10.8 Resources & References
 
 **Design Inspiration:**
+
 - OpenAI ChatGPT: https://chat.openai.com
 - Linear: https://linear.app
 - Stripe Dashboard: https://stripe.com
@@ -6052,22 +6534,26 @@ src/
 - Vercel: https://vercel.com
 
 **Accessibility:**
+
 - WCAG 2.1 Guidelines: https://www.w3.org/WAI/WCAG21/quickref/
 - WebAIM: https://webaim.org
 - A11y Project: https://www.a11yproject.com
 - NVDA Screen Reader: https://www.nvaccess.org
 
 **Performance:**
+
 - Web.dev (Core Web Vitals): https://web.dev/vitals/
 - Lighthouse: https://developer.chrome.com/docs/lighthouse/
 - Next.js Performance: https://nextjs.org/docs/app/building-your-application/optimizing
 
 **Typography & Color:**
+
 - Inter Font: https://rsms.me/inter/
 - JetBrains Mono: https://www.jetbrains.com/lp/mono/
 - Contrast Checker: https://webaim.org/resources/contrastchecker/
 
 **Component Libraries (for reference, not dependencies):**
+
 - Radix UI: https://www.radix-ui.com (unstyled, accessible primitives)
 - Headless UI: https://headlessui.com (Tailwind-compatible)
 - Shadcn UI: https://ui.shadcn.com (example implementations)
@@ -6077,6 +6563,7 @@ src/
 ### 10.9 Final Notes
 
 **This Front-End Specification is a living document.** As Laglig.se evolves, this specification should be updated to reflect:
+
 - User feedback and usability insights
 - New feature requirements from the product roadmap
 - Lessons learned during development
@@ -6084,6 +6571,7 @@ src/
 - Design system additions and refinements
 
 **For Questions or Clarifications:**
+
 - **Product Requirements:** See PRD v1.3 (Epics 1-8)
 - **Component Details:** See `front-end-spec-component-library.md`
 - **Design Philosophy:** Reference Section 6 (Branding & Style Guide)
@@ -6094,6 +6582,7 @@ src/
 ---
 
 **Document Status:**
+
 - **Version:** 1.0
 - **Last Updated:** 2025-11-04
 - **Status:** ✅ **COMPLETE** (All 10 sections finalized)

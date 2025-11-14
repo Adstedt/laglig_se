@@ -9,7 +9,11 @@
     "scrape-laglistor": "ts-node src/laglistor-scraper.ts",
     "dev": "ts-node src/crawler.ts"
   },
-  "keywords": ["playwright", "crawler", "competitor-analysis"],
+  "keywords": [
+    "playwright",
+    "crawler",
+    "competitor-analysis"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {

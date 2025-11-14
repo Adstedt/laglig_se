@@ -5,15 +5,18 @@
 **Total: 29 entities** (including 4 join tables)
 
 ### Core Auth (1):
+
 - [x] User
 
 ### Company & Workspace (4):
+
 - [x] Workspace
 - [x] WorkspaceMember
 - [x] OnboardingSession
 - [x] WorkspaceInvitation
 
 ### Legal Content (11):
+
 - [x] LegalDocument
 - [x] CourtCase
 - [x] EUDocument
@@ -27,14 +30,17 @@
 - [x] LawTask
 
 ### AI Chat (1):
+
 - [x] AIChatMessage
 
 ### Billing (3):
+
 - [x] Subscription
 - [x] WorkspaceUsage
 - [x] WorkspaceAuditLog
 
 ### HR Module (6):
+
 - [x] Employee
 - [x] Department
 - [x] EmployeeDocument
@@ -43,10 +49,12 @@
 - [x] KollektivavtalEmbedding
 
 ### Change Monitoring (2):
+
 - [x] ChangeNotification
 - [x] LawChangeHistory
 
 ### Background Jobs (1):
+
 - [x] BackgroundJob
 
 ---
@@ -153,6 +161,7 @@
   - [x] invited_by ✅
 
 **PRD Line 2550 - Core tables with workspace_id:**
+
 - [x] `laws_in_workspace` ✅ (named LawInWorkspace)
 - [x] `employees` ✅
 - [x] `tasks` ✅ (named LawTask)
@@ -180,21 +189,26 @@
 ## ✅ All 41 Functional Requirements Coverage
 
 ### Epic 1: Foundation
+
 - [x] **FR1:** 170,000+ legal documents → LegalDocument (polymorphic) ✅
 
 ### Epic 2: Legal Content
+
 - [x] **FR1:** Public access to legal documents → LegalDocument with slug for SEO ✅
 
 ### Epic 3: RAG AI Chat
+
 - [x] **FR4:** RAG-powered chatbot → LawEmbedding + KollektivavtalEmbedding ✅
 - [x] **FR5:** Drag-and-drop context → AIChatMessage.retrieved_law_ids ✅
 - [x] **FR6:** Stream components → AIChatMessage ✅
 
 ### Epic 4: Onboarding
+
 - [x] **FR2:** Dynamic onboarding with Bolagsverket → Workspace (org_number, sni_code) + OnboardingSession ✅
 - [x] **FR3:** 60-80 law lists with AI commentary → LawInWorkspace.ai_commentary ✅
 
 ### Epic 5: Workspace & Billing
+
 - [x] **FR17:** Multi-tenancy with 5 roles → WorkspaceMember with WorkspaceRole enum ✅
 - [x] **FR18:** Three subscription tiers → Subscription with SubscriptionTier enum ✅
 - [x] **FR19:** Usage limits → WorkspaceUsage ✅
@@ -207,12 +221,14 @@
 - [x] **FR34:** Billing management → Subscription ✅
 
 ### Epic 6: Kanban & Dashboard
+
 - [x] **FR7:** Kanban board → LawInWorkspace (5 status columns) ✅
 - [x] **FR27:** Dashboard summary → Aggregations from LawInWorkspace ✅
 - [x] **FR28:** Multiple law lists → LawList + LawListItem ✅
 - [x] **FR25:** Global search → LegalDocument.search_vector (tsvector GIN index) ✅
 
 ### Epic 7: HR Module
+
 - [x] **FR13:** Employee CRUD with Fortnox schema → Employee (with fortnox_employee_id) ✅
 - [x] **FR14:** CSV import with fuzzy role matching → Employee.role + role_standardized ✅
 - [x] **FR15:** Kollektivavtal PDF upload → Kollektivavtal + KollektivavtalEmbedding ✅
@@ -220,6 +236,7 @@
 - [x] **FR41:** Fortnox integration foundation → Employee.fortnox_employee_id ✅
 
 ### Epic 8: Change Monitoring
+
 - [x] **FR8:** Daily change monitoring → LawChangeHistory + BackgroundJob ✅
 - [x] **FR9:** Email notifications for law changes → ChangeNotification ✅
 - [x] **FR10:** In-app notification bell → ChangeNotification.read_at ✅
@@ -230,10 +247,12 @@
 - [x] **FR40:** Persistent notification badge → ChangeNotification.read_at ✅
 
 ### Authentication & Security
+
 - [x] **FR29:** Supabase Auth (3 methods) → User (managed by Supabase Auth) ✅
 - [x] **FR30:** Password complexity → Handled by Supabase Auth ✅
 
 ### UI/UX
+
 - [x] **FR23:** Accessible UI → (UI layer, not data model) ✅
 - [x] **FR24:** Individual law pages → LegalDocument with slug ✅
 - [x] **FR26:** Law cards → LawInWorkspace ✅
@@ -244,6 +263,7 @@
 ## ✅ All 26 Non-Functional Requirements Coverage
 
 ### Performance
+
 - [x] **NFR1:** Core Web Vitals → (Application layer, not data model) ✅
 - [x] **NFR2:** RAG latency <3s → AIChatMessage.latency_ms tracking ✅
 - [x] **NFR3:** 75%+ cache hit rate → (Redis layer, tracked via monitoring) ✅
@@ -251,6 +271,7 @@
 - [x] **NFR24:** Semantic chunking 500-800 tokens → LawEmbedding.metadata ✅
 
 ### Security
+
 - [x] **NFR4:** AES-256 encryption for personnummer → Employee.personnummer_encrypted ✅
 - [x] **NFR5:** GDPR compliance → Hard delete support (no soft deletion) ✅
 - [x] **NFR14:** 30-day session timeout → (Supabase Auth handles) ✅
@@ -258,6 +279,7 @@
 - [x] **NFR23:** Input validation → (Application layer with Zod) ✅
 
 ### Operational
+
 - [x] **NFR6:** Email verification → (Supabase Auth handles) ✅
 - [x] **NFR7:** Legal disclaimers → (UI layer) ✅
 - [x] **NFR8:** Rate limiting → (Application layer) ✅
@@ -280,6 +302,7 @@
 ## ✅ Critical Indexes Verification
 
 ### Performance-Critical HNSW Indexes:
+
 ```sql
 CREATE INDEX idx_law_embeddings_hnsw
   ON law_embeddings USING hnsw (embedding vector_cosine_ops);
@@ -289,12 +312,14 @@ CREATE INDEX idx_kollektivavtal_embeddings_hnsw
 ```
 
 ### GIN Indexes (Full-Text Search):
+
 ```sql
 CREATE INDEX idx_legal_documents_search
   ON legal_documents USING gin (search_vector);
 ```
 
 ### B-Tree Indexes (Standard Queries):
+
 - [x] `legal_documents(slug)` - SEO URLs ✅
 - [x] `legal_documents(content_type, document_number)` - Unique constraint ✅
 - [x] `law_in_workspace(workspace_id, status, position)` - Kanban queries ✅
@@ -335,12 +360,14 @@ CREATE INDEX idx_legal_documents_search
 ## ✅ Relationship Verification
 
 ### One-to-One:
+
 - [x] Workspace ↔ Subscription ✅
 - [x] Workspace ↔ WorkspaceUsage ✅
 - [x] LegalDocument ↔ CourtCase ✅
 - [x] LegalDocument ↔ EUDocument ✅
 
 ### One-to-Many:
+
 - [x] User → WorkspaceMember ✅
 - [x] Workspace → WorkspaceMember ✅
 - [x] Workspace → LawInWorkspace ✅
@@ -357,10 +384,12 @@ CREATE INDEX idx_legal_documents_search
 - [x] Department → Department (parent self-reference) ✅
 
 ### Many-to-Many (via Join Tables):
+
 - [x] LawList ↔ LegalDocument (via LawListItem) ✅
 - [x] Employee ↔ Kollektivavtal (via EmployeeKollektivavtal) ✅
 
 ### Many-to-Many (via Arrays):
+
 - [x] LawInWorkspace ↔ Employee (via assigned_employee_ids UUID[]) ✅
 - [x] AIChatMessage ↔ LegalDocument (via retrieved_law_ids UUID[]) ✅
 
@@ -400,27 +429,33 @@ CREATE INDEX idx_legal_documents_search
 ## ✅ Data Type Correctness
 
 ### UUIDs:
+
 - [x] All primary keys are UUID ✅
 - [x] All foreign keys are UUID ✅
 
 ### Timestamps:
+
 - [x] All timestamps use DateTime (timestamptz in PostgreSQL) ✅
 - [x] created_at defaults to now() ✅
 - [x] updated_at uses @updatedAt (Prisma automatic) ✅
 
 ### Text Fields:
+
 - [x] Short strings use String (VARCHAR) ✅
 - [x] Long content uses @db.Text (TEXT) ✅
 
 ### Vectors:
+
 - [x] Embeddings use Unsupported("vector(1536)") ✅
 - [x] search_vector uses Unsupported("tsvector") ✅
 
 ### JSONB:
+
 - [x] Flexible metadata uses Json type ✅
 - [x] All JSONB fields documented with structure ✅
 
 ### Arrays:
+
 - [x] UUID arrays use String[] @db.Uuid ✅
 - [x] String arrays use String[] ✅
 
@@ -437,6 +472,7 @@ CREATE INDEX idx_legal_documents_search
 5. **SNI Code Mappings** - Could be static data or simple lookup table (not critical for MVP)
 
 **Justification:** All of these are either:
+
 - Handled by external services (Supabase Auth, Resend)
 - Static data that doesn't require a database table
 - Post-MVP features explicitly deferred
@@ -459,6 +495,7 @@ CREATE INDEX idx_legal_documents_search
 **Failed: 0 ❌**
 
 ### Summary:
+
 - ✅ All 29 entities implemented
 - ✅ All 41 Functional Requirements covered
 - ✅ All 26 Non-Functional Requirements covered

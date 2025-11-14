@@ -6,18 +6,22 @@
 ---
 
 ## Overview
+
 Complete archive of Swedish laws and regulations from Svensk författningssamling (SFS)
 
 ## Access Methods
 
 ### 1. Kronologiskt register (Chronological Register)
+
 **Browse by publication year:** 2025 → 1736-1944
 
 **User Interface:**
+
 - Top section: Grid/table view of all SFS numbers from selected year
 - Bottom section: Detailed list view with full titles
 
 **Data Structure - List View:**
+
 ```
 Checkbox | SFS Number | Full Title/Description
 ---------|------------|----------------------
@@ -27,6 +31,7 @@ Checkbox | SFS Number | Full Title/Description
 ```
 
 **Fields Present:**
+
 - SFS identifier (format: SFS YYYY:NNNN)
 - Document type (Lag, Förordning, Tillkännagivande, etc.)
 - Full title/description
@@ -34,9 +39,11 @@ Checkbox | SFS Number | Full Title/Description
 - Option: "Inkludera upphävda" (include repealed laws)
 
 ### 2. Lagförkortningar (Law Abbreviations)
+
 **Browse by abbreviation:** A-Ö alphabetical index
 
 **Data Structure:**
+
 ```
 Abbreviation | SFS Reference | Full Title
 -------------|---------------|------------
@@ -48,11 +55,13 @@ AMF          | SFS 1977:1166| Arbetsmiljöförordning (1977:1166)
 ```
 
 **Fields Present:**
+
 - Common abbreviation (ABL, AML, etc.)
 - SFS identifier
 - Full law title
 
 ## Data Volume Estimate
+
 - **Years covered:** 289 years (1736-2025)
 - **Laws per year:** Varies (2022 had 1826+ SFS entries)
 - **Total estimate:** 50,000-100,000+ SFS entries
@@ -61,6 +70,7 @@ AMF          | SFS 1977:1166| Arbetsmiljöförordning (1977:1166)
 ## Data Source Identification
 
 ### Primary Source: Riksdagen (Swedish Parliament)
+
 - **Website:** https://data.riksdagen.se
 - **API:** https://data.riksdagen.se/dokumentlista/?doktyp=sfs
 - **Format:** JSON, XML, CSV available
@@ -69,17 +79,20 @@ AMF          | SFS 1977:1166| Arbetsmiljöförordning (1977:1166)
 - **Historical:** ✅ Complete archive available
 
 ### API Details
+
 - **Base:** https://data.riksdagen.se/data/dokument/
 - **SFS type:** `doktyp=sfs`
 - **Authentication:** ✅ No authentication required
 - **Rate limits:** Unknown (need to verify)
 
 ### Alternative Sources
+
 - Lagen.nu (open source legal data project)
 - Direct scraping from regeringen.se/lagrummet
 - Swedish Legal Information Institute (if exists)
 
 ### Data Freshness
+
 - **New SFS published:** Daily/weekly in Svensk författningssamling
 - **Notisum update frequency:** Unknown (likely daily or real-time via API)
 - **Riksdagen API:** Real-time
@@ -87,6 +100,7 @@ AMF          | SFS 1977:1166| Arbetsmiljöförordning (1977:1166)
 ## Metadata & Enrichment
 
 ### What Notisum likely adds:
+
 - Abbreviation mapping (ABL → Aktiebolagslag)
 - Categorization/tagging
 - Commentary and explanations (from their own legal experts)
@@ -94,6 +108,7 @@ AMF          | SFS 1977:1166| Arbetsmiljöförordning (1977:1166)
 - Amendment tracking
 
 ### What's from source data:
+
 - SFS number
 - Publication date
 - Full legal text
@@ -106,18 +121,22 @@ AMF          | SFS 1977:1166| Arbetsmiljöförordning (1977:1166)
 When clicking a specific SFS number (e.g., SFS 2022:1), user navigates to individual law page.
 
 ### URL Pattern
+
 `https://www.notisum.se/rn/document/?id=YYYYNNNN`
+
 - Example: `?id=20250280` (for SFS 2025:280)
 - Example: `?id=SFS2010-0800` (alternative format for Skollagen 2010:800)
 
 ### Content Structure - HTML View
 
 **Header Information:**
+
 - SFS number (e.g., "SFS 2025:280")
 - Full title (e.g., "Förordning (2025:280) om nationellt professionsprogram för rektorer, lärare och förskollärare")
 - Amendment status: "Senaste ändring: -, författningstexten ändras när ändring trätt ikraft"
 
 **Main Content:**
+
 - Full legal text in HTML format
 - Structured by paragraphs (§)
 - Sections and subsections with headers
@@ -125,6 +144,7 @@ When clicking a specific SFS number (e.g., SFS 2022:1), user navigates to indivi
 - Ikraftträdande- och övergångsbestämmelser (Entry into force and transitional provisions)
 
 **Interactive Elements:**
+
 - Tabs: "Fulltext" (default view) and "Fakta & Historik" (Facts & History)
 - Print button
 - Add to list/favorite functionality (based on UI elements seen)
@@ -132,21 +152,25 @@ When clicking a specific SFS number (e.g., SFS 2022:1), user navigates to indivi
 ### Cross-Reference Navigation Flow
 
 **Step 1: Click cross-reference link** (e.g., click "skollagen (2010:800)" in text)
+
 - Navigates to: `https://www.notisum.se/rn/document/?id=SFS2010-0800`
 
 **Step 2: Intermediate summary page shows:**
+
 - SFS number and title
 - Summary/description box with key information about the law
 - "Visa dokument" (Show document) button
 - Tabs for additional information
 
 **Step 3: Click "Visa dokument"**
+
 - Opens official PDF: `https://www.notisum.se/dok/sls/sfs/20100800.pdf`
 - PDF URL pattern: `/dok/sls/sfs/[YYYYNNNN].pdf`
 
 ### PDF Document Format
 
 **Official SFS PDF contains:**
+
 - Swedish government crown logo
 - Header: "Svensk författningssamling"
 - SFS number (top right)
@@ -175,6 +199,7 @@ When clicking a specific SFS number (e.g., SFS 2022:1), user navigates to indivi
 ### Notisum Value-Add on Detail Pages
 
 **What Notisum provides beyond source data:**
+
 - HTML rendering with interactive cross-links (not just static PDF)
 - Summary/description boxes on intermediate pages
 - Tabs for "Fakta & Historik"
@@ -183,6 +208,7 @@ When clicking a specific SFS number (e.g., SFS 2022:1), user navigates to indivi
 - Likely: Commentary and expert analysis (not visible in screenshots but common in legal databases)
 
 **What comes from official source:**
+
 - The PDF files themselves (likely direct from government publication)
 - Legal text content
 - SFS numbering
@@ -195,6 +221,7 @@ Clicking the "Fakta & Historik" tab reveals comprehensive metadata and amendment
 ### Metadata Section
 
 **Core Facts Displayed:**
+
 - **Myndighet** (Authority/Ministry): e.g., "Utbildningsdepartementet"
 - **Beteckning** (Designation): SFS number
 - **Utfärdad** (Issued): Original publication date (e.g., "2010-06-23")
@@ -245,6 +272,7 @@ Kommentar :
 ```
 
 **Amendment Chronology:**
+
 - Listed in reverse chronological order (newest first)
 - Shows complete amendment trail from original publication to present
 - Example for Skollagen (2010:800): Amendments from 2025:729, 2025:182, 2024:1072, 2024:1074, etc., back to original
@@ -254,6 +282,7 @@ Kommentar :
 Each amendment has an official PDF link. These PDFs contain:
 
 **Header:**
+
 - "Svensk författningssamling" with crown logo
 - SFS number (e.g., "SFS 2024:1072")
 - Document type: "Lag" (if amendment is itself a law)
@@ -266,6 +295,7 @@ Each amendment has an official PDF link. These PDFs contain:
 
 **Amendment Instructions:**
 Explicit instructions for how to modify the base law:
+
 - "dels att [section] ska upphöra att gälla" (shall cease to apply)
 - "dels att [section] ska ha följande lydelse" (shall have the following wording)
 - "dels att rubriken närmast före [section] ska lyda" (heading before section shall read)
@@ -275,6 +305,7 @@ Explicit instructions for how to modify the base law:
 Full text of new or modified sections
 
 **Footnotes:**
+
 - Riksdag proposal references (Prop., bet., rskr.)
 - "Senaste lydelse av [section]: [previous SFS]" (Most recent wording of section)
   - Shows which previous amendment last touched this section
@@ -284,6 +315,7 @@ Full text of new or modified sections
 "Denna lag träder i kraft den [date]"
 
 **Signatures:**
+
 - "På regeringens vägnar"
 - Minister name
 - Department official name
@@ -292,6 +324,7 @@ Full text of new or modified sections
 ### Data Fields in Amendment History
 
 **Per Amendment:**
+
 - Amendment SFS number
 - Link to official PDF of amendment law
 - Text description of changes (which sections affected)
@@ -305,12 +338,14 @@ Full text of new or modified sections
 ### Data Volume
 
 **For a major law like Skollagen (2010:800):**
+
 - Original publication: 2010
 - Years active: 15 years (2010-2025)
 - Number of amendments: Dozens to hundreds
 - Each amendment: Metadata + full PDF + change description
 
 **For all ~100,000 SFS entries:**
+
 - Many have zero amendments (one-time regulations)
 - Major framework laws: 50-200+ amendments over decades
 - Total amendment documents: Estimated tens of thousands
@@ -322,6 +357,7 @@ Full text of new or modified sections
 SFS amendment data is also accessible through **custom law lists** feature:
 
 **Context:**
+
 - Users create custom law lists (e.g., "01 ALLMÄNNA REGLER")
 - Each list contains selected laws with custom columns/notes
 - Lists have user-defined metadata: "Så här påverkas vi" (How this affects us), "Så här uppfyller vi kraven" (How we comply)
@@ -330,12 +366,14 @@ SFS amendment data is also accessible through **custom law lists** feature:
 Clicking zoom icon (🔍) on a law opens amendment history in **table modal format**:
 
 **Columns:**
+
 - Beteckning (SFS number of amendment)
 - Utkom den (Publication date)
 - Författningsrubrik (Title of amending law)
 - Ikraftträdande (Entry into force date)
 
 **Features:**
+
 - Expandable rows showing change details (e.g., "ändr. 6 kap. 7 §")
 - PDF links to official amendment documents
 - "Kommentera ändring" button (users can add notes on specific amendments)

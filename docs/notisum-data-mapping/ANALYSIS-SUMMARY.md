@@ -10,6 +10,7 @@
 ## Executive Summary
 
 Notisum provides access to **18+ distinct legal document types** across three major categories:
+
 1. **Swedish Legislation** (SFS laws, preparatory works)
 2. **EU Legislation** (Regulations, directives, court cases)
 3. **Swedish Court Case Law** (9 different courts/tribunals)
@@ -21,82 +22,89 @@ Notisum provides access to **18+ distinct legal document types** across three ma
 ## Document Types by Priority for Laglig.se MVP
 
 ### Tier 1: ESSENTIAL (Must-Have for MVP)
+
 **Business Impact:** Universal - All businesses need these
 
-| Document Type | Volume | Data Source | Hosted by Notisum | Business Value | MVP Priority |
-|--------------|--------|-------------|-------------------|----------------|--------------|
-| **SFS Laws & Ordinances** | 50,000-100,000+ | Riksdagen API | ✅ Yes | ⭐⭐⭐⭐⭐ Universal | **CRITICAL** |
-| **HFD/RegR (Admin Court)** | 1,500-3,000 | Domstolsverket | ✅ Yes | ⭐⭐⭐⭐⭐ Tax/permits | **CRITICAL** |
-| **AD (Labour Court)** | 2,000-3,000 | Domstolsverket | ❌ BROKEN | ⭐⭐⭐⭐⭐ All employers | **BLOCKED** |
+| Document Type              | Volume          | Data Source    | Hosted by Notisum | Business Value           | MVP Priority |
+| -------------------------- | --------------- | -------------- | ----------------- | ------------------------ | ------------ |
+| **SFS Laws & Ordinances**  | 50,000-100,000+ | Riksdagen API  | ✅ Yes            | ⭐⭐⭐⭐⭐ Universal     | **CRITICAL** |
+| **HFD/RegR (Admin Court)** | 1,500-3,000     | Domstolsverket | ✅ Yes            | ⭐⭐⭐⭐⭐ Tax/permits   | **CRITICAL** |
+| **AD (Labour Court)**      | 2,000-3,000     | Domstolsverket | ❌ BROKEN         | ⭐⭐⭐⭐⭐ All employers | **BLOCKED**  |
 
 **Total Tier 1 Pages:** ~55,000-105,000 pages (excluding broken AD)
 
 ---
 
 ### Tier 2: HIGH PRIORITY (Strong MVP Candidates)
+
 **Business Impact:** Very high for most businesses
 
-| Document Type | Volume | Data Source | Hosted by Notisum | Business Value | MVP Priority |
-|--------------|--------|-------------|-------------------|----------------|--------------|
-| **HD (Supreme Court)** | 3,000-5,000 | Domstolsverket | ✅ Yes | ⭐⭐⭐⭐ Legal precedent | **HIGH** |
-| **HovR (Courts of Appeal)** | 1,500-3,000 | Domstolsverket | ✅ Yes | ⭐⭐⭐⭐ Practical precedent | **HIGH** |
-| **EU Regulations** | 100,000+ | EUR-Lex API | ✅ Yes | ⭐⭐⭐⭐ All businesses | **HIGH** |
-| **EU Directives** | 10,000-15,000 | EUR-Lex API | ✅ Yes | ⭐⭐⭐⭐ Compliance | **HIGH** |
+| Document Type               | Volume        | Data Source    | Hosted by Notisum | Business Value               | MVP Priority |
+| --------------------------- | ------------- | -------------- | ----------------- | ---------------------------- | ------------ |
+| **HD (Supreme Court)**      | 3,000-5,000   | Domstolsverket | ✅ Yes            | ⭐⭐⭐⭐ Legal precedent     | **HIGH**     |
+| **HovR (Courts of Appeal)** | 1,500-3,000   | Domstolsverket | ✅ Yes            | ⭐⭐⭐⭐ Practical precedent | **HIGH**     |
+| **EU Regulations**          | 100,000+      | EUR-Lex API    | ✅ Yes            | ⭐⭐⭐⭐ All businesses      | **HIGH**     |
+| **EU Directives**           | 10,000-15,000 | EUR-Lex API    | ✅ Yes            | ⭐⭐⭐⭐ Compliance          | **HIGH**     |
 
 **Total Tier 2 Pages:** ~115,000-125,000 pages
 
 ---
 
 ### Tier 3: MODERATE PRIORITY (Industry-Specific)
+
 **Business Impact:** Critical for specific industries only
 
-| Document Type | Volume | Data Source | Hosted by Notisum | Business Value | MVP Priority |
-|--------------|--------|-------------|-------------------|----------------|--------------|
-| **MÖD (Environmental Court)** | 600-1,200 | Domstolsverket | ✅ Yes | ⭐⭐⭐ Construction/Energy | **MODERATE** |
-| **EU Court Cases (CJEU)** | 30,000-40,000 | EUR-Lex API | ✅ Yes | ⭐⭐⭐ EU compliance | **MODERATE** |
-| **MIG (Migration Court)** | 200-500 | Domstolsverket | ✅ Yes | ⭐⭐ Int'l hiring | **LOW-MOD** |
+| Document Type                 | Volume        | Data Source    | Hosted by Notisum | Business Value             | MVP Priority |
+| ----------------------------- | ------------- | -------------- | ----------------- | -------------------------- | ------------ |
+| **MÖD (Environmental Court)** | 600-1,200     | Domstolsverket | ✅ Yes            | ⭐⭐⭐ Construction/Energy | **MODERATE** |
+| **EU Court Cases (CJEU)**     | 30,000-40,000 | EUR-Lex API    | ✅ Yes            | ⭐⭐⭐ EU compliance       | **MODERATE** |
+| **MIG (Migration Court)**     | 200-500       | Domstolsverket | ✅ Yes            | ⭐⭐ Int'l hiring          | **LOW-MOD**  |
 
 **Total Tier 3 Pages:** ~30,000-40,000 pages
 
 ---
 
 ### Tier 4: PROFESSIONAL/PHASE 2 (Legal Professionals)
+
 **Business Impact:** Moderate - Mainly for legal interpretation
 
-| Document Type | Volume | Data Source | Hosted by Notisum | Business Value | Phase 2 Priority |
-|--------------|--------|-------------|-------------------|----------------|------------------|
-| **Propositioner** | 10,000-15,000 | Riksdagen API | ✅ Yes | ⭐⭐⭐ Legal interpretation | **PHASE 2** |
-| **MD (Historical Marketing Court)** | 500-1,000 | Domstolsverket | ✅ Yes (ends 2016) | ⭐⭐ Marketing law | **PHASE 2** |
+| Document Type                       | Volume        | Data Source    | Hosted by Notisum  | Business Value              | Phase 2 Priority |
+| ----------------------------------- | ------------- | -------------- | ------------------ | --------------------------- | ---------------- |
+| **Propositioner**                   | 10,000-15,000 | Riksdagen API  | ✅ Yes             | ⭐⭐⭐ Legal interpretation | **PHASE 2**      |
+| **MD (Historical Marketing Court)** | 500-1,000     | Domstolsverket | ✅ Yes (ends 2016) | ⭐⭐ Marketing law          | **PHASE 2**      |
 
 **Total Tier 4 Pages:** ~10,500-16,000 pages
 
 ---
 
 ### Tier 5: LOW PRIORITY (Skip or External Link Only)
+
 **Business Impact:** Low - Preparatory works or limited applicability
 
-| Document Type | Volume | Data Source | Hosted by Notisum | Business Value | Recommendation |
-|--------------|--------|-------------|-------------------|----------------|----------------|
-| **SOU (Government Inquiries)** | 2,000-3,000 | Regeringen.se | ❌ External link | ⭐⭐ Policy | **SKIP/LINK** |
-| **Departementsserien (Ds)** | 1,000-2,000 | Regeringen.se | ❌ External link | ⭐ Policy | **SKIP** |
-| **Förordningsmotiv** | 100-300 | Gov't databases | ⚠️ Sparse/broken | ⭐ Rare | **SKIP** |
-| **EU Treaties & Other Acts** | 10,000+ | EUR-Lex API | ✅ Yes | ⭐ Reference | **SKIP MVP** |
+| Document Type                  | Volume      | Data Source     | Hosted by Notisum | Business Value | Recommendation |
+| ------------------------------ | ----------- | --------------- | ----------------- | -------------- | -------------- |
+| **SOU (Government Inquiries)** | 2,000-3,000 | Regeringen.se   | ❌ External link  | ⭐⭐ Policy    | **SKIP/LINK**  |
+| **Departementsserien (Ds)**    | 1,000-2,000 | Regeringen.se   | ❌ External link  | ⭐ Policy      | **SKIP**       |
+| **Förordningsmotiv**           | 100-300     | Gov't databases | ⚠️ Sparse/broken  | ⭐ Rare        | **SKIP**       |
+| **EU Treaties & Other Acts**   | 10,000+     | EUR-Lex API     | ✅ Yes            | ⭐ Reference   | **SKIP MVP**   |
 
 ---
 
 ### Tier 6: SKIP ENTIRELY (Not Viable)
+
 **Data Quality Issues or Not Binding**
 
-| Document Type | Volume | Data Source | Issue | Recommendation |
-|--------------|--------|-------------|-------|----------------|
-| **JO (Parliamentary Ombudsman)** | Unknown | jo.se | ⚠️ Broken links, not binding | **SKIP** |
-| **JK (Chancellor of Justice)** | Unknown | jk.se | ❌ Ends 2014, broken, not binding | **SKIP** |
+| Document Type                    | Volume  | Data Source | Issue                             | Recommendation |
+| -------------------------------- | ------- | ----------- | --------------------------------- | -------------- |
+| **JO (Parliamentary Ombudsman)** | Unknown | jo.se       | ⚠️ Broken links, not binding      | **SKIP**       |
+| **JK (Chancellor of Justice)**   | Unknown | jk.se       | ❌ Ends 2014, broken, not binding | **SKIP**       |
 
 ---
 
 ## Data Source Availability Summary
 
 ### ✅ EXCELLENT API ACCESS
+
 - **Riksdagen API:** SFS laws, Propositioner, Utskottsbetänkanden
   - Format: JSON, XML, CSV
   - Authentication: None required
@@ -108,18 +116,21 @@ Notisum provides access to **18+ distinct legal document types** across three ma
   - Status: ✅ Free, public, comprehensive
 
 ### ⚠️ LIKELY API/FEED AVAILABLE
+
 - **Domstolsverket:** All Swedish court cases (HD, HovR, HFD, AD, MÖD, MIG, MD)
   - Format: Unknown (investigate)
   - Authentication: Unknown
   - Status: ⚠️ Need to verify API availability
 
 ### ❌ NO STRUCTURED API
+
 - **Regeringen.se:** SOU, Ds, Kommittédirektiv, Förordningsmotiv
   - Format: PDF, HTML (scraping required)
   - Authentication: N/A
   - Status: ❌ No public API, would require scraping
 
 ### ❌ DATA QUALITY ISSUES
+
 - **AD (Arbetsdomstolen):** Individual pages broken in Notisum
 - **JO:** Limited content, broken links
 - **JK:** Database ends 2014, 90% broken links
@@ -131,6 +142,7 @@ Notisum provides access to **18+ distinct legal document types** across three ma
 ### MVP (Phase 1) - Recommended Content Types
 
 **Core Legal Content (Tier 1 + 2):**
+
 1. ✅ **SFS Laws & Ordinances** (50,000-100,000 pages)
 2. ✅ **HFD/RegR Administrative Court** (1,500-3,000 pages)
 3. ⚠️ **AD Labour Court** (BLOCKED - investigate data source)
@@ -142,6 +154,7 @@ Notisum provides access to **18+ distinct legal document types** across three ma
 **Total MVP Pages:** ~170,000-225,000 legal content pages
 
 **Exclude from MVP:**
+
 - ❌ Propositioner (Phase 2)
 - ❌ SOU/Ds (External links or Phase 3)
 - ❌ MÖD, MIG (Industry-specific, Phase 2)
@@ -187,6 +200,7 @@ enum ContentType {
 **Each content type requires different metadata fields:**
 
 **SFS Laws:**
+
 - SFS number (YYYY:NNNN)
 - Title
 - Ministry
@@ -196,6 +210,7 @@ enum ContentType {
 - Cross-references to other laws
 
 **Court Cases (HD, HovR, HFD, etc.):**
+
 - Case number (varies by court)
 - Court name
 - Decision date
@@ -206,6 +221,7 @@ enum ContentType {
 - Subject matter tags
 
 **EU Regulations/Directives:**
+
 - CELEX number
 - EU document number
 - Publication date
@@ -221,9 +237,11 @@ enum ContentType {
 ### Notisum URL Patterns by Document Type
 
 **Swedish Laws:**
+
 - SFS: `?id=YYYYNNNN` (e.g., 20250280)
 
 **Swedish Courts:**
+
 - HD: `?id=HDYYYYNNN` (e.g., HD025003)
 - HovR: `?id=RHYYYYNNN` (e.g., RH024001)
 - HFD: `?id=RRYYYYNNN` (e.g., RR023001)
@@ -233,17 +251,20 @@ enum ContentType {
 - MD: `?id=MDYYYYNN` (e.g., MD016001)
 
 **Swedish Preparatory Works:**
+
 - Proposition: `?id=PYYYYNN` (e.g., P2324028)
 - SOU: `?id=SOYYYYNN` (e.g., SO025020)
 - Ds: `?id=DSYYYYNN` (e.g., DS202435)
 
 **EU Documents:**
+
 - Regulations: `?id=YYYRNNNNN` (e.g., 323R0139)
 - Directives: `?id=YYYLDNNNN` (e.g., 32024L0790)
 - Court cases: `?id=YYYYXNNNNN` (e.g., 62190495)
 
 **Laglig.se URL Strategy:**
 Each content type should have distinct, SEO-friendly URL structure:
+
 - `/lagar/sfs/2025/280` - SFS laws
 - `/rattsfall/hd/2025/3` - Supreme Court cases
 - `/rattsfall/hovr/2024/1` - Court of Appeal cases
@@ -259,6 +280,7 @@ Each content type should have distinct, SEO-friendly URL structure:
 **Total indexable pages for SEO:** ~170,000-225,000 pages
 
 **Breakdown:**
+
 1. **SFS Laws:** 50,000-100,000 pages (largest volume)
 2. **EU Regulations:** 100,000+ pages (second largest)
 3. **EU Directives:** 10,000-15,000 pages
@@ -272,17 +294,20 @@ Each content type should have distinct, SEO-friendly URL structure:
 **SEO Value Distribution:**
 
 **High Search Volume:**
+
 - SFS Laws - Most searched (common law names like "Aktiebolagslag")
 - EU Regulations - GDPR, consumer protection regulations
 - Labour Court (AD) - Employment law questions
 - Tax Court (HFD) - Tax compliance questions
 
 **Medium Search Volume:**
+
 - Supreme Court (HD) - Legal precedent research
 - Courts of Appeal (HovR) - Regional case law
 - EU Directives - Sector-specific compliance
 
 **Lower Search Volume:**
+
 - Environmental Court (MÖD) - Industry-specific
 - Migration Court (MIG) - Individual/specific company needs
 
@@ -348,6 +373,7 @@ Each content type should have distinct, SEO-friendly URL structure:
 ### Database Tables Required
 
 **Core Tables:**
+
 ```sql
 -- Unified legal documents table
 legal_documents (
@@ -421,16 +447,19 @@ eu_documents (
 **Challenge:** Different document types have different structures
 
 **SFS Laws:**
+
 - Structured by chapters (kap.) and sections (§)
 - Need to preserve hierarchy in embeddings
 - Cross-references within law text
 
 **Court Cases:**
+
 - Narrative structure (facts, analysis, conclusion)
 - Long documents (5-20 pages typically)
 - Multiple sections to embed separately
 
 **EU Regulations:**
+
 - Structured by articles
 - Multiple languages (focus on Swedish)
 - Complex numbering (CELEX)
@@ -440,23 +469,23 @@ eu_documents (
 ```typescript
 interface ChunkingStrategy {
   sfs_law: {
-    method: 'by_section', // Chunk by § (section)
-    maxTokens: 500,
+    method: 'by_section' // Chunk by § (section)
+    maxTokens: 500
     preserveContext: ['chapter', 'section_number']
-  },
+  }
   court_case: {
-    method: 'by_semantic_section', // Facts, Analysis, Conclusion
-    maxTokens: 800,
+    method: 'by_semantic_section' // Facts, Analysis, Conclusion
+    maxTokens: 800
     preserveContext: ['court', 'case_number', 'decision_date']
-  },
+  }
   eu_regulation: {
-    method: 'by_article',
-    maxTokens: 500,
+    method: 'by_article'
+    maxTokens: 500
     preserveContext: ['celex', 'article_number']
-  },
+  }
   proposition: {
-    method: 'by_section', // Propositioner have numbered sections
-    maxTokens: 1000, // Longer chunks for context
+    method: 'by_section' // Propositioner have numbered sections
+    maxTokens: 1000 // Longer chunks for context
     preserveContext: ['proposition_number', 'section_title']
   }
 }
@@ -469,6 +498,7 @@ interface ChunkingStrategy {
 ### What Notisum Provides
 
 **Strengths:**
+
 - ✅ Comprehensive coverage (18+ document types)
 - ✅ Long historical data (40+ years for some types)
 - ✅ Full text hosting (most types)
@@ -477,6 +507,7 @@ interface ChunkingStrategy {
 - ✅ Chronological navigation
 
 **Weaknesses:**
+
 - ❌ Outdated UI/UX
 - ❌ No AI assistance
 - ❌ No plain-language explanations
@@ -488,6 +519,7 @@ interface ChunkingStrategy {
 ### What Laglig.se Should Differentiate On
 
 **Phase 1 Differentiators:**
+
 1. **AI-Powered RAG** - Natural language questions
 2. **Plain Swedish Summaries** - Not legalese
 3. **Industry-Specific Filtering** - "Show me what matters to restaurants"
@@ -495,16 +527,9 @@ interface ChunkingStrategy {
 5. **SNI Code Integration** - Automatic relevance filtering
 6. **Change Monitoring** - "New law affects you" alerts
 
-**Phase 2 Differentiators:**
-7. **HR Compliance Toolkit** - Built on AD labour court cases
-8. **Tax Compliance Wizard** - Built on HFD tax cases
-9. **Environmental Permit Guide** - Built on MÖD cases
-10. **Cross-Document Intelligence** - "This law + these 5 court cases + EU directive"
+**Phase 2 Differentiators:** 7. **HR Compliance Toolkit** - Built on AD labour court cases 8. **Tax Compliance Wizard** - Built on HFD tax cases 9. **Environmental Permit Guide** - Built on MÖD cases 10. **Cross-Document Intelligence** - "This law + these 5 court cases + EU directive"
 
-**Phase 3 Differentiators:**
-11. **Predictive Compliance** - "New SOU suggests changes in 2 years"
-12. **Risk Scoring** - "Your practice has medium risk based on AD precedent"
-13. **Automated Legal Opinions** - AI-generated guidance with citations
+**Phase 3 Differentiators:** 11. **Predictive Compliance** - "New SOU suggests changes in 2 years" 12. **Risk Scoring** - "Your practice has medium risk based on AD precedent" 13. **Automated Legal Opinions** - AI-generated guidance with citations
 
 ---
 
@@ -512,25 +537,25 @@ interface ChunkingStrategy {
 
 ### ❌ BLOCKERS - Cannot Use
 
-| Document Type | Issue | Impact | Workaround |
-|--------------|-------|--------|------------|
-| **AD (Labour Court)** | Individual pages empty/broken | Critical business value lost | Investigate Domstolsverket direct access |
-| **JK (Chancellor of Justice)** | Database ends 2014, 90% broken links | Outdated, unusable | Skip entirely, or source from jk.se if needed |
+| Document Type                  | Issue                                | Impact                       | Workaround                                    |
+| ------------------------------ | ------------------------------------ | ---------------------------- | --------------------------------------------- |
+| **AD (Labour Court)**          | Individual pages empty/broken        | Critical business value lost | Investigate Domstolsverket direct access      |
+| **JK (Chancellor of Justice)** | Database ends 2014, 90% broken links | Outdated, unusable           | Skip entirely, or source from jk.se if needed |
 
 ### ⚠️ DATA ISSUES - Use with Caution
 
-| Document Type | Issue | Impact | Workaround |
-|--------------|-------|--------|------------|
-| **JO (Parl. Ombudsman)** | Limited content, broken links | Low value anyway (not binding) | Skip or link to jo.se |
-| **Förordningsmotiv** | Sparse data, many dead links | Very low value (rare docs) | Skip entirely |
-| **MD (Marketing Court)** | Historical only (ends 2016) | Outdated | Label clearly as historical, supplement with current PMD |
+| Document Type            | Issue                         | Impact                         | Workaround                                               |
+| ------------------------ | ----------------------------- | ------------------------------ | -------------------------------------------------------- |
+| **JO (Parl. Ombudsman)** | Limited content, broken links | Low value anyway (not binding) | Skip or link to jo.se                                    |
+| **Förordningsmotiv**     | Sparse data, many dead links  | Very low value (rare docs)     | Skip entirely                                            |
+| **MD (Marketing Court)** | Historical only (ends 2016)   | Outdated                       | Label clearly as historical, supplement with current PMD |
 
 ### ✅ EXTERNAL LINK ONLY - Notisum Doesn't Host
 
-| Document Type | Notisum Approach | Impact | Laglig.se Approach |
-|--------------|------------------|--------|-------------------|
-| **SOU** | Index + link to regeringen.se | Lower priority anyway | Same or skip MVP |
-| **Ds** | Index + link to regeringen.se | Lower priority anyway | Same or skip MVP |
+| Document Type | Notisum Approach              | Impact                | Laglig.se Approach |
+| ------------- | ----------------------------- | --------------------- | ------------------ |
+| **SOU**       | Index + link to regeringen.se | Lower priority anyway | Same or skip MVP   |
+| **Ds**        | Index + link to regeringen.se | Lower priority anyway | Same or skip MVP   |
 
 ---
 
@@ -549,6 +574,7 @@ interface ChunkingStrategy {
 > **Goal:** Build comprehensive legal content database with 170,000+ public SEO-optimized pages covering Swedish and EU law, court precedent, and regulations.
 >
 > **Content Types (MVP):**
+>
 > - Swedish laws and ordinances (SFS) - 50,000-100,000 pages
 > - Swedish Supreme Court (HD) - 3,000-5,000 pages
 > - Swedish Courts of Appeal (HovR) - 1,500-3,000 pages
@@ -558,6 +584,7 @@ interface ChunkingStrategy {
 > - EU Directives - 10,000-15,000 pages
 >
 > **User Stories Must Address:**
+>
 > - Multiple content type ingestion pipelines
 > - Content type-specific metadata schemas
 > - Content type-specific chunking strategies for RAG
@@ -567,6 +594,7 @@ interface ChunkingStrategy {
 > - National implementation tracking (EU directives)
 >
 > **Success Criteria:**
+>
 > - All 7 content types ingested and indexed
 > - RAG search works across all content types
 > - Cross-references between document types functional
@@ -577,7 +605,9 @@ interface ChunkingStrategy {
 ## User Story Additions Required
 
 ### Current Epic 2 Stories (From PRD)
+
 The current epic focuses only on SFS laws:
+
 - Story 2.1: SFS Law Ingestion
 - Story 2.2: Law Content Display
 - Story 2.3: etc.
@@ -585,6 +615,7 @@ The current epic focuses only on SFS laws:
 ### Required New Stories
 
 **2.X: Multi-Content-Type Data Model**
+
 - As a: System
 - I want: Flexible schema supporting multiple legal document types
 - So that: We can store SFS laws, court cases, EU regulations with type-specific metadata
@@ -595,6 +626,7 @@ The current epic focuses only on SFS laws:
   - Cross-reference system linking documents
 
 **2.Y: Court Case Ingestion Pipeline**
+
 - As a: System
 - I want: Ingest court cases from HD, HovR, HFD, MÖD, MIG
 - So that: Users can search case law precedent
@@ -606,6 +638,7 @@ The current epic focuses only on SFS laws:
   - Cross-references to cited laws extracted
 
 **2.Z: EU Law Ingestion Pipeline**
+
 - As a: System
 - I want: Ingest EU regulations and directives from EUR-Lex
 - So that: Users can search EU compliance requirements
@@ -617,6 +650,7 @@ The current epic focuses only on SFS laws:
   - Cross-references to Swedish implementing laws
 
 **2.AA: Content Type-Specific RAG Chunking**
+
 - As a: System
 - I want: Different chunking strategies for different document types
 - So that: RAG retrieval is optimized for each content structure
@@ -628,6 +662,7 @@ The current epic focuses only on SFS laws:
   - Chunk overlap configured per type
 
 **2.AB: Cross-Document Linking System**
+
 - As a: User
 - I want: Navigate between related documents (law → cases interpreting it → EU directive requiring it)
 - So that: I understand legal landscape completely
@@ -639,6 +674,7 @@ The current epic focuses only on SFS laws:
   - Bidirectional navigation works
 
 **2.AC: Content Type Filtering in Search**
+
 - As a: User
 - I want: Filter search results by content type (only laws, only court cases, etc.)
 - So that: I find the right type of legal authority
@@ -655,17 +691,17 @@ The current epic focuses only on SFS laws:
 
 ### MVP Scope (Tier 1 + 2)
 
-| Content Type | Estimated Pages | Data Quality | API Available | Priority |
-|--------------|----------------|--------------|---------------|----------|
-| **SFS Laws** | 50,000-100,000 | ✅ Excellent | ✅ Riksdagen | CRITICAL |
-| **EU Regulations** | 100,000+ | ✅ Excellent | ✅ EUR-Lex | HIGH |
-| **EU Directives** | 10,000-15,000 | ✅ Excellent | ✅ EUR-Lex | HIGH |
-| **HD Supreme Court** | 3,000-5,000 | ✅ Good | ⚠️ Verify | HIGH |
-| **HovR Courts Appeal** | 1,500-3,000 | ✅ Good | ⚠️ Verify | HIGH |
-| **HFD Admin Supreme** | 1,500-3,000 | ✅ Good | ⚠️ Verify | CRITICAL |
-| **AD Labour Court** | 2,000-3,000 | ❌ BROKEN | ⚠️ Investigate | BLOCKED |
-| **MÖD Environment** | 600-1,200 | ✅ Good | ⚠️ Verify | MODERATE |
-| **MIG Migration** | 200-500 | ✅ Good | ⚠️ Verify | LOW-MOD |
+| Content Type           | Estimated Pages | Data Quality | API Available  | Priority |
+| ---------------------- | --------------- | ------------ | -------------- | -------- |
+| **SFS Laws**           | 50,000-100,000  | ✅ Excellent | ✅ Riksdagen   | CRITICAL |
+| **EU Regulations**     | 100,000+        | ✅ Excellent | ✅ EUR-Lex     | HIGH     |
+| **EU Directives**      | 10,000-15,000   | ✅ Excellent | ✅ EUR-Lex     | HIGH     |
+| **HD Supreme Court**   | 3,000-5,000     | ✅ Good      | ⚠️ Verify      | HIGH     |
+| **HovR Courts Appeal** | 1,500-3,000     | ✅ Good      | ⚠️ Verify      | HIGH     |
+| **HFD Admin Supreme**  | 1,500-3,000     | ✅ Good      | ⚠️ Verify      | CRITICAL |
+| **AD Labour Court**    | 2,000-3,000     | ❌ BROKEN    | ⚠️ Investigate | BLOCKED  |
+| **MÖD Environment**    | 600-1,200       | ✅ Good      | ⚠️ Verify      | MODERATE |
+| **MIG Migration**      | 200-500         | ✅ Good      | ⚠️ Verify      | LOW-MOD  |
 
 **Total MVP Pages: ~170,000-225,000** (excluding broken AD)
 
@@ -676,11 +712,13 @@ The current epic focuses only on SFS laws:
 ## Action Items for PRD Update
 
 ### 1. Update Epic 2 Scope and Title
+
 - [ ] Rename from "Legal Content Foundation (Alla Lagar)" to "Legal Content Foundation"
 - [ ] Update goal to reflect 170,000+ pages, multiple content types
 - [ ] Clarify SFS + court cases + EU law
 
 ### 2. Add New User Stories
+
 - [ ] Story: Multi-content-type data model
 - [ ] Story: Court case ingestion pipeline
 - [ ] Story: EU law ingestion pipeline
@@ -689,12 +727,14 @@ The current epic focuses only on SFS laws:
 - [ ] Story: Content type filtering in search
 
 ### 3. Update Functional Requirements
+
 - [ ] FR1: Expand beyond "10,000+ Swedish laws" to "170,000+ legal content pages"
 - [ ] Add FR for court case database
 - [ ] Add FR for EU law database
 - [ ] Add FR for cross-document navigation
 
 ### 4. Update Technical Requirements
+
 - [ ] Add Riksdagen API integration requirement
 - [ ] Add EUR-Lex API integration requirement
 - [ ] Add Domstolsverket API/feed requirement (verify first)
@@ -702,6 +742,7 @@ The current epic focuses only on SFS laws:
 - [ ] Add content-type-specific RAG strategy
 
 ### 5. Update Data Model Section
+
 - [ ] Add ContentType enum
 - [ ] Add polymorphic document schema
 - [ ] Add court case specific tables
@@ -709,6 +750,7 @@ The current epic focuses only on SFS laws:
 - [ ] Add cross-reference tables
 
 ### 6. Investigation Tasks Before Architect Handoff
+
 - [ ] **CRITICAL:** Investigate AD (Labour Court) data source - why broken in Notisum?
   - Check Domstolsverket direct access
   - Check arbetsdomstolen.se
@@ -722,6 +764,7 @@ The current epic focuses only on SFS laws:
   - Test National Implementation Measures (NIM) for directives
 
 ### 7. Update Out-of-Scope / Phase 2
+
 - [ ] Move Propositioner to Phase 2 (Professional tier)
 - [ ] Move EU Court Cases to Phase 2
 - [ ] Move SOU/Ds to Phase 3 or skip
@@ -733,13 +776,16 @@ The current epic focuses only on SFS laws:
 ## Competitive SEO Impact
 
 ### Notisum's SEO Strategy
+
 Notisum covers 18+ document types, creating **massive content footprint**:
+
 - Every SFS law = separate page
 - Every court case = separate page
 - Every EU regulation = separate page
 - Total: Hundreds of thousands of indexed pages
 
 **Result:** Notisum ranks for:
+
 - Law names: "aktiebolagslag", "arbetsmiljölag"
 - EU regulations: "gdpr", "mifid"
 - Court cases: "NJA 2020 s 123"
@@ -748,12 +794,14 @@ Notisum covers 18+ document types, creating **massive content footprint**:
 ### Laglig.se SEO Strategy (Recommended)
 
 **Match Notisum's content coverage breadth:**
+
 - SFS laws: 50,000-100,000 pages
 - EU regulations: 100,000+ pages
 - Court cases: 9,000-16,000 pages
 - Total: ~170,000-225,000 pages
 
 **Exceed Notisum on quality:**
+
 - ✅ Plain Swedish summaries (not legalese)
 - ✅ AI-generated explanations
 - ✅ Industry-specific relevance
@@ -761,12 +809,14 @@ Notisum covers 18+ document types, creating **massive content footprint**:
 - ✅ Related document suggestions
 
 **Target long-tail keywords Notisum misses:**
+
 - "Vad gäller när jag säger upp någon"
 - "GDPR krav för små företag"
 - "Miljötillstånd restaurang"
 - "Arbetstidslagen övertid regler"
 
 **Differentiation:**
+
 - **Notisum:** Comprehensive legal database (lawyers, legal professionals)
 - **Laglig.se:** Business compliance assistant (SMB owners, HR, compliance officers)
 
@@ -777,6 +827,7 @@ Notisum covers 18+ document types, creating **massive content footprint**:
 ### MVP Content Scope
 
 **Include (Tier 1 + 2):**
+
 1. ✅ SFS Laws & Ordinances (50K-100K pages) - Riksdagen API
 2. ✅ HFD Administrative Supreme Court (1.5K-3K pages) - Domstolsverket
 3. ⚠️ AD Labour Court (2K-3K pages) - **INVESTIGATE DATA SOURCE FIRST**
@@ -788,6 +839,7 @@ Notisum covers 18+ document types, creating **massive content footprint**:
 **Total: ~170,000-225,000 pages**
 
 **Explicitly Exclude from MVP:**
+
 - ❌ Propositioner (Phase 2 - Professional tier)
 - ❌ SOU, Ds (Phase 3 or skip - low SMB value)
 - ❌ EU Court Cases (Phase 2)

@@ -1,6 +1,7 @@
 # API & Data Sources for Legal Compliance Platform
 
 ## Overview
+
 This document outlines all API integrations and data sources needed to build a hyper-personalized legal compliance platform for Swedish companies.
 
 ---
@@ -15,25 +16,27 @@ This document outlines all API integrations and data sources needed to build a h
 
 #### Document Types & Counts
 
-| Document Type | Code | Count | Description |
-|--------------|------|-------|-------------|
-| Motioner | `mot` | 256,241 | Parliamentary member proposals |
-| Betänkanden | `bet` | 74,405 | Committee reports |
-| Propositioner | `prop` | 31,525 | Government bills |
-| Protokoll | `prot` | 18,419 | Parliamentary debates |
-| SFS | `sfs` | 11,336 | Swedish Code of Statutes (laws) |
-| SOU | `sou` | 4,863 | Government investigations |
-| Departementsserien | `ds` | 1,626 | Ministry series |
-| Other | - | ~256,032 | Interpellations, questions, etc. |
+| Document Type      | Code   | Count    | Description                      |
+| ------------------ | ------ | -------- | -------------------------------- |
+| Motioner           | `mot`  | 256,241  | Parliamentary member proposals   |
+| Betänkanden        | `bet`  | 74,405   | Committee reports                |
+| Propositioner      | `prop` | 31,525   | Government bills                 |
+| Protokoll          | `prot` | 18,419   | Parliamentary debates            |
+| SFS                | `sfs`  | 11,336   | Swedish Code of Statutes (laws)  |
+| SOU                | `sou`  | 4,863    | Government investigations        |
+| Departementsserien | `ds`   | 1,626    | Ministry series                  |
+| Other              | -      | ~256,032 | Interpellations, questions, etc. |
 
 #### API Endpoints
 
 **1. Document List (Search/Filter)**
+
 ```
 GET /dokumentlista/
 ```
 
 **Parameters:**
+
 - `doktyp`: Document type (sfs, prop, mot, bet, prot, sou, ds)
 - `rm`: Parliamentary session (e.g., 2022/23)
 - `from`: Date from (YYYY-MM-DD)
@@ -44,21 +47,25 @@ GET /dokumentlista/
 - `p`: Page number (20 documents per page)
 
 **Example:**
+
 ```
 https://data.riksdagen.se/dokumentlista/?doktyp=sfs&sort=datum&sortorder=desc&utformat=json&p=1
 ```
 
 **2. Single Document (Full Text)**
+
 ```
 GET /dokument/{dok_id}.{format}
 ```
 
 **Formats:**
+
 - `.json` - Full metadata + text
 - `.text` - Plain text
 - `.html` - HTML formatted
 
 **Example:**
+
 ```
 https://data.riksdagen.se/dokument/sfs-2025-873.json
 ```
@@ -66,6 +73,7 @@ https://data.riksdagen.se/dokument/sfs-2025-873.json
 #### Response Structure
 
 **Document List Response:**
+
 ```json
 {
   "dokumentlista": {
@@ -87,6 +95,7 @@ https://data.riksdagen.se/dokument/sfs-2025-873.json
 ```
 
 **Single Document Response (SFS):**
+
 ```json
 {
   "dokumentstatus": {
@@ -104,6 +113,7 @@ https://data.riksdagen.se/dokument/sfs-2025-873.json
 ```
 
 **Proposition Response:**
+
 ```json
 {
   "dokumentstatus": {
@@ -128,6 +138,7 @@ https://data.riksdagen.se/dokument/sfs-2025-873.json
 #### Data Download Strategy
 
 **Bulk Import (Historical):**
+
 ```python
 # Paginate through all documents
 base_url = "https://data.riksdagen.se/dokumentlista/"
@@ -146,6 +157,7 @@ for page in range(1, 568):
 ```
 
 **Incremental Updates:**
+
 ```python
 # Check for new/updated documents daily
 params = {
@@ -163,23 +175,25 @@ params = {
 
 **Critical for Compliance - Not in Riksdagen API**
 
-| Agency | Abbreviation | Coverage | API/Access |
-|--------|--------------|----------|------------|
-| Arbetsmiljöverket | AFS | Work environment | https://www.av.se/arbetsmiljoarbete-och-inspektioner/publikationer/foreskrifter/ |
-| Transportstyrelsen | TSFS | Transport/logistics | https://www.transportstyrelsen.se/sv/regler/transport-och-fordon/ |
-| Finansinspektionen | FFFS | Financial sector | https://www.fi.se/sv/vara-register/foreskrifter/ |
-| Läkemedelsverket | LVFS | Pharmaceuticals | https://www.lakemedelsverket.se/sv/regel/foreskrifter |
-| Boverket | BFS | Construction | https://www.boverket.se/sv/lag--ratt/forfattningssamling/ |
-| Livsmedelsverket | LIVSFS | Food safety | https://www.livsmedelsverket.se/om-oss/lagstiftning/gallande-regler |
-| Datainspektionen | DIFS | Data protection | https://www.imy.se/verksamhet/dataskydd/det-har-galler-enligt-gdpr/ |
+| Agency             | Abbreviation | Coverage            | API/Access                                                                       |
+| ------------------ | ------------ | ------------------- | -------------------------------------------------------------------------------- |
+| Arbetsmiljöverket  | AFS          | Work environment    | https://www.av.se/arbetsmiljoarbete-och-inspektioner/publikationer/foreskrifter/ |
+| Transportstyrelsen | TSFS         | Transport/logistics | https://www.transportstyrelsen.se/sv/regler/transport-och-fordon/                |
+| Finansinspektionen | FFFS         | Financial sector    | https://www.fi.se/sv/vara-register/foreskrifter/                                 |
+| Läkemedelsverket   | LVFS         | Pharmaceuticals     | https://www.lakemedelsverket.se/sv/regel/foreskrifter                            |
+| Boverket           | BFS          | Construction        | https://www.boverket.se/sv/lag--ratt/forfattningssamling/                        |
+| Livsmedelsverket   | LIVSFS       | Food safety         | https://www.livsmedelsverket.se/om-oss/lagstiftning/gallande-regler              |
+| Datainspektionen   | DIFS         | Data protection     | https://www.imy.se/verksamhet/dataskydd/det-har-galler-enligt-gdpr/              |
 
 **Access Methods:**
+
 - ⚠️ Most agencies don't have unified APIs
 - 📄 PDF downloads from each agency website
 - 🔍 Requires web scraping or manual curation
 - 💰 Some aggregators (e.g., Rättsnätet.se) offer paid access
 
 **Priority P0 Agencies:**
+
 - Arbetsmiljöverket (AFS) - Applies to ALL employers
 - Livsmedelsverket (LIVSFS) - Food/restaurant industry
 - Datainspektionen (DIFS) - GDPR guidance
@@ -191,9 +205,11 @@ params = {
 **Base URL:** `https://eur-lex.europa.eu/`
 
 **API:** SPARQL endpoint available
+
 - Documentation: https://eur-lex.europa.eu/content/help/data-reuse/webservice.html
 
 **Key Regulations for Swedish Companies:**
+
 - GDPR (EU 2016/679)
 - REACH (Chemicals)
 - Machinery Directive
@@ -201,6 +217,7 @@ params = {
 - EU Taxonomy (Sustainability)
 
 **Integration:**
+
 - Direct API queries for specific regulations
 - Focus on directives that apply directly (not transposed to SFS)
 
@@ -211,11 +228,13 @@ params = {
 **URL:** `https://lagen.nu/`
 
 **Coverage:**
+
 - Consolidated versions of laws (with all amendments applied)
 - Cross-references between laws
 - Historical versions
 
 **Access:**
+
 - 🆓 Website scraping possible (check ToS)
 - 💰 May offer commercial API access
 - ⚠️ Alternative: Build consolidation logic from SFS changes
@@ -229,6 +248,7 @@ params = {
 **Open Data Portal:** `https://data.bolagsverket.se/`
 
 **Available Data:**
+
 - Organization number (Organisationsnummer)
 - Company name
 - Legal form (AB, HB, etc.)
@@ -238,6 +258,7 @@ params = {
 - Registered address
 
 **API Access:**
+
 ```
 # Example: Company search
 https://data.bolagsverket.se/api/v1/company/{org_number}
@@ -248,6 +269,7 @@ https://data.bolagsverket.se/api/v1/company/{org_number}
 **Update Frequency:** Daily
 
 **Use Case:**
+
 ```
 Input: 556789-1234
 → Output: {
@@ -265,6 +287,7 @@ Input: 556789-1234
 **SNI Code Database:** `https://www.scb.se/vara-tjanster/oppna-data/`
 
 **SNI 2007 Classification:**
+
 - 21 sections (A-U)
 - 88 divisions
 - 272 groups
@@ -279,6 +302,7 @@ Input: 556789-1234
 | 47.11 | Retail sale in non-specialized stores | Kassaregisterlagen, GDPR |
 
 **API/Access:**
+
 - Open data downloads (CSV, Excel)
 - No real-time API for company lookup
 - Use for SNI → Law mapping table
@@ -292,6 +316,7 @@ Input: 556789-1234
 **API:** Retriever Business API (paid)
 
 **Additional Data:**
+
 - Financial statements
 - Credit ratings
 - Industry classifications (more detailed than SNI)
@@ -302,6 +327,7 @@ Input: 556789-1234
 **Pricing:** ~5-20 SEK per company lookup
 
 **Use Case:**
+
 - Enhanced company profile
 - Risk assessment
 - Better industry classification
@@ -356,19 +382,19 @@ signals = llm.extract(analysis_prompt)
 
 **Activity Signals → Law Triggers:**
 
-| Website Signal | Triggered Laws |
-|----------------|----------------|
-| "serverar alkohol" | Alkohollag (SFS 2010:1622) |
-| "skolmat", "skola" | Livsmedelslag + Skollagen |
-| "utkörning", "delivery" | Arbetstidslagen (obekväm arbetstid) |
-| "personuppgifter", "kundklubb" | GDPR |
-| "export", "international" | Tullregler, EU-förordningar |
-| "kemikalier" | REACH, Kemikalielagen |
-| "barnverksamhet" | Socialtjänstlagen |
-| "hälso- och sjukvård" | Patientsäkerhetslagen |
-| "ISO 9001" | Quality management triggers |
-| "ISO 14001" | Environmental law triggers |
-| "ISO 27001" | Data protection law triggers |
+| Website Signal                 | Triggered Laws                      |
+| ------------------------------ | ----------------------------------- |
+| "serverar alkohol"             | Alkohollag (SFS 2010:1622)          |
+| "skolmat", "skola"             | Livsmedelslag + Skollagen           |
+| "utkörning", "delivery"        | Arbetstidslagen (obekväm arbetstid) |
+| "personuppgifter", "kundklubb" | GDPR                                |
+| "export", "international"      | Tullregler, EU-förordningar         |
+| "kemikalier"                   | REACH, Kemikalielagen               |
+| "barnverksamhet"               | Socialtjänstlagen                   |
+| "hälso- och sjukvård"          | Patientsäkerhetslagen               |
+| "ISO 9001"                     | Quality management triggers         |
+| "ISO 14001"                    | Environmental law triggers          |
+| "ISO 27001"                    | Data protection law triggers        |
 
 ---
 
@@ -391,6 +417,7 @@ Step 4: Merge & Enrich
 ```
 
 **Data Model:**
+
 ```json
 {
   "org_number": "556789-1234",
@@ -402,11 +429,7 @@ Step 4: Merge & Enrich
   "data_sources": ["bolagsverket", "website"],
   "website_analysis": {
     "url": "https://cafekarlек.se",
-    "activities": [
-      "café",
-      "catering",
-      "event services"
-    ],
+    "activities": ["café", "catering", "event services"],
     "signals": {
       "food_service": true,
       "alcohol": false,
@@ -466,6 +489,7 @@ INSERT INTO activity_law_triggers VALUES
 ### 3.3 Hybrid Law Retrieval
 
 **Method 1: Rule-based (Metadata)**
+
 ```python
 def get_laws_by_rules(company_profile):
     laws = []
@@ -494,6 +518,7 @@ def get_laws_by_rules(company_profile):
 ```
 
 **Method 2: Vector Search (Semantic)**
+
 ```python
 def get_laws_by_semantic_search(business_description):
     # Generate embedding of business description
@@ -511,6 +536,7 @@ def get_laws_by_semantic_search(business_description):
 ```
 
 **Method 3: LLM Ranking + Explanation**
+
 ```python
 def rank_and_explain_laws(company_profile, candidate_laws):
     prompt = f"""
@@ -539,26 +565,30 @@ def rank_and_explain_laws(company_profile, candidate_laws):
 ## 4. API Rate Limits & Costs
 
 ### Free APIs
-| Source | Rate Limit | Cost |
-|--------|-----------|------|
-| Riksdagen API | Unknown (generous) | Free |
-| Bolagsverket Open Data | Unknown | Free |
-| SCB Open Data | N/A (downloads) | Free |
+
+| Source                 | Rate Limit         | Cost |
+| ---------------------- | ------------------ | ---- |
+| Riksdagen API          | Unknown (generous) | Free |
+| Bolagsverket Open Data | Unknown            | Free |
+| SCB Open Data          | N/A (downloads)    | Free |
 
 ### Paid APIs
-| Source | Cost per Lookup | Notes |
-|--------|----------------|-------|
-| Retriever Business | ~5-20 SEK | Detailed company data |
-| Allabolag API | Similar | Alternative to Retriever |
+
+| Source             | Cost per Lookup | Notes                    |
+| ------------------ | --------------- | ------------------------ |
+| Retriever Business | ~5-20 SEK       | Detailed company data    |
+| Allabolag API      | Similar         | Alternative to Retriever |
 
 ### LLM Costs (per company analysis)
-| Model | Input Tokens | Output Tokens | Cost/Analysis |
-|-------|-------------|---------------|---------------|
-| GPT-4 | ~2000 | ~1000 | ~$0.08 |
-| GPT-4o-mini | ~2000 | ~1000 | ~$0.01 |
-| Claude Sonnet 3.5 | ~2000 | ~1000 | ~$0.01 |
+
+| Model             | Input Tokens | Output Tokens | Cost/Analysis |
+| ----------------- | ------------ | ------------- | ------------- |
+| GPT-4             | ~2000        | ~1000         | ~$0.08        |
+| GPT-4o-mini       | ~2000        | ~1000         | ~$0.01        |
+| Claude Sonnet 3.5 | ~2000        | ~1000         | ~$0.01        |
 
 **Estimated Cost per Company Profile:**
+
 - Bolagsverket lookup: Free
 - Website scraping: Free (hosting cost only)
 - LLM analysis: ~$0.01
@@ -569,16 +599,19 @@ def rank_and_explain_laws(company_profile, candidate_laws):
 ## 5. Data Update Strategy
 
 ### Static Data (One-time Import)
+
 - Historical SFS documents (11,336)
 - SNI → Law mapping tables
 - Agency regulations (manual curation)
 
 ### Daily Updates
+
 - New SFS documents (check last 7 days)
 - Bolagsverket company changes
 - Agency regulation updates (monitor websites)
 
 ### Real-time
+
 - Company profile generation (on-demand)
 - Website analysis (cached for 30 days)
 - Law explanations (generated per request)
@@ -588,19 +621,24 @@ def rank_and_explain_laws(company_profile, candidate_laws):
 ## 6. Priority Implementation Roadmap
 
 ### Phase 1: MVP (3 months)
+
 **Data Sources:**
+
 - ✅ Riksdagen API (SFS only)
 - ✅ Bolagsverket (org number → SNI)
 - ✅ Manual SNI → Law mapping (top 50 laws, 20 industries)
 - ✅ Basic website scraping
 
 **Coverage:**
+
 - 50 most common laws
 - 20 most common industries
 - No agency regulations yet
 
 ### Phase 2: Enhanced (6 months)
+
 **Add:**
+
 - Arbetsmiljöverket (AFS) regulations
 - Livsmedelsverket (LIVSFS) regulations
 - EU regulations (GDPR, REACH)
@@ -608,7 +646,9 @@ def rank_and_explain_laws(company_profile, candidate_laws):
 - Propositioner + Betänkanden (legislative history)
 
 ### Phase 3: Complete (12 months)
+
 **Add:**
+
 - All government agency regulations
 - EUR-Lex integration
 - Change tracking & alerts
@@ -620,12 +660,14 @@ def rank_and_explain_laws(company_profile, candidate_laws):
 ## 7. Example: Complete Data Flow
 
 **Input:**
+
 ```
 Organization Number: 556789-1234
 URL: https://cafekarlек.se (optional)
 ```
 
 **Step 1: Bolagsverket Lookup**
+
 ```json
 {
   "name": "Café Kärlek AB",
@@ -636,6 +678,7 @@ URL: https://cafekarlек.se (optional)
 ```
 
 **Step 2: Website Analysis**
+
 ```json
 {
   "activities": ["café", "catering", "event services"],
@@ -650,20 +693,24 @@ URL: https://cafekarlек.se (optional)
 
 **Step 3: Law Retrieval**
 
-*Rule-based:*
+_Rule-based:_
+
 - SNI 56.10 → Livsmedelslag, Kassaregisterlagen
 - Employees > 0 → Arbetsmiljölagen
 - Always → GDPR
 
-*Signal-based:*
+_Signal-based:_
+
 - "catering" → Livsmedelsförordningen
 - "event services" → Arbetstidslagen
 - "personal_data" → Dataskyddsförordningen
 
-*Vector search:*
+_Vector search:_
+
 - "café with catering for corporate events" → Additional relevant laws
 
 **Step 4: LLM Explanation**
+
 ```json
 {
   "laws": [
@@ -687,23 +734,27 @@ URL: https://cafekarlек.se (optional)
 ## 8. Technical Stack Recommendations
 
 ### Backend
+
 - **Language:** Python 3.11+
 - **Framework:** FastAPI
 - **Database:** PostgreSQL 15+ with pgvector extension
 - **Caching:** Redis
 
 ### Data Processing
+
 - **Web Scraping:** BeautifulSoup4, Scrapy
 - **HTTP Requests:** httpx (async)
 - **Data Validation:** Pydantic
 
 ### AI/ML
+
 - **LLM:** OpenAI GPT-4o-mini or Claude 3.5 Sonnet
 - **RAG Framework:** LangChain or LlamaIndex
 - **Embeddings:** OpenAI text-embedding-3-small or Cohere
 - **Vector Store:** pgvector (PostgreSQL extension)
 
 ### Monitoring
+
 - **API Monitoring:** Sentry
 - **Data Quality:** Great Expectations
 - **Uptime:** StatusPage or similar
@@ -713,18 +764,21 @@ URL: https://cafekarlек.se (optional)
 ## 9. Legal & Compliance Considerations
 
 ### Data Privacy
+
 - ✅ Bolagsverket data is public
 - ✅ Website scraping: Respect robots.txt
 - ⚠️ Cache company data: Max 30 days (GDPR)
 - ⚠️ Don't store unnecessary personal data
 
 ### Liability
+
 - ❗ Add disclaimer: "Not legal advice"
 - ❗ Recommend professional legal review
 - ❗ Consider E&O insurance
 - ✅ Cite sources for all law interpretations
 
 ### Intellectual Property
+
 - ✅ SFS is public domain
 - ⚠️ Agency regulations: Check per-agency
 - ❌ ISO standards: Cannot republish (link only)
@@ -767,4 +821,4 @@ URL: https://cafekarlек.se (optional)
 
 ---
 
-*Last Updated: 2025-10-03*
+_Last Updated: 2025-10-03_

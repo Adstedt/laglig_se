@@ -1,0 +1,103 @@
+# Epic List
+
+## Epic 1: Foundation & Core Infrastructure
+
+**Goal:** Establish project foundation while delivering initial 100 public law pages to validate SEO strategy.
+
+**Delivers:** Next.js app, database, auth, CI/CD, 100 law pages, monitoring, security
+
+**Requirements covered:** NFR1, FR29, NFR6, NFR13, NFR22, NFR23
+
+**Estimated stories:** 8-10
+
+---
+
+## Epic 2: Legal Content Foundation
+
+**Goal:** Build comprehensive multi-source legal content database with 170,000+ public SEO-optimized pages covering Swedish laws, court precedent, and EU legislation. Provide category structure, search/discovery features, and begin recording law change history.
+
+**Delivers:** 170,000+ legal content pages (SFS laws, court cases from HD/HovR/HFD/MÖD/MIG, EU regulations/directives), multi-content-type search, cross-document navigation, change history recording (no UI yet)
+
+**Requirements covered:** FR1, FR4, FR8, FR24, FR35, FR36, FR37, NFR1
+
+**Estimated stories:** 11
+
+## **Note:** Expanded from single-source (SFS laws only) to multi-content-type architecture based on competitive analysis. Court cases and EU legislation critical for SEO coverage.
+
+## Epic 3: RAG-Powered AI Chat Interface
+
+**Goal:** Implement zero-hallucination AI chatbot with drag-and-drop context building and citation-first responses.
+
+**Delivers:** Vector database, AI chat UI, drag-and-drop, RAG responses, streaming, citations
+
+**Requirements covered:** FR4, FR5, FR6, NFR2, NFR3, NFR9, NFR20, NFR24
+
+**Estimated stories:** 10-12
+
+---
+
+## Epic 4: Dynamic Onboarding & Personalized Law Lists
+
+**Goal:** Create conversion engine that transforms homepage visitors into trial users through AI-driven conversational onboarding, dynamic questioning, and two-phase comprehensive law list generation (60-80 laws).
+
+**Delivers:** Onboarding widget, Bolagsverket integration, dynamic contextual questioning (3-5 AI-selected questions), two-phase streaming generation (Phase 1: 15-30 laws pre-signup, Phase 2: 45-65 laws post-signup background), trial signup, email verification
+
+**Requirements covered:** FR2, FR3, FR21, FR23, FR30, NFR4, NFR5
+
+**Estimated stories:** 12
+
+---
+
+## Epic 5: Workspace Management & Team Collaboration
+
+**Goal:** Enable multi-user workspaces with subscription tiers, team invites, role-based access, and billing integration.
+
+**Delivers:** Multi-tenancy, roles, invites, tiers, Stripe, usage tracking, workspace settings
+
+**Requirements covered:** FR17, FR18, FR19, FR20, FR22, FR32, FR33, FR34, NFR18
+
+**Estimated stories:** 10-12
+
+---
+
+## Epic 6: Compliance Workspace (Kanban + Dashboard)
+
+**Goal:** Provide Jira-inspired Kanban board for visual compliance tracking and summary dashboard.
+
+**Delivers:** Dashboard, Kanban, drag-and-drop cards, law card modal, task management
+
+**Requirements covered:** FR7, FR27, FR28, FR25
+
+**Estimated stories:** 8-10
+
+---
+
+## Epic 7: HR Module (Employee Management)
+
+**Goal:** Connect employees to laws for context-aware HR compliance, improving AI chatbot value.
+
+**Delivers:** Employee CRUD, CSV import, compliance status, kollektivavtal, drag to chat
+
+**Requirements covered:** FR13, FR14, FR15, FR16, FR41, NFR4
+
+**Estimated stories:** 10-12
+
+---
+
+## Epic 8: Change Monitoring & Notification System
+
+**Goal:** Implement retention engine that automatically detects law changes and notifies users.
+
+**Delivers:** Change detection, AI summaries, email/in-app notifications, diff view, reminders, weekly digest, timeline
+
+**Requirements covered:** FR8, FR9, FR10, FR11, FR12, FR38, FR39, FR40, NFR10, NFR11, NFR26
+
+**Estimated stories:** 10-12
+
+---
+
+**Total Estimated Stories:** 70-86 across 8 epics
+
+**Estimated Timeline:** 16 weeks (4 months) - aligns with 4-6 month MVP goal
+
+---

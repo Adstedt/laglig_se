@@ -13,6 +13,7 @@
 **Session Goals:** Broad exploration of product idea, market positioning, features, go-to-market strategy, technical approach, and competitive differentiation
 
 **Techniques Used:**
+
 - What If Scenarios
 - Role Playing (4 stakeholder perspectives)
 - SCAMPER Method
@@ -43,7 +44,7 @@
 #### Ideas Generated:
 
 1. **Mandatory Compliance Software Scenario:** If Swedish law required compliance tracking within 2 years, Laglig.se's brand positioning ("Lagli
-g") and accessible onboarding would position it as the market leader, with focus on availability across all company sizes and advanced features for power users
+   g") and accessible onboarding would position it as the market leader, with focus on availability across all company sizes and advanced features for power users
 
 2. **Major Competitor Entry Scenario:** Primary differentiation against enterprise players (Microsoft, SAP, Visma) would be the "Laglig.se" brand/domain strength and cultural positioning making compliance "cool" (similar to Klarna's brand approach)
 
@@ -249,7 +250,7 @@ g") and accessible onboarding would position it as the market leader, with focus
 #### Notable Connections:
 
 - Assumption reversal on "stability" revealed that chaos/change is actually a moat - traditional static tools can't compete with real-time updates
-- Trust-building through citations makes the RAG database not just accurate but *provably* accurate
+- Trust-building through citations makes the RAG database not just accurate but _provably_ accurate
 
 ---
 
@@ -366,7 +367,8 @@ g") and accessible onboarding would position it as the market leader, with focus
 ## Idea Categorization
 
 ### Immediate Opportunities
-*Ideas ready to implement now*
+
+_Ideas ready to implement now_
 
 1. **Brand & Domain Leverage**
    - Description: Maximize "Laglig.se" domain and "Coolt med koll" branding in all marketing materials
@@ -396,7 +398,8 @@ g") and accessible onboarding would position it as the market leader, with focus
 ---
 
 ### Future Innovations
-*Ideas requiring development/research*
+
+_Ideas requiring development/research_
 
 1. **Court Rulings Integration**
    - Description: Parse and integrate B2B court case rulings into RAG database for precedent-based advice
@@ -431,7 +434,8 @@ g") and accessible onboarding would position it as the market leader, with focus
 ---
 
 ### Moonshots
-*Ambitious, transformative concepts*
+
+_Ambitious, transformative concepts_
 
 1. **AI-Powered Compliance Autopilot**
    - Description: System that not only identifies required compliance but automatically drafts policies, updates employee handbooks, generates training materials
@@ -456,7 +460,8 @@ g") and accessible onboarding would position it as the market leader, with focus
 ---
 
 ### Insights & Learnings
-*Key realizations from the session*
+
+_Key realizations from the session_
 
 - **Brand as Moat:** The "Laglig.se" domain and culturally-resonant "Coolt med koll" positioning creates defensibility that's difficult to replicate - even well-funded competitors can't buy this level of cultural fit
 
@@ -605,4 +610,4 @@ g") and accessible onboarding would position it as the market leader, with focus
 
 ---
 
-*Session facilitated using the BMAD-METHOD™ brainstorming framework*
+_Session facilitated using the BMAD-METHOD™ brainstorming framework_

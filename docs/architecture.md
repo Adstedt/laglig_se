@@ -17,6 +17,7 @@ This unified approach combines what would traditionally be separate backend and 
 Laglig.se is a Swedish legal compliance SaaS platform targeting SMBs, ISO compliance managers, and public sector. The platform combines a comprehensive legal database (**170,000+ documents** including SFS laws, court cases, EU legislation) with AI-powered question answering, proactive change monitoring, and Kanban-style compliance workflows.
 
 **Architectural Complexity Drivers:**
+
 - **Massive SEO footprint:** 170,000+ server-rendered pages requiring sub-2s load times
 - **RAG-powered AI:** Zero-hallucination requirement demands vector search + LLM orchestration
 - **Dynamic onboarding:** Real-time law generation with conversational AI (3-5 contextual questions)
@@ -24,6 +25,7 @@ Laglig.se is a Swedish legal compliance SaaS platform targeting SMBs, ISO compli
 - **Cost-conscious scaling:** Target 60% margins with AI costs at ~11% of revenue at scale
 
 **Business Goals:**
+
 - 10M SEK ARR within 18 months (83K SEK/month)
 - 760+ paying customers
 - SEO dominance (rank #1-3 for 100+ Swedish legal search terms, 50K monthly organic visitors)
@@ -31,12 +33,14 @@ Laglig.se is a Swedish legal compliance SaaS platform targeting SMBs, ISO compli
 
 **Technical Approach:**
 This architecture adopts a **Serverless Monolith (Vercel Edge + Functions)** with Next.js 16 App Router, Supabase PostgreSQL (pgvector), and OpenAI GPT-4 for RAG. The system prioritizes:
+
 1. **Rapid MVP delivery** (solo-founder velocity)
 2. **SEO-first rendering** (SSR for all 170K public pages)
 3. **Cost-conscious AI** (pgvector avoids Pinecone costs until 100K queries/day)
 4. **Clear scaling path** (identified triggers for migration to dedicated services)
 
 **Scaling Horizons:**
+
 - **0-1K users (Months 0-6):** Current architecture sufficient, Vercel free tier
 - **1K-10K users (Months 6-12):** Supabase Pro tier ($25/mo), Vercel Pro ($20/mo)
 - **10K-100K users (Months 12-24):** Migrate pgvector → Pinecone (NFR17), consider edge caching
@@ -49,6 +53,7 @@ This architecture adopts a **Serverless Monolith (Vercel Edge + Functions)** wit
 **Status:** Greenfield project - No starter template used
 
 **Evaluated Options:**
+
 1. **T3 Stack (create-t3-app)** - Next.js + tRPC + Prisma + Tailwind + NextAuth
    - ❌ **Rejected:** tRPC optimized for client-side mutations, not ideal for 170K SSR pages (REST/Server Actions better for CDN caching)
    - ✅ **Adopted pieces:** Prisma, Tailwind, NextAuth patterns (but not full T3 structure)
@@ -62,12 +67,14 @@ This architecture adopts a **Serverless Monolith (Vercel Edge + Functions)** wit
    - Allows clean integration of pgvector without template constraints
 
 **Key Constraints from PRD:**
+
 - **Platform:** Vercel (deployment) + Supabase (database + auth) - PRD Story 1.2, 1.3
 - **Framework:** Next.js 16 App Router (not Pages Router) - PRD Story 1.1
 - **Database:** PostgreSQL with pgvector extension - PRD Story 3.1
 - **Monolith Structure:** Single Next.js application - PRD Repository Structure section
 
 **Architectural Freedom:**
+
 - Component organization patterns (PRD references shadcn/ui but not structure)
 - State management (Zustand suggested, React Context also viable)
 - Testing approach (Vitest + Playwright specified, but coverage targets flexible)
@@ -81,12 +88,14 @@ This architecture adopts a **Serverless Monolith (Vercel Edge + Functions)** wit
 **Framework Version:** Next.js 16 (stable) with React 19
 
 **Key Benefits for Laglig.se:**
+
 - **Turbopack by Default:** 2-5× faster production builds, critical for 170,000+ pages
 - **Explicit Caching with "use cache":** Better control for law pages vs dynamic content
 - **Improved Performance:** Up to 10× faster Fast Refresh during development
 - **Node.js 20.9+ Required:** Upgraded from Node.js 18.18+ requirement
 
 **Critical Breaking Changes:**
+
 ```typescript
 // Async params and searchParams (applies to ALL routes)
 // BEFORE (Next.js 14/15)
@@ -102,6 +111,7 @@ export default async function Page({ params, searchParams }) {
 ```
 
 **Other Breaking Changes:**
+
 - **Image Optimization:** Default cache TTL increased to 4 hours (from 60 seconds)
 - **Parallel Routes:** All slots require explicit `default.js` files
 - **Middleware:** Consider renaming `middleware.ts` → `proxy.ts` (old name still works)
@@ -115,6 +125,7 @@ export default async function Page({ params, searchParams }) {
 **✅ CONFIRMED: Hybrid Approach**
 
 **Server Actions (Internal Operations):**
+
 - User authentication flows (login, signup, password reset)
 - Form submissions (create law list, update workspace settings)
 - Kanban drag-and-drop mutations (move card, update status)
@@ -122,6 +133,7 @@ export default async function Page({ params, searchParams }) {
 - **Benefits:** Type-safe, no API routes, automatic revalidation, better DX
 
 **REST API Routes (External Integrations):**
+
 - Webhooks: `/api/webhooks/stripe`, `/api/webhooks/fortnox`
 - Public data API: `/api/public/laws/:id`, `/api/public/search` (for future partners)
 - Admin operations: `/api/admin/ingest`, `/api/admin/jobs`
@@ -129,6 +141,7 @@ export default async function Page({ params, searchParams }) {
 - **Benefits:** Standard HTTP, cacheable, external-integration-friendly, Vercel Cron compatible
 
 **Implementation Pattern:**
+
 ```typescript
 // Server Actions (app/actions/workspace.ts)
 'use server'
@@ -147,6 +160,7 @@ export async function POST(request: Request) {
 ```
 
 **Rationale:**
+
 - Server Actions for 90% of user-facing mutations (better DX, type safety)
 - REST for 10% external/scheduled operations (webhooks, cron, public API)
 - No tRPC (avoids complexity, App Router Server Actions are "tRPC-lite")
@@ -155,11 +169,11 @@ export async function POST(request: Request) {
 
 ## 1.4 Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2025-11-04 | 1.0 | Initial fullstack architecture document created | Winston (Architect) |
-| 2025-11-04 | 1.0 | Confirmed hybrid API strategy (Server Actions + REST) | Winston (Architect) |
-| 2025-11-10 | 1.1 | Updated from Next.js 14 to Next.js 16 with breaking changes noted | Winston (Architect) |
+| Date       | Version | Description                                                       | Author              |
+| ---------- | ------- | ----------------------------------------------------------------- | ------------------- |
+| 2025-11-04 | 1.0     | Initial fullstack architecture document created                   | Winston (Architect) |
+| 2025-11-04 | 1.0     | Confirmed hybrid API strategy (Server Actions + REST)             | Winston (Architect) |
+| 2025-11-10 | 1.1     | Updated from Next.js 14 to Next.js 16 with breaking changes noted | Winston (Architect) |
 
 ---
 
@@ -176,6 +190,7 @@ Laglig.se implements a **Serverless Monolith** architecture deployed on Vercel's
 **Selected Platform: Vercel + Supabase**
 
 **Core Services:**
+
 - **Hosting:** Vercel Edge Network (Next.js SSR + serverless functions)
 - **Database:** Supabase PostgreSQL with pgvector extension (EU region)
 - **Cache:** Upstash Redis (serverless, EU region)
@@ -188,6 +203,7 @@ Laglig.se implements a **Serverless Monolith** architecture deployed on Vercel's
 - **Background Jobs:** Vercel Cron (daily change detection, digest emails)
 
 **Deployment Host and Regions:**
+
 - **Vercel:** Global Edge Network (automatic multi-region)
 - **Supabase:** EU Central (Frankfurt) - GDPR compliance, Swedish data residency preference
 - **OpenAI:** US East (unavoidable, API-based, no PII stored)
@@ -195,6 +211,7 @@ Laglig.se implements a **Serverless Monolith** architecture deployed on Vercel's
 **Rationale for Vercel + Supabase:**
 
 **Why Vercel:**
+
 1. **Best-in-class Next.js hosting:** Zero-config SSR, automatic Edge optimization, built-in CDN
 2. **Serverless functions:** No server management, auto-scaling, pay-per-request pricing
 3. **DX velocity:** Preview deployments, instant rollbacks, GitHub integration
@@ -202,6 +219,7 @@ Laglig.se implements a **Serverless Monolith** architecture deployed on Vercel's
 5. **Cost-effective at scale:** Free tier → $20/mo Pro → $40/mo Enterprise (covers 0-10K users)
 
 **Why Supabase:**
+
 1. **pgvector support:** Native PostgreSQL vector search (eliminates Pinecone costs until 100K queries/day)
 2. **Integrated auth:** Supabase Auth handles JWT, sessions, password reset (reduces auth complexity)
 3. **Real-time capabilities:** WebSocket support for future live collaboration features
@@ -210,15 +228,18 @@ Laglig.se implements a **Serverless Monolith** architecture deployed on Vercel's
 6. **Developer-friendly:** Auto-generated REST API, migrations, studio UI
 
 **Alternative Considered: AWS Full Stack**
+
 - ❌ **Rejected:** Higher complexity (Lambda, API Gateway, RDS, Cognito, S3 = 5+ services vs. 2)
 - ❌ **Slower setup:** Weeks of infrastructure config vs. hours with Vercel/Supabase
 - ✅ **Future migration path:** Can migrate to AWS if enterprise customers require private cloud (post-MVP)
 
 **Alternative Considered: Azure**
+
 - ❌ **Rejected:** No pgvector equivalent in Azure Database for PostgreSQL (requires VM + self-managed)
 - ❌ **Overkill:** Azure optimized for .NET/Enterprise, not Next.js startups
 
 **Alternative Considered: Self-Hosted (VPS)**
+
 - ❌ **Rejected:** Operations burden (server maintenance, security patches, backups) unacceptable for solo founder
 - ❌ **Cost savings minimal:** $50/mo VPS vs. $45/mo (Vercel + Supabase) - not worth DevOps time
 
@@ -235,12 +256,14 @@ Laglig.se implements a **Serverless Monolith** architecture deployed on Vercel's
 **Package Organization:** Flat structure within single Next.js app
 
 **Rationale:**
+
 - **No separate packages needed:** All code runs in Next.js context (no mobile app, no separate admin portal)
 - **Shared types via `lib/types/`:** TypeScript interfaces shared between frontend and backend without monorepo complexity
 - **Future-proof:** Can migrate to Turborepo if admin portal or mobile app enters scope (Month 12+)
 - **Solo founder velocity:** Simpler mental model, fewer build configs, faster iteration
 
 **Repository Structure:**
+
 ```
 laglig_se/
 ├── .github/                    # CI/CD workflows
@@ -347,6 +370,7 @@ laglig_se/
 ```
 
 **Key Design Decisions:**
+
 1. **App Router route groups:** `(auth)`, `(dashboard)`, `(public)` for logical organization without affecting URLs
 2. **Server Actions in `app/actions/`:** Co-located with routes but organized by domain
 3. **Shared types in `lib/types/`:** Single source of truth for TypeScript interfaces
@@ -431,6 +455,7 @@ graph TB
 ```
 
 **Diagram Key:**
+
 - **Edge Cache:** Vercel CDN caches SSR pages (170K law pages) for fast global delivery
 - **Next.js App Router:** Central application handling all requests
 - **Serverless Functions:** Auto-scaling compute for SSR, mutations, webhooks, cron jobs
@@ -439,6 +464,7 @@ graph TB
 - **Cron Jobs:** Daily change detection, digest emails (8:00 CET)
 
 **Data Flow Examples:**
+
 1. **SEO User:** GoogleBot → Edge Cache → SSR → Redis (metadata cache) → PostgreSQL → Cached HTML
 2. **Authenticated User:** Browser → Server Action → Redis (check cache) → PostgreSQL → Revalidate
 3. **AI Chat (Cache Hit):** Browser → Server Action → Redis (return cached response <10ms) → No OpenAI call → Response
@@ -452,51 +478,61 @@ graph TB
 This architecture follows several proven patterns to ensure maintainability, scalability, and developer velocity:
 
 **1. Jamstack Architecture (Hybrid)**
+
 - **Description:** Pre-rendered static pages (170K law pages) with dynamic API routes for authenticated features
 - **Implementation:** Next.js SSR generates static HTML at build time for `/lagar/:slug`, caches at Edge, dynamic dashboard routes rendered on-demand
 - **Rationale:** Optimal SEO (Google indexes static HTML instantly), fast global delivery (CDN), reduced server load (90% of traffic hits cached pages)
 
 **2. Backend-for-Frontend (BFF) via Server Actions**
+
 - **Description:** Server-side logic co-located with React components, no client-side API calls needed
 - **Implementation:** `'use server'` functions in `app/actions/` called directly from components, automatic serialization
 - **Rationale:** Type safety across frontend-backend boundary, eliminates API versioning complexity, reduces network round-trips (no REST for mutations)
 
 **3. Repository Pattern (Data Access Layer)**
+
 - **Description:** Abstract database queries behind reusable functions
 - **Implementation:** `lib/db/queries/` contains functions like `getLawBySlug()`, `searchLaws()`, `getUserWorkspaces()` wrapping Prisma
 - **Rationale:** Testable data access, enables future database migration (e.g., Supabase → AWS RDS), prevents N+1 queries through centralized optimization
 
 **4. RAG (Retrieval-Augmented Generation) Pattern**
+
 - **Description:** LLM responses grounded in retrieved document chunks to prevent hallucination
 - **Implementation:** User question → pgvector similarity search (top 5 chunks) → GPT-4 prompt with context → cited answer
 - **Rationale:** Zero-hallucination requirement (Swedish legal accuracy critical), lower cost than fine-tuning, dynamic corpus (laws change weekly)
 
 **5. Command Query Responsibility Segregation (CQRS-Lite)**
+
 - **Description:** Separate read paths (SSR, API GET) from write paths (Server Actions, API POST)
 - **Implementation:** Read: PostgreSQL direct queries with Prisma (optimized for speed). Write: Server Actions with revalidation triggers
 - **Rationale:** Read-heavy workload (170K pages, 10:1 read/write ratio), allows independent scaling of reads (Edge cache) vs. writes (serverless functions)
 
 **6. Event-Driven Background Jobs**
+
 - **Description:** Asynchronous processing of time-intensive tasks (change detection, email digests)
 - **Implementation:** Vercel Cron triggers `/api/cron/detect-changes` daily, upserts changes to `content_changes` table, queues digest emails
 - **Rationale:** Prevents blocking user requests, distributes compute load (change detection takes 2-3 hours), ensures reliable delivery (retry logic)
 
 **7. Multi-Tenancy via Workspace Pattern**
+
 - **Description:** User → Workspace → Law Lists (1:many:many relationship)
 - **Implementation:** All queries scoped by `workspace_id`, Row-Level Security (RLS) in Supabase enforces tenant isolation
 - **Rationale:** Supports team plans (Pro/Enterprise), data isolation between customers, enables Fortnox bulk provisioning (1 Fortnox customer = 1 workspace)
 
 **8. Progressive Enhancement (Frontend)**
+
 - **Description:** Core functionality works without JavaScript, enhanced with JS
 - **Implementation:** Forms use native `<form action={serverAction}>` (works without JS), client-side enhancements (validation, optimistic updates) layered on top
 - **Rationale:** Accessibility (screen readers), resilience (JS fails gracefully), SEO (search engines execute less JS)
 
 **9. Strangler Fig Pattern (External APIs)**
+
 - **Description:** Gradually replace external API dependencies with internal implementations
 - **Implementation:** Initially call Riksdagen API directly, later cache responses in PostgreSQL, eventually scrape if API unreliable
 - **Rationale:** Mitigates third-party API risk (Riksdagen downtime, rate limits), improves response time (local cache), reduces external dependencies over time
 
 **10. API Gateway Pattern (Future)**
+
 - **Description:** Single entry point for all external integrations (Fortnox, webhooks, public API)
 - **Implementation:** `/api/v1/*` routes with centralized auth, rate limiting (10 req/sec), logging
 - **Rationale:** Prepares for Fortnox integration (Month 9), public API monetization (post-MVP), consistent auth/rate limiting across integrations
@@ -510,58 +546,64 @@ Given the central importance of AI/RAG to Laglig.se's value proposition, this su
 **RAG Framework: Vercel AI SDK + Custom Pipeline**
 
 **Vercel AI SDK:**
+
 - **Purpose:** React hooks for streaming AI responses, unified API across LLM providers
 - **Key Feature:** `useChat()` hook for streaming text generation with automatic state management
 - **Implementation:**
+
   ```typescript
   // components/ai-chat/ChatInterface.tsx
   import { useChat } from 'ai/react'
 
   const { messages, input, handleSubmit, isLoading } = useChat({
     api: '/api/chat',
-    body: { lawIds: contextLawIds } // Pass context
+    body: { lawIds: contextLawIds }, // Pass context
   })
   ```
+
 - **Why:** Provides streaming UI out-of-the-box, handles message history, optimistic updates, error recovery
 
 **Semantic Chunking: LangChain + Custom Logic**
 
 **LangChain (Optional):**
+
 - **Use Case:** Document splitting utilities, text transformers
 - **Alternative:** Custom implementation for content-type-specific chunking (see below)
 
 **Content-Type-Specific Chunking Strategy (PRD Story 2.10):**
+
 ```typescript
 // lib/ai/chunking.ts
 const chunkingStrategies = {
   SFS_LAW: {
-    method: 'semantic_section',  // Chunk by § (section)
+    method: 'semantic_section', // Chunk by § (section)
     maxTokens: 500,
     overlap: 50,
-    preserveContext: ['chapter_number', 'law_title']
+    preserveContext: ['chapter_number', 'law_title'],
   },
   COURT_CASE: {
-    method: 'semantic_section',  // Facts / Analysis / Conclusion
+    method: 'semantic_section', // Facts / Analysis / Conclusion
     maxTokens: 800,
     overlap: 50,
-    preserveContext: ['court_name', 'case_number', 'section_type']
+    preserveContext: ['court_name', 'case_number', 'section_type'],
   },
   EU_REGULATION: {
-    method: 'article',           // Chunk by article
+    method: 'article', // Chunk by article
     maxTokens: 500,
     overlap: 50,
-    preserveContext: ['article_number', 'celex']
+    preserveContext: ['article_number', 'celex'],
   },
   EU_DIRECTIVE: {
-    method: 'article',           // Chunk by article, preserve recitals
+    method: 'article', // Chunk by article, preserve recitals
     maxTokens: 500,
     overlap: 50,
-    preserveContext: ['article_number', 'recitals']
-  }
+    preserveContext: ['article_number', 'recitals'],
+  },
 }
 ```
 
 **Why Content-Type-Specific:**
+
 - **SFS Laws:** Legal § (section) is natural semantic boundary
 - **Court Cases:** Facts/Analysis/Conclusion sections have different retrieval relevance
 - **EU Legislation:** Articles are self-contained, but recitals provide context
@@ -570,6 +612,7 @@ const chunkingStrategies = {
 **Vector Database: PostgreSQL pgvector with HNSW Index**
 
 **pgvector Configuration:**
+
 ```sql
 -- Enable extension
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -591,18 +634,21 @@ WITH (m = 16, ef_construction = 64);
 ```
 
 **Index Choice: HNSW (Hierarchical Navigable Small World)**
+
 - **Why HNSW over IVFFlat:**
   - HNSW: Better query performance (<100ms), higher accuracy, no training needed
   - IVFFlat: Faster inserts but requires training, lower accuracy
   - **Decision:** HNSW for query-heavy workload (10:1 read/write ratio)
 
 **Embedding Model: OpenAI text-embedding-3-small**
+
 - **Dimensions:** 1536
 - **Cost:** $0.02 / 1M tokens (~$200 for 100M token corpus)
 - **Why small over large:** Cost (10x cheaper), sufficient accuracy for Swedish legal text
 - **Performance:** ~3-4 hours to embed 170K documents (batched at 1,000 requests/minute per OpenAI rate limit)
 
 **Batch Processing Strategy:**
+
 ```typescript
 // scripts/generate-embeddings.ts
 async function batchEmbeddings(documents: LegalDocument[]) {
@@ -615,7 +661,7 @@ async function batchEmbeddings(documents: LegalDocument[]) {
     // Batch API call
     const embeddings = await openai.embeddings.create({
       model: 'text-embedding-3-small',
-      input: batch.map(d => d.chunk_text)
+      input: batch.map((d) => d.chunk_text),
     })
 
     // Store in database
@@ -623,8 +669,8 @@ async function batchEmbeddings(documents: LegalDocument[]) {
       data: embeddings.data.map((emb, idx) => ({
         lawId: batch[idx].id,
         embedding: emb.embedding,
-        chunkText: batch[idx].chunk_text
-      }))
+        chunkText: batch[idx].chunk_text,
+      })),
     })
 
     // Rate limit: 1000 req/min = 1 batch every 60ms
@@ -641,14 +687,11 @@ async function batchEmbeddings(documents: LegalDocument[]) {
 
 ```typescript
 // lib/ai/rag.ts
-export async function ragQuery(
-  userQuery: string,
-  contextLawIds?: string[]
-) {
+export async function ragQuery(userQuery: string, contextLawIds?: string[]) {
   // 1. Generate query embedding
   const queryEmbedding = await openai.embeddings.create({
     model: 'text-embedding-3-small',
-    input: userQuery
+    input: userQuery,
   })
 
   // 2. Vector similarity search (top 10 chunks)
@@ -683,7 +726,7 @@ export async function ragQuery(
   respond "Jag har inte tillräcklig information för att svara på det."`
 
   const userPrompt = `Context:
-${relevantChunks.map((c, i) => `[${i+1}] ${c.title} (${c.document_number}): ${c.chunk_text}`).join('\n\n')}
+${relevantChunks.map((c, i) => `[${i + 1}] ${c.title} (${c.document_number}): ${c.chunk_text}`).join('\n\n')}
 
 User Question: ${userQuery}`
 
@@ -692,9 +735,9 @@ User Question: ${userQuery}`
     model: 'gpt-4',
     messages: [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: userPrompt }
+      { role: 'user', content: userPrompt },
     ],
-    stream: true
+    stream: true,
   })
 
   return { stream, citations: relevantChunks }
@@ -702,12 +745,14 @@ User Question: ${userQuery}`
 ```
 
 **RAG Performance Targets (NFR2, NFR9):**
+
 - **Latency:** <3 seconds end-to-end (embedding + vector search + GPT-4 generation)
 - **Hallucination Rate:** <5% (achieved through strict "ONLY from context" prompt)
 - **Citation Coverage:** 100% (every answer must cite sources)
 - **Cache Hit Rate:** 75%+ for repeated queries (Redis cache for common questions)
 
 **Why This Approach:**
+
 1. **Vercel AI SDK:** Handles streaming complexity, React integration, error recovery
 2. **pgvector:** Avoids $70/mo Pinecone cost until 100K queries/day (NFR17)
 3. **Content-type chunking:** Improves retrieval accuracy by respecting document structure
@@ -715,6 +760,7 @@ User Question: ${userQuery}`
 5. **text-embedding-3-small:** 10x cheaper than text-embedding-3-large, sufficient for Swedish legal text
 
 **Scaling Triggers:**
+
 - **Migrate to Pinecone:** If pgvector query latency >500ms or storage >100GB
 - **Add Claude:** If GPT-4 quality insufficient for Swedish nuance (Anthropic has better multilingual performance)
 
@@ -725,6 +771,7 @@ User Question: ${userQuery}`
 **Redis Provider: Upstash Redis (Serverless)**
 
 **Why Upstash:**
+
 - **Serverless pricing:** Pay-per-request, no idle costs (Vercel-friendly)
 - **EU region:** Frankfurt (GDPR compliance)
 - **REST API:** Works with Vercel Edge Functions (no TCP required)
@@ -734,6 +781,7 @@ User Question: ${userQuery}`
 **Cache Strategy:**
 
 **1. RAG Query Cache (High Priority)**
+
 ```typescript
 // lib/ai/cache.ts
 import { Redis } from '@upstash/redis'
@@ -757,17 +805,20 @@ async function cachedRagQuery(userQuery: string, contextLawIds?: string[]) {
 ```
 
 **What to cache:**
+
 - **RAG responses:** Full AI answers + citations (7 day TTL)
 - **Query embeddings:** User query embeddings (30 day TTL, rarely change)
 - **Law metadata:** Law titles, SFS numbers, categories (permanent until law changes)
 - **Search results:** Full-text search results (1 hour TTL)
 
 **What NOT to cache:**
+
 - **User-specific data:** Workspace settings, user profiles (Supabase Auth handles sessions)
 - **Real-time data:** Kanban card positions, chat history (too volatile)
 - **Personalized law lists:** Different per user (cache invalidation complexity)
 
 **2. Law Metadata Cache (Medium Priority)**
+
 ```typescript
 // Cache law metadata for SSR pages
 async function getLawMetadata(slug: string) {
@@ -784,6 +835,7 @@ async function getLawMetadata(slug: string) {
 ```
 
 **3. Search Results Cache (Low Priority)**
+
 ```typescript
 // Cache search results for common queries
 async function cachedSearch(query: string, filters: SearchFilters) {
@@ -802,6 +854,7 @@ async function cachedSearch(query: string, filters: SearchFilters) {
 **Cache Invalidation Strategy:**
 
 **Event-driven invalidation with Redis Sets (Optimized):**
+
 ```typescript
 // When caching RAG response, track the relationship
 async function cacheRagResponse(lawId: string, query: string, response: any) {
@@ -824,7 +877,7 @@ async function invalidateLawCache(lawId: string) {
   if (cacheKeys.length) {
     // Delete all related caches in single pipeline
     const pipeline = redis.pipeline()
-    cacheKeys.forEach(key => pipeline.del(key))
+    cacheKeys.forEach((key) => pipeline.del(key))
     pipeline.del(`law:${lawId}:cache_keys`) // Delete the set itself
     await pipeline.exec()
   }
@@ -839,17 +892,20 @@ async function invalidateLawCache(lawId: string) {
 ```
 
 **Why Sets over keys():**
+
 - `redis.keys('rag:*')` scans entire keyspace (O(N), blocks Redis at scale)
 - `redis.smembers('law:123:cache_keys')` is O(1) lookup + O(K) deletion where K = keys per law (~10-50)
 - At 100K cached queries, keys() takes seconds; Sets approach takes milliseconds
 
 **Performance Targets (NFR3):**
+
 - **Cache hit rate:** 75%+ for RAG queries (target from PRD)
 - **Cache latency:** <10ms for Upstash REST API (EU region)
 - **Cost impact:** ~$20/mo at 10K users (100K cached queries/day)
 - **Savings:** $300/mo in OpenAI API costs (avoid repeated embeddings/GPT-4 calls)
 
 **Why This Approach:**
+
 1. **Upstash REST API:** Compatible with Vercel Edge Functions (no TCP connection)
 2. **Aggressive RAG caching:** Same question = same answer (deterministic RAG)
 3. **Event-driven invalidation:** Only flush cache when law actually changes (rare)
@@ -870,6 +926,7 @@ Next.js 16 App Router with Server Components + Server Actions significantly redu
 **Why Context:** Infrequent updates (only on login/logout/workspace switch), minimal re-renders, no bundle overhead
 
 **Implementation:**
+
 ```typescript
 // app/providers/SessionProvider.tsx
 'use client'
@@ -905,6 +962,7 @@ export function useSession() {
 ```
 
 **What goes in Context:**
+
 - ✅ User profile (name, email, avatar)
 - ✅ Active workspace (workspace_id, name, tier)
 - ✅ Permissions (canEditKanban, canInviteUsers)
@@ -917,6 +975,7 @@ export function useSession() {
 **Why Zustand:** High-frequency updates, selective subscriptions (no unnecessary re-renders), persistence middleware, small bundle (~2KB)
 
 **Implementation:**
+
 ```typescript
 // lib/stores/kanbanStore.ts
 import { create } from 'zustand'
@@ -938,53 +997,60 @@ export const useKanbanStore = create<KanbanState>()(
       draggedCard: null,
 
       moveCard: (cardId, targetColumnId) => {
-        const originalColumnId = get().cards.find(c => c.id === cardId)?.columnId
+        const originalColumnId = get().cards.find(
+          (c) => c.id === cardId
+        )?.columnId
 
         // Optimistic update (instant UI feedback)
-        set(state => ({
-          cards: state.cards.map(card =>
-            card.id === cardId ? { ...card, columnId: targetColumnId, syncing: true } : card
-          )
+        set((state) => ({
+          cards: state.cards.map((card) =>
+            card.id === cardId
+              ? { ...card, columnId: targetColumnId, syncing: true }
+              : card
+          ),
         }))
 
         // Background sync (Server Action)
         moveCardAction(cardId, targetColumnId)
           .then(() => {
             // Mark as synced
-            set(state => ({
-              cards: state.cards.map(card =>
+            set((state) => ({
+              cards: state.cards.map((card) =>
                 card.id === cardId ? { ...card, syncing: false } : card
-              )
+              ),
             }))
           })
           .catch(() => {
             // Rollback on error
-            set(state => ({
-              cards: state.cards.map(card =>
-                card.id === cardId ? { ...card, columnId: originalColumnId, syncing: false } : card
-              )
+            set((state) => ({
+              cards: state.cards.map((card) =>
+                card.id === cardId
+                  ? { ...card, columnId: originalColumnId, syncing: false }
+                  : card
+              ),
             }))
             toast.error('Kunde inte flytta kortet. Ändringarna sparades inte.')
           })
       },
 
       optimisticUpdate: (cardId, updates) => {
-        set(state => ({
-          cards: state.cards.map(card =>
+        set((state) => ({
+          cards: state.cards.map((card) =>
             card.id === cardId ? { ...card, ...updates } : card
-          )
+          ),
         }))
-      }
+      },
     }),
     {
       name: 'kanban-storage',
-      partialize: (state) => ({ columns: state.columns, cards: state.cards }) // Don't persist draggedCard
+      partialize: (state) => ({ columns: state.columns, cards: state.cards }), // Don't persist draggedCard
     }
   )
 )
 ```
 
 **What goes in Zustand:**
+
 - ✅ Kanban columns, cards, drag state
 - ✅ Optimistic updates (instant UI feedback)
 - ✅ Persistence (localStorage for offline resilience)
@@ -992,22 +1058,25 @@ export const useKanbanStore = create<KanbanState>()(
 - ❌ NOT: Law data (Server Components fetch directly)
 
 **⚠️ Security Warning:**
+
 ```typescript
 // localStorage can be read by XSS attacks - never persist sensitive data
 partialize: (state) => ({
-  columns: state.columns,     // ✅ Safe (UI metadata only)
-  cardPositions: state.cards.map(c => ({
-    id: c.id,                 // ✅ Safe (reference only)
-    columnId: c.columnId      // ✅ Safe (UI state)
-  }))
+  columns: state.columns, // ✅ Safe (UI metadata only)
+  cardPositions: state.cards.map((c) => ({
+    id: c.id, // ✅ Safe (reference only)
+    columnId: c.columnId, // ✅ Safe (UI state)
+  })),
   // ❌ DON'T persist: law content, user PII, API tokens
 })
 ```
+
 - **Never persist:** User PII, law content, API tokens
 - **Safe to persist:** Column order, card IDs (references), UI preferences
 - **Best practice:** Only persist UI state, fetch sensitive data from server on load
 
 **Why Zustand over Context for Kanban:**
+
 - **Performance:** Zustand allows selective subscriptions (`useKanbanStore(state => state.draggedCard)` only re-renders when draggedCard changes)
 - **Context problem:** All consumers re-render on any state change (dragging 1 card would re-render entire Kanban board)
 - **Middleware:** Zustand persist middleware handles localStorage sync automatically
@@ -1018,6 +1087,7 @@ partialize: (state) => ({
 **Why Built-in:** Vercel AI SDK `useChat()` hook already manages this perfectly
 
 **Implementation:**
+
 ```typescript
 // components/ai-chat/ChatInterface.tsx
 import { useChat } from 'ai/react'
@@ -1044,6 +1114,7 @@ export function ChatInterface({ lawIds }: { lawIds: string[] }) {
 ```
 
 **What useChat manages:**
+
 - ✅ Message history (automatically synced)
 - ✅ Streaming state (word-by-word display)
 - ✅ Loading states (isLoading flag)
@@ -1056,6 +1127,7 @@ export function ChatInterface({ lawIds }: { lawIds: string[] }) {
 **Why Local:** No need for global store, component-specific, garbage collected automatically
 
 **Implementation:**
+
 ```typescript
 // components/ui/Modal.tsx
 export function Modal({ children, trigger }: ModalProps) {
@@ -1075,6 +1147,7 @@ export function Modal({ children, trigger }: ModalProps) {
 ```
 
 **What stays local:**
+
 - ✅ Modal open/closed
 - ✅ Dropdown expanded
 - ✅ Form input values (before submission)
@@ -1084,37 +1157,42 @@ export function Modal({ children, trigger }: ModalProps) {
 
 **State Management Decision Matrix:**
 
-| State Type | Solution | Why |
-|------------|----------|-----|
-| User session, workspace | **React Context** | Slow-changing, global access, minimal re-renders |
-| Kanban board state | **Zustand** | High-frequency updates, optimistic UI, selective subscriptions |
-| AI chat messages | **Vercel AI SDK** | Built-in, handles streaming/errors perfectly |
-| UI ephemeral state | **useState/useReducer** | Component-local, auto garbage-collected |
-| Law data fetching | **Server Components** | No client state needed, SSR by default |
-| Form state | **React Hook Form** | Uncontrolled inputs, better performance than useState |
+| State Type              | Solution                | Why                                                            |
+| ----------------------- | ----------------------- | -------------------------------------------------------------- |
+| User session, workspace | **React Context**       | Slow-changing, global access, minimal re-renders               |
+| Kanban board state      | **Zustand**             | High-frequency updates, optimistic UI, selective subscriptions |
+| AI chat messages        | **Vercel AI SDK**       | Built-in, handles streaming/errors perfectly                   |
+| UI ephemeral state      | **useState/useReducer** | Component-local, auto garbage-collected                        |
+| Law data fetching       | **Server Components**   | No client state needed, SSR by default                         |
+| Form state              | **React Hook Form**     | Uncontrolled inputs, better performance than useState          |
 
 **Why NOT Full Zustand:**
+
 - React Server Components eliminate most client state needs
 - Server Actions replace client-side API calls (no useEffect + useState for data fetching)
 - Context sufficient for slow-changing global state
 - Zustand adds 2KB bundle - only use where performance critical
 
 **Why NOT Just Context:**
+
 - Context re-renders all consumers on any change
 - Kanban board has frequent updates (drag operations) - Context causes performance issues
 - Zustand allows selector-based subscriptions (only re-render what changed)
 
 **Bundle Impact:**
+
 - React Context: 0KB (built-in)
 - Zustand: 2KB gzipped
 - Vercel AI SDK: 5KB gzipped (already required for chat)
 - **Total:** 7KB for state management (acceptable)
 
 **Alternative Considered: Jotai**
+
 - ❌ **Rejected:** Similar to Zustand but atom-based API more complex for Kanban use case
 - ❌ **No persistence middleware:** Would need custom implementation
 
 **Alternative Considered: Redux Toolkit**
+
 - ❌ **Rejected:** 15KB bundle (7x larger than Zustand), unnecessary boilerplate for this app
 - ❌ **Overkill:** Redux useful for complex state machines, not needed here
 
@@ -1127,6 +1205,7 @@ export function Modal({ children, trigger }: ModalProps) {
 **Monthly Infrastructure Costs by Scale:**
 
 **Stage 1: 0-1,000 MAU (Months 0-6) - MVP Launch**
+
 - **Vercel:** Free tier (100GB bandwidth, 100 serverless execution hours)
 - **Supabase:** Free tier (500MB database, 2GB bandwidth, 50K monthly active users)
 - **Upstash Redis:** Free tier (10K requests/day)
@@ -1139,6 +1218,7 @@ export function Modal({ children, trigger }: ModalProps) {
 - **Gross Margin:** 95%
 
 **Stage 2: 1,000-10,000 MAU (Months 6-12) - Growth Phase**
+
 - **Vercel Pro:** $20/mo (1TB bandwidth, faster builds, team features)
 - **Supabase Pro:** $25/mo (8GB database, 250GB bandwidth, dedicated compute)
 - **Upstash Redis:** ~$20/mo (100K requests/day, 75% cache hit rate target)
@@ -1153,6 +1233,7 @@ export function Modal({ children, trigger }: ModalProps) {
 - **Gross Margin:** 84%
 
 **Stage 3: 10,000-100,000 MAU (Months 12-18) - Scale Phase**
+
 - **Vercel Pro:** $40/mo (higher limits, edge config)
 - **Supabase Team:** $599/mo (dedicated compute, point-in-time recovery, higher limits)
 - **Upstash Redis:** ~$200/mo (1M requests/day)
@@ -1167,6 +1248,7 @@ export function Modal({ children, trigger }: ModalProps) {
 - **Gross Margin:** 57%
 
 **At 10M SEK ARR Target (Month 18):**
+
 - **Monthly Revenue:** 83K SEK (~$8,300)
 - **Infrastructure Costs:** ~$3,538/mo
 - **Gross Margin:** 57% (below 60% target but within acceptable range)
@@ -1179,16 +1261,19 @@ export function Modal({ children, trigger }: ModalProps) {
 **Cost Optimization Strategies:**
 
 **Trigger 1: Migrate to Pinecoe when pgvector query latency >500ms**
+
 - Currently: pgvector free (included in Supabase)
 - Pinecone: $70/mo for 100K vectors
 - **Trigger:** When query latency consistently >500ms or database >50GB
 
 **Trigger 2: Optimize OpenAI costs when monthly spend >$3K**
+
 - Switch to Claude Sonnet ($0.003/1K tokens, 10x cheaper than GPT-4 for completions)
 - Increase cache TTL from 7 days to 30 days (hit rate 75% → 85%)
 - Pre-generate answers for top 1,000 common questions
 
 **Trigger 3: Self-host Redis when Upstash >10M requests/day**
+
 - Upstash at scale: ~$2,000/mo
 - Redis Labs Cluster: $200/mo (self-managed)
 - **Migration point:** Month 24+ (100K+ MAU)
@@ -1196,15 +1281,18 @@ export function Modal({ children, trigger }: ModalProps) {
 **Revenue Sensitivity Analysis:**
 
 **Best Case (Month 18): 15M SEK ARR**
+
 - Infrastructure: Still ~$3.5K/mo (doesn't scale linearly with revenue)
 - Gross Margin: 72%
 
 **Worst Case (Month 18): 5M SEK ARR**
+
 - Infrastructure: ~$2K/mo (lower tier, fewer AI queries)
 - Gross Margin: 52%
 - **Risk:** Below 60% margin target, need to optimize or increase pricing
 
 **Key Cost Drivers to Monitor Weekly (NFR18):**
+
 1. **OpenAI API costs per user:** Target <$0.50/user/month
 2. **Cache hit rate:** Maintain >75% (每 10% drop = +$600/mo cost)
 3. **Embedding regeneration frequency:** Minimize (each full re-embedding = $200)
@@ -1221,13 +1309,16 @@ The architecture depends on 5 external services that can fail. Each requires spe
 **1. Supabase Database Unavailable (Rare but Critical)**
 
 **Circuit Breaker Pattern:**
+
 ```typescript
 // lib/db/resilience.ts
 let dbFailureCount = 0
 const FAILURE_THRESHOLD = 3
 const CIRCUIT_TIMEOUT = 60000 // 60 seconds
 
-async function queryWithCircuitBreaker<T>(queryFn: () => Promise<T>): Promise<T> {
+async function queryWithCircuitBreaker<T>(
+  queryFn: () => Promise<T>
+): Promise<T> {
   try {
     const result = await queryFn()
     dbFailureCount = 0 // Reset on success
@@ -1244,7 +1335,9 @@ async function queryWithCircuitBreaker<T>(queryFn: () => Promise<T>): Promise<T>
       if (cached) return cached
 
       // No fallback available
-      throw new Error('Service temporarily unavailable. Please try again in 1 minute.')
+      throw new Error(
+        'Service temporarily unavailable. Please try again in 1 minute.'
+      )
     }
 
     throw error
@@ -1260,6 +1353,7 @@ setInterval(() => {
 ```
 
 **Graceful Degradation:**
+
 - Law pages: Serve from Edge cache (stale data OK for SEO)
 - Dashboard: Show cached workspace state, disable writes
 - AI Chat: Disable temporarily, show "Service unavailable" message
@@ -1267,6 +1361,7 @@ setInterval(() => {
 **2. OpenAI API Rate Limit or Timeout**
 
 **Exponential Backoff with Jitter:**
+
 ```typescript
 // lib/ai/resilience.ts
 async function openAIWithRetry<T>(
@@ -1288,7 +1383,9 @@ async function openAIWithRetry<T>(
       const jitter = Math.random() * 1000
       const delay = Math.min(baseDelay + jitter, 10000) // Max 10s
 
-      console.warn(`OpenAI ${error.code}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`)
+      console.warn(
+        `OpenAI ${error.code}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`
+      )
       await sleep(delay)
     }
   }
@@ -1298,12 +1395,13 @@ async function openAIWithRetry<T>(
 const embedding = await openAIWithRetry(() =>
   openai.embeddings.create({
     model: 'text-embedding-3-small',
-    input: userQuery
+    input: userQuery,
   })
 )
 ```
 
 **Fallback Strategy:**
+
 - If embeddings fail: Use cached query embedding (if similar query exists)
 - If GPT-4 fails after retries: Return "AI tjänsten är överbelastad. Försök igen om en minut."
 - If streaming fails mid-response: Show partial response + "Anslutningen bröts"
@@ -1311,6 +1409,7 @@ const embedding = await openAIWithRetry(() =>
 **3. Redis Cache Unavailable**
 
 **Graceful Degradation (Cache is Optional):**
+
 ```typescript
 // lib/ai/cache.ts
 async function cachedRagQuery(query: string) {
@@ -1348,6 +1447,7 @@ async function cachedRagQuery(query: string) {
 **4. Vercel Function Timeout (10 seconds on Pro tier)**
 
 **Background Job Pattern for Long Operations:**
+
 ```typescript
 // app/api/onboarding/phase2/route.ts
 export async function POST(request: Request) {
@@ -1362,13 +1462,13 @@ export async function POST(request: Request) {
       type: 'PHASE2_LAW_GENERATION',
       workspaceId,
       status: 'PENDING',
-      payload: { phase1LawIds, contextualAnswers }
-    }
+      payload: { phase1LawIds, contextualAnswers },
+    },
   })
 
   return Response.json({
     status: 'queued',
-    message: 'Genererar resterande lagar i bakgrunden...'
+    message: 'Genererar resterande lagar i bakgrunden...',
   })
 }
 
@@ -1378,14 +1478,14 @@ export async function GET() {
   const jobs = await prisma.backgroundJob.findMany({
     where: { status: 'PENDING' },
     take: 5, // Process 5 jobs per cron run
-    orderBy: { createdAt: 'asc' }
+    orderBy: { createdAt: 'asc' },
   })
 
   for (const job of jobs) {
     try {
       await prisma.backgroundJob.update({
         where: { id: job.id },
-        data: { status: 'IN_PROGRESS' }
+        data: { status: 'IN_PROGRESS' },
       })
 
       // Execute long-running operation
@@ -1393,7 +1493,7 @@ export async function GET() {
 
       await prisma.backgroundJob.update({
         where: { id: job.id },
-        data: { status: 'COMPLETED', completedAt: new Date() }
+        data: { status: 'COMPLETED', completedAt: new Date() },
       })
     } catch (error) {
       await prisma.backgroundJob.update({
@@ -1401,8 +1501,8 @@ export async function GET() {
         data: {
           status: 'FAILED',
           error: error.message,
-          retryCount: { increment: 1 }
-        }
+          retryCount: { increment: 1 },
+        },
       })
     }
   }
@@ -1412,6 +1512,7 @@ export async function GET() {
 ```
 
 **Operations Requiring Background Jobs:**
+
 - Phase 2 law generation (60 seconds per PRD)
 - Full law database re-embedding (3-4 hours)
 - Daily change detection (2-3 hours per PRD)
@@ -1420,12 +1521,13 @@ export async function GET() {
 **5. External APIs (Riksdagen, EUR-Lex, Domstolsverket)**
 
 **Strangler Fig Pattern with Local Cache:**
+
 ```typescript
 // lib/external/riksdagen.ts
 async function fetchLawFromRiksdagen(sfsNumber: string) {
   // 1. Try local cache first (data stored during last sync)
   const cached = await prisma.legalDocument.findUnique({
-    where: { documentNumber: sfsNumber }
+    where: { documentNumber: sfsNumber },
   })
 
   if (cached && isFresh(cached.updatedAt, 24)) {
@@ -1434,9 +1536,12 @@ async function fetchLawFromRiksdagen(sfsNumber: string) {
 
   // 2. Try Riksdagen API
   try {
-    const response = await fetch(`https://data.riksdagen.se/dokument/${sfsNumber}`, {
-      signal: AbortSignal.timeout(5000) // 5s timeout
-    })
+    const response = await fetch(
+      `https://data.riksdagen.se/dokument/${sfsNumber}`,
+      {
+        signal: AbortSignal.timeout(5000), // 5s timeout
+      }
+    )
 
     if (!response.ok) throw new Error(`API returned ${response.status}`)
 
@@ -1446,7 +1551,7 @@ async function fetchLawFromRiksdagen(sfsNumber: string) {
     await prisma.legalDocument.upsert({
       where: { documentNumber: sfsNumber },
       update: { ...data, updatedAt: new Date() },
-      create: { ...data }
+      create: { ...data },
     })
 
     return data
@@ -1466,12 +1571,14 @@ async function fetchLawFromRiksdagen(sfsNumber: string) {
 ```
 
 **Note on Scraping:**
+
 - PRD mentions "scrape if API unreliable" (Strangler Fig Pattern #9)
 - ⚠️ **Legal Review Required:** Scraping may violate Terms of Service
 - **Recommendation:** Only as absolute last resort with legal clearance
 - **Preferred:** Aggressive local caching + stale-while-revalidate pattern
 
 **Circuit Breaker Configuration:**
+
 - **Failure Threshold:** 3 consecutive failures
 - **Timeout:** 30 seconds
 - **Half-Open Retry:** After 60 seconds, allow 1 test request
@@ -1482,6 +1589,7 @@ async function fetchLawFromRiksdagen(sfsNumber: string) {
 ### 2.11 Observability & Monitoring
 
 **Monitoring Stack:**
+
 - **Application Performance:** Vercel Analytics (built-in, Web Vitals)
 - **Error Tracking:** Sentry (errors, performance, user sessions)
 - **Custom Metrics:** Vercel Edge Config + Cron-based aggregation
@@ -1490,6 +1598,7 @@ async function fetchLawFromRiksdagen(sfsNumber: string) {
 **Key Metrics to Track (NFR18 - Weekly Unit Economics):**
 
 **1. AI Cost per User:**
+
 ```typescript
 // Track in Sentry custom metrics
 Sentry.metrics.distribution('ai.cost_per_query', costInUSD, {
@@ -1511,6 +1620,7 @@ GROUP BY workspace_id, tier
 **Target:** <$0.50/user/month
 
 **2. Cache Hit Rate:**
+
 ```typescript
 // Track every RAG query
 const cacheKey = `rag:${hashQuery(query)}`
@@ -1526,6 +1636,7 @@ if (cached) {
 **Target:** >75% hit rate (每 10% drop costs +$600/mo)
 
 **3. pgvector Query Latency:**
+
 ```typescript
 const start = Date.now()
 const results = await prisma.$queryRaw`
@@ -1543,6 +1654,7 @@ Sentry.metrics.distribution('pgvector.query_latency_ms', latency)
 **Target:** <100ms p95, alert if >500ms
 
 **4. RAG End-to-End Latency (NFR2):**
+
 ```typescript
 const ragStart = Date.now()
 
@@ -1557,14 +1669,15 @@ Sentry.metrics.distribution('rag.total_latency_ms', totalLatency)
 **Target:** <3,000ms end-to-end
 
 **5. Background Job Success Rate:**
+
 ```typescript
 // Monitor Phase 2 law generation, change detection
 Sentry.metrics.increment('background_job.completed', {
-  tags: { job_type: 'phase2_generation' }
+  tags: { job_type: 'phase2_generation' },
 })
 
 Sentry.metrics.increment('background_job.failed', {
-  tags: { job_type: 'phase2_generation', error_type }
+  tags: { job_type: 'phase2_generation', error_type },
 })
 ```
 
@@ -1573,12 +1686,14 @@ Sentry.metrics.increment('background_job.failed', {
 **Alerting Rules:**
 
 **Critical (PagerDuty/Slack):**
+
 - Database circuit breaker trips (3 consecutive failures)
 - RAG p95 latency >5s for >5 minutes
 - OpenAI API error rate >10% for >5 minutes
 - Cache hit rate <50% for >1 hour
 
 **Warning (Slack only):**
+
 - AI cost per user >$0.75/month (approaching limit)
 - pgvector query latency >500ms (Pinecone migration trigger)
 - Background job failure rate >5%
@@ -1586,6 +1701,7 @@ Sentry.metrics.increment('background_job.failed', {
 **Logging Strategy:**
 
 **Structured Logging:**
+
 ```typescript
 // Use consistent log structure for parsing
 logger.info('RAG query executed', {
@@ -1596,93 +1712,97 @@ logger.info('RAG query executed', {
   cache_hit: true,
   retrieved_chunks: 5,
   latency_ms: 1250,
-  cost_usd: 0.003
+  cost_usd: 0.003,
 })
 ```
 
 **Log Retention:**
+
 - Vercel Logs: 7 days (free tier), 30 days (Pro)
 - Sentry: 90 days
 - Custom metrics (Supabase): Indefinite (for cost analysis)
 
 **Privacy Considerations:**
+
 - ❌ Never log: User queries verbatim (GDPR risk)
 - ✅ Log: Query length, topics (hashed), cost, performance
 - ❌ Never log: Personnummer (Swedish SSN) in any logs
 - ✅ Log: User IDs (UUIDs only)
 
 ---
+
 ## 3. Tech Stack
 
 **This is the DEFINITIVE technology selection for Laglig.se.** All development must use these exact versions unless explicitly updated through architecture review. This table serves as the single source of truth for dependencies, tools, and services.
 
 ### 3.1 Technology Stack Table
 
-| Category | Technology | Version | Purpose | Rationale |
-|----------|------------|---------|---------|-----------|
-| **Frontend Language** | TypeScript | 5.5+ (bundled with Next.js 16) | Type-safe JavaScript for entire codebase | Prevents runtime errors, better IDE support, self-documenting code. Required for Next.js App Router patterns. Next.js 16 bundles TypeScript 5.5+. |
-| **Frontend Framework** | Next.js | 16 (App Router) | React meta-framework with SSR, routing, API routes | Best-in-class SSR for 170K SEO pages, Vercel-optimized, Server Components reduce client bundle, App Router required for Server Actions. Turbopack by default for 2-5× faster builds. |
-| **UI Library** | React | 19 (bundled with Next.js 16) | Component-based UI | Industry standard, massive ecosystem, required by Next.js, Server Components support. Next.js 16 bundles React 19 (stable). |
-| **UI Component Library** | shadcn/ui (Radix UI + Tailwind) | Latest (not versioned, copy-paste components) | Unstyled accessible primitives + Tailwind styling | Accessibility built-in (WCAG 2.1 AA), customizable (not opaque npm package), OpenAI-inspired minimalism compatible, small bundle impact. |
-| **CSS Framework** | Tailwind CSS | 3.4+ | Utility-first CSS framework | Rapid UI development, design tokens compatible, tree-shaking reduces bundle, consistent with PRD Front-End Spec, integrates with shadcn/ui. |
-| **State Management (Global)** | Zustand | 4.5+ | Lightweight state for Kanban board | 2KB bundle, selective subscriptions (no Context re-render issues), persistence middleware, optimistic updates support. Only used for Kanban - Context elsewhere. |
-| **State Management (Session)** | React Context | Built-in (React 19) | User session, workspace, permissions | Zero bundle cost, sufficient for slow-changing state, Next.js Server Components compatible. |
-| **State Management (AI Chat)** | Vercel AI SDK | 3.0+ | AI chat message history, streaming | Purpose-built for LLM streaming, handles message state automatically, optimistic updates, error recovery, retries. |
-| **Form Management** | React Hook Form | 7.51+ | Uncontrolled form inputs with validation | Better performance than controlled inputs, integrates with Zod for validation, small bundle (9KB), fewer re-renders. |
-| **Validation** | Zod | 3.22+ | Runtime type validation and schema | Type-safe validation, integrates with React Hook Form, Server Action input validation, consistent validation across frontend/backend. |
-| **Icons** | Lucide Icons | 0.365+ | Icon library | 2px stroke, rounded caps (matches PRD design), tree-shakeable, React components, OpenAI-style minimalism compatible. |
-| **Backend Language** | TypeScript | 5.4+ (same as frontend) | Type-safe server-side code | Shared types between frontend/backend, prevents API contract mismatches, Server Actions type safety. |
-| **Backend Framework** | Next.js API Routes + Server Actions | 14.2+ | Serverless API endpoints + type-safe mutations | Hybrid approach: Server Actions for internal mutations (type-safe, no API routes), REST for webhooks/cron/public API (external integrations). |
-| **API Style** | Hybrid (Server Actions + REST) | N/A | Internal: Server Actions, External: REST | Server Actions for 90% user-facing mutations (better DX, type safety), REST for webhooks (Stripe, Fortnox), cron jobs, public API. No tRPC (App Router Server Actions are "tRPC-lite"). |
-| **Database** | Supabase PostgreSQL | PostgreSQL 15.1 (Supabase managed) | Primary relational database with pgvector | ACID compliance, pgvector extension for embeddings (saves $70/mo Pinecone), EU region (GDPR), 170K+ documents + embeddings, Supabase managed (backups, monitoring). |
-| **Vector Database** | pgvector (extension) | 0.7.0+ | Semantic similarity search for RAG | HNSW index (<100ms queries), avoids Pinecone costs until 100K queries/day (NFR17), PostgreSQL native (no separate service), cosine similarity operator. |
-| **ORM** | Prisma | 5.12+ | Type-safe database queries | Auto-generated TypeScript types, migration management, connection pooling, prevents SQL injection, integrates with Supabase. |
-| **Cache** | Upstash Redis | Latest (serverless) | RAG response cache, law metadata cache, search results | Serverless pricing (pay-per-request), EU region (GDPR), REST API (Vercel Edge compatible), 75%+ hit rate target saves $6K/mo OpenAI costs at scale. |
-| **File Storage** | Supabase Storage | Latest | User-uploaded PDFs (kollektivavtal), documents | S3-compatible, integrated with Supabase Auth (RLS policies), EU region, CDN delivery for public files. |
-| **Authentication** | Supabase Auth + NextAuth.js | Supabase Auth 2.0+, NextAuth 4.24+ | User authentication, session management | Supabase Auth: JWT tokens, magic links, OAuth providers. NextAuth: Session handling in Next.js, middleware integration. Hybrid approach for best of both. |
-| **AI LLM** | OpenAI GPT-4 Turbo | gpt-4-turbo-preview | RAG completions, law summaries, question answering | Best Swedish language support, function calling for citations, streaming support, 128K context (handles 10 law chunks), $0.01/1K input tokens. |
-| **AI Embeddings** | OpenAI text-embedding-3-small | text-embedding-3-small | Document chunking embeddings | 1536 dimensions, $0.02/1M tokens (10x cheaper than large), sufficient accuracy for Swedish legal text, 3-4 hours to embed 170K documents. |
-| **AI SDK** | Vercel AI SDK | 3.0+ | LLM streaming, React hooks, provider abstraction | `useChat()` hook for streaming, automatic state management, works with OpenAI/Anthropic/etc, Server Action integration, error handling. |
-| **Email Service** | Resend | Latest API | Transactional emails, digests, notifications | React Email templates (type-safe), 100 emails/day free tier, excellent DX, EU delivery optimization, webhooks for bounces. |
-| **Email Templates** | React Email | 2.1+ | Type-safe email templates in React/TSX | Write emails as React components, compile to HTML, preview server, version control friendly, integrates with Resend. |
-| **Payments** | Stripe | Latest API (stripe npm package 14.21+) | Subscription billing, invoices, Fortnox integration | Industry standard, Swedish payment methods (Swish, Klarna), webhooks for events, Stripe Tax for EU VAT, customer portal. Uses official stripe Node.js SDK. |
-| **Monitoring (Errors)** | Sentry | 7.109+ (Next.js SDK) | Error tracking, performance monitoring, user sessions | Source maps for stack traces, release tracking, user feedback, performance metrics (Web Vitals), 5K errors/mo free tier. |
-| **Monitoring (Performance)** | Vercel Analytics | Built-in | Web Vitals, page performance, user analytics | Zero config, privacy-friendly, Core Web Vitals tracking (LCP, FID, CLS), real user monitoring. |
-| **Frontend Testing** | Vitest | 1.4+ | Unit tests for utilities, components (React Testing Library) | Fast (Vite-powered), TypeScript support, compatible with Jest API, ESM support, 60-70% coverage target. |
-| **Component Testing** | React Testing Library | 14.2+ | Test React components (user interactions, accessibility) | Tests user behavior not implementation, accessibility-first, integrates with Vitest, WCAG compliance testing. |
-| **Backend Testing** | Vitest | 1.4+ (same as frontend) | Unit tests for Server Actions, utilities, RAG pipeline | Shared test config with frontend, TypeScript support, mock external services (OpenAI, Supabase). |
-| **E2E Testing** | Playwright | 1.42+ | End-to-end user flows (onboarding → dashboard → AI chat) | Cross-browser (Chrome, Firefox, Safari), mobile viewports, screenshot testing, trace viewer for debugging, CI integration. |
-| **Build Tool** | Next.js (built-in) | 14.2+ | TypeScript compilation, bundling, optimization | Zero config, automatic code splitting, tree shaking, image optimization, Edge runtime support. |
-| **Bundler** | Turbopack (Next.js 16) | Built-in (default) | Fast bundling for dev & production | 2-5× faster production builds, up to 10× faster Fast Refresh, Rust-powered, incremental compilation. Now default in Next.js 16 - no flags needed. |
-| **Package Manager** | pnpm | 9.0+ | Dependency management | Faster than npm (symlink-based), disk space efficient, strict (prevents phantom dependencies), monorepo-ready. |
-| **IaC Tool** | N/A (Vercel managed) | N/A | Infrastructure as code | Vercel auto-provisions infrastructure, Supabase UI for database config. No Terraform/Pulumi needed for MVP. Manual config documented in docs/. Post-MVP: Consider Terraform if multi-cloud. |
-| **CI/CD** | GitHub Actions + Vercel | GitHub Actions, Vercel CLI | Linting, type-checking, tests, automated deployments | GitHub Actions: Run tests on PR. Vercel: Auto-deploy on merge to main (production), preview deploys on PR. Lighthouse CI on PR. |
-| **Linting** | ESLint | 8.57+ | Code quality, catch errors, enforce conventions | Next.js config, TypeScript support, accessibility rules (eslint-plugin-jsx-a11y), import order, no-unused-vars. |
-| **Formatting** | Prettier | 3.2+ | Consistent code formatting | Auto-format on save, integrates with ESLint, Tailwind plugin for class sorting, team consistency. |
-| **Type Checking** | TypeScript Compiler | 5.4+ (tsc, bundled with Next.js) | Static type checking in CI | Runs in GitHub Actions, fails build on type errors, strict mode enabled, composite project for performance. |
-| **Git Hooks** | Husky + lint-staged | Husky 9.0+, lint-staged 15.2+ | Pre-commit linting, type-checking | Prevents bad commits (lint errors, type errors), runs Prettier on staged files, fast (only changed files). |
-| **API Documentation** | N/A (TypeScript types serve as docs) | N/A | API contracts | Server Actions have TypeScript signatures (self-documenting), REST endpoints documented in architecture.md. Post-MVP: Consider OpenAPI spec if public API. |
-| **Logging** | Vercel Logs + Sentry | Built-in + Sentry SDK | Structured logging, error aggregation | Vercel Logs: console.log output (7-30 day retention). Sentry: Structured logs + breadcrumbs, 90 day retention, searchable. |
-| **Background Jobs** | Vercel Cron | Built-in | Scheduled tasks (change detection, digests, Phase 2 law gen) | Native Vercel integration, cron syntax (`0 8 * * *` for 8am daily), serverless function execution, 10 min max runtime. |
-| **Feature Flags** | Vercel Edge Config | Built-in | Gradual rollouts, A/B testing, kill switches | Low latency (<10ms), globally distributed, update without deploy, free tier (1KB storage). Post-MVP: Consider LaunchDarkly if complex rules needed. |
-| **Analytics** | Vercel Analytics | Built-in | User behavior, page views, conversions | Privacy-friendly (no cookies), GDPR compliant, zero config, tracks custom events, free tier (25K events/mo). |
-| **SEO** | Next.js Metadata API | Built-in (Next.js 16) | Meta tags, Open Graph, structured data | Server-side metadata generation, dynamic OG images, sitemap.xml generation for 170K pages, robots.txt. |
-| **Accessibility Testing** | axe DevTools + pa11y CI | axe 4.8+, pa11y 7.1+ | Automated accessibility audits | axe: Browser extension for manual testing. pa11y: CI integration, fails build on WCAG violations, tests all 170K pages. |
-| **Rate Limiting** | Upstash Ratelimit | @upstash/ratelimit 1.0+ | API rate limiting, abuse prevention | Distributed rate limiting (Redis-backed), multiple algorithms (sliding window, token bucket), NFR8 requirement (10 req/min per IP), integrates with Upstash Redis. |
-| **PDF Processing** | pdf-parse | 1.1+ | Extract text from PDF files | Parses kollektivavtal PDFs (PRD Story 3.6), extracts text for RAG indexing, Node.js compatible, handles Swedish characters (UTF-8). |
-| **Drag & Drop** | @dnd-kit/core + @dnd-kit/sortable | 6.1+ | Kanban board drag-and-drop interactions | Accessible drag-and-drop (keyboard support), touch-friendly (mobile), collision detection, smooth animations, PRD Epic 6 requirement. |
-| **Date/Time Formatting** | date-fns | 3.3+ | Swedish locale date formatting | Format dates as "3 timmar sedan", "igår", Swedish month names, timezone handling, tree-shakeable (only import needed functions), smaller bundle than moment.js. |
-| **Environment Validation** | @t3-oss/env-nextjs | 0.9+ | Type-safe environment variable validation | Validates .env at build time (fails early vs runtime crashes), Zod-based schema, prevents missing API keys in production, T3 Stack component. |
-| **Cron Monitoring** | Sentry Cron Monitoring | Built-in (Sentry SDK) | Alert on failed/missed cron jobs | Tracks cron job execution, alerts if job fails or doesn't run on schedule, integrates with existing Sentry setup, critical for daily change detection. |
-| **API Mocking** | Mock Service Worker (MSW) | 2.2+ | Mock external APIs in tests | Intercepts OpenAI, Stripe, Supabase calls in tests, network-level mocking (works with any HTTP client), prevents test flakiness, avoids API costs in CI. |
-| **Image Optimization** | sharp | Auto-installed by Next.js | Image processing for profile pictures | Next.js Image component auto-installs sharp as production dependency, resizes/optimizes user avatars (PRD Story 3.9), WebP conversion, 60% smaller file sizes. |
-| **Code Coverage** | c8 | Built-in (Vitest) | Test coverage reporting | Istanbul-compatible coverage (line, branch, function), integrates with Vitest (`vitest --coverage`), 60-70% coverage target, HTML reports for CI. |
+| Category                       | Technology                           | Version                                       | Purpose                                                      | Rationale                                                                                                                                                                                   |
+| ------------------------------ | ------------------------------------ | --------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend Language**          | TypeScript                           | 5.5+ (bundled with Next.js 16)                | Type-safe JavaScript for entire codebase                     | Prevents runtime errors, better IDE support, self-documenting code. Required for Next.js App Router patterns. Next.js 16 bundles TypeScript 5.5+.                                           |
+| **Frontend Framework**         | Next.js                              | 16 (App Router)                               | React meta-framework with SSR, routing, API routes           | Best-in-class SSR for 170K SEO pages, Vercel-optimized, Server Components reduce client bundle, App Router required for Server Actions. Turbopack by default for 2-5× faster builds.        |
+| **UI Library**                 | React                                | 19 (bundled with Next.js 16)                  | Component-based UI                                           | Industry standard, massive ecosystem, required by Next.js, Server Components support. Next.js 16 bundles React 19 (stable).                                                                 |
+| **UI Component Library**       | shadcn/ui (Radix UI + Tailwind)      | Latest (not versioned, copy-paste components) | Unstyled accessible primitives + Tailwind styling            | Accessibility built-in (WCAG 2.1 AA), customizable (not opaque npm package), OpenAI-inspired minimalism compatible, small bundle impact.                                                    |
+| **CSS Framework**              | Tailwind CSS                         | 3.4+                                          | Utility-first CSS framework                                  | Rapid UI development, design tokens compatible, tree-shaking reduces bundle, consistent with PRD Front-End Spec, integrates with shadcn/ui.                                                 |
+| **State Management (Global)**  | Zustand                              | 4.5+                                          | Lightweight state for Kanban board                           | 2KB bundle, selective subscriptions (no Context re-render issues), persistence middleware, optimistic updates support. Only used for Kanban - Context elsewhere.                            |
+| **State Management (Session)** | React Context                        | Built-in (React 19)                           | User session, workspace, permissions                         | Zero bundle cost, sufficient for slow-changing state, Next.js Server Components compatible.                                                                                                 |
+| **State Management (AI Chat)** | Vercel AI SDK                        | 3.0+                                          | AI chat message history, streaming                           | Purpose-built for LLM streaming, handles message state automatically, optimistic updates, error recovery, retries.                                                                          |
+| **Form Management**            | React Hook Form                      | 7.51+                                         | Uncontrolled form inputs with validation                     | Better performance than controlled inputs, integrates with Zod for validation, small bundle (9KB), fewer re-renders.                                                                        |
+| **Validation**                 | Zod                                  | 3.22+                                         | Runtime type validation and schema                           | Type-safe validation, integrates with React Hook Form, Server Action input validation, consistent validation across frontend/backend.                                                       |
+| **Icons**                      | Lucide Icons                         | 0.365+                                        | Icon library                                                 | 2px stroke, rounded caps (matches PRD design), tree-shakeable, React components, OpenAI-style minimalism compatible.                                                                        |
+| **Backend Language**           | TypeScript                           | 5.4+ (same as frontend)                       | Type-safe server-side code                                   | Shared types between frontend/backend, prevents API contract mismatches, Server Actions type safety.                                                                                        |
+| **Backend Framework**          | Next.js API Routes + Server Actions  | 14.2+                                         | Serverless API endpoints + type-safe mutations               | Hybrid approach: Server Actions for internal mutations (type-safe, no API routes), REST for webhooks/cron/public API (external integrations).                                               |
+| **API Style**                  | Hybrid (Server Actions + REST)       | N/A                                           | Internal: Server Actions, External: REST                     | Server Actions for 90% user-facing mutations (better DX, type safety), REST for webhooks (Stripe, Fortnox), cron jobs, public API. No tRPC (App Router Server Actions are "tRPC-lite").     |
+| **Database**                   | Supabase PostgreSQL                  | PostgreSQL 15.1 (Supabase managed)            | Primary relational database with pgvector                    | ACID compliance, pgvector extension for embeddings (saves $70/mo Pinecone), EU region (GDPR), 170K+ documents + embeddings, Supabase managed (backups, monitoring).                         |
+| **Vector Database**            | pgvector (extension)                 | 0.7.0+                                        | Semantic similarity search for RAG                           | HNSW index (<100ms queries), avoids Pinecone costs until 100K queries/day (NFR17), PostgreSQL native (no separate service), cosine similarity operator.                                     |
+| **ORM**                        | Prisma                               | 5.12+                                         | Type-safe database queries                                   | Auto-generated TypeScript types, migration management, connection pooling, prevents SQL injection, integrates with Supabase.                                                                |
+| **Cache**                      | Upstash Redis                        | Latest (serverless)                           | RAG response cache, law metadata cache, search results       | Serverless pricing (pay-per-request), EU region (GDPR), REST API (Vercel Edge compatible), 75%+ hit rate target saves $6K/mo OpenAI costs at scale.                                         |
+| **File Storage**               | Supabase Storage                     | Latest                                        | User-uploaded PDFs (kollektivavtal), documents               | S3-compatible, integrated with Supabase Auth (RLS policies), EU region, CDN delivery for public files.                                                                                      |
+| **Authentication**             | Supabase Auth + NextAuth.js          | Supabase Auth 2.0+, NextAuth 4.24+            | User authentication, session management                      | Supabase Auth: JWT tokens, magic links, OAuth providers. NextAuth: Session handling in Next.js, middleware integration. Hybrid approach for best of both.                                   |
+| **AI LLM**                     | OpenAI GPT-4 Turbo                   | gpt-4-turbo-preview                           | RAG completions, law summaries, question answering           | Best Swedish language support, function calling for citations, streaming support, 128K context (handles 10 law chunks), $0.01/1K input tokens.                                              |
+| **AI Embeddings**              | OpenAI text-embedding-3-small        | text-embedding-3-small                        | Document chunking embeddings                                 | 1536 dimensions, $0.02/1M tokens (10x cheaper than large), sufficient accuracy for Swedish legal text, 3-4 hours to embed 170K documents.                                                   |
+| **AI SDK**                     | Vercel AI SDK                        | 3.0+                                          | LLM streaming, React hooks, provider abstraction             | `useChat()` hook for streaming, automatic state management, works with OpenAI/Anthropic/etc, Server Action integration, error handling.                                                     |
+| **Email Service**              | Resend                               | Latest API                                    | Transactional emails, digests, notifications                 | React Email templates (type-safe), 100 emails/day free tier, excellent DX, EU delivery optimization, webhooks for bounces.                                                                  |
+| **Email Templates**            | React Email                          | 2.1+                                          | Type-safe email templates in React/TSX                       | Write emails as React components, compile to HTML, preview server, version control friendly, integrates with Resend.                                                                        |
+| **Payments**                   | Stripe                               | Latest API (stripe npm package 14.21+)        | Subscription billing, invoices, Fortnox integration          | Industry standard, Swedish payment methods (Swish, Klarna), webhooks for events, Stripe Tax for EU VAT, customer portal. Uses official stripe Node.js SDK.                                  |
+| **Monitoring (Errors)**        | Sentry                               | 7.109+ (Next.js SDK)                          | Error tracking, performance monitoring, user sessions        | Source maps for stack traces, release tracking, user feedback, performance metrics (Web Vitals), 5K errors/mo free tier.                                                                    |
+| **Monitoring (Performance)**   | Vercel Analytics                     | Built-in                                      | Web Vitals, page performance, user analytics                 | Zero config, privacy-friendly, Core Web Vitals tracking (LCP, FID, CLS), real user monitoring.                                                                                              |
+| **Frontend Testing**           | Vitest                               | 1.4+                                          | Unit tests for utilities, components (React Testing Library) | Fast (Vite-powered), TypeScript support, compatible with Jest API, ESM support, 60-70% coverage target.                                                                                     |
+| **Component Testing**          | React Testing Library                | 14.2+                                         | Test React components (user interactions, accessibility)     | Tests user behavior not implementation, accessibility-first, integrates with Vitest, WCAG compliance testing.                                                                               |
+| **Backend Testing**            | Vitest                               | 1.4+ (same as frontend)                       | Unit tests for Server Actions, utilities, RAG pipeline       | Shared test config with frontend, TypeScript support, mock external services (OpenAI, Supabase).                                                                                            |
+| **E2E Testing**                | Playwright                           | 1.42+                                         | End-to-end user flows (onboarding → dashboard → AI chat)     | Cross-browser (Chrome, Firefox, Safari), mobile viewports, screenshot testing, trace viewer for debugging, CI integration.                                                                  |
+| **Build Tool**                 | Next.js (built-in)                   | 14.2+                                         | TypeScript compilation, bundling, optimization               | Zero config, automatic code splitting, tree shaking, image optimization, Edge runtime support.                                                                                              |
+| **Bundler**                    | Turbopack (Next.js 16)               | Built-in (default)                            | Fast bundling for dev & production                           | 2-5× faster production builds, up to 10× faster Fast Refresh, Rust-powered, incremental compilation. Now default in Next.js 16 - no flags needed.                                           |
+| **Package Manager**            | pnpm                                 | 9.0+                                          | Dependency management                                        | Faster than npm (symlink-based), disk space efficient, strict (prevents phantom dependencies), monorepo-ready.                                                                              |
+| **IaC Tool**                   | N/A (Vercel managed)                 | N/A                                           | Infrastructure as code                                       | Vercel auto-provisions infrastructure, Supabase UI for database config. No Terraform/Pulumi needed for MVP. Manual config documented in docs/. Post-MVP: Consider Terraform if multi-cloud. |
+| **CI/CD**                      | GitHub Actions + Vercel              | GitHub Actions, Vercel CLI                    | Linting, type-checking, tests, automated deployments         | GitHub Actions: Run tests on PR. Vercel: Auto-deploy on merge to main (production), preview deploys on PR. Lighthouse CI on PR.                                                             |
+| **Linting**                    | ESLint                               | 8.57+                                         | Code quality, catch errors, enforce conventions              | Next.js config, TypeScript support, accessibility rules (eslint-plugin-jsx-a11y), import order, no-unused-vars.                                                                             |
+| **Formatting**                 | Prettier                             | 3.2+                                          | Consistent code formatting                                   | Auto-format on save, integrates with ESLint, Tailwind plugin for class sorting, team consistency.                                                                                           |
+| **Type Checking**              | TypeScript Compiler                  | 5.4+ (tsc, bundled with Next.js)              | Static type checking in CI                                   | Runs in GitHub Actions, fails build on type errors, strict mode enabled, composite project for performance.                                                                                 |
+| **Git Hooks**                  | Husky + lint-staged                  | Husky 9.0+, lint-staged 15.2+                 | Pre-commit linting, type-checking                            | Prevents bad commits (lint errors, type errors), runs Prettier on staged files, fast (only changed files).                                                                                  |
+| **API Documentation**          | N/A (TypeScript types serve as docs) | N/A                                           | API contracts                                                | Server Actions have TypeScript signatures (self-documenting), REST endpoints documented in architecture.md. Post-MVP: Consider OpenAPI spec if public API.                                  |
+| **Logging**                    | Vercel Logs + Sentry                 | Built-in + Sentry SDK                         | Structured logging, error aggregation                        | Vercel Logs: console.log output (7-30 day retention). Sentry: Structured logs + breadcrumbs, 90 day retention, searchable.                                                                  |
+| **Background Jobs**            | Vercel Cron                          | Built-in                                      | Scheduled tasks (change detection, digests, Phase 2 law gen) | Native Vercel integration, cron syntax (`0 8 * * *` for 8am daily), serverless function execution, 10 min max runtime.                                                                      |
+| **Feature Flags**              | Vercel Edge Config                   | Built-in                                      | Gradual rollouts, A/B testing, kill switches                 | Low latency (<10ms), globally distributed, update without deploy, free tier (1KB storage). Post-MVP: Consider LaunchDarkly if complex rules needed.                                         |
+| **Analytics**                  | Vercel Analytics                     | Built-in                                      | User behavior, page views, conversions                       | Privacy-friendly (no cookies), GDPR compliant, zero config, tracks custom events, free tier (25K events/mo).                                                                                |
+| **SEO**                        | Next.js Metadata API                 | Built-in (Next.js 16)                         | Meta tags, Open Graph, structured data                       | Server-side metadata generation, dynamic OG images, sitemap.xml generation for 170K pages, robots.txt.                                                                                      |
+| **Accessibility Testing**      | axe DevTools + pa11y CI              | axe 4.8+, pa11y 7.1+                          | Automated accessibility audits                               | axe: Browser extension for manual testing. pa11y: CI integration, fails build on WCAG violations, tests all 170K pages.                                                                     |
+| **Rate Limiting**              | Upstash Ratelimit                    | @upstash/ratelimit 1.0+                       | API rate limiting, abuse prevention                          | Distributed rate limiting (Redis-backed), multiple algorithms (sliding window, token bucket), NFR8 requirement (10 req/min per IP), integrates with Upstash Redis.                          |
+| **PDF Processing**             | pdf-parse                            | 1.1+                                          | Extract text from PDF files                                  | Parses kollektivavtal PDFs (PRD Story 3.6), extracts text for RAG indexing, Node.js compatible, handles Swedish characters (UTF-8).                                                         |
+| **Drag & Drop**                | @dnd-kit/core + @dnd-kit/sortable    | 6.1+                                          | Kanban board drag-and-drop interactions                      | Accessible drag-and-drop (keyboard support), touch-friendly (mobile), collision detection, smooth animations, PRD Epic 6 requirement.                                                       |
+| **Date/Time Formatting**       | date-fns                             | 3.3+                                          | Swedish locale date formatting                               | Format dates as "3 timmar sedan", "igår", Swedish month names, timezone handling, tree-shakeable (only import needed functions), smaller bundle than moment.js.                             |
+| **Environment Validation**     | @t3-oss/env-nextjs                   | 0.9+                                          | Type-safe environment variable validation                    | Validates .env at build time (fails early vs runtime crashes), Zod-based schema, prevents missing API keys in production, T3 Stack component.                                               |
+| **Cron Monitoring**            | Sentry Cron Monitoring               | Built-in (Sentry SDK)                         | Alert on failed/missed cron jobs                             | Tracks cron job execution, alerts if job fails or doesn't run on schedule, integrates with existing Sentry setup, critical for daily change detection.                                      |
+| **API Mocking**                | Mock Service Worker (MSW)            | 2.2+                                          | Mock external APIs in tests                                  | Intercepts OpenAI, Stripe, Supabase calls in tests, network-level mocking (works with any HTTP client), prevents test flakiness, avoids API costs in CI.                                    |
+| **Image Optimization**         | sharp                                | Auto-installed by Next.js                     | Image processing for profile pictures                        | Next.js Image component auto-installs sharp as production dependency, resizes/optimizes user avatars (PRD Story 3.9), WebP conversion, 60% smaller file sizes.                              |
+| **Code Coverage**              | c8                                   | Built-in (Vitest)                             | Test coverage reporting                                      | Istanbul-compatible coverage (line, branch, function), integrates with Vitest (`vitest --coverage`), 60-70% coverage target, HTML reports for CI.                                           |
 
 ---
 
 ### 3.2 Notable Technology Decisions
 
 **Why Next.js App Router (not Pages Router)?**
+
 - Server Components reduce client bundle by 40-60% (law metadata rendered server-side)
 - Streaming SSR improves TTFB for 170K law pages (SEO benefit)
 - Server Actions eliminate 90% of API routes (type-safe mutations without REST boilerplate)
@@ -1690,6 +1810,7 @@ logger.info('RAG query executed', {
 - PRD Story 1.1 explicitly requires App Router
 
 **Why Supabase (not AWS RDS or self-hosted PostgreSQL)?**
+
 - pgvector extension (avoids $70/mo Pinecone until 100K queries/day)
 - Integrated Auth (reduces complexity vs. AWS Cognito)
 - EU region (GDPR compliance for Swedish users)
@@ -1698,6 +1819,7 @@ logger.info('RAG query executed', {
 - Developer experience: Supabase Studio UI, instant API generation
 
 **Why Upstash Redis (not Redis Labs or AWS ElastiCache)?**
+
 - Serverless pricing: pay-per-request, no idle costs (Vercel-friendly)
 - REST API: works with Vercel Edge Functions (no TCP connection required)
 - EU region: Frankfurt (GDPR compliance)
@@ -1705,6 +1827,7 @@ logger.info('RAG query executed', {
 - Alternative (Redis Labs) requires $5/mo minimum + TCP (not Edge-compatible)
 
 **Why Zustand (not Redux, Jotai, or full Context)?**
+
 - Minimal (2KB gzipped) vs. Redux Toolkit (15KB)
 - Selective subscriptions prevent Kanban board re-render issues (Context re-renders all consumers)
 - Persistence middleware for offline resilience (localStorage)
@@ -1712,12 +1835,14 @@ logger.info('RAG query executed', {
 - Server Components eliminate most client state needs
 
 **Why Hybrid API Approach (Server Actions + REST)?**
+
 - Server Actions: 90% of user mutations (type-safe, no API versioning, automatic revalidation)
 - REST: 10% external integrations (webhooks from Stripe/Fortnox, cron jobs, public API)
 - tRPC rejected: App Router Server Actions provide similar benefits without library overhead
 - GraphQL rejected: Overkill for CRUD operations, adds complexity
 
 **Why OpenAI GPT-4 (not Claude, Gemini, or open-source)?**
+
 - Best Swedish language quality (tested vs. Claude Sonnet 3.5, Gemini Pro)
 - Function calling for structured citations (required for NFR9 zero-hallucination)
 - 128K context window (handles 10 law chunks + conversation history)
@@ -1726,12 +1851,14 @@ logger.info('RAG query executed', {
 - Alternative: Claude Sonnet 3.5 ($0.003/1K) if OpenAI costs exceed $3K/mo (optimization trigger)
 
 **Why text-embedding-3-small (not text-embedding-3-large)?**
+
 - 10x cheaper ($0.02/1M vs. $0.13/1M tokens)
 - 1536 dimensions (vs. 3072) sufficient for Swedish legal text retrieval accuracy
 - At 170K documents: $200 one-time cost vs. $1,300 (saves $1,100)
 - Performance tested: <2% accuracy loss vs. large model for legal document retrieval
 
 **Why Playwright (not Cypress)?**
+
 - Cross-browser testing (Chrome, Firefox, Safari) out of box
 - Better mobile viewport testing (PRD requires tablet/mobile)
 - Trace viewer for debugging CI failures (video, screenshots, network logs)
@@ -1739,6 +1866,7 @@ logger.info('RAG query executed', {
 - TypeScript-first (better DX)
 
 **Why Vercel (not AWS, Azure, self-hosted)?**
+
 - Best-in-class Next.js hosting (zero config SSR, Edge optimization)
 - Preview deployments on every PR (invaluable for solo founder velocity)
 - Built-in CDN, analytics, cron, Edge Config (no separate services)
@@ -1746,6 +1874,7 @@ logger.info('RAG query executed', {
 - Instant rollbacks, environment variables UI, Lighthouse CI integration
 
 **Why shadcn/ui (not Material UI, Ant Design, Chakra)?**
+
 - Copy-paste components (not opaque npm package) → full customization
 - Radix UI primitives → WCAG 2.1 AA accessibility built-in
 - Tailwind-based → consistent with PRD Front-End Spec
@@ -1755,6 +1884,7 @@ logger.info('RAG query executed', {
 - Chakra rejected: Theme complexity, not Tailwind-based
 
 **Why Prisma (not Drizzle, TypeORM)?**
+
 - Best TypeScript integration (auto-generated types)
 - Schema-first migrations (version controlled)
 - Supabase compatibility (PostgreSQL connection pooling)
@@ -1763,6 +1893,7 @@ logger.info('RAG query executed', {
 - Drizzle considered: Lighter but less mature, migrations more manual
 
 **Why React Email (not MJML, plain HTML)?**
+
 - Type-safe email templates (TSX components)
 - Shared React knowledge (no new syntax like MJML)
 - Preview server for local testing
@@ -1770,6 +1901,7 @@ logger.info('RAG query executed', {
 - Compiles to HTML for Resend API
 
 **Why pnpm (not npm, yarn)?**
+
 - 3x faster installs than npm (symlink-based)
 - Disk space efficient (shared packages across projects)
 - Strict mode prevents phantom dependencies (catches missing package.json entries)
@@ -1781,21 +1913,25 @@ logger.info('RAG query executed', {
 ### 3.3 Version Update Policy
 
 **Major Version Updates:**
+
 - Require architecture review if breaking changes affect core patterns
 - Test in staging environment before production
 - Document migration path in docs/migrations/
 
 **Minor/Patch Updates:**
+
 - Apply monthly via Dependabot PRs
 - Run full test suite (unit + integration + e2e)
 - Review changelog for security fixes, deprecations
 
 **Security Updates:**
+
 - Apply immediately regardless of version
 - Monitor GitHub Security Advisories
 - Sentry tracks dependency vulnerabilities
 
 **LTS Policy:**
+
 - Next.js: Stay within latest major version (14.x)
 - Node.js: Use Active LTS (20.x currently)
 - React: Update to latest stable within 3 months
@@ -1806,12 +1942,14 @@ logger.info('RAG query executed', {
 ### 3.4 Development Environment Requirements
 
 **Minimum Requirements:**
+
 - **Node.js:** 20.x LTS (20.11+ recommended, Active LTS)
 - **pnpm:** 9.0+
 - **Git:** 2.40+
 - **Editor:** VS Code (or similar IDE with TypeScript/ESLint support)
 
 **Required VS Code Extensions:**
+
 - `dbaeumer.vscode-eslint` - ESLint integration
 - `esbenp.prettier-vscode` - Prettier code formatter
 - `bradlc.vscode-tailwindcss` - Tailwind CSS IntelliSense
@@ -1820,6 +1958,7 @@ logger.info('RAG query executed', {
 - `usernamehw.errorlens` - Inline error display (recommended)
 
 **TypeScript Path Aliases Configuration:**
+
 ```json
 // tsconfig.json (already configured)
 {
@@ -1835,18 +1974,17 @@ logger.info('RAG query executed', {
 ```
 
 **ESLint Accessibility Configuration:**
+
 ```json
 // .eslintrc.json (add to extends array)
 {
-  "extends": [
-    "next/core-web-vitals",
-    "plugin:jsx-a11y/recommended"
-  ],
+  "extends": ["next/core-web-vitals", "plugin:jsx-a11y/recommended"],
   "plugins": ["jsx-a11y"]
 }
 ```
 
 **Recommended Setup:**
+
 ```bash
 # Install Node.js 20 LTS
 nvm install 20
@@ -1871,6 +2009,7 @@ pnpm dev
 ```
 
 **Required Environment Variables:**
+
 ```bash
 # Database
 DATABASE_URL="postgresql://..."          # Supabase connection string
@@ -1905,25 +2044,25 @@ SENTRY_AUTH_TOKEN="..."
 
 ### 3.5 Tech Stack Alternatives Considered & Rejected
 
-| Technology | Alternative Considered | Why Rejected |
-|------------|----------------------|--------------|
-| Next.js | Remix, SvelteKit, Nuxt | Next.js best Vercel integration, largest community, Server Components maturity |
-| Supabase | AWS RDS + Cognito | Higher complexity (5+ services), slower setup (weeks vs. days), no pgvector in RDS |
-| Upstash Redis | Redis Labs, AWS ElastiCache | Redis Labs: $5/mo minimum + TCP (not Edge compatible). ElastiCache: Requires VPC, no serverless |
-| Zustand | Redux Toolkit, Jotai, Recoil | Redux: 15KB bundle (7x larger), boilerplate. Jotai: Atom API complexity. Recoil: Meta-owned, uncertain future |
-| OpenAI GPT-4 | Claude Sonnet 3.5, Gemini Pro | Claude: Slightly worse Swedish. Gemini: No function calling (citations). Open-source: Hallucination risk |
-| Vercel | AWS Amplify, Netlify, Railway | AWS Amplify: Slower deploys, worse DX. Netlify: No Edge Functions. Railway: Less mature, no preview deploys |
-| Playwright | Cypress, Selenium | Cypress: No Safari testing, slower. Selenium: Complex setup, flaky tests, maintenance burden |
-| Prisma | Drizzle, TypeORM, Kysely | Drizzle: Less mature, manual migrations. TypeORM: Decorator hell, ActiveRecord pattern not ideal. Kysely: SQL-first (prefer schema-first) |
-| shadcn/ui | Material UI, Ant Design, Chakra | Material UI: 300KB bundle, Google aesthetic (not minimal). Ant Design: Chinese design language. Chakra: Theme complexity |
-| React Email | MJML, Handlebars, plain HTML | MJML: New syntax to learn, not React. Handlebars: No type safety. Plain HTML: Tedious, hard to maintain |
-| Tailwind CSS | CSS Modules, Styled Components, Emotion | CSS Modules: More boilerplate. Styled Components: Runtime cost, larger bundle. Emotion: Similar to Styled Components |
-| Vitest | Jest | Jest: Slower, CommonJS issues with ESM, worse TypeScript support. Vitest: Vite-powered, 10x faster, better ESM support |
-| T3 Stack | N/A | Considered using create-t3-app starter but rejected: tRPC not ideal for 170K SSR pages (REST/Server Actions better for CDN caching) |
-| Pinecone | pgvector (chosen) | Pinecone: $70/mo minimum, vendor lock-in. pgvector: Free (included in Supabase), PostgreSQL-native, migrate to Pinecone at 100K queries/day if needed |
-| pnpm | Bun, npm, yarn | Bun: Unproven stability (v1.0 just released), potential compatibility issues. npm: 3x slower. yarn: Not as strict as pnpm |
-| Next.js | Astro | Astro: Better for content sites (blogs), not for interactive apps. No Server Actions, smaller ecosystem, less mature for full-stack SaaS |
-| Supabase | Convex | Convex: Opinionated schema (no Prisma), vendor lock-in, $25/mo minimum. Supabase: PostgreSQL-standard, more control, pgvector extension |
+| Technology    | Alternative Considered                  | Why Rejected                                                                                                                                          |
+| ------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Next.js       | Remix, SvelteKit, Nuxt                  | Next.js best Vercel integration, largest community, Server Components maturity                                                                        |
+| Supabase      | AWS RDS + Cognito                       | Higher complexity (5+ services), slower setup (weeks vs. days), no pgvector in RDS                                                                    |
+| Upstash Redis | Redis Labs, AWS ElastiCache             | Redis Labs: $5/mo minimum + TCP (not Edge compatible). ElastiCache: Requires VPC, no serverless                                                       |
+| Zustand       | Redux Toolkit, Jotai, Recoil            | Redux: 15KB bundle (7x larger), boilerplate. Jotai: Atom API complexity. Recoil: Meta-owned, uncertain future                                         |
+| OpenAI GPT-4  | Claude Sonnet 3.5, Gemini Pro           | Claude: Slightly worse Swedish. Gemini: No function calling (citations). Open-source: Hallucination risk                                              |
+| Vercel        | AWS Amplify, Netlify, Railway           | AWS Amplify: Slower deploys, worse DX. Netlify: No Edge Functions. Railway: Less mature, no preview deploys                                           |
+| Playwright    | Cypress, Selenium                       | Cypress: No Safari testing, slower. Selenium: Complex setup, flaky tests, maintenance burden                                                          |
+| Prisma        | Drizzle, TypeORM, Kysely                | Drizzle: Less mature, manual migrations. TypeORM: Decorator hell, ActiveRecord pattern not ideal. Kysely: SQL-first (prefer schema-first)             |
+| shadcn/ui     | Material UI, Ant Design, Chakra         | Material UI: 300KB bundle, Google aesthetic (not minimal). Ant Design: Chinese design language. Chakra: Theme complexity                              |
+| React Email   | MJML, Handlebars, plain HTML            | MJML: New syntax to learn, not React. Handlebars: No type safety. Plain HTML: Tedious, hard to maintain                                               |
+| Tailwind CSS  | CSS Modules, Styled Components, Emotion | CSS Modules: More boilerplate. Styled Components: Runtime cost, larger bundle. Emotion: Similar to Styled Components                                  |
+| Vitest        | Jest                                    | Jest: Slower, CommonJS issues with ESM, worse TypeScript support. Vitest: Vite-powered, 10x faster, better ESM support                                |
+| T3 Stack      | N/A                                     | Considered using create-t3-app starter but rejected: tRPC not ideal for 170K SSR pages (REST/Server Actions better for CDN caching)                   |
+| Pinecone      | pgvector (chosen)                       | Pinecone: $70/mo minimum, vendor lock-in. pgvector: Free (included in Supabase), PostgreSQL-native, migrate to Pinecone at 100K queries/day if needed |
+| pnpm          | Bun, npm, yarn                          | Bun: Unproven stability (v1.0 just released), potential compatibility issues. npm: 3x slower. yarn: Not as strict as pnpm                             |
+| Next.js       | Astro                                   | Astro: Better for content sites (blogs), not for interactive apps. No Server Actions, smaller ecosystem, less mature for full-stack SaaS              |
+| Supabase      | Convex                                  | Convex: Opinionated schema (no Prisma), vendor lock-in, $25/mo minimum. Supabase: PostgreSQL-standard, more control, pgvector extension               |
 
 ---
 
@@ -1973,6 +2112,7 @@ npx license-checker --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;CC
 **Exception Process:**
 
 If a critical library uses LGPL (e.g., some PDF parsers):
+
 1. Evaluate alternatives with permissive licenses first
 2. If no alternative exists, consult legal counsel
 3. Document exception with justification in docs/licenses/exceptions.md
@@ -1986,6 +2126,7 @@ If a critical library uses LGPL (e.g., some PDF parsers):
 ✅ CI enforcement active in `.github/workflows/license-check.yml`
 
 ---
+
 ## 4. Data Models
 
 **This section defines ALL core business entities that power Laglig.se.** These models support multi-tenancy, RAG-powered AI, employee compliance tracking, Kanban workflows, and legal content management across 170,000+ documents.
@@ -1993,6 +2134,7 @@ If a critical library uses LGPL (e.g., some PDF parsers):
 **Total Entities:** 29 (including 4 join tables)
 
 **Data Model Architecture:**
+
 - **Multi-tenant:** All workspace data isolated via `workspace_id` foreign keys + PostgreSQL Row-Level Security (RLS)
 - **Polymorphic Legal Content:** Single `legal_documents` table for all content types (SFS laws, court cases, EU legislation) with type-specific metadata tables
 - **UUID Primary Keys:** Prevents enumeration attacks, enables distributed ID generation
@@ -2006,6 +2148,7 @@ If a critical library uses LGPL (e.g., some PDF parsers):
 **Purpose:** Individual user accounts. Users can belong to multiple workspaces with different roles in each.
 
 **Key Attributes:**
+
 - `id`: UUID - Primary key
 - `email`: string - Unique email for authentication
 - `name`: string | null - Full name
@@ -2014,6 +2157,7 @@ If a critical library uses LGPL (e.g., some PDF parsers):
 - `last_login_at`: DateTime | null
 
 **TypeScript Interface:**
+
 ```typescript
 interface User {
   id: string // UUID
@@ -2026,10 +2170,12 @@ interface User {
 ```
 
 **Relationships:**
+
 - Has many `WorkspaceMember`
 - Has many `AIChatMessage`
 
 **Design Decisions:**
+
 - Managed by Supabase Auth (JWT tokens, magic links, OAuth)
 - No password field (handled by Supabase Auth tables)
 - Email is unique globally (not per workspace)
@@ -2042,14 +2188,16 @@ interface User {
 
 **Key Attributes:**
 
-*Workspace Identity:*
+_Workspace Identity:_
+
 - `id`: UUID - Primary key
 - `name`: string - Workspace/company name (e.g., "Acme AB")
 - `slug`: string - URL-friendly identifier (unique, indexed)
 - `owner_id`: UUID - Foreign key to User (workspace creator)
 - `company_logo`: string | null - Logo URL (Supabase Storage)
 
-*Company Data (from Bolagsverket):*
+_Company Data (from Bolagsverket):_
+
 - `org_number`: string | null - Swedish organization number (10 digits, e.g., "5569876543")
 - `company_legal_name`: string | null - Official registered name from Bolagsverket
 - `address`: string | null - Registered company address
@@ -2057,26 +2205,30 @@ interface User {
 - `legal_form`: string | null - AB, HB, KB, etc.
 - `employee_count_reported`: integer | null - Employee count from Bolagsverket (may be outdated)
 
-*Onboarding Context:*
+_Onboarding Context:_
+
 - `onboarding_context`: JSONB | null - Stores dynamic question answers from onboarding (e.g., `{"serverar_alkohol": true, "uteservering": false}`)
 - `onboarding_completed`: boolean - True after Phase 2 law generation complete
 - `industry`: string | null - Simplified industry label (e.g., "Restaurang", "Bygg")
 - `company_size`: enum | null - "1-10", "11-50", "51-200", "201+"
 
-*Subscription & Status:*
+_Subscription & Status:_
+
 - `subscription_tier`: enum - "FREE", "SOLO", "TEAM", "ENTERPRISE"
 - `trial_ends_at`: DateTime | null - 14-day trial expiration
 - `status`: enum - "ACTIVE", "PAUSED", "DELETED"
 
-*Timestamps:*
+_Timestamps:_
+
 - `created_at`: DateTime
 - `updated_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
-type CompanySize = "1-10" | "11-50" | "51-200" | "201+"
-type SubscriptionTier = "FREE" | "SOLO" | "TEAM" | "ENTERPRISE"
-type WorkspaceStatus = "ACTIVE" | "PAUSED" | "DELETED"
+type CompanySize = '1-10' | '11-50' | '51-200' | '201+'
+type SubscriptionTier = 'FREE' | 'SOLO' | 'TEAM' | 'ENTERPRISE'
+type WorkspaceStatus = 'ACTIVE' | 'PAUSED' | 'DELETED'
 
 interface Workspace {
   id: string // UUID
@@ -2110,6 +2262,7 @@ interface Workspace {
 ```
 
 **Relationships:**
+
 - Belongs to one `User` (owner_id)
 - Has many `WorkspaceMember`
 - Has one `Subscription`
@@ -2120,6 +2273,7 @@ interface Workspace {
 - Has many `ChangeNotification`
 
 **Design Decisions:**
+
 - **Company data stored directly on Workspace** (not separate Company table) - workspace = company
 - `slug` indexed for URL routing (`/workspaces/{slug}/dashboard`)
 - `org_number` indexed for Bolagsverket lookup during onboarding
@@ -2135,6 +2289,7 @@ interface Workspace {
 **Purpose:** Join table connecting users to workspaces with role-based permissions.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `user_id`: UUID - FK to User
@@ -2143,8 +2298,9 @@ interface Workspace {
 - `joined_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
-type WorkspaceRole = "OWNER" | "ADMIN" | "HR_MANAGER" | "MEMBER" | "AUDITOR"
+type WorkspaceRole = 'OWNER' | 'ADMIN' | 'HR_MANAGER' | 'MEMBER' | 'AUDITOR'
 
 interface WorkspaceMember {
   id: string
@@ -2157,10 +2313,12 @@ interface WorkspaceMember {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - Belongs to one `User`
 
 **Role Permissions:**
+
 - **OWNER:** Full access, billing, workspace deletion (1 per workspace)
 - **ADMIN:** Full access except billing and deletion
 - **HR_MANAGER:** Full HR Module access, read-only law lists
@@ -2168,6 +2326,7 @@ interface WorkspaceMember {
 - **AUDITOR:** Read-only across multiple workspaces (for ISO consultants)
 
 **Design Decisions:**
+
 - Composite unique index on `(workspace_id, user_id)`
 - One OWNER per workspace enforced at application level
 - AUDITOR role can belong to multiple workspaces (ISO consultant use case)
@@ -2179,6 +2338,7 @@ interface WorkspaceMember {
 **Purpose:** Stores partial onboarding state to allow users to resume if they close browser. Session expires after 24 hours (PRD technical implications).
 
 **Key Attributes:**
+
 - `id`: UUID
 - `session_token`: string - Unique token for resuming (stored in localStorage)
 - `org_number`: string | null - Company org-number entered
@@ -2189,6 +2349,7 @@ interface WorkspaceMember {
 - `expires_at`: DateTime - 24 hours from creation
 
 **TypeScript Interface:**
+
 ```typescript
 interface OnboardingSession {
   id: string
@@ -2203,9 +2364,11 @@ interface OnboardingSession {
 ```
 
 **Relationships:**
+
 - None (temporary data, not tied to User until signup)
 
 **Design Decisions:**
+
 - Indexed on `session_token` for fast lookup
 - Cron job deletes expired sessions daily
 - When user signs up, data migrated to `Workspace.onboarding_context` and session deleted
@@ -2218,6 +2381,7 @@ interface OnboardingSession {
 **Purpose:** Polymorphic table storing ALL legal content (SFS laws, court cases, EU legislation). Currently 170,000+ documents. Per PRD Story 2.1, this is the central table for the legal content database.
 
 **Key Attributes:**
+
 - `id`: UUID - Primary key
 - `content_type`: enum - "SFS_LAW", "HD_SUPREME_COURT", "HOVR_COURT_APPEAL", "HFD_ADMIN_SUPREME", "MOD_ENVIRONMENT_COURT", "MIG_MIGRATION_COURT", "EU_REGULATION", "EU_DIRECTIVE"
 - `document_number`: string - Unique identifier per type (e.g., "2023:456" for SFS, "B 1234-23" for court case)
@@ -2236,18 +2400,19 @@ interface OnboardingSession {
 - `updated_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 type ContentType =
-  | "SFS_LAW"
-  | "HD_SUPREME_COURT"
-  | "HOVR_COURT_APPEAL"
-  | "HFD_ADMIN_SUPREME"
-  | "MOD_ENVIRONMENT_COURT"
-  | "MIG_MIGRATION_COURT"
-  | "EU_REGULATION"
-  | "EU_DIRECTIVE"
+  | 'SFS_LAW'
+  | 'HD_SUPREME_COURT'
+  | 'HOVR_COURT_APPEAL'
+  | 'HFD_ADMIN_SUPREME'
+  | 'MOD_ENVIRONMENT_COURT'
+  | 'MIG_MIGRATION_COURT'
+  | 'EU_REGULATION'
+  | 'EU_DIRECTIVE'
 
-type DocumentStatus = "ACTIVE" | "REPEALED" | "AMENDED"
+type DocumentStatus = 'ACTIVE' | 'REPEALED' | 'AMENDED'
 
 interface LegalDocument {
   id: string
@@ -2270,6 +2435,7 @@ interface LegalDocument {
 ```
 
 **Relationships:**
+
 - Has many `LawEmbedding` (vector chunks for RAG)
 - Has many `CourtCase` (if content_type is court case)
 - Has many `EUDocument` (if content_type is EU legislation)
@@ -2280,6 +2446,7 @@ interface LegalDocument {
 - Referenced by many `ChangeNotification`
 
 **Design Decisions:**
+
 - **Polymorphic design:** Single table for all content types (vs. separate tables per type)
 - `document_number` unique constraint per `content_type` (composite index)
 - `slug` indexed for SEO URLs (`/lagar/{slug}`)
@@ -2290,6 +2457,7 @@ interface LegalDocument {
 - `status` tracked for change detection (ACTIVE → AMENDED → REPEALED lifecycle)
 
 **Metadata Examples:**
+
 ```typescript
 // SFS Law metadata
 {
@@ -2323,6 +2491,7 @@ interface LegalDocument {
 **Purpose:** Type-specific metadata for court case documents (HD, HovR, HFD, MÖD, MIG). Extends `LegalDocument` with case-specific fields. Per PRD Story 2.1 line 1289.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `document_id`: UUID - FK to LegalDocument (one-to-one)
 - `court_name`: string - "Högsta domstolen", "Hovrätten för Västra Sverige", etc.
@@ -2332,6 +2501,7 @@ interface LegalDocument {
 - `parties`: JSONB - Plaintiff, defendant, representatives
 
 **TypeScript Interface:**
+
 ```typescript
 interface CourtCase {
   id: string
@@ -2350,9 +2520,11 @@ interface CourtCase {
 ```
 
 **Relationships:**
+
 - Belongs to one `LegalDocument`
 
 **Design Decisions:**
+
 - One-to-one with `LegalDocument` (not polymorphic columns)
 - Only created when `LegalDocument.content_type` is a court case type
 - `parties` as JSONB handles varying party structures (criminal vs civil vs administrative)
@@ -2364,6 +2536,7 @@ interface CourtCase {
 **Purpose:** Type-specific metadata for EU legislation (regulations, directives). Tracks CELEX numbers and Swedish implementation status. Per PRD Story 2.1 line 1290.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `document_id`: UUID - FK to LegalDocument
 - `celex_number`: string - Official EU identifier (e.g., "32016L0680")
@@ -2371,6 +2544,7 @@ interface CourtCase {
 - `national_implementation_measures`: JSONB | null - Which SFS laws implement this directive
 
 **TypeScript Interface:**
+
 ```typescript
 interface EUDocument {
   id: string
@@ -2386,9 +2560,11 @@ interface EUDocument {
 ```
 
 **Relationships:**
+
 - Belongs to one `LegalDocument`
 
 **Design Decisions:**
+
 - `celex_number` indexed for EUR-Lex API lookups
 - `national_implementation_measures` tracks which SFS laws implement EU directives (manually curated or scraped from government sources)
 
@@ -2399,6 +2575,7 @@ interface EUDocument {
 **Purpose:** Links between documents (law cites court case, EU directive implemented by SFS law, law amends another law). Enables cross-document navigation. Per PRD Story 2.1 line 1291.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `source_document_id`: UUID - FK to LegalDocument
 - `target_document_id`: UUID - FK to LegalDocument
@@ -2406,8 +2583,9 @@ interface EUDocument {
 - `context`: TEXT | null - Surrounding text where reference appears
 
 **TypeScript Interface:**
+
 ```typescript
-type ReferenceType = "CITES" | "AMENDS" | "IMPLEMENTS" | "REPEALS" | "RELATED"
+type ReferenceType = 'CITES' | 'AMENDS' | 'IMPLEMENTS' | 'REPEALS' | 'RELATED'
 
 interface CrossReference {
   id: string
@@ -2419,15 +2597,18 @@ interface CrossReference {
 ```
 
 **Relationships:**
+
 - Belongs to one `LegalDocument` (source)
 - Belongs to one `LegalDocument` (target)
 
 **Design Decisions:**
+
 - Indexed on `(source_document_id, target_document_id)` for fast lookups
 - Enables "Referenced by" section on law pages
 - Extracted during document ingestion via regex patterns and GPT-4 parsing
 
 **Examples:**
+
 - Source: SFS 2018:218 (GDPR implementation law), Target: EU Regulation 2016/679, Type: IMPLEMENTS
 - Source: HD Case B 1234-23, Target: SFS 1977:1160 (Arbetsmiljölagen), Type: CITES
 - Source: SFS 2024:123, Target: SFS 1977:1160, Type: AMENDS
@@ -2441,6 +2622,7 @@ interface CrossReference {
 **Competitive Context:** Notisum provides 7 data points per amendment. This model achieves **feature parity + automation advantages**.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `base_document_id`: UUID - FK to LegalDocument (law being amended)
 - `amending_document_id`: UUID - FK to LegalDocument (law making amendment)
@@ -2458,6 +2640,7 @@ interface CrossReference {
 - `updated_at`: TIMESTAMPTZ
 
 **TypeScript Interface:**
+
 ```typescript
 interface Amendment {
   id: string
@@ -2472,10 +2655,11 @@ interface Amendment {
   // Affected sections (Notisum format)
   affected_sections_raw: string | null // "ändr. 6 kap. 17 §"
   affected_sections: {
-    amended: string[]      // ["6:17"]
-    repealed: string[]     // ["8:4"]
-    new: string[]          // ["6:17a", "6:17b"]
-    renumbered: Array<{    // [{from: "3:2b", to: "3:2c"}]
+    amended: string[] // ["6:17"]
+    repealed: string[] // ["8:4"]
+    new: string[] // ["6:17a", "6:17b"]
+    renumbered: Array<{
+      // [{from: "3:2b", to: "3:2c"}]
       from: string
       to: string
     }>
@@ -2486,7 +2670,11 @@ interface Amendment {
   summary_generated_by: 'GPT_4' | 'HUMAN' | 'SFSR' | 'RIKSDAGEN' | null
 
   // Source tracking
-  detected_method: 'RIKSDAGEN_TEXT_PARSING' | 'LAGEN_NU_SCRAPING' | 'SFSR_REGISTER' | 'LAGRUMMET_RINFO'
+  detected_method:
+    | 'RIKSDAGEN_TEXT_PARSING'
+    | 'LAGEN_NU_SCRAPING'
+    | 'SFSR_REGISTER'
+    | 'LAGRUMMET_RINFO'
   metadata: Record<string, any> | null
 
   created_at: Date
@@ -2495,10 +2683,12 @@ interface Amendment {
 ```
 
 **Relationships:**
+
 - Belongs to one `LegalDocument` (base)
 - Belongs to one `LegalDocument` (amending)
 
 **Design Decisions:**
+
 - Indexed on `base_document_id`, `amending_document_id`, and `publication_date`
 - Unique constraint on `(base_document_id, amending_document_id)` prevents duplicates
 - Powers "Change History" tab on law pages (Epic 8 Story 8.9)
@@ -2508,6 +2698,7 @@ interface Amendment {
 - See `docs/historical-amendment-tracking-strategy.md` for complete implementation guide
 
 **Example (Realistic from Notisum competitive analysis):**
+
 ```json
 {
   "id": "uuid",
@@ -2536,6 +2727,7 @@ interface Amendment {
 ```
 
 **Database Impact:**
+
 - **Volume:** ~90,000 Amendment records for 11,351 SFS laws
 - **Storage:** ~45MB (500 bytes/record average)
 - **Performance:** Amendment timeline queries <500ms for 90% of laws (<50 amendments each)
@@ -2547,12 +2739,14 @@ interface Amendment {
 **Purpose:** Categorization and tagging for legal documents. One document can have multiple subjects (e.g., "Arbetsmiljö", "GDPR", "Bygg"). Per PRD Story 2.1 line 1293.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `document_id`: UUID - FK to LegalDocument
 - `subject_code`: string - Short code (e.g., "ARBM", "GDPR", "BYGG")
 - `subject_name`: string - Display name (e.g., "Arbetsmiljö", "Dataskydd")
 
 **TypeScript Interface:**
+
 ```typescript
 interface DocumentSubject {
   id: string
@@ -2563,14 +2757,17 @@ interface DocumentSubject {
 ```
 
 **Relationships:**
+
 - Belongs to one `LegalDocument`
 
 **Design Decisions:**
+
 - Composite index on `(document_id, subject_code)` prevents duplicate tags
 - Subject taxonomy curated manually + GPT-4 classification
 - Indexed on `subject_code` for filtering (e.g., "Show all GDPR laws")
 
 **Subject Taxonomy Examples:**
+
 - ARBM: Arbetsmiljö
 - GDPR: Dataskydd & GDPR
 - BYGG: Byggverksamhet
@@ -2585,6 +2782,7 @@ interface DocumentSubject {
 **Purpose:** Vector embeddings for semantic search (RAG). Each law chunked into 5-20 pieces (500-800 tokens each per NFR24). Content-type-specific chunking strategies preserve document structure. Indexed with pgvector HNSW for <100ms queries.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `law_id`: UUID - FK to LegalDocument
 - `chunk_index`: integer - Position in document (0, 1, 2, ...)
@@ -2594,6 +2792,7 @@ interface DocumentSubject {
 - `created_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 interface LawEmbedding {
   id: string
@@ -2610,21 +2809,23 @@ interface LawEmbedding {
     // For court cases
     court_name?: string
     case_number?: string
-    section_type?: "Facts" | "Analysis" | "Conclusion"
+    section_type?: 'Facts' | 'Analysis' | 'Conclusion'
 
     // For EU legislation
     article_number?: string
     celex?: string
-    document_type?: "regulation" | "directive"
+    document_type?: 'regulation' | 'directive'
   } | null
   created_at: Date
 }
 ```
 
 **Relationships:**
+
 - Belongs to one `LegalDocument`
 
 **Design Decisions:**
+
 - HNSW index: `CREATE INDEX ON law_embeddings USING hnsw (embedding vector_cosine_ops)`
 - Composite index on `(law_id, chunk_index)`
 - Average 10 chunks per law = 1.7M embeddings (170K laws × 10)
@@ -2642,6 +2843,7 @@ interface LawEmbedding {
 **Purpose:** User-created collections of laws (e.g., "GDPR Compliance Checklist", "Q1 2025 Review"). Separate from main workspace law list.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `name`: string
@@ -2651,6 +2853,7 @@ interface LawEmbedding {
 - `updated_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 interface LawList {
   id: string
@@ -2664,6 +2867,7 @@ interface LawList {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - Has many `LegalDocument` (via `LawListItem` join table)
 
@@ -2674,6 +2878,7 @@ interface LawList {
 **Purpose:** Many-to-many relationship between law lists and legal documents.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `law_list_id`: UUID - FK to LawList
 - `law_id`: UUID - FK to LegalDocument
@@ -2681,6 +2886,7 @@ interface LawList {
 - `added_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 interface LawListItem {
   id: string
@@ -2692,6 +2898,7 @@ interface LawListItem {
 ```
 
 **Design Decisions:**
+
 - Composite unique index on `(law_list_id, law_id)`
 
 ---
@@ -2701,6 +2908,7 @@ interface LawListItem {
 **Purpose:** Represents laws in a workspace's compliance tracking system. Each law has status (Kanban column), priority, assigned employees, notes, and tasks. This is what appears on the Kanban board - NOT a generic "ComplianceItem".
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `law_id`: UUID - FK to LegalDocument
@@ -2717,9 +2925,15 @@ interface LawListItem {
 - `updated_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
-type LawStatus = "NOT_STARTED" | "IN_PROGRESS" | "BLOCKED" | "REVIEW" | "COMPLIANT"
-type Priority = "LOW" | "MEDIUM" | "HIGH"
+type LawStatus =
+  | 'NOT_STARTED'
+  | 'IN_PROGRESS'
+  | 'BLOCKED'
+  | 'REVIEW'
+  | 'COMPLIANT'
+type Priority = 'LOW' | 'MEDIUM' | 'HIGH'
 
 interface LawInWorkspace {
   id: string
@@ -2740,12 +2954,14 @@ interface LawInWorkspace {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - Belongs to one `LegalDocument`
 - References many `Employee` (via assigned_employee_ids array)
 - Has many `LawTask` (sub-tasks)
 
 **Design Decisions:**
+
 - **This is THE Kanban card entity** (PRD lines 2863-2899)
 - Composite unique index on `(workspace_id, law_id)` - each law appears once per workspace
 - Index on `(workspace_id, status, position)` for fast Kanban board queries
@@ -2755,6 +2971,7 @@ interface LawInWorkspace {
 - `category` assigned during onboarding for grouping laws in dashboard
 
 **Example:**
+
 ```typescript
 {
   workspace_id: "ws-123",
@@ -2778,6 +2995,7 @@ interface LawInWorkspace {
 **Purpose:** Sub-tasks within law cards. Breaks down compliance into actionable steps. Per PRD Story 6.4 line 2917.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `law_in_workspace_id`: UUID - FK to LawInWorkspace
 - `workspace_id`: UUID - FK to Workspace
@@ -2790,6 +3008,7 @@ interface LawInWorkspace {
 - `created_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 interface LawTask {
   id: string
@@ -2806,16 +3025,19 @@ interface LawTask {
 ```
 
 **Relationships:**
+
 - Belongs to one `LawInWorkspace`
 - Belongs to one `Workspace`
 - Optionally assigned to one `User`
 
 **Design Decisions:**
+
 - Index on `(law_in_workspace_id, completed)` for task progress queries
 - Task completion percentage shown on Kanban card: "3/5 tasks complete"
 - Overdue tasks (due_date < now() AND completed = false) highlighted red in UI
 
 **Example:**
+
 ```typescript
 {
   law_in_workspace_id: "liw-123", // Arbetsmiljölagen
@@ -2834,6 +3056,7 @@ interface LawTask {
 **Purpose:** Stores chat history for RAG conversations. Each workspace has isolated chat threads.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `user_id`: UUID - FK to User
@@ -2845,8 +3068,9 @@ interface LawTask {
 - `created_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
-type ChatRole = "USER" | "ASSISTANT" | "SYSTEM"
+type ChatRole = 'USER' | 'ASSISTANT' | 'SYSTEM'
 
 interface AIChatMessage {
   id: string
@@ -2862,11 +3086,13 @@ interface AIChatMessage {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - Belongs to one `User`
 - References many `LegalDocument` (via retrieved_law_ids)
 
 **Design Decisions:**
+
 - Index on `(workspace_id, created_at DESC)` for fetching recent messages
 - `retrieved_law_ids` enables "View source laws" feature
 - Privacy: Never log query content in Sentry (only length, cost, latency)
@@ -2878,6 +3104,7 @@ interface AIChatMessage {
 **Purpose:** Stripe billing integration. One subscription per workspace.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace (unique)
 - `stripe_customer_id`: string
@@ -2893,9 +3120,15 @@ interface AIChatMessage {
 - `updated_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
-type SubscriptionStatus = "ACTIVE" | "TRIALING" | "PAST_DUE" | "CANCELED" | "UNPAID"
-type BillingInterval = "MONTHLY" | "YEARLY"
+type SubscriptionStatus =
+  | 'ACTIVE'
+  | 'TRIALING'
+  | 'PAST_DUE'
+  | 'CANCELED'
+  | 'UNPAID'
+type BillingInterval = 'MONTHLY' | 'YEARLY'
 
 interface Subscription {
   id: string
@@ -2915,9 +3148,11 @@ interface Subscription {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace` (one-to-one)
 
 **Design Decisions:**
+
 - `stripe_customer_id` always present (created on signup, even FREE tier)
 - `stripe_subscription_id` null for FREE tier
 - Status synced via Stripe webhooks
@@ -2929,6 +3164,7 @@ interface Subscription {
 **Purpose:** Tracks usage limits per subscription tier (AI queries, employees, storage). Per PRD Story 5.6 line 2633.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace (unique)
 - `ai_queries_this_month`: integer - Resets monthly
@@ -2940,6 +3176,7 @@ interface Subscription {
 - `updated_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 interface WorkspaceUsage {
   id: string
@@ -2955,9 +3192,11 @@ interface WorkspaceUsage {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace` (one-to-one)
 
 **Design Decisions:**
+
 - Unique index on `workspace_id`
 - Cron job resets `ai_queries_this_month` on 1st of month
 - Middleware checks usage before allowing actions (add employee, send AI query, upload file)
@@ -2973,6 +3212,7 @@ interface WorkspaceUsage {
 **Purpose:** Team invite tokens with 7-day expiry. Per PRD Story 5.3 lines 2591-2597.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `email`: string - Invitee email
@@ -2984,8 +3224,9 @@ interface WorkspaceUsage {
 - `expires_at`: DateTime - 7 days from creation
 
 **TypeScript Interface:**
+
 ```typescript
-type InvitationStatus = "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED"
+type InvitationStatus = 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED'
 
 interface WorkspaceInvitation {
   id: string
@@ -3001,10 +3242,12 @@ interface WorkspaceInvitation {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - Invited by one `User`
 
 **Design Decisions:**
+
 - Unique index on `token` for fast lookup (`/invite/{token}`)
 - Cron job marks expired invites as EXPIRED daily
 - Auto-deleted after 30 days (keep 30 days for audit trail)
@@ -3016,6 +3259,7 @@ interface WorkspaceInvitation {
 **Purpose:** Activity logs for Enterprise tier (FR31). Tracks who did what and when.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `user_id`: UUID - FK to User
@@ -3026,15 +3270,16 @@ interface WorkspaceInvitation {
 - `timestamp`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 type AuditAction =
-  | "LAW_REVIEWED"
-  | "EMPLOYEE_ADDED"
-  | "EMPLOYEE_EDITED"
-  | "EMPLOYEE_DELETED"
-  | "MEMBER_INVITED"
-  | "MEMBER_REMOVED"
-  | "SETTINGS_CHANGED"
+  | 'LAW_REVIEWED'
+  | 'EMPLOYEE_ADDED'
+  | 'EMPLOYEE_EDITED'
+  | 'EMPLOYEE_DELETED'
+  | 'MEMBER_INVITED'
+  | 'MEMBER_REMOVED'
+  | 'SETTINGS_CHANGED'
 
 interface WorkspaceAuditLog {
   id: string
@@ -3049,10 +3294,12 @@ interface WorkspaceAuditLog {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - Belongs to one `User`
 
 **Design Decisions:**
+
 - Index on `(workspace_id, timestamp DESC)` for activity feed
 - Only created for Enterprise tier workspaces (check tier before logging)
 - Powers "Recent Activity" feed on Dashboard
@@ -3064,6 +3311,7 @@ interface WorkspaceAuditLog {
 **Purpose:** Individual employees within a workspace. Tracks employment details and compliance status.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `employee_number`: string | null
@@ -3087,10 +3335,16 @@ interface WorkspaceAuditLog {
 - `updated_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
-type EmploymentType = "FULL_TIME" | "PART_TIME" | "TEMPORARY" | "CONSULTANT" | "INTERN"
-type ContractType = "PERMANENT" | "FIXED_TERM" | "PROJECT_BASED"
-type ComplianceStatus = "COMPLIANT" | "NEEDS_ATTENTION" | "NON_COMPLIANT"
+type EmploymentType =
+  | 'FULL_TIME'
+  | 'PART_TIME'
+  | 'TEMPORARY'
+  | 'CONSULTANT'
+  | 'INTERN'
+type ContractType = 'PERMANENT' | 'FIXED_TERM' | 'PROJECT_BASED'
+type ComplianceStatus = 'COMPLIANT' | 'NEEDS_ATTENTION' | 'NON_COMPLIANT'
 
 interface Employee {
   id: string
@@ -3118,6 +3372,7 @@ interface Employee {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - Optionally belongs to one `Department`
 - Optionally reports to one `Employee` (manager_id)
@@ -3127,6 +3382,7 @@ interface Employee {
 - Referenced by many `LawInWorkspace` (assigned_employee_ids array)
 
 **Design Decisions:**
+
 - **Personnummer encryption:** AES-256 with keys in environment variables (NFR4)
 - Never sent to OpenAI API or logged
 - `compliance_status` calculated daily by background job
@@ -3139,6 +3395,7 @@ interface Employee {
 **Purpose:** Organizational structure grouping employees.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `name`: string
@@ -3148,6 +3405,7 @@ interface Employee {
 - `created_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 interface Department {
   id: string
@@ -3161,6 +3419,7 @@ interface Department {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - Has one `Employee` as manager
 - Has many `Employee`
@@ -3173,6 +3432,7 @@ interface Department {
 **Purpose:** Metadata for employee-related documents (contracts, certificates, ID copies). Files in Supabase Storage.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `employee_id`: UUID - FK to Employee
 - `workspace_id`: UUID - FK to Workspace
@@ -3188,9 +3448,16 @@ interface Department {
 - `created_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
-type DocumentType = "CONTRACT" | "ID_COPY" | "CERTIFICATE" | "INSURANCE" | "TRAINING" | "OTHER"
-type DocumentStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED" | "EXPIRED"
+type DocumentType =
+  | 'CONTRACT'
+  | 'ID_COPY'
+  | 'CERTIFICATE'
+  | 'INSURANCE'
+  | 'TRAINING'
+  | 'OTHER'
+type DocumentStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED'
 
 interface EmployeeDocument {
   id: string
@@ -3210,11 +3477,13 @@ interface EmployeeDocument {
 ```
 
 **Relationships:**
+
 - Belongs to one `Employee`
 - Belongs to one `Workspace`
 - Uploaded by one `User`
 
 **Design Decisions:**
+
 - Files at `{workspace_id}/employees/{employee_id}/documents/{uuid}.pdf`
 - `expiry_date` triggers daily cron job to mark EXPIRED
 
@@ -3225,6 +3494,7 @@ interface EmployeeDocument {
 **Purpose:** Collective bargaining agreements (PDFs) with RAG embeddings.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `name`: string
@@ -3239,8 +3509,9 @@ interface EmployeeDocument {
 - `created_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
-type AgreementType = "ARBETARE" | "TJANSTEMAN" | "MIXED"
+type AgreementType = 'ARBETARE' | 'TJANSTEMAN' | 'MIXED'
 
 interface Kollektivavtal {
   id: string
@@ -3259,6 +3530,7 @@ interface Kollektivavtal {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - Has many `KollektivavtalEmbedding`
 - Assigned to many `Employee` (via `EmployeeKollektivavtal`)
@@ -3270,6 +3542,7 @@ interface Kollektivavtal {
 **Purpose:** Links employees to applicable collective agreements.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `employee_id`: UUID - FK to Employee
 - `kollektivavtal_id`: UUID - FK to Kollektivavtal
@@ -3277,6 +3550,7 @@ interface Kollektivavtal {
 - `assigned_by`: UUID - FK to User
 
 **TypeScript Interface:**
+
 ```typescript
 interface EmployeeKollektivavtal {
   id: string
@@ -3288,6 +3562,7 @@ interface EmployeeKollektivavtal {
 ```
 
 **Design Decisions:**
+
 - Composite unique index on `(employee_id, kollektivavtal_id)`
 
 ---
@@ -3297,6 +3572,7 @@ interface EmployeeKollektivavtal {
 **Purpose:** Vector embeddings for kollektivavtal RAG queries.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `kollektivavtal_id`: UUID - FK to Kollektivavtal
 - `chunk_index`: integer
@@ -3305,6 +3581,7 @@ interface EmployeeKollektivavtal {
 - `created_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 interface KollektivavtalEmbedding {
   id: string
@@ -3317,9 +3594,11 @@ interface KollektivavtalEmbedding {
 ```
 
 **Relationships:**
+
 - Belongs to one `Kollektivavtal`
 
 **Design Decisions:**
+
 - HNSW index on `embedding`
 - RAG queries check both `LawEmbedding` (public) and `KollektivavtalEmbedding` (workspace-specific)
 
@@ -3330,6 +3609,7 @@ interface KollektivavtalEmbedding {
 **Purpose:** Tracks law change alerts sent to users. Powers daily/weekly digests.
 
 **Key Attributes:**
+
 - `id`: UUID
 - `workspace_id`: UUID - FK to Workspace
 - `law_id`: UUID - FK to LegalDocument
@@ -3342,8 +3622,9 @@ interface KollektivavtalEmbedding {
 - `read_at`: DateTime | null
 
 **TypeScript Interface:**
+
 ```typescript
-type NotificationType = "EMAIL_DAILY_DIGEST" | "EMAIL_WEEKLY_DIGEST" | "IN_APP"
+type NotificationType = 'EMAIL_DAILY_DIGEST' | 'EMAIL_WEEKLY_DIGEST' | 'IN_APP'
 
 interface ChangeNotification {
   id: string
@@ -3360,10 +3641,12 @@ interface ChangeNotification {
 ```
 
 **Relationships:**
+
 - Belongs to one `Workspace`
 - References one `LegalDocument`
 
 **Design Decisions:**
+
 - `digest_batch_id` groups multiple changes into single email
 - Created by daily cron job comparing `LegalDocument.updated_at`
 - Retention: Delete >90 days old
@@ -3375,6 +3658,7 @@ interface ChangeNotification {
 **Purpose:** Historical snapshots of law content for diff view. Per FR38 ("show what changed").
 
 **Key Attributes:**
+
 - `id`: UUID
 - `law_id`: UUID - FK to LegalDocument
 - `changed_at`: DateTime
@@ -3384,8 +3668,9 @@ interface ChangeNotification {
 - `detected_by_cron_job_id`: string | null - Which cron job run detected this
 
 **TypeScript Interface:**
+
 ```typescript
-type ChangeType = "AMENDED" | "REPEALED" | "METADATA_UPDATE"
+type ChangeType = 'AMENDED' | 'REPEALED' | 'METADATA_UPDATE'
 
 interface LawChangeHistory {
   id: string
@@ -3396,16 +3681,18 @@ interface LawChangeHistory {
   diff: {
     added_sections?: string[]
     removed_sections?: string[]
-    modified_sections?: Array<{section: string, old: string, new: string}>
+    modified_sections?: Array<{ section: string; old: string; new: string }>
   } | null
   detected_by_cron_job_id: string | null
 }
 ```
 
 **Relationships:**
+
 - Belongs to one `LegalDocument`
 
 **Design Decisions:**
+
 - Index on `(law_id, changed_at DESC)` for change timeline
 - `full_text_snapshot` stored for exact historical reconstruction
 - `diff` JSONB enables "What changed?" UI (Story 8.6)
@@ -3418,6 +3705,7 @@ interface LawChangeHistory {
 **Purpose:** Tracks long-running background operations (Phase 2 law generation, daily change detection, embedding generation, compliance recalculation). Enables progress tracking, retry logic, and job monitoring. Critical for user-facing features like "Kompletterar din laglista... 23/68 lagar" (PRD line 38).
 
 **Key Attributes:**
+
 - `id`: UUID - Primary key
 - `job_type`: enum - "PHASE2_LAW_GENERATION", "CHANGE_DETECTION", "EMBEDDING_GENERATION", "COMPLIANCE_RECALC", "KOLLEKTIVAVTAL_EMBEDDING"
 - `workspace_id`: UUID | null - FK to Workspace (null for system-wide jobs like change detection)
@@ -3431,15 +3719,16 @@ interface LawChangeHistory {
 - `created_at`: DateTime
 
 **TypeScript Interface:**
+
 ```typescript
 type JobType =
-  | "PHASE2_LAW_GENERATION"
-  | "CHANGE_DETECTION"
-  | "EMBEDDING_GENERATION"
-  | "COMPLIANCE_RECALC"
-  | "KOLLEKTIVAVTAL_EMBEDDING"
+  | 'PHASE2_LAW_GENERATION'
+  | 'CHANGE_DETECTION'
+  | 'EMBEDDING_GENERATION'
+  | 'COMPLIANCE_RECALC'
+  | 'KOLLEKTIVAVTAL_EMBEDDING'
 
-type JobStatus = "PENDING" | "RUNNING" | "COMPLETED" | "FAILED" | "CANCELLED"
+type JobStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'
 
 interface BackgroundJob {
   id: string
@@ -3457,9 +3746,11 @@ interface BackgroundJob {
 ```
 
 **Relationships:**
+
 - Optionally belongs to one `Workspace` (workspace-specific jobs)
 
 **Design Decisions:**
+
 - Indexed on `(workspace_id, status, created_at DESC)` for "my active jobs" queries
 - Indexed on `(status, created_at)` for global job queue processing
 - **Phase 2 Law Generation:** Created immediately after user signs up, processed by Vercel Cron job every 1 minute
@@ -3472,19 +3763,27 @@ interface BackgroundJob {
 **Usage Examples:**
 
 **Phase 2 Law Generation Progress:**
+
 ```typescript
 // Frontend polls this endpoint every 2 seconds
 const job = await prisma.backgroundJob.findFirst({
-  where: { workspace_id: 'ws-123', job_type: 'PHASE2_LAW_GENERATION', status: 'RUNNING' }
+  where: {
+    workspace_id: 'ws-123',
+    job_type: 'PHASE2_LAW_GENERATION',
+    status: 'RUNNING',
+  },
 })
 
 if (job) {
-  const percentage = Math.round((job.progress_current / job.progress_total) * 100)
+  const percentage = Math.round(
+    (job.progress_current / job.progress_total) * 100
+  )
   // Display: "Kompletterar din laglista... 23/68 lagar (34%)"
 }
 ```
 
 **Creating Phase 2 Job on Signup:**
+
 ```typescript
 await prisma.backgroundJob.create({
   data: {
@@ -3499,18 +3798,19 @@ await prisma.backgroundJob.create({
 ```
 
 **Vercel Cron Job Processing Queue:**
+
 ```typescript
 // api/cron/process-background-jobs/route.ts
 const jobs = await prisma.backgroundJob.findMany({
   where: { status: 'PENDING' },
   orderBy: { created_at: 'asc' },
-  take: 5 // Process 5 jobs per cron run
+  take: 5, // Process 5 jobs per cron run
 })
 
 for (const job of jobs) {
   await prisma.backgroundJob.update({
     where: { id: job.id },
-    data: { status: 'RUNNING', started_at: new Date() }
+    data: { status: 'RUNNING', started_at: new Date() },
   })
 
   try {
@@ -3521,12 +3821,16 @@ for (const job of jobs) {
 
     await prisma.backgroundJob.update({
       where: { id: job.id },
-      data: { status: 'COMPLETED', completed_at: new Date() }
+      data: { status: 'COMPLETED', completed_at: new Date() },
     })
   } catch (error) {
     await prisma.backgroundJob.update({
       where: { id: job.id },
-      data: { status: 'FAILED', error_message: error.message, completed_at: new Date() }
+      data: {
+        status: 'FAILED',
+        error_message: error.message,
+        completed_at: new Date(),
+      },
     })
   }
 }
@@ -3537,6 +3841,7 @@ for (const job of jobs) {
 ## Data Model Summary & Rationale
 
 ### **Entity Count: 29 Total**
+
 - **Core Auth:** 1 (User)
 - **Company & Workspace:** 4 (Workspace, WorkspaceMember, OnboardingSession, WorkspaceInvitation)
 - **Legal Content:** 11 (LegalDocument, CourtCase, EUDocument, CrossReference, Amendment, DocumentSubject, LawEmbedding, LawList, LawListItem, LawInWorkspace, LawTask)
@@ -3549,45 +3854,53 @@ for (const job of jobs) {
 ### **Key Architectural Decisions**
 
 **1. Company Data in Workspace (Not Separate Entity)**
+
 - Workspace = Company in Laglig.se's domain model
 - Simplifies queries (no JOIN needed for company data)
 - Aligns with PRD where workspace name = company name
 - Trade-off: If one company needs multiple workspaces later, requires refactoring (acceptable for MVP)
 
 **2. LawInWorkspace is the Kanban Card (Not Generic "ComplianceItem")**
+
 - Each law in workspace has status, priority, notes, tasks
 - Enables law-centric compliance tracking (not arbitrary tasks)
 - Composite unique constraint: one law appears once per workspace
 - Supports Phase 1 onboarding: 15-30 laws with AI commentary pre-populated
 
 **3. Polymorphic LegalDocument with Type-Specific Tables**
+
 - Single table for all 170K documents (SFS, court cases, EU legislation)
 - Type-specific tables (CourtCase, EUDocument) for metadata
 - Rationale: Shared fields (title, slug, full_text) in main table, unique fields in extensions
 - Trade-off: Requires LEFT JOIN for type-specific data, but cleaner than single table with nullable columns
 
 **4. UUID Arrays vs Join Tables**
+
 - `LawInWorkspace.assigned_employee_ids` uses UUID[] (no join table)
 - Simple many-to-many when no metadata needed
 - When metadata required (e.g., `assigned_at`, `position`), use join table (LawListItem, EmployeeKollektivavtal)
 
 **5. JSONB for Dynamic Schemas**
+
 - `Workspace.onboarding_context`: Question-answer pairs vary by industry
 - `LegalDocument.metadata`: SFS chapters ≠ court case parties
 - `LawChangeHistory.diff`: Structured diffs
 - Indexed with GIN for fast queries
 
 **6. No Soft Deletion**
+
 - GDPR right to erasure requires hard delete
 - Simplifies queries (no `WHERE deleted_at IS NULL`)
 - Audit logs kept separately for critical actions
 
 **7. Encryption Strategy**
+
 - `Employee.personnummer_encrypted`: AES-256, keys in env vars
 - Never in logs, never sent to OpenAI
 - Decryption only for display in HR Module (requires HR_MANAGER+ role)
 
 **8. Multi-Tenancy via workspace_id + RLS**
+
 - All workspace data has `workspace_id` foreign key
 - PostgreSQL Row-Level Security policies enforce isolation
 - Middleware double-checks user access
@@ -3596,12 +3909,14 @@ for (const job of jobs) {
 ### **Storage Estimates**
 
 **Legal Content:**
+
 - 170K laws × 50KB avg = 8.5GB full_text
 - 1.7M embeddings × 6KB = 10GB law_embeddings
 - HNSW index overhead: +3GB
 - **Subtotal: ~22GB**
 
 **User Data (at 1,000 workspaces):**
+
 - Employees: 50 avg × 1K workspaces × 5KB = 250MB
 - Employee docs: 5 docs × 500KB × 50 employees × 1K = ~125GB (Supabase Storage)
 - Kollektivavtal: 2 PDFs × 2MB × 1K = 4GB
@@ -3614,6 +3929,7 @@ for (const job of jobs) {
 ### **Performance Indexes**
 
 Critical indexes for <100ms queries:
+
 1. `law_embeddings.embedding` - HNSW (vector search)
 2. `legal_documents.slug` - BTREE (SEO URLs)
 3. `legal_documents.search_vector` - GIN (full-text search)
@@ -3641,17 +3957,17 @@ As documented in Section 1.2, laglig.se uses a **hybrid API architecture** that 
 
 **Decision Matrix: When to Use Each API Style**
 
-| Use Case | API Style | Reasoning |
-|----------|-----------|-----------|
-| **User forms & mutations** | Server Actions | Type-safe, no API boilerplate, automatic revalidation |
-| **AI chat interactions** | Server Actions | Streaming responses, minimal latency |
-| **Kanban card updates** | Server Actions | Optimistic updates, real-time sync |
-| **Authentication flows** | Server Actions | Tight Next.js integration, session management |
-| **Stripe webhooks** | REST API | External service callbacks require public endpoints |
-| **Vercel Cron jobs** | REST API | Scheduled tasks need HTTP endpoints |
-| **Admin ingestion scripts** | REST API | Long-running background jobs, separate process |
-| **Enterprise API access** | REST API | Third-party integrations, API keys, versioning |
-| **Fortnox sync** | REST API | OAuth callbacks, external system integration |
+| Use Case                    | API Style      | Reasoning                                             |
+| --------------------------- | -------------- | ----------------------------------------------------- |
+| **User forms & mutations**  | Server Actions | Type-safe, no API boilerplate, automatic revalidation |
+| **AI chat interactions**    | Server Actions | Streaming responses, minimal latency                  |
+| **Kanban card updates**     | Server Actions | Optimistic updates, real-time sync                    |
+| **Authentication flows**    | Server Actions | Tight Next.js integration, session management         |
+| **Stripe webhooks**         | REST API       | External service callbacks require public endpoints   |
+| **Vercel Cron jobs**        | REST API       | Scheduled tasks need HTTP endpoints                   |
+| **Admin ingestion scripts** | REST API       | Long-running background jobs, separate process        |
+| **Enterprise API access**   | REST API       | Third-party integrations, API keys, versioning        |
+| **Fortnox sync**            | REST API       | OAuth callbacks, external system integration          |
 
 ---
 
@@ -3662,6 +3978,7 @@ As documented in Section 1.2, laglig.se uses a **hybrid API architecture** that 
 **Location:** `app/actions/*.ts` (organized by feature area)
 
 **Error Handling Pattern:**
+
 ```typescript
 type ActionResult<T> =
   | { success: true; data: T }
@@ -3764,6 +4081,7 @@ type ActionResult<T> =
 #### Role-Based Access Control (RBAC)
 
 **Roles:**
+
 - `OWNER` - Full workspace control
 - `ADMIN` - Manage members, settings, HR
 - `MEMBER` - Use all features, no admin access
@@ -3779,32 +4097,34 @@ type ActionResult<T> =
 
 **Rate Limits:**
 
-| Scope | Limit | Window |
-|-------|-------|--------|
-| **User (Server Actions)** | 100 requests | per minute |
-| **Workspace (REST API)** | 1,000 requests | per hour |
-| **Public API** | 100 requests | per hour (per IP) |
-| **AI Chat** | 20 messages | per minute |
+| Scope                     | Limit          | Window            |
+| ------------------------- | -------------- | ----------------- |
+| **User (Server Actions)** | 100 requests   | per minute        |
+| **Workspace (REST API)**  | 1,000 requests | per hour          |
+| **Public API**            | 100 requests   | per hour (per IP) |
+| **AI Chat**               | 20 messages    | per minute        |
 
 **Workspace Quotas by Tier:**
 
-| Tier | AI Messages/Month | Storage | Team Members | HR Employees |
-|------|------------------|---------|--------------|--------------|
-| **FREE** | 50 | 0.5 GB | 3 | 10 |
-| **BASIC** | 500 | 5 GB | 5 | 25 |
-| **PROFESSIONAL** | 2,000 | 50 GB | 15 | 100 |
-| **ENTERPRISE** | Unlimited | Unlimited | Unlimited | Unlimited |
+| Tier             | AI Messages/Month | Storage   | Team Members | HR Employees |
+| ---------------- | ----------------- | --------- | ------------ | ------------ |
+| **FREE**         | 50                | 0.5 GB    | 3            | 10           |
+| **BASIC**        | 500               | 5 GB      | 5            | 25           |
+| **PROFESSIONAL** | 2,000             | 50 GB     | 15           | 100          |
+| **ENTERPRISE**   | Unlimited         | Unlimited | Unlimited    | Unlimited    |
 
 ---
 
 ### 5.6 Versioning Strategy
 
 **REST API:** URL path versioning (`/api/v1`, `/api/v2`)
+
 - Current: v1
 - Deprecation policy: 12-month support after new version release
 - Breaking changes trigger version bump
 
 **Server Actions:** Function overloading for backward compatibility
+
 - Detect v1 vs v2 signatures
 - Log deprecation warnings
 - Gradual migration path
@@ -3816,6 +4136,7 @@ type ActionResult<T> =
 **Location:** `https://laglig.se/developers`
 
 **Includes:**
+
 - Interactive OpenAPI documentation (Swagger UI)
 - Server Actions usage examples
 - Authentication guide
@@ -3827,7 +4148,6 @@ type ActionResult<T> =
 ---
 
 ## Section 5 Summary ✅
-
 
 ### 5.8 External API Integration Clients
 
@@ -3873,7 +4193,10 @@ export class RiksdagenClient {
    * @param page - Page number (1-indexed)
    * @param pageSize - Results per page (max 100)
    */
-  async fetchSFSList(page: number = 1, pageSize: number = 100): Promise<{
+  async fetchSFSList(
+    page: number = 1,
+    pageSize: number = 100
+  ): Promise<{
     documents: RiksdagenSFS[]
     totalPages: number
     totalDocuments: number
@@ -3883,7 +4206,9 @@ export class RiksdagenClient {
     const response = await fetch(url)
 
     if (!response.ok) {
-      throw new Error(`Riksdagen API error: ${response.status} ${response.statusText}`)
+      throw new Error(
+        `Riksdagen API error: ${response.status} ${response.statusText}`
+      )
     }
 
     const data = await response.json()
@@ -3893,7 +4218,7 @@ export class RiksdagenClient {
       : [data.dokumentlista.dokument]
 
     // Validate each document
-    const validated = documents.map(doc => RiksdagenSFSSchema.parse(doc))
+    const validated = documents.map((doc) => RiksdagenSFSSchema.parse(doc))
 
     return {
       documents: validated,
@@ -3907,7 +4232,10 @@ export class RiksdagenClient {
    * @param id - Document ID (e.g., "sfs-2011-1029")
    * @param format - 'text' or 'html'
    */
-  async fetchSFSFullText(id: string, format: 'text' | 'html' = 'text'): Promise<string> {
+  async fetchSFSFullText(
+    id: string,
+    format: 'text' | 'html' = 'text'
+  ): Promise<string> {
     const url = `${this.baseURL}/dokument/${id}.${format}`
 
     const response = await fetch(url)
@@ -3953,7 +4281,7 @@ export class RiksdagenClient {
 
       // Rate limiting: wait 200ms between requests (5 req/sec)
       if (hasMore) {
-        await new Promise(resolve => setTimeout(resolve, 200))
+        await new Promise((resolve) => setTimeout(resolve, 200))
       }
     }
   }
@@ -4131,7 +4459,8 @@ export class DomstolsverketClient {
           intervall: filters.fromDatum
             ? {
                 fromDatum: filters.fromDatum,
-                toDatum: filters.toDatum || new Date().toISOString().split('T')[0],
+                toDatum:
+                  filters.toDatum || new Date().toISOString().split('T')[0],
               }
             : undefined,
         },
@@ -4146,7 +4475,9 @@ export class DomstolsverketClient {
 
     return {
       total: data.total,
-      cases: data.publiceringLista.map((c: any) => PubliceringDTOSchema.parse(c)),
+      cases: data.publiceringLista.map((c: any) =>
+        PubliceringDTOSchema.parse(c)
+      ),
     }
   }
 
@@ -4172,7 +4503,13 @@ export class DomstolsverketClient {
     court: string
     cases: PubliceringDTO[]
   }> {
-    const priorityCourts = ['AD', 'HFD', 'HD', 'HovR-Stockholm', 'HovR-Göteborg']
+    const priorityCourts = [
+      'AD',
+      'HFD',
+      'HD',
+      'HovR-Stockholm',
+      'HovR-Göteborg',
+    ]
 
     for (const courtCode of priorityCourts) {
       let page = 0
@@ -4191,7 +4528,7 @@ export class DomstolsverketClient {
 
         // Rate limiting
         if (hasMore) {
-          await new Promise(resolve => setTimeout(resolve, 200))
+          await new Promise((resolve) => setTimeout(resolve, 200))
         }
       }
     }
@@ -4221,16 +4558,23 @@ function mapCourtCodeToContentType(courtCode: string): ContentType {
 export async function ingestAllCourtCases() {
   let processed = 0
 
-  for await (const { court, cases } of domstolsverketClient.fetchAllCasesByPriority()) {
+  for await (const {
+    court,
+    cases,
+  } of domstolsverketClient.fetchAllCasesByPriority()) {
     for (const courtCase of cases) {
-      const contentType = mapCourtCodeToContentType(courtCase.domstol.domstolKod)
+      const contentType = mapCourtCodeToContentType(
+        courtCase.domstol.domstolKod
+      )
 
       // Create legal document
       const doc = await prisma.legalDocument.create({
         data: {
           content_type: contentType,
           document_number: courtCase.referatNummerLista[0] || courtCase.id,
-          title: courtCase.benamning || `${courtCase.domstol.domstolNamn} ${courtCase.avgorandedatum}`,
+          title:
+            courtCase.benamning ||
+            `${courtCase.domstol.domstolNamn} ${courtCase.avgorandedatum}`,
           summary: courtCase.sammanfattning,
           full_text: courtCase.innehall ? stripHTML(courtCase.innehall) : '',
           publication_date: new Date(courtCase.publiceringstid),
@@ -4309,14 +4653,16 @@ export async function fetchWithRetry(
       // Rate limited - exponential backoff
       if (response.status === 429) {
         const delay = Math.pow(2, attempt) * 1000 // 2s, 4s, 8s
-        console.warn(`Rate limited, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`)
-        await new Promise(resolve => setTimeout(resolve, delay))
+        console.warn(
+          `Rate limited, retrying in ${delay}ms (attempt ${attempt}/${maxRetries})`
+        )
+        await new Promise((resolve) => setTimeout(resolve, delay))
         continue
       }
 
       // Server error - retry
       if (response.status >= 500) {
-        await new Promise(resolve => setTimeout(resolve, 2000 * attempt))
+        await new Promise((resolve) => setTimeout(resolve, 2000 * attempt))
         continue
       }
 
@@ -4328,7 +4674,7 @@ export async function fetchWithRetry(
       }
 
       console.warn(`Fetch failed (attempt ${attempt}/${maxRetries}):`, error)
-      await new Promise(resolve => setTimeout(resolve, 2000 * attempt))
+      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt))
     }
   }
 
@@ -4344,7 +4690,9 @@ export function createRateLimiter(requestsPerSecond: number) {
     const timeSinceLastRequest = now - lastRequest
 
     if (timeSinceLastRequest < delay) {
-      await new Promise(resolve => setTimeout(resolve, delay - timeSinceLastRequest))
+      await new Promise((resolve) =>
+        setTimeout(resolve, delay - timeSinceLastRequest)
+      )
     }
 
     lastRequest = Date.now()
@@ -4359,20 +4707,24 @@ export function createRateLimiter(requestsPerSecond: number) {
 #### 5.8.4 Additional External API Clients (Summary)
 
 **Fortnox API** (`lib/external-apis/fortnox.ts`)
+
 - OAuth 2.0 authentication
 - Fetch employee data for HR module
 - Sync company financial data
 
 **Bolagsverket API** (`lib/external-apis/bolagsverket.ts`)
+
 - Fetch company information by org number
 - Used in onboarding process (Epic 4)
 
 **EUR-Lex CELLAR API** (`lib/external-apis/eurlex.ts`)
+
 - SPARQL queries for EU regulations/directives
 - Fetch Swedish translations
 - National Implementation Measures (NIM)
 
 **Stripe API** (`lib/external-apis/stripe.ts`)
+
 - Subscription management
 - Payment processing
 - Webhook handling
@@ -4381,8 +4733,8 @@ export function createRateLimiter(requestsPerSecond: number) {
 
 ---
 
-
 **This API specification supports:**
+
 - ✅ All 8 PRD Epics
 - ✅ Hybrid architecture (Server Actions + REST)
 - ✅ Production-ready authentication
@@ -4391,7 +4743,6 @@ export function createRateLimiter(requestsPerSecond: number) {
 - ✅ Versioning strategy
 
 **Next:** Section 6 - Components
-
 
 ## 6. Components
 
@@ -4470,17 +4821,20 @@ C4Container
 **Responsibility:** User sign-in, sign-up, password reset, and session management
 
 **Key Interfaces:**
+
 - `<SignInForm />` - Credential-based login form
 - `<SignUpForm />` - New user registration form
 - `<GoogleSignInButton />` - OAuth 2.0 Google sign-in
 - `<PasswordResetForm />` - Forgot password flow
 
 **Dependencies:**
+
 - NextAuth.js (authentication library)
 - `app/actions/auth.ts` (Server Actions)
 - Zustand auth store (client-side session state)
 
 **Technology Stack:**
+
 - React Server Components (forms)
 - Server Actions for mutations
 - TailwindCSS for styling
@@ -4495,6 +4849,7 @@ C4Container
 **Responsibility:** Multi-step onboarding flow to generate personalized law list (Epic 4, Stories 4.1-4.4b)
 
 **Key Interfaces:**
+
 - `<OnboardingWizard />` - Root wizard component with step navigation
 - `<OrgNumberInput />` - Organization number input with Bolagsverket validation (Story 4.1)
 - `<CompanyUrlInput />` - Optional website URL for context scraping (enhanced personalization)
@@ -4505,17 +4860,20 @@ C4Container
 - `<WorkspaceSetupStep />` - Workspace creation, invite team members
 
 **Two-Phase Generation (Story 4.3, 4.4b):**
+
 - **Phase 1 (Pre-Signup):** 15-30 high-priority laws shown immediately
 - **Phase 2 (Post-Signup):** 45-65 additional laws generated in background
 - **Total:** 60-80 laws matching Notisum's comprehensiveness
 
 **Dependencies:**
+
 - `app/actions/onboarding.ts` (Server Actions)
 - Zustand onboarding store (step state, answers)
 - `lib/external-apis/bolagsverket.ts` (company data fetch)
 - GPT-4 for Phase 2 AI-powered generation
 
 **State Management:**
+
 ```typescript
 interface OnboardingState {
   currentStep: number
@@ -4532,6 +4890,7 @@ interface OnboardingState {
 ```
 
 **Technology Stack:**
+
 - React Server Components + Client Components (for interactivity)
 - Server Actions for data fetching and processing
 - Zustand for wizard state
@@ -4546,6 +4905,7 @@ interface OnboardingState {
 **Responsibility:** Main workspace view with navigation, quick actions, and overview cards (Epic 5)
 
 **Key Interfaces:**
+
 - `<WorkspaceDashboard />` - Root dashboard layout
 - `<WorkspaceNav />` - Top navigation with workspace switcher
 - `<QuickActionCards />` - "Ask AI", "View Laws", "Add Employee"
@@ -4553,11 +4913,13 @@ interface OnboardingState {
 - `<TeamMembers />` - Active workspace members list
 
 **Dependencies:**
+
 - `app/actions/workspace.ts` (Server Actions)
 - Zustand workspace store (current workspace, members)
 - NextAuth session (user permissions)
 
 **Technology Stack:**
+
 - React Server Components (static content)
 - Client Components for interactive elements
 - Real-time updates via polling (future: WebSockets)
@@ -4571,6 +4933,7 @@ interface OnboardingState {
 **Responsibility:** Drag-and-drop law compliance tracking board (Epic 6, Stories 6.2-6.8)
 
 **Key Interfaces:**
+
 - `<KanbanBoard />` - Root board with 5 columns: Not Started, In Progress, Blocked, Review, Compliant (Story 6.2)
 - `<KanbanColumn />` - Single status column with draggable cards
 - `<LawCard />` - Draggable law card (FR26, Story 6.3):
@@ -4589,11 +4952,13 @@ interface OnboardingState {
 - `<FilterBar />` - Filter by category, priority, assignee, tags (Story 6.6)
 
 **Dependencies:**
+
 - `app/actions/kanban.ts` (Server Actions for mutations)
 - `@dnd-kit/core` (drag-and-drop library)
 - Zustand kanban store (optimistic updates)
 
 **State Management:**
+
 ```typescript
 interface KanbanState {
   cards: Record<string, LawInWorkspace[]> // Keyed by status
@@ -4604,6 +4969,7 @@ interface KanbanState {
 ```
 
 **Technology Stack:**
+
 - Client Component (requires interactivity)
 - @dnd-kit/core for drag-and-drop
 - Optimistic UI updates with Zustand
@@ -4618,6 +4984,7 @@ interface KanbanState {
 **Responsibility:** Conversational AI assistant for Swedish legal queries (Epic 3)
 
 **Key Interfaces:**
+
 - `<AIChatWidget />` - Floating chat widget (accessible from all pages)
 - `<ChatMessageList />` - Scrollable message history
 - `<ChatMessage />` - Single message bubble (user or AI)
@@ -4626,23 +4993,28 @@ interface KanbanState {
 - `<StreamingIndicator />` - Typing indicator during AI response
 
 **Dependencies:**
+
 - `app/actions/ai-chat.ts` (Server Actions with streaming)
 - Vercel AI SDK (`useChat` hook)
 - Zustand chat store (message history)
 
 **Streaming Implementation:**
+
 ```typescript
 import { useChat } from 'ai/react'
 
-const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-  api: '/api/chat', // Server Action endpoint
-  onError: (error) => {
-    toast.error('AI chat error: ' + error.message)
-  },
-})
+const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
+  {
+    api: '/api/chat', // Server Action endpoint
+    onError: (error) => {
+      toast.error('AI chat error: ' + error.message)
+    },
+  }
+)
 ```
 
 **Technology Stack:**
+
 - Client Component (real-time streaming)
 - Vercel AI SDK for streaming responses
 - Server Actions for backend integration
@@ -4657,6 +5029,7 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 **Responsibility:** Public law detail pages optimized for SEO (Epic 2.5)
 
 **Key Interfaces:**
+
 - `<LawDetailPage />` - Full law page with metadata, full text, related content
 - `<LawMetadata />` - SFS number, effective date, status badge
 - `<LawFullText />` - Formatted legal text with section navigation
@@ -4666,10 +5039,12 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 - `<ShareButton />` - Social sharing functionality
 
 **Dependencies:**
+
 - Supabase (direct database read via Prisma)
 - Static generation with ISR (Incremental Static Regeneration)
 
 **SEO Optimization:**
+
 - Server-Side Rendering (SSR)
 - JSON-LD structured data
 - Open Graph meta tags
@@ -4677,6 +5052,7 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 - Sitemap generation
 
 **Technology Stack:**
+
 - React Server Components (no client JS needed)
 - ISR with 1-hour revalidation
 - Markdown rendering (if needed)
@@ -4690,6 +5066,7 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 **Responsibility:** Employee management and Fortnox integration (Epic 6)
 
 **Key Interfaces:**
+
 - `<EmployeeList />` - Table of all employees with filters
 - `<EmployeeForm />` - Add/edit employee form
 - `<FortnoxSyncButton />` - One-click Fortnox sync
@@ -4698,11 +5075,13 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 - `<DepartmentManagement />` - Organize employees by department
 
 **Dependencies:**
+
 - `app/actions/hr.ts` (Server Actions)
 - `lib/external-apis/fortnox.ts` (Fortnox API client)
 - Supabase Storage (document uploads)
 
 **Technology Stack:**
+
 - Server Components for lists
 - Client Components for forms and file uploads
 - Server Actions for mutations
@@ -4717,6 +5096,7 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 **Responsibility:** Display detected law changes and manage notifications (Epic 8, Stories 8.1-8.5)
 
 **Key Interfaces:**
+
 - `<ChangeNotificationList />` - List of detected changes with priority badges (Story 8.1)
 - `<ChangeNotificationCard />` - Individual change card with AI summary (Story 8.1)
 - `<PriorityBadge />` - Visual indicators 🔴/🟡/🟢 for High/Medium/Low (Story 8.1)
@@ -4727,6 +5107,7 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 - `<LawSubscriptionManager />` - Subscribe to specific laws
 
 **Diff Viewer Features (Story 8.2):**
+
 - Side-by-side comparison (desktop) / stacked (mobile)
 - Red background for deletions, green for additions
 - Line-through for removed text, underline for added
@@ -4734,11 +5115,13 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 - "Mark as Reviewed" button
 
 **Dependencies:**
+
 - `app/actions/notifications.ts` (Server Actions)
 - `diff` npm package for text comparison
 - Background job results (cron-triggered change detection)
 
 **Technology Stack:**
+
 - Server Components for lists
 - Client Components for diff viewer and settings
 - Real-time updates via polling (check for new changes every 5 minutes)
@@ -4754,18 +5137,21 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 **Key Components:**
 
 **Drag-and-Drop System (Stories 3.4-3.7, 6.5):**
+
 - `<DraggableWrapper />` - Makes any component draggable
 - `<DropZone />` - Target area for dropped items
 - Supports: Law cards, Employee cards, Task cards, PDFs
 - Library: `@dnd-kit/core` or `react-beautiful-dnd`
 
 **Context Pills (AI Chat):**
+
 - `<LawContextPill />` - Shows dragged law in chat context (Story 3.4)
 - `<EmployeeContextPill />` - Shows dragged employee (Story 3.5)
 - `<TaskContextPill />` - Shows dragged task (Story 3.6)
 - `<DocumentContextPill />` - Shows dragged PDF (Story 3.7)
 
 **Common UI Patterns:**
+
 - `<ToastNotification />` - Success/error/info messages
 - `<SkeletonLoader />` - Content loading placeholders
 - `<ProgressBar />` - Determinate progress indicator
@@ -4785,22 +5171,26 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 **Responsibility:** User authentication, session management, and authorization
 
 **Key Interfaces:**
+
 - `signInAction()` - Credential-based sign in
 - `signUpAction()` - New user registration
 - `signOutAction()` - End session
 - `getServerSession()` - Retrieve current session server-side
 
 **Dependencies:**
+
 - NextAuth.js (authentication library)
 - Prisma (user storage)
 - bcrypt (password hashing)
 
 **Technology Stack:**
+
 - NextAuth.js with JWT strategy
 - Prisma adapter for database persistence
 - Google OAuth provider
 
 **Authentication Flow:**
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -4825,6 +5215,7 @@ sequenceDiagram
 **Responsibility:** Generate personalized law lists based on company context
 
 **Key Interfaces:**
+
 - `fetchCompanyDataAction()` - Fetch from Bolagsverket API
 - `scrapeCompanyWebsiteAction()` - Extract context from company website (optional)
 - `startOnboardingAction()` - Create session + Phase 1 law list
@@ -4832,17 +5223,22 @@ sequenceDiagram
 - `generateFinalLawListAction()` - GPT-4 Phase 2 generation with website context
 
 **Dependencies:**
+
 - `lib/external-apis/bolagsverket.ts`
 - OpenAI GPT-4 (for Phase 2)
 - Prisma (onboarding session storage)
 
 **Phase 1 Logic (Rule-Based):**
+
 ```typescript
-function generateLawListPhase1(sniCode: string, employeeCount: number): string[] {
+function generateLawListPhase1(
+  sniCode: string,
+  employeeCount: number
+): string[] {
   const baseLaws = [
     'SFS 1977:1160', // Arbetsmiljölagen (ALL companies)
-    'SFS 1982:80',   // Anställningsskyddslag (ALL companies)
-    'SFS 1982:80',   // LAS (ALL companies)
+    'SFS 1982:80', // Anställningsskyddslag (ALL companies)
+    'SFS 1982:80', // LAS (ALL companies)
   ]
 
   // Add laws based on employee count
@@ -4861,8 +5257,11 @@ function generateLawListPhase1(sniCode: string, employeeCount: number): string[]
 ```
 
 **Website Context Scraping & AI Segmentation:**
+
 ```typescript
-async function scrapeAndAnalyzeCompanyWebsite(url: string): Promise<WebsiteContext> {
+async function scrapeAndAnalyzeCompanyWebsite(
+  url: string
+): Promise<WebsiteContext> {
   // Scrape company website content
   const response = await fetch(url)
   const html = await response.text()
@@ -4907,13 +5306,16 @@ Identify and return as JSON:
   const websiteContext = JSON.parse(analysis.choices[0].message.content)
 
   // Cache the analysis for future use
-  await redis.set(`website-analysis:${url}`, JSON.stringify(websiteContext), { ex: 86400 })
+  await redis.set(`website-analysis:${url}`, JSON.stringify(websiteContext), {
+    ex: 86400,
+  })
 
   return websiteContext
 }
 ```
 
 **Phase 2 Logic (AI-Generated with Website Context):**
+
 ```typescript
 async function generateLawListPhase2(
   companyContext: CompanyContext,
@@ -4952,17 +5354,20 @@ Return as JSON array of SFS numbers: ["SFS 1977:1160", ...]
 **Responsibility:** Vector search and AI chat response generation (Epic 3)
 
 **Key Interfaces:**
+
 - `retrieveRelevantLaws()` - Semantic search via pgvector
 - `generateAIResponse()` - GPT-4 response with context
 - `streamAIResponse()` - Streaming chat responses
 
 **Dependencies:**
+
 - Supabase pgvector (vector database)
 - OpenAI Embeddings (text-embedding-3-small)
 - OpenAI GPT-4 (chat completion)
 - Langchain (RAG orchestration)
 
 **Vector Search Flow:**
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -4982,6 +5387,7 @@ sequenceDiagram
 ```
 
 **Embedding Generation:**
+
 ```typescript
 async function generateEmbedding(text: string): Promise<number[]> {
   const response = await openai.embeddings.create({
@@ -4994,6 +5400,7 @@ async function generateEmbedding(text: string): Promise<number[]> {
 ```
 
 **Vector Search Query:**
+
 ```sql
 SELECT
   ld.id,
@@ -5017,18 +5424,21 @@ LIMIT 5
 **Responsibility:** Background jobs to fetch legal content from external APIs (Epic 2)
 
 **Key Interfaces:**
+
 - `ingestAllSFS()` - Fetch 11,351 SFS laws from Riksdagen
 - `ingestCourtCases()` - Fetch court cases from Domstolsverket
 - `generateEmbeddings()` - Batch embedding generation
 - `trackIngestionProgress()` - Update BackgroundJob status
 
 **Dependencies:**
+
 - `lib/external-apis/riksdagen.ts`
 - `lib/external-apis/domstolsverket.ts`
 - BullMQ (job queue)
 - Redis (queue persistence)
 
 **Job Queue Architecture:**
+
 ```typescript
 // Producer (API endpoint)
 await ingestionQueue.add('ingest-sfs', {
@@ -5046,6 +5456,7 @@ const worker = new Worker('ingestion-queue', async (job) => {
 ```
 
 **Progress Tracking:**
+
 ```typescript
 await prisma.backgroundJob.update({
   where: { id: jobId },
@@ -5066,16 +5477,19 @@ await prisma.backgroundJob.update({
 **Responsibility:** Daily cron jobs to detect new/amended/repealed laws (Epic 8)
 
 **Key Interfaces:**
+
 - `detectSFSChanges()` - Compare current vs Riksdagen API
 - `detectCourtCaseChanges()` - Check for new court cases
 - `notifySubscribers()` - Send change notifications to users
 
 **Dependencies:**
+
 - `lib/external-apis/riksdagen.ts`
 - `lib/external-apis/domstolsverket.ts`
 - Notification Service
 
 **Change Detection Logic:**
+
 ```typescript
 async function detectSFSChanges() {
   const storedLaws = await prisma.legalDocument.findMany({
@@ -5086,7 +5500,9 @@ async function detectSFSChanges() {
   const latestLaws = await riksdagenClient.fetchSFSList(1, 100)
 
   for (const law of latestLaws) {
-    const stored = storedLaws.find(l => l.document_number === `SFS ${law.beteckning}`)
+    const stored = storedLaws.find(
+      (l) => l.document_number === `SFS ${law.beteckning}`
+    )
 
     if (!stored) {
       // New law detected
@@ -5106,6 +5522,7 @@ async function detectSFSChanges() {
 ```
 
 **Cron Schedule (Vercel Cron):**
+
 ```json
 {
   "crons": [
@@ -5130,16 +5547,19 @@ async function detectSFSChanges() {
 **Responsibility:** Send email and push notifications to users
 
 **Key Interfaces:**
+
 - `sendChangeNotificationEmail()` - Email about law changes
 - `sendWorkspaceInviteEmail()` - Team invitation
 - `sendPushNotification()` - Browser/mobile push
 
 **Dependencies:**
+
 - Resend (email service)
 - Firebase Cloud Messaging (push notifications)
 - Prisma (user preferences)
 
 **Email Templates:**
+
 ```typescript
 const changeNotificationTemplate = {
   subject: 'Legal Update: {{lawTitle}} has been amended',
@@ -5152,6 +5572,7 @@ const changeNotificationTemplate = {
 ```
 
 **Technology Stack:**
+
 - Resend API (email delivery)
 - React Email (email templates)
 - Firebase SDK (push notifications)
@@ -5165,17 +5586,20 @@ const changeNotificationTemplate = {
 **Responsibility:** Employee management and Fortnox synchronization (Epic 6)
 
 **Key Interfaces:**
+
 - `createEmployee()` - Add new employee
 - `syncFortnoxEmployees()` - Sync from Fortnox API
 - `attachCollectiveAgreement()` - Link kollektivavtal
 - `uploadEmployeeDocument()` - Store employee files
 
 **Dependencies:**
+
 - `lib/external-apis/fortnox.ts`
 - Supabase Storage (file uploads)
 - Prisma (employee records)
 
 **Fortnox Sync Logic:**
+
 ```typescript
 async function syncFortnoxEmployees(workspaceId: string) {
   const fortnoxEmployees = await fortnoxClient.fetchEmployees(workspaceId)
@@ -5216,16 +5640,19 @@ async function syncFortnoxEmployees(workspaceId: string) {
 **Responsibility:** Stripe subscription management and billing (Epic 7)
 
 **Key Interfaces:**
+
 - `createCheckoutSession()` - Start Stripe checkout
 - `handleWebhook()` - Process Stripe webhooks
 - `updateSubscription()` - Upgrade/downgrade plan
 - `cancelSubscription()` - End subscription
 
 **Dependencies:**
+
 - Stripe SDK
 - Prisma (subscription records)
 
 **Webhook Events:**
+
 - `checkout.session.completed` → Create subscription
 - `customer.subscription.updated` → Update tier
 - `customer.subscription.deleted` → Mark cancelled
@@ -5233,6 +5660,7 @@ async function syncFortnoxEmployees(workspaceId: string) {
 - `invoice.payment_failed` → Notify user
 
 **Technology Stack:**
+
 - Stripe SDK
 - Webhook signature verification
 - Idempotency keys for retries
@@ -5248,6 +5676,7 @@ async function syncFortnoxEmployees(workspaceId: string) {
 **Responsibility:** Type-safe database access with automatic migrations
 
 **Key Interfaces:**
+
 - `prisma.legalDocument.findMany()`
 - `prisma.workspace.create()`
 - `prisma.$transaction()` (atomic operations)
@@ -5263,6 +5692,7 @@ async function syncFortnoxEmployees(workspaceId: string) {
 **Responsibility:** 3-tier caching strategy (Section 2.7)
 
 **Key Interfaces:**
+
 - `redis.get(key)`
 - `redis.set(key, value, { ex: ttl })`
 - `redis.incr(key)` (rate limiting counters)
@@ -5278,6 +5708,7 @@ async function syncFortnoxEmployees(workspaceId: string) {
 **Responsibility:** Type-safe wrappers for external services
 
 **Components:**
+
 - `RiksdagenClient` - SFS law fetching
 - `DomstolsverketClient` - Court case fetching
 - `FortnoxClient` - Employee sync
@@ -5293,11 +5724,13 @@ async function syncFortnoxEmployees(workspaceId: string) {
 **Responsibility:** Store employee documents and attachments
 
 **Key Interfaces:**
+
 - `storage.upload(bucket, path, file)`
 - `storage.download(bucket, path)`
 - `storage.getPublicUrl(bucket, path)`
 
 **Buckets:**
+
 - `employee-documents` - HR files (contracts, certificates)
 - `workspace-files` - General workspace uploads
 - `court-case-attachments` - PDF judgments
@@ -5315,6 +5748,7 @@ async function syncFortnoxEmployees(workspaceId: string) {
 **Used by:** Auth, Onboarding, Kanban, AI Chat, HR
 
 **Flow:**
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -5332,6 +5766,7 @@ sequenceDiagram
 ```
 
 **Benefits:**
+
 - No API boilerplate
 - Type-safe end-to-end
 - Automatic revalidation
@@ -5343,6 +5778,7 @@ sequenceDiagram
 **Used by:** Ingestion, Change Detection, Embedding Generation
 
 **Flow:**
+
 ```mermaid
 sequenceDiagram
     participant API
@@ -5362,6 +5798,7 @@ sequenceDiagram
 ```
 
 **Benefits:**
+
 - Async processing
 - Retry logic
 - Progress tracking
@@ -5371,6 +5808,7 @@ sequenceDiagram
 ## Section 6 Complete ✅
 
 **This component architecture supports:**
+
 - ✅ All 8 PRD Epics mapped to specific components
 - ✅ Clear separation between frontend UI and backend services
 - ✅ Scalable serverless architecture
@@ -5378,6 +5816,7 @@ sequenceDiagram
 - ✅ Component diagrams for visualization
 
 **Component Count:**
+
 - **Frontend:** 8 major components (Auth, Onboarding, Dashboard, Kanban, AI Chat, Law Pages, HR, Change Monitoring)
 - **Backend:** 8 services (Auth, Onboarding, RAG, Ingestion, Change Detection, Notifications, HR, Subscriptions)
 - **Shared:** 4 infrastructure components (Database, Cache, External APIs, Storage)
@@ -5411,6 +5850,7 @@ Laglig.se integrates with 6 critical external APIs to provide comprehensive lega
 **Purpose:** Primary source for Swedish legislation (SFS laws)
 
 **Production Endpoints:**
+
 - List endpoint: `https://data.riksdagen.se/dokumentlista/`
 - Document endpoint: `https://data.riksdagen.se/dokument/{dok_id}`
 - Full text: `https://data.riksdagen.se/dokument/{dok_id}.html`
@@ -5425,16 +5865,16 @@ Laglig.se integrates with 6 critical external APIs to provide comprehensive lega
 
 interface IngestionStrategy {
   initialLoad: {
-    totalDocuments: 11351,
-    batchSize: 50,
-    estimatedTime: '48 hours',
-    parallelWorkers: 3,
-  },
+    totalDocuments: 11351
+    batchSize: 50
+    estimatedTime: '48 hours'
+    parallelWorkers: 3
+  }
   incremental: {
-    schedule: '0 2 * * *', // 2 AM daily
-    lookbackDays: 7, // Check last week for safety
-    estimatedDocuments: 20,
-  },
+    schedule: '0 2 * * *' // 2 AM daily
+    lookbackDays: 7 // Check last week for safety
+    estimatedDocuments: 20
+  }
 }
 ```
 
@@ -5470,7 +5910,7 @@ class RiksdagenRateLimiter {
     while (this.requestQueue.length > 0) {
       const batch = this.requestQueue.splice(0, this.MAX_REQUESTS_PER_SECOND)
 
-      await Promise.all(batch.map(request => request()))
+      await Promise.all(batch.map((request) => request()))
 
       if (this.requestQueue.length > 0) {
         await this.delay(1000) // Wait 1 second between batches
@@ -5486,14 +5926,17 @@ class RiksdagenRateLimiter {
 
 ```typescript
 interface RetryConfig {
-  maxAttempts: 3,
-  backoffMultiplier: 2,
-  initialDelay: 1000,
-  maxDelay: 30000,
-  retryableErrors: [429, 500, 502, 503, 504],
+  maxAttempts: 3
+  backoffMultiplier: 2
+  initialDelay: 1000
+  maxDelay: 30000
+  retryableErrors: [429, 500, 502, 503, 504]
 }
 
-async function fetchWithRetry(url: string, config: RetryConfig): Promise<Response> {
+async function fetchWithRetry(
+  url: string,
+  config: RetryConfig
+): Promise<Response> {
   let lastError: Error
 
   for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
@@ -5514,7 +5957,7 @@ async function fetchWithRetry(url: string, config: RetryConfig): Promise<Respons
         config.initialDelay * Math.pow(config.backoffMultiplier, attempt - 1),
         config.maxDelay
       )
-      await new Promise(resolve => setTimeout(resolve, delay))
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
 
@@ -5527,14 +5970,14 @@ async function fetchWithRetry(url: string, config: RetryConfig): Promise<Respons
 ```typescript
 interface SFSProcessingPipeline {
   stages: [
-    'fetch_metadata',    // Get document list
-    'fetch_full_text',   // Get HTML content
-    'parse_structure',   // Extract sections, paragraphs
-    'detect_status',     // Active, Repealed, Amended
-    'extract_dates',     // Effective date, publication date
+    'fetch_metadata', // Get document list
+    'fetch_full_text', // Get HTML content
+    'parse_structure', // Extract sections, paragraphs
+    'detect_status', // Active, Repealed, Amended
+    'extract_dates', // Effective date, publication date
     'generate_embeddings', // Create vector embeddings
-    'store_database',    // Save to PostgreSQL
-    'invalidate_cache',  // Clear relevant caches
+    'store_database', // Save to PostgreSQL
+    'invalidate_cache', // Clear relevant caches
   ]
 }
 
@@ -5590,16 +6033,16 @@ async function processSFSDocument(dokId: string): Promise<void> {
 ```typescript
 interface RiksdagenMonitoring {
   metrics: {
-    apiCallsPerDay: number,
-    averageResponseTime: number,
-    errorRate: number,
-    documentsIngested: number,
-  },
+    apiCallsPerDay: number
+    averageResponseTime: number
+    errorRate: number
+    documentsIngested: number
+  }
   alerts: {
-    highErrorRate: 'Alert if error rate > 5%',
-    slowResponse: 'Alert if avg response > 2000ms',
-    noNewDocuments: 'Alert if no new docs for 7 days',
-  },
+    highErrorRate: 'Alert if error rate > 5%'
+    slowResponse: 'Alert if avg response > 2000ms'
+    noNewDocuments: 'Alert if no new docs for 7 days'
+  }
 }
 ```
 
@@ -5610,6 +6053,7 @@ interface RiksdagenMonitoring {
 **Purpose:** Court cases from Swedish courts (AD, HD, HFD, HovR)
 
 **Production Endpoint:**
+
 - Search: `https://puh.domstol.se/api/search`
 - Details: `https://puh.domstol.se/api/case/{id}`
 
@@ -5619,10 +6063,10 @@ interface RiksdagenMonitoring {
 
 ```typescript
 interface CourtPriority {
-  1: 'AD', // Arbetsdomstolen - Notisum's BROKEN, our advantage
-  2: 'HFD', // Högsta förvaltningsdomstolen
-  3: 'HD',  // Högsta domstolen
-  4: 'HovR', // Hovrätterna
+  1: 'AD' // Arbetsdomstolen - Notisum's BROKEN, our advantage
+  2: 'HFD' // Högsta förvaltningsdomstolen
+  3: 'HD' // Högsta domstolen
+  4: 'HovR' // Hovrätterna
 }
 
 // AD-specific handling (Story 2.3)
@@ -5649,16 +6093,22 @@ async function ingestADCases(): Promise<void> {
 
 ```typescript
 interface DomstolsverketSearchStrategy {
-  batchSize: 100,
-  maxResultsPerQuery: 10000,
+  batchSize: 100
+  maxResultsPerQuery: 10000
   searchFilters: {
-    courts: ['Arbetsdomstolen', 'Högsta domstolen', 'Högsta förvaltningsdomstolen'],
-    dateRange: 'last_5_years',
-    documentTypes: ['Dom', 'Beslut'],
-  },
+    courts: [
+      'Arbetsdomstolen',
+      'Högsta domstolen',
+      'Högsta förvaltningsdomstolen',
+    ]
+    dateRange: 'last_5_years'
+    documentTypes: ['Dom', 'Beslut']
+  }
 }
 
-async function* searchCourtCases(filter: SearchFilter): AsyncGenerator<CourtCase[]> {
+async function* searchCourtCases(
+  filter: SearchFilter
+): AsyncGenerator<CourtCase[]> {
   let offset = 0
   let hasMore = true
 
@@ -5738,10 +6188,10 @@ interface BolagsverketClient {
 ```typescript
 // If Bolagsverket API is unavailable, use manual input
 interface ManualCompanyInput {
-  name: string,
-  industry: string, // Dropdown selection
-  employeeCount: '1-9' | '10-49' | '50-249' | '250+',
-  location: string,
+  name: string
+  industry: string // Dropdown selection
+  employeeCount: '1-9' | '10-49' | '50-249' | '250+'
+  location: string
 }
 ```
 
@@ -5762,12 +6212,14 @@ class FortnoxOAuth {
   getAuthorizationUrl(workspaceId: string): string {
     const state = generateSecureState(workspaceId)
 
-    return `https://apps.fortnox.se/oauth-v1/auth?` +
+    return (
+      `https://apps.fortnox.se/oauth-v1/auth?` +
       `client_id=${this.CLIENT_ID}` +
       `&redirect_uri=${encodeURIComponent(this.REDIRECT_URI)}` +
       `&scope=employee:read` +
       `&state=${state}` +
       `&response_type=code`
+    )
   }
 
   async exchangeCodeForToken(code: string): Promise<TokenResponse> {
@@ -5775,7 +6227,7 @@ class FortnoxOAuth {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${btoa(`${this.CLIENT_ID}:${this.CLIENT_SECRET}`)}`,
+        Authorization: `Basic ${btoa(`${this.CLIENT_ID}:${this.CLIENT_SECRET}`)}`,
       },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
@@ -5870,7 +6322,9 @@ export async function POST(request: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     )
   } catch (err) {
-    return new Response('Webhook signature verification failed', { status: 400 })
+    return new Response('Webhook signature verification failed', {
+      status: 400,
+    })
   }
 
   // Handle the event
@@ -5904,32 +6358,32 @@ export async function POST(request: Request) {
 ```typescript
 interface SubscriptionTiers {
   SOLO: {
-    priceId: process.env.STRIPE_PRICE_SOLO,
+    priceId: process.env.STRIPE_PRICE_SOLO
     limits: {
-      users: 1,
-      employees: 10,
-      aiQueries: 100,
-      storageGB: 1,
-    },
-  },
+      users: 1
+      employees: 10
+      aiQueries: 100
+      storageGB: 1
+    }
+  }
   TEAM: {
-    priceId: process.env.STRIPE_PRICE_TEAM,
+    priceId: process.env.STRIPE_PRICE_TEAM
     limits: {
-      users: 5,
-      employees: 50,
-      aiQueries: 500,
-      storageGB: 10,
-    },
-  },
+      users: 5
+      employees: 50
+      aiQueries: 500
+      storageGB: 10
+    }
+  }
   ENTERPRISE: {
-    priceId: process.env.STRIPE_PRICE_ENTERPRISE,
+    priceId: process.env.STRIPE_PRICE_ENTERPRISE
     limits: {
-      users: -1, // Unlimited
-      employees: -1,
-      aiQueries: -1,
-      storageGB: 100,
-    },
-  },
+      users: -1 // Unlimited
+      employees: -1
+      aiQueries: -1
+      storageGB: 100
+    }
+  }
 }
 
 async function enforceUsageLimits(workspaceId: string): Promise<void> {
@@ -5954,7 +6408,9 @@ async function enforceUsageLimits(workspaceId: string): Promise<void> {
   }
 
   if (limits.employees > 0 && workspace._count.employees > limits.employees) {
-    throw new Error('Employee limit exceeded. Please upgrade your subscription.')
+    throw new Error(
+      'Employee limit exceeded. Please upgrade your subscription.'
+    )
   }
 }
 ```
@@ -6129,19 +6585,19 @@ setInterval(async () => {
 ```typescript
 interface SyncSchedule {
   riksdagen: {
-    full: 'monthly', // Full re-sync monthly
-    incremental: 'daily', // Check for new/updated daily
-    time: '02:00',
-  },
+    full: 'monthly' // Full re-sync monthly
+    incremental: 'daily' // Check for new/updated daily
+    time: '02:00'
+  }
   domstolsverket: {
-    full: 'weekly',
-    incremental: 'daily',
-    time: '03:00',
-  },
+    full: 'weekly'
+    incremental: 'daily'
+    time: '03:00'
+  }
   fortnox: {
-    onDemand: true, // User-triggered
-    webhook: true, // Real-time via webhooks
-  },
+    onDemand: true // User-triggered
+    webhook: true // Real-time via webhooks
+  }
 }
 ```
 
@@ -6168,6 +6624,7 @@ interface ConflictResolution {
 ## Section 7 Complete ✅
 
 **This External APIs section provides:**
+
 - ✅ Production-ready integration patterns for all 6 APIs
 - ✅ Rate limiting and retry strategies
 - ✅ Error handling and monitoring
@@ -6176,16 +6633,16 @@ interface ConflictResolution {
 - ✅ Data synchronization strategies
 
 **MVP Implementation Priorities:**
+
 1. **Riksdagen API** - Core legal content (48-hour initial load) [MVP]
 2. **Domstolsverket API** - AD priority for competitive advantage [MVP]
 3. **Bolagsverket API** - Critical for onboarding personalization [MVP]
 4. **Stripe API** - Revenue enablement [MVP]
 
-**Post-MVP Enhancements:**
-5. **Fortnox API** - HR module automation [Post-MVP]
-6. **EUR-Lex API** - EU law expansion [Post-MVP]
+**Post-MVP Enhancements:** 5. **Fortnox API** - HR module automation [Post-MVP] 6. **EUR-Lex API** - EU law expansion [Post-MVP]
 
 **Next:** Section 8 - Core Workflows
+
 ## 8. Core Workflows (Complete MVP Version)
 
 ### 8.1 Workflow Overview
@@ -6193,6 +6650,7 @@ interface ConflictResolution {
 This section documents ALL critical user journeys required for MVP through sequence diagrams. Workflows are organized by priority tier to ensure implementation focus.
 
 **MVP Priority Tiers:**
+
 - **P0 (Blocking):** Must have for basic functionality
 - **P1 (Critical):** Required for MVP launch
 - **P2 (Important):** Enhances MVP but can be simplified
@@ -6343,6 +6801,7 @@ sequenceDiagram
 ```
 
 **Permission Matrix:**
+
 ```
 | Feature           | Owner | Admin | HR Manager | Member | Auditor |
 |-------------------|-------|-------|------------|--------|---------|
@@ -6455,6 +6914,7 @@ sequenceDiagram
 ```
 
 **Search Optimizations:**
+
 ```typescript
 // Weighted search ranking
 const searchWeights = {
@@ -7030,38 +7490,39 @@ sequenceDiagram
 
 ## Critical Workflow Coverage Matrix
 
-| Epic | Story | Workflow | Priority | Status |
-|------|-------|----------|----------|---------|
-| 1 | 1.3 | Authentication | P0 | ✅ Complete |
-| 2 | 2.2 | Law Ingestion | P1 | ✅ Complete |
-| 2 | 2.7 | Search | P1 | ✅ Complete |
-| 2 | 2.9 | SNI Discovery | P2 | ✅ Complete |
-| 3 | 3.3-3.7 | AI Chat + Context | P1 | ✅ Complete |
-| 4 | 4.1-4.4 | Onboarding | P0 | ✅ Complete |
-| 4 | 4.5-4.6 | Trial Signup | P1 | ✅ Complete |
-| 4 | 4.8 | Trial Expiration | P2 | ✅ Complete |
-| 4 | 4.9 | Law List Mgmt | P1 | ✅ Complete |
-| 5 | 5.1 | Workspace Creation | P0 | ✅ Complete |
-| 5 | 5.2 | RBAC | P0 | ✅ Complete |
-| 5 | 5.3 | Team Invites | P1 | ✅ Complete |
-| 5 | 5.4 | Subscription | P1 | ✅ Complete |
-| 5 | 5.5 | Usage Limits | P2 | ✅ Complete |
-| 5 | 5.8 | Workspace Delete | P3 | ✅ Complete |
-| 6 | 6.1 | Dashboard | P1 | ✅ Complete |
-| 6 | 6.2-6.5 | Kanban | P1 | ✅ Complete |
-| 6 | 6.9 | Global Search | P2 | ✅ Complete |
-| 7 | 7.1,7.4 | Employee CRUD | P1 | ✅ Complete |
-| 7 | 7.3 | CSV Import | P1 | ✅ Complete |
-| 7 | 7.5 | Kollektivavtal | P2 | ✅ Complete |
-| 7 | 7.12 | Fortnox Sync | P3 | ✅ Complete |
-| 8 | 8.1-8.3 | Change Detection | P1 | ✅ Complete |
-| 8 | 8.7 | Weekly Digest | P2 | ✅ Complete |
+| Epic | Story   | Workflow           | Priority | Status      |
+| ---- | ------- | ------------------ | -------- | ----------- |
+| 1    | 1.3     | Authentication     | P0       | ✅ Complete |
+| 2    | 2.2     | Law Ingestion      | P1       | ✅ Complete |
+| 2    | 2.7     | Search             | P1       | ✅ Complete |
+| 2    | 2.9     | SNI Discovery      | P2       | ✅ Complete |
+| 3    | 3.3-3.7 | AI Chat + Context  | P1       | ✅ Complete |
+| 4    | 4.1-4.4 | Onboarding         | P0       | ✅ Complete |
+| 4    | 4.5-4.6 | Trial Signup       | P1       | ✅ Complete |
+| 4    | 4.8     | Trial Expiration   | P2       | ✅ Complete |
+| 4    | 4.9     | Law List Mgmt      | P1       | ✅ Complete |
+| 5    | 5.1     | Workspace Creation | P0       | ✅ Complete |
+| 5    | 5.2     | RBAC               | P0       | ✅ Complete |
+| 5    | 5.3     | Team Invites       | P1       | ✅ Complete |
+| 5    | 5.4     | Subscription       | P1       | ✅ Complete |
+| 5    | 5.5     | Usage Limits       | P2       | ✅ Complete |
+| 5    | 5.8     | Workspace Delete   | P3       | ✅ Complete |
+| 6    | 6.1     | Dashboard          | P1       | ✅ Complete |
+| 6    | 6.2-6.5 | Kanban             | P1       | ✅ Complete |
+| 6    | 6.9     | Global Search      | P2       | ✅ Complete |
+| 7    | 7.1,7.4 | Employee CRUD      | P1       | ✅ Complete |
+| 7    | 7.3     | CSV Import         | P1       | ✅ Complete |
+| 7    | 7.5     | Kollektivavtal     | P2       | ✅ Complete |
+| 7    | 7.12    | Fortnox Sync       | P3       | ✅ Complete |
+| 8    | 8.1-8.3 | Change Detection   | P1       | ✅ Complete |
+| 8    | 8.7     | Weekly Digest      | P2       | ✅ Complete |
 
 ---
 
 ## Section 8 Complete (Full MVP Coverage) ✅
 
 **This comprehensive Core Workflows section now includes:**
+
 - ✅ **20 complete workflow diagrams** covering ALL MVP stories
 - ✅ **Priority tiering** (P0/P1/P2/P3) for implementation focus
 - ✅ **Coverage matrix** showing all epics represented
@@ -7069,6 +7530,7 @@ sequenceDiagram
 - ✅ **Performance optimizations** noted in queries
 
 **Key Additions from Deep Dive:**
+
 1. Authentication & RBAC (was missing)
 2. Workspace creation flow (critical gap)
 3. Search workflow (170k documents)
@@ -7787,28 +8249,30 @@ sequenceDiagram
 
 #### ✅ All 89 PRD Stories Now Covered
 
-| Epic | Total Stories | Workflows Added | Coverage |
-|------|---------------|-----------------|----------|
-| Epic 1 | 10 | Infrastructure + Auth | 100% |
-| Epic 2 | 11 | All content flows | 100% |
-| Epic 3 | 12 | Complete AI system | 100% |
-| Epic 4 | 10 | Full onboarding | 100% |
-| Epic 5 | 12 | All workspace features | 100% |
-| Epic 6 | 10 | Complete Kanban | 100% |
-| Epic 7 | 12 | Full HR module | 100% |
-| Epic 8 | 12 | All monitoring flows | 100% |
+| Epic   | Total Stories | Workflows Added        | Coverage |
+| ------ | ------------- | ---------------------- | -------- |
+| Epic 1 | 10            | Infrastructure + Auth  | 100%     |
+| Epic 2 | 11            | All content flows      | 100%     |
+| Epic 3 | 12            | Complete AI system     | 100%     |
+| Epic 4 | 10            | Full onboarding        | 100%     |
+| Epic 5 | 12            | All workspace features | 100%     |
+| Epic 6 | 10            | Complete Kanban        | 100%     |
+| Epic 7 | 12            | Full HR module         | 100%     |
+| Epic 8 | 12            | All monitoring flows   | 100%     |
 
 **Total Workflows: 38** (Original 20 + 18 restored)
 
 #### Section 8 Complete with Full PRD Alignment ✅
 
 Every single user story from the PRD now has a corresponding workflow diagram, ensuring:
+
 - No implementation gaps
 - Clear technical specifications
 - Complete MVP coverage
 - Post-MVP features documented
 
 **Next:** Section 10 - Frontend Architecture
+
 ## 9. Database Schema
 
 ### 9.1 Database Overview
@@ -7816,6 +8280,7 @@ Every single user story from the PRD now has a corresponding workflow diagram, e
 Laglig.se uses **PostgreSQL** via **Supabase** with the **pgvector** extension for semantic search capabilities. The complete Prisma schema includes **45+ entities** organized into logical domains supporting all 38 workflows.
 
 **Technology Stack:**
+
 - **Database:** PostgreSQL 15+ (Supabase hosted)
 - **ORM:** Prisma 5.x with type-safe queries
 - **Vector Search:** pgvector extension for embeddings
@@ -8931,12 +9396,13 @@ enum JobStatus {
 
 ```typescript
 interface AnonymousSession {
-  sessionId: string          // UUID
+  sessionId: string // UUID
   orgNumber: string
   companyName: string
   sniCode: string
   websiteUrl?: string
-  websiteAnalysis?: {        // AI segmentation results
+  websiteAnalysis?: {
+    // AI segmentation results
     industry: string[]
     businessModel: string
     customerType: string
@@ -8945,11 +9411,11 @@ interface AnonymousSession {
     keywords: string[]
   }
   contextAnswers: Record<string, boolean>
-  phase1Laws: string[]       // 15-30 laws shown immediately
+  phase1Laws: string[] // 15-30 laws shown immediately
   createdAt: Date
-  ipAddress: string          // For analytics
+  ipAddress: string // For analytics
   userAgent: string
-  referrer?: string          // Track marketing source
+  referrer?: string // Track marketing source
 }
 ```
 
@@ -8995,17 +9461,20 @@ Critical indexes for query optimization based on the 38 workflows:
 ### 9.15 Data Compliance & Security
 
 #### Encryption at Rest
+
 - **Personnummer:** AES-256 encryption for Swedish personal numbers
 - **Sensitive fields:** Encrypted using Supabase column-level encryption
 - **Backups:** Encrypted daily snapshots with 30-day retention
 
 #### GDPR Compliance
+
 - **Right to erasure:** Soft delete with 30-day retention
 - **Data portability:** Export endpoints for all user data
 - **Audit trails:** Complete activity logging for compliance
 - **Consent tracking:** Marketing preferences stored explicitly
 
 #### Row Level Security (RLS)
+
 ```sql
 -- Example RLS policy for workspace isolation
 CREATE POLICY "workspace_isolation" ON laws_in_workspace
@@ -9022,11 +9491,13 @@ CREATE POLICY "workspace_isolation" ON laws_in_workspace
 The database schema now includes **45+ entities** supporting all **38 workflows** identified in Section 8:
 
 ✅ **Complete Coverage:**
+
 - All user stories from PRD have corresponding database support
 - Every workflow can be implemented with current schema
 - No missing entities for MVP features
 
 ✅ **Key Design Patterns:**
+
 - **Multi-tenancy:** Workspace-based isolation
 - **Soft deletes:** Status fields for recovery
 - **JSON flexibility:** Metadata and context storage
@@ -9035,12 +9506,14 @@ The database schema now includes **45+ entities** supporting all **38 workflows*
 - **Session-based onboarding:** Redis for temporary data
 
 ✅ **Performance Optimized:**
+
 - Strategic indexes for common queries
 - Denormalized fields where appropriate
 - Cached data in JSON columns
 - Vector embeddings pre-computed
 
 ✅ **Scalability Ready:**
+
 - Prepared for millions of laws
 - Supports thousands of workspaces
 - Background job processing
@@ -9055,6 +9528,7 @@ The schema is now **100% aligned** with all PRD requirements and workflows.
 The Laglig.se frontend architecture leverages **Next.js 16 App Router** with **React Server Components (RSC)** as the foundation, optimizing for both **SEO performance** (170,000+ SSR pages) and **interactive user experiences** (drag-and-drop Kanban, real-time AI chat). The architecture follows a **component-first approach** with clear separation between server and client components, minimizing JavaScript bundle size while maximizing interactivity where needed.
 
 **Core Principles:**
+
 - **Server-First Rendering:** Default to RSC, use client components only when necessary
 - **Progressive Enhancement:** SSR content works without JavaScript, enhance with interactivity
 - **Component Composition:** Small, focused components composed into features
@@ -9102,6 +9576,7 @@ The Laglig.se frontend architecture leverages **Next.js 16 App Router** with **R
 #### 10.2.2 Component Categories
 
 **1. Layout Components (Server Components)**
+
 ```typescript
 // app/layout.tsx
 export default async function RootLayout({
@@ -9127,6 +9602,7 @@ export default async function RootLayout({
 ```
 
 **2. Page Components (Server Components)**
+
 ```typescript
 // app/lagar/[id]/page.tsx
 "use cache" // Next.js 16 explicit caching
@@ -9151,6 +9627,7 @@ export default async function LawPage({
 ```
 
 **3. Interactive Components (Client Components)**
+
 ```typescript
 // components/kanban/kanban-board.tsx
 "use client"
@@ -9170,6 +9647,7 @@ export function KanbanBoard() {
 ```
 
 **4. Hybrid Components (Partial Prerendering)**
+
 ```typescript
 // components/dashboard/compliance-widget.tsx
 export async function ComplianceWidget() {
@@ -9227,26 +9705,31 @@ components/
 #### 10.3.1 State Categories
 
 **1. Server State (React Server Components)**
+
 - Law content, user data, workspace settings
 - Fetched server-side, passed as props
 - No client-side state needed
 
 **2. URL State (Next.js 16 Routing)**
+
 - Filters, search params, pagination
 - Managed via `searchParams` and router
 - Shareable, bookmarkable
 
 **3. Session State (React Context)**
+
 - User session, workspace context, permissions
 - Slow-changing, needed globally
 - Wrapped at root layout
 
 **4. UI State (Component State)**
+
 - Form inputs, modals, tooltips
 - Local to component
 - React `useState`
 
 **5. Feature State (Zustand)**
+
 - Kanban board, drag-and-drop
 - Complex state with actions
 - Selective subscriptions
@@ -9254,6 +9737,7 @@ components/
 #### 10.3.2 Implementation Patterns
 
 **Server State Pattern**
+
 ```typescript
 // No client-side fetching needed
 export default async function LawListPage() {
@@ -9263,6 +9747,7 @@ export default async function LawListPage() {
 ```
 
 **URL State Pattern**
+
 ```typescript
 // app/lagar/page.tsx
 export default async function LawsPage({
@@ -9283,6 +9768,7 @@ export default async function LawsPage({
 ```
 
 **Session State Pattern**
+
 ```typescript
 // providers/session-provider.tsx
 "use client"
@@ -9305,6 +9791,7 @@ export function SessionProvider({
 ```
 
 **Feature State Pattern (Zustand)**
+
 ```typescript
 // stores/kanban.ts
 import { create } from 'zustand'
@@ -9325,7 +9812,7 @@ export const useKanbanStore = create<KanbanStore>((set) => ({
     set((state) => ({
       cards: state.cards.map((card) =>
         card.id === cardId ? { ...card, columnId } : card
-      )
+      ),
     }))
 
     // Server update
@@ -9333,9 +9820,11 @@ export const useKanbanStore = create<KanbanStore>((set) => ({
       await updateCardColumn(cardId, columnId)
     } catch {
       // Rollback on error
-      set((state) => ({ /* rollback logic */ }))
+      set((state) => ({
+        /* rollback logic */
+      }))
     }
-  }
+  },
 }))
 ```
 
@@ -9383,9 +9872,10 @@ app/
 #### 10.4.2 Routing Patterns
 
 **1. Dynamic Routes with Caching**
+
 ```typescript
 // app/lagar/[id]/page.tsx
-"use cache"
+'use cache'
 export const revalidate = 3600 // 1 hour
 
 export async function generateStaticParams() {
@@ -9396,6 +9886,7 @@ export async function generateStaticParams() {
 ```
 
 **2. Parallel Routes for Modals**
+
 ```typescript
 // app/(app)/@modal/law/[id]/page.tsx
 export default function LawModal({ params }) {
@@ -9405,6 +9896,7 @@ export default function LawModal({ params }) {
 ```
 
 **3. Route Groups for Layout Sharing**
+
 ```typescript
 // app/(app)/layout.tsx - Shared for all app routes
 export default function AppLayout({ children }) {
@@ -9419,6 +9911,7 @@ export default function AppLayout({ children }) {
 ```
 
 **4. Intercepting Routes for Quick Preview**
+
 ```typescript
 // app/(.)lagar/[id]/page.tsx
 // Intercepts law links to show preview modal
@@ -9434,6 +9927,7 @@ export default function LawPreview({ params }) {
 #### 10.5.1 Fetching Patterns
 
 **1. Server Components (Default)**
+
 ```typescript
 // Direct database access in components
 export default async function LawList() {
@@ -9446,9 +9940,10 @@ export default async function LawList() {
 ```
 
 **2. Server Actions (Mutations)**
+
 ```typescript
 // app/actions/law.ts
-"use server"
+'use server'
 
 export async function updateLawStatus(lawId: string, status: string) {
   const session = await getSession()
@@ -9456,12 +9951,13 @@ export async function updateLawStatus(lawId: string, status: string) {
 
   return await prisma.lawInWorkspace.update({
     where: { id: lawId },
-    data: { status }
+    data: { status },
   })
 }
 ```
 
 **3. Client-Side Fetching (Real-time)**
+
 ```typescript
 // For WebSocket connections, polling
 "use client"
@@ -9486,6 +9982,7 @@ export function NotificationBell() {
 ```
 
 **4. Streaming (AI Responses)**
+
 ```typescript
 // components/ai-chat/chat.tsx
 "use client"
@@ -9535,6 +10032,7 @@ export async function updateLaw(id: string) {
 #### 10.6.1 Bundle Optimization
 
 **1. Code Splitting**
+
 ```typescript
 // Dynamic imports for heavy components
 const PDFViewer = dynamic(() => import('@/components/pdf-viewer'), {
@@ -9544,6 +10042,7 @@ const PDFViewer = dynamic(() => import('@/components/pdf-viewer'), {
 ```
 
 **2. Tree Shaking**
+
 ```typescript
 // Import only what's needed
 import { Calendar } from 'lucide-react' // ✅
@@ -9551,6 +10050,7 @@ import { Calendar } from 'lucide-react' // ✅
 ```
 
 **3. Bundle Analysis**
+
 ```json
 // package.json
 {
@@ -9878,20 +10378,24 @@ const csp = {
   'default-src': ["'self'"],
   'script-src': ["'self'", "'unsafe-eval'", "'unsafe-inline'"],
   'style-src': ["'self'", "'unsafe-inline'"],
-  'img-src': ["'self'", "data:", "https:"],
-  'connect-src': ["'self'", "https://api.openai.com"]
+  'img-src': ["'self'", 'data:', 'https:'],
+  'connect-src': ["'self'", 'https://api.openai.com'],
 }
 
 module.exports = {
-  headers: async () => [{
-    source: '/:path*',
-    headers: [{
-      key: 'Content-Security-Policy',
-      value: Object.entries(csp)
-        .map(([key, values]) => `${key} ${values.join(' ')}`)
-        .join('; ')
-    }]
-  }]
+  headers: async () => [
+    {
+      source: '/:path*',
+      headers: [
+        {
+          key: 'Content-Security-Policy',
+          value: Object.entries(csp)
+            .map(([key, values]) => `${key} ${values.join(' ')}`)
+            .join('; '),
+        },
+      ],
+    },
+  ],
 }
 ```
 
@@ -9909,6 +10413,7 @@ The Frontend Architecture leverages Next.js 16's latest features to deliver:
 ✅ **Security:** Built-in XSS/CSRF protection, CSP headers
 
 **Key Decisions:**
+
 1. **Server Components First:** Reduces bundle size, improves performance
 2. **Hybrid State Management:** URL state, Context, and Zustand for different needs
 3. **Explicit Caching:** "use cache" directive for precise control
@@ -9926,6 +10431,7 @@ The Frontend Architecture leverages Next.js 16's latest features to deliver:
 The Laglig.se backend leverages **Vercel's serverless infrastructure** with **Next.js 16 API Routes and Server Actions** to deliver a scalable, cost-effective architecture supporting 170,000+ legal documents, AI-powered RAG queries, and real-time collaboration features. The backend follows a **hybrid API approach**: Server Actions for internal mutations (90%) and REST endpoints for external integrations (10%).
 
 **Core Architecture Principles:**
+
 - **Serverless-First:** Zero idle costs, automatic scaling, no server management
 - **Type-Safe Mutations:** Server Actions provide end-to-end TypeScript safety
 - **Database-Centric:** Prisma ORM with PostgreSQL for all business logic
@@ -9933,6 +10439,7 @@ The Laglig.se backend leverages **Vercel's serverless infrastructure** with **Ne
 - **Security-by-Default:** Authentication at every layer, input validation, rate limiting
 
 **Request Flow:**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     Client Request                           │
@@ -9969,15 +10476,17 @@ The Laglig.se backend leverages **Vercel's serverless infrastructure** with **Ne
 #### 11.2.1 Server Actions (90% of Mutations)
 
 Server Actions handle all internal user-facing mutations with built-in benefits:
+
 - **Type Safety:** Input/output types shared between client and server
 - **CSRF Protection:** Automatic token validation
 - **Progressive Enhancement:** Works without JavaScript
 - **Optimistic Updates:** Built-in revalidation
 
 **Server Action Pattern:**
+
 ```typescript
 // app/actions/law-actions.ts
-"use server"
+'use server'
 
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
@@ -9987,7 +10496,7 @@ import { revalidatePath } from 'next/cache'
 // Input validation schema
 const UpdateLawStatusSchema = z.object({
   lawId: z.string().uuid(),
-  status: z.enum(['TODO', 'IN_PROGRESS', 'COMPLIANT', 'NON_COMPLIANT'])
+  status: z.enum(['TODO', 'IN_PROGRESS', 'COMPLIANT', 'NON_COMPLIANT']),
 })
 
 export async function updateLawStatus(
@@ -10006,8 +10515,8 @@ export async function updateLawStatus(
   const law = await prisma.lawInWorkspace.findFirst({
     where: {
       id: validated.lawId,
-      workspaceId: session.user.workspaceId
-    }
+      workspaceId: session.user.workspaceId,
+    },
   })
 
   if (!law) {
@@ -10019,8 +10528,8 @@ export async function updateLawStatus(
     where: { id: validated.lawId },
     data: {
       status: validated.status,
-      updatedBy: session.user.id
-    }
+      updatedBy: session.user.id,
+    },
   })
 
   // 5. Revalidate cache
@@ -10030,12 +10539,13 @@ export async function updateLawStatus(
   // 6. Return typed response
   return {
     success: true,
-    law: updated
+    law: updated,
   }
 }
 ```
 
 **Client Usage:**
+
 ```typescript
 // components/law-status-updater.tsx
 "use client"
@@ -10075,6 +10585,7 @@ export function LawStatusUpdater({ lawId, currentStatus }) {
 REST endpoints handle webhooks, public API, and cron jobs:
 
 **Webhook Pattern (Stripe):**
+
 ```typescript
 // app/api/webhooks/stripe/route.ts
 import { headers } from 'next/headers'
@@ -10097,7 +10608,7 @@ export async function POST(req: Request) {
     )
   } catch (err) {
     return new Response('Webhook signature verification failed', {
-      status: 400
+      status: 400,
     })
   }
 
@@ -10114,6 +10625,7 @@ export async function POST(req: Request) {
 ```
 
 **Cron Job Pattern:**
+
 ```typescript
 // app/api/cron/check-law-changes/route.ts
 export const runtime = 'nodejs' // Long-running job
@@ -10133,7 +10645,7 @@ export async function GET(request: Request) {
 
   return Response.json({
     processed: changes.length,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   })
 }
 ```
@@ -10152,16 +10664,19 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  log: process.env.NODE_ENV === 'development'
-    ? ['query', 'error', 'warn']
-    : ['error'],
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL
-    }
-  }
-})
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log:
+      process.env.NODE_ENV === 'development'
+        ? ['query', 'error', 'warn']
+        : ['error'],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+  })
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma
@@ -10171,36 +10686,38 @@ if (process.env.NODE_ENV !== 'production') {
 #### 11.3.2 Common Query Patterns
 
 **Multi-Tenant Data Isolation:**
+
 ```typescript
 // Always filter by workspaceId
 export async function getWorkspaceLaws(workspaceId: string) {
   return prisma.lawInWorkspace.findMany({
     where: {
       workspaceId,
-      isActive: true
+      isActive: true,
     },
     include: {
       law: {
         select: {
           title: true,
           documentNumber: true,
-          lastUpdated: true
-        }
+          lastUpdated: true,
+        },
       },
       assignments: {
         include: {
-          employee: true
-        }
-      }
+          employee: true,
+        },
+      },
     },
     orderBy: {
-      priority: 'desc'
-    }
+      priority: 'desc',
+    },
   })
 }
 ```
 
 **Optimistic Locking Pattern:**
+
 ```typescript
 // Prevent concurrent updates
 export async function updateTaskWithLock(
@@ -10211,12 +10728,12 @@ export async function updateTaskWithLock(
   const result = await prisma.task.updateMany({
     where: {
       id: taskId,
-      version: expectedVersion // Optimistic lock
+      version: expectedVersion, // Optimistic lock
     },
     data: {
       ...updates,
-      version: { increment: 1 }
-    }
+      version: { increment: 1 },
+    },
   })
 
   if (result.count === 0) {
@@ -10228,6 +10745,7 @@ export async function updateTaskWithLock(
 ```
 
 **Batch Operations:**
+
 ```typescript
 // Efficient bulk inserts
 export async function createLawEmbeddings(
@@ -10238,17 +10756,17 @@ export async function createLawEmbeddings(
     // Delete old embeddings
     await tx.lawEmbedding.deleteMany({
       where: {
-        lawId: { in: embeddings.map(e => e.lawId) }
-      }
+        lawId: { in: embeddings.map((e) => e.lawId) },
+      },
     })
 
     // Insert new embeddings
     await tx.lawEmbedding.createMany({
-      data: embeddings.map(e => ({
+      data: embeddings.map((e) => ({
         lawId: e.lawId,
         chunk: e.chunk,
-        embedding: e.vector
-      }))
+        embedding: e.vector,
+      })),
     })
   })
 }
@@ -10301,7 +10819,7 @@ import GoogleProvider from 'next-auth/providers/google'
 export const authOptions: NextAuthOptions = {
   adapter: SupabaseAdapter({
     url: process.env.SUPABASE_URL!,
-    secret: process.env.SUPABASE_SERVICE_KEY!
+    secret: process.env.SUPABASE_SERVICE_KEY!,
   }),
 
   providers: [
@@ -10311,15 +10829,15 @@ export const authOptions: NextAuthOptions = {
         port: process.env.EMAIL_SERVER_PORT,
         auth: {
           user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD
-        }
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
       },
-      from: 'noreply@laglig.se'
+      from: 'noreply@laglig.se',
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!
-    })
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
 
   callbacks: {
@@ -10330,9 +10848,9 @@ export const authOptions: NextAuthOptions = {
         include: {
           workspaceMemberships: {
             where: { isActive: true },
-            include: { workspace: true }
-          }
-        }
+            include: { workspace: true },
+          },
+        },
       })
 
       session.user.id = user.id
@@ -10340,14 +10858,14 @@ export const authOptions: NextAuthOptions = {
       session.user.role = user.workspaceMemberships[0]?.role
 
       return session
-    }
+    },
   },
 
   pages: {
     signIn: '/login',
     error: '/auth/error',
-    verifyRequest: '/auth/verify'
-  }
+    verifyRequest: '/auth/verify',
+  },
 }
 ```
 
@@ -10359,7 +10877,7 @@ import { withAuth } from 'next-auth/middleware'
 
 export default withAuth({
   pages: {
-    signIn: '/login'
+    signIn: '/login',
   },
   callbacks: {
     authorized: ({ token, req }) => {
@@ -10369,8 +10887,8 @@ export default withAuth({
 
       // Protected routes require authentication
       return !!token
-    }
-  }
+    },
+  },
 })
 
 export const config = {
@@ -10378,8 +10896,8 @@ export const config = {
     '/dashboard/:path*',
     '/hr/:path*',
     '/settings/:path*',
-    '/api/((?!public|webhooks|cron).*)'
-  ]
+    '/api/((?!public|webhooks|cron).*)',
+  ],
 }
 ```
 
@@ -10391,7 +10909,7 @@ export enum Permission {
   VIEW_DASHBOARD = 'view:dashboard',
   EDIT_LAWS = 'edit:laws',
   MANAGE_EMPLOYEES = 'manage:employees',
-  ADMIN_WORKSPACE = 'admin:workspace'
+  ADMIN_WORKSPACE = 'admin:workspace',
 }
 
 const rolePermissions: Record<string, Permission[]> = {
@@ -10401,8 +10919,8 @@ const rolePermissions: Record<string, Permission[]> = {
     Permission.VIEW_DASHBOARD,
     Permission.EDIT_LAWS,
     Permission.MANAGE_EMPLOYEES,
-    Permission.ADMIN_WORKSPACE
-  ]
+    Permission.ADMIN_WORKSPACE,
+  ],
 }
 
 export function hasPermission(
@@ -10436,26 +10954,25 @@ import OpenAI from 'openai'
 import { z } from 'zod'
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 })
 
-export async function generateLawSummary(
-  lawContent: string
-): Promise<string> {
+export async function generateLawSummary(lawContent: string): Promise<string> {
   const completion = await openai.chat.completions.create({
     model: 'gpt-4-turbo-preview',
     messages: [
       {
         role: 'system',
-        content: 'Du är en svensk juridisk expert. Sammanfatta lagen koncist på svenska.'
+        content:
+          'Du är en svensk juridisk expert. Sammanfatta lagen koncist på svenska.',
       },
       {
         role: 'user',
-        content: lawContent
-      }
+        content: lawContent,
+      },
     ],
     max_tokens: 500,
-    temperature: 0.3 // Low temperature for consistency
+    temperature: 0.3, // Low temperature for consistency
   })
 
   return completion.choices[0].message.content!
@@ -10473,28 +10990,30 @@ export async function queryRAG(
         role: 'system',
         content: `Du är Laglig.se AI-assistent. Svara ENDAST baserat på given kontext.
         Om svaret inte finns i kontexten, säg "Jag har inte tillräcklig information."
-        Inkludera alltid källhänvisningar i format [1], [2] etc.`
+        Inkludera alltid källhänvisningar i format [1], [2] etc.`,
       },
       {
         role: 'user',
-        content: `Kontext:\n${context.join('\n\n')}\n\nFråga: ${question}`
-      }
+        content: `Kontext:\n${context.join('\n\n')}\n\nFråga: ${question}`,
+      },
     ],
-    functions: [{
-      name: 'provide_answer',
-      parameters: {
-        type: 'object',
-        properties: {
-          answer: { type: 'string' },
-          citations: {
-            type: 'array',
-            items: { type: 'string' }
-          }
+    functions: [
+      {
+        name: 'provide_answer',
+        parameters: {
+          type: 'object',
+          properties: {
+            answer: { type: 'string' },
+            citations: {
+              type: 'array',
+              items: { type: 'string' },
+            },
+          },
+          required: ['answer', 'citations'],
         },
-        required: ['answer', 'citations']
-      }
-    }],
-    function_call: { name: 'provide_answer' }
+      },
+    ],
+    function_call: { name: 'provide_answer' },
   })
 
   const result = JSON.parse(
@@ -10513,7 +11032,7 @@ import { Redis } from '@upstash/redis'
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 })
 
 // Cache RAG responses (NFR3: 75% hit rate target)
@@ -10530,7 +11049,7 @@ export async function setCachedRAGResponse(
 ): Promise<void> {
   const cacheKey = `rag:${hashQuestion(question)}`
   await redis.set(cacheKey, response, {
-    ex: 86400 // 24 hour TTL
+    ex: 86400, // 24 hour TTL
   })
 }
 
@@ -10540,7 +11059,7 @@ export async function withCircuitBreaker<T>(
   fn: () => Promise<T>,
   options = { threshold: 3, timeout: 60 }
 ): Promise<T> {
-  const failureCount = await redis.get<number>(`circuit:${key}`) ?? 0
+  const failureCount = (await redis.get<number>(`circuit:${key}`)) ?? 0
 
   if (failureCount >= options.threshold) {
     throw new Error(`Service ${key} is currently unavailable`)
@@ -10645,14 +11164,14 @@ export class StorageService {
       .from(this.bucket)
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: false,
       })
 
     if (error) return { url: '', error }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from(this.bucket)
-      .getPublicUrl(filePath)
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(this.bucket).getPublicUrl(filePath)
 
     return { url: publicUrl, error: null }
   }
@@ -10702,27 +11221,27 @@ export async function handleError(
 ): Promise<{ error: string; code: string }> {
   // Log to Sentry
   Sentry.captureException(error, {
-    extra: context
+    extra: context,
   })
 
   if (error instanceof AppError) {
     return {
       error: error.message,
-      code: error.code
+      code: error.code,
     }
   }
 
   if (error instanceof z.ZodError) {
     return {
       error: 'Validation failed',
-      code: 'VALIDATION_ERROR'
+      code: 'VALIDATION_ERROR',
     }
   }
 
   // Generic error
   return {
     error: 'An unexpected error occurred',
-    code: 'INTERNAL_ERROR'
+    code: 'INTERNAL_ERROR',
   }
 }
 ```
@@ -10736,7 +11255,7 @@ import { Redis } from '@upstash/redis'
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 })
 
 // NFR8: Rate limiting per tier
@@ -10744,18 +11263,18 @@ export const rateLimits = {
   solo: new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(50, '30d'), // 50 queries/month
-    analytics: true
+    analytics: true,
   }),
   team: new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(500, '30d'), // 500 queries/month
-    analytics: true
+    analytics: true,
   }),
   enterprise: new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(10000, '1d'), // Effectively unlimited
-    analytics: true
-  })
+    analytics: true,
+  }),
 }
 
 export async function checkRateLimit(
@@ -10774,7 +11293,7 @@ export async function checkRateLimit(
 
     return {
       success: graceCheck.success,
-      remaining: graceCheck.remaining
+      remaining: graceCheck.remaining,
     }
   }
 
@@ -10790,10 +11309,7 @@ export async function checkRateLimit(
 
 ```typescript
 // Efficient pagination with cursor
-export async function getLawsPaginated(
-  cursor?: string,
-  limit: number = 50
-) {
+export async function getLawsPaginated(cursor?: string, limit: number = 50) {
   const laws = await prisma.law.findMany({
     take: limit + 1,
     cursor: cursor ? { id: cursor } : undefined,
@@ -10802,8 +11318,8 @@ export async function getLawsPaginated(
       id: true,
       title: true,
       documentNumber: true,
-      summary: true // Don't fetch full content
-    }
+      summary: true, // Don't fetch full content
+    },
   })
 
   const hasMore = laws.length > limit
@@ -10811,7 +11327,7 @@ export async function getLawsPaginated(
 
   return {
     items,
-    nextCursor: hasMore ? items[items.length - 1].id : null
+    nextCursor: hasMore ? items[items.length - 1].id : null,
   }
 }
 ```
@@ -10830,23 +11346,28 @@ datasource db {
 **Supabase Connection Strategy:**
 
 1. **Pooled Connection (Transaction Mode)** - For serverless functions
+
    ```
    postgresql://[user]:[password]@[host]:6543/postgres?pgbouncer=true
    ```
+
    - Uses PgBouncer in transaction mode
    - Maximum 100 concurrent connections per project
    - Use for: Server Components, API Routes, Server Actions
    - Set as: `DATABASE_URL`
 
 2. **Direct Connection** - For long-running operations
+
    ```
    postgresql://[user]:[password]@[host]:5432/postgres
    ```
+
    - Direct PostgreSQL connection
    - Use for: Migrations, Prisma CLI commands
    - Set as: `DIRECT_URL`
 
 **Production Connection URLs:**
+
 ```bash
 # Pooled connection for serverless
 DATABASE_URL="postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true"
@@ -10867,7 +11388,7 @@ export async function POST(req: Request) {
   const response = await openai.chat.completions.create({
     model: 'gpt-4-turbo-preview',
     stream: true,
-    messages
+    messages,
   })
 
   const stream = OpenAIStream(response, {
@@ -10876,10 +11397,10 @@ export async function POST(req: Request) {
       await prisma.chatMessage.create({
         data: {
           content: completion,
-          role: 'assistant'
-        }
+          role: 'assistant',
+        },
       })
-    }
+    },
   })
 
   return new StreamingTextResponse(stream)
@@ -10900,6 +11421,7 @@ The Backend Architecture provides a robust, scalable foundation for Laglig.se:
 ✅ **Comprehensive Error Handling:** Circuit breakers, rate limiting, monitoring
 
 **Key Architectural Decisions:**
+
 1. **Hybrid API Approach:** Server Actions for internal, REST for external
 2. **Prisma + PostgreSQL:** Type-safe ORM with pgvector for embeddings
 3. **Upstash Redis:** Serverless caching and rate limiting
@@ -10917,6 +11439,7 @@ The Backend Architecture provides a robust, scalable foundation for Laglig.se:
 Laglig.se follows a **monorepo architecture** with a single Next.js 16 application containing all frontend, backend, and infrastructure code. This unified structure simplifies deployment, ensures consistent tooling, and eliminates version mismatches between packages.
 
 **Structure Principles:**
+
 - **Feature-based organization:** Components grouped by feature, not type
 - **Clear separation of concerns:** app/, lib/, components/ have distinct purposes
 - **Co-location:** Keep related files together (tests, styles, types)
@@ -11206,22 +11729,26 @@ laglig_se/
 #### Core Directories
 
 **`app/`** - Next.js 16 App Router
+
 - Contains all routes, layouts, and API endpoints
 - Follows file-based routing convention
 - Server Components by default
 
 **`components/`** - React Components
+
 - `ui/` - Base UI components (buttons, inputs)
 - `features/` - Feature-specific components
 - `shared/` - Components used across features
 - `providers/` - React Context providers
 
 **`lib/`** - Core Business Logic
+
 - Database queries, external APIs, utilities
 - No React dependencies (pure TypeScript)
 - Reusable across server and client
 
 **`prisma/`** - Database Layer
+
 - Schema definition and migrations
 - Type generation for TypeScript
 - Seed scripts for development
@@ -11229,21 +11756,25 @@ laglig_se/
 #### Supporting Directories
 
 **`scripts/`** - Build & Maintenance
+
 - One-time scripts (data ingestion)
 - Build-time scripts (sitemap generation)
 - Maintenance scripts (license checking)
 
 **`tests/`** - Test Suite
+
 - Mirrors source structure
 - Co-located with features
 - E2E tests for critical paths
 
 **`types/`** - TypeScript Definitions
+
 - Global type extensions
 - Third-party module declarations
 - Shared interfaces
 
 **`emails/`** - Email Templates
+
 - React Email components
 - Type-safe email templates
 - Preview server support
@@ -11254,35 +11785,35 @@ laglig_se/
 
 ```typescript
 // Components - PascalCase
-components/features/kanban/KanbanBoard.tsx
-components/ui/Button.tsx
+components / features / kanban / KanbanBoard.tsx
+components / ui / Button.tsx
 
 // Utilities - camelCase
-lib/utils/formatDate.ts
-lib/auth/getSession.ts
+lib / utils / formatDate.ts
+lib / auth / getSession.ts
 
 // Server Actions - camelCase
-app/actions/updateLawStatus.ts
+app / actions / updateLawStatus.ts
 
 // API Routes - lowercase with hyphens
-app/api/webhooks/stripe/route.ts
-app/api/cron/check-law-changes/route.ts
+app / api / webhooks / stripe / route.ts
+app / api / cron / check - law - changes / route.ts
 
 // Types - PascalCase for types/interfaces
-types/User.ts
-types/Workspace.ts
+types / User.ts
+types / Workspace.ts
 
 // Constants - UPPER_SNAKE_CASE
-lib/utils/constants.ts
+lib / utils / constants.ts
 export const MAX_FILE_SIZE = 10485760
 
 // Hooks - camelCase with 'use' prefix
-lib/hooks/useWorkspace.ts
-lib/hooks/useDebounce.ts
+lib / hooks / useWorkspace.ts
+lib / hooks / useDebounce.ts
 
 // Test files - same name with .test or .spec
-components/features/kanban/KanbanBoard.test.tsx
-app/api/webhooks/stripe/route.test.ts
+components / features / kanban / KanbanBoard.test.tsx
+app / api / webhooks / stripe / route.test.ts
 ```
 
 ---
@@ -11308,6 +11839,7 @@ app/api/webhooks/stripe/route.test.ts
 ```
 
 **Usage:**
+
 ```typescript
 // Instead of:
 import { Button } from '../../../components/ui/button'
@@ -11339,6 +11871,7 @@ import { getSession } from '@/lib/auth/session'
 ```
 
 **Variable Naming:**
+
 ```bash
 # Public variables (exposed to client)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -11359,57 +11892,53 @@ UPSTASH_REDIS_REST_URL=https://...
 ### 12.7 Configuration Files
 
 **`next.config.js`** - Next.js Configuration
+
 ```javascript
 module.exports = {
   experimental: {
     dynamicIO: true,
-    typedRoutes: true
+    typedRoutes: true,
   },
   images: {
-    domains: ['supabase.co']
+    domains: ['supabase.co'],
   },
   async headers() {
     return [
       {
         source: '/:path*',
-        headers: securityHeaders
-      }
+        headers: securityHeaders,
+      },
     ]
-  }
+  },
 }
 ```
 
 **`tailwind.config.ts`** - Tailwind Configuration
+
 ```typescript
 export default {
-  content: [
-    './app/**/*.{js,ts,jsx,tsx}',
-    './components/**/*.{js,ts,jsx,tsx}'
-  ],
+  content: ['./app/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
         brand: {
           50: '#f0f9ff',
           500: '#3b82f6',
-          900: '#1e3a8a'
-        }
-      }
-    }
-  }
+          900: '#1e3a8a',
+        },
+      },
+    },
+  },
 }
 ```
 
 **`middleware.ts`** - Authentication & Routing
+
 ```typescript
 export { default } from 'next-auth/middleware'
 
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/hr/:path*',
-    '/settings/:path*'
-  ]
+  matcher: ['/dashboard/:path*', '/hr/:path*', '/settings/:path*'],
 }
 ```
 
@@ -11418,6 +11947,7 @@ export const config = {
 ### 12.8 Development vs Production Structure
 
 **Development Only:**
+
 ```
 ├── .env.local             # Local secrets
 ├── docker-compose.yml     # Local PostgreSQL, Redis
@@ -11427,6 +11957,7 @@ export const config = {
 ```
 
 **Production Build Output:**
+
 ```
 .next/
 ├── cache/                # Build cache
@@ -11436,6 +11967,7 @@ export const config = {
 ```
 
 **Deployment Structure (Vercel):**
+
 ```
 - Automatic from GitHub
 - Environment variables via Vercel UI
@@ -11449,6 +11981,7 @@ export const config = {
 ### 12.9 Monorepo Benefits
 
 **Why Monorepo for Laglig.se:**
+
 1. **Single deployment unit** - No version mismatches
 2. **Shared TypeScript types** - End-to-end type safety
 3. **Unified tooling** - One ESLint, Prettier, TypeScript config
@@ -11456,6 +11989,7 @@ export const config = {
 5. **Atomic changes** - Frontend/backend changes in one PR
 
 **Trade-offs Considered:**
+
 - ✅ Simpler than Turborepo/Lerna for single app
 - ✅ No package versioning complexity
 - ❌ Can't scale to multiple apps (acceptable for MVP)
@@ -11474,6 +12008,7 @@ The Unified Project Structure provides a scalable, maintainable foundation:
 ✅ **Separation of Concerns:** Clear boundaries between layers
 
 **Key Decisions:**
+
 1. **Monorepo over Multi-repo:** Simpler for single application
 2. **Feature-based Components:** Better than type-based organization
 3. **App Router Structure:** Leverages Next.js 16 patterns
@@ -11481,11 +12016,13 @@ The Unified Project Structure provides a scalable, maintainable foundation:
 5. **Path Aliases:** Clean imports without relative paths
 
 **Next:** Section 13 - Development Workflow
+
 ### 13.1 Overview
 
 The development workflow emphasizes **rapid iteration, type safety, and automated quality checks**. All developers follow the same setup process and conventions to ensure consistency across the team.
 
 **Workflow Principles:**
+
 - **Fast feedback loops:** Hot reload, instant type checking
 - **Automated quality:** Pre-commit hooks, CI/CD validation
 - **Type-first development:** TypeScript everywhere
@@ -11497,6 +12034,7 @@ The development workflow emphasizes **rapid iteration, type safety, and automate
 ### 13.2 Initial Setup
 
 **Prerequisites:**
+
 ```bash
 # Required versions
 node --version  # 20.x LTS required
@@ -11509,6 +12047,7 @@ supabase --version  # 1.142+ required
 ```
 
 **Clone and Install:**
+
 ```bash
 # Clone repository
 git clone https://github.com/laglig/laglig_se.git
@@ -11528,6 +12067,7 @@ pnpm exec playwright install
 ```
 
 **Environment Configuration:**
+
 ```bash
 # .env.local - Supabase Development Variables
 # For local development with Supabase CLI
@@ -11552,6 +12092,7 @@ UPSTASH_REDIS_REST_TOKEN="..."
 ### 13.3 Local Development
 
 **Start Services:**
+
 ```bash
 # Start Supabase local development stack
 supabase start
@@ -11579,12 +12120,14 @@ pnpm dev
 ```
 
 **Available URLs:**
+
 - Application: http://localhost:3000
 - Supabase Studio: http://localhost:54323
 - PostgreSQL: localhost:54322
 - Supabase API: http://localhost:54321
 
 **Development Commands:**
+
 ```json
 // package.json scripts
 {
@@ -11610,6 +12153,7 @@ pnpm dev
 ### 13.4 Development Patterns
 
 **Database Changes:**
+
 ```bash
 # 1. Modify schema
 # Edit prisma/schema.prisma
@@ -11625,6 +12169,7 @@ pnpm prisma generate
 ```
 
 **Adding Features:**
+
 ```bash
 # 1. Create feature branch
 git checkout -b feature/employee-import
@@ -11644,10 +12189,11 @@ touch types/employee-import.d.ts
 ```
 
 **API Development:**
+
 ```typescript
 // For internal mutations - use Server Actions
 // app/actions/employee.ts
-"use server"
+'use server'
 export async function createEmployee(data: EmployeeInput) {
   // Implementation
 }
@@ -11664,6 +12210,7 @@ export async function POST(req: Request) {
 ### 13.5 Quality Assurance
 
 **Pre-commit Hooks (Husky):**
+
 ```bash
 # .husky/pre-commit
 #!/bin/sh
@@ -11673,22 +12220,19 @@ pnpm lint-staged
 ```
 
 **Lint-staged Configuration:**
+
 ```json
 // package.json
 {
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,md}": ["prettier --write"]
   }
 }
 ```
 
 **Type Checking:**
+
 ```bash
 # Run type check
 pnpm typecheck
@@ -11702,6 +12246,7 @@ pnpm tsc --watch --noEmit
 ### 13.6 Testing Workflow
 
 **Unit Tests:**
+
 ```bash
 # Run all unit tests
 pnpm test
@@ -11714,6 +12259,7 @@ pnpm test:coverage
 ```
 
 **Integration Tests:**
+
 ```bash
 # Run integration tests
 pnpm test:integration
@@ -11723,6 +12269,7 @@ pnpm test:debug path/to/test.ts
 ```
 
 **E2E Tests:**
+
 ```bash
 # Run E2E tests
 pnpm test:e2e
@@ -11739,6 +12286,7 @@ pnpm test:e2e onboarding.spec.ts
 ### 13.7 Debugging
 
 **VS Code Launch Configuration:**
+
 ```json
 // .vscode/launch.json
 {
@@ -11761,10 +12309,11 @@ pnpm test:e2e onboarding.spec.ts
 ```
 
 **Debug Logging:**
+
 ```typescript
 // Enable Prisma query logging
 const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error']
+  log: ['query', 'info', 'warn', 'error'],
 })
 
 // Debug Server Actions
@@ -11783,6 +12332,7 @@ export async function myAction(data: Input) {
 Laglig.se uses **Vercel** for hosting with automatic deployments from GitHub. The architecture supports **preview deployments, staging, and production** environments with zero-downtime deployments.
 
 **Deployment Flow:**
+
 ```
 GitHub Push → Vercel Build → Deploy to CDN → Invalidate Cache
      ↓              ↓              ↓              ↓
@@ -11798,14 +12348,15 @@ Preview      Build App     Domain Routing   Global CDN
 
 **Environment Types:**
 
-| Environment | Branch | URL | Purpose |
-|------------|--------|-----|---------|
-| Development | - | localhost:3000 | Local development |
-| Preview | feature/* | {branch}-laglig.vercel.app | PR previews |
-| Staging | staging | staging.laglig.se | Pre-production testing |
-| Production | main | laglig.se | Live application |
+| Environment | Branch     | URL                        | Purpose                |
+| ----------- | ---------- | -------------------------- | ---------------------- |
+| Development | -          | localhost:3000             | Local development      |
+| Preview     | feature/\* | {branch}-laglig.vercel.app | PR previews            |
+| Staging     | staging    | staging.laglig.se          | Pre-production testing |
+| Production  | main       | laglig.se                  | Live application       |
 
 **Environment Variables:**
+
 ```bash
 # Vercel Dashboard Configuration
 # Production
@@ -11827,6 +12378,7 @@ NEXT_PUBLIC_VERCEL_URL=${VERCEL_URL}
 ### 14.3 CI/CD Pipeline
 
 **GitHub Actions Workflow:**
+
 ```yaml
 # .github/workflows/ci.yml
 name: CI
@@ -11875,6 +12427,7 @@ jobs:
 ```
 
 **Vercel Configuration:**
+
 ```json
 // vercel.json
 {
@@ -11901,6 +12454,7 @@ jobs:
 ### 14.4 Database Migrations
 
 **Migration Strategy:**
+
 ```bash
 # 1. Test migration locally
 pnpm prisma migrate dev
@@ -11922,6 +12476,7 @@ pnpm prisma migrate deploy
 ```
 
 **Rollback Plan:**
+
 ```bash
 # Rollback to previous migration
 pnpm prisma migrate resolve --rolled-back
@@ -11935,6 +12490,7 @@ vercel rollback
 ### 14.5 Monitoring & Alerts
 
 **Health Checks:**
+
 ```typescript
 // app/api/public/health/route.ts
 export async function GET() {
@@ -11947,7 +12503,7 @@ export async function GET() {
 
     return Response.json({
       status: 'healthy',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
     return Response.json(
@@ -11959,6 +12515,7 @@ export async function GET() {
 ```
 
 **Deployment Notifications:**
+
 ```yaml
 # Slack webhook for deployment status
 - name: Notify Slack
@@ -11975,6 +12532,7 @@ export async function GET() {
 ### 14.6 CDN & Edge Configuration
 
 **Static Asset Optimization:**
+
 ```javascript
 // next.config.js
 module.exports = {
@@ -11984,12 +12542,13 @@ module.exports = {
   },
   staticPageGenerationTimeout: 120,
   experimental: {
-    isrMemoryCacheSize: 0 // Disable in-memory cache
-  }
+    isrMemoryCacheSize: 0, // Disable in-memory cache
+  },
 }
 ```
 
 **Edge Middleware:**
+
 ```typescript
 // middleware.ts
 import { NextResponse } from 'next/server'
@@ -12005,7 +12564,7 @@ export function middleware(request: Request) {
 }
 
 export const config = {
-  matcher: '/:path*'
+  matcher: '/:path*',
 }
 ```
 
@@ -12018,6 +12577,7 @@ export const config = {
 Laglig.se implements **defense-in-depth security** with multiple layers of protection for user data, especially sensitive information like Swedish personnummer.
 
 **Security Layers:**
+
 ```
 Edge Network → WAF → Rate Limiting → Auth → Input Validation → Encryption
      ↓           ↓         ↓           ↓           ↓              ↓
@@ -12030,9 +12590,11 @@ Edge Network → WAF → Rate Limiting → Auth → Input Validation → Encrypt
 ### 15.2 Authentication Security
 
 **Password Requirements:**
+
 ```typescript
 // lib/validation/auth.ts
-export const PasswordSchema = z.string()
+export const PasswordSchema = z
+  .string()
   .min(12, 'Password must be at least 12 characters')
   .regex(/[A-Z]/, 'Must contain uppercase letter')
   .regex(/[a-z]/, 'Must contain lowercase letter')
@@ -12041,6 +12603,7 @@ export const PasswordSchema = z.string()
 ```
 
 **Session Security:**
+
 ```typescript
 // lib/auth/auth-options.ts
 export const authOptions: NextAuthOptions = {
@@ -12050,7 +12613,7 @@ export const authOptions: NextAuthOptions = {
   },
   jwt: {
     secret: process.env.NEXTAUTH_SECRET,
-    encryption: true
+    encryption: true,
   },
   cookies: {
     sessionToken: {
@@ -12059,10 +12622,10 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: true
-      }
-    }
-  }
+        secure: true,
+      },
+    },
+  },
 }
 ```
 
@@ -12071,6 +12634,7 @@ export const authOptions: NextAuthOptions = {
 ### 15.3 Data Protection
 
 **Personnummer Encryption (NFR4):**
+
 ```typescript
 // lib/security/encryption.ts
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
@@ -12107,6 +12671,7 @@ export function decryptPersonnummer(encrypted: string): string {
 ```
 
 **Database Security:**
+
 ```sql
 -- Row Level Security (RLS) for multi-tenancy
 ALTER TABLE employees ENABLE ROW LEVEL SECURITY;
@@ -12121,6 +12686,7 @@ CREATE POLICY workspace_isolation ON employees
 ### 15.4 Input Validation & Sanitization
 
 **Request Validation:**
+
 ```typescript
 // app/actions/employee.ts
 import { z } from 'zod'
@@ -12130,7 +12696,7 @@ const CreateEmployeeSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
   personnummer: z.string().regex(/^\d{6}-\d{4}$/),
-  notes: z.string().transform(val => DOMPurify.sanitize(val))
+  notes: z.string().transform((val) => DOMPurify.sanitize(val)),
 })
 
 export async function createEmployee(input: unknown) {
@@ -12140,12 +12706,13 @@ export async function createEmployee(input: unknown) {
 ```
 
 **SQL Injection Prevention:**
+
 ```typescript
 // Always use parameterized queries
 const user = await prisma.user.findFirst({
   where: {
-    email: userInput // Prisma handles escaping
-  }
+    email: userInput, // Prisma handles escaping
+  },
 })
 
 // Never use raw string concatenation
@@ -12158,6 +12725,7 @@ const user = await prisma.user.findFirst({
 ### 15.5 API Security
 
 **Rate Limiting (NFR8):**
+
 ```typescript
 // lib/rate-limit.ts
 import { Ratelimit } from '@upstash/ratelimit'
@@ -12165,7 +12733,7 @@ import { Ratelimit } from '@upstash/ratelimit'
 const ratelimit = new Ratelimit({
   redis,
   limiter: Ratelimit.slidingWindow(10, '1 m'), // 10 requests per minute
-  analytics: true
+  analytics: true,
 })
 
 export async function rateLimitMiddleware(req: Request) {
@@ -12178,14 +12746,15 @@ export async function rateLimitMiddleware(req: Request) {
       headers: {
         'X-RateLimit-Limit': limit.toString(),
         'X-RateLimit-Remaining': remaining.toString(),
-        'X-RateLimit-Reset': new Date(reset).toISOString()
-      }
+        'X-RateLimit-Reset': new Date(reset).toISOString(),
+      },
     })
   }
 }
 ```
 
 **CORS Configuration:**
+
 ```typescript
 // next.config.js
 module.exports = {
@@ -12196,16 +12765,16 @@ module.exports = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value: process.env.NEXT_PUBLIC_APP_URL
+            value: process.env.NEXT_PUBLIC_APP_URL,
           },
           {
             key: 'Access-Control-Allow-Methods',
-            value: 'GET, POST, PUT, DELETE, OPTIONS'
-          }
-        ]
-      }
+            value: 'GET, POST, PUT, DELETE, OPTIONS',
+          },
+        ],
+      },
     ]
-  }
+  },
 }
 ```
 
@@ -12214,6 +12783,7 @@ module.exports = {
 ### 15.6 Performance Optimization
 
 **Database Performance:**
+
 ```sql
 -- Indexes for common queries
 CREATE INDEX idx_laws_workspace_status ON law_in_workspace(workspace_id, status);
@@ -12225,6 +12795,7 @@ CREATE INDEX ON law_embeddings USING hnsw (embedding vector_cosine_ops);
 ```
 
 **Caching Strategy (NFR3):**
+
 ```typescript
 // lib/cache/strategies.ts
 export async function getCachedOrFetch<T>(
@@ -12256,17 +12827,18 @@ const response = await getCachedOrFetch(
 ```
 
 **Bundle Optimization:**
+
 ```javascript
 // next.config.js
 module.exports = {
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production'
+    removeConsole: process.env.NODE_ENV === 'production',
   },
   experimental: {
-    optimizeCss: true
+    optimizeCss: true,
   },
   swcMinify: true,
-  productionBrowserSourceMaps: false
+  productionBrowserSourceMaps: false,
 }
 ```
 
@@ -12275,6 +12847,7 @@ module.exports = {
 ### 15.7 Security Headers
 
 **Content Security Policy (NFR22):**
+
 ```typescript
 // lib/security/headers.ts
 export const securityHeaders = [
@@ -12288,24 +12861,24 @@ export const securityHeaders = [
       font-src 'self';
       connect-src 'self' https://api.openai.com https://*.supabase.co;
       frame-ancestors 'none';
-    `.replace(/\n/g, '')
+    `.replace(/\n/g, ''),
   },
   {
     key: 'X-Frame-Options',
-    value: 'DENY'
+    value: 'DENY',
   },
   {
     key: 'X-Content-Type-Options',
-    value: 'nosniff'
+    value: 'nosniff',
   },
   {
     key: 'Referrer-Policy',
-    value: 'strict-origin-when-cross-origin'
+    value: 'strict-origin-when-cross-origin',
   },
   {
     key: 'Strict-Transport-Security',
-    value: 'max-age=31536000; includeSubDomains'
-  }
+    value: 'max-age=31536000; includeSubDomains',
+  },
 ]
 ```
 
@@ -12314,6 +12887,7 @@ export const securityHeaders = [
 ### 15.8 GDPR Compliance (NFR5)
 
 **Data Export:**
+
 ```typescript
 // app/actions/gdpr.ts
 export async function exportUserData(userId: string) {
@@ -12322,8 +12896,8 @@ export async function exportUserData(userId: string) {
     include: {
       workspaceMemberships: true,
       chatMessages: true,
-      activityLogs: true
-    }
+      activityLogs: true,
+    },
   })
 
   // Remove internal fields
@@ -12332,12 +12906,13 @@ export async function exportUserData(userId: string) {
   return {
     data: userData,
     exportedAt: new Date().toISOString(),
-    format: 'json'
+    format: 'json',
   }
 }
 ```
 
 **Right to Deletion:**
+
 ```typescript
 export async function deleteUserAccount(userId: string) {
   await prisma.$transaction(async (tx) => {
@@ -12348,13 +12923,13 @@ export async function deleteUserAccount(userId: string) {
         email: `deleted-${userId}@example.com`,
         name: 'Deleted User',
         personnummer: null,
-        deletedAt: new Date()
-      }
+        deletedAt: new Date(),
+      },
     })
 
     // Delete personal data
     await tx.chatMessage.deleteMany({
-      where: { userId }
+      where: { userId },
     })
   })
 }
@@ -12374,11 +12949,13 @@ Security and Performance measures ensure Laglig.se meets enterprise requirements
 ✅ **Rate Limiting:** Tier-based API limits
 
 **Next:** Section 16 - Testing Strategy
+
 ### 16.1 Overview
 
 The testing strategy ensures **high quality and reliability** through comprehensive automated testing at multiple levels. The goal is to achieve **60-70% code coverage** while focusing on critical business paths.
 
 **Testing Pyramid:**
+
 ```
          E2E Tests (10%)
         /               \
@@ -12388,6 +12965,7 @@ The testing strategy ensures **high quality and reliability** through comprehens
 ```
 
 **Testing Principles:**
+
 - **Fast feedback:** Unit tests run in milliseconds
 - **User-focused:** Test behavior, not implementation
 - **Isolated:** Mock external dependencies
@@ -12401,6 +12979,7 @@ The testing strategy ensures **high quality and reliability** through comprehens
 **Framework:** Vitest with React Testing Library
 
 **What to Test:**
+
 - Utility functions and helpers
 - Custom hooks
 - Zod schemas and validation
@@ -12408,6 +12987,7 @@ The testing strategy ensures **high quality and reliability** through comprehens
 - Component rendering and state
 
 **Unit Test Example:**
+
 ```typescript
 // tests/unit/lib/validation.test.ts
 import { describe, it, expect } from 'vitest'
@@ -12418,7 +12998,7 @@ describe('EmployeeSchema', () => {
     const valid = {
       name: 'Anna Andersson',
       personnummer: '900101-1234',
-      email: 'anna@example.com'
+      email: 'anna@example.com',
     }
 
     expect(() => EmployeeSchema.parse(valid)).not.toThrow()
@@ -12428,7 +13008,7 @@ describe('EmployeeSchema', () => {
     const invalid = {
       name: 'Test User',
       personnummer: '123456789',
-      email: 'test@example.com'
+      email: 'test@example.com',
     }
 
     expect(() => EmployeeSchema.parse(invalid)).toThrow()
@@ -12437,6 +13017,7 @@ describe('EmployeeSchema', () => {
 ```
 
 **Component Test Example:**
+
 ```typescript
 // tests/unit/components/law-card.test.tsx
 import { render, screen } from '@testing-library/react'
@@ -12472,17 +13053,22 @@ describe('LawCard', () => {
 ### 16.3 Integration Testing
 
 **Focus Areas:**
+
 - Database queries with Prisma
 - Server Actions with auth
 - API route handlers
 - External service mocking
 
 **Database Integration Test:**
+
 ```typescript
 // tests/integration/db/employee.test.ts
 import { describe, it, expect, beforeEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
-import { createEmployee, getEmployeesByWorkspace } from '@/lib/db/queries/employee'
+import {
+  createEmployee,
+  getEmployeesByWorkspace,
+} from '@/lib/db/queries/employee'
 
 describe('Employee Database Operations', () => {
   beforeEach(async () => {
@@ -12497,7 +13083,7 @@ describe('Employee Database Operations', () => {
       name: 'Test Employee',
       email: 'test@example.com',
       personnummer: '900101-1234',
-      workspaceId
+      workspaceId,
     })
 
     const employees = await getEmployeesByWorkspace(workspaceId)
@@ -12509,12 +13095,12 @@ describe('Employee Database Operations', () => {
   it('enforces workspace isolation', async () => {
     await createEmployee({
       name: 'Employee A',
-      workspaceId: 'workspace-a'
+      workspaceId: 'workspace-a',
     })
 
     await createEmployee({
       name: 'Employee B',
-      workspaceId: 'workspace-b'
+      workspaceId: 'workspace-b',
     })
 
     const workspaceAEmployees = await getEmployeesByWorkspace('workspace-a')
@@ -12526,6 +13112,7 @@ describe('Employee Database Operations', () => {
 ```
 
 **Server Action Test with Auth:**
+
 ```typescript
 // tests/integration/actions/law.test.ts
 import { describe, it, expect, vi } from 'vitest'
@@ -12545,12 +13132,12 @@ describe('Law Server Actions', () => {
 
   it('updates law status with valid session', async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      user: { id: '1', workspaceId: 'ws-1', role: 'ADMIN' }
+      user: { id: '1', workspaceId: 'ws-1', role: 'ADMIN' },
     })
 
     const result = await updateLawStatus({
       lawId: '123',
-      status: 'COMPLIANT'
+      status: 'COMPLIANT',
     })
 
     expect(result.success).toBe(true)
@@ -12566,6 +13153,7 @@ describe('Law Server Actions', () => {
 **Framework:** Playwright
 
 **Critical User Journeys:**
+
 1. Onboarding flow (company lookup → questions → signup)
 2. Law list navigation and filtering
 3. AI chat interaction
@@ -12573,6 +13161,7 @@ describe('Law Server Actions', () => {
 5. Kanban board drag-and-drop
 
 **E2E Test Example:**
+
 ```typescript
 // tests/e2e/onboarding.spec.ts
 import { test, expect } from '@playwright/test'
@@ -12612,6 +13201,7 @@ test.describe('Onboarding Flow', () => {
 ```
 
 **Accessibility Test:**
+
 ```typescript
 test('meets WCAG 2.1 AA standards', async ({ page }) => {
   await page.goto('/lagar')
@@ -12628,6 +13218,7 @@ test('meets WCAG 2.1 AA standards', async ({ page }) => {
 ### 16.5 Test Data Management
 
 **Seed Data Strategy:**
+
 ```typescript
 // prisma/seed.ts
 import { prisma } from '../lib/prisma'
@@ -12638,8 +13229,8 @@ async function seed() {
     data: {
       name: 'Test Company AB',
       orgNumber: '556677-8899',
-      tier: 'TEAM'
-    }
+      tier: 'TEAM',
+    },
   })
 
   // Create test users
@@ -12650,10 +13241,10 @@ async function seed() {
       workspaceMemberships: {
         create: {
           workspaceId: workspace.id,
-          role: 'ADMIN'
-        }
-      }
-    }
+          role: 'ADMIN',
+        },
+      },
+    },
   })
 
   // Create test laws
@@ -12662,9 +13253,9 @@ async function seed() {
       data: {
         title: 'Arbetsmiljölagen',
         documentNumber: 'SFS 1977:1160',
-        content: 'Full law content...'
-      }
-    })
+        content: 'Full law content...',
+      },
+    }),
   ])
 
   console.log('✅ Database seeded')
@@ -12672,6 +13263,7 @@ async function seed() {
 ```
 
 **Test Database Configuration:**
+
 ```bash
 # .env.test
 DATABASE_URL="postgresql://postgres:password@localhost:5432/laglig_test"
@@ -12682,6 +13274,7 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/laglig_test"
 ### 16.6 Mocking Strategy
 
 **External Service Mocks:**
+
 ```typescript
 // tests/mocks/openai.ts
 import { vi } from 'vitest'
@@ -12690,47 +13283,55 @@ export const mockOpenAI = {
   chat: {
     completions: {
       create: vi.fn().mockResolvedValue({
-        choices: [{
-          message: {
-            content: 'Mocked AI response'
-          }
-        }]
-      })
-    }
-  }
+        choices: [
+          {
+            message: {
+              content: 'Mocked AI response',
+            },
+          },
+        ],
+      }),
+    },
+  },
 }
 
 // Usage in tests
 vi.mock('openai', () => ({
-  default: vi.fn(() => mockOpenAI)
+  default: vi.fn(() => mockOpenAI),
 }))
 ```
 
 **MSW for HTTP Mocking:**
+
 ```typescript
 // tests/mocks/handlers.ts
 import { rest } from 'msw'
 
 export const handlers = [
-  rest.get('https://api.bolagsverket.se/company/:orgNumber', (req, res, ctx) => {
-    return res(
-      ctx.json({
-        name: 'Test Company AB',
-        orgNumber: req.params.orgNumber,
-        sniCode: '62010'
-      })
-    )
-  }),
+  rest.get(
+    'https://api.bolagsverket.se/company/:orgNumber',
+    (req, res, ctx) => {
+      return res(
+        ctx.json({
+          name: 'Test Company AB',
+          orgNumber: req.params.orgNumber,
+          sniCode: '62010',
+        })
+      )
+    }
+  ),
 
   rest.post('https://api.openai.com/v1/embeddings', (req, res, ctx) => {
     return res(
       ctx.json({
-        data: [{
-          embedding: new Array(1536).fill(0.1)
-        }]
+        data: [
+          {
+            embedding: new Array(1536).fill(0.1),
+          },
+        ],
       })
     )
-  })
+  }),
 ]
 ```
 
@@ -12739,6 +13340,7 @@ export const handlers = [
 ### 16.7 Test Configuration
 
 **Vitest Configuration:**
+
 ```typescript
 // vitest.config.ts
 import { defineConfig } from 'vitest/config'
@@ -12753,29 +13355,25 @@ export default defineConfig({
     setupFiles: './tests/setup.ts',
     coverage: {
       reporter: ['text', 'html', 'lcov'],
-      exclude: [
-        'node_modules/',
-        '.next/',
-        'tests/',
-        '*.config.*'
-      ],
+      exclude: ['node_modules/', '.next/', 'tests/', '*.config.*'],
       thresholds: {
         lines: 60,
         functions: 60,
         branches: 60,
-        statements: 60
-      }
-    }
+        statements: 60,
+      },
+    },
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './'),
-    }
-  }
+    },
+  },
 })
 ```
 
 **Playwright Configuration:**
+
 ```typescript
 // playwright.config.ts
 import { defineConfig, devices } from '@playwright/test'
@@ -12790,7 +13388,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure'
+    screenshot: 'only-on-failure',
   },
   projects: [
     {
@@ -12804,13 +13402,13 @@ export default defineConfig({
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 5'] },
-    }
+    },
   ],
   webServer: {
     command: 'pnpm dev',
     port: 3000,
     reuseExistingServer: !process.env.CI,
-  }
+  },
 })
 ```
 
@@ -12823,6 +13421,7 @@ export default defineConfig({
 These coding standards ensure **consistency, maintainability, and quality** across the codebase. They are designed to be **enforceable by tools** and **critical for AI agents** working on the code.
 
 **Core Principles:**
+
 - **Explicit over implicit:** Clear naming and types
 - **Consistency:** Same patterns everywhere
 - **Safety first:** Prevent runtime errors
@@ -12834,6 +13433,7 @@ These coding standards ensure **consistency, maintainability, and quality** acro
 ### 17.2 TypeScript Standards
 
 **Strict Configuration:**
+
 ```json
 // tsconfig.json
 {
@@ -12853,6 +13453,7 @@ These coding standards ensure **consistency, maintainability, and quality** acro
 ```
 
 **Type Patterns:**
+
 ```typescript
 // ✅ GOOD: Explicit types
 export interface Employee {
@@ -12865,15 +13466,12 @@ export interface Employee {
 }
 
 // ❌ BAD: Using 'any'
-export function processData(data: any) { }
+export function processData(data: any) {}
 
 // ✅ GOOD: Type guards
 function isEmployee(obj: unknown): obj is Employee {
   return (
-    typeof obj === 'object' &&
-    obj !== null &&
-    'id' in obj &&
-    'email' in obj
+    typeof obj === 'object' && obj !== null && 'id' in obj && 'email' in obj
   )
 }
 
@@ -12884,7 +13482,7 @@ type ApiResponse<T> =
 
 // ✅ GOOD: Const assertions
 const TIERS = ['SOLO', 'TEAM', 'ENTERPRISE'] as const
-type Tier = typeof TIERS[number]
+type Tier = (typeof TIERS)[number]
 ```
 
 ---
@@ -12892,6 +13490,7 @@ type Tier = typeof TIERS[number]
 ### 17.3 React/Next.js Standards
 
 **Component Patterns:**
+
 ```typescript
 // ✅ GOOD: Server Component (default)
 // app/components/law-list.tsx
@@ -12925,6 +13524,7 @@ export function StaticHeader() {
 ```
 
 **Data Fetching Patterns:**
+
 ```typescript
 // ✅ GOOD: Server-side data fetching
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
@@ -12960,20 +13560,21 @@ export async function updateEmployee(id: string, data: UpdateData) {
 ### 17.4 Database Standards
 
 **Prisma Query Patterns:**
+
 ```typescript
 // ✅ GOOD: Workspace isolation
 export async function getEmployees(workspaceId: string) {
   return prisma.employee.findMany({
     where: {
       workspaceId,
-      isActive: true
+      isActive: true,
     },
     select: {
       id: true,
       name: true,
-      email: true
+      email: true,
       // Don't select sensitive fields unless needed
-    }
+    },
   })
 }
 
@@ -12991,15 +13592,15 @@ export async function transferEmployee(
   return prisma.$transaction(async (tx) => {
     await tx.employee.update({
       where: { id: employeeId },
-      data: { workspaceId: toWorkspace }
+      data: { workspaceId: toWorkspace },
     })
 
     await tx.auditLog.create({
       data: {
         action: 'EMPLOYEE_TRANSFER',
         fromWorkspace,
-        toWorkspace
-      }
+        toWorkspace,
+      },
     })
   })
 }
@@ -13009,7 +13610,7 @@ export async function getLawsPaginated(cursor?: string) {
   return prisma.law.findMany({
     take: 51, // Fetch one extra to check hasMore
     cursor: cursor ? { id: cursor } : undefined,
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'desc' },
   })
 }
 ```
@@ -13019,6 +13620,7 @@ export async function getLawsPaginated(cursor?: string) {
 ### 17.5 Error Handling Standards
 
 **Error Patterns:**
+
 ```typescript
 // ✅ GOOD: Typed errors
 export class AppError extends Error {
@@ -13046,11 +13648,10 @@ export async function createEmployee(data: unknown) {
 
     // Perform operation
     const employee = await prisma.employee.create({
-      data: validated
+      data: validated,
     })
 
     return { success: true, data: employee }
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, error: 'Invalid input', details: error.errors }
@@ -13079,6 +13680,7 @@ try {
 ### 17.6 Security Standards
 
 **Input Validation:**
+
 ```typescript
 // ✅ GOOD: Always validate user input
 import { z } from 'zod'
@@ -13086,7 +13688,7 @@ import { z } from 'zod'
 const SearchSchema = z.object({
   query: z.string().min(1).max(100),
   category: z.enum(['ALL', 'LABOR', 'ENVIRONMENT', 'GDPR']),
-  limit: z.number().int().min(1).max(100).default(20)
+  limit: z.number().int().min(1).max(100).default(20),
 })
 
 export async function searchLaws(input: unknown) {
@@ -13098,13 +13700,14 @@ export async function searchLaws(input: unknown) {
 export async function searchLaws(query: string) {
   return prisma.law.findMany({
     where: {
-      title: { contains: query } // Unvalidated!
-    }
+      title: { contains: query }, // Unvalidated!
+    },
   })
 }
 ```
 
 **Authentication Checks:**
+
 ```typescript
 // ✅ GOOD: Check auth at every layer
 export async function protectedAction() {
@@ -13127,15 +13730,16 @@ export async function protectedAction() {
 ### 17.7 Performance Standards
 
 **Optimization Patterns:**
+
 ```typescript
 // ✅ GOOD: Selective field fetching
 const employees = await prisma.employee.findMany({
   select: {
     id: true,
     name: true,
-    email: true
+    email: true,
     // Only fetch needed fields
-  }
+  },
 })
 
 // ❌ BAD: Fetching everything
@@ -13143,15 +13747,15 @@ const employees = await prisma.employee.findMany({
   include: {
     tasks: true,
     documents: true,
-    activityLogs: true // Unnecessary data
-  }
+    activityLogs: true, // Unnecessary data
+  },
 })
 
 // ✅ GOOD: Parallel data fetching
 const [laws, employees, tasks] = await Promise.all([
   getLaws(workspaceId),
   getEmployees(workspaceId),
-  getTasks(workspaceId)
+  getTasks(workspaceId),
 ])
 
 // ❌ BAD: Sequential fetching
@@ -13161,6 +13765,7 @@ const tasks = await getTasks(workspaceId)
 ```
 
 **Caching Patterns:**
+
 ```typescript
 // ✅ GOOD: Cache expensive operations
 export async function getAIResponse(question: string) {
@@ -13183,6 +13788,7 @@ export async function getAIResponse(question: string) {
 ### 17.8 Git Commit Standards
 
 **Commit Message Format:**
+
 ```
 <type>(<scope>): <subject>
 
@@ -13192,6 +13798,7 @@ export async function getAIResponse(question: string) {
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation
@@ -13201,6 +13808,7 @@ export async function getAIResponse(question: string) {
 - `chore`: Maintenance
 
 **Examples:**
+
 ```bash
 feat(auth): add magic link authentication
 
@@ -13226,6 +13834,7 @@ dragging cards quickly between columns.
 The error handling strategy ensures **graceful degradation**, **helpful error messages**, and **comprehensive logging** while maintaining security and user experience.
 
 **Error Handling Layers:**
+
 ```
 User Input → Validation → Business Logic → Database → External Services
      ↓           ↓            ↓             ↓            ↓
@@ -13240,21 +13849,22 @@ User Feedback  Logging    Rollback    Fallback     Alert Team
 
 **Error Categories:**
 
-| Category | Code Range | Examples | User Message |
-|----------|------------|----------|--------------|
-| Validation | 400-409 | Invalid input, missing fields | "Please check your input" |
-| Authentication | 401 | No session, expired token | "Please sign in" |
-| Authorization | 403 | Insufficient permissions | "You don't have access" |
-| Not Found | 404 | Resource doesn't exist | "Page not found" |
-| Business Logic | 422 | Rule violation | Specific message |
-| External Service | 502-504 | API timeout, service down | "Service temporarily unavailable" |
-| Internal | 500 | Unexpected errors | "Something went wrong" |
+| Category         | Code Range | Examples                      | User Message                      |
+| ---------------- | ---------- | ----------------------------- | --------------------------------- |
+| Validation       | 400-409    | Invalid input, missing fields | "Please check your input"         |
+| Authentication   | 401        | No session, expired token     | "Please sign in"                  |
+| Authorization    | 403        | Insufficient permissions      | "You don't have access"           |
+| Not Found        | 404        | Resource doesn't exist        | "Page not found"                  |
+| Business Logic   | 422        | Rule violation                | Specific message                  |
+| External Service | 502-504    | API timeout, service down     | "Service temporarily unavailable" |
+| Internal         | 500        | Unexpected errors             | "Something went wrong"            |
 
 ---
 
 ### 18.3 Global Error Handling
 
 **Error Boundary (Client):**
+
 ```typescript
 // app/error.tsx
 "use client"
@@ -13291,6 +13901,7 @@ export default function Error({
 ```
 
 **Global Error Handler (Server):**
+
 ```typescript
 // lib/error-handler.ts
 export async function handleError(
@@ -13304,7 +13915,7 @@ export async function handleError(
   // Log to Sentry with context
   Sentry.captureException(error, {
     user: { id: context?.userId },
-    extra: context
+    extra: context,
   })
 
   // Handle known error types
@@ -13312,7 +13923,7 @@ export async function handleError(
     return {
       success: false,
       error: error.message,
-      code: error.code
+      code: error.code,
     }
   }
 
@@ -13320,10 +13931,10 @@ export async function handleError(
     return {
       success: false,
       error: 'Validation failed',
-      details: error.errors.map(e => ({
+      details: error.errors.map((e) => ({
         field: e.path.join('.'),
-        message: e.message
-      }))
+        message: e.message,
+      })),
     }
   }
 
@@ -13331,13 +13942,13 @@ export async function handleError(
     if (error.code === 'P2002') {
       return {
         success: false,
-        error: 'This record already exists'
+        error: 'This record already exists',
       }
     }
     if (error.code === 'P2025') {
       return {
         success: false,
-        error: 'Record not found'
+        error: 'Record not found',
       }
     }
   }
@@ -13346,7 +13957,7 @@ export async function handleError(
   return {
     success: false,
     error: 'An unexpected error occurred',
-    code: 'INTERNAL_ERROR'
+    code: 'INTERNAL_ERROR',
   }
 }
 ```
@@ -13356,6 +13967,7 @@ export async function handleError(
 ### 18.4 Service-Specific Error Handling
 
 **Database Errors:**
+
 ```typescript
 // lib/db/error-handler.ts
 export async function withDatabaseErrorHandling<T>(
@@ -13377,11 +13989,7 @@ export async function withDatabaseErrorHandling<T>(
     if (error instanceof Prisma.PrismaClientRustPanicError) {
       // Critical database error
       await notifyOps('Database panic', error)
-      throw new AppError(
-        'Critical database error',
-        'DB_PANIC',
-        500
-      )
+      throw new AppError('Critical database error', 'DB_PANIC', 500)
     }
 
     throw error
@@ -13390,6 +13998,7 @@ export async function withDatabaseErrorHandling<T>(
 ```
 
 **External API Errors:**
+
 ```typescript
 // lib/external/error-handler.ts
 export async function withRetry<T>(
@@ -13413,7 +14022,7 @@ export async function withRetry<T>(
       }
 
       // Exponential backoff
-      await new Promise(resolve =>
+      await new Promise((resolve) =>
         setTimeout(resolve, options.delay * Math.pow(2, i))
       )
     }
@@ -13423,10 +14032,10 @@ export async function withRetry<T>(
 }
 
 // Usage
-const companyData = await withRetry(
-  () => fetchBolagsverketData(orgNumber),
-  { retries: 3, delay: 1000 }
-)
+const companyData = await withRetry(() => fetchBolagsverketData(orgNumber), {
+  retries: 3,
+  delay: 1000,
+})
 ```
 
 ---
@@ -13434,6 +14043,7 @@ const companyData = await withRetry(
 ### 18.5 User-Friendly Error Messages
 
 **Swedish Error Messages:**
+
 ```typescript
 // lib/errors/messages.ts
 export const ERROR_MESSAGES = {
@@ -13457,7 +14067,7 @@ export const ERROR_MESSAGES = {
 
   // Generic
   SOMETHING_WENT_WRONG: 'Något gick fel. Försök igen om en stund',
-  TRY_AGAIN_LATER: 'Försök igen om några minuter'
+  TRY_AGAIN_LATER: 'Försök igen om några minuter',
 }
 
 export function getUserMessage(errorCode: string): string {
@@ -13466,20 +14076,20 @@ export function getUserMessage(errorCode: string): string {
 ```
 
 **Toast Notifications:**
+
 ```typescript
 // components/shared/error-toast.tsx
 import { toast } from '@/components/ui/toast'
 
 export function showError(error: string | Error) {
-  const message = typeof error === 'string'
-    ? error
-    : getUserMessage(error.code || 'UNKNOWN')
+  const message =
+    typeof error === 'string' ? error : getUserMessage(error.code || 'UNKNOWN')
 
   toast({
     title: 'Ett fel uppstod',
     description: message,
     variant: 'destructive',
-    duration: 5000
+    duration: 5000,
   })
 }
 
@@ -13497,6 +14107,7 @@ try {
 ### 18.6 Logging Strategy
 
 **Structured Logging:**
+
 ```typescript
 // lib/logger.ts
 interface LogContext {
@@ -13514,43 +14125,49 @@ class Logger {
   }
 
   info(message: string, data?: any) {
-    console.log(JSON.stringify({
-      level: 'info',
-      message,
-      timestamp: new Date().toISOString(),
-      ...this.context,
-      data
-    }))
+    console.log(
+      JSON.stringify({
+        level: 'info',
+        message,
+        timestamp: new Date().toISOString(),
+        ...this.context,
+        data,
+      })
+    )
   }
 
   error(message: string, error: Error, data?: any) {
-    console.error(JSON.stringify({
-      level: 'error',
-      message,
-      error: {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      },
-      timestamp: new Date().toISOString(),
-      ...this.context,
-      data
-    }))
+    console.error(
+      JSON.stringify({
+        level: 'error',
+        message,
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+        },
+        timestamp: new Date().toISOString(),
+        ...this.context,
+        data,
+      })
+    )
 
     // Send to Sentry
     Sentry.captureException(error, {
-      extra: { ...this.context, ...data }
+      extra: { ...this.context, ...data },
     })
   }
 
   metric(name: string, value: number, tags?: Record<string, string>) {
-    console.log(JSON.stringify({
-      level: 'metric',
-      name,
-      value,
-      tags,
-      timestamp: new Date().toISOString()
-    }))
+    console.log(
+      JSON.stringify({
+        level: 'metric',
+        name,
+        value,
+        tags,
+        timestamp: new Date().toISOString(),
+      })
+    )
   }
 }
 
@@ -13558,13 +14175,14 @@ export const logger = new Logger()
 ```
 
 **Usage in Server Actions:**
+
 ```typescript
 export async function createEmployee(data: unknown) {
   const startTime = Date.now()
 
   logger.setContext({
     action: 'createEmployee',
-    userId: session?.user?.id
+    userId: session?.user?.id,
   })
 
   try {
@@ -13578,7 +14196,6 @@ export async function createEmployee(data: unknown) {
     logger.metric('employee.create.duration', Date.now() - startTime)
 
     return { success: true, data: employee }
-
   } catch (error) {
     logger.error('Failed to create employee', error as Error)
     return handleError(error)
@@ -13591,6 +14208,7 @@ export async function createEmployee(data: unknown) {
 ### 18.7 Error Recovery Strategies
 
 **Optimistic Updates with Rollback:**
+
 ```typescript
 // stores/kanban.ts
 export const useKanbanStore = create((set, get) => ({
@@ -13598,10 +14216,10 @@ export const useKanbanStore = create((set, get) => ({
     const previousState = get().cards
 
     // Optimistic update
-    set(state => ({
-      cards: state.cards.map(card =>
+    set((state) => ({
+      cards: state.cards.map((card) =>
         card.id === cardId ? { ...card, columnId } : card
-      )
+      ),
     }))
 
     try {
@@ -13612,11 +14230,12 @@ export const useKanbanStore = create((set, get) => ({
       showError('Failed to move card')
       throw error
     }
-  }
+  },
 }))
 ```
 
 **Circuit Breaker Pattern:**
+
 ```typescript
 // lib/circuit-breaker.ts
 class CircuitBreaker {
@@ -13678,6 +14297,7 @@ export async function queryAI(prompt: string) {
 The monitoring strategy provides **real-time visibility** into system health, performance, and user behavior, enabling proactive issue detection and data-driven optimization.
 
 **Monitoring Stack:**
+
 ```
 Application → Metrics → Alerts → Dashboard
      ↓          ↓         ↓         ↓
@@ -13692,6 +14312,7 @@ Application → Metrics → Alerts → Dashboard
 ### 19.2 Key Metrics
 
 **Business Metrics:**
+
 ```typescript
 // lib/metrics/business.ts
 export const trackBusinessMetrics = {
@@ -13706,7 +14327,7 @@ export const trackBusinessMetrics = {
   aiQueryCompleted: (workspaceId: string, cached: boolean) => {
     logger.metric('ai.query.completed', 1, {
       workspaceId,
-      cached: cached.toString()
+      cached: cached.toString(),
     })
   },
 
@@ -13717,11 +14338,12 @@ export const trackBusinessMetrics = {
 
   employeeAdded: (workspaceId: string, count: number) => {
     logger.metric('employees.added', count, { workspaceId })
-  }
+  },
 }
 ```
 
 **Technical Metrics:**
+
 ```typescript
 // lib/metrics/technical.ts
 export const trackTechnicalMetrics = {
@@ -13739,7 +14361,7 @@ export const trackTechnicalMetrics = {
 
   errorRate: (errorType: string, endpoint: string) => {
     logger.metric('error.count', 1, { errorType, endpoint })
-  }
+  },
 }
 ```
 
@@ -13748,6 +14370,7 @@ export const trackTechnicalMetrics = {
 ### 19.3 Application Performance Monitoring
 
 **Sentry Configuration:**
+
 ```typescript
 // sentry.client.config.ts
 import * as Sentry from '@sentry/nextjs'
@@ -13769,11 +14392,12 @@ Sentry.init({
       return null
     }
     return event
-  }
+  },
 })
 ```
 
 **Performance Tracking:**
+
 ```typescript
 // lib/performance.ts
 export function measurePerformance(name: string) {
@@ -13823,6 +14447,7 @@ class LawService {
 ### 19.4 Infrastructure Monitoring
 
 **Health Checks:**
+
 ```typescript
 // app/api/health/route.ts
 export async function GET() {
@@ -13830,7 +14455,7 @@ export async function GET() {
     database: false,
     redis: false,
     openai: false,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   }
 
   // Check database
@@ -13857,18 +14482,21 @@ export async function GET() {
     logger.error('Health check: OpenAI failed', error as Error)
   }
 
-  const allHealthy = Object.values(checks).every(v => v === true || typeof v === 'string')
+  const allHealthy = Object.values(checks).every(
+    (v) => v === true || typeof v === 'string'
+  )
 
   return Response.json(checks, {
     status: allHealthy ? 200 : 503,
     headers: {
-      'Cache-Control': 'no-cache'
-    }
+      'Cache-Control': 'no-cache',
+    },
   })
 }
 ```
 
 **Cron Job Monitoring:**
+
 ```typescript
 // app/api/cron/check-law-changes/route.ts
 export async function GET(request: Request) {
@@ -13876,7 +14504,7 @@ export async function GET(request: Request) {
 
   logger.info('Cron job started', {
     job: 'check-law-changes',
-    jobId
+    jobId,
   })
 
   try {
@@ -13885,7 +14513,7 @@ export async function GET(request: Request) {
     // Check in with Sentry
     const checkIn = Sentry.captureCheckIn({
       monitorSlug: 'law-change-detection',
-      status: 'in_progress'
+      status: 'in_progress',
     })
 
     const changes = await detectLawChanges()
@@ -13898,21 +14526,20 @@ export async function GET(request: Request) {
       checkInId: checkIn,
       monitorSlug: 'law-change-detection',
       status: 'ok',
-      duration: Date.now() - startTime
+      duration: Date.now() - startTime,
     })
 
     return Response.json({
       success: true,
       changes: changes.length,
-      duration: Date.now() - startTime
+      duration: Date.now() - startTime,
     })
-
   } catch (error) {
     logger.error('Cron job failed', error as Error, { jobId })
 
     Sentry.captureCheckIn({
       monitorSlug: 'law-change-detection',
-      status: 'error'
+      status: 'error',
     })
 
     throw error
@@ -13925,6 +14552,7 @@ export async function GET(request: Request) {
 ### 19.5 User Analytics
 
 **Vercel Analytics Integration:**
+
 ```typescript
 // app/layout.tsx
 import { Analytics } from '@vercel/analytics/react'
@@ -13944,6 +14572,7 @@ export default function RootLayout({ children }) {
 ```
 
 **Custom Event Tracking:**
+
 ```typescript
 // lib/analytics.ts
 import { track } from '@vercel/analytics'
@@ -13959,13 +14588,13 @@ export const analytics = {
 
   conversionEvent: (event: string, value?: number) => {
     track(event, { value })
-  }
+  },
 }
 
 // Usage
 analytics.userAction('law_bookmarked', {
   lawId: law.id,
-  category: law.category
+  category: law.category,
 })
 
 analytics.conversionEvent('trial_started', 0)
@@ -13977,6 +14606,7 @@ analytics.conversionEvent('subscription_created', 299)
 ### 19.6 Cost Monitoring
 
 **OpenAI Usage Tracking:**
+
 ```typescript
 // lib/monitoring/costs.ts
 export async function trackOpenAIUsage(
@@ -13987,18 +14617,18 @@ export async function trackOpenAIUsage(
 ) {
   const costs = {
     'gpt-4-turbo-preview': {
-      input: 0.01 / 1000,  // $0.01 per 1K tokens
-      output: 0.03 / 1000  // $0.03 per 1K tokens
+      input: 0.01 / 1000, // $0.01 per 1K tokens
+      output: 0.03 / 1000, // $0.03 per 1K tokens
     },
     'text-embedding-3-small': {
-      input: 0.00002 / 1000,  // $0.02 per 1M tokens
-      output: 0
-    }
+      input: 0.00002 / 1000, // $0.02 per 1M tokens
+      output: 0,
+    },
   }
 
-  const cost = cached ? 0 :
-    (inputTokens * costs[model].input) +
-    (outputTokens * costs[model].output)
+  const cost = cached
+    ? 0
+    : inputTokens * costs[model].input + outputTokens * costs[model].output
 
   await prisma.aiUsageLog.create({
     data: {
@@ -14006,8 +14636,8 @@ export async function trackOpenAIUsage(
       inputTokens,
       outputTokens,
       costUsd: cost,
-      cached
-    }
+      cached,
+    },
   })
 
   logger.metric('openai.cost', cost * 100, { model, cached: cached.toString() })
@@ -14021,6 +14651,7 @@ export async function trackOpenAIUsage(
 ```
 
 **Database Size Monitoring:**
+
 ```sql
 -- Monitor database growth
 SELECT
@@ -14045,6 +14676,7 @@ GROUP BY bucket_id;
 ### 19.7 Alerting Strategy
 
 **Alert Configuration:**
+
 ```typescript
 // lib/monitoring/alerts.ts
 interface AlertRule {
@@ -14063,7 +14695,7 @@ const alertRules: AlertRule[] = [
     threshold: 100,
     duration: '5m',
     severity: 'critical',
-    notify: ['slack', 'pagerduty']
+    notify: ['slack', 'pagerduty'],
   },
   {
     name: 'Low Cache Hit Rate',
@@ -14071,7 +14703,7 @@ const alertRules: AlertRule[] = [
     threshold: 0.5,
     duration: '15m',
     severity: 'warning',
-    notify: ['slack']
+    notify: ['slack'],
   },
   {
     name: 'High AI Costs',
@@ -14079,7 +14711,7 @@ const alertRules: AlertRule[] = [
     threshold: 100,
     duration: '1h',
     severity: 'warning',
-    notify: ['email', 'slack']
+    notify: ['email', 'slack'],
   },
   {
     name: 'Database Connection Pool Exhausted',
@@ -14087,12 +14719,13 @@ const alertRules: AlertRule[] = [
     threshold: 2,
     duration: '1m',
     severity: 'critical',
-    notify: ['slack', 'pagerduty']
-  }
+    notify: ['slack', 'pagerduty'],
+  },
 ]
 ```
 
 **Notification Channels:**
+
 ```typescript
 // lib/monitoring/notifications.ts
 export async function notifyOps(
@@ -14107,15 +14740,17 @@ export async function notifyOps(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         text: `🚨 ${severity.toUpperCase()}: ${message}`,
-        attachments: [{
-          color: severity === 'critical' ? 'danger' : 'warning',
-          fields: Object.entries(data || {}).map(([k, v]) => ({
-            title: k,
-            value: String(v),
-            short: true
-          }))
-        }]
-      })
+        attachments: [
+          {
+            color: severity === 'critical' ? 'danger' : 'warning',
+            fields: Object.entries(data || {}).map(([k, v]) => ({
+              title: k,
+              value: String(v),
+              short: true,
+            })),
+          },
+        ],
+      }),
     })
   }
 
@@ -14125,7 +14760,7 @@ export async function notifyOps(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': process.env.PAGERDUTY_TOKEN!
+        Authorization: process.env.PAGERDUTY_TOKEN!,
       },
       body: JSON.stringify({
         routing_key: process.env.PAGERDUTY_ROUTING_KEY,
@@ -14134,9 +14769,9 @@ export async function notifyOps(
           summary: message,
           severity: 'critical',
           source: 'laglig.se',
-          custom_details: data
-        }
-      })
+          custom_details: data,
+        },
+      }),
     })
   }
 }
@@ -14147,6 +14782,7 @@ export async function notifyOps(
 ### 19.8 Dashboard and Reporting
 
 **Metrics Dashboard Example:**
+
 ```typescript
 // app/admin/metrics/page.tsx
 export default async function MetricsPage() {
@@ -14196,6 +14832,7 @@ The monitoring and observability strategy provides:
 ✅ **Health Monitoring:** Service availability checks
 
 **Next:** Section 20 - Architect Checklist Results
+
 ## 20. Architecture Completeness Checklist
 
 ### 20.1 Document Completeness Review
@@ -14204,27 +14841,27 @@ This section validates that the Laglig.se architecture document is **100% implem
 
 **Document Coverage Status:**
 
-| Section | Title | Status | Notes |
-|---------|-------|--------|-------|
-| 1 | Architecture Essence | ✅ Complete | Core principles, constraints defined |
-| 2 | Architecture Strategy | ✅ Complete | Platform choice (Vercel + Supabase) |
-| 3 | Tech Stack | ✅ Complete | 56 technologies selected, versions specified |
-| 4 | Data Models | ✅ Complete | 29 entities fully defined |
-| 5 | System Architecture | ✅ Complete | C4 model diagrams included |
-| 6 | Component Architecture | ✅ Complete | All components specified |
-| 7 | Event-Driven Flows | ✅ Complete | Event flows documented |
-| 8 | Workflows | ✅ Complete | All 38 workflows with sequence diagrams |
-| 9 | Database Schema | ✅ Complete | Full Prisma schema provided |
-| 10 | Frontend Architecture | ✅ Complete | Next.js 16 patterns, components |
-| 11 | Backend Architecture | ✅ Complete | Serverless, Server Actions, APIs |
-| 12 | Project Structure | ✅ Complete | Complete directory structure |
-| 13 | Development Workflow | ✅ Complete | Setup, commands, patterns |
-| 14 | Deployment Architecture | ✅ Complete | CI/CD, environments |
-| 15 | Security & Performance | ✅ Complete | GDPR, encryption, optimization |
-| 16 | Testing Strategy | ✅ Complete | Unit, integration, E2E |
-| 17 | Coding Standards | ✅ Complete | TypeScript, React, Git |
-| 18 | Error Handling | ✅ Complete | Global strategy, recovery |
-| 19 | Monitoring | ✅ Complete | Metrics, alerts, dashboards |
+| Section | Title                   | Status      | Notes                                        |
+| ------- | ----------------------- | ----------- | -------------------------------------------- |
+| 1       | Architecture Essence    | ✅ Complete | Core principles, constraints defined         |
+| 2       | Architecture Strategy   | ✅ Complete | Platform choice (Vercel + Supabase)          |
+| 3       | Tech Stack              | ✅ Complete | 56 technologies selected, versions specified |
+| 4       | Data Models             | ✅ Complete | 29 entities fully defined                    |
+| 5       | System Architecture     | ✅ Complete | C4 model diagrams included                   |
+| 6       | Component Architecture  | ✅ Complete | All components specified                     |
+| 7       | Event-Driven Flows      | ✅ Complete | Event flows documented                       |
+| 8       | Workflows               | ✅ Complete | All 38 workflows with sequence diagrams      |
+| 9       | Database Schema         | ✅ Complete | Full Prisma schema provided                  |
+| 10      | Frontend Architecture   | ✅ Complete | Next.js 16 patterns, components              |
+| 11      | Backend Architecture    | ✅ Complete | Serverless, Server Actions, APIs             |
+| 12      | Project Structure       | ✅ Complete | Complete directory structure                 |
+| 13      | Development Workflow    | ✅ Complete | Setup, commands, patterns                    |
+| 14      | Deployment Architecture | ✅ Complete | CI/CD, environments                          |
+| 15      | Security & Performance  | ✅ Complete | GDPR, encryption, optimization               |
+| 16      | Testing Strategy        | ✅ Complete | Unit, integration, E2E                       |
+| 17      | Coding Standards        | ✅ Complete | TypeScript, React, Git                       |
+| 18      | Error Handling          | ✅ Complete | Global strategy, recovery                    |
+| 19      | Monitoring              | ✅ Complete | Metrics, alerts, dashboards                  |
 
 **Total Completion: 19/19 Sections (100%)**
 
@@ -14234,28 +14871,28 @@ This section validates that the Laglig.se architecture document is **100% implem
 
 **Functional Requirements Validation:**
 
-| FR# | Requirement | Architecture Coverage | Section |
-|-----|-------------|---------------------|---------|
-| FR1 | 170,000+ legal documents | ✅ PostgreSQL + pgvector design | 4, 9 |
-| FR2 | Dynamic onboarding flow | ✅ Workflow 8.4, components defined | 8.4, 6.3 |
-| FR3 | 60-80 laws per company | ✅ Two-phase generation strategy | 8.5 |
-| FR4 | RAG-powered AI chat | ✅ OpenAI + pgvector + caching | 6.4, 11.5 |
-| FR5 | Drag-and-drop Kanban | ✅ @dnd-kit + Zustand | 10.2, 6.3 |
-| FR6 | Employee management | ✅ Full CRUD, personnummer encryption | 4.8, 15.3 |
-| FR7 | Change monitoring | ✅ Daily cron jobs documented | 8.11, 14.3 |
-| FR8 | Multi-tenancy | ✅ Workspace isolation pattern | 4.3, 11.3 |
+| FR# | Requirement              | Architecture Coverage                 | Section    |
+| --- | ------------------------ | ------------------------------------- | ---------- |
+| FR1 | 170,000+ legal documents | ✅ PostgreSQL + pgvector design       | 4, 9       |
+| FR2 | Dynamic onboarding flow  | ✅ Workflow 8.4, components defined   | 8.4, 6.3   |
+| FR3 | 60-80 laws per company   | ✅ Two-phase generation strategy      | 8.5        |
+| FR4 | RAG-powered AI chat      | ✅ OpenAI + pgvector + caching        | 6.4, 11.5  |
+| FR5 | Drag-and-drop Kanban     | ✅ @dnd-kit + Zustand                 | 10.2, 6.3  |
+| FR6 | Employee management      | ✅ Full CRUD, personnummer encryption | 4.8, 15.3  |
+| FR7 | Change monitoring        | ✅ Daily cron jobs documented         | 8.11, 14.3 |
+| FR8 | Multi-tenancy            | ✅ Workspace isolation pattern        | 4.3, 11.3  |
 
 **Non-Functional Requirements Validation:**
 
-| NFR# | Requirement | Architecture Coverage | Status |
-|------|-------------|---------------------|--------|
-| NFR1 | <2.5s LCP for SEO | ✅ SSR, caching, CDN | Achievable |
-| NFR2 | <3s AI response | ✅ Streaming, caching | Achievable |
-| NFR3 | 75% cache hit rate | ✅ Upstash Redis patterns | Achievable |
-| NFR4 | AES-256 encryption | ✅ Implementation provided | Implemented |
-| NFR5 | GDPR compliance | ✅ Data export/deletion | Implemented |
-| NFR8 | Rate limiting | ✅ Per-tier limits | Implemented |
-| NFR9 | Zero hallucinations | ✅ RAG grounding enforced | Implemented |
+| NFR# | Requirement         | Architecture Coverage      | Status      |
+| ---- | ------------------- | -------------------------- | ----------- |
+| NFR1 | <2.5s LCP for SEO   | ✅ SSR, caching, CDN       | Achievable  |
+| NFR2 | <3s AI response     | ✅ Streaming, caching      | Achievable  |
+| NFR3 | 75% cache hit rate  | ✅ Upstash Redis patterns  | Achievable  |
+| NFR4 | AES-256 encryption  | ✅ Implementation provided | Implemented |
+| NFR5 | GDPR compliance     | ✅ Data export/deletion    | Implemented |
+| NFR8 | Rate limiting       | ✅ Per-tier limits         | Implemented |
+| NFR9 | Zero hallucinations | ✅ RAG grounding enforced  | Implemented |
 
 ---
 
@@ -14263,16 +14900,17 @@ This section validates that the Laglig.se architecture document is **100% implem
 
 **Core Stack Alignment:**
 
-| Component | Selected | PRD Required | Aligned |
-|-----------|----------|--------------|---------|
-| Framework | Next.js 16 | Next.js App Router | ✅ Yes |
-| Database | Supabase PostgreSQL | PostgreSQL + pgvector | ✅ Yes |
-| Hosting | Vercel | Vercel | ✅ Yes |
-| AI | OpenAI GPT-4 | LLM with Swedish | ✅ Yes |
-| Cache | Upstash Redis | Serverless cache | ✅ Yes |
-| Auth | Supabase Auth + NextAuth | Secure auth | ✅ Yes |
+| Component | Selected                 | PRD Required          | Aligned |
+| --------- | ------------------------ | --------------------- | ------- |
+| Framework | Next.js 16               | Next.js App Router    | ✅ Yes  |
+| Database  | Supabase PostgreSQL      | PostgreSQL + pgvector | ✅ Yes  |
+| Hosting   | Vercel                   | Vercel                | ✅ Yes  |
+| AI        | OpenAI GPT-4             | LLM with Swedish      | ✅ Yes  |
+| Cache     | Upstash Redis            | Serverless cache      | ✅ Yes  |
+| Auth      | Supabase Auth + NextAuth | Secure auth           | ✅ Yes  |
 
 **Version Consistency Check:**
+
 - ✅ Node.js 20.x LTS specified
 - ✅ pnpm 9.0+ specified
 - ✅ All npm packages versioned
@@ -14315,16 +14953,17 @@ This section validates that the Laglig.se architecture document is **100% implem
 
 **Code Examples Provided:**
 
-| Category | Examples | Count | Quality |
-|----------|----------|-------|---------|
-| TypeScript Types | ✅ | 50+ | Production-ready |
-| React Components | ✅ | 30+ | Complete patterns |
-| Server Actions | ✅ | 15+ | Auth included |
-| Database Queries | ✅ | 20+ | Prisma patterns |
-| Error Handling | ✅ | 10+ | Comprehensive |
-| Testing | ✅ | 15+ | All levels |
+| Category         | Examples | Count | Quality           |
+| ---------------- | -------- | ----- | ----------------- |
+| TypeScript Types | ✅       | 50+   | Production-ready  |
+| React Components | ✅       | 30+   | Complete patterns |
+| Server Actions   | ✅       | 15+   | Auth included     |
+| Database Queries | ✅       | 20+   | Prisma patterns   |
+| Error Handling   | ✅       | 10+   | Comprehensive     |
+| Testing          | ✅       | 15+   | All levels        |
 
 **Configuration Files:**
+
 - ✅ `next.config.js` complete
 - ✅ `tsconfig.json` complete
 - ✅ `prisma/schema.prisma` referenced
@@ -14337,13 +14976,13 @@ This section validates that the Laglig.se architecture document is **100% implem
 
 **Identified Risks with Mitigation:**
 
-| Risk | Severity | Mitigation | Section |
-|------|----------|------------|---------|
-| AI costs exceeding budget | High | Caching strategy, monitoring | 15.6, 19.6 |
-| Database scaling issues | Medium | pgvector → Pinecone path | 2.8 |
-| Law change detection failure | High | Cron monitoring, alerts | 19.4 |
-| Personnummer exposure | Critical | AES-256 encryption | 15.3 |
-| Service outages | Medium | Circuit breakers | 18.7 |
+| Risk                         | Severity | Mitigation                   | Section    |
+| ---------------------------- | -------- | ---------------------------- | ---------- |
+| AI costs exceeding budget    | High     | Caching strategy, monitoring | 15.6, 19.6 |
+| Database scaling issues      | Medium   | pgvector → Pinecone path     | 2.8        |
+| Law change detection failure | High     | Cron monitoring, alerts      | 19.4       |
+| Personnummer exposure        | Critical | AES-256 encryption           | 15.3       |
+| Service outages              | Medium   | Circuit breakers             | 18.7       |
 
 ---
 
@@ -14351,16 +14990,17 @@ This section validates that the Laglig.se architecture document is **100% implem
 
 **Documentation Completeness for Developers:**
 
-| Area | Documentation | Examples | Ready |
-|------|---------------|----------|-------|
-| Local Setup | ✅ Complete steps | Yes | ✅ |
-| Development Workflow | ✅ Patterns defined | Yes | ✅ |
-| Testing Strategy | ✅ All levels covered | Yes | ✅ |
-| Deployment Process | ✅ CI/CD pipeline | Yes | ✅ |
-| Error Handling | ✅ Global strategy | Yes | ✅ |
-| Monitoring | ✅ Metrics defined | Yes | ✅ |
+| Area                 | Documentation         | Examples | Ready |
+| -------------------- | --------------------- | -------- | ----- |
+| Local Setup          | ✅ Complete steps     | Yes      | ✅    |
+| Development Workflow | ✅ Patterns defined   | Yes      | ✅    |
+| Testing Strategy     | ✅ All levels covered | Yes      | ✅    |
+| Deployment Process   | ✅ CI/CD pipeline     | Yes      | ✅    |
+| Error Handling       | ✅ Global strategy    | Yes      | ✅    |
+| Monitoring           | ✅ Metrics defined    | Yes      | ✅    |
 
 **AI Agent Compatibility:**
+
 - ✅ Clear file naming conventions
 - ✅ Explicit TypeScript patterns
 - ✅ No ambiguous instructions
@@ -14372,13 +15012,13 @@ This section validates that the Laglig.se architecture document is **100% implem
 
 **Legal & Regulatory Coverage:**
 
-| Requirement | Implementation | Verified |
-|-------------|----------------|----------|
-| GDPR Data Export | ✅ Function provided | Yes |
-| GDPR Right to Deletion | ✅ Anonymization pattern | Yes |
-| Swedish Personnummer | ✅ AES-256 encryption | Yes |
-| Cookie Consent | ✅ No tracking cookies | Yes |
-| Legal Disclaimers | ✅ NFR15 addressed | Yes |
+| Requirement            | Implementation           | Verified |
+| ---------------------- | ------------------------ | -------- |
+| GDPR Data Export       | ✅ Function provided     | Yes      |
+| GDPR Right to Deletion | ✅ Anonymization pattern | Yes      |
+| Swedish Personnummer   | ✅ AES-256 encryption    | Yes      |
+| Cookie Consent         | ✅ No tracking cookies   | Yes      |
+| Legal Disclaimers      | ✅ NFR15 addressed       | Yes      |
 
 ---
 
@@ -14386,14 +15026,14 @@ This section validates that the Laglig.se architecture document is **100% implem
 
 **Measurable Performance Criteria:**
 
-| Metric | Target | Architecture Support | Achievable |
-|--------|--------|---------------------|------------|
-| Page Load (LCP) | <2.5s | SSR, CDN, caching | ✅ Yes |
-| AI Response | <3s | Streaming, cache | ✅ Yes |
-| Cache Hit Rate | >75% | Redis patterns | ✅ Yes |
-| Database Queries | <100ms | Indexes defined | ✅ Yes |
-| Build Time | <5min | Turbopack | ✅ Yes |
-| Test Suite | <2min | Vitest parallel | ✅ Yes |
+| Metric           | Target | Architecture Support | Achievable |
+| ---------------- | ------ | -------------------- | ---------- |
+| Page Load (LCP)  | <2.5s  | SSR, CDN, caching    | ✅ Yes     |
+| AI Response      | <3s    | Streaming, cache     | ✅ Yes     |
+| Cache Hit Rate   | >75%   | Redis patterns       | ✅ Yes     |
+| Database Queries | <100ms | Indexes defined      | ✅ Yes     |
+| Build Time       | <5min  | Turbopack            | ✅ Yes     |
+| Test Suite       | <2min  | Vitest parallel      | ✅ Yes     |
 
 ---
 
@@ -14402,6 +15042,7 @@ This section validates that the Laglig.se architecture document is **100% implem
 **Architecture Document Status: ✅ PRODUCTION READY**
 
 **Completeness Metrics:**
+
 - Document Sections: **19/19 (100%)**
 - PRD Requirements: **41/41 FR, 26/26 NFR (100%)**
 - Code Examples: **165+ provided**
@@ -14410,6 +15051,7 @@ This section validates that the Laglig.se architecture document is **100% implem
 - External Services: **12/12 integrated**
 
 **Ready for Implementation:**
+
 - ✅ **Developer Handoff Ready** - Complete setup and workflow documentation
 - ✅ **AI Agent Compatible** - Clear patterns and examples throughout
 - ✅ **DevOps Ready** - CI/CD and deployment fully specified
@@ -14417,6 +15059,7 @@ This section validates that the Laglig.se architecture document is **100% implem
 - ✅ **Scalability Proven** - Growth path to 100K users defined
 
 **Recommended Next Steps:**
+
 1. Create GitHub repository with initial structure
 2. Set up Vercel and Supabase projects
 3. Implement authentication flow first
@@ -14440,4 +15083,4 @@ This section validates that the Laglig.se architecture document is **100% implem
 
 ---
 
-*End of Architecture Document*
+_End of Architecture Document_

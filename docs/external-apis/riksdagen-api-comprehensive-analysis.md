@@ -17,9 +17,11 @@
 ## 1. What We Discovered
 
 ### Test Case: SFS 2011:1029
+
 **Law:** Lag om upphandling på försvars- och säkerhetsområdet (Defense and Security Procurement Act)
 
 #### Search Query Across ALL Document Types
+
 ```
 GET https://data.riksdagen.se/dokumentlista/?sok=sfs-2011-1029&utformat=json
 ```
@@ -27,17 +29,20 @@ GET https://data.riksdagen.se/dokumentlista/?sok=sfs-2011-1029&utformat=json
 **Results:** 20 documents returned
 
 **Analysis:**
+
 - **Document 1:** The actual SFS 2011:1029 law itself ✅
 - **Documents 2-20:** Propositions (prop), Government inquiries (sou), Reports - **NO ACTUAL REFERENCES** ❌
 
 ### Why Documents 2-20 Appeared
 
 Riksdagen's search uses **keyword matching**, not semantic cross-referencing:
+
 - Some documents contain the year "2011" in passing
 - Some contain the number "1029" as page numbers or other references
 - **NONE actually cite or reference SFS 2011:1029**
 
 **Verification:**
+
 ```bash
 # Checked full text of documents 2, 9, and 14
 curl -s "https://data.riksdagen.se/dokument/HA0346.text" | grep -i "2011:1029"
@@ -56,18 +61,18 @@ curl -s "https://data.riksdagen.se/dokument/H9B319.text" | grep -i "2011.*1029"
 
 ### Document Types Available
 
-| Doktyp Code | Full Name | Description |
-|-------------|-----------|-------------|
-| **sfs** | Svensk författningssamling | Laws and regulations (11,351 docs) |
-| **prop** | Proposition | Government bills |
-| **bet** | Betänkande | Committee reports |
-| **mot** | Motion | Members' motions |
-| **sou** | Statens offentliga utredningar | Government inquiries |
-| **frsrdg** | Framställning från riksdagen | Petitions from Parliament |
-| **urf** | Utrikesutskottets förslag | Foreign Affairs Committee proposals |
-| **prot** | Protokoll | Chamber protocols |
-| **frs** | Fråga | Questions |
-| **ip** | Interpellation | Interpellations |
+| Doktyp Code | Full Name                      | Description                         |
+| ----------- | ------------------------------ | ----------------------------------- |
+| **sfs**     | Svensk författningssamling     | Laws and regulations (11,351 docs)  |
+| **prop**    | Proposition                    | Government bills                    |
+| **bet**     | Betänkande                     | Committee reports                   |
+| **mot**     | Motion                         | Members' motions                    |
+| **sou**     | Statens offentliga utredningar | Government inquiries                |
+| **frsrdg**  | Framställning från riksdagen   | Petitions from Parliament           |
+| **urf**     | Utrikesutskottets förslag      | Foreign Affairs Committee proposals |
+| **prot**    | Protokoll                      | Chamber protocols                   |
+| **frs**     | Fråga                          | Questions                           |
+| **ip**      | Interpellation                 | Interpellations                     |
 
 ### SFS Document Structure (Complete Fields)
 
@@ -107,6 +112,7 @@ curl -s "https://data.riksdagen.se/dokument/H9B319.text" | grep -i "2011.*1029"
 ```
 
 **Meaning:** "up to and including SFS 2023:253"
+
 - Shows the **latest amendment** applied to this law
 - Does **NOT** show all intermediate amendments
 - Full-text HTML/Text includes **consolidated version** (all amendments applied)
@@ -115,10 +121,13 @@ curl -s "https://data.riksdagen.se/dokument/H9B319.text" | grep -i "2011.*1029"
 
 ```html
 <b>Ändringsregister</b>:
-<a href="http://rkrattsbaser.gov.se/sfsr?bet=2011:1029">SFSR (Regeringskansliet)</a>
+<a href="http://rkrattsbaser.gov.se/sfsr?bet=2011:1029"
+  >SFSR (Regeringskansliet)</a
+>
 ```
 
 **SFSR = Svensk författningssamlings ändringsregister** (Swedish Statute Book Amendment Register)
+
 - External service maintained by Regeringskansliet (Government Offices)
 - Provides complete amendment history
 - Shows ALL amendments, not just latest
@@ -129,27 +138,27 @@ curl -s "https://data.riksdagen.se/dokument/H9B319.text" | grep -i "2011.*1029"
 
 ### ✅ Available Features
 
-| Feature | Status | Details |
-|---------|--------|---------|
-| **SFS Full Text** | ✅ Excellent | Consolidated version with all amendments |
-| **SFS Metadata** | ✅ Excellent | Title, date, department, beteckning |
-| **Latest Amendment** | ✅ Good | Via `undertitel` field ("t.o.m. SFS YYYY:NNN") |
-| **JSON/XML API** | ✅ Excellent | Clean, well-documented |
-| **Pagination** | ✅ Good | `p` (page) and `sz` (size) parameters |
-| **Date Range** | ✅ Excellent | 1968-2025 (11,351 documents) |
-| **Search** | ⚠️ Basic | Keyword matching only |
-| **Status Info** | ⚠️ Partial | "Utfärdad" and "Ändrad" dates |
+| Feature              | Status       | Details                                        |
+| -------------------- | ------------ | ---------------------------------------------- |
+| **SFS Full Text**    | ✅ Excellent | Consolidated version with all amendments       |
+| **SFS Metadata**     | ✅ Excellent | Title, date, department, beteckning            |
+| **Latest Amendment** | ✅ Good      | Via `undertitel` field ("t.o.m. SFS YYYY:NNN") |
+| **JSON/XML API**     | ✅ Excellent | Clean, well-documented                         |
+| **Pagination**       | ✅ Good      | `p` (page) and `sz` (size) parameters          |
+| **Date Range**       | ✅ Excellent | 1968-2025 (11,351 documents)                   |
+| **Search**           | ⚠️ Basic     | Keyword matching only                          |
+| **Status Info**      | ⚠️ Partial   | "Utfärdad" and "Ändrad" dates                  |
 
 ### ❌ Missing Features
 
-| Feature | Status | Workaround |
-|---------|--------|------------|
-| **Cross-References** | ❌ Not Available | Use Lagrummet RInfo or parse full text |
-| **Complete Amendment Chain** | ❌ Not Available | Use SFSR (rkrattsbaser.gov.se) |
-| **Repeal Status** | ❌ Not Explicit | Some docs have "Författningen är upphävd" in HTML |
-| **Court Cases** | ❌ Not Available | Use Lagrummet RInfo |
-| **Semantic Sections (§)** | ❌ Not Structured | Full text only, no structured § data |
-| **Pre-1968 Laws** | ❌ Not Available | Use Lagrummet or historical archives |
+| Feature                      | Status            | Workaround                                        |
+| ---------------------------- | ----------------- | ------------------------------------------------- |
+| **Cross-References**         | ❌ Not Available  | Use Lagrummet RInfo or parse full text            |
+| **Complete Amendment Chain** | ❌ Not Available  | Use SFSR (rkrattsbaser.gov.se)                    |
+| **Repeal Status**            | ❌ Not Explicit   | Some docs have "Författningen är upphävd" in HTML |
+| **Court Cases**              | ❌ Not Available  | Use Lagrummet RInfo                               |
+| **Semantic Sections (§)**    | ❌ Not Structured | Full text only, no structured § data              |
+| **Pre-1968 Laws**            | ❌ Not Available  | Use Lagrummet or historical archives              |
 
 ---
 
@@ -162,6 +171,7 @@ GET https://data.riksdagen.se/dokumentlista/?doktyp=SFS&utformat=json&p={page}&s
 ```
 
 **Parameters:**
+
 - `doktyp=SFS` - Filter to SFS documents only
 - `utformat=json` - Response format (json, xml, csv, text, html)
 - `p={page}` - Page number (1-indexed)
@@ -170,6 +180,7 @@ GET https://data.riksdagen.se/dokumentlista/?doktyp=SFS&utformat=json&p={page}&s
 - `sortorder=desc` - Descending order
 
 **Response:**
+
 ```json
 {
   "dokumentlista": {
@@ -180,14 +191,19 @@ GET https://data.riksdagen.se/dokumentlista/?doktyp=SFS&utformat=json&p={page}&s
     "@traff_till": "100",
     "@nasta_sida": "http://data.riksdagen.se/dokumentlista/?doktyp=SFS&p=2&sz=100&utformat=json",
     "dokument": [
-      { /* SFS document object */ },
-      { /* ... */ }
+      {
+        /* SFS document object */
+      },
+      {
+        /* ... */
+      }
     ]
   }
 }
 ```
 
 **Complete Ingestion Strategy:**
+
 ```typescript
 async function ingestAllSFS() {
   const pageSize = 100
@@ -223,34 +239,44 @@ async function ingestAllSFS() {
 ### Endpoint 2: Individual SFS Document (Full Text)
 
 **HTML Version:**
+
 ```
 GET https://data.riksdagen.se/dokument/{id}.html
 ```
 
 **Text Version:**
+
 ```
 GET https://data.riksdagen.se/dokument/{id}.text
 ```
 
 **JSON Metadata:**
+
 ```
 GET https://data.riksdagen.se/dokument/{id}.json
 ```
 
 **Example:**
+
 ```typescript
-const id = "sfs-2011-1029"
+const id = 'sfs-2011-1029'
 
 // Get full HTML (for parsing)
-const htmlResponse = await fetch(`https://data.riksdagen.se/dokument/${id}.html`)
+const htmlResponse = await fetch(
+  `https://data.riksdagen.se/dokument/${id}.html`
+)
 const html = await htmlResponse.text()
 
 // Get plain text (for embeddings)
-const textResponse = await fetch(`https://data.riksdagen.se/dokument/${id}.text`)
+const textResponse = await fetch(
+  `https://data.riksdagen.se/dokument/${id}.text`
+)
 const fullText = await textResponse.text()
 
 // Get JSON metadata
-const jsonResponse = await fetch(`https://data.riksdagen.se/dokument/${id}.json`)
+const jsonResponse = await fetch(
+  `https://data.riksdagen.se/dokument/${id}.json`
+)
 const metadata = await jsonResponse.json()
 ```
 
@@ -289,7 +315,7 @@ interface RiksdagenSFS {
 // Map to our LegalDocument schema
 const legalDocument: LegalDocument = {
   id: generateUUID(),
-  content_type: "SFS_LAW",
+  content_type: 'SFS_LAW',
   document_number: `SFS ${sfs.beteckning}`, // "SFS 2011:1029"
   title: sfs.titel,
   slug: slugify(`${sfs.beteckning} ${sfs.titel}`), // "2011-1029-lag-om-upphandling-pa-forsvars-och-sakerhetsomradet"
@@ -328,7 +354,7 @@ function extractLatestAmendment(undertitel: string | null): string | null {
 function determineStatus(sfs: RiksdagenSFS): DocumentStatus {
   // Check if HTML contains "Författningen är upphävd"
   // For MVP, assume all are ACTIVE unless proven repealed
-  return "ACTIVE"
+  return 'ACTIVE'
 }
 ```
 
@@ -339,6 +365,7 @@ function determineStatus(sfs: RiksdagenSFS): DocumentStatus {
 ### Problem: Riksdagen Search is Unreliable
 
 **Test Case:** Searching for "sfs-2011-1029" returned 20 documents:
+
 - Only 1 was the actual law
 - 19 were false positives (keyword matches on "2011" or "1029")
 
@@ -347,6 +374,7 @@ function determineStatus(sfs: RiksdagenSFS): DocumentStatus {
 #### Option 1: Lagrummet RInfo (Recommended for MVP)
 
 **Lagrummet provides:**
+
 - `changedBy` field showing amendment relationships
 - Structured cross-references in JSON-LD
 - Links between EU directives → Swedish implementing laws
@@ -371,30 +399,35 @@ function determineStatus(sfs: RiksdagenSFS): DocumentStatus {
 #### Option 2: Parse Full Text (Post-MVP)
 
 **Strategy:**
+
 1. Fetch full text from Riksdagen
 2. Extract SFS references using regex: `SFS \d{4}:\d+`
 3. Validate references exist in database
 4. Create `CrossReference` records
 
 **Regex Pattern:**
+
 ```typescript
 const SFS_PATTERN = /SFS\s+(\d{4}:\d+)/g
 
 function extractSFSReferences(fullText: string): string[] {
   const matches = fullText.matchAll(SFS_PATTERN)
-  return Array.from(matches, m => `SFS ${m[1]}`)
+  return Array.from(matches, (m) => `SFS ${m[1]}`)
 }
 ```
 
 **Example:**
+
 ```typescript
-const fullText = await fetch('https://data.riksdagen.se/dokument/sfs-2018-218.text')
+const fullText = await fetch(
+  'https://data.riksdagen.se/dokument/sfs-2018-218.text'
+)
 const refs = extractSFSReferences(fullText)
 // Result: ["SFS 2016:679", "SFS 2011:1029", ...]
 
 for (const ref of refs) {
   const targetDoc = await prisma.legalDocument.findFirst({
-    where: { document_number: ref }
+    where: { document_number: ref },
   })
 
   if (targetDoc) {
@@ -402,9 +435,9 @@ for (const ref of refs) {
       data: {
         source_document_id: currentDoc.id,
         target_document_id: targetDoc.id,
-        reference_type: "CITES",
-        context: "Referenced in full text",
-      }
+        reference_type: 'CITES',
+        context: 'Referenced in full text',
+      },
     })
   }
 }
@@ -413,12 +446,16 @@ for (const ref of refs) {
 #### Option 3: SFSR Amendment Register (Epic 8 - Change Detection)
 
 **For complete amendment history:**
+
 ```html
 <!-- From Riksdagen HTML -->
-<a href="http://rkrattsbaser.gov.se/sfsr?bet=2011:1029">SFSR (Regeringskansliet)</a>
+<a href="http://rkrattsbaser.gov.se/sfsr?bet=2011:1029"
+  >SFSR (Regeringskansliet)</a
+>
 ```
 
 **Strategy:**
+
 1. Parse HTML to extract SFSR link
 2. Fetch SFSR page for complete amendment list
 3. Populate `Amendment` table
@@ -430,10 +467,10 @@ for (const ref of refs) {
 
 ### Recommended Limits
 
-| Operation | Rate Limit | Reasoning |
-|-----------|------------|-----------|
-| **List API** | 10 req/sec | Conservative, government service |
-| **Full Text** | 5 req/sec | Larger payloads, be respectful |
+| Operation       | Rate Limit | Reasoning                           |
+| --------------- | ---------- | ----------------------------------- |
+| **List API**    | 10 req/sec | Conservative, government service    |
+| **Full Text**   | 5 req/sec  | Larger payloads, be respectful      |
 | **Burst Limit** | 50 req/min | Allow initial burst, then slow down |
 
 ### Implementation
@@ -441,13 +478,19 @@ for (const ref of refs) {
 ```typescript
 import PQueue from 'p-queue'
 
-const listQueue = new PQueue({ concurrency: 10, interval: 1000, intervalCap: 10 })
+const listQueue = new PQueue({
+  concurrency: 10,
+  interval: 1000,
+  intervalCap: 10,
+})
 const textQueue = new PQueue({ concurrency: 5, interval: 1000, intervalCap: 5 })
 
 // List API requests
 async function fetchDocumentList(page: number) {
   return listQueue.add(async () => {
-    const response = await fetch(`https://data.riksdagen.se/dokumentlista/?doktyp=SFS&p=${page}&sz=100&utformat=json`)
+    const response = await fetch(
+      `https://data.riksdagen.se/dokumentlista/?doktyp=SFS&p=${page}&sz=100&utformat=json`
+    )
     return response.json()
   })
 }
@@ -455,7 +498,9 @@ async function fetchDocumentList(page: number) {
 // Full text requests
 async function fetchFullText(id: string) {
   return textQueue.add(async () => {
-    const response = await fetch(`https://data.riksdagen.se/dokument/${id}.text`)
+    const response = await fetch(
+      `https://data.riksdagen.se/dokument/${id}.text`
+    )
     return response.text()
   })
 }
@@ -503,7 +548,9 @@ async function fetchWithRetry(url: string, maxRetries = 3) {
 **Endpoint:** `POST /api/admin/ingest/riksdagen-sfs`
 
 **Process:**
+
 1. **Fetch List (11,351 documents, ~114 pages at 100/page)**
+
    ```typescript
    for (let page = 1; page <= 114; page++) {
      const docs = await fetchDocumentList(page)
@@ -514,6 +561,7 @@ async function fetchWithRetry(url: string, maxRetries = 3) {
    ```
 
 2. **Worker Process (Vercel Cron)**
+
    ```typescript
    // api/cron/ingest-sfs/route.ts
    export async function GET() {
@@ -532,7 +580,7 @@ async function fetchWithRetry(url: string, maxRetries = 3) {
        await prisma.legalDocument.upsert({
          where: { document_number: `SFS ${sfs.beteckning}` },
          create: mapToLegalDocument(sfs, fullText, summary),
-         update: { full_text: fullText, summary, updated_at: new Date() }
+         update: { full_text: fullText, summary, updated_at: new Date() },
        })
 
        await job.complete()
@@ -543,6 +591,7 @@ async function fetchWithRetry(url: string, maxRetries = 3) {
    ```
 
 3. **Progress Tracking**
+
    ```typescript
    const job = await prisma.backgroundJob.create({
      data: {
@@ -550,17 +599,18 @@ async function fetchWithRetry(url: string, maxRetries = 3) {
        status: 'RUNNING',
        progress_current: 0,
        progress_total: 11351,
-     }
+     },
    })
 
    // Update progress every 100 documents
    await prisma.backgroundJob.update({
      where: { id: job.id },
-     data: { progress_current: { increment: 100 } }
+     data: { progress_current: { increment: 100 } },
    })
    ```
 
 **Estimates:**
+
 - **API requests:** 114 (list) + 11,351 (full text) = 11,465 requests
 - **Time at 5 req/sec:** 38 minutes (list) + 38 hours (full text) = ~38 hours
 - **OpenAI summary cost:** 11,351 × $0.01 = $113.51
@@ -570,59 +620,66 @@ async function fetchWithRetry(url: string, maxRetries = 3) {
 
 ## 9. Comparison: Riksdagen vs Lagrummet
 
-| Factor | Riksdagen | Lagrummet RInfo |
-|--------|-----------|-----------------|
-| **SFS Count** | 11,351 (1968-2025) | Unknown (claims 50K-100K?) |
-| **Date Range** | 1968-2025 | Possibly pre-1968 |
-| **Latest Data** | ✅ Oct 30, 2025 | Unknown freshness |
-| **API Type** | REST (JSON/XML) | REST + JSON-LD + SPARQL |
-| **API Reliability** | ✅ Excellent uptime | ⚠️ Intermittent timeouts |
-| **Documentation** | ✅ Good | ⚠️ Limited, GitHub |
-| **Full Text** | ✅ Clean HTML/Text | ✅ Via content URLs |
+| Factor                 | Riksdagen                 | Lagrummet RInfo                 |
+| ---------------------- | ------------------------- | ------------------------------- |
+| **SFS Count**          | 11,351 (1968-2025)        | Unknown (claims 50K-100K?)      |
+| **Date Range**         | 1968-2025                 | Possibly pre-1968               |
+| **Latest Data**        | ✅ Oct 30, 2025           | Unknown freshness               |
+| **API Type**           | REST (JSON/XML)           | REST + JSON-LD + SPARQL         |
+| **API Reliability**    | ✅ Excellent uptime       | ⚠️ Intermittent timeouts        |
+| **Documentation**      | ✅ Good                   | ⚠️ Limited, GitHub              |
+| **Full Text**          | ✅ Clean HTML/Text        | ✅ Via content URLs             |
 | **Amendment Tracking** | ⚠️ Latest only ("t.o.m.") | ✅ Complete chain (`changedBy`) |
-| **Cross-References** | ❌ Not available | ✅ Structured JSON-LD |
-| **Court Cases** | ❌ Not available | ✅ Available |
-| **Semantic Structure** | ❌ Not available | ⚠️ Limited |
+| **Cross-References**   | ❌ Not available          | ✅ Structured JSON-LD           |
+| **Court Cases**        | ❌ Not available          | ✅ Available                    |
+| **Semantic Structure** | ❌ Not available          | ⚠️ Limited                      |
 
 ### Decision Matrix
 
-| Use Case | Source | Reasoning |
-|----------|--------|-----------|
-| **SFS Full Text (MVP)** | **Riksdagen** | Reliable, fast, 11,351 docs sufficient |
-| **SFS Pre-1968** | Lagrummet | If needed (rare) |
-| **Amendment Chains** | Lagrummet + SFSR | For Epic 8 change detection |
-| **Cross-References** | Lagrummet | Riksdagen search unreliable |
-| **Court Cases** | Lagrummet | Only source |
-| **EU Legislation** | EUR-Lex | Only source |
+| Use Case                | Source           | Reasoning                              |
+| ----------------------- | ---------------- | -------------------------------------- |
+| **SFS Full Text (MVP)** | **Riksdagen**    | Reliable, fast, 11,351 docs sufficient |
+| **SFS Pre-1968**        | Lagrummet        | If needed (rare)                       |
+| **Amendment Chains**    | Lagrummet + SFSR | For Epic 8 change detection            |
+| **Cross-References**    | Lagrummet        | Riksdagen search unreliable            |
+| **Court Cases**         | Lagrummet        | Only source                            |
+| **EU Legislation**      | EUR-Lex          | Only source                            |
 
 ---
 
 ## 10. Risks & Mitigations
 
 ### Risk 1: Missing Pre-1968 Laws (LOW)
+
 **Impact:** Some historical laws not in Riksdagen
 **Likelihood:** Low (most compliance laws are post-1968)
 **Mitigation:** Add Lagrummet as secondary source if users request older laws
 
 ### Risk 2: Repeal Status Not Explicit (MEDIUM)
+
 **Impact:** May show repealed laws as active
 **Likelihood:** Medium (no structured repeal field)
 **Mitigation:**
+
 - Parse HTML for "Författningen är upphävd"
 - Cross-check with Lagrummet `inForce` field
 - Manual review of top 100 most-referenced laws
 
 ### Risk 3: Amendment Chain Incomplete (MEDIUM)
+
 **Impact:** Can't show full amendment history
 **Likelihood:** High (only "t.o.m." latest amendment)
 **Mitigation:**
+
 - Use Lagrummet's `changedBy` field for complete chain
 - Scrape SFSR (rkrattsbaser.gov.se) for Epic 8
 
 ### Risk 4: No Semantic Sections (LOW)
+
 **Impact:** Can't chunk by § (section) easily
 **Likelihood:** Certain (full text only)
 **Mitigation:**
+
 - Parse HTML `<a class="paragraf" name="K1P1">` tags
 - Use regex to extract § markers
 - For MVP, chunk by token count (500-800) not sections
@@ -634,6 +691,7 @@ async function fetchWithRetry(url: string, maxRetries = 3) {
 ### ✅ Riksdagen API Recommendation: APPROVED for MVP
 
 **Strengths:**
+
 - ✅ 11,351 SFS laws (1968-2025) - sufficient for MVP
 - ✅ Reliable, government-backed service
 - ✅ Clean JSON/XML API
@@ -642,6 +700,7 @@ async function fetchWithRetry(url: string, maxRetries = 3) {
 - ✅ Well-documented
 
 **Limitations:**
+
 - ❌ No cross-references (use Lagrummet)
 - ❌ No court cases (use Lagrummet)
 - ❌ Incomplete amendment chains (use Lagrummet + SFSR for Epic 8)
@@ -650,11 +709,13 @@ async function fetchWithRetry(url: string, maxRetries = 3) {
 ### Updated External API Strategy
 
 **MVP (Epic 2):**
+
 1. **Riksdagen API** - PRIMARY source for SFS laws (11,351 documents)
 2. **Lagrummet RInfo** - Court cases + cross-references + amendment chains
 3. **EUR-Lex CELLAR** - EU legislation (regulations/directives)
 
 **Post-MVP:**
+
 - SFSR (rkrattsbaser.gov.se) - Complete amendment history for Epic 8
 - Riksdagen API - Propositions, government inquiries (contextual depth)
 
@@ -694,9 +755,18 @@ function parseEffectiveDate(html: string, publicationDate: Date): Date | null {
 
   // Swedish month names mapping
   const months: Record<string, number> = {
-    'januari': 0, 'februari': 1, 'mars': 2, 'april': 3,
-    'maj': 4, 'juni': 5, 'juli': 6, 'augusti': 7,
-    'september': 8, 'oktober': 9, 'november': 10, 'december': 11
+    januari: 0,
+    februari: 1,
+    mars: 2,
+    april: 3,
+    maj: 4,
+    juni: 5,
+    juli: 6,
+    augusti: 7,
+    september: 8,
+    oktober: 9,
+    november: 10,
+    december: 11,
   }
 
   // Try each pattern
@@ -728,10 +798,12 @@ function parseEffectiveDate(html: string, publicationDate: Date): Date | null {
 ```
 
 **Expected Coverage:**
+
 - ~80% of laws will have explicit effective date in text
 - ~20% will fall back to publication date (acceptable - usually same or within days)
 
 **Edge Cases:**
+
 - Future effective dates: "träder i kraft den 1 januari 2026" - handled correctly
 - Phased rollouts: "träder i kraft för kommuner den..." - take first date mentioned
 - Conditional: "träder i kraft dagen efter kungörelsen" - use publication date
@@ -750,11 +822,11 @@ function parseEffectiveDate(html: string, publicationDate: Date): Date | null {
 function detectDocumentStatus(html: string, title: string): DocumentStatus {
   // Priority 1: Check for explicit repeal notice (most reliable)
   const repealNotices = [
-    'Författningen är upphävd',           // "This regulation is repealed"
-    'Lagen är upphävd',                   // "This law is repealed"
-    'Förordningen är upphävd',            // "This ordinance is repealed"
-    'upphävd genom',                       // "repealed by..."
-    'har upphävts',                        // "has been repealed"
+    'Författningen är upphävd', // "This regulation is repealed"
+    'Lagen är upphävd', // "This law is repealed"
+    'Förordningen är upphävd', // "This ordinance is repealed"
+    'upphävd genom', // "repealed by..."
+    'har upphävts', // "has been repealed"
   ]
 
   for (const notice of repealNotices) {
@@ -765,8 +837,8 @@ function detectDocumentStatus(html: string, title: string): DocumentStatus {
 
   // Priority 2: Check title for repeal indicator (secondary check)
   const titleIndicators = [
-    '(upphävd)',                           // "(repealed)" in title
-    '(utgått)',                            // "(expired)" in title
+    '(upphävd)', // "(repealed)" in title
+    '(utgått)', // "(expired)" in title
   ]
 
   for (const indicator of titleIndicators) {
@@ -777,8 +849,8 @@ function detectDocumentStatus(html: string, title: string): DocumentStatus {
 
   // Priority 3: Check if law has been superseded (replacement law referenced)
   const supersededPatterns = [
-    /ersatt av (?:SFS |)(\d{4}:\d+)/i,    // "replaced by SFS YYYY:NNN"
-    /avlöst av (?:SFS |)(\d{4}:\d+)/i,    // "succeeded by SFS YYYY:NNN"
+    /ersatt av (?:SFS |)(\d{4}:\d+)/i, // "replaced by SFS YYYY:NNN"
+    /avlöst av (?:SFS |)(\d{4}:\d+)/i, // "succeeded by SFS YYYY:NNN"
   ]
 
   for (const pattern of supersededPatterns) {
@@ -799,16 +871,19 @@ function detectDocumentStatus(html: string, title: string): DocumentStatus {
 ```
 
 **Detection Confidence:**
+
 - **High confidence (95%+):** "Författningen är upphävd" in HTML
 - **Medium confidence (85%):** "(upphävd)" in title
 - **Low confidence (70%):** "ersatt av" patterns (may be reference, not repeal)
 
 **Validation Strategy:**
+
 - After ingestion, spot-check 100 random laws marked ACTIVE
 - Search for known repealed laws (e.g., old arbetstidslag from 1970s)
 - Cross-check with Lagrummet's `inForce` field for top 1000 most-referenced laws
 
 **False Positive Handling:**
+
 - If law mistakenly marked REPEALED, can be manually overridden in admin panel
 - Or run batch update query after cross-checking with Lagrummet
 
@@ -823,7 +898,10 @@ function detectDocumentStatus(html: string, title: string): DocumentStatus {
 **Implementation Strategy:**
 
 ```typescript
-function extractSFSCitations(html: string, currentDocId: string): CrossReference[] {
+function extractSFSCitations(
+  html: string,
+  currentDocId: string
+): CrossReference[] {
   const crossRefs: CrossReference[] = []
 
   // Regex pattern for SFS citations
@@ -832,11 +910,11 @@ function extractSFSCitations(html: string, currentDocId: string): CrossReference
 
   let match
   while ((match = sfsPattern.exec(html)) !== null) {
-    const citedSfsNumber = `SFS ${match[1]}`  // Normalize to "SFS YYYY:NNN"
+    const citedSfsNumber = `SFS ${match[1]}` // Normalize to "SFS YYYY:NNN"
 
     // Lookup cited law in database
     const citedLaw = await prisma.legalDocument.findUnique({
-      where: { document_number: citedSfsNumber }
+      where: { document_number: citedSfsNumber },
     })
 
     if (citedLaw && citedLaw.id !== currentDocId) {
@@ -845,7 +923,7 @@ function extractSFSCitations(html: string, currentDocId: string): CrossReference
         source_document_id: currentDocId,
         target_document_id: citedLaw.id,
         reference_type: 'CITES',
-        context: extractContextAroundMatch(html, match.index)  // 50 chars before/after
+        context: extractContextAroundMatch(html, match.index), // 50 chars before/after
       })
     }
   }
@@ -868,7 +946,7 @@ function extractContextAroundMatch(html: string, matchIndex: number): string {
 
 function deduplicateByTargetId(refs: CrossReference[]): CrossReference[] {
   const seen = new Set<string>()
-  return refs.filter(ref => {
+  return refs.filter((ref) => {
     if (seen.has(ref.target_document_id)) {
       return false
     }
@@ -879,22 +957,26 @@ function deduplicateByTargetId(refs: CrossReference[]): CrossReference[] {
 ```
 
 **Expected Results:**
+
 - **Average citations per law:** 5-10 (varies widely - some have 0, constitutional laws have 50+)
 - **Total cross-references:** ~50,000-100,000 (11,351 laws × 5-10 avg)
 - **Coverage:** ~70% of laws will have at least 1 citation
 - **Accuracy:** ~90% precision (some false positives from historical references)
 
 **Performance Optimization:**
+
 - Run citation extraction as separate background job AFTER all laws ingested
 - This ensures cited laws exist in database for lookup
 - Batch process in chunks of 500 laws to avoid memory issues
 
 **Phase 2 Enhancement:**
+
 - Use Lagrummet RInfo's structured JSON-LD cross-references to fill gaps
 - Lagrummet provides `references` array with structured legal citations
 - Merge Riksdagen extraction + Lagrummet data for comprehensive coverage
 
 **UI Impact:**
+
 - Enables "Relaterade lagar" (Related Laws) tab on law detail pages
 - Shows bidirectional relationships:
   - "Denna lag hänvisar till:" (This law cites...)
@@ -904,11 +986,11 @@ function deduplicateByTargetId(refs: CrossReference[]): CrossReference[] {
 
 ### 12.4 Summary: Data Extraction Confidence Levels
 
-| Field | Extraction Method | Confidence | Fallback |
-|-------|------------------|------------|----------|
-| **Effective Date** | Regex parsing of transition provisions | 80% | Use publication_date |
-| **Status (REPEALED)** | Multi-pattern text detection | 95% | Default to ACTIVE |
-| **Cross-References** | SFS citation regex extraction | 90% | Phase 2: Lagrummet RInfo |
+| Field                 | Extraction Method                      | Confidence | Fallback                 |
+| --------------------- | -------------------------------------- | ---------- | ------------------------ |
+| **Effective Date**    | Regex parsing of transition provisions | 80%        | Use publication_date     |
+| **Status (REPEALED)** | Multi-pattern text detection           | 95%        | Default to ACTIVE        |
+| **Cross-References**  | SFS citation regex extraction          | 90%        | Phase 2: Lagrummet RInfo |
 
 **All three extraction strategies are PRODUCTION-READY** with acceptable confidence levels and clear fallback paths.
 

@@ -20,17 +20,17 @@ We use a **three-stage approach** that balances conversion optimization, lead ca
 
 ```typescript
 interface AnonymousSession {
-  sessionId: string, // UUID
-  orgNumber: string,
-  companyName: string,
-  sniCode: string,
-  websiteUrl?: string,
-  contextAnswers: Record<string, boolean>,
-  phase1Laws: string[], // 15-30 laws shown immediately
-  createdAt: Date,
-  ipAddress: string, // For analytics
-  userAgent: string,
-  referrer?: string, // Track marketing source
+  sessionId: string // UUID
+  orgNumber: string
+  companyName: string
+  sniCode: string
+  websiteUrl?: string
+  contextAnswers: Record<string, boolean>
+  phase1Laws: string[] // 15-30 laws shown immediately
+  createdAt: Date
+  ipAddress: string // For analytics
+  userAgent: string
+  referrer?: string // Track marketing source
 }
 
 // Store in Redis with 24-hour expiration
@@ -61,6 +61,7 @@ async function createAnonymousSession(data: CompanyContext): Promise<string> {
 ```
 
 **Benefits:**
+
 - No database pollution with abandoned sessions
 - Low resource usage (Redis only)
 - Fast performance
@@ -76,18 +77,21 @@ async function createAnonymousSession(data: CompanyContext): Promise<string> {
 
 ```typescript
 interface LeadCapture {
-  id: string,
-  email: string,
-  sessionId: string, // Links to Redis session
-  orgNumber: string,
-  companyName: string,
-  marketingConsent: boolean,
-  source: 'widget_trial',
-  createdAt: Date,
-  sessionData: AnonymousSession, // Snapshot for safety
+  id: string
+  email: string
+  sessionId: string // Links to Redis session
+  orgNumber: string
+  companyName: string
+  marketingConsent: boolean
+  source: 'widget_trial'
+  createdAt: Date
+  sessionData: AnonymousSession // Snapshot for safety
 }
 
-async function captureLeadEmail(email: string, sessionId: string): Promise<void> {
+async function captureLeadEmail(
+  email: string,
+  sessionId: string
+): Promise<void> {
   const session = await redis.get(`session:${sessionId}`)
   if (!session) throw new Error('Session expired')
 
@@ -135,6 +139,7 @@ async function captureLeadEmail(email: string, sessionId: string): Promise<void>
 ```
 
 **Marketing Automation Flow:**
+
 1. **Immediate:** "Din laglista är sparad" email with resume link
 2. **Day 1:** "Visste du att..." education email
 3. **Day 3:** "3 lagar som ofta missas" value email
@@ -152,7 +157,7 @@ async function captureLeadEmail(email: string, sessionId: string): Promise<void>
 async function convertLeadToUser(
   leadId: string,
   password: string
-): Promise<{ user: User, workspace: Workspace }> {
+): Promise<{ user: User; workspace: Workspace }> {
   const lead = await prisma.lead.findUnique({
     where: { id: leadId },
   })
@@ -246,24 +251,28 @@ async function convertLeadToUser(
 ## Benefits of This Approach
 
 ### 1. Conversion Optimization
+
 - **Low friction:** No email required to see value
 - **Value first:** Show personalized laws before asking for email
 - **Progressive commitment:** Email → Password in separate steps
 - **Resume capability:** Users can return to saved session
 
 ### 2. Lead Generation
+
 - **MQL capture:** Get email even if they don't convert immediately
 - **Marketing automation:** Nurture leads over time
 - **Attribution tracking:** Know which campaigns drive trials
 - **Abandonment recovery:** Re-engage users who didn't complete
 
 ### 3. Resource Efficiency
+
 - **No database pollution:** Abandoned sessions auto-expire
 - **Deferred computation:** Phase 2 laws only for real signups
 - **Cost control:** No workspace overhead for trials
 - **Clean data:** Only real users in main database
 
 ### 4. Data Intelligence
+
 - **Conversion funnel:** Track drop-off at each stage
 - **Industry insights:** See which industries trial most
 - **Feature validation:** Track which laws generate interest
@@ -292,29 +301,29 @@ async function convertLeadToUser(
 ```typescript
 interface OnboardingMetrics {
   funnel: {
-    sessionsStarted: number,      // Widget trials
-    emailsCaptured: number,       // MQLs
-    accountsCreated: number,      // Conversions
-    workspacesActive: number,     // Retained users
-  },
+    sessionsStarted: number // Widget trials
+    emailsCaptured: number // MQLs
+    accountsCreated: number // Conversions
+    workspacesActive: number // Retained users
+  }
 
   conversionRates: {
-    trialToLead: number,          // Sessions → Email (target: 30%)
-    leadToCustomer: number,       // Email → Signup (target: 20%)
-    overallConversion: number,    // Sessions → Signup (target: 6%)
-  },
+    trialToLead: number // Sessions → Email (target: 30%)
+    leadToCustomer: number // Email → Signup (target: 20%)
+    overallConversion: number // Sessions → Signup (target: 6%)
+  }
 
   timing: {
-    avgTimeToEmail: number,       // How long before email capture
-    avgTimeToSignup: number,      // Email → Signup duration
-    sessionAbandonment: number,   // % who never give email
-  },
+    avgTimeToEmail: number // How long before email capture
+    avgTimeToSignup: number // Email → Signup duration
+    sessionAbandonment: number // % who never give email
+  }
 
   quality: {
-    phase2CompletionRate: number, // % who wait for all laws
-    firstWeekRetention: number,   // Still active after 7 days
-    paidConversion: number,        // Free → Paid upgrade rate
-  },
+    phase2CompletionRate: number // % who wait for all laws
+    firstWeekRetention: number // Still active after 7 days
+    paidConversion: number // Free → Paid upgrade rate
+  }
 }
 ```
 
@@ -323,21 +332,27 @@ interface OnboardingMetrics {
 ## Alternative Approaches Considered
 
 ### Option A: Create Full Workspace Immediately
+
 ❌ **Rejected because:**
+
 - Database pollution with abandoned trials
 - Higher infrastructure costs
 - Complex cleanup logic needed
 - GDPR concerns with storing data without consent
 
 ### Option B: No Persistence Until Signup
+
 ❌ **Rejected because:**
+
 - Lose users who want to think about it
 - Can't do abandonment recovery
 - No lead capture for marketing
 - Poor user experience if browser crashes
 
 ### Option C: Local Storage Only
+
 ❌ **Rejected because:**
+
 - Can't resume on different device
 - No lead capture capability
 - Lost data if cookies cleared
@@ -348,6 +363,7 @@ interface OnboardingMetrics {
 ## Conclusion
 
 The **hybrid session-based model with MQL capture** provides the best balance of:
+
 - High conversion rates (progressive commitment)
 - Lead generation (email capture without full signup)
 - Resource efficiency (Redis sessions, not full workspaces)

@@ -27,17 +27,18 @@ Through systematic platform analysis and data extraction, we've reverse-engineer
 
 **Scraped Data Reveals:**
 
-| Law List | Total Laws | Categories | Key Focus Areas |
-|----------|-----------|------------|-----------------|
-| Arbetsmiljö | 115 | ALLMÄNNA REGLER, ARBETSUTRUSTNING, etc. | Workplace safety, employer obligations |
-| Miljö | 101 | ALLMÄNNA REGLER, AVFALL, etc. | Environmental compliance, waste management |
-| Lista-72160 | 58 | Multiple | Industry-specific regulations |
-| Lista-72163 | 94 | Multiple | Sector-specific requirements |
-| Lista-72162 | 3 | Limited | Niche compliance area |
+| Law List    | Total Laws | Categories                              | Key Focus Areas                            |
+| ----------- | ---------- | --------------------------------------- | ------------------------------------------ |
+| Arbetsmiljö | 115        | ALLMÄNNA REGLER, ARBETSUTRUSTNING, etc. | Workplace safety, employer obligations     |
+| Miljö       | 101        | ALLMÄNNA REGLER, AVFALL, etc.           | Environmental compliance, waste management |
+| Lista-72160 | 58         | Multiple                                | Industry-specific regulations              |
+| Lista-72163 | 94         | Multiple                                | Sector-specific requirements               |
+| Lista-72162 | 3          | Limited                                 | Niche compliance area                      |
 
 **Total Documented Laws:** 371+ across 5 major compliance categories
 
 **Notisum's Categorization System:**
+
 - **Hierarchical structure:** Numbered categories (01 ALLMÄNNA REGLER, 02 HR, etc.)
 - **Manual curation:** Law lists appear manually maintained and updated
 - **Limited personalization:** Same lists for all customers regardless of business type
@@ -61,6 +62,7 @@ Through systematic platform analysis and data extraction, we've reverse-engineer
 ```
 
 **Observations:**
+
 - ✅ Comprehensive descriptions (200-500 words per law)
 - ✅ Amendment tracking (latest SFS updates)
 - ✅ Direct links to full legal text
@@ -97,6 +99,7 @@ Through systematic platform analysis and data extraction, we've reverse-engineer
    - No AI-powered relevance scoring
 
 **Missing Capabilities (Laglig.se Opportunities):**
+
 - ❌ AI-powered personalized law generation
 - ❌ Conversational chatbot for legal questions
 - ❌ Automated compliance task management (Kanban)
@@ -152,12 +155,14 @@ Through systematic platform analysis and data extraction, we've reverse-engineer
 ### Validated Pricing Intelligence:
 
 **Notisum's Price Points:**
+
 - **Small Enterprise:** ~5,000 SEK/month
 - **Mid-Market:** 8,000-10,000 SEK/month
 - **Enterprise:** 12,000-15,000 SEK/month
 - **Features:** Same product, pricing by number of users/locations
 
 **Market Positioning:**
+
 - **Target:** Legal departments in companies 250+ employees
 - **Value Prop:** Comprehensive legal database with expert commentary
 - **Weakness:** Completely inaccessible to SMBs (price + complexity)
@@ -178,6 +183,7 @@ Laglig.se:      |---|-------|------------|
 ```
 
 **The Opportunity:**
+
 - Notisum has validated willingness to pay 5,000-15,000 SEK at the high end
 - Laglig.se can capture the 400-1,995 SEK segment (97% of Swedish companies)
 - Eventually move upmarket with enterprise features at competitive 2,995 SEK
@@ -189,24 +195,28 @@ Laglig.se:      |---|-------|------------|
 ### Notisum's Technology Stack (Inferred):
 
 **Frontend:**
+
 - Legacy ASP.NET framework (based on URLs: `.aspx` extensions)
 - Server-side rendering (slow page loads)
 - Limited JavaScript interactivity
 - No modern SPA framework
 
 **Backend:**
+
 - Proprietary database architecture
 - Manual content management system
 - No API-first design (limited integration capabilities)
 - No real-time updates
 
 **Data Management:**
+
 - Manual law curation by legal experts
 - Static categorization system
 - No machine learning or AI
 - Update cycle appears quarterly based on SFS publication schedules
 
 **Mobile:**
+
 - Responsive design exists but poor UX
 - No native mobile app
 - Not optimized for mobile workflows
@@ -214,6 +224,7 @@ Laglig.se:      |---|-------|------------|
 ### Technology Debt = Competitive Moat for Laglig.se:
 
 **Notisum Cannot Easily:**
+
 1. ✅ Add AI/LLM capabilities (architecture not designed for it)
 2. ✅ Modernize UX without complete rebuild (legacy tech stack)
 3. ✅ Build mobile-first experience (not in their DNA)
@@ -221,6 +232,7 @@ Laglig.se:      |---|-------|------------|
 5. ✅ Integrate with modern tools like Fortnox (no API-first design)
 
 **Laglig.se's Technology Advantage:**
+
 - ✅ Built AI-first from day one (RAG database + LLM)
 - ✅ Modern stack (Next.js, Vercel, AI SDK)
 - ✅ API-first architecture (easy integrations)
@@ -235,14 +247,14 @@ Laglig.se:      |---|-------|------------|
 
 #### 1. Product Superiority
 
-| Capability | Notisum | Laglig.se | Competitive Advantage |
-|------------|---------|-----------|----------------------|
-| **Onboarding** | Manual, weeks to setup | AI-powered, 10 minutes | 100x faster time-to-value |
-| **Law Discovery** | Search + manual browse | AI generates YOUR list | Personalized from day 1 |
-| **Legal Guidance** | Static text | AI chatbot with citations | Interactive, context-aware |
-| **Compliance Tasks** | Manual tracking | Automated Kanban | Reduces admin time 80% |
-| **Mobile Experience** | Poor | Native-quality | Works where you work |
-| **Updates** | Manual notification | Proactive AI recommendations | Never miss a change |
+| Capability            | Notisum                | Laglig.se                    | Competitive Advantage      |
+| --------------------- | ---------------------- | ---------------------------- | -------------------------- |
+| **Onboarding**        | Manual, weeks to setup | AI-powered, 10 minutes       | 100x faster time-to-value  |
+| **Law Discovery**     | Search + manual browse | AI generates YOUR list       | Personalized from day 1    |
+| **Legal Guidance**    | Static text            | AI chatbot with citations    | Interactive, context-aware |
+| **Compliance Tasks**  | Manual tracking        | Automated Kanban             | Reduces admin time 80%     |
+| **Mobile Experience** | Poor                   | Native-quality               | Works where you work       |
+| **Updates**           | Manual notification    | Proactive AI recommendations | Never miss a change        |
 
 #### 2. Pricing Disruption
 
@@ -272,6 +284,7 @@ Enterprise Tier (2,995 SEK/month):
 **Laglig.se:** "Compliance for everyone" - Det är coolt med koll
 
 **Positioning Advantage:**
+
 - Notisum = intimidating, complex, expert-only
 - Laglig.se = accessible, aspirational, empowering
 - "Laglig.se" domain = inherent SEO and brand trust
@@ -279,11 +292,13 @@ Enterprise Tier (2,995 SEK/month):
 #### 4. Distribution Strategy
 
 **Notisum's Channels:**
+
 - Direct sales to legal departments
 - Slow, expensive enterprise sales cycles
 - Limited partnerships
 
 **Laglig.se's Channels:**
+
 - Product-led growth (free trial → conversion)
 - SEO dominance via "Laglig.se" domain
 - Fortnox partnership (600k instant distribution)
@@ -304,6 +319,7 @@ Enterprise Tier (2,995 SEK/month):
 - ✅ Achieve product-market fit with small businesses
 
 **Success Metrics:**
+
 - 500+ paying customers at 400-995 SEK tiers
 - <3% monthly churn
 - 10% trial-to-paid conversion
@@ -319,6 +335,7 @@ Enterprise Tier (2,995 SEK/month):
 - ✅ Launch 1,995 SEK tier for growing businesses
 
 **Success Metrics:**
+
 - 2,500+ customers across all tiers
 - 30% revenue from 995+ SEK tiers
 - First enterprise customer at 2,995 SEK
@@ -334,6 +351,7 @@ Enterprise Tier (2,995 SEK/month):
 - ✅ Win enterprise deals on price (50% savings) + product (better UX)
 
 **Success Metrics:**
+
 - 50+ enterprise customers (2,995 SEK tier)
 - Case studies showing companies leaving Notisum
 - 20M+ SEK ARR
@@ -358,6 +376,7 @@ Enterprise Tier (2,995 SEK/month):
 
 **Notisum Action:** Lower prices to 2,000-3,000 SEK to compete
 **Laglig.se Response:**
+
 - Continue dominating 400-1,500 SEK segment (they can't profitably go this low)
 - Emphasize superior UX and AI features (price isn't only factor)
 - Leverage "Laglig.se" brand (cooler, more accessible)
@@ -366,6 +385,7 @@ Enterprise Tier (2,995 SEK/month):
 
 **Notisum Action:** Bolt-on AI chatbot to existing platform
 **Laglig.se Response:**
+
 - AI-first architecture will always be superior to bolt-on
 - Speed of iteration advantage (Next.js vs. legacy ASP.NET)
 - Onboarding + personalization = differentiation they can't copy easily
@@ -374,6 +394,7 @@ Enterprise Tier (2,995 SEK/month):
 
 **Notisum Action:** Create "Notisum Lite" for SMBs
 **Laglig.se Response:**
+
 - "Laglig.se" brand advantage (they'd be "the lite version")
 - Already established in SMB segment by then
 - Switching costs (customers already using Laglig.se)
@@ -383,6 +404,7 @@ Enterprise Tier (2,995 SEK/month):
 
 **Notisum/Parent Company Action:** Try to acquire Laglig.se early
 **Laglig.se Response:**
+
 - Only consider if valuation >100M SEK and strategic fit
 - Alternative: Partner with Fortnox/Visma as protection
 - Focus on building independent value
@@ -391,6 +413,7 @@ Enterprise Tier (2,995 SEK/month):
 
 **Notisum Action:** Ignore SMB segment, focus on enterprise
 **Laglig.se Response:**
+
 - Perfect! Continue building moat in SMB
 - Eventually move upmarket and steal enterprise customers
 - Notisum realizes threat too late to respond effectively
@@ -485,4 +508,4 @@ Notisum has validated demand and pricing power at the high end. Their weaknesses
 
 ---
 
-*Competitive intelligence compiled from: Platform analysis (106 pages), law database scraping (371+ entries), feature analysis, and market research synthesis.*
+_Competitive intelligence compiled from: Platform analysis (106 pages), law database scraping (371+ entries), feature analysis, and market research synthesis._

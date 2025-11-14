@@ -6,13 +6,15 @@
 **Owner:** Product Team
 
 ---
+
 ## Changelog
 
-
 ### Version 1.3 (2025-11-03)
+
 **Dynamic Onboarding & Comprehensive Law Generation Update**
 
 **Major Changes:**
+
 - **Epic 4 Onboarding Flow Enhancement:** Updated from static Bolagsverket-only analysis to conversational dynamic questioning flow
   - Added Story 4.2b: NEW - Dynamic contextual questioning (3-5 AI-selected questions based on industry + previous answers)
   - Updated Story 4.3: Changed from "15-25 laws" to "two-phase generation (15-30 high-priority pre-signup, 60-80 total post-signup)"
@@ -40,21 +42,26 @@
   - Laws categorized into: Grundläggande, Arbetsmiljö, Branschspecifika, GDPR & Data, Ekonomi, Miljö, Övrigt
 
 **Rationale:**
+
 1. **Dynamic Questioning:** Bolagsverket data alone insufficient for accurate law selection. Industry-specific context (alcohol licensing, hazardous materials, subcontractors, etc.) dramatically affects applicable laws.
 2. **60-80 Law Coverage:** Competitive analysis of Notisum shows typical law lists contain 60-80 laws. Generating only 15-25 laws underserves users and misses compliance gaps.
 3. **Two-Phase Strategy:** Balances conversion (show value fast) with comprehensiveness (match competitor coverage). Phase 1 demonstrates "magic" in 2-3 minutes, Phase 2 completes coverage post-signup without blocking user.
 
 **Technical Implications:**
+
 - AI question selection requires GPT-4 with industry knowledge base
 - Phase 2 generation uses background job (not blocking request/response)
 - Session storage preserves partial onboarding state (24-hour expiry) for browser-close recovery
 - CompanyContext object stores all answers for downstream AI chat, notifications, and analytics
 
 ---
+
 ### Version 1.2 (2025-11-02)
+
 **Multi-Content-Type Architecture Update**
 
 **Major Changes:**
+
 - **Epic 2 Scope Expansion:** Changed from "10,000+ law database" to "170,000+ multi-content-type legal database"
   - Added Swedish Court Cases (AD, HD, HovR, HFD, MÖD, MIG): 15,000-20,000 pages
   - Added EU Legislation (Regulations, Directives): 110,000+ pages
@@ -97,15 +104,18 @@
 **Rationale:** Competitive analysis of Notisum revealed their SEO strategy relies on comprehensive content coverage across 18+ document types. To compete, Laglig.se MVP must cover SFS laws, court precedent, and EU legislation (7 content types, ~170K pages) to drive sufficient SEO traffic.
 
 **Data Source Status:**
+
 - ✅ Riksdagen API: Available, confirmed
 - ✅ EUR-Lex API: Available, confirmed
 - ✅ Domstolsverket API: Available, confirmed
 - ❌ AD Labour Court: Data quality issues in Notisum, investigate alternative sources post-MVP
 
 ### Version 1.1 (2025-11-01)
+
 **PRD Completion - Ready for Architect Handoff**
 
 **Changes:**
+
 - Added Post-MVP Roadmap section with explicit out-of-scope features
 - Added User Research & Validation Approach section
 - Added Technical Risk Areas section (6 high-complexity areas flagged)
@@ -113,6 +123,7 @@
 - Updated status to "Complete - Ready for Architect"
 
 ### Version 1.0 (2025-01-01)
+
 **Initial PRD Draft**
 
 - Complete epic structure (8 epics, 86 stories)
@@ -122,7 +133,6 @@
 - Revenue model and pricing tiers
 
 ---
-
 
 ## Goals and Background Context
 
@@ -191,6 +201,7 @@ Laglig.se transforms legal compliance from a reactive burden into proactive busi
 3. **Industry-specific guidance** (paid) - Tailored compliance packs for construction, restaurants, tech, manufacturing
 
 **Key Differentiators:**
+
 - **Freemium SEO Moat:** Public content ranks for everything, drives organic traffic
 - **RAG-Powered AI:** Zero-hallucination through comprehensive Swedish law database
 - **Proactive, Not Reactive:** Monitors legal changes and pushes tasks BEFORE deadlines
@@ -208,6 +219,7 @@ The project is **bootstrap-funded** with a **solo founder** handling development
 **Current Foundation:** This PRD is informed by competitive analysis (Notisum market validation, €40M ARR at poor UX), founder domain expertise in the Swedish SMB market, and analysis of existing legal compliance pain points.
 
 **MVP Validation Strategy:** The MVP serves as the primary user research vehicle. Key assumptions to validate post-launch:
+
 - **Assumption 1:** SMB owners will pay €399-899/month for compliance automation (validate via trial-to-paid conversion >25%)
 - **Assumption 2:** AI-powered guidance reduces need for legal consultants (validate via user interviews at Month 3)
 - **Assumption 3:** Change monitoring drives retention (validate via churn rate <5% monthly)
@@ -219,10 +231,10 @@ The project is **bootstrap-funded** with a **solo founder** handling development
 
 ### Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|---------|
-| 2025-01-01 | 1.0 | Initial PRD created from Project Brief and 7 feature specifications | John (PM Agent) |
-| 2025-11-01 | 1.1 | Added Post-MVP Roadmap, User Research section, Technical Risk Areas. Passed PM Checklist (92%% - Ready for Architect). | John (PM Agent) |
+| Date       | Version | Description                                                                                                            | Author          |
+| ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------- | --------------- |
+| 2025-01-01 | 1.0     | Initial PRD created from Project Brief and 7 feature specifications                                                    | John (PM Agent) |
+| 2025-11-01 | 1.1     | Added Post-MVP Roadmap, User Research section, Technical Risk Areas. Passed PM Checklist (92%% - Ready for Architect). | John (PM Agent) |
 
 ---
 
@@ -367,6 +379,7 @@ The project is **bootstrap-funded** with a **solo founder** handling development
 **NFR25:** The system SHALL provide graceful error messages for users, avoiding technical jargon (e.g., "We couldn't load that law right now" vs. "500 Internal Server Error").
 
 **NFR26:** The system SHALL implement email marketing automation for:
+
 - **Trial nurturing:** Day 1 welcome, Day 7 feature tips, Day 12 conversion reminder
 - **Newsletter signups:** Weekly legal updates, industry insights, product announcements for non-customers
 - **Email engagement tracking:** Open rates, click rates, conversion attribution
@@ -380,7 +393,7 @@ The project is **bootstrap-funded** with a **solo founder** handling development
 
 **Design Philosophy:** "Coolt med koll" - Compliance as aspirational, modern business infrastructure
 
-Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive, even *enjoyable* workflows. The UI should feel like **Jira met a modern legal AI assistant** - powerful for professionals, approachable for SMB owners.
+Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive, even _enjoyable_ workflows. The UI should feel like **Jira met a modern legal AI assistant** - powerful for professionals, approachable for SMB owners.
 
 **Core UX Principles:**
 
@@ -403,11 +416,13 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Interaction:** Users drag law cards, employee cards, task cards, files directly into AI chat sidebar to build contextual queries.
 
 **Why it works:**
+
 - **Tangible** - Makes abstract "context" feel physical and manipulable
 - **Discoverable** - Hover states and drop zones teach the interaction naturally
 - **Powerful** - Enables complex multi-entity queries without forms
 
 **Implementation notes:**
+
 - Visual feedback: Glow/highlight on hover, smooth animation on drop
 - Context pills appear above chat input showing active components
 - Max 10 components to prevent context overload
@@ -419,11 +434,13 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Interaction:** AI responses, onboarding law lists, and component suggestions stream word-by-word or card-by-card to frontend.
 
 **Why it works:**
+
 - **Perceived performance** - User sees progress immediately
 - **Trust building** - Watching AI "think" makes process transparent
 - **Engagement** - Streaming creates anticipation
 
 **Implementation notes:**
+
 - Vercel AI SDK `useChat` hook for text streaming
 - Component streaming: Law cards appear one-by-one
 - Graceful handling if stream interrupted
@@ -435,11 +452,13 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Interaction:** Law cards move across columns (Not Started → In Progress → Blocked → Review → Compliant) via drag-and-drop, Jira-style.
 
 **Why it works:**
+
 - **Familiar mental model** - Most users know Kanban from Trello/Jira/Asana
 - **Visual progress** - See compliance status at a glance
 - **Flexible workflow** - Users customize columns, add notes
 
 **Implementation notes:**
+
 - Use @dnd-kit or react-beautiful-dnd
 - Auto-save on card move
 - Mobile: Swipe instead of drag
@@ -451,6 +470,7 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Interaction:** Tooltips, hover states, and inline hints explain features without leaving page.
 
 **Why it works:**
+
 - **Self-serve** - Reduces support burden
 - **Contextual** - Help appears exactly when needed
 - **Non-intrusive** - Doesn't block workflow
@@ -462,6 +482,7 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Interaction:** Every AI answer includes inline citations `[1]` that show hover tooltips with source law text and clickable links.
 
 **Why it works:**
+
 - **Trust** - Users verify AI isn't hallucinating
 - **Learning** - Users discover related law sections organically
 - **Legal defensibility** - Answers traceable to official sources
@@ -488,6 +509,7 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Target Level:** WCAG AA (for MVP)
 
 **Key requirements:**
+
 - Keyboard navigation for all interactive elements
 - Screen reader compatibility (semantic HTML, ARIA labels)
 - Color contrast ratios ≥4.5:1 for normal text
@@ -503,12 +525,14 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Design Philosophy:** Minimalist, OpenAI-inspired, light mode default
 
 **Visual Direction:**
+
 - **Inspiration:** OpenAI's ChatGPT interface - clean, spacious, content-focused
 - **Whitespace:** Generous padding, breathing room
 - **Simplicity:** Minimal UI elements, hide complexity
 - **Light mode default:** Clean white/light gray backgrounds
 
 **Color Palette:**
+
 - **Primary:** Deep blue (#1e40af) - Trust, professionalism
 - **Accent:** Bright green (#10b981) - Compliance success
 - **Warning:** Amber (#f59e0b)
@@ -518,31 +542,37 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 - **Text:** Near-black (#111827)
 
 **Typography:**
+
 - **Sans-serif:** Inter, SF Pro, or system font stack
 - **Font weights:** Regular (400), Medium (500), Semibold (600)
 - **Monospace:** For SFS numbers and legal citations
 
 **UI Elements:**
+
 - **Rounded corners:** 8px border-radius
 - **Shadows:** Subtle shadow-sm and shadow-md
 - **Borders:** 1px, light gray, minimal use
 
 **Layout Principles:**
+
 - **Spacious:** 24px-32px gaps between sections
 - **Single column primary content:** Focused, centered
 - **Max-width content:** ~800px for readability
 
 **Tone of Voice:**
+
 - **Conversational, not bureaucratic**
 - **Confident, not preachy**
 - **Helpful, not condescending**
 
 **Iconography:**
+
 - **Minimal icon use:** Text-first
 - **Style:** Outlined icons (Heroicons, Lucide)
 - **Size:** 20px or 24px consistent
 
 **Reference:**
+
 - Primary inspiration: chat.openai.com
 - Secondary: linear.app
 
@@ -555,6 +585,7 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Framework:** shadcn/ui + Tailwind CSS
 
 **Rationale:**
+
 - Pre-built, accessible components
 - Minimalist aesthetic matches OpenAI inspiration
 - Components copied into codebase (full control)
@@ -567,20 +598,24 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 #### Standardized UI Patterns
 
 **Reusable Components Required:**
+
 - **Buttons:** Primary, Secondary, Ghost, Destructive variants
 - **Status Badges:** Compliant (green), Needs Attention (amber), Non-Compliant (red)
 - **Cards:** Law cards, Employee cards, Task cards (all draggable)
 - **Form Inputs:** Text, Textarea, Select (consistent styling)
 
 **Color System:**
+
 - Define Tailwind config with custom tokens
 - Ensures consistent colors across all components
 
 **Typography Scale:**
+
 - Semantic heading levels (H1-H4)
 - Body text sizes (large/default/small)
 
 **Spacing System:**
+
 - Use Tailwind's spacing scale consistently
 - Generous whitespace (OpenAI-inspired)
 
@@ -589,6 +624,7 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 #### Design Handoff Requirements
 
 **Architects will receive:**
+
 1. Component library specification
 2. Color token definitions for Tailwind config
 3. Typography scale and usage guidelines
@@ -602,22 +638,26 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Primary Target:** Web Responsive (Desktop + Tablet + Mobile)
 
 **Breakpoints:**
+
 - **Desktop:** 1280px+ (primary target)
 - **Tablet:** 768px-1279px
 - **Mobile:** 320px-767px
 
 **Platform priorities:**
+
 1. Desktop Chrome/Edge (70% of B2B users)
 2. Desktop Safari (Mac users)
 3. Mobile Safari (iPhone)
 4. Mobile Chrome (Android)
 
 **NOT in MVP:**
+
 - Native mobile apps
 - Desktop apps
 - Browser extensions
 
 **Progressive Web App (PWA):**
+
 - Add to homescreen capability
 - Offline mode for law pages
 - Push notifications (post-MVP)
@@ -631,12 +671,14 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 **Decision:** Single repository containing all application code
 
 **Rationale:**
+
 - Solo founder managing one codebase
 - Faster development with shared types
 - Atomic commits across frontend/backend
 - Easier refactoring
 
 **Structure:**
+
 ```
 laglig_se/
 ├── app/                 # Next.js App Router pages
@@ -656,6 +698,7 @@ laglig_se/
 **Decision:** Next.js monolith deployed to Vercel with serverless functions
 
 **Rationale:**
+
 - MVP speed (single deployment)
 - Vercel optimization
 - Cost efficiency
@@ -684,6 +727,7 @@ laglig_se/
    - Before each major release
 
 **NOT in MVP:**
+
 - Full E2E test suite
 - Visual regression testing
 - Load/performance testing
@@ -695,6 +739,7 @@ laglig_se/
 **Framework:** Next.js 14+ (App Router)
 
 **UI Libraries:**
+
 - shadcn/ui (Radix UI + Tailwind)
 - Tailwind CSS
 - @dnd-kit or react-beautiful-dnd
@@ -735,6 +780,7 @@ laglig_se/
 **Template Management:** React Email
 
 **Email Types:**
+
 - Transactional (signup, password reset, invites)
 - Marketing (newsletter, digests, updates)
 - Notifications (law changes, reminders)
@@ -766,12 +812,14 @@ laglig_se/
 ### Security & Compliance
 
 **GDPR Requirements:**
+
 - Data encryption at rest
 - Personnummer encrypted (AES-256)
 - Data export/deletion APIs
 - 30-day soft delete + purge
 
 **Authentication Security:**
+
 - bcrypt password hashing
 - Password complexity enforcement
 - Breach check (HaveIBeenPwned)
@@ -779,12 +827,14 @@ laglig_se/
 - CSRF protection
 
 **API Security:**
+
 - Rate limiting (10 req/sec per IP)
 - Zod input validation
 - SQL injection prevention (Prisma)
 - XSS prevention (React auto-escaping + CSP)
 
 **Infrastructure Security:**
+
 - HTTPS only
 - Security headers (CSP, X-Frame-Options)
 - Dependency scanning (Dependabot)
@@ -801,6 +851,7 @@ The following areas involve significant technical complexity or external depende
 **Complexity:** High - Core product differentiator with quality-critical requirements
 
 **Key Challenges:**
+
 - **Chunk size optimization:** Specified as 500-800 tokens (NFR24), but optimal size varies by law structure. May require experimentation.
 - **Retrieval parameters:** Top-k value, similarity threshold, reranking strategies need tuning for Swedish legal text.
 - **Embedding model selection:** `text-embedding-3-small` chosen for cost, but accuracy vs. `text-embedding-3-large` should be validated.
@@ -815,6 +866,7 @@ The following areas involve significant technical complexity or external depende
 **Complexity:** Medium - Critical external dependency for change detection
 
 **Key Challenges:**
+
 - **API reliability unknown:** No SLA from Riksdagen. What if API down during daily cron job (NFR10)?
 - **Rate limiting:** Specified as 10 req/sec (Story 2.1), but actual limits may differ. Risk of job timeout if throttled.
 - **API schema changes:** Government APIs can change without notice. Need versioning strategy.
@@ -829,6 +881,7 @@ The following areas involve significant technical complexity or external depende
 **Complexity:** Medium - Performance and cost implications at scale
 
 **Key Challenges:**
+
 - **pgvector vs. Pinecone decision:** NFR17 specifies migration at 100k queries/day, but query performance may degrade earlier with 100k+ embeddings.
 - **Index optimization:** HNSW vs. IVFFlat trade-offs not evaluated. Wrong choice impacts query latency.
 - **Storage costs:** 100k chunks × 1536 dimensions = significant storage. Cost projections needed.
@@ -843,6 +896,7 @@ The following areas involve significant technical complexity or external depende
 **Complexity:** Medium - UX-critical interaction with many moving parts
 
 **Key Challenges:**
+
 - **Performance with 100+ law cards:** Drag-and-drop libraries (@dnd-kit, react-beautiful-dnd) may struggle with large card counts.
 - **State management:** Dragging across components (Kanban → Chat) requires global state. Zustand vs. Jotai vs. React Context?
 - **Mobile touch optimization:** Different interaction model than desktop drag. Needs separate implementation path.
@@ -857,6 +911,7 @@ The following areas involve significant technical complexity or external depende
 **Complexity:** High - Cron job processing 10k+ laws with AI generation
 
 **Key Challenges:**
+
 - **Job completion time:** Target <2 hours (NFR10) to process 10k laws. At 10 req/sec = 1,000 seconds (16 min) just for fetching. Diffing + AI summary generation adds significant time.
 - **Parallel processing:** Need concurrency (Story 8.12 specifies 10 parallel) but must respect API rate limits.
 - **AI summary generation latency:** Target <5 min per change (NFR11), but GPT-4 can be slow. Need batching strategy.
@@ -871,6 +926,7 @@ The following areas involve significant technical complexity or external depende
 **Complexity:** Medium-High - Security-critical for GDPR compliance
 
 **Key Challenges:**
+
 - **Row-Level Security (RLS):** Supabase RLS policies must be airtight. One misconfigured policy = data breach.
 - **Query performance:** RLS adds overhead. Ensure indexes on workspace_id don't degrade performance.
 - **Testing isolation:** How do we test that User A can't access User B's data? Need automated security tests.
@@ -886,6 +942,7 @@ The following areas involve significant technical complexity or external depende
 ## Epic List
 
 ### Epic 1: Foundation & Core Infrastructure
+
 **Goal:** Establish project foundation while delivering initial 100 public law pages to validate SEO strategy.
 
 **Delivers:** Next.js app, database, auth, CI/CD, 100 law pages, monitoring, security
@@ -897,6 +954,7 @@ The following areas involve significant technical complexity or external depende
 ---
 
 ### Epic 2: Legal Content Foundation
+
 **Goal:** Build comprehensive multi-source legal content database with 170,000+ public SEO-optimized pages covering Swedish laws, court precedent, and EU legislation. Provide category structure, search/discovery features, and begin recording law change history.
 
 **Delivers:** 170,000+ legal content pages (SFS laws, court cases from HD/HovR/HFD/MÖD/MIG, EU regulations/directives), multi-content-type search, cross-document navigation, change history recording (no UI yet)
@@ -905,10 +963,10 @@ The following areas involve significant technical complexity or external depende
 
 **Estimated stories:** 11
 
-**Note:** Expanded from single-source (SFS laws only) to multi-content-type architecture based on competitive analysis. Court cases and EU legislation critical for SEO coverage.
----
+## **Note:** Expanded from single-source (SFS laws only) to multi-content-type architecture based on competitive analysis. Court cases and EU legislation critical for SEO coverage.
 
 ### Epic 3: RAG-Powered AI Chat Interface
+
 **Goal:** Implement zero-hallucination AI chatbot with drag-and-drop context building and citation-first responses.
 
 **Delivers:** Vector database, AI chat UI, drag-and-drop, RAG responses, streaming, citations
@@ -920,6 +978,7 @@ The following areas involve significant technical complexity or external depende
 ---
 
 ### Epic 4: Dynamic Onboarding & Personalized Law Lists
+
 **Goal:** Create conversion engine that transforms homepage visitors into trial users through AI-driven conversational onboarding, dynamic questioning, and two-phase comprehensive law list generation (60-80 laws).
 
 **Delivers:** Onboarding widget, Bolagsverket integration, dynamic contextual questioning (3-5 AI-selected questions), two-phase streaming generation (Phase 1: 15-30 laws pre-signup, Phase 2: 45-65 laws post-signup background), trial signup, email verification
@@ -931,6 +990,7 @@ The following areas involve significant technical complexity or external depende
 ---
 
 ### Epic 5: Workspace Management & Team Collaboration
+
 **Goal:** Enable multi-user workspaces with subscription tiers, team invites, role-based access, and billing integration.
 
 **Delivers:** Multi-tenancy, roles, invites, tiers, Stripe, usage tracking, workspace settings
@@ -942,6 +1002,7 @@ The following areas involve significant technical complexity or external depende
 ---
 
 ### Epic 6: Compliance Workspace (Kanban + Dashboard)
+
 **Goal:** Provide Jira-inspired Kanban board for visual compliance tracking and summary dashboard.
 
 **Delivers:** Dashboard, Kanban, drag-and-drop cards, law card modal, task management
@@ -953,6 +1014,7 @@ The following areas involve significant technical complexity or external depende
 ---
 
 ### Epic 7: HR Module (Employee Management)
+
 **Goal:** Connect employees to laws for context-aware HR compliance, improving AI chatbot value.
 
 **Delivers:** Employee CRUD, CSV import, compliance status, kollektivavtal, drag to chat
@@ -964,6 +1026,7 @@ The following areas involve significant technical complexity or external depende
 ---
 
 ### Epic 8: Change Monitoring & Notification System
+
 **Goal:** Implement retention engine that automatically detects law changes and notifies users.
 
 **Delivers:** Change detection, AI summaries, email/in-app notifications, diff view, reminders, weekly digest, timeline
@@ -987,11 +1050,13 @@ The following features are **explicitly NOT included in the MVP** and are planne
 ### Phase 2: Integration & Automation (Months 7-9)
 
 **Fortnox OAuth Integration**
+
 - One-click employee sync from Fortnox to Laglig.se
 - Automatic schema mapping (FR41 lays foundation)
 - **Rationale for deferral:** Requires Fortnox partnership negotiations, OAuth setup, and rigorous data sync testing. MVP validates core value proposition first.
 
 **Slack/Teams Integration**
+
 - Post law changes and AI insights to team channels
 - Slash commands for quick AI queries
 - **Rationale:** Nice-to-have for team collaboration, not critical for individual user value
@@ -999,12 +1064,14 @@ The following features are **explicitly NOT included in the MVP** and are planne
 ### Phase 3: Public Sector Features (Months 10-12)
 
 **Advanced Multi-Department Compliance**
+
 - Department-specific law lists and workflows
 - Cross-department audit trails
 - Budget tracking for compliance activities
 - **Rationale:** Public sector has unique procurement requirements; validate SMB/ISO consultant demand first
 
 **Audit Report Generation**
+
 - Automated compliance reports for auditors
 - PDF export with evidence attachments
 - **Rationale:** Complex feature requiring deep audit workflow understanding
@@ -1012,17 +1079,20 @@ The following features are **explicitly NOT included in the MVP** and are planne
 ### Phase 4: Mobile & Expansion (Months 13+)
 
 **Native Mobile Apps**
+
 - iOS and Android native apps
 - Offline law access
 - Push notifications
 - **Rationale:** Web responsive sufficient for MVP; native apps require significant investment
 
 **Multi-Language Support**
+
 - English interface for international companies operating in Sweden
 - Norwegian/Danish law databases (expansion)
 - **Rationale:** Focus on Swedish market first; internationalization adds complexity
 
 **Advanced Analytics Dashboard**
+
 - Compliance trend analysis
 - Team productivity metrics
 - Custom reporting
@@ -1037,11 +1107,13 @@ The following features are **explicitly NOT included in the MVP** and are planne
 - **Video Training Library:** Recorded webinars and tutorials
 
 **Decision Criteria for Adding Features:**
+
 - Feature must serve >30% of active users
 - Clear ROI: Revenue impact or significant churn reduction
 - Does not distract from core value proposition (law discovery + AI guidance + change monitoring)
 
 ---
+
 ## Epic 1: Foundation & Core Infrastructure (DETAILED)
 
 **Goal:** Establish project foundation (Next.js app, database, auth, deployment pipeline) while delivering initial public law pages to validate SEO strategy.
@@ -1244,11 +1316,13 @@ The following features are **explicitly NOT included in the MVP** and are planne
 ---
 
 **Epic 1 Complete: 10 stories, 3-4 weeks estimated**
+
 ## Epic 2: Legal Content Foundation (DETAILED)
 
 **Goal:** Build comprehensive multi-source legal content database with 170,000+ public SEO-optimized pages covering Swedish laws, court precedent, and EU legislation. Provide category structure, search/discovery features, and begin recording law change history for future retention features.
 
 **Content Types (MVP):**
+
 - **Swedish Laws (SFS):** 50,000-100,000 pages - Riksdagen API
 - **Swedish Court Cases:** 9,000-16,000 pages - Domstolsverket API
   - HD (Supreme Court): 3,000-5,000 cases
@@ -1263,13 +1337,13 @@ The following features are **explicitly NOT included in the MVP** and are planne
 **Total MVP Pages:** ~170,000-225,000 legal content pages
 
 **Excluded from MVP (Post-MVP/Phase 2):**
+
 - AD (Labour Court) - Data source quality issues, revisit post-MVP
 - Propositioner (Government Bills) - Phase 2 professional tier
 - EU Court Cases - Phase 2 for legal interpretation
 - SOU/Ds (Preparatory Works) - Low SMB value, Phase 3 or skip
 
-**Value Delivered:** Comprehensive multi-content-type legal library driving massive SEO traffic (170K+ indexable pages) + discovery tools enabling users to find relevant laws, court precedent, and EU compliance requirements + cross-document navigation (laws ↔ cases ↔ EU directives) + historical data collection for Epic 8.
----
+## **Value Delivered:** Comprehensive multi-content-type legal library driving massive SEO traffic (170K+ indexable pages) + discovery tools enabling users to find relevant laws, court precedent, and EU compliance requirements + cross-document navigation (laws ↔ cases ↔ EU directives) + historical data collection for Epic 8.
 
 ### Story 2.1: Design Multi-Content-Type Data Model
 
@@ -1328,7 +1402,7 @@ The following features are **explicitly NOT included in the MVP** and are planne
 10. Script completes full ingestion in <48 hours (multi-day background job acceptable - ~38 hours estimated at 5 req/sec)
 11. Verification: Database contains 11,351 SFS documents (1968-present) after completion
 12. **Note:** Riksdagen API provides laws from 1968-present. Pre-1968 laws rarely relevant for SMB compliance. Can add Lagrummet as fallback source in Phase 2 if historical laws requested.
-12. **Amendment extraction** (competitive feature - see `docs/historical-amendment-tracking-strategy.md`):
+13. **Amendment extraction** (competitive feature - see `docs/historical-amendment-tracking-strategy.md`):
     - For EACH SFS law, parse inline amendment references from full text (e.g., "Lag (2021:1112)")
     - Create Amendment records linking original law → amending law
     - Fetch amending law metadata (already in database from Step 1)
@@ -1336,14 +1410,14 @@ The following features are **explicitly NOT included in the MVP** and are planne
     - Generate 2-3 sentence summary with GPT-4 (Swedish, plain language)
     - Parse effective date from transition provisions: "träder i kraft den 1 juli 2011"
     - Store all 7 data points per amendment (SFS number, title, pub date, affected sections, summary, effective date, user comments placeholder)
-13. **Amendment backfill** from lagen.nu (background job, separate from main ingestion):
+14. **Amendment backfill** from lagen.nu (background job, separate from main ingestion):
     - For laws with <5 amendments (suspected incomplete), scrape lagen.nu for complete list
     - Rate limit: 1 request per 2 seconds (respectful)
     - Run as separate background job, does not block main ingestion
-14. **Cost impact:** One-time GPT-4 cost ~$238 for summarizing 5,675 amending laws (2,600 tokens × $0.042/amendment)
-15. **Performance impact:** +1.6 hours for amendment parsing (regex + text processing), +1.3 hours for lagen.nu backfill
-16. **Database impact:** +90,000 Amendment records with full metadata (~45MB storage)
-17. Verification: Database contains 90,000+ Amendment records after completion with all 7 fields populated
+15. **Cost impact:** One-time GPT-4 cost ~$238 for summarizing 5,675 amending laws (2,600 tokens × $0.042/amendment)
+16. **Performance impact:** +1.6 hours for amendment parsing (regex + text processing), +1.3 hours for lagen.nu backfill
+17. **Database impact:** +90,000 Amendment records with full metadata (~45MB storage)
+18. Verification: Database contains 90,000+ Amendment records after completion with all 7 fields populated
 
 ---
 
@@ -1662,7 +1736,7 @@ The following features are **explicitly NOT included in the MVP** and are planne
 10. Script completes full ingestion in <48 hours (multi-day background job acceptable - ~38 hours estimated at 5 req/sec)
 11. Verification: Database contains 11,351 SFS documents (1968-present) after completion
 12. **Note:** Riksdagen API provides laws from 1968-present. Pre-1968 laws rarely relevant for SMB compliance. Can add Lagrummet as fallback source in Phase 2 if historical laws requested.
-12. **Amendment extraction** (competitive feature - see `docs/historical-amendment-tracking-strategy.md`):
+13. **Amendment extraction** (competitive feature - see `docs/historical-amendment-tracking-strategy.md`):
     - For EACH SFS law, parse inline amendment references from full text (e.g., "Lag (2021:1112)")
     - Create Amendment records linking original law → amending law
     - Fetch amending law metadata (already in database from Step 1)
@@ -1670,14 +1744,14 @@ The following features are **explicitly NOT included in the MVP** and are planne
     - Generate 2-3 sentence summary with GPT-4 (Swedish, plain language)
     - Parse effective date from transition provisions: "träder i kraft den 1 juli 2011"
     - Store all 7 data points per amendment (SFS number, title, pub date, affected sections, summary, effective date, user comments placeholder)
-13. **Amendment backfill** from lagen.nu (background job, separate from main ingestion):
+14. **Amendment backfill** from lagen.nu (background job, separate from main ingestion):
     - For laws with <5 amendments (suspected incomplete), scrape lagen.nu for complete list
     - Rate limit: 1 request per 2 seconds (respectful)
     - Run as separate background job, does not block main ingestion
-14. **Cost impact:** One-time GPT-4 cost ~$238 for summarizing 5,675 amending laws (2,600 tokens × $0.042/amendment)
-15. **Performance impact:** +1.6 hours for amendment parsing (regex + text processing), +1.3 hours for lagen.nu backfill
-16. **Database impact:** +90,000 Amendment records with full metadata (~45MB storage)
-17. Verification: Database contains 90,000+ Amendment records after completion with all 7 fields populated
+15. **Cost impact:** One-time GPT-4 cost ~$238 for summarizing 5,675 amending laws (2,600 tokens × $0.042/amendment)
+16. **Performance impact:** +1.6 hours for amendment parsing (regex + text processing), +1.3 hours for lagen.nu backfill
+17. **Database impact:** +90,000 Amendment records with full metadata (~45MB storage)
+18. Verification: Database contains 90,000+ Amendment records after completion with all 7 fields populated
 
 ---
 
@@ -1941,8 +2015,6 @@ The following features are **explicitly NOT included in the MVP** and are planne
 ---
 
 **Epic 2 Complete: 11 stories, 4-5 weeks estimated**
-
-
 
 ---
 
@@ -2254,7 +2326,6 @@ The following features are **explicitly NOT included in the MVP** and are planne
 9. Logging: Successful fetches, errors to Sentry
 10. Test with 10 real org-numbers (verify data accuracy)
 
-
 ### Story 4.2b: Implement Dynamic Contextual Questioning Flow
 
 **As a** visitor,
@@ -2297,11 +2368,13 @@ The following features are **explicitly NOT included in the MVP** and are planne
 14. Test with 10 different industries: Verify questions are relevant and law lists accurate
 
 **Technical Notes:**
+
 - Question selection can be rule-based initially (if/then logic), GPT-4 as enhancement later
 - Each question adds to streaming law generation, not batch at end
 - Educational tooltips position Laglig.se as educator, not just tool
 
 ---
+
 ---
 
 ### Story 4.3: Implement Two-Phase AI-Powered Law List Generation
@@ -2347,12 +2420,14 @@ The following features are **explicitly NOT included in the MVP** and are planne
 25. Compare generated lists against Notisum's industry lists (coverage parity check)
 
 **Technical Notes:**
+
 - Phase 1 laws prioritized for "conversion value" - show user we understand their business
 - Phase 2 adds breadth for Notisum parity (users expect comprehensive coverage)
 - contextualAnswers from Story 4.2b dramatically improve accuracy vs. Bolagsverket-only
 - Background job for Phase 2 uses job queue (BullMQ or similar) for reliability
 
 ---
+
 ---
 
 ### Story 4.4: Build Streaming Law List UI
@@ -2459,6 +2534,7 @@ The following features are **explicitly NOT included in the MVP** and are planne
 33. Category reorganization uses CSS transitions (smooth, not jarring)
 
 **Technical Notes:**
+
 - Background job uses job queue (BullMQ) for reliability
 - Frontend uses Server-Sent Events (SSE) or polling for real-time updates
 - Laws cached in client state to avoid refetching
@@ -3124,6 +3200,7 @@ The following features are **explicitly NOT included in the MVP** and are planne
 **Epic 6 Complete: 10 stories, 2-3 weeks estimated**
 
 ---
+
 ## Epic 7: HR Module (Employee Management) (DETAILED)
 
 **Goal:** Connect employees to laws for context-aware HR compliance, improving AI chatbot value.
@@ -3398,14 +3475,14 @@ The following features are **explicitly NOT included in the MVP** and are planne
 **Value Delivered:** Users never miss critical law updates + AI summaries make changes understandable + retention improves through ongoing value delivery.
 
 **Competitive Context:** Notisum provides basic change notifications with raw legal text only (confirmed via live account testing). Laglig.se differentiates through:
+
 - AI plain language summaries explaining "what changed" in Swedish
 - Business impact assessment (High/Medium/Low priority)
 - Action guidance ("Review by [date]" vs "No action needed")
 - Visual GitHub-style diffs (not just grey text boxes)
 - Contextual help explaining legal notation (ändr:, nya §§, rubr:)
 
-**Reference:** See `docs/competitive-analysis/notisum-change-notification-analysis.md` for detailed competitor breakdown based on live email examples.
----
+## **Reference:** See `docs/competitive-analysis/notisum-change-notification-analysis.md` for detailed competitor breakdown based on live email examples.
 
 ### Story 8.1: Build Change Detection UI (Changes Tab)
 
@@ -3651,6 +3728,7 @@ The following features are **explicitly NOT included in the MVP** and are planne
 12. **Verification**: Arbetsmiljölagen (1977:1160) displays all 77 amendments matching Notisum data
 
 **Competitive Advantages Beyond Notisum:**
+
 - ✅ **Automated Updates**: Nightly cron detects new amendments (Notisum requires manual updates)
 - ✅ **AI Summaries**: GPT-4 generated vs. manually written
 - ✅ **Workspace Comments**: Team collaboration (Notisum lacks this)
@@ -3737,7 +3815,6 @@ The following features are **explicitly NOT included in the MVP** and are planne
 **End of PRD Epic Details**
 
 ---
-
 
 ## Next Steps
 
@@ -3903,12 +3980,14 @@ After UX and Architecture phases complete:
 3. **Begin Implementation** - Start with Story 1.1 (Initialize Next.js 14 Project)
 
 **Estimated Timeline:**
+
 - UX Design Phase: 2-3 weeks
 - Architecture Phase: 2 weeks (can overlap with UX)
 - Development (8 Epics): 16-22 weeks
 - **Total: 20-27 weeks (~5-7 months)**
 
 ---
+
 ## Document Completion Status
 
 **Document Version:** 1.1 (Complete - Ready for Architect)
@@ -3916,6 +3995,7 @@ After UX and Architecture phases complete:
 **Completion:** 100% (All sections and epic details complete)
 
 **Total Epic Summary:**
+
 - Epic 1: Foundation & Core Infrastructure (10 stories, 3-4 weeks)
 - Epic 2: Legal Content Foundation (11 stories, 4-5 weeks)
 - Epic 3: RAG-Powered AI Chat Interface (12 stories, 3-4 weeks)
@@ -3928,6 +4008,7 @@ After UX and Architecture phases complete:
 **TOTAL: 89 stories across 8 epics, estimated 24-30 weeks (5.5-7 months)**
 
 **Next Steps:**
+
 1. Architect review and technical design
 2. Database schema design
 3. API specification

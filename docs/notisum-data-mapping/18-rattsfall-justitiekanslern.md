@@ -8,11 +8,13 @@
 ## CRITICAL DATA ISSUES
 
 **User observations:**
+
 - ❌ **No data after 2014** - Database appears to end in 2014
 - ❌ **External links dead 90%** - Most links don't work
 - ⚠️ **Limited content** - Individual pages show "- - -"
 
 **What exists:**
+
 - ✅ Landing page with category structure
 - ✅ Chronological register with case numbers and summaries
 - ⚠️ Individual case pages have limited content
@@ -26,6 +28,7 @@
 Chancellor of Justice (Justitiekanslern, JK) decisions regarding government and public authorities.
 
 **Key characteristics:**
+
 - Government legal advisor and ombudsman (NOT a court)
 - Decisions and legal opinions
 - Coverage from 1998-2014 only
@@ -41,6 +44,7 @@ Chancellor of Justice (Justitiekanslern, JK) decisions regarding government and 
 **Justitiekanslern** (Chancellor of Justice) is the Swedish government's legal advisor and ombudsman.
 
 **Role:**
+
 - Government's chief legal advisor
 - Supervises public authorities (overlapping with JO)
 - Represents the state in certain legal cases
@@ -49,6 +53,7 @@ Chancellor of Justice (Justitiekanslern, JK) decisions regarding government and 
 - Handles damage claims against the state
 
 **Jurisdiction covers:**
+
 - Government administration
 - Freedom of press and expression violations
 - Damage claims against the state
@@ -61,25 +66,27 @@ Chancellor of Justice (Justitiekanslern, JK) decisions regarding government and 
 
 **Sweden has TWO ombudsmen:**
 
-| Feature | JK (Justitiekanslern) | JO (Justitieombudsmannen) |
-|---------|----------------------|--------------------------|
-| **Appointed by** | Government | Parliament (Riksdagen) |
-| **Reports to** | Government | Parliament |
-| **Primary role** | Government's legal advisor | Parliamentary oversight |
-| **Can prosecute** | Yes (press freedom cases) | Yes (officials) |
-| **Handles damage claims** | Yes (against state) | No |
-| **Legal opinions** | Yes (government advisor) | No |
-| **In Notisum** | ⚠️ Yes (ends 2014, broken) | ⚠️ Yes (limited content) |
+| Feature                   | JK (Justitiekanslern)      | JO (Justitieombudsmannen) |
+| ------------------------- | -------------------------- | ------------------------- |
+| **Appointed by**          | Government                 | Parliament (Riksdagen)    |
+| **Reports to**            | Government                 | Parliament                |
+| **Primary role**          | Government's legal advisor | Parliamentary oversight   |
+| **Can prosecute**         | Yes (press freedom cases)  | Yes (officials)           |
+| **Handles damage claims** | Yes (against state)        | No                        |
+| **Legal opinions**        | Yes (government advisor)   | No                        |
+| **In Notisum**            | ⚠️ Yes (ends 2014, broken) | ⚠️ Yes (limited content)  |
 
 ---
 
 ## Structure in Notisum
 
 **Similar landing page structure to JO:**
+
 - **Years:** 2014 → 1998
 - **Categories:** Subject matter categories for filtering decisions
 
 **Categories visible (from screenshot):**
+
 - Beslut inom olika kategorier (Decisions in various categories)
 - Ersättning vid frihetsinkränkning (Compensation for deprivation of liberty)
 - Skadeståndsärenden (Damage claims)
@@ -98,12 +105,14 @@ Chancellor of Justice (Justitiekanslern, JK) decisions regarding government and 
 **Pattern:** `JKB [number]-[year]-[number]`
 
 **Breakdown:**
+
 - `JKB` = Justitiekanslern Beslut (JK Decision)
 - `[number]` = Case number
 - `-[year]` = Year (2 digits)
 - `-[number]` = Additional identifier
 
 **Examples from screenshot:**
+
 - `JKB 835-13-22`
 - `JKB 3535-13-21`
 - `JKB 699-14-31`
@@ -121,6 +130,7 @@ Chancellor of Justice (Justitiekanslern, JK) decisions regarding government and 
 **Format:** `https://www.notisum.se/rn/document/?id=JKB[number]`
 
 **Example from screenshot:**
+
 - `JKB 835-13-22` → `id=JKB60935`
 
 **Note:** URL ID doesn't directly match case number (similar to JO)
@@ -132,6 +142,7 @@ Chancellor of Justice (Justitiekanslern, JK) decisions regarding government and 
 ### Header Information
 
 **Case identification:**
+
 - Case number: "JKB 835-13-22"
 - Case title/summary
 
@@ -143,11 +154,13 @@ Translation: "Initiative matter regarding identified deficiencies in the Central
 ### Limited Content
 
 **From screenshot:**
+
 - Shows "Visa dokument" (Show document) button
 - Shows "- - -" which suggests limited or no content
 - User reports: "External links are dead 90%"
 
 **Same issue as JO:**
+
 - Summary/title available
 - Full decision text may not be available
 - Links broken
@@ -158,16 +171,17 @@ Translation: "Initiative matter regarding identified deficiencies in the Central
 
 **Important distinctions:**
 
-| Feature | JK Decisions | Court Decisions |
-|---------|--------------|-----------------|
-| **Institution type** | Government legal advisor/ombudsman | Judicial court |
-| **Legal force** | Limited (opinions/recommendations) | Binding precedent |
-| **Can represent state** | Yes (in damage claims) | N/A |
-| **Can prosecute** | Yes (press freedom violations) | N/A |
-| **Binding precedent** | No | Yes |
-| **Legal opinions** | Yes (government advisor) | No (courts decide cases) |
+| Feature                 | JK Decisions                       | Court Decisions          |
+| ----------------------- | ---------------------------------- | ------------------------ |
+| **Institution type**    | Government legal advisor/ombudsman | Judicial court           |
+| **Legal force**         | Limited (opinions/recommendations) | Binding precedent        |
+| **Can represent state** | Yes (in damage claims)             | N/A                      |
+| **Can prosecute**       | Yes (press freedom violations)     | N/A                      |
+| **Binding precedent**   | No                                 | Yes                      |
+| **Legal opinions**      | Yes (government advisor)           | No (courts decide cases) |
 
 **JK can:**
+
 - ✅ Provide legal opinions to government
 - ✅ Represent state in damage claims
 - ✅ Prosecute press freedom violations
@@ -175,6 +189,7 @@ Translation: "Initiative matter regarding identified deficiencies in the Central
 - ✅ Award damages (in state liability cases)
 
 **JK cannot:**
+
 - ❌ Create binding legal precedent
 - ❌ Overturn court decisions
 - ❌ Enforce its opinions on government
@@ -184,6 +199,7 @@ Translation: "Initiative matter regarding identified deficiencies in the Central
 ## Data Volume and Quality
 
 **Coverage:** 1998-2014 (16 years)
+
 - **Last data:** 2014
 - **Data age:** 11 years old (as of 2025)
 - **Status:** Database appears abandoned
@@ -192,6 +208,7 @@ Translation: "Initiative matter regarding identified deficiencies in the Central
 Multiple cases shown, suggesting moderate volume per year.
 
 **Data quality issues:**
+
 1. **Outdated** - No updates since 2014
 2. **Broken links** - 90% of external links don't work (user observation)
 3. **Limited content** - Individual pages show "- - -"
@@ -202,17 +219,20 @@ Multiple cases shown, suggesting moderate volume per year.
 ## Why JK Decisions Matter (or Don't)
 
 **Very limited relevance for businesses:**
+
 1. **Not binding precedent** - Legal opinions and decisions, not binding law
 2. **Government focus** - Advisor to government, not business regulator
 3. **Outdated database** - No data after 2014
 4. **Data quality issues** - Broken links, limited content
 
 **Some potential value:**
+
 - State damage claims (if business has claim against government)
 - Freedom of press matters (if media business)
 - Understanding government legal interpretations (historical)
 
 **Very low priority compared to:**
+
 - **Courts (HD, HFD, AD, etc.)** - Binding legal precedent
 - **Laws (SFS)** - Actual legal requirements
 - **Current ombudsman decisions** - Would need from jk.se for post-2014
@@ -222,6 +242,7 @@ Multiple cases shown, suggesting moderate volume per year.
 ## Relevance for Laglig.se
 
 **Very low value for SMBs:**
+
 1. **Not binding precedent** - Opinions and decisions, not binding law
 2. **Government focus** - Not directly applicable to business operations
 3. **Outdated** - Database ends in 2014, 11 years ago
@@ -231,14 +252,17 @@ Multiple cases shown, suggesting moderate volume per year.
 **Recommendation for Laglig.se:**
 
 **MVP (Phase 1):**
+
 - ❌ **Skip entirely** - Very low business relevance, outdated, broken
 - **Focus instead:** AD, HFD, HD, HovR (binding precedent)
 
 **Phase 2 (Professional tier):**
+
 - ❌ **Still skip** - Outdated data (ends 2014), limited value
 - **Complete courts first** - All current court databases before historical JK
 
 **Phase 3 (Enterprise/Specialized tier):**
+
 - ❌ **Skip** - Even for specialized use, would need current data from jk.se
 - **If needed:** Obtain from jk.se directly (NOT Notisum)
 - **Very low priority** - After all courts, laws, regulations, and current ombudsman decisions
@@ -248,6 +272,7 @@ Multiple cases shown, suggesting moderate volume per year.
 ## Data Availability Issues
 
 **Current status in Notisum:**
+
 - ✅ Landing page with categories exists
 - ✅ Chronological register with case summaries (through 2014)
 - ❌ **Database ends in 2014** - No updates for 11 years
@@ -255,12 +280,14 @@ Multiple cases shown, suggesting moderate volume per year.
 - ❌ 90% of links broken (user observation)
 
 **Why database might be abandoned:**
+
 1. JK may have stopped publishing to Notisum after 2014
 2. Database migration issues
 3. Licensing or partnership ended
 4. JK now publishes only on jk.se
 
 **Alternative source:**
+
 - **jk.se** - Official JK website
   - Current decisions and opinions
   - Damage claim decisions
@@ -273,6 +300,7 @@ Multiple cases shown, suggesting moderate volume per year.
 ## Summary
 
 **Justitiekanslern decisions (JK) in Notisum:**
+
 - ❌ **Outdated** - Database ends in 2014 (11 years old)
 - ❌ **Broken links** - 90% of external links don't work
 - ⚠️ **Limited content** - Summaries exist but full text appears incomplete
@@ -281,12 +309,14 @@ Multiple cases shown, suggesting moderate volume per year.
 - 📊 **Very low business relevance** - Government advisor, not business regulator
 
 **For Laglig.se:**
+
 - **Very low priority** - Outdated, not binding, limited business relevance
 - **Data quality issues** - Ends 2014, broken links, limited content
 - **Skip for MVP, Phase 2, and Phase 3** - Focus on courts and laws
 - **If ever needed** - Use jk.se for current data, not Notisum
 
 **Key insight:** JK decisions in Notisum are **NOT VIABLE** because:
+
 1. **Outdated** - Database abandoned after 2014
 2. **Not binding legal precedent** - Only opinions and recommendations
 3. **Government focus** - Not applicable to most businesses
@@ -296,6 +326,7 @@ Multiple cases shown, suggesting moderate volume per year.
 **Recommendation:** Do NOT include JK from Notisum in Laglig.se. Database is too outdated and broken to provide value.
 
 **Priority ranking for Laglig.se (updated):**
+
 1. **Essential:** SFS laws, AD, HFD, HD (binding law and precedent)
 2. **High:** HovR, MÖD, EU law (important precedent and compliance)
 3. **Moderate:** Propositioner, MIG (specialized needs)

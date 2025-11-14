@@ -25,6 +25,7 @@ All 89 user stories have been successfully extracted from the PRD and converted 
 ## Epic Breakdown
 
 ### ✅ Epic 1: Authentication & Authorization (10 stories)
+
 **Location:** `docs/stories/1.1-1.10-auth-complete.md`
 
 1. Implement Supabase Auth with Google OAuth
@@ -45,6 +46,7 @@ All 89 user stories have been successfully extracted from the PRD and converted 
 ### ✅ Epic 2: Law List Generation & Management (13 stories)
 
 **Individual Stories:**
+
 - 2.1-2.3: Industry selector, business info, SNI code matching
 - 2.4: AI-powered starter pack generation (streaming UI)
 - 2.5: Law search and add manually
@@ -61,6 +63,7 @@ All 89 user stories have been successfully extracted from the PRD and converted 
 ### ✅ Epic 3: AI Chat Interface (12 stories)
 
 **Individual Stories:**
+
 - 3.1: Chat sidebar with context pills
 - 3.2: Streaming AI responses
 - 3.3: Inline citations with law references
@@ -80,6 +83,7 @@ All 89 user stories have been successfully extracted from the PRD and converted 
 ### ✅ Epic 4: Individual Law Page (10 stories)
 
 **Individual Stories:**
+
 - 4.1: Law detail page with metadata
 - 4.2: 4-tab interface (Overview, Content, Change History, Notes)
 - 4.3: Law status dropdown (Not Started → Compliant)
@@ -98,6 +102,7 @@ All 89 user stories have been successfully extracted from the PRD and converted 
 ### ✅ Epic 5: Workspace Management (12 stories)
 
 **Individual Stories:**
+
 - 5.1-5.2: Workspace creation and settings
 - 5.3: Team member management (invite, edit roles, remove)
 - 5.4-5.6: Stripe subscription integration (3 tiers)
@@ -115,6 +120,7 @@ All 89 user stories have been successfully extracted from the PRD and converted 
 ### ✅ Epic 6: Compliance Workspace (Kanban & Dashboard) (10 stories)
 
 **Individual Stories:**
+
 - 6.1: Dashboard summary view with compliance ring
 - 6.2: Kanban compliance workspace (5 columns)
 - 6.3: Law card modal (detailed view)
@@ -133,6 +139,7 @@ All 89 user stories have been successfully extracted from the PRD and converted 
 ### ✅ Epic 7: HR Module (Employee Management) (12 stories)
 
 **Individual Stories:**
+
 - 7.1: Employee list view with CRUD
 - 7.2: Employee profile page with 4 tabs
 - 7.3: CSV import for employee data
@@ -153,6 +160,7 @@ All 89 user stories have been successfully extracted from the PRD and converted 
 ### ✅ Epic 8: Change Monitoring & Notification System (12 stories)
 
 **Individual Stories:**
+
 - 8.1: Change detection UI (Changes tab)
 - 8.2: GitHub-style diff view
 - 8.3: "Mark as Reviewed" workflow
@@ -266,6 +274,7 @@ docs/
 ## Technical Highlights
 
 ### Architecture
+
 - **Framework:** Next.js 16 with App Router and React Server Components
 - **Database:** Supabase PostgreSQL with pgvector extension
 - **ORM:** Prisma for type-safe database access
@@ -278,6 +287,7 @@ docs/
 - **Cron:** Vercel Cron for scheduled jobs
 
 ### Key Features
+
 1. **AI-Powered Law List Generation** with streaming UI
 2. **Smart Chat Interface** with drag-and-drop context building
 3. **GitHub-Style Change Detection** with AI summaries
@@ -290,6 +300,7 @@ docs/
 10. **Unit Economics Tracking** for business validation
 
 ### Competitive Differentiators vs Notisum
+
 1. ✅ **AI Plain Language Summaries** (Notisum: raw legal text only)
 2. ✅ **Priority Badges** (High/Medium/Low)
 3. ✅ **Business Impact Assessment** ("Action required by..." vs "FYI only")
@@ -320,6 +331,7 @@ docs/
 **Total Development Time:** 22-28 weeks (5.5-7 months)
 
 ### Epic Estimates
+
 - Epic 1: 2-3 weeks (Authentication)
 - Epic 2: 3-4 weeks (Law List Generation)
 - Epic 3: 3-4 weeks (AI Chat)
@@ -336,6 +348,7 @@ docs/
 ## Next Steps
 
 ### Immediate Actions
+
 1. **Review Stories:** Product owner reviews all 89 stories for accuracy
 2. **Prioritize MVP:** Identify must-have vs nice-to-have stories for MVP
 3. **Technical Spike:** Validate key technical assumptions (Riksdagen API, pgvector performance)
@@ -343,9 +356,11 @@ docs/
 5. **Sprint Planning:** Break stories into 2-week sprints
 
 ### Phase 1: MVP (Recommended Scope)
+
 **Target:** 3 months, 30-40 stories
 
 **Must-Have Epics:**
+
 - ✅ Epic 1: Authentication (all 10 stories)
 - ✅ Epic 2: Law List Generation (stories 2.1-2.7, skip 2.10a-c experiments initially)
 - ✅ Epic 3: AI Chat (stories 3.1-3.8, skip export/templates/feedback)
@@ -358,12 +373,14 @@ docs/
 **MVP Focus:** Core law list generation, AI chat, basic workspace management
 
 ### Phase 2: Post-MVP (3-4 months)
+
 - Epic 7: HR Module (employee management, kollektivavtal)
 - Epic 8: Change Monitoring (email notifications, diff views)
 - Epic 6-7: Advanced Kanban features (bulk actions, export, column customization)
 - Epic 4: Advanced law features (employee assignment, related laws)
 
 ### Phase 3: Scale (Ongoing)
+
 - Performance optimizations (caching, CDN, database indexes)
 - Advanced analytics and reporting
 - Mobile app (React Native)
@@ -375,18 +392,21 @@ docs/
 ## Success Metrics
 
 ### Product Metrics
+
 - **Activation:** 70% of signups generate law list within 24 hours
 - **Engagement:** 50% DAU/MAU ratio (daily active / monthly active)
 - **Retention:** 80% month-1 retention, 60% month-3 retention
 - **Viral Coefficient:** 0.3 (30% invite at least one teammate)
 
 ### Business Metrics
+
 - **Gross Margin:** >80% (tracked via Epic 5.10)
 - **CAC Payback:** <12 months
 - **LTV:CAC Ratio:** >3:1
 - **Churn:** <5% monthly for Enterprise tier
 
 ### Technical Metrics
+
 - **Uptime:** 99.9% (SLA for Enterprise)
 - **Page Load:** <2 seconds (p95)
 - **AI Response Time:** <3 seconds (p95)
@@ -397,12 +417,14 @@ docs/
 ## Risk Register
 
 ### Technical Risks
+
 1. **Riksdagen API Reliability:** Mitigation: Cache responses, implement retry logic
 2. **AI Cost Overruns:** Mitigation: Rate limiting, usage quotas, cost monitoring
 3. **pgvector Performance:** Mitigation: Benchmark early, consider alternatives (Pinecone)
 4. **Change Detection Accuracy:** Mitigation: Manual QA spot checks, user feedback loop
 
 ### Business Risks
+
 1. **Low Conversion Rate:** Mitigation: Strong onboarding, trial extensions, email nurture
 2. **High Churn:** Mitigation: Retention emails, usage analytics, customer success
 3. **Competitive Response:** Mitigation: Fast iteration, unique features (AI, HR module)
@@ -413,6 +435,7 @@ docs/
 ## Documentation Quality Assurance
 
 ### Story Template Compliance
+
 ✅ All 89 stories follow standardized template
 ✅ Status field (Draft)
 ✅ User story format (As a... I want... So that...)
@@ -427,6 +450,7 @@ docs/
 ✅ Placeholders for dev agent and QA results
 
 ### Code Quality Standards
+
 ✅ TypeScript throughout
 ✅ Next.js 16 App Router conventions
 ✅ Prisma schema definitions

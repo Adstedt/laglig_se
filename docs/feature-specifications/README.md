@@ -75,6 +75,7 @@ None - Ready for development!
 ## How to Continue
 
 ### For Development Team:
+
 All feature specifications are complete and ready for implementation. Start with:
 
 1. **Review Priority Order:**
@@ -101,6 +102,7 @@ All feature specifications are complete and ready for implementation. Start with
 ## Key Decisions Made
 
 ### Homepage
+
 - Hero: "Vi håller koll på lagarna – du håller koll på affären"
 - Embedded onboarding widget below hero (streaming generation)
 - Feature showcase with expandable accordion
@@ -108,6 +110,7 @@ All feature specifications are complete and ready for implementation. Start with
 - Law wiki with e-commerce category structure
 
 ### Onboarding
+
 - 60-second streaming generation experience
 - 4 stages: Fetch data → Analyze → Generate list → Add comments
 - Preview 5-10 law cards before trial gate
@@ -115,12 +118,14 @@ All feature specifications are complete and ready for implementation. Start with
 - Trial gate: Email + password + tier selection
 
 ### Pricing
+
 - Basic: 399 SEK/mån (3,990 SEK/år)
 - Pro: 899 SEK/mån (8,990 SEK/år)
 - Enterprise: Custom (base 4,000 SEK/mån)
 - 17% annual discount (2 months free)
 
 ### Trial
+
 - 14 days (changed from 7 days for better exploration)
 - 100 AI chat query limit (not unlimited)
 - No credit card required

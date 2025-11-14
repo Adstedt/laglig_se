@@ -20,6 +20,7 @@ We need to integrate with **3 external data sources** to ingest 170,000+ legal d
 ## 1. Riksdagen API (data.riksdagen.se)
 
 ### Overview
+
 - **Type:** REST API
 - **Authentication:** None required (public open data)
 - **Rate Limits:** Not explicitly documented (TBD - test and monitor)
@@ -27,6 +28,7 @@ We need to integrate with **3 external data sources** to ingest 170,000+ legal d
 - **Documentation:** https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/
 
 ### Supported Formats
+
 - XML
 - JSON
 - JSONP
@@ -37,11 +39,13 @@ We need to integrate with **3 external data sources** to ingest 170,000+ legal d
 ### Available Endpoints
 
 #### 1. **dokumentlista** - Document List
+
 ```
 GET https://data.riksdagen.se/dokumentlista/?[params]&utformat=json
 ```
 
 **Query Parameters:**
+
 - `dok` - Document type (mot, prop, bet, etc.)
 - `rm` - Parliamentary year (e.g., "2024/25")
 - `p` - Page number
@@ -51,6 +55,7 @@ GET https://data.riksdagen.se/dokumentlista/?[params]&utformat=json
 - `parti` - Political party filter
 
 **Document Types:**
+
 - `prop` - Government propositions
 - `mot` - Members' motions
 - `bet` - Committee reports
@@ -61,26 +66,31 @@ GET https://data.riksdagen.se/dokumentlista/?[params]&utformat=json
 **Important:** `doktyp=sfs` does NOT exist in Riksdagen API. SFS documents are published by the government, not parliament.
 
 #### 2. **dokument** - Individual Document
+
 ```
 GET https://data.riksdagen.se/dokument/[docid].[format]
 ```
 
 **Example:**
+
 ```
 GET https://data.riksdagen.se/dokument/H8010330.json
 ```
 
 #### 3. **ledamoter** - Members API
+
 ```
 GET https://data.riksdagen.se/personlista/?iid=[id]&utformat=json
 ```
 
 #### 4. **votering** - Voting Records
+
 ```
 GET https://data.riksdagen.se/voteringlista/?rm=[year]&utformat=json
 ```
 
 #### 5. **anforande** - Speeches
+
 ```
 GET https://data.riksdagen.se/anforandelista/?rm=[year]&utformat=json
 ```
@@ -88,6 +98,7 @@ GET https://data.riksdagen.se/anforandelista/?rm=[year]&utformat=json
 ### Use Cases for Laglig.se
 
 **Limited Value - Post-MVP Only:**
+
 - Propositions (prop) could be used for "preparation work" context (Phase 2+)
 - Committee reports (bet) for understanding legislative intent (Phase 2+)
 - Cross-references from laws to propositions (enhancement feature)
@@ -123,6 +134,7 @@ GET https://data.riksdagen.se/anforandelista/?rm=[year]&utformat=json
 ```
 
 ### Rate Limiting Strategy
+
 - **Estimated:** 10 requests/second (conservative, based on typical Swedish government APIs)
 - **Implementation:** Use `p-queue` with concurrency limit
 - **Retry Logic:** Exponential backoff for 429/503 errors
@@ -133,6 +145,7 @@ GET https://data.riksdagen.se/anforandelista/?rm=[year]&utformat=json
 ## 2. Lagrummet RInfo Service (PRIMARY SOURCE)
 
 ### Overview
+
 - **Type:** RESTful + JSON-LD + SPARQL
 - **Authentication:** None required (public open data)
 - **Rate Limits:** Not explicitly documented (TBD)
@@ -143,47 +156,56 @@ GET https://data.riksdagen.se/anforandelista/?rm=[year]&utformat=json
 ### What It Provides
 
 **SFS Laws (Svensk författningssamling):**
+
 - All current Swedish laws and regulations
 - Historical versions
 - Amendment tracking (SFS 2024:123 changes SFS 1999:175)
 - Official source: aggregates from svenskforfattningssamling.se
 
 **Court Cases (Rättspraxis):**
+
 - HD (Högsta domstolen / Supreme Court) - NJA series
 - HovR (Hovrätterna / Courts of Appeal) - RH series
 - HFD (Högsta förvaltningsdomstolen / Supreme Administrative Court) - HFD series
 
 **Agency Regulations:**
+
 - Myndighetsföreskrifter from various agencies (Boverket, Transportstyrelsen, etc.)
 
 ### Endpoints
 
 #### 1. **Search Endpoint** - Query Documents
+
 ```
 GET http://service.lagrummet.se/-/publ?q=[query]&_stats=on&_page=0&_pageSize=10
 ```
 
 **Query Parameters:**
+
 - `q` - Search query (supports Lucene syntax)
 - `_page` - Page number (0-indexed)
 - `_pageSize` - Results per page
 - `_stats` - Include statistics (on/off)
 
 **Example:**
+
 ```
 GET http://service.lagrummet.se/-/publ?q=arbetsmiljö&_page=0&_pageSize=20
 ```
 
 #### 2. **Individual Document Data**
+
 ```
 GET http://service.lagrummet.se/publ/[identifier]/data
 ```
 
 **Identifiers:**
+
 - SFS: `sfs/[year]:[number]` - Example: `sfs/1999:175`
 - Court cases: `rf/nja/[year]/s_[page]` - Example: `rf/nja/2020/s_123`
 
 **Example:**
+
 ```
 GET http://service.lagrummet.se/publ/sfs/1999/175/data
 ```
@@ -191,23 +213,27 @@ GET http://service.lagrummet.se/publ/sfs/1999/175/data
 **Response Format:** JSON-LD
 
 #### 3. **Document HTML/RDF**
+
 ```
 GET http://rinfo.lagrummet.se/publ/[identifier]
 ```
 
 **Content Negotiation:**
+
 - `Accept: application/json` → JSON-LD
 - `Accept: text/html` → Human-readable HTML
 - `Accept: application/rdf+xml` → RDF/XML
 - `Accept: text/turtle` → Turtle format
 
 #### 4. **SPARQL Endpoint**
+
 ```
 POST http://service.lagrummet.se/sparql
 Content-Type: application/sparql-query
 ```
 
 **Example Query (Get all SFS from 2024):**
+
 ```sparql
 PREFIX rinfo: <http://rinfo.lagrummet.se/taxo/2007/09/rinfo/pub#>
 PREFIX dct: <http://purl.org/dc/terms/>
@@ -255,6 +281,7 @@ LIMIT 100
 ### Pagination Strategy
 
 **Search Results:**
+
 ```json
 {
   "@context": "...",
@@ -266,6 +293,7 @@ LIMIT 100
 ```
 
 **Implementation:**
+
 ```typescript
 async function fetchAllSFSLaws() {
   let page = 0
@@ -292,6 +320,7 @@ async function fetchAllSFSLaws() {
 ```
 
 ### Rate Limiting Strategy
+
 - **Conservative:** 5 requests/second (lagrummet.se is a smaller service)
 - **Retry Logic:** 3 retries with exponential backoff
 - **Cache:** Aggressive caching (laws change infrequently)
@@ -300,32 +329,33 @@ async function fetchAllSFSLaws() {
 ### Mapping to Our Data Model
 
 **SFS Law → LegalDocument:**
+
 ```typescript
 interface LagrummetSFS {
-  "@id": string // "http://rinfo.lagrummet.se/publ/sfs/1999:175"
+  '@id': string // "http://rinfo.lagrummet.se/publ/sfs/1999:175"
   identifier: string // "SFS 1999:175"
   title: string
   issued: string // ISO date
   inForce: boolean
   content: { url: string }
-  changedBy?: Array<{ "@id": string, identifier: string }>
+  changedBy?: Array<{ '@id': string; identifier: string }>
 }
 
 // Map to our schema
 const legalDocument: LegalDocument = {
   id: generateUUID(),
-  content_type: "SFS_LAW",
+  content_type: 'SFS_LAW',
   document_number: sfs.identifier, // "SFS 1999:175"
   title: sfs.title,
-  slug: slugify(sfs.title + " " + sfs.identifier),
+  slug: slugify(sfs.title + ' ' + sfs.identifier),
   summary: null, // Generated later via GPT-4
   full_text: await fetchFullText(sfs.content.url),
   effective_date: new Date(sfs.issued),
   publication_date: new Date(sfs.issued),
-  status: sfs.inForce ? "ACTIVE" : "REPEALED",
-  source_url: sfs["@id"],
+  status: sfs.inForce ? 'ACTIVE' : 'REPEALED',
+  source_url: sfs['@id'],
   metadata: {
-    lagrummet_id: sfs["@id"],
+    lagrummet_id: sfs['@id'],
     in_force: sfs.inForce,
     changed_by: sfs.changedBy || [],
     // Additional metadata from RInfo
@@ -336,9 +366,10 @@ const legalDocument: LegalDocument = {
 ```
 
 **Court Case → LegalDocument + CourtCase:**
+
 ```typescript
 interface LagrummetCourtCase {
-  "@id": string // "http://rinfo.lagrummet.se/publ/rf/nja/2020/s_123"
+  '@id': string // "http://rinfo.lagrummet.se/publ/rf/nja/2020/s_123"
   identifier: string // "NJA 2020 s. 123"
   title: string // Case summary
   issued: string // Decision date
@@ -348,7 +379,7 @@ interface LagrummetCourtCase {
 
 // Map to our schema
 const legalDocument: LegalDocument = {
-  content_type: "HD_SUPREME_COURT", // Based on court
+  content_type: 'HD_SUPREME_COURT', // Based on court
   document_number: courtCase.identifier,
   // ... rest of mapping
 }
@@ -367,6 +398,7 @@ const courtCaseData: CourtCase = {
 ## 3. EUR-Lex CELLAR API (European Union Legislation)
 
 ### Overview
+
 - **Type:** SPARQL + RESTful API
 - **Authentication:** None required (public access)
 - **Rate Limits:** Not explicitly documented (TBD)
@@ -378,24 +410,29 @@ const courtCaseData: CourtCase = {
 ### What It Provides
 
 **EU Regulations (Förordningar):**
+
 - CELEX format: `3YYYYRNNNN` (e.g., 32016R0679 = GDPR)
 - All official EU languages including Swedish (sv)
 
 **EU Directives (Direktiv):**
+
 - CELEX format: `3YYYYLNNNN` (e.g., 32016L0680)
 - Swedish translations
 
 **National Implementation Measures (NIM):**
+
 - Links from EU directives → Swedish implementing SFS laws
 
 ### Key Concepts
 
 **CELLAR Repository:**
+
 - Publications Office's document repository
 - Uses Common Data Model (CDM) - FRBR-compliant OWL ontology
 - ELI (European Legislation Identifier) standard
 
 **Work-Expression-Manifestation:**
+
 - **Work:** Abstract concept of the legislation
 - **Expression:** Language-specific version (Swedish, English, etc.)
 - **Manifestation:** Physical format (PDF, HTML, XML)
@@ -405,6 +442,7 @@ const courtCaseData: CourtCase = {
 #### Query Structure
 
 **Prefixes:**
+
 ```sparql
 PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -490,18 +528,21 @@ LIMIT 100
 ### RESTful API
 
 **Fetch Document Metadata:**
+
 ```
 GET https://publications.europa.eu/resource/cellar/{uuid}
 Accept: application/json
 ```
 
 **Example:**
+
 ```
 GET https://publications.europa.eu/resource/cellar/3e485e15-11bd-11e6-ba9a-01aa75ed71a1
 Accept: application/json
 ```
 
 **Fetch Document Content (HTML/PDF):**
+
 ```
 GET https://eur-lex.europa.eu/legal-content/SV/TXT/HTML/?uri=CELEX:32016R0679
 ```
@@ -509,11 +550,13 @@ GET https://eur-lex.europa.eu/legal-content/SV/TXT/HTML/?uri=CELEX:32016R0679
 ### Language Codes
 
 **Swedish:** `SWE` or `sv`
+
 - Authority URI: `http://publications.europa.eu/resource/authority/language/SWE`
 - ISO 639-1: `sv`
 - ISO 639-2: `swe`
 
 ### Rate Limiting Strategy
+
 - **Estimated:** 10 requests/second (Publications Office is robust)
 - **Batch Queries:** Use SPARQL for bulk metadata, then fetch content individually
 - **Cache Aggressively:** EU legislation changes slowly
@@ -522,6 +565,7 @@ GET https://eur-lex.europa.eu/legal-content/SV/TXT/HTML/?uri=CELEX:32016R0679
 ### Mapping to Our Data Model
 
 **EU Regulation → LegalDocument + EUDocument:**
+
 ```typescript
 interface CELLARRegulation {
   work: string // Work URI
@@ -535,15 +579,15 @@ interface CELLARRegulation {
 // Map to our schema
 const legalDocument: LegalDocument = {
   id: generateUUID(),
-  content_type: "EU_REGULATION",
+  content_type: 'EU_REGULATION',
   document_number: regulation.celex, // "32016R0679"
   title: regulation.title,
-  slug: slugify(regulation.title + " " + regulation.celex),
+  slug: slugify(regulation.title + ' ' + regulation.celex),
   summary: null, // Generated later via GPT-4
   full_text: await fetchHTML(regulation.html_url),
   effective_date: new Date(regulation.date),
   publication_date: new Date(regulation.date),
-  status: "ACTIVE",
+  status: 'ACTIVE',
   source_url: `https://eur-lex.europa.eu/legal-content/SV/TXT/?uri=CELEX:${regulation.celex}`,
   metadata: {
     work_uri: regulation.work,
@@ -564,6 +608,7 @@ const euDocument: EUDocument = {
 ```
 
 **EU Directive with NIM → LegalDocument + EUDocument + CrossReference:**
+
 ```typescript
 interface CELLARDirective {
   directive: string
@@ -573,7 +618,9 @@ interface CELLARDirective {
 }
 
 // Create EU directive document
-const directive: LegalDocument = { /* ... */ }
+const directive: LegalDocument = {
+  /* ... */
+}
 
 // Create EUDocument with NIM
 const euDoc: EUDocument = {
@@ -583,10 +630,10 @@ const euDoc: EUDocument = {
     sweden: [
       {
         law: directive.swedish_law, // "SFS 2018:218"
-        type: "transposition"
-      }
-    ]
-  }
+        type: 'transposition',
+      },
+    ],
+  },
 }
 
 // Create CrossReference linking EU directive → Swedish implementing law
@@ -594,8 +641,9 @@ const crossRef: CrossReference = {
   id: generateUUID(),
   source_document_id: directive.id, // EU directive
   target_document_id: await findSFSByNumber(directive.swedish_law), // Swedish law
-  reference_type: "IMPLEMENTS",
-  context: "This directive is implemented in Swedish law by " + directive.swedish_law,
+  reference_type: 'IMPLEMENTS',
+  context:
+    'This directive is implemented in Swedish law by ' + directive.swedish_law,
   created_at: new Date(),
 }
 ```
@@ -672,7 +720,7 @@ const LagrummetSFSSchema = z.object({
 })
 
 const ingestionQueue = new Queue('legal-content-ingestion', {
-  connection: { host: 'redis.example.com', port: 6379 }
+  connection: { host: 'redis.example.com', port: 6379 },
 })
 
 async function ingestSFSLaws() {
@@ -701,7 +749,7 @@ async function ingestSFSLaws() {
         // Add to queue
         await ingestionQueue.add('process-sfs', validated, {
           attempts: 3,
-          backoff: { type: 'exponential', delay: 2000 }
+          backoff: { type: 'exponential', delay: 2000 },
         })
       } catch (error) {
         console.error(`Validation error for ${item['@id']}:`, error)
@@ -732,7 +780,7 @@ export async function GET() {
     // 3. Create embeddings
     const chunks = chunkText(fullText, 500)
     const embeddings = await Promise.all(
-      chunks.map(chunk => generateEmbedding(chunk))
+      chunks.map((chunk) => generateEmbedding(chunk))
     )
 
     // 4. Upsert to database
@@ -755,7 +803,7 @@ export async function GET() {
         summary,
         status: sfs.inForce ? 'ACTIVE' : 'REPEALED',
         updated_at: new Date(),
-      }
+      },
     })
 
     // 5. Insert embeddings
@@ -831,12 +879,14 @@ export async function GET() {
 ### OpenAI API Costs
 
 **Embeddings:**
+
 - Model: `text-embedding-3-small`
 - Price: $0.00002 / 1K tokens
 - Total tokens: 850K chunks × 600 tokens avg = 510M tokens
 - Cost: 510,000 × $0.00002 = **$10,200**
 
 **GPT-4 Summaries:**
+
 - Model: `gpt-4-turbo`
 - Price: $0.01 / 1K input tokens, $0.03 / 1K output tokens
 - Input: 170K docs × 500 tokens avg = 85M tokens → $850
@@ -846,6 +896,7 @@ export async function GET() {
 **Total One-Time Ingestion:** ~$11,560
 
 **Ongoing Costs (Monthly):**
+
 - Change detection: ~500 changes/month × $0.01 = $5
 - New user summaries: 1000 users × 68 laws × $0.01 = $680/month
 - **Monthly recurring:** ~$685
@@ -853,15 +904,18 @@ export async function GET() {
 ### Infrastructure Costs
 
 **Supabase:**
+
 - Database: ~165GB → Pro plan ($25/month) + storage overage ($0.125/GB) = $45/month
 - Vector index: Included in database storage
 
 **Vercel:**
+
 - Hobby: Free (testing)
 - Pro: $20/month (production)
 - Serverless function execution: $0.12 / 1M requests
 
 **Redis (Upstash or similar):**
+
 - Queue system: ~$10/month
 
 **Total Monthly Infrastructure:** ~$75/month
@@ -873,6 +927,7 @@ export async function GET() {
 ### Critical Risks
 
 **1. Lagrummet Service Availability (HIGH RISK)**
+
 - **Issue:** `dev.lagrummet.se` documentation has intermittent timeouts
 - **Mitigation:**
   - Use GitHub repo as fallback documentation
@@ -881,6 +936,7 @@ export async function GET() {
   - Consider scraping svenskforfattningssamling.se as fallback
 
 **2. Rate Limiting Unknown (MEDIUM RISK)**
+
 - **Issue:** No official rate limits documented for Lagrummet or EUR-Lex
 - **Mitigation:**
   - Start conservative (5 req/sec)
@@ -889,6 +945,7 @@ export async function GET() {
   - Add logging dashboard
 
 **3. Data Format Changes (LOW RISK)**
+
 - **Issue:** JSON-LD structure could change without notice
 - **Mitigation:**
   - Strict Zod validation
@@ -897,6 +954,7 @@ export async function GET() {
   - Manual review of first 100 documents
 
 **4. OpenAI Cost Overrun (MEDIUM RISK)**
+
 - **Issue:** $11K one-time cost for embeddings
 - **Mitigation:**
   - Batch processing to avoid duplication
@@ -905,6 +963,7 @@ export async function GET() {
   - Phase 2: Migrate to self-hosted embeddings (e.g., sentence-transformers)
 
 **5. EUR-Lex Swedish Translation Coverage (LOW RISK)**
+
 - **Issue:** Not all EU legislation has Swedish translations
 - **Mitigation:**
   - Fall back to English if Swedish unavailable
@@ -918,6 +977,7 @@ export async function GET() {
 ### Integration Tests
 
 **Lagrummet RInfo:**
+
 ```typescript
 describe('Lagrummet RInfo Integration', () => {
   it('should fetch SFS law list', async () => {
@@ -930,7 +990,9 @@ describe('Lagrummet RInfo Integration', () => {
   })
 
   it('should fetch individual SFS law', async () => {
-    const response = await fetch('http://service.lagrummet.se/publ/sfs/1999/175/data')
+    const response = await fetch(
+      'http://service.lagrummet.se/publ/sfs/1999/175/data'
+    )
     expect(response.ok).toBe(true)
     const law = await response.json()
     expect(law.identifier).toMatch(/SFS \d{4}:\d+/)
@@ -942,13 +1004,14 @@ describe('Lagrummet RInfo Integration', () => {
       fetch(`http://service.lagrummet.se/-/publ?q=test&_page=${i}`)
     )
     const results = await Promise.allSettled(promises)
-    const failed = results.filter(r => r.status === 'rejected')
+    const failed = results.filter((r) => r.status === 'rejected')
     expect(failed.length).toBe(0)
   })
 })
 ```
 
 **EUR-Lex SPARQL:**
+
 ```typescript
 describe('EUR-Lex SPARQL Integration', () => {
   it('should query Swedish regulations', async () => {
@@ -959,11 +1022,17 @@ describe('EUR-Lex SPARQL Integration', () => {
         FILTER (STRSTARTS(?celex, "32020R"))
       } LIMIT 5
     `
-    const response = await fetch('https://publications.europa.eu/webapi/rdf/sparql', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/sparql-query', Accept: 'application/json' },
-      body: query
-    })
+    const response = await fetch(
+      'https://publications.europa.eu/webapi/rdf/sparql',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/sparql-query',
+          Accept: 'application/json',
+        },
+        body: query,
+      }
+    )
     expect(response.ok).toBe(true)
     const data = await response.json()
     expect(data.results.bindings.length).toBeGreaterThan(0)
@@ -988,6 +1057,7 @@ When drafting **Section 5: API Specification**, include:
 ### Internal API Endpoints (Our Backend)
 
 **Epic 2: Ingestion Admin Endpoints**
+
 ```
 POST /api/admin/ingest/sfs
 POST /api/admin/ingest/court-cases
@@ -996,6 +1066,7 @@ GET  /api/admin/ingest/status
 ```
 
 **Epic 3: RAG Query Endpoint**
+
 ```
 POST /api/chat/query
 {
@@ -1006,6 +1077,7 @@ POST /api/chat/query
 ```
 
 **Epic 4: Onboarding Endpoints**
+
 ```
 POST /api/onboarding/fetch-company
 {

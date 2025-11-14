@@ -11,6 +11,7 @@
 ## Document Types Analyzed
 
 ### Regelsamling → Svensk lagstiftning
+
 1. [Lagar och förordningar (SFS)](./01-lagar-och-forordningar.md) ✅ Documented
 2. Ändringar i lagboken - _Pending_ (likely same data as #1, different view)
 3. Senaste ändringar - _Pending_ (likely same data as #1, different view)
@@ -18,6 +19,7 @@
 5. Ikraftträdanden - _Pending_ (likely same data as #1, different view)
 
 ### Regelsamling → Svensk lagstiftning → Förarbeten regering
+
 1. [Propositioner (Government Bills)](./06-propositioner.md) ✅ Documented
 2. Kommittédirektiv - ⚠️ External link only (https://www.regeringen.se/rattsliga-dokument/kommittedirektiv/)
 3. [Statens offentliga utredningar (SOU)](./07-sou.md) ⚠️ Documented (external link only)
@@ -26,7 +28,9 @@
 6. Lagrådet - ⚠️ External link only (https://www.lagradet.se/yttranden/)
 
 ### Regelsamling → Svensk lagstiftning → Förarbeten riksdag
+
 **Note:** ALL parliamentary preparatory works are external links only to riksdagen.se
+
 1. Motioner - ⚠️ External link only (https://www.riksdagen.se/sv/sok/?avd=dokument&doktyp=mot)
 2. Framställanden och redogörelser - ⚠️ External link only (https://www.riksdagen.se/sv/sok/?avd=dokument&doktyp=frsrdg)
 3. Betänkanden - ⚠️ External link only (https://www.riksdagen.se/sv/dokument-och-lagar/Utskottens-dokument/Betankanden/)
@@ -35,6 +39,7 @@
 6. Skrivelser - ⚠️ External link only (https://www.riksdagen.se/sv/sok/?avd=dokument&doktyp=rskr)
 
 ### Regelsamling → Europalagstiftning
+
 1. [Förordningar (EU Regulations)](./02-eu-forordningar.md) ✅ Documented
 2. [Direktiv (EU Directives)](./03-eu-direktiv.md) ✅ Documented
 3. [Alla rättsakter (All EU Legal Acts)](./04-eu-alla-rattsakter.md) ✅ Documented
@@ -42,6 +47,7 @@
 5. Other EU document types - _Pending_ (likely same pattern)
 
 ### Regelsamling → Rättsfall (Swedish Court Case Law)
+
 1. [Högsta domstolen (Supreme Court - NJA)](./10-rattsfall-hogsta-domstolen.md) ✅ Documented
 2. [Hovrätterna (Courts of Appeal - RH)](./11-rattsfall-hovratterna.md) ✅ Documented
 3. [Högsta förvaltningsdomstolen (Supreme Administrative Court - HFD/RÅ)](./12-rattsfall-hogsta-forvaltningsdomstolen.md) ✅ Documented
@@ -53,10 +59,12 @@
 9. [Justitiekanslern (JK)](./18-rattsfall-justitiekanslern.md) ⚠️ Documented (outdated - ends 2014, broken links)
 
 ### Standardlaglistor
+
 - Arbetsmiljö - _Pending_
 - Miljö - _Pending_
 - Other lists - _Pending_
 
 ### Other Sections
+
 - Ämnesfokus - _Pending_
 - Bevakning - _Pending_

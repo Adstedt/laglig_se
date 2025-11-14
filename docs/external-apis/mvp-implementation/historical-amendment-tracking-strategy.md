@@ -38,6 +38,7 @@ Amendment 13: 2023:253 (2023-06-01) - Latest
 ```
 
 **Use Cases:**
+
 1. **Epic 8 UI:** Show users "This law has been amended 13 times since 2011"
 2. **Change Timeline:** Display visual timeline of all changes
 3. **Cross-References:** Link to each amending SFS law
@@ -52,6 +53,7 @@ Amendment 13: 2023:253 (2023-06-01) - Latest
 Riksdagen's consolidated full-text includes **inline amendment references** at the end of each section:
 
 **Example from SFS 2011:1029.text:**
+
 ```
 3 § Det finns bestämmelser om offentlig upphandling i lagen
 (2016:1145) om offentlig upphandling, om upphandling i lagen
@@ -75,24 +77,24 @@ Lag (2018:851).
 
 From full text parsing, we found **13 unique amendments:**
 
-| # | SFS Number | Found in Text | Type |
-|---|------------|---------------|------|
-| 1 | 2014:476 | ❌ (transition provisions) | Amendment |
-| 2 | 2014:771 | ❌ (transition provisions) | Amendment |
-| 3 | 2016:391 | ❌ (transition provisions) | Amendment |
-| 4 | 2016:575 | ✅ "Lag (2016:575)" | Amendment |
-| 5 | 2016:1160 | ✅ "Lag (2016:1160)" | Amendment |
-| 6 | 2017:656 | ❌ (transition provisions) | Amendment |
-| 7 | 2017:764 | ❌ (transition provisions) | Amendment |
-| 8 | 2018:594 | ✅ "Lag (2018:594)" | Amendment |
-| 9 | 2018:851 | ✅ "Lag (2018:851)" | Amendment |
-| 10 | 2018:1316 | ❌ (not in body text) | Amendment |
-| 11 | 2019:669 | ✅ "Lag (2019:669)" | Amendment |
-| 12 | 2019:953 | ✅ "Lag (2019:953)" | Amendment |
-| 13 | 2021:1112 | ✅ "Lag (2021:1112)" | Major Amendment |
-| 14 | 2022:781 | ❌ (not in body text) | Amendment |
-| 15 | 2022:994 | ❌ (not in body text) | Amendment |
-| 16 | 2023:253 | ✅ "Lag (2023:253)" | Latest Amendment |
+| #   | SFS Number | Found in Text              | Type             |
+| --- | ---------- | -------------------------- | ---------------- |
+| 1   | 2014:476   | ❌ (transition provisions) | Amendment        |
+| 2   | 2014:771   | ❌ (transition provisions) | Amendment        |
+| 3   | 2016:391   | ❌ (transition provisions) | Amendment        |
+| 4   | 2016:575   | ✅ "Lag (2016:575)"        | Amendment        |
+| 5   | 2016:1160  | ✅ "Lag (2016:1160)"       | Amendment        |
+| 6   | 2017:656   | ❌ (transition provisions) | Amendment        |
+| 7   | 2017:764   | ❌ (transition provisions) | Amendment        |
+| 8   | 2018:594   | ✅ "Lag (2018:594)"        | Amendment        |
+| 9   | 2018:851   | ✅ "Lag (2018:851)"        | Amendment        |
+| 10  | 2018:1316  | ❌ (not in body text)      | Amendment        |
+| 11  | 2019:669   | ✅ "Lag (2019:669)"        | Amendment        |
+| 12  | 2019:953   | ✅ "Lag (2019:953)"        | Amendment        |
+| 13  | 2021:1112  | ✅ "Lag (2021:1112)"       | Major Amendment  |
+| 14  | 2022:781   | ❌ (not in body text)      | Amendment        |
+| 15  | 2022:994   | ❌ (not in body text)      | Amendment        |
+| 16  | 2023:253   | ✅ "Lag (2023:253)"        | Latest Amendment |
 
 **Observation:** Most amendments (10/16) appear inline, but some only in transition provisions or missing entirely.
 
@@ -163,9 +165,10 @@ function extractAmendmentsFromTransitionProvisions(fullText: string): string[] {
 // Combined extraction
 function getAllAmendments(fullText: string): string[] {
   const inlineAmendments = extractAmendmentsFromText(fullText).map(
-    a => a.sfs_number
+    (a) => a.sfs_number
   )
-  const transitionAmendments = extractAmendmentsFromTransitionProvisions(fullText)
+  const transitionAmendments =
+    extractAmendmentsFromTransitionProvisions(fullText)
 
   // Merge and deduplicate
   const allAmendments = new Set([...inlineAmendments, ...transitionAmendments])
@@ -186,7 +189,9 @@ async function processSFSDocument(doc: RiksdagenSFS) {
   // Extract amendments
   const amendments = getAllAmendments(fullText)
 
-  console.log(`[Ingestion] Found ${amendments.length} amendments for ${doc.beteckning}`)
+  console.log(
+    `[Ingestion] Found ${amendments.length} amendments for ${doc.beteckning}`
+  )
 
   // Store in database
   await prisma.legalDocument.create({
@@ -197,8 +202,8 @@ async function processSFSDocument(doc: RiksdagenSFS) {
       metadata: {
         ...doc,
         amendments_extracted: amendments, // ["SFS 2021:1112", "SFS 2023:253", ...]
-      }
-    }
+      },
+    },
   })
 
   // Create Amendment records
@@ -208,7 +213,7 @@ async function processSFSDocument(doc: RiksdagenSFS) {
         original_law_number: `SFS ${doc.beteckning}`,
         amending_law_number: amendingSFS,
         detected_method: 'RIKSDAGEN_TEXT_PARSING',
-      }
+      },
     })
   }
 }
@@ -224,6 +229,7 @@ async function processSFSDocument(doc: RiksdagenSFS) {
 **Example:** https://lagen.nu/2011:1029
 
 **Structure:**
+
 - Section: "Ändringar och övergångsbestämmelser" (Changes and Transition Provisions)
 - **Complete list of ALL amendments** with:
   - SFS number
@@ -232,12 +238,14 @@ async function processSFSDocument(doc: RiksdagenSFS) {
   - Affected sections
 
 **Advantages:**
+
 - ✅ **COMPLETE** amendment history (includes ALL 16 amendments for 2011:1029)
 - ✅ **Structured format** (consistent HTML)
 - ✅ **Metadata:** Effective dates, descriptions, affected sections
 - ✅ **No missing amendments** (unlike inline parsing)
 
 **Disadvantages:**
+
 - ❌ Requires scraping (no official API)
 - ❌ Legal/ethical concerns (robots.txt compliance)
 - ❌ Rate limiting needed (be respectful)
@@ -268,8 +276,8 @@ async function fetchAmendmentsFromLagenNu(
 
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'Laglig.se Legal Compliance Bot (contact@laglig.se)'
-    }
+      'User-Agent': 'Laglig.se Legal Compliance Bot (contact@laglig.se)',
+    },
   })
 
   if (!response.ok) {
@@ -299,7 +307,7 @@ async function fetchAmendmentsFromLagenNu(
           sfs_number: `SFS ${match[1]}`,
           title: title || 'Unknown',
           effective_date: dateMatch ? dateMatch[1] : null,
-          source: 'lagen_nu'
+          source: 'lagen_nu',
         })
       }
     })
@@ -314,20 +322,24 @@ async function ensureCompleteAmendmentHistory(lawNumber: string) {
 
   // Check what we have from inline parsing
   const existingAmendments = await prisma.amendment.findMany({
-    where: { original_law_number: `SFS ${lawNumber}` }
+    where: { original_law_number: `SFS ${lawNumber}` },
   })
 
   // Fetch complete list from lagen.nu
   const lagenNuAmendments = await fetchAmendmentsFromLagenNu(year, number)
 
   // Find missing amendments
-  const existingSFSNumbers = new Set(existingAmendments.map(a => a.amending_law_number))
+  const existingSFSNumbers = new Set(
+    existingAmendments.map((a) => a.amending_law_number)
+  )
   const missing = lagenNuAmendments.filter(
-    a => !existingSFSNumbers.has(a.sfs_number)
+    (a) => !existingSFSNumbers.has(a.sfs_number)
   )
 
   if (missing.length > 0) {
-    console.log(`[Amendment Backfill] Found ${missing.length} missing amendments from lagen.nu`)
+    console.log(
+      `[Amendment Backfill] Found ${missing.length} missing amendments from lagen.nu`
+    )
 
     for (const amendment of missing) {
       await prisma.amendment.create({
@@ -338,8 +350,8 @@ async function ensureCompleteAmendmentHistory(lawNumber: string) {
           metadata: {
             title: amendment.title,
             effective_date: amendment.effective_date,
-          }
-        }
+          },
+        },
       })
     }
   }
@@ -349,11 +361,13 @@ async function ensureCompleteAmendmentHistory(lawNumber: string) {
 ### Legal/Ethical Considerations
 
 **Lagen.nu robots.txt check:**
+
 ```bash
 curl https://lagen.nu/robots.txt
 ```
 
 **Best Practices:**
+
 1. ✅ Respect robots.txt
 2. ✅ Rate limit: 1 request per 2 seconds (max 30 requests/minute)
 3. ✅ User-Agent: Identify our bot with contact info
@@ -373,18 +387,21 @@ curl https://lagen.nu/robots.txt
 **Status:** ⚠️ Beta site is "preparing database" (Förbereder Rättsdatabaser)
 
 **What It Should Provide:**
+
 - **OFFICIAL** government amendment register
 - Complete amendment history with legal authority
 - Links to each amending law
 - Dates and affected sections
 
 **Current Issues:**
+
 - ❌ Beta site not fully operational
 - ❌ No API documented
 - ❌ HTML scraping required
 - ❌ Reliability unknown
 
 **Strategy:**
+
 - Monitor beta site for launch
 - Test API availability once operational
 - Use as **validation source** (cross-check our data)
@@ -430,38 +447,38 @@ enum AmendmentSource {
 ```typescript
 // SFS 2011:1029 amendments in database
 
-[
+;[
   {
-    original_law_number: "SFS 2011:1029",
-    amending_law_number: "SFS 2016:1160",
-    effective_date: new Date("2017-01-01"),
-    detected_method: "RIKSDAGEN_TEXT_PARSING",
+    original_law_number: 'SFS 2011:1029',
+    amending_law_number: 'SFS 2016:1160',
+    effective_date: new Date('2017-01-01'),
+    detected_method: 'RIKSDAGEN_TEXT_PARSING',
     metadata: {
       occurrence_count: 3, // Found 3 times in text
-      sections: ["1 kap. 3 §", "1 kap. 4 §", "1 kap. 5 §"]
-    }
+      sections: ['1 kap. 3 §', '1 kap. 4 §', '1 kap. 5 §'],
+    },
   },
   {
-    original_law_number: "SFS 2011:1029",
-    amending_law_number: "SFS 2021:1112",
-    effective_date: new Date("2022-02-01"),
-    detected_method: "RIKSDAGEN_TEXT_PARSING",
+    original_law_number: 'SFS 2011:1029',
+    amending_law_number: 'SFS 2021:1112',
+    effective_date: new Date('2022-02-01'),
+    detected_method: 'RIKSDAGEN_TEXT_PARSING',
     metadata: {
       occurrence_count: 15, // Major amendment
-      title: "Simplified procurement framework",
-      repealed_sections: ["2 kap. 31 §", "2 kap. 32 §", "2 kap. 33 §"]
-    }
+      title: 'Simplified procurement framework',
+      repealed_sections: ['2 kap. 31 §', '2 kap. 32 §', '2 kap. 33 §'],
+    },
   },
   {
-    original_law_number: "SFS 2011:1029",
-    amending_law_number: "SFS 2023:253",
-    effective_date: new Date("2023-06-01"),
-    detected_method: "RIKSDAGEN_TEXT_PARSING",
+    original_law_number: 'SFS 2011:1029',
+    amending_law_number: 'SFS 2023:253',
+    effective_date: new Date('2023-06-01'),
+    detected_method: 'RIKSDAGEN_TEXT_PARSING',
     metadata: {
       occurrence_count: 2,
-      title: "Expanded security exemptions"
-    }
-  }
+      title: 'Expanded security exemptions',
+    },
+  },
 ]
 ```
 
@@ -480,13 +497,16 @@ async function ingestSFSWithAmendments(doc: RiksdagenSFS) {
 
   // 2. Extract amendments from text
   const inlineAmendments = extractAmendmentsFromText(fullText)
-  const transitionAmendments = extractAmendmentsFromTransitionProvisions(fullText)
+  const transitionAmendments =
+    extractAmendmentsFromTransitionProvisions(fullText)
   const allAmendments = new Set([
-    ...inlineAmendments.map(a => a.sfs_number),
-    ...transitionAmendments
+    ...inlineAmendments.map((a) => a.sfs_number),
+    ...transitionAmendments,
   ])
 
-  console.log(`[${doc.beteckning}] Found ${allAmendments.size} amendments via text parsing`)
+  console.log(
+    `[${doc.beteckning}] Found ${allAmendments.size} amendments via text parsing`
+  )
 
   // 3. Store law
   const law = await prisma.legalDocument.create({
@@ -497,8 +517,8 @@ async function ingestSFSWithAmendments(doc: RiksdagenSFS) {
       metadata: {
         amendments_count: allAmendments.size,
         amendments_list: Array.from(allAmendments).sort(),
-      }
-    }
+      },
+    },
   })
 
   // 4. Create Amendment records
@@ -510,8 +530,8 @@ async function ingestSFSWithAmendments(doc: RiksdagenSFS) {
       where: {
         original_law_number_amending_law_number: {
           original_law_number: `SFS ${doc.beteckning}`,
-          amending_law_number: amendingSFS
-        }
+          amending_law_number: amendingSFS,
+        },
       },
       create: {
         original_law_number: `SFS ${doc.beteckning}`,
@@ -520,9 +540,9 @@ async function ingestSFSWithAmendments(doc: RiksdagenSFS) {
         metadata: {
           detected_during: 'initial_ingestion',
           source_document_id: doc.id,
-        }
+        },
       },
-      update: {} // Already exists, skip
+      update: {}, // Already exists, skip
     })
   }
 
@@ -547,10 +567,10 @@ export async function GET(request: Request) {
       content_type: 'SFS_LAW',
       metadata: {
         path: ['amendments_count'],
-        lt: 5 // Likely incomplete if only <5 amendments found
-      }
+        lt: 5, // Likely incomplete if only <5 amendments found
+      },
     },
-    take: 100 // Process 100 laws per run
+    take: 100, // Process 100 laws per run
   })
 
   for (const law of lawsWithFewAmendments) {
@@ -657,6 +677,7 @@ export default async function LawDetailPage({ params }: { params: { id: string }
 ### Test Cases
 
 **Test 1: Simple Law (Few Amendments)**
+
 ```typescript
 describe('Amendment Extraction - Simple Law', () => {
   it('should extract amendments from SFS 2023:987 (new law, 0 amendments)', async () => {
@@ -668,6 +689,7 @@ describe('Amendment Extraction - Simple Law', () => {
 ```
 
 **Test 2: Moderately Amended Law**
+
 ```typescript
 describe('Amendment Extraction - Moderate', () => {
   it('should extract all 5 amendments from SFS 2018:218 (GDPR complement)', async () => {
@@ -681,6 +703,7 @@ describe('Amendment Extraction - Moderate', () => {
 ```
 
 **Test 3: Heavily Amended Law**
+
 ```typescript
 describe('Amendment Extraction - Heavy', () => {
   it('should extract 13+ amendments from SFS 2011:1029', async () => {
@@ -696,6 +719,7 @@ describe('Amendment Extraction - Heavy', () => {
 ```
 
 **Test 4: Lagen.nu Backfill**
+
 ```typescript
 describe('Amendment Backfill - Lagen.nu', () => {
   it('should find missing amendments via lagen.nu', async () => {
@@ -707,7 +731,9 @@ describe('Amendment Backfill - Lagen.nu', () => {
 
     // Should find additional amendments
     expect(lagenNuAmendments.length).toBeGreaterThan(inlineAmendments.length)
-    expect(lagenNuAmendments.map(a => a.sfs_number)).toContain('SFS 2016:1160')
+    expect(lagenNuAmendments.map((a) => a.sfs_number)).toContain(
+      'SFS 2016:1160'
+    )
   })
 })
 ```
@@ -715,12 +741,14 @@ describe('Amendment Backfill - Lagen.nu', () => {
 ### Manual Verification
 
 **Sample Laws for Validation:**
+
 1. **SFS 1999:175** (Legal Information Ordinance) - 10+ amendments
 2. **SFS 2010:1 (0)** (Social Security Code) - 100+ amendments (stress test)
 3. **SFS 2018:218** (GDPR complement) - 5 amendments
 4. **SFS 2023:987** (New law) - 0 amendments
 
 **Validation Process:**
+
 1. Extract amendments using our algorithm
 2. Compare with lagen.nu (ground truth)
 3. Check recall: Did we find all amendments?
@@ -734,11 +762,13 @@ describe('Amendment Backfill - Lagen.nu', () => {
 ### Initial Ingestion
 
 **11,351 SFS laws × amendment extraction:**
+
 - Parsing time: ~500ms per law (regex + text processing)
 - Total: 11,351 × 0.5s = 5,676 seconds = **1.6 hours**
 - Added to 38-hour full-text ingestion = **39.6 hours total**
 
 **Amendment Records Created:**
+
 - Average 8 amendments per law (estimate)
 - 11,351 × 8 = **90,808 Amendment records**
 - Database storage: ~90K rows × 500 bytes = **45MB**
@@ -746,11 +776,13 @@ describe('Amendment Backfill - Lagen.nu', () => {
 ### Lagen.nu Backfill (Optional)
 
 **If we backfill ALL laws:**
+
 - 11,351 requests × 2 seconds = **22,702 seconds = 6.3 hours**
 - Respectful rate limiting
 - Run as separate background job (not blocking main ingestion)
 
 **Practical Approach:**
+
 - Only backfill laws with <5 amendments (likely incomplete)
 - Estimate: 20% of laws need backfill = 2,270 laws
 - Time: 2,270 × 2s = **1.3 hours**
@@ -762,42 +794,48 @@ describe('Amendment Backfill - Lagen.nu', () => {
 ### ✅ Recommended Strategy (Three-Tier Approach)
 
 **Tier 1: Riksdagen Text Parsing** (Initial Ingestion)
+
 - Extract amendments from `.text` files during SFS ingestion
 - Fast, already have the data, no extra API calls
 - Expected: 70-80% completeness
 
 **Tier 2: Lagen.nu Backfill** (Post-Ingestion Enhancement)
+
 - Run background job to backfill missing amendments
 - Only for laws with <5 amendments (suspected incomplete)
 - Expected: 95-100% completeness
 
 **Tier 3: SFSR Validation** (Future)
+
 - Once beta site is operational, use for validation
 - Cross-check our data against official register
 - Update any discrepancies
 
 ### Implementation Timeline
 
-| Epic | Task | Method | Status |
-|------|------|--------|--------|
-| **Epic 2.2** | Initial SFS ingestion with inline amendment extraction | Riksdagen text parsing | ✅ Implement NOW |
-| **Epic 2.12** | Amendment backfill background job | Lagen.nu scraping | ✅ Implement NOW |
-| **Epic 8** | Amendment timeline UI on law detail pages | Display from database | Post-MVP |
-| **Future** | SFSR validation & enhancement | Official register | When available |
+| Epic          | Task                                                   | Method                 | Status           |
+| ------------- | ------------------------------------------------------ | ---------------------- | ---------------- |
+| **Epic 2.2**  | Initial SFS ingestion with inline amendment extraction | Riksdagen text parsing | ✅ Implement NOW |
+| **Epic 2.12** | Amendment backfill background job                      | Lagen.nu scraping      | ✅ Implement NOW |
+| **Epic 8**    | Amendment timeline UI on law detail pages              | Display from database  | Post-MVP         |
+| **Future**    | SFSR validation & enhancement                          | Official register      | When available   |
 
 ### Data Quality Expectations
 
 **After Tier 1 (Riksdagen parsing):**
+
 - Completeness: 70-80%
 - Accuracy: 95%+
 - Speed: No extra API calls
 
 **After Tier 2 (Lagen.nu backfill):**
+
 - Completeness: 95-100%
 - Accuracy: 98%+
 - Speed: +1.3 hours background job
 
 **After Tier 3 (SFSR validation):**
+
 - Completeness: 100%
 - Accuracy: 100%
 - Speed: TBD (when beta launches)
@@ -846,6 +884,7 @@ Our initial strategy only extracts **SFS numbers** from amendment references. Ho
 ### Solution: Expand Amendment Extraction
 
 **Key Insight:** Each amendment IS a separate SFS law that we're already ingesting! We just need to:
+
 1. **Fetch metadata** from the amending law itself
 2. **Parse affected sections** from amending law full text
 3. **Generate summaries** with GPT-4
@@ -873,11 +912,11 @@ Denna lag träder i kraft den 1 juli 2028.              ← EFFECTIVE DATE
 
 **Swedish Legislative Notation:**
 
-| Notation | Meaning | English |
-|----------|---------|---------|
-| **ändr.** | Amended | Changed |
-| **upph.** | Upphörd | Repealed |
-| **nya** | Nya | New |
+| Notation      | Meaning    | English    |
+| ------------- | ---------- | ---------- |
+| **ändr.**     | Amended    | Changed    |
+| **upph.**     | Upphörd    | Repealed   |
+| **nya**       | Nya        | New        |
 | **betecknas** | Renumbered | Renumbered |
 
 **Implementation:**
@@ -895,17 +934,20 @@ interface AffectedSections {
   }
 }
 
-export function parseAffectedSections(amendingLawText: string): AffectedSections {
+export function parseAffectedSections(
+  amendingLawText: string
+): AffectedSections {
   const sections = {
     amended: [] as string[],
     repealed: [] as string[],
     new: [] as string[],
-    renumbered: [] as Array<{ from: string; to: string }>
+    renumbered: [] as Array<{ from: string; to: string }>,
   }
 
   // Pattern 1: Amended sections
   // "dels att 6 kap. 17 § ska ha följande lydelse"
-  const amendedPattern = /dels att ((\d+)\s*kap\.\s+)?(\d+[a-z]?)\s*§\s+ska ha följande lydelse/g
+  const amendedPattern =
+    /dels att ((\d+)\s*kap\.\s+)?(\d+[a-z]?)\s*§\s+ska ha följande lydelse/g
   let match
   while ((match = amendedPattern.exec(amendingLawText)) !== null) {
     const chapter = match[2] || '1'
@@ -915,7 +957,8 @@ export function parseAffectedSections(amendingLawText: string): AffectedSections
 
   // Pattern 2: Repealed sections
   // "dels att 8 kap. 4 § ska upphöra att gälla"
-  const repealedPattern = /dels att ((\d+)\s*kap\.\s+)?(\d+[a-z]?)\s*§\s+ska upphöra att gälla/g
+  const repealedPattern =
+    /dels att ((\d+)\s*kap\.\s+)?(\d+[a-z]?)\s*§\s+ska upphöra att gälla/g
   while ((match = repealedPattern.exec(amendingLawText)) !== null) {
     const chapter = match[2] || '1'
     const section = match[3]
@@ -924,19 +967,24 @@ export function parseAffectedSections(amendingLawText: string): AffectedSections
 
   // Pattern 3: New sections
   // "dels att det ska införas nya paragrafer, 6 kap. 17 a och 17 b §§"
-  const newPattern = /dels att det ska införas (?:nya|en ny) paragrafer?,\s*(.*?)(?=dels|Denna lag|$)/gs
+  const newPattern =
+    /dels att det ska införas (?:nya|en ny) paragrafer?,\s*(.*?)(?=dels|Denna lag|$)/gs
   while ((match = newPattern.exec(amendingLawText)) !== null) {
     const text = match[1]
     // Parse section references from this text
-    const sectionRefs = text.match(/(\d+)\s*kap\.\s+(\d+[a-z]?(?:\s+och\s+\d+[a-z]?)?)\s*§/g)
+    const sectionRefs = text.match(
+      /(\d+)\s*kap\.\s+(\d+[a-z]?(?:\s+och\s+\d+[a-z]?)?)\s*§/g
+    )
     if (sectionRefs) {
-      sectionRefs.forEach(ref => {
-        const m = ref.match(/(\d+)\s*kap\.\s+(\d+[a-z]?(?:\s+och\s+\d+[a-z]?)?)/)
+      sectionRefs.forEach((ref) => {
+        const m = ref.match(
+          /(\d+)\s*kap\.\s+(\d+[a-z]?(?:\s+och\s+\d+[a-z]?)?)/
+        )
         if (m) {
           const chapter = m[1]
           const sectionsStr = m[2]
           // Handle "17 a och 17 b" format
-          sectionsStr.split(/\s+och\s+/).forEach(s => {
+          sectionsStr.split(/\s+och\s+/).forEach((s) => {
             sections.new.push(`${chapter}:${s.trim()}`)
           })
         }
@@ -946,7 +994,8 @@ export function parseAffectedSections(amendingLawText: string): AffectedSections
 
   // Pattern 4: Renumbered sections
   // "nuvarande 3 kap. 2 b § betecknas 3 kap. 2 c §"
-  const renumberedPattern = /nuvarande\s+((\d+)\s*kap\.\s+)?(\d+[a-z]?)\s*§\s+betecknas\s+((\d+)\s*kap\.\s+)?(\d+[a-z]?)\s*§/g
+  const renumberedPattern =
+    /nuvarande\s+((\d+)\s*kap\.\s+)?(\d+[a-z]?)\s*§\s+betecknas\s+((\d+)\s*kap\.\s+)?(\d+[a-z]?)\s*§/g
   while ((match = renumberedPattern.exec(amendingLawText)) !== null) {
     const fromChapter = match[2] || '1'
     const fromSection = match[3]
@@ -954,7 +1003,7 @@ export function parseAffectedSections(amendingLawText: string): AffectedSections
     const toSection = match[6]
     sections.renumbered.push({
       from: `${fromChapter}:${fromSection}`,
-      to: `${toChapter}:${toSection}`
+      to: `${toChapter}:${toSection}`,
     })
   }
 
@@ -972,12 +1021,13 @@ export function parseAffectedSections(amendingLawText: string): AffectedSections
 
   return {
     raw: parts.join('; '),
-    parsed: sections
+    parsed: sections,
   }
 }
 ```
 
 **Example Output for SFS 2025:732:**
+
 ```typescript
 {
   raw: "ändr. 6:17",
@@ -1001,6 +1051,7 @@ Denna lag träder i kraft den 1 juli 2028.
 ```
 
 **Special Cases:**
+
 - Multiple effective dates: "träder i kraft den 1 juli 2025, dock att 3 kap. 2 § träder i kraft den 1 januari 2026"
 - Immediate effect: "träder i kraft dagen efter den dag då lagen har kungjorts"
 - Future dates: Can be years in the future
@@ -1023,9 +1074,18 @@ export function parseEffectiveDate(amendingLawText: string): Date | null {
 
   // Swedish month names to numbers
   const months: Record<string, number> = {
-    'januari': 0, 'februari': 1, 'mars': 2, 'april': 3,
-    'maj': 4, 'juni': 5, 'juli': 6, 'augusti': 7,
-    'september': 8, 'oktober': 9, 'november': 10, 'december': 11
+    januari: 0,
+    februari: 1,
+    mars: 2,
+    april: 3,
+    maj: 4,
+    juni: 5,
+    juli: 6,
+    augusti: 7,
+    september: 8,
+    oktober: 9,
+    november: 10,
+    december: 11,
   }
 
   const month = months[monthName]
@@ -1042,6 +1102,7 @@ export function parseEffectiveDate(amendingLawText: string): Date | null {
 **Goal:** Generate 2-3 sentence summaries similar to Notisum's quality.
 
 **Notisum Example (SFS 2022:1109):**
+
 > "Marknadskontrollmyndigheterna får utökade möjligheter att kontrollera att produkter som tillhandahålls på EU:s inre marknad uppfyller de krav som finns. Det kan handla om säkerhetskrav eller krav för att skydda människors hälsa eller miljön. Träder i kraft den 25 juli 2022."
 
 **Implementation:**
@@ -1099,10 +1160,13 @@ Exempel 2:
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3, // Low temperature for consistency
       max_tokens: 200,
-      presence_penalty: 0.1
+      presence_penalty: 0.1,
     })
 
-    return response.choices[0].message.content?.trim() || 'Inga detaljer tillgängliga.'
+    return (
+      response.choices[0].message.content?.trim() ||
+      'Inga detaljer tillgängliga.'
+    )
   } catch (error) {
     console.error('Failed to generate summary:', error)
     return 'Sammanfattning kunde inte genereras.'
@@ -1111,6 +1175,7 @@ Exempel 2:
 ```
 
 **Cost Analysis:**
+
 - Input: ~2,500 tokens (prompt + law text excerpt)
 - Output: ~100 tokens
 - Total: 2,600 tokens per amendment
@@ -1118,6 +1183,7 @@ Exempel 2:
 - For 5,675 amending laws: **$238 one-time cost**
 
 **Quality Assurance:**
+
 - Generate summaries for 10 sample amendments
 - Review manually for accuracy
 - Adjust prompt if needed
@@ -1177,6 +1243,7 @@ enum SummarySource {
 ### 12.5 Enhanced Implementation Flow
 
 **Step 1: Ingest ALL SFS Laws** (Including amending laws)
+
 ```typescript
 // Epic 2.2: SFS Ingestion
 
@@ -1190,12 +1257,15 @@ for (const sfsDoc of allSFSDocuments) {
     publication_date: new Date(sfsDoc.publicerad),
     full_text: fullText,
     source_url: sfsDoc.dokument_url_html,
-    metadata: { /* ... */ }
+    metadata: {
+      /* ... */
+    },
   })
 }
 ```
 
 **Step 2: Extract Amendments & Enrich with Metadata**
+
 ```typescript
 // For EACH original law (e.g., SFS 1977:1160)
 
@@ -1204,7 +1274,7 @@ const amendments = extractAmendmentsFromText(originalLaw.full_text)
 for (const amendmentSFS of amendments) {
   // Fetch the amending law (already in database from Step 1)
   const amendingLaw = await prisma.legalDocument.findUnique({
-    where: { document_number: amendmentSFS }
+    where: { document_number: amendmentSFS },
   })
 
   if (!amendingLaw) {
@@ -1240,26 +1310,30 @@ for (const amendmentSFS of amendments) {
       summary_generated_by: 'GPT_4',
       detected_method: 'RIKSDAGEN_TEXT_PARSING',
       metadata: {
-        parsing_confidence: affectedSections.parsed.amended.length > 0 ? 'high' : 'low'
-      }
-    }
+        parsing_confidence:
+          affectedSections.parsed.amended.length > 0 ? 'high' : 'low',
+      },
+    },
   })
 }
 ```
 
 **Step 3: Backfill from Lagen.nu** (If needed)
+
 ```typescript
 // For laws with < 5 amendments (suspected incomplete)
 
 const lawsNeedingBackfill = await prisma.legalDocument.findMany({
   where: {
     amendments_count: { lt: 5 },
-    content_type: 'SFS_LAW'
-  }
+    content_type: 'SFS_LAW',
+  },
 })
 
 for (const law of lawsNeedingBackfill) {
-  const lagenNuAmendments = await fetchAmendmentsFromLagenNu(law.document_number)
+  const lagenNuAmendments = await fetchAmendmentsFromLagenNu(
+    law.document_number
+  )
 
   for (const lnAmendment of lagenNuAmendments) {
     // Check if amendment already exists
@@ -1267,9 +1341,9 @@ for (const law of lawsNeedingBackfill) {
       where: {
         original_law_number_amending_law_number: {
           original_law_number: law.document_number,
-          amending_law_number: lnAmendment.sfs_number
-        }
-      }
+          amending_law_number: lnAmendment.sfs_number,
+        },
+      },
     })
 
     if (!existing) {
@@ -1286,26 +1360,27 @@ for (const law of lawsNeedingBackfill) {
 
 **One-Time Costs (Initial Ingestion):**
 
-| Task | Volume | Time/Cost |
-|------|--------|-----------|
-| Fetch SFS metadata | 11,351 laws | Free, 2 hours |
-| Fetch full text | 11,351 laws | Free, 36 hours |
-| **Extract amendments** | **~5,675 amending laws** | **0** |
-| **Parse affected sections** | **5,675 amendments** | **+30 minutes** |
-| **Parse effective dates** | **5,675 amendments** | **+10 minutes** |
-| **Generate GPT-4 summaries** | **5,675 amendments** | **$238** |
-| Lagen.nu backfill | ~2,000 laws (20%) | +1.3 hours |
+| Task                         | Volume                   | Time/Cost       |
+| ---------------------------- | ------------------------ | --------------- |
+| Fetch SFS metadata           | 11,351 laws              | Free, 2 hours   |
+| Fetch full text              | 11,351 laws              | Free, 36 hours  |
+| **Extract amendments**       | **~5,675 amending laws** | **0**           |
+| **Parse affected sections**  | **5,675 amendments**     | **+30 minutes** |
+| **Parse effective dates**    | **5,675 amendments**     | **+10 minutes** |
+| **Generate GPT-4 summaries** | **5,675 amendments**     | **$238**        |
+| Lagen.nu backfill            | ~2,000 laws (20%)        | +1.3 hours      |
 
 **Total One-Time Cost:**
+
 - Time: 38 hours → **39.2 hours** (+1.2 hours)
 - Money: $0 → **$238** (GPT-4 summaries)
 
 **Recurring Costs (Monthly):**
 
-| Task | Volume | Cost |
-|------|--------|------|
+| Task                    | Volume               | Cost  |
+| ----------------------- | -------------------- | ----- |
 | New amendment summaries | ~10 amendments/month | $0.42 |
-| User queries (RAG) | 1,000 queries/month | $30 |
+| User queries (RAG)      | 1,000 queries/month  | $30   |
 
 **Total Recurring:** ~$30/month
 
@@ -1406,16 +1481,16 @@ export function AmendmentTimeline({ law, amendments }: AmendmentTimelineProps) {
 
 **Feature Parity with Notisum:**
 
-| Feature | Notisum | Our Strategy | Status |
-|---------|---------|--------------|--------|
-| Complete amendment list | ✅ | ✅ Tier 1 + Tier 2 | ✅ |
-| SFS number | ✅ | ✅ Inline parsing | ✅ |
-| Publication date | ✅ | ✅ From amending law | ✅ |
-| Full title | ✅ | ✅ From amending law | ✅ |
-| Affected sections | ✅ | ✅ Parse from text | ✅ |
-| Human-readable summary | ✅ | ✅ GPT-4 generated | ✅ |
-| Effective date | ✅ | ✅ Parse transition provisions | ✅ |
-| User comments | ✅ | ✅ Workspace feature | ✅ |
+| Feature                 | Notisum | Our Strategy                   | Status |
+| ----------------------- | ------- | ------------------------------ | ------ |
+| Complete amendment list | ✅      | ✅ Tier 1 + Tier 2             | ✅     |
+| SFS number              | ✅      | ✅ Inline parsing              | ✅     |
+| Publication date        | ✅      | ✅ From amending law           | ✅     |
+| Full title              | ✅      | ✅ From amending law           | ✅     |
+| Affected sections       | ✅      | ✅ Parse from text             | ✅     |
+| Human-readable summary  | ✅      | ✅ GPT-4 generated             | ✅     |
+| Effective date          | ✅      | ✅ Parse transition provisions | ✅     |
+| User comments           | ✅      | ✅ Workspace feature           | ✅     |
 
 **Competitive Advantages Beyond Notisum:**
 
@@ -1442,6 +1517,7 @@ export function AmendmentTimeline({ law, amendments }: AmendmentTimelineProps) {
 ### ✅ Three-Tier Approach (Updated)
 
 **Tier 1: Riksdagen Text Parsing + Enrichment**
+
 - Extract amendment SFS numbers from inline references
 - Fetch amending law metadata (already in database)
 - Parse affected sections from amending law full text
@@ -1450,11 +1526,13 @@ export function AmendmentTimeline({ law, amendments }: AmendmentTimelineProps) {
 - **Result:** 70-80% complete, fully enriched
 
 **Tier 2: Lagen.nu Backfill**
+
 - Scrape lagen.nu for complete amendment lists
 - Same enrichment process as Tier 1
 - **Result:** 95-100% complete, fully enriched
 
 **Tier 3: SFSR Validation**
+
 - Validate against official register when available
 - Update discrepancies
 - **Result:** 100% complete, authoritative
@@ -1469,11 +1547,13 @@ export function AmendmentTimeline({ law, amendments }: AmendmentTimelineProps) {
 ### ✅ Cost-Benefit Analysis
 
 **Investment:**
+
 - One-time: $238 (GPT-4 summaries)
 - Time: +1.2 hours to initial ingestion
 - Recurring: $0.42/month for new amendments
 
 **Value:**
+
 - Feature parity with premium competitor (Notisum)
 - Automated change detection (competitive advantage)
 - User-facing amendment timelines (Epic 8)

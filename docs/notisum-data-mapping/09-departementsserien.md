@@ -10,6 +10,7 @@
 Ministry publications (Departementsserien, abbreviated "Ds") are reports and memoranda prepared by government ministries on specific policy issues. Less formal than SOU (official government inquiries) but still part of the legislative preparation process.
 
 **Key characteristics:**
+
 - Prepared by **government ministries** (not independent committees like SOU)
 - Policy analysis and proposals
 - Part of **förarbeten** (preparatory works)
@@ -27,14 +28,17 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 - Full Ds text is hosted on `https://regeringen.se/`
 
 **Example from screenshot:**
+
 - Notisum lists "Ds 2024:35"
 - Clicking leads to: `https://regeringen.se/rattsliga-dokument/departementsserien-och-promemorior/2025/01/ds-202435/`
 
 **Same situation as:**
+
 - **SOU** - External link only
 - **Kommittédirektiv** - External link only
 
 **Different from:**
+
 - **SFS** - Notisum hosts full text
 - **Propositioner** - Notisum hosts full text
 
@@ -43,6 +47,7 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 ## Structure in Notisum
 
 **Same interface as other document types:**
+
 - **Kronologiskt register** (chronological by year)
 - **Grid view** + **detailed list view**
 - Checkbox interface
@@ -56,12 +61,14 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 **Pattern:** `Ds YYYY:NN`
 
 **Breakdown:**
+
 - `Ds` = Departementsserien
 - `YYYY` = Year of publication
 - `:` = Separator
 - `NN` = Sequential number within that year
 
 **Examples:**
+
 - `Ds 2024:35` = Ministry publication #35 from 2024
 - `Ds 2025:1` = First ministry publication from 2025
 
@@ -72,6 +79,7 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 **Notisum URL format:** `https://www.notisum.se/rn/document/?id=DSYYYYNN`
 
 **Condensed numbering:**
+
 - Full format: `Ds 2024:35`
 - URL format: `id=DS202435` (likely)
 - `DS` = Departementsserien identifier
@@ -86,16 +94,17 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 
 **Ds vs. SOU:**
 
-| Feature | SOU | Ds |
-|---------|-----|-----|
-| **Author** | Independent inquiry committee | Government ministry staff |
-| **Scope** | Major policy issues | More specific/technical topics |
-| **Timeline** | 1-3 years typically | Faster (months) |
-| **Formality** | High - official government inquiry | Medium - ministry working document |
-| **Consultation** | Extensive remiss process | May have remiss, less formal |
-| **Leads to** | Often becomes proposition | May become proposition or inform SOU |
+| Feature          | SOU                                | Ds                                   |
+| ---------------- | ---------------------------------- | ------------------------------------ |
+| **Author**       | Independent inquiry committee      | Government ministry staff            |
+| **Scope**        | Major policy issues                | More specific/technical topics       |
+| **Timeline**     | 1-3 years typically                | Faster (months)                      |
+| **Formality**    | High - official government inquiry | Medium - ministry working document   |
+| **Consultation** | Extensive remiss process           | May have remiss, less formal         |
+| **Leads to**     | Often becomes proposition          | May become proposition or inform SOU |
 
 **When Ds is used:**
+
 - Quick policy analysis needed
 - Technical issues within ministry expertise
 - Internal government deliberation
@@ -108,12 +117,14 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 **Typical flow involving Ds:**
 
 **Option 1: Ds → Proposition**
+
 1. Ministry identifies policy issue
 2. Ds report analyzes options
 3. Government submits proposition based on Ds
 4. Riksdag votes → becomes law
 
 **Option 2: Ds → SOU → Proposition**
+
 1. Ds provides initial analysis
 2. Government orders full SOU investigation
 3. SOU builds on Ds findings
@@ -121,6 +132,7 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 5. Riksdag votes → becomes law
 
 **Option 3: Ds → Internal use**
+
 1. Ministry produces Ds for internal deliberation
 2. Never leads to public proposal
 3. Archived for reference
@@ -138,6 +150,7 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 **Access:** ✅ Free and public
 
 **Format:**
+
 - PDF reports (typically 50-200 pages)
 - HTML summaries
 - Metadata
@@ -149,6 +162,7 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 ## Why Notisum Doesn't Host Ds
 
 **Same reasons as SOU:**
+
 1. **Size:** Substantial PDF files
 2. **Licensing:** May not have rights to republish
 3. **Maintenance:** Less frequently accessed than laws
@@ -160,6 +174,7 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 ## Data Volume Estimate
 
 **Ds per year:** Moderate volume
+
 - Likely 20-50+ Ds/year
 - More than förordningsmotiv (0-10/year)
 - Less than propositioner (150-300/year)
@@ -172,11 +187,13 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 ## Relevance for Laglig.se
 
 **Low-to-moderate value:**
+
 1. **Policy professionals** - Track policy development
 2. **Lawyers** - Background for legal interpretation
 3. **Researchers** - Academic policy analysis
 
 **Low value for SMB compliance:**
+
 - Early in legislative process
 - Not binding law
 - Most businesses need enacted regulations, not preparatory analysis
@@ -184,15 +201,18 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 **Recommendation for Laglig.se:**
 
 **MVP (Phase 1):**
+
 - ❌ **Skip entirely** - Link to regeringen.se if needed
 - Focus on SFS (binding law) and propositioner (interpretation)
 
 **Phase 2 (Professional tier):**
+
 - ⚠️ **Maybe include** - Index with external links (like Notisum)
 - **Potential value-add:** Track Ds → Proposition → SFS connections
   - "This law originated from Ds 2022:X which became Prop. 2023/24:Y"
 
 **Phase 3 (Enterprise/Policy tier):**
+
 - ✅ **Consider full integration** if user demand exists
 - **AI opportunity:** Summarize Ds reports
 - **Tracking:** "New Ds published in your industry"
@@ -201,43 +221,45 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 
 ## Key Differences from SOU
 
-| Feature | SOU | Ds |
-|---------|-----|-----|
-| **Author** | Independent committee | Ministry staff |
-| **Commissioning** | Government directive (kommittédirektiv) | Internal ministry decision |
-| **Timeline** | 1-3 years | Months |
-| **Formality** | Official government inquiry | Ministry working document |
-| **Size** | 100-1000+ pages | 50-200 pages typically |
-| **Consultation** | Extensive remiss | May have limited remiss |
-| **Frequency** | 20-100/year | 20-50+/year |
-| **Hosted by Notisum** | ❌ No - external link | ❌ No - external link |
-| **Laglig.se priority** | Low | Low |
+| Feature                | SOU                                     | Ds                         |
+| ---------------------- | --------------------------------------- | -------------------------- |
+| **Author**             | Independent committee                   | Ministry staff             |
+| **Commissioning**      | Government directive (kommittédirektiv) | Internal ministry decision |
+| **Timeline**           | 1-3 years                               | Months                     |
+| **Formality**          | Official government inquiry             | Ministry working document  |
+| **Size**               | 100-1000+ pages                         | 50-200 pages typically     |
+| **Consultation**       | Extensive remiss                        | May have limited remiss    |
+| **Frequency**          | 20-100/year                             | 20-50+/year                |
+| **Hosted by Notisum**  | ❌ No - external link                   | ❌ No - external link      |
+| **Laglig.se priority** | Low                                     | Low                        |
 
 ---
 
 ## Key Differences from Propositioner
 
-| Feature | Propositioner | Ds |
-|---------|---------------|-----|
-| **Legal status** | Official legislative proposal to Riksdag | Preparatory analysis |
-| **Binding** | Becomes law if approved | Never binding |
-| **Author** | Government (Regeringen) | Ministry staff |
-| **Hosted by Notisum** | ✅ Yes - full text | ❌ No - external link |
-| **Data source** | Riksdagen (with API) | Regeringen.se (no API) |
-| **Frequency** | 150-300/year | 20-50+/year |
-| **Relevance for SMB** | Moderate (interpret laws) | Low (too early stage) |
-| **Laglig.se priority** | Phase 2 | Low/Skip |
+| Feature                | Propositioner                            | Ds                     |
+| ---------------------- | ---------------------------------------- | ---------------------- |
+| **Legal status**       | Official legislative proposal to Riksdag | Preparatory analysis   |
+| **Binding**            | Becomes law if approved                  | Never binding          |
+| **Author**             | Government (Regeringen)                  | Ministry staff         |
+| **Hosted by Notisum**  | ✅ Yes - full text                       | ❌ No - external link  |
+| **Data source**        | Riksdagen (with API)                     | Regeringen.se (no API) |
+| **Frequency**          | 150-300/year                             | 20-50+/year            |
+| **Relevance for SMB**  | Moderate (interpret laws)                | Low (too early stage)  |
+| **Laglig.se priority** | Phase 2                                  | Low/Skip               |
 
 ---
 
 ## Technical Integration Notes
 
 **Same challenges as SOU:**
+
 1. **No robust API** - regeringen.se doesn't provide structured data
 2. **Licensing uncertainty** - unclear if republishing is permitted
 3. **Maintenance burden** - would require web scraping
 
 **Realistic approach for Laglig.se:**
+
 - **Start:** Index only with external links (if at all)
 - **Later:** Consider if user demand justifies effort
 - **Focus:** Cross-reference tracking (Ds → Prop → SFS)
@@ -277,6 +299,7 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
    - Businesses must comply
 
 **Where users find value:**
+
 - **2024: Compliance teams** → Need SFS law
 - **2023: Legal advisors** → Need proposition
 - **2022: Policy analysts** → May consult Ds for background
@@ -286,12 +309,14 @@ Ministry publications (Departementsserien, abbreviated "Ds") are reports and mem
 ## Summary
 
 **Departementsserien (Ds) are ministry-level policy publications that:**
+
 - ⚠️ **Not hosted by Notisum** - external links only to regeringen.se
 - ⚠️ **Preparatory documents** - not binding law
 - ⚠️ **Early in process** - may lead to propositioner and laws
 - ⚠️ **No structured API** - difficult to integrate
 
 **For Laglig.se:**
+
 - ❌ **Not a priority** for MVP or Phase 2
 - **Low value** for core SMB compliance use case
 - **Could add later** as index with cross-referencing if professional users request

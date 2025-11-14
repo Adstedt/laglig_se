@@ -15,6 +15,7 @@ Fortnox's Employee schema is a comprehensive payroll and HR management system de
 ## Core Structure
 
 ### Required Fields (Minimum)
+
 ```json
 {
   "Email": "string",
@@ -24,6 +25,7 @@ Fortnox's Employee schema is a comprehensive payroll and HR management system de
 ```
 
 ### Optional but Key Identifier
+
 - `EmployeeId`: string (1-15 characters) - unique identifier
 
 ---
@@ -31,33 +33,35 @@ Fortnox's Employee schema is a comprehensive payroll and HR management system de
 ## Data Categories
 
 ### 1. Personal & Contact Information
+
 ```typescript
 {
   // Identity
-  EmployeeId: string;              // 1-15 chars, unique
-  FirstName: string;
-  LastName: string;
-  FullName: string;                // Auto-generated
-  PersonalIdentityNumber: string;  // Swedish personnummer
+  EmployeeId: string // 1-15 chars, unique
+  FirstName: string
+  LastName: string
+  FullName: string // Auto-generated
+  PersonalIdentityNumber: string // Swedish personnummer
 
   // Contact
-  Email: string;                   // Required
-  Phone1: string;
-  Phone2: string;
+  Email: string // Required
+  Phone1: string
+  Phone2: string
 
   // Address
-  Address1: string;
-  Address2: string;
-  City: string;
-  PostCode: string;
-  Country: string;
+  Address1: string
+  Address2: string
+  City: string
+  PostCode: string
+  Country: string
 
   // Role
-  JobTitle: string;                // Max 30 chars
+  JobTitle: string // Max 30 chars
 }
 ```
 
 ### 2. Employment Details
+
 ```typescript
 {
   EmploymentDate: date;            // Start date
@@ -86,6 +90,7 @@ Fortnox's Employee schema is a comprehensive payroll and HR management system de
 ```
 
 ### 3. Compensation & Salary
+
 ```typescript
 {
   // Current Salary
@@ -122,23 +127,25 @@ Fortnox's Employee schema is a comprehensive payroll and HR management system de
 ```
 
 ### 4. Work Schedule & Time Tracking
+
 ```typescript
 {
-  ScheduleId: string;              // Current schedule
-  FullTimeEquivalent: float;       // % of full-time (e.g., 1.0 = 100%)
-  AverageWeeklyHours: string;
-  WorkingTimeEnumeration: string;
+  ScheduleId: string // Current schedule
+  FullTimeEquivalent: float // % of full-time (e.g., 1.0 = 100%)
+  AverageWeeklyHours: string
+  WorkingTimeEnumeration: string
 
   // Schedule History
   DatedSchedules: Array<{
-    EmployeeId: string;            // Required
-    FirstDay: date;                // Required - when schedule starts
-    ScheduleId?: string;
+    EmployeeId: string // Required
+    FirstDay: date // Required - when schedule starts
+    ScheduleId?: string
   }>
 }
 ```
 
 ### 5. Payroll & Tax Information
+
 ```typescript
 {
   // Bank Details (Swedish format)
@@ -184,136 +191,140 @@ Fortnox's Employee schema is a comprehensive payroll and HR management system de
   // ===== PENDING VACATION =====
   // (Earned but not yet registered/taken)
 
-  VacationDaysPendingPaid: float;
-  VacationDaysPendingPrepaid: float;
-  VacationDaysPendingSaved: float;
-  VacationDaysPendingUnpaid: float;
+  VacationDaysPendingPaid: float
+  VacationDaysPendingPrepaid: float
+  VacationDaysPendingSaved: float
+  VacationDaysPendingUnpaid: float
 
   // Breakdown by year earned
-  VacationDaysPendingSavedYear1: float;
-  VacationDaysPendingSavedYear2: float;
-  VacationDaysPendingSavedYear3: float;
-  VacationDaysPendingSavedYear4: float;
-  VacationDaysPendingSavedYear5: float;
-  VacationDaysPendingSavedYear6Plus: float;
+  VacationDaysPendingSavedYear1: float
+  VacationDaysPendingSavedYear2: float
+  VacationDaysPendingSavedYear3: float
+  VacationDaysPendingSavedYear4: float
+  VacationDaysPendingSavedYear5: float
+  VacationDaysPendingSavedYear6Plus: float
 
   // ===== REGISTERED VACATION =====
   // (Officially recorded/scheduled)
 
-  VacationDaysRegisteredPaid: float;
-  VacationDaysRegisteredPrepaid: float;
-  VacationDaysRegisteredSaved: float;
-  VacationDaysRegisteredUnpaid: float;
+  VacationDaysRegisteredPaid: float
+  VacationDaysRegisteredPrepaid: float
+  VacationDaysRegisteredSaved: float
+  VacationDaysRegisteredUnpaid: float
 
   // Breakdown by year
-  VacationDaysRegisteredSavedYear1: float;
-  VacationDaysRegisteredSavedYear2: float;
-  VacationDaysRegisteredSavedYear3: float;
-  VacationDaysRegisteredSavedYear4: float;
-  VacationDaysRegisteredSavedYear5: float;
-  VacationDaysRegisteredSavedYear6Plus: float;
+  VacationDaysRegisteredSavedYear1: float
+  VacationDaysRegisteredSavedYear2: float
+  VacationDaysRegisteredSavedYear3: float
+  VacationDaysRegisteredSavedYear4: float
+  VacationDaysRegisteredSavedYear5: float
+  VacationDaysRegisteredSavedYear6Plus: float
 
   // ===== TOTALS =====
 
-  VacationDaysPaid: float;
-  VacationDaysPrepaid: float;
-  VacationDaysSaved: float;
-  VacationDaysUnpaid: float;
+  VacationDaysPaid: float
+  VacationDaysPrepaid: float
+  VacationDaysSaved: float
+  VacationDaysUnpaid: float
 
   // Saved days with employment rate tracking
-  VacationDaysSavedYear1: float;
-  VacationDaysSavedYear2: float;
-  VacationDaysSavedYear3: float;
-  VacationDaysSavedYear4: float;
-  VacationDaysSavedYear5: float;
-  VacationDaysSavedYear6Plus: float;
+  VacationDaysSavedYear1: float
+  VacationDaysSavedYear2: float
+  VacationDaysSavedYear3: float
+  VacationDaysSavedYear4: float
+  VacationDaysSavedYear5: float
+  VacationDaysSavedYear6Plus: float
 
-  VacationDaysSavedEmploymentRateYear1: float;
-  VacationDaysSavedEmploymentRateYear2: float;
-  VacationDaysSavedEmploymentRateYear3: float;
-  VacationDaysSavedEmploymentRateYear4: float;
-  VacationDaysSavedEmploymentRateYear5: float;
-  VacationDaysSavedEmploymentRateYear6Plus: float;
+  VacationDaysSavedEmploymentRateYear1: float
+  VacationDaysSavedEmploymentRateYear2: float
+  VacationDaysSavedEmploymentRateYear3: float
+  VacationDaysSavedEmploymentRateYear4: float
+  VacationDaysSavedEmploymentRateYear5: float
+  VacationDaysSavedEmploymentRateYear6Plus: float
 
   // ===== VACATION CALCULATIONS =====
 
-  VacationCalculationAdvanceVacationDebt: float;
-  VacationCalculationIncludeInCalculation: boolean;
-  VacationCalculationSameWagePercent: boolean;
-  VacationCalculationSoleCustody: boolean;
-  VacationCalculationSumOnlyNoDays: boolean;
-  VacationCalculationTotalVacationSalarySum: float;
-  VacationCalculationVacationEntitlement: float;
-  VacationCalculationVariableAdditionSum: float;
+  VacationCalculationAdvanceVacationDebt: float
+  VacationCalculationIncludeInCalculation: boolean
+  VacationCalculationSameWagePercent: boolean
+  VacationCalculationSoleCustody: boolean
+  VacationCalculationSumOnlyNoDays: boolean
+  VacationCalculationTotalVacationSalarySum: float
+  VacationCalculationVacationEntitlement: float
+  VacationCalculationVariableAdditionSum: float
 
   // ===== VACATION-BASED WORK TIME =====
 
-  VacationBasedAttendanceDays: float;
-  VacationBasedAttendanceHours: float;
-  VacationBasedCalendarDaysWhole: float;
-  VacationBasedSalaryTotal: float;
-  VacationBasedSalaryVariableAddition: float;
-  VacationBasedSalaryWorkedTime: float;
+  VacationBasedAttendanceDays: float
+  VacationBasedAttendanceHours: float
+  VacationBasedCalendarDaysWhole: float
+  VacationBasedSalaryTotal: float
+  VacationBasedSalaryVariableAddition: float
+  VacationBasedSalaryWorkedTime: float
 
   // ===== ABSENCE TRACKING =====
 
-  AbsenceHoursVacationBased: float;
-  AbsenceHoursNonVacationBased: float;
-  AbsenceWorkdaysVacationBased: float;
-  AbsenceWorkdaysNonVacationBased: float;
+  AbsenceHoursVacationBased: float
+  AbsenceHoursNonVacationBased: float
+  AbsenceWorkdaysVacationBased: float
+  AbsenceWorkdaysNonVacationBased: float
 
-  NonVacationBasedCalendarDaysPartial: float;
-  NonVacationBasedCalendarDaysWhole: float;
+  NonVacationBasedCalendarDaysPartial: float
+  NonVacationBasedCalendarDaysWhole: float
 }
 ```
 
 ### 7. Flex Time & Compensation Time
+
 ```typescript
 {
   // Flex Time (positive/negative hours bank)
-  CurrentFlexBalance: float;
-  InitialFlex: float;
+  CurrentFlexBalance: float
+  InitialFlex: float
 
   // Compensation Time (overtime bank)
-  CurrentCompBalance: float;
-  InitialComp: float;
+  CurrentCompBalance: float
+  InitialComp: float
 
   // ATF/ATK (Swedish work time reduction)
-  ATFValue: float;
-  ATKValue: float;
+  ATFValue: float
+  ATKValue: float
 }
 ```
 
 ### 8. Project & Cost Allocation
+
 ```typescript
 {
-  Project: string;                 // Default project for time tracking
-  CostCenter: string;              // Default cost center
+  Project: string // Default project for time tracking
+  CostCenter: string // Default cost center
 }
 ```
 
 ### 9. Nested/Related Entities
 
 #### Employee Categories
+
 ```typescript
 {
   EmployeeCategories: Array<{
-    Name: string;
-    value: string;
+    Name: string
+    value: string
   }>
 }
 ```
 
 #### Employee Children (Child Care Tracking)
+
 ```typescript
 {
   EmployeeChildren: Array<{
-    EmployeeId: string;            // Required
-    Child: string;                 // Required
-    ApprovedDays: integer;         // Required
-    IngoingWithdrawnDays: integer; // Required
-    WithdrawnDays: float;
-    Id: string;
+    EmployeeId: string // Required
+    Child: string // Required
+    ApprovedDays: integer // Required
+    IngoingWithdrawnDays: integer // Required
+    WithdrawnDays: float
+    Id: string
   }>
 }
 ```
@@ -323,12 +334,15 @@ Fortnox's Employee schema is a comprehensive payroll and HR management system de
 ## Key Design Patterns
 
 ### 1. **Temporal Data Tracking**
+
 Fortnox uses arrays with `FirstDay` fields to track changes over time:
+
 - `DatedWages[]` - salary changes
 - `DatedSchedules[]` - schedule changes
 - `OpeningSalaries[]` - historical records
 
 **Pattern:**
+
 ```typescript
 Array<{
   FirstDay: date;        // When this value takes effect
@@ -337,28 +351,36 @@ Array<{
 ```
 
 ### 2. **State Management: Pending vs Registered**
+
 Swedish vacation law requires tracking both:
+
 - **Pending**: Earned but not officially recorded
 - **Registered**: Officially scheduled/approved
 
 This two-phase tracking ensures accuracy for legal/payroll purposes.
 
 ### 3. **Multi-Year Tracking**
+
 Vacation days can be carried forward up to 6+ years, each tracked separately:
+
 - `Year1` through `Year5` (specific years)
 - `Year6Plus` (aggregated older)
 
 ### 4. **Balance Tracking Pattern**
+
 ```typescript
 {
   Current[Type]Balance: float;   // Current state
   Initial[Type]: float;          // Starting point
 }
 ```
+
 Used for flex time, comp time, etc.
 
 ### 5. **Enums for Validation**
+
 Extensive use of enums for:
+
 - Employment types
 - Tax forms
 - Pension types
@@ -367,13 +389,16 @@ Extensive use of enums for:
 Ensures data consistency and Swedish legal compliance.
 
 ### 6. **Separation of List vs Detail**
+
 - `fortnox_Employee` - Full schema for single employee
 - `fortnox_EmployeeListItem` - Lighter schema for list views
 
 Optimizes API performance while maintaining full data access when needed.
 
 ### 7. **Nested Arrays for Relationships**
+
 Rather than foreign keys, related data is nested:
+
 - Categories
 - Children
 - Historical records
@@ -385,6 +410,7 @@ Reduces API calls, provides complete context.
 ## Lessons for laglig.se
 
 ### What to Adopt:
+
 1. **Temporal tracking pattern** - Track role changes, salary changes over time
 2. **Balance tracking** - For vacation days, billable hours, etc.
 3. **Enum-based validation** - For roles, permissions, subscription tiers
@@ -392,11 +418,13 @@ Reduces API calls, provides complete context.
 5. **Separation of list/detail schemas** - For performance
 
 ### What to Simplify:
+
 1. **Vacation tracking** - Legal professionals don't need 6+ years of granular tracking
 2. **Tax/payroll details** - Not core to legal practice management
 3. **Swedish-specific fields** - Unless targeting Swedish law firms specifically
 
 ### Potential laglig.se User Schema Structure:
+
 ```typescript
 {
   // Core Identity

@@ -3,9 +3,11 @@
 ## 📊 Nuläge
 
 ### ❌ Problem med V1 Scraper
+
 Den första versionen (`laglistor-scraper.ts`) extraherade **fel data**:
 
 **Exempel på dålig output från V1:**
+
 ```
 Arbetsmiljö: Endast 5 "lagar" extraherade (borde vara 112)
 
@@ -22,6 +24,7 @@ Exempel på vad som extraherades:
 Den nya versionen (`laglistor-scraper-v2.ts`) har helt omskriven extraheringslogik:
 
 **Vad den gör rätt:**
+
 1. **Identifierar kategorirubriker** - Känner igen "01 ALLMÄNNA REGLER", "02 HR", etc.
 2. **Hittar rätt tabellerader** - Söker efter rader med SFS-nummer och långa beskrivningar
 3. **Extraherar komplett data:**
@@ -41,6 +44,7 @@ Den nya versionen (`laglistor-scraper-v2.ts`) har helt omskriven extraheringslog
 När V2 scrapern körs korrekt ska den extrahera:
 
 ### Arbetsmiljö (listid=72130)
+
 - **~112 lagar** fördelade över kategorier som:
   - 01 ALLMÄNNA REGLER
   - 02 HR-regler
@@ -48,9 +52,11 @@ När V2 scrapern körs korrekt ska den extrahera:
   - etc.
 
 ### Miljö (listid=72129)
+
 - **~98 lagar** fördelade över miljökategorier
 
 ### Övriga 10 laglistor
+
 - Variabelt antal lagar, alla korrekt kategoriserade
 
 ## 🔄 Nästa Steg
@@ -65,6 +71,7 @@ npm run scrape-laglistor
 ```
 
 **När browsern öppnas:**
+
 1. ⏳ Vänta på att användarnamn/lösenord fylls i automatiskt
 2. 🤖 **LÖS RECAPTCHA** (kan inte automatiseras)
 3. 🖱️ Klicka på "Logga in"
@@ -75,6 +82,7 @@ npm run scrape-laglistor
 ## 📁 Output Location
 
 Resultaten kommer sparas i:
+
 ```
 competitor-analysis/output/laglistor-data/
 ├── arbetsmiljo.json
@@ -93,6 +101,7 @@ competitor-analysis/output/laglistor-data/
 Efter körning, kontrollera:
 
 1. **Antal extraherade lagar:**
+
    ```bash
    # Ska visa ~112 för Arbetsmiljö
    cat output/laglistor-data/arbetsmiljo.json | grep '"sfs":' | wc -l
@@ -111,15 +120,18 @@ Efter körning, kontrollera:
 ## 🐛 Troubleshooting
 
 **Om färre än 112 lagar extraheras från Arbetsmiljö:**
+
 - Kontrollera att alla kategorier expanderades (kolla screenshot)
 - Verifiera att scrolling laddade allt innehåll
 - Granska HTML-strukturen manuellt
 
 **Om kategorier saknas:**
+
 - Kategorirubrikerna kanske har annan struktur än förväntat
 - Behöver eventuellt justera regex: `/^0\\d\\s+[A-ZÅÄÖ]/`
 
 **Om timeout vid login:**
+
 - Du har 5 minuter på dig att lösa reCAPTCHA
 - Om det tar längre tid, öka timeout i `laglistor-scraper-v2.ts` rad 80
 
@@ -158,6 +170,7 @@ async extractAllLaws(): Promise<LawEntry[]> {
 ## 🎯 Success Criteria
 
 Scrapern är framgångsrik när:
+
 - ✅ Arbetsmiljö: 112 lagar extraherade
 - ✅ Miljö: 98 lagar extraherade
 - ✅ Alla lagar har SFS-nummer

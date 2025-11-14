@@ -12,6 +12,7 @@
 The Change Monitoring System is Laglig.se's competitive moat for retention and engagement - an automated law change detection and notification system that keeps users informed about updates to Swedish laws they're tracking. By integrating with Riksdagen's API and leveraging AI-powered change analysis, the system ensures users never miss critical compliance updates.
 
 **Key Differentiators:**
+
 - **Complete Change History** - Full amendment timeline for all 10,000+ Swedish laws
 - **AI-Powered Summaries** - Plain-language explanations of what changed and why it matters
 - **GitHub-Style Diff View** - See exactly what text was added, modified, or deleted
@@ -20,6 +21,7 @@ The Change Monitoring System is Laglig.se's competitive moat for retention and e
 - **Unlimited Change Analysis** - AI summaries don't count toward monthly query limits
 
 **Strategic Value:**
+
 - **Retention Driver** - Users must stay subscribed to receive critical compliance updates
 - **Engagement Mechanism** - Weekly industry emails bring users back to the platform
 - **Trust Builder** - Proactive notifications position Laglig.se as a reliable compliance partner
@@ -49,45 +51,55 @@ The Change Monitoring System is Laglig.se's competitive moat for retention and e
 ## Core Principles
 
 ### 1. Proactive, Not Reactive
+
 **Users shouldn't have to check for updates - the system notifies them automatically.**
 
 **Problem:** Small business owners don't have time to monitor Riksdagen for law changes.
 
 **Solution:**
+
 - Daily automated checks for all laws in the database
 - Immediate notifications when tracked laws change
 - Weekly industry summaries for broader awareness
 
 ### 2. Context-Aware Notifications
+
 **Only notify about laws the user cares about.**
 
 **Implementation:**
+
 - Track only laws explicitly added to user's law list
 - No spam notifications for irrelevant laws
 - Industry emails curated based on SNI code
 
 ### 3. Change Transparency
+
 **Users must understand exactly what changed and when it takes effect.**
 
 **Features:**
+
 - GitHub-style diff view (old vs. new text side-by-side)
 - AI-generated plain-language summary
 - Effective date clearly displayed
 - Source document link to Riksdagen proposition
 
 ### 4. Frictionless Acknowledgment
+
 **Users should be able to review and acknowledge changes quickly.**
 
 **Workflow:**
+
 - One-click "Mark as reviewed" button
 - Bulk acknowledgment for multiple changes
 - Persistent reminders for unacknowledged critical changes
 - Visual badges showing unreviewed count
 
 ### 5. Complete Historical Record
+
 **Every change to every law is stored permanently.**
 
 **Value:**
+
 - Users can see full amendment history when they join the platform
 - SEO-rich content for law pages (Google loves comprehensive timelines)
 - Audit trail for compliance documentation
@@ -164,6 +176,7 @@ The Change Monitoring System is Laglig.se's competitive moat for retention and e
 **Schedule:** Every day at 00:00 UTC (01:00 CET, 02:00 CEST)
 
 **Why daily?**
+
 - Riksdagen API is free (no cost concerns)
 - Laws can change at any time (government updates published daily)
 - Users expect timely notifications (within 24 hours)
@@ -171,40 +184,43 @@ The Change Monitoring System is Laglig.se's competitive moat for retention and e
 **Job Steps:**
 
 1. **Fetch All Laws from Riksdagen API**
+
    ```typescript
    async function fetchAllLawsFromRiksdagen() {
      const response = await fetch(
        'https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json'
-     );
-     const data = await response.json();
-     return data.dokumentlista.dokument; // Array of ~10,000 laws
+     )
+     const data = await response.json()
+     return data.dokumentlista.dokument // Array of ~10,000 laws
    }
    ```
 
 2. **Compare with Local Database**
+
    ```typescript
    for (const riksdagenLaw of riksdagenLaws) {
      const localLaw = await db.laws.findUnique({
-       where: { sfsNumber: riksdagenLaw.beteckning }
-     });
+       where: { sfsNumber: riksdagenLaw.beteckning },
+     })
 
      if (!localLaw) {
        // New law published - create record
-       await createNewLaw(riksdagenLaw);
+       await createNewLaw(riksdagenLaw)
      } else {
        // Check if content has changed
-       const hasChanged = await detectChanges(localLaw, riksdagenLaw);
+       const hasChanged = await detectChanges(localLaw, riksdagenLaw)
        if (hasChanged) {
-         await recordChange(localLaw, riksdagenLaw);
+         await recordChange(localLaw, riksdagenLaw)
        }
      }
    }
    ```
 
 3. **Detect Changes**
+
    ```typescript
    async function detectChanges(localLaw, riksdagenLaw) {
-     const changes = [];
+     const changes = []
 
      // Compare full text
      if (localLaw.fullText !== riksdagenLaw.text) {
@@ -212,23 +228,24 @@ The Change Monitoring System is Laglig.se's competitive moat for retention and e
          type: 'text_amendment',
          oldText: localLaw.fullText,
          newText: riksdagenLaw.text,
-       });
+       })
      }
 
      // Compare metadata
      if (localLaw.title !== riksdagenLaw.titel) {
-       changes.push({ type: 'metadata', field: 'title' });
+       changes.push({ type: 'metadata', field: 'title' })
      }
 
      if (localLaw.status !== riksdagenLaw.status) {
-       changes.push({ type: 'status_change', newStatus: riksdagenLaw.status });
+       changes.push({ type: 'status_change', newStatus: riksdagenLaw.status })
      }
 
-     return changes.length > 0 ? changes : null;
+     return changes.length > 0 ? changes : null
    }
    ```
 
 4. **Record Change in Database**
+
    ```typescript
    async function recordChange(localLaw, riksdagenLaw) {
      const change = await db.lawChanges.create({
@@ -241,10 +258,10 @@ The Change Monitoring System is Laglig.se's competitive moat for retention and e
          newText: riksdagenLaw.text,
          sourceDocumentUrl: riksdagenLaw.dokument_url_html,
        },
-     });
+     })
 
      // Trigger AI processing
-     await generateAISummary(change.id);
+     await generateAISummary(change.id)
 
      // Update local law record
      await db.laws.update({
@@ -253,10 +270,10 @@ The Change Monitoring System is Laglig.se's competitive moat for retention and e
          fullText: riksdagenLaw.text,
          lastAmendedAt: new Date(riksdagenLaw.systemdatum),
        },
-     });
+     })
 
      // Trigger notifications
-     await notifyAffectedUsers(localLaw.id, change.id);
+     await notifyAffectedUsers(localLaw.id, change.id)
    }
    ```
 
@@ -264,14 +281,14 @@ The Change Monitoring System is Laglig.se's competitive moat for retention and e
 
 The system detects the following types of changes:
 
-| Change Type | Description | Example |
-|-------------|-------------|---------|
-| `amendment` | Existing text modified | §3:2 text changed to clarify employer obligations |
-| `new_section` | New section/paragraph added | New §3:2a inserted requiring digital assessments |
-| `repeal` | Section deleted/repealed | §5:4 removed from law |
-| `metadata` | Title, department, or classification changed | Law renamed from "Arbetsmiljölag" to "Arbetsmiljölagen" |
-| `status_change` | Law becomes active, inactive, or repealed | Law status changed from "proposed" to "active" |
-| `associated_document` | New preparatory work or government bill added | Proposition 2024/25:42 linked to law |
+| Change Type           | Description                                   | Example                                                 |
+| --------------------- | --------------------------------------------- | ------------------------------------------------------- |
+| `amendment`           | Existing text modified                        | §3:2 text changed to clarify employer obligations       |
+| `new_section`         | New section/paragraph added                   | New §3:2a inserted requiring digital assessments        |
+| `repeal`              | Section deleted/repealed                      | §5:4 removed from law                                   |
+| `metadata`            | Title, department, or classification changed  | Law renamed from "Arbetsmiljölag" to "Arbetsmiljölagen" |
+| `status_change`       | Law becomes active, inactive, or repealed     | Law status changed from "proposed" to "active"          |
+| `associated_document` | New preparatory work or government bill added | Proposition 2024/25:42 linked to law                    |
 
 **For MVP:** All change types are treated equally (no severity classification).
 
@@ -311,54 +328,63 @@ The system detects the following types of changes:
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Law Changes Detected</title>
-</head>
-<body style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto;">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Law Changes Detected</title>
+  </head>
+  <body
+    style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto;"
+  >
+    <div style="background: #1e40af; color: white; padding: 20px;">
+      <h1 style="margin: 0;">Laglig.se</h1>
+      <p style="margin: 5px 0 0 0; opacity: 0.9;">Lagändringar upptäckta</p>
+    </div>
 
-  <div style="background: #1e40af; color: white; padding: 20px;">
-    <h1 style="margin: 0;">Laglig.se</h1>
-    <p style="margin: 5px 0 0 0; opacity: 0.9;">Lagändringar upptäckta</p>
-  </div>
+    <div style="padding: 30px 20px;">
+      <p style="font-size: 16px; color: #333;">Hej {{firstName}},</p>
 
-  <div style="padding: 30px 20px;">
-    <p style="font-size: 16px; color: #333;">
-      Hej {{firstName}},
-    </p>
+      <p style="font-size: 16px; color: #333;">
+        <strong>{{changeCount}} lagar</strong> i din lista har ändrats:
+      </p>
 
-    <p style="font-size: 16px; color: #333;">
-      <strong>{{changeCount}} lagar</strong> i din lista har ändrats:
-    </p>
+      <ul style="list-style: none; padding: 0;">
+        {{#each changes}}
+        <li
+          style="padding: 15px; background: #f3f4f6; margin-bottom: 10px; border-radius: 8px;"
+        >
+          <strong style="color: #1e40af;">{{lawName}}</strong><br />
+          <span style="color: #6b7280; font-size: 14px;"
+            >Ändrad: {{changeDate}}</span
+          >
+        </li>
+        {{/each}}
+      </ul>
 
-    <ul style="list-style: none; padding: 0;">
-      {{#each changes}}
-      <li style="padding: 15px; background: #f3f4f6; margin-bottom: 10px; border-radius: 8px;">
-        <strong style="color: #1e40af;">{{lawName}}</strong><br>
-        <span style="color: #6b7280; font-size: 14px;">Ändrad: {{changeDate}}</span>
-      </li>
-      {{/each}}
-    </ul>
-
-    <a href="{{reviewChangesUrl}}"
-       style="display: inline-block; background: #1e40af; color: white;
+      <a
+        href="{{reviewChangesUrl}}"
+        style="display: inline-block; background: #1e40af; color: white;
               padding: 12px 24px; text-decoration: none; border-radius: 6px;
-              font-weight: 600; margin-top: 20px;">
-      Granska ändringar →
-    </a>
-  </div>
+              font-weight: 600; margin-top: 20px;"
+      >
+        Granska ändringar →
+      </a>
+    </div>
 
-  <div style="padding: 20px; background: #f9fafb; border-top: 1px solid #e5e7eb;
-              text-align: center; color: #6b7280; font-size: 14px;">
-    <p>
-      Du får detta mejl eftersom du prenumererar på ändringar för lagar i din lista.
-    </p>
-    <p>
-      <a href="{{unsubscribeUrl}}" style="color: #1e40af;">Avsluta prenumeration</a>
-    </p>
-  </div>
-
-</body>
+    <div
+      style="padding: 20px; background: #f9fafb; border-top: 1px solid #e5e7eb;
+              text-align: center; color: #6b7280; font-size: 14px;"
+    >
+      <p>
+        Du får detta mejl eftersom du prenumererar på ändringar för lagar i din
+        lista.
+      </p>
+      <p>
+        <a href="{{unsubscribeUrl}}" style="color: #1e40af;"
+          >Avsluta prenumeration</a
+        >
+      </p>
+    </div>
+  </body>
 </html>
 ```
 
@@ -385,18 +411,22 @@ The system detects the following types of changes:
 
   <ul style="list-style: none; padding: 0;">
     {{#each industryChanges}}
-    <li style="padding: 15px; background: #fef3c7; margin-bottom: 10px;
-               border-left: 4px solid #f59e0b; border-radius: 4px;">
-      <strong style="color: #92400e;">{{lawName}}</strong><br>
-      <span style="color: #78350f; font-size: 14px;">
-        {{aiSummary}}
-      </span>
+    <li
+      style="padding: 15px; background: #fef3c7; margin-bottom: 10px;
+               border-left: 4px solid #f59e0b; border-radius: 4px;"
+    >
+      <strong style="color: #92400e;">{{lawName}}</strong><br />
+      <span style="color: #78350f; font-size: 14px;"> {{aiSummary}} </span>
     </li>
     {{/each}}
   </ul>
 
   <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-    💡 <em>Tips: Lägg till dessa lagar i din lista för att få detaljerade ändringsnotiser.</em>
+    💡
+    <em
+      >Tips: Lägg till dessa lagar i din lista för att få detaljerade
+      ändringsnotiser.</em
+    >
   </p>
 </div>
 ```
@@ -448,6 +478,7 @@ Du har {{unacknowledgedCount}} lagändringar som väntar på granskning:
 ```
 
 **Badge Behavior:**
+
 - Red circular badge shows count of unacknowledged changes
 - Badge disappears when all changes acknowledged
 - Max display: "9+" (if more than 9 unacknowledged)
@@ -483,6 +514,7 @@ Clicking the bell opens a dropdown panel:
 ```
 
 **Dropdown Actions:**
+
 - **Granska:** Navigate to law page with diff view open
 - **Markera som granskad:** Acknowledge change without viewing (decrements badge)
 - **Visa alla ändringar:** Navigate to Law List → Changes tab
@@ -543,6 +575,7 @@ export function NotificationBell() {
 **Not included in MVP.**
 
 Post-MVP features:
+
 - SMS notifications for Enterprise tier (critical changes only)
 - Mobile app push notifications
 - Slack/Teams integration
@@ -552,11 +585,13 @@ Post-MVP features:
 ### Notification Preferences
 
 **MVP:** No user configuration. All users receive:
+
 - Daily email digest (if changes detected)
 - Weekly industry email
 - In-app notifications
 
 **Post-MVP:** Granular settings in Workspace Settings → Notifications:
+
 - Frequency: Immediate / Daily / Weekly / Never
 - Channels: Email / In-app / SMS
 - Severity filter: Only critical / All changes
@@ -628,12 +663,14 @@ Post-MVP features:
 ```
 
 **Visual States:**
+
 - **🔴 Ny** - Unacknowledged change (red badge)
 - **✓ Granskad** - Acknowledged (checkmark, grayed out)
 
 **Sorting:** Most recent first (by `changeDate`)
 
 **Actions:**
+
 - **Visa ändringar:** Navigate to law page with diff view open
 - **Markera som granskad:** Acknowledge change inline
 - **Markera alla som granskade:** Bulk acknowledge all unacknowledged changes
@@ -641,6 +678,7 @@ Post-MVP features:
 **Empty State:**
 
 If no changes:
+
 ```
 ┌────────────────────────────────────────────┐
 │                                            │
@@ -724,6 +762,7 @@ If no changes:
 ```
 
 **Diff View Color Coding:**
+
 - **Green background** - New text added
 - **Red background** - Text deleted
 - **Yellow background** - Text modified
@@ -766,6 +805,7 @@ function renderDiffView(oldText: string, newText: string) {
 ### User Journey: From Notification to Acknowledgment
 
 **Step 1: User receives email**
+
 ```
 Subject: [Laglig.se] 3 lagar i din lista har ändrats
 
@@ -790,6 +830,7 @@ User sees list of 3 unacknowledged changes with AI summaries.
 → Law page opens with "Ändringshistorik" tab auto-selected
 
 → User sees:
+
 - AI summary of what changed
 - GitHub-style diff view
 - Effective date
@@ -813,16 +854,16 @@ async function acknowledgeChange(changeId: string, userId: string) {
         },
       },
     },
-  });
+  })
 
   // Decrement notification badge count
-  await decrementNotificationBadge(userId);
+  await decrementNotificationBadge(userId)
 
   // Show success toast
-  toast.success('Ändring markerad som granskad');
+  toast.success('Ändring markerad som granskad')
 
   // Redirect back to Changes tab
-  router.push('/mina-lagar?tab=changes');
+  router.push('/mina-lagar?tab=changes')
 }
 ```
 
@@ -856,6 +897,7 @@ If user does NOT acknowledge a change:
 **Day 8+:** No further emails, but in-app badge persists
 
 **Weekly digest also includes reminder:**
+
 ```
 Du har 3 ogranskade lagändringar från tidigare veckor:
 - Arbetsmiljölagen (ändrad 2024-03-15)
@@ -866,6 +908,7 @@ Du har 3 ogranskade lagändringar från tidigare veckor:
 ```
 
 **Persistent in-app badge:**
+
 - Notification bell continues showing count until acknowledged
 - Law List → Changes tab shows badge "(3)" indefinitely
 
@@ -880,35 +923,43 @@ Du har 3 ogranskade lagändringar från tidigare veckor:
 **Process:**
 
 1. **Extract Diff**
+
    ```typescript
-   const diff = diffLines(oldText, newText);
-   const addedText = diff.filter(part => part.added).map(p => p.value).join('\n');
-   const removedText = diff.filter(part => part.removed).map(p => p.value).join('\n');
+   const diff = diffLines(oldText, newText)
+   const addedText = diff
+     .filter((part) => part.added)
+     .map((p) => p.value)
+     .join('\n')
+   const removedText = diff
+     .filter((part) => part.removed)
+     .map((p) => p.value)
+     .join('\n')
    ```
 
 2. **Generate Summary with GPT-4**
+
    ```typescript
    async function generateAISummary(changeId: string) {
-     const change = await db.lawChanges.findUnique({ where: { id: changeId } });
+     const change = await db.lawChanges.findUnique({ where: { id: changeId } })
 
      const prompt = `
        You are a legal analyst explaining Swedish law changes to business owners.
-
+   
        Law: ${change.law.name}
-
+   
        Old text:
        ${change.oldText}
-
+   
        New text:
        ${change.newText}
-
+   
        Generate a 2-3 sentence plain-language summary in Swedish explaining:
        1. What changed (new section added, text modified, section deleted)
        2. Why it matters (what employers/businesses must do differently)
        3. Which sections are affected (§X, §Y)
-
+   
        Keep it concise and actionable. Avoid legal jargon.
-     `;
+     `
 
      const completion = await openai.chat.completions.create({
        model: 'gpt-4',
@@ -917,29 +968,29 @@ Du har 3 ogranskade lagändringar från tidigare veckor:
          { role: 'user', content: prompt },
        ],
        temperature: 0.3, // Low temperature for factual accuracy
-     });
+     })
 
-     const aiSummary = completion.choices[0].message.content;
+     const aiSummary = completion.choices[0].message.content
 
      // Store summary in database
      await db.lawChanges.update({
        where: { id: changeId },
        data: { aiSummary },
-     });
+     })
 
-     return aiSummary;
+     return aiSummary
    }
    ```
 
 3. **Store in Database**
    ```typescript
    interface LawChange {
-     id: string;
-     lawId: string;
-     changeDate: Date;
-     oldText: string;
-     newText: string;
-     aiSummary: string; // ← Generated summary stored here
+     id: string
+     lawId: string
+     changeDate: Date
+     oldText: string
+     newText: string
+     aiSummary: string // ← Generated summary stored here
    }
    ```
 
@@ -959,6 +1010,7 @@ Påverkade paragrafer: Ny § 3:2a.
 **MVP Decision:** AI change summaries do NOT count toward monthly query limits.
 
 **Rationale:**
+
 - Change summaries are system-generated (not user-initiated)
 - Critical for user experience (users expect summaries)
 - Predictable cost (max ~100 changes/month across all laws)
@@ -969,22 +1021,26 @@ Påverkade paragrafer: Ny § 3:2a.
 
 ```typescript
 async function generateImpactAssessment(changeId: string, workspaceId: string) {
-  const change = await db.lawChanges.findUnique({ where: { id: changeId } });
-  const workspace = await db.workspaces.findUnique({ where: { id: workspaceId } });
+  const change = await db.lawChanges.findUnique({ where: { id: changeId } })
+  const workspace = await db.workspaces.findUnique({
+    where: { id: workspaceId },
+  })
 
   // Fetch user's context
-  const employees = await db.employees.findMany({ where: { workspaceId } });
-  const kollektivavtal = await db.kollektivavtal.findMany({ where: { workspaceId } });
+  const employees = await db.employees.findMany({ where: { workspaceId } })
+  const kollektivavtal = await db.kollektivavtal.findMany({
+    where: { workspaceId },
+  })
 
   const prompt = `
     Law change: ${change.aiSummary}
 
     User context:
-    - ${employees.length} employees (${employees.filter(e => e.employmentForm === 'distans').length} remote workers)
-    - Kollektivavtal: ${kollektivavtal.map(k => k.name).join(', ')}
+    - ${employees.length} employees (${employees.filter((e) => e.employmentForm === 'distans').length} remote workers)
+    - Kollektivavtal: ${kollektivavtal.map((k) => k.name).join(', ')}
 
     Does this change affect the user's organization? If yes, what action should they take?
-  `;
+  `
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-4',
@@ -992,9 +1048,9 @@ async function generateImpactAssessment(changeId: string, workspaceId: string) {
       { role: 'system', content: 'You are a compliance advisor.' },
       { role: 'user', content: prompt },
     ],
-  });
+  })
 
-  return completion.choices[0].message.content;
+  return completion.choices[0].message.content
 
   // ↑ This counts toward monthly AI query limit
 }
@@ -1041,10 +1097,11 @@ const restaurantStarterPack = [
   'Miljöbalken',
   'Plan- och bygglagen (serveringstillstånd)',
   'Konsumentköplagen',
-];
+]
 ```
 
 **Why curated packs instead of all SNI-tagged laws?**
+
 - Quality over quantity (15-25 laws vs. 100+)
 - Human expertise ensures relevance
 - Easier to maintain and update
@@ -1056,7 +1113,6 @@ const restaurantStarterPack = [
 
 ```html
 <div style="padding: 30px 20px; background: #fffbeb;">
-
   <h2 style="color: #92400e; margin-bottom: 10px;">
     🍽️ Veckans branschändringar
   </h2>
@@ -1066,43 +1122,48 @@ const restaurantStarterPack = [
   </p>
 
   <div style="margin-top: 20px;">
-
-    <div style="background: white; padding: 15px; margin-bottom: 10px;
-                border-left: 4px solid #f59e0b; border-radius: 4px;">
-      <strong style="color: #1e40af;">Alkohollagen (2010:1622)</strong><br>
+    <div
+      style="background: white; padding: 15px; margin-bottom: 10px;
+                border-left: 4px solid #f59e0b; border-radius: 4px;"
+    >
+      <strong style="color: #1e40af;">Alkohollagen (2010:1622)</strong><br />
       <span style="color: #6b7280; font-size: 13px;">Ändrad 2024-03-18</span>
       <p style="margin: 10px 0 0 0; color: #374151; font-size: 14px;">
-        Nya regler för uteserveringar kräver skriftligt medgivande från fastighetsägare.
-        Gäller från 1 maj 2024.
+        Nya regler för uteserveringar kräver skriftligt medgivande från
+        fastighetsägare. Gäller från 1 maj 2024.
       </p>
     </div>
 
-    <div style="background: white; padding: 15px; margin-bottom: 10px;
-                border-left: 4px solid #f59e0b; border-radius: 4px;">
-      <strong style="color: #1e40af;">Livsmedelslagen (2006:804)</strong><br>
+    <div
+      style="background: white; padding: 15px; margin-bottom: 10px;
+                border-left: 4px solid #f59e0b; border-radius: 4px;"
+    >
+      <strong style="color: #1e40af;">Livsmedelslagen (2006:804)</strong><br />
       <span style="color: #6b7280; font-size: 13px;">Ändrad 2024-03-16</span>
       <p style="margin: 10px 0 0 0; color: #374151; font-size: 14px;">
-        Uppdaterade märkningskrav för allergener. Menyer måste tydligt visa
-        alla 14 huvudallergener från 1 juni 2024.
+        Uppdaterade märkningskrav för allergener. Menyer måste tydligt visa alla
+        14 huvudallergener från 1 juni 2024.
       </p>
     </div>
-
   </div>
 
-  <p style="color: #78350f; font-size: 13px; margin-top: 20px;
-            background: #fef3c7; padding: 10px; border-radius: 4px;">
-    💡 <strong>Tips:</strong> Dessa lagar påverkar din bransch men är inte i din laglista.
-    Du kan lägga till dem för mer detaljerade ändringsnotiser.
+  <p
+    style="color: #78350f; font-size: 13px; margin-top: 20px;
+            background: #fef3c7; padding: 10px; border-radius: 4px;"
+  >
+    💡 <strong>Tips:</strong> Dessa lagar påverkar din bransch men är inte i din
+    laglista. Du kan lägga till dem för mer detaljerade ändringsnotiser.
   </p>
 
   <p style="text-align: center; margin-top: 30px;">
-    <a href="https://laglig.se/alla-lagar?sni=56.101"
-       style="display: inline-block; background: #1e40af; color: white;
-              padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+    <a
+      href="https://laglig.se/alla-lagar?sni=56.101"
+      style="display: inline-block; background: #1e40af; color: white;
+              padding: 12px 24px; text-decoration: none; border-radius: 6px;"
+    >
       Utforska alla lagar för din bransch →
     </a>
   </p>
-
 </div>
 ```
 
@@ -1136,12 +1197,12 @@ const restaurantStarterPack = [
 3. Store in database:
    ```typescript
    interface IndustryStarterPack {
-     id: string;
-     sniCode: string;              // '56.101'
-     industryName: string;          // 'Restauranger & Catering'
-     laws: string[];                // Array of law IDs
-     createdAt: Date;
-     updatedAt: Date;
+     id: string
+     sniCode: string // '56.101'
+     industryName: string // 'Restauranger & Catering'
+     laws: string[] // Array of law IDs
+     createdAt: Date
+     updatedAt: Date
    }
    ```
 
@@ -1172,17 +1233,20 @@ async function addLawToList(lawId: string, workspaceId: string) {
       workspaceId,
       addedAt: new Date(),
     },
-  });
+  })
 
   // ✅ No separate "monitoring" record needed
   // The system automatically checks all laws in law_lists table for changes
 
   // Show confirmation
-  toast.success('Lag tillagd i din lista. Du får nu automatiska ändringsnotiser.');
+  toast.success(
+    'Lag tillagd i din lista. Du får nu automatiska ändringsnotiser.'
+  )
 }
 ```
 
 **Why no separate "monitoring" concept?**
+
 - Simpler UX (less cognitive load)
 - Clearer value proposition ("Add to list = get updates")
 - Easier to implement (one source of truth)
@@ -1201,7 +1265,7 @@ async function addLawToList(lawId: string, workspaceId: string) {
 async function removeLawFromList(lawListId: string) {
   await db.lawLists.delete({
     where: { id: lawListId },
-  });
+  })
 
   // ✅ Monitoring automatically stops (law no longer in user's list)
 
@@ -1214,9 +1278,11 @@ async function removeLawFromList(lawListId: string) {
     data: {
       archivedForUsers: { push: currentUser.id },
     },
-  });
+  })
 
-  toast.success('Lag borttagen. Du får inte längre ändringsnotiser för denna lag.');
+  toast.success(
+    'Lag borttagen. Du får inte längre ändringsnotiser för denna lag.'
+  )
 }
 ```
 
@@ -1241,6 +1307,7 @@ async function removeLawFromList(lawListId: string) {
 **Answer:** No. Monitoring is tied to law list membership.
 
 **Rationale:**
+
 - Simpler mental model
 - Encourages users to curate their law list (quality over quantity)
 - Prevents workaround to tier limits ("I'll just monitor 1000 laws without adding them")
@@ -1303,6 +1370,7 @@ async function removeLawFromList(lawListId: string) {
 ```
 
 **Timeline Elements:**
+
 - **Date:** When change was made (left side)
 - **Bullet:** Visual timeline marker
 - **Line:** Connects timeline events
@@ -1312,6 +1380,7 @@ async function removeLawFromList(lawListId: string) {
 **Click Interaction:**
 
 Clicking "Visa ändringar" opens a modal with:
+
 - Change date
 - AI summary
 - Affected sections
@@ -1538,8 +1607,8 @@ Returns all unacknowledged law changes for the current user.
 ```typescript
 // app/api/notifications/unacknowledged/route.ts
 export async function GET(req: Request) {
-  const session = await getServerSession();
-  if (!session) return new Response('Unauthorized', { status: 401 });
+  const session = await getServerSession()
+  if (!session) return new Response('Unauthorized', { status: 401 })
 
   const notifications = await db.notification.findMany({
     where: {
@@ -1557,9 +1626,9 @@ export async function GET(req: Request) {
     orderBy: {
       createdAt: 'desc',
     },
-  });
+  })
 
-  return Response.json(notifications);
+  return Response.json(notifications)
 }
 ```
 
@@ -1575,8 +1644,8 @@ export async function POST(
   req: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession();
-  if (!session) return new Response('Unauthorized', { status: 401 });
+  const session = await getServerSession()
+  if (!session) return new Response('Unauthorized', { status: 401 })
 
   const notification = await db.notification.update({
     where: { id: params.id },
@@ -1584,7 +1653,7 @@ export async function POST(
       acknowledged: true,
       acknowledgedAt: new Date(),
     },
-  });
+  })
 
   // Also update lawChange.acknowledgedBy
   if (notification.lawChangeId) {
@@ -1598,10 +1667,10 @@ export async function POST(
           },
         },
       },
-    });
+    })
   }
 
-  return Response.json({ success: true });
+  return Response.json({ success: true })
 }
 ```
 
@@ -1620,9 +1689,9 @@ export async function GET(
   const changes = await db.lawChange.findMany({
     where: { lawId: params.id },
     orderBy: { changeDate: 'desc' },
-  });
+  })
 
-  return Response.json(changes);
+  return Response.json(changes)
 }
 ```
 
@@ -1634,57 +1703,56 @@ export async function GET(
 
 ```typescript
 // cron/detect-law-changes.ts
-import { CronJob } from 'cron';
+import { CronJob } from 'cron'
 
 // Run daily at 00:00 UTC
 const job = new CronJob('0 0 * * *', async () => {
-  console.log('🔍 Starting daily law change detection...');
+  console.log('🔍 Starting daily law change detection...')
 
   try {
     // 1. Fetch all laws from Riksdagen API
-    const riksdagenLaws = await fetchAllLawsFromRiksdagen();
-    console.log(`📚 Fetched ${riksdagenLaws.length} laws from Riksdagen`);
+    const riksdagenLaws = await fetchAllLawsFromRiksdagen()
+    console.log(`📚 Fetched ${riksdagenLaws.length} laws from Riksdagen`)
 
     // 2. Compare with local database
-    let changesDetected = 0;
+    let changesDetected = 0
 
     for (const riksdagenLaw of riksdagenLaws) {
       const localLaw = await db.law.findUnique({
         where: { sfsNumber: riksdagenLaw.beteckning },
-      });
+      })
 
       if (!localLaw) {
         // New law - create record
-        await createNewLaw(riksdagenLaw);
-        continue;
+        await createNewLaw(riksdagenLaw)
+        continue
       }
 
       // Check for changes
-      const changes = await detectChanges(localLaw, riksdagenLaw);
+      const changes = await detectChanges(localLaw, riksdagenLaw)
 
       if (changes.length > 0) {
         for (const change of changes) {
-          await recordChange(localLaw.id, change);
-          changesDetected++;
+          await recordChange(localLaw.id, change)
+          changesDetected++
         }
       }
     }
 
-    console.log(`✅ Detection complete. ${changesDetected} changes found.`);
+    console.log(`✅ Detection complete. ${changesDetected} changes found.`)
 
     // 3. Trigger notification pipeline
     if (changesDetected > 0) {
-      await sendDailyDigestEmails();
+      await sendDailyDigestEmails()
     }
-
   } catch (error) {
-    console.error('❌ Error detecting law changes:', error);
+    console.error('❌ Error detecting law changes:', error)
     // Send alert to dev team
-    await sendErrorAlert('Law change detection failed', error);
+    await sendErrorAlert('Law change detection failed', error)
   }
-});
+})
 
-job.start();
+job.start()
 ```
 
 ---
@@ -1693,11 +1761,11 @@ job.start();
 
 ```typescript
 // cron/send-industry-digests.ts
-import { CronJob } from 'cron';
+import { CronJob } from 'cron'
 
 // Run every Sunday at 18:00 CET (17:00 UTC in winter, 16:00 UTC in summer)
 const job = new CronJob('0 17 * * 0', async () => {
-  console.log('📬 Sending weekly industry digest emails...');
+  console.log('📬 Sending weekly industry digest emails...')
 
   try {
     // 1. Get all workspaces with SNI codes
@@ -1708,19 +1776,19 @@ const job = new CronJob('0 17 * * 0', async () => {
       include: {
         users: true,
       },
-    });
+    })
 
-    console.log(`📊 Found ${workspaces.length} workspaces with SNI codes`);
+    console.log(`📊 Found ${workspaces.length} workspaces with SNI codes`)
 
     // 2. For each workspace, find relevant law changes
     for (const workspace of workspaces) {
-      const starterPack = await getIndustryStarterPack(workspace.sniCode);
+      const starterPack = await getIndustryStarterPack(workspace.sniCode)
 
-      if (!starterPack) continue;
+      if (!starterPack) continue
 
       // Get changes from the past 7 days for laws in starter pack
-      const weekStart = new Date();
-      weekStart.setDate(weekStart.getDate() - 7);
+      const weekStart = new Date()
+      weekStart.setDate(weekStart.getDate() - 7)
 
       const relevantChanges = await db.lawChange.findMany({
         where: {
@@ -1730,24 +1798,23 @@ const job = new CronJob('0 17 * * 0', async () => {
         include: {
           law: true,
         },
-      });
+      })
 
-      if (relevantChanges.length === 0) continue;
+      if (relevantChanges.length === 0) continue
 
       // 3. Send email to all users in workspace
       for (const user of workspace.users) {
-        await sendIndustryDigestEmail(user, workspace, relevantChanges);
+        await sendIndustryDigestEmail(user, workspace, relevantChanges)
       }
     }
 
-    console.log('✅ Industry digest emails sent');
-
+    console.log('✅ Industry digest emails sent')
   } catch (error) {
-    console.error('❌ Error sending industry digests:', error);
+    console.error('❌ Error sending industry digests:', error)
   }
-});
+})
 
-job.start();
+job.start()
 ```
 
 ---
@@ -1756,16 +1823,16 @@ job.start();
 
 ```typescript
 // cron/send-reminder-emails.ts
-import { CronJob } from 'cron';
+import { CronJob } from 'cron'
 
 // Run daily at 09:00 CET
 const job = new CronJob('0 8 * * *', async () => {
-  console.log('⏰ Checking for unacknowledged changes...');
+  console.log('⏰ Checking for unacknowledged changes...')
 
   try {
-    const now = new Date();
-    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const now = new Date()
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
     // Find notifications that need reminders
     const needsFirstReminder = await db.notification.findMany({
@@ -1783,16 +1850,20 @@ const job = new CronJob('0 8 * * *', async () => {
           include: { law: true },
         },
       },
-    });
+    })
 
     // Send first reminder
     for (const notification of needsFirstReminder) {
-      await sendReminderEmail(notification.user, notification.lawChange, 'first');
+      await sendReminderEmail(
+        notification.user,
+        notification.lawChange,
+        'first'
+      )
 
       await db.notification.update({
         where: { id: notification.id },
         data: { reminderSentAt: new Date() },
-      });
+      })
     }
 
     // Find notifications that need second reminder
@@ -1810,26 +1881,31 @@ const job = new CronJob('0 8 * * *', async () => {
           include: { law: true },
         },
       },
-    });
+    })
 
     // Send second reminder
     for (const notification of needsSecondReminder) {
-      await sendReminderEmail(notification.user, notification.lawChange, 'second');
+      await sendReminderEmail(
+        notification.user,
+        notification.lawChange,
+        'second'
+      )
 
       await db.notification.update({
         where: { id: notification.id },
         data: { secondReminderSentAt: new Date() },
-      });
+      })
     }
 
-    console.log(`✅ Sent ${needsFirstReminder.length} first reminders, ${needsSecondReminder.length} second reminders`);
-
+    console.log(
+      `✅ Sent ${needsFirstReminder.length} first reminders, ${needsSecondReminder.length} second reminders`
+    )
   } catch (error) {
-    console.error('❌ Error sending reminders:', error);
+    console.error('❌ Error sending reminders:', error)
   }
-});
+})
 
-job.start();
+job.start()
 ```
 
 ---
@@ -1885,6 +1961,7 @@ GET https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json
 ```
 
 **Key Fields:**
+
 - `beteckning` - SFS number (e.g., "1977:1160") - use as unique identifier
 - `titel` - Law title
 - `systemdatum` - Last updated timestamp (use to detect changes)
@@ -1937,6 +2014,7 @@ GET https://data.riksdagen.se/dokument/SFS1977:1160.json
 ```
 
 **Key Fields:**
+
 - `systemdatum` - Compare with local database to detect changes
 - `ändring` - Array of amendments (useful for change tracking)
 
@@ -1946,16 +2024,18 @@ GET https://data.riksdagen.se/dokument/SFS1977:1160.json
 
 ```typescript
 async function detectChanges(localLaw: Law, riksdagenData: any) {
-  const changes: Change[] = [];
+  const changes: Change[] = []
 
   // 1. Compare systemdatum (last updated timestamp)
-  const localTimestamp = localLaw.lastAmendedAt;
-  const riksdagenTimestamp = new Date(riksdagenData.systemdatum);
+  const localTimestamp = localLaw.lastAmendedAt
+  const riksdagenTimestamp = new Date(riksdagenData.systemdatum)
 
   if (riksdagenTimestamp > localTimestamp) {
     // Something changed - fetch full text to compare
-    const newText = await fetch(riksdagenData.dokument_url_text).then(r => r.text());
-    const oldText = localLaw.fullText;
+    const newText = await fetch(riksdagenData.dokument_url_text).then((r) =>
+      r.text()
+    )
+    const oldText = localLaw.fullText
 
     if (newText !== oldText) {
       changes.push({
@@ -1963,7 +2043,7 @@ async function detectChanges(localLaw: Law, riksdagenData: any) {
         oldText,
         newText,
         changeDate: riksdagenTimestamp,
-      });
+      })
     }
   }
 
@@ -1974,7 +2054,7 @@ async function detectChanges(localLaw: Law, riksdagenData: any) {
       oldStatus: localLaw.status,
       newStatus: riksdagenData.status,
       changeDate: riksdagenTimestamp,
-    });
+    })
   }
 
   // 3. Compare title (rare, but possible)
@@ -1985,10 +2065,10 @@ async function detectChanges(localLaw: Law, riksdagenData: any) {
       oldValue: localLaw.title,
       newValue: riksdagenData.titel,
       changeDate: riksdagenTimestamp,
-    });
+    })
   }
 
-  return changes;
+  return changes
 }
 ```
 
@@ -2002,23 +2082,22 @@ async function fetchAllLawsFromRiksdagen() {
     const response = await fetch(
       'https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json',
       { timeout: 30000 } // 30 second timeout
-    );
+    )
 
     if (!response.ok) {
-      throw new Error(`Riksdagen API error: ${response.status}`);
+      throw new Error(`Riksdagen API error: ${response.status}`)
     }
 
-    const data = await response.json();
-    return data.dokumentlista.dokument;
-
+    const data = await response.json()
+    return data.dokumentlista.dokument
   } catch (error) {
-    console.error('Failed to fetch laws from Riksdagen:', error);
+    console.error('Failed to fetch laws from Riksdagen:', error)
 
     // Send alert to dev team
-    await sendErrorAlert('Riksdagen API failure', error);
+    await sendErrorAlert('Riksdagen API failure', error)
 
     // Return empty array to prevent cron job crash
-    return [];
+    return []
   }
 }
 ```
@@ -2033,19 +2112,19 @@ async function fetchAllLawsFromRiksdagen() {
 
 ```typescript
 // Cache full law list for 24 hours
-const cachedLawList = await redis.get('riksdagen:law-list');
+const cachedLawList = await redis.get('riksdagen:law-list')
 
 if (cachedLawList) {
-  return JSON.parse(cachedLawList);
+  return JSON.parse(cachedLawList)
 }
 
-const lawList = await fetchAllLawsFromRiksdagen();
+const lawList = await fetchAllLawsFromRiksdagen()
 
 await redis.set('riksdagen:law-list', JSON.stringify(lawList), {
   ex: 86400, // 24 hours
-});
+})
 
-return lawList;
+return lawList
 ```
 
 **Note:** Caching is optional for MVP (API is free and fast). Add if performance issues arise.
@@ -2073,21 +2152,22 @@ async function classifyChangeSeverity(change: LawChange) {
     - **Minor**: Formatting, cross-references, metadata updates
 
     Return only: "minor", "moderate", or "critical"
-  `;
+  `
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-4',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0,
-  });
+  })
 
-  const severity = completion.choices[0].message.content.trim().toLowerCase();
+  const severity = completion.choices[0].message.content.trim().toLowerCase()
 
-  return severity as 'minor' | 'moderate' | 'critical';
+  return severity as 'minor' | 'moderate' | 'critical'
 }
 ```
 
 **Use Cases:**
+
 - Filter notifications: "Only show me critical changes"
 - Prioritize in Changes tab: Critical first, then moderate, then minor
 - Different notification channels: Critical → Email + SMS, Moderate → Email, Minor → In-app only
@@ -2122,7 +2202,7 @@ async function generateImpactAssessment(changeId: string, workspaceId: string) {
   const change = await db.lawChange.findUnique({
     where: { id: changeId },
     include: { law: true },
-  });
+  })
 
   const workspace = await db.workspace.findUnique({
     where: { id: workspaceId },
@@ -2131,7 +2211,7 @@ async function generateImpactAssessment(changeId: string, workspaceId: string) {
       documents: true,
       kollektivavtal: true,
     },
-  });
+  })
 
   const prompt = `
     Analyze the impact of this law change on the user's organization:
@@ -2141,9 +2221,9 @@ async function generateImpactAssessment(changeId: string, workspaceId: string) {
 
     **User Context:**
     - ${workspace.employees.length} employees
-    - ${workspace.employees.filter(e => e.employmentForm === 'distans').length} remote workers
-    - Kollektivavtal: ${workspace.kollektivavtal.map(k => k.name).join(', ')}
-    - Documents: ${workspace.documents.map(d => d.name).join(', ')}
+    - ${workspace.employees.filter((e) => e.employmentForm === 'distans').length} remote workers
+    - Kollektivavtal: ${workspace.kollektivavtal.map((k) => k.name).join(', ')}
+    - Documents: ${workspace.documents.map((d) => d.name).join(', ')}
 
     Does this change affect them? If yes, provide:
     1. Who/what is affected
@@ -2151,14 +2231,14 @@ async function generateImpactAssessment(changeId: string, workspaceId: string) {
     3. Deadline (if applicable)
 
     Be concise and actionable.
-  `;
+  `
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-4',
     messages: [{ role: 'user', content: prompt }],
-  });
+  })
 
-  return completion.choices[0].message.content;
+  return completion.choices[0].message.content
 }
 ```
 
@@ -2171,6 +2251,7 @@ async function generateImpactAssessment(changeId: string, workspaceId: string) {
 **Example:**
 
 User receives notification:
+
 ```
 📋 Arbetsmiljölagen changed (Critical)
 
@@ -2242,6 +2323,7 @@ THEN create AI impact assessment
 **Goal:** Show users insights about law changes over time.
 
 **Metrics:**
+
 - Total changes in tracked laws this month/year
 - Average changes per law
 - Most frequently changed laws
@@ -2249,6 +2331,7 @@ THEN create AI impact assessment
 - Time to acknowledge (average days)
 
 **Visualizations:**
+
 - Line chart: Changes over time
 - Bar chart: Changes by category
 - Heatmap: Which months have most changes
@@ -2261,6 +2344,7 @@ THEN create AI impact assessment
 **Goal:** Send change notifications to team Slack/Teams channels.
 
 **Setup:**
+
 1. Workspace settings → Integrations → Connect Slack
 2. Select channel: #legal-compliance
 3. Configure notification preferences
@@ -2287,6 +2371,7 @@ Träder i kraft: 2024-04-01
 **Goal:** Generate PDF report of all changes for compliance audits.
 
 **Content:**
+
 - Date range: 2024-01-01 to 2024-12-31
 - List of all tracked laws
 - All changes detected
@@ -2389,12 +2474,12 @@ Träder i kraft: 2024-04-01
 ```json
 {
   "dependencies": {
-    "cron": "^3.1.0",              // Scheduled jobs
-    "diff": "^5.1.0",              // GitHub-style diff view
-    "date-fns": "^3.0.0",          // Date formatting
-    "@vercel/postgres": "^0.5.0",  // Database
-    "openai": "^4.20.0",           // AI summaries
-    "@sendgrid/mail": "^8.0.0"     // Email notifications
+    "cron": "^3.1.0", // Scheduled jobs
+    "diff": "^5.1.0", // GitHub-style diff view
+    "date-fns": "^3.0.0", // Date formatting
+    "@vercel/postgres": "^0.5.0", // Database
+    "openai": "^4.20.0", // AI summaries
+    "@sendgrid/mail": "^8.0.0" // Email notifications
   }
 }
 ```
@@ -2437,18 +2522,21 @@ The Change Monitoring System is a **strategic retention and engagement driver** 
 ✅ Unlimited AI change analysis (doesn't count toward quota)
 
 **MVP delivers core value:**
+
 - Users never miss critical compliance updates
 - Clear understanding of what changed and when it takes effect
 - Persistent reminders until changes acknowledged
 - Industry awareness through weekly emails
 
 **Post-MVP expansion opportunities:**
+
 - AI severity classification and impact assessment
 - Automatic task generation
 - Advanced integrations (Slack, Teams, SMS)
 - Change analytics and audit reports
 
 **Next Steps:**
+
 1. ✅ Elicit requirements (COMPLETE)
 2. ⏳ Review and approve this specification
 3. ⏳ Create technical implementation tickets

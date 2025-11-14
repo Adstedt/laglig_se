@@ -22,15 +22,18 @@
 ### Method 1: Riksdagen API - `systemdatum` Filter ✅ RECOMMENDED
 
 **Endpoint:**
+
 ```
 GET https://data.riksdagen.se/dokumentlista/?doktyp=SFS&ts={date}&utformat=json
 ```
 
 **Parameters:**
+
 - `ts={date}` - System timestamp (format: `YYYY-MM-DD`)
 - Filters by `systemdatum` field (when document was published/updated in Riksdagen system)
 
 **Test Results:**
+
 ```bash
 # Query for documents published on 2025-11-04
 curl "https://data.riksdagen.se/dokumentlista/?doktyp=SFS&ts=2025-11-04&utformat=json&sz=100"
@@ -42,6 +45,7 @@ curl "https://data.riksdagen.se/dokumentlista/?doktyp=SFS&ts=2025-11-04&utformat
 ```
 
 **Example Response:**
+
 ```json
 {
   "dokumentlista": {
@@ -50,15 +54,15 @@ curl "https://data.riksdagen.se/dokumentlista/?doktyp=SFS&ts=2025-11-04&utformat
       {
         "dok_id": "sfs-1979-377",
         "titel": "Lag (1979:377) om registrering av båtar",
-        "undertitel": "t.o.m. SFS 2025:983",  // ← AMENDMENT DETECTED
-        "datum": "1979-05-31",                  // Original law date
-        "publicerad": "2025-11-04 04:41:04",    // Published to system
-        "systemdatum": "2025-11-04 04:41:04"    // System update timestamp
+        "undertitel": "t.o.m. SFS 2025:983", // ← AMENDMENT DETECTED
+        "datum": "1979-05-31", // Original law date
+        "publicerad": "2025-11-04 04:41:04", // Published to system
+        "systemdatum": "2025-11-04 04:41:04" // System update timestamp
       },
       {
         "dok_id": "sfs-2025-970",
         "titel": "Förordning (2025:970) om återvandringsbidrag...",
-        "undertitel": "",                       // ← NEW LAW (no amendments yet)
+        "undertitel": "", // ← NEW LAW (no amendments yet)
         "datum": "2025-10-30",
         "publicerad": "2025-11-04 04:41:46",
         "systemdatum": "2025-11-04 04:41:46"
@@ -70,28 +74,31 @@ curl "https://data.riksdagen.se/dokumentlista/?doktyp=SFS&ts=2025-11-04&utformat
 
 **What We Can Detect:**
 
-| Change Type | Detection Method | Confidence |
-|-------------|------------------|------------|
-| **New laws** | `undertitel` is empty | ✅ 100% |
-| **Amendments** | `undertitel` shows "t.o.m. SFS YYYY:XXX" | ✅ 100% |
-| **Repeals** | Parse HTML for "Författningen är upphävd" | ⚠️ 80% (requires HTML fetch) |
-| **Text changes** | Compare `full_text` hash | ✅ 100% |
+| Change Type      | Detection Method                          | Confidence                   |
+| ---------------- | ----------------------------------------- | ---------------------------- |
+| **New laws**     | `undertitel` is empty                     | ✅ 100%                      |
+| **Amendments**   | `undertitel` shows "t.o.m. SFS YYYY:XXX"  | ✅ 100%                      |
+| **Repeals**      | Parse HTML for "Författningen är upphävd" | ⚠️ 80% (requires HTML fetch) |
+| **Text changes** | Compare `full_text` hash                  | ✅ 100%                      |
 
 ---
 
 ### Method 2: Alternative Date Range (`from` / `tom`)
 
 **Endpoint:**
+
 ```
 GET https://data.riksdagen.se/dokumentlista/?doktyp=SFS&from={start}&tom={end}&utformat=json
 ```
 
 **Parameters:**
+
 - `from={date}` - Start date (Swedish "från")
 - `tom={date}` - End date (Swedish "till och med" = "up to and including")
 - Filters by `datum` field (law issuance date, NOT system update date)
 
 **Test Results:**
+
 ```bash
 # Query for laws issued between Oct 1 - Nov 6, 2025
 curl "https://data.riksdagen.se/dokumentlista/?doktyp=SFS&from=2025-10-01&tom=2025-11-06&utformat=json"
@@ -109,6 +116,7 @@ curl "https://data.riksdagen.se/dokumentlista/?doktyp=SFS&from=2025-10-01&tom=20
 **Documentation:** http://dev.lagrummet.se/dokumentation/system/atom-insamling.html
 
 **Key Findings:**
+
 - Lagrummet uses Atom feeds for publishing legal document changes
 - Each entry has `<updated>` timestamp indicating when changed
 - Provides `changedBy` field showing complete amendment chain
@@ -117,11 +125,13 @@ curl "https://data.riksdagen.se/dokumentlista/?doktyp=SFS&from=2025-10-01&tom=20
 **Status:** ⚠️ Documentation site has intermittent timeouts (94.247.169.67:443)
 
 **Advantages:**
+
 - ✅ Structured `changedBy` field with ALL amendments (not just latest)
 - ✅ Standard Atom format (RSS-like, easy to parse)
 - ✅ Designed specifically for change detection
 
 **Disadvantages:**
+
 - ❌ Service reliability issues
 - ❌ Less documentation than Riksdagen
 - ❌ Feed URL not confirmed (needs testing)
@@ -135,11 +145,13 @@ curl "https://data.riksdagen.se/dokumentlista/?doktyp=SFS&from=2025-10-01&tom=20
 **URL:** http://rkrattsbaser.gov.se/sfsr?bet={beteckning}
 
 **Example:**
+
 ```
 http://rkrattsbaser.gov.se/sfsr?bet=2011:1029
 ```
 
 **What It Provides:**
+
 - Complete amendment history (ALL amendments, not just latest)
 - Links to amending SFS laws
 - Dates when each amendment took effect
@@ -155,6 +167,7 @@ http://rkrattsbaser.gov.se/sfsr?bet=2011:1029
 ### Primary Method: Riksdagen `systemdatum` Polling
 
 **Why Riksdagen?**
+
 1. ✅ **Reliable:** Government-backed service, excellent uptime
 2. ✅ **Simple:** Single API call with date filter
 3. ✅ **Comprehensive:** Detects both new laws AND amendments
@@ -223,12 +236,15 @@ async function detectSFSChanges() {
 #### Process Changed Document
 
 ```typescript
-async function processChangedDocument(doc: RiksdagenSFS, detectionDate: string) {
+async function processChangedDocument(
+  doc: RiksdagenSFS,
+  detectionDate: string
+) {
   const sfsNumber = `SFS ${doc.beteckning}` // "SFS 2011:1029"
 
   // Find existing law in our database
   const existingLaw = await prisma.legalDocument.findFirst({
-    where: { document_number: sfsNumber }
+    where: { document_number: sfsNumber },
   })
 
   if (!existingLaw) {
@@ -245,8 +261,8 @@ async function processChangedDocument(doc: RiksdagenSFS, detectionDate: string) 
           titel: doc.titel,
           datum: doc.datum,
           publicerad: doc.publicerad,
-        }
-      }
+        },
+      },
     })
 
     // Queue for ingestion
@@ -293,7 +309,7 @@ async function detectChanges(existingLaw: LegalDocument, newDoc: RiksdagenSFS) {
   }
 
   // 3. Check for repeal (parse HTML)
-  if (newDoc.undertitel?.includes('upphävd') || await isRepealed(newDoc.id)) {
+  if (newDoc.undertitel?.includes('upphävd') || (await isRepealed(newDoc.id))) {
     changes.push({
       type: 'REPEAL',
       repealed_at: new Date(newDoc.datum),
@@ -309,7 +325,7 @@ async function detectChanges(existingLaw: LegalDocument, newDoc: RiksdagenSFS) {
           change_type: change.type,
           detected_at: new Date(),
           metadata: change,
-        }
+        },
       })
     }
 
@@ -321,13 +337,15 @@ async function detectChanges(existingLaw: LegalDocument, newDoc: RiksdagenSFS) {
       where: { id: existingLaw.id },
       data: {
         full_text: newFullText,
-        status: changes.some(c => c.type === 'REPEAL') ? 'REPEALED' : existingLaw.status,
+        status: changes.some((c) => c.type === 'REPEAL')
+          ? 'REPEALED'
+          : existingLaw.status,
         metadata: {
           ...existingLaw.metadata,
           latest_amendment: newAmendment,
         },
         updated_at: new Date(),
-      }
+      },
     })
   }
 }
@@ -343,10 +361,12 @@ async function createChangeNotifications(
   // Find all workspaces that have this law in their list
   const workspacesWithLaw = await prisma.lawInWorkspace.findMany({
     where: { law_id: law.id },
-    include: { workspace: true }
+    include: { workspace: true },
   })
 
-  console.log(`[Change Detection] Notifying ${workspacesWithLaw.length} workspaces about changes to ${law.document_number}`)
+  console.log(
+    `[Change Detection] Notifying ${workspacesWithLaw.length} workspaces about changes to ${law.document_number}`
+  )
 
   for (const { workspace } of workspacesWithLaw) {
     // Determine priority based on change type
@@ -367,9 +387,10 @@ async function createChangeNotifications(
         detected_at: new Date(),
         metadata: {
           all_changes: changes,
-          amending_law: changes.find(c => c.type === 'AMENDMENT')?.amending_law,
-        }
-      }
+          amending_law: changes.find((c) => c.type === 'AMENDMENT')
+            ?.amending_law,
+        },
+      },
     })
   }
 }
@@ -390,14 +411,16 @@ function hashText(text: string): string {
 }
 
 async function isRepealed(riksdagenId: string): Promise<boolean> {
-  const html = await fetch(`https://data.riksdagen.se/dokument/${riksdagenId}.html`)
+  const html = await fetch(
+    `https://data.riksdagen.se/dokument/${riksdagenId}.html`
+  )
   const text = await html.text()
   return text.includes('Författningen är upphävd')
 }
 
 function determinePriority(changes: ChangeType[]): 'HIGH' | 'MEDIUM' | 'LOW' {
-  if (changes.some(c => c.type === 'REPEAL')) return 'HIGH'
-  if (changes.some(c => c.type === 'AMENDMENT')) return 'MEDIUM'
+  if (changes.some((c) => c.type === 'REPEAL')) return 'HIGH'
+  if (changes.some((c) => c.type === 'AMENDMENT')) return 'MEDIUM'
   return 'LOW'
 }
 
@@ -515,6 +538,7 @@ model ChangeNotification {
 **Starts NOW** (with initial ingestion)
 
 **What Happens:**
+
 - ✅ Nightly cron job runs
 - ✅ Detects changes via Riksdagen `systemdatum`
 - ✅ Stores in `LawChangeHistory` table
@@ -523,11 +547,13 @@ model ChangeNotification {
 - ❌ **No user acknowledgment** (just silent collection)
 
 **Why?**
+
 - Start collecting change history NOW
 - When Epic 8 launches, we'll have historical data
 - Validate change detection accuracy during MVP
 
 **Code:**
+
 ```typescript
 // Epic 2.11: Silent mode
 await prisma.changeNotification.create({
@@ -536,7 +562,7 @@ await prisma.changeNotification.create({
     document_id: law.id,
     // ... other fields
     acknowledged: false, // Not shown to users yet
-  }
+  },
 })
 ```
 
@@ -549,6 +575,7 @@ await prisma.changeNotification.create({
 **What Gets Added:**
 
 #### 1. Changes Tab UI (Story 8.1)
+
 ```typescript
 // app/dashboard/laws/page.tsx
 
@@ -579,6 +606,7 @@ await prisma.changeNotification.create({
 ```
 
 #### 2. Email Notifications (Story 8.4)
+
 ```typescript
 // api/cron/send-change-digest/route.ts
 
@@ -589,17 +617,17 @@ export async function GET() {
       changeNotifications: {
         some: {
           acknowledged: false,
-          detected_at: { gte: yesterday }
-        }
-      }
+          detected_at: { gte: yesterday },
+        },
+      },
     },
     include: {
       owner: true,
       changeNotifications: {
         where: { acknowledged: false },
-        include: { document: true }
-      }
-    }
+        include: { document: true },
+      },
+    },
   })
 
   for (const workspace of workspaces) {
@@ -613,6 +641,7 @@ export async function GET() {
 ```
 
 #### 3. Notification Bell (Story 8.5)
+
 ```typescript
 // components/NotificationBell.tsx
 
@@ -664,6 +693,7 @@ export function NotificationBell() {
 ### Manual Testing
 
 **Week 1: Monitor Actual Changes**
+
 ```bash
 # Run cron job manually
 curl -X GET http://localhost:3000/api/cron/detect-sfs-changes \
@@ -678,6 +708,7 @@ psql -d laglig_se -c "SELECT * FROM law_change_history ORDER BY detected_at DESC
 ```
 
 **Test Cases:**
+
 1. ✅ New law published → Detected as NEW_LAW
 2. ✅ Existing law amended → Detected as AMENDMENT with correct `amending_law`
 3. ✅ Text change → Hash mismatch detected
@@ -694,13 +725,15 @@ describe('Change Detection', () => {
     // Mock Riksdagen API response with new SFS
     const mockResponse = {
       dokumentlista: {
-        dokument: [{
-          id: 'sfs-2025-999',
-          beteckning: '2025:999',
-          undertitel: '',
-          // ... other fields
-        }]
-      }
+        dokument: [
+          {
+            id: 'sfs-2025-999',
+            beteckning: '2025:999',
+            undertitel: '',
+            // ... other fields
+          },
+        ],
+      },
     }
 
     // Run change detection
@@ -708,7 +741,10 @@ describe('Change Detection', () => {
 
     // Verify LawChangeHistory record created
     const history = await prisma.lawChangeHistory.findFirst({
-      where: { change_type: 'NEW_LAW', metadata: { path: ['riksdagen_id'], equals: 'sfs-2025-999' } }
+      where: {
+        change_type: 'NEW_LAW',
+        metadata: { path: ['riksdagen_id'], equals: 'sfs-2025-999' },
+      },
     })
     expect(history).toBeDefined()
   })
@@ -718,27 +754,29 @@ describe('Change Detection', () => {
     const law = await prisma.legalDocument.create({
       data: {
         document_number: 'SFS 2011:1029',
-        metadata: { latest_amendment: 'SFS 2023:253' }
+        metadata: { latest_amendment: 'SFS 2023:253' },
         // ... other fields
-      }
+      },
     })
 
     // Mock Riksdagen API response with updated amendment
     const mockResponse = {
       dokumentlista: {
-        dokument: [{
-          id: 'sfs-2011-1029',
-          beteckning: '2011:1029',
-          undertitel: 't.o.m. SFS 2025:500', // NEW AMENDMENT
-        }]
-      }
+        dokument: [
+          {
+            id: 'sfs-2011-1029',
+            beteckning: '2011:1029',
+            undertitel: 't.o.m. SFS 2025:500', // NEW AMENDMENT
+          },
+        ],
+      },
     }
 
     await detectSFSChanges()
 
     // Verify AMENDMENT change detected
     const history = await prisma.lawChangeHistory.findFirst({
-      where: { document_id: law.id, change_type: 'AMENDMENT' }
+      where: { document_id: law.id, change_type: 'AMENDMENT' },
     })
     expect(history).toBeDefined()
     expect(history.metadata.new_value).toBe('SFS 2025:500')
@@ -754,25 +792,31 @@ describe('Change Detection', () => {
 
 ```typescript
 // Structured logging
-console.log(JSON.stringify({
-  event: 'change_detection_started',
-  timestamp: new Date().toISOString(),
-  date_checked: dateStr,
-}))
+console.log(
+  JSON.stringify({
+    event: 'change_detection_started',
+    timestamp: new Date().toISOString(),
+    date_checked: dateStr,
+  })
+)
 
-console.log(JSON.stringify({
-  event: 'changes_detected',
-  count: documents.length,
-  new_laws: newLawCount,
-  amendments: amendmentCount,
-  repeals: repealCount,
-}))
+console.log(
+  JSON.stringify({
+    event: 'changes_detected',
+    count: documents.length,
+    new_laws: newLawCount,
+    amendments: amendmentCount,
+    repeals: repealCount,
+  })
+)
 
-console.log(JSON.stringify({
-  event: 'change_detection_completed',
-  duration_ms: Date.now() - startTime,
-  notifications_created: notificationCount,
-}))
+console.log(
+  JSON.stringify({
+    event: 'change_detection_completed',
+    duration_ms: Date.now() - startTime,
+    notifications_created: notificationCount,
+  })
+)
 ```
 
 ### Alerts (Sentry)
@@ -780,7 +824,7 @@ console.log(JSON.stringify({
 ```typescript
 // Alert if no changes for 7+ days (unusual)
 const lastChange = await prisma.lawChangeHistory.findFirst({
-  orderBy: { detected_at: 'desc' }
+  orderBy: { detected_at: 'desc' },
 })
 
 const daysSinceLastChange = Math.floor(
@@ -788,7 +832,10 @@ const daysSinceLastChange = Math.floor(
 )
 
 if (daysSinceLastChange > 7) {
-  Sentry.captureMessage(`No SFS changes detected in ${daysSinceLastChange} days`, 'warning')
+  Sentry.captureMessage(
+    `No SFS changes detected in ${daysSinceLastChange} days`,
+    'warning'
+  )
 }
 
 // Alert if API fails
@@ -797,7 +844,7 @@ try {
 } catch (error) {
   Sentry.captureException(error, {
     tags: { component: 'change_detection' },
-    extra: { date: dateStr }
+    extra: { date: dateStr },
   })
 }
 ```
@@ -811,6 +858,7 @@ try {
 **Riksdagen API:** ✅ Free (no costs)
 
 **OpenAI GPT-4 (Change Summaries):**
+
 - Assume 10 changes/day average
 - 500 tokens input (law context) + 100 tokens output (summary) per change
 - Input: 10 × 500 × $0.01/1K = $0.05/day
@@ -818,6 +866,7 @@ try {
 - **Total:** ~$2.40/month
 
 **Email Sending (Resend):**
+
 - Assume 1,000 users, 10 changes/day, 50% email opt-in
 - 500 emails/day × 30 days = 15,000 emails/month
 - Resend: Free tier (3,000 emails/month) + Paid ($20/month for 50K)
@@ -871,17 +920,20 @@ async function detectSFSChanges() {
 ### Summary
 
 ✅ **PRIMARY METHOD: Riksdagen API `systemdatum` filtering**
+
 - Simple, reliable, comprehensive
 - Single API call per day
 - Detects new laws, amendments, repeals
 
 ✅ **Epic 2.11 Implementation: Silent data collection**
+
 - Start NOW with initial SFS ingestion
 - Nightly cron at 00:30 CET
 - Store in `LawChangeHistory` + `ChangeNotification`
 - No user-facing UI yet
 
 ✅ **Epic 8 Implementation: User notifications**
+
 - Changes tab with priority badges
 - Daily email digest (08:00 CET)
 - Notification bell with real-time count

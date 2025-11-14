@@ -17,10 +17,12 @@ The HR Module transforms Laglig.se from a law database into a **complete complia
 - Kollektivavtal (collective agreement) compliance
 
 **Key Differentiator vs. Competitors:**
+
 - **Notisum/Karnov:** Provide law databases only
 - **Laglig.se:** Law database + Employee management + AI-powered compliance checking + Kollektivavtal integration
 
 **Strategic Value:**
+
 - **Cost Avoidance:** Union disputes over contract violations = €10,000-50,000+ in legal fees
 - **Time Savings:** HR spends 5-10 hours/week on compliance checks → AI does it in seconds
 - **Audit Readiness:** ISO consultants can show complete employee compliance in minutes
@@ -51,40 +53,50 @@ The HR Module transforms Laglig.se from a law database into a **complete complia
 ## Core Principles
 
 ### 1. Compliance-First Design
+
 **Every employee has a compliance status: Compliant, Needs Attention, or Non-Compliant.**
 
 **Calculated based on:**
+
 - Documents uploaded (employment contract required)
 - Kollektivavtal compliance (if assigned)
 - Data completeness (missing critical fields reduces quality score)
 
 ### 2. Role-Based Law Assignment
+
 **Predefined roles auto-assign applicable laws.**
 
 **Example:**
+
 - Select role "Construction Worker" → Auto-assigns Arbetsmiljölagen, PBL, ATL, LAS
 - AI suggests: "Construction workers often need Första Hjälpen training"
 
 ### 3. Kollektivavtal as First-Class Citizen
+
 **Swedish companies must comply with collective agreements.**
 
 **Implementation:**
+
 - Upload kollektivavtal PDF → AI chunks, embeds, adds to RAG
 - Assign to employee groups (arbetare vs. tjänstemän)
 - AI compares employment contracts vs. kollektivavtal requirements
 
 ### 4. Data Quality Matters
+
 **Incomplete employee data = Poor AI advice.**
 
 **Enforcement:**
+
 - Data quality score visible on HR Dashboard
 - Warnings when critical fields missing
 - "Fix data quality" prompts encourage complete profiles
 
 ### 5. Integration Over Duplication
+
 **Don't compete with Fortnox for payroll/vacation tracking.**
 
 **Strategy:**
+
 - If user has Fortnox integration → Sync vacation data (read-only)
 - Focus Laglig.se on **compliance**, not **payroll**
 
@@ -99,120 +111,120 @@ The HR Module transforms Laglig.se from a law database into a **complete complia
 ```typescript
 interface Employee {
   // Core Identity
-  id: string;                          // UUID
-  employeeId?: string;                 // Optional custom ID (1-15 chars)
-  firstName: string;                   // Required
-  lastName: string;                    // Required
-  fullName: string;                    // Auto-generated: "Anna Svensson"
-  personalIdentityNumber?: string;     // Encrypted Swedish personnummer
+  id: string // UUID
+  employeeId?: string // Optional custom ID (1-15 chars)
+  firstName: string // Required
+  lastName: string // Required
+  fullName: string // Auto-generated: "Anna Svensson"
+  personalIdentityNumber?: string // Encrypted Swedish personnummer
 
   // Contact
-  email: string;                       // Required
-  phone?: string;
+  email: string // Required
+  phone?: string
   address?: {
-    street?: string;
-    city?: string;
-    postCode?: string;
-    country?: string;
-  };
+    street?: string
+    city?: string
+    postCode?: string
+    country?: string
+  }
 
   // Employment
-  employmentDate: Date;                // Start date (required)
-  employedTo?: Date;                   // End date (null if active)
-  inactive: boolean;                   // false = active, true = terminated
-  employmentForm?: EmploymentForm;     // Fortnox-aligned enums
-  personnelType?: PersonnelType;       // ARB (arbetare) vs TJM (tjänsteman)
-  jobTitle: string;                    // E.g., "Construction Worker"
-  department?: string;                 // E.g., "Construction", "Office"
-  managerId?: string;                  // Employee ID of manager
-  fullTimeEquivalent: number;          // 1.0 = full-time, 0.5 = half-time
-  averageWeeklyHours?: number;         // For ATL compliance
+  employmentDate: Date // Start date (required)
+  employedTo?: Date // End date (null if active)
+  inactive: boolean // false = active, true = terminated
+  employmentForm?: EmploymentForm // Fortnox-aligned enums
+  personnelType?: PersonnelType // ARB (arbetare) vs TJM (tjänsteman)
+  jobTitle: string // E.g., "Construction Worker"
+  department?: string // E.g., "Construction", "Office"
+  managerId?: string // Employee ID of manager
+  fullTimeEquivalent: number // 1.0 = full-time, 0.5 = half-time
+  averageWeeklyHours?: number // For ATL compliance
 
   // Role (Predefined for MVP)
-  role: PredefinedRole;                // See roles below
+  role: PredefinedRole // See roles below
 
   // Compliance
-  applicableLaws: string[];            // Law IDs (auto-assigned based on role)
-  documents: Document[];               // Uploaded files linked to Mina Filer
-  complianceStatus: ComplianceStatus;  // Calculated field
-  assignedKollektivavtal: string[];    // Kollektivavtal IDs
+  applicableLaws: string[] // Law IDs (auto-assigned based on role)
+  documents: Document[] // Uploaded files linked to Mina Filer
+  complianceStatus: ComplianceStatus // Calculated field
+  assignedKollektivavtal: string[] // Kollektivavtal IDs
 
   // Vacation (Fortnox integration only - Post-MVP)
   vacationData?: {
-    source: "fortnox";
-    lastSyncedAt: Date;
-    entitlement: number;
-    taken: number;
-    remaining: number;
-    saved: number;
-  };
+    source: 'fortnox'
+    lastSyncedAt: Date
+    entitlement: number
+    taken: number
+    remaining: number
+    saved: number
+  }
 
   // Temporal Tracking
-  roleHistory: RoleHistoryEntry[];     // Track role changes over time
+  roleHistory: RoleHistoryEntry[] // Track role changes over time
 
   // Metadata
-  userId: string;                      // Company owner
-  createdAt: Date;
-  updatedAt: Date;
-  createdBy: string;                   // User ID
-  lastModifiedBy: string;
+  userId: string // Company owner
+  createdAt: Date
+  updatedAt: Date
+  createdBy: string // User ID
+  lastModifiedBy: string
 
   // Fortnox Integration (Post-MVP)
-  fortnoxEmployeeId?: string;
-  fortnoxLastSyncedAt?: Date;
+  fortnoxEmployeeId?: string
+  fortnoxLastSyncedAt?: Date
 }
 
 // Supporting Types
 type EmploymentForm =
-  | "TV"   // Tillsvidareanställning (permanent)
-  | "PRO"  // Provanställning (probation)
-  | "TID"  // Tidsbegränsad (temporary)
-  | "VIK"  // Vikariat (substitute)
-  | "PRJ"  // Projektanställning (project)
-  | "PRA"  // Praktik (internship)
-  | "CONS" // Konsult (consultant)
-  | null;
+  | 'TV' // Tillsvidareanställning (permanent)
+  | 'PRO' // Provanställning (probation)
+  | 'TID' // Tidsbegränsad (temporary)
+  | 'VIK' // Vikariat (substitute)
+  | 'PRJ' // Projektanställning (project)
+  | 'PRA' // Praktik (internship)
+  | 'CONS' // Konsult (consultant)
+  | null
 
 type PersonnelType =
-  | "ARB"  // Arbetare (worker - often has kollektivavtal)
-  | "TJM"  // Tjänsteman (salaried employee)
-  | null;
+  | 'ARB' // Arbetare (worker - often has kollektivavtal)
+  | 'TJM' // Tjänsteman (salaried employee)
+  | null
 
 type ComplianceStatus =
-  | "compliant"       // All docs uploaded, data complete
-  | "needs_attention" // Some missing fields or docs
-  | "non_compliant";  // Critical issues (e.g., contract missing)
+  | 'compliant' // All docs uploaded, data complete
+  | 'needs_attention' // Some missing fields or docs
+  | 'non_compliant' // Critical issues (e.g., contract missing)
 
 // Predefined Roles (MVP)
 type PredefinedRole =
-  | "construction_worker"
-  | "office_worker"
-  | "driver"
-  | "restaurant_worker"
-  | "warehouse_worker"
-  | "sales_representative"
-  | "manager"
-  | "consultant"
-  | "other";
+  | 'construction_worker'
+  | 'office_worker'
+  | 'driver'
+  | 'restaurant_worker'
+  | 'warehouse_worker'
+  | 'sales_representative'
+  | 'manager'
+  | 'consultant'
+  | 'other'
 
 interface Document {
-  fileId: string;                      // Reference to Mina Filer
+  fileId: string // Reference to Mina Filer
   documentType:
-    | "employment_contract"
-    | "gdpr_consent"
-    | "policy_signature"
-    | "certification"
-    | "other";
-  uploadedDate: Date;
-  uploadedBy: string;                  // User ID
+    | 'employment_contract'
+    | 'gdpr_consent'
+    | 'policy_signature'
+    | 'certification'
+    | 'other'
+  uploadedDate: Date
+  uploadedBy: string // User ID
 }
 
 interface RoleHistoryEntry {
-  effectiveDate: Date;
-  jobTitle: string;
-  role: PredefinedRole;
-  department?: string;
-  applicableLaws: string[];
+  effectiveDate: Date
+  jobTitle: string
+  role: PredefinedRole
+  department?: string
+  applicableLaws: string[]
 }
 ```
 
@@ -223,100 +235,94 @@ interface RoleHistoryEntry {
 **Each role template auto-assigns laws and (future) trainings:**
 
 ```typescript
-const ROLE_TEMPLATES: Record<PredefinedRole, {
-  defaultLaws: string[];
-  description: string;
-}> = {
+const ROLE_TEMPLATES: Record<
+  PredefinedRole,
+  {
+    defaultLaws: string[]
+    description: string
+  }
+> = {
   construction_worker: {
     defaultLaws: [
-      "law_arbetsmiljo",                // AML
-      "law_planbygglagen",              // PBL
-      "law_arbetstid",                  // ATL
-      "law_anstallningsskydd",          // LAS
+      'law_arbetsmiljo', // AML
+      'law_planbygglagen', // PBL
+      'law_arbetstid', // ATL
+      'law_anstallningsskydd', // LAS
     ],
-    description: "Byggarbetare, anläggningsarbetare, hantverkare",
+    description: 'Byggarbetare, anläggningsarbetare, hantverkare',
   },
 
   office_worker: {
     defaultLaws: [
-      "law_arbetsmiljo",
-      "law_arbetstid",
-      "law_anstallningsskydd",
-      "law_gdpr",
+      'law_arbetsmiljo',
+      'law_arbetstid',
+      'law_anstallningsskydd',
+      'law_gdpr',
     ],
-    description: "Kontorsanställda, administrativa roller",
+    description: 'Kontorsanställda, administrativa roller',
   },
 
   driver: {
     defaultLaws: [
-      "law_arbetsmiljo",
-      "law_arbetstid",
-      "law_anstallningsskydd",
-      "law_vagtrafik",
+      'law_arbetsmiljo',
+      'law_arbetstid',
+      'law_anstallningsskydd',
+      'law_vagtrafik',
     ],
-    description: "Lastbilschaufförer, distributionsförare",
+    description: 'Lastbilschaufförer, distributionsförare',
   },
 
   restaurant_worker: {
     defaultLaws: [
-      "law_livsmedel",
-      "law_alkohol",
-      "law_arbetsmiljo",
-      "law_arbetstid",
-      "law_anstallningsskydd",
+      'law_livsmedel',
+      'law_alkohol',
+      'law_arbetsmiljo',
+      'law_arbetstid',
+      'law_anstallningsskydd',
     ],
-    description: "Kökspersonal, servitörer, bartenders",
+    description: 'Kökspersonal, servitörer, bartenders',
   },
 
   warehouse_worker: {
-    defaultLaws: [
-      "law_arbetsmiljo",
-      "law_arbetstid",
-      "law_anstallningsskydd",
-    ],
-    description: "Lagerarbetare, logistikpersonal",
+    defaultLaws: ['law_arbetsmiljo', 'law_arbetstid', 'law_anstallningsskydd'],
+    description: 'Lagerarbetare, logistikpersonal',
   },
 
   sales_representative: {
     defaultLaws: [
-      "law_arbetsmiljo",
-      "law_arbetstid",
-      "law_anstallningsskydd",
-      "law_marknadsforingslag",
+      'law_arbetsmiljo',
+      'law_arbetstid',
+      'law_anstallningsskydd',
+      'law_marknadsforingslag',
     ],
-    description: "Säljare, kundtjänst, account managers",
+    description: 'Säljare, kundtjänst, account managers',
   },
 
   manager: {
     defaultLaws: [
-      "law_arbetsmiljo",
-      "law_arbetstid",
-      "law_anstallningsskydd",
-      "law_medbestammande",             // MBL
-      "law_diskriminering",
+      'law_arbetsmiljo',
+      'law_arbetstid',
+      'law_anstallningsskydd',
+      'law_medbestammande', // MBL
+      'law_diskriminering',
     ],
-    description: "Chefer med personalansvar",
+    description: 'Chefer med personalansvar',
   },
 
   consultant: {
-    defaultLaws: [
-      "law_arbetsmiljo",
-      "law_arbetstid",
-    ],
-    description: "Inhyrda konsulter, frilansare",
+    defaultLaws: ['law_arbetsmiljo', 'law_arbetstid'],
+    description: 'Inhyrda konsulter, frilansare',
   },
 
   other: {
-    defaultLaws: [
-      "law_arbetsmiljo",
-      "law_anstallningsskydd",
-    ],
-    description: "Övriga roller (anpassa manuellt)",
+    defaultLaws: ['law_arbetsmiljo', 'law_anstallningsskydd'],
+    description: 'Övriga roller (anpassa manuellt)',
   },
-};
+}
 ```
 
 **Why this matters:**
+
 - **Onboarding speed:** Select role → Laws assigned automatically
 - **Compliance consistency:** All Construction Workers get same baseline laws
 - **AI context:** AI knows "Construction Workers need PBL compliance" without user input
@@ -350,6 +356,7 @@ const ROLE_TEMPLATES: Record<PredefinedRole, {
 ```
 
 **HR Submenu:**
+
 1. **📊 Översikt** - HR Dashboard (metrics, data quality)
 2. **👤 Anställda** - Employee list (table/card view)
 3. **📄 Kollektivavtal** - Manage collective agreements
@@ -389,6 +396,7 @@ const ROLE_TEMPLATES: Record<PredefinedRole, {
 ```
 
 **Table Columns:**
+
 1. **Namn** - Full name with avatar
 2. **Role** - Job title
 3. **Status** - Compliance badge (✅ ⚠️ ❌)
@@ -432,18 +440,21 @@ const ROLE_TEMPLATES: Record<PredefinedRole, {
 ### Filters & Search
 
 **Search bar:**
+
 - Searches: Name, Email, Job Title, Department
 - Instant results (debounced 300ms)
 
 **Filter dropdowns:**
 
 **Status:**
+
 - Alla (default)
 - ✅ Compliant
 - ⚠️ Needs Attention
 - ❌ Non-Compliant
 
 **Department:**
+
 - Alla (default)
 - Construction
 - Office
@@ -451,6 +462,7 @@ const ROLE_TEMPLATES: Record<PredefinedRole, {
 - (Dynamic based on unique departments)
 
 **Sort:**
+
 - Namn (A-Z)
 - Namn (Z-A)
 - Status (Non-compliant first)
@@ -500,19 +512,23 @@ const ROLE_TEMPLATES: Record<PredefinedRole, {
 ### Header Section
 
 **Avatar:**
+
 - Initials if no photo (e.g., "AS" for Anna Svensson)
 - Colored background (random consistent color per employee)
 
 **Name & Title:**
+
 - Full name (large, bold)
 - Job title · Department (smaller, muted)
 
 **Compliance Badge:**
+
 - ✅ **Compliant** (green)
 - ⚠️ **Needs Attention** (yellow)
 - ❌ **Non-Compliant** (red)
 
 **Actions:**
+
 - **[Redigera]** - Opens edit form (inline or modal)
 - **[Radera]** - Confirmation dialog → Soft delete (sets `inactive = true`)
 - **[Exportera profil]** - Download employee data as PDF (for GDPR requests)
@@ -591,18 +607,21 @@ const ROLE_TEMPLATES: Record<PredefinedRole, {
 ```
 
 **Document types (auto-categorized):**
+
 1. **Anställningskontrakt** (Employment contracts)
 2. **Policies & Samtycken** (GDPR consent, signed policies)
 3. **Certifieringar** (Truckkort, Första hjälpen, etc.)
 4. **Övrigt** (Other)
 
 **Document actions:**
+
 - **[Visa]** - Opens PDF viewer in modal
 - **[Ladda ner]** - Downloads file
 - **[Radera]** - Confirmation → Removes file (soft delete in Mina Filer)
 - **[Dra till chat]** - Draggable handle → Add to AI Chat context
 
 **Upload flow:**
+
 1. User drags PDF onto drop zone
 2. File uploads to Mina Filer under `Anställda/Anna_Svensson/`
 3. Document linked to employee record
@@ -638,6 +657,7 @@ const ROLE_TEMPLATES: Record<PredefinedRole, {
 ```
 
 **Task linking:**
+
 - Tasks from Kanban board can be assigned to employees
 - Employee profile shows all related tasks
 - Clicking [Visa uppgift] opens task modal
@@ -647,6 +667,7 @@ const ROLE_TEMPLATES: Record<PredefinedRole, {
 ### Tab 4: Historik (Activity Log - Future)
 
 **Post-MVP feature:**
+
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │ HISTORIK                                                               │
@@ -694,6 +715,7 @@ User clicks **[Import]** button → Opens CSV Import Modal
 ```
 
 **Example CSV template:**
+
 ```csv
 FirstName,LastName,Email,JobTitle,Role,EmploymentDate,Department
 Anna,Svensson,anna@company.se,Construction Worker,Byggnadsarbetare,2023-06-15,Construction
@@ -782,8 +804,8 @@ Erik,Johansson,erik@company.se,Office Manager,Kontorschef,2023-07-01,Office
 
 ```typescript
 async function fuzzyMatchRole(csvRoleValue: string): Promise<{
-  suggestedRole: PredefinedRole;
-  confidence: number;
+  suggestedRole: PredefinedRole
+  confidence: number
 }> {
   const prompt = `
 Map this Swedish job role to one of our predefined roles.
@@ -807,23 +829,24 @@ Return JSON:
   "confidence": 0.95,
   "reasoning": "Byggnadsarbetare is Swedish for construction worker"
 }
-  `;
+  `
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4-turbo',
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
-  });
+  })
 
-  const result = JSON.parse(response.choices[0].message.content);
+  const result = JSON.parse(response.choices[0].message.content)
   return {
     suggestedRole: result.role,
     confidence: result.confidence,
-  };
+  }
 }
 ```
 
 **Confidence indicators:**
+
 - **95-100%** 🟢 High confidence (auto-accept)
 - **85-94%** 🟡 Medium confidence (flag for review)
 - **< 85%** 🔴 Low confidence (user must confirm)
@@ -853,6 +876,7 @@ Return JSON:
 ```
 
 **Error CSV format:**
+
 ```csv
 Row,Name,Error,OriginalData
 3,Erik Johansson,Missing required field: Email,"Erik,Johansson,,Office Worker,2023-07-01"
@@ -887,6 +911,7 @@ Row,Name,Error,OriginalData
 ```
 
 **OAuth Flow:**
+
 1. User clicks [Anslut Fortnox]
 2. Redirects to Fortnox OAuth consent screen
 3. User authorizes Laglig.se
@@ -926,10 +951,10 @@ Row,Name,Error,OriginalData
 ```typescript
 // app/api/cron/sync-fortnox-employees/route.ts
 export async function GET(req: Request) {
-  const usersWithFortnox = await getUsersWithFortnoxIntegration();
+  const usersWithFortnox = await getUsersWithFortnoxIntegration()
 
   for (const user of usersWithFortnox) {
-    const fortnoxEmployees = await fetchFortnoxEmployees(user.fortnoxApiKey);
+    const fortnoxEmployees = await fetchFortnoxEmployees(user.fortnoxApiKey)
 
     for (const fortnoxEmp of fortnoxEmployees) {
       const existingEmployee = await supabase
@@ -937,37 +962,40 @@ export async function GET(req: Request) {
         .select('id')
         .eq('fortnox_employee_id', fortnoxEmp.EmployeeId)
         .eq('user_id', user.id)
-        .single();
+        .single()
 
       if (existingEmployee) {
         // Update existing
-        await supabase.from('employees').update({
-          first_name: fortnoxEmp.FirstName,
-          last_name: fortnoxEmp.LastName,
-          email: fortnoxEmp.Email,
-          employed_to: fortnoxEmp.EmployedTo,
-          inactive: fortnoxEmp.Inactive,
+        await supabase
+          .from('employees')
+          .update({
+            first_name: fortnoxEmp.FirstName,
+            last_name: fortnoxEmp.LastName,
+            email: fortnoxEmp.Email,
+            employed_to: fortnoxEmp.EmployedTo,
+            inactive: fortnoxEmp.Inactive,
 
-          // Sync vacation (read-only)
-          vacation_data: {
-            source: 'fortnox',
-            lastSyncedAt: new Date().toISOString(),
-            entitlement: calculateVacationEntitlement(fortnoxEmp),
-            taken: fortnoxEmp.VacationDaysRegisteredPaid || 0,
-            remaining: fortnoxEmp.VacationDaysPaid || 0,
-            saved: fortnoxEmp.VacationDaysSaved || 0,
-          },
+            // Sync vacation (read-only)
+            vacation_data: {
+              source: 'fortnox',
+              lastSyncedAt: new Date().toISOString(),
+              entitlement: calculateVacationEntitlement(fortnoxEmp),
+              taken: fortnoxEmp.VacationDaysRegisteredPaid || 0,
+              remaining: fortnoxEmp.VacationDaysPaid || 0,
+              saved: fortnoxEmp.VacationDaysSaved || 0,
+            },
 
-          fortnox_last_synced_at: new Date().toISOString(),
-        }).eq('id', existingEmployee.id);
+            fortnox_last_synced_at: new Date().toISOString(),
+          })
+          .eq('id', existingEmployee.id)
       } else {
         // Create new employee
-        await createEmployeeFromFortnox(user.id, fortnoxEmp);
+        await createEmployeeFromFortnox(user.id, fortnoxEmp)
       }
     }
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true })
 }
 ```
 
@@ -1108,13 +1136,15 @@ export async function GET(req: Request) {
 function getQuickSelectEmployees(filter: string): string[] {
   switch (filter) {
     case 'arbetare':
-      return employees.filter(e => e.personnelType === 'ARB').map(e => e.id);
+      return employees.filter((e) => e.personnelType === 'ARB').map((e) => e.id)
     case 'tjansteman':
-      return employees.filter(e => e.personnelType === 'TJM').map(e => e.id);
+      return employees.filter((e) => e.personnelType === 'TJM').map((e) => e.id)
     case 'construction_workers':
-      return employees.filter(e => e.role === 'construction_worker').map(e => e.id);
+      return employees
+        .filter((e) => e.role === 'construction_worker')
+        .map((e) => e.id)
     default:
-      return [];
+      return []
   }
 }
 ```
@@ -1171,18 +1201,18 @@ async function processKollektivavtal(
   userId: string
 ) {
   // 1. Extract text from PDF
-  const file = await getFileFromMinaFiler(fileId);
-  const text = await extractPdfText(file);
+  const file = await getFileFromMinaFiler(fileId)
+  const text = await extractPdfText(file)
 
   // 2. Semantic chunking (500-800 tokens, 100 token overlap)
   const chunks = await semanticChunk(text, {
     maxTokens: 800,
     minTokens: 500,
     overlap: 100,
-  });
+  })
 
   // 3. Generate embeddings (OpenAI text-embedding-3-large)
-  const embeddings = await embedChunks(chunks);
+  const embeddings = await embedChunks(chunks)
 
   // 4. Store kollektivavtal record
   const { data: kollektivavtal } = await supabase
@@ -1196,7 +1226,7 @@ async function processKollektivavtal(
       active: true,
     })
     .select()
-    .single();
+    .single()
 
   // 5. Store chunks in RAG database
   for (let i = 0; i < chunks.length; i++) {
@@ -1211,7 +1241,7 @@ async function processKollektivavtal(
         file_name: name,
         applicable_to: assignedEmployeeIds,
       },
-    });
+    })
   }
 
   // 6. Update employee records
@@ -1223,10 +1253,10 @@ async function processKollektivavtal(
         [kollektivavtal.id]
       ),
     })
-    .in('id', assignedEmployeeIds);
+    .in('id', assignedEmployeeIds)
 
-  console.log(`Kollektivavtal processed: ${chunks.length} chunks embedded`);
-  return kollektivavtal;
+  console.log(`Kollektivavtal processed: ${chunks.length} chunks embedded`)
+  return kollektivavtal
 }
 ```
 
@@ -1293,7 +1323,7 @@ async function processKollektivavtal(
 
 ```typescript
 function calculateDataQualityScore(employee: Employee): number {
-  let score = 100;
+  let score = 100
   const penalties = {
     missingPhone: 5,
     missingDepartment: 5,
@@ -1301,29 +1331,29 @@ function calculateDataQualityScore(employee: Employee): number {
     missingGdprConsent: 15,
     missingPersonnelType: 10,
     missingManager: 5,
-  };
+  }
 
-  if (!employee.phone) score -= penalties.missingPhone;
-  if (!employee.department) score -= penalties.missingDepartment;
-  if (!employee.personnelType) score -= penalties.missingPersonnelType;
-  if (!employee.managerId) score -= penalties.missingManager;
+  if (!employee.phone) score -= penalties.missingPhone
+  if (!employee.department) score -= penalties.missingDepartment
+  if (!employee.personnelType) score -= penalties.missingPersonnelType
+  if (!employee.managerId) score -= penalties.missingManager
 
   const hasContract = employee.documents.some(
-    d => d.documentType === 'employment_contract'
-  );
-  if (!hasContract) score -= penalties.missingContract;
+    (d) => d.documentType === 'employment_contract'
+  )
+  if (!hasContract) score -= penalties.missingContract
 
   const hasGdprConsent = employee.documents.some(
-    d => d.documentType === 'gdpr_consent'
-  );
-  if (!hasGdprConsent) score -= penalties.missingGdprConsent;
+    (d) => d.documentType === 'gdpr_consent'
+  )
+  if (!hasGdprConsent) score -= penalties.missingGdprConsent
 
-  return Math.max(0, score);
+  return Math.max(0, score)
 }
 
 function calculateCompanyDataQualityScore(employees: Employee[]): number {
-  const scores = employees.map(calculateDataQualityScore);
-  return Math.round(scores.reduce((a, b) => a + b, 0) / employees.length);
+  const scores = employees.map(calculateDataQualityScore)
+  return Math.round(scores.reduce((a, b) => a + b, 0) / employees.length)
 }
 ```
 
@@ -1337,6 +1367,7 @@ function calculateCompanyDataQualityScore(employees: Employee[]): number {
 
 1. User drags PDF onto drop zone
 2. Modal opens: "Select document type"
+
    ```
    Dokumenttyp:
    ( ) Anställningskontrakt
@@ -1347,6 +1378,7 @@ function calculateCompanyDataQualityScore(employees: Employee[]): number {
 
    [Avbryt] [Ladda upp]
    ```
+
 3. File uploads to Mina Filer under `/Anställda/Anna_Svensson/`
 4. Document linked to employee record
 5. Compliance status recalculated
@@ -1356,6 +1388,7 @@ function calculateCompanyDataQualityScore(employees: Employee[]): number {
 ### Document Storage in Mina Filer
 
 **Folder structure:**
+
 ```
 Mina Filer/
 ├── Anställda/
@@ -1376,11 +1409,11 @@ Mina Filer/
 
 ```typescript
 interface Document {
-  fileId: string;                      // UUID in Mina Filer
-  employeeId: string;                  // Links to employee
-  documentType: DocumentType;
-  uploadedDate: Date;
-  uploadedBy: string;
+  fileId: string // UUID in Mina Filer
+  employeeId: string // Links to employee
+  documentType: DocumentType
+  uploadedDate: Date
+  uploadedBy: string
 }
 
 // When document uploaded:
@@ -1391,14 +1424,20 @@ await supabase.from('files').insert({
   file_path: '/Anställda/Anna_Svensson/Anställningskontrakt_Anna.pdf',
   file_type: 'application/pdf',
   uploaded_date: new Date(),
-});
+})
 
-await supabase.from('employees').update({
-  documents: supabase.raw(
-    'array_append(documents, ?)',
-    [JSON.stringify({ fileId, documentType: 'employment_contract', uploadedDate: new Date() })]
-  ),
-}).eq('id', employeeId);
+await supabase
+  .from('employees')
+  .update({
+    documents: supabase.raw('array_append(documents, ?)', [
+      JSON.stringify({
+        fileId,
+        documentType: 'employment_contract',
+        uploadedDate: new Date(),
+      }),
+    ]),
+  })
+  .eq('id', employeeId)
 ```
 
 ---
@@ -1437,6 +1476,7 @@ Modal opens:
 ```
 
 **Task appears in:**
+
 1. Employee profile → Tasks tab
 2. Dashboard Kanban board (with employee tag)
 
@@ -1561,6 +1601,7 @@ Källor:
 **User:** "Ja, skapa uppgift"
 
 **AI creates task:**
+
 ```json
 {
   "title": "Uppdatera Annas anställningsavtal med OB-tillägg och uppsägningstid",
@@ -1616,17 +1657,20 @@ Vill du att jag skapar uppgifter för att åtgärda dessa brister?"
 ### User Roles (MVP)
 
 **Owner/Admin:**
+
 - Full access to all employees
 - Can add, edit, delete employees
 - Can upload kollektivavtal
 - Can assign kollektivavtal to employees
 
 **HR Manager (Post-MVP):**
+
 - Can view/edit all employees
 - Cannot delete employees
 - Can upload documents
 
 **Manager (Post-MVP):**
+
 - Can view direct reports only (based on `managerId` field)
 - Cannot edit employee data
 - Read-only access
@@ -1636,14 +1680,17 @@ Vill du att jag skapar uppgifter för att åtgärda dessa brister?"
 ### Data Retention
 
 **Active employees:**
+
 - Store indefinitely (as long as company account active)
 
 **Terminated employees:**
+
 - Keep for **2 years** after `employedTo` date
 - After 2 years: Auto-delete or prompt user
 - Exception: If linked to active tasks/kollektivavtal, keep until resolved
 
 **Deletion prompt:**
+
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │ RADERING AV ANSTÄLLDA                                                  │
@@ -1811,6 +1858,7 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 ### API Routes
 
 **Employees:**
+
 - `GET /api/employees` - List employees (with filters)
 - `POST /api/employees` - Create employee
 - `GET /api/employees/[id]` - Get employee details
@@ -1820,6 +1868,7 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 - `GET /api/employees/[id]/export-pdf` - GDPR export
 
 **Kollektivavtal:**
+
 - `GET /api/kollektivavtal` - List kollektivavtal
 - `POST /api/kollektivavtal` - Upload and process
 - `GET /api/kollektivavtal/[id]` - Get details
@@ -1827,6 +1876,7 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 - `DELETE /api/kollektivavtal/[id]` - Delete
 
 **HR Dashboard:**
+
 - `GET /api/hr/metrics` - Get compliance metrics
 
 ---
@@ -1836,6 +1886,7 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 ### 1. Training Tracking System
 
 **Full training management:**
+
 - Master training database
 - Auto-assignment based on role + laws
 - Expiration tracking
@@ -1847,6 +1898,7 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 ### 2. Document Signing (E-Signature)
 
 **Integration with Scrive or BankID:**
+
 - Send employment contract from Laglig.se
 - Employee signs with BankID
 - Signed document auto-stored in Mina Filer
@@ -1857,6 +1909,7 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 ### 3. Onboarding/Offboarding Checklists
 
 **Guided workflows:**
+
 - HR creates employee → Checklist generated
 - Track completion: "Send contract ✓", "Schedule training ☐"
 - Offboarding: "Collect equipment ☐", "Revoke access ☐"
@@ -1866,6 +1919,7 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 ### 4. Employee Self-Service Portal
 
 **Employees can:**
+
 - View own profile
 - Upload certifications (Truckkort, etc.)
 - Request GDPR data export
@@ -1876,6 +1930,7 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 ### 5. Bulk Operations
 
 **Multi-select employees:**
+
 - Bulk assign kollektivavtal
 - Bulk assign training
 - Bulk export compliance reports
@@ -1885,10 +1940,12 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 ### 6. Advanced AI Features
 
 **Proactive compliance advisor:**
+
 - "You're hiring a 6th employee - you now need a skyddsombud per AML"
 - "Anna's Första Hjälpen expires in 30 days - create renewal task?"
 
 **Predictive analytics:**
+
 - "Based on your growth rate, you'll need to review MBL compliance in 3 months"
 
 ---
@@ -1896,12 +1953,14 @@ CREATE INDEX kollektivavtal_chunks_embedding_idx ON kollektivavtal_chunks USING 
 ## Success Metrics
 
 **Product Metrics:**
+
 - **Employee adoption:** % of companies adding >10 employees
 - **Document upload rate:** Avg docs per employee
 - **Kollektivavtal usage:** % of companies uploading kollektivavtal
 - **AI Chat engagement:** % of employees dragged into chat
 
 **Business Metrics:**
+
 - **Upsell driver:** % of Basic users upgrading for HR Module
 - **Retention:** Companies with HR Module have X% lower churn
 - **Time savings:** HR spends Y% less time on compliance checks
@@ -1918,6 +1977,7 @@ The HR Module is Laglig.se's **strategic differentiator**. By connecting Swedish
 4. **Creates stickiness** (switching cost high once employee data imported)
 
 **Next steps:**
+
 1. Build employee CRUD + CSV import
 2. Implement kollektivavtal upload + RAG processing
 3. Integrate employee cards with AI Chat

@@ -28,6 +28,7 @@
 ### Purpose
 
 The Dashboard/Workspace is the authenticated user's primary interface for:
+
 1. Tracking compliance status across all laws
 2. Managing tasks and team collaboration
 3. Monitoring law changes and updates
@@ -37,6 +38,7 @@ The Dashboard/Workspace is the authenticated user's primary interface for:
 ### Strategic Context
 
 **User Journey:**
+
 - User completes onboarding → sees streaming law list generation → signs up for trial
 - Lands on Dashboard with personalized law list ready
 - First impression critical for activation and engagement
@@ -70,6 +72,7 @@ The Dashboard/Workspace is the authenticated user's primary interface for:
 ```
 
 **Dimensions:**
+
 - Left sidebar: 240px fixed width (collapsible)
 - Main content: Fluid (remaining space)
 - Right sidebar: 400px fixed width (foldable, starts expanded)
@@ -80,35 +83,42 @@ The Dashboard/Workspace is the authenticated user's primary interface for:
 ### Header Bar
 
 **Left Section:**
+
 ```
 [Laglig.se Logo] > Dashboard > Min huvudlista
 ```
+
 - Logo: Home link (returns to Dashboard)
 - Breadcrumbs: Navigation trail (dynamic based on current page)
 
 **Right Section:**
+
 ```
 [🔍 Search] [🔔 Notiser: 3] [? Hjälp] [Avatar: AA ▼]
 ```
 
 **Global Search:**
+
 - Keyboard shortcut: `/` or `Cmd/Ctrl + K` (future)
 - Search across: Laws, Tasks, Employees, Comments
 - Instant results dropdown
 - Navigate to result on Enter
 
 **Notifications Bell:**
+
 - Badge count for unread notifications
 - Click → Dropdown notification center
 - Priority colors (red/yellow/white)
 
 **Help Icon:**
+
 - Link to documentation
 - Video tutorials
 - Support contact
 - Keyboard shortcuts reference (future)
 
 **Avatar Dropdown:**
+
 - Account settings
 - Subscription/Billing
 - Team management (Pro/Enterprise)
@@ -160,17 +170,20 @@ The Dashboard/Workspace is the authenticated user's primary interface for:
 ### Navigation Behavior
 
 **Accordion Mechanics:**
+
 - **Laglistor:** Click to expand/collapse, shows all law lists
 - **HR:** Click to expand/collapse, shows sub-items
 - Persists state (remembers open/closed)
 - Active item highlighted (blue background)
 
 **Law List Navigation:**
+
 - Click "Min huvudlista" → Navigate to Kanban board showing 47 laws
 - Click "Bygglagstiftning" → Navigate to separate Kanban board showing 15 construction laws
 - **One Kanban board per law list** (each persists its own state)
 
 **"Alla Lagar" vs. "Laglistor" Distinction:**
+
 - **Laglistor:** Personalized, tracked lists with compliance status (Kanban boards)
 - **Alla Lagar:** Complete legal wiki (10k+ laws, browse-only, can add to lists)
 
@@ -179,6 +192,7 @@ The Dashboard/Workspace is the authenticated user's primary interface for:
 ## Dashboard (Summary View)
 
 ### Purpose
+
 Default landing page showing overview of compliance status, recent activity, and quick actions.
 
 ### Layout
@@ -246,11 +260,13 @@ Default landing page showing overview of compliance status, recent activity, and
 #### 1. Efterlevnad (Compliance Overview)
 
 **Visual:**
+
 - Circular progress ring (87% = 41/47 laws)
 - Color: Green (>80%), Yellow (50-80%), Red (<50%)
 - Large percentage number in center
 
 **Data:**
+
 - Total laws: 47
 - Compliant: 41 (laws in "Compliant" column)
 - In progress: 4
@@ -258,10 +274,12 @@ Default landing page showing overview of compliance status, recent activity, and
 - Updated (requires review): 0
 
 **Interaction:**
+
 - Click → Navigate to Kanban board
 - Filtered to show non-compliant laws only
 
 **Calculation:**
+
 ```
 Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 ```
@@ -273,6 +291,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 **Two types of insights:**
 
 **A. Law Changes (Change monitoring):**
+
 ```
 ⚠️ 3 lagar ändrade sedan igår
 - Arbetsmiljölagen (2025-01-15)
@@ -283,6 +302,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 ```
 
 **B. New Law Discoveries (SNI-based):**
+
 ```
 🆕 2 nya lagar för ditt företag
 - Nya krav på digitala kvitton (SNI 56.10)
@@ -292,6 +312,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 ```
 
 **How SNI-based discovery works:**
+
 1. New law published affecting specific SNI code (e.g., 56.10 - Restauranger)
 2. System identifies all customers with that SNI code
 3. AI generates insight for those customers
@@ -299,6 +320,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 5. Click → Modal showing law details with "Lägg till i min laglista" CTA
 
 **Why this drives retention:**
+
 - Proactive value delivery (system "works for you" in background)
 - Personalized to industry (not generic)
 - Creates FOMO if user cancels subscription
@@ -308,6 +330,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 #### 3. Snabblänkar (Quick Links)
 
 **Always-visible quick actions:**
+
 ```
 • Fråga AI en fråga
 • Lägg till lag till lista
@@ -315,6 +338,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 ```
 
 **Click → Opens relevant interface:**
+
 - "Fråga AI" → Opens right sidebar chat
 - "Lägg till lag" → Opens modal with search (from "Alla Lagar" wiki)
 - "Bjud in teammedlem" → Opens invite modal (Pro/Enterprise only)
@@ -324,6 +348,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 #### 4. Senaste aktivitet (Recent Activity Feed)
 
 **Activity types:**
+
 - Law updated (system event)
 - User comment (@mentions highlighted)
 - Task completed (user + timestamp)
@@ -332,6 +357,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 - Team member activity (Pro tier)
 
 **Display format:**
+
 ```
 [Icon] [Activity description] [Actor] [Timestamp]
 [Optional: Preview or context]
@@ -339,6 +365,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 ```
 
 **Example:**
+
 ```
 🔔 Arbetsmiljölagen uppdaterad - Kräver granskning
    2 timmar sedan
@@ -346,6 +373,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 ```
 
 **Interaction:**
+
 - Click activity → Navigate to relevant page (law card, task, chat)
 - Timestamps: Relative ("2 timmar sedan") for recent, absolute for older
 
@@ -356,6 +384,7 @@ Compliance % = (Laws in "Compliant" column / Total laws in list) × 100
 #### 5. Teamaktivitet (Team Activity) - Pro/Enterprise only
 
 **Shows team member contributions:**
+
 ```
 Anna: 3 uppgifter slutförda denna vecka
 Johan: Aktiv på 5 lagar (commented, moved cards)
@@ -373,6 +402,7 @@ Sara: Lade till 2 nya lagar till listan
 **Visible for first 7 days after signup**
 
 **Checklist items:**
+
 1. ✅ Skapa konto och laglista (auto-completed)
 2. ✅ Utforska din Kanban-tavla (visit Kanban board)
 3. ✅ Ställ en fråga till AI (send one AI chat message)
@@ -381,11 +411,13 @@ Sara: Lade till 2 nya lagar till listan
 6. ☐ Aktivera ändringsbevakning (enable notifications)
 
 **Interaction:**
+
 - Click item → Navigate to relevant page/feature
 - Dismissible (X button) but reappears until 100% complete
 - After 7 days or 100% complete, widget auto-hides
 
 **Why this matters:**
+
 - Drives feature adoption (activation metrics)
 - Reduces time-to-value
 - Increases retention (users who complete checklist churn less)
@@ -405,16 +437,19 @@ Sara: Lade till 2 nya lagar till listan
 ## Kanban Board (Compliance Workspace)
 
 ### Purpose
+
 Main workspace for managing compliance status across all laws in a list.
 
 ### Board Structure
 
 **One Kanban board per law list:**
+
 - "Min huvudlista" → Kanban with 47 laws
 - "Bygglagstiftning" → Separate Kanban with 15 construction laws
 - Each board persists its own state (card positions, filters, sorting)
 
 **Columns:**
+
 1. **Not Started** - Default for all laws (sorted by priority)
 2. **In Progress** - User actively working on compliance
 3. **Compliant** - Compliance achieved (can be hidden via filter)
@@ -478,6 +513,7 @@ Main workspace for managing compliance status across all laws in a list.
 ```
 
 **Card elements:**
+
 - **Title:** Law name + SFS number
 - **Priority badge:** 🔴 High, 🟡 Medium, ⚪ Low
 - **Category tag:** Arbetsmiljö, GDPR, Skatt, etc.
@@ -489,6 +525,7 @@ Main workspace for managing compliance status across all laws in a list.
 - **@mentions:** Count of unread mentions
 
 **Visual states:**
+
 - **Normal:** White background, subtle border
 - **Hover:** Elevated shadow, shows action icons
 - **Dragging:** Semi-transparent, follows cursor
@@ -500,9 +537,11 @@ Main workspace for managing compliance status across all laws in a list.
 ### Card Interactions
 
 **Click card:**
+
 - Opens law card modal (Jira-style, see section below)
 
 **Hover card:**
+
 - Subtle elevation
 - Shows action icons:
   - 💬 Comment
@@ -511,11 +550,13 @@ Main workspace for managing compliance status across all laws in a list.
   - ⚡ Quick status change
 
 **Drag card:**
+
 - Drag to different column (changes status)
 - Drag to AI chat sidebar (adds context to chat)
 - Visual feedback: Card becomes semi-transparent, target column highlights
 
 **Right-click card (Context menu):**
+
 - Assign to user
 - Change status (dropdown)
 - Copy link
@@ -535,11 +576,13 @@ Main workspace for managing compliance status across all laws in a list.
 ```
 
 **Quick filter buttons:**
+
 - **Högprioritet:** Shows only high-priority laws (red badge)
 - **Uppdaterade:** Shows only laws with "UPPDATERAD" badge
 - **Mina:** Shows only laws assigned to current user
 
 **Click quick filter:**
+
 - Toggles filter on/off
 - Can combine multiple quick filters (AND logic)
 - Badge shows count
@@ -549,6 +592,7 @@ Main workspace for managing compliance status across all laws in a list.
 #### Advanced Filters (Dropdown)
 
 **Filter panel (opens from "Alla filter ▼"):**
+
 ```
 ┌──────────────────────────────┐
 │ Filter lagar                 │
@@ -589,6 +633,7 @@ Main workspace for managing compliance status across all laws in a list.
 ```
 
 **Filter logic:**
+
 - Multiple selections within category = OR (e.g., High OR Medium priority)
 - Multiple categories = AND (e.g., High priority AND Arbetsmiljö AND Assigned to Anna)
 - Active filters shown as chips above Kanban board
@@ -599,11 +644,13 @@ Main workspace for managing compliance status across all laws in a list.
 #### Search
 
 **Full-text search field:**
+
 ```
 [🔍 Sök i lagnamn, kommentarer, uppgifter...]
 ```
 
 **Searches across:**
+
 - Law names (e.g., "Arbetsmiljö")
 - SFS numbers (e.g., "1977:1160")
 - AI-generated comments
@@ -611,6 +658,7 @@ Main workspace for managing compliance status across all laws in a list.
 - Task titles
 
 **Real-time filtering:**
+
 - Results update as user types
 - Highlights matching text in cards
 - Shows "X lagar hittades" count
@@ -620,17 +668,20 @@ Main workspace for managing compliance status across all laws in a list.
 #### Sorting (Within Columns)
 
 **Sort dropdown (per column):**
+
 ```
 [⬆️⬇️ Sortera: Prioritet ▼]
 ```
 
 **Sort options:**
+
 - **Prioritet:** High → Medium → Low
 - **Alfabetisk:** A → Z
 - **Senast ändrad:** Newest → Oldest
 - **Manuell:** User-defined drag order (default)
 
 **Sorting behavior:**
+
 - Each column can have independent sorting
 - Sorting persists per user (saved in preferences)
 - Manual sorting = drag cards within column to reorder
@@ -642,11 +693,13 @@ Main workspace for managing compliance status across all laws in a list.
 **Toggle buttons above Kanban:**
 
 1. **Card view vs. List view:**
+
    ```
    [⬜ Card View] [☰ List View]
    ```
 
    **List view = Table:**
+
    ```
    | Lag                    | Prioritet | Kategori    | Status      | Tilldelad | Uppgifter | Ändrad     |
    | Arbetsmiljölagen       | 🔴 Hög    | Arbetsmiljö | In Progress | Anna      | 3         | 2024-03-15 |
@@ -658,6 +711,7 @@ Main workspace for managing compliance status across all laws in a list.
    - More compact, better for reviewing many laws
 
 2. **Show/Hide "Compliant" column:**
+
    ```
    [👁️ Dölj efterlevda lagar]
    ```
@@ -666,11 +720,13 @@ Main workspace for managing compliance status across all laws in a list.
    - Compliant laws still accessible via filters
 
 3. **Swimlanes (Group by category):**
+
    ```
    [🏊 Gruppera efter kategori]
    ```
 
    **Swimlane view:**
+
    ```
    Arbetsmiljö (12 lagar)
    ├─ Not Started (8) ─ In Progress (3) ─ Compliant (1) ─┤
@@ -691,6 +747,7 @@ Main workspace for managing compliance status across all laws in a list.
 ### Updated Laws: Notification Strategy
 
 **When law receives amendment:**
+
 1. System detects change via Riksdagen API
 2. Identifies all users with this law in their lists
 3. Law card gets red "🔴 UPPDATERAD" badge
@@ -699,6 +756,7 @@ Main workspace for managing compliance status across all laws in a list.
 6. Quick filter "Uppdaterade" shows count
 
 **Badge on card:**
+
 ```
 ┌─────────────────────────────────┐
 │ Arbetsmiljölagen (1977:1160)    │
@@ -712,12 +770,14 @@ Main workspace for managing compliance status across all laws in a list.
 ```
 
 **Click badge OR open modal:**
+
 - Shows "Diff view" (what changed in the law)
 - Comparison: Old version vs. New version
 - Highlighted changes (red = removed, green = added)
 - Mark as reviewed button (removes badge)
 
 **Why this approach:**
+
 - Preserves workflow (user's progress not disrupted)
 - Visual indicator is clear but not interruptive
 - Diff view shows exactly what changed (critical for compliance)
@@ -728,6 +788,7 @@ Main workspace for managing compliance status across all laws in a list.
 ## Law Card Modal
 
 ### Purpose
+
 Detailed view of a single law with full compliance tracking, tasks, comments, and collaboration features.
 
 ### Modal Structure
@@ -813,15 +874,18 @@ Detailed view of a single law with full compliance tracking, tasks, comments, an
 #### Left Column: Law Details
 
 **1. AI-Generated Comment (Contextual)**
+
 - Personalized explanation: "Som [company type] med [employee count] innebär denna lag att..."
 - Always shows (generated during onboarding or when law added to list)
 - Read-only (system-generated)
 
 **2. Link to Full Law Text**
+
 - "Läs hela lagen på Riksdagen →"
 - Opens law page (internal wiki or external Riksdagen link)
 
 **3. Diff View (if law updated)**
+
 - Expandable section: "🔴 UPPDATERAD - Visa ändringar"
 - Shows side-by-side or inline diff:
   - Red highlight = text removed
@@ -830,6 +894,7 @@ Detailed view of a single law with full compliance tracking, tasks, comments, an
 - "Markera som granskad" button → Removes "UPPDATERAD" badge
 
 **4. Tasks Section**
+
 - List of all tasks tied to this law
 - Checkbox to mark complete
 - Shows: Title, Assigned user, Deadline, File attachment count
@@ -837,6 +902,7 @@ Detailed view of a single law with full compliance tracking, tasks, comments, an
 - "+ Lägg till uppgift" → Create new task tied to this law
 
 **5. Comments Section**
+
 - Threaded comments (can reply)
 - @mentions trigger notifications
 - Rich text editor (bold, italic, lists)
@@ -845,6 +911,7 @@ Detailed view of a single law with full compliance tracking, tasks, comments, an
 - Timestamps (relative or absolute)
 
 **6. Activity Log (Audit Trail)**
+
 - Chronological list of all actions on this law:
   - Status changes (with user + timestamp)
   - Tasks added/completed
@@ -860,16 +927,19 @@ Detailed view of a single law with full compliance tracking, tasks, comments, an
 #### Right Column: Metadata
 
 **Status Dropdown:**
+
 ```
 Status: In Progress ▼
   • Not Started
   • In Progress
   • Compliant
 ```
+
 - Change status directly from modal
 - Updates Kanban board position
 
 **Priority:**
+
 ```
 Prioritet: Hög 🔴
   • Hög 🔴
@@ -878,12 +948,14 @@ Prioritet: Hög 🔴
 ```
 
 **Category:**
+
 ```
 Kategori: Arbetsmiljö
   (Select from predefined categories or add custom)
 ```
 
 **Assigned To:**
+
 ```
 Tilldelad: Anna ▼
   • Anna
@@ -893,18 +965,21 @@ Tilldelad: Anna ▼
 ```
 
 **Flags:**
+
 ```
 Flaggor: [Urgent] [+ Add flag]
   (Custom flags: Urgent, Review needed, Blocked, etc.)
 ```
 
 **Labels:**
+
 ```
 Labels: [Restaurang] [Stockholm] [+ Add label]
   (Custom labels for filtering/organization)
 ```
 
 **Last Changed:**
+
 ```
 Senast ändrad: 2024-03-15
   (Date of last amendment from Riksdagen)
@@ -937,6 +1012,7 @@ Senast ändrad: 2024-03-15
 ### Modal UX Details
 
 **Keyboard shortcuts:**
+
 - `Esc` → Close modal
 - `Cmd/Ctrl + Enter` → Post comment
 - `e` → Edit status
@@ -944,11 +1020,13 @@ Senast ändrad: 2024-03-15
 - `c` → Focus comment field
 
 **Responsive:**
+
 - Desktop: Full modal (800px width)
 - Tablet: Full-screen overlay
 - Mobile: Native sheet (slides up from bottom)
 
 **Performance:**
+
 - Lazy-load activity log (load on scroll)
 - Optimistic updates (UI updates before server confirms)
 - Auto-save comments (draft saved to localStorage)
@@ -958,11 +1036,13 @@ Senast ändrad: 2024-03-15
 ## Global Task Management
 
 ### Purpose
+
 Centralized view of all tasks across all law lists, with filtering, sorting, and bulk actions.
 
 ### Task Structure
 
 **Task Object:**
+
 ```javascript
 {
   id: "task-123",
@@ -987,6 +1067,7 @@ Centralized view of all tasks across all law lists, with filtering, sorting, and
 ```
 
 **Key design decision:**
+
 - Tasks CAN be tied to a law (encouraged) but NOT required
 - Tasks without linked law = general tasks (like standalone Jira tickets)
 - Tasks WITH linked law = compliance evidence (ISO audit trail)
@@ -1028,6 +1109,7 @@ Centralized view of all tasks across all law lists, with filtering, sorting, and
 ```
 
 **Table columns:**
+
 1. **Checkbox:** Multi-select for bulk actions
 2. **Uppgift:** Title + file attachment icon/count
 3. **Lag:** Linked law name (click → Open law card modal)
@@ -1036,6 +1118,7 @@ Centralized view of all tasks across all law lists, with filtering, sorting, and
 6. **Status:** Icon (⚪ Not started, 🟡 In progress, ✅ Done)
 
 **Sortable columns:**
+
 - Click column header to sort (ascending/descending)
 - Multi-column sorting (Shift + click)
 
@@ -1044,11 +1127,13 @@ Centralized view of all tasks across all law lists, with filtering, sorting, and
 ### Task Filters
 
 **Quick filters:**
+
 - **Mina:** Tasks assigned to me
 - **Försenade:** Overdue tasks (past deadline)
 - **Slutförda:** Completed tasks (usually hidden by default)
 
 **Advanced filters (dropdown):**
+
 - Status: Not started, In progress, Done
 - Assigned to: Anna, Johan, Unassigned
 - Priority: High, Medium, Low
@@ -1110,6 +1195,7 @@ Centralized view of all tasks across all law lists, with filtering, sorting, and
 ```
 
 **Key features:**
+
 - **Linked law:** Link to law card (bidirectional relationship)
 - **File attachments:** Upload evidence of compliance (PDFs, images, spreadsheets)
 - **Comments:** Team discussion with @mentions
@@ -1125,6 +1211,7 @@ Centralized view of all tasks across all law lists, with filtering, sorting, and
 Auditor asks: "Show me proof you comply with Arbetsmiljölagen."
 
 **User workflow:**
+
 1. Open "Arbetsmiljölagen" law card
 2. See 3 completed tasks:
    - ✓ Genomför riskbedömning [📎 Riskbedömning_2025.pdf]
@@ -1142,17 +1229,20 @@ Auditor asks: "Show me proof you comply with Arbetsmiljölagen."
 ## AI Chat Integration
 
 ### Purpose
+
 Persistent AI assistant accessible from anywhere in the application, with context awareness and drag-and-drop component integration.
 
 ### Right Sidebar Chat
 
 **Toggle mechanism:**
+
 - Icon on right side of screen (⚡ lightning bolt or 💬 chat bubble)
 - Click to fold in/out
 - Starts EXPANDED by default (first-time users for discoverability)
 - Users can fold in to maximize workspace
 
 **Sidebar dimensions:**
+
 - Width: 400px fixed
 - Height: Full viewport height (minus header)
 - Can pop out to full-screen modal
@@ -1209,12 +1299,14 @@ Persistent AI assistant accessible from anywhere in the application, with contex
 #### 1. Chat History (ChatGPT-style)
 
 **Dropdown menu:**
+
 - List of previous conversations (last 30 days)
 - Conversation titles auto-generated by AI based on first message
 - "+ Ny chat" to start fresh conversation
 - Delete old conversations
 
 **Persistence:**
+
 - Each conversation saved with full history
 - Switch between conversations without losing context
 - Conversations tied to user account (sync across devices)
@@ -1228,26 +1320,31 @@ Persistent AI assistant accessible from anywhere in the application, with contex
 **Example contexts:**
 
 **On Dashboard:**
+
 ```
 AI: Hej! Jag ser att du är på Dashboard. Vill du ha hjälp med något från din laglista eller dina uppgifter?
 ```
 
 **On Kanban board (Arbetsmiljö filtered):**
+
 ```
 AI: Jag ser att du tittar på arbetsmiljölagar. Har du frågor om någon specifik lag?
 ```
 
 **On HR module:**
+
 ```
 AI: Jag ser att du är i HR-modulen. Fråga mig om anställningsregler, arbetsmiljö eller medarbetarfrågor!
 ```
 
 **Viewing specific law card:**
+
 ```
 AI: Jag ser att du tittar på Arbetsmiljölagen. Vill du veta något specifikt om denna lag?
 ```
 
 **Implementation:**
+
 - AI receives page context with each message (URL, current view, filtered data)
 - Welcome message updates when context changes
 - More relevant, personalized responses
@@ -1257,12 +1354,14 @@ AI: Jag ser att du tittar på Arbetsmiljölagen. Vill du veta något specifikt o
 #### 3. Drag-and-Drop Components
 
 **Draggable components:**
+
 1. **Law cards** (from Kanban board)
 2. **Employee cards** (from HR module)
 3. **Employee group cards** (list of employees)
 4. **Task cards** (from task list)
 
 **Drag interaction:**
+
 1. User starts dragging law card from Kanban
 2. Right sidebar highlights with "Släpp här för att lägga till kontext"
 3. User drops card in chat sidebar
@@ -1280,6 +1379,7 @@ AI: Jag ser att du tittar på Arbetsmiljölagen. Vill du veta något specifikt o
    - Status (Not started, In progress, Compliant)
 
 **Example conversation with context:**
+
 ```
 [User drags Arbetsmiljölagen card + Anna's employee card]
 
@@ -1299,6 +1399,7 @@ Ska jag skapa uppgifter för dessa i systemet? [Ja] [Nej]
 ```
 
 **Why this is powerful:**
+
 - AI has FULL context without user typing details
 - Reduces friction (no "copy-paste law name")
 - Enables complex, multi-component queries
@@ -1309,6 +1410,7 @@ Ska jag skapa uppgifter för dessa i systemet? [Ja] [Nej]
 #### 4. File Attachments
 
 **Click 📎 icon:**
+
 - Upload files from computer (PDF, images, spreadsheets)
 - Files sent to AI for analysis
 - Use cases:
@@ -1323,12 +1425,14 @@ Ska jag skapa uppgifter för dessa i systemet? [Ja] [Nej]
 #### 5. Full-Screen Mode
 
 **Click ↗ icon:**
+
 - Chat expands to full-screen modal
 - Covers entire workspace (except header)
 - More space for complex conversations
 - Useful for long AI responses or multiple components
 
 **Full-screen advantages:**
+
 - Better for reading long AI explanations
 - More room to view dropped components
 - Focus mode (no distractions)
@@ -1339,6 +1443,7 @@ Ska jag skapa uppgifter för dessa i systemet? [Ja] [Nej]
 #### 6. RAG-Based Responses (No Hallucinations)
 
 **Every AI response includes:**
+
 1. Answer based ONLY on Swedish legal documents (SFS, court cases, EU law)
 2. Citations with source references:
    ```
@@ -1353,17 +1458,21 @@ Ska jag skapa uppgifter för dessa i systemet? [Ja] [Nej]
 ### Chat UX Details
 
 **Typing indicators:**
+
 - "AI skriver..." with animated dots
 
 **Streaming responses:**
+
 - Text streams in word-by-word (Vercel AI SDK)
 - User can start reading before response completes
 
 **Error handling:**
+
 - If API timeout: "Oj, det tog för lång tid. Försök igen?"
 - If no results: "Jag hittade inga lagar som svarar på det. Kan du formulera om frågan?"
 
 **Keyboard shortcuts:**
+
 - `Enter` → Send message
 - `Shift + Enter` → New line
 - `Esc` → Close chat sidebar
@@ -1374,9 +1483,11 @@ Ska jag skapa uppgifter för dessa i systemet? [Ja] [Nej]
 ## Mina Filer (Document Storage)
 
 ### Purpose
+
 Central storage for company documents and files that can be dragged into AI chat for contextual analysis and compliance review.
 
 ### Location
+
 **Navigate:** Left sidebar → "📁 Mina Filer"
 
 ---
@@ -1384,6 +1495,7 @@ Central storage for company documents and files that can be dragged into AI chat
 ### File Storage Interface
 
 **Layout:**
+
 ```
 ┌────────────────────────────────────────────────────────────────┐
 │ Mina Filer                           [🔍 Sök] [⬆️ Ladda upp]   │
@@ -1423,6 +1535,7 @@ Central storage for company documents and files that can be dragged into AI chat
 #### 1. Folder Organization
 
 **Default folders (auto-created):**
+
 - **Anställningskontrakt** - Employment contracts
 - **Riskbedömningar** - Risk assessments
 - **Policyer och rutiner** - Policies and procedures
@@ -1430,6 +1543,7 @@ Central storage for company documents and files that can be dragged into AI chat
 - **Allmänna dokument** - General documents
 
 **Custom folders:**
+
 - User can create custom folders
 - Nested folders (up to 3 levels)
 - Drag-and-drop files between folders
@@ -1439,21 +1553,25 @@ Central storage for company documents and files that can be dragged into AI chat
 #### 2. File Upload
 
 **Upload methods:**
+
 - Click "⬆️ Ladda upp" button
 - Drag-and-drop files into interface
 - Upload multiple files simultaneously
 
 **Supported file types:**
+
 - Documents: PDF, DOCX, XLSX, TXT
 - Images: JPG, PNG
 - Archives: ZIP (auto-extracts contents)
 
 **File size limits:**
+
 - Basic tier: Max 10 MB per file, 1 GB total storage
 - Pro tier: Max 50 MB per file, 10 GB total storage
 - Enterprise tier: Custom limits
 
 **Upload UX:**
+
 ```
 ┌─────────────────────────────────────┐
 │ Laddar upp... (2/5 filer)           │
@@ -1472,6 +1590,7 @@ Central storage for company documents and files that can be dragged into AI chat
 #### 3. File Management
 
 **File actions (··· dropdown menu):**
+
 - **Ladda ner** - Download to computer
 - **Förhandsgranska** - Preview in browser (PDF, images)
 - **Byt namn** - Rename file
@@ -1483,6 +1602,7 @@ Central storage for company documents and files that can be dragged into AI chat
 - **Radera** - Delete file (confirmation required)
 
 **Bulk actions:**
+
 - Select multiple files (checkboxes)
 - Bulk download (creates ZIP)
 - Bulk move to folder
@@ -1493,14 +1613,17 @@ Central storage for company documents and files that can be dragged into AI chat
 #### 4. Search & Filtering
 
 **Search:**
+
 ```
 [🔍 Sök i filnamn och innehåll...]
 ```
+
 - Full-text search in file names
 - OCR search in PDF content (future)
 - Instant results as user types
 
 **Filters:**
+
 - File type: PDF, DOCX, XLSX, Images, All
 - Upload date: Last 7 days, 30 days, 3 months, Year, All time
 - Folder: Filter by folder
@@ -1508,6 +1631,7 @@ Central storage for company documents and files that can be dragged into AI chat
 - Linked to: Laws, Tasks, Unlinked
 
 **Sorting:**
+
 - Name (A-Z, Z-A)
 - Date uploaded (Newest, Oldest)
 - File size (Largest, Smallest)
@@ -1520,6 +1644,7 @@ Central storage for company documents and files that can be dragged into AI chat
 **The killer feature:**
 
 **User workflow:**
+
 1. Open "Mina Filer" page
 2. Find relevant document (e.g., "Riskbedömning_2025.pdf")
 3. Drag file to AI chat sidebar (right sidebar)
@@ -1527,6 +1652,7 @@ Central storage for company documents and files that can be dragged into AI chat
 5. AI receives file content for analysis
 
 **Chat interaction:**
+
 ```
 [User drags Riskbedömning_2025.pdf to chat]
 
@@ -1553,6 +1679,7 @@ AI: Jag har analyserat er riskbedömning.
 ```
 
 **Why this is powerful:**
+
 - AI analyzes actual company documents (not just laws)
 - Provides specific, actionable compliance feedback
 - Reduces "does our policy comply?" questions to legal department
@@ -1588,6 +1715,7 @@ AI: Jag har analyserat er riskbedömning.
 ```
 
 **Preview support:**
+
 - PDF: Full rendering with zoom, page navigation
 - Images: Zoom, rotate
 - DOCX: Converted to HTML preview (basic formatting)
@@ -1602,6 +1730,7 @@ AI: Jag har analyserat er riskbedömning.
 **Create references between files and compliance work:**
 
 **Link file to law card:**
+
 1. Open file actions menu (···)
 2. Click "Koppla till lag"
 3. Search/select law (e.g., "Arbetsmiljölagen")
@@ -1609,6 +1738,7 @@ AI: Jag har analyserat er riskbedömning.
 5. Bidirectional link (law card ↔ file)
 
 **Link file to task:**
+
 1. Open file actions menu (···)
 2. Click "Koppla till uppgift"
 3. Search/select task
@@ -1616,6 +1746,7 @@ AI: Jag har analyserat er riskbedömning.
 5. Use case: Evidence of task completion (ISO audit trail)
 
 **Use case - ISO Audit:**
+
 ```
 Auditor: "Show proof of risk assessment compliance."
 
@@ -1634,18 +1765,21 @@ Result: Complete compliance evidence chain
 ### Storage Quotas & Upgrades
 
 **Basic tier:**
+
 - 1 GB total storage
 - Max 10 MB per file
 - No version history
 - No shared folders
 
 **Pro tier:**
+
 - 10 GB total storage
 - Max 50 MB per file
 - Version history (last 10 versions per file)
 - Shared folders with team (Pro tier feature)
 
 **Enterprise tier:**
+
 - Custom storage limits (negotiated)
 - Max 500 MB per file
 - Unlimited version history
@@ -1653,6 +1787,7 @@ Result: Complete compliance evidence chain
 - SSO integration for file access
 
 **Upgrade prompts:**
+
 ```
 ⚠️ Du närmar dig din lagringsgräns
    920 MB av 1 GB använt (92%)
@@ -1666,11 +1801,13 @@ Result: Complete compliance evidence chain
 ### File Permissions (Pro/Enterprise)
 
 **Shared folder permissions:**
+
 - **Owner:** Full control (upload, delete, manage permissions)
 - **Editor:** Can upload, rename, move files
 - **Viewer:** Can only view and download files
 
 **Share folder with team:**
+
 ```
 ┌─────────────────────────────────────┐
 │ Dela mapp: Policyer och rutiner     │
@@ -1691,20 +1828,24 @@ Result: Complete compliance evidence chain
 ### Integration with Other Features
 
 **1. Task attachments:**
+
 - Files uploaded to task modal → Auto-saved to "Mina Filer"
 - Folder: "Uppgiftsfiler" (auto-created)
 - Linked to task automatically
 
 **2. AI Chat file uploads:**
+
 - Files attached in chat → Saved to "AI Chat-filer" folder
 - Temporary vs. permanent save option
 - Can be moved to other folders later
 
 **3. Change monitoring alerts:**
+
 - Law updated → AI suggests: "Review your [Arbetsmiljöpolicy.pdf] to ensure compliance with new requirements"
 - Click → Opens file + law card side-by-side
 
 **4. HR module:**
+
 - Employee documents (contracts, certificates) → Auto-linked to employee cards
 - Folder: "HR-dokument/[Employee name]"
 
@@ -1713,10 +1854,12 @@ Result: Complete compliance evidence chain
 ### Search & Discovery
 
 **Global search integration:**
+
 - Header search (🔍) includes files
 - Search results show: File name, preview snippet, location (folder), date
 
 **AI-powered file insights (future):**
+
 - "Vi upptäckte att din GDPR-policy är från 2020. Rekommenderar granskning."
 - "3 filer innehåller hänvisningar till Arbetsmiljölagen - vill du koppla dem?"
 
@@ -1725,6 +1868,7 @@ Result: Complete compliance evidence chain
 ### Mobile Access
 
 **Desktop-first (post-MVP for mobile):**
+
 - Full file manager on desktop
 - Mobile: View and download files only
 - No upload or drag-and-drop on mobile (technical limitations)
@@ -1734,17 +1878,20 @@ Result: Complete compliance evidence chain
 ### Technical Implementation
 
 **Storage:**
+
 - Cloud storage: AWS S3 or Vercel Blob Storage
 - CDN for fast downloads
 - Server-side virus scanning (ClamAV)
 
 **File processing:**
+
 - PDF: Render with pdf.js
 - Images: Thumbnail generation (256px, 1024px)
 - DOCX/XLSX: Convert to HTML with mammoth.js / SheetJS
 - OCR: Future (Tesseract for searchable PDFs)
 
 **Database:**
+
 ```sql
 files:
   - id
@@ -1773,16 +1920,19 @@ folders:
 ### Security & Privacy
 
 **Access control:**
+
 - Files scoped per user account (Basic tier)
 - Shared folders scoped per team (Pro/Enterprise)
 - No public file links (must be authenticated)
 
 **Encryption:**
+
 - Files encrypted at rest (S3 server-side encryption)
 - HTTPS for all transfers
 - Virus scanning on upload
 
 **Data retention:**
+
 - Deleted files → Soft delete (30-day recovery period)
 - After 30 days → Permanent deletion
 - Account cancellation → Files deleted after 90 days (grace period)
@@ -1792,23 +1942,28 @@ folders:
 ### Why "Mina Filer" is Strategic
 
 **1. Reduces external tool dependency:**
+
 - Users currently store docs in Google Drive/Dropbox
 - Keep everything in one place = stickier product
 
 **2. Creates compliance evidence chain:**
+
 - File → Linked to law → Linked to task → Activity log
 - Complete audit trail in one system
 
 **3. Enhances AI capabilities:**
+
 - AI can analyze actual company documents
 - More valuable, specific advice
 - "Does MY policy comply?" vs. "What does the law say?"
 
 **4. Competitive differentiation:**
+
 - Notisum/Karnov don't have document storage
 - Integrated workflow (law research + document management + AI)
 
 **5. Upsell opportunity:**
+
 - Storage limits drive Pro upgrades
 - Teams need shared folders
 - Advanced permissions = Enterprise feature
@@ -1818,11 +1973,13 @@ folders:
 ## Notifications System
 
 ### Purpose
+
 Keep users informed of important events (law changes, task assignments, mentions) with priority-based delivery.
 
 ### Notification Priority Levels
 
 **🔴 High Priority (Interruptive):**
+
 - Trial expiring in 24 hours
 - Payment failed
 - Critical law change (high-priority law updated)
@@ -1830,6 +1987,7 @@ Keep users informed of important events (law changes, task assignments, mentions
 **Delivery:** Push notification (browser), email immediately, in-app badge
 
 **🟡 Medium Priority (In-app):**
+
 - Task assigned to you
 - @mentioned in comment
 - Law change (medium-priority law)
@@ -1838,6 +1996,7 @@ Keep users informed of important events (law changes, task assignments, mentions
 **Delivery:** In-app badge, email digest (daily), no push notification
 
 **⚪ Low Priority (Informational):**
+
 - Team member activity
 - New feature announcement
 - Task completed by someone else
@@ -1852,6 +2011,7 @@ Keep users informed of important events (law changes, task assignments, mentions
 **Location:** Header bar, bell icon (🔔) in top-right
 
 **Badge count:**
+
 - Shows total unread notifications
 - High priority = red badge
 - Medium priority = yellow badge
@@ -1891,6 +2051,7 @@ Keep users informed of important events (law changes, task assignments, mentions
 ```
 
 **Notification item structure:**
+
 - **Icon:** Priority color indicator (🔴🟡⚪)
 - **Title:** Brief description
 - **Context:** Additional info or preview
@@ -1898,6 +2059,7 @@ Keep users informed of important events (law changes, task assignments, mentions
 - **Timestamp:** Relative time
 
 **Interactions:**
+
 - Click notification → Navigate to source (law card, task, comment)
 - Hover → Shows "Mark as read" button
 - "Markera alla lästa" → Clear all notifications
@@ -1907,6 +2069,7 @@ Keep users informed of important events (law changes, task assignments, mentions
 ### Email Digest
 
 **Daily summary email (sent at 9 AM):**
+
 ```
 Subject: Laglig.se - 3 ändringar, 2 uppgifter, 1 kommentar
 
@@ -1932,6 +2095,7 @@ Här är vad som hänt sedan igår:
 ```
 
 **Email preferences (in Settings):**
+
 - Real-time for high-priority only
 - Daily digest for medium-priority
 - Weekly digest for low-priority
@@ -1942,6 +2106,7 @@ Här är vad som hänt sedan igår:
 ## First-Time User Experience
 
 ### Purpose
+
 Guide new users through key features to drive activation and reduce time-to-value.
 
 ### Interactive Tutorial
@@ -1949,6 +2114,7 @@ Guide new users through key features to drive activation and reduce time-to-valu
 **Triggers on first login after onboarding:**
 
 **Step 1: Welcome modal**
+
 ```
 ┌─────────────────────────────────────┐
 │ Välkommen till Laglig.se! 🎉        │
@@ -1961,6 +2127,7 @@ Guide new users through key features to drive activation and reduce time-to-valu
 ```
 
 **Step 2: Left sidebar highlight**
+
 ```
 [Tooltip pointing to left sidebar]
 "Detta är din navigering. Här hittar du:
@@ -1973,6 +2140,7 @@ Guide new users through key features to drive activation and reduce time-to-valu
 ```
 
 **Step 3: Laglistor accordion**
+
 ```
 [Tooltip pointing to "Laglistor" accordion]
 "Här är din första laglista med 47 lagar
@@ -1986,6 +2154,7 @@ anpassade för ditt företag. Klicka för att öppna."
 ```
 
 **Step 4: Kanban board**
+
 ```
 [User lands on Kanban board]
 [Tooltip pointing to columns]
@@ -1999,6 +2168,7 @@ efterlevnad för varje lag:
 ```
 
 **Step 5: Law card**
+
 ```
 [Tooltip highlighting a law card]
 "Klicka på en lag för att se detaljer,
@@ -2013,6 +2183,7 @@ inklusive AI-genererade förklaringar."
 ```
 
 **Step 6: AI Chat**
+
 ```
 [Tooltip pointing to right sidebar toggle]
 "Fråga vår AI om lagar när som helst.
@@ -2025,6 +2196,7 @@ svenska lagar - inga gissningar!"
 ```
 
 **Step 7: Drag-and-drop demo**
+
 ```
 [Animated demo]
 "Du kan dra lagkort direkt in i chatten
@@ -2038,6 +2210,7 @@ för att ge AI:n mer kontext."
 ```
 
 **Step 8: Tutorial complete**
+
 ```
 ┌─────────────────────────────────────┐
 │ Du är redo! 🎉                      │
@@ -2073,6 +2246,7 @@ för att ge AI:n mer kontext."
 ```
 
 **Checklist items auto-complete when user:**
+
 1. ✅ Creates account (done in onboarding)
 2. ✅ Visits Kanban board (first time)
 3. ✅ Sends message to AI chat
@@ -2081,10 +2255,12 @@ för att ge AI:n mer kontext."
 6. ☐ Enables change monitoring notifications
 
 **Click checklist item:**
+
 - Navigates to relevant page/feature
 - Helps user discover features
 
 **After 7 days OR 100% complete:**
+
 - Widget auto-hides
 - Can be re-enabled in Settings ("Visa checklista igen")
 
@@ -2093,6 +2269,7 @@ för att ge AI:n mer kontext."
 ### Empty States
 
 **Kanban board with 0 laws:**
+
 ```
 ┌─────────────────────────────────────┐
 │ Din laglista är tom                 │
@@ -2107,6 +2284,7 @@ för att ge AI:n mer kontext."
 ```
 
 **Task list with 0 tasks:**
+
 ```
 ┌─────────────────────────────────────┐
 │ Inga uppgifter ännu                 │
@@ -2126,21 +2304,25 @@ för att ge AI:n mer kontext."
 ### Frontend Stack
 
 **Framework:**
+
 - Next.js 14+ (App Router)
 - React Server Components for initial render
 - Client Components for interactive features
 
 **UI Library:**
+
 - shadcn/ui + Tailwind CSS + Animate UI (https://animate-ui.com/)
 - Radix UI primitives (modals, dropdowns, tooltips)
 - Framer Motion for animations
 
 **State Management:**
+
 - React Context for global state (user, theme)
 - Zustand for complex state (Kanban board, filters)
 - TanStack Query for server state
 
 **Drag-and-Drop:**
+
 - @dnd-kit/core for Kanban board
 - Custom drag handlers for chat sidebar integration
 
@@ -2149,10 +2331,12 @@ för att ge AI:n mer kontext."
 ### Backend Architecture
 
 **API Layer:**
+
 - Next.js API Routes + tRPC for type-safe APIs
 - REST endpoints for webhooks (Stripe, Riksdagen)
 
 **Database:**
+
 - PostgreSQL (Supabase or Neon)
 - Tables:
   - `users` (accounts, profiles)
@@ -2164,6 +2348,7 @@ för att ge AI:n mer kontext."
   - `activity_logs` (audit trail)
 
 **Real-time:**
+
 - WebSockets (Supabase Realtime or Pusher)
 - Live updates for:
   - Team member actions (card moves, comments)
@@ -2175,21 +2360,25 @@ för att ge AI:n mer kontext."
 ### Key Interactions & Performance
 
 **Kanban Board:**
+
 - Optimistic updates (card moves instantly, sync in background)
 - Virtual scrolling for large lists (100+ laws)
 - Debounced filtering/search (300ms delay)
 
 **Law Card Modal:**
+
 - Lazy-load activity log (fetch on scroll)
 - Optimistic comment posting
 - Auto-save comment drafts (localStorage)
 
 **AI Chat:**
+
 - Streaming responses (Vercel AI SDK `useChat` hook)
 - Message history pagination (load 20 at a time)
 - Optimistic message sending
 
 **Notifications:**
+
 - Polling (every 30 seconds when tab active)
 - WebSocket for real-time (optional, if available)
 - Service Worker for push notifications (future)
@@ -2199,11 +2388,13 @@ för att ge AI:n mer kontext."
 ### Mobile Responsiveness
 
 **Desktop-first approach (per your feedback):**
+
 - Full dashboard on desktop (1920×1080)
 - Simplified views on tablet (1024×768)
 - Minimal mobile support (375×667)
 
 **Mobile behavior (post-MVP):**
+
 - Left sidebar → Hamburger menu
 - Right chat sidebar → Full-screen modal
 - Kanban board → Tabs per column (horizontal swipe)
@@ -2214,6 +2405,7 @@ för att ge AI:n mer kontext."
 ### Accessibility
 
 **Keyboard navigation:**
+
 - Tab through interactive elements
 - Arrow keys in Kanban (move focus between cards)
 - Enter to open modals
@@ -2221,11 +2413,13 @@ för att ge AI:n mer kontext."
 - Shortcuts for power users (future)
 
 **Screen readers:**
+
 - ARIA labels on all interactive elements
 - Live regions for notifications
 - Semantic HTML (headings, lists, forms)
 
 **Color contrast:**
+
 - WCAG AA compliance (4.5:1 ratio)
 - Priority colors distinguishable for colorblind users
 

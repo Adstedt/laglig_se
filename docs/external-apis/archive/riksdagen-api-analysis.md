@@ -8,6 +8,7 @@
 ## 1. Riksdagen Open Data Overview
 
 ### Available Data Types
+
 1. **Documents (dokument)** - Laws, government proposals, parliamentary decisions
 2. **Members (person)** - Parliamentarians from ~1990 onward
 3. **Votes (votering)** - Voting records from 1993/94 forward
@@ -15,6 +16,7 @@
 5. **Calendar (planering)** - Meeting schedules, debates, committees
 
 ### Key Characteristics
+
 - **Free & Open:** No fees or licenses required
 - **Attribution Required:** Must cite "Sveriges riksdag" as source
 - **Contact:** riksdagsinformation@riksdagen.se
@@ -27,6 +29,7 @@
 ### Core Tables (19 total)
 
 **Document-Centric:**
+
 ```
 dokument              - Core document metadata (ID, type, title, dates, HTML)
 ├── dokutskottsforslag  - Committee proposals within documents
@@ -40,6 +43,7 @@ dokument              - Core document metadata (ID, type, title, dates, HTML)
 ```
 
 **Parliamentary Activity:**
+
 ```
 debatt                - Debate recordings with video metadata
 votering              - Voting records per legislator
@@ -47,6 +51,7 @@ anforande             - Speeches/statements with text
 ```
 
 **Personnel:**
+
 ```
 person                - Legislator biographical data
 ├── personuppdrag       - Individual assignments/roles
@@ -54,6 +59,7 @@ person                - Legislator biographical data
 ```
 
 **Administrative:**
+
 ```
 organ                 - Parliamentary bodies/committees
 roll                  - Role definitions
@@ -62,6 +68,7 @@ riksmote              - Parliamentary sessions
 ```
 
 ### Key Design Patterns
+
 - **Denormalized approach:** Embedded reference data for fast API queries
 - **SQL Server conventions:** nvarchar, datetime, int types
 - **Document-centric hierarchy:** Everything stems from `dokument`
@@ -72,29 +79,29 @@ riksmote              - Parliamentary sessions
 
 ### What Matches (Already Implemented) ✅
 
-| Riksdagen Table | Laglig.se Equivalent | Notes |
-|----------------|---------------------|-------|
-| `dokument` | `LegalDocument` | Core document entity ✅ |
-| `dokreferens` | `CrossReference` | Cross-document links ✅ |
-| `dokaktivitet` | `LawChangeHistory` | Activity tracking (different purpose) ✅ |
+| Riksdagen Table | Laglig.se Equivalent | Notes                                    |
+| --------------- | -------------------- | ---------------------------------------- |
+| `dokument`      | `LegalDocument`      | Core document entity ✅                  |
+| `dokreferens`   | `CrossReference`     | Cross-document links ✅                  |
+| `dokaktivitet`  | `LawChangeHistory`   | Activity tracking (different purpose) ✅ |
 
 ### What's Different (By Design)
 
-| Riksdagen Table | Laglig.se Approach | Reason |
-|----------------|-------------------|--------|
-| `dokutskottsforslag`, `dokmotforslag`, `dokforslag` | Stored in `LegalDocument.metadata` JSONB | Multi-source aggregation requires flexibility |
-| `person`, `personuppdrag` | `Employee` (different domain) | We track company employees, not parliamentarians |
-| `debatt`, `votering`, `anforande` | Not implemented | Outside MVP scope (no voting/debate tracking) |
-| `organ`, `roll` | Not needed | Not tracking parliamentary structure |
-| `riksmote` | Not needed | Not tracking parliamentary sessions |
+| Riksdagen Table                                     | Laglig.se Approach                       | Reason                                           |
+| --------------------------------------------------- | ---------------------------------------- | ------------------------------------------------ |
+| `dokutskottsforslag`, `dokmotforslag`, `dokforslag` | Stored in `LegalDocument.metadata` JSONB | Multi-source aggregation requires flexibility    |
+| `person`, `personuppdrag`                           | `Employee` (different domain)            | We track company employees, not parliamentarians |
+| `debatt`, `votering`, `anforande`                   | Not implemented                          | Outside MVP scope (no voting/debate tracking)    |
+| `organ`, `roll`                                     | Not needed                               | Not tracking parliamentary structure             |
+| `riksmote`                                          | Not needed                               | Not tracking parliamentary sessions              |
 
 ### What We Could Add (Inspired by Riksdagen)
 
-| Riksdagen Table | Potential Laglig.se Addition | Value Proposition |
-|----------------|----------------------------|-------------------|
-| **`dokbilaga` (attachments)** | **`DocumentAttachment`** | Allow users to attach PDFs/images to laws (e.g., internal compliance docs, notes) |
-| `dokuppgift` (assignments) | Already have `LawTask` | ✅ Covered |
-| `dokintressent` (stakeholders) | Could add `LawStakeholder` | Track which departments/employees care about each law (low priority) |
+| Riksdagen Table                | Potential Laglig.se Addition | Value Proposition                                                                 |
+| ------------------------------ | ---------------------------- | --------------------------------------------------------------------------------- |
+| **`dokbilaga` (attachments)**  | **`DocumentAttachment`**     | Allow users to attach PDFs/images to laws (e.g., internal compliance docs, notes) |
+| `dokuppgift` (assignments)     | Already have `LawTask`       | ✅ Covered                                                                        |
+| `dokintressent` (stakeholders) | Could add `LawStakeholder`   | Track which departments/employees care about each law (low priority)              |
 
 ---
 
@@ -103,6 +110,7 @@ riksmote              - Parliamentary sessions
 ### ✅ KEEP Our Schema (Primary Architecture)
 
 **Reasons:**
+
 1. **Multi-source aggregation:** We ingest from Riksdagen (SFS), Domstolsverket (court cases), EUR-Lex (EU legislation). Riksdagen's schema is single-source only.
 2. **SaaS multi-tenancy:** Our schema has `workspace_id` on all tables for RLS. Riksdagen's is single-tenant.
 3. **Polymorphic content types:** Our `LegalDocument` + `CourtCase` + `EUDocument` design handles multiple document types cleanly. Riksdagen only handles parliamentary documents.
@@ -112,6 +120,7 @@ riksmote              - Parliamentary sessions
 ### 🔄 ADOPT Selective Concepts
 
 **1. DocumentAttachment Table (Inspired by `dokbilaga`)**
+
 ```typescript
 interface DocumentAttachment {
   id: string
@@ -163,10 +172,12 @@ When ingesting from Riksdagen API, map their fields to our `LegalDocument.metada
 
 async function ingestRiksdagenSFS() {
   // 1. Fetch from Riksdagen API (their dokument endpoint)
-  const response = await fetch('https://data.riksdagen.se/dokumentlista/?sok=...&doktyp=sfs')
+  const response = await fetch(
+    'https://data.riksdagen.se/dokumentlista/?sok=...&doktyp=sfs'
+  )
 
   // 2. Map to our LegalDocument schema
-  const documents = response.dokumentlista.dokument.map(rikDoc => ({
+  const documents = response.dokumentlista.dokument.map((rikDoc) => ({
     content_type: 'SFS_LAW',
     document_number: rikDoc.dokument_id, // e.g., "SFS 2024:1234"
     title: rikDoc.titel,
@@ -180,11 +191,14 @@ async function ingestRiksdagenSFS() {
       publicerad: rikDoc.publicerad,
       utskottsforslag: rikDoc.utskottsforslag,
       // ... etc
-    }
+    },
   }))
 
   // 3. Upsert to our database
-  await prisma.legalDocument.createMany({ data: documents, skipDuplicates: true })
+  await prisma.legalDocument.createMany({
+    data: documents,
+    skipDuplicates: true,
+  })
 }
 ```
 
@@ -195,6 +209,7 @@ async function ingestRiksdagenSFS() {
 ### ❌ NO - Full Adoption Not Recommended
 
 **Blockers:**
+
 1. **Single-source design:** Only handles Riksdagen data, not court cases or EU legislation
 2. **No multi-tenancy:** No `workspace_id`, no RLS policies
 3. **SQL Server conventions:** We use PostgreSQL with pgvector
@@ -205,6 +220,7 @@ async function ingestRiksdagenSFS() {
 ### ✅ YES - Inspiration for Metadata Structure
 
 **What We Gain:**
+
 - Understanding of Riksdagen's data model helps us map their API responses correctly
 - Their `dokbilaga` concept inspires our DocumentAttachment feature
 - Their `dokreferens` validates our CrossReference design
@@ -219,11 +235,13 @@ When drafting API routes for Epic 2 (Legal Content Ingestion):
 ### Story 2.2: Ingest SFS Laws from Riksdagen API
 
 **Endpoint to Build:**
+
 ```
 POST /api/admin/ingest/riksdagen-sfs
 ```
 
 **Implementation Notes:**
+
 1. Use Riksdagen's open data API (no auth required)
 2. Fetch `dokument` with `doktyp=sfs`
 3. Map their fields to our `LegalDocument` schema
@@ -233,6 +251,7 @@ POST /api/admin/ingest/riksdagen-sfs
 7. Progress tracking: Use `BackgroundJob` entity for 50K+ documents
 
 **Zod Schema:**
+
 ```typescript
 const RiksdagenDocumentSchema = z.object({
   dokument_id: z.string(),
@@ -251,17 +270,20 @@ const RiksdagenDocumentSchema = z.object({
 ### For Tomorrow's Section 5 Work:
 
 **✅ DO:**
+
 - Document Riksdagen API integration in API Specification
 - Show field mapping: Riksdagen response → our LegalDocument
 - Include rate limits, error handling, retry logic
 - Reference this analysis document
 
 **❌ DON'T:**
+
 - Adopt Riksdagen's SQL schema wholesale
 - Create separate tables for `dokutskottsforslag`, `dokmotforslag` (use JSONB instead)
 - Track parliamentarians, debates, votes (out of scope)
 
 **🔮 FUTURE (Post-MVP):**
+
 - Add `DocumentAttachment` table inspired by `dokbilaga`
 - Consider `LawStakeholder` table inspired by `dokintressent` (if users request it)
 

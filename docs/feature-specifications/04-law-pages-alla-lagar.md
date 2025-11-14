@@ -16,6 +16,7 @@ The Law Pages (Alla Lagar) feature is Laglig.se's content foundation - a compreh
 3. **RAG Backbone** - Properly chunked and embedded law content powers the AI Chat Interface
 
 **Key Differentiators:**
+
 - **B2B Focus** - Auto-classification filters out irrelevant private/consumer laws
 - **Popular Abbreviations** - Users search by "LAS" or "ABL", not SFS numbers
 - **SNI-Based Discovery** - Enter industry code → Get relevant laws instantly
@@ -48,11 +49,13 @@ The Law Pages (Alla Lagar) feature is Laglig.se's content foundation - a compreh
 ## Core Principles
 
 ### 1. B2B-First Content Strategy
+
 **Not all Swedish laws are relevant to businesses.**
 
 **Problem:** Riksdagen API returns ~10,000+ laws, including inheritance law, marriage law, child custody law, etc.
 
 **Solution:** AI-powered classification tags every law as:
+
 - **B2B** (business-relevant)
 - **Private** (personal/consumer)
 - **Both** (e.g., GDPR applies to businesses and individuals)
@@ -60,38 +63,46 @@ The Law Pages (Alla Lagar) feature is Laglig.se's content foundation - a compreh
 **Default filter:** Show only B2B laws (users can toggle to see all)
 
 ### 2. Discovery Over Search
+
 **Users don't know what laws apply to them.**
 
 **Problem:** Small business owner doesn't know "I need Arbetsmiljölagen, Anställningsskyddslagen, and Arbetstidslagen"
 
 **Solution:**
+
 - **SNI code input** → "Your restaurant (SNI 56.101) should track these 12 laws"
 - **Popular abbreviations** → "Everyone in business knows 'LAS' - start there"
 - **AI suggestions** → "Companies tracking Arbetsmiljölagen also add Arbetstidslagen (90%)"
 
 ### 3. Plain-Language Accessibility
+
 **Legal text is impenetrable for non-lawyers.**
 
 **Problem:** "Arbetsgivaren skall systematiskt planera, leda och kontrollera verksamheten på ett sätt som leder till att arbetsmiljön uppfyller föreskrivna krav på en god arbetsmiljö..."
 
 **Solution:** AI-generated plain-language summary:
+
 > "This law requires employers to systematically assess and manage workplace safety risks. You must document risk assessments and update them when changes occur."
 
 ### 4. Change Transparency
+
 **Laws change frequently - users must stay informed.**
 
 **Problem:** Arbetsmiljölagen amended on 2024-01-15. User's compliance plan is now outdated.
 
 **Solution:**
+
 - Status badges: "📝 Uppdaterad" on law cards
 - GitHub-style diff view: See old vs. new text side-by-side
 - AI change summary: "New section 3:2a requires digital work environment assessments"
 - Automatic notifications if law in user's list
 
 ### 5. SEO-Driven Growth
+
 **Law pages are public to drive organic traffic.**
 
 **Strategy:**
+
 - Every law page is public (no login required)
 - Optimized for "[law name]", "[law abbreviation]", "[law topic] sweden"
 - Beautiful design reduces bounce rate
@@ -231,10 +242,12 @@ Alla Lagar (Landing Page)
 **Subheadline:** "Sök bland 10,000+ lagar eller hitta relevanta lagar för din bransch"
 
 **Primary CTA:** Search bar with two modes:
+
 1. **Law search:** "Sök efter lag, föreskrift, eller tema..."
 2. **SNI/Industry search:** "SNI-kod eller bransch (t.ex. restaurang, bygg, detaljhandel)"
 
 **Design notes:**
+
 - Clean, minimal design (reduce cognitive load)
 - Search bar is prominent (40% of hero section)
 - Subtle background: Light gradient or legal-themed illustration (scales, gavel)
@@ -244,11 +257,13 @@ Alla Lagar (Landing Page)
 ### Popular Abbreviations Section
 
 **Why this matters:**
+
 - Business users think in abbreviations: "We need LAS compliance" not "Lagen (1982:80) om anställningsskydd"
 - Most searched terms on legal sites are abbreviations
 - Quick-access to most common laws
 
 **Display:**
+
 - **Horizontal scrollable chips** (mobile) or **Grid** (desktop)
 - Each chip shows: **Abbreviation** + **Law name on hover**
 - Clicking chip → Opens that law's page
@@ -256,6 +271,7 @@ Alla Lagar (Landing Page)
 **Top 20 abbreviations (from Notisum scrape):**
 
 **Labor:**
+
 - **LAS** - Lagen om anställningsskydd
 - **AML** - Arbetsmiljölagen
 - **ATL** - Arbetstidslagen
@@ -265,28 +281,34 @@ Alla Lagar (Landing Page)
 - **FML** - Föräldraledighetslagen
 
 **Corporate:**
+
 - **ABL** - Aktiebolagslagen
 - **ÅRL** - Årsredovisningslagen
 - **BFL** - Bokföringslagen
 - **RevL** - Revisionslagen
 
 **Tax:**
+
 - **IL** - Inkomstskattelagen
 - **ML** - Mervärdesskattelagen
 - **SFL** - Skatteförfarandelagen
 
 **Finance:**
+
 - **PuL** - Penningtvättslagen
 - **BankL** - Banklagen
 
 **Data:**
+
 - **GDPR** - Dataskyddsförordningen (EU)
 
 **Construction:**
+
 - **PBL** - Plan- och bygglagen
 - **MB** - Miljöbalken
 
 **Consumer:**
+
 - **KKL** - Konsumentköplagen
 
 **Link:** "Visa alla 50+ förkortningar →" opens modal with full list
@@ -296,6 +318,7 @@ Alla Lagar (Landing Page)
 ### Categories Grid
 
 **Visual design:**
+
 - **Card-based layout** (e-commerce style)
 - Each card shows:
   - Icon (emoji or custom SVG)
@@ -316,12 +339,14 @@ Alla Lagar (Landing Page)
 **Data source:** Track law page views in last 7 days, rank by view count
 
 **Display:**
+
 - Numbered list (top 5)
 - Law name + abbreviation
 - "X företag använder" (how many companies have it in their lists)
 - Click → Opens law page
 
 **Why this works:**
+
 - "1,234 companies track this law" → FOMO, credibility
 - Introduces users to laws they might not have considered
 
@@ -334,6 +359,7 @@ Alla Lagar (Landing Page)
 **Data source:** Laws amended in last 30 days
 
 **Display:**
+
 - Chronological list (most recent first)
 - Status icon: 📝 (updated), 🆕 (new), ⚠️ (repealed)
 - Law name + date
@@ -341,6 +367,7 @@ Alla Lagar (Landing Page)
 - Click → Opens law page, scrolls to change banner
 
 **Why this works:**
+
 - Shows the database is actively maintained
 - Encourages users to check back weekly (retention)
 - SEO: Fresh content signals to Google
@@ -396,16 +423,19 @@ Alla Lagar (Landing Page)
 ### Sidebar Filters
 
 **Subcategories:**
+
 - Checkboxes for each subcategory
 - Show law count per subcategory
 - Multi-select (can check multiple)
 
 **Status:**
+
 - ☑ Gällande (Active) - Default checked
 - ☐ Upphävda (Repealed)
 - ☐ Upphävda och ersatta (Superseded)
 
 **Recently Updated:**
+
 - ☐ Senaste 30 dagarna
 - ☐ Senaste 90 dagarna
 - ☐ Senaste året
@@ -417,6 +447,7 @@ Alla Lagar (Landing Page)
 ### Sort Options
 
 **Sort by:**
+
 - **Relevans** (Default) - Most tracked + recently updated
 - **Namn (A-Ö)** - Alphabetical
 - **Senast uppdaterad** - Most recent changes first
@@ -427,6 +458,7 @@ Alla Lagar (Landing Page)
 ### Law Cards in Grid
 
 **Card structure:**
+
 ```
 ┌──────────────────────────────┐
 │ 📝 Arbetsmiljölagen (AML)    │ ← Badge + Name + Abbr
@@ -441,6 +473,7 @@ Alla Lagar (Landing Page)
 ```
 
 **Badge colors:**
+
 - 🆕 **Ny lag** (green) - Enacted <60 days ago
 - 📝 **Uppdaterad** (blue) - Amended <30 days ago
 - ⚠️ **Utgången** (red) - Repealed/superseded
@@ -536,15 +569,18 @@ Alla Lagar (Landing Page)
 ### Page Header
 
 **Law Name:** Large, bold headline
+
 - Format: "Arbetsmiljölagen (1977:1160)"
 - If abbreviation exists: Show prominently "AML"
 
 **Metadata:**
+
 - **Senast uppdaterad:** 2024-01-15
 - **Status:** Gällande | Upphävd | Ersatt
 - **SFS-nummer:** 1977:1160 (clickable link to Riksdagen source)
 
 **Actions (Sticky on scroll):**
+
 - **[+ Lägg till i laglista]** - Primary action (see Add to List workflow)
 - **[📤 Dela]** - Copy link to clipboard
 - **[📄 Exportera]** - Download as PDF (formatted)
@@ -556,6 +592,7 @@ Alla Lagar (Landing Page)
 **Appears if:** Law amended in last 30 days
 
 **Content:**
+
 - Icon: 📝 (updated) or 🆕 (new law)
 - Text: "Denna lag ändrades 2024-01-15"
 - AI-generated one-sentence summary of changes
@@ -570,6 +607,7 @@ Alla Lagar (Landing Page)
 **Header:** "Lättläst sammanfattning (AI-genererad)" with ▼/▶ toggle
 
 **Content structure:**
+
 1. **Key requirements** (bullet list)
    - "Arbetsgivare måste..."
    - "Dokumentation krävs för..."
@@ -583,9 +621,11 @@ Alla Lagar (Landing Page)
    - "Fängelse upp till 2 år vid grov oaktsamhet"
 
 **Disclaimer (always present):**
+
 > ⚠️ Detta är en AI-genererad sammanfattning och utgör inte juridisk rådgivning. Läs alltid den fullständiga lagtexten eller kontakta en jurist.
 
 **Generation:**
+
 - **Batch generation:** Run GPT-4 on all laws during initial ingestion
 - **On-demand:** Generate for new laws and amendments
 - **Prompt template:**
@@ -612,6 +652,7 @@ Max 200 words total.
 **Format:** Collapsible chapters
 
 **Structure:**
+
 ```
 ▼ 1 kap. Lagens syfte och tillämpningsområde
   1 § [Full text of section 1]
@@ -626,31 +667,34 @@ Max 200 words total.
 ```
 
 **Features:**
+
 - **Collapsible chapters** - Reduce cognitive load, allow quick navigation
 - **Section anchors** - Each § has anchor ID for deep linking (e.g., `#3-2a`)
 - **Keyword highlighting** - If user arrived from search, highlight search terms
 - **Tooltip citations** - If section references another law, show tooltip on hover
 
 **Technical implementation:**
+
 - Parse HTML from Riksdagen API
 - Convert to structured JSON:
 
 ```typescript
 interface LawChapter {
-  chapter_number: string; // "3"
-  chapter_title: string; // "Allmänna skyldigheter för arbetsgivare"
-  sections: LawSection[];
+  chapter_number: string // "3"
+  chapter_title: string // "Allmänna skyldigheter för arbetsgivare"
+  sections: LawSection[]
 }
 
 interface LawSection {
-  section_number: string; // "2a"
-  section_text: string; // Full paragraph text
-  anchor_id: string; // "3-2a" for deep linking
-  references: string[]; // Other law sections referenced
+  section_number: string // "2a"
+  section_text: string // Full paragraph text
+  anchor_id: string // "3-2a" for deep linking
+  references: string[] // Other law sections referenced
 }
 ```
 
 **Deep linking:**
+
 - AI Chat citations link here: `/alla-lagar/arbetsmiljolagen-1977-1160?section=3-2a`
 - On page load, scroll to section and highlight it (yellow background, 3s fade)
 
@@ -661,11 +705,13 @@ interface LawSection {
 **Purpose:** Discovery + upsell
 
 **Data source:**
+
 1. **Explicit references** - Laws that cite each other (from Riksdagen API)
 2. **Co-occurrence** - Laws frequently tracked together by users
 3. **AI-detected similarity** - Vector similarity between law embeddings
 
 **Display:**
+
 - **Title:** "Lagar som ofta används tillsammans"
 - **List format:**
   - Law name + abbreviation
@@ -674,6 +720,7 @@ interface LawSection {
 - **Quick action:** "Lägg till alla →" (adds all related laws to user's list)
 
 **Example:**
+
 ```
 Lagar som ofta används tillsammans med Arbetsmiljölagen:
 
@@ -692,6 +739,7 @@ Lagar som ofta används tillsammans med Arbetsmiljölagen:
 **(See dedicated section below for full details)**
 
 **Quick summary:**
+
 - Private notes per law (rich text editor)
 - @mention team members (triggers notification)
 - Thread-style display (newest first)
@@ -704,6 +752,7 @@ Lagar som ofta används tillsammans med Arbetsmiljölagen:
 ### Global Search Bar
 
 **Location:**
+
 - Header (persistent across all pages)
 - Hero section on `/alla-lagar` landing page
 
@@ -736,6 +785,7 @@ Lagar som ofta används tillsammans med Arbetsmiljölagen:
 ### Search Implementation
 
 **Tech stack:**
+
 - **Backend:** PostgreSQL full-text search (Swedish stemming) + pgvector for semantic search
 - **Frontend:** Instant search with debouncing (300ms)
 
@@ -748,10 +798,10 @@ async function searchLaws(query: string): Promise<SearchResult[]> {
     .from('laws')
     .select('*')
     .eq('abbreviation', query.toUpperCase())
-    .single();
+    .single()
 
   if (abbrevMatch.data) {
-    return [{ ...abbrevMatch.data, relevance: 1.0 }];
+    return [{ ...abbrevMatch.data, relevance: 1.0 }]
   }
 
   // 2. Full-text search (law names + summaries)
@@ -762,22 +812,22 @@ async function searchLaws(query: string): Promise<SearchResult[]> {
       type: 'websearch',
       config: 'swedish',
     })
-    .limit(10);
+    .limit(10)
 
   // 3. If <5 results, do semantic search (vector similarity)
   if (textResults.data.length < 5) {
-    const embedding = await generateEmbedding(query);
+    const embedding = await generateEmbedding(query)
     const semanticResults = await supabase.rpc('match_laws', {
       query_embedding: embedding,
       match_threshold: 0.7,
       match_count: 10,
-    });
+    })
 
     // Merge and deduplicate
-    return mergeResults(textResults.data, semanticResults);
+    return mergeResults(textResults.data, semanticResults)
   }
 
-  return textResults.data;
+  return textResults.data
 }
 ```
 
@@ -786,6 +836,7 @@ async function searchLaws(query: string): Promise<SearchResult[]> {
 ### Search Results Display
 
 **Dropdown (Instant Results):**
+
 ```
 ┌─────────────────────────────────────────┐
 │ Sök efter lag...                        │
@@ -823,15 +874,18 @@ async function searchLaws(query: string): Promise<SearchResult[]> {
 **Faceted filters:**
 
 **Kategori:**
+
 - ☐ Arbetsrätt (12)
 - ☐ Miljö & Bygg (5)
 - ☐ Livsmedel & Hälsa (3)
 
 **Status:**
+
 - ☑ Gällande (18)
 - ☐ Upphävda (2)
 
 **Senast uppdaterad:**
+
 - ☐ Senaste 30 dagarna (1)
 - ☐ Senaste 90 dagarna (4)
 
@@ -846,6 +900,7 @@ async function searchLaws(query: string): Promise<SearchResult[]> {
 **Solution:** Enter SNI code (or industry name) → Get curated list of relevant laws.
 
 **Example:**
+
 - User enters "56.101" (Restaurant) or "restaurang"
 - System returns: Livsmedelslag, Alkohollag, Arbetsmiljölagen, Skatteregler, etc.
 
@@ -867,6 +922,7 @@ async function searchLaws(query: string): Promise<SearchResult[]> {
 **User types:** "restaurang" or "56.101"
 
 **Autocomplete suggestions:**
+
 ```
 ┌────────────────────────────────────────────┐
 │ rest                                       │
@@ -930,7 +986,7 @@ Generate initial mappings for all ~700 SNI codes:
 
 ```typescript
 async function generateSNILawMappings() {
-  const sniCodes = await fetchAllSNICodes(); // From SCB API
+  const sniCodes = await fetchAllSNICodes() // From SCB API
 
   for (const sni of sniCodes) {
     const prompt = `
@@ -958,15 +1014,15 @@ Return JSON:
   "recommended": ["Skatterätt", "Dataskydd & Integritet"],
   "reasoning": "Restaurants handle food (critical) and have employees (labor law required)..."
 }
-    `;
+    `
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4-turbo',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
-    });
+    })
 
-    const mapping = JSON.parse(response.choices[0].message.content);
+    const mapping = JSON.parse(response.choices[0].message.content)
 
     // Store in database
     await supabase.from('sni_law_mappings').insert({
@@ -974,7 +1030,7 @@ Return JSON:
       highly_relevant_categories: mapping.highly_relevant,
       recommended_categories: mapping.recommended,
       reasoning: mapping.reasoning,
-    });
+    })
   }
 }
 ```
@@ -986,6 +1042,7 @@ Return JSON:
 **Phase 2: Manual Refinement (Week 2)**
 
 Focus on **top 50 most common industries:**
+
 - Restaurang (56.101)
 - Byggnadsverksamhet (41.200)
 - Detaljhandel (47.x)
@@ -996,6 +1053,7 @@ Focus on **top 50 most common industries:**
 Human expert reviews AI suggestions, adds specific laws (not just categories).
 
 **Example refined mapping:**
+
 ```json
 {
   "sni_code": "56.101",
@@ -1006,11 +1064,7 @@ Human expert reviews AI suggestions, adds specific laws (not just categories).
     "law_arbetsmiljo",
     "law_anstallningsskydd"
   ],
-  "recommended_laws": [
-    "law_mervardeskatt",
-    "law_bokforing",
-    "law_dataskydd"
-  ],
+  "recommended_laws": ["law_mervardeskatt", "law_bokforing", "law_dataskydd"],
   "reasoning": "Restauranger måste följa livsmedelssäkerhet, alkoholtillstånd (om de serverar alkohol), arbetsmiljö för anställda..."
 }
 ```
@@ -1039,6 +1093,7 @@ Store feedback → Improve mappings over time.
 **Top 50 business law abbreviations** (from Notisum scrape):
 
 **Labor (14):**
+
 - ABL - Aktiebolagslagen
 - AML - Arbetsmiljölagen
 - ATL - Arbetstidslagen
@@ -1052,6 +1107,7 @@ Store feedback → Improve mappings over time.
 - FPL - Föräldraledighetslag (alternative abbreviation)
 
 **Corporate (8):**
+
 - ABL - Aktiebolagslagen
 - ÅRKL - Årsredovisningslag
 - BFL - Bokföringslag
@@ -1061,6 +1117,7 @@ Store feedback → Improve mappings over time.
 - SkL - Skadeståndslag
 
 **Tax (10):**
+
 - IL - Inkomstskattelag
 - ML - Mervärdeskattelag
 - SFL - Skatteförfarandelag
@@ -1069,6 +1126,7 @@ Store feedback → Improve mappings over time.
 - SkBL - Skattebrottslagen
 
 **Finance (6):**
+
 - BankL - Banklag
 - PuL - Penningtvättslag
 - FRL - Försäkringsrörelselag
@@ -1076,17 +1134,20 @@ Store feedback → Improve mappings over time.
 - VMSL - Värdepappersmarknadslag
 
 **Data & Privacy (4):**
+
 - GDPR - Dataskyddsförordningen (EU-förordning, not SFS)
 - DSL - Dataskyddslag
 - OSL - Offentlighets- och sekretesslag
 - PuL (old) - Personuppgiftslag (replaced by GDPR/DSL)
 
 **Construction & Environment (4):**
+
 - MB - Miljöbalk
 - PBL - Plan- och bygglag
 - VVL - Vägtrafiklag
 
 **Consumer (4):**
+
 - KKL - Konsumentköplag
 - KTjL - Konsumenttjänstlag
 - MFL - Marknadsföringslag
@@ -1097,6 +1158,7 @@ Store feedback → Improve mappings over time.
 ### Abbreviations Page Layout
 
 **Grid display:**
+
 ```
 ┌────────────────────────────────────────────────────┐
 │ Populära lagförkortningar                          │
@@ -1135,6 +1197,7 @@ Store feedback → Improve mappings over time.
 **Step 2: Modal opens**
 
 **If user has 1 list:**
+
 ```
 ┌────────────────────────────────────────┐
 │ Lägg till Arbetsmiljölagen i laglista │
@@ -1148,6 +1211,7 @@ Store feedback → Improve mappings over time.
 ```
 
 **If user has multiple lists:**
+
 ```
 ┌────────────────────────────────────────┐
 │ Lägg till Arbetsmiljölagen i laglista │
@@ -1165,6 +1229,7 @@ Store feedback → Improve mappings over time.
 ```
 
 **If user clicks "+ Skapa ny lista":**
+
 ```
 ┌────────────────────────────────────────┐
 │ Skapa ny laglista                      │
@@ -1185,6 +1250,7 @@ Store feedback → Improve mappings over time.
 **Step 3: Confirmation**
 
 Toast notification appears (top-right corner):
+
 ```
 ┌────────────────────────────────────────┐
 │ ✅ Arbetsmiljölagen tillagd i          │
@@ -1218,35 +1284,35 @@ Toast notification appears (top-right corner):
 ```typescript
 // app/api/law-lists/add-law/route.ts
 export async function POST(req: Request) {
-  const { lawId, listIds } = await req.json();
-  const userId = getCurrentUserId();
+  const { lawId, listIds } = await req.json()
+  const userId = getCurrentUserId()
 
   // Verify user owns these lists
   const { data: lists } = await supabase
     .from('law_lists')
     .select('id')
     .in('id', listIds)
-    .eq('user_id', userId);
+    .eq('user_id', userId)
 
   if (lists.length !== listIds.length) {
-    return NextResponse.json({ error: 'Invalid list IDs' }, { status: 403 });
+    return NextResponse.json({ error: 'Invalid list IDs' }, { status: 403 })
   }
 
   // Add law to lists (many-to-many relationship)
   const insertions = listIds.map((listId: string) => ({
     list_id: listId,
     law_id: lawId,
-  }));
+  }))
 
-  await supabase.from('law_list_items').insert(insertions);
+  await supabase.from('law_list_items').insert(insertions)
 
   // Track analytics
   await trackEvent('law_added_to_list', {
     law_id: lawId,
     list_count: listIds.length,
-  });
+  })
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true })
 }
 ```
 
@@ -1276,10 +1342,10 @@ export async function POST(req: Request) {
 ```typescript
 // app/api/cron/sync-law-updates/route.ts
 export async function GET(req: Request) {
-  console.log('Starting nightly law sync...');
+  console.log('Starting nightly law sync...')
 
   // 1. Fetch all laws from Riksdagen API
-  const riksdagenLaws = await fetchRiksdagenLaws();
+  const riksdagenLaws = await fetchRiksdagenLaws()
 
   for (const apiLaw of riksdagenLaws) {
     // 2. Check if law exists in our DB
@@ -1287,36 +1353,42 @@ export async function GET(req: Request) {
       .from('laws')
       .select('*')
       .eq('sfs_number', apiLaw.sfs_number)
-      .single();
+      .single()
 
     if (!existingLaw) {
       // 3. New law → Insert
-      await insertNewLaw(apiLaw);
-      console.log(`New law: ${apiLaw.name}`);
+      await insertNewLaw(apiLaw)
+      console.log(`New law: ${apiLaw.name}`)
     } else {
       // 4. Existing law → Check for amendments
-      const hasChanged = apiLaw.updated_date > existingLaw.updated_at;
+      const hasChanged = apiLaw.updated_date > existingLaw.updated_at
 
       if (hasChanged) {
         // 5. Generate diff
-        const diff = generateDiff(existingLaw.full_text_html, apiLaw.full_text_html);
+        const diff = generateDiff(
+          existingLaw.full_text_html,
+          apiLaw.full_text_html
+        )
 
         // 6. AI summarize changes
-        const changeSummary = await summarizeChanges(diff);
+        const changeSummary = await summarizeChanges(diff)
 
         // 7. Store historical version
         await supabase.from('law_versions').insert({
           law_id: existingLaw.id,
           version_date: existingLaw.updated_at,
           full_text: existingLaw.full_text_html,
-        });
+        })
 
         // 8. Update law with new content
-        await supabase.from('laws').update({
-          full_text_html: apiLaw.full_text_html,
-          latest_amendment: apiLaw.updated_date,
-          updated_at: new Date().toISOString(),
-        }).eq('id', existingLaw.id);
+        await supabase
+          .from('laws')
+          .update({
+            full_text_html: apiLaw.full_text_html,
+            latest_amendment: apiLaw.updated_date,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingLaw.id)
 
         // 9. Store change record
         await supabase.from('law_changes').insert({
@@ -1324,18 +1396,18 @@ export async function GET(req: Request) {
           change_date: apiLaw.updated_date,
           diff_html: diff,
           summary: changeSummary,
-        });
+        })
 
         // 10. Trigger notifications
-        await notifyUsersOfLawChange(existingLaw.id, changeSummary);
+        await notifyUsersOfLawChange(existingLaw.id, changeSummary)
 
-        console.log(`Updated law: ${apiLaw.name}`);
+        console.log(`Updated law: ${apiLaw.name}`)
       }
     }
   }
 
-  console.log('Law sync complete');
-  return NextResponse.json({ success: true });
+  console.log('Law sync complete')
+  return NextResponse.json({ success: true })
 }
 ```
 
@@ -1346,28 +1418,28 @@ export async function GET(req: Request) {
 **Library:** `diff` (npm package)
 
 ```typescript
-import { diffLines } from 'diff';
+import { diffLines } from 'diff'
 
 function generateDiff(oldText: string, newText: string): string {
-  const diff = diffLines(oldText, newText);
+  const diff = diffLines(oldText, newText)
 
-  let diffHtml = '<div class="diff-viewer">';
+  let diffHtml = '<div class="diff-viewer">'
 
   diff.forEach((part) => {
     const className = part.added
       ? 'diff-added'
       : part.removed
-      ? 'diff-removed'
-      : 'diff-unchanged';
+        ? 'diff-removed'
+        : 'diff-unchanged'
 
-    const prefix = part.added ? '+ ' : part.removed ? '- ' : '  ';
+    const prefix = part.added ? '+ ' : part.removed ? '- ' : '  '
 
-    diffHtml += `<div class="${className}">${prefix}${escapeHtml(part.value)}</div>`;
-  });
+    diffHtml += `<div class="${className}">${prefix}${escapeHtml(part.value)}</div>`
+  })
 
-  diffHtml += '</div>';
+  diffHtml += '</div>'
 
-  return diffHtml;
+  return diffHtml
 }
 ```
 
@@ -1391,15 +1463,15 @@ Write a concise Swedish summary (max 2 sentences) of what changed.
 Examples:
 - "Ny paragraf 3:2a införd som kräver riskbedömning av digital arbetsmiljö."
 - "Paragraph 5 § ändrad för att inkludera distansarbete i definitionen av arbetsplats."
-  `;
+  `
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4-turbo',
     messages: [{ role: 'user', content: prompt }],
     max_tokens: 100,
-  });
+  })
 
-  return response.choices[0].message.content.trim();
+  return response.choices[0].message.content.trim()
 }
 ```
 
@@ -1446,6 +1518,7 @@ Examples:
 ```
 
 **Color coding:**
+
 - **Green background** (+ lines) - Added text
 - **Red background** (- lines) - Removed text
 - **Gray background** (unchanged lines) - Context
@@ -1457,38 +1530,42 @@ Examples:
 **Display on law cards and law pages:**
 
 **🆕 Ny lag** (Green badge)
+
 - Condition: `effective_date` within last 60 days
 - Text: "Ny lag"
 
 **📝 Uppdaterad** (Blue badge)
+
 - Condition: `latest_amendment` within last 30 days
 - Text: "Uppdaterad"
 
 **⚠️ Utgången** (Red badge)
+
 - Condition: `status = 'repealed'` or `status = 'superseded'`
 - Text: "Utgången"
 
 **Implementation:**
+
 ```tsx
 function LawStatusBadge({ law }: { law: Law }) {
-  const daysSinceEnactment = daysBetween(law.effective_date, new Date());
+  const daysSinceEnactment = daysBetween(law.effective_date, new Date())
   const daysSinceAmendment = law.latest_amendment
     ? daysBetween(law.latest_amendment, new Date())
-    : null;
+    : null
 
   if (law.status === 'repealed' || law.status === 'superseded') {
-    return <Badge variant="destructive">⚠️ Utgången</Badge>;
+    return <Badge variant="destructive">⚠️ Utgången</Badge>
   }
 
   if (daysSinceEnactment <= 60) {
-    return <Badge variant="success">🆕 Ny lag</Badge>;
+    return <Badge variant="success">🆕 Ny lag</Badge>
   }
 
   if (daysSinceAmendment && daysSinceAmendment <= 30) {
-    return <Badge variant="info">📝 Uppdaterad</Badge>;
+    return <Badge variant="info">📝 Uppdaterad</Badge>
   }
 
-  return null;
+  return null
 }
 ```
 
@@ -1501,6 +1578,7 @@ function LawStatusBadge({ law }: { law: Law }) {
 **Purpose:** Users can annotate laws with team-specific context.
 
 **Use cases:**
+
 - "We reviewed this for Q2 audit - compliant as of 2024-01-15"
 - "@erik Can you check if our policy aligns with new § 3:2a?"
 - "Risk assessment template updated to match this requirement"
@@ -1555,6 +1633,7 @@ function LawStatusBadge({ law }: { law: Law }) {
 **Library:** TipTap (React rich text editor)
 
 **Extensions:**
+
 - Bold, Italic, Underline
 - Links
 - **@Mention** (autocomplete team members)
@@ -1656,11 +1735,13 @@ function LawNotesEditor({ lawId }: { lawId: string }) {
 **Arrow keys to navigate, Enter to select**
 
 **Rendered mention:**
+
 ```html
 <span class="mention" data-user-id="user_123">@erik</span>
 ```
 
 **CSS:**
+
 ```css
 .mention {
   background-color: #e3f2fd;
@@ -1728,11 +1809,13 @@ CREATE INDEX notifications_read_idx ON notifications(read);
 **API Base URL:** `https://data.riksdagen.se/dokumentlista/`
 
 **Endpoint for SFS laws:**
+
 ```
 GET https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json
 ```
 
 **Response format:**
+
 ```json
 {
   "dokumentlista": {
@@ -1763,20 +1846,20 @@ GET https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json
 
 ```typescript
 async function ingestAllLaws() {
-  console.log('Starting initial law ingestion...');
+  console.log('Starting initial law ingestion...')
 
-  const riksdagenLaws = await fetchAllRiksdagenLaws();
-  console.log(`Fetched ${riksdagenLaws.length} laws from Riksdagen API`);
+  const riksdagenLaws = await fetchAllRiksdagenLaws()
+  console.log(`Fetched ${riksdagenLaws.length} laws from Riksdagen API`)
 
   for (const apiLaw of riksdagenLaws) {
     // 1. Parse HTML to extract chapters and sections
-    const parsed = parseLawHTML(apiLaw.html);
+    const parsed = parseLawHTML(apiLaw.html)
 
     // 2. AI classify as B2B/Private
-    const classification = await classifyLaw(apiLaw);
+    const classification = await classifyLaw(apiLaw)
 
     // 3. AI generate plain-language summary
-    const summary = await generateLawSummary(apiLaw);
+    const summary = await generateLawSummary(apiLaw)
 
     // 4. Insert into database
     await supabase.from('laws').insert({
@@ -1792,19 +1875,20 @@ async function ingestAllLaws() {
       is_private: classification.is_private,
       summary,
       keywords: extractKeywords(apiLaw.html),
-    });
+    })
 
     // 5. Generate embeddings for RAG (law chunks)
-    await generateLawEmbeddings(apiLaw.dok_id, parsed.chapters);
+    await generateLawEmbeddings(apiLaw.dok_id, parsed.chapters)
 
-    console.log(`Ingested: ${apiLaw.titel}`);
+    console.log(`Ingested: ${apiLaw.titel}`)
   }
 
-  console.log('Initial ingestion complete');
+  console.log('Initial ingestion complete')
 }
 ```
 
 **Cost estimate:**
+
 - **AI classification:** 10,000 laws × $0.01 = $100
 - **AI summaries:** 10,000 laws × $0.02 = $200
 - **Embeddings:** 10,000 laws × 100 chunks × $0.0001 = $100
@@ -1817,6 +1901,7 @@ async function ingestAllLaws() {
 **Frequency:** Daily at 2 AM CET (low-traffic time)
 
 **Vercel Cron:**
+
 ```json
 {
   "crons": [
@@ -1829,6 +1914,7 @@ async function ingestAllLaws() {
 ```
 
 **Job logic:**
+
 1. Fetch laws updated in last 7 days from Riksdagen API
 2. Compare with stored versions
 3. Generate diffs for changed laws
@@ -1843,6 +1929,7 @@ async function ingestAllLaws() {
 **Why:** ISO audit trails require proving "we were compliant with version effective on X date"
 
 **Schema:**
+
 ```sql
 CREATE TABLE law_versions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1882,21 +1969,22 @@ Consider:
 - Does it regulate data protection, contracts, criminal law? → both
 
 Respond with JSON: {"classification": "b2b"|"private"|"both", "reasoning": "..."}
-  `;
+  `
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4-turbo',
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
-  });
+  })
 
-  const result = JSON.parse(response.choices[0].message.content);
+  const result = JSON.parse(response.choices[0].message.content)
 
   return {
     is_b2b: result.classification === 'b2b' || result.classification === 'both',
-    is_private: result.classification === 'private' || result.classification === 'both',
+    is_private:
+      result.classification === 'private' || result.classification === 'both',
     reasoning: result.reasoning,
-  };
+  }
 }
 ```
 
@@ -1923,10 +2011,12 @@ Respond with JSON: {"classification": "b2b"|"private"|"both", "reasoning": "..."
    - Retargeting: Pixel tracks visitors, show ads later
 
 **Risks:**
+
 - Competitors can scrape content
 - Users might not convert (get value without paying)
 
 **Mitigation:**
+
 - Beautiful design = harder to replicate
 - AI summaries have disclaimer (not legal advice) = users still need expert help
 - "Add to list" + "Track changes" requires signup = gate core features
@@ -1938,40 +2028,50 @@ Respond with JSON: {"classification": "b2b"|"private"|"both", "reasoning": "..."
 **On-page SEO:**
 
 **Title tag:**
+
 ```html
-<title>Arbetsmiljölagen (AML) - Fullständig lagtext och sammanfattning | Laglig.se</title>
+<title>
+  Arbetsmiljölagen (AML) - Fullständig lagtext och sammanfattning | Laglig.se
+</title>
 ```
 
 **Meta description:**
+
 ```html
-<meta name="description" content="Läs Arbetsmiljölagen (1977:1160) i fulltext. AI-genererad sammanfattning, ändringshistorik, och relaterade lagar. Gratis tillgång till alla svenska lagar på Laglig.se." />
+<meta
+  name="description"
+  content="Läs Arbetsmiljölagen (1977:1160) i fulltext. AI-genererad sammanfattning, ändringshistorik, och relaterade lagar. Gratis tillgång till alla svenska lagar på Laglig.se."
+/>
 ```
 
 **Structured data (Schema.org):**
+
 ```html
 <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "LegislationObject",
-  "name": "Arbetsmiljölagen",
-  "legislationIdentifier": "SFS 1977:1160",
-  "legislationDate": "1977-12-23",
-  "legislationJurisdiction": {
-    "@type": "Country",
-    "name": "Sweden"
-  },
-  "url": "https://laglig.se/alla-lagar/arbetsmiljolagen-1977-1160"
-}
+  {
+    "@context": "https://schema.org",
+    "@type": "LegislationObject",
+    "name": "Arbetsmiljölagen",
+    "legislationIdentifier": "SFS 1977:1160",
+    "legislationDate": "1977-12-23",
+    "legislationJurisdiction": {
+      "@type": "Country",
+      "name": "Sweden"
+    },
+    "url": "https://laglig.se/alla-lagar/arbetsmiljolagen-1977-1160"
+  }
 </script>
 ```
 
 **Keyword optimization:**
+
 - H1: Law name + abbreviation
 - H2: Chapter titles (rich in keywords)
 - Body: Full law text (naturally keyword-rich)
 - Alt text on images/icons
 
 **Internal linking:**
+
 - Related laws section links to other law pages
 - Breadcrumbs link to category pages
 - Footer links to law categories
@@ -1988,20 +2088,21 @@ Respond with JSON: {"classification": "b2b"|"private"|"both", "reasoning": "..."
 4. **Blog/news feed** (post-MVP) announcing law changes
 
 **Sitemap generation:**
+
 ```typescript
 // app/sitemap.ts
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { data: laws } = await supabase
     .from('laws')
     .select('slug, updated_at')
-    .eq('is_b2b', true);
+    .eq('is_b2b', true)
 
   return laws.map((law) => ({
     url: `https://laglig.se/alla-lagar/${law.slug}`,
     lastModified: law.updated_at,
     changeFrequency: 'monthly',
     priority: 0.8,
-  }));
+  }))
 }
 ```
 
@@ -2023,6 +2124,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
    - Email capture form (converts to user account)
 
 **A/B testing (post-launch):**
+
 - Test CTA wording: "Lägg till i laglista" vs. "Spåra denna lag"
 - Test placement: Top vs. floating action button
 - Test social proof: "1,234 företag spårar denna lag"
@@ -2034,6 +2136,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 ### Database Schema
 
 **Laws table:**
+
 ```sql
 CREATE TABLE laws (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2071,6 +2174,7 @@ CREATE INDEX laws_updated_at_idx ON laws(updated_at DESC);
 ---
 
 **Law versions table:**
+
 ```sql
 CREATE TABLE law_versions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2085,6 +2189,7 @@ CREATE TABLE law_versions (
 ---
 
 **Law changes table:**
+
 ```sql
 CREATE TABLE law_changes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2099,6 +2204,7 @@ CREATE TABLE law_changes (
 ---
 
 **Law notes table:**
+
 ```sql
 CREATE TABLE law_notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2114,6 +2220,7 @@ CREATE TABLE law_notes (
 ---
 
 **SNI law mappings table:**
+
 ```sql
 CREATE TABLE sni_law_mappings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -2133,6 +2240,7 @@ CREATE INDEX sni_mappings_code_idx ON sni_law_mappings(sni_code);
 ### API Routes
 
 **Law pages:**
+
 - `GET /api/laws` - List all laws (with filters)
 - `GET /api/laws/[slug]` - Get single law by slug
 - `GET /api/laws/[id]/versions` - Get historical versions
@@ -2141,10 +2249,12 @@ CREATE INDEX sni_mappings_code_idx ON sni_law_mappings(sni_code);
 - `GET /api/laws/[id]/notes` - Get notes for law
 
 **Search:**
+
 - `GET /api/laws/search?q={query}` - Search laws
 - `GET /api/laws/sni?code={sni_code}` - Get laws by SNI code
 
 **Categories:**
+
 - `GET /api/laws/categories` - List categories with counts
 - `GET /api/laws/categories/[slug]` - Get laws in category
 
@@ -2153,6 +2263,7 @@ CREATE INDEX sni_mappings_code_idx ON sni_law_mappings(sni_code);
 ### Frontend Routes
 
 **Public routes:**
+
 - `/alla-lagar` - Landing page
 - `/alla-lagar/kategori/[slug]` - Category browsing
 - `/alla-lagar/[lawSlug]` - Individual law page
@@ -2213,6 +2324,7 @@ CREATE INDEX sni_mappings_code_idx ON sni_law_mappings(sni_code);
 **User asks:** "What are the requirements for hiring employees in Sweden?"
 
 **AI responds:**
+
 - LAS (employment contracts)
 - AML (workplace safety obligations)
 - ATL (working hours regulations)
@@ -2235,6 +2347,7 @@ CREATE INDEX sni_mappings_code_idx ON sni_law_mappings(sni_code);
 **How do we measure if Law Pages are successful?**
 
 ### Product Metrics
+
 - **Law page views:** Total views, views per law
 - **Search usage:** % of visits starting with search
 - **Category browsing:** Click-through rate from categories
@@ -2242,18 +2355,21 @@ CREATE INDEX sni_mappings_code_idx ON sni_law_mappings(sni_code);
 - **SNI discovery usage:** Searches via SNI input field
 
 ### SEO Metrics
+
 - **Organic traffic:** Visitors from Google
 - **Keyword rankings:** Position for "[law name]" searches
 - **Indexed pages:** 10,000+ law pages indexed
 - **Bounce rate:** <50% on law pages (indicates valuable content)
 
 ### Engagement Metrics
+
 - **Time on page:** Avg time spent reading law pages
 - **Notes created:** # of users adding notes to laws
 - **@Mentions:** # of team collaboration interactions
 - **Return visits:** % of users returning to same law page
 
 ### Business Metrics
+
 - **Signup conversions:** Law page → Signup flow completion
 - **Trial-to-paid:** Users who signed up via law pages → Paid conversion
 - **Retention:** Users who engage with law pages have lower churn
@@ -2275,6 +2391,7 @@ The Law Pages (Alla Lagar) feature is Laglig.se's **content foundation and growt
 ...we create a legal database that competitors (Notisum, Karnov) cannot easily replicate.
 
 **Next steps:**
+
 1. Ingest all laws from Riksdagen API (one-time setup)
 2. Implement GPT-4 batch classification (B2B/Private)
 3. Build category browsing and search

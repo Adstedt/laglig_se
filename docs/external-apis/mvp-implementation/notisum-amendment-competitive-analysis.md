@@ -11,6 +11,7 @@
 **Key Finding:** Notisum provides comprehensive amendment timelines with 7 data points per amendment. Our current strategy would only capture 2-3 of these. **We need to expand our approach.**
 
 **Competitive Benchmark:**
+
 - ✅ **77 amendments tracked** (1977-2025) for Arbetsmiljölagen
 - ✅ **Rich metadata** per amendment (7 fields)
 - ✅ **Human-readable summaries** (1-3 sentences each)
@@ -39,15 +40,15 @@ Kommentar:         [Lägg till egen kommentar]
 
 ### Data Fields (7 per Amendment)
 
-| Field | Description | Example | How They Get It |
-|-------|-------------|---------|-----------------|
-| **Beteckning** | Amendment SFS number | SFS 2025:732 | Riksdagen API |
-| **Utkom den** | Publication date | 2025-06-24 | Riksdagen API (`publicerad` field) |
-| **Författningsrubrik** | Full title | Lag (2025:732) om ändring i arbetsmiljölagen (1977:1160) | Riksdagen API (`titel` field) |
-| **Påverkan** | Affected sections | ändr. 6 kap. 17 § | **Parsed from amending law full text** |
-| **Sammanfattning** | What changed | "Gränsen för... höjs från årskurs 7 till 8" | **Human-written or GPT-generated** |
-| **Ikraftträdande** | Effective date | 2028-07-01 | Parsed from amending law transition provisions |
-| **Kommentar** | User notes | [Empty] | User-generated content |
+| Field                  | Description          | Example                                                  | How They Get It                                |
+| ---------------------- | -------------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| **Beteckning**         | Amendment SFS number | SFS 2025:732                                             | Riksdagen API                                  |
+| **Utkom den**          | Publication date     | 2025-06-24                                               | Riksdagen API (`publicerad` field)             |
+| **Författningsrubrik** | Full title           | Lag (2025:732) om ändring i arbetsmiljölagen (1977:1160) | Riksdagen API (`titel` field)                  |
+| **Påverkan**           | Affected sections    | ändr. 6 kap. 17 §                                        | **Parsed from amending law full text**         |
+| **Sammanfattning**     | What changed         | "Gränsen för... höjs från årskurs 7 till 8"              | **Human-written or GPT-generated**             |
+| **Ikraftträdande**     | Effective date       | 2028-07-01                                               | Parsed from amending law transition provisions |
+| **Kommentar**          | User notes           | [Empty]                                                  | User-generated content                         |
 
 ---
 
@@ -55,15 +56,16 @@ Kommentar:         [Lägg till egen kommentar]
 
 Notisum uses standard Swedish legislative notation:
 
-| Notation | Meaning | Example |
-|----------|---------|---------|
-| **ändr.** | Amended | "ändr. 6 kap. 17 §" = Chapter 6, Section 17 amended |
-| **upph.** | Repealed | "upph. 8 kap. 4 §" = Chapter 8, Section 4 repealed |
-| **nya** | New sections | "nya 7 kap. 15, 16, 17 §§" = Chapter 7, Sections 15-17 added |
-| **betecknas** | Renumbered | "nuvarande 3 kap. 2 b § betecknas 3 kap. 2 c §" |
-| **rubr.** | Headings | "rubr. närmast före 8 kap. 4 §" = Heading before Ch 8 §4 |
+| Notation      | Meaning      | Example                                                      |
+| ------------- | ------------ | ------------------------------------------------------------ |
+| **ändr.**     | Amended      | "ändr. 6 kap. 17 §" = Chapter 6, Section 17 amended          |
+| **upph.**     | Repealed     | "upph. 8 kap. 4 §" = Chapter 8, Section 4 repealed           |
+| **nya**       | New sections | "nya 7 kap. 15, 16, 17 §§" = Chapter 7, Sections 15-17 added |
+| **betecknas** | Renumbered   | "nuvarande 3 kap. 2 b § betecknas 3 kap. 2 c §"              |
+| **rubr.**     | Headings     | "rubr. närmast före 8 kap. 4 §" = Heading before Ch 8 §4     |
 
 **Example from SFS 2013:610:**
+
 ```
 Påverkan: upph. 8 kap. 9 §;
           ändr. 4 kap. 1, 2, 3, 4, 5, 6, 7, 9, 10 §§,
@@ -82,12 +84,15 @@ Påverkan: upph. 8 kap. 9 §;
 ### High-Quality Summaries (Human-Readable)
 
 **SFS 2022:1109:**
+
 > "Marknadskontrollmyndigheterna får utökade möjligheter att kontrollera att produkter som tillhandahålls på EU:s inre marknad uppfyller de krav som finns. Det kan handla om säkerhetskrav eller krav för att skydda människors hälsa eller miljön. Träder i kraft den 25 juli 2022."
 
 **SFS 2010:856:**
+
 > "Tillämpningsområdet för Arbetsmiljölagen förtydligas så att det framgår att barn i förskolan och elever i fritidshemmet inte anses genomgå utbildning i arbetsmiljölagens mening. Barnen i förskolan omfattas inte av Arbetsmiljölagen till skillnad mot elever fr.o.m. förskoleklassen och vuxna som arbetar i dessa skolformer."
 
 **Characteristics:**
+
 - 2-4 sentences
 - Non-technical language
 - Explains **why** the change matters (not just what changed)
@@ -103,11 +108,13 @@ Påverkan: upph. 8 kap. 9 §;
 **Chronological Order:** Newest first (2025 → 1977)
 
 **Entries Include:**
+
 1. All substantive amendments (changes to law content)
 2. Technical amendments (renumbering, reference updates)
 3. Original law (SFS 1977:1160 at bottom with full description)
 
 **Special Entries:**
+
 - **Amendments to amendments:** e.g., SFS 2008:1387 amends SFS 2008:295
 - **Transition provisions:** e.g., "2011-08-01, överg.best."
 - **Multiple effective dates:** Some amendments phase in over time
@@ -118,15 +125,15 @@ Påverkan: upph. 8 kap. 9 §;
 
 ### Current Strategy Capabilities
 
-| Feature | Tier 1 (Riksdagen Parse) | Tier 2 (Lagen.nu) | Tier 3 (SFSR) | Notisum |
-|---------|--------------------------|-------------------|---------------|---------|
-| **SFS Number** | ✅ Inline refs | ✅ Complete list | ✅ Complete | ✅ Complete |
-| **Publication Date** | ❌ Not in refs | ❌ Not shown | ✅ Should have | ✅ Has |
-| **Full Title** | ❌ Not in refs | ✅ Has | ✅ Should have | ✅ Has |
-| **Affected Sections** | ❌ Not in refs | ❌ Not shown | ✅ Should have | ✅ Has |
-| **Summary** | ❌ Not available | ❌ Not shown | ❌ Unclear | ✅ Has |
-| **Effective Date** | ❌ Not in refs | ✅ Has | ✅ Should have | ✅ Has |
-| **Completeness** | 60-80% | 95-100% | 100% (when live) | 100% |
+| Feature               | Tier 1 (Riksdagen Parse) | Tier 2 (Lagen.nu) | Tier 3 (SFSR)    | Notisum     |
+| --------------------- | ------------------------ | ----------------- | ---------------- | ----------- |
+| **SFS Number**        | ✅ Inline refs           | ✅ Complete list  | ✅ Complete      | ✅ Complete |
+| **Publication Date**  | ❌ Not in refs           | ❌ Not shown      | ✅ Should have   | ✅ Has      |
+| **Full Title**        | ❌ Not in refs           | ✅ Has            | ✅ Should have   | ✅ Has      |
+| **Affected Sections** | ❌ Not in refs           | ❌ Not shown      | ✅ Should have   | ✅ Has      |
+| **Summary**           | ❌ Not available         | ❌ Not shown      | ❌ Unclear       | ✅ Has      |
+| **Effective Date**    | ❌ Not in refs           | ✅ Has            | ✅ Should have   | ✅ Has      |
+| **Completeness**      | 60-80%                   | 95-100%           | 100% (when live) | 100%        |
 
 ### Critical Missing Pieces
 
@@ -177,6 +184,7 @@ utvecklingsstörda till utgången av juni 2012.
 ### Notisum's Data Pipeline (Confirmed)
 
 **Source 1: Riksdagen API** (Metadata)
+
 ```json
 {
   "dokument_id": "sfs-2010-856",
@@ -185,9 +193,11 @@ utvecklingsstörda till utgången av juni 2012.
   "dokument_url_html": "https://data.riksdagen.se/dokument/sfs-2010-856.html"
 }
 ```
+
 ✅ Gets: SFS number, title, publication date
 
 **Source 2: Riksdagen Full Text** (Parse PDF or `.text`)
+
 ```
 Pattern match: "föreskrivs att 1 kap. 3 § och 6 kap. 17 § [...] ska ha följande lydelse"
 Result: affected_sections = "ändr. 1 kap. 3 §, 6 kap. 17 §"
@@ -195,9 +205,11 @@ Result: affected_sections = "ändr. 1 kap. 3 §, 6 kap. 17 §"
 Pattern match: "träder i kraft den 1 juli 2011"
 Result: effective_date = 2011-07-01
 ```
+
 ✅ Gets: Affected sections, effective date (via parsing)
 
 **Source 3: Manual or AI Summary**
+
 ```
 Based on SFS 2010:856 full text:
 "Tillämpningsområdet för Arbetsmiljölagen förtydligas så att det framgår
@@ -205,9 +217,11 @@ att barn i förskolan och elever i fritidshemmet inte anses genomgå
 utbildning i arbetsmiljölagens mening. Barnen i förskolan omfattas inte
 av Arbetsmiljölagen till skillnad mot elever fr.o.m. förskoleklassen."
 ```
+
 ✅ Gets: Human-readable summary (likely human-written for older laws, GPT for new)
 
 **Source 4: SFSR Official Register** (Validation)
+
 - Likely used for validation/cross-checking
 - May become primary source when fully operational
 
@@ -218,23 +232,27 @@ av Arbetsmiljölagen till skillnad mot elever fr.o.m. förskoleklassen."
 The patterns in Section 12 will work perfectly with Riksdagen's standardized format:
 
 **Pattern 1: Amended Sections**
+
 ```typescript
 const amendedPattern = /föreskrivs att (.*?) ska ha följande lydelse/
 // Matches: "1 kap. 3 § och 6 kap. 17 §"
 ```
 
 **Pattern 2: Effective Date**
+
 ```typescript
 const effectiveDatePattern = /träder i kraft den (\d{1,2}) (\w+) (\d{4})/
 // Matches: "1 juli 2011"
 ```
 
 **Pattern 3: Repealed Sections** (standard format, not in SFS 2010:856)
+
 ```typescript
 const repealedPattern = /ska upphöra att gälla/
 ```
 
 **Pattern 4: New Sections** (standard format, not in SFS 2010:856)
+
 ```typescript
 const newPattern = /ska införas (?:nya|en ny) paragrafer?/
 ```
@@ -244,12 +262,14 @@ const newPattern = /ska införas (?:nya|en ny) paragrafer?/
 ### Competitive Advantage: Full Automation
 
 **Notisum:**
+
 - Manually downloads and hosts PDFs from Riksdagen
 - Likely manually writes summaries (established 1999, pre-AI era)
 - Updates reactively when they notice new laws
 - 77 amendments tracked for Arbetsmiljölagen (1977:1160)
 
 **Us:**
+
 - ✅ Automatically fetch ALL 11,351 SFS from Riksdagen API
 - ✅ Automatically parse affected sections (same format Notisum reads)
 - ✅ Automatically generate summaries with GPT-4 (2025 technology)
@@ -313,6 +333,7 @@ enum SummarySource {
 ### Phase 1: Initial Ingestion (Epic 2.2)
 
 **Step 1: Ingest ALL SFS Laws** (Including amending laws)
+
 ```typescript
 // Fetch all 11,351 SFS documents
 for (const sfsDoc of allSFSDocuments) {
@@ -328,6 +349,7 @@ for (const sfsDoc of allSFSDocuments) {
 ```
 
 **Step 2: Parse Inline Amendment References**
+
 ```typescript
 // For EACH original law (e.g., SFS 1977:1160)
 const amendments = extractAmendmentsFromText(fullText) // ["2021:1112", "2023:253", ...]
@@ -335,12 +357,15 @@ const amendments = extractAmendmentsFromText(fullText) // ["2021:1112", "2023:25
 for (const amendmentSFS of amendments) {
   // Amendment is ALREADY in database (we ingested all SFS in Step 1)
   const amendingLaw = await prisma.legalDocument.findUnique({
-    where: { document_number: `SFS ${amendmentSFS}` }
+    where: { document_number: `SFS ${amendmentSFS}` },
   })
 
   if (amendingLaw) {
     // Parse affected sections from amending law title
-    const affectedSections = parseAffectedSections(amendingLaw.title, amendingLaw.full_text)
+    const affectedSections = parseAffectedSections(
+      amendingLaw.title,
+      amendingLaw.full_text
+    )
 
     // Generate summary with GPT-4
     const summary = await generateAmendmentSummary(amendingLaw.full_text)
@@ -359,25 +384,28 @@ for (const amendmentSFS of amendments) {
         affected_sections: affectedSections.parsed,
         summary: summary,
         summary_generated_by: 'GPT_4',
-        detected_method: 'RIKSDAGEN_TEXT_PARSING'
-      }
+        detected_method: 'RIKSDAGEN_TEXT_PARSING',
+      },
     })
   }
 }
 ```
 
 **Step 3: Backfill Missing Amendments from Lagen.nu**
+
 ```typescript
 // For laws with < 5 amendments (suspected incomplete)
 const lawsNeedingBackfill = await prisma.legalDocument.findMany({
   where: {
     amendments_count: { lt: 5 },
-    content_type: 'SFS_LAW'
-  }
+    content_type: 'SFS_LAW',
+  },
 })
 
 for (const law of lawsNeedingBackfill) {
-  const lagenNuAmendments = await fetchAmendmentsFromLagenNu(law.document_number)
+  const lagenNuAmendments = await fetchAmendmentsFromLagenNu(
+    law.document_number
+  )
 
   for (const amendment of lagenNuAmendments) {
     // Same process as Step 2
@@ -391,6 +419,7 @@ for (const law of lawsNeedingBackfill) {
 **Parse Amending Law Full Text:**
 
 Amending laws follow a standard format:
+
 ```
 Lag (YYYY:NNNN)
 om ändring i [original law name] (YYYY:NNNN)
@@ -407,18 +436,22 @@ Denna lag träder i kraft den 1 juli 2028.              ← EFFECTIVE DATE
 ```
 
 **Regex Patterns:**
+
 ```typescript
 const patterns = {
-  amended: /dels att ([\d\s]+kap\.\s+)?(\d+[a-z]?)\s*§\s+ska ha följande lydelse/g,
-  repealed: /dels att ([\d\s]+kap\.\s+)?(\d+[a-z]?)\s*§\s+ska upphöra att gälla/g,
+  amended:
+    /dels att ([\d\s]+kap\.\s+)?(\d+[a-z]?)\s*§\s+ska ha följande lydelse/g,
+  repealed:
+    /dels att ([\d\s]+kap\.\s+)?(\d+[a-z]?)\s*§\s+ska upphöra att gälla/g,
   new: /dels att det ska införas (?:nya|en ny) paragrafer?,\s*(.*?)(?=dels|Denna lag)/gs,
-  effectiveDate: /Denna lag träder i kraft den (\d{1,2}) (\w+) (\d{4})/
+  effectiveDate: /Denna lag träder i kraft den (\d{1,2}) (\w+) (\d{4})/,
 }
 ```
 
 ### Phase 3: Summary Generation with GPT-4
 
 **Prompt Template:**
+
 ```typescript
 const prompt = `You are analyzing Swedish legal amendments.
 
@@ -444,11 +477,12 @@ const summary = await openai.chat.completions.create({
   model: 'gpt-4',
   messages: [{ role: 'user', content: prompt }],
   temperature: 0.3,
-  max_tokens: 200
+  max_tokens: 200,
 })
 ```
 
 **Cost Estimate:**
+
 - Average amendment: 2,000 tokens input + 100 tokens output = 2,100 tokens
 - Assume 50% of SFS are amendments (5,675 amending laws)
 - Total: 5,675 × 2,100 tokens = 11.9M tokens
@@ -506,6 +540,7 @@ function AmendmentTimeline({ law, amendments }: AmendmentTimelineProps) {
 ```
 
 **Visual Design:**
+
 - ✅ Chronological order (newest first)
 - ✅ Clear visual separation per amendment
 - ✅ Color coding: Green (new), Yellow (amended), Red (repealed)
@@ -569,24 +604,24 @@ function AmendmentTimeline({ law, amendments }: AmendmentTimelineProps) {
 
 ### One-Time Ingestion
 
-| Task | Volume | Unit Cost | Total |
-|------|--------|-----------|-------|
-| Fetch SFS metadata | 11,351 laws | Free (Riksdagen API) | $0 |
-| Fetch full text | 11,351 laws | Free (Riksdagen API) | $0 |
-| Extract amendments | ~5,675 amending laws | $0 (regex parsing) | $0 |
-| **Generate summaries** | **5,675 amendments** | **$0.042/amendment** | **$238** |
-| Lagen.nu backfill | ~2,000 laws (20%) | Free (scraping, rate-limited) | $0 |
-| Store in database | 11,351 laws + 90K amendments | Storage cost | ~$50/month |
+| Task                   | Volume                       | Unit Cost                     | Total      |
+| ---------------------- | ---------------------------- | ----------------------------- | ---------- |
+| Fetch SFS metadata     | 11,351 laws                  | Free (Riksdagen API)          | $0         |
+| Fetch full text        | 11,351 laws                  | Free (Riksdagen API)          | $0         |
+| Extract amendments     | ~5,675 amending laws         | $0 (regex parsing)            | $0         |
+| **Generate summaries** | **5,675 amendments**         | **$0.042/amendment**          | **$238**   |
+| Lagen.nu backfill      | ~2,000 laws (20%)            | Free (scraping, rate-limited) | $0         |
+| Store in database      | 11,351 laws + 90K amendments | Storage cost                  | ~$50/month |
 
 **Total One-Time Cost:** ~$238 (GPT-4 summaries only)
 
 ### Recurring Costs (Monthly)
 
-| Task | Volume | Unit Cost | Total |
-|------|--------|-----------|-------|
-| Nightly change detection | ~10 changes/day × 30 | Free | $0 |
-| New amendment summaries | ~10 amendments/month | $0.42 | $0.42 |
-| User queries (RAG) | 1,000 queries/month | $0.03/query | $30 |
+| Task                     | Volume               | Unit Cost   | Total |
+| ------------------------ | -------------------- | ----------- | ----- |
+| Nightly change detection | ~10 changes/day × 30 | Free        | $0    |
+| New amendment summaries  | ~10 amendments/month | $0.42       | $0.42 |
+| User queries (RAG)       | 1,000 queries/month  | $0.03/query | $30   |
 
 **Total Recurring Cost:** ~$30/month
 
@@ -595,12 +630,14 @@ function AmendmentTimeline({ law, amendments }: AmendmentTimelineProps) {
 ## 12. Success Metrics
 
 **To Match Notisum:**
+
 - ✅ 100% completeness on amendment history (all SFS laws)
 - ✅ 7 data points per amendment (SFS, date, title, sections, summary, effective date, comments)
 - ✅ Human-readable summaries (GPT-4 generated, validated by users)
 - ✅ User comment functionality (workspace annotations)
 
 **To Exceed Notisum:**
+
 - ✅ Real-time change detection (nightly cron, not manual)
 - ✅ AI-powered impact analysis (cross-law references)
 - ✅ Visual timeline (interactive charts)

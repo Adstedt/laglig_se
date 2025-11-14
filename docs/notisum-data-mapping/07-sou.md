@@ -10,6 +10,7 @@
 Government official inquiry reports (SOU) commissioned by the government to investigate specific policy issues and propose solutions. These are extensive research reports that often lead to government bills (propositioner).
 
 **Key characteristics:**
+
 - Independent expert inquiries commissioned by government
 - Comprehensive research and analysis of policy areas
 - Recommendations often form basis for propositioner
@@ -27,10 +28,12 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 - Full SOU text is hosted externally on `https://regeringen.se/`
 
 **Example:**
+
 - Notisum URL: `https://www.notisum.se/rn/document/?id=SO025020`
 - External link: `https://regeringen.se/rattsliga-dokument/statens-offentliga-utredningar/2025/02/sou-202520/`
 
 **This is different from:**
+
 - **SFS laws** - Notisum hosts full text
 - **Propositioner** - Notisum hosts full text
 - **EU documents** - Notisum hosts full text
@@ -40,6 +43,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 ## Structure in Notisum
 
 **Same interface as other document types:**
+
 - **Kronologiskt register** (chronological by year: 2025 → 1995)
 - **Grid view** + **detailed list view**
 - Checkbox interface
@@ -54,12 +58,14 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 **Pattern:** `SOU YYYY:NN`
 
 **Breakdown:**
+
 - `SOU` = Statens offentliga utredningar
 - `YYYY` = Year of publication
 - `:` = Separator
 - `NN` = Sequential number within that year
 
 **Examples:**
+
 - `SOU 2025:20` = Government inquiry #20 from 2025
 - `SOU 2024:95` = Inquiry #95 from 2024
 
@@ -70,6 +76,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 **Notisum URL format:** `https://www.notisum.se/rn/document/?id=SOYYYYNN`
 
 **Condensed numbering:**
+
 - Full format: `SOU 2025:20`
 - URL format: `id=SO025020`
 - `SO` = SOU identifier
@@ -77,6 +84,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 - `020` = Zero-padded inquiry number
 
 **Examples:**
+
 - `SOU 2025:20` → `id=SO025020`
 - `SOU 2024:95` → `id=SO024095`
 
@@ -87,6 +95,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 **Purpose:** In-depth investigation of policy issues before legislation
 
 **Typical SOU process:**
+
 1. **Government appoints inquiry** (kommittédirektiv defines scope)
 2. **Expert committee investigates** (1-3 years typically)
 3. **SOU report published** with findings and recommendations
@@ -97,6 +106,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 8. **Law enacted** (published in SFS)
 
 **Example timeline:**
+
 - 2022: SOU 2022:X investigates environmental tax reform
 - 2023: Consultation period
 - 2024: Government submits Prop. 2024/25:X based on SOU findings
@@ -108,11 +118,13 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 ## Relationship to Other Documents
 
 **SOU → Proposition → SFS:**
+
 - SOU provides research and recommendations
 - Proposition references SOU as justification
 - SFS law is the final enacted result
 
 **Cross-referencing:**
+
 - Propositioner frequently cite SOU reports: "Enligt SOU 2022:X..."
 - Court cases may reference SOU for background context
 - SFS laws don't directly reference SOU (they reference propositioner)
@@ -128,6 +140,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 **Access:** ✅ Free and public
 
 **Format:**
+
 - Full PDF reports (often 100-500+ pages)
 - HTML summaries
 - Structured metadata
@@ -139,6 +152,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 ## Why Notisum Doesn't Host SOU
 
 **Likely reasons:**
+
 1. **Size:** SOU reports are massive (100-1000+ pages each)
 2. **Licensing:** May not have rights to republish regeringen.se content
 3. **Maintenance:** SOU are less frequently accessed than laws/propositioner
@@ -146,6 +160,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 5. **Cost/benefit:** Hosting thousands of large PDFs for limited user interest
 
 **Similar situation:**
+
 - **Kommittédirektiv** - Also external link only to regeringen.se
 
 ---
@@ -156,6 +171,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 **Historical coverage:** SOU series dates back to 1920s on regeringen.se
 
 **SOU per year:** Varies widely
+
 - Recent years: 20-100+ SOU/year
 - Major policy areas generate multiple related SOU
 
@@ -166,12 +182,14 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 ## Relevance for Laglig.se
 
 **High value for policy professionals:**
+
 1. **Policy analysts** - Understanding government research
 2. **Lawyers** - Background for legal interpretation (förarbeten)
 3. **Lobbyists/advocates** - Influencing policy development
 4. **Researchers** - Academic analysis of Swedish policy
 
 **Low value for SMB compliance:**
+
 - Too early in legislative process
 - Most businesses need "what is the law now" not "what might it become"
 - Exception: Large enterprises planning for future regulation
@@ -179,15 +197,18 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 **Recommendation for Laglig.se:**
 
 **MVP (Phase 1):**
+
 - ❌ **Skip entirely** - Link to regeringen.se if needed
 - Focus on SFS laws (binding rules) and propositioner (interpretation)
 
 **Phase 2 (Professional tier):**
+
 - ⚠️ **Maybe include** - Same approach as Notisum (index + external links)
 - **Value-add:** Track SOU → Proposition → SFS connections
   - "This law came from Prop. 2024/25:X, which was based on SOU 2022:X"
 
 **Phase 3 (Enterprise/Policy tier):**
+
 - ✅ **Full integration** - Host SOU content if licensing allows
 - **AI opportunity:** Summarize lengthy SOU reports
   - "This 400-page inquiry recommends 3 key policy changes: [summary]"
@@ -200,6 +221,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 **Challenge:** No robust API like Riksdagen
 
 **Options:**
+
 1. **Index only** (Notisum approach)
    - Maintain list of SOU numbers and titles
    - Link to regeringen.se for full text
@@ -215,6 +237,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
    - May not be feasible
 
 **Realistic approach for Laglig.se:**
+
 - Start with index only
 - Link SOU → Propositioner → SFS
 - Add full hosting if user demand justifies effort
@@ -223,17 +246,17 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 
 ## Key Differences from Propositioner
 
-| Feature | Propositioner | SOU |
-|---------|---------------|-----|
-| **Author** | Government (Regeringen) | Independent inquiry committee |
-| **Purpose** | Propose law to Riksdag | Research and recommend policy |
-| **Legal status** | Official legislative proposal | Advisory/preparatory |
-| **Hosted by Notisum** | ✅ Yes - full text | ❌ No - external link only |
-| **Data source** | Riksdagen (with API) | Regeringen.se (no API) |
-| **Size** | 50-500 pages typically | 100-1000+ pages typically |
-| **Frequency** | 150-300/year | 20-100/year |
-| **Leads to** | SFS law (if approved) | Proposition (maybe) |
-| **Relevance for SMB** | Moderate (interpret laws) | Low (too early stage) |
+| Feature               | Propositioner                 | SOU                           |
+| --------------------- | ----------------------------- | ----------------------------- |
+| **Author**            | Government (Regeringen)       | Independent inquiry committee |
+| **Purpose**           | Propose law to Riksdag        | Research and recommend policy |
+| **Legal status**      | Official legislative proposal | Advisory/preparatory          |
+| **Hosted by Notisum** | ✅ Yes - full text            | ❌ No - external link only    |
+| **Data source**       | Riksdagen (with API)          | Regeringen.se (no API)        |
+| **Size**              | 50-500 pages typically        | 100-1000+ pages typically     |
+| **Frequency**         | 150-300/year                  | 20-100/year                   |
+| **Leads to**          | SFS law (if approved)         | Proposition (maybe)           |
+| **Relevance for SMB** | Moderate (interpret laws)     | Low (too early stage)         |
 
 ---
 
@@ -278,6 +301,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
    - Businesses must comply
 
 **Where users find value:**
+
 - **2025: Compliance officers** → Need SFS law
 - **2024: Legal advisors** → Need proposition for interpretation
 - **2023: Policy teams** → Need SOU to prepare for changes
@@ -290,6 +314,7 @@ Government official inquiry reports (SOU) commissioned by the government to inve
 **Notisum's SOU section is essentially a **directory/index** that links to regeringen.se.**
 
 **For Laglig.se:**
+
 - **Not a priority** for MVP
 - **Low value** for core SMB compliance use case
 - **Could add later** as index with smart cross-referencing to propositioner and SFS

@@ -1,0 +1,6 @@
+node_modules/
+.next/
+competitor-analysis/
+docs/
+.bmad-core/
+.claude/

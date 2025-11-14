@@ -22,7 +22,11 @@
       "Bash(git push)",
       "Bash(docs/prd_temp.md)",
       "Bash(mv:*)",
-      "Bash(\"C:/Users/audri/Desktop/dev/laglig_se/docs/front-end-spec-temp.md\")"
+      "Bash(\"C:/Users/audri/Desktop/dev/laglig_se/docs/front-end-spec-temp.md\")",
+      "Bash(git mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(test:*)",
+      "Bash(pnpm:*)"
     ],
     "deny": [],
     "ask": []

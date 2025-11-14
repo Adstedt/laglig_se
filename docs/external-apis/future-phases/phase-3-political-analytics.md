@@ -14,9 +14,11 @@ This document outlines a **political analytics layer** that identifies which pol
 ### Core Value Proposition
 
 **Current state (Post Phase 2):**
+
 > "Here's the law text and why it was introduced (från förarbeten)"
 
 **Phase 3 enhancement:**
+
 > "Here's the law text, why it was introduced, AND which political forces drove it (with party affiliations, voting records, and ideological positioning)"
 
 ### Target Audiences
@@ -43,17 +45,20 @@ In Sweden's parliamentary system, understanding WHO proposed a law is critical b
 ### 1.2 Swedish Political Spectrum (Current Riksdag)
 
 **Left Bloc:**
+
 - V (Vänsterpartiet) - Far-left socialist party
 - S (Socialdemokraterna) - Center-left social democrats
 - MP (Miljöpartiet) - Green party
 
 **Right Bloc:**
+
 - M (Moderaterna) - Conservative party
 - KD (Kristdemokraterna) - Christian democrats
 - L (Liberalerna) - Liberal party
 - SD (Sverigedemokraterna) - Nationalist conservatives
 
 **Center:**
+
 - C (Centerpartiet) - Agrarian/liberal centrists (swing voters)
 
 ### 1.3 Example Use Cases
@@ -113,16 +118,16 @@ The Riksdagen API provides rich political metadata for propositioner (government
 {
   "dokumentstatus": {
     "dokument": {
-      "dok_id": "GV03133",        // Prop. 2008/09:133
-      "typ": "prop",               // Document type: proposition
-      "rm": "2008/09",             // Parliamentary year
+      "dok_id": "GV03133", // Prop. 2008/09:133
+      "typ": "prop", // Document type: proposition
+      "rm": "2008/09", // Parliamentary year
       "nummer": "133",
       "titel": "En reformerad föräldraförsäkring",
-      "organ": "Socialförsäkringsutskottet",  // Committee handling proposal
+      "organ": "Socialförsäkringsutskottet", // Committee handling proposal
       "undertecknare": [
         {
           "namn": "Cristina Husmark Pehrsson",
-          "partibet": "M",         // Party affiliation: Moderaterna
+          "partibet": "M", // Party affiliation: Moderaterna
           "roll": "Socialminister"
         }
       ]
@@ -141,9 +146,9 @@ The Riksdagen API provides rich political metadata for propositioner (government
         "bet": "2008/09:SfU17",
 
         "votering_resultat": {
-          "ja_roster": 175,        // Yes votes
-          "nej_roster": 174,       // No votes
-          "frånvarande": 0         // Absent
+          "ja_roster": 175, // Yes votes
+          "nej_roster": 174, // No votes
+          "frånvarande": 0 // Absent
         }
       }
     ]
@@ -166,7 +171,7 @@ Returns individual MP voting records:
         "namn": "Stefan Löfven",
         "parti": "S",
         "valkrets": "Stockholms län",
-        "rost": "Ja",              // Vote: Yes/No/Absent/Abstain
+        "rost": "Ja", // Vote: Yes/No/Absent/Abstain
         "datum": "2009-05-15"
       }
       // ... 349 MPs total
@@ -188,16 +193,16 @@ Returns historical government compositions:
       "regeringsnamn": "Regeringen Löfven II",
       "from": "2019-01-21",
       "tom": "2021-11-30",
-      "partier": ["S", "MP"],      // Coalition parties
+      "partier": ["S", "MP"], // Coalition parties
       "statsminister": "Stefan Löfven",
-      "typ": "Minoritet"           // Minority government
+      "typ": "Minoritet" // Minority government
     },
     {
       "regeringsnamn": "Regeringen Kristersson",
       "from": "2022-10-18",
-      "tom": null,                 // Current government
+      "tom": null, // Current government
       "partier": ["M", "KD", "L"],
-      "stod_av": ["SD"],           // Supported by (not in cabinet)
+      "stod_av": ["SD"], // Supported by (not in cabinet)
       "statsminister": "Ulf Kristersson",
       "typ": "Minoritet"
     }
@@ -347,9 +352,9 @@ From Phase 2, we already extract förarbeten references from SFS footnotes:
 ```typescript
 // From phase-2-forarbeten-integration.md
 interface ForarbetenRefs {
-  proposition?: string       // "Prop. 2005/06:133"
-  committee_report?: string  // "Bet. 2005/06:FöU9"
-  riksdag_comm?: string      // "Rskr. 2005/06:295"
+  proposition?: string // "Prop. 2005/06:133"
+  committee_report?: string // "Bet. 2005/06:FöU9"
+  riksdag_comm?: string // "Rskr. 2005/06:295"
 }
 ```
 
@@ -358,16 +363,15 @@ interface ForarbetenRefs {
 ```typescript
 async function extractPoliticalContext(
   sfsNumber: string,
-  propositionRef: string  // "Prop. 2005/06:133"
+  propositionRef: string // "Prop. 2005/06:133"
 ): Promise<PoliticalContext> {
-
   // Parse proposition reference
   const match = propositionRef.match(/Prop\.\s+(\d{4})\/(\d{2}):(\d+)/)
   if (!match) return null
 
   const [_, fullYear, shortYear, nummer] = match
-  const rm = `${fullYear}/${shortYear}`  // "2005/06"
-  const dokId = `GV${shortYear}${nummer.padStart(4, '0')}`  // "GV06133"
+  const rm = `${fullYear}/${shortYear}` // "2005/06"
+  const dokId = `GV${shortYear}${nummer.padStart(4, '0')}` // "GV06133"
 
   // Fetch proposition document
   const propUrl = `https://data.riksdagen.se/dokument/${dokId}.json`
@@ -391,10 +395,7 @@ async function extractPoliticalContext(
   let votingRecord = null
 
   if (votingData) {
-    const detailedVotes = await fetchDetailedVotes(
-      rm,
-      votingData.bet
-    )
+    const detailedVotes = await fetchDetailedVotes(rm, votingData.bet)
 
     votingRecord = {
       voteDate: new Date(votingData.votdatum),
@@ -405,7 +406,7 @@ async function extractPoliticalContext(
       voteMargin: calculateVoteMargin(
         votingData.votering_resultat.ja_roster,
         votingData.votering_resultat.nej_roster
-      )
+      ),
     }
   }
 
@@ -427,7 +428,7 @@ async function extractPoliticalContext(
     support_parties: government.support_parties,
     government_type: government.type,
     left_right_score: leftRightScore,
-    ...votingRecord
+    ...votingRecord,
   }
 }
 ```
@@ -436,10 +437,9 @@ async function extractPoliticalContext(
 
 ```typescript
 async function fetchDetailedVotes(
-  rm: string,      // "2005/06"
-  betId: string    // "2005/06:FöU9"
-): Promise<{ supportingParties: string[], opposingParties: string[] }> {
-
+  rm: string, // "2005/06"
+  betId: string // "2005/06:FöU9"
+): Promise<{ supportingParties: string[]; opposingParties: string[] }> {
   const url = `https://data.riksdagen.se/voteringlista/?rm=${rm}&bet=${betId}&utformat=json`
   const response = await fetch(url)
   const data = await response.json()
@@ -447,9 +447,9 @@ async function fetchDetailedVotes(
   const votes = data.voteringlista.votering
 
   // Group votes by party
-  const partyVotes: Record<string, { yes: number, no: number }> = {}
+  const partyVotes: Record<string, { yes: number; no: number }> = {}
 
-  votes.forEach(vote => {
+  votes.forEach((vote) => {
     if (!partyVotes[vote.parti]) {
       partyVotes[vote.parti] = { yes: 0, no: 0 }
     }
@@ -486,32 +486,33 @@ function calculateIdeologicalScore(
   coalitionParties: string[],
   supportingParties?: string[]
 ): number {
-
   // Party ideological positions (expert consensus from political science)
   const partyScores: Record<string, number> = {
-    'V':  -8,   // Vänsterpartiet (far-left socialist)
-    'S':  -4,   // Socialdemokraterna (center-left)
-    'MP': -3,   // Miljöpartiet (left-green)
-    'C':   0,   // Centerpartiet (centrist)
-    'L':  +3,   // Liberalerna (center-right liberal)
-    'KD': +5,   // Kristdemokraterna (conservative)
-    'M':  +6,   // Moderaterna (conservative)
-    'SD': +7,   // Sverigedemokraterna (nationalist right)
+    V: -8, // Vänsterpartiet (far-left socialist)
+    S: -4, // Socialdemokraterna (center-left)
+    MP: -3, // Miljöpartiet (left-green)
+    C: 0, // Centerpartiet (centrist)
+    L: +3, // Liberalerna (center-right liberal)
+    KD: +5, // Kristdemokraterna (conservative)
+    M: +6, // Moderaterna (conservative)
+    SD: +7, // Sverigedemokraterna (nationalist right)
   }
 
   // Weighted average of coalition parties
-  const coalitionScore = coalitionParties
-    .map(p => partyScores[p] || 0)
-    .reduce((sum, score) => sum + score, 0) / coalitionParties.length
+  const coalitionScore =
+    coalitionParties
+      .map((p) => partyScores[p] || 0)
+      .reduce((sum, score) => sum + score, 0) / coalitionParties.length
 
   // If we have voting data, factor in supporting parties
   if (supportingParties && supportingParties.length > 0) {
-    const supportScore = supportingParties
-      .map(p => partyScores[p] || 0)
-      .reduce((sum, score) => sum + score, 0) / supportingParties.length
+    const supportScore =
+      supportingParties
+        .map((p) => partyScores[p] || 0)
+        .reduce((sum, score) => sum + score, 0) / supportingParties.length
 
     // Weight: 70% coalition, 30% supporting parties
-    return (coalitionScore * 0.7) + (supportScore * 0.3)
+    return coalitionScore * 0.7 + supportScore * 0.3
   }
 
   return coalitionScore
@@ -537,14 +538,13 @@ async function trackPoliticalAmendments(
   originalSfsNumber: string,
   amendmentSfsNumber: string
 ): Promise<void> {
-
   // Fetch political context for both laws
   const original = await prisma.politicalContext.findUnique({
-    where: { legal_document_id: originalSfsNumber }
+    where: { legal_document_id: originalSfsNumber },
   })
 
   const amendment = await prisma.politicalContext.findUnique({
-    where: { legal_document_id: amendmentSfsNumber }
+    where: { legal_document_id: amendmentSfsNumber },
   })
 
   if (!original || !amendment) return
@@ -563,12 +563,12 @@ async function trackPoliticalAmendments(
       original_law_id: original.id,
       amendment_sfs_number: amendmentSfsNumber,
       amendment_year: new Date(amendment.created_at).getFullYear(),
-      amending_party: amendment.coalition_parties[0],  // Lead party
+      amending_party: amendment.coalition_parties[0], // Lead party
       amending_government: amendment.government_name,
       amendment_type: classifyAmendmentType(original, amendment),
       ideological_shift: ideologicalShift.direction,
-      shift_magnitude: ideologicalShift.magnitude
-    }
+      shift_magnitude: ideologicalShift.magnitude,
+    },
   })
 }
 
@@ -577,8 +577,7 @@ function determineIdeologicalShift(
   newScore: number,
   originalParties: string[],
   newParties: string[]
-): { direction: string, magnitude: number } {
-
+): { direction: string; magnitude: number } {
   const shift = newScore - originalScore
   const magnitude = Math.abs(shift)
 
@@ -587,10 +586,10 @@ function determineIdeologicalShift(
   if (shift < -1) direction = 'right_to_left'
 
   // Check if parties changed
-  const partiesChanged = !originalParties.every(p => newParties.includes(p))
+  const partiesChanged = !originalParties.every((p) => newParties.includes(p))
 
   if (!partiesChanged && magnitude < 0.5) {
-    direction = 'neutral'  // Same coalition, minor adjustment
+    direction = 'neutral' // Same coalition, minor adjustment
   }
 
   return { direction, magnitude }
@@ -624,14 +623,14 @@ Add political context section:
 
       <dt>Political classification:</dt>
       <dd>
-        <span class="ideology-badge left">Worker Protection (Left-leaning)</span>
+        <span class="ideology-badge left"
+          >Worker Protection (Left-leaning)</span
+        >
         <span class="score">Ideological score: -6.5 / 10</span>
       </dd>
 
       <dt>Parliamentary support:</dt>
-      <dd>
-        <span class="party-badge s">S</span> (Strong majority)
-      </dd>
+      <dd><span class="party-badge s">S</span> (Strong majority)</dd>
     </dl>
   </div>
 
@@ -650,8 +649,12 @@ Add political context section:
         <dt>Political shift:</dt>
         <dd>
           <span class="shift-arrow">← Left to Right</span>
-          <span class="ideology-badge right">Employer Flexibility (Right-leaning)</span>
-          <span class="score">New score: +4.2 / 10 (shift of +10.7 points)</span>
+          <span class="ideology-badge right"
+            >Employer Flexibility (Right-leaning)</span
+          >
+          <span class="score"
+            >New score: +4.2 / 10 (shift of +10.7 points)</span
+          >
         </dd>
 
         <dt>Parliamentary vote:</dt>
@@ -659,7 +662,9 @@ Add political context section:
           <div class="vote-visualization">
             <div class="vote-bar">
               <div class="votes-for" style="width: 52%">For: 176 votes</div>
-              <div class="votes-against" style="width: 48%">Against: 173 votes</div>
+              <div class="votes-against" style="width: 48%">
+                Against: 173 votes
+              </div>
             </div>
             <p class="vote-margin">Narrow majority (50.4% support)</p>
           </div>
@@ -684,9 +689,17 @@ Add political context section:
   </div>
 
   <div class="political-analysis-cta">
-    <p>💡 <strong>Political Risk Analysis:</strong> This law has undergone significant ideological shifts between left and right governments. Businesses should monitor political developments that may affect employment regulations.</p>
+    <p>
+      💡 <strong>Political Risk Analysis:</strong> This law has undergone
+      significant ideological shifts between left and right governments.
+      Businesses should monitor political developments that may affect
+      employment regulations.
+    </p>
 
-    <a href="/insights/political-legislative-trends/labor-law" class="btn-secondary">
+    <a
+      href="/insights/political-legislative-trends/labor-law"
+      class="btn-secondary"
+    >
       View Labor Law Political Trends →
     </a>
   </div>
@@ -698,6 +711,7 @@ Add political context section:
 **New page:** `/insights/political-legislative-trends`
 
 Features:
+
 1. **Party Legislative Activity** - Which parties proposed most laws in each domain
 2. **Ideological Timeline** - Visual timeline showing left/right shifts over decades
 3. **Controversial Legislation** - Laws with narrow vote margins
@@ -740,23 +754,26 @@ This feature will capture search traffic for:
 
 ### 6.1 Competitor Landscape
 
-| Feature | laglig.se (Phase 3) | Notisum | Lagrummet | Zeteo |
-|---------|---------------------|---------|-----------|-------|
-| **Political Context** | ✅ Full | ❌ None | ❌ None | ❌ None |
-| **Voting Records** | ✅ Yes | ❌ No | ❌ No | ❌ No |
-| **Ideological Scoring** | ✅ Yes | ❌ No | ❌ No | ❌ No |
-| **Amendment Tracking** | ✅ With political shifts | ⚠️ Basic | ⚠️ Basic | ⚠️ Basic |
-| **Minister Attribution** | ✅ Yes | ❌ No | ❌ No | ❌ No |
+| Feature                  | laglig.se (Phase 3)      | Notisum  | Lagrummet | Zeteo    |
+| ------------------------ | ------------------------ | -------- | --------- | -------- |
+| **Political Context**    | ✅ Full                  | ❌ None  | ❌ None   | ❌ None  |
+| **Voting Records**       | ✅ Yes                   | ❌ No    | ❌ No     | ❌ No    |
+| **Ideological Scoring**  | ✅ Yes                   | ❌ No    | ❌ No     | ❌ No    |
+| **Amendment Tracking**   | ✅ With political shifts | ⚠️ Basic | ⚠️ Basic  | ⚠️ Basic |
+| **Minister Attribution** | ✅ Yes                   | ❌ No    | ❌ No     | ❌ No    |
 
 ### 6.2 Unique Market Position
 
 **Current legal databases:**
+
 > "Here's the law text and case precedent"
 
 **laglig.se Phase 3:**
+
 > "Here's the law text, case precedent, legislative intent (förarbeten), AND the political forces that shaped it - with predictive insights on future changes based on government composition"
 
 **Market Repositioning:**
+
 - **From:** Legal database for lawyers
 - **To:** Policy intelligence platform for lawyers, journalists, researchers, and businesses
 
@@ -765,6 +782,7 @@ This feature will capture search traffic for:
 This feature justifies premium pricing:
 
 **New Tier: "Policy Intelligence" (SEK 3,500-5,000/month)**
+
 - All Professional tier features (förarbeten integration from Phase 2)
 - Political analytics layer
 - Ideological trend analysis
@@ -772,6 +790,7 @@ This feature justifies premium pricing:
 - API access to political metadata
 
 **Target customers:**
+
 - Law firms with political advisory practices
 - Lobbying organizations
 - Media organizations (SvD, DN, Dagens Industri)
@@ -785,6 +804,7 @@ This feature justifies premium pricing:
 ### Phase 3.1: Foundation (Months 1-2)
 
 **Deliverables:**
+
 - [ ] Extend Prisma schema with `PoliticalContext`, `PoliticalAmendment`, `PoliticalParty` models
 - [ ] Seed `PoliticalParty` table with Swedish party data (1968-present)
 - [ ] Build `extractPoliticalContext()` function
@@ -792,12 +812,14 @@ This feature justifies premium pricing:
 - [ ] Build `calculateIdeologicalScore()` function
 
 **Success metrics:**
+
 - Successfully extract political context for 100 sample laws
 - Validate ideological scores against political science expert ratings (>85% agreement)
 
 ### Phase 3.2: Data Ingestion (Months 3-4)
 
 **Deliverables:**
+
 - [ ] Batch process all 11,351 SFS laws to extract political context
 - [ ] Match laws to propositioner using förarbeten footnotes
 - [ ] Fetch voting records for all available propositions (~8,000 expected)
@@ -805,6 +827,7 @@ This feature justifies premium pricing:
 - [ ] Identify amendment relationships and political shifts
 
 **Success metrics:**
+
 - Political context available for >80% of SFS laws (9,000+ laws)
 - Voting records available for >60% of laws with propositions
 - Amendment tracking for >500 amended laws
@@ -812,6 +835,7 @@ This feature justifies premium pricing:
 ### Phase 3.3: UX Implementation (Months 5-6)
 
 **Deliverables:**
+
 - [ ] Design and implement political context section on law pages
 - [ ] Build political analytics dashboard (`/insights/political-legislative-trends`)
 - [ ] Create party profile pages (e.g., `/insights/parties/socialdemokraterna`)
@@ -819,6 +843,7 @@ This feature justifies premium pricing:
 - [ ] Implement ideological timeline visualizations
 
 **Success metrics:**
+
 - Political context section renders on >90% of law pages
 - Dashboard loads <2 seconds
 - Mobile-responsive design
@@ -826,6 +851,7 @@ This feature justifies premium pricing:
 ### Phase 3.4: Advanced Features (Months 7-8)
 
 **Deliverables:**
+
 - [ ] Build political alert system (email notifications on political shifts)
 - [ ] Create API endpoints for political metadata access
 - [ ] Build "Political Risk Score" for businesses (regulatory change likelihood)
@@ -833,6 +859,7 @@ This feature justifies premium pricing:
 - [ ] Add export features (CSV/JSON for researchers)
 
 **Success metrics:**
+
 - 100+ active users with political alerts enabled
 - 10+ API customers (research orgs, media companies)
 - Political risk score accuracy >70% (validate against actual amendments)
@@ -848,6 +875,7 @@ This feature justifies premium pricing:
 **Voting records to fetch:** ~8,000 detailed voting lists (estimate 70% of laws have votes)
 
 **Storage requirements:**
+
 - `PoliticalContext` table: 11,351 rows × 1 KB = ~11 MB
 - `PoliticalAmendment` table: ~2,000 rows × 500 bytes = ~1 MB
 - `PoliticalParty` table: ~15 rows × 500 bytes = ~8 KB
@@ -858,17 +886,20 @@ This feature justifies premium pricing:
 **Riksdagen API:** Free and unlimited
 
 **Ingestion timeline:**
+
 - 11,000 proposition fetches at ~1 req/sec = 3 hours
 - 8,000 voting list fetches at ~1 req/sec = 2.2 hours
 - **Total ingestion time:** ~6 hours (one-time)
 
 **Maintenance:**
+
 - New laws: ~500/year = ~1.5 hours/year
 - Re-scraping for amendments: ~100 laws/year = ~20 minutes/year
 
 ### 8.3 Development Cost Estimate
 
 **Engineering time:**
+
 - Backend development: 120 hours (3 weeks full-time)
 - Frontend development: 80 hours (2 weeks full-time)
 - Data science (ideological scoring validation): 40 hours (1 week full-time)
@@ -884,6 +915,7 @@ This feature justifies premium pricing:
 ### 9.1 Engagement Metrics
 
 **Target (6 months post-launch):**
+
 - [ ] Political context viewed on >40% of law page visits
 - [ ] Political analytics dashboard: 500+ monthly active users
 - [ ] Average session duration on political pages: >3 minutes
@@ -892,6 +924,7 @@ This feature justifies premium pricing:
 ### 9.2 Business Metrics
 
 **Target (12 months post-launch):**
+
 - [ ] 50+ "Policy Intelligence" tier subscriptions (SEK 175,000-250,000 MRR)
 - [ ] 10+ API customers (SEK 35,000 MRR)
 - [ ] 5+ enterprise contracts with media/lobbying orgs (SEK 100,000+ MRR)
@@ -900,6 +933,7 @@ This feature justifies premium pricing:
 ### 9.3 Content Metrics
 
 **Target (data quality):**
+
 - [ ] Political context coverage: >80% of SFS laws
 - [ ] Voting record coverage: >60% of laws
 - [ ] Amendment tracking: >500 amended laws with political shift analysis
@@ -908,6 +942,7 @@ This feature justifies premium pricing:
 ### 9.4 SEO Metrics
 
 **Target (12 months post-launch):**
+
 - [ ] +15-20% organic traffic from political/policy keywords
 - [ ] Rank #1-3 for "Swedish law political context" and similar queries
 - [ ] 200+ backlinks from political science research papers citing our data
@@ -922,6 +957,7 @@ This feature justifies premium pricing:
 **Risk:** Riksdagen API may have incomplete voting records for older laws (pre-2000)
 
 **Mitigation:**
+
 - Set expectations: "Voting records available for laws from 2000-present"
 - For older laws, show only proposer party and government composition
 - Phase 4: Consider manual data entry for landmark historical laws (e.g., 1974 LAS)
@@ -929,6 +965,7 @@ This feature justifies premium pricing:
 **Risk:** Ideological scoring is subjective and may be contested
 
 **Mitigation:**
+
 - Be transparent about methodology in UI ("Based on political science expert consensus")
 - Provide source citations (academic papers on Swedish party positioning)
 - Allow users to see raw data (coalition parties, voting records) to draw own conclusions
@@ -939,6 +976,7 @@ This feature justifies premium pricing:
 **Risk:** Appearing politically biased (favoring left or right)
 
 **Mitigation:**
+
 - Use objective language ("left-leaning" vs "socialist propaganda")
 - Present voting records factually without commentary
 - Show BOTH supporting and opposing parties for all laws
@@ -948,6 +986,7 @@ This feature justifies premium pricing:
 **Risk:** Political parties or politicians objecting to characterizations
 
 **Mitigation:**
+
 - Base all classifications on verifiable public data (voting records, propositions)
 - Link to original Riksdagen sources for all claims
 - Provide contact form for corrections ("If you believe this data is inaccurate, contact us")
@@ -958,6 +997,7 @@ This feature justifies premium pricing:
 **Risk:** Riksdagen API changes structure or access
 
 **Mitigation:**
+
 - Build flexible parsers that handle schema changes
 - Monitor API version changes
 - Maintain fallback to raw HTML scraping if JSON API fails
@@ -1018,6 +1058,7 @@ This feature justifies premium pricing:
 4. **Academic:** "Uppsala Researchers Validate AI-Powered Legislative Political Analysis"
 
 **Target publications:**
+
 - Dagens Industri (business angle)
 - SvD/DN (innovation/tech angle)
 - Ny Teknik (legal tech angle)
@@ -1033,12 +1074,14 @@ This feature justifies premium pricing:
 **Feature:** Political Risk Score for Businesses
 
 Use machine learning to predict likelihood of regulatory changes based on:
+
 - Current government composition
 - Historical amendment patterns by party
 - Party manifestos mentioning specific laws
 - Public opinion polls on policy issues
 
 **Example output:**
+
 > "Labor law amendment risk: HIGH (78%). Current right-wing government has historically amended employment protection laws within 18 months of taking office. Monitor SFS 1982:80 for changes."
 
 ### 12.2 European Integration
@@ -1046,6 +1089,7 @@ Use machine learning to predict likelihood of regulatory changes based on:
 **Feature:** EU Directive Political Context
 
 Extend political analytics to EU legislation:
+
 - Which MEP groups proposed directives
 - Voting records in European Parliament
 - Sweden's transposition approach by government
@@ -1057,6 +1101,7 @@ Extend political analytics to EU legislation:
 **Feature:** Local Government Political Context
 
 Extend to municipal legislation:
+
 - Which party controls kommun
 - Local ordinances by party
 - Regional variation in implementation of national laws
@@ -1080,6 +1125,7 @@ Phase 3 Political Analytics transforms laglig.se from a **legal database** into 
 ### 13.2 Dependency on Phase 2
 
 **Critical:** This feature REQUIRES Phase 2 (Förarbeten Integration) because:
+
 - Political context is extracted from propositioner
 - We use förarbeten cross-references to match SFS laws to propositions
 - Without förarbeten pipeline, we can't efficiently find the political metadata
@@ -1091,6 +1137,7 @@ Phase 3 Political Analytics transforms laglig.se from a **legal database** into 
 **Priority: HIGH** - Implement in Q3-Q4 2025 (after Phase 2 launch in Q1-Q2 2025)
 
 This feature has exceptional ROI:
+
 - **Development cost:** SEK 224K (~€19K)
 - **Projected ARR:** SEK 3.7M-4.6M (~€320K-400K)
 - **Payback period:** ~2 months

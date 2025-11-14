@@ -18,6 +18,7 @@ User & Team Management is the foundation that enables Laglig.se to scale from in
 - **Usage tracking:** Enforce limits, prompt upgrades, track metrics
 
 **Strategic Value:**
+
 - **Revenue driver:** Tiered pricing captures solo entrepreneurs → SMBs → enterprises
 - **Team collaboration:** 5 users per Team plan = €899/month (vs. €399 × 5 individual plans)
 - **Enterprise land-and-expand:** Start with 1 department, expand to whole organization
@@ -49,14 +50,17 @@ User & Team Management is the foundation that enables Laglig.se to scale from in
 ## Core Principles
 
 ### 1. Workspace-First Model
+
 **Every user belongs to a workspace (company/team).**
 
 **Why:**
+
 - Enables team collaboration (shared law lists, employees, files)
 - Clean billing model (pay per workspace, not per user until limit)
 - Enterprise-ready (departments as separate workspaces)
 
 **Structure:**
+
 ```
 Workspace (Bygg AB)
 ├── Owner (Erik Johansson)
@@ -75,14 +79,17 @@ Shared Resources:
 ---
 
 ### 2. Trial-Based, No Free Tier
+
 **14-day free trial, then paid plan required.**
 
 **Rationale:**
+
 - Attracts serious customers only (no "tire kickers")
 - Higher conversion rate (vs. freemium churn)
 - Predictable revenue (no permanent free users consuming resources)
 
 **Competitor comparison:**
+
 - **Notisum:** Subscription-only, no trial → High barrier
 - **Karnov:** Freemium → Many inactive users
 - **Laglig.se:** 14-day trial → Sweet spot (try before buy, no long-term free)
@@ -90,6 +97,7 @@ Shared Resources:
 ---
 
 ### 3. Three-Tier Pricing (Solo/Team/Enterprise)
+
 **Clear positioning for different customer segments.**
 
 - **Solo (€399/mo):** Micro-businesses, solo entrepreneurs, consultants
@@ -101,9 +109,11 @@ Shared Resources:
 ---
 
 ### 4. Flexible Add-Ons for Growth
+
 **Don't lose customers who outgrow tier limits.**
 
 **Add-ons:**
+
 - **+10 Employees:** €100/month (for customers between 50-100 employees)
 - **+5 GB Storage:** €50/month (for customers needing more than 1 GB)
 - **Extra AI Queries:** €0.50 per query above limit (up to 10% overage)
@@ -113,9 +123,11 @@ Shared Resources:
 ---
 
 ### 5. Auditor Role for Multi-Workspace Access
+
 **ISO consultants, external auditors serve multiple clients.**
 
 **Implementation:**
+
 - User can be Auditor in 10+ workspaces (doesn't count toward user limits)
 - Read-only access (view law lists, employees, export reports)
 - Billed to client workspace, not auditor
@@ -130,35 +142,35 @@ Shared Resources:
 
 ```typescript
 interface Workspace {
-  id: string;                          // UUID
-  name: string;                        // "Bygg AB"
-  orgNumber: string;                   // Swedish organisationsnummer
-  sniCode?: string;                    // Industry code for law suggestions
-  legalForm?: string;                  // AB, HB, Enskild firma, etc.
-  logo?: string;                       // URL to uploaded logo
+  id: string // UUID
+  name: string // "Bygg AB"
+  orgNumber: string // Swedish organisationsnummer
+  sniCode?: string // Industry code for law suggestions
+  legalForm?: string // AB, HB, Enskild firma, etc.
+  logo?: string // URL to uploaded logo
 
   // Subscription
-  tier: 'solo' | 'team' | 'enterprise';
-  billingStatus: 'trial' | 'active' | 'paused' | 'canceled' | 'past_due';
-  trialEndsAt?: Date;
-  subscriptionId?: string;             // Stripe subscription ID
-  billingEmail: string;
+  tier: 'solo' | 'team' | 'enterprise'
+  billingStatus: 'trial' | 'active' | 'paused' | 'canceled' | 'past_due'
+  trialEndsAt?: Date
+  subscriptionId?: string // Stripe subscription ID
+  billingEmail: string
 
   // Usage Tracking
   usageStats: {
-    aiQueriesThisMonth: number;
-    storageUsed: number;                // Bytes
-    employeeCount: number;
-    userCount: number;
-    lawListCount: number;
-    kollektivavtalCount: number;
-  };
+    aiQueriesThisMonth: number
+    storageUsed: number // Bytes
+    employeeCount: number
+    userCount: number
+    lawListCount: number
+    kollektivavtalCount: number
+  }
 
   // Metadata
-  createdAt: Date;
-  updatedAt: Date;
-  ownerId: string;                     // User ID of workspace owner
-  deletedAt?: Date;                    // Soft delete timestamp
+  createdAt: Date
+  updatedAt: Date
+  ownerId: string // User ID of workspace owner
+  deletedAt?: Date // Soft delete timestamp
 }
 ```
 
@@ -170,35 +182,35 @@ interface Workspace {
 
 ```typescript
 interface User {
-  id: string;                          // UUID
-  email: string;                       // Unique, used for auth
-  passwordHash?: string;               // Null if OAuth-only
-  emailVerified: boolean;
+  id: string // UUID
+  email: string // Unique, used for auth
+  passwordHash?: string // Null if OAuth-only
+  emailVerified: boolean
 
   // Profile
-  firstName: string;
-  lastName: string;
-  phone?: string;
+  firstName: string
+  lastName: string
+  phone?: string
 
   // Auth
-  authMethod: 'email' | 'google' | 'microsoft';
-  lastLoginAt?: Date;
+  authMethod: 'email' | 'google' | 'microsoft'
+  lastLoginAt?: Date
 
   // Primary Workspace
-  workspaceId: string;                 // Main workspace
-  role: 'owner' | 'admin' | 'hr_manager' | 'member';
+  workspaceId: string // Main workspace
+  role: 'owner' | 'admin' | 'hr_manager' | 'member'
 
   // Additional Workspaces (Auditor only)
   auditorWorkspaces: Array<{
-    workspaceId: string;
-    invitedBy: string;                 // User ID who invited
-    invitedAt: Date;
-  }>;
+    workspaceId: string
+    invitedBy: string // User ID who invited
+    invitedAt: Date
+  }>
 
   // Metadata
-  createdAt: Date;
-  updatedAt: Date;
-  lastActiveAt: Date;
+  createdAt: Date
+  updatedAt: Date
+  lastActiveAt: Date
 }
 ```
 
@@ -208,14 +220,14 @@ interface User {
 
 ```typescript
 interface TeamInvitation {
-  id: string;
-  workspaceId: string;
-  email: string;                       // Invitee email
-  role: 'admin' | 'hr_manager' | 'member' | 'auditor';
-  invitedBy: string;                   // User ID
-  status: 'pending' | 'accepted' | 'expired';
-  expiresAt: Date;                     // 7 days from creation
-  createdAt: Date;
+  id: string
+  workspaceId: string
+  email: string // Invitee email
+  role: 'admin' | 'hr_manager' | 'member' | 'auditor'
+  invitedBy: string // User ID
+  status: 'pending' | 'accepted' | 'expired'
+  expiresAt: Date // 7 days from creation
+  createdAt: Date
 }
 ```
 
@@ -225,38 +237,41 @@ interface TeamInvitation {
 
 ### Tier Comparison Table
 
-| Feature | Solo (€399/mo) | Team (€899/mo) | Enterprise (€2,000+/mo) |
-|---------|----------------|----------------|-------------------------|
-| **Users** | 1 (owner only) | 5 users | Unlimited |
-| **Employees (HR)** | 5 employees | 50 employees | Unlimited |
-| **Law Lists** | 1 list, max 50 laws | Unlimited lists & laws | Unlimited |
-| **AI Chat Queries** | 50/month (+10% overage) | 500/month (+10% overage) | Unlimited |
-| **Kollektivavtal** | 1 kollektivavtal | 5 kollektivavtal | Unlimited |
-| **Storage (Mina Filer)** | 1 GB | 1 GB | Custom (10+ GB) |
-| **Change Monitoring** | ✅ Email notifications | ✅ Email notifications | ✅ Email + SMS + In-app |
-| **Fortnox Integration** | ❌ | ✅ (Post-MVP) | ✅ |
-| **Support** | Email only | Priority email | Dedicated CSM + phone |
-| **Audit Logs** | ❌ | ❌ | ✅ (unlimited retention) |
-| **Custom Onboarding** | ❌ Self-service | ❌ Self-service | ✅ CSM-led onboarding |
-| **SLA** | None | 24-hour response | 4-hour response + 99.9% uptime |
-| **Annual Discount** | 17% (€3,980/year) | 17% (€8,950/year) | Negotiable |
-| **Free Trial** | 14 days | 14 days | Custom demo |
+| Feature                  | Solo (€399/mo)          | Team (€899/mo)           | Enterprise (€2,000+/mo)        |
+| ------------------------ | ----------------------- | ------------------------ | ------------------------------ |
+| **Users**                | 1 (owner only)          | 5 users                  | Unlimited                      |
+| **Employees (HR)**       | 5 employees             | 50 employees             | Unlimited                      |
+| **Law Lists**            | 1 list, max 50 laws     | Unlimited lists & laws   | Unlimited                      |
+| **AI Chat Queries**      | 50/month (+10% overage) | 500/month (+10% overage) | Unlimited                      |
+| **Kollektivavtal**       | 1 kollektivavtal        | 5 kollektivavtal         | Unlimited                      |
+| **Storage (Mina Filer)** | 1 GB                    | 1 GB                     | Custom (10+ GB)                |
+| **Change Monitoring**    | ✅ Email notifications  | ✅ Email notifications   | ✅ Email + SMS + In-app        |
+| **Fortnox Integration**  | ❌                      | ✅ (Post-MVP)            | ✅                             |
+| **Support**              | Email only              | Priority email           | Dedicated CSM + phone          |
+| **Audit Logs**           | ❌                      | ❌                       | ✅ (unlimited retention)       |
+| **Custom Onboarding**    | ❌ Self-service         | ❌ Self-service          | ✅ CSM-led onboarding          |
+| **SLA**                  | None                    | 24-hour response         | 4-hour response + 99.9% uptime |
+| **Annual Discount**      | 17% (€3,980/year)       | 17% (€8,950/year)        | Negotiable                     |
+| **Free Trial**           | 14 days                 | 14 days                  | Custom demo                    |
 
 ---
 
 ### Tier Positioning
 
 **Solo (€399/month):**
+
 - **Target customer:** Solo entrepreneur, consultant, micro-business (<5 employees)
 - **Use case:** "I just need basic compliance tracking for my small business"
 - **Example:** Freelance electrician tracking AML, ATL, LAS for himself + 2 apprentices
 
 **Team (€899/month):**
+
 - **Target customer:** SMB with 5-25 employees, multiple stakeholders (Owner + HR + Ops)
 - **Use case:** "Our HR manager needs to track employees, I need compliance reports"
 - **Example:** Construction company with Owner, HR Manager, Site Manager, 20 workers
 
 **Enterprise (€2,000+/month):**
+
 - **Target customer:** Large corporations (100+ employees), public sector, multi-location
 - **Use case:** "We need unlimited users, dedicated support, and audit trails for compliance"
 - **Example:** Municipality with 500 employees across 10 departments, ISO 27001 certified
@@ -268,16 +283,19 @@ interface TeamInvitation {
 **Available for Solo & Team tiers:**
 
 **+10 Employees:**
+
 - **Price:** €100/month
 - **Use case:** Team customer with 60 employees (50 included, +10 add-on)
 - **Limit:** Max 100 employees total via add-ons (then force Enterprise upgrade)
 
 **+5 GB Storage:**
+
 - **Price:** €50/month
 - **Use case:** Customer with many PDF contracts, risk assessments
 - **Limit:** Max 10 GB total via add-ons
 
 **AI Query Overage:**
+
 - **Price:** €0.50 per query above limit
 - **Limit:** Max 10% overage (e.g., 55 queries for Solo plan = 50 included + 5 overage)
 - **After 10% overage:** Hard block with upgrade prompt
@@ -309,46 +327,47 @@ Auditor (External, read-only, multi-workspace)
 
 ### Permissions Matrix
 
-| Action | Owner | Admin | HR Manager | Member | Auditor |
-|--------|-------|-------|------------|--------|---------|
-| **Law Lists** | | | | | |
-| View law lists | ✅ | ✅ | ✅ (read-only) | ✅ | ✅ |
-| Create/edit/delete lists | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Add/remove laws from lists | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **HR Module** | | | | | |
-| View employees | ✅ | ✅ | ✅ | ❌ | ✅ |
-| View sensitive data (personnummer) | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Create/edit/delete employees | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Upload kollektivavtal | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **AI Chat** | | | | | |
-| Use AI Chat | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Documents (Mina Filer)** | | | | | |
-| View files | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Upload/delete files | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Tasks (Kanban)** | | | | | |
-| View tasks | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Create/edit/complete tasks | ✅ | ✅ | ✅ | ❌ | ❌ |
-| **Team Management** | | | | | |
-| Invite users | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Remove users | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Change user roles | ✅ | ✅ | ❌ | ❌ | ❌ |
-| **Billing** | | | | | |
-| View billing info | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Change plan | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Update payment method | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Workspace Settings** | | | | | |
-| Edit workspace info | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Delete workspace | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Transfer ownership | ✅ | ❌ | ❌ | ❌ | ❌ |
-| **Reporting** | | | | | |
-| Export compliance reports | ✅ | ✅ | ✅ | ❌ | ✅ |
-| View audit logs (Enterprise) | ✅ | ✅ | ❌ | ❌ | ✅ |
+| Action                             | Owner | Admin | HR Manager     | Member | Auditor |
+| ---------------------------------- | ----- | ----- | -------------- | ------ | ------- |
+| **Law Lists**                      |       |       |                |        |         |
+| View law lists                     | ✅    | ✅    | ✅ (read-only) | ✅     | ✅      |
+| Create/edit/delete lists           | ✅    | ✅    | ❌             | ❌     | ❌      |
+| Add/remove laws from lists         | ✅    | ✅    | ❌             | ❌     | ❌      |
+| **HR Module**                      |       |       |                |        |         |
+| View employees                     | ✅    | ✅    | ✅             | ❌     | ✅      |
+| View sensitive data (personnummer) | ✅    | ✅    | ✅             | ❌     | ✅      |
+| Create/edit/delete employees       | ✅    | ✅    | ✅             | ❌     | ❌      |
+| Upload kollektivavtal              | ✅    | ✅    | ✅             | ❌     | ❌      |
+| **AI Chat**                        |       |       |                |        |         |
+| Use AI Chat                        | ✅    | ✅    | ✅             | ✅     | ✅      |
+| **Documents (Mina Filer)**         |       |       |                |        |         |
+| View files                         | ✅    | ✅    | ✅             | ✅     | ✅      |
+| Upload/delete files                | ✅    | ✅    | ✅             | ❌     | ❌      |
+| **Tasks (Kanban)**                 |       |       |                |        |         |
+| View tasks                         | ✅    | ✅    | ✅             | ✅     | ✅      |
+| Create/edit/complete tasks         | ✅    | ✅    | ✅             | ❌     | ❌      |
+| **Team Management**                |       |       |                |        |         |
+| Invite users                       | ✅    | ✅    | ❌             | ❌     | ❌      |
+| Remove users                       | ✅    | ✅    | ❌             | ❌     | ❌      |
+| Change user roles                  | ✅    | ✅    | ❌             | ❌     | ❌      |
+| **Billing**                        |       |       |                |        |         |
+| View billing info                  | ✅    | ❌    | ❌             | ❌     | ❌      |
+| Change plan                        | ✅    | ❌    | ❌             | ❌     | ❌      |
+| Update payment method              | ✅    | ❌    | ❌             | ❌     | ❌      |
+| **Workspace Settings**             |       |       |                |        |         |
+| Edit workspace info                | ✅    | ✅    | ❌             | ❌     | ❌      |
+| Delete workspace                   | ✅    | ❌    | ❌             | ❌     | ❌      |
+| Transfer ownership                 | ✅    | ❌    | ❌             | ❌     | ❌      |
+| **Reporting**                      |       |       |                |        |         |
+| Export compliance reports          | ✅    | ✅    | ✅             | ❌     | ✅      |
+| View audit logs (Enterprise)       | ✅    | ✅    | ❌             | ❌     | ✅      |
 
 ---
 
 ### Role Descriptions
 
 **Owner:**
+
 - **Count:** 1 per workspace (transferable)
 - **Typical user:** CEO, Founder, Managing Director
 - **Key powers:**
@@ -358,6 +377,7 @@ Auditor (External, read-only, multi-workspace)
   - Full access to all features
 
 **Admin:**
+
 - **Count:** Unlimited (within user tier limit)
 - **Typical user:** COO, Operations Manager, Compliance Officer
 - **Key powers:**
@@ -366,6 +386,7 @@ Auditor (External, read-only, multi-workspace)
   - Can manage all law lists, employees, tasks
 
 **HR Manager:**
+
 - **Count:** Unlimited
 - **Typical user:** HR Director, HR Coordinator
 - **Key powers:**
@@ -375,6 +396,7 @@ Auditor (External, read-only, multi-workspace)
   - Can use AI Chat with employee context
 
 **Member:**
+
 - **Count:** Unlimited
 - **Typical user:** Site Manager, Team Lead, regular employee
 - **Key powers:**
@@ -384,6 +406,7 @@ Auditor (External, read-only, multi-workspace)
   - Cannot edit anything
 
 **Auditor:**
+
 - **Count:** Unlimited (doesn't count toward workspace user limit)
 - **Typical user:** External ISO consultant, accountant, lawyer
 - **Key powers:**
@@ -399,13 +422,12 @@ Auditor (External, read-only, multi-workspace)
 ### Supported Auth Methods
 
 **MVP:**
+
 1. **Email/Password** - Standard signup with email verification
 2. **Google OAuth** - "Sign in with Google"
 3. **Microsoft OAuth** - "Sign in with Microsoft" (for businesses using M365)
 
-**Post-MVP:**
-4. **BankID** - Swedish e-ID (for government/public sector customers)
-5. **Magic Links** - Passwordless email login
+**Post-MVP:** 4. **BankID** - Swedish e-ID (for government/public sector customers) 5. **Magic Links** - Passwordless email login
 
 ---
 
@@ -456,6 +478,7 @@ After signup, user sees:
 ```
 
 **Email content:**
+
 ```
 Subject: Verifiera din e-post för Laglig.se
 
@@ -476,52 +499,57 @@ Laglig.se
 ### Password Requirements
 
 **Complexity rules:**
+
 - Minimum 8 characters
 - At least 1 number
-- At least 1 special character (!@#$%^&*()_+-=[]{}|;:,.<>?)
+- At least 1 special character (!@#$%^&\*()\_+-=[]{}|;:,.<>?)
 - At least 1 uppercase letter
 - Not in "Have I Been Pwned" breach database
 
 **Validation:**
+
 ```typescript
 async function validatePassword(password: string): Promise<{
-  valid: boolean;
-  error?: string;
+  valid: boolean
+  error?: string
 }> {
   if (password.length < 8) {
-    return { valid: false, error: 'Lösenord måste vara minst 8 tecken' };
+    return { valid: false, error: 'Lösenord måste vara minst 8 tecken' }
   }
   if (!/\d/.test(password)) {
-    return { valid: false, error: 'Lösenord måste innehålla minst 1 siffra' };
+    return { valid: false, error: 'Lösenord måste innehålla minst 1 siffra' }
   }
   if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-    return { valid: false, error: 'Lösenord måste innehålla minst 1 specialtecken' };
+    return {
+      valid: false,
+      error: 'Lösenord måste innehålla minst 1 specialtecken',
+    }
   }
   if (!/[A-Z]/.test(password)) {
-    return { valid: false, error: 'Lösenord måste innehålla minst 1 versal' };
+    return { valid: false, error: 'Lösenord måste innehålla minst 1 versal' }
   }
 
   // Check against breach database
-  const isPwned = await checkHaveIBeenPwned(password);
+  const isPwned = await checkHaveIBeenPwned(password)
   if (isPwned) {
     return {
       valid: false,
       error: 'Detta lösenord har läckt i en dataintrång. Välj ett annat.',
-    };
+    }
   }
 
-  return { valid: true };
+  return { valid: true }
 }
 
 async function checkHaveIBeenPwned(password: string): Promise<boolean> {
-  const sha1 = hashSHA1(password);
-  const prefix = sha1.substring(0, 5);
-  const suffix = sha1.substring(5);
+  const sha1 = hashSHA1(password)
+  const prefix = sha1.substring(0, 5)
+  const suffix = sha1.substring(5)
 
-  const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
-  const hashes = await response.text();
+  const response = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`)
+  const hashes = await response.text()
 
-  return hashes.toLowerCase().includes(suffix.toLowerCase());
+  return hashes.toLowerCase().includes(suffix.toLowerCase())
 }
 ```
 
@@ -654,13 +682,13 @@ Laglig.se
 async function lookupBolagsverket(orgNumber: string) {
   const response = await fetch(
     `https://data.bolagsverket.se/api/v1/company/${orgNumber}`
-  );
+  )
 
   if (!response.ok) {
-    throw new Error('Organisationsnummer hittades inte i Bolagsverket');
+    throw new Error('Organisationsnummer hittades inte i Bolagsverket')
   }
 
-  const data = await response.json();
+  const data = await response.json()
 
   return {
     companyName: data.name,
@@ -671,7 +699,7 @@ async function lookupBolagsverket(orgNumber: string) {
     },
     sniCode: data.sniCode,
     legalForm: data.legalForm, // AB, HB, Enskild firma, etc.
-  };
+  }
 }
 ```
 
@@ -950,6 +978,7 @@ Laglig.se
 **Step 3: Invitee clicks link**
 
 **If invitee already has Laglig.se account:**
+
 ```
 ┌────────────────────────────────────────────────────────────────┐
 │ ACCEPTERA INBJUDAN                                             │
@@ -970,6 +999,7 @@ Laglig.se
 ```
 
 **If invitee doesn't have account:**
+
 ```
 ┌────────────────────────────────────────────────────────────────┐
 │ ACCEPTERA INBJUDAN                                             │
@@ -1071,6 +1101,7 @@ Laglig.se
 ### Stripe Integration Architecture
 
 **Payment flow:**
+
 1. User selects plan (Solo/Team) during signup or upgrade
 2. **If trial:** Create Stripe subscription with `trial_period_days: 14`, no charge
 3. **After trial ends:** Stripe automatically charges saved card
@@ -1086,11 +1117,11 @@ async function createStripeSubscription(
   tier: 'solo' | 'team',
   paymentMethodId?: string
 ) {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
   // Create or retrieve Stripe customer
-  const workspace = await getWorkspace(workspaceId);
-  let customerId = workspace.stripeCustomerId;
+  const workspace = await getWorkspace(workspaceId)
+  let customerId = workspace.stripeCustomerId
 
   if (!customerId) {
     const customer = await stripe.customers.create({
@@ -1100,29 +1131,30 @@ async function createStripeSubscription(
         workspace_id: workspaceId,
         org_number: workspace.orgNumber,
       },
-    });
-    customerId = customer.id;
+    })
+    customerId = customer.id
 
-    await updateWorkspace(workspaceId, { stripeCustomerId: customerId });
+    await updateWorkspace(workspaceId, { stripeCustomerId: customerId })
   }
 
   // Attach payment method (if provided)
   if (paymentMethodId) {
     await stripe.paymentMethods.attach(paymentMethodId, {
       customer: customerId,
-    });
+    })
 
     await stripe.customers.update(customerId, {
       invoice_settings: {
         default_payment_method: paymentMethodId,
       },
-    });
+    })
   }
 
   // Create subscription
-  const priceId = tier === 'solo'
-    ? process.env.STRIPE_SOLO_PRICE_ID
-    : process.env.STRIPE_TEAM_PRICE_ID;
+  const priceId =
+    tier === 'solo'
+      ? process.env.STRIPE_SOLO_PRICE_ID
+      : process.env.STRIPE_TEAM_PRICE_ID
 
   const subscription = await stripe.subscriptions.create({
     customer: customerId,
@@ -1132,7 +1164,7 @@ async function createStripeSubscription(
       workspace_id: workspaceId,
       tier,
     },
-  });
+  })
 
   // Update workspace
   await updateWorkspace(workspaceId, {
@@ -1140,9 +1172,9 @@ async function createStripeSubscription(
     tier,
     billingStatus: 'trial',
     trialEndsAt: new Date(subscription.trial_end * 1000),
-  });
+  })
 
-  return subscription;
+  return subscription
 }
 ```
 
@@ -1155,57 +1187,60 @@ async function createStripeSubscription(
 ```typescript
 // app/api/webhooks/stripe/route.ts
 export async function POST(req: Request) {
-  const sig = req.headers.get('stripe-signature')!;
-  const body = await req.text();
+  const sig = req.headers.get('stripe-signature')!
+  const body = await req.text()
 
   const event = stripe.webhooks.constructEvent(
     body,
     sig,
     process.env.STRIPE_WEBHOOK_SECRET!
-  );
+  )
 
   switch (event.type) {
     case 'customer.subscription.created':
-      await handleSubscriptionCreated(event.data.object);
-      break;
+      await handleSubscriptionCreated(event.data.object)
+      break
 
     case 'customer.subscription.updated':
-      await handleSubscriptionUpdated(event.data.object);
-      break;
+      await handleSubscriptionUpdated(event.data.object)
+      break
 
     case 'customer.subscription.deleted':
-      await handleSubscriptionDeleted(event.data.object);
-      break;
+      await handleSubscriptionDeleted(event.data.object)
+      break
 
     case 'invoice.payment_succeeded':
-      await handlePaymentSucceeded(event.data.object);
-      break;
+      await handlePaymentSucceeded(event.data.object)
+      break
 
     case 'invoice.payment_failed':
-      await handlePaymentFailed(event.data.object);
-      break;
+      await handlePaymentFailed(event.data.object)
+      break
 
     default:
-      console.log(`Unhandled event type: ${event.type}`);
+      console.log(`Unhandled event type: ${event.type}`)
   }
 
-  return new Response('OK', { status: 200 });
+  return new Response('OK', { status: 200 })
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  const workspaceId = subscription.metadata.workspace_id;
+  const workspaceId = subscription.metadata.workspace_id
 
   // Update workspace billing status
-  let billingStatus: BillingStatus = 'active';
+  let billingStatus: BillingStatus = 'active'
 
   if (subscription.status === 'trialing') {
-    billingStatus = 'trial';
+    billingStatus = 'trial'
   } else if (subscription.status === 'active') {
-    billingStatus = 'active';
+    billingStatus = 'active'
   } else if (subscription.status === 'past_due') {
-    billingStatus = 'past_due';
-  } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
-    billingStatus = 'canceled';
+    billingStatus = 'past_due'
+  } else if (
+    subscription.status === 'canceled' ||
+    subscription.status === 'unpaid'
+  ) {
+    billingStatus = 'canceled'
   }
 
   await updateWorkspace(workspaceId, {
@@ -1213,17 +1248,17 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     trialEndsAt: subscription.trial_end
       ? new Date(subscription.trial_end * 1000)
       : null,
-  });
+  })
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  const customerId = invoice.customer as string;
-  const workspace = await getWorkspaceByStripeCustomerId(customerId);
+  const customerId = invoice.customer as string
+  const workspace = await getWorkspaceByStripeCustomerId(customerId)
 
   // Update workspace status
   await updateWorkspace(workspace.id, {
     billingStatus: 'past_due',
-  });
+  })
 
   // Send email to owner
   await sendEmail({
@@ -1241,7 +1276,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
       Mvh,
       Laglig.se
     `,
-  });
+  })
 }
 ```
 
@@ -1252,12 +1287,14 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 **Enterprise customers don't use Stripe.**
 
 **Flow:**
+
 1. Sales team creates workspace manually in admin panel
 2. Sets `tier = 'enterprise'`, `billingStatus = 'active'`, `subscriptionId = null`
 3. Finance team sends invoice monthly/quarterly via email or Fortnox
 4. Payment tracked manually (mark as paid in admin panel)
 
 **Admin panel:**
+
 ```
 Enterprise Workspace: Kommun AB
 Tier: Enterprise
@@ -1279,12 +1316,12 @@ Status: Active
 
 ```typescript
 interface UsageStats {
-  aiQueriesThisMonth: number;
-  storageUsed: number;              // Bytes
-  employeeCount: number;
-  userCount: number;
-  lawListCount: number;
-  kollektivavtalCount: number;
+  aiQueriesThisMonth: number
+  storageUsed: number // Bytes
+  employeeCount: number
+  userCount: number
+  lawListCount: number
+  kollektivavtalCount: number
 }
 ```
 
@@ -1296,31 +1333,31 @@ interface UsageStats {
 
 ```typescript
 async function checkAIQueryLimit(workspaceId: string): Promise<{
-  allowed: boolean;
-  reason?: string;
+  allowed: boolean
+  reason?: string
 }> {
-  const workspace = await getWorkspace(workspaceId);
-  const usage = workspace.usageStats;
+  const workspace = await getWorkspace(workspaceId)
+  const usage = workspace.usageStats
 
   // Get tier limits
   const limits = {
-    solo: { queries: 50, overage: 5 },      // 50 + 10% = 55 max
-    team: { queries: 500, overage: 50 },    // 500 + 10% = 550 max
+    solo: { queries: 50, overage: 5 }, // 50 + 10% = 55 max
+    team: { queries: 500, overage: 50 }, // 500 + 10% = 550 max
     enterprise: { queries: Infinity, overage: 0 },
-  };
+  }
 
-  const limit = limits[workspace.tier];
-  const maxQueries = limit.queries + limit.overage;
+  const limit = limits[workspace.tier]
+  const maxQueries = limit.queries + limit.overage
 
   if (usage.aiQueriesThisMonth >= maxQueries) {
     return {
       allowed: false,
       reason: 'query_limit_exceeded',
-    };
+    }
   }
 
   // Allow if within limit or within overage
-  return { allowed: true };
+  return { allowed: true }
 }
 ```
 
@@ -1351,25 +1388,25 @@ async function checkStorageLimit(
   workspaceId: string,
   fileSize: number
 ): Promise<{ allowed: boolean; reason?: string }> {
-  const workspace = await getWorkspace(workspaceId);
-  const currentUsage = workspace.usageStats.storageUsed;
+  const workspace = await getWorkspace(workspaceId)
+  const currentUsage = workspace.usageStats.storageUsed
 
   const limits = {
-    solo: 1 * 1024 * 1024 * 1024,        // 1 GB
-    team: 1 * 1024 * 1024 * 1024,        // 1 GB
+    solo: 1 * 1024 * 1024 * 1024, // 1 GB
+    team: 1 * 1024 * 1024 * 1024, // 1 GB
     enterprise: Infinity,
-  };
+  }
 
-  const limit = limits[workspace.tier];
+  const limit = limits[workspace.tier]
 
   if (currentUsage + fileSize > limit) {
     return {
       allowed: false,
       reason: 'storage_limit_exceeded',
-    };
+    }
   }
 
-  return { allowed: true };
+  return { allowed: true }
 }
 ```
 
@@ -1398,28 +1435,28 @@ async function checkStorageLimit(
 
 ```typescript
 async function checkEmployeeLimit(workspaceId: string): Promise<{
-  allowed: boolean;
-  reason?: string;
+  allowed: boolean
+  reason?: string
 }> {
-  const workspace = await getWorkspace(workspaceId);
-  const currentCount = workspace.usageStats.employeeCount;
+  const workspace = await getWorkspace(workspaceId)
+  const currentCount = workspace.usageStats.employeeCount
 
   const limits = {
     solo: 5,
     team: 50,
     enterprise: Infinity,
-  };
+  }
 
-  const limit = limits[workspace.tier];
+  const limit = limits[workspace.tier]
 
   if (currentCount >= limit) {
     return {
       allowed: false,
       reason: 'employee_limit_exceeded',
-    };
+    }
   }
 
-  return { allowed: true };
+  return { allowed: true }
 }
 ```
 
@@ -1448,6 +1485,7 @@ async function checkEmployeeLimit(workspaceId: string): Promise<{
 **Location:** `/settings`
 
 **Left sidebar navigation:**
+
 ```
 ┌─────────────────────────┐
 │ INSTÄLLNINGAR           │
@@ -1646,6 +1684,7 @@ async function checkEmployeeLimit(workspaceId: string): Promise<{
 ```
 
 **After clicking "Uppgradera nu":**
+
 1. Stripe updates subscription (prorated charge for remaining days)
 2. Workspace tier updated to "team"
 3. Limits immediately updated (can now add 5 users, 50 employees, etc.)
@@ -1681,6 +1720,7 @@ async function checkEmployeeLimit(workspaceId: string): Promise<{
 ```
 
 **Implementation:**
+
 - Stripe subscription updated with `cancel_at_period_end: true`
 - Workspace marked for downgrade on `2024-02-15`
 - Cron job on that date: Downgrade tier, remove excess users/employees
@@ -1712,12 +1752,14 @@ async function checkEmployeeLimit(workspaceId: string): Promise<{
 ```
 
 **After pausing:**
+
 - Stripe subscription paused
 - Workspace `billingStatus = 'paused'`
 - All users see banner: "Workspace pausad. [Återaktivera →]"
 - Data preserved but read-only
 
 **To unpause:**
+
 ```
 ┌────────────────────────────────────────────────────────────────┐
 │ ⚠️ WORKSPACE PAUSAD                                            │
@@ -1765,6 +1807,7 @@ async function checkEmployeeLimit(workspaceId: string): Promise<{
 ### After Deletion
 
 **Implementation:**
+
 1. **Soft delete** workspace (set `deletedAt = now()`)
 2. **Cancel Stripe subscription** (if active)
 3. **Send email to all team members:**
@@ -1883,6 +1926,7 @@ Laglig.se
 **Auditors don't count toward workspace user limit.**
 
 **Example:**
+
 - Team plan: 5 users (Owner + 4 Admins/Members)
 - Auditors: Unlimited (don't count toward limit)
 
@@ -1898,18 +1942,19 @@ Laglig.se
 
 ```typescript
 interface ActivityLog {
-  id: string;
-  workspaceId: string;
-  userId: string;                      // Who did the action
-  action: string;                      // 'law_added', 'employee_created', etc.
-  resource: string;                    // 'law_list', 'employee', 'task', etc.
-  resourceId: string;                  // ID of affected resource
-  metadata: Record<string, any>;       // Details
-  timestamp: Date;
+  id: string
+  workspaceId: string
+  userId: string // Who did the action
+  action: string // 'law_added', 'employee_created', etc.
+  resource: string // 'law_list', 'employee', 'task', etc.
+  resourceId: string // ID of affected resource
+  metadata: Record<string, any> // Details
+  timestamp: Date
 }
 ```
 
 **Logged actions:**
+
 - **Law Lists:** Created, deleted, law added, law removed
 - **Employees:** Created, updated, deleted, document uploaded
 - **Kollektivavtal:** Uploaded, assigned, unassigned
@@ -1976,11 +2021,13 @@ interface ActivityLog {
 ### GDPR Compliance
 
 **Data Processing Agreement (DPA):**
+
 - Required for Enterprise customers
 - Signed during onboarding
 - Stored in admin panel
 
 **User Rights:**
+
 - **Right to access:** Export workspace data (Settings → Export)
 - **Right to deletion:** Delete workspace (30-day grace period)
 - **Right to portability:** Export as JSON/CSV
@@ -1993,22 +2040,23 @@ interface ActivityLog {
 **After timeout:** User must log in again
 
 **Implementation:**
+
 ```typescript
 // Middleware checks last active timestamp
 async function checkSession(req: Request) {
-  const session = await getSession(req);
-  const lastActiveAt = session.lastActiveAt;
-  const now = new Date();
-  const daysSinceActive = (now - lastActiveAt) / (1000 * 60 * 60 * 24);
+  const session = await getSession(req)
+  const lastActiveAt = session.lastActiveAt
+  const now = new Date()
+  const daysSinceActive = (now - lastActiveAt) / (1000 * 60 * 60 * 24)
 
   if (daysSinceActive > 30) {
     // Session expired
-    await destroySession(session.id);
-    return redirect('/login?reason=session_expired');
+    await destroySession(session.id)
+    return redirect('/login?reason=session_expired')
   }
 
   // Update last active
-  await updateSession(session.id, { lastActiveAt: now });
+  await updateSession(session.id, { lastActiveAt: now })
 }
 ```
 
@@ -2017,6 +2065,7 @@ async function checkSession(req: Request) {
 ### Two-Factor Authentication (Post-MVP)
 
 **Flow:**
+
 1. User enables 2FA in Settings → Security
 2. Scan QR code with Google Authenticator / Authy
 3. On login: Enter password → Enter 6-digit code
@@ -2026,6 +2075,7 @@ async function checkSession(req: Request) {
 ### Audit Logs (Enterprise Only)
 
 **Full audit trail for compliance (ISO 27001, SOC 2):**
+
 - Who accessed what data
 - When
 - From which IP address
@@ -2139,6 +2189,7 @@ CREATE INDEX activity_logs_timestamp_idx ON activity_logs(timestamp DESC);
 ### API Routes
 
 **Authentication:**
+
 - `POST /api/auth/signup` - Create account
 - `POST /api/auth/login` - Login
 - `POST /api/auth/logout` - Logout
@@ -2148,6 +2199,7 @@ CREATE INDEX activity_logs_timestamp_idx ON activity_logs(timestamp DESC);
 - `POST /api/auth/oauth/microsoft` - Microsoft OAuth callback
 
 **Workspaces:**
+
 - `POST /api/workspaces` - Create workspace
 - `GET /api/workspaces/[id]` - Get workspace details
 - `PATCH /api/workspaces/[id]` - Update workspace settings
@@ -2155,12 +2207,14 @@ CREATE INDEX activity_logs_timestamp_idx ON activity_logs(timestamp DESC);
 - `POST /api/workspaces/[id]/transfer-ownership` - Transfer ownership
 
 **Team:**
+
 - `GET /api/workspaces/[id]/team` - List team members
 - `POST /api/workspaces/[id]/team/invite` - Invite user
 - `DELETE /api/workspaces/[id]/team/[userId]` - Remove user
 - `PATCH /api/workspaces/[id]/team/[userId]` - Change role
 
 **Billing:**
+
 - `POST /api/billing/create-checkout-session` - Create Stripe Checkout
 - `POST /api/billing/upgrade` - Upgrade plan
 - `POST /api/billing/downgrade` - Downgrade plan
@@ -2185,6 +2239,7 @@ User & Team Management is the **revenue engine and collaboration foundation** fo
 ...we create a scalable SaaS business that can grow from individual users to enterprise customers.
 
 **Next steps:**
+
 1. Implement Supabase Auth (email/OAuth)
 2. Build workspace creation flow with Bolagsverket integration
 3. Integrate Stripe subscriptions and webhooks

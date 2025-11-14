@@ -12,6 +12,7 @@
 The AI Chat Interface is the core value proposition of Laglig.se - a context-aware legal compliance assistant that combines RAG (Retrieval-Augmented Generation) with drag-and-drop component streaming to provide hallucination-free, citation-backed answers about Swedish laws and user-specific compliance requirements.
 
 **Key Differentiators:**
+
 - **Zero Hallucination Guarantee:** AI only answers from RAG database or dragged component data
 - **Multi-Component Context:** Drag law cards, employee cards, tasks, and files into chat for rich contextual queries
 - **Citation-First:** Every response includes hover tooltips and clickable links to source laws/documents
@@ -41,34 +42,44 @@ The AI Chat Interface is the core value proposition of Laglig.se - a context-awa
 ## Core Principles
 
 ### 1. Hallucination Prevention
+
 **The AI NEVER generates information outside the provided context.**
 
 **Implementation:**
+
 - System prompt enforces strict grounding: "ONLY answer using RAG chunks or component data"
 - Post-processing validation: Every claim must cite [Law §X] or [Document: Y]
 - If information missing: "I don't have enough information in the current context to answer that."
 
 ### 2. Citation-First Architecture
+
 Every AI response must include:
+
 - Inline citations with hover tooltips
 - Clickable links to law sections or documents
 - Highlighted quotes from source materials
 
 ### 3. Context Richness
+
 Users build context through drag-and-drop:
+
 - Law cards → Full law metadata + tasks + notes
 - Employee cards → HR data + training status + linked laws
 - Files → Full text extraction + metadata
 - Tasks → Task details + linked laws/employees
 
 ### 4. Conversational Intelligence
+
 AI maintains conversation memory within each chat thread:
+
 - Remembers previously dragged components
 - References earlier queries
 - Builds on previous answers
 
 ### 5. User Control
+
 AI suggests actions, user approves:
+
 - "Shall I create a task for this?"
 - "Would you like me to add this law to your list?"
 - Never mutates data without explicit confirmation
@@ -123,6 +134,7 @@ AI suggests actions, user approves:
 ### UI Components
 
 #### Header
+
 - **Title:** "💬 AI Chat"
 - **Actions:**
   - Collapse button (minimize sidebar to 60px icon)
@@ -130,6 +142,7 @@ AI suggests actions, user approves:
   - Summarize button (appears after 5+ messages)
 
 #### Context Pills Area
+
 - Displays all dragged components as pills
 - Format: `[Icon] Name [×]`
 - Click × to remove component from context
@@ -137,6 +150,7 @@ AI suggests actions, user approves:
 - Visual hierarchy: Law cards → Employees → Files → Tasks
 
 #### Message Area
+
 - **Auto-scroll to bottom** on new messages
 - **Streaming text** appears word-by-word (Vercel AI SDK `useChat`)
 - **Citation hover tooltips** on numbered references
@@ -144,6 +158,7 @@ AI suggests actions, user approves:
 - **Error messages** in red pill: "⚠️ Could not retrieve answer"
 
 #### Input Area
+
 - **Text input:** Multiline textarea, auto-expand up to 5 rows
 - **Drop zone:** Highlight border when dragging component over chat
 - **File upload button:** Opens file picker (PDF, DOCX, XLSX)
@@ -159,11 +174,13 @@ AI suggests actions, user approves:
 ### Pattern 1: Standard Q&A
 
 **User input:**
+
 ```
 "Vad kräver arbetsmiljölagen för riskbedömningar?"
 ```
 
 **AI response:**
+
 ```
 Enligt Arbetsmiljölagen 3:2a¹ ska arbetsgivaren:
 
@@ -184,6 +201,7 @@ Riskbedömningen ska göras kontinuerligt och alltid när:
 ```
 
 **Technical flow:**
+
 1. User query → Generate embedding (OpenAI `text-embedding-3-large`)
 2. Vector search in Supabase pgvector (top 10 chunks)
 3. Inject chunks into system prompt
@@ -198,16 +216,19 @@ Riskbedömningen ska göras kontinuerligt och alltid när:
 Drags `Anställningskontrakt_Anna.pdf` into chat
 
 **Context pill appears:**
+
 ```
 📄 Anställningskontrakt_Anna.pdf [×]
 ```
 
 **User input:**
+
 ```
 "Är detta kontrakt compliant med Anställningsskyddslagen?"
 ```
 
 **AI response:**
+
 ```
 Jag har granskat anställningskontraktet för Anna Svensson
 mot Anställningsskyddslagen (1982:80).
@@ -234,6 +255,7 @@ ett specifikt antal månader (t.ex. "3 månader").
 ```
 
 **Technical flow:**
+
 1. File uploaded → Extract text (PDF.js or Textract)
 2. Store in Mina Filer (if not already stored)
 3. Add file object to chat context:
@@ -255,11 +277,13 @@ ett specifikt antal månader (t.ex. "3 månader").
 
 **User action:**
 Drags into chat:
+
 1. `📋 Arbetsmiljölagen` (law card)
 2. `👤 Anna Svensson` (employee card)
 3. `👤 Erik Johansson` (employee card)
 
 **Context pills:**
+
 ```
 📋 Arbetsmiljölagen [×]
 👤 Anna Svensson [×]
@@ -267,11 +291,13 @@ Drags into chat:
 ```
 
 **User input:**
+
 ```
 "Vilken utbildning saknar Anna och Erik för att vara compliant?"
 ```
 
 **AI response:**
+
 ```
 Baserat på Arbetsmiljölagen 3:3¹ och medarbetarnas
 nuvarande utbildningsstatus:
@@ -306,6 +332,7 @@ Vill du att jag skapar uppgifter för detta i din Kanban?
 **User clicks:** "Ja, skapa uppgifter"
 
 **AI creates tasks:**
+
 ```
 ✅ Uppgifter skapade:
 1. [Uppgift] Boka Första hjälpen-utbildning för Anna Svensson
@@ -318,6 +345,7 @@ Vill du att jag skapar uppgifter för detta i din Kanban?
 ```
 
 **Technical flow:**
+
 1. Multiple component objects in context
 2. RAG retrieval for Arbetsmiljölagen
 3. LLM compares employee training data vs. law requirements
@@ -331,6 +359,7 @@ Vill du att jag skapar uppgifter för detta i din Kanban?
 **Scenario:** User views Arbetsmiljölagen law page
 
 **AI initiates:**
+
 ```
 💡 Jag märkte att du tittar på Arbetsmiljölagen.
 Vill du att jag identifierar vilka krav som gäller
@@ -340,11 +369,13 @@ för ditt team (5 byggarbetare, 2 kontorsanställda)?
 **User:** "Ja"
 
 **AI retrieves:**
+
 - Team composition from HR module
 - Existing law cards and compliance status
 - Related tasks
 
 **AI responds:**
+
 ```
 Baserat på ditt team har jag identifierat 8 krav från
 Arbetsmiljölagen:
@@ -369,6 +400,7 @@ Vill du att jag skapar uppgifter för de 3 saknade kraven?
 ### Drag-and-Drop Mechanics
 
 **Supported components:**
+
 1. **Law Cards** (from Dashboard Kanban or Law Pages)
 2. **Employee Cards** (from HR Module)
 3. **Task Cards** (from Kanban board)
@@ -377,12 +409,14 @@ Vill du att jag skapar uppgifter för de 3 saknade kraven?
 **Visual feedback:**
 
 **Phase 1: Drag Start**
+
 ```
 User grabs law card → Card gets semi-transparent
 Chat sidebar highlights drop zone with pulsing border
 ```
 
 **Phase 2: Hover Over Drop Zone**
+
 ```
 Drop zone shows preview:
 ┌───────────────────────────────┐
@@ -395,6 +429,7 @@ Drop zone shows preview:
 ```
 
 **Phase 3: Drop**
+
 ```
 Component animates into context pills area
 API call: POST /api/chat/add-context
@@ -402,6 +437,7 @@ Component data serialized to JSON and added to chat state
 ```
 
 **Phase 4: Context Active**
+
 ```
 Context pill appears:
 📋 Arbetsmiljölagen [×]
@@ -413,28 +449,30 @@ Placeholder text updates:
 ### Component Data Serialization
 
 #### Law Card Object
+
 ```typescript
 interface LawCardContext {
-  type: "law_card";
-  law_id: string;
-  law_name: string; // "Arbetsmiljölagen (1977:1160)"
-  law_category: string; // "Labor Law"
-  status: "compliant" | "under_review" | "non_compliant" | "not_applicable";
+  type: 'law_card'
+  law_id: string
+  law_name: string // "Arbetsmiljölagen (1977:1160)"
+  law_category: string // "Labor Law"
+  status: 'compliant' | 'under_review' | 'non_compliant' | 'not_applicable'
   tasks: {
-    id: string;
-    title: string;
-    status: "todo" | "in_progress" | "done";
-    deadline: string | null;
-  }[];
-  notes: string | null; // User's notes on this law
-  linked_files: string[]; // File IDs from Mina Filer
-  linked_employees: string[]; // Employee IDs affected by this law
-  last_reviewed: string | null; // ISO 8601 date
-  priority: "high" | "medium" | "low";
+    id: string
+    title: string
+    status: 'todo' | 'in_progress' | 'done'
+    deadline: string | null
+  }[]
+  notes: string | null // User's notes on this law
+  linked_files: string[] // File IDs from Mina Filer
+  linked_employees: string[] // Employee IDs affected by this law
+  last_reviewed: string | null // ISO 8601 date
+  priority: 'high' | 'medium' | 'low'
 }
 ```
 
 **Example:**
+
 ```json
 {
   "type": "law_card",
@@ -459,27 +497,29 @@ interface LawCardContext {
 ```
 
 #### Employee Card Object
+
 ```typescript
 interface EmployeeCardContext {
-  type: "employee_card";
-  employee_id: string;
-  name: string;
-  role: string;
-  employment_type: "full_time" | "part_time" | "consultant";
-  start_date: string; // ISO 8601
+  type: 'employee_card'
+  employee_id: string
+  name: string
+  role: string
+  employment_type: 'full_time' | 'part_time' | 'consultant'
+  start_date: string // ISO 8601
   completed_trainings: {
-    name: string;
-    completed_date: string;
-    expires_date: string | null;
-  }[];
-  missing_trainings: string[]; // Training names
-  linked_laws: string[]; // Law IDs that apply to this employee
-  linked_tasks: string[]; // Task IDs assigned to this employee
-  compliance_status: "compliant" | "needs_attention";
+    name: string
+    completed_date: string
+    expires_date: string | null
+  }[]
+  missing_trainings: string[] // Training names
+  linked_laws: string[] // Law IDs that apply to this employee
+  linked_tasks: string[] // Task IDs assigned to this employee
+  compliance_status: 'compliant' | 'needs_attention'
 }
 ```
 
 **Example:**
+
 ```json
 {
   "type": "employee_card",
@@ -508,26 +548,28 @@ interface EmployeeCardContext {
 ```
 
 #### File Object
+
 ```typescript
 interface FileContext {
-  type: "file";
-  file_id: string;
-  filename: string;
-  file_type: string; // MIME type
-  file_size: number; // bytes
-  uploaded_date: string; // ISO 8601
-  uploaded_by: string; // User ID
-  folder_path: string; // e.g., "Anställningskontrakt/2024"
-  linked_laws: string[]; // Law IDs this file relates to
-  linked_tasks: string[]; // Task IDs this file is evidence for
-  linked_employees: string[]; // Employee IDs if applicable
-  extracted_text: string; // Full text from PDF/DOCX
-  ocr_applied: boolean; // True if scanned PDF
-  tags: string[]; // User-defined tags
+  type: 'file'
+  file_id: string
+  filename: string
+  file_type: string // MIME type
+  file_size: number // bytes
+  uploaded_date: string // ISO 8601
+  uploaded_by: string // User ID
+  folder_path: string // e.g., "Anställningskontrakt/2024"
+  linked_laws: string[] // Law IDs this file relates to
+  linked_tasks: string[] // Task IDs this file is evidence for
+  linked_employees: string[] // Employee IDs if applicable
+  extracted_text: string // Full text from PDF/DOCX
+  ocr_applied: boolean // True if scanned PDF
+  tags: string[] // User-defined tags
 }
 ```
 
 **Example:**
+
 ```json
 {
   "type": "file",
@@ -548,25 +590,27 @@ interface FileContext {
 ```
 
 #### Task Object
+
 ```typescript
 interface TaskContext {
-  type: "task";
-  task_id: string;
-  title: string;
-  description: string | null;
-  status: "todo" | "in_progress" | "done";
-  priority: "high" | "medium" | "low";
-  created_date: string; // ISO 8601
-  deadline: string | null;
-  assigned_to: string | null; // Employee ID
-  linked_laws: string[]; // Law IDs this task addresses
-  linked_employees: string[]; // Affected employees
-  linked_files: string[]; // Evidence files
-  column: "backlog" | "todo" | "in_progress" | "done";
+  type: 'task'
+  task_id: string
+  title: string
+  description: string | null
+  status: 'todo' | 'in_progress' | 'done'
+  priority: 'high' | 'medium' | 'low'
+  created_date: string // ISO 8601
+  deadline: string | null
+  assigned_to: string | null // Employee ID
+  linked_laws: string[] // Law IDs this task addresses
+  linked_employees: string[] // Affected employees
+  linked_files: string[] // Evidence files
+  column: 'backlog' | 'todo' | 'in_progress' | 'done'
 }
 ```
 
 **Example:**
+
 ```json
 {
   "type": "task",
@@ -591,11 +635,13 @@ interface TaskContext {
 
 **Component limit:** 10 components max
 **Reasoning:**
+
 - Prevents context window overflow (GPT-4 Turbo: 128k tokens)
 - Maintains response quality (too much context → generic answers)
 - UX clarity (10 pills fit in sidebar without scrolling)
 
 **When limit reached:**
+
 ```
 User tries to drag 11th component → Warning appears:
 "⚠️ Maximum 10 components. Remove one before adding another."
@@ -662,6 +708,7 @@ AI could suggest: "Your context is full. Shall I remove the oldest component (�
 **Chunk by:** Article/Paragraph with section headers
 
 **Example: Arbetsmiljölagen**
+
 ```
 Chunk 1:
 ---
@@ -681,33 +728,36 @@ Next section: 3:3 (Utbildning och information)
 ```
 
 **Metadata stored:**
+
 ```typescript
 interface LawChunk {
-  id: string;
-  law_id: string;
-  law_name: string; // "Arbetsmiljölagen (1977:1160)"
-  law_category: string; // "Labor Law"
-  chapter: string | null; // "3"
-  chapter_title: string | null; // "Allmänna skyldigheter..."
-  section: string | null; // "2a"
-  chunk_text: string; // Full text
-  chunk_index: number; // Order in document
-  token_count: number;
-  embedding: number[]; // 1536-dim vector
-  effective_date: string; // ISO 8601
-  amendment_date: string | null;
-  is_current: boolean; // False if superseded by amendment
-  previous_section: string | null; // "3:2"
-  next_section: string | null; // "3:3"
+  id: string
+  law_id: string
+  law_name: string // "Arbetsmiljölagen (1977:1160)"
+  law_category: string // "Labor Law"
+  chapter: string | null // "3"
+  chapter_title: string | null // "Allmänna skyldigheter..."
+  section: string | null // "2a"
+  chunk_text: string // Full text
+  chunk_index: number // Order in document
+  token_count: number
+  embedding: number[] // 1536-dim vector
+  effective_date: string // ISO 8601
+  amendment_date: string | null
+  is_current: boolean // False if superseded by amendment
+  previous_section: string | null // "3:2"
+  next_section: string | null // "3:3"
 }
 ```
 
 **Chunk size:**
+
 - Target: **500-800 tokens** (~375-600 words)
 - Max: **1000 tokens**
 - Overlap: **50-100 tokens** (include context from adjacent sections)
 
 **Why this approach:**
+
 - Swedish laws are structured by article/paragraph → natural boundaries
 - Users cite laws by section (e.g., "3:2a") → matches mental model
 - Section headers provide semantic context
@@ -723,6 +773,7 @@ interface LawChunk {
 **Why:** User documents lack structured article numbering
 
 **Example: Employment Contract**
+
 ```
 Chunk 1:
 ---
@@ -744,19 +795,20 @@ Tokens: 92
 ```
 
 **Metadata stored:**
+
 ```typescript
 interface DocumentChunk {
-  id: string;
-  file_id: string;
-  filename: string;
-  section_title: string | null; // "1. Parter och anställningsform"
-  chunk_text: string;
-  chunk_index: number;
-  token_count: number;
-  embedding: number[];
-  uploaded_date: string;
-  linked_laws: string[]; // Laws referenced in this chunk
-  linked_employees: string[];
+  id: string
+  file_id: string
+  filename: string
+  section_title: string | null // "1. Parter och anställningsform"
+  chunk_text: string
+  chunk_index: number
+  token_count: number
+  embedding: number[]
+  uploaded_date: string
+  linked_laws: string[] // Laws referenced in this chunk
+  linked_employees: string[]
 }
 ```
 
@@ -765,6 +817,7 @@ interface DocumentChunk {
 ### Vector Database: Supabase pgvector
 
 **Setup:**
+
 ```sql
 -- Enable pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -802,6 +855,7 @@ CREATE INDEX law_chunks_text_idx
 ```
 
 **Query function:**
+
 ```sql
 CREATE OR REPLACE FUNCTION match_law_chunks(
   query_embedding vector(1536),
@@ -840,9 +894,10 @@ $$;
 ```
 
 **TypeScript query:**
+
 ```typescript
-import { createClient } from '@supabase/supabase-js';
-import { embedQuery } from './openai'; // OpenAI embedding function
+import { createClient } from '@supabase/supabase-js'
+import { embedQuery } from './openai' // OpenAI embedding function
 
 async function retrieveRelevantChunks(
   query: string,
@@ -852,10 +907,10 @@ async function retrieveRelevantChunks(
   const supabase = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
-  );
+  )
 
   // Generate embedding for query
-  const queryEmbedding = await embedQuery(query);
+  const queryEmbedding = await embedQuery(query)
 
   // Vector search
   const { data, error } = await supabase.rpc('match_law_chunks', {
@@ -863,11 +918,11 @@ async function retrieveRelevantChunks(
     match_threshold: 0.7,
     match_count: limit,
     filter_law_ids: filterLawIds || null,
-  });
+  })
 
-  if (error) throw error;
+  if (error) throw error
 
-  return data;
+  return data
 }
 ```
 
@@ -878,22 +933,24 @@ async function retrieveRelevantChunks(
 **Model:** OpenAI `text-embedding-3-large` (1536 dimensions)
 
 **Why:**
+
 - Best-in-class for multilingual (Swedish support)
 - Stable API, no maintenance
 - Cost: $0.13 per 1M tokens (cheap for ~1M law chunks)
 
 **Implementation:**
+
 ```typescript
-import { openai } from '@ai-sdk/openai';
+import { openai } from '@ai-sdk/openai'
 
 export async function embedQuery(text: string): Promise<number[]> {
   const response = await openai.embeddings.create({
     model: 'text-embedding-3-large',
     input: text,
     encoding_format: 'float',
-  });
+  })
 
-  return response.data[0].embedding;
+  return response.data[0].embedding
 }
 
 export async function embedChunks(chunks: string[]): Promise<number[][]> {
@@ -902,23 +959,24 @@ export async function embedChunks(chunks: string[]): Promise<number[][]> {
     model: 'text-embedding-3-large',
     input: chunks,
     encoding_format: 'float',
-  });
+  })
 
-  return response.data.map((item) => item.embedding);
+  return response.data.map((item) => item.embedding)
 }
 ```
 
 **Batch processing for law ingestion:**
+
 ```typescript
 async function ingestLawDocument(lawId: string, lawText: string) {
   // 1. Chunk the law text
-  const chunks = await chunkLawText(lawText);
+  const chunks = await chunkLawText(lawText)
 
   // 2. Generate embeddings in batches of 100
-  const batchSize = 100;
+  const batchSize = 100
   for (let i = 0; i < chunks.length; i += batchSize) {
-    const batch = chunks.slice(i, i + batchSize);
-    const embeddings = await embedChunks(batch.map((c) => c.text));
+    const batch = chunks.slice(i, i + batchSize)
+    const embeddings = await embedChunks(batch.map((c) => c.text))
 
     // 3. Insert into Supabase
     const records = batch.map((chunk, idx) => ({
@@ -933,9 +991,9 @@ async function ingestLawDocument(lawId: string, lawText: string) {
       embedding: embeddings[idx],
       effective_date: chunk.effectiveDate,
       is_current: true,
-    }));
+    }))
 
-    await supabase.from('law_chunks').insert(records);
+    await supabase.from('law_chunks').insert(records)
   }
 }
 ```
@@ -953,7 +1011,7 @@ async function hybridSearch(
   limit = 10
 ) {
   // 1. Vector search
-  const vectorResults = await retrieveRelevantChunks(query, filterLawIds, limit);
+  const vectorResults = await retrieveRelevantChunks(query, filterLawIds, limit)
 
   // 2. Keyword search (PostgreSQL full-text search)
   const { data: keywordResults } = await supabase
@@ -963,16 +1021,16 @@ async function hybridSearch(
       type: 'websearch',
       config: 'swedish',
     })
-    .limit(limit);
+    .limit(limit)
 
   // 3. Merge and deduplicate
-  const mergedResults = [...vectorResults, ...keywordResults];
+  const mergedResults = [...vectorResults, ...keywordResults]
   const uniqueResults = Array.from(
     new Map(mergedResults.map((r) => [r.id, r])).values()
-  );
+  )
 
   // 4. Rerank by RRF (Reciprocal Rank Fusion)
-  return rerankByRRF(uniqueResults, vectorResults, keywordResults);
+  return rerankByRRF(uniqueResults, vectorResults, keywordResults)
 }
 
 function rerankByRRF(
@@ -980,22 +1038,24 @@ function rerankByRRF(
   vectorResults: Chunk[],
   keywordResults: Chunk[]
 ) {
-  const k = 60; // RRF constant
-  const scores = new Map<string, number>();
+  const k = 60 // RRF constant
+  const scores = new Map<string, number>()
 
   combined.forEach((chunk) => {
-    let score = 0;
+    let score = 0
 
-    const vectorRank = vectorResults.findIndex((r) => r.id === chunk.id);
-    if (vectorRank !== -1) score += 1 / (k + vectorRank + 1);
+    const vectorRank = vectorResults.findIndex((r) => r.id === chunk.id)
+    if (vectorRank !== -1) score += 1 / (k + vectorRank + 1)
 
-    const keywordRank = keywordResults.findIndex((r) => r.id === chunk.id);
-    if (keywordRank !== -1) score += 1 / (k + keywordRank + 1);
+    const keywordRank = keywordResults.findIndex((r) => r.id === chunk.id)
+    if (keywordRank !== -1) score += 1 / (k + keywordRank + 1)
 
-    scores.set(chunk.id, score);
-  });
+    scores.set(chunk.id, score)
+  })
 
-  return combined.sort((a, b) => (scores.get(b.id) || 0) - (scores.get(a.id) || 0));
+  return combined.sort(
+    (a, b) => (scores.get(b.id) || 0) - (scores.get(a.id) || 0)
+  )
 }
 ```
 
@@ -1008,12 +1068,13 @@ function rerankByRRF(
 **Why:** Vector search retrieves semantically similar chunks, but reranking improves precision by considering query-chunk interaction.
 
 **Implementation:**
+
 ```typescript
-import { CohereClient } from 'cohere-ai';
+import { CohereClient } from 'cohere-ai'
 
 const cohere = new CohereClient({
   token: process.env.COHERE_API_KEY,
-});
+})
 
 async function rerankChunks(query: string, chunks: Chunk[]) {
   const response = await cohere.rerank({
@@ -1021,12 +1082,12 @@ async function rerankChunks(query: string, chunks: Chunk[]) {
     query,
     documents: chunks.map((c) => c.chunk_text),
     topN: 10,
-  });
+  })
 
   return response.results.map((result) => ({
     ...chunks[result.index],
     relevanceScore: result.relevance_score,
-  }));
+  }))
 }
 ```
 
@@ -1042,6 +1103,7 @@ async function rerankChunks(query: string, chunks: Chunk[]) {
 **The AI knows what page the user is on and auto-includes relevant context.**
 
 **Implementation:**
+
 ```typescript
 // Client: Send current page context with each query
 const { messages, input, handleSubmit } = useChat({
@@ -1054,35 +1116,36 @@ const { messages, input, handleSubmit } = useChat({
     },
     componentContext: contextPills, // Dragged components
   },
-});
+})
 ```
 
 **Server: Inject page context into system prompt**
+
 ```typescript
 // app/api/chat/route.ts
 export async function POST(req: Request) {
-  const { messages, pageContext, componentContext } = await req.json();
+  const { messages, pageContext, componentContext } = await req.json()
 
-  let systemPrompt = BASE_SYSTEM_PROMPT;
+  let systemPrompt = BASE_SYSTEM_PROMPT
 
   // Add page-specific context
   if (pageContext?.type === 'law_page') {
-    systemPrompt += `\n\nThe user is currently viewing: ${pageContext.lawName}`;
-    systemPrompt += `\nFocus your answers on this law unless the user asks about something else.`;
+    systemPrompt += `\n\nThe user is currently viewing: ${pageContext.lawName}`
+    systemPrompt += `\nFocus your answers on this law unless the user asks about something else.`
   }
 
   if (pageContext?.type === 'employee_page') {
-    systemPrompt += `\n\nThe user is viewing employee: ${pageContext.employeeName}`;
-    systemPrompt += `\nProvide compliance information relevant to this employee's role and training.`;
+    systemPrompt += `\n\nThe user is viewing employee: ${pageContext.employeeName}`
+    systemPrompt += `\nProvide compliance information relevant to this employee's role and training.`
   }
 
   // Add component context (dragged cards)
   if (componentContext?.length > 0) {
-    systemPrompt += `\n\nComponents in context:`;
+    systemPrompt += `\n\nComponents in context:`
     componentContext.forEach((comp: any) => {
-      systemPrompt += `\n- ${comp.type}: ${comp.name || comp.filename}`;
-    });
-    systemPrompt += `\n\nUse this context to provide specific, actionable answers.`;
+      systemPrompt += `\n- ${comp.type}: ${comp.name || comp.filename}`
+    })
+    systemPrompt += `\n\nUse this context to provide specific, actionable answers.`
   }
 
   // Continue with RAG retrieval and LLM call...
@@ -1120,21 +1183,21 @@ export function ChatContextPills({ context, onRemove }: Props) {
         <Badge variant="destructive">Max context reached</Badge>
       )}
     </div>
-  );
+  )
 }
 
 function getIcon(type: string) {
   switch (type) {
     case 'law_card':
-      return '📋';
+      return '📋'
     case 'employee_card':
-      return '👤';
+      return '👤'
     case 'file':
-      return '📄';
+      return '📄'
     case 'task':
-      return '✅';
+      return '✅'
     default:
-      return '📎';
+      return '📎'
   }
 }
 ```
@@ -1148,6 +1211,7 @@ function getIcon(type: string) {
 **Every AI claim must include a numbered citation with hover tooltip and clickable link.**
 
 **Example response:**
+
 ```
 Enligt Arbetsmiljölagen 3:2a¹ ska arbetsgivaren systematiskt
 undersöka arbetsförhållandena och bedöma risker.
@@ -1174,6 +1238,7 @@ förändringar sker i verksamheten.
 **Step 1: LLM generates response with citation markers**
 
 **System prompt:**
+
 ```
 When referencing laws or documents, ALWAYS include numbered citations like [¹], [²].
 
@@ -1193,41 +1258,41 @@ Sources:
 ```typescript
 // lib/parseCitations.ts
 export function parseCitationsFromText(text: string) {
-  const citationRegex = /\[(\d+)\]/g;
-  const sourcesRegex = /Sources:\n([\s\S]+)/;
+  const citationRegex = /\[(\d+)\]/g
+  const sourcesRegex = /Sources:\n([\s\S]+)/
 
   // Extract inline citation numbers
-  const inlineCitations = [...text.matchAll(citationRegex)].map((m) => m[1]);
+  const inlineCitations = [...text.matchAll(citationRegex)].map((m) => m[1])
 
   // Extract sources section
-  const sourcesMatch = text.match(sourcesRegex);
-  const sources = sourcesMatch ? parseSourcesSection(sourcesMatch[1]) : [];
+  const sourcesMatch = text.match(sourcesRegex)
+  const sources = sourcesMatch ? parseSourcesSection(sourcesMatch[1]) : []
 
-  return { inlineCitations, sources };
+  return { inlineCitations, sources }
 }
 
 function parseSourcesSection(sourcesText: string) {
   // Parse each [¹] block into structured data
-  const sourceBlocks = sourcesText.split(/\n\[(\d+)\]/);
-  const sources = [];
+  const sourceBlocks = sourcesText.split(/\n\[(\d+)\]/)
+  const sources = []
 
   for (let i = 1; i < sourceBlocks.length; i += 2) {
-    const number = sourceBlocks[i];
-    const content = sourceBlocks[i + 1];
+    const number = sourceBlocks[i]
+    const content = sourceBlocks[i + 1]
 
-    const lawNameMatch = content.match(/^(.+?)\n/);
-    const quoteMatch = content.match(/Quote: "(.+?)"/);
-    const chunkIdMatch = content.match(/Chunk ID: (\S+)/);
+    const lawNameMatch = content.match(/^(.+?)\n/)
+    const quoteMatch = content.match(/Quote: "(.+?)"/)
+    const chunkIdMatch = content.match(/Chunk ID: (\S+)/)
 
     sources.push({
       number,
       lawName: lawNameMatch?.[1]?.trim(),
       quote: quoteMatch?.[1],
       chunkId: chunkIdMatch?.[1],
-    });
+    })
   }
 
-  return sources;
+  return sources
 }
 ```
 
@@ -1236,7 +1301,7 @@ function parseSourcesSection(sourcesText: string) {
 ```tsx
 // components/ChatMessage.tsx
 export function ChatMessage({ message }: { message: Message }) {
-  const { inlineCitations, sources } = parseCitationsFromText(message.content);
+  const { inlineCitations, sources } = parseCitationsFromText(message.content)
 
   return (
     <div className="message">
@@ -1246,20 +1311,20 @@ export function ChatMessage({ message }: { message: Message }) {
         sources={sources}
       />
     </div>
-  );
+  )
 }
 
 function MessageText({ text, citations, sources }: Props) {
   // Replace [¹] with hoverable citation component
-  const parts = text.split(/(\[\d+\])/);
+  const parts = text.split(/(\[\d+\])/)
 
   return (
     <div>
       {parts.map((part, idx) => {
-        const citationMatch = part.match(/\[(\d+)\]/);
+        const citationMatch = part.match(/\[(\d+)\]/)
         if (citationMatch) {
-          const citationNumber = citationMatch[1];
-          const source = sources.find((s) => s.number === citationNumber);
+          const citationNumber = citationMatch[1]
+          const source = sources.find((s) => s.number === citationNumber)
 
           return (
             <HoverCard key={idx}>
@@ -1280,12 +1345,12 @@ function MessageText({ text, citations, sources }: Props) {
                 </div>
               </HoverCardContent>
             </HoverCard>
-          );
+          )
         }
-        return <span key={idx}>{part}</span>;
+        return <span key={idx}>{part}</span>
       })}
     </div>
-  );
+  )
 }
 ```
 
@@ -1296,11 +1361,13 @@ function MessageText({ text, citations, sources }: Props) {
 **Each citation links directly to the law page, scrolled to the relevant section.**
 
 **URL format:**
+
 ```
 /laws/arbetsmiljolagen-1977-1160?section=3-2a
 ```
 
 **Implementation:**
+
 ```typescript
 // app/laws/[slug]/page.tsx
 export default function LawPage({ params, searchParams }: Props) {
@@ -1336,6 +1403,7 @@ export default function LawPage({ params, searchParams }: Props) {
 ```
 
 **CSS for highlight effect:**
+
 ```css
 .highlight-section {
   background-color: rgba(250, 204, 21, 0.2);
@@ -1388,47 +1456,57 @@ AI receives file context immediately
 ```typescript
 // app/api/chat/upload-file/route.ts
 export async function POST(req: Request) {
-  const formData = await req.formData();
-  const file = formData.get('file') as File;
-  const userId = getCurrentUserId(); // From auth
+  const formData = await req.formData()
+  const file = formData.get('file') as File
+  const userId = getCurrentUserId() // From auth
 
   // 1. Validate file
-  const validation = validateFile(file);
+  const validation = validateFile(file)
   if (!validation.valid) {
-    return NextResponse.json({ error: validation.error }, { status: 400 });
+    return NextResponse.json({ error: validation.error }, { status: 400 })
   }
 
   // 2. Upload to storage (Supabase Storage or S3)
-  const fileId = generateId();
-  const filePath = `users/${userId}/chat-uploads/${fileId}_${file.name}`;
-  await supabase.storage.from('files').upload(filePath, file);
+  const fileId = generateId()
+  const filePath = `users/${userId}/chat-uploads/${fileId}_${file.name}`
+  await supabase.storage.from('files').upload(filePath, file)
 
   // 3. Extract text
-  let extractedText = '';
+  let extractedText = ''
   if (file.type === 'application/pdf') {
-    extractedText = await extractPdfText(file);
+    extractedText = await extractPdfText(file)
     // If scanned (low text confidence), apply OCR
     if (extractedText.length < 100) {
-      extractedText = await applyOCR(file);
+      extractedText = await applyOCR(file)
     }
-  } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-    extractedText = await extractDocxText(file);
-  } else if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-    extractedText = await extractXlsxText(file);
+  } else if (
+    file.type ===
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ) {
+    extractedText = await extractDocxText(file)
+  } else if (
+    file.type ===
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ) {
+    extractedText = await extractXlsxText(file)
   }
 
   // 4. Store in Mina Filer database
-  const { data: fileRecord } = await supabase.from('files').insert({
-    id: fileId,
-    user_id: userId,
-    filename: file.name,
-    file_type: file.type,
-    file_size: file.size,
-    file_path: filePath,
-    extracted_text: extractedText,
-    folder_path: 'Chat Uploads', // Auto-folder for chat uploads
-    uploaded_date: new Date().toISOString(),
-  }).select().single();
+  const { data: fileRecord } = await supabase
+    .from('files')
+    .insert({
+      id: fileId,
+      user_id: userId,
+      filename: file.name,
+      file_type: file.type,
+      file_size: file.size,
+      file_path: filePath,
+      extracted_text: extractedText,
+      folder_path: 'Chat Uploads', // Auto-folder for chat uploads
+      uploaded_date: new Date().toISOString(),
+    })
+    .select()
+    .single()
 
   // 5. Return file context for chat
   return NextResponse.json({
@@ -1440,7 +1518,7 @@ export async function POST(req: Request) {
       extracted_text: extractedText,
       uploaded_date: fileRecord.uploaded_date,
     },
-  });
+  })
 }
 ```
 
@@ -1449,90 +1527,99 @@ export async function POST(req: Request) {
 ### Text Extraction
 
 **PDF (native text):**
+
 ```typescript
-import { getDocument } from 'pdfjs-dist';
+import { getDocument } from 'pdfjs-dist'
 
 async function extractPdfText(file: File): Promise<string> {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await getDocument({ data: arrayBuffer }).promise;
+  const arrayBuffer = await file.arrayBuffer()
+  const pdf = await getDocument({ data: arrayBuffer }).promise
 
-  let fullText = '';
+  let fullText = ''
   for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items.map((item: any) => item.str).join(' ');
-    fullText += pageText + '\n\n';
+    const page = await pdf.getPage(i)
+    const textContent = await page.getTextContent()
+    const pageText = textContent.items.map((item: any) => item.str).join(' ')
+    fullText += pageText + '\n\n'
   }
 
-  return fullText;
+  return fullText
 }
 ```
 
 **PDF (scanned with OCR):**
+
 ```typescript
-import Tesseract from 'tesseract.js';
+import Tesseract from 'tesseract.js'
 
 async function applyOCR(file: File): Promise<string> {
-  const { data: { text } } = await Tesseract.recognize(file, 'swe', {
+  const {
+    data: { text },
+  } = await Tesseract.recognize(file, 'swe', {
     logger: (m) => console.log(m), // Progress logging
-  });
+  })
 
-  return text;
+  return text
 }
 ```
 
 **Alternative: AWS Textract (Post-MVP for higher accuracy):**
+
 ```typescript
-import { TextractClient, AnalyzeDocumentCommand } from '@aws-sdk/client-textract';
+import {
+  TextractClient,
+  AnalyzeDocumentCommand,
+} from '@aws-sdk/client-textract'
 
 async function extractWithTextract(file: File): Promise<string> {
-  const client = new TextractClient({ region: 'eu-north-1' });
-  const arrayBuffer = await file.arrayBuffer();
+  const client = new TextractClient({ region: 'eu-north-1' })
+  const arrayBuffer = await file.arrayBuffer()
 
   const command = new AnalyzeDocumentCommand({
     Document: { Bytes: new Uint8Array(arrayBuffer) },
     FeatureTypes: ['TABLES', 'FORMS'],
-  });
+  })
 
-  const response = await client.send(command);
+  const response = await client.send(command)
 
   // Parse blocks into text
-  const text = response.Blocks
-    ?.filter((b) => b.BlockType === 'LINE')
+  const text = response.Blocks?.filter((b) => b.BlockType === 'LINE')
     .map((b) => b.Text)
-    .join('\n');
+    .join('\n')
 
-  return text || '';
+  return text || ''
 }
 ```
 
 **DOCX:**
+
 ```typescript
-import mammoth from 'mammoth';
+import mammoth from 'mammoth'
 
 async function extractDocxText(file: File): Promise<string> {
-  const arrayBuffer = await file.arrayBuffer();
-  const result = await mammoth.extractRawText({ arrayBuffer });
-  return result.value;
+  const arrayBuffer = await file.arrayBuffer()
+  const result = await mammoth.extractRawText({ arrayBuffer })
+  return result.value
 }
 ```
 
 **XLSX:**
+
 ```typescript
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx'
 
 async function extractXlsxText(file: File): Promise<string> {
-  const arrayBuffer = await file.arrayBuffer();
-  const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+  const arrayBuffer = await file.arrayBuffer()
+  const workbook = XLSX.read(arrayBuffer, { type: 'array' })
 
-  let text = '';
+  let text = ''
   workbook.SheetNames.forEach((sheetName) => {
-    const sheet = workbook.Sheets[sheetName];
-    text += `Sheet: ${sheetName}\n`;
-    text += XLSX.utils.sheet_to_csv(sheet) + '\n\n';
-  });
+    const sheet = workbook.Sheets[sheetName]
+    text += `Sheet: ${sheetName}\n`
+    text += XLSX.utils.sheet_to_csv(sheet) + '\n\n'
+  })
 
-  return text;
+  return text
 }
 ```
 
@@ -1543,34 +1630,36 @@ async function extractXlsxText(file: File): Promise<string> {
 **Max file size for AI analysis:** 30 MB
 
 **Reasoning:**
+
 - Fits in LLM context window (GPT-4 Turbo: 128k tokens ≈ 96k words)
 - 30 MB PDF ≈ 10,000 pages (most contracts are <100 pages)
 
 **Validation:**
+
 ```typescript
 function validateFile(file: File) {
-  const MAX_SIZE = 30 * 1024 * 1024; // 30 MB
+  const MAX_SIZE = 30 * 1024 * 1024 // 30 MB
   const ALLOWED_TYPES = [
     'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  ];
+  ]
 
   if (file.size > MAX_SIZE) {
     return {
       valid: false,
       error: `File too large. Max size: 30 MB (your file: ${(file.size / 1024 / 1024).toFixed(1)} MB)`,
-    };
+    }
   }
 
   if (!ALLOWED_TYPES.includes(file.type)) {
     return {
       valid: false,
       error: 'Unsupported file type. Allowed: PDF, DOCX, XLSX',
-    };
+    }
   }
 
-  return { valid: true };
+  return { valid: true }
 }
 ```
 
@@ -1581,6 +1670,7 @@ function validateFile(file: File) {
 **User can drag multiple files for side-by-side analysis.**
 
 **Example:**
+
 ```
 User drags:
 1. Anställningskontrakt_Anna.pdf
@@ -1592,6 +1682,7 @@ i uppsägningstider eller förmåner?"
 ```
 
 **AI response:**
+
 ```
 Jag har jämfört de två anställningskontrakten:
 
@@ -1623,6 +1714,7 @@ Diskrimineringslagen (2008:567)¹.
 **Primary guardrail: AI only answers from RAG or component context.**
 
 **System prompt:**
+
 ```
 You are a Swedish legal compliance assistant for Laglig.se.
 
@@ -1643,6 +1735,7 @@ Your responses must be:
 ```
 
 **Post-processing validation:**
+
 ```typescript
 function validateResponseGrounding(
   response: string,
@@ -1650,31 +1743,31 @@ function validateResponseGrounding(
   componentContext: ComponentContext[]
 ) {
   // 1. Check for citation markers
-  const hasCitations = /\[(\d+)\]/.test(response);
+  const hasCitations = /\[(\d+)\]/.test(response)
   if (!hasCitations) {
-    console.warn('Response missing citations');
+    console.warn('Response missing citations')
   }
 
   // 2. Extract claimed facts
-  const facts = extractFactsFromResponse(response);
+  const facts = extractFactsFromResponse(response)
 
   // 3. Verify each fact exists in context
   const ungroundedFacts = facts.filter((fact) => {
     const inRAG = ragChunks.some((chunk) =>
       chunk.chunk_text.toLowerCase().includes(fact.toLowerCase())
-    );
+    )
     const inComponents = componentContext.some((comp) =>
       JSON.stringify(comp).toLowerCase().includes(fact.toLowerCase())
-    );
-    return !inRAG && !inComponents;
-  });
+    )
+    return !inRAG && !inComponents
+  })
 
   if (ungroundedFacts.length > 0) {
-    console.error('Ungrounded facts detected:', ungroundedFacts);
+    console.error('Ungrounded facts detected:', ungroundedFacts)
     // Optionally: Strip ungrounded sentences or show warning to user
   }
 
-  return ungroundedFacts.length === 0;
+  return ungroundedFacts.length === 0
 }
 ```
 
@@ -1685,6 +1778,7 @@ function validateResponseGrounding(
 **User asks about weather, sports, etc.**
 
 **AI response:**
+
 ```
 Jag är en juridisk efterlevnadsassistent och kan endast
 hjälpa till med frågor om svensk lagstiftning och compliance.
@@ -1694,6 +1788,7 @@ HR-efterlevnad, eller riskbedömningar?
 ```
 
 **Implementation:**
+
 ```typescript
 // System prompt addition
 If the user asks off-topic questions (weather, sports, general knowledge),
@@ -1711,6 +1806,7 @@ or risk assessments?"
 **User asks about a law not in their lists or context.**
 
 **Example:**
+
 ```
 User: "Vilka krav har Livsmedelslagen för restauranger?"
 
@@ -1724,6 +1820,7 @@ jag kan ge dig detaljerade svar?
 ```
 
 **If user clicks "Lägg till":**
+
 ```typescript
 // AI generates add-to-list action
 const action = {
@@ -1753,40 +1850,43 @@ await trpc.lawLists.addLaw.mutate({
 **To prevent abuse and control costs.**
 
 **Proposed tiers:**
+
 - **Basic:** 50 queries/day
 - **Pro:** 500 queries/day
 - **Enterprise:** Unlimited
 
 **Implementation (Redis token bucket):**
-```typescript
-import { Redis } from '@upstash/redis';
 
-const redis = Redis.fromEnv();
+```typescript
+import { Redis } from '@upstash/redis'
+
+const redis = Redis.fromEnv()
 
 export async function checkRateLimit(userId: string): Promise<boolean> {
-  const key = `rate_limit:${userId}`;
-  const limit = getUserQueryLimit(userId); // 50, 500, or Infinity
-  const window = 24 * 60 * 60; // 24 hours in seconds
+  const key = `rate_limit:${userId}`
+  const limit = getUserQueryLimit(userId) // 50, 500, or Infinity
+  const window = 24 * 60 * 60 // 24 hours in seconds
 
-  const current = await redis.incr(key);
+  const current = await redis.incr(key)
 
   if (current === 1) {
     // First request, set expiration
-    await redis.expire(key, window);
+    await redis.expire(key, window)
   }
 
-  return current <= limit;
+  return current <= limit
 }
 
 async function handleChatQuery(userId: string, query: string) {
-  const allowed = await checkRateLimit(userId);
+  const allowed = await checkRateLimit(userId)
 
   if (!allowed) {
     return {
       error: 'Rate limit exceeded',
-      message: 'Du har nått din dagliga gräns för AI-frågor. Uppgradera till Pro för fler frågor.',
+      message:
+        'Du har nått din dagliga gräns för AI-frågor. Uppgradera till Pro för fler frågor.',
       upgradeUrl: '/pricing',
-    };
+    }
   }
 
   // Process query...
@@ -1802,27 +1902,28 @@ async function handleChatQuery(userId: string, query: string) {
 **Tool:** OpenAI Moderation API
 
 ```typescript
-import { openai } from '@ai-sdk/openai';
+import { openai } from '@ai-sdk/openai'
 
 export async function moderateInput(text: string): Promise<boolean> {
-  const response = await openai.moderations.create({ input: text });
+  const response = await openai.moderations.create({ input: text })
 
-  const flagged = response.results[0].flagged;
+  const flagged = response.results[0].flagged
 
   if (flagged) {
-    console.warn('Flagged input:', response.results[0].categories);
+    console.warn('Flagged input:', response.results[0].categories)
   }
 
-  return flagged;
+  return flagged
 }
 
 // In chat route
-const isFlagged = await moderateInput(userQuery);
+const isFlagged = await moderateInput(userQuery)
 if (isFlagged) {
   return NextResponse.json({
     error: 'Inappropriate content detected',
-    message: 'Vänligen skriv en respektfull fråga relaterad till lagefterlevnad.',
-  });
+    message:
+      'Vänligen skriv en respektfull fråga relaterad till lagefterlevnad.',
+  })
 }
 ```
 
@@ -1864,21 +1965,25 @@ CREATE INDEX chats_user_id_idx ON chats(user_id);
 ```typescript
 // app/api/chat/route.ts
 export async function POST(req: Request) {
-  const { messages, chatId, componentContext } = await req.json();
-  const userId = getCurrentUserId();
+  const { messages, chatId, componentContext } = await req.json()
+  const userId = getCurrentUserId()
 
   // 1. Get or create chat
-  let chat;
+  let chat
   if (chatId) {
-    chat = await supabase.from('chats').select('*').eq('id', chatId).single();
+    chat = await supabase.from('chats').select('*').eq('id', chatId).single()
   } else {
     // New chat
-    const title = generateChatTitle(messages[0].content); // First message
-    const { data } = await supabase.from('chats').insert({
-      user_id: userId,
-      title,
-    }).select().single();
-    chat = data;
+    const title = generateChatTitle(messages[0].content) // First message
+    const { data } = await supabase
+      .from('chats')
+      .insert({
+        user_id: userId,
+        title,
+      })
+      .select()
+      .single()
+    chat = data
   }
 
   // 2. Save user message
@@ -1887,11 +1992,17 @@ export async function POST(req: Request) {
     role: 'user',
     content: messages[messages.length - 1].content,
     component_context: componentContext,
-  });
+  })
 
   // 3. Generate AI response
-  const ragChunks = await retrieveRelevantChunks(messages[messages.length - 1].content);
-  const aiResponse = await generateAIResponse(messages, ragChunks, componentContext);
+  const ragChunks = await retrieveRelevantChunks(
+    messages[messages.length - 1].content
+  )
+  const aiResponse = await generateAIResponse(
+    messages,
+    ragChunks,
+    componentContext
+  )
 
   // 4. Save assistant message
   await supabase.from('chat_messages').insert({
@@ -1899,10 +2010,10 @@ export async function POST(req: Request) {
     role: 'assistant',
     content: aiResponse.text,
     rag_chunks_used: ragChunks,
-  });
+  })
 
   // 5. Stream response to client
-  return new StreamingResponse(aiResponse.stream);
+  return new StreamingResponse(aiResponse.stream)
 }
 ```
 
@@ -1912,46 +2023,58 @@ export async function POST(req: Request) {
 
 ```typescript
 // app/api/chat/[chatId]/route.ts
-export async function GET(req: Request, { params }: { params: { chatId: string } }) {
-  const userId = getCurrentUserId();
+export async function GET(
+  req: Request,
+  { params }: { params: { chatId: string } }
+) {
+  const userId = getCurrentUserId()
 
   // Fetch chat with messages
   const { data: chat } = await supabase
     .from('chats')
-    .select(`
+    .select(
+      `
       *,
       messages:chat_messages(*)
-    `)
+    `
+    )
     .eq('id', params.chatId)
     .eq('user_id', userId) // Security: only user's own chats
-    .single();
+    .single()
 
-  return NextResponse.json({ chat });
+  return NextResponse.json({ chat })
 }
 ```
 
 **Client:**
+
 ```tsx
 // components/ChatInterface.tsx
 export function ChatInterface({ chatId }: { chatId?: string }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([])
 
   useEffect(() => {
     if (chatId) {
       // Load existing chat
       fetch(`/api/chat/${chatId}`)
         .then((res) => res.json())
-        .then((data) => setMessages(data.chat.messages));
+        .then((data) => setMessages(data.chat.messages))
     }
-  }, [chatId]);
+  }, [chatId])
 
-  const { messages: liveMessages, input, handleSubmit } = useChat({
+  const {
+    messages: liveMessages,
+    input,
+    handleSubmit,
+  } = useChat({
     api: '/api/chat',
     initialMessages: messages,
     body: { chatId },
-  });
+  })
 
-  return <ChatUI messages={liveMessages} input={input} onSubmit={handleSubmit} />;
+  return (
+    <ChatUI messages={liveMessages} input={input} onSubmit={handleSubmit} />
+  )
 }
 ```
 
@@ -1964,7 +2087,7 @@ export function ChatInterface({ chatId }: { chatId?: string }) {
 ```tsx
 // components/ChatSidebar.tsx
 export function ChatSidebar() {
-  const { data: chats } = trpc.chats.list.useQuery();
+  const { data: chats } = trpc.chats.list.useQuery()
 
   return (
     <div className="w-64 border-r">
@@ -1984,7 +2107,7 @@ export function ChatSidebar() {
         ))}
       </div>
     </div>
-  );
+  )
 }
 ```
 
@@ -1995,25 +2118,27 @@ export function ChatSidebar() {
 **Chats stored for 365 days, then auto-deleted.**
 
 **Cron job:**
+
 ```typescript
 // app/api/cron/cleanup-old-chats/route.ts
 export async function GET(req: Request) {
-  const oneYearAgo = new Date();
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  const oneYearAgo = new Date()
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
 
   const { data: deletedChats } = await supabase
     .from('chats')
     .delete()
     .lt('created_at', oneYearAgo.toISOString())
-    .select('id');
+    .select('id')
 
-  console.log(`Deleted ${deletedChats?.length} old chats`);
+  console.log(`Deleted ${deletedChats?.length} old chats`)
 
-  return NextResponse.json({ deleted: deletedChats?.length });
+  return NextResponse.json({ deleted: deletedChats?.length })
 }
 ```
 
 **Vercel Cron (vercel.json):**
+
 ```json
 {
   "crons": [
@@ -2034,6 +2159,7 @@ export async function GET(req: Request) {
 **AI suggests creating a task based on conversation.**
 
 **Example:**
+
 ```
 User: "Vi saknar en riskbedömning för byggarbetare"
 
@@ -2048,6 +2174,7 @@ Vill du att jag skapar en uppgift för detta?
 **User clicks "Ja, skapa uppgift"**
 
 **AI generates task JSON:**
+
 ```json
 {
   "type": "create_task",
@@ -2065,17 +2192,20 @@ Vill du att jag skapar en uppgift för detta?
 ```
 
 **User confirms → Task created:**
+
 ```tsx
 // Client: Handle task creation confirmation
 const handleTaskCreation = async (taskData: GeneratedTask) => {
-  const confirmed = await confirm('Skapa denna uppgift?');
-  if (!confirmed) return;
+  const confirmed = await confirm('Skapa denna uppgift?')
+  if (!confirmed) return
 
-  await trpc.tasks.create.mutate(taskData);
+  await trpc.tasks.create.mutate(taskData)
 
   // Show success message in chat
-  appendSystemMessage('✅ Uppgift skapad: "Genomför riskbedömning för byggarbetare"');
-};
+  appendSystemMessage(
+    '✅ Uppgift skapad: "Genomför riskbedömning för byggarbetare"'
+  )
+}
 ```
 
 **Task appears in Kanban board immediately.**
@@ -2087,6 +2217,7 @@ const handleTaskCreation = async (taskData: GeneratedTask) => {
 **AI suggests adding a law to user's list.**
 
 **Example:**
+
 ```
 User: "Vad säger dataskyddsförordningen om cookies?"
 
@@ -2102,17 +2233,19 @@ detaljerade svar om cookies och samtycke?
 **User clicks "Lägg till GDPR"**
 
 **AI adds law to default list:**
+
 ```typescript
 await trpc.lawLists.addLaw.mutate({
   listId: user.defaultListId,
   lawId: 'law_gdpr',
-});
+})
 
 // Chat updates
-appendSystemMessage('✅ GDPR tillagd i "Min huvudlista". Fråga igen!');
+appendSystemMessage('✅ GDPR tillagd i "Min huvudlista". Fråga igen!')
 ```
 
 **User asks again:**
+
 ```
 User: "Nu kan du svara: Vad säger GDPR om cookies?"
 
@@ -2130,12 +2263,12 @@ cookies kräver uttryckligt samtycke från användare...
 
 ```typescript
 // app/api/chat/route.ts
-import { streamText, tool } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { z } from 'zod';
+import { streamText, tool } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { z } from 'zod'
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages } = await req.json()
 
   const result = await streamText({
     model: openai('gpt-4-turbo'),
@@ -2156,46 +2289,50 @@ export async function POST(req: Request) {
           const task = await createTask({
             ...params,
             userId: getCurrentUserId(),
-          });
+          })
 
           return {
             success: true,
             taskId: task.id,
             message: `✅ Uppgift skapad: "${params.title}"`,
-          };
+          }
         },
       }),
 
       addLawToList: tool({
-        description: 'Add a law to the user\'s law list',
+        description: "Add a law to the user's law list",
         parameters: z.object({
           lawId: z.string(),
           lawName: z.string(),
-          listId: z.string().optional().describe('Defaults to user\'s main list'),
+          listId: z
+            .string()
+            .optional()
+            .describe("Defaults to user's main list"),
         }),
         execute: async (params) => {
-          const listId = params.listId || getUserDefaultListId();
-          await addLawToList(listId, params.lawId);
+          const listId = params.listId || getUserDefaultListId()
+          await addLawToList(listId, params.lawId)
 
           return {
             success: true,
             message: `✅ ${params.lawName} tillagd i din laglista`,
-          };
+          }
         },
       }),
     },
-  });
+  })
 
-  return result.toAIStreamResponse();
+  return result.toAIStreamResponse()
 }
 ```
 
 **Client automatically handles tool calls:**
+
 ```tsx
 const { messages, input, handleSubmit } = useChat({
   api: '/api/chat',
   // Tool results automatically integrated into conversation
-});
+})
 ```
 
 ---
@@ -2207,11 +2344,13 @@ const { messages, input, handleSubmit } = useChat({
 **Button appears after 5+ messages:**
 
 ```tsx
-{messages.length >= 5 && (
-  <Button onClick={handleSummarize} variant="outline">
-    📄 Sammanfatta denna konversation
-  </Button>
-)}
+{
+  messages.length >= 5 && (
+    <Button onClick={handleSummarize} variant="outline">
+      📄 Sammanfatta denna konversation
+    </Button>
+  )
+}
 ```
 
 ---
@@ -2221,26 +2360,26 @@ const { messages, input, handleSubmit } = useChat({
 ```typescript
 // app/api/chat/[chatId]/summarize/route.ts
 export async function POST(req: Request, { params }: Props) {
-  const { chatId } = params;
+  const { chatId } = params
 
   // 1. Fetch full conversation
   const { data: messages } = await supabase
     .from('chat_messages')
     .select('*')
     .eq('chat_id', chatId)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: true })
 
   // 2. Generate summary with GPT-4
-  const summary = await generateSummary(messages);
+  const summary = await generateSummary(messages)
 
   // 3. Return summary
-  return NextResponse.json({ summary });
+  return NextResponse.json({ summary })
 }
 
 async function generateSummary(messages: Message[]) {
   const conversationText = messages
     .map((m) => `${m.role}: ${m.content}`)
-    .join('\n\n');
+    .join('\n\n')
 
   const prompt = `
 Summarize this legal compliance conversation in Swedish.
@@ -2272,14 +2411,14 @@ Format:
 
 Conversation:
 ${conversationText}
-`;
+`
 
   const response = await openai.chat.completions.create({
     model: 'gpt-4-turbo',
     messages: [{ role: 'user', content: prompt }],
-  });
+  })
 
-  return response.choices[0].message.content;
+  return response.choices[0].message.content
 }
 ```
 
@@ -2290,29 +2429,29 @@ ${conversationText}
 **1. PDF Export**
 
 ```typescript
-import { jsPDF } from 'jspdf';
+import { jsPDF } from 'jspdf'
 
 export function exportSummaryToPDF(summary: string, chatTitle: string) {
-  const doc = new jsPDF();
+  const doc = new jsPDF()
 
   // Add company logo
   // doc.addImage(logoBase64, 'PNG', 10, 10, 30, 30);
 
   // Add title
-  doc.setFontSize(18);
-  doc.text(chatTitle, 50, 20);
+  doc.setFontSize(18)
+  doc.text(chatTitle, 50, 20)
 
   // Add summary
-  doc.setFontSize(11);
-  const lines = doc.splitTextToSize(summary, 180);
-  doc.text(lines, 10, 50);
+  doc.setFontSize(11)
+  const lines = doc.splitTextToSize(summary, 180)
+  doc.text(lines, 10, 50)
 
   // Add footer
-  doc.setFontSize(8);
-  doc.text('Genererad av Laglig.se AI Chat', 10, 280);
+  doc.setFontSize(8)
+  doc.text('Genererad av Laglig.se AI Chat', 10, 280)
 
   // Download
-  doc.save(`${chatTitle}_sammanfattning.pdf`);
+  doc.save(`${chatTitle}_sammanfattning.pdf`)
 }
 ```
 
@@ -2320,29 +2459,29 @@ export function exportSummaryToPDF(summary: string, chatTitle: string) {
 
 ```typescript
 export function exportSummaryToMarkdown(summary: string, chatTitle: string) {
-  const blob = new Blob([summary], { type: 'text/markdown' });
-  const url = URL.createObjectURL(blob);
+  const blob = new Blob([summary], { type: 'text/markdown' })
+  const url = URL.createObjectURL(blob)
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${chatTitle}_sammanfattning.md`;
-  a.click();
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${chatTitle}_sammanfattning.md`
+  a.click()
 
-  URL.revokeObjectURL(url);
+  URL.revokeObjectURL(url)
 }
 ```
 
 **3. Email Export (Post-MVP)**
 
 ```typescript
-import { Resend } from 'resend';
+import { Resend } from 'resend'
 
 export async function emailSummary(
   summary: string,
   chatTitle: string,
   recipientEmail: string
 ) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const resend = new Resend(process.env.RESEND_API_KEY)
 
   await resend.emails.send({
     from: 'Laglig.se <noreply@laglig.se>',
@@ -2354,7 +2493,7 @@ export async function emailSummary(
       <hr>
       <p><small>Genererad av Laglig.se AI Chat</small></p>
     `,
-  });
+  })
 }
 ```
 
@@ -2412,44 +2551,48 @@ export async function emailSummary(
 
 ```tsx
 // components/ChatInterface.tsx
-'use client';
+'use client'
 
-import { useChat } from 'ai/react';
-import { useState } from 'react';
+import { useChat } from 'ai/react'
+import { useState } from 'react'
 
 export function ChatInterface({ chatId }: { chatId?: string }) {
-  const [contextPills, setContextPills] = useState<ComponentContext[]>([]);
+  const [contextPills, setContextPills] = useState<ComponentContext[]>([])
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: '/api/chat',
-    body: {
-      chatId,
-      componentContext: contextPills,
-    },
-    onFinish: (message) => {
-      // Message complete, save to database
-      console.log('AI response finished:', message);
-    },
-  });
+  const { messages, input, handleInputChange, handleSubmit, isLoading } =
+    useChat({
+      api: '/api/chat',
+      body: {
+        chatId,
+        componentContext: contextPills,
+      },
+      onFinish: (message) => {
+        // Message complete, save to database
+        console.log('AI response finished:', message)
+      },
+    })
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const componentData = JSON.parse(e.dataTransfer.getData('application/json'));
+    e.preventDefault()
+    const componentData = JSON.parse(e.dataTransfer.getData('application/json'))
 
     if (contextPills.length >= 10) {
-      alert('Maximum 10 components in context');
-      return;
+      alert('Maximum 10 components in context')
+      return
     }
 
-    setContextPills([...contextPills, componentData]);
-  };
+    setContextPills([...contextPills, componentData])
+  }
 
   return (
     <div className="flex flex-col h-full">
       {/* Context Pills */}
-      <ChatContextPills context={contextPills} onRemove={(id) => {
-        setContextPills(contextPills.filter((c) => c.id !== id));
-      }} />
+      <ChatContextPills
+        context={contextPills}
+        onRemove={(id) => {
+          setContextPills(contextPills.filter((c) => c.id !== id))
+        }}
+      />
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4">
@@ -2479,7 +2622,7 @@ export function ChatInterface({ chatId }: { chatId?: string }) {
         </Button>
       </form>
     </div>
-  );
+  )
 }
 ```
 
@@ -2489,20 +2632,20 @@ export function ChatInterface({ chatId }: { chatId?: string }) {
 
 ```typescript
 // app/api/chat/route.ts
-import { streamText, tool } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { z } from 'zod';
+import { streamText, tool } from 'ai'
+import { openai } from '@ai-sdk/openai'
+import { z } from 'zod'
 
 export async function POST(req: Request) {
-  const { messages, chatId, componentContext } = await req.json();
-  const userId = getCurrentUserId();
+  const { messages, chatId, componentContext } = await req.json()
+  const userId = getCurrentUserId()
 
   // 1. Retrieve relevant law chunks via RAG
-  const lastMessage = messages[messages.length - 1];
-  const ragChunks = await retrieveRelevantChunks(lastMessage.content);
+  const lastMessage = messages[messages.length - 1]
+  const ragChunks = await retrieveRelevantChunks(lastMessage.content)
 
   // 2. Build system prompt with context
-  const systemPrompt = buildSystemPrompt(ragChunks, componentContext);
+  const systemPrompt = buildSystemPrompt(ragChunks, componentContext)
 
   // 3. Stream response
   const result = await streamText({
@@ -2519,20 +2662,20 @@ export async function POST(req: Request) {
           linkedLaws: z.array(z.string()),
         }),
         execute: async (params) => {
-          const task = await createTask({ ...params, userId });
-          return { success: true, taskId: task.id };
+          const task = await createTask({ ...params, userId })
+          return { success: true, taskId: task.id }
         },
       }),
 
       addLawToList: tool({
-        description: 'Add a law to user\'s list',
+        description: "Add a law to user's list",
         parameters: z.object({
           lawId: z.string(),
           lawName: z.string(),
         }),
         execute: async (params) => {
-          await addLawToList(userId, params.lawId);
-          return { success: true };
+          await addLawToList(userId, params.lawId)
+          return { success: true }
         },
       }),
     },
@@ -2543,11 +2686,11 @@ export async function POST(req: Request) {
         role: 'assistant',
         content: text,
         ragChunksUsed: ragChunks,
-      });
+      })
     },
-  });
+  })
 
-  return result.toAIStreamResponse();
+  return result.toAIStreamResponse()
 }
 
 function buildSystemPrompt(
@@ -2562,26 +2705,26 @@ CRITICAL RULES:
 3. ALWAYS cite sources with [¹], [²]
 4. Respond in Swedish unless asked in English
 
-`;
+`
 
   // Add RAG chunks
   if (ragChunks.length > 0) {
-    prompt += `\n\nRelevant law sections:\n`;
+    prompt += `\n\nRelevant law sections:\n`
     ragChunks.forEach((chunk, idx) => {
-      prompt += `\n[${idx + 1}] ${chunk.law_name} ${chunk.chapter}:${chunk.section}\n`;
-      prompt += `${chunk.chunk_text}\n`;
-    });
+      prompt += `\n[${idx + 1}] ${chunk.law_name} ${chunk.chapter}:${chunk.section}\n`
+      prompt += `${chunk.chunk_text}\n`
+    })
   }
 
   // Add component context
   if (componentContext.length > 0) {
-    prompt += `\n\nComponents in context:\n`;
+    prompt += `\n\nComponents in context:\n`
     componentContext.forEach((comp) => {
-      prompt += `\n${comp.type}: ${JSON.stringify(comp, null, 2)}\n`;
-    });
+      prompt += `\n${comp.type}: ${JSON.stringify(comp, null, 2)}\n`
+    })
   }
 
-  return prompt;
+  return prompt
 }
 ```
 
@@ -2594,6 +2737,7 @@ CRITICAL RULES:
 **User speaks questions instead of typing.**
 
 **Implementation:**
+
 - Browser Web Speech API or OpenAI Whisper API
 - Voice input button in chat
 - Transcript appears as text message
@@ -2608,6 +2752,7 @@ CRITICAL RULES:
 **Critical constraint:** External sources MUST be flagged and cannot be basis for decisions without RAG support.
 
 **Example:**
+
 ```
 User: "Har det kommit nya domar om distansarbete?"
 
@@ -2625,6 +2770,7 @@ För juridiskt bindande svar, kontakta alltid en jurist."
 ```
 
 **Implementation:**
+
 ```typescript
 // Tool: External web search
 externalSearch: tool({
@@ -2649,6 +2795,7 @@ externalSearch: tool({
 **User can ask questions in English about Swedish laws.**
 
 **Example:**
+
 ```
 User: "What does Arbetsmiljölagen require for remote work?"
 
@@ -2665,35 +2812,42 @@ employers must assess risks even for remote work environments..."
 **User:** "Generate an audit report for my compliance with Arbetsmiljölagen"
 
 **AI generates:**
+
 ```markdown
 # Arbetsmiljölagen Compliance Audit Report
+
 **Företag:** Bygg AB
 **Datum:** 2024-01-20
 **Granskad av:** Laglig.se AI
 
 ## Sammanfattning
+
 Ni uppfyller 7 av 10 granskade krav från Arbetsmiljölagen.
 
 ## Detaljerad Bedömning
 
 ### ✅ Uppfyllda krav (7)
+
 1. Systematiskt arbetsmiljöarbete dokumenterat (3:1a)
 2. Skyddsombud utsett (6:1)
-...
+   ...
 
 ### ⚠️ Behöver åtgärdas (3)
+
 1. Riskbedömning för arbete på hög höjd saknas (3:2a)
    - **Åtgärd:** Genomför riskbedömning inom 30 dagar
    - **Ansvarig:** [Tilldelad person]
-...
+     ...
 
 ## Bilagor
+
 - [Länk till riskbedömningsmall]
 - [Länk till arbetsplatsinspektionsprotokoll]
 
 ---
-*Denna rapport är genererad av Laglig.se AI och bör granskas
-av en kvalificerad arbetsmiljöexpert eller jurist innan beslut tas.*
+
+_Denna rapport är genererad av Laglig.se AI och bör granskas
+av en kvalificerad arbetsmiljöexpert eller jurist innan beslut tas._
 ```
 
 **Export as PDF with ISO-compliant audit trail formatting.**
@@ -2735,17 +2889,20 @@ Laglig.se AI
 **How do we measure if the AI Chat is successful?**
 
 ### Product Metrics
+
 - **Usage:** % of active users who use chat weekly
 - **Engagement:** Average messages per session
 - **Retention:** Users who return to chat within 7 days
 - **Feature adoption:** % of users who drag components into chat
 
 ### Quality Metrics
+
 - **Citation rate:** % of responses with valid citations (target: 100%)
 - **Hallucination rate:** % of responses flagged as ungrounded (target: <1%)
 - **User satisfaction:** Thumbs up/down on responses (target: >85% positive)
 
 ### Business Metrics
+
 - **Task creation:** # of tasks created via AI suggestions
 - **Law additions:** # of laws added via AI recommendations
 - **Upsell:** % of Basic users who upgrade after hitting query limits
@@ -2755,6 +2912,7 @@ Laglig.se AI
 ## Conclusion
 
 The AI Chat Interface is Laglig.se's core differentiator. By combining:
+
 - **RAG-powered grounding** (zero hallucinations)
 - **Multi-component context streaming** (UX moat)
 - **Citation-first architecture** (trust & credibility)
@@ -2763,6 +2921,7 @@ The AI Chat Interface is Laglig.se's core differentiator. By combining:
 ...we create a legal AI assistant that competitors (Notisum, Karnov) cannot easily replicate.
 
 **Next steps:**
+
 1. Implement RAG pipeline (law chunking, embedding, vector search)
 2. Build drag-and-drop component streaming
 3. Develop citation parsing and hover tooltips
