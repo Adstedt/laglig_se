@@ -12,9 +12,12 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "@t3-oss/env-nextjs": "^0.13.8",
     "next": "^16.0.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/node": "^20.17.6",
@@ -29,6 +32,8 @@
     "lint-staged": "15",
     "postcss": "^8.4.49",
     "prettier": "^3.6.2",
+    "prisma": "^6.19.0",
+    "supabase": "^2.58.5",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.6.3"
   },

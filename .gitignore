@@ -12,6 +12,7 @@ out/
 build/
 
 # environment variables
+.env
 .env*.local
 .env.local
 .env.development.local
@@ -34,3 +35,5 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/app/generated/prisma

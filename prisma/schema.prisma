@@ -1,0 +1,74 @@
+// Prisma Schema for Laglig.se
+// Database: Supabase PostgreSQL with pgvector extension
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+// ============================================================================
+// CORE MODELS - Epic 1: Foundation
+// ============================================================================
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  name           String?
+  avatar_url     String?
+  email_verified Boolean   @default(false)
+  created_at     DateTime  @default(now())
+  last_login_at  DateTime?
+
+  // Relations
+  workspace_members WorkspaceMember[]
+  owned_workspaces  Workspace[]       @relation("WorkspaceOwner")
+
+  @@index([email])
+  @@map("users")
+}
+
+model Workspace {
+  id       String @id @default(uuid())
+  name     String
+  slug     String @unique
+  owner_id String
+  owner    User   @relation("WorkspaceOwner", fields: [owner_id], references: [id], onDelete: Cascade)
+
+  // Company data from Bolagsverket (populated in Story 4.2)
+  org_number         String? @unique
+  company_legal_name String?
+  sni_code           String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  members WorkspaceMember[]
+
+  @@index([owner_id])
+  @@index([org_number])
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id           String @id @default(uuid())
+  user_id      String
+  workspace_id String
+  role         String @default("MEMBER") // OWNER, ADMIN, MEMBER
+
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  joined_at DateTime @default(now())
+
+  @@unique([user_id, workspace_id])
+  @@index([workspace_id])
+  @@map("workspace_members")
+}
