@@ -22,6 +22,7 @@ model User {
   email          String    @unique
   name           String?
   avatar_url     String?
+  password_hash  String?   // NULL for OAuth users (future), Supabase Auth manages passwords
   email_verified Boolean   @default(false)
   created_at     DateTime  @default(now())
   last_login_at  DateTime?
