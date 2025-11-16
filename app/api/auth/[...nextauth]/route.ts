@@ -28,6 +28,11 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (error || !data.user) {
+          // eslint-disable-next-line no-console
+          console.error(
+            'Supabase Auth error:',
+            error?.message || 'No user returned'
+          )
           return null
         }
 
