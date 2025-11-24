@@ -85,9 +85,8 @@ describe('Signup Integration Tests', () => {
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        const error = result.error.issues.find(
-          (e: { path: (string | number)[] }) =>
-            e.path.includes('confirmPassword')
+        const error = result.error.issues.find((e) =>
+          e.path.includes('confirmPassword')
         )
         expect(error?.message).toContain("don't match")
       }

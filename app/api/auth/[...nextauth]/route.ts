@@ -1,4 +1,4 @@
-import NextAuth, { NextAuthOptions } from 'next-auth'
+import NextAuth, { type AuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { createClient } from '@supabase/supabase-js'
 import { prisma } from '@/lib/prisma'
@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export const authOptions: NextAuthOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Email',
@@ -63,17 +63,6 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  cookies: {
-    sessionToken: {
-      name: '__Secure-next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      },
-    },
-  },
   pages: {
     signIn: '/login',
     signOut: '/logout',
@@ -83,7 +72,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        token.email = user.email
+        token.email = user.email!
         token.name = user.name
       }
       return token
