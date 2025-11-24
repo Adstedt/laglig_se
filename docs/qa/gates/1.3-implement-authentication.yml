@@ -90,21 +90,21 @@ quality_score: 78
 # Calculation: 100 - (10 × 2 minor issues [test assertions, E2E TODO]) - (2 × HIGH-1 [rate limiting docs]) = 78
 # All CRITICAL issues verified as resolved, only minor concerns remain
 
-expires: '2025-01-29T00:00:00Z'  # 2 weeks from review
+expires: '2025-01-29T00:00:00Z' # 2 weeks from review
 
 # Evidence Summary
 evidence:
   tests_reviewed: 16
   tests_implemented: 12
   tests_passing: 5
-  tests_failing: 7  # Due to assertion format issues, not logic errors
+  tests_failing: 7 # Due to assertion format issues, not logic errors
   tests_todo: 4
-  risks_identified: 3  # Down from 6, CRITICAL risks resolved
+  risks_identified: 3 # Down from 6, CRITICAL risks resolved
   files_reviewed: 25
   trace:
-    ac_covered: [1, 2, 3, 4, 5, 6, 8]  # Password validation, schemas, session config verified via tests
-    ac_partial: [7, 9, 10]  # Protected routes, API, middleware implemented but lack E2E verification
-    ac_gaps: []  # All ACs have either implementation or tests, though E2E coverage TODO
+    ac_covered: [1, 2, 3, 4, 5, 6, 8] # Password validation, schemas, session config verified via tests
+    ac_partial: [7, 9, 10] # Protected routes, API, middleware implemented but lack E2E verification
+    ac_gaps: [] # All ACs have either implementation or tests, though E2E coverage TODO
 
 # Non-Functional Requirements Validation
 nfr_validation:
@@ -126,7 +126,7 @@ nfr_validation:
 
 # Recommendations
 recommendations:
-  immediate:  # Must fix before production
+  immediate: # Must fix before production
     - action: 'Fix user synchronization - implement upsert logic in authorize callback to create Prisma user if not exists'
       refs: ['app/api/auth/[...nextauth]/route.ts:19-45']
       estimate: '4 hours'
@@ -143,7 +143,7 @@ recommendations:
       refs: ['docs/architecture/15-security-and-performance.md']
       estimate: '2 hours (documentation) OR 1 day (implementation)'
 
-  future:  # Can be addressed post-MVP
+  future: # Can be addressed post-MVP
     - action: 'Migrate from deprecated @supabase/auth-helpers-nextjs to @supabase/ssr'
       refs: ['lib/supabase/client.ts', 'lib/supabase/server.ts', 'package.json']
       estimate: '1 day'
@@ -163,9 +163,9 @@ recommendations:
 # Technical Debt Summary
 technical_debt:
   total_items: 4
-  critical: 1  # User sync bug
-  high: 2      # Tests, rate limiting
-  medium: 1    # Deprecated dependency
+  critical: 1 # User sync bug
+  high: 2 # Tests, rate limiting
+  medium: 1 # Deprecated dependency
 
   estimated_remediation: '3-4 days'
 
@@ -193,12 +193,12 @@ technical_debt:
 # Risk Assessment
 risk_summary:
   totals:
-    critical: 3  # User sync bug, no tests, missing error handling
-    high: 1      # Rate limiting
-    medium: 1    # Deprecated dependency
-    low: 1       # Unused field
+    critical: 3 # User sync bug, no tests, missing error handling
+    high: 1 # Rate limiting
+    medium: 1 # Deprecated dependency
+    low: 1 # Unused field
 
-  highest_risk_score: 9  # User sync bug (probability: high × impact: critical)
+  highest_risk_score: 9 # User sync bug (probability: high × impact: critical)
 
   risk_details:
     - risk_id: 'R-1'
@@ -256,8 +256,8 @@ compliance:
 # Acceptance Criteria Status
 acceptance_criteria_status:
   total: 10
-  passed: 0    # Cannot verify without tests
-  partial: 10  # Implementation exists but unverified
+  passed: 0 # Cannot verify without tests
+  partial: 10 # Implementation exists but unverified
   failed: 0
 
   details:

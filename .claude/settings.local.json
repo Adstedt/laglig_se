@@ -28,7 +28,11 @@
       "Bash(test:*)",
       "Bash(pnpm:*)",
       "Bash(cat:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
