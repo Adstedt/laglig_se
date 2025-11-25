@@ -73,3 +73,47 @@ model WorkspaceMember {
   @@index([workspace_id])
   @@map("workspace_members")
 }
+
+// ============================================================================
+// LEGAL CONTENT MODELS - Epic 1: Story 1.5
+// ============================================================================
+
+model LegalDocument {
+  id               String      @id @default(uuid())
+  document_number  String      @unique // "SFS 1977:1160"
+  title            String
+  slug             String      @unique
+  content_type     ContentType
+  full_text        String?     @db.Text
+  summary          String?     @db.Text
+  effective_date   DateTime?
+  publication_date DateTime?
+  status           LawStatus   @default(ACTIVE)
+  source_url       String
+  metadata         Json?
+  created_at       DateTime    @default(now())
+  updated_at       DateTime    @updatedAt
+
+  @@index([document_number])
+  @@index([slug])
+  @@index([content_type])
+  @@index([status])
+  @@map("legal_documents")
+}
+
+enum ContentType {
+  SFS_LAW
+  COURT_CASE_AD
+  COURT_CASE_HD
+  COURT_CASE_HFD
+  COURT_CASE_HOVR
+  EU_REGULATION
+  EU_DIRECTIVE
+}
+
+enum LawStatus {
+  ACTIVE
+  REPEALED
+  DRAFT
+  ARCHIVED
+}

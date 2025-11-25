@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
+    "ingest-laws": "npx tsx scripts/ingest-laws.ts",
     "postinstall": "prisma generate",
     "prepare": "husky"
   },

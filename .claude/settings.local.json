@@ -32,7 +32,9 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(vercel env add:*)",
+      "Bash(vercel env:*)"
     ],
     "deny": [],
     "ask": []
