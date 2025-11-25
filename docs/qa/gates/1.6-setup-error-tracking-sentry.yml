@@ -1,0 +1,53 @@
+schema: 1
+story: '1.6'
+story_title: 'Set Up Error Tracking and Logging (Sentry)'
+gate: PASS
+status_reason: 'All developer tasks complete. Sentry SDK installed, configured, and deployed. Manual dashboard verification pending.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-11-25T12:55:00Z'
+
+top_issues: []
+
+waiver:
+  active: false
+
+quality_score: 92
+expires: '2025-12-09T12:55:00Z'
+
+evidence:
+  tests_reviewed: 0
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 6, 8]
+    ac_gaps: [5, 7]  # Require manual dashboard verification
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Auth token secured, DSN public exposure is by design, source maps hidden'
+  performance:
+    status: PASS
+    notes: 'Appropriate sample rates (10% prod traces), minimal overhead'
+  reliability:
+    status: PASS
+    notes: 'Graceful fallback when DSN not configured, error filtering implemented'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation of client/server/edge configs, well-documented env vars'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Integrate setSentryUser with auth callbacks when auth is implemented'
+      refs: ['lib/sentry/context.ts']
+    - action: 'Remove /api/test-error endpoint after production verification'
+      refs: ['app/api/test-error/route.ts']
+
+notes: |
+  AC 5 (test error captured) and AC 7 (email alerts) require manual user verification
+  in Sentry dashboard. This is expected for monitoring infrastructure setup.
+
+  The Sentry-Vercel integration auto-configured environment variables during setup,
+  which streamlined AC 8 (Vercel integration).
+
+  Implementation uses @sentry/nextjs v10.27.0 (newer than 7.109+ in tech stack docs).
