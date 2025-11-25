@@ -73,6 +73,85 @@ type Tier = (typeof TIERS)[number]
 
 ## 17.3 React/Next.js Standards
 
+### UI Components: shadcn/ui
+
+**MANDATORY:** Use [shadcn/ui](https://ui.shadcn.com/) for all UI components. This provides:
+
+- Accessible, well-tested components built on Radix UI primitives
+- Tailwind CSS styling that matches our stack
+- Copy-paste ownership (components live in `components/ui/`)
+
+**Installation Pattern:**
+
+```bash
+# Add new components via CLI
+pnpm dlx shadcn@latest add button
+pnpm dlx shadcn@latest add card
+pnpm dlx shadcn@latest add input
+```
+
+**Usage Rules:**
+
+```typescript
+// ✅ GOOD: Use shadcn/ui components
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+
+export function MyForm() {
+  return (
+    <Card>
+      <CardHeader>Contact Form</CardHeader>
+      <CardContent>
+        <Input placeholder="Email" type="email" />
+        <Button type="submit">Submit</Button>
+      </CardContent>
+    </Card>
+  )
+}
+
+// ❌ BAD: Writing custom UI primitives
+export function MyButton({ children }) {
+  return (
+    <button className="bg-blue-500 px-4 py-2 rounded">
+      {children}
+    </button>
+  )
+}
+
+// ❌ BAD: Raw HTML for forms/dialogs/dropdowns
+<button onClick={...}>Click me</button>
+<dialog>...</dialog>
+<select>...</select>
+```
+
+**When to Use shadcn/ui:**
+
+- Buttons, inputs, forms, cards, dialogs, dropdowns, tables
+- Any interactive UI element
+- Navigation components (tabs, breadcrumbs, menus)
+
+**When Custom Components Are OK:**
+
+- Page-specific layouts
+- Domain components (e.g., `LawCard`, `ComplianceStatus`)
+- Components that compose shadcn/ui primitives
+
+**Component Location:**
+
+```
+components/
+├── ui/           # shadcn/ui components (auto-generated)
+│   ├── button.tsx
+│   ├── card.tsx
+│   └── input.tsx
+└── domain/       # Business-specific components
+    ├── law-card.tsx
+    └── breadcrumb.tsx  # Can use shadcn/ui Breadcrumb
+```
+
+---
+
 **Component Patterns:**
 
 ```typescript
