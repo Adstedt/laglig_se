@@ -59,10 +59,10 @@ export function TestimonialsSection() {
             className="font-safiro mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            Företag som sover gott om natten
+            De hade inte tid att bevaka heller
           </h2>
           <p className="text-lg text-muted-foreground">
-            Se hur andra har löst sin lagefterlevnad
+            Nu slipper de. Så här gick det.
           </p>
         </div>
 
@@ -72,44 +72,52 @@ export function TestimonialsSection() {
             {testimonials.map((testimonial) => (
               <div
                 key={testimonial.author}
-                className="card-hover flex flex-col rounded-2xl border bg-card p-6"
+                className="group relative flex flex-col overflow-hidden rounded-2xl border bg-card p-6 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
               >
-                {/* Metric highlight */}
-                <div className="mb-4 rounded-xl bg-primary/5 p-4 text-center">
-                  <p className="text-3xl font-bold tracking-tight text-primary">
-                    {testimonial.metric}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {testimonial.metricLabel}
-                  </p>
-                </div>
+                {/* Subtle gradient on hover */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/3 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
 
-                {/* Quote */}
-                <blockquote className="mb-6 flex-1">
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    &ldquo;{testimonial.quote}&rdquo;
-                  </p>
-                </blockquote>
-
-                {/* Author */}
-                <div className="border-t pt-4">
-                  <div className="mb-2 flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium">
-                      {testimonial.author
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
-                        {testimonial.author}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {testimonial.role}, {testimonial.company}
-                      </p>
-                    </div>
+                <div className="relative">
+                  {/* Metric highlight - larger, more impactful */}
+                  <div className="mb-5 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 p-5 text-center">
+                    <p
+                      className="text-4xl font-bold tracking-tight text-primary"
+                      style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
+                    >
+                      {testimonial.metric}
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-primary/70">
+                      {testimonial.metricLabel}
+                    </p>
                   </div>
-                  <StarRating />
+
+                  {/* Quote */}
+                  <blockquote className="mb-6 flex-1">
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      &ldquo;{testimonial.quote}&rdquo;
+                    </p>
+                  </blockquote>
+
+                  {/* Author */}
+                  <div className="border-t pt-4">
+                    <div className="mb-3 flex items-center gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-muted to-muted/50 text-sm font-semibold shadow-sm">
+                        {testimonial.author
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">
+                          {testimonial.author}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {testimonial.role}, {testimonial.company}
+                        </p>
+                      </div>
+                    </div>
+                    <StarRating />
+                  </div>
                 </div>
               </div>
             ))}

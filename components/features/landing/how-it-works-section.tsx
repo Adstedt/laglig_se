@@ -83,10 +83,13 @@ export function HowItWorksSection() {
           <div className="mt-12 text-center">
             <Button size="lg" className="h-12 px-8" asChild>
               <Link href="/onboarding">
-                Testa nu - det är gratis
+                Prova med ert org-nummer
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Gratis i 14 dagar. Ingen bindning.
+            </p>
           </div>
         </div>
       </div>

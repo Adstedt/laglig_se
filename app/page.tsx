@@ -2,6 +2,7 @@ import { Navbar } from '@/components/shared/navigation/navbar'
 import { Footer } from '@/components/shared/navigation/footer'
 import { HeroSection } from '@/components/features/landing/hero-section'
 import { LogoCloudSection } from '@/components/features/landing/logo-cloud-section'
+import { RiskSection } from '@/components/features/landing/risk-section'
 import { FeaturesSection } from '@/components/features/landing/features-section'
 import { HowItWorksSection } from '@/components/features/landing/how-it-works-section'
 import { TestimonialsSection } from '@/components/features/landing/testimonials-section'
@@ -17,6 +18,7 @@ export default function Home() {
       <main>
         <HeroSection />
         <LogoCloudSection />
+        <RiskSection />
         <FeaturesSection />
         <HowItWorksSection />
         <TestimonialsSection />
