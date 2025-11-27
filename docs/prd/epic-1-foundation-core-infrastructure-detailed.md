@@ -132,14 +132,15 @@
 
 **Acceptance Criteria:**
 
-1. CSP header configured in Next.js middleware
-2. CSP allows: self, Vercel, Supabase, OpenAI
-3. CSP blocks: inline scripts (except nonce), eval(), data: URIs
+1. CSP header configured in Next.js middleware and/or next.config.mjs
+2. CSP allows: self, Vercel, Supabase, OpenAI, Sentry
+3. CSP configured appropriately for Next.js App Router stack (unsafe-inline for styles required by Tailwind/shadcn)
 4. X-Frame-Options: DENY header set
 5. X-Content-Type-Options: nosniff header set
 6. Referrer-Policy: strict-origin-when-cross-origin set
-7. Security headers tested with securityheaders.com (score A/A+)
-8. No CSP violations in browser console
+7. Strict-Transport-Security (HSTS) header set
+8. Security headers tested with securityheaders.com (score A/A+)
+9. No CSP violations in browser console during normal application use
 
 ---
 

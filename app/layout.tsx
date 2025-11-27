@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 // Optimized font loading with swap display for better CLS
 const inter = Inter({
@@ -30,6 +32,10 @@ export default function RootLayout({
     <html lang="sv" className={inter.variable}>
       <body className="min-h-screen bg-white font-sans text-gray-900 antialiased">
         {children}
+        {/* Vercel Analytics - Cookieless, GDPR-compliant tracking */}
+        <Analytics />
+        {/* Speed Insights - Tracks Core Web Vitals: LCP, FID, CLS, TTFB */}
+        <SpeedInsights />
       </body>
     </html>
   )

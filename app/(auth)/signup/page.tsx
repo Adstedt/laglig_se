@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import Link from 'next/link'
 import { SignupSchema } from '@/lib/validation/auth'
-import { supabase } from '@/lib/supabase/client'
+import { signupAction } from '@/app/actions/auth'
 import type { z } from 'zod'
 
 type SignupFormData = z.infer<typeof SignupSchema>
 
 export default function SignupPage() {
   const [error, setError] = useState<string>('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -43,35 +44,37 @@ export default function SignupPage() {
     try {
       setIsLoading(true)
       setError('')
+      setFieldErrors({})
 
-      // Validate with Zod
-      const validated = SignupSchema.parse(data)
-
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: validated.email,
-        password: validated.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            name: validated.name,
-          },
-        },
-      })
-
-      if (authError) {
-        setError(authError.message)
+      // Client-side validation first (fast feedback)
+      const clientValidation = SignupSchema.safeParse(data)
+      if (!clientValidation.success) {
+        const errors = clientValidation.error.flatten().fieldErrors
+        setFieldErrors(errors as Record<string, string[]>)
         return
       }
 
-      if (authData.user) {
-        setSuccess(true)
+      // Server-side validation and signup via Server Action
+      const result = await signupAction(data)
+
+      if (!result.success) {
+        // Handle field-specific errors
+        if (result.errors) {
+          setFieldErrors(result.errors)
+          // Show first error as general message
+          const firstError = Object.values(result.errors)[0]?.[0]
+          if (firstError) {
+            setError(firstError)
+          }
+        } else if (result.message) {
+          setError(result.message)
+        }
+        return
       }
+
+      setSuccess(true)
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError('An error occurred. Please try again.')
-      }
+      setError('An unexpected error occurred. Please try again.')
       // eslint-disable-next-line no-console
       console.error('Signup error:', err)
     } finally {
@@ -154,8 +157,10 @@ export default function SignupPage() {
               className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
               placeholder="John Doe"
             />
-            {errors.name && (
-              <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+            {(errors.name ?? fieldErrors.name?.[0]) && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.name?.message ?? fieldErrors.name?.[0]}
+              </p>
             )}
           </div>
 
@@ -174,9 +179,9 @@ export default function SignupPage() {
               className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
               placeholder="you@example.com"
             />
-            {errors.email && (
+            {(errors.email ?? fieldErrors.email?.[0]) && (
               <p className="mt-1 text-sm text-red-600">
-                {errors.email.message}
+                {errors.email?.message ?? fieldErrors.email?.[0]}
               </p>
             )}
           </div>
@@ -212,9 +217,9 @@ export default function SignupPage() {
                 </span>
               </div>
             )}
-            {errors.password && (
+            {(errors.password ?? fieldErrors.password?.[0]) && (
               <p className="mt-1 text-sm text-red-600">
-                {errors.password.message}
+                {errors.password?.message ?? fieldErrors.password?.[0]}
               </p>
             )}
             <p className="mt-1 text-xs text-gray-500">
@@ -237,9 +242,10 @@ export default function SignupPage() {
               className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
               placeholder="Re-enter password"
             />
-            {errors.confirmPassword && (
+            {(errors.confirmPassword ?? fieldErrors.confirmPassword?.[0]) && (
               <p className="mt-1 text-sm text-red-600">
-                {errors.confirmPassword.message}
+                {errors.confirmPassword?.message ??
+                  fieldErrors.confirmPassword?.[0]}
               </p>
             )}
           </div>
