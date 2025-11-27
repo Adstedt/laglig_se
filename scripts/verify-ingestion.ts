@@ -37,11 +37,6 @@ async function verifyIngestion() {
       document_number: true,
       title: true,
       publication_date: true,
-      _count: {
-        select: {
-          amendments_as_base: true,
-        },
-      },
     },
     orderBy: {
       publication_date: 'desc',
@@ -51,9 +46,7 @@ async function verifyIngestion() {
 
   console.log('📄 Sample of most recent laws:')
   sampleLaws.forEach((law) => {
-    console.log(
-      `  ${law.document_number} - ${law.title.substring(0, 60)}... (${law._count.amendments_as_base} amendments)`
-    )
+    console.log(`  ${law.document_number} - ${law.title.substring(0, 60)}...`)
   })
   console.log('')
 

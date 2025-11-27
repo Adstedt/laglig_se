@@ -19,7 +19,7 @@ import {
   generateSlug,
   type ParsedLaw,
 } from '../lib/external/riksdagen'
-import { ContentType, DocumentStatus } from '@prisma/client'
+import { ContentType, DocumentStatus, Prisma } from '@prisma/client'
 
 // ============================================================================
 // Configuration
@@ -313,7 +313,7 @@ async function extractAndCreateAmendments(
           publication_date: amendingLaw.publication_date || new Date(),
           effective_date: null, // TODO: Parse from transition provisions (future enhancement)
           affected_sections_raw: null, // TODO: Parse affected sections (future enhancement)
-          affected_sections: null,
+          affected_sections: Prisma.JsonNull,
           summary: null, // Generated in separate script (Task 8)
           summary_generated_by: null,
           detected_method: 'RIKSDAGEN_TEXT_PARSING',

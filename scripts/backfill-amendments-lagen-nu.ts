@@ -17,6 +17,7 @@
  */
 
 import { prisma } from '../lib/prisma'
+import { Prisma } from '@prisma/client'
 
 // ============================================================================
 // Configuration
@@ -307,7 +308,7 @@ async function createAmendmentRecord(
         publication_date: amendingLaw.publication_date || new Date(),
         effective_date: null,
         affected_sections_raw: null,
-        affected_sections: null,
+        affected_sections: Prisma.JsonNull,
         summary: null, // Generated in separate script (Task 8)
         summary_generated_by: null,
         detected_method: 'LAGEN_NU_SCRAPING',

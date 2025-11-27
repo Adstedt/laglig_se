@@ -11,7 +11,7 @@
  *   pnpm ingest-laws -- --skip-text # Skip fetching full text (faster)
  */
 
-import { PrismaClient, ContentType, LawStatus } from '@prisma/client'
+import { PrismaClient, ContentType, DocumentStatus } from '@prisma/client'
 import {
   fetchSFSLaws,
   fetchLawFullText,
@@ -88,7 +88,7 @@ async function ingestLaw(
       full_text: fullText,
       summary,
       publication_date: law.publicationDate,
-      status: LawStatus.ACTIVE,
+      status: DocumentStatus.ACTIVE,
       source_url: law.sourceUrl,
       metadata: {
         dok_id: law.dokId,

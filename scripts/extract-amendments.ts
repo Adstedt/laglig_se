@@ -13,7 +13,7 @@
  */
 
 import { prisma } from '../lib/prisma'
-import { ContentType } from '@prisma/client'
+import { ContentType, Prisma } from '@prisma/client'
 
 // ============================================================================
 // Types
@@ -228,7 +228,7 @@ async function extractAndCreateAmendments(
           publication_date: amendingLaw.publication_date || new Date(),
           effective_date: null, // TODO: Parse from transition provisions
           affected_sections_raw: null, // TODO: Parse affected sections
-          affected_sections: null,
+          affected_sections: Prisma.JsonNull,
           summary: null, // Generated in separate script
           summary_generated_by: null,
           detected_method: 'RIKSDAGEN_TEXT_PARSING',

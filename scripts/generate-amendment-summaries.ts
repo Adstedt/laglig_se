@@ -60,7 +60,7 @@ const openai = new OpenAI({
 function getPrompt(
   baseLawTitle: string,
   amendingLawTitle: string,
-  affectedSections: object | null
+  affectedSections: unknown
 ): string {
   return `Sammanfatta denna lagändring på svenska i 2-3 meningar för icke-jurister:
 
@@ -210,7 +210,7 @@ async function processAmendment(
     id: string
     base_document: { title: string }
     amending_document: { title: string }
-    affected_sections: object | null
+    affected_sections: unknown
   },
   stats: GenerationStats
 ) {
@@ -275,7 +275,7 @@ interface SummaryResult {
 async function generateSummary(amendment: {
   base_document: { title: string }
   amending_document: { title: string }
-  affected_sections: object | null
+  affected_sections: unknown
 }): Promise<SummaryResult> {
   const prompt = getPrompt(
     amendment.base_document.title,

@@ -299,6 +299,8 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
 
       const courtCaseId = doc.court_case?.id
 
+      expect(courtCaseId).toBeDefined()
+
       // Delete document
       await prisma.legalDocument.delete({
         where: { id: doc.id },
@@ -306,7 +308,7 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
 
       // Verify court case was also deleted (CASCADE)
       const deletedCourtCase = await prisma.courtCase.findUnique({
-        where: { id: courtCaseId },
+        where: { id: courtCaseId! },
       })
 
       expect(deletedCourtCase).toBeNull()
@@ -405,7 +407,7 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
       })
 
       expect(sourceWithRefs?.source_references).toHaveLength(1)
-      expect(sourceWithRefs?.source_references[0].target_document_id).toBe(
+      expect(sourceWithRefs?.source_references?.[0]?.target_document_id).toBe(
         doc2.id
       )
 
@@ -418,7 +420,7 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
       })
 
       expect(targetWithRefs?.target_references).toHaveLength(1)
-      expect(targetWithRefs?.target_references[0].source_document_id).toBe(
+      expect(targetWithRefs?.target_references?.[0]?.source_document_id).toBe(
         doc1.id
       )
     })
