@@ -79,25 +79,38 @@ model WorkspaceMember {
 // ============================================================================
 
 model LegalDocument {
-  id               String      @id @default(uuid())
-  document_number  String      @unique // "SFS 1977:1160"
-  title            String
-  slug             String      @unique
+  id               String         @id @default(uuid())
   content_type     ContentType
-  full_text        String?     @db.Text
-  summary          String?     @db.Text
+  document_number  String         @unique // "SFS 1977:1160", "NJA 2023 s. 45"
+  title            String
+  slug             String         @unique
+  summary          String?        @db.Text // AI-generated summary
+  full_text        String?        @db.Text // Plain text for RAG, search, embeddings
+  html_content     String?        @db.Text // Original HTML for rendering law pages
   effective_date   DateTime?
   publication_date DateTime?
-  status           LawStatus   @default(ACTIVE)
+  status           DocumentStatus @default(ACTIVE)
   source_url       String
-  metadata         Json?
-  created_at       DateTime    @default(now())
-  updated_at       DateTime    @updatedAt
+  metadata         Json? // Type-specific metadata storage (includes filbilaga if present)
+  search_vector    Unsupported("tsvector")? // Full-text search
+  embedding        Unsupported("vector(1536)")? // Semantic search
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+
+  // Relations
+  court_case       CourtCase?
+  eu_document      EuDocument?
+  source_references     CrossReference[] @relation("SourceDocument")
+  target_references     CrossReference[] @relation("TargetDocument")
+  base_amendments       Amendment[]      @relation("BaseDocument")
+  amending_amendments   Amendment[]      @relation("AmendingDocument")
+  subjects              DocumentSubject[]
 
   @@index([document_number])
   @@index([slug])
   @@index([content_type])
   @@index([status])
+  @@index([search_vector])
   @@map("legal_documents")
 }
 
@@ -105,15 +118,135 @@ enum ContentType {
   SFS_LAW
   COURT_CASE_AD
   COURT_CASE_HD
-  COURT_CASE_HFD
   COURT_CASE_HOVR
+  COURT_CASE_HFD
+  COURT_CASE_MOD
+  COURT_CASE_MIG
   EU_REGULATION
   EU_DIRECTIVE
 }
 
-enum LawStatus {
+enum DocumentStatus {
   ACTIVE
   REPEALED
   DRAFT
   ARCHIVED
+}
+
+enum SummaryGeneratedBy {
+  GPT_4
+  HUMAN
+  SFSR
+  RIKSDAGEN
+}
+
+enum AmendmentDetectedMethod {
+  RIKSDAGEN_TEXT_PARSING
+  LAGEN_NU_SCRAPING
+  SFSR_REGISTER
+  LAGRUMMET_RINFO
+}
+
+enum ReferenceType {
+  CITES
+  IMPLEMENTS
+  AMENDS
+  REFERENCES
+  RELATED
+}
+
+// ============================================================================
+// TYPE-SPECIFIC TABLES - Epic 2: Story 2.1
+// ============================================================================
+
+model CourtCase {
+  id            String        @id @default(uuid())
+  document_id   String        @unique
+  court_name    String // "Högsta domstolen", "Hovrätten över Skåne och Blekinge"
+  case_number   String // "B 1234-23"
+  lower_court   String?
+  decision_date DateTime
+  parties       Json? // {plaintiff: "...", defendant: "..."}
+
+  // Relations
+  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@map("court_cases")
+}
+
+model EuDocument {
+  id                               String        @id @default(uuid())
+  document_id                      String        @unique
+  celex_number                     String // "32016R0679" (GDPR)
+  eut_reference                    String? // "L 119/1" (Official Journal reference)
+  national_implementation_measures Json? // Swedish implementing laws
+
+  // Relations
+  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@map("eu_documents")
+}
+
+model CrossReference {
+  id                 String        @id @default(uuid())
+  source_document_id String // Document making the reference
+  target_document_id String // Document being referenced
+  reference_type     ReferenceType
+  context            String?       @db.Text // Snippet: "This case interprets § 7 regarding..."
+  created_at         DateTime      @default(now())
+
+  // Relations
+  source_document LegalDocument @relation("SourceDocument", fields: [source_document_id], references: [id], onDelete: Cascade)
+  target_document LegalDocument @relation("TargetDocument", fields: [target_document_id], references: [id], onDelete: Cascade)
+
+  @@index([source_document_id])
+  @@index([target_document_id])
+  @@map("cross_references")
+}
+
+model Amendment {
+  id                     String                    @id @default(uuid())
+  base_document_id       String // Law being amended (FK to legal_documents)
+  amending_document_id   String // Amending law (FK to legal_documents)
+
+  // 7 competitive-feature fields
+  amending_law_title     String // "Lag (2025:732) om ändring i arbetsrättslagstiftningen"
+  publication_date       DateTime // When amending law was published
+  effective_date         DateTime? // When amendment takes effect (can be future)
+  affected_sections_raw  String? // Notisum format: "ändr. 6 kap. 17 §; upph. 8 kap. 4 §"
+  affected_sections      Json? // Parsed: {amended: ["6:17"], repealed: ["8:4"], new: [], renumbered: []}
+  summary                String?                   @db.Text // 2-3 sentence GPT-4 generated plain language summary (Swedish)
+  summary_generated_by   SummaryGeneratedBy?
+
+  // Additional implementation fields
+  detected_method        AmendmentDetectedMethod?
+  metadata               Json? // Debugging/additional data
+
+  created_at             DateTime                  @default(now())
+  updated_at             DateTime                  @updatedAt
+
+  // Relations
+  base_document     LegalDocument @relation("BaseDocument", fields: [base_document_id], references: [id], onDelete: Cascade)
+  amending_document LegalDocument @relation("AmendingDocument", fields: [amending_document_id], references: [id], onDelete: Cascade)
+
+  @@index([base_document_id])
+  @@index([amending_document_id])
+  @@index([effective_date])
+  @@map("amendments")
+}
+
+model DocumentSubject {
+  id           String   @id @default(uuid())
+  document_id  String
+  subject_code String // "ARBETSRATT", "DATASKYDD"
+  subject_name String // "Arbetsrätt", "Dataskydd & GDPR"
+  created_at   DateTime @default(now())
+
+  // Relations
+  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@unique([document_id, subject_code])
+  @@index([document_id])
+  @@index([subject_code])
+  @@map("document_subjects")
 }

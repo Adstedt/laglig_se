@@ -1,11 +1,21 @@
 import '@testing-library/jest-dom'
+import { config } from 'dotenv'
+import path from 'path'
 
-// Mock environment variables for tests
-process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
-process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
-process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key'
-process.env.NEXTAUTH_SECRET = 'test-secret-at-least-32-chars-long-1234567890'
-process.env.NEXTAUTH_URL = 'http://localhost:3000'
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
-process.env.DIRECT_URL = 'postgresql://test:test@localhost:5432/test'
+// Load .env.local explicitly for integration tests
+config({ path: path.resolve(process.cwd(), '.env.local') })
+
+// Mock environment variables ONLY if none are loaded (for unit tests)
+// Integration tests will use real env vars from .env.local
+if (
+  !process.env.DATABASE_URL ||
+  process.env.DATABASE_URL.includes('localhost:5432')
+) {
+  // Throw error for integration tests - they must have real DB connection
+  if (process.env.VITEST_POOL_ID !== undefined) {
+    console.warn('⚠️  WARNING: DATABASE_URL not loaded from .env.local')
+    console.warn('   Integration tests require Supabase database connection')
+    console.warn('   Check that .env.local exists and contains DATABASE_URL')
+  }
+}
 // NODE_ENV is read-only in Vitest, set via config instead
