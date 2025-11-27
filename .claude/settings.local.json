@@ -36,7 +36,10 @@
       "Bash(vercel env add:*)",
       "Bash(vercel env:*)",
       "Bash(git merge:*)",
-      "WebFetch(domain:legora.com)"
+      "WebFetch(domain:legora.com)",
+      "Bash(set:*)",
+      "Bash(source .env.local)",
+      "Bash(set +a)"
     ],
     "deny": [],
     "ask": []

@@ -257,10 +257,50 @@ export async function fetchSFSLaws(
 }
 
 /**
- * Fetches the full text of a law document
+ * Fetches the raw HTML content of a law document (with HTML tags preserved)
  *
  * @param dokId - The document ID from Riksdagen
- * @returns HTML content of the law, or null if not available
+ * @returns Raw HTML content, or null if not available
+ */
+export async function fetchLawHTML(dokId: string): Promise<string | null> {
+  const url = `${RIKSDAGEN_BASE_URL}/dokument/${dokId}.html`
+
+  try {
+    const response = await fetchWithRetry(url, {
+      headers: {
+        Accept: 'text/html',
+      },
+    })
+
+    const html = await response.text()
+
+    // Extract body content but preserve HTML tags
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
+    const bodyContent = bodyMatch?.[1] || html
+
+    // Remove script and style tags for security
+    let cleaned = bodyContent.replace(
+      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+      ''
+    )
+    cleaned = cleaned.replace(
+      /<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi,
+      ''
+    )
+    cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, '')
+
+    return cleaned.trim()
+  } catch (error) {
+    console.error(`Failed to fetch HTML for ${dokId}:`, error)
+    return null
+  }
+}
+
+/**
+ * Fetches the full text of a law document (plain text, HTML tags removed)
+ *
+ * @param dokId - The document ID from Riksdagen
+ * @returns Plain text content of the law, or null if not available
  */
 export async function fetchLawFullText(dokId: string): Promise<string | null> {
   const url = `${RIKSDAGEN_BASE_URL}/dokument/${dokId}.html`
