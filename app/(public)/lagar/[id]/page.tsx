@@ -103,7 +103,7 @@ function cleanLawHtml(html: string): string {
 function extractEffectiveDate(html: string): string | null {
   // Pattern: /Träder i kraft I:YYYY-MM-DD/
   const match = html.match(/Träder i kraft[^:]*:?\s*(\d{4}-\d{2}-\d{2})/i)
-  return match ? match[1] : null
+  return match?.[1] ?? null
 }
 
 export default async function LawPage({ params }: PageProps) {
@@ -148,9 +148,37 @@ export default async function LawPage({ params }: PageProps) {
   const sanitizedHtml = cleanedHtml
     ? sanitizeHtml(cleanedHtml, {
         allowedTags: [
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'ul', 'ol', 'li',
-          'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'strong', 'em',
-          'span', 'div', 'blockquote', 'pre', 'code', 'b', 'i', 'u', 'sub', 'sup',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+          'p',
+          'br',
+          'hr',
+          'ul',
+          'ol',
+          'li',
+          'table',
+          'thead',
+          'tbody',
+          'tr',
+          'th',
+          'td',
+          'a',
+          'strong',
+          'em',
+          'span',
+          'div',
+          'blockquote',
+          'pre',
+          'code',
+          'b',
+          'i',
+          'u',
+          'sub',
+          'sup',
         ],
         allowedAttributes: {
           a: ['href', 'name', 'class'],
@@ -174,12 +202,12 @@ export default async function LawPage({ params }: PageProps) {
         day: 'numeric',
       })
     : htmlEffectiveDate
-    ? new Date(htmlEffectiveDate).toLocaleDateString('sv-SE', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : null
+      ? new Date(htmlEffectiveDate).toLocaleDateString('sv-SE', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : null
 
   // JSON-LD structured data
   const jsonLd = {
@@ -286,7 +314,11 @@ export default async function LawPage({ params }: PageProps) {
           {law.subjects.length > 0 && (
             <div className="mb-6 flex flex-wrap gap-2">
               {law.subjects.map((subject) => (
-                <Badge key={subject.subject_code} variant="outline" className="text-xs">
+                <Badge
+                  key={subject.subject_code}
+                  variant="outline"
+                  className="text-xs"
+                >
                   {subject.subject_name}
                 </Badge>
               ))}
@@ -317,7 +349,9 @@ export default async function LawPage({ params }: PageProps) {
                 {sanitizedHtml ? (
                   <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
                 ) : law.full_text ? (
-                  <div className="whitespace-pre-wrap font-serif">{law.full_text}</div>
+                  <div className="whitespace-pre-wrap font-serif">
+                    {law.full_text}
+                  </div>
                 ) : (
                   <p className="italic text-muted-foreground py-8 text-center">
                     Ingen lagtext tillgänglig.{' '}
@@ -339,12 +373,17 @@ export default async function LawPage({ params }: PageProps) {
           {law.base_amendments.length > 0 && (
             <Card className="mb-8">
               <CardHeader className="border-b bg-muted/30">
-                <CardTitle className="text-lg">Ändringar ({law.base_amendments.length})</CardTitle>
+                <CardTitle className="text-lg">
+                  Ändringar ({law.base_amendments.length})
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y">
                   {law.base_amendments.map((amendment) => (
-                    <div key={amendment.id} className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
+                    <div
+                      key={amendment.id}
+                      className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+                    >
                       <div className="min-w-0 flex-1">
                         {amendment.amending_document ? (
                           <Link
@@ -361,7 +400,9 @@ export default async function LawPage({ params }: PageProps) {
                       </div>
                       <div className="ml-4 shrink-0 text-sm text-muted-foreground">
                         {amendment.effective_date
-                          ? new Date(amendment.effective_date).toLocaleDateString('sv-SE')
+                          ? new Date(
+                              amendment.effective_date
+                            ).toLocaleDateString('sv-SE')
                           : '—'}
                       </div>
                     </div>
@@ -394,7 +435,10 @@ export default async function LawPage({ params }: PageProps) {
 function StatusBadge({ status }: { status: DocumentStatus }) {
   const statusConfig: Record<
     DocumentStatus,
-    { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+    {
+      label: string
+      variant: 'default' | 'secondary' | 'destructive' | 'outline'
+    }
   > = {
     ACTIVE: { label: 'Gällande', variant: 'default' },
     REPEALED: { label: 'Upphävd', variant: 'destructive' },

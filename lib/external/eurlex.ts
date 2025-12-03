@@ -383,7 +383,8 @@ export async function executeSparqlQuery(
       }
 
       const delay = Math.min(
-        RETRY_CONFIG.initialDelay * Math.pow(RETRY_CONFIG.backoffMultiplier, attempt - 1),
+        RETRY_CONFIG.initialDelay *
+          Math.pow(RETRY_CONFIG.backoffMultiplier, attempt - 1),
         RETRY_CONFIG.maxDelay
       )
 
@@ -568,6 +569,7 @@ export async function fetchDocumentContentViaCellar(
             return false // break
           }
         }
+        return true // continue
       })
 
       if (swedishHtmlUrl) {
@@ -616,7 +618,9 @@ function parseHtmlContent(
   const $ = cheerioLoad(html)
 
   // Remove script, style, nav elements
-  $('script, style, nav, header, footer, .navigation, .breadcrumb, meta, link').remove()
+  $(
+    'script, style, nav, header, footer, .navigation, .breadcrumb, meta, link'
+  ).remove()
 
   // Try to get main content area
   let mainContent =
@@ -670,8 +674,12 @@ export async function fetchNationalMeasures(
     const $ = cheerioLoad(html)
 
     // Look for Swedish implementation measures
-    const measures: NIMData['sweden']['measures'] = []
-    let implementationStatus: NIMData['sweden']['implementationStatus'] =
+    const measures: Array<{
+      sfsNumber: string
+      title: string
+      notificationDate?: string
+    }> = []
+    let implementationStatus: 'COMPLETE' | 'PARTIAL' | 'PENDING' | 'UNKNOWN' =
       'UNKNOWN'
 
     // Find Sweden section (typically marked with "SE" or "Sweden")
@@ -838,7 +846,12 @@ export interface ExtractedEUMetadata {
   recitalCount: number
 
   // Issuing body
-  issuingBody: 'COMMISSION' | 'PARLIAMENT_COUNCIL' | 'COUNCIL' | 'ECB' | 'UNKNOWN'
+  issuingBody:
+    | 'COMMISSION'
+    | 'PARLIAMENT_COUNCIL'
+    | 'COUNCIL'
+    | 'ECB'
+    | 'UNKNOWN'
   issuingBodySwedish: string | null
 
   // Document classification
@@ -872,33 +885,26 @@ export function extractEUMetadata(
 ): ExtractedEUMetadata {
   // Article count - matches "Artikel 1", "Artikel 2", etc.
   const articleMatches = fullText.match(/\bArtikel\s+\d+\b/gi) || []
-  const uniqueArticles = new Set(
-    articleMatches.map((m) => m.toLowerCase())
-  )
+  const uniqueArticles = new Set(articleMatches.map((m) => m.toLowerCase()))
   const articleCount = uniqueArticles.size
 
   // Chapter count - matches "KAPITEL I", "KAPITEL 1", etc.
-  const chapterMatches =
-    fullText.match(/\bKAPITEL\s+[IVX\d]+\b/gi) || []
-  const uniqueChapters = new Set(
-    chapterMatches.map((m) => m.toUpperCase())
-  )
+  const chapterMatches = fullText.match(/\bKAPITEL\s+[IVX\d]+\b/gi) || []
+  const uniqueChapters = new Set(chapterMatches.map((m) => m.toUpperCase()))
   const chapterCount = uniqueChapters.size
 
   // Section count - matches "AVSNITT 1", etc.
   const sectionMatches = fullText.match(/\bAVSNITT\s+\d+\b/gi) || []
-  const uniqueSections = new Set(
-    sectionMatches.map((m) => m.toUpperCase())
-  )
+  const uniqueSections = new Set(sectionMatches.map((m) => m.toUpperCase()))
   const sectionCount = uniqueSections.size
 
   // Recital count - matches "(1)", "(2)", etc. in preamble style
   // Only count those that appear before "HÄRIGENOM FÖRESKRIVS" or first Article
-  const preambleEnd = fullText.search(
-    /HÄRIGENOM FÖRESKRIVS|Artikel\s+1\b/i
-  )
+  const preambleEnd = fullText.search(/HÄRIGENOM FÖRESKRIVS|Artikel\s+1\b/i)
   const preambleText =
-    preambleEnd > 0 ? fullText.substring(0, preambleEnd) : fullText.substring(0, 5000)
+    preambleEnd > 0
+      ? fullText.substring(0, preambleEnd)
+      : fullText.substring(0, 5000)
   const recitalMatches = preambleText.match(/\(\d+\)/g) || []
   const recitalCount = recitalMatches.length
 
@@ -927,9 +933,7 @@ export function extractEUMetadata(
   const referencedCelex = [...new Set(celexMatches)].slice(0, 50) // Limit to 50
 
   // Word count
-  const wordCount = fullText
-    .split(/\s+/)
-    .filter((w) => w.length > 0).length
+  const wordCount = fullText.split(/\s+/).filter((w) => w.length > 0).length
 
   return {
     articleCount,
