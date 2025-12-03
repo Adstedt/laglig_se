@@ -208,11 +208,13 @@ async function fetchWithRetry(
  *
  * @param limit - Maximum number of laws to fetch (default 100)
  * @param page - Page number for pagination (1-indexed)
+ * @param sortOrder - Sort order: 'desc' for newest first, 'asc' for oldest first
  * @returns Parsed laws and pagination info
  */
 export async function fetchSFSLaws(
   limit: number = 100,
-  page: number = 1
+  page: number = 1,
+  sortOrder: 'asc' | 'desc' = 'desc'
 ): Promise<FetchLawsResult> {
   const url = new URL(`${RIKSDAGEN_BASE_URL}/dokumentlista/`)
   url.searchParams.set('doktyp', 'sfs')
@@ -220,7 +222,7 @@ export async function fetchSFSLaws(
   url.searchParams.set('sz', String(Math.min(limit, 100))) // Max 100 per page
   url.searchParams.set('p', String(page))
   url.searchParams.set('sort', 'datum')
-  url.searchParams.set('sortorder', 'desc')
+  url.searchParams.set('sortorder', sortOrder)
 
   console.log(`Fetching SFS laws: page ${page}, limit ${limit}`)
 

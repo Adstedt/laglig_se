@@ -39,7 +39,22 @@
       "WebFetch(domain:legora.com)",
       "Bash(set:*)",
       "Bash(source .env.local)",
-      "Bash(set +a)"
+      "Bash(set +a)",
+      "WebFetch(domain:dev.lagrummet.se)",
+      "WebFetch(domain:www.domstol.se)",
+      "WebFetch(domain:rattspraxis.etjanst.domstol.se)",
+      "WebFetch(domain:eur-lex.europa.eu)",
+      "Bash(dir:*)",
+      "WebFetch(domain:michalovadek.github.io)",
+      "WebFetch(domain:cran.r-project.org)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:op.europa.eu)",
+      "Bash(timeout 120 pnpm tsx:*)",
+      "Bash(node:*)",
+      "Bash(find:*)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=8192 --expose-gc\" pnpm tsx:*)",
+      "Bash(npx esbuild:*)",
+      "Bash(tasklist:*)"
     ],
     "deny": [],
     "ask": []

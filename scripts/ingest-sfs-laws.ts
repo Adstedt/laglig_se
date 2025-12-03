@@ -29,6 +29,9 @@ const CONFIG = {
   // Pagination: Riksdagen API max 100 per page
   PAGE_SIZE: 100,
 
+  // Riksdagen API has a hard limit of page 100 (cannot fetch beyond page 100)
+  API_MAX_PAGE: 100,
+
   // Progress logging interval
   PROGRESS_LOG_INTERVAL: 100,
 
@@ -79,36 +82,64 @@ async function ingestSFSLaws() {
     console.log('')
 
     // Fetch first page to get total count
-    const firstPage = await fetchSFSLaws(CONFIG.PAGE_SIZE, 1)
+    const firstPage = await fetchSFSLaws(CONFIG.PAGE_SIZE, 1, 'desc')
     stats.totalLaws = firstPage.totalCount
+
+    const totalPages = Math.ceil(stats.totalLaws / CONFIG.PAGE_SIZE)
+    const descPages = Math.min(totalPages, CONFIG.API_MAX_PAGE)
+    const lawsCoveredByDesc = descPages * CONFIG.PAGE_SIZE
+    const remainingLaws = Math.max(0, stats.totalLaws - lawsCoveredByDesc)
+    // Fetch enough ASC pages to cover the gap, accounting for potential overlap
+    // We need to fetch from the oldest until we reach the point where DESC stopped
+    // Since DESC covers hits 1-10000 (newest), ASC needs to cover hits 1-1365 (oldest)
+    // which equals the remaining laws. But there may be slight overlap, so fetch extra.
+    const ascPagesNeeded = Math.min(
+      Math.ceil((remainingLaws + CONFIG.PAGE_SIZE) / CONFIG.PAGE_SIZE), // +1 page buffer for overlap
+      CONFIG.API_MAX_PAGE
+    )
 
     console.log(`📊 Total SFS laws in Riksdagen: ${stats.totalLaws}`)
     console.log(`📄 Page size: ${CONFIG.PAGE_SIZE}`)
-    console.log(
-      `📄 Total pages: ${Math.ceil(stats.totalLaws / CONFIG.PAGE_SIZE)}`
-    )
+    console.log(`📄 Total logical pages: ${totalPages}`)
+    console.log(`📄 API max page limit: ${CONFIG.API_MAX_PAGE}`)
+    console.log('')
+    console.log(`📋 Ingestion plan:`)
+    console.log(`   Phase 1: Pages 1-${descPages} descending (newest ${lawsCoveredByDesc} laws)`)
+    if (ascPagesNeeded > 0) {
+      console.log(`   Phase 2: Pages 1-${ascPagesNeeded} ascending (oldest ${remainingLaws} laws)`)
+    }
     console.log('')
 
-    // Process first page
+    // ========================================================================
+    // Phase 1: Fetch newest laws (descending order, pages 1 to API_MAX_PAGE)
+    // ========================================================================
+    console.log('=' .repeat(80))
+    console.log('PHASE 1: Fetching newest laws (descending order)')
+    console.log('='.repeat(80))
+
+    // Process first page (already fetched)
     await processLaws(firstPage.laws, stats)
 
-    // Process remaining pages
-    let currentPage = 2
-    let hasMore = firstPage.hasMore
+    // Process remaining descending pages (up to API limit)
+    for (let page = 2; page <= descPages; page++) {
+      console.log(`\n📄 [DESC] Fetching page ${page}/${descPages}...`)
+      const pageData = await fetchSFSLaws(CONFIG.PAGE_SIZE, page, 'desc')
+      await processLaws(pageData.laws, stats)
+    }
 
-    while (hasMore) {
-      console.log(`\n📄 Fetching page ${currentPage}...`)
+    // ========================================================================
+    // Phase 2: Fetch oldest laws (ascending order) to cover API page limit gap
+    // ========================================================================
+    if (ascPagesNeeded > 0) {
+      console.log('')
+      console.log('='.repeat(80))
+      console.log('PHASE 2: Fetching oldest laws (ascending order)')
+      console.log('='.repeat(80))
 
-      const page = await fetchSFSLaws(CONFIG.PAGE_SIZE, currentPage)
-      await processLaws(page.laws, stats)
-
-      hasMore = page.hasMore
-      currentPage++
-
-      // Safety check to prevent infinite loops (Riksdagen has ~114 pages)
-      if (currentPage > 250) {
-        console.warn('⚠️  Safety limit reached (250 pages), stopping')
-        break
+      for (let page = 1; page <= ascPagesNeeded; page++) {
+        console.log(`\n📄 [ASC] Fetching page ${page}/${ascPagesNeeded}...`)
+        const pageData = await fetchSFSLaws(CONFIG.PAGE_SIZE, page, 'asc')
+        await processLaws(pageData.laws, stats)
       }
     }
 

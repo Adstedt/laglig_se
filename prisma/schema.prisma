@@ -177,13 +177,14 @@ model CourtCase {
 model EuDocument {
   id                               String        @id @default(uuid())
   document_id                      String        @unique
-  celex_number                     String // "32016R0679" (GDPR)
+  celex_number                     String        @unique // "32016R0679" (GDPR)
   eut_reference                    String? // "L 119/1" (Official Journal reference)
   national_implementation_measures Json? // Swedish implementing laws
 
   // Relations
   document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
 
+  @@index([celex_number])
   @@map("eu_documents")
 }
 

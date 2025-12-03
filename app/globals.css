@@ -238,3 +238,126 @@ html {
     background-position: 200% 0;
   }
 }
+
+/* Legal document styling - optimized for readability */
+@layer components {
+  .legal-document {
+    @apply leading-relaxed text-foreground;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+  }
+
+  /* Paragraph numbers (§) - make them stand out */
+  .legal-document a.paragraf,
+  .legal-document a[name^="P"] b,
+  .legal-document b:has(+ a[name^="P"]) {
+    @apply text-primary font-bold text-lg;
+    display: block;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  /* First paragraph shouldn't have top border */
+  .legal-document > div > a.paragraf:first-child,
+  .legal-document > div > p:first-child a.paragraf {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  /* Section headers (Inledande bestämmelser, etc.) */
+  .legal-document h2,
+  .legal-document div > p:first-child:not(:has(a)) {
+    @apply text-lg font-semibold text-foreground mt-8 mb-4;
+  }
+
+  /* Italic text - "Träder i kraft" notices */
+  .legal-document i {
+    @apply block my-4 py-3 px-4 rounded-lg text-sm;
+    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted)/0.5) 100%);
+    border-left: 3px solid hsl(var(--primary)/0.5);
+    font-style: normal;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Links within law text */
+  .legal-document a:not(.paragraf) {
+    @apply text-primary underline decoration-primary/30 underline-offset-2;
+    transition: all 0.15s ease;
+  }
+
+  .legal-document a:not(.paragraf):hover {
+    @apply decoration-primary;
+  }
+
+  /* Horizontal rules */
+  .legal-document hr {
+    @apply my-8 border-t border-border;
+  }
+
+  /* Lists - numbered points in law */
+  .legal-document ol,
+  .legal-document ul {
+    @apply my-4 ml-8 space-y-2;
+  }
+
+  .legal-document li {
+    @apply pl-2;
+  }
+
+  /* Tables */
+  .legal-document table {
+    @apply w-full my-6 text-sm;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .legal-document th,
+  .legal-document td {
+    @apply border border-border px-4 py-3 text-left;
+  }
+
+  .legal-document th {
+    @apply bg-muted font-semibold;
+  }
+
+  .legal-document tr:hover td {
+    @apply bg-muted/30;
+  }
+
+  /* Bold text */
+  .legal-document b {
+    @apply font-semibold;
+  }
+
+  /* Blockquotes */
+  .legal-document blockquote {
+    @apply border-l-4 border-primary/30 pl-6 my-6 italic text-muted-foreground;
+  }
+
+  /* Consecutive line breaks - add spacing */
+  .legal-document br {
+    display: block;
+    content: "";
+    margin-top: 0.5rem;
+  }
+
+  /* Clean up empty paragraphs */
+  .legal-document p:empty {
+    display: none;
+  }
+
+  /* Paragraph text blocks */
+  .legal-document p {
+    @apply mb-4;
+  }
+
+  /* Indented subsections */
+  .legal-document p + ol,
+  .legal-document p + ul {
+    @apply mt-2;
+  }
+}

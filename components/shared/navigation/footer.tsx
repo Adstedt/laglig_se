@@ -18,6 +18,7 @@ const menuLinks = [
 const legalLinks = [
   { href: '/integritetspolicy', label: 'Integritetspolicy' },
   { href: '/anvandarvillkor', label: 'Användarvillkor' },
+  { href: '/ansvarsfriskrivning', label: 'Ansvarsfriskrivning' },
 ]
 
 export function Footer() {
@@ -107,11 +108,15 @@ export function Footer() {
         <div className="mb-8 rounded-lg bg-muted p-4">
           <p className="text-xs text-muted-foreground">
             <strong>Juridisk ansvarsfriskrivning:</strong> Laglig.se
-            tillhandahåller AI-stödd information baserad på svenska lagar och
-            förordningar. Informationen är avsedd som vägledning och ersätter
-            inte professionell juridisk rådgivning. För specifika juridiska
-            frågor eller tolkning av lagar i enskilda fall, konsultera alltid en
-            behörig jurist.
+            tillhandahåller AI-assisterad juridisk information. Detta är inte
+            juridisk rådgivning. Kontakta en kvalificerad jurist för specifik
+            vägledning.{' '}
+            <Link
+              href="/ansvarsfriskrivning"
+              className="underline hover:text-foreground"
+            >
+              Läs mer
+            </Link>
           </p>
         </div>
 
