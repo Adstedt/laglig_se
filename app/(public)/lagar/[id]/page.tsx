@@ -14,7 +14,10 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CalendarDays, Building2, ExternalLink, Scale } from 'lucide-react'
+import { CalendarDays, Building2, ExternalLink } from 'lucide-react'
+import { LawTableOfContents, BackToTopButton } from './toc-client'
+import { getDocumentTheme } from '@/lib/document-themes'
+import { cn } from '@/lib/utils'
 
 // ISR: Revalidate every hour - NOT generateStaticParams() for 88K+ docs
 export const revalidate = 3600
@@ -94,6 +97,22 @@ function cleanLawHtml(html: string): string {
 
   // Clean up leading whitespace and empty divs
   cleaned = cleaned.replace(/^\s*<br\s*\/?>\s*/gi, '')
+
+  // Remove all hr tags - we use CSS borders for visual separation instead
+  cleaned = cleaned.replace(/<hr\s*\/?>/gi, '')
+
+  // Remove lone dots after </i> tags (Riksdagen artifact: "</i>.<p>")
+  cleaned = cleaned.replace(/<\/i>\s*\.\s*(?=<)/gi, '</i>')
+
+  // Remove lone dots that appear as paragraphs (artifact from Riksdagen HTML)
+  cleaned = cleaned.replace(/<p>\s*\.\s*<\/p>/gi, '')
+
+  // Remove empty paragraphs
+  cleaned = cleaned.replace(/<p>\s*<\/p>/gi, '')
+
+  // Remove paragraphs that only contain <br> tags
+  cleaned = cleaned.replace(/<p>\s*(<br\s*\/?>)+\s*<\/p>/gi, '')
+
   cleaned = cleaned.trim()
 
   return cleaned
@@ -104,6 +123,71 @@ function extractEffectiveDate(html: string): string | null {
   // Pattern: /Träder i kraft I:YYYY-MM-DD/
   const match = html.match(/Träder i kraft[^:]*:?\s*(\d{4}-\d{2}-\d{2})/i)
   return match?.[1] ?? null
+}
+
+// Extract metadata from Riksdagen HTML header
+interface LawMetadata {
+  department?: string
+  issuedDate?: string
+  amendedThrough?: string
+  repealedDate?: string
+  repealedBy?: string
+  sfsrUrl?: string
+  fulltextUrl?: string
+}
+
+function extractLawMetadata(html: string): LawMetadata {
+  const metadata: LawMetadata = {}
+
+  // Get the metadata block (before first <hr>)
+  const hrIndex = html.indexOf('<hr')
+  if (hrIndex === -1) return metadata
+
+  const metaBlock = html.substring(0, hrIndex)
+
+  // Extract Departement/myndighet (handles <b> or <strong> tags, with whitespace)
+  const deptMatch = metaBlock.match(
+    /Departement\/myndighet<\/(?:b|strong)>:\s*\n?\s*([^<\n]+)/i
+  )
+  if (deptMatch?.[1]) metadata.department = deptMatch[1].trim()
+
+  // Extract Utfärdad date
+  const issuedMatch = metaBlock.match(
+    /Utfärdad<\/(?:b|strong)>:\s*\n?\s*(\d{4}-\d{2}-\d{2})/i
+  )
+  if (issuedMatch?.[1]) metadata.issuedDate = issuedMatch[1]
+
+  // Extract Ändrad t.o.m. (with or without dot after "m", no "SFS" prefix in some)
+  const amendedMatch = metaBlock.match(
+    /Ändrad<\/(?:b|strong)>:\s*\n?\s*t\.o\.m\.?\s*(?:SFS\s*)?(\d{4}:\d+)/i
+  )
+  if (amendedMatch?.[1]) metadata.amendedThrough = amendedMatch[1]
+
+  // Extract Upphävd date
+  const repealedMatch = metaBlock.match(
+    /Upphävd<\/(?:b|strong)>:\s*\n?\s*(\d{4}-\d{2}-\d{2})/i
+  )
+  if (repealedMatch?.[1]) metadata.repealedDate = repealedMatch[1]
+
+  // Extract "Författningen har upphävts genom" SFS number
+  const repealedByMatch = metaBlock.match(
+    /har upphävts genom<\/(?:b|strong)>:\s*\n?\s*(?:SFS\s*)?(\d{4}:\d+)/i
+  )
+  if (repealedByMatch?.[1]) metadata.repealedBy = repealedByMatch[1]
+
+  // Extract SFSR link (both http and https)
+  const sfsrMatch = metaBlock.match(
+    /href="(https?:\/\/rkrattsbaser\.gov\.se\/sfsr[^"]+)"/i
+  )
+  if (sfsrMatch?.[1]) metadata.sfsrUrl = sfsrMatch[1]
+
+  // Extract Fulltext link (both http and https)
+  const fulltextMatch = metaBlock.match(
+    /href="(https?:\/\/rkrattsbaser\.gov\.se\/sfst[^"]+)"/i
+  )
+  if (fulltextMatch?.[1]) metadata.fulltextUrl = fulltextMatch[1]
+
+  return metadata
 }
 
 export default async function LawPage({ params }: PageProps) {
@@ -231,6 +315,15 @@ export default async function LawPage({ params }: PageProps) {
     url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'}/lagar/${law.slug}`,
   }
 
+  // Get theme for SFS laws (amber)
+  const theme = getDocumentTheme('SFS_LAW')
+  const ThemeIcon = theme.icon
+
+  // Extract metadata from HTML
+  const lawMetadata = law.html_content
+    ? extractLawMetadata(law.html_content)
+    : {}
+
   return (
     <>
       {/* JSON-LD Structured Data */}
@@ -260,17 +353,26 @@ export default async function LawPage({ params }: PageProps) {
             </BreadcrumbList>
           </Breadcrumb>
 
-          {/* Hero Header */}
+          {/* Hero Header - with theme accent */}
           <header className="mb-8 rounded-xl bg-card p-6 shadow-sm border">
             <div className="flex items-start gap-4">
-              <div className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Scale className="h-6 w-6 text-primary" />
+              <div
+                className={cn(
+                  'hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
+                  theme.accentLight
+                )}
+              >
+                <ThemeIcon className={cn('h-6 w-6', theme.accent)} />
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl font-bold text-foreground sm:text-2xl md:text-3xl leading-tight">
                   {law.title}
                 </h1>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Badge className={cn('gap-1', theme.badge)}>
+                    <ThemeIcon className="h-3.5 w-3.5" />
+                    {theme.label}
+                  </Badge>
                   <Badge variant="secondary" className="font-mono text-sm">
                     {law.document_number}
                   </Badge>
@@ -300,7 +402,10 @@ export default async function LawPage({ params }: PageProps) {
                   href={law.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-primary hover:underline ml-auto"
+                  className={cn(
+                    'flex items-center gap-1.5 hover:underline ml-auto',
+                    theme.accent
+                  )}
                 >
                   <Building2 className="h-4 w-4" />
                   <span>Riksdagen</span>
@@ -309,6 +414,92 @@ export default async function LawPage({ params }: PageProps) {
               )}
             </div>
           </header>
+
+          {/* Law Metadata Card */}
+          {(lawMetadata.department ||
+            lawMetadata.issuedDate ||
+            lawMetadata.amendedThrough ||
+            lawMetadata.sfsrUrl) && (
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                  {lawMetadata.department && (
+                    <div className="flex gap-2">
+                      <dt className="text-muted-foreground shrink-0">
+                        Departement:
+                      </dt>
+                      <dd className="font-medium">{lawMetadata.department}</dd>
+                    </div>
+                  )}
+                  {lawMetadata.issuedDate && (
+                    <div className="flex gap-2">
+                      <dt className="text-muted-foreground shrink-0">
+                        Utfärdad:
+                      </dt>
+                      <dd className="font-medium">{lawMetadata.issuedDate}</dd>
+                    </div>
+                  )}
+                  {lawMetadata.amendedThrough && (
+                    <div className="flex gap-2">
+                      <dt className="text-muted-foreground shrink-0">
+                        Ändrad t.o.m:
+                      </dt>
+                      <dd className="font-medium">
+                        SFS {lawMetadata.amendedThrough}
+                      </dd>
+                    </div>
+                  )}
+                  {lawMetadata.repealedDate && (
+                    <div className="flex gap-2">
+                      <dt className="text-muted-foreground shrink-0">
+                        Upphävd:
+                      </dt>
+                      <dd className="font-medium text-red-600">
+                        {lawMetadata.repealedDate}
+                      </dd>
+                    </div>
+                  )}
+                  {lawMetadata.repealedBy && (
+                    <div className="flex gap-2">
+                      <dt className="text-muted-foreground shrink-0">
+                        Upphävd genom:
+                      </dt>
+                      <dd className="font-medium">
+                        SFS {lawMetadata.repealedBy}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+                {/* External links */}
+                {(lawMetadata.sfsrUrl || lawMetadata.fulltextUrl) && (
+                  <div className="mt-3 pt-3 border-t flex flex-wrap gap-4 text-sm">
+                    {lawMetadata.sfsrUrl && (
+                      <a
+                        href={lawMetadata.sfsrUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-primary hover:underline"
+                      >
+                        Ändringsregister (SFSR)
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                    {lawMetadata.fulltextUrl && (
+                      <a
+                        href={lawMetadata.fulltextUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-primary hover:underline"
+                      >
+                        Fulltext (Regeringskansliet)
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Subject Tags */}
           {law.subjects.length > 0 && (
@@ -427,6 +618,12 @@ export default async function LawPage({ params }: PageProps) {
             </p>
           </footer>
         </div>
+
+        {/* Table of Contents (client component) */}
+        <LawTableOfContents />
+
+        {/* Back to top button */}
+        <BackToTopButton />
       </main>
     </>
   )
