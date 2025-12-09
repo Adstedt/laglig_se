@@ -15,9 +15,16 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CalendarDays, Building2, ExternalLink } from 'lucide-react'
-import { LawTableOfContents, BackToTopButton } from './toc-client'
+import { BackToTopButton } from './toc-client'
+import { FloatingReferencesWrapper } from './floating-references-wrapper'
+import { LawSectionWithBanner } from './law-section-with-banner'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
+import { RelatedDocumentsSummary } from '@/components/features/cross-references'
+import {
+  getCourtCasesCitingLaw,
+  getImplementedEuDirectives,
+} from '@/app/actions/cross-references'
 
 // ISR: Revalidate every hour - NOT generateStaticParams() for 88K+ docs
 export const revalidate = 3600
@@ -118,13 +125,6 @@ function cleanLawHtml(html: string): string {
   return cleaned
 }
 
-// Extract effective date from HTML content
-function extractEffectiveDate(html: string): string | null {
-  // Pattern: /Träder i kraft I:YYYY-MM-DD/
-  const match = html.match(/Träder i kraft[^:]*:?\s*(\d{4}-\d{2}-\d{2})/i)
-  return match?.[1] ?? null
-}
-
 // Extract metadata from Riksdagen HTML header
 interface LawMetadata {
   department?: string
@@ -222,10 +222,11 @@ export default async function LawPage({ params }: PageProps) {
     notFound()
   }
 
-  // Extract effective date from HTML if not in database
-  const htmlEffectiveDate = law.html_content
-    ? extractEffectiveDate(law.html_content)
-    : null
+  // Fetch cross-references in parallel
+  const [citingCases, implementedDirectives] = await Promise.all([
+    getCourtCasesCitingLaw(law.id, 10),
+    getImplementedEuDirectives(law.id),
+  ])
 
   // Clean and sanitize HTML content
   const cleanedHtml = law.html_content ? cleanLawHtml(law.html_content) : null
@@ -278,20 +279,6 @@ export default async function LawPage({ params }: PageProps) {
         day: 'numeric',
       })
     : null
-
-  const effectiveDateDisplay = law.effective_date
-    ? new Date(law.effective_date).toLocaleDateString('sv-SE', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : htmlEffectiveDate
-      ? new Date(htmlEffectiveDate).toLocaleDateString('sv-SE', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-      : null
 
   // JSON-LD structured data
   const jsonLd = {
@@ -387,14 +374,6 @@ export default async function LawPage({ params }: PageProps) {
                 <div className="flex items-center gap-1.5">
                   <CalendarDays className="h-4 w-4" />
                   <span>Publicerad {formattedPublicationDate}</span>
-                </div>
-              )}
-              {effectiveDateDisplay && (
-                <div className="flex items-center gap-1.5">
-                  <CalendarDays className="h-4 w-4 text-green-600" />
-                  <span className="text-green-700 font-medium">
-                    Träder i kraft {effectiveDateDisplay}
-                  </span>
                 </div>
               )}
               {law.source_url && (
@@ -501,6 +480,13 @@ export default async function LawPage({ params }: PageProps) {
             </Card>
           )}
 
+          {/* Related Documents Summary - Collapsible preview near top */}
+          <RelatedDocumentsSummary
+            citingCases={citingCases}
+            implementedDirectives={implementedDirectives}
+            lawTitle={law.title}
+          />
+
           {/* Subject Tags */}
           {law.subjects.length > 0 && (
             <div className="mb-6 flex flex-wrap gap-2">
@@ -530,35 +516,12 @@ export default async function LawPage({ params }: PageProps) {
             </Card>
           )}
 
-          {/* Law Content */}
-          <Card className="mb-8">
-            <CardHeader className="border-b bg-muted/30">
-              <CardTitle className="text-lg">Lagtext</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <article className="legal-document p-6 md:p-8">
-                {sanitizedHtml ? (
-                  <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
-                ) : law.full_text ? (
-                  <div className="whitespace-pre-wrap font-serif">
-                    {law.full_text}
-                  </div>
-                ) : (
-                  <p className="italic text-muted-foreground py-8 text-center">
-                    Ingen lagtext tillgänglig.{' '}
-                    <a
-                      href={law.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Läs på Riksdagen →
-                    </a>
-                  </p>
-                )}
-              </article>
-            </CardContent>
-          </Card>
+          {/* Law Content with Future Amendments Banner */}
+          <LawSectionWithBanner
+            htmlContent={sanitizedHtml || ''}
+            fallbackText={law.full_text}
+            sourceUrl={law.source_url}
+          />
 
           {/* Amendments Section */}
           {law.base_amendments.length > 0 && (
@@ -619,11 +582,14 @@ export default async function LawPage({ params }: PageProps) {
           </footer>
         </div>
 
-        {/* Table of Contents (client component) */}
-        <LawTableOfContents />
-
         {/* Back to top button */}
         <BackToTopButton />
+
+        {/* Floating references button - appears when scrolling */}
+        <FloatingReferencesWrapper
+          courtCaseCount={citingCases.totalCount}
+          directiveCount={implementedDirectives.length}
+        />
       </main>
     </>
   )

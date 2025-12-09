@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { ContentType } from '@prisma/client'
 import type { Metadata } from 'next'
@@ -14,15 +13,13 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  CalendarDays,
-  Building2,
-  ExternalLink,
-  Users,
-  ArrowUpRight,
-} from 'lucide-react'
+import { CalendarDays, Building2, ExternalLink, Users } from 'lucide-react'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
+import { ContentWithStyledHeadings } from '@/components/features/content'
+import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
+import { CitedLawsSummary } from '@/components/features/cross-references'
+import { FloatingCitedLawsWrapper } from './floating-cited-laws-wrapper'
 
 // ISR: Revalidate every hour
 export const revalidate = 3600
@@ -331,6 +328,17 @@ export default async function CourtCasePage({ params }: PageProps) {
             </div>
           </header>
 
+          {/* Cited Laws Summary - collapsible at top */}
+          <CitedLawsSummary
+            citedLaws={document.source_references.map((ref) => ({
+              id: ref.id,
+              title: ref.target_document.title,
+              slug: ref.target_document.slug,
+              document_number: ref.target_document.document_number,
+              context: ref.context,
+            }))}
+          />
+
           {/* Case Details */}
           {(parties?.plaintiff || parties?.defendant) && (
             <Card className="mb-6 border-l-4 border-l-primary/50">
@@ -395,7 +403,7 @@ export default async function CourtCasePage({ params }: PageProps) {
             <CardContent className="p-0">
               <article className="legal-document p-6 md:p-8">
                 {sanitizedHtml ? (
-                  <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+                  <ContentWithStyledHeadings htmlContent={sanitizedHtml} />
                 ) : document.full_text ? (
                   <div className="whitespace-pre-wrap font-serif">
                     {document.full_text}
@@ -417,38 +425,6 @@ export default async function CourtCasePage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          {/* Cited Laws Section */}
-          {document.source_references.length > 0 && (
-            <Card className="mb-8">
-              <CardHeader className="border-b bg-muted/30">
-                <CardTitle className="text-lg">
-                  Citerade lagar ({document.source_references.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {document.source_references.map((ref) => (
-                    <Link
-                      key={ref.id}
-                      href={`/lagar/${ref.target_document.slug}`}
-                      className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors group"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <span className="font-medium text-foreground group-hover:text-primary line-clamp-1">
-                          {ref.target_document.title}
-                        </span>
-                        <span className="ml-2 text-sm text-muted-foreground font-mono">
-                          ({ref.target_document.document_number})
-                        </span>
-                      </div>
-                      <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary shrink-0 ml-2" />
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Footer */}
           <footer className="text-center text-sm text-muted-foreground py-4 border-t">
             <p>
@@ -464,6 +440,14 @@ export default async function CourtCasePage({ params }: PageProps) {
             </p>
           </footer>
         </div>
+
+        {/* Back to top button */}
+        <BackToTopButton />
+
+        {/* Floating button for cited laws */}
+        <FloatingCitedLawsWrapper
+          lawCount={document.source_references.length}
+        />
       </main>
     </>
   )
