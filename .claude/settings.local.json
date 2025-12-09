@@ -57,7 +57,10 @@
       "Bash(tasklist:*)",
       "WebFetch(domain:www.dimiter.eu)",
       "Bash(ls:*)",
-      "WebFetch(domain:www.notisum.se)"
+      "WebFetch(domain:www.notisum.se)",
+      "WebFetch(domain:rkrattsbaser.gov.se)",
+      "Bash(DEBUG=\"\" pnpm tsx:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

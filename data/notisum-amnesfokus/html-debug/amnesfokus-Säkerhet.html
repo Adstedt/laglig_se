@@ -1,0 +1,563 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html lang="sv" xmlns="http://www.w3.org/1999/xhtml"><head id="_ctl0_QSitePageHead"><title>
+	Notisum - Karnov Group - Notisum - KarnovGroup
+</title><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="shortcut icon" href="../favicon.ico" type="image/x-icon"><link rel="icon" type="image/x-icon" href="../favicon.ico"><link type="text/css" rel="Stylesheet" href="/css/light.min.css"><link type="text/css" rel="Stylesheet" href="/css/fontawesome.min.css"><script src="/bundle/jq?v=JVBM4Dk7eZ-fjWvmxvoCeVR5MAt_3YXn4K7MRdHsuR81"></script>
+<link href="/bundle/css?v=To9siyCL39W7yAEru7bjv9Gvj9pZmghkXrK4kMs5ZGg1" rel="stylesheet">
+<script src="/bundle/global?v=L9tTDE3tGhytU8j9n71n9al0v7gzRMZch6AhdqJyTCw1"></script>
+<script src="/bundle/appbase?v=Ruhhb5Eg5dsWs-894-vhAavXAWmItf1eAcJi5JW00JY1"></script>
+<script src="/bundle/appdoc?v=rU56VeA_NnlocS43r5jKCErSwj4uprs75hXviLJDkbM1"></script>
+<link href="/bundle/box/css?v=xrPhlKNsI-4vPkryDdql-62ix2jMmKyYpkcuyRYg93M1" rel="stylesheet">
+<script src="/bundle/box/js?v=DS4GErKlAmYUYsZmfbH_GnJQuHxWk7o4VCb7VsV7Kf41"></script>
+<link href="/bundle/alert/css?v=dcj6bdt2VkiigglbQKQKkQWHfl9bMl2Q0LxCN2yf89I1" rel="stylesheet">
+<script src="/bundle/alert/js?v=zBPZFr7fjnNiGpC72HUrmmKOhOmJnEDyOfKMdjlqJ9U1"></script>
+
+    <!-- Google Analytics -->
+    <script async="" src="https://www.googletagmanager.com/gtag/js?id=G-C7R6FH646N"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-C7R6FH646N');
+    </script>
+    <!-- End Google Analytics -->
+    </head>
+<body id="_ctl0_WideBodyTag">
+    <form name="aspnetForm" method="post" action="./default.aspx?pageid=95" id="aspnetForm">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" style="">
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" style="">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKMTM5Njg5MjgxNg8WAh4TVmFsaWRhdGVSZXF1ZXN0TW9kZQIBFgJmDw8WBB4PX19BbnRpWHNyZlRva2VuBSAxMzcyNDM1YTFjMzY0NjkzOWJmNjUzOTYwYmMxMWI2NB4SX19BbnRpWHNyZlVzZXJOYW1lBQdwcjMyNjAyZBYEAgIPZBYCAgcPFgIeB1Zpc2libGVnZAIED2QWAgIBD2QWCAIHD2QWBAIBD2QWAgIBD2QWBGYPDxYCHwNoZGQCAg9kFgJmD2QWAmYPZBYEZg9kFgICAQ8PFgIeBFRleHQFFlbDpGxrb21tZW4gS29udG9yYWIgQUJkZAIGD2QWAmYPZBYaZg8PFgYfBAUMV2ViYmluYXJpZXIgHghDc3NDbGFzcwUNbGFiZWwtZWxlbWVudB4EXyFTQgICFgQeDmRhdGEtZ3JvdXBOYW1lBRZXSURFSU5GT1JNQVRJT05DT05UUk9MHgxkYXRhLWtleU5hbWUFC1BBTkVMSEVBREVSZAIBDw8WBh8EBUxWaSBow6VsbGVyIGzDtnBhbmRlIG9saWthIGluZm9ybWF0aW9ucy0gb2NoIHV0YmlsZG5pbmdzd2ViYmluYXJpdW0gaSBOb3Rpc3VtHwUFG2xhYmVsLWVsZW1lbnQgbGFiZWwtZWxlbWVudB8GAgIWBB8HBRZXSURFSU5GT1JNQVRJT05DT05UUk9MHwgFGFdlYmJpbmFyUGFuZWxIZWFkZXJMYWJlbGQCAg8WAh8EBY0BPGRpdiBjbGFzcz0ibGFiZWwtZWxlbWVudCIgZGF0YS1ncm91cE5hbWU9IldJREVJTkZPUk1BVElPTkNPTlRST0wiIGRhdGEta2V5TmFtZT0iU3Vic2NyaWJlVG9OZXh0SGVhZGVyIj5Bbm3DpGwgZGlnIHRpbGwgZXR0IHdlYmJpbmFyaXVtPC9kaXY+ZAIDDxYCHwQFxQE8ZGl2IGNsYXNzPSJsYWJlbC1lbGVtZW50IiBkYXRhLWdyb3VwTmFtZT0iV0lERUlORk9STUFUSU9OQ09OVFJPTCIgZGF0YS1rZXlOYW1lPSJTdWJzY3JpYmVEZXRhaWxzVGV4dCI+S2xpY2thIHDDpSBTZSBrb21tYW5kZSB3ZWJiaW5hcmllciBmw7ZyIGF0dCBrb21tYSB0aWxsIGVuIGxpc3RhIG1lZCBha3R1ZWxsYSB3ZWJiaW5hcmllcjwvZGl2PmQCBA8WCB4FY2xhc3MFH2J0biBsYWJlbC1lbGVtZW50IGxhYmVsLWVsZW1lbnQeCWlubmVyaHRtbAUXU2Uga29tbWFuZGUgd2ViYmluYXJpZXIfBwUWV0lERUlORk9STUFUSU9OQ09OVFJPTB8IBRVTdWJzY3JpYmVUb05leHRCdXR0b25kAgUPFgIfBAV/PGRpdiBjbGFzcz0ibGFiZWwtZWxlbWVudCIgZGF0YS1ncm91cE5hbWU9IldJREVJTkZPUk1BVElPTkNPTlRST0wiIGRhdGEta2V5TmFtZT0iTGF0ZXN0V2ViaW5hckhlYWRlciI+U2VuYXN0ZSB3ZWJiaW5hcml1bTwvZGl2PmQCBg8WAh8EBbIBPGRpdiBjbGFzcz0ibGFiZWwtZWxlbWVudCIgZGF0YS1ncm91cE5hbWU9IldJREVJTkZPUk1BVElPTkNPTlRST0wiIGRhdGEta2V5TmFtZT0iTGF0ZXN0V2ViaW5hckRldGFpbHNUZXh0Ij5OZWRhbiBsaXN0YXMgZGV0IHNlbmFzdGUgd2ViYmluYXJpZXQuIEtsaWNrYSBmw7ZyIGF0dCBnw6UgdmlkYXJlLjwvZGl2PmQCBw8WAh8EBXo8ZGl2IGNsYXNzPSJsYWJlbC1lbGVtZW50IiBkYXRhLWdyb3VwTmFtZT0iV0lERUlORk9STUFUSU9OQ09OVFJPTCIgZGF0YS1rZXlOYW1lPSJBbGxXZWJpbmFyc0hlYWRlciI+QWxsYSB3ZWJiaW5hcmllcjwvZGl2PmQCCA8WAh8EBacBPGRpdiBjbGFzcz0ibGFiZWwtZWxlbWVudCIgZGF0YS1ncm91cE5hbWU9IldJREVJTkZPUk1BVElPTkNPTlRST0wiIGRhdGEta2V5TmFtZT0iQWxsV2ViaW5hcnNEZXRhaWxzVGV4dCI+TcOlbmdhIGF2IHbDpXJhIHdlYmJpbmFyaWVyIGthbiBvY2tzw6Ugc2VzIGkgZWZ0ZXJoYW5kLiA8L2Rpdj5kAgkPFggfCgUxRyYjMjI5OyB0aWxsIGdlbm9tZiYjMjQ2O3JkYSB3ZWJiaW5hcmllciAmZ3Q7Jmd0Ox8HBRZXSURFSU5GT1JNQVRJT05DT05UUk9MHwgFEUFsbFdlYmluYXJzQnV0dG9uHwkFG2xhYmVsLWVsZW1lbnQgbGFiZWwtZWxlbWVudGQCCg8PFgYfBAUPU2VuYXN0ZSBueWhldGVyHwUFG2xhYmVsLWVsZW1lbnQgbGFiZWwtZWxlbWVudB8GAgIWBB8HBRZXSURFSU5GT1JNQVRJT05DT05UUk9MHwgFDU5ld3NMaXN0UGFuZWxkAgsPFgIeC18hSXRlbUNvdW50AgEWAmYPZBYCZg8VBAU5ODcwNCVBcmJldHNtaWxqw7Z2ZXJrZXRzIG55YSByZWdlbHN0cnVrdHVyCjIwMjQtMDktMTCHAjxkaXY+Jm5ic3A7PC9kaXY+ICAgICAgICAgICAgPGRpdj5JIHNsdXRldCBhdiAyMDIzIHByZXNlbnRlcmFkZSBBcmJldHNtaWxqw7Z2ZXJrZXQgMTUgbnlhIGbDtnJlc2tyaWZ0ZXIgc29tIHNrYSBlcnPDpHR0YSBkZSBudXZhcmFuZGUgNjcuIERlc3NhIHRyw6RkZXIgaSBrcmFmdCBkZW4gMSBqYW51YXJpIDIwMjUsIG1lbiBmaW5ucyByZWRhbiBudSB0aWxsZ8OkbmdsaWdhIGkgTm90aXN1bS48L2Rpdj48ZGl2PiZuYnNwOzwvZGl2PiA8ZGl2PlZpbGwgZHUgLi4uZAIMDxYIHwkFK3N0YXRpY0NvbG9yTGluayBsYWJlbC1lbGVtZW50IGxhYmVsLWVsZW1lbnQfCgUQTCYjMjI4O3MgZmxlci4uLh8HBRZXSURFSU5GT1JNQVRJT05DT05UUk9MHwgFEHJlYWRNb3JlTmV3c0xpbmtkAgMPZBYGAggPFgYfBwUWTk9UQUREVE9MQVdMSVNURElBTE9HUx8IBQxMQVdJTkxJU1RNU0cfCQUNbGFiZWwtZWxlbWVudGQCCg9kFgwCAQ8WAh8EBZEBPGRpdiBjbGFzcz0ibGFiZWwtZWxlbWVudCIgZGF0YS1ncm91cE5hbWU9Ik5PVEFERFRPTEFXTElTVERJQUxPR1MiIGRhdGEta2V5TmFtZT0iQURERE9DVU1FTlRUT0xBV0xJU1RIRUFERVIiPkzDpGdnIHRpbGwgZG9rdW1lbnQgaSBsYWdsaXN0YTwvZGl2PmQCAw8WAh8EBXY8ZGl2IGNsYXNzPSJsYWJlbC1lbGVtZW50IiBkYXRhLWdyb3VwTmFtZT0iTk9UQUREVE9MQVdMSVNURElBTE9HUyIgZGF0YS1rZXlOYW1lPSJBRERUT0xJU1RMQUJFTDEiPlbDpGxqIGxhZ2xpc3RhPC9kaXY+ZAIFDxAPFgQfBQUNbGFiZWwtZWxlbWVudB8GAgIWBB8HBRZOT1RBRERUT0xBV0xJU1RESUFMT0dTHwgFE015QXZhaWxhYmxlTGF3TGlzdHMQFQUWRmFzdGlnaGV0L0J5Z2cgU3ZlcmlnZR1JbmZvcm1hdGlvbnNzw6RrZXJoZXQgU3ZlcmlnZRFMaXZzbWVkZWwgU3ZlcmlnZShNaWxqw7YgZsO2ciBldHQgdGrDpG5zdGVmw7ZyZXRhZyBTdmVyaWdlDk1pbGrDtiBTdmVyaWdlFQUFNzIxNjIFNzI4ODAFNzI4ODEFNzI4ODIFNzI4ODMUKwMFZ2dnZ2dkZAIHD2QWBAIBDxYCHwQFnQE8ZGl2IGNsYXNzPSJsYWJlbC1lbGVtZW50IiBkYXRhLWdyb3VwTmFtZT0iTk9UQUREVE9MQVdMSVNURElBTE9HUyIgZGF0YS1rZXlOYW1lPSJOT1RJRllJRkVYSVNUU0RFU0NSSVBUSU9OIj5WYXJuYSBvbSBkb2t1bWVudGV0IHJlZGFuIGZpbm5zIGkgbGFnbGlzdGFuPC9kaXY+ZAIDDxYCHwQFfDxkaXYgY2xhc3M9ImxhYmVsLWVsZW1lbnQiIGRhdGEtZ3JvdXBOYW1lPSJOT1RBRERUT0xBV0xJU1RESUFMT0dTIiBkYXRhLWtleU5hbWU9Ik5PVElGWUlGRVhJU1RTQ0hLVEVYVCI+VmFybmluZyBww6UvYXY8L2Rpdj5kAgkPFggfCQUcYnRuIGJ0bi1zdWJtaXQgbGFiZWwtZWxlbWVudB8KBQ5MJiMyMjg7Z2cgdGlsbB8HBRZOT1RBRERUT0xBV0xJU1RESUFMT0dTHwgFEmFkZFRvTGlzdElucEJ1dHRvbmQCCw8WCB8JBRFidG4gbGFiZWwtZWxlbWVudB8KBQZBdmJyeXQfBwUWTk9UQUREVE9MQVdMSVNURElBTE9HUx8IBRpDbG9zZUFkZFRvTGF3TGlzdElucEJ1dHRvbmQCDg9kFgoCAQ8WAh8EBZABPGRpdiBjbGFzcz0ibGFiZWwtZWxlbWVudCIgZGF0YS1ncm91cE5hbWU9Ik5PVEFERFRPTEFXTElTVERJQUxPR1MiIGRhdGEta2V5TmFtZT0iQUREQVJSQVlUT0xBV0xJU1RIRUFERVIiPkzDpGdnIHRpbGwgZG9rdW1lbnRlbiBpIGxhZ2xpc3RhPC9kaXY+ZAIDDxYCHwQFezxkaXYgY2xhc3M9ImxhYmVsLWVsZW1lbnQiIGRhdGEtZ3JvdXBOYW1lPSJOT1RBRERUT0xBV0xJU1RESUFMT0dTIiBkYXRhLWtleU5hbWU9IkFEREFSUkFZVE9MSVNUTEFCRUwxIj5Ww6RsaiBsYWdsaXN0YTwvZGl2PmQCBQ8QDxYEHwUFDWxhYmVsLWVsZW1lbnQfBgICFgQfBwUWTk9UQUREVE9MQVdMSVNURElBTE9HUx8IBRRNeUF2YWlsYWJsZUxhd0xpc3RzMhAVBRZGYXN0aWdoZXQvQnlnZyBTdmVyaWdlHUluZm9ybWF0aW9uc3PDpGtlcmhldCBTdmVyaWdlEUxpdnNtZWRlbCBTdmVyaWdlKE1pbGrDtiBmw7ZyIGV0dCB0asOkbnN0ZWbDtnJldGFnIFN2ZXJpZ2UOTWlsasO2IFN2ZXJpZ2UVBQU3MjE2MgU3Mjg4MAU3Mjg4MQU3Mjg4MgU3Mjg4MxQrAwVnZ2dnZ2RkAgcPFggfCQUcYnRuIGJ0bi1zdWJtaXQgbGFiZWwtZWxlbWVudB8KBQ5MJiMyMjg7Z2cgdGlsbB8HBRZOT1RBRERUT0xBV0xJU1RESUFMT0dTHwgFF2FkZEFycmF5VG9MaXN0SW5wQnV0dG9uZAIJDxYIHwkFEWJ0biBsYWJlbC1lbGVtZW50HwoFBkF2YnJ5dB8HBRZOT1RBRERUT0xBV0xJU1RESUFMT0dTHwgFH0Nsb3NlQWRkQXJyYXlUb0xhd0xpc3RJbnBCdXR0b25kAgkPDxYCHwNoZGQCCw9kFgICAw9kFgICAQ8WCB8JBRFidG4gbGFiZWwtZWxlbWVudB8KBQZBdmJyeXQfBwUQTk9UQ0hBTkdFU0RJQUxPRx8IBRVDbG9zZUNoYW5nZXNEaWFsb2dJbnBkAg0PZBYKZg8WBh8HBRVOT1RVU0VSQ09NTUVOVERJQUxPR1MfCAUSU0FWRVVTRVJDT01NRU5UTVNHHwkFDWxhYmVsLWVsZW1lbnRkAgIPFgYfBwUVTk9UVVNFUkNPTU1FTlRESUFMT0dTHwgFGFNBVkVVU0VSQ09NTUVOVE5PVEVYVE1TRx8JBQ1sYWJlbC1lbGVtZW50ZAIEDxYGHwcFFU5PVFVTRVJDT01NRU5URElBTE9HUx8IBRRERUxFVEVVU0VSQ09NTUVOVE1TRx8JBQ1sYWJlbC1lbGVtZW50ZAIGDxYGHwcFFU5PVFVTRVJDT01NRU5URElBTE9HUx8IBQhFUlJPUk1TRx8JBQ1sYWJlbC1lbGVtZW50ZAIKD2QWBgIBDxYIHwkFEWJ0biBsYWJlbC1lbGVtZW50HwoFCiYjMTk3O25ncmEfBwUVTk9UVVNFUkNPTU1FTlRESUFMT0dTHwgFIUNsb3NlVXNlckRvY3VtZW50Q29tbWVudERpYWxvZ0lucGQCAw8WAh8EBX88ZGl2IGNsYXNzPSJsYWJlbC1lbGVtZW50IiBkYXRhLWdyb3VwTmFtZT0iTk9UVVNFUkNPTU1FTlRESUFMT0dTIiBkYXRhLWtleU5hbWU9InVzZXJEb2N1bWVudENvbW1lbnRIZWFkZXIiPkFuZ2Uga29tbWVudGFyPC9kaXY+ZAIFDxYIHwkFHGJ0biBidG4tc3VibWl0IGxhYmVsLWVsZW1lbnQfCgUFU3BhcmEfBwUVTk9UVVNFUkNPTU1FTlRESUFMT0dTHwgFGlNhdmVVc2VyRG9jdW1lbnRDb21tZW50SW5wZBgBBR5fX0NvbnRyb2xzUmVxdWlyZVBvc3RCYWNrS2V5X18WAQUlX2N0bDA6Tm90UGFnZUhlYWRlcjpBcHByb3ZlQWNjb3VudENoa6YbPbYmJr7FvpT79oNoKpR5xfYi" style="">
+
+<script type="text/javascript">
+<!--
+var theForm = document.forms['aspnetForm'];
+if (!theForm) {
+    theForm = document.aspnetForm;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+// -->
+</script>
+
+
+
+<script src="/ScriptResource.axd?d=6LXBBxX7Tuah0wTcauYU61RnxUNmgWmPeSjXWrD5vpdexrUmL1TSSGLGWhOvcANsrO9v7CuMP3FrMSOxq4vulQ5cQ_lG0pTbwvLct0Uu4UmUX9iA00g-rJvaK43Nf-8yG4uYa4Cmk7z6QsQgvTntXALu1i5jIjhxtrYCFyWuHVIAORML0&amp;t=345ad968" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<script src="../Services/AjaxLawList.asmx/jsdebug" type="text/javascript"></script>
+<script src="../Services/AjaxCompliance.asmx/jsdebug" type="text/javascript"></script>
+<script src="../Services/Document.asmx/jsdebug" type="text/javascript"></script>
+<script src="../Services/Text.asmx/jsdebug" type="text/javascript"></script>
+<script src="../Services/User.asmx/jsdebug" type="text/javascript"></script>
+<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="79EA417F" style="">
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdAD8WefIgZAh+yH7PftG3+JoqlZUupC/HIU783rLdCvv0PxNYY3LdCBkFeSVWJYY3myZLPgneRt1DSa650WoFCzCKz+WakelIyCuAMBpQnFVsK24RXW4eyNK/c7I/xhXvJGLWlA/MEnINhX42DwIsD0Cd7Fj37vAIwD5aKIQdu8CMP76g7XTPzN2QhGdI8gxCjLRrmMRtQYfGybjcG0qbEh5AHGqW7qTInITZpQCVF9m2FuEedNOTIqyI1aaOgTfVktGj/JwTB2eYT8lEbqhkIXdiJmkyyVyp6o1kV90f8NbNxr4XGVSQTQeVBQvO/aTDLG3CxYurg7sNHSlnfJf5rnd08i+fjLAfbO6CRUdO/H139bKUVTuQMGTAaO9ls9lcDXzwGehSG3wNG6bXkl7Olbf8t9SoFY1uqJpkAu5r1Pd09TEomie9JWvDVwUUxRrcbhgzu5p/n+WO1Vu0U4NvMJkPKM4F5MClbph3wNIYZL3pbDoEWDUu6uSE6inzAqI79pJaiqB5Kj3BbnPMftzn+adjEiiekg8K1NeA1XtcgB78ojCv7D+oq6C85LOIbN4fq4yG9Tl/695Mu6MspZEtTZ8iPdqStEgNRmF2Z/S352Z6TgpVLLwxXX23k0foPwu3NAs23pyIzPyMh3j+rgdgI4neq4bdxt1xVylO/VvVGf/4icUB0YjOd92Du+zooi4Q5sJprxeaJXKpvVy3J27kONSblDWE6S2qHhrM82OkzizdJNz6GX6WCuoEFbQrygPahys7uVrNLoBKclTNlhJauY8Ex+xL3lx64dp+BONqK7k7UH4VPkYA0tx+bWsY2UStVWvNsQQIQzh9CZXy8SXyn2kQrDve7QyGtnRKFQXqD5Qb/cInDyiaqqfHdnrCKr/NJbwmy+z0tm/ULNy0BragYm/bAaA5e2Vb3HoNEvSRzsTWQVZeXqPsydiUkwz020PCzQL6MYB0ApjHco9gVx62DeZgUeYfv3X3eYXwmUuobGx7T/NKpnjx/yTwGMT2BQmr9r+8Ds1kBGlphzNs2dFO3h7VZTDonJe+AlisFBXnoKSEum+MS6BUq/2ycubfuZrJISe2YMnzivNT+GDx7g65xoRzrZaozNLRti18dNu9orbGvR1yIg8wKHWl723T4PjSJJw6wFTDzCY47um3DSBwN7quxDLOgQbS4oDgh/LN6tbrVCvKIGh+TDvGSoaS/BmitVmNEqUC/BSJNBkurAiZYmQV4C2WaAPyGk81VqV236K7Ng2epXE/tS3CUSnafeGAvcnGoWInBBzEqfnwpvcTjGzg8efp59JR1HXsOsYybabnwWOrg3TBiOX8GhErzpLVsDAf8Vry0DL6n2PM/5zqjbhO8v1WYQ==" style="">
+    
+    <input name="_ctl0:NotTopSharedValues:not_is_identified" type="hidden" id="_ctl0_NotTopSharedValues_not_is_identified" value="1" style="">
+    <input name="_ctl0:NotPageHeader:ADDFAVORITEMSGSUCCESS" type="hidden" id="_ctl0_NotPageHeader_ADDFAVORITEMSGSUCCESS" value="Favoriten har nu skapats." data-groupname="NOTPAGEHEADER" data-keyname="ADDFAVORITEMSGSUCCESS" class="label-element" style="">
+<input name="_ctl0:NotPageHeader:currentSelectedLanguagePrefix" type="hidden" id="_ctl0_NotPageHeader_currentSelectedLanguagePrefix" value="sv" style="">
+<input name="_ctl0:NotPageHeader:favoritePageTitle" type="hidden" id="_ctl0_NotPageHeader_favoritePageTitle" style=""><input name="_ctl0:NotPageHeader:RESPONSEADDFAVORITE" type="hidden" id="_ctl0_NotPageHeader_RESPONSEADDFAVORITE" value="Är du säker på att du vill lägga till denna sida till dina favoriter?" data-groupname="NOTPAGEHEADER" data-keyname="RESPONSEADDFAVORITE" class="label-element" style=""><input name="_ctl0:NotPageHeader:currentViewedDocument" type="hidden" id="_ctl0_NotPageHeader_currentViewedDocument" style=""><input name="_ctl0:NotPageHeader:selectedDocumentsArray" type="hidden" id="_ctl0_NotPageHeader_selectedDocumentsArray" style=""><input name="_ctl0:NotPageHeader:IsAllSelected" type="hidden" id="_ctl0_NotPageHeader_IsAllSelected" value="0" style=""><input name="_ctl0:NotPageHeader:IsAllSuggestionsSelected" type="hidden" id="_ctl0_NotPageHeader_IsAllSuggestionsSelected" value="0" style=""><input name="_ctl0:NotPageHeader:ADDTOLAWLISTERROR1" type="hidden" id="_ctl0_NotPageHeader_ADDTOLAWLISTERROR1" value="Ett fel inträffade och dokumentet kunde inte läggs till i din laglista. Prova igen och om felet uppstår igen så kontakta Notisum Kundtjänst." data-groupname="NOTPAGEHEADER" data-keyname="ADDTOLAWLISTERROR1" class="label-element" style=""><input name="_ctl0:NotPageHeader:ADDTOLAWLISTERROR2" type="hidden" id="_ctl0_NotPageHeader_ADDTOLAWLISTERROR2" value="Ett systemfel inträffade och dokumentet kunde inte läggas till i din laglista. Prova igen och om felet uppstår igen så kontakta Notisum Kundtjänst. " data-groupname="NOTPAGEHEADER" data-keyname="ADDTOLAWLISTERROR2" class="label-element" style=""><input name="_ctl0:NotPageHeader:ADDDOCUMENTTOLAWLISTMSG1" type="hidden" id="_ctl0_NotPageHeader_ADDDOCUMENTTOLAWLISTMSG1" value="Dokumentet har lagts till i din laglista" data-groupname="NOTPAGEHEADER" data-keyname="ADDDOCUMENTTOLAWLISTMSG1" class="label-element" style=""><input name="_ctl0:NotPageHeader:ADDDOCUMENTSTOLAWLISTMSG1" type="hidden" id="_ctl0_NotPageHeader_ADDDOCUMENTSTOLAWLISTMSG1" value="Dokumenten har lagts till i din laglista." data-groupname="NOTPAGEHEADER" data-keyname="ADDDOCUMENTSTOLAWLISTMSG1" class="label-element" style=""><input name="_ctl0:NotPageHeader:SENDMAILERRORRESPONSE" type="hidden" id="_ctl0_NotPageHeader_SENDMAILERRORRESPONSE" value="Ett fel inträffade när mailet skulle skickas. Försök igen eller kontakta Notisum Kundtjänst." data-groupname="NOTPAGEHEADER" data-keyname="SENDMAILERRORRESPONSE" class="label-element" style=""><input name="_ctl0:NotPageHeader:SENDMAILSUCCESSRESPONSE" type="hidden" id="_ctl0_NotPageHeader_SENDMAILSUCCESSRESPONSE" value="Meddelandet har nu skickats." data-groupname="NOTPAGEHEADER" data-keyname="SENDMAILSUCCESSRESPONSE" class="label-element" style=""><input name="_ctl0:NotPageHeader:GenericWaitMsg" type="hidden" id="_ctl0_NotPageHeader_GenericWaitMsg" value="Sidan laddas, vänta." data-groupname="NOTPAGEHEADER" data-keyname="GenericWaitMsg" class="label-element" style=""><input name="_ctl0:NotPageHeader:GenericEmptyFieldMsg" type="hidden" id="_ctl0_NotPageHeader_GenericEmptyFieldMsg" value="Fältet kan inte vara tomt, kontrollera din inmatning och försök igen." data-groupname="NOTPAGEHEADER" data-keyname="GenericEmptyFieldMsg" class="label-element" style=""><input name="_ctl0:NotPageHeader:GenericSearchingLabel" type="hidden" id="_ctl0_NotPageHeader_GenericSearchingLabel" value="Söker ..." data-groupname="NOTPAGEHEADER" data-keyname="GenericSearchingLabel" class="label-element" style=""><input name="_ctl0:NotPageHeader:NotisumGenericErrorMessage" type="hidden" id="_ctl0_NotPageHeader_NotisumGenericErrorMessage" style=""><input name="_ctl0:NotPageHeader:ShowMessageOnStartup" type="hidden" id="_ctl0_NotPageHeader_ShowMessageOnStartup" value="0" style=""><input name="_ctl0:NotPageHeader:identifyEmailH" type="hidden" id="_ctl0_NotPageHeader_identifyEmailH" style=""><input name="_ctl0:NotPageHeader:identifyPwH" type="hidden" id="_ctl0_NotPageHeader_identifyPwH" style=""><input name="_ctl0:NotPageHeader:br" type="hidden" id="_ctl0_NotPageHeader_br" value="MOZILLA" style=""><input name="_ctl0:NotPageHeader:GENERIC_SAVE" type="hidden" id="_ctl0_NotPageHeader_GENERIC_SAVE" value="Spara" data-groupname="NOTPAGEHEADER" data-keyname="GENERIC_SAVE" class="label-element" style=""><div id="_ctl0_NotPageHeader_loginbox" class="login-box" style="display:none;">
+        <ul id="login-box-form">
+            <li>
+                <label>
+                    <div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="InternalLoginUserLabel">Användarnamn</div></label>
+                <input type="text" id="identifyEmail" class="input-text" onkeypress="return loginEnterPressIE(this.form);" style=""> 
+            </li>
+            <li>
+                <label>
+                    <div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="InternalLoginPasswordLabel">Lösenord</div></label>
+                <input type="password" id="identifyPassword" class="input-text" onkeypress="return loginEnterPressIE(this.form);" style="">
+            </li>
+            <li id="login-box-form-submit">
+                <a id="_ctl0_NotPageHeader_InternalLoginButton" class="btn btn-submit label-element" onclick="javascript:Identify();" data-groupname="NOTPAGEHEADER" data-keyname="InternalLoginButton">Logga in</a>
+                <a id="_ctl0_NotPageHeader_CloseInternalLoginPanelButton" class="btn label-element" onclick="javascript:ToggleUserStatusPanel();" data-groupname="NOTPAGEHEADER" data-keyname="CloseInternalLoginPanelButton">Stäng</a>
+            </li>
+        </ul>
+        
+    </div>
+    <div id="container">
+        <div id="header" style="width: 100%;">
+            <div id="header-bar">
+                <ul id="header-bar-nav">
+                    <li id="nav-home"><a href="/"><i class="fal fa-home"></i></a></li>
+                    <li id="nav-user"><a href="javascript:LoginInfo(this);" id="_ctl0_NotPageHeader_currentUserContextDescriptionIcon"><i class="fal fa-user"></i></a><a href="javascript:LoginInfo(this);" id="_ctl0_NotPageHeader_currentUserContextDescription" title="Du är inloggad som Abonnent" data-groupname="NOTPAGEHEADER" data-keyname="currentUserContextDescription" class="label-element">Du är inloggad som Abonnent</a></li>
+                    <li id="nav-search"><a id="ADVANCEDSEARCHOPTIONIcon" href="javascript:ToggleUserStatusPanel();"><i class="fal fa-search"></i></a><a href="/rn/search" id="_ctl0_NotPageHeader_ADVANCEDSEARCHOPTION" data-groupname="NOTPAGEHEADER" data-keyname="ADVANCEDSEARCHOPTION" class="label-element">Sök</a></li>
+                    <li class="header-bar-nav-icon" id="nav-contact"><a href="contact.aspx?pageid=6" id="_ctl0_NotPageHeader_contactButton" title="Kontakta oss" data-groupname="NOTPAGEHEADER" data-keyname="contactButton" class="label-element"><i class="fal fa-envelope"></i></a></li>
+                    
+                    <li class="header-bar-nav-icon" id="nav-favorite"><a href="javascript:addFavorite();" id="_ctl0_NotPageHeader_addFavButton" title="Lägg till nuvarande sida till favoriter" data-groupname="NOTPAGEHEADER" data-keyname="addFavButton" class="label-element"><i class="fal fa-star"></i></a></li>
+                    
+                        <li id="na-my-messages"><a href="javascript:ShowMessageCenter(55321);" id="_ctl0_NotPageHeader_goToMyMessagesIcon"><i class="fal fa-envelope-open"></i></a><a href="javascript:ShowMessageCenter(55321);" id="_ctl0_NotPageHeader_goToMyMessages" title="Visar meddelanden Notisum har skickat" data-groupname="NOTPAGEHEADER" data-keyname="goToMyMessages" class="label-element">Mina meddelanden</a></li>
+                    
+                    <li class="header-bar-nav-icon last" id="nav-logout"><a href="/Resources/Global/Logout.aspx" class="rnLoginLinkIcon"><i class="fal fa-times"></i></a><a href="../Resources/Global/Logout.aspx" id="_ctl0_NotPageHeader_SignOutButton" class="rnLoginLink label-element" data-groupname="NOTPAGEHEADER" data-keyname="SignOutButton">Logga ut</a></li>
+                    <li id="_ctl0_NotPageHeader_svOption" class="header-bar-nav-icon lang-icon"><a id="_ctl0_NotPageHeader_svSelector" onclick="javascript:__doPostBack('_ctl0$NotPageHeader$SetSvLangExecutor', '');">
+                            <img src="/resources/shared/images/sv.png"></a></li><li id="_ctl0_NotPageHeader_enOption" class="header-bar-nav-icon lang-icon"><a id="_ctl0_NotPageHeader_enSelector" onclick="javascript:__doPostBack('_ctl0$NotPageHeader$SetEnLangExecutor', '');">
+                            <img src="/resources/shared/images/en.png"></a></li>
+                </ul>
+                
+            </div>
+            <div id="header-logo">
+                <a href="start" id="_ctl0_NotPageHeader_homeButton" title="Tillbaka till startsidan" data-groupname="NOTPAGEHEADER" data-keyname="homeButton" class="label-element">
+                    <img src="../Resources/Global/Images/logo.png" id="_ctl0_NotPageHeader_mainLogoImage" class="headerNotisumLogo" alt="Notisum logga"></a>
+            </div>
+            <div id="header-nav">
+                <ul><li class="first"><a href="/rn/start" target="_self">Start</a><ul class="header-nav-sub-menu1"><li><a href="/rn/start" target="_self">Start</a></li></ul></li><li><a>Regelsamling</a><ul class="header-nav-sub-menu1"><li><a>Svensk lagstiftning</a><ul class="header-nav-sub-menu2"><li class="first"><a href="/rn/Default.aspx?pageid=109" target="_self">Lagar och förordningar</a></li><li><a href="/rn/Wide.aspx?pageid=110" target="_self">Ändringar i lagboken</a></li><li><a href="/rn/jurisdictions/jurisdiction/amendments?type=SFS" target="_self">Senaste ändringar</a></li><li><a href="/rn/jurisdictions/jurisdiction/repealed?type=SFS" target="_self">Upphävda</a></li><li><a href="/rn/jurisdictions/jurisdiction/inforce?type=SFS" target="_self">Ikraftträdanden</a></li></ul></li><li><a>Europalagstiftning</a><ul class="header-nav-sub-menu2"><li class="first"><a href="/rn/Default.aspx?pageid=359" target="_self">Förordningar</a></li><li><a href="/rn/Default.aspx?pageid=360" target="_self">Direktiv</a></li><li><a href="/rn/Default.aspx?pageid=358" target="_self">Alla rättsakter</a></li><li><a href="/Rn/Default.aspx?pageid=102" target="_self">Källförteckning EU-rätt</a></li><li><a href="/rn/jurisdictions/jurisdiction/amendments?type=EGF" target="_self">Senaste ändringar</a></li><li><a href="/rn/jurisdictions/jurisdiction/repealed?type=EGF" target="_self">Upphävda</a></li><li class="last"><a href="/rn/Default.aspx?pageid=361" target="_self">EU-domstolen</a></li></ul></li><li><a>Förarbeten regering</a><ul class="header-nav-sub-menu2"><li class="first"><a href="/Rn/Default.aspx?pageid=117" target="_self">Propositioner</a></li><li><a href="http://www.regeringen.se/rattsdokument/kommittedirektiv/" target="_blank">Kommittédirektiv</a></li><li><a href="/Rn/Default.aspx?pageid=119" target="_self">Statens offentliga utredningar (SOU)</a></li><li><a href="/Rn/Default.aspx?pageid=118" target="_self">Förordningsmotiv</a></li><li><a href="/Rn/Default.aspx?pageid=120" target="_self">Departementsserien  (Ds)</a></li><li class="last"><a href="https://www.lagradet.se/yttranden/" target="_blank">Lagrådet</a></li></ul></li><li><a>Förarbeten riksdag</a><ul class="header-nav-sub-menu2"><li class="first"><a href="https://www.riksdagen.se/sv/dokument-lagar/?doktyp=mot" target="_blank">Motioner</a></li><li><a href="http://www.riksdagen.se/sv/dokument-lagar/?doktyp=frsrdg" target="_blank">Framställningar och redogörelser</a></li><li><a href="http://www.riksdagen.se/sv/Dokument-Lagar/Utskottens-dokument/Betankanden/" target="_blank">Betänkanden</a></li><li><a href="http://www.riksdagen.se/sv/Dokument-Lagar/Utskottens-dokument/Yttranden/" target="_blank">Yttranden</a></li><li><a href="http://www.riksdagen.se/sv/dokument-lagar/?doktyp=uprotokoll" target="_blank">Protokoll</a></li><li class="last"><a href="http://www.riksdagen.se/sv/dokument-lagar/?doktyp=rskr" target="_blank">Skrivelser</a></li></ul></li><li><a>Rättsfall</a><ul class="header-nav-sub-menu2"><li class="first"><a href="/Rn/Default.aspx?pageid=124" target="_self">Högsta domstolen</a></li><li><a href="/Rn/Default.aspx?pageid=125" target="_self">Hovrätterna</a></li><li><a href="/Rn/Default.aspx?pageid=126" target="_self">Högsta förvaltningsdomstolen</a></li><li><a href="/Rn/Default.aspx?pageid=129" target="_self">Arbetsdomstolen</a></li><li><a href="/Rn/Default.aspx?pageid=130" target="_self">Patent- och marknadsdomstolen</a></li><li><a href="/Rn/Default.aspx?pageid=131" target="_self">Mark- och miljööverdomstolen</a></li><li><a href="/Rn/Default.aspx?pageid=132" target="_self">Migrationsöverdomstolen</a></li><li><a href="/Rn/Default.aspx?pageid=133" target="_self">Justitieombudsmannen</a></li><li class="last"><a href="/Rn/Default.aspx?pageid=134" target="_self">Justitiekanslern</a></li></ul></li><li class="last"><a>Myndigheter</a><ul class="header-nav-sub-menu2"><li class="first"><a href="/Rn/Default.aspx?pageid=135" target="_self">Statliga myndigheter</a></li><li><a href="/Rn/Default.aspx?pageid=136" target="_self">Länsstyrelser</a></li><li class="last"><a href="/rn/se/municipalities" target="_self">Kommuner</a></li></ul></li></ul></li><li><a>Ämnesfokus</a><ul class="header-nav-sub-menu1 subject-area-list"><li class="subjecta-area-item"><a href="/rn/focus?pageid=140" target="_self">Arbetsmiljö</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=139" target="_self">Ekonomi</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=141" target="_self">Energi</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=142" target="_self">Fastighet</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=143" target="_self">Förvaltning</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=565" target="_self">Skog- och jordbruk</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=144" target="_self">Hälsa och Sjukvård</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=516" target="_self">Livsmedel</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=145" target="_self">Marknad</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=146" target="_self">Media</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=147" target="_self">Miljö</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=138" target="_self">Personal</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=601" target="_self">Produktlagstiftning</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=148" target="_self">Rättsväsende</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=149" target="_self">Skola</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=150" target="_self">Social</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=151" target="_self">Säkerhet</a></li><li class="subjecta-area-item"><a href="/rn/focus?pageid=152" target="_self">Trafik</a></li></ul></li><li><a>Bevakning</a><ul class="header-nav-sub-menu1"><li class="first"><a>Laglistor</a><ul class="header-nav-sub-menu2"><li class="menu-action-button"><a href="/Rn/lawlist/edit.aspx" target="_self">Skapa ny laglista</a></li><li class="menu-action-button"><a href="/Rn/lawlist/remove.aspx" target="_self">Ta bort laglista</a></li><li class="menu-action-button"><a href="/Rn/Wide2.aspx?pageid=521" target="_self">Notisums standardlaglistor</a></li><li><a href="lawlist/?listid=72162">Fastighet/Bygg Sverige</a></li><li><a href="lawlist/?listid=72880">Informationssäkerhet Sverige</a></li><li><a href="lawlist/?listid=72881">Livsmedel Sverige</a></li><li><a href="lawlist/?listid=72882">Miljö för ett tjänsteföretag Sverige</a></li><li><a href="lawlist/?listid=72883">Miljö Sverige</a></li></ul></li><li><a href="/rn/lawlist/compare" target="_self">Nya regler</a></li><li><a href="/rn/lawlist/changes" target="_self">Ändrade regler</a></li><li><a href="/rn/lawlist/inforce" target="_self">Ikraftträdda regler</a></li><li><a href="/rn/reminders" target="_self">Åtgärdsbevakning</a></li><li class="last"><a href="/rn/subscribe" target="_self">Prenumerera</a></li></ul></li><li><a href="/rn/settings" target="_self" class="noChildren">Inställningar</a></li><li class="last"><a>Hjälp</a><ul class="header-nav-sub-menu1"><li><a href="/Rn/Default.aspx?pageid=643" target="_self">Guide till svensk lagstiftning</a></li><li><a href="/rn/info?pageid=610" target="_self">Manualer</a></li><li><a href="/rn/Wide.aspx?pageid=629" target="_self">Webbinarier</a></li><li><a href="/rn/contact.aspx?pageid=6" target="_self">Kontakt</a></li></ul></li></ul>
+
+
+            </div>
+            
+            <div id="header-search-container">
+                
+                    <div id="header-search">
+                        <input name="_ctl0:NotPageHeader:headersearchinputhidden" type="hidden" id="_ctl0_NotPageHeader_headersearchinputhidden" style=""><input name="_ctl0:NotPageHeader:headersearchinput" type="text" value="Sök i Notisums databas" id="_ctl0_NotPageHeader_headersearchinput" class="input_text" autocomplete="off" onkeypress="return entsubIE(this.form);" onblur="if(this.value==''){this.value='Sök i Notisums databas';}" onfocus="if(this.value=='Sök i Notisums databas'){this.value='';}" style=""><a href="javascript:SimpleSearch();" id="_ctl0_NotPageHeader_headersearchsubmitimg" class="header-search-submit">
+                            <img src="../Resources/Global/Images/header_search_submit.gif" id="_ctl0_NotPageHeader_searchImage"></a>
+                    </div>
+                
+            </div>
+            <div id="header-hamburger"><i class="fal fa-bars"></i></div>
+        </div>
+        <a id="_ctl0_NotPageHeader_AddFavoriteExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$AddFavoriteExecutor','')"></a><a id="_ctl0_NotPageHeader_SearchExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$SearchExecutor','')"></a><a id="_ctl0_NotPageHeader_IdentifyExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$IdentifyExecutor','')"></a><a id="_ctl0_NotPageHeader_SetSvLangExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$SetSvLangExecutor','')"></a><a id="_ctl0_NotPageHeader_SetDaLangExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$SetDaLangExecutor','')"></a><a id="_ctl0_NotPageHeader_SetEnLangExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$SetEnLangExecutor','')"></a><a id="_ctl0_NotPageHeader_SetNbLangExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$SetNbLangExecutor','')"></a><a id="_ctl0_NotPageHeader_SetFiLangExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$SetFiLangExecutor','')"></a>
+    </div>
+    <div id="_ctl0_NotPageHeader_MyMessagesPanel" class="lightbox width-screen" style="display: none; position: fixed; z-index: 10001;">
+	
+        <div class="lightbox-header">
+            <div class="lightbox-html-container-top" id="myMessageTypesContainer"></div>
+            <a id="_ctl0_NotPageHeader_inpCloseMessageCenter" class="btn label-element" onclick="javascript:HideMessageCenter();" data-groupname="NOTPAGEHEADER" data-keyname="inpCloseMessageCenter">Stäng</a>
+        </div>
+        <div class="lightbox-body">
+            <div id="myMessagesProcessWindow" class="processWindow">
+                <table>
+                    <tbody><tr>
+                        <td>
+                            <img src="../Resources/Global/Images/Spiner.gif" id="_ctl0_NotPageHeader_Img10">&nbsp;<div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="myMessagesProcessWaitText">Sidan laddas, vänta...</div></td>
+                    </tr>
+                </tbody></table>
+            </div>
+            <div class="lightbox-html-container large" id="myMessagesContainer"></div>
+        </div>
+    
+</div><a id="_ctl0_NotPageHeader_myMessagesPopupExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$myMessagesPopupExecutor','')"></a><div id="_ctl0_NotPageHeader_MyMessageAdditionalRecipientsPanel" class="lightbox width-middle" style="display: none; position: fixed; z-index: 10001;">
+	
+        <div class="lightbox-header">
+            <a id="_ctl0_NotPageHeader_inpAbortSend" class="btn label-element" onclick="javascript:AbortSendDialog();" data-groupname="NOTPAGEHEADER" data-keyname="inpAbortSend">Avbryt</a>
+        </div>
+        <div class="lightbox-body">
+            <div>
+                <div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="AdditionalRecipientsDescription">Detta meddelande skickades även till de mottagare som listas nedan. Här kan du välja om du vill skicka detta meddelande igen även till dessa mottagare eller endast till dig själv.</div>
+            </div>
+            <br>
+            <div class="lightbox-html-container" id="myMessageAdditionalRecipientsContainer"></div>
+            <br>
+            <div class="lightbox-footer">
+                <a id="_ctl0_NotPageHeader_inpSendToMeOnly" class="btn label-element" onclick="javascript:ForceSendSingle();" data-groupname="NOTPAGEHEADER" data-keyname="inpSendToMeOnly">Skicka till mig</a><a id="_ctl0_NotPageHeader_inpSendToAll" class="btn btn-submit label-element" onclick="javascript:ForceSendAll();" data-groupname="NOTPAGEHEADER" data-keyname="inpSendToAll">Skicka till alla</a>
+            </div>
+        </div>
+    
+</div><a id="_ctl0_NotPageHeader_ErrorRequestPopupExecutor" href="javascript:__doPostBack('_ctl0$NotPageHeader$ErrorRequestPopupExecutor','')"></a><div id="_ctl0_NotPageHeader_ErrorRequestPanel" class="lightbox width-middle" style="display: none; position: fixed; z-index: 10001;">
+	
+        <div class="lightbox-header lightbox-header-alert">
+            <div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="ErrorRequestBoxHeader">Ett fel inträffade</div>
+        </div>
+        <div class="lightbox-body">
+            <div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="ErrorRequestBoxMessage">Åtgärden gick inte att genomföra. Sidan kommer nu att laddas om och eventuellt behöver du logga in igen.</div>
+            <div class="lightbox-footer">
+                <a id="_ctl0_NotPageHeader_ErrorRequestBoxReloadButton" class="btn btn-cancel label-element" onclick="javascript:window.location.reload();" data-groupname="NOTPAGEHEADER" data-keyname="ErrorRequestBoxReloadButton">Ladda om</a>
+            </div>
+        </div>
+    
+</div><div id="_ctl0_NotPageHeader_notePopupPanel" class="lightbox width-wide" style="display: none; position: fixed; z-index: 10001;">
+	
+        <div class="lightbox-header lightbox-header-narrow" id="notePopupHeader">
+            <a onclick="javascript:CloseNote();"><i class="fal fa-window-close"></i></a>
+        </div>
+        <div class="lightbox-body">
+            <div id="processNoteWindow" class="processWindow">
+                <table>
+                    <tbody><tr>
+                        <td>
+                            <img src="../Resources/Global/Images/Spiner.gif" id="_ctl0_NotPageHeader_Img1">&nbsp;<div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="processNoteWindowText">Sidan laddas, vänta...</div></td>
+                    </tr>
+                </tbody></table>
+            </div>
+            <div id="newsItemBody"></div>
+        </div>
+    
+</div><div id="_ctl0_NotPageHeader_ConsentAccountPopupPanel" class="lightbox width-screen" style="display: none; position: fixed; z-index: 10001;">
+	
+        <div class="lightbox-header lightbox-header-narrow" id="ConsentAccountPopupPanelHeader">
+        </div>
+        <div class="lightbox-body">
+            <h3>
+                <div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="GDPRHeader">Godkännande av dataskyddspolicy och allmänna villkor</div></h3>
+            <div>
+                <div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="GDPRDescription">För att kunna använda tjänsten behöver du godkänna Notisums dataskyddspolicy och allmänna villkor.</div>
+            </div>
+            <div>
+                <div class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="APPROVE_ACCOUNT_TEXT1">Hej,<br>
+Notisums allmänna villkor för nättjänster och vår dataskyddspolicy är framtagna med hänsyn till den gällande dataskyddsförordningen (GDPR). Båda dokumenten finns länkade nedan som PDF-filer. Läs igenom och säkerställ att du förstår innebörden.
+<br><br>
+Du hittar <a href="https://www.notisum.com/sv/allmanna_villkor" target="_blank">Notisums allmänna villkor för nättjänster här</a> och 
+<a href="/marknad/DataskyddNotisum.pdf" target="_blank">Notisums dataskyddspolicy här</a>.
+<br><br>
+Om uppgifterna nedan inte är korrekta behöver du justera dem<br></div>
+            </div>
+            <div>
+                <span class="label-element" data-groupname="NOTPAGEHEADER" data-keyname="ApproveAccountChk"><input id="_ctl0_NotPageHeader_ApproveAccountChk" type="checkbox" name="_ctl0:NotPageHeader:ApproveAccountChk" checked="checked" style=""><label for="_ctl0_NotPageHeader_ApproveAccountChk">Jag godkänner härmed de allmänna villkoren.</label></span>
+            </div>
+            <div class="lightbox-footer">
+                <a id="_ctl0_NotPageHeader_ApproveAccountButton" class="btn btn-submit label-element" onclick="javascript:ConsentAccount();" data-groupname="NOTPAGEHEADER" data-keyname="ApproveAccountButton">Godkänn</a>
+                <a id="_ctl0_NotPageHeader_ExecuteConsent" href="javascript:__doPostBack('_ctl0$NotPageHeader$ExecuteConsent','')"></a>
+            </div>
+        </div>
+    
+</div>
+    <script type="text/javascript">
+        function ShowSuccessMessageFromFavorite() {
+            showSuccess(document.getElementById('_ctl0_NotPageHeader_ADDFAVORITEMSGSUCCESS').value);
+        }
+        document.getElementById('header-hamburger').onclick = function () {
+            document.getElementsByTagName('body')[0].classList.toggle("open-nav");
+        }
+    </script>
+
+
+
+    
+    
+<div class="main">
+    
+
+<div class="page-header">
+    <h2 class="page-title-startpage"><span id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0_WelcomePanel_CustomerLabel" class="pageTextTitle">Välkommen Kontorab AB</span></h2>
+</div>
+<div class="">			
+	<div id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0_LeftPanelsContainer" class="">
+<div class="table-container">
+    <table class="adv-table-title">
+        <tbody><tr>
+            <td class="header-cell"><h4><span id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl0_ContentPanelHeaderLabel" class="label-element" data-groupname="MYFAVORITES" data-keyname="PANELHEADER">Favoriter</span>&nbsp;<a class="show-info-anchor" href="javascript:showHelp('favoriter');"><i class="fal fa-info-circle"></i></a></h4></td>
+        </tr>
+    </tbody></table>
+    <table class="table-list" cellspacing="0">
+	    <tbody class="table-list-body">	        
+        
+                <tr><td class="table-column-title"><a class="staticColorLink" target="_top" href="/rn/contact.aspx?pageid=6" title="">Kontakta kundtjänst</a></td></tr>
+            
+              
+            
+        </tbody>
+    </table>    
+   <div id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl0_ToOverviewPage" class="toLawListOverview">
+	
+        <a href="Default.aspx?pageid=97&amp;viewTab=2" id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl0_ToOverviewPageLink" class="staticColorLink"><b>
+            </b></a>
+   
+</div>
+</div>
+
+<div class="table-container">
+    <table class="adv-table-title">
+        <tbody><tr>
+            <td class="header-cell"><h4><span id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl2_ContentPanelHeaderLabel" class="label-element" data-groupname="MYLAWLISTS" data-keyname="PANELHEADER">Laglistor</span>&nbsp;<a class="show-info-anchor" href="javascript:showHelp('laglistor');"><i class="fal fa-info-circle"></i></a></h4></td>
+            <td style="text-align:right;font-size: 22px;">
+                
+                
+            </td>
+        </tr>
+    </tbody></table>
+	<table class="table-list" cellspacing="0">
+	    <tbody class="table-list-body">      
+            
+                    <tr>
+                        <td colspan="2">
+                            <div class="lawlist-box lawlist-box-info">
+                                <div class="table-column-title"><a href="/rn/lawlist/?listid=72162" title="Ett urval lagar, förordningar och myndighetsföreskrifter om fastigheter. Ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.">Fastighet/Bygg Sverige</a></div>
+                                <div class="my-lawlists-description">Ett urval lagar, förordningar och myndighetsföreskrifter om fastigheter. Ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.</div>
+                                <div width="100%" class="lawlist-box-options"><div class="lawlist-box-flags"><a class="lawlist-box-accept-link" href="/rn/lawlist/?listid=72162&amp;accept=1">12 <div class="label-element" data-groupname="MYLAWLISTS" data-keyname="CHANGESLABEL">Uppdateringar</div></a></div><div class="lawlist-box-custmize"><a href="/rn/lawlist/edit.aspx?listid=72162"><i class="fal fa-cog"></i></a></div></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td colspan="2">
+                            <div class="lawlist-box lawlist-box-info">
+                                <div class="table-column-title"><a href="/rn/lawlist/?listid=72880" title="Ett urval lagar, förordningar och myndighetsföreskrifter om informationssäkerhet och IT. Ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.">Informationssäkerhet Sverige</a></div>
+                                <div class="my-lawlists-description">Ett urval lagar, förordningar och myndighetsföreskrifter om informationssäkerhet och IT. Ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.</div>
+                                <div width="100%" class="lawlist-box-options"><div class="lawlist-box-flags">&nbsp;</div><div class="lawlist-box-custmize"><a href="/rn/lawlist/edit.aspx?listid=72880"><i class="fal fa-cog"></i></a></div></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td colspan="2">
+                            <div class="lawlist-box lawlist-box-info">
+                                <div class="table-column-title"><a href="/rn/lawlist/?listid=72881" title="Ett urval lagar, förordningar och myndighetsföreskrifter om livsmedel. Ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.">Livsmedel Sverige</a></div>
+                                <div class="my-lawlists-description">Ett urval lagar, förordningar och myndighetsföreskrifter om livsmedel. Ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.</div>
+                                <div width="100%" class="lawlist-box-options"><div class="lawlist-box-flags">&nbsp;</div><div class="lawlist-box-custmize"><a href="/rn/lawlist/edit.aspx?listid=72881"><i class="fal fa-cog"></i></a></div></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td colspan="2">
+                            <div class="lawlist-box lawlist-box-info">
+                                <div class="table-column-title"><a href="/rn/lawlist/?listid=72882" title="Ett urval lagar, förordningar och myndighetsföreskrifter om miljö. Förslag på laglista att utgå ifrån - ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.
+">Miljö för ett tjänsteföretag Sverige</a></div>
+                                <div class="my-lawlists-description">Ett urval lagar, förordningar och myndighetsföreskrifter om miljö. Förslag på laglista att utgå ifrån - ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.
+</div>
+                                <div width="100%" class="lawlist-box-options"><div class="lawlist-box-flags">&nbsp;</div><div class="lawlist-box-custmize"><a href="/rn/lawlist/edit.aspx?listid=72882"><i class="fal fa-cog"></i></a></div></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                    <tr>
+                        <td colspan="2">
+                            <div class="lawlist-box lawlist-box-info">
+                                <div class="table-column-title"><a href="/rn/lawlist/?listid=72883" title="Ett urval lagar, förordningar och myndighetsföreskrifter om förhållandet mellan arbetsgivare och arbetstagare. Ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.">Miljö Sverige</a></div>
+                                <div class="my-lawlists-description">Ett urval lagar, förordningar och myndighetsföreskrifter om förhållandet mellan arbetsgivare och arbetstagare. Ni kan lägga till och ta bort författningar så det bättre berör er verksamhet.</div>
+                                <div width="100%" class="lawlist-box-options"><div class="lawlist-box-flags">&nbsp;</div><div class="lawlist-box-custmize"><a href="/rn/lawlist/edit.aspx?listid=72883"><i class="fal fa-cog"></i></a></div></div>
+                            </div>
+                        </td>
+                    </tr>
+                
+                                 
+        </tbody>
+    </table> 
+</div></div>
+	<div id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0_middlePanelsContainer" class=""></div>
+	<div id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0_rightPanelsContainer" class="">
+<div class="box-container information-panel-container">
+    <table class="adv-table-title">
+        <tbody><tr>
+            <td class="header-cell"><h4><span id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl1_ContentPanelHeaderLabel" class="label-element" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="PANELHEADER">Webbinarier </span></h4></td>
+        </tr>
+    </tbody></table>
+    <div class="box-body information-panel" cellspacing="0">
+        <div class="table-container">
+            <div class="table-title"><span id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl1_WebbinarPanelHeaderLabel" class="label-element label-element" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="WebbinarPanelHeaderLabel">Vi håller löpande olika informations- och utbildningswebbinarium i Notisum</span></div>
+            <table class="table-list" cellspacing="0">
+                <tbody class="table-list-body">
+                    <tr>
+                        <td>
+                            <div><h4><div class="label-element" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="SubscribeToNextHeader">Anmäl dig till ett webbinarium</div></h4></div>
+                            <p></p><div class="label-element" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="SubscribeDetailsText">Klicka på Se kommande webbinarier för att komma till en lista med aktuella webbinarier</div><p></p>
+                            <div>                                
+                                <a href="../webinar" id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl1_SubscribeToNextButton" class="btn label-element label-element" target="_blank" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="SubscribeToNextButton">Se kommande webbinarier</a>                                
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="display:none;">
+                        <td>
+                            <div><h4><div class="label-element" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="LatestWebinarHeader">Senaste webbinarium</div></h4></div>
+                            <p></p><div class="label-element" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="LatestWebinarDetailsText">Nedan listas det senaste webbinariet. Klicka för att gå vidare.</div><p></p>
+                            <a href="/rn/news/article?itemid=158597">NYHETER OCH ÄNDRINGAR I MILJÖ- OCH ARBETSMILJÖLAGSTIFTNINGEN VID HALVÅRSSKIFTET </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div><h4><div class="label-element" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="AllWebinarsHeader">Alla webbinarier</div></h4></div>
+                            <p></p><div class="label-element" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="AllWebinarsDetailsText">Många av våra webbinarier kan också ses i efterhand. </div><p></p>
+                            <a href="wide.aspx?pageid=570" id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl1_AllWebinarsButton" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="AllWebinarsButton" class="label-element label-element">Gå till genomförda webbinarier &gt;&gt;</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="table-container" style="display:none;">
+            <div class="table-title"><span id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl1_NewsListPanel" class="label-element label-element" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="NewsListPanel">Senaste nyheter</span></div>
+            <table class="table-list" cellspacing="0">
+                <tbody class="table-list-body">
+            
+                    <tr><td>
+                        <div class="news-title">
+                            <i><b><a href="/rn/news/article?itemid=98704">
+                                Arbetsmiljöverkets nya regelstruktur</a></b></i></div>
+                        <div class="news-date">
+                            2024-09-10</div>
+                        <div class="news-content">
+                            <div>&nbsp;</div>            <div>I slutet av 2023 presenterade Arbetsmiljöverket 15 nya föreskrifter som ska ersätta de nuvarande 67. Dessa träder i kraft den 1 januari 2025, men finns redan nu tillgängliga i Notisum.</div><div>&nbsp;</div> <div>Vill du ...</div>
+                    </div></td></tr>                
+                
+                    </tbody>
+            </table>
+            <div class="box-footer">
+                <a href="../Resources/Rn/ContentUserPanels/Default.aspx?pageid=188" id="_ctl0_ContentPlaceHolder_GenericLayout_GenericBodyLayout_DynamicContentControl__ctl0__ctl1_readMoreNewsLink" class="staticColorLink label-element label-element" style="font-weight:bold;" data-groupname="WIDEINFORMATIONCONTROL" data-keyname="readMoreNewsLink">Läs fler...</a>
+            </div>
+        </div>
+    </div>
+</div></div>
+</div> 
+
+</div>
+    <input name="_ctl0:ContentPlaceHolder:NotAddToLawListDialogs:selectedDocumentToAdd" type="hidden" id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_selectedDocumentToAdd" style="">
+<input name="_ctl0:ContentPlaceHolder:NotAddToLawListDialogs:selectedDocumentsArray" type="hidden" id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_selectedDocumentsArray" style="">
+<input name="_ctl0:ContentPlaceHolder:NotAddToLawListDialogs:IsAllSelected" type="hidden" id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_IsAllSelected" value="0" style="">
+<input name="_ctl0:ContentPlaceHolder:NotAddToLawListDialogs:currentSelectedLanguagePrefix" type="hidden" id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_currentSelectedLanguagePrefix" value="sv" style="">
+<input name="_ctl0:ContentPlaceHolder:NotAddToLawListDialogs:LAWINLISTMSG" type="hidden" id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_LAWINLISTMSG" value="Detta dokument finns redan i den valda laglistan. Klicka på OK om du vill lägga till dokumentet igen." data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="LAWINLISTMSG" class="label-element" style="">
+<div id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_AddToLawListPanel" class="lightbox width-middle" style="display: none; position: fixed; z-index: 10001;">
+	
+    <div class="lightbox-header">
+        <div class="label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="ADDDOCUMENTTOLAWLISTHEADER">Lägg till dokument i laglista</div>
+    </div>
+    <div class="lightbox-body">
+        <div>
+            <div class="label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="ADDTOLISTLABEL1">Välj laglista</div><br>
+            <select name="_ctl0:ContentPlaceHolder:NotAddToLawListDialogs:MyAvailableLawLists" id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_MyAvailableLawLists" class="label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="MyAvailableLawLists">
+		<option value="72162">Fastighet/Bygg Sverige</option>
+		<option value="72880">Informationssäkerhet Sverige</option>
+		<option value="72881">Livsmedel Sverige</option>
+		<option value="72882">Miljö för ett tjänsteföretag Sverige</option>
+		<option value="72883">Miljö Sverige</option>
+
+	</select>
+            <div id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_notify_exist_container" style="padding-top:10px;">
+                <div class="label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="NOTIFYIFEXISTSDESCRIPTION">Varna om dokumentet redan finns i laglistan</div><br>
+                <input type="checkbox" id="notifyController" onchange="javascript:SetWarnIfExistsFlag2(this);" style="">&nbsp;<div class="label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="NOTIFYIFEXISTSCHKTEXT">Varning på/av</div>
+            </div>
+        </div>
+        <div class="lightbox-footer">
+            <a href="javascript:AddDocumentToLawList();" id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_addToListInpButton" class="btn btn-submit label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="addToListInpButton">Lägg till</a>&nbsp;<a href="javascript:CloseAddToLawListExt();" id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_CloseAddToLawListInpButton" class="btn label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="CloseAddToLawListInpButton">Avbryt</a>
+        </div>
+    </div>         
+
+</div>
+
+<div id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_AddArrayToLawListPanel" class="lightbox width-middle" style="display: none; position: fixed; z-index: 10001;">
+	
+    <div class="lightbox-header">
+        <div class="label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="ADDARRAYTOLAWLISTHEADER">Lägg till dokumenten i laglista</div>
+    </div>
+    <div class="lightbox-body">
+        <div>
+            <div class="label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="ADDARRAYTOLISTLABEL1">Välj laglista</div><br>
+            <select name="_ctl0:ContentPlaceHolder:NotAddToLawListDialogs:MyAvailableLawLists2" id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_MyAvailableLawLists2" class="label-element" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="MyAvailableLawLists2">
+		<option value="72162">Fastighet/Bygg Sverige</option>
+		<option value="72880">Informationssäkerhet Sverige</option>
+		<option value="72881">Livsmedel Sverige</option>
+		<option value="72882">Miljö för ett tjänsteföretag Sverige</option>
+		<option value="72883">Miljö Sverige</option>
+
+	</select>                        
+        </div>
+        <div class="lightbox-footer">
+            <a id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_addArrayToListInpButton" class="btn btn-submit label-element" onclick="javascript:AddArrayToLawListExt();" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="addArrayToListInpButton">Lägg till</a>&nbsp;<a id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_CloseAddArrayToLawListInpButton" class="btn label-element" onclick="javascript:CloseAddArrayToLawListExt();" data-groupname="NOTADDTOLAWLISTDIALOGS" data-keyname="CloseAddArrayToLawListInpButton">Avbryt</a>
+        </div>
+    </div>
+
+</div>
+
+<a id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_AddToLawListExecutor" href="javascript:__doPostBack('_ctl0$ContentPlaceHolder$NotAddToLawListDialogs$AddToLawListExecutor','')"></a>
+<script language="javascript" type="text/javascript">
+    PopuplateSelectedDocuments();
+</script>
+<a id="_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_popupExecutor" href="javascript:__doPostBack('_ctl0$ContentPlaceHolder$NotAddToLawListDialogs$popupExecutor','')"></a>
+    
+    <a href="javascript:window.scrollTo({top: 0, left: 0, behavior: 'smooth'});" class="top-of-site-link" id="topOfPageLink" data-visible="false">
+      <i class="fal fa-arrow-circle-up"></i>
+    </a>   
+    
+    
+<script language="javascript" type="text/javascript">
+
+</script>
+<input name="_ctl0:NotChangesDialog:currentSelectedLanguagePrefix" type="hidden" id="_ctl0_NotChangesDialog_currentSelectedLanguagePrefix" value="sv" style="">
+<div id="_ctl0_NotChangesDialog_LawChangesHistoryPanel" class="lightbox width-wide" style="display: none; position: fixed; z-index: 10001;">
+	   
+    <div class="lightbox-header" id="LawChangesHistoryPanelHeader">
+        <a id="_ctl0_NotChangesDialog_CloseChangesDialogInp" class="btn label-element" onclick="javascript:CloseChangesHistoryDialog();" data-groupname="NOTCHANGESDIALOG" data-keyname="CloseChangesDialogInp">Avbryt</a>
+    </div>      
+    <div class="lightbox-body large">
+        <div id="processWindow" class="processWindow">
+            <table>
+                <tbody><tr>
+                    <td><img src="../Resources/Global/Images/Spiner.gif" id="_ctl0_NotChangesDialog_Img9">&nbsp;Sidan laddas, vänta...</td>
+                </tr>
+            </tbody></table>                        
+        </div>    
+        <div id="_ctl0_NotChangesDialog_lawChangesPanelInfoContainer" class="lightbox-html-container"></div>                 
+    </div>
+
+</div>
+<a id="_ctl0_NotChangesDialog_popupExecutor" href="javascript:__doPostBack('_ctl0$NotChangesDialog$popupExecutor','')"></a>
+
+
+        <input name="_ctl0:NotUserCommentDialogs:SAVEUSERCOMMENTMSG" type="hidden" id="_ctl0_NotUserCommentDialogs_SAVEUSERCOMMENTMSG" value="Är du säker på att du vill spara denna kommentar?" data-groupname="NOTUSERCOMMENTDIALOGS" data-keyname="SAVEUSERCOMMENTMSG" class="label-element" style="">
+<input name="_ctl0:NotUserCommentDialogs:SAVEUSERCOMMENTNOTEXTMSG" type="hidden" id="_ctl0_NotUserCommentDialogs_SAVEUSERCOMMENTNOTEXTMSG" value="Det finns ingen kommentar att spara. Ange kommentar och försök igen." data-groupname="NOTUSERCOMMENTDIALOGS" data-keyname="SAVEUSERCOMMENTNOTEXTMSG" class="label-element" style="">
+<input name="_ctl0:NotUserCommentDialogs:DELETEUSERCOMMENTMSG" type="hidden" id="_ctl0_NotUserCommentDialogs_DELETEUSERCOMMENTMSG" value="Är du säker på att du vill ta bort denna kommentar?" data-groupname="NOTUSERCOMMENTDIALOGS" data-keyname="DELETEUSERCOMMENTMSG" class="label-element" style="">
+<input name="_ctl0:NotUserCommentDialogs:ERRORMSG" type="hidden" id="_ctl0_NotUserCommentDialogs_ERRORMSG" value="Ett fel inträffade vid hantering av denna kommentar, kontakta Notisum Kundtjänst." data-groupname="NOTUSERCOMMENTDIALOGS" data-keyname="ERRORMSG" class="label-element" style="">
+<a id="_ctl0_NotUserCommentDialogs_popupExecutor" href="javascript:__doPostBack('_ctl0$NotUserCommentDialogs$popupExecutor','')"></a> 
+<div id="_ctl0_NotUserCommentDialogs_addEditUserDocumentCommentPanel" class="lightbox width-large" style="display: none; z-index: 10001; position: fixed;">
+	
+    <div class="lightbox-header" id="addEditUserDocumentCommentPanelHeader">
+        <a id="_ctl0_NotUserCommentDialogs_CloseUserDocumentCommentDialogInp" class="btn label-element" data-groupname="NOTUSERCOMMENTDIALOGS" data-keyname="CloseUserDocumentCommentDialogInp">Ångra</a>    
+    </div>
+    <div class="lightbox-body">  
+        <b><div class="label-element" data-groupname="NOTUSERCOMMENTDIALOGS" data-keyname="userDocumentCommentHeader">Ange kommentar</div></b><br>
+        <textarea id="userDocumentCommentContainer" onkeyup="" class="userDocumentCommentContainer input-textarea" style=""></textarea>                                       
+        <div class="lightbox-footer">
+            <a id="_ctl0_NotUserCommentDialogs_SaveUserDocumentCommentInp" class="btn btn-submit label-element" data-groupname="NOTUSERCOMMENTDIALOGS" data-keyname="SaveUserDocumentCommentInp">Spara</a>
+        </div>   
+    </div>
+
+</div>
+
+    
+
+<script src="/ScriptResource.axd?d=tM6H_wLkG9xkmrqvoxQ47QBq8pxDSxjDtdcpghkdOqSTqFpwcNRqKnE0Rbjc0a0HHaxWYGzKNHqv1BNYEfzbPf6EUEFLfB9_YCRj7q7HERgfpqUxdAMGVqBTofO8DIMEVd-0dA2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=Tai4eor9ShLXZ4oXsHVwiMoIAduQGVWYemvj4eiDKu7iJalcPANUWcuwKa1X8GV_5rXOfqxr6cdx9wHFz7U99LO7X1iNoT6T199KhfRwh3ib6F1m0&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=A5c5ecGgSOsABn5cTcN2U8n21uDGcYtBx5SydUrQqE8RjAmC60ptSb5opXHzrj51fwhG-w-1rtJa09_ffFB7NaX5tevbRL0dIHpEOuD77iRR34ZVdxvc5ijzOq8ias_i9QyvXw2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=7wjdZCw3JKapOXD0QA3tH9JhzrQPOo_M6O4dDvF3JqSKrCByvMn0gyajiEnNEjPXr9P8L3apLpF6pXeGwi3MnRunL_YrW3aHzWzhmTgMJZJTFrQwB-OY4HMPkbSgjCSGxeJs9Q2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=KQ6UqMaGy5gG0VGF2ddGQVARA6-jPAkPYfgbBdVSAitW9SM-6IFanNef_EuMeN3ehCArEi5DpOEelaK9LHycUSDJpW9795UL2wb-16eHpuPGhegmxdhqAOXfrCHARV_T9obtfQ2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=VIg7Ccr_i-mH7oYxxXC220nprZBwQD9y_Q7tkMt-yUodt2HWFukmdEzGQ3PY78G_bFrSQaUUQ04K4hS42WRlCiMcRkPI-tspW-eWfp_MSfs4yXJ51NVjNp2-_ldRDgQBZdaY3w2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=t_pDI_aLoctQEIwd1a8zRglTwZkH5Bx1fQtl2dq5BN0xKNiJmaoTG4HFtqbE3trJvwROjBMZ-nxcfAVBuKEpRXcbTCubWI17hCSQNk1KvAybmPu7m91Nr90BSiy9vaYLLk_EaA2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=G4J6wmRDV02HjrrPe1txcl5Df1Ee5y-GX_abNm1pzx9pQ1GDUdML2yep30fRw4oFNcKh3lej2PmBG2VqfR98uBuo0ItlFk7oMMQnpKPQBHmORcf2Kd_E1AvUdu6Cu38F8uKsow2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=HYUlY5kZW9cERFDrZyQfAnID1y2DjZV2nWG1YsNSyHutgkkZef1q6uzPN3ByXSB5750I0LCndf2zOaUyhkGGmwCrUulNdd6esZvLTZGl1AVfSWx3qy6HPHfIdkmGye9vKFaZoA2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=xO7hY3mIEVxC2REdFJJ3yeSuq5A6uLRVRXO7csTXY-3rz4E8gvsCWgihlakiZKPdDxqVjxydr2VSLhpez0PkQuX5Go07z6vep2t3QQMcG66RoCm1EoFA8uAWnuu9zqakBn9mKQ2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=bGxUOCqTCxQgAPQBYysaKVTcywK43WjkmpZ5ajAGYjlExQefWySpQ0Bn0TMk3X8cjiZ3SNxA349p_3GKP9lepd9h9F1VgMMQPFc9g-hV0qFW9DUl0&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=fGrCRtnHQRHU985Co5z_rqtzQdztAVErKEQkKNKSH3NPUA2nbG6HzEomgM0VQxF0yFxtg4yhdo2SnzrhfX596qD7DG-hcSPyNW94O6aTqUadLuJZI0-fxba1z-3CEClSFxGtGw2&amp;t=7d5986a" type="text/javascript"></script>
+<script src="/ScriptResource.axd?d=o2BW7KynPUfINbomiZBwQEW1an1FnZ54Ia536wKDIBeqCKusnYJW3h6PaeWDyUZ321v5X8E5ylJGi2_VlSVFlTLyi4rFbm0crvn5ASL932l-vNp6tblLsDeCqms_rLTRJ5AOMA2&amp;t=7d5986a" type="text/javascript"></script>
+<script type="text/javascript">
+<!--
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ModalPopupBehavior, {"backgroundCssClass":"overlay","dynamicServicePath":"/rn/default.aspx","id":"editMyMessagesPanelBehavior","popupControlID":"_ctl0_NotPageHeader_MyMessagesPanel"}, null, null, $get("_ctl0_NotPageHeader_myMessagesPopupExecutor"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ModalPopupBehavior, {"backgroundCssClass":"overlay","dynamicServicePath":"/rn/default.aspx","id":"additonalRecipientsPanelBehavior","popupControlID":"_ctl0_NotPageHeader_MyMessageAdditionalRecipientsPanel"}, null, null, $get("_ctl0_NotPageHeader_myMessagesPopupExecutor"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ModalPopupBehavior, {"backgroundCssClass":"overlay","dynamicServicePath":"/rn/default.aspx","id":"errorRequestPanelExtenderBehavior","popupControlID":"_ctl0_NotPageHeader_ErrorRequestPanel"}, null, null, $get("_ctl0_NotPageHeader_ErrorRequestPopupExecutor"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ModalPopupBehavior, {"backgroundCssClass":"overlay","dynamicServicePath":"/rn/default.aspx","id":"notePopupBehavior","popupControlID":"_ctl0_NotPageHeader_notePopupPanel","popupDragHandleControlID":"notePopupHeader"}, null, null, $get("_ctl0_NotPageHeader_myMessagesPopupExecutor"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ModalPopupBehavior, {"backgroundCssClass":"overlay","dynamicServicePath":"/rn/default.aspx","id":"ConsentAccountPopupBehavior","popupControlID":"_ctl0_NotPageHeader_ConsentAccountPopupPanel"}, null, null, $get("_ctl0_NotPageHeader_myMessagesPopupExecutor"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ModalPopupBehavior, {"backgroundCssClass":"overlay","dynamicServicePath":"/rn/default.aspx","id":"addToLawListPopupBehavior","popupControlID":"_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_AddToLawListPanel"}, null, null, $get("_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_popupExecutor"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ModalPopupBehavior, {"backgroundCssClass":"overlay","dynamicServicePath":"/rn/default.aspx","id":"programmaticModalPopupBehavior8","popupControlID":"_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_AddArrayToLawListPanel"}, null, null, $get("_ctl0_ContentPlaceHolder_NotAddToLawListDialogs_popupExecutor"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ModalPopupBehavior, {"backgroundCssClass":"overlay","dynamicServicePath":"/rn/default.aspx","id":"lawChangesHistoryPopupBehavior","popupControlID":"_ctl0_NotChangesDialog_LawChangesHistoryPanel","popupDragHandleControlID":"LawChangesHistoryPanelHeader"}, null, null, $get("_ctl0_NotChangesDialog_popupExecutor"));
+});
+Sys.Application.add_init(function() {
+    $create(Sys.Extended.UI.ModalPopupBehavior, {"backgroundCssClass":"overlay","dynamicServicePath":"/rn/default.aspx","id":"addEditUserDocumentCommentPopupBehavior","popupControlID":"_ctl0_NotUserCommentDialogs_addEditUserDocumentCommentPanel","popupDragHandleControlID":"addEditUserDocumentCommentPanelHeader"}, null, null, $get("_ctl0_NotUserCommentDialogs_popupExecutor"));
+});
+// -->
+</script>
+<div data-act-control-type="modalPopupBackground" id="editMyMessagesPanelBehavior_backgroundElement" class="overlay" style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div><div data-act-control-type="modalPopupBackground" id="additonalRecipientsPanelBehavior_backgroundElement" class="overlay" style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div><div data-act-control-type="modalPopupBackground" id="errorRequestPanelExtenderBehavior_backgroundElement" class="overlay" style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div><div data-act-control-type="modalPopupBackground" id="notePopupBehavior_backgroundElement" class="overlay" style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div><div data-act-control-type="modalPopupBackground" id="ConsentAccountPopupBehavior_backgroundElement" class="overlay" style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div><div data-act-control-type="modalPopupBackground" id="addToLawListPopupBehavior_backgroundElement" class="overlay" style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div><div data-act-control-type="modalPopupBackground" id="programmaticModalPopupBehavior8_backgroundElement" class="overlay" style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div><div data-act-control-type="modalPopupBackground" id="lawChangesHistoryPopupBehavior_backgroundElement" class="overlay" style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div><div data-act-control-type="modalPopupBackground" id="addEditUserDocumentCommentPopupBehavior_backgroundElement" class="overlay" style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div></form>
+    <script src="/bundle/l?v=I7ScGNb7_EFw2ye1Krq0S4Ji8s7HKusVgjt-VGM9bg81"></script>
+<link href="/bundle/jqui?v=tAVKZ-rwChjKa0kPU0WbKUpHiJOnahoW7ztE7MjnJ6M1" rel="stylesheet">
+
+    
+
+
+</body></html>

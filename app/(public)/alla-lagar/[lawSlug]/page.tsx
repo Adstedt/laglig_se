@@ -1,24 +1,15 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { ContentType } from '@prisma/client'
 import type { Metadata } from 'next'
 
 interface PageProps {
   params: Promise<{ lawSlug: string }>
 }
 
-// Generate static params for all laws (SSG)
-export async function generateStaticParams() {
-  const laws = await prisma.legalDocument.findMany({
-    where: { content_type: ContentType.SFS_LAW },
-    select: { slug: true },
-  })
-
-  return laws.map((law) => ({
-    lawSlug: law.slug,
-  }))
-}
+// ISR: Revalidate every hour - NOT generateStaticParams() for 11K+ docs
+export const revalidate = 3600
+export const dynamicParams = true
 
 // Generate metadata for SEO
 export async function generateMetadata({

@@ -13,7 +13,14 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CalendarDays, ExternalLink, Globe, FileText, ArrowUpRight } from 'lucide-react'
+import { CalendarDays, ExternalLink, FileText } from 'lucide-react'
+import { getDocumentTheme } from '@/lib/document-themes'
+import { cn } from '@/lib/utils'
+import { LinkedSwedishLaws } from '@/components/features/cross-references'
+import { lookupLawBySfsNumber } from '@/app/actions/cross-references'
+import { ContentWithStyledHeadings } from '@/components/features/content'
+import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
+import { FloatingImplementationsButton } from './floating-implementations-button'
 
 // ISR: Revalidate every hour
 export const revalidate = 3600
@@ -107,6 +114,32 @@ export default async function EuDocumentPage({ params }: PageProps) {
 
   const euDoc = document.eu_document
 
+  // Get theme for EU documents (purple)
+  const theme = getDocumentTheme(typeInfo.contentType)
+  const ThemeIcon = theme.icon
+
+  // Parse national implementation measures
+  const nimData = euDoc?.national_implementation_measures as {
+    sweden?: {
+      measures: Array<{
+        sfs_number: string
+        title: string
+      }>
+    }
+  } | null
+
+  // Look up slugs for each measure in parallel
+  const measuresWithSlugs = await Promise.all(
+    (nimData?.sweden?.measures || []).map(async (measure) => {
+      const lawInfo = await lookupLawBySfsNumber(measure.sfs_number)
+      return {
+        sfs_number: measure.sfs_number,
+        title: measure.title || lawInfo?.title,
+        slug: lawInfo?.slug ?? null,
+      }
+    })
+  )
+
   // Sanitize HTML content
   const sanitizedHtml = document.html_content
     ? sanitizeHtml(document.html_content, {
@@ -129,18 +162,6 @@ export default async function EuDocumentPage({ params }: PageProps) {
         day: 'numeric',
       })
     : null
-
-  // Parse national implementation measures
-  const nimData = euDoc?.national_implementation_measures as {
-    sweden?: {
-      measures: Array<{
-        sfs_number: string
-        title: string
-      }>
-    }
-  } | null
-
-  const swedishMeasures = nimData?.sweden?.measures || []
 
   // JSON-LD structured data
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
@@ -199,18 +220,24 @@ export default async function EuDocumentPage({ params }: PageProps) {
             </BreadcrumbList>
           </Breadcrumb>
 
-          {/* Hero Header */}
+          {/* Hero Header - with theme accent */}
           <header className="mb-8 rounded-xl bg-card p-6 shadow-sm border">
             <div className="flex items-start gap-4">
-              <div className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
-                <Globe className="h-6 w-6 text-blue-600" />
+              <div
+                className={cn(
+                  'hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
+                  theme.accentLight
+                )}
+              >
+                <ThemeIcon className={cn('h-6 w-6', theme.accent)} />
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl font-bold text-foreground sm:text-2xl md:text-3xl leading-tight">
                   {document.title}
                 </h1>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                  <Badge className={cn('gap-1', theme.badge)}>
+                    <ThemeIcon className="h-3.5 w-3.5" />
                     {typeInfo.name}
                   </Badge>
                   {euDoc?.celex_number && (
@@ -244,7 +271,10 @@ export default async function EuDocumentPage({ params }: PageProps) {
                   href={document.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-primary hover:underline ml-auto"
+                  className={cn(
+                    'flex items-center gap-1.5 hover:underline ml-auto',
+                    theme.accent
+                  )}
                 >
                   <span>EUR-Lex</span>
                   <ExternalLink className="h-3 w-3" />
@@ -255,7 +285,7 @@ export default async function EuDocumentPage({ params }: PageProps) {
 
           {/* Summary Card */}
           {document.summary && (
-            <Card className="mb-8 border-l-4 border-l-blue-500/50">
+            <Card className="mb-8 border-l-4 border-l-purple-500/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-medium text-muted-foreground">
                   Sammanfattning
@@ -267,36 +297,9 @@ export default async function EuDocumentPage({ params }: PageProps) {
             </Card>
           )}
 
-          {/* Swedish Implementation (for directives) */}
-          {type === 'direktiv' && swedishMeasures.length > 0 && (
-            <Card className="mb-8">
-              <CardHeader className="border-b bg-muted/30">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <span className="text-lg">🇸🇪</span>
-                  Svenska genomförandeåtgärder ({swedishMeasures.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {swedishMeasures.map((measure, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <span className="font-mono text-sm text-muted-foreground">
-                          {measure.sfs_number}
-                        </span>
-                        {measure.title && (
-                          <span className="ml-3 text-foreground">{measure.title}</span>
-                        )}
-                      </div>
-                      <ArrowUpRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Swedish Implementation (for directives) - with links to law pages */}
+          {type === 'direktiv' && measuresWithSlugs.length > 0 && (
+            <LinkedSwedishLaws measures={measuresWithSlugs} />
           )}
 
           {/* Document content */}
@@ -307,7 +310,7 @@ export default async function EuDocumentPage({ params }: PageProps) {
             <CardContent className="p-0">
               <article className="legal-document p-6 md:p-8">
                 {sanitizedHtml ? (
-                  <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+                  <ContentWithStyledHeadings htmlContent={sanitizedHtml} />
                 ) : document.full_text ? (
                   <div className="whitespace-pre-wrap font-serif">{document.full_text}</div>
                 ) : (
@@ -342,6 +345,14 @@ export default async function EuDocumentPage({ params }: PageProps) {
             </p>
           </footer>
         </div>
+
+        {/* Back to top button */}
+        <BackToTopButton />
+
+        {/* Floating button for Swedish implementations (directives only) */}
+        {type === 'direktiv' && (
+          <FloatingImplementationsButton implementationCount={measuresWithSlugs.length} />
+        )}
       </main>
     </>
   )

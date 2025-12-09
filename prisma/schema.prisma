@@ -98,13 +98,15 @@ model LegalDocument {
   updated_at       DateTime       @updatedAt
 
   // Relations
-  court_case       CourtCase?
-  eu_document      EuDocument?
-  source_references     CrossReference[] @relation("SourceDocument")
-  target_references     CrossReference[] @relation("TargetDocument")
-  base_amendments       Amendment[]      @relation("BaseDocument")
-  amending_amendments   Amendment[]      @relation("AmendingDocument")
+  court_case            CourtCase?
+  eu_document           EuDocument?
+  source_references     CrossReference[]    @relation("SourceDocument")
+  target_references     CrossReference[]    @relation("TargetDocument")
+  base_amendments       Amendment[]         @relation("BaseDocument")
+  amending_amendments   Amendment[]         @relation("AmendingDocument")
   subjects              DocumentSubject[]
+  versions              DocumentVersion[]
+  change_events         ChangeEvent[]
 
   @@index([document_number])
   @@index([slug])
@@ -153,6 +155,14 @@ enum ReferenceType {
   AMENDS
   REFERENCES
   RELATED
+}
+
+enum ChangeType {
+  NEW_LAW
+  AMENDMENT
+  REPEAL
+  METADATA_UPDATE
+  NEW_RULING
 }
 
 // ============================================================================
@@ -206,29 +216,31 @@ model CrossReference {
 }
 
 model Amendment {
-  id                     String                    @id @default(uuid())
-  base_document_id       String // Law being amended (FK to legal_documents)
-  amending_document_id   String // Amending law (FK to legal_documents)
+  id                       String                    @id @default(uuid())
+  base_document_id         String // Law being amended (FK to legal_documents)
+  amending_document_id     String? // Amending law (FK to legal_documents) - NULL for detected amendments where amending law doesn't exist as separate doc
 
   // 7 competitive-feature fields
-  amending_law_title     String // "Lag (2025:732) om ändring i arbetsrättslagstiftningen"
-  publication_date       DateTime // When amending law was published
-  effective_date         DateTime? // When amendment takes effect (can be future)
-  affected_sections_raw  String? // Notisum format: "ändr. 6 kap. 17 §; upph. 8 kap. 4 §"
-  affected_sections      Json? // Parsed: {amended: ["6:17"], repealed: ["8:4"], new: [], renumbered: []}
-  summary                String?                   @db.Text // 2-3 sentence GPT-4 generated plain language summary (Swedish)
-  summary_generated_by   SummaryGeneratedBy?
+  amending_law_title       String // "Lag (2025:732) om ändring i arbetsrättslagstiftningen"
+  publication_date         DateTime? // When amending law was published
+  effective_date           DateTime? // When amendment takes effect (can be future)
+  affected_sections_raw    String? // Notisum format: "ändr. 6 kap. 17 §; upph. 8 kap. 4 §"
+  affected_sections        Json? // Parsed: {amended: ["6:17"], repealed: ["8:4"], new: [], renumbered: []}
+  summary                  String?                   @db.Text // 2-3 sentence GPT-4 generated plain language summary (Swedish)
+  summary_generated_by     SummaryGeneratedBy?
 
   // Additional implementation fields
-  detected_method        AmendmentDetectedMethod?
-  metadata               Json? // Debugging/additional data
+  detected_method          AmendmentDetectedMethod?
+  detected_from_version_id String? // FK to DocumentVersion that captured this amendment
+  metadata                 Json? // Debugging/additional data
 
-  created_at             DateTime                  @default(now())
-  updated_at             DateTime                  @updatedAt
+  created_at               DateTime                  @default(now())
+  updated_at               DateTime                  @updatedAt
 
   // Relations
-  base_document     LegalDocument @relation("BaseDocument", fields: [base_document_id], references: [id], onDelete: Cascade)
-  amending_document LegalDocument @relation("AmendingDocument", fields: [amending_document_id], references: [id], onDelete: Cascade)
+  base_document          LegalDocument    @relation("BaseDocument", fields: [base_document_id], references: [id], onDelete: Cascade)
+  amending_document      LegalDocument?   @relation("AmendingDocument", fields: [amending_document_id], references: [id], onDelete: Cascade)
+  detected_from_version  DocumentVersion? @relation(fields: [detected_from_version_id], references: [id])
 
   @@index([base_document_id])
   @@index([amending_document_id])
@@ -250,4 +262,56 @@ model DocumentSubject {
   @@index([document_id])
   @@index([subject_code])
   @@map("document_subjects")
+}
+
+// ============================================================================
+// VERSION HISTORY & CHANGE TRACKING - Epic 2: Story 2.11
+// ============================================================================
+
+model DocumentVersion {
+  id               String        @id @default(cuid())
+  document_id      String
+  version_number   Int
+  full_text        String        @db.Text
+  html_content     String?       @db.Text
+  amendment_sfs    String? // "SFS 2025:732" - which amendment created this version
+  source_systemdatum DateTime? // API systemdatum at time of capture
+  changed_sections Json? // ["7 §", "12 §"] - sections modified
+  created_at       DateTime      @default(now())
+
+  // Relations
+  document   LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  amendments Amendment[] // Amendments detected from this version
+
+  @@unique([document_id, version_number])
+  @@index([document_id])
+  @@map("document_versions")
+}
+
+model ChangeEvent {
+  id                  String      @id @default(cuid())
+  document_id         String
+  content_type        ContentType
+  change_type         ChangeType
+  amendment_sfs       String? // "SFS 2025:732"
+  previous_version_id String?
+  new_version_id      String?
+  old_value           String?     @db.Text // For metadata changes
+  new_value           String?     @db.Text // For metadata changes
+  diff_summary        String?     @db.Text // Unified diff or structured summary
+  changed_sections    Json? // Sections that were modified
+  ai_summary          String?     @db.Text // GPT-4 generated summary
+  ai_summary_generated_at DateTime?
+  detected_at         DateTime    @default(now())
+  processed_at        DateTime?
+  notification_sent   Boolean     @default(false)
+
+  // Relations
+  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+
+  @@index([document_id])
+  @@index([content_type])
+  @@index([change_type])
+  @@index([detected_at])
+  @@map("change_events")
 }

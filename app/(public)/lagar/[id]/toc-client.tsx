@@ -251,7 +251,7 @@ export function BackToTopButton() {
     <Button
       variant="secondary"
       size="icon"
-      className="fixed bottom-4 right-4 z-40 shadow-lg rounded-full"
+      className="fixed bottom-6 right-20 z-40 shadow-lg rounded-full hover:scale-110 transition-transform"
       onClick={scrollToTop}
       aria-label="Tillbaka till toppen"
     >

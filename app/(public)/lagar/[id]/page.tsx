@@ -18,6 +18,7 @@ import { CalendarDays, Building2, ExternalLink } from 'lucide-react'
 import { BackToTopButton } from './toc-client'
 import { FloatingReferencesWrapper } from './floating-references-wrapper'
 import { LawSectionWithBanner } from './law-section-with-banner'
+import { NotYetInForceBanner } from '@/components/features/law'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
 import { RelatedDocumentsSummary } from '@/components/features/cross-references'
@@ -134,6 +135,9 @@ interface LawMetadata {
   repealedBy?: string
   sfsrUrl?: string
   fulltextUrl?: string
+  effectiveDate?: string // YYYY-MM-DD format - for the WHOLE law
+  effectiveDateFormatted?: string // Formatted like "1 januari 2026"
+  isNotYetInForce?: boolean // true if effectiveDate is in the future
 }
 
 function extractLawMetadata(html: string): LawMetadata {
@@ -186,6 +190,37 @@ function extractLawMetadata(html: string): LawMetadata {
     /href="(https?:\/\/rkrattsbaser\.gov\.se\/sfst[^"]+)"/i
   )
   if (fulltextMatch?.[1]) metadata.fulltextUrl = fulltextMatch[1]
+
+  // Extract effective date for WHOLE law from header
+  // Pattern: /Träder i kraft I:YYYY-MM-DD/ appearing at the start (not per-paragraph)
+  // This is found right after the metadata block, before actual law content
+  const afterHr = html.substring(hrIndex)
+  // Look for the pattern in the first section (before any paragraph anchor)
+  const firstSectionEnd = afterHr.indexOf('<a class="paragraf"')
+  const firstSection = firstSectionEnd > 0 ? afterHr.substring(0, firstSectionEnd) : afterHr.substring(0, 500)
+
+  const effectiveDateMatch = firstSection.match(/\/Träder i kraft I:(\d{4})-(\d{2})-(\d{2})\//)
+  if (effectiveDateMatch) {
+    const year = parseInt(effectiveDateMatch[1] ?? '0')
+    const month = parseInt(effectiveDateMatch[2] ?? '0')
+    const day = parseInt(effectiveDateMatch[3] ?? '0')
+
+    metadata.effectiveDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+
+    const effectiveDate = new Date(year, month - 1, day)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    // Format the date in Swedish
+    metadata.effectiveDateFormatted = effectiveDate.toLocaleDateString('sv-SE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+
+    // Check if the law hasn't entered into force yet
+    metadata.isNotYetInForce = effectiveDate > today
+  }
 
   return metadata
 }
@@ -339,6 +374,11 @@ export default async function LawPage({ params }: PageProps) {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+
+          {/* Banner for laws not yet in force */}
+          {lawMetadata.isNotYetInForce && lawMetadata.effectiveDateFormatted && (
+            <NotYetInForceBanner effectiveDate={lawMetadata.effectiveDateFormatted} />
+          )}
 
           {/* Hero Header - with theme accent */}
           <header className="mb-8 rounded-xl bg-card p-6 shadow-sm border">
@@ -521,6 +561,7 @@ export default async function LawPage({ params }: PageProps) {
             htmlContent={sanitizedHtml || ''}
             fallbackText={law.full_text}
             sourceUrl={law.source_url}
+            isLawNotYetInForce={lawMetadata.isNotYetInForce ?? false}
           />
 
           {/* Amendments Section */}

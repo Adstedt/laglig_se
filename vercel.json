@@ -4,5 +4,18 @@
   "installCommand": "pnpm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "crons": []
+  "crons": [
+    {
+      "path": "/api/cron/sync-sfs",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/sync-court-cases",
+      "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/cron/generate-summaries",
+      "schedule": "0 */4 * * *"
+    }
+  ]
 }
