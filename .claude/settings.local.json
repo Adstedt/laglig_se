@@ -54,7 +54,10 @@
       "Bash(find:*)",
       "Bash(NODE_OPTIONS=\"--max-old-space-size=8192 --expose-gc\" pnpm tsx:*)",
       "Bash(npx esbuild:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "WebFetch(domain:www.dimiter.eu)",
+      "Bash(ls:*)",
+      "WebFetch(domain:www.notisum.se)"
     ],
     "deny": [],
     "ask": []

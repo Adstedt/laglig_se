@@ -245,19 +245,19 @@ html {
     @apply leading-relaxed text-foreground;
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 1.0625rem;
-    line-height: 1.75;
+    line-height: 1.8;
   }
 
-  /* Paragraph numbers (§) - make them stand out */
-  .legal-document a.paragraf,
-  .legal-document a[name^="P"] b,
-  .legal-document b:has(+ a[name^="P"]) {
-    @apply text-primary font-bold text-lg;
+  /* Paragraph numbers (§) - prominent section markers */
+  .legal-document a.paragraf {
+    @apply font-bold;
     display: block;
-    margin-top: 2rem;
-    margin-bottom: 0.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid hsl(var(--border));
+    font-size: 1.125rem;
+    color: hsl(var(--primary));
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 2px solid hsl(var(--border));
   }
 
   /* First paragraph shouldn't have top border */
@@ -270,15 +270,40 @@ html {
 
   /* Section headers (Inledande bestämmelser, etc.) */
   .legal-document h2,
-  .legal-document div > p:first-child:not(:has(a)) {
-    @apply text-lg font-semibold text-foreground mt-8 mb-4;
+  .legal-document h4 {
+    @apply text-xl font-bold text-foreground mb-3;
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 2px solid hsl(var(--border));
   }
 
-  /* Italic text - "Träder i kraft" notices */
+  /* First section header shouldn't have top border */
+  .legal-document > div > h4:first-of-type {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  /* Paragraph right after section header shouldn't have top border */
+  .legal-document h4 + a.paragraf,
+  .legal-document h4 + p + a.paragraf {
+    border-top: none;
+    margin-top: 0.5rem;
+    padding-top: 0;
+  }
+
+  .legal-document h3 {
+    @apply text-base font-semibold text-foreground mt-6 mb-2;
+  }
+
+  /* Remove empty anchor paragraphs that create extra spacing */
+  .legal-document p:has(> a[name]:only-child) {
+    display: none;
+  }
+
+  /* Amendment references - Lag (2022:448) - small inline text */
   .legal-document i {
-    @apply block my-4 py-3 px-4 rounded-lg text-sm;
-    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted)/0.5) 100%);
-    border-left: 3px solid hsl(var(--primary)/0.5);
+    @apply inline text-xs;
     font-style: normal;
     color: hsl(var(--muted-foreground));
   }
@@ -293,15 +318,18 @@ html {
     @apply decoration-primary;
   }
 
-  /* Horizontal rules */
-  .legal-document hr {
-    @apply my-8 border-t border-border;
-  }
-
   /* Lists - numbered points in law */
   .legal-document ol,
   .legal-document ul {
-    @apply my-4 ml-8 space-y-2;
+    @apply my-4 ml-6 space-y-2;
+  }
+
+  .legal-document ol {
+    list-style-type: decimal;
+  }
+
+  .legal-document ul {
+    list-style-type: disc;
   }
 
   .legal-document li {
@@ -313,6 +341,9 @@ html {
     @apply w-full my-6 text-sm;
     border-collapse: separate;
     border-spacing: 0;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px hsl(var(--foreground) / 0.05);
   }
 
   .legal-document th,
@@ -341,7 +372,7 @@ html {
   /* Consecutive line breaks - add spacing */
   .legal-document br {
     display: block;
-    content: "";
+    content: '';
     margin-top: 0.5rem;
   }
 
@@ -359,5 +390,10 @@ html {
   .legal-document p + ol,
   .legal-document p + ul {
     @apply mt-2;
+  }
+
+  /* Content markers like "Innehåll:" - table of contents style */
+  .legal-document > div > p:first-child {
+    @apply text-base font-medium text-muted-foreground mb-6;
   }
 }

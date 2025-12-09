@@ -14,20 +14,40 @@ import {
 } from '@/components/ui/breadcrumb'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CalendarDays, Building2, ExternalLink, Gavel, Users, ArrowUpRight } from 'lucide-react'
+import {
+  CalendarDays,
+  Building2,
+  ExternalLink,
+  Users,
+  ArrowUpRight,
+} from 'lucide-react'
+import { getDocumentTheme } from '@/lib/document-themes'
+import { cn } from '@/lib/utils'
 
 // ISR: Revalidate every hour
 export const revalidate = 3600
 export const dynamicParams = true
 
 // Court URL mapping
-const COURT_URL_MAP: Record<string, { contentType: ContentType; name: string }> = {
+const COURT_URL_MAP: Record<
+  string,
+  { contentType: ContentType; name: string }
+> = {
   hd: { contentType: ContentType.COURT_CASE_HD, name: 'Högsta domstolen' },
   hovr: { contentType: ContentType.COURT_CASE_HOVR, name: 'Hovrätten' },
-  hfd: { contentType: ContentType.COURT_CASE_HFD, name: 'Högsta förvaltningsdomstolen' },
+  hfd: {
+    contentType: ContentType.COURT_CASE_HFD,
+    name: 'Högsta förvaltningsdomstolen',
+  },
   ad: { contentType: ContentType.COURT_CASE_AD, name: 'Arbetsdomstolen' },
-  mod: { contentType: ContentType.COURT_CASE_MOD, name: 'Mark- och miljööverdomstolen' },
-  mig: { contentType: ContentType.COURT_CASE_MIG, name: 'Migrationsöverdomstolen' },
+  mod: {
+    contentType: ContentType.COURT_CASE_MOD,
+    name: 'Mark- och miljööverdomstolen',
+  },
+  mig: {
+    contentType: ContentType.COURT_CASE_MIG,
+    name: 'Migrationsöverdomstolen',
+  },
 }
 
 interface PageProps {
@@ -139,9 +159,37 @@ export default async function CourtCasePage({ params }: PageProps) {
   const sanitizedHtml = document.html_content
     ? sanitizeHtml(document.html_content, {
         allowedTags: [
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'ul', 'ol', 'li',
-          'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'strong', 'em',
-          'span', 'div', 'blockquote', 'pre', 'code', 'b', 'i', 'u', 'sub', 'sup',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+          'p',
+          'br',
+          'hr',
+          'ul',
+          'ol',
+          'li',
+          'table',
+          'thead',
+          'tbody',
+          'tr',
+          'th',
+          'td',
+          'a',
+          'strong',
+          'em',
+          'span',
+          'div',
+          'blockquote',
+          'pre',
+          'code',
+          'b',
+          'i',
+          'u',
+          'sub',
+          'sup',
         ],
         allowedAttributes: {
           a: ['href', 'name', 'class'],
@@ -166,12 +214,18 @@ export default async function CourtCasePage({ params }: PageProps) {
     defendant_counsel?: string
   } | null
 
+  // Get theme based on court content type
+  const theme = getDocumentTheme(courtInfo.contentType)
+  const ThemeIcon = theme.icon
+
   // JSON-LD structured data
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'LegalCase',
-    name: courtCase ? `${courtCase.court_name} ${courtCase.case_number}` : document.title,
+    name: courtCase
+      ? `${courtCase.court_name} ${courtCase.case_number}`
+      : document.title,
     identifier: courtCase?.case_number || document.document_number,
     datePublished: document.publication_date?.toISOString(),
     inLanguage: 'sv',
@@ -217,20 +271,28 @@ export default async function CourtCasePage({ params }: PageProps) {
             </BreadcrumbList>
           </Breadcrumb>
 
-          {/* Hero Header */}
+          {/* Hero Header - with theme accent */}
           <header className="mb-8 rounded-xl bg-card p-6 shadow-sm border">
             <div className="flex items-start gap-4">
-              <div className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                <Gavel className="h-6 w-6 text-primary" />
+              <div
+                className={cn(
+                  'hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
+                  theme.accentLight
+                )}
+              >
+                <ThemeIcon className={cn('h-6 w-6', theme.accent)} />
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl font-bold text-foreground sm:text-2xl md:text-3xl leading-tight">
                   {document.title}
                 </h1>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary">{courtInfo.name}</Badge>
+                  <Badge className={cn('gap-1', theme.badge)}>
+                    <ThemeIcon className="h-3.5 w-3.5" />
+                    {theme.label}
+                  </Badge>
                   {courtCase?.case_number && (
-                    <Badge variant="outline" className="font-mono text-sm">
+                    <Badge variant="secondary" className="font-mono text-sm">
                       {courtCase.case_number}
                     </Badge>
                   )}
@@ -257,7 +319,10 @@ export default async function CourtCasePage({ params }: PageProps) {
                   href={document.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-primary hover:underline ml-auto"
+                  className={cn(
+                    'flex items-center gap-1.5 hover:underline ml-auto',
+                    theme.accent
+                  )}
                 >
                   <span>Källa</span>
                   <ExternalLink className="h-3 w-3" />
@@ -268,7 +333,7 @@ export default async function CourtCasePage({ params }: PageProps) {
 
           {/* Case Details */}
           {(parties?.plaintiff || parties?.defendant) && (
-            <Card className="mb-6 border-l-4 border-l-amber-500/50">
+            <Card className="mb-6 border-l-4 border-l-primary/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-medium text-muted-foreground flex items-center gap-2">
                   <Users className="h-4 w-4" />
@@ -278,7 +343,9 @@ export default async function CourtCasePage({ params }: PageProps) {
               <CardContent className="grid gap-3 sm:grid-cols-2">
                 {parties?.plaintiff && (
                   <div>
-                    <p className="text-xs uppercase text-muted-foreground mb-1">Kärande</p>
+                    <p className="text-xs uppercase text-muted-foreground mb-1">
+                      Kärande
+                    </p>
                     <p className="text-sm font-medium">{parties.plaintiff}</p>
                     {parties?.plaintiff_counsel && (
                       <p className="text-xs text-muted-foreground mt-1">
@@ -289,7 +356,9 @@ export default async function CourtCasePage({ params }: PageProps) {
                 )}
                 {parties?.defendant && (
                   <div>
-                    <p className="text-xs uppercase text-muted-foreground mb-1">Svarande</p>
+                    <p className="text-xs uppercase text-muted-foreground mb-1">
+                      Svarande
+                    </p>
                     <p className="text-sm font-medium">{parties.defendant}</p>
                     {parties?.defendant_counsel && (
                       <p className="text-xs text-muted-foreground mt-1">
@@ -311,7 +380,9 @@ export default async function CourtCasePage({ params }: PageProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground leading-relaxed">{document.summary}</p>
+                <p className="text-foreground leading-relaxed">
+                  {document.summary}
+                </p>
               </CardContent>
             </Card>
           )}
@@ -326,7 +397,9 @@ export default async function CourtCasePage({ params }: PageProps) {
                 {sanitizedHtml ? (
                   <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
                 ) : document.full_text ? (
-                  <div className="whitespace-pre-wrap font-serif">{document.full_text}</div>
+                  <div className="whitespace-pre-wrap font-serif">
+                    {document.full_text}
+                  </div>
                 ) : (
                   <p className="italic text-muted-foreground py-8 text-center">
                     Ingen domtext tillgänglig.{' '}
@@ -348,7 +421,9 @@ export default async function CourtCasePage({ params }: PageProps) {
           {document.source_references.length > 0 && (
             <Card className="mb-8">
               <CardHeader className="border-b bg-muted/30">
-                <CardTitle className="text-lg">Citerade lagar ({document.source_references.length})</CardTitle>
+                <CardTitle className="text-lg">
+                  Citerade lagar ({document.source_references.length})
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y">

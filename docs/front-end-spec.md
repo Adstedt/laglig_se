@@ -208,17 +208,76 @@ graph TD
 
 ### Navigation Structure
 
-**Primary Navigation:** Fixed top navigation bar with logo (left), main menu items (center), and account menu (right)
+> **Note:** For complete layout architecture details, see [`feature-specifications/02-dashboard-and-workspace.md`](./feature-specifications/02-dashboard-and-workspace.md)
 
-**Main Menu Items:**
+#### Four-Panel Layout (Authenticated App Shell)
 
-- **Dashboard** - Default landing after login, shows personalized overview
-- **AI Assistent** - Opens AI chat interface (can also be triggered from any page via floating button)
-- **Lagbibliotek** (Law Library) - Browse/search all 170K+ legal content pages
-- **Mina Listor** (My Lists) - Manage custom law lists with change monitoring
-- **Ändringar** (Changes) - Unified feed of all detected changes across user's law lists
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ Header Bar (60px)                                                │
+│ [Logo][Breadcrumbs]         [Global Search] [🔔][?][Avatar▼]   │
+├──────────────┬──────────────────────────────────┬───────────────┤
+│  Left        │   Main Content Area              │  Right        │
+│  Sidebar     │   (Dashboard/Kanban/Views)       │  Sidebar      │
+│  (240px)     │   (Fluid)                        │  (AI Chat)    │
+│              │                                  │  (400px)      │
+│  Navigation  │   Dynamic content based on       │               │
+│  Menu        │   selected nav item              │  [Foldable]   │
+│              │                                  │               │
+│  Accordions  │                                  │  Cmd+K to     │
+│  & Links     │                                  │  toggle       │
+└──────────────┴──────────────────────────────────┴───────────────┘
+```
 
-**Secondary Navigation:**
+**Dimensions:**
+
+- Header: 60px height
+- Left sidebar: 240px fixed width (collapsible on mobile)
+- Main content: Fluid (remaining space)
+- Right sidebar (AI Chat): 400px fixed width (foldable, toggle with Cmd+K or `/`)
+
+#### Left Sidebar Menu
+
+```
+┌─────────────────────────┐
+│ [Laglig.se Logo]        │
+├─────────────────────────┤
+│ 📋 Dashboard            │ ← Default landing
+│ 💬 AI Chat              │ ← Toggle right sidebar
+│ ⚖️ Laglistor ▼          │ ← Accordion (user's law lists)
+│   📑 Min huvudlista     │
+│   📑 Bygglagstiftning   │
+│   + Skapa ny lista      │
+│ 📚 Alla Lagar           │ ← Browse 170K+ laws
+│ ✅ Uppgifter            │ ← Global task view
+│ 👥 HR ▼                 │ ← Accordion (HR module)
+│   📊 Översikt           │
+│   👤 Medarbetare        │
+│ 🔔 Ändringsbevakning    │ ← Change monitoring
+│ 👥 Team (Pro)           │ ← Multi-user features
+│ 📁 Mina Filer           │ ← Document storage
+│ ⚙️ Inställningar        │
+├─────────────────────────┤
+│ [Trial: 12 days left]   │ ← Trial status widget
+│ [Uppgradera →]          │
+└─────────────────────────┘
+```
+
+#### Header Bar
+
+**Left Section:**
+
+- Logo (home link)
+- Breadcrumbs (dynamic based on current page)
+
+**Right Section:**
+
+- Global Search (`/` or `Cmd+K`)
+- Notifications Bell (🔔) with badge count
+- Help icon (?)
+- Avatar dropdown (Account, Billing, Team, Logout)
+
+#### Secondary Navigation (In-Page)
 
 - **Law Detail Pages:** Tabs for AI Summary / Full Text / Change History / Related Content
 - **Dashboard:** Quick-access cards for recent changes, saved searches, frequently accessed laws
