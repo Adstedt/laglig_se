@@ -1,10 +1,13 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { getDocumentTheme } from '@/lib/document-themes'
+import { prefetchManager } from '@/lib/prefetch'
 import type { BrowseResult } from '@/app/actions/browse'
 
 interface CatalogueResultCardProps {
@@ -17,13 +20,47 @@ export function CatalogueResultCard({
   document,
   position,
 }: CatalogueResultCardProps) {
+  const router = useRouter()
+  const cardRef = useRef<HTMLAnchorElement>(null)
   const theme = getDocumentTheme(document.contentType)
   const ThemeIcon = theme.icon
 
   const documentUrl = `${theme.href}/${document.slug}`
 
+  // Initialize prefetch manager and trigger prefetch when card becomes visible
+  useEffect(() => {
+    prefetchManager.init(router)
+
+    const card = cardRef.current
+    if (!card) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            prefetchManager.add(documentUrl)
+            // Unobserve after prefetch triggered - only need to prefetch once
+            observer.unobserve(card)
+          }
+        })
+      },
+      {
+        // Trigger when card is within 100px of viewport (prefetch slightly before visible)
+        rootMargin: '100px',
+        threshold: 0,
+      }
+    )
+
+    observer.observe(card)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [router, documentUrl])
+
   return (
     <Link
+      ref={cardRef}
       href={documentUrl}
       className={cn(
         'group block rounded-xl border bg-card p-5',

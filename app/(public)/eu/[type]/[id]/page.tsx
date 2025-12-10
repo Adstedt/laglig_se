@@ -21,15 +21,27 @@ import { lookupLawBySfsNumber } from '@/app/actions/cross-references'
 import { ContentWithStyledHeadings } from '@/components/features/content'
 import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
 import { FloatingImplementationsButton } from './floating-implementations-button'
+import { RelatedDocsPrefetcher } from '@/components/features/eu-legislation'
 
 // ISR: Revalidate every hour
 export const revalidate = 3600
 export const dynamicParams = true
 
 // EU type URL mapping
-const EU_TYPE_MAP: Record<string, { contentType: ContentType; name: string; namePlural: string }> = {
-  forordningar: { contentType: ContentType.EU_REGULATION, name: 'EU-förordning', namePlural: 'EU-förordningar' },
-  direktiv: { contentType: ContentType.EU_DIRECTIVE, name: 'EU-direktiv', namePlural: 'EU-direktiv' },
+const EU_TYPE_MAP: Record<
+  string,
+  { contentType: ContentType; name: string; namePlural: string }
+> = {
+  forordningar: {
+    contentType: ContentType.EU_REGULATION,
+    name: 'EU-förordning',
+    namePlural: 'EU-förordningar',
+  },
+  direktiv: {
+    contentType: ContentType.EU_DIRECTIVE,
+    name: 'EU-direktiv',
+    namePlural: 'EU-direktiv',
+  },
 }
 
 interface PageProps {
@@ -144,9 +156,37 @@ export default async function EuDocumentPage({ params }: PageProps) {
   const sanitizedHtml = document.html_content
     ? sanitizeHtml(document.html_content, {
         allowedTags: [
-          'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'ul', 'ol', 'li',
-          'table', 'thead', 'tbody', 'tr', 'th', 'td', 'a', 'strong', 'em',
-          'span', 'div', 'blockquote', 'pre', 'code', 'b', 'i', 'u', 'sub', 'sup',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+          'p',
+          'br',
+          'hr',
+          'ul',
+          'ol',
+          'li',
+          'table',
+          'thead',
+          'tbody',
+          'tr',
+          'th',
+          'td',
+          'a',
+          'strong',
+          'em',
+          'span',
+          'div',
+          'blockquote',
+          'pre',
+          'code',
+          'b',
+          'i',
+          'u',
+          'sub',
+          'sup',
         ],
         allowedAttributes: {
           a: ['href', 'name', 'class'],
@@ -292,7 +332,9 @@ export default async function EuDocumentPage({ params }: PageProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground leading-relaxed">{document.summary}</p>
+                <p className="text-foreground leading-relaxed">
+                  {document.summary}
+                </p>
               </CardContent>
             </Card>
           )}
@@ -312,7 +354,9 @@ export default async function EuDocumentPage({ params }: PageProps) {
                 {sanitizedHtml ? (
                   <ContentWithStyledHeadings htmlContent={sanitizedHtml} />
                 ) : document.full_text ? (
-                  <div className="whitespace-pre-wrap font-serif">{document.full_text}</div>
+                  <div className="whitespace-pre-wrap font-serif">
+                    {document.full_text}
+                  </div>
                 ) : (
                   <p className="italic text-muted-foreground py-8 text-center">
                     Ingen dokumenttext tillgänglig.{' '}
@@ -351,8 +395,17 @@ export default async function EuDocumentPage({ params }: PageProps) {
 
         {/* Floating button for Swedish implementations (directives only) */}
         {type === 'direktiv' && (
-          <FloatingImplementationsButton implementationCount={measuresWithSlugs.length} />
+          <FloatingImplementationsButton
+            implementationCount={measuresWithSlugs.length}
+          />
         )}
+
+        {/* Prefetch related documents for instant navigation */}
+        <RelatedDocsPrefetcher
+          swedishImplementations={measuresWithSlugs.map((m) => ({
+            slug: m.slug,
+          }))}
+        />
       </main>
     </>
   )

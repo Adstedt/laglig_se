@@ -18,7 +18,10 @@ import { CalendarDays, Building2, ExternalLink } from 'lucide-react'
 import { BackToTopButton } from './toc-client'
 import { FloatingReferencesWrapper } from './floating-references-wrapper'
 import { LawSectionWithBanner } from './law-section-with-banner'
-import { NotYetInForceBanner } from '@/components/features/law'
+import {
+  NotYetInForceBanner,
+  RelatedDocsPrefetcher,
+} from '@/components/features/law'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
 import { RelatedDocumentsSummary } from '@/components/features/cross-references'
@@ -197,9 +200,14 @@ function extractLawMetadata(html: string): LawMetadata {
   const afterHr = html.substring(hrIndex)
   // Look for the pattern in the first section (before any paragraph anchor)
   const firstSectionEnd = afterHr.indexOf('<a class="paragraf"')
-  const firstSection = firstSectionEnd > 0 ? afterHr.substring(0, firstSectionEnd) : afterHr.substring(0, 500)
+  const firstSection =
+    firstSectionEnd > 0
+      ? afterHr.substring(0, firstSectionEnd)
+      : afterHr.substring(0, 500)
 
-  const effectiveDateMatch = firstSection.match(/\/Träder i kraft I:(\d{4})-(\d{2})-(\d{2})\//)
+  const effectiveDateMatch = firstSection.match(
+    /\/Träder i kraft I:(\d{4})-(\d{2})-(\d{2})\//
+  )
   if (effectiveDateMatch) {
     const year = parseInt(effectiveDateMatch[1] ?? '0')
     const month = parseInt(effectiveDateMatch[2] ?? '0')
@@ -212,11 +220,14 @@ function extractLawMetadata(html: string): LawMetadata {
     today.setHours(0, 0, 0, 0)
 
     // Format the date in Swedish
-    metadata.effectiveDateFormatted = effectiveDate.toLocaleDateString('sv-SE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
+    metadata.effectiveDateFormatted = effectiveDate.toLocaleDateString(
+      'sv-SE',
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }
+    )
 
     // Check if the law hasn't entered into force yet
     metadata.isNotYetInForce = effectiveDate > today
@@ -376,9 +387,12 @@ export default async function LawPage({ params }: PageProps) {
           </Breadcrumb>
 
           {/* Banner for laws not yet in force */}
-          {lawMetadata.isNotYetInForce && lawMetadata.effectiveDateFormatted && (
-            <NotYetInForceBanner effectiveDate={lawMetadata.effectiveDateFormatted} />
-          )}
+          {lawMetadata.isNotYetInForce &&
+            lawMetadata.effectiveDateFormatted && (
+              <NotYetInForceBanner
+                effectiveDate={lawMetadata.effectiveDateFormatted}
+              />
+            )}
 
           {/* Hero Header - with theme accent */}
           <header className="mb-8 rounded-xl bg-card p-6 shadow-sm border">
@@ -630,6 +644,22 @@ export default async function LawPage({ params }: PageProps) {
         <FloatingReferencesWrapper
           courtCaseCount={citingCases.totalCount}
           directiveCount={implementedDirectives.length}
+        />
+
+        {/* Prefetch related documents for instant navigation */}
+        <RelatedDocsPrefetcher
+          citingCases={citingCases.cases.map((c) => ({
+            slug: c.slug,
+            contentType: c.contentType,
+          }))}
+          implementedDirectives={implementedDirectives.map((d) => ({
+            slug: d.slug,
+          }))}
+          amendments={law.base_amendments
+            .filter((a) => a.amending_document?.slug)
+            .map((a) => ({
+              slug: a.amending_document?.slug ?? null,
+            }))}
         />
       </main>
     </>

@@ -1,7 +1,44 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { CatalogueResultCard } from '@/components/features/catalogue/catalogue-result-card'
 import type { BrowseResult } from '@/app/actions/browse'
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    prefetch: vi.fn(),
+    push: vi.fn(),
+    replace: vi.fn(),
+  }),
+}))
+
+// Mock prefetch manager
+vi.mock('@/lib/prefetch', () => ({
+  prefetchManager: {
+    init: vi.fn(),
+    add: vi.fn(),
+  },
+}))
+
+// Mock IntersectionObserver as a proper class
+class MockIntersectionObserver {
+  readonly root: Element | null = null
+  readonly rootMargin: string = ''
+  readonly thresholds: ReadonlyArray<number> = []
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+  takeRecords = vi.fn(() => [])
+}
+
+beforeEach(() => {
+  global.IntersectionObserver =
+    MockIntersectionObserver as unknown as typeof IntersectionObserver
+})
+
+afterEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('CatalogueResultCard', () => {
   const mockDocument: BrowseResult = {

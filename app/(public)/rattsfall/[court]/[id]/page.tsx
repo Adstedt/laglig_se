@@ -20,6 +20,7 @@ import { ContentWithStyledHeadings } from '@/components/features/content'
 import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
 import { CitedLawsSummary } from '@/components/features/cross-references'
 import { FloatingCitedLawsWrapper } from './floating-cited-laws-wrapper'
+import { RelatedDocsPrefetcher } from '@/components/features/court-case'
 
 // ISR: Revalidate every hour
 export const revalidate = 3600
@@ -447,6 +448,13 @@ export default async function CourtCasePage({ params }: PageProps) {
         {/* Floating button for cited laws */}
         <FloatingCitedLawsWrapper
           lawCount={document.source_references.length}
+        />
+
+        {/* Prefetch related documents for instant navigation */}
+        <RelatedDocsPrefetcher
+          citedLaws={document.source_references.map((ref) => ({
+            slug: ref.target_document.slug,
+          }))}
         />
       </main>
     </>
