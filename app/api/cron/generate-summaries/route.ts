@@ -20,6 +20,7 @@ import {
   generateAmendmentSummaryPrompt,
   generateRepealSummaryPrompt,
 } from '@/lib/sync/ai-summary-queue'
+import { sendSummaryGenEmail } from '@/lib/email/cron-notifications'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60 // 1 minute max
@@ -39,9 +40,13 @@ interface SummaryStats {
   skipped: number
 }
 
-async function generateSummaryWithOpenAI(prompt: string): Promise<string | null> {
+async function generateSummaryWithOpenAI(
+  prompt: string
+): Promise<string | null> {
   if (!OPENAI_API_KEY) {
-    console.warn('OPENAI_API_KEY not configured, skipping AI summary generation')
+    console.warn(
+      'OPENAI_API_KEY not configured, skipping AI summary generation'
+    )
     return null
   }
 
@@ -50,14 +55,15 @@ async function generateSummaryWithOpenAI(prompt: string): Promise<string | null>
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini', // Cost-effective model for summaries
         messages: [
           {
             role: 'system',
-            content: 'Du är en expert på svensk lagstiftning som skriver korta, lättförståeliga sammanfattningar för allmänheten.',
+            content:
+              'Du är en expert på svensk lagstiftning som skriver korta, lättförståeliga sammanfattningar för allmänheten.',
           },
           {
             role: 'user',
@@ -197,10 +203,11 @@ export async function GET(request: Request) {
       }
 
       // Small delay between API calls
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
     }
 
     const duration = Date.now() - startTime.getTime()
+    const durationStr = `${Math.round(duration / 1000)}s`
 
     // Get count of remaining pending summaries
     const remainingCount = await prisma.changeEvent.count({
@@ -210,20 +217,35 @@ export async function GET(request: Request) {
       },
     })
 
+    // Send email notification (only if work was done)
+    await sendSummaryGenEmail(
+      { ...stats, remainingPending: remainingCount },
+      durationStr,
+      true
+    )
+
     return NextResponse.json({
       success: true,
       stats,
       remainingPending: remainingCount,
-      duration: `${Math.round(duration / 1000)}s`,
+      duration: durationStr,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error('AI summary generation failed:', error)
 
+    const duration = Date.now() - startTime.getTime()
+    const durationStr = `${Math.round(duration / 1000)}s`
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
+
+    // Send failure notification email
+    await sendSummaryGenEmail(stats, durationStr, false, errorMessage)
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         stats,
         timestamp: new Date().toISOString(),
       },

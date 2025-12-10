@@ -695,6 +695,53 @@
 
 ---
 
-**Epic 2 Complete: 11 stories, 4-5 weeks estimated**
+## Story 2.12: Rättskällor Catalogue/Browse Page
+
+**As a** visitor or authenticated user,
+**I want** to browse all legal documents (laws, court cases, EU legislation) through a catalogue/browse interface at `/rattskallor`,
+**so that** I can discover, filter, and explore legal content without needing to perform a specific search query.
+
+**Acceptance Criteria:**
+
+1. Base route `/rattskallor` displays paginated catalogue of ALL legal document types (SFS laws, court cases, EU legislation)
+2. Pre-filtered sub-routes implemented:
+   - `/rattskallor/lagar` - Shows only SFS laws (content_type = SFS_LAW)
+   - `/rattskallor/rattsfall` - Shows only court cases (AD, HD, HovR, HFD, MÖD, MIG)
+   - `/rattskallor/eu-ratt` - Shows only EU legislation (EU_REGULATION, EU_DIRECTIVE)
+3. Integrated search bar with debounced search-as-you-type (300ms debounce):
+   - Search suggestions appear in dropdown as user types
+   - Pressing Enter or clicking "Search" filters results
+   - Results often already cached from debounced requests
+4. Same filter/facet components as `/sok` page available (reuse existing UX):
+   - Content Type filter (when on base `/rattskallor` route)
+   - Document Status filter (Active, Amended, Repealed)
+   - Category filter (same as `/sok` - uses `document_subjects` table)
+   - Business Type filter (B2B/Private/Both)
+   - Date range filter (publication date)
+5. Traditional pagination with page selector:
+   - Results per page selector: 25, 50, 100 (default: 25)
+   - Page numbers displayed with "Page X of Y" indicator
+   - SEO-friendly URLs: `/rattskallor/lagar?page=2&per_page=50`
+6. Pre-fetching strategy implemented:
+   - On initial page load, pre-fetch page 2 results in background after render
+   - When user hovers/scrolls near pagination controls, pre-fetch target page
+7. Each result displays: title, document number, content type badge, category tags, publication date, snippet/summary
+8. Results sortable by: Relevance (when search active), Publication Date (newest/oldest), Title (A-Z)
+9. Mobile-responsive layout:
+   - Desktop: Sidebar filters + main results area (same as `/sok`)
+   - Mobile: Filter drawer accessible via button
+10. All pages use Server-Side Rendering (SSR) for SEO
+11. Proper meta tags and Open Graph data for each route:
+    - `/rattskallor`: "Bläddra i svensk lagstiftning | Laglig.se"
+    - `/rattskallor/lagar`: "Svenska lagar (SFS) | Laglig.se"
+    - `/rattskallor/rattsfall`: "Svenska rättsfall | Laglig.se"
+    - `/rattskallor/eu-ratt`: "EU-lagstiftning | Laglig.se"
+12. Search performance <800ms for browsing queries across 170,000+ documents
+13. Core Web Vitals targets met: LCP <2.5s, CLS <0.1, FID <100ms
+14. Authenticated users see same experience as public visitors (auth-specific features deferred to separate story)
+
+---
+
+**Epic 2 Complete: 12 stories, 5-6 weeks estimated**
 
 ---

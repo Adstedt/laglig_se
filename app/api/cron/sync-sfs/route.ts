@@ -17,11 +17,16 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ContentType, DocumentStatus, ChangeType } from '@prisma/client'
-import { fetchLawFullText, fetchLawHTML, generateSlug } from '@/lib/external/riksdagen'
+import {
+  fetchLawFullText,
+  fetchLawHTML,
+  generateSlug,
+} from '@/lib/external/riksdagen'
 import { archiveDocumentVersion } from '@/lib/sync/version-archive'
 import { detectChanges } from '@/lib/sync/change-detection'
 import { parseUndertitel } from '@/lib/sync/section-parser'
 import { createAmendmentFromChange } from '@/lib/sync/amendment-creator'
+import { sendSfsSyncEmail } from '@/lib/email/cron-notifications'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -50,10 +55,10 @@ interface SyncStats {
 }
 
 const CONFIG = {
-  PAGE_SIZE: 100,
-  MAX_PAGES: 20,
-  DELAY_MS: 250,
-  EARLY_STOP_THRESHOLD: 10,
+  PAGE_SIZE: 50, // Reduced from 100 for faster processing
+  MAX_PAGES: 10, // Reduced from 20 - daily sync shouldn't need more
+  DELAY_MS: 100, // Reduced from 250ms - API can handle more
+  EARLY_STOP_THRESHOLD: 5, // Reduced from 10 - stop sooner when caught up
 }
 
 export async function GET(request: Request) {
@@ -123,7 +128,9 @@ export async function GET(request: Request) {
         })
 
         if (existing) {
-          const storedMeta = existing.metadata as { systemdatum?: string } | null
+          const storedMeta = existing.metadata as {
+            systemdatum?: string
+          } | null
           const storedSystemdatum = storedMeta?.systemdatum
             ? new Date(storedMeta.systemdatum.replace(' ', 'T') + 'Z')
             : null
@@ -189,7 +196,7 @@ export async function GET(request: Request) {
                   html_content: newHtml,
                   updated_at: new Date(),
                   metadata: {
-                    ...(existing.metadata as object || {}),
+                    ...((existing.metadata as object) || {}),
                     systemdatum: doc.systemdatum,
                     latestAmendment,
                     lastSyncAt: new Date().toISOString(),
@@ -269,7 +276,7 @@ export async function GET(request: Request) {
         }
 
         // Small delay to be respectful to API
-        await new Promise(resolve => setTimeout(resolve, CONFIG.DELAY_MS))
+        await new Promise((resolve) => setTimeout(resolve, CONFIG.DELAY_MS))
       }
 
       hasMore = page < totalPages && page < CONFIG.MAX_PAGES
@@ -277,20 +284,32 @@ export async function GET(request: Request) {
     }
 
     const duration = Date.now() - startTime.getTime()
+    const durationStr = `${Math.round(duration / 1000)}s`
+
+    // Send email notification
+    await sendSfsSyncEmail(stats, durationStr, true)
 
     return NextResponse.json({
       success: true,
       stats,
-      duration: `${Math.round(duration / 1000)}s`,
+      duration: durationStr,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error('SFS sync failed:', error)
 
+    const duration = Date.now() - startTime.getTime()
+    const durationStr = `${Math.round(duration / 1000)}s`
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
+
+    // Send failure notification email
+    await sendSfsSyncEmail(stats, durationStr, false, errorMessage)
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         stats,
         timestamp: new Date().toISOString(),
       },

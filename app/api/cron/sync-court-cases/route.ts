@@ -30,6 +30,7 @@ import {
   parseApiDate,
   mapCourtCodeToContentType,
 } from '@/lib/external/domstolsverket'
+import { sendCourtSyncEmail } from '@/lib/email/cron-notifications'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -56,14 +57,24 @@ interface CourtStats {
 function htmlToPlainText(html: string | undefined): string | null {
   if (!html) return null
 
-  let text = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+  let text = html.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    ''
+  )
   text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
   text = text.replace(/<br\s*\/?>/gi, '\n')
   text = text.replace(/<\/p>/gi, '\n\n')
   text = text.replace(/<\/div>/gi, '\n')
   text = text.replace(/<[^>]+>/g, '')
-  text = text.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-  text = text.replace(/[ \t]+/g, ' ').replace(/\n\s*\n\s*\n/g, '\n\n').trim()
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+  text = text
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim()
 
   return text || null
 }
@@ -121,7 +132,10 @@ async function createCrossReferences(
   return created
 }
 
-async function processCourtCase(dto: PubliceringDTO, stats: CourtStats): Promise<boolean> {
+async function processCourtCase(
+  dto: PubliceringDTO,
+  stats: CourtStats
+): Promise<boolean> {
   const courtCode = dto.domstol?.domstolKod
   const contentType = mapCourtCodeToContentType(courtCode)
 
@@ -188,7 +202,10 @@ async function processCourtCase(dto: PubliceringDTO, stats: CourtStats): Promise
       await createNewRulingEvent(tx, legalDoc.id, contentType as ContentType)
 
       if (dto.lagrumLista && dto.lagrumLista.length > 0) {
-        const refsCreated = await createCrossReferences(legalDoc.id, dto.lagrumLista)
+        const refsCreated = await createCrossReferences(
+          legalDoc.id,
+          dto.lagrumLista
+        )
         stats.crossRefsCreated += refsCreated
       }
     })
@@ -240,7 +257,7 @@ async function syncCourt(court: CourtType): Promise<CourtStats> {
       }
 
       page++
-      await new Promise(resolve => setTimeout(resolve, CONFIG.DELAY_MS))
+      await new Promise((resolve) => setTimeout(resolve, CONFIG.DELAY_MS))
     }
   } catch {
     stats.errors++
@@ -269,39 +286,70 @@ export async function GET(request: Request) {
     const totalInserted = allStats.reduce((sum, s) => sum + s.inserted, 0)
     const totalSkipped = allStats.reduce((sum, s) => sum + s.skipped, 0)
     const totalErrors = allStats.reduce((sum, s) => sum + s.errors, 0)
-    const totalCrossRefs = allStats.reduce((sum, s) => sum + s.crossRefsCreated, 0)
+    const totalCrossRefs = allStats.reduce(
+      (sum, s) => sum + s.crossRefsCreated,
+      0
+    )
 
     const duration = Date.now() - startTime.getTime()
+    const durationStr = `${Math.round(duration / 1000)}s`
+
+    const emailStats = {
+      total: {
+        fetched: totalFetched,
+        inserted: totalInserted,
+        skipped: totalSkipped,
+        errors: totalErrors,
+        crossRefsCreated: totalCrossRefs,
+      },
+      byCourt: allStats.map((s) => ({
+        court: s.court,
+        courtName: COURT_CONFIGS[s.court].name,
+        inserted: s.inserted,
+        skipped: s.skipped,
+        errors: s.errors,
+        earlyTerminated: s.earlyTerminated,
+      })),
+    }
+
+    // Send email notification
+    await sendCourtSyncEmail(emailStats, durationStr, true)
 
     return NextResponse.json({
       success: true,
-      stats: {
-        total: {
-          fetched: totalFetched,
-          inserted: totalInserted,
-          skipped: totalSkipped,
-          errors: totalErrors,
-          crossRefsCreated: totalCrossRefs,
-        },
-        byCourt: allStats.map(s => ({
-          court: s.court,
-          courtName: COURT_CONFIGS[s.court].name,
-          inserted: s.inserted,
-          skipped: s.skipped,
-          errors: s.errors,
-          earlyTerminated: s.earlyTerminated,
-        })),
-      },
-      duration: `${Math.round(duration / 1000)}s`,
+      stats: emailStats,
+      duration: durationStr,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Court case sync failed:', error)
 
+    const duration = Date.now() - startTime.getTime()
+    const durationStr = `${Math.round(duration / 1000)}s`
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
+
+    // Send failure notification email
+    await sendCourtSyncEmail(
+      {
+        total: {
+          fetched: 0,
+          inserted: 0,
+          skipped: 0,
+          errors: 0,
+          crossRefsCreated: 0,
+        },
+        byCourt: [],
+      },
+      durationStr,
+      false,
+      errorMessage
+    )
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         timestamp: new Date().toISOString(),
       },
       { status: 500 }
