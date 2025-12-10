@@ -4,6 +4,7 @@
   "installCommand": "pnpm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
+  "bypassToken": "${VERCEL_AUTOMATION_BYPASS_SECRET}",
   "crons": [
     {
       "path": "/api/cron/sync-sfs",
