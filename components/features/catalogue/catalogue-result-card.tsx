@@ -62,6 +62,7 @@ export function CatalogueResultCard({
     <Link
       ref={cardRef}
       href={documentUrl}
+      prefetch={true}
       className={cn(
         'group block rounded-xl border bg-card p-5',
         'transition-all duration-200',
