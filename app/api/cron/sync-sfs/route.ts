@@ -50,7 +50,7 @@ const CONFIG = {
   PAGE_SIZE: 50,
   MAX_PAGES: 3, // Should rarely need more than 1-2 pages for daily sync
   DELAY_MS: 100,
-  LOOKBACK_DAYS: 2, // Look back 2 days to catch any missed updates
+  LOOKBACK_DAYS: 7, // Look back 7 days to catch any missed publications
 }
 
 export async function GET(request: Request) {
