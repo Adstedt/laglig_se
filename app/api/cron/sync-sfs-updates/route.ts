@@ -126,6 +126,10 @@ export async function GET(request: Request) {
 
         stats.fetched++
         const sfsNumber = `SFS ${doc.beteckning}`
+        const latestAmendment = parseUndertitel(doc.undertitel || '')
+        const amendmentInfo = latestAmendment
+          ? ` (ändrad t.o.m. ${latestAmendment})`
+          : ''
 
         // Check if we have this law in our database
         const existing = await prisma.legalDocument.findUnique({
@@ -141,7 +145,9 @@ export async function GET(request: Request) {
         // Skip if we don't have this law (handled by sync-sfs for new laws)
         if (!existing) {
           stats.notInDb++
-          console.log(`[SYNC-SFS-UPDATES] ${sfsNumber} not in DB, skipping`)
+          console.log(
+            `[SYNC-SFS-UPDATES] ${sfsNumber}${amendmentInfo} not in DB, skipping`
+          )
           continue
         }
 
@@ -156,13 +162,13 @@ export async function GET(request: Request) {
         if (storedSystemdatum && apiSystemdatum <= storedSystemdatum) {
           stats.skipped++
           console.log(
-            `[SYNC-SFS-UPDATES] ${sfsNumber} already up-to-date (stored: ${storedMeta?.systemdatum}, api: ${doc.systemdatum})`
+            `[SYNC-SFS-UPDATES] ${sfsNumber}${amendmentInfo} already up-to-date`
           )
           continue
         }
 
         console.log(
-          `[SYNC-SFS-UPDATES] ${sfsNumber} needs update (stored: ${storedMeta?.systemdatum || 'none'}, api: ${doc.systemdatum})`
+          `[SYNC-SFS-UPDATES] ${sfsNumber}${amendmentInfo} needs update`
         )
 
         // Update existing law
@@ -174,10 +180,11 @@ export async function GET(request: Request) {
 
           if (!newFullText && !newHtml) {
             stats.failed++
+            console.log(
+              `[SYNC-SFS-UPDATES] ${sfsNumber} failed to fetch content`
+            )
             continue
           }
-
-          const latestAmendment = parseUndertitel(doc.undertitel || '')
 
           await prisma.$transaction(async (tx) => {
             const archivedVersion = await archiveDocumentVersion(tx, {
@@ -223,10 +230,15 @@ export async function GET(request: Request) {
           })
 
           stats.updated++
-          console.log(`[SYNC-SFS-UPDATES] ${sfsNumber} updated successfully`)
+          console.log(
+            `[SYNC-SFS-UPDATES] ${sfsNumber}${amendmentInfo} updated successfully`
+          )
         } catch (err) {
           stats.failed++
-          console.error(`[SYNC-SFS-UPDATES] ${sfsNumber} update failed:`, err)
+          console.error(
+            `[SYNC-SFS-UPDATES] ${sfsNumber}${amendmentInfo} update failed:`,
+            err
+          )
         }
 
         // Small delay to be respectful to API
