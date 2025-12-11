@@ -26,3 +26,47 @@ if (process.env.NODE_ENV === 'production') {
     await prisma.$disconnect()
   })
 }
+
+/**
+ * Retry a database operation with exponential backoff
+ * Useful for handling connection pool exhaustion during high-concurrency scenarios
+ * like Vercel static generation builds.
+ *
+ * @param operation - Async function to retry
+ * @param maxRetries - Maximum number of retry attempts (default: 3)
+ * @param baseDelayMs - Base delay in ms, doubles each retry (default: 1000)
+ */
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelayMs: number = 1000
+): Promise<T> {
+  let lastError: Error | undefined
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (error) {
+      lastError = error as Error
+
+      // Only retry on connection pool errors (P2024)
+      const isPrismaPoolError =
+        error instanceof Error &&
+        'code' in error &&
+        (error as { code: string }).code === 'P2024'
+
+      if (!isPrismaPoolError || attempt === maxRetries) {
+        throw error
+      }
+
+      // Exponential backoff with jitter
+      const delay = baseDelayMs * Math.pow(2, attempt) + Math.random() * 500
+      console.warn(
+        `[Prisma] Connection pool timeout, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`
+      )
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+
+  throw lastError
+}

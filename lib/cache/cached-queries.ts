@@ -12,7 +12,7 @@
  */
 
 import { unstable_cache } from 'next/cache'
-import { prisma } from '@/lib/prisma'
+import { prisma, withRetry } from '@/lib/prisma'
 import { ContentType } from '@prisma/client'
 
 /**
@@ -21,30 +21,32 @@ import { ContentType } from '@prisma/client'
  */
 export const getCachedLaw = unstable_cache(
   async (slug: string) => {
-    return prisma.legalDocument.findUnique({
-      where: { slug, content_type: ContentType.SFS_LAW },
-      include: {
-        subjects: {
-          select: {
-            subject_code: true,
-            subject_name: true,
-          },
-        },
-        base_amendments: {
-          include: {
-            amending_document: {
-              select: {
-                slug: true,
-                document_number: true,
-                title: true,
-              },
+    return withRetry(() =>
+      prisma.legalDocument.findUnique({
+        where: { slug, content_type: ContentType.SFS_LAW },
+        include: {
+          subjects: {
+            select: {
+              subject_code: true,
+              subject_name: true,
             },
           },
-          orderBy: { effective_date: 'desc' },
-          take: 10,
+          base_amendments: {
+            include: {
+              amending_document: {
+                select: {
+                  slug: true,
+                  document_number: true,
+                  title: true,
+                },
+              },
+            },
+            orderBy: { effective_date: 'desc' },
+            take: 10,
+          },
         },
-      },
-    })
+      })
+    )
   },
   ['law-by-slug'],
   {
@@ -59,16 +61,18 @@ export const getCachedLaw = unstable_cache(
  */
 export const getCachedLawMetadata = unstable_cache(
   async (slug: string) => {
-    return prisma.legalDocument.findUnique({
-      where: { slug, content_type: ContentType.SFS_LAW },
-      select: {
-        title: true,
-        document_number: true,
-        summary: true,
-        full_text: true,
-        slug: true,
-      },
-    })
+    return withRetry(() =>
+      prisma.legalDocument.findUnique({
+        where: { slug, content_type: ContentType.SFS_LAW },
+        select: {
+          title: true,
+          document_number: true,
+          summary: true,
+          full_text: true,
+          slug: true,
+        },
+      })
+    )
   },
   ['law-metadata'],
   {
@@ -86,30 +90,32 @@ export const getCachedLawMetadata = unstable_cache(
  */
 export const getCachedCourtCase = unstable_cache(
   async (slug: string, contentType: ContentType) => {
-    const result = await prisma.legalDocument.findUnique({
-      where: { slug, content_type: contentType },
-      include: {
-        court_case: true,
-        source_references: {
-          where: {
-            target_document: {
-              content_type: ContentType.SFS_LAW,
-            },
-          },
-          include: {
-            target_document: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                document_number: true,
+    const result = await withRetry(() =>
+      prisma.legalDocument.findUnique({
+        where: { slug, content_type: contentType },
+        include: {
+          court_case: true,
+          source_references: {
+            where: {
+              target_document: {
+                content_type: ContentType.SFS_LAW,
               },
             },
+            include: {
+              target_document: {
+                select: {
+                  id: true,
+                  title: true,
+                  slug: true,
+                  document_number: true,
+                },
+              },
+            },
+            take: 20,
           },
-          take: 20,
         },
-      },
-    })
+      })
+    )
     return result
   },
   ['court-case-by-slug'],
@@ -125,22 +131,24 @@ export const getCachedCourtCase = unstable_cache(
  */
 export const getCachedCourtCaseMetadata = unstable_cache(
   async (slug: string, contentType: ContentType) => {
-    return prisma.legalDocument.findUnique({
-      where: { slug, content_type: contentType },
-      select: {
-        title: true,
-        document_number: true,
-        summary: true,
-        full_text: true,
-        slug: true,
-        court_case: {
-          select: {
-            court_name: true,
-            case_number: true,
+    return withRetry(() =>
+      prisma.legalDocument.findUnique({
+        where: { slug, content_type: contentType },
+        select: {
+          title: true,
+          document_number: true,
+          summary: true,
+          full_text: true,
+          slug: true,
+          court_case: {
+            select: {
+              court_name: true,
+              case_number: true,
+            },
           },
         },
-      },
-    })
+      })
+    )
   },
   ['court-case-metadata'],
   {
@@ -155,12 +163,14 @@ export const getCachedCourtCaseMetadata = unstable_cache(
  */
 export const getCachedEuLegislation = unstable_cache(
   async (slug: string, contentType: ContentType) => {
-    return prisma.legalDocument.findUnique({
-      where: { slug, content_type: contentType },
-      include: {
-        eu_document: true,
-      },
-    })
+    return withRetry(() =>
+      prisma.legalDocument.findUnique({
+        where: { slug, content_type: contentType },
+        include: {
+          eu_document: true,
+        },
+      })
+    )
   },
   ['eu-legislation-by-slug'],
   {
@@ -175,21 +185,23 @@ export const getCachedEuLegislation = unstable_cache(
  */
 export const getCachedEuLegislationMetadata = unstable_cache(
   async (slug: string, contentType: ContentType) => {
-    return prisma.legalDocument.findUnique({
-      where: { slug, content_type: contentType },
-      select: {
-        title: true,
-        document_number: true,
-        summary: true,
-        full_text: true,
-        slug: true,
-        eu_document: {
-          select: {
-            celex_number: true,
+    return withRetry(() =>
+      prisma.legalDocument.findUnique({
+        where: { slug, content_type: contentType },
+        select: {
+          title: true,
+          document_number: true,
+          summary: true,
+          full_text: true,
+          slug: true,
+          eu_document: {
+            select: {
+              celex_number: true,
+            },
           },
         },
-      },
-    })
+      })
+    )
   },
   ['eu-legislation-metadata'],
   {
@@ -201,19 +213,24 @@ export const getCachedEuLegislationMetadata = unstable_cache(
 /**
  * Get cached list of top laws for static generation
  * Used by generateStaticParams in /lagar/[id]/page.tsx
+ *
+ * Note: Limit reduced from 500 to 50 to prevent connection pool exhaustion
+ * during Vercel build. Non-pregenerated pages use ISR (dynamicParams=true).
  */
 export const getTopLawsForStaticGeneration = unstable_cache(
-  async (limit: number = 500) => {
-    return prisma.legalDocument.findMany({
-      where: { content_type: ContentType.SFS_LAW },
-      orderBy: [
-        // Sort by amendment_count (most amended = most important) would be ideal
-        // but we don't have that field, so use effective_date as proxy
-        { effective_date: 'desc' },
-      ],
-      take: limit,
-      select: { slug: true },
-    })
+  async (limit: number = 50) => {
+    return withRetry(() =>
+      prisma.legalDocument.findMany({
+        where: { content_type: ContentType.SFS_LAW },
+        orderBy: [
+          // Sort by amendment_count (most amended = most important) would be ideal
+          // but we don't have that field, so use effective_date as proxy
+          { effective_date: 'desc' },
+        ],
+        take: limit,
+        select: { slug: true },
+      })
+    )
   },
   ['top-laws-static'],
   {
@@ -228,12 +245,14 @@ export const getTopLawsForStaticGeneration = unstable_cache(
  */
 export const getTopCourtCasesForStaticGeneration = unstable_cache(
   async (contentType: ContentType, limit: number = 50) => {
-    return prisma.legalDocument.findMany({
-      where: { content_type: contentType },
-      orderBy: { publication_date: 'desc' },
-      take: limit,
-      select: { slug: true },
-    })
+    return withRetry(() =>
+      prisma.legalDocument.findMany({
+        where: { content_type: contentType },
+        orderBy: { publication_date: 'desc' },
+        take: limit,
+        select: { slug: true },
+      })
+    )
   },
   ['top-court-cases-static'],
   {
@@ -274,12 +293,14 @@ export const getAllTopCourtCasesForStaticGeneration = unstable_cache(
     const allCases: { court: string; id: string }[] = []
 
     for (const courtType of courtTypes) {
-      const cases = await prisma.legalDocument.findMany({
-        where: { content_type: courtType },
-        orderBy: { publication_date: 'desc' },
-        take: limitPerCourt,
-        select: { slug: true },
-      })
+      const cases = await withRetry(() =>
+        prisma.legalDocument.findMany({
+          where: { content_type: courtType },
+          orderBy: { publication_date: 'desc' },
+          take: limitPerCourt,
+          select: { slug: true },
+        })
+      )
 
       const courtSlug = courtMap[courtType]
       if (courtSlug) {

@@ -3,10 +3,7 @@ import Link from 'next/link'
 import { DocumentStatus } from '@prisma/client'
 import type { Metadata } from 'next'
 import sanitizeHtml from 'sanitize-html'
-import {
-  getCachedLaw,
-  getCachedLawMetadata,
-} from '@/lib/cache/cached-queries'
+import { getCachedLaw, getCachedLawMetadata } from '@/lib/cache/cached-queries'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -64,9 +61,12 @@ function formatDateOrNull(
 }
 
 /**
- * Pre-generate top 500 law pages at build time for better performance
+ * Pre-generate top 50 law pages at build time for better performance
  * Sorted by effective_date (most recent) as proxy for importance
- * Build timeout is 45 minutes on Vercel, this should complete well within that
+ *
+ * Note: Reduced from 500 to 50 to prevent Prisma connection pool exhaustion
+ * during Vercel build. The remaining pages use ISR (dynamicParams=true) and
+ * will be generated on first request then cached.
  */
 export async function generateStaticParams() {
   // Only run during production build, skip in development
@@ -78,8 +78,10 @@ export async function generateStaticParams() {
     const { getTopLawsForStaticGeneration } = await import(
       '@/lib/cache/cached-queries'
     )
-    const topLaws = await getTopLawsForStaticGeneration(500)
-    console.log(`[generateStaticParams] Pre-generating ${topLaws.length} law pages`)
+    const topLaws = await getTopLawsForStaticGeneration(50)
+    console.log(
+      `[generateStaticParams] Pre-generating ${topLaws.length} law pages`
+    )
     return topLaws.map((law) => ({ id: law.slug }))
   } catch (error) {
     console.error('[generateStaticParams] Error fetching top laws:', error)
