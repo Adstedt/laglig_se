@@ -5,7 +5,7 @@ import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { Ratelimit } from '@upstash/ratelimit'
 import { z } from 'zod'
 import { headers } from 'next/headers'
-import { track } from '@vercel/analytics/server'
+import { safeTrack } from '@/lib/analytics'
 
 // Rate limiter: 10 requests per minute for anonymous users
 // Only initialize if Redis is configured
@@ -136,7 +136,7 @@ export async function searchDocumentsAction(
       if (cached && typeof cached === 'string') {
         const parsedCache = JSON.parse(cached) as SearchResponse
         // Track cache hit
-        await track('search_cache_hit', { query: query.substring(0, 50) })
+        await safeTrack('search_cache_hit', { query: query.substring(0, 50) })
         return {
           ...parsedCache,
           queryTimeMs: performance.now() - startTime,
@@ -295,7 +295,7 @@ export async function searchDocumentsAction(
     }
 
     // Track search analytics (Epic AC12)
-    await track('search_query', {
+    await safeTrack('search_query', {
       query: query.substring(0, 50),
       resultsCount: total,
       queryTimeMs: Math.round(response.queryTimeMs),
@@ -437,7 +437,7 @@ export async function trackSearchClickAction(
   documentId: string,
   position: number
 ): Promise<void> {
-  await track('search_result_click', {
+  await safeTrack('search_result_click', {
     query: query.substring(0, 50),
     documentId,
     position,

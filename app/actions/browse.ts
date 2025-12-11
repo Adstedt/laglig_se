@@ -4,7 +4,7 @@ import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { z } from 'zod'
-import { track } from '@vercel/analytics/server'
+import { safeTrack, trackAsync } from '@/lib/analytics'
 
 // Content types aligned with Architecture 9.5.1 ContentType enum
 const ContentTypeEnum = z.enum([
@@ -327,7 +327,7 @@ async function searchWithQuery(
     }
 
     // Track analytics
-    await track('browse_search', {
+    await safeTrack('browse_search', {
       query: query.substring(0, 50),
       resultsCount: total,
       queryTimeMs: Math.round(response.queryTimeMs),
@@ -645,13 +645,11 @@ async function browseWithoutQuery(
     }
 
     // Track analytics (async, don't block response)
-    track('browse_catalogue', {
+    trackAsync('browse_catalogue', {
       contentTypes: contentTypes?.join(',') ?? 'all',
       resultsCount: queryResult.total,
       queryTimeMs: Math.round(response.queryTimeMs),
       cached: false,
-    }).catch(() => {
-      // Silently ignore analytics errors
     })
 
     return response
