@@ -1,0 +1,22 @@
+[
+  {
+    "sfsNumber": "2025:1",
+    "error": "Please provide binary data as `Uint8Array`, rather than `Buffer`."
+  },
+  {
+    "sfsNumber": "2025:2",
+    "error": "Please provide binary data as `Uint8Array`, rather than `Buffer`."
+  },
+  {
+    "sfsNumber": "2025:3",
+    "error": "Please provide binary data as `Uint8Array`, rather than `Buffer`."
+  },
+  {
+    "sfsNumber": "2025:4",
+    "error": "Please provide binary data as `Uint8Array`, rather than `Buffer`."
+  },
+  {
+    "sfsNumber": "2025:5",
+    "error": "Please provide binary data as `Uint8Array`, rather than `Buffer`."
+  }
+]

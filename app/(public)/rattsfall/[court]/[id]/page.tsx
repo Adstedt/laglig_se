@@ -1,8 +1,11 @@
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
 import { ContentType } from '@prisma/client'
 import type { Metadata } from 'next'
 import sanitizeHtml from 'sanitize-html'
+import {
+  getCachedCourtCase,
+  getCachedCourtCaseMetadata,
+} from '@/lib/cache/cached-queries'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -23,8 +26,54 @@ import { FloatingCitedLawsWrapper } from './floating-cited-laws-wrapper'
 import { RelatedDocsPrefetcher } from '@/components/features/court-case'
 
 // ISR: Revalidate every hour
+// Static generation for top court cases (Story 2.19)
 export const revalidate = 3600
-export const dynamicParams = true
+export const dynamicParams = true // Allow ISR for non-pre-generated pages
+
+/**
+ * Safely convert a date that might be a string (from cache) or Date object
+ * to an ISO string for JSON-LD structured data
+ */
+function toISOStringOrUndefined(date: Date | string | null | undefined): string | undefined {
+  if (!date) return undefined
+  if (typeof date === 'string') return date
+  if (date instanceof Date) return date.toISOString()
+  return undefined
+}
+
+/**
+ * Safely convert a date to a formatted locale string for display
+ */
+function formatDateOrNull(date: Date | string | null | undefined, options: Intl.DateTimeFormatOptions): string | null {
+  if (!date) return null
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleDateString('sv-SE', options)
+}
+
+/**
+ * Pre-generate top ~200 court case pages at build time (35 per court × 6 courts)
+ * This improves performance for the most frequently accessed court cases
+ */
+export async function generateStaticParams() {
+  // Only run during production build, skip in development
+  if (process.env.NODE_ENV !== 'production') {
+    return []
+  }
+
+  try {
+    const { getAllTopCourtCasesForStaticGeneration } = await import(
+      '@/lib/cache/cached-queries'
+    )
+    const topCases = await getAllTopCourtCasesForStaticGeneration(35) // 35 per court = ~210 total
+    console.log(
+      `[generateStaticParams] Pre-generating ${topCases.length} court case pages`
+    )
+    return topCases
+  } catch (error) {
+    console.error('[generateStaticParams] Error fetching top court cases:', error)
+    return [] // Fallback to ISR for all pages
+  }
+}
 
 // Court URL mapping
 const COURT_URL_MAP: Record<
@@ -52,6 +101,7 @@ interface PageProps {
   params: Promise<{ court: string; id: string }>
 }
 
+// Generate metadata for SEO - uses cached query for performance
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -62,22 +112,8 @@ export async function generateMetadata({
     return { title: 'Rättsfall hittades inte | Laglig.se' }
   }
 
-  const document = await prisma.legalDocument.findUnique({
-    where: { slug: id, content_type: courtInfo.contentType },
-    select: {
-      title: true,
-      document_number: true,
-      summary: true,
-      full_text: true,
-      slug: true,
-      court_case: {
-        select: {
-          court_name: true,
-          case_number: true,
-        },
-      },
-    },
-  })
+  // Use cached query for better performance (Story 2.19)
+  const document = await getCachedCourtCaseMetadata(id, courtInfo.contentType)
 
   if (!document) {
     return { title: 'Rättsfall hittades inte | Laglig.se' }
@@ -122,30 +158,8 @@ export default async function CourtCasePage({ params }: PageProps) {
     notFound()
   }
 
-  const document = await prisma.legalDocument.findUnique({
-    where: { slug: id, content_type: courtInfo.contentType },
-    include: {
-      court_case: true,
-      source_references: {
-        where: {
-          target_document: {
-            content_type: ContentType.SFS_LAW,
-          },
-        },
-        include: {
-          target_document: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              document_number: true,
-            },
-          },
-        },
-        take: 20,
-      },
-    },
-  })
+  // Use cached query for better performance (Story 2.19)
+  const document = await getCachedCourtCase(id, courtInfo.contentType)
 
   if (!document) {
     notFound()
@@ -196,13 +210,12 @@ export default async function CourtCasePage({ params }: PageProps) {
       })
     : null
 
-  const formattedDecisionDate = courtCase?.decision_date
-    ? new Date(courtCase.decision_date).toLocaleDateString('sv-SE', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : null
+  // Use safe date formatting (dates might be strings when coming from cache)
+  const formattedDecisionDate = formatDateOrNull(courtCase?.decision_date, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 
   // Parse parties from JSON
   const parties = courtCase?.parties as {
@@ -225,7 +238,7 @@ export default async function CourtCasePage({ params }: PageProps) {
       ? `${courtCase.court_name} ${courtCase.case_number}`
       : document.title,
     identifier: courtCase?.case_number || document.document_number,
-    datePublished: document.publication_date?.toISOString(),
+    datePublished: toISOStringOrUndefined(document.publication_date),
     inLanguage: 'sv',
     court: {
       '@type': 'GovernmentOrganization',

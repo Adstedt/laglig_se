@@ -113,11 +113,16 @@ model LegalDocument {
   @@index([content_type])
   @@index([status])
   @@index([search_vector])
+  // Story 2.19: Composite indexes for optimized catalogue queries
+  @@index([content_type, status, effective_date(sort: Desc)], name: "idx_browse_composite")
+  @@index([content_type, effective_date(sort: Desc)], name: "idx_browse_content_date")
+  @@index([publication_date(sort: Desc)], name: "idx_publication_date")
   @@map("legal_documents")
 }
 
 enum ContentType {
   SFS_LAW
+  SFS_AMENDMENT      // Story 2.13: Amendment documents (ändringsförfattningar)
   COURT_CASE_AD
   COURT_CASE_HD
   COURT_CASE_HOVR
@@ -262,6 +267,95 @@ model DocumentSubject {
   @@index([document_id])
   @@index([subject_code])
   @@map("document_subjects")
+}
+
+// ============================================================================
+// AMENDMENT PDF DOCUMENTS - Epic 2: Story 2.13
+// ============================================================================
+
+// Stores the amendment document (PDF) itself - one row per SFS amendment number
+model AmendmentDocument {
+  id              String      @id @default(cuid())
+  sfs_number      String      @unique // "2022:1109"
+
+  // Storage
+  storage_path    String      // Supabase: "2022/SFS2022-1109.pdf"
+  original_url    String      // Source URL for reference
+  file_size       Int?        // Bytes
+
+  // Base law reference
+  base_law_sfs    String      // "1977:1160" - the law being amended
+  base_law_name   String?     // "arbetsmiljölagen"
+
+  // Document metadata
+  title           String?     // "Lag om ändring i arbetsmiljölagen (1977:1160)"
+  effective_date  DateTime?   // When changes take effect
+  publication_date DateTime?  // When published (Utfärdad)
+
+  // Full text for search
+  full_text       String?     @db.Text
+
+  // Processing status
+  parse_status    ParseStatus @default(PENDING)
+  parse_error     String?
+  parsed_at       DateTime?
+  confidence      Float?      // LLM confidence score (0-1)
+
+  // Timestamps
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+
+  // Relations
+  section_changes SectionChange[]
+
+  @@index([base_law_sfs])
+  @@index([effective_date])
+  @@index([parse_status])
+  @@map("amendment_documents")
+}
+
+// Individual section changes within an amendment
+model SectionChange {
+  id              String      @id @default(cuid())
+  amendment_id    String
+
+  // Section reference
+  chapter         String?     // "7" for "7 kap." or null
+  section         String      // "15" or "2a"
+
+  // Change details
+  change_type     SectionChangeType
+  old_number      String?     // For renumbering: original number
+  description     String?     // Brief description of change
+
+  // Text content (extracted from PDF)
+  old_text        String?     @db.Text  // Previous text (if available)
+  new_text        String?     @db.Text  // New text content
+
+  // Ordering within the amendment
+  sort_order      Int         @default(0)
+
+  // Relations
+  amendment       AmendmentDocument @relation(fields: [amendment_id], references: [id], onDelete: Cascade)
+
+  @@unique([amendment_id, chapter, section, change_type])
+  @@index([amendment_id])
+  @@map("section_changes")
+}
+
+enum ParseStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  NEEDS_REVIEW
+}
+
+enum SectionChangeType {
+  AMENDED       // "ska ha följande lydelse"
+  REPEALED      // "upphävs", "upphöra att gälla"
+  NEW           // "nya paragrafer", "införas"
+  RENUMBERED    // "X § blir Y §"
 }
 
 // ============================================================================

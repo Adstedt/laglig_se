@@ -60,7 +60,21 @@
       "WebFetch(domain:www.notisum.se)",
       "WebFetch(domain:rkrattsbaser.gov.se)",
       "Bash(DEBUG=\"\" pnpm tsx:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:selex.se)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:rkrattsdb.gov.se)",
+      "WebFetch(domain:svenskforfattningssamling.se)",
+      "Bash(npx:*)",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__list_network_requests",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__get_network_request",
+      "mcp__chrome-devtools__take_snapshot"
     ],
     "deny": [],
     "ask": []

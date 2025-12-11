@@ -16,6 +16,8 @@ interface CatalogueResultsProps {
   perPage: number
   sortBy: 'date_desc' | 'date_asc' | 'title' | 'relevance'
   basePath: string
+  /** Use /rattskallor/sida/[page] route for pagination instead of ?page= */
+  useStaticPagination?: boolean
 }
 
 export async function CatalogueResults({
@@ -30,6 +32,7 @@ export async function CatalogueResults({
   perPage,
   sortBy,
   basePath,
+  useStaticPagination = false,
 }: CatalogueResultsProps) {
   const result = await browseDocumentsAction({
     query: query || undefined,
@@ -132,6 +135,7 @@ export async function CatalogueResults({
             perPage={perPage}
             total={result.total}
             basePath={basePath}
+            useStaticPagination={useStaticPagination}
           />
         </div>
       )}

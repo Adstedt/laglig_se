@@ -31,6 +31,7 @@ import {
   mapCourtCodeToContentType,
 } from '@/lib/external/domstolsverket'
 import { sendCourtSyncEmail } from '@/lib/email/cron-notifications'
+import { invalidateCourtCaseCaches } from '@/lib/cache/invalidation'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -79,7 +80,10 @@ function htmlToPlainText(html: string | undefined): string | null {
   return text || null
 }
 
+type PrismaTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
+
 async function createCrossReferences(
+  tx: PrismaTransaction,
   sourceDocId: string,
   lagrumList: Array<{ sfsNummer: string; referens?: string }>
 ): Promise<number> {
@@ -92,7 +96,7 @@ async function createCrossReferences(
         sfsNumber = `SFS ${sfsNumber}`
       }
 
-      const targetDoc = await prisma.legalDocument.findFirst({
+      const targetDoc = await tx.legalDocument.findFirst({
         where: {
           content_type: 'SFS_LAW',
           OR: [
@@ -104,7 +108,7 @@ async function createCrossReferences(
       })
 
       if (targetDoc) {
-        const existingRef = await prisma.crossReference.findFirst({
+        const existingRef = await tx.crossReference.findFirst({
           where: {
             source_document_id: sourceDocId,
             target_document_id: targetDoc.id,
@@ -113,7 +117,7 @@ async function createCrossReferences(
         })
 
         if (!existingRef) {
-          await prisma.crossReference.create({
+          await tx.crossReference.create({
             data: {
               source_document_id: sourceDocId,
               target_document_id: targetDoc.id,
@@ -203,6 +207,7 @@ async function processCourtCase(
 
       if (dto.lagrumLista && dto.lagrumLista.length > 0) {
         const refsCreated = await createCrossReferences(
+          tx,
           legalDoc.id,
           dto.lagrumLista
         )
@@ -312,12 +317,22 @@ export async function GET(request: Request) {
       })),
     }
 
+    // Invalidate caches if any documents were inserted (Story 2.19)
+    let cacheInvalidation = null
+    if (totalInserted > 0) {
+      cacheInvalidation = await invalidateCourtCaseCaches()
+      console.log(
+        `[SYNC-COURT-CASES] Cache invalidated: ${cacheInvalidation.redisKeysCleared} Redis keys, tags: ${cacheInvalidation.tagsRevalidated.join(', ')}`
+      )
+    }
+
     // Send email notification
     await sendCourtSyncEmail(emailStats, durationStr, true)
 
     return NextResponse.json({
       success: true,
       stats: emailStats,
+      cacheInvalidation,
       duration: durationStr,
       timestamp: new Date().toISOString(),
     })

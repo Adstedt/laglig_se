@@ -27,10 +27,10 @@ export interface SfsSyncStats {
   apiCount: number
   fetched: number
   inserted: number
-  updated: number
+  updated?: number // Optional - only used by sync-sfs-updates job
   skipped: number
   failed: number
-  earlyTerminated: boolean
+  dateRange: { from: string; to: string }
 }
 
 export interface CourtSyncStats {
@@ -76,7 +76,7 @@ export async function sendSfsSyncEmail(
   const statusEmoji = success ? '✅' : '❌'
   const subject = `${statusEmoji} SFS Sync ${success ? 'Complete' : 'Failed'} - ${new Date().toLocaleDateString('sv-SE')}`
 
-  const hasChanges = stats.inserted > 0 || stats.updated > 0
+  const hasChanges = stats.inserted > 0 || (stats.updated ?? 0) > 0
 
   const html = `
     <h2>SFS Laws Daily Sync Report</h2>
@@ -92,10 +92,12 @@ export async function sendSfsSyncEmail(
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>New Laws Inserted</strong></td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.inserted}</td>
       </tr>
+      ${stats.updated !== undefined ? `
       <tr style="background: ${stats.updated > 0 ? '#fff3cd' : '#f8f9fa'};">
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Laws Updated</strong></td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.updated}</td>
       </tr>
+      ` : ''}
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;">Fetched from API</td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.fetched}</td>
@@ -115,8 +117,8 @@ export async function sendSfsSyncEmail(
     </table>
 
     <p style="margin-top: 16px; color: #666;">
-      ${stats.earlyTerminated ? '⚡ Early terminated (caught up with latest changes)' : ''}
-      ${!hasChanges ? '📭 No new changes detected today' : ''}
+      📅 Date range: ${stats.dateRange.from} to ${stats.dateRange.to}
+      ${!hasChanges ? '<br>📭 No new changes detected' : ''}
     </p>
 
     <hr style="margin-top: 24px;">

@@ -1,5 +1,6 @@
 'use server'
 
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { z } from 'zod'
@@ -347,7 +348,37 @@ async function searchWithQuery(
   }
 }
 
-async function browseWithoutQuery(
+/**
+ * Check if this is the default browse view (no filters, page 1, default sort)
+ * Default views get longer cache TTL since they're most commonly accessed
+ */
+function isDefaultBrowseView(
+  contentTypes: z.infer<typeof ContentTypeEnum>[] | undefined,
+  status: z.infer<typeof DocumentStatusEnum>[] | undefined,
+  businessType: z.infer<typeof BusinessTypeEnum> | undefined,
+  subjectCodes: string[] | undefined,
+  dateFrom: string | undefined,
+  dateTo: string | undefined,
+  page: number,
+  sortBy: z.infer<typeof SortByEnum>
+): boolean {
+  return (
+    page === 1 &&
+    (!contentTypes || contentTypes.length === 0) &&
+    (!status || status.length === 0) &&
+    !businessType &&
+    (!subjectCodes || subjectCodes.length === 0) &&
+    !dateFrom &&
+    !dateTo &&
+    sortBy === 'date_desc'
+  )
+}
+
+/**
+ * Core browse database query function
+ * Extracted for use with unstable_cache wrapper
+ */
+async function executeBrowseQuery(
   contentTypes: z.infer<typeof ContentTypeEnum>[] | undefined,
   status: z.infer<typeof DocumentStatusEnum>[] | undefined,
   businessType: z.infer<typeof BusinessTypeEnum> | undefined,
@@ -357,10 +388,13 @@ async function browseWithoutQuery(
   page: number,
   limit: number,
   offset: number,
-  sortBy: z.infer<typeof SortByEnum>,
-  startTime: number,
-  cacheKey: string
-): Promise<BrowseResponse> {
+  sortBy: z.infer<typeof SortByEnum>
+): Promise<{
+  results: BrowseResult[]
+  total: number
+  page: number
+  totalPages: number
+}> {
   // Build Prisma where clause
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {}
@@ -415,67 +449,209 @@ async function browseWithoutQuery(
       break
   }
 
-  try {
-    const [results, count] = await Promise.all([
-      prisma.legalDocument.findMany({
-        where,
-        take: limit,
-        skip: offset,
-        orderBy,
-        select: {
-          id: true,
-          title: true,
-          document_number: true,
-          content_type: true,
-          summary: true,
-          effective_date: true,
-          status: true,
-          slug: true,
-          subjects: {
-            select: { subject_name: true },
-            take: 1,
-          },
+  const [results, count] = await Promise.all([
+    prisma.legalDocument.findMany({
+      where,
+      take: limit,
+      skip: offset,
+      orderBy,
+      select: {
+        id: true,
+        title: true,
+        document_number: true,
+        content_type: true,
+        summary: true,
+        effective_date: true,
+        status: true,
+        slug: true,
+        subjects: {
+          select: { subject_name: true },
+          take: 1,
         },
-      }),
-      prisma.legalDocument.count({ where }),
-    ])
+      },
+    }),
+    prisma.legalDocument.count({ where }),
+  ])
 
-    const totalPages = Math.ceil(count / limit)
+  const totalPages = Math.ceil(count / limit)
+
+  return {
+    results: results.map((r) => ({
+      id: r.id,
+      title: r.title,
+      documentNumber: r.document_number,
+      contentType: r.content_type,
+      category: r.subjects[0]?.subject_name ?? null,
+      summary: r.summary,
+      effectiveDate: r.effective_date?.toISOString() ?? null,
+      status: r.status,
+      slug: r.slug,
+      snippet: r.summary || '',
+    })),
+    total: count,
+    page,
+    totalPages,
+  }
+}
+
+/**
+ * Cached version of default browse query (no filters, page 1)
+ * Uses 1-hour TTL and cache tags for selective invalidation
+ */
+const getCachedDefaultBrowse = unstable_cache(
+  async (limit: number) => {
+    return executeBrowseQuery(
+      undefined, // contentTypes
+      undefined, // status
+      undefined, // businessType
+      undefined, // subjectCodes
+      undefined, // dateFrom
+      undefined, // dateTo
+      1, // page
+      limit,
+      0, // offset
+      'date_desc'
+    )
+  },
+  ['browse-default'],
+  {
+    revalidate: 3600, // 1 hour for default view
+    tags: ['browse', 'catalogue', 'laws'],
+  }
+)
+
+/**
+ * Cached version of filtered browse query
+ * Uses 5-minute TTL for more dynamic filtered results
+ */
+const getCachedFilteredBrowse = unstable_cache(
+  async (
+    contentTypes: string[] | undefined,
+    status: string[] | undefined,
+    businessType: string | undefined,
+    subjectCodes: string[] | undefined,
+    dateFrom: string | undefined,
+    dateTo: string | undefined,
+    page: number,
+    limit: number,
+    sortBy: string
+  ) => {
+    return executeBrowseQuery(
+      contentTypes as z.infer<typeof ContentTypeEnum>[] | undefined,
+      status as z.infer<typeof DocumentStatusEnum>[] | undefined,
+      businessType as z.infer<typeof BusinessTypeEnum> | undefined,
+      subjectCodes,
+      dateFrom,
+      dateTo,
+      page,
+      limit,
+      (page - 1) * limit,
+      sortBy as z.infer<typeof SortByEnum>
+    )
+  },
+  ['browse-filtered'],
+  {
+    revalidate: 300, // 5 minutes for filtered results
+    tags: ['browse', 'catalogue'],
+  }
+)
+
+async function browseWithoutQuery(
+  contentTypes: z.infer<typeof ContentTypeEnum>[] | undefined,
+  status: z.infer<typeof DocumentStatusEnum>[] | undefined,
+  businessType: z.infer<typeof BusinessTypeEnum> | undefined,
+  subjectCodes: string[] | undefined,
+  dateFrom: string | undefined,
+  dateTo: string | undefined,
+  page: number,
+  limit: number,
+  _offset: number, // Kept for API compatibility, offset calculated inside cached functions
+  sortBy: z.infer<typeof SortByEnum>,
+  startTime: number,
+  cacheKey: string
+): Promise<BrowseResponse> {
+  const isDefault = isDefaultBrowseView(
+    contentTypes,
+    status,
+    businessType,
+    subjectCodes,
+    dateFrom,
+    dateTo,
+    page,
+    sortBy
+  )
+
+  // Determine cache TTL based on view type
+  const cacheTtl = isDefault ? 3600 : 300 // 1 hour for default, 5 min for filtered
+
+  // Check Redis cache first (Layer 4: Redis Cache)
+  if (isRedisConfigured) {
+    try {
+      const cached = await redis.get(cacheKey)
+      if (cached && typeof cached === 'string') {
+        const parsedCache = JSON.parse(cached) as BrowseResponse
+        console.log(`[CACHE HIT] Redis: ${cacheKey.substring(0, 50)}...`)
+        return {
+          ...parsedCache,
+          queryTimeMs: performance.now() - startTime,
+          cached: true,
+        }
+      }
+      console.log(`[CACHE MISS] Redis: ${cacheKey.substring(0, 50)}...`)
+    } catch {
+      // Cache read error, continue to query
+    }
+  }
+
+  try {
+    // Use Next.js data cache (Layer 3: unstable_cache)
+    // This provides request deduplication and server-side caching
+    let queryResult: {
+      results: BrowseResult[]
+      total: number
+      page: number
+      totalPages: number
+    }
+
+    if (isDefault) {
+      queryResult = await getCachedDefaultBrowse(limit)
+    } else {
+      queryResult = await getCachedFilteredBrowse(
+        contentTypes,
+        status,
+        businessType,
+        subjectCodes,
+        dateFrom,
+        dateTo,
+        page,
+        limit,
+        sortBy
+      )
+    }
 
     const response: BrowseResponse = {
       success: true,
-      results: results.map((r) => ({
-        id: r.id,
-        title: r.title,
-        documentNumber: r.document_number,
-        contentType: r.content_type,
-        category: r.subjects[0]?.subject_name ?? null,
-        summary: r.summary,
-        effectiveDate: r.effective_date?.toISOString() ?? null,
-        status: r.status,
-        slug: r.slug,
-        snippet: r.summary || '',
-      })),
-      total: count,
-      page,
-      totalPages,
+      ...queryResult,
       queryTimeMs: performance.now() - startTime,
     }
 
-    // Cache results
+    // Store in Redis cache (async, don't await)
     if (isRedisConfigured) {
-      try {
-        await redis.set(cacheKey, JSON.stringify(response), { ex: 300 })
-      } catch {
-        // Cache error, continue
-      }
+      redis
+        .set(cacheKey, JSON.stringify(response), { ex: cacheTtl })
+        .catch(() => {
+          // Silently ignore Redis write errors
+        })
     }
 
-    // Track analytics
-    await track('browse_catalogue', {
+    // Track analytics (async, don't block response)
+    track('browse_catalogue', {
       contentTypes: contentTypes?.join(',') ?? 'all',
-      resultsCount: count,
+      resultsCount: queryResult.total,
       queryTimeMs: Math.round(response.queryTimeMs),
+      cached: false,
+    }).catch(() => {
+      // Silently ignore analytics errors
     })
 
     return response

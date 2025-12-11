@@ -26,6 +26,8 @@ interface CataloguePaginationProps {
   perPage: number
   total: number
   basePath: string
+  /** Use /rattskallor/sida/[page] route for pagination instead of ?page= */
+  useStaticPagination?: boolean
 }
 
 export function CataloguePagination({
@@ -34,6 +36,7 @@ export function CataloguePagination({
   perPage,
   total,
   basePath,
+  useStaticPagination = false,
 }: CataloguePaginationProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -41,6 +44,15 @@ export function CataloguePagination({
 
   const buildPageUrl = useCallback(
     (page: number, newPerPage?: number) => {
+      // For static pagination, use /rattskallor/sida/[page] URLs
+      if (useStaticPagination) {
+        if (page === 1) {
+          return basePath // /rattskallor (canonical)
+        }
+        return `${basePath}/sida/${page}`
+      }
+
+      // For dynamic pagination, use ?page= query params
       const params = new URLSearchParams(searchParams.toString())
       if (page === 1) {
         params.delete('page')
@@ -55,7 +67,7 @@ export function CataloguePagination({
       const queryString = params.toString()
       return queryString ? `${basePath}?${queryString}` : basePath
     },
-    [searchParams, basePath]
+    [searchParams, basePath, useStaticPagination]
   )
 
   // Pre-fetch page 2 after initial render

@@ -1,8 +1,11 @@
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
 import { ContentType } from '@prisma/client'
 import type { Metadata } from 'next'
 import sanitizeHtml from 'sanitize-html'
+import {
+  getCachedEuLegislation,
+  getCachedEuLegislationMetadata,
+} from '@/lib/cache/cached-queries'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,6 +30,31 @@ import { RelatedDocsPrefetcher } from '@/components/features/eu-legislation'
 export const revalidate = 3600
 export const dynamicParams = true
 
+/**
+ * Safely convert a date that might be a string (from cache) or Date object
+ * to an ISO string for JSON-LD structured data
+ */
+function toISOStringOrUndefined(
+  date: Date | string | null | undefined
+): string | undefined {
+  if (!date) return undefined
+  if (typeof date === 'string') return date
+  if (date instanceof Date) return date.toISOString()
+  return undefined
+}
+
+/**
+ * Safely convert a date to a formatted locale string for display
+ */
+function formatDateOrNull(
+  date: Date | string | null | undefined,
+  options: Intl.DateTimeFormatOptions
+): string | null {
+  if (!date) return null
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleDateString('sv-SE', options)
+}
+
 // EU type URL mapping
 const EU_TYPE_MAP: Record<
   string,
@@ -48,6 +76,7 @@ interface PageProps {
   params: Promise<{ type: string; id: string }>
 }
 
+// Generate metadata for SEO - uses cached query for performance
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -58,21 +87,8 @@ export async function generateMetadata({
     return { title: 'EU-dokument hittades inte | Laglig.se' }
   }
 
-  const document = await prisma.legalDocument.findUnique({
-    where: { slug: id, content_type: typeInfo.contentType },
-    select: {
-      title: true,
-      document_number: true,
-      summary: true,
-      full_text: true,
-      slug: true,
-      eu_document: {
-        select: {
-          celex_number: true,
-        },
-      },
-    },
-  })
+  // Use cached query for better performance (Story 2.19)
+  const document = await getCachedEuLegislationMetadata(id, typeInfo.contentType)
 
   if (!document) {
     return { title: 'EU-dokument hittades inte | Laglig.se' }
@@ -113,12 +129,8 @@ export default async function EuDocumentPage({ params }: PageProps) {
     notFound()
   }
 
-  const document = await prisma.legalDocument.findUnique({
-    where: { slug: id, content_type: typeInfo.contentType },
-    include: {
-      eu_document: true,
-    },
-  })
+  // Use cached query for better performance (Story 2.19)
+  const document = await getCachedEuLegislation(id, typeInfo.contentType)
 
   if (!document) {
     notFound()
@@ -195,13 +207,12 @@ export default async function EuDocumentPage({ params }: PageProps) {
       })
     : null
 
-  const formattedPublicationDate = document.publication_date
-    ? new Date(document.publication_date).toLocaleDateString('sv-SE', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : null
+  // Use safe date formatting (dates might be strings when coming from cache)
+  const formattedPublicationDate = formatDateOrNull(document.publication_date, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 
   // JSON-LD structured data
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
@@ -211,7 +222,7 @@ export default async function EuDocumentPage({ params }: PageProps) {
     name: document.title,
     identifier: euDoc?.celex_number || document.document_number,
     legislationIdentifier: euDoc?.celex_number,
-    datePublished: document.publication_date?.toISOString(),
+    datePublished: toISOStringOrUndefined(document.publication_date),
     inLanguage: 'sv',
     legislationType: type === 'forordningar' ? 'Regulation' : 'Directive',
     legislationJurisdiction: {

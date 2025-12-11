@@ -10,6 +10,10 @@
       "schedule": "0 4 * * *"
     },
     {
+      "path": "/api/cron/sync-sfs-updates",
+      "schedule": "30 4 * * *"
+    },
+    {
       "path": "/api/cron/sync-court-cases",
       "schedule": "0 5 * * *"
     },

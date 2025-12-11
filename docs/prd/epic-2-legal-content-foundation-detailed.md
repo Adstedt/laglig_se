@@ -350,7 +350,7 @@
 10. Database accumulates change history silently
 11. Verification: After 2 weeks, database contains change records for all content types
 12. Change detection tested: Mock SFS amendment detected correctly
-13. **NEW: Amendment enrichment** when SFS changes detected (competitive feature):
+13. **Amendment enrichment** when SFS changes detected (competitive feature):
     - For new/updated SFS laws, extract amendment references from full text
     - Parse affected sections: "föreskrivs att 1 kap. 3 § ska ha följande lydelse"
     - Generate 2-3 sentence GPT-4 summary in Swedish (plain language)
@@ -359,9 +359,37 @@
     - Cost: ~$0.42/month for ~10 new amendments detected nightly
     - See `docs/historical-amendment-tracking-strategy.md` Section 12.5 for implementation
 
+**Note:** Amendment PDF fetching on change detection is covered in Story 2.18.
+
 ---
 
-**Epic 2 Complete: 11 stories, 4-5 weeks estimated**
+## Story 2.18: Amendment PDF Integration for Change Monitoring (Backlog)
+
+**As a** product owner,
+**I want** the daily change monitoring to fetch actual amendment PDFs when new amendments are detected,
+**so that** we capture the precise text changes (not just metadata) and can show users exactly what changed in a law.
+
+**Acceptance Criteria:**
+
+1. When change detection identifies a new amendment SFS number, trigger amendment PDF fetch
+2. Determine correct PDF source based on amendment year (2018+ → svenskforfattningssamling.se, 1998-2017 → rkrattsbaser.gov.se)
+3. Use Story 2.13's `pdf-parser.ts` and `amendment-extractor.ts` to extract precise text changes
+4. Create `LegalDocument` record with `content_type: SFS_AMENDMENT`
+5. Update `Amendment.amending_document_id` to link to the new document
+6. Create `DocumentVersion` for base law capturing state after this amendment
+7. Handle PDF fetch failures gracefully (log error, continue with metadata-only amendment)
+8. Rate limit PDF fetches to 1 req/sec to respect external sources
+9. Log metrics: PDFs fetched, successful parses, failed fetches
+
+**Dependencies:**
+- Story 2.11 (Change History Tracking) - Complete
+- Story 2.13 Phase 2 (Amendment Document Ingestion) - Required for PDF parsing infrastructure
+
+**Full story:** `docs/stories/backlog/2.18.amendment-pdf-integration-change-monitoring.md`
+
+---
+
+**Epic 2 Complete: 14 stories**
 **As a** developer,
 **I want** to create a flexible database schema supporting multiple legal document types,
 **so that** we can store SFS laws, court cases, and EU legislation with type-specific metadata.
@@ -684,7 +712,7 @@
 10. Database accumulates change history silently
 11. Verification: After 2 weeks, database contains change records for all content types
 12. Change detection tested: Mock SFS amendment detected correctly
-13. **NEW: Amendment enrichment** when SFS changes detected (competitive feature):
+13. **Amendment enrichment** when SFS changes detected (competitive feature):
     - For new/updated SFS laws, extract amendment references from full text
     - Parse affected sections: "föreskrivs att 1 kap. 3 § ska ha följande lydelse"
     - Generate 2-3 sentence GPT-4 summary in Swedish (plain language)
@@ -692,6 +720,8 @@
     - Create/update Amendment records with all 7 fields
     - Cost: ~$0.42/month for ~10 new amendments detected nightly
     - See `docs/historical-amendment-tracking-strategy.md` Section 12.5 for implementation
+
+**Note:** Amendment PDF fetching on change detection is covered in Story 2.18.
 
 ---
 
@@ -742,6 +772,45 @@
 
 ---
 
-**Epic 2 Complete: 12 stories, 5-6 weeks estimated**
+## Story 2.13: Amendment Documents & Historical Versions
+
+**As a** legal professional or citizen,
+**I want** to see the complete amendment history of a law and view how it looked at any point in time,
+**so that** I can understand how legislation has evolved and reference the correct version for a specific date.
+
+**Background:** Currently, Laglig.se only shows the consolidated (gällande) version of laws. Amendment statutes (ändringsförfattningar like "SFS 2024:123 om ändring i...") are published as separate PDF documents but don't exist as individual records. This story adds the infrastructure to ingest amendment PDFs and reconstruct historical versions.
+
+**Acceptance Criteria:**
+
+**Phase 1: Investigation & Data Model**
+1. Document the exact structure of amendment PDFs from rkrattsdb.gov.se (1998-2018) and svenskforfattningssamling.se (2018+)
+2. Design schema changes to support amendment documents (architect review required for: new ContentType vs separate model)
+3. Prototype PDF parsing for 5 sample amendments to extract: amended/repealed/added sections, old vs new text, effective date
+4. Evaluate SE-Lex data (MIT licensed) vs building own pipeline
+
+**Phase 2: Amendment Document Ingestion**
+5. Create scraper/downloader for amendment PDFs from both sources with rate limiting
+6. Implement PDF → text extraction pipeline (handle text-based and scanned PDFs via OCR)
+7. Parse amendment structure to populate `affected_sections` JSON field
+8. Store amendment documents with proper linking to base laws
+9. Convert amendment text to HTML (display) and Markdown (RAG)
+
+**Phase 3: Historical Version Reconstruction**
+10. Implement algorithm to reconstruct law text at any historical date by "undoing" amendments backwards
+11. Store reconstructed versions in `DocumentVersion` table
+12. Create UI component: "Visa version från [datum]" date picker
+13. Create UI component: Diff view comparing two versions
+
+**Phase 4: Markdown Generation (Optional/Parallel)**
+14. Create HTML → Markdown converter following SE-Lex format conventions
+15. Store markdown in new `markdown_content` column for RAG optimization
+
+**Dependencies:**
+- Story 2.2 (SFS ingestion) - base infrastructure
+- Story 2.11 (Change history tracking) - DocumentVersion model
+
+---
+
+**Epic 2 Complete: 14 stories**
 
 ---

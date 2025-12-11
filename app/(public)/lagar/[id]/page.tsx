@@ -1,9 +1,12 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
-import { ContentType, DocumentStatus } from '@prisma/client'
+import { DocumentStatus } from '@prisma/client'
 import type { Metadata } from 'next'
 import sanitizeHtml from 'sanitize-html'
+import {
+  getCachedLaw,
+  getCachedLawMetadata,
+} from '@/lib/cache/cached-queries'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -30,29 +33,70 @@ import {
   getImplementedEuDirectives,
 } from '@/app/actions/cross-references'
 
-// ISR: Revalidate every hour - NOT generateStaticParams() for 88K+ docs
+// ISR: Revalidate every hour
+// Static generation for top 500 laws (Story 2.19)
 export const revalidate = 3600
-export const dynamicParams = true
+export const dynamicParams = true // Allow ISR for non-pre-generated pages
+
+/**
+ * Safely convert a date that might be a string (from cache) or Date object
+ * to an ISO string for JSON-LD structured data
+ */
+function toISOStringOrUndefined(
+  date: Date | string | null | undefined
+): string | undefined {
+  if (!date) return undefined
+  if (typeof date === 'string') return date
+  if (date instanceof Date) return date.toISOString()
+  return undefined
+}
+
+/**
+ * Safely convert a date to a formatted locale string for display
+ */
+function formatDateOrNull(
+  date: Date | string | null | undefined,
+  options: Intl.DateTimeFormatOptions
+): string | null {
+  if (!date) return null
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleDateString('sv-SE', options)
+}
+
+/**
+ * Pre-generate top 500 law pages at build time for better performance
+ * Sorted by effective_date (most recent) as proxy for importance
+ * Build timeout is 45 minutes on Vercel, this should complete well within that
+ */
+export async function generateStaticParams() {
+  // Only run during production build, skip in development
+  if (process.env.NODE_ENV !== 'production') {
+    return []
+  }
+
+  try {
+    const { getTopLawsForStaticGeneration } = await import(
+      '@/lib/cache/cached-queries'
+    )
+    const topLaws = await getTopLawsForStaticGeneration(500)
+    console.log(`[generateStaticParams] Pre-generating ${topLaws.length} law pages`)
+    return topLaws.map((law) => ({ id: law.slug }))
+  } catch (error) {
+    console.error('[generateStaticParams] Error fetching top laws:', error)
+    return [] // Fallback to ISR for all pages
+  }
+}
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// Generate metadata for SEO
+// Generate metadata for SEO - uses cached query for performance
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { id } = await params
-  const law = await prisma.legalDocument.findUnique({
-    where: { slug: id, content_type: ContentType.SFS_LAW },
-    select: {
-      title: true,
-      document_number: true,
-      summary: true,
-      full_text: true,
-      slug: true,
-    },
-  })
+  const law = await getCachedLawMetadata(id)
 
   if (!law) {
     return {
@@ -239,30 +283,8 @@ function extractLawMetadata(html: string): LawMetadata {
 export default async function LawPage({ params }: PageProps) {
   const { id } = await params
 
-  const law = await prisma.legalDocument.findUnique({
-    where: { slug: id, content_type: ContentType.SFS_LAW },
-    include: {
-      subjects: {
-        select: {
-          subject_code: true,
-          subject_name: true,
-        },
-      },
-      base_amendments: {
-        include: {
-          amending_document: {
-            select: {
-              slug: true,
-              document_number: true,
-              title: true,
-            },
-          },
-        },
-        orderBy: { effective_date: 'desc' },
-        take: 10,
-      },
-    },
-  })
+  // Use cached query for better performance (Story 2.19)
+  const law = await getCachedLaw(id)
 
   if (!law) {
     notFound()
@@ -318,13 +340,12 @@ export default async function LawPage({ params }: PageProps) {
       })
     : null
 
-  const formattedPublicationDate = law.publication_date
-    ? new Date(law.publication_date).toLocaleDateString('sv-SE', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : null
+  // Use safe date formatting (dates might be strings when coming from cache)
+  const formattedPublicationDate = formatDateOrNull(law.publication_date, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
 
   // JSON-LD structured data
   const jsonLd = {
@@ -333,8 +354,8 @@ export default async function LawPage({ params }: PageProps) {
     name: law.title,
     identifier: law.document_number,
     legislationIdentifier: law.document_number,
-    datePublished: law.publication_date?.toISOString(),
-    dateEnacted: law.effective_date?.toISOString(),
+    datePublished: toISOStringOrUndefined(law.publication_date),
+    dateEnacted: toISOStringOrUndefined(law.effective_date),
     inLanguage: 'sv',
     legislationType: 'Act',
     legislationJurisdiction: {
@@ -608,11 +629,7 @@ export default async function LawPage({ params }: PageProps) {
                         )}
                       </div>
                       <div className="ml-4 shrink-0 text-sm text-muted-foreground">
-                        {amendment.effective_date
-                          ? new Date(
-                              amendment.effective_date
-                            ).toLocaleDateString('sv-SE')
-                          : '—'}
+                        {formatDateOrNull(amendment.effective_date, {}) ?? '—'}
                       </div>
                     </div>
                   ))}

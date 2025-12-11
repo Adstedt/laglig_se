@@ -48,6 +48,19 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  experimental: {
+    // Router Cache Configuration (Story 2.19)
+    // This re-enables client-side caching that was disabled by default in Next.js 15
+    // - dynamic: 60s - Caches dynamic routes (with searchParams) for 60 seconds
+    //   Allows back/forward navigation and filter exploration without refetching
+    // - static: 180s - Caches static routes for 3 minutes
+    //   Benefits document detail pages and static content
+    // See: https://nextjs.org/docs/app/api-reference/config/next-config-js/staleTimes
+    staleTimes: {
+      dynamic: 60, // Cache dynamic routes for 60 seconds (catalogue with filters)
+      static: 180, // Cache static routes for 3 minutes (document detail pages)
+    },
+  },
   async headers() {
     return [
       {
