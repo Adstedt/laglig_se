@@ -111,6 +111,10 @@ export async function GET(request: Request) {
       const documents: RiksdagenDocument[] = data.dokumentlista.dokument || []
       const totalPages = parseInt(data.dokumentlista['@sidor'], 10) || 1
 
+      console.log(
+        `[SYNC-SFS-UPDATES] Page ${page}: ${documents.length} docs from API, total in API: ${stats.apiCount}`
+      )
+
       for (const doc of documents) {
         const apiSystemdatum = new Date(doc.systemdatum.replace(' ', 'T') + 'Z')
 
@@ -137,6 +141,7 @@ export async function GET(request: Request) {
         // Skip if we don't have this law (handled by sync-sfs for new laws)
         if (!existing) {
           stats.notInDb++
+          console.log(`[SYNC-SFS-UPDATES] ${sfsNumber} not in DB, skipping`)
           continue
         }
 
@@ -150,8 +155,15 @@ export async function GET(request: Request) {
         // Skip if we already have the latest version
         if (storedSystemdatum && apiSystemdatum <= storedSystemdatum) {
           stats.skipped++
+          console.log(
+            `[SYNC-SFS-UPDATES] ${sfsNumber} already up-to-date (stored: ${storedMeta?.systemdatum}, api: ${doc.systemdatum})`
+          )
           continue
         }
+
+        console.log(
+          `[SYNC-SFS-UPDATES] ${sfsNumber} needs update (stored: ${storedMeta?.systemdatum || 'none'}, api: ${doc.systemdatum})`
+        )
 
         // Update existing law
         try {
@@ -211,8 +223,10 @@ export async function GET(request: Request) {
           })
 
           stats.updated++
-        } catch {
+          console.log(`[SYNC-SFS-UPDATES] ${sfsNumber} updated successfully`)
+        } catch (err) {
           stats.failed++
+          console.error(`[SYNC-SFS-UPDATES] ${sfsNumber} update failed:`, err)
         }
 
         // Small delay to be respectful to API
@@ -225,6 +239,19 @@ export async function GET(request: Request) {
 
     const duration = Date.now() - startTime.getTime()
     const durationStr = `${Math.round(duration / 1000)}s`
+
+    console.log(`[SYNC-SFS-UPDATES] ========== SUMMARY ==========`)
+    console.log(`[SYNC-SFS-UPDATES] Lookback: ${CONFIG.LOOKBACK_HOURS} hours`)
+    console.log(`[SYNC-SFS-UPDATES] API total: ${stats.apiCount} documents`)
+    console.log(`[SYNC-SFS-UPDATES] Fetched (within cutoff): ${stats.fetched}`)
+    console.log(`[SYNC-SFS-UPDATES] Updated: ${stats.updated}`)
+    console.log(
+      `[SYNC-SFS-UPDATES] Skipped (already up-to-date): ${stats.skipped}`
+    )
+    console.log(`[SYNC-SFS-UPDATES] Not in DB: ${stats.notInDb}`)
+    console.log(`[SYNC-SFS-UPDATES] Failed: ${stats.failed}`)
+    console.log(`[SYNC-SFS-UPDATES] Duration: ${durationStr}`)
+    console.log(`[SYNC-SFS-UPDATES] ======================================`)
 
     // Invalidate caches if any documents were updated
     let cacheInvalidation = null

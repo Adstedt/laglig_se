@@ -112,6 +112,10 @@ export async function GET(request: Request) {
       const documents: RiksdagenDocument[] = data.dokumentlista.dokument || []
       const totalPages = parseInt(data.dokumentlista['@sidor'], 10) || 1
 
+      console.log(
+        `[SYNC-SFS] Page ${page}/${totalPages}: ${documents.length} docs from API (date range: ${fromDateStr} to ${toDateStr}), total matches: ${stats.apiCount}`
+      )
+
       for (const doc of documents) {
         stats.fetched++
         const sfsNumber = `SFS ${doc.beteckning}`
@@ -125,10 +129,14 @@ export async function GET(request: Request) {
 
         if (existing) {
           stats.skipped++
+          console.log(`[SYNC-SFS] ${sfsNumber} already exists, skipping`)
           continue
         }
 
         // Insert new law
+        console.log(
+          `[SYNC-SFS] ${sfsNumber} "${doc.titel}" - inserting new law...`
+        )
         try {
           const [htmlContent, fullText] = await Promise.all([
             fetchLawHTML(doc.dok_id),
@@ -136,6 +144,7 @@ export async function GET(request: Request) {
           ])
 
           if (!fullText && !htmlContent) {
+            console.log(`[SYNC-SFS] ${sfsNumber} failed to fetch content`)
             stats.failed++
             continue
           }
@@ -187,8 +196,10 @@ export async function GET(request: Request) {
           })
 
           stats.inserted++
-        } catch {
+          console.log(`[SYNC-SFS] ${sfsNumber} inserted successfully`)
+        } catch (err) {
           stats.failed++
+          console.error(`[SYNC-SFS] ${sfsNumber} insert failed:`, err)
         }
 
         // Small delay to be respectful to API
@@ -201,6 +212,16 @@ export async function GET(request: Request) {
 
     const duration = Date.now() - startTime.getTime()
     const durationStr = `${Math.round(duration / 1000)}s`
+
+    console.log(`[SYNC-SFS] ========== SUMMARY ==========`)
+    console.log(`[SYNC-SFS] Date range: ${fromDateStr} to ${toDateStr}`)
+    console.log(`[SYNC-SFS] API returned: ${stats.apiCount} documents`)
+    console.log(`[SYNC-SFS] Fetched: ${stats.fetched}`)
+    console.log(`[SYNC-SFS] Inserted: ${stats.inserted}`)
+    console.log(`[SYNC-SFS] Skipped (already exist): ${stats.skipped}`)
+    console.log(`[SYNC-SFS] Failed: ${stats.failed}`)
+    console.log(`[SYNC-SFS] Duration: ${durationStr}`)
+    console.log(`[SYNC-SFS] ==============================`)
 
     // Invalidate caches if any documents were inserted
     let cacheInvalidation = null
