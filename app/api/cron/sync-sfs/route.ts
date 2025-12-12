@@ -1,8 +1,20 @@
 /**
- * SFS Laws - New Laws Sync Cron Job
+ * SFS Laws - New Laws Sync Cron Job (Catchup Strategy)
  *
- * This endpoint syncs NEWLY PUBLISHED SFS laws from Riksdagen API.
- * Filters by publication date (datum) to only get recent laws.
+ * This endpoint ensures our database is caught up with the Riksdagen API.
+ * It fetches the 300 newest laws by `publicerad` (API publication date)
+ * and inserts any that are missing from our database.
+ *
+ * Strategy:
+ * - Sort by publicerad desc (newest API additions first)
+ * - Check each against our DB
+ * - Insert any missing laws
+ * - Always check 3 pages (300 docs) to catch any gaps
+ *
+ * This handles:
+ * - Normal daily new publications
+ * - Gaps from missed cron runs
+ * - Laws published to API after their enactment date
  *
  * For updates/amendments to EXISTING laws, see /api/cron/sync-sfs-updates
  *
@@ -32,25 +44,37 @@ interface RiksdagenDocument {
   beteckning: string
   titel: string
   datum: string
+  publicerad: string
   systemdatum: string
   undertitel?: string
   dokument_url_html: string
 }
 
+interface InsertedDoc {
+  sfsNumber: string
+  title: string
+  publicerad: string
+  datum: string
+}
+
 interface SyncStats {
   apiCount: number
+  pagesChecked: number
   fetched: number
   inserted: number
   skipped: number
   failed: number
-  dateRange: { from: string; to: string }
+  noSfsNumber: number
+  newestApiSfs: string | null
+  newestApiPublicerad: string | null
+  newestInDb: boolean | null
+  insertedDocs: InsertedDoc[]
 }
 
 const CONFIG = {
-  PAGE_SIZE: 50,
-  MAX_PAGES: 3, // Should rarely need more than 1-2 pages for daily sync
+  PAGE_SIZE: 100,
+  MAX_PAGES: 3, // Check 300 docs (covers ~2-3 weeks of new laws)
   DELAY_MS: 100,
-  LOOKBACK_DAYS: 7, // Look back 7 days to catch any missed publications
 }
 
 export async function GET(request: Request) {
@@ -62,39 +86,48 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Calculate date range for recent documents only
-  const now = new Date()
-  const fromDate = new Date(now)
-  fromDate.setDate(fromDate.getDate() - CONFIG.LOOKBACK_DAYS)
-  // Format as YYYY-MM-DD
-  const fromDateStr = fromDate.toISOString().slice(0, 10)
-  const toDateStr = now.toISOString().slice(0, 10)
-
   const stats: SyncStats = {
     apiCount: 0,
+    pagesChecked: 0,
     fetched: 0,
     inserted: 0,
     skipped: 0,
     failed: 0,
-    dateRange: { from: fromDateStr, to: toDateStr },
+    noSfsNumber: 0,
+    newestApiSfs: null,
+    newestApiPublicerad: null,
+    newestInDb: null,
+    insertedDocs: [],
   }
 
-  try {
-    // Fetch only recent laws (published in the last few days)
-    let page = 1
-    let hasMore = true
+  // Collect all log entries for detailed output
+  const logEntries: string[] = []
 
-    while (hasMore && page <= CONFIG.MAX_PAGES) {
+  try {
+    console.log(`[SYNC-SFS] ========================================`)
+    console.log(`[SYNC-SFS] Starting catchup sync (newest 300 by publicerad)`)
+    console.log(
+      `[SYNC-SFS] Strategy: Check API docs against DB, insert missing`
+    )
+    console.log(
+      `[SYNC-SFS] Max pages: ${CONFIG.MAX_PAGES} (${CONFIG.MAX_PAGES * CONFIG.PAGE_SIZE} docs)`
+    )
+    console.log(`[SYNC-SFS] ========================================`)
+
+    let page = 0
+
+    while (page < CONFIG.MAX_PAGES) {
+      page++
+      stats.pagesChecked = page
+
+      // Fetch newest laws by publicerad (API publication date)
       const url = new URL('https://data.riksdagen.se/dokumentlista/')
       url.searchParams.set('doktyp', 'sfs')
       url.searchParams.set('utformat', 'json')
       url.searchParams.set('sz', CONFIG.PAGE_SIZE.toString())
       url.searchParams.set('p', page.toString())
-      url.searchParams.set('sort', 'datum')
+      url.searchParams.set('sort', 'publicerad')
       url.searchParams.set('sortorder', 'desc')
-      // Only fetch documents from the last LOOKBACK_DAYS
-      url.searchParams.set('from', fromDateStr)
-      url.searchParams.set('tom', toDateStr)
 
       const response = await fetch(url.toString(), {
         headers: {
@@ -112,16 +145,45 @@ export async function GET(request: Request) {
       const documents: RiksdagenDocument[] = data.dokumentlista.dokument || []
       const totalPages = parseInt(data.dokumentlista['@sidor'], 10) || 1
 
-      console.log(
-        `[SYNC-SFS] Page ${page}/${totalPages}: ${documents.length} docs from API (date range: ${fromDateStr} to ${toDateStr}), total matches: ${stats.apiCount}`
-      )
+      console.log(`[SYNC-SFS] --- Page ${page}/${CONFIG.MAX_PAGES} ---`)
+      console.log(`[SYNC-SFS] Fetched ${documents.length} docs from API`)
+
+      if (documents.length === 0) {
+        console.log(`[SYNC-SFS] No documents returned, stopping`)
+        break
+      }
+
+      // Track newest for verification
+      if (page === 1 && documents.length > 0) {
+        const newestDoc = documents.find((d) => d.beteckning)
+        if (newestDoc) {
+          stats.newestApiSfs = `SFS ${newestDoc.beteckning}`
+          stats.newestApiPublicerad = newestDoc.publicerad
+          console.log(
+            `[SYNC-SFS] Newest in API: ${stats.newestApiSfs} (publicerad: ${newestDoc.publicerad})`
+          )
+        }
+      }
+
+      let pageInserted = 0
+      let pageSkipped = 0
+      let pageNoSfs = 0
 
       for (const doc of documents) {
         stats.fetched++
+
+        // Skip documents without SFS number (historical docs)
+        if (!doc.beteckning) {
+          stats.noSfsNumber++
+          pageNoSfs++
+          logEntries.push(`[ ] (no SFS number) dok_id=${doc.dok_id} - skipped`)
+          continue
+        }
+
         const sfsNumber = `SFS ${doc.beteckning}`
         const apiSystemdatum = new Date(doc.systemdatum.replace(' ', 'T') + 'Z')
 
-        // Check if already exists - skip if so (updates handled by sync-sfs-updates)
+        // Check if already exists
         const existing = await prisma.legalDocument.findUnique({
           where: { document_number: sfsNumber },
           select: { id: true },
@@ -129,14 +191,21 @@ export async function GET(request: Request) {
 
         if (existing) {
           stats.skipped++
-          console.log(`[SYNC-SFS] ${sfsNumber} already exists, skipping`)
+          pageSkipped++
+          logEntries.push(
+            `[✓] ${sfsNumber.padEnd(20)} exists (publicerad: ${doc.publicerad})`
+          )
           continue
         }
 
-        // Insert new law
-        console.log(
-          `[SYNC-SFS] ${sfsNumber} "${doc.titel}" - inserting new law...`
+        // New document - insert it
+        logEntries.push(
+          `[+] ${sfsNumber.padEnd(20)} NEW (publicerad: ${doc.publicerad})`
         )
+        console.log(
+          `[SYNC-SFS] INSERTING: ${sfsNumber} "${doc.titel.substring(0, 50)}..."`
+        )
+
         try {
           const [htmlContent, fullText] = await Promise.all([
             fetchLawHTML(doc.dok_id),
@@ -144,7 +213,9 @@ export async function GET(request: Request) {
           ])
 
           if (!fullText && !htmlContent) {
-            console.log(`[SYNC-SFS] ${sfsNumber} failed to fetch content`)
+            console.log(
+              `[SYNC-SFS] ${sfsNumber} - no content available, skipping`
+            )
             stats.failed++
             continue
           }
@@ -167,10 +238,12 @@ export async function GET(request: Request) {
                 metadata: {
                   dokId: doc.dok_id,
                   source: 'data.riksdagen.se',
+                  publicerad: doc.publicerad,
                   systemdatum: doc.systemdatum,
                   latestAmendment,
                   versionCount: 1,
                   fetchedAt: new Date().toISOString(),
+                  method: 'cron-sync-catchup',
                 },
               },
             })
@@ -196,32 +269,112 @@ export async function GET(request: Request) {
           })
 
           stats.inserted++
-          console.log(`[SYNC-SFS] ${sfsNumber} inserted successfully`)
+          pageInserted++
+          stats.insertedDocs.push({
+            sfsNumber,
+            title: doc.titel,
+            publicerad: doc.publicerad,
+            datum: doc.datum,
+          })
+          console.log(`[SYNC-SFS] ✓ INSERTED: ${sfsNumber}`)
+          console.log(
+            `[SYNC-SFS]   Title: ${doc.titel.substring(0, 80)}${doc.titel.length > 80 ? '...' : ''}`
+          )
+          console.log(
+            `[SYNC-SFS]   Datum: ${doc.datum} | Publicerad: ${doc.publicerad}`
+          )
         } catch (err) {
           stats.failed++
-          console.error(`[SYNC-SFS] ${sfsNumber} insert failed:`, err)
+          console.error(`[SYNC-SFS] ✗ ${sfsNumber} insert failed:`, err)
         }
 
         // Small delay to be respectful to API
         await new Promise((resolve) => setTimeout(resolve, CONFIG.DELAY_MS))
       }
 
-      hasMore = page < totalPages && page < CONFIG.MAX_PAGES
-      page++
+      console.log(
+        `[SYNC-SFS] Page ${page} summary: ${pageInserted} inserted, ${pageSkipped} exist, ${pageNoSfs} no SFS`
+      )
+
+      // Continue to next page if available
+      if (page >= totalPages) {
+        console.log(`[SYNC-SFS] Reached last API page`)
+        break
+      }
+    }
+
+    // Verification: Check if newest API doc exists in our DB
+    console.log(`[SYNC-SFS] `)
+    console.log(`[SYNC-SFS] ──────────── VERIFICATION ────────────`)
+
+    if (stats.newestApiSfs) {
+      const newestExists = await prisma.legalDocument.findUnique({
+        where: { document_number: stats.newestApiSfs },
+        select: { id: true },
+      })
+      stats.newestInDb = !!newestExists
+
+      console.log(`[SYNC-SFS] Newest in API:  ${stats.newestApiSfs}`)
+      console.log(`[SYNC-SFS] Publicerad:     ${stats.newestApiPublicerad}`)
+      console.log(
+        `[SYNC-SFS] In our DB:      ${stats.newestInDb ? '✓ YES' : '✗ NO - MISSING!'}`
+      )
+
+      if (!stats.newestInDb) {
+        console.log(
+          `[SYNC-SFS] ⚠️  WARNING: Newest API document not in database!`
+        )
+      }
     }
 
     const duration = Date.now() - startTime.getTime()
     const durationStr = `${Math.round(duration / 1000)}s`
 
-    console.log(`[SYNC-SFS] ========== SUMMARY ==========`)
-    console.log(`[SYNC-SFS] Date range: ${fromDateStr} to ${toDateStr}`)
-    console.log(`[SYNC-SFS] API returned: ${stats.apiCount} documents`)
-    console.log(`[SYNC-SFS] Fetched: ${stats.fetched}`)
-    console.log(`[SYNC-SFS] Inserted: ${stats.inserted}`)
-    console.log(`[SYNC-SFS] Skipped (already exist): ${stats.skipped}`)
-    console.log(`[SYNC-SFS] Failed: ${stats.failed}`)
-    console.log(`[SYNC-SFS] Duration: ${durationStr}`)
-    console.log(`[SYNC-SFS] ==============================`)
+    // Final summary
+    console.log(`[SYNC-SFS] `)
+    console.log(`[SYNC-SFS] ============ SUMMARY ============`)
+    console.log(`[SYNC-SFS] Pages checked:    ${stats.pagesChecked}`)
+    console.log(`[SYNC-SFS] API total:        ${stats.apiCount} documents`)
+    console.log(`[SYNC-SFS] Fetched:          ${stats.fetched}`)
+    console.log(`[SYNC-SFS] Inserted:         ${stats.inserted}`)
+    console.log(`[SYNC-SFS] Already exist:    ${stats.skipped}`)
+    console.log(`[SYNC-SFS] No SFS number:    ${stats.noSfsNumber}`)
+    console.log(`[SYNC-SFS] Failed:           ${stats.failed}`)
+    console.log(`[SYNC-SFS] Duration:         ${durationStr}`)
+    console.log(`[SYNC-SFS] =====================================`)
+
+    // Get current DB count
+    const dbCount = await prisma.legalDocument.count({
+      where: { content_type: ContentType.SFS_LAW },
+    })
+    console.log(`[SYNC-SFS] Total SFS_LAW in DB: ${dbCount}`)
+
+    // Determine sync status
+    const syncStatus =
+      stats.inserted === 0 && stats.newestInDb === true
+        ? 'CAUGHT_UP'
+        : stats.inserted > 0
+          ? 'SYNCED_NEW'
+          : 'UNKNOWN'
+
+    console.log(`[SYNC-SFS] Sync status: ${syncStatus}`)
+
+    // Log inserted documents summary
+    if (stats.insertedDocs.length > 0) {
+      console.log(`[SYNC-SFS] `)
+      console.log(`[SYNC-SFS] ──────── NEW LAWS ADDED ────────`)
+      for (const doc of stats.insertedDocs) {
+        console.log(`[SYNC-SFS] `)
+        console.log(`[SYNC-SFS] ${doc.sfsNumber}`)
+        console.log(
+          `[SYNC-SFS]   "${doc.title.substring(0, 70)}${doc.title.length > 70 ? '...' : ''}"`
+        )
+        console.log(
+          `[SYNC-SFS]   Datum: ${doc.datum} | Publicerad: ${doc.publicerad}`
+        )
+      }
+      console.log(`[SYNC-SFS] ─────────────────────────────────`)
+    }
 
     // Invalidate caches if any documents were inserted
     let cacheInvalidation = null
@@ -233,17 +386,32 @@ export async function GET(request: Request) {
     }
 
     // Send email notification
-    await sendSfsSyncEmail(stats, durationStr, true)
+    await sendSfsSyncEmail(
+      {
+        apiCount: stats.apiCount,
+        fetched: stats.fetched,
+        inserted: stats.inserted,
+        skipped: stats.skipped,
+        failed: stats.failed,
+        dateRange: { from: 'catchup', to: 'latest' },
+      },
+      durationStr,
+      true
+    )
 
     return NextResponse.json({
       success: true,
-      stats,
+      syncStatus,
+      stats: {
+        ...stats,
+        dbCount,
+      },
       cacheInvalidation,
       duration: durationStr,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('SFS sync failed:', error)
+    console.error('[SYNC-SFS] Sync failed:', error)
 
     const duration = Date.now() - startTime.getTime()
     const durationStr = `${Math.round(duration / 1000)}s`
@@ -251,7 +419,19 @@ export async function GET(request: Request) {
       error instanceof Error ? error.message : 'Unknown error'
 
     // Send failure notification email
-    await sendSfsSyncEmail(stats, durationStr, false, errorMessage)
+    await sendSfsSyncEmail(
+      {
+        apiCount: stats.apiCount,
+        fetched: stats.fetched,
+        inserted: stats.inserted,
+        skipped: stats.skipped,
+        failed: stats.failed,
+        dateRange: { from: 'catchup', to: 'latest' },
+      },
+      durationStr,
+      false,
+      errorMessage
+    )
 
     return NextResponse.json(
       {

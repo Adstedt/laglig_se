@@ -2,20 +2,24 @@
 /**
  * Daily SFS Laws Sync
  *
- * Incremental sync script that fetches only new SFS laws from Riksdagen API.
- * Designed to run as a daily cron job to keep the database up to date.
+ * Incremental sync script that fetches new SFS laws from Riksdagen API.
+ * Uses "catchup" strategy: fetches newest documents (sorted by publicerad desc)
+ * and continues until a full page of already-existing docs is found.
  *
  * Usage:
  *   pnpm tsx scripts/sync-sfs-daily.ts
  *
  * Options:
- *   --days=N       Look back N days (default: 7)
  *   --dry-run      Don't insert, just show what would be added
  *   --verbose      Show detailed progress
  */
 
 import { prisma } from '../lib/prisma'
-import { fetchLawFullText, fetchLawHTML, generateSlug } from '../lib/external/riksdagen'
+import {
+  fetchLawFullText,
+  fetchLawHTML,
+  generateSlug,
+} from '../lib/external/riksdagen'
 import { ContentType, DocumentStatus } from '@prisma/client'
 
 // ============================================================================
@@ -24,15 +28,14 @@ import { ContentType, DocumentStatus } from '@prisma/client'
 
 const CONFIG = {
   PAGE_SIZE: 100,
-  MAX_PAGES: 10, // Safety limit (1000 laws max per sync)
+  MAX_PAGES: 3, // Safety limit - stop after 3 pages (300 docs) regardless
   DELAY_BETWEEN_REQUESTS: 250, // ms
 }
 
 // Parse command line arguments
 const args = process.argv.slice(2)
-const DAYS_BACK = parseInt(args.find(a => a.startsWith('--days='))?.split('=')[1] || '7', 10)
 const DRY_RUN = args.includes('--dry-run')
-const VERBOSE = args.includes('--verbose')
+const _VERBOSE = args.includes('--verbose') // Reserved for future use
 
 // ============================================================================
 // Types
@@ -43,33 +46,43 @@ interface RiksdagenDocument {
   beteckning: string
   titel: string
   datum: string
+  publicerad: string
   dokument_url_html: string
 }
 
+interface InsertedDoc {
+  sfsNumber: string
+  title: string
+  publicerad: string
+  datum: string
+}
+
 interface SyncStats {
-  apiCount: number
+  pagesChecked: number
   fetched: number
   inserted: number
   skipped: number
   failed: number
+  insertedDocs: InsertedDoc[]
 }
 
 // ============================================================================
 // API Functions
 // ============================================================================
 
-async function fetchRecentSFS(
-  fromDate: string,
+async function fetchLatestSFS(
   page: number = 1
-): Promise<{ documents: RiksdagenDocument[]; totalCount: number; hasMore: boolean }> {
+): Promise<{
+  documents: RiksdagenDocument[]
+  totalCount: number
+  hasMore: boolean
+}> {
   const url = new URL('https://data.riksdagen.se/dokumentlista/')
   url.searchParams.set('doktyp', 'sfs')
   url.searchParams.set('utformat', 'json')
-  url.searchParams.set('from', fromDate)
-  url.searchParams.set('tom', new Date().toISOString().split('T')[0])
   url.searchParams.set('sz', CONFIG.PAGE_SIZE.toString())
   url.searchParams.set('p', page.toString())
-  url.searchParams.set('sort', 'datum')
+  url.searchParams.set('sort', 'publicerad')
   url.searchParams.set('sortorder', 'desc')
 
   const response = await fetch(url.toString(), {
@@ -96,11 +109,7 @@ async function fetchRecentSFS(
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0]
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 // ============================================================================
@@ -109,127 +118,176 @@ function formatDate(date: Date): string {
 
 async function syncDaily() {
   const startTime = new Date()
-  const lookbackDate = new Date()
-  lookbackDate.setDate(lookbackDate.getDate() - DAYS_BACK)
-  const fromDate = formatDate(lookbackDate)
 
   console.log('='.repeat(60))
-  console.log('Daily SFS Laws Sync')
+  console.log('Daily SFS Laws Sync (Catchup Strategy)')
   console.log('='.repeat(60))
   console.log(`Started at: ${startTime.toISOString()}`)
-  console.log(`Looking back: ${DAYS_BACK} days (from ${fromDate})`)
+  console.log(`Strategy: Fetch newest by publicerad, stop when caught up`)
+  console.log(
+    `Max pages: ${CONFIG.MAX_PAGES} (${CONFIG.MAX_PAGES * CONFIG.PAGE_SIZE} docs)`
+  )
   console.log(`Dry run: ${DRY_RUN}`)
   console.log('')
 
   const stats: SyncStats = {
-    apiCount: 0,
+    pagesChecked: 0,
     fetched: 0,
     inserted: 0,
     skipped: 0,
     failed: 0,
+    insertedDocs: [],
   }
 
   try {
-    // Fetch first page to get count
-    const firstPage = await fetchRecentSFS(fromDate, 1)
-    stats.apiCount = firstPage.totalCount
+    let page = 0
 
-    if (stats.apiCount === 0) {
-      console.log('No new laws found in the specified date range.')
-      await prisma.$disconnect()
-      return
-    }
-
-    console.log(`Found ${stats.apiCount} laws in date range`)
-    console.log('')
-
-    // Collect all documents
-    let allDocuments: RiksdagenDocument[] = [...firstPage.documents]
-    let page = 1
-    let hasMore = firstPage.hasMore
-
-    while (hasMore) {
+    while (page < CONFIG.MAX_PAGES) {
       page++
-      await sleep(CONFIG.DELAY_BETWEEN_REQUESTS)
-      const pageData = await fetchRecentSFS(fromDate, page)
-      allDocuments = allDocuments.concat(pageData.documents)
-      hasMore = pageData.hasMore
-      if (VERBOSE) {
-        console.log(`  Fetched page ${page}...`)
-      }
-    }
+      stats.pagesChecked = page
 
-    stats.fetched = allDocuments.length
-    console.log(`Fetched ${stats.fetched} documents`)
-    console.log('')
+      console.log(`[Page ${page}/${CONFIG.MAX_PAGES}] Fetching...`)
 
-    // Process each document
-    for (const doc of allDocuments) {
-      const sfsNumber = `SFS ${doc.beteckning}`
-
-      // Check if already exists
-      const existing = await prisma.legalDocument.findUnique({
-        where: { document_number: sfsNumber },
-      })
-
-      if (existing) {
-        stats.skipped++
-        if (VERBOSE) {
-          console.log(`  Skipped: ${sfsNumber} (exists)`)
-        }
-        continue
+      if (page > 1) {
+        await sleep(CONFIG.DELAY_BETWEEN_REQUESTS)
       }
 
-      if (DRY_RUN) {
-        console.log(`  Would insert: ${sfsNumber} - ${doc.titel.substring(0, 50)}...`)
-        stats.inserted++
-        continue
+      const pageData = await fetchLatestSFS(page)
+      const documents = pageData.documents
+
+      if (documents.length === 0) {
+        console.log(`  No documents returned, stopping`)
+        break
       }
 
-      try {
-        // Fetch content
-        const [htmlContent, fullText] = await Promise.all([
-          fetchLawHTML(doc.dok_id),
-          fetchLawFullText(doc.dok_id),
-        ])
+      stats.fetched += documents.length
 
-        if (!fullText && !htmlContent) {
-          console.log(`  No content for ${sfsNumber}`)
-          stats.failed++
+      // Track the newest publicerad date from API for this page
+      if (page === 1 && documents.length > 0) {
+        const newestApiDoc = documents[0]
+        console.log(
+          `  Newest in API: ${newestApiDoc.beteckning} (publicerad: ${newestApiDoc.publicerad})`
+        )
+      }
+
+      let pageNewCount = 0
+      let pageSkipCount = 0
+
+      // Process each document - show row by row
+      console.log('')
+      console.log(`  Checking ${documents.length} documents:`)
+      for (const doc of documents) {
+        // Skip documents with empty beteckning (historical docs without SFS number)
+        if (!doc.beteckning) {
+          console.log(
+            `    [ ] ${doc.dok_id.padEnd(20)} - (no SFS number, skipped)`
+          )
+          stats.skipped++
+          pageSkipCount++
           continue
         }
 
-        // Generate slug
-        const slug = generateSlug(doc.titel, sfsNumber)
+        const sfsNumber = `SFS ${doc.beteckning}`
 
-        // Insert
-        await prisma.legalDocument.create({
-          data: {
-            document_number: sfsNumber,
-            title: doc.titel,
-            slug,
-            content_type: ContentType.SFS_LAW,
-            full_text: fullText,
-            html_content: htmlContent,
-            publication_date: doc.datum ? new Date(doc.datum) : null,
-            status: DocumentStatus.ACTIVE,
-            source_url: `https://data.riksdagen.se/dokument/${doc.dok_id}`,
-            metadata: {
-              dokId: doc.dok_id,
-              source: 'data.riksdagen.se',
-              fetchedAt: new Date().toISOString(),
-              method: 'daily-sync',
-            },
-          },
+        // Check if already exists
+        const existing = await prisma.legalDocument.findUnique({
+          where: { document_number: sfsNumber },
         })
 
-        console.log(`  Inserted: ${sfsNumber}`)
-        stats.inserted++
-        await sleep(CONFIG.DELAY_BETWEEN_REQUESTS)
-      } catch (error) {
-        console.error(`  Error processing ${sfsNumber}:`, error instanceof Error ? error.message : error)
-        stats.failed++
+        if (existing) {
+          stats.skipped++
+          pageSkipCount++
+          console.log(`    [✓] ${sfsNumber.padEnd(20)} - exists in DB`)
+          continue
+        }
+
+        // New document found
+        pageNewCount++
+        console.log(
+          `    [+] ${sfsNumber.padEnd(20)} - NEW (publicerad: ${doc.publicerad})`
+        )
+
+        if (DRY_RUN) {
+          stats.inserted++
+          continue
+        }
+
+        try {
+          // Fetch content
+          const [htmlContent, fullText] = await Promise.all([
+            fetchLawHTML(doc.dok_id),
+            fetchLawFullText(doc.dok_id),
+          ])
+
+          if (!fullText && !htmlContent) {
+            console.log(`  No content for ${sfsNumber}`)
+            stats.failed++
+            continue
+          }
+
+          // Generate slug
+          const slug = generateSlug(doc.titel, sfsNumber)
+
+          // Insert
+          await prisma.legalDocument.create({
+            data: {
+              document_number: sfsNumber,
+              title: doc.titel,
+              slug,
+              content_type: ContentType.SFS_LAW,
+              full_text: fullText,
+              html_content: htmlContent,
+              publication_date: doc.datum ? new Date(doc.datum) : null,
+              status: DocumentStatus.ACTIVE,
+              source_url: `https://data.riksdagen.se/dokument/${doc.dok_id}`,
+              metadata: {
+                dokId: doc.dok_id,
+                source: 'data.riksdagen.se',
+                publicerad: doc.publicerad,
+                fetchedAt: new Date().toISOString(),
+                method: 'daily-sync-catchup',
+              },
+            },
+          })
+
+          stats.inserted++
+          stats.insertedDocs.push({
+            sfsNumber,
+            title: doc.titel,
+            publicerad: doc.publicerad,
+            datum: doc.datum,
+          })
+          console.log(`  [INSERTED] ${sfsNumber}`)
+          console.log(
+            `    Title: ${doc.titel.substring(0, 70)}${doc.titel.length > 70 ? '...' : ''}`
+          )
+          console.log(`    Datum: ${doc.datum} | Publicerad: ${doc.publicerad}`)
+          await sleep(CONFIG.DELAY_BETWEEN_REQUESTS)
+        } catch (error) {
+          console.error(
+            `  [ERROR] ${sfsNumber}:`,
+            error instanceof Error ? error.message : error
+          )
+          stats.failed++
+        }
       }
+
+      // Log page summary
+      console.log(
+        `  Page ${page} summary: ${pageNewCount} new, ${pageSkipCount} skipped`
+      )
+
+      // Always check all 3 pages to catch any gaps
+      if (!pageData.hasMore) {
+        console.log(`  → No more pages available`)
+        break
+      } else if (page >= CONFIG.MAX_PAGES) {
+        console.log(`  → Reached max pages limit`)
+      } else {
+        console.log(`  → Checking next page...`)
+      }
+
+      console.log('')
     }
 
     // Final summary
@@ -242,21 +300,68 @@ async function syncDaily() {
     console.log('SYNC COMPLETE')
     console.log('='.repeat(60))
     console.log('')
-    console.log(`API count:    ${stats.apiCount}`)
-    console.log(`Fetched:      ${stats.fetched}`)
-    console.log(`Inserted:     ${stats.inserted}`)
-    console.log(`Skipped:      ${stats.skipped}`)
-    console.log(`Failed:       ${stats.failed}`)
+    console.log(`Pages checked:  ${stats.pagesChecked}`)
+    console.log(`Docs fetched:   ${stats.fetched}`)
+    console.log(`Inserted:       ${stats.inserted}`)
+    console.log(`Skipped:        ${stats.skipped}`)
+    console.log(`Failed:         ${stats.failed}`)
     console.log('')
-    console.log(`Duration:     ${seconds}s`)
+    console.log(`Duration:       ${seconds}s`)
 
     // Log final DB count
     const finalCount = await prisma.legalDocument.count({
       where: { content_type: 'SFS_LAW' },
     })
-    console.log(``)
+    console.log('')
     console.log(`Total SFS_LAW in DB: ${finalCount}`)
 
+    // Verification: Check if newest API doc exists in our DB
+    console.log('')
+    console.log('─'.repeat(60))
+    console.log('VERIFICATION')
+    console.log('─'.repeat(60))
+
+    const newestApiResult = await fetchLatestSFS(1)
+    const newestApiDoc = newestApiResult.documents.find((d) => d.beteckning)
+
+    if (newestApiDoc) {
+      const newestSfs = `SFS ${newestApiDoc.beteckning}`
+      const existsInDb = await prisma.legalDocument.findUnique({
+        where: { document_number: newestSfs },
+      })
+
+      console.log(
+        `Newest in API:  ${newestSfs} (publicerad: ${newestApiDoc.publicerad})`
+      )
+      console.log(`In our DB:      ${existsInDb ? '✓ Yes' : '✗ NO - MISSING!'}`)
+
+      if (!existsInDb) {
+        console.log('')
+        console.log('⚠️  WARNING: Newest API document is not in our database!')
+        console.log('   This may indicate a sync issue. Check logs above.')
+      }
+    }
+
+    // Log inserted documents summary
+    if (stats.insertedDocs.length > 0) {
+      console.log('')
+      console.log('─'.repeat(60))
+      console.log('NEW LAWS ADDED')
+      console.log('─'.repeat(60))
+      for (const doc of stats.insertedDocs) {
+        console.log('')
+        console.log(`${doc.sfsNumber}`)
+        console.log(
+          `  "${doc.title.substring(0, 70)}${doc.title.length > 70 ? '...' : ''}"`
+        )
+        console.log(`  Datum: ${doc.datum} | Publicerad: ${doc.publicerad}`)
+      }
+      console.log('─'.repeat(60))
+    }
+
+    console.log('')
+    console.log(`Inserted this run: ${stats.inserted}`)
+    console.log(`Pages checked:     ${stats.pagesChecked}`)
   } catch (error) {
     console.error('Sync failed:', error)
     process.exit(1)
