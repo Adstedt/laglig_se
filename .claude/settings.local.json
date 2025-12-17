@@ -89,7 +89,9 @@
       "Bash(do echo \"\")",
       "Bash(echo:*)",
       "WebFetch(domain:intersolia.com)",
-      "WebFetch(domain:lezdkonjjjbvaghdwpog.supabase.co)"
+      "WebFetch(domain:lezdkonjjjbvaghdwpog.supabase.co)",
+      "WebFetch(domain:laglig-q5molghmv-adstedts-projects.vercel.app)",
+      "Bash(vercel logs:*)"
     ],
     "deny": [],
     "ask": []
