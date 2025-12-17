@@ -286,19 +286,18 @@ export function VersionByVersionTimeline({
 
                   {/* Summary badges and PDF link */}
                   <div className="flex flex-wrap items-center gap-2 mt-2">
-                    {amendment.sectionsAdded && amendment.sectionsAdded > 0 && (
+                    {(amendment.sectionsAdded ?? 0) > 0 && (
                       <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200">
                         <Plus className="h-3 w-3 mr-1" />
                         {amendment.sectionsAdded} nya
                       </Badge>
                     )}
-                    {amendment.sectionsRepealed &&
-                      amendment.sectionsRepealed > 0 && (
-                        <Badge className="text-xs bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200">
-                          <Minus className="h-3 w-3 mr-1" />
-                          {amendment.sectionsRepealed} upphävda
-                        </Badge>
-                      )}
+                    {(amendment.sectionsRepealed ?? 0) > 0 && (
+                      <Badge className="text-xs bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200">
+                        <Minus className="h-3 w-3 mr-1" />
+                        {amendment.sectionsRepealed} upphävda
+                      </Badge>
+                    )}
                     {amendment.sectionsChanged > 0 && (
                       <Badge className="text-xs bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-200">
                         <Edit className="h-3 w-3 mr-1" />
