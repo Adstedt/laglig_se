@@ -21,7 +21,9 @@ export function getStorageClient(): SupabaseClient {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
+    )
   }
 
   adminClient = createClient(supabaseUrl, serviceRoleKey, {
@@ -54,10 +56,12 @@ export async function uploadPdf(
   const client = getStorageClient()
   const path = getStoragePath(sfsNumber)
 
-  const { error } = await client.storage.from(BUCKET_NAME).upload(path, pdfBuffer, {
-    contentType: 'application/pdf',
-    upsert: true, // Overwrite if exists
-  })
+  const { error } = await client.storage
+    .from(BUCKET_NAME)
+    .upload(path, pdfBuffer, {
+      contentType: 'application/pdf',
+      upsert: true, // Overwrite if exists
+    })
 
   if (error) {
     return { path, error: new Error(error.message) }
@@ -81,7 +85,7 @@ export async function pdfExists(sfsNumber: string): Promise<boolean> {
   })
 
   if (error) return false
-  return data?.some(f => f.name === filename) ?? false
+  return data?.some((f) => f.name === filename) ?? false
 }
 
 /**
@@ -125,22 +129,38 @@ export async function deletePdf(sfsNumber: string): Promise<boolean> {
 }
 
 /**
+ * Get public URL for a PDF given its storage path
+ * Storage paths look like: "2025/SFS2025-732.pdf" or "SFS 2013/SFSSFS 2013-610.pdf"
+ */
+export function getPublicPdfUrl(storagePath: string): string {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!supabaseUrl) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
+  }
+  // URL encode the path to handle spaces
+  const encodedPath = storagePath.split('/').map(encodeURIComponent).join('/')
+  return `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${encodedPath}`
+}
+
+/**
  * List all PDFs for a given year
  */
 export async function listPdfsForYear(year: number): Promise<string[]> {
   const client = getStorageClient()
 
-  const { data, error } = await client.storage.from(BUCKET_NAME).list(String(year), {
-    limit: 2000,
-    sortBy: { column: 'name', order: 'asc' },
-  })
+  const { data, error } = await client.storage
+    .from(BUCKET_NAME)
+    .list(String(year), {
+      limit: 2000,
+      sortBy: { column: 'name', order: 'asc' },
+    })
 
   if (error || !data) return []
 
   // Convert filenames back to SFS numbers
   return data
-    .filter(f => f.name.endsWith('.pdf'))
-    .map(f => {
+    .filter((f) => f.name.endsWith('.pdf'))
+    .map((f) => {
       // SFS2025-1461.pdf -> 2025:1461
       const match = f.name.match(/SFS(\d{4})-(\d+)\.pdf/)
       return match ? `${match[1]}:${match[2]}` : null

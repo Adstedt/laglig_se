@@ -126,10 +126,10 @@ export default async function RattskallolPage({
 function CatalogueResultsSkeleton() {
   return (
     <div className="space-y-4">
-      {/* Results header skeleton */}
-      <div className="mb-4 flex items-center justify-between">
+      {/* Results header skeleton - items-start aligns with filter header */}
+      <div className="mb-6 flex items-start justify-between">
         <Skeleton className="h-5 w-48" />
-        <Skeleton className="h-9 w-32" />
+        <Skeleton className="h-9 w-[160px]" />
       </div>
 
       {/* Result cards skeleton */}

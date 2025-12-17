@@ -96,9 +96,9 @@ export async function CatalogueResults({
 
   return (
     <div>
-      {/* Results Header */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
+      {/* Results Header - items-start aligns text with filter header */}
+      <div className="mb-6 flex items-start justify-between">
+        <p className="h-5 text-sm leading-5 text-muted-foreground">
           Visar {startIndex.toLocaleString('sv-SE')}-
           {endIndex.toLocaleString('sv-SE')} av{' '}
           <span className="font-medium text-foreground">

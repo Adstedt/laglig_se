@@ -1,0 +1,62 @@
+[
+  {
+    "sfsNumber": "SFS 1998:960",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 1999:1432",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 1999:883",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2000:1385",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2000:1446",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2000:739",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2004:1318",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2004:882",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2005:1068",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2006:189",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2007:1100",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2007:636",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2011:1119",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2011:507",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2013:167",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  }
+]

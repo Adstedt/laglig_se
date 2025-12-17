@@ -1,0 +1,1094 @@
+{
+  "totalApiReported": 11397,
+  "totalFetched": 11397,
+  "uniqueSfs": 11265,
+  "years": [
+    {
+      "year": 1686,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1723,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1736,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 2
+    },
+    {
+      "year": 1757,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1772,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1810,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 2
+    },
+    {
+      "year": 1821,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1827,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1828,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1829,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1834,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1840,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1844,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1845,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1848,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1851,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1855,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1860,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1861,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 2
+    },
+    {
+      "year": 1863,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1864,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1866,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1867,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1868,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 1
+    },
+    {
+      "year": 1869,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1870,
+      "apiCount": 4,
+      "fetched": 4,
+      "unique": 3
+    },
+    {
+      "year": 1871,
+      "apiCount": 1,
+      "fetched": 1,
+      "unique": 1
+    },
+    {
+      "year": 1872,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1873,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1874,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1875,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1876,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1877,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1878,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1879,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1880,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1881,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1882,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1883,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1884,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1885,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1886,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1887,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1888,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1889,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1890,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1891,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1892,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1893,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1894,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1895,
+      "apiCount": 4,
+      "fetched": 4,
+      "unique": 3
+    },
+    {
+      "year": 1896,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1897,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1898,
+      "apiCount": 4,
+      "fetched": 4,
+      "unique": 3
+    },
+    {
+      "year": 1899,
+      "apiCount": 5,
+      "fetched": 5,
+      "unique": 4
+    },
+    {
+      "year": 1900,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1901,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1902,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1903,
+      "apiCount": 2,
+      "fetched": 2,
+      "unique": 1
+    },
+    {
+      "year": 1904,
+      "apiCount": 7,
+      "fetched": 7,
+      "unique": 6
+    },
+    {
+      "year": 1905,
+      "apiCount": 4,
+      "fetched": 4,
+      "unique": 3
+    },
+    {
+      "year": 1906,
+      "apiCount": 4,
+      "fetched": 4,
+      "unique": 3
+    },
+    {
+      "year": 1907,
+      "apiCount": 4,
+      "fetched": 4,
+      "unique": 3
+    },
+    {
+      "year": 1908,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 3
+    },
+    {
+      "year": 1909,
+      "apiCount": 6,
+      "fetched": 6,
+      "unique": 5
+    },
+    {
+      "year": 1910,
+      "apiCount": 7,
+      "fetched": 7,
+      "unique": 6
+    },
+    {
+      "year": 1911,
+      "apiCount": 6,
+      "fetched": 6,
+      "unique": 5
+    },
+    {
+      "year": 1912,
+      "apiCount": 6,
+      "fetched": 6,
+      "unique": 5
+    },
+    {
+      "year": 1913,
+      "apiCount": 6,
+      "fetched": 6,
+      "unique": 5
+    },
+    {
+      "year": 1914,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 2
+    },
+    {
+      "year": 1915,
+      "apiCount": 5,
+      "fetched": 5,
+      "unique": 4
+    },
+    {
+      "year": 1916,
+      "apiCount": 5,
+      "fetched": 5,
+      "unique": 4
+    },
+    {
+      "year": 1917,
+      "apiCount": 5,
+      "fetched": 5,
+      "unique": 4
+    },
+    {
+      "year": 1918,
+      "apiCount": 9,
+      "fetched": 9,
+      "unique": 8
+    },
+    {
+      "year": 1919,
+      "apiCount": 6,
+      "fetched": 6,
+      "unique": 5
+    },
+    {
+      "year": 1920,
+      "apiCount": 8,
+      "fetched": 8,
+      "unique": 7
+    },
+    {
+      "year": 1921,
+      "apiCount": 13,
+      "fetched": 13,
+      "unique": 12
+    },
+    {
+      "year": 1922,
+      "apiCount": 4,
+      "fetched": 4,
+      "unique": 4
+    },
+    {
+      "year": 1923,
+      "apiCount": 3,
+      "fetched": 3,
+      "unique": 3
+    },
+    {
+      "year": 1924,
+      "apiCount": 9,
+      "fetched": 9,
+      "unique": 8
+    },
+    {
+      "year": 1925,
+      "apiCount": 5,
+      "fetched": 5,
+      "unique": 5
+    },
+    {
+      "year": 1926,
+      "apiCount": 9,
+      "fetched": 9,
+      "unique": 9
+    },
+    {
+      "year": 1927,
+      "apiCount": 16,
+      "fetched": 16,
+      "unique": 16
+    },
+    {
+      "year": 1928,
+      "apiCount": 10,
+      "fetched": 10,
+      "unique": 10
+    },
+    {
+      "year": 1929,
+      "apiCount": 10,
+      "fetched": 10,
+      "unique": 10
+    },
+    {
+      "year": 1930,
+      "apiCount": 10,
+      "fetched": 10,
+      "unique": 10
+    },
+    {
+      "year": 1931,
+      "apiCount": 6,
+      "fetched": 6,
+      "unique": 6
+    },
+    {
+      "year": 1932,
+      "apiCount": 9,
+      "fetched": 9,
+      "unique": 9
+    },
+    {
+      "year": 1933,
+      "apiCount": 18,
+      "fetched": 18,
+      "unique": 18
+    },
+    {
+      "year": 1934,
+      "apiCount": 15,
+      "fetched": 15,
+      "unique": 15
+    },
+    {
+      "year": 1935,
+      "apiCount": 20,
+      "fetched": 20,
+      "unique": 19
+    },
+    {
+      "year": 1936,
+      "apiCount": 13,
+      "fetched": 13,
+      "unique": 13
+    },
+    {
+      "year": 1937,
+      "apiCount": 10,
+      "fetched": 10,
+      "unique": 10
+    },
+    {
+      "year": 1938,
+      "apiCount": 11,
+      "fetched": 11,
+      "unique": 10
+    },
+    {
+      "year": 1939,
+      "apiCount": 15,
+      "fetched": 15,
+      "unique": 14
+    },
+    {
+      "year": 1940,
+      "apiCount": 15,
+      "fetched": 15,
+      "unique": 15
+    },
+    {
+      "year": 1941,
+      "apiCount": 15,
+      "fetched": 15,
+      "unique": 15
+    },
+    {
+      "year": 1942,
+      "apiCount": 26,
+      "fetched": 26,
+      "unique": 26
+    },
+    {
+      "year": 1943,
+      "apiCount": 6,
+      "fetched": 6,
+      "unique": 6
+    },
+    {
+      "year": 1944,
+      "apiCount": 13,
+      "fetched": 13,
+      "unique": 13
+    },
+    {
+      "year": 1945,
+      "apiCount": 6,
+      "fetched": 6,
+      "unique": 6
+    },
+    {
+      "year": 1946,
+      "apiCount": 18,
+      "fetched": 18,
+      "unique": 18
+    },
+    {
+      "year": 1947,
+      "apiCount": 22,
+      "fetched": 22,
+      "unique": 22
+    },
+    {
+      "year": 1948,
+      "apiCount": 14,
+      "fetched": 14,
+      "unique": 14
+    },
+    {
+      "year": 1949,
+      "apiCount": 21,
+      "fetched": 21,
+      "unique": 21
+    },
+    {
+      "year": 1950,
+      "apiCount": 21,
+      "fetched": 21,
+      "unique": 21
+    },
+    {
+      "year": 1951,
+      "apiCount": 22,
+      "fetched": 22,
+      "unique": 22
+    },
+    {
+      "year": 1952,
+      "apiCount": 19,
+      "fetched": 19,
+      "unique": 19
+    },
+    {
+      "year": 1953,
+      "apiCount": 11,
+      "fetched": 11,
+      "unique": 11
+    },
+    {
+      "year": 1954,
+      "apiCount": 27,
+      "fetched": 27,
+      "unique": 27
+    },
+    {
+      "year": 1955,
+      "apiCount": 31,
+      "fetched": 31,
+      "unique": 31
+    },
+    {
+      "year": 1956,
+      "apiCount": 22,
+      "fetched": 22,
+      "unique": 22
+    },
+    {
+      "year": 1957,
+      "apiCount": 26,
+      "fetched": 26,
+      "unique": 26
+    },
+    {
+      "year": 1958,
+      "apiCount": 44,
+      "fetched": 44,
+      "unique": 44
+    },
+    {
+      "year": 1959,
+      "apiCount": 46,
+      "fetched": 46,
+      "unique": 46
+    },
+    {
+      "year": 1960,
+      "apiCount": 51,
+      "fetched": 51,
+      "unique": 51
+    },
+    {
+      "year": 1961,
+      "apiCount": 33,
+      "fetched": 33,
+      "unique": 33
+    },
+    {
+      "year": 1962,
+      "apiCount": 58,
+      "fetched": 58,
+      "unique": 58
+    },
+    {
+      "year": 1963,
+      "apiCount": 38,
+      "fetched": 38,
+      "unique": 38
+    },
+    {
+      "year": 1964,
+      "apiCount": 58,
+      "fetched": 58,
+      "unique": 58
+    },
+    {
+      "year": 1965,
+      "apiCount": 55,
+      "fetched": 55,
+      "unique": 55
+    },
+    {
+      "year": 1966,
+      "apiCount": 52,
+      "fetched": 52,
+      "unique": 52
+    },
+    {
+      "year": 1967,
+      "apiCount": 75,
+      "fetched": 75,
+      "unique": 75
+    },
+    {
+      "year": 1968,
+      "apiCount": 61,
+      "fetched": 61,
+      "unique": 61
+    },
+    {
+      "year": 1969,
+      "apiCount": 57,
+      "fetched": 57,
+      "unique": 57
+    },
+    {
+      "year": 1970,
+      "apiCount": 98,
+      "fetched": 98,
+      "unique": 98
+    },
+    {
+      "year": 1971,
+      "apiCount": 92,
+      "fetched": 92,
+      "unique": 92
+    },
+    {
+      "year": 1972,
+      "apiCount": 69,
+      "fetched": 69,
+      "unique": 69
+    },
+    {
+      "year": 1973,
+      "apiCount": 114,
+      "fetched": 114,
+      "unique": 114
+    },
+    {
+      "year": 1974,
+      "apiCount": 127,
+      "fetched": 127,
+      "unique": 127
+    },
+    {
+      "year": 1975,
+      "apiCount": 130,
+      "fetched": 130,
+      "unique": 130
+    },
+    {
+      "year": 1976,
+      "apiCount": 128,
+      "fetched": 128,
+      "unique": 128
+    },
+    {
+      "year": 1977,
+      "apiCount": 112,
+      "fetched": 112,
+      "unique": 112
+    },
+    {
+      "year": 1978,
+      "apiCount": 127,
+      "fetched": 127,
+      "unique": 127
+    },
+    {
+      "year": 1979,
+      "apiCount": 167,
+      "fetched": 167,
+      "unique": 167
+    },
+    {
+      "year": 1980,
+      "apiCount": 116,
+      "fetched": 116,
+      "unique": 116
+    },
+    {
+      "year": 1981,
+      "apiCount": 155,
+      "fetched": 155,
+      "unique": 155
+    },
+    {
+      "year": 1982,
+      "apiCount": 201,
+      "fetched": 201,
+      "unique": 201
+    },
+    {
+      "year": 1983,
+      "apiCount": 150,
+      "fetched": 150,
+      "unique": 150
+    },
+    {
+      "year": 1984,
+      "apiCount": 187,
+      "fetched": 187,
+      "unique": 187
+    },
+    {
+      "year": 1985,
+      "apiCount": 219,
+      "fetched": 219,
+      "unique": 219
+    },
+    {
+      "year": 1986,
+      "apiCount": 196,
+      "fetched": 196,
+      "unique": 196
+    },
+    {
+      "year": 1987,
+      "apiCount": 225,
+      "fetched": 225,
+      "unique": 225
+    },
+    {
+      "year": 1988,
+      "apiCount": 419,
+      "fetched": 419,
+      "unique": 419
+    },
+    {
+      "year": 1989,
+      "apiCount": 198,
+      "fetched": 198,
+      "unique": 198
+    },
+    {
+      "year": 1990,
+      "apiCount": 210,
+      "fetched": 210,
+      "unique": 210
+    },
+    {
+      "year": 1991,
+      "apiCount": 245,
+      "fetched": 245,
+      "unique": 245
+    },
+    {
+      "year": 1992,
+      "apiCount": 275,
+      "fetched": 275,
+      "unique": 275
+    },
+    {
+      "year": 1993,
+      "apiCount": 307,
+      "fetched": 307,
+      "unique": 307
+    },
+    {
+      "year": 1994,
+      "apiCount": 333,
+      "fetched": 333,
+      "unique": 333
+    },
+    {
+      "year": 1995,
+      "apiCount": 215,
+      "fetched": 215,
+      "unique": 215
+    },
+    {
+      "year": 1996,
+      "apiCount": 256,
+      "fetched": 256,
+      "unique": 256
+    },
+    {
+      "year": 1997,
+      "apiCount": 171,
+      "fetched": 171,
+      "unique": 171
+    },
+    {
+      "year": 1998,
+      "apiCount": 247,
+      "fetched": 247,
+      "unique": 247
+    },
+    {
+      "year": 1999,
+      "apiCount": 174,
+      "fetched": 174,
+      "unique": 174
+    },
+    {
+      "year": 2000,
+      "apiCount": 175,
+      "fetched": 175,
+      "unique": 175
+    },
+    {
+      "year": 2001,
+      "apiCount": 160,
+      "fetched": 160,
+      "unique": 160
+    },
+    {
+      "year": 2002,
+      "apiCount": 145,
+      "fetched": 145,
+      "unique": 145
+    },
+    {
+      "year": 2003,
+      "apiCount": 135,
+      "fetched": 135,
+      "unique": 135
+    },
+    {
+      "year": 2004,
+      "apiCount": 138,
+      "fetched": 138,
+      "unique": 138
+    },
+    {
+      "year": 2005,
+      "apiCount": 159,
+      "fetched": 159,
+      "unique": 159
+    },
+    {
+      "year": 2006,
+      "apiCount": 176,
+      "fetched": 176,
+      "unique": 176
+    },
+    {
+      "year": 2007,
+      "apiCount": 346,
+      "fetched": 346,
+      "unique": 346
+    },
+    {
+      "year": 2008,
+      "apiCount": 160,
+      "fetched": 160,
+      "unique": 160
+    },
+    {
+      "year": 2009,
+      "apiCount": 207,
+      "fetched": 207,
+      "unique": 207
+    },
+    {
+      "year": 2010,
+      "apiCount": 191,
+      "fetched": 191,
+      "unique": 191
+    },
+    {
+      "year": 2011,
+      "apiCount": 173,
+      "fetched": 173,
+      "unique": 173
+    },
+    {
+      "year": 2012,
+      "apiCount": 119,
+      "fetched": 119,
+      "unique": 119
+    },
+    {
+      "year": 2013,
+      "apiCount": 126,
+      "fetched": 126,
+      "unique": 126
+    },
+    {
+      "year": 2014,
+      "apiCount": 163,
+      "fetched": 163,
+      "unique": 163
+    },
+    {
+      "year": 2015,
+      "apiCount": 150,
+      "fetched": 150,
+      "unique": 150
+    },
+    {
+      "year": 2016,
+      "apiCount": 186,
+      "fetched": 186,
+      "unique": 186
+    },
+    {
+      "year": 2017,
+      "apiCount": 162,
+      "fetched": 162,
+      "unique": 162
+    },
+    {
+      "year": 2018,
+      "apiCount": 214,
+      "fetched": 214,
+      "unique": 214
+    },
+    {
+      "year": 2019,
+      "apiCount": 130,
+      "fetched": 130,
+      "unique": 130
+    },
+    {
+      "year": 2020,
+      "apiCount": 144,
+      "fetched": 144,
+      "unique": 144
+    },
+    {
+      "year": 2021,
+      "apiCount": 174,
+      "fetched": 174,
+      "unique": 174
+    },
+    {
+      "year": 2022,
+      "apiCount": 206,
+      "fetched": 206,
+      "unique": 206
+    },
+    {
+      "year": 2023,
+      "apiCount": 112,
+      "fetched": 112,
+      "unique": 112
+    },
+    {
+      "year": 2024,
+      "apiCount": 161,
+      "fetched": 161,
+      "unique": 161
+    },
+    {
+      "year": 2025,
+      "apiCount": 138,
+      "fetched": 138,
+      "unique": 138
+    }
+  ],
+  "fetchedAt": "2025-12-11T19:27:18.090Z"
+}

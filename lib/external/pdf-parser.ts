@@ -252,6 +252,33 @@ export function extractSfsNumber(
  * Main PDF parsing function
  * Extracts text and structured data from a PDF buffer
  */
+/**
+ * Clean up PDF text artifacts and improve formatting
+ */
+function cleanPdfText(text: string): string {
+  return (
+    text
+      // Remove page number artifacts at start (e.g., "11 2 3 4 5 6 7 8 9 0 1 2 3...")
+      .replace(/^[\d\s]{20,}/, '')
+      // Remove inline SFS page markers (e.g., "2SFS 2024:4", "3SFS 2024:4")
+      .replace(/\d+SFS\s*\d{4}:\d+/g, '\n\n')
+      // Remove standalone SFS markers at end of pages
+      .replace(/SFS\s*\d{4}:\d+\s*Publicerad den \d+[^\n]+/g, '')
+      // Normalize multiple spaces to single space
+      .replace(/[ \t]+/g, ' ')
+      // Normalize multiple newlines to double newline (paragraph break)
+      .replace(/\n{3,}/g, '\n\n')
+      // Add line breaks before section markers (§)
+      .replace(/(\S)\s+(\d+\s*§)/g, '$1\n\n$2')
+      // Add line breaks before "Denna lag/förordning"
+      .replace(/(\S)\s+(Denna (?:lag|förordning))/g, '$1\n\n$2')
+      // Add line breaks before "På regeringens vägnar"
+      .replace(/(\S)\s+(På regeringens vägnar)/g, '$1\n\n$2')
+      // Trim
+      .trim()
+  )
+}
+
 export async function parsePdf(
   pdfBuffer: Buffer | Uint8Array,
   filename?: string
@@ -259,9 +286,13 @@ export async function parsePdf(
   const data =
     pdfBuffer instanceof Uint8Array ? pdfBuffer : new Uint8Array(pdfBuffer)
 
-  // Extract text from PDF
-  const result = await extractText(data, { mergePages: true })
-  const fullText = result.text
+  // Extract text from PDF - don't merge pages to preserve some structure
+  const result = await extractText(data, { mergePages: false })
+  // Join pages with double newline to preserve page breaks
+  const rawText = Array.isArray(result.text)
+    ? result.text.join('\n\n')
+    : result.text
+  const fullText = cleanPdfText(rawText)
   const pageCount = result.totalPages || 1
 
   // Extract structured data

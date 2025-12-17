@@ -1,0 +1,5306 @@
+[
+  {
+    "sfsNumber": "SFS 2014:14",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:15",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:16",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:17",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:18",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:20",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:22",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:23",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:24",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:25",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:26",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:27",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:28",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:29",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:29",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:31",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:32",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:33",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:36",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:37",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:38",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:39",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:40",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:41",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:42",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:43",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:44",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:45",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:46",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:48",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:49",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:50",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:51",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:53",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:54",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:55",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:56",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:57",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:58",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:60",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:77",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:78",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:79",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:80",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:81",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:82",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:83",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:86",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:87",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:88",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:89",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:90",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:91",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:92",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:93",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:94",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:95",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:96",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:97",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:98",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:99",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:100",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:101",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:102",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:103",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:104",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:106",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:107",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:109",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:112",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:113",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:114",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:118",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:119",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:120",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:121",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:122",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:123",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:124",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:125",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:126",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:127",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:128",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:129",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:130",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:131",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:135",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:136",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:137",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:138",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:141",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:142",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:143",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:146",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:147",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:148",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:149",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:150",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:151",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:152",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:153",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:155",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:156",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:157",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:158",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:160",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:161",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:162",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:163",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:165",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:166",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:167",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:168",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:169",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:170",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:171",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:172",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:173",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:174",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:175",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:176",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:177",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:178",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:179",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:180",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:181",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:182",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:183",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:184",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:185",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:186",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:187",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:188",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:189",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:190",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:191",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:192",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:193",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:194",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:195",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:196",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:197",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:198",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:198",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:199",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:200",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:201",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:202",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:203",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:204",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:205",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:206",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:207",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:208",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:209",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:210",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:211",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:212",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:213",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:215",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:216",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:217",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:218",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:219",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:220",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:221",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:222",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:223",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:224",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:225",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:226",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:228",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:229",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:230",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:231",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:232",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:233",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:234",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:235",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:236",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:237",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:238",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:239",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:240",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:241",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:242",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:243",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:244",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:245",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:246",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:247",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:248",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:249",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:250",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:251",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:252",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:253",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:255",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:256",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:264",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:265",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:269",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:270",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:271",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:272",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:273",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:274",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:276",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:277",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:278",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:279",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:280",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:281",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:282",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:283",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:284",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:285",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:286",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:287",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:288",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:289",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:290",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:291",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:292",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:293",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:294",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:295",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:296",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:297",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:300",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:301",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:302",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:303",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:304",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:305",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:306",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:308",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:309",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:310",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:311",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:312",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:313",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:314",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:315",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:316",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:317",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:318",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:319",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:320",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:321",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:323",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:324",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:325",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:326",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:328",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:330",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:331",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:332",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:334",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:335",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:336",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:337",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:342",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:343",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:344",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:345",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:346",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:350",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:351",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:352",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:353",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:354",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:355",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:356",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:357",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:358",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:359",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:360",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:361",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:362",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:363",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:364",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:364",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:365",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:366",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:367",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:368",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:369",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:370",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:371",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:372",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:373",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:374",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:376",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:377",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:378",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:379",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:380",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:381",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:382",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:383",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:384",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:385",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:386",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:387",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:388",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:389",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:390",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:391",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:392",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:393",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:394",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:395",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:398",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:399",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:401",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:402",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:403",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:404",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:407",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:408",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:409",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:410",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:411",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:412",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:413",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:415",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:416",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:417",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:418",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:419",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:420",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:422",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:423",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:424",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:426",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:428",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:429",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:430",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:431",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:432",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:433",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:434",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:435",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:436",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:437",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:438",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:439",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:440",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:441",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:442",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:443",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:444",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:445",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:446",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:448",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:449",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:450",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:451",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:452",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:453",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:454",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:455",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:456",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:457",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:458",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:459",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:460",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:461",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:462",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:463",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:464",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:471",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:472",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:473",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:474",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:475",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:476",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:477",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:478",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:479",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:481",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:482",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:483",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:485",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:486",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:487",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:488",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:489",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:490",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:491",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:492",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:493",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:494",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:495",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:496",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:497",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:498",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:499",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:500",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:501",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:502",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:503",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:504",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:505",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:506",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:507",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:510",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:511",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:512",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:513",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:515",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:516",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:517",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:518",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:519",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:522",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:523",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:524",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:525",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:526",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:529",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:530",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:531",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:532",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:533",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:536",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:537",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:538",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:539",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:540",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:541",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:542",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:543",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:544",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:545",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:546",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:547",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:548",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:550",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:551",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:552",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:553",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:554",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:555",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:556",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:557",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:558",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:559",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:560",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:561",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:562",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:563",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:564",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:565",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:566",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:567",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:568",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:569",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:571",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:572",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:573",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:574",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:575",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:576",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:577",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:578",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:579",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:581",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:582",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:583",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:584",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:585",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:586",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:587",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:588",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:589",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:590",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:591",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:592",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:593",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:594",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:595",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:596",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:597",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:598",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:599",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:600",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:601",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:602",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:603",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:604",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:605",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:606",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:607",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:608",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:609",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:610",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:611",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:612",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:613",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:614",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:615",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:616",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:617",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:618",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:619",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:620",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:621",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:622",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:623",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:624",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:625",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:626",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:627",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:628",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:629",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:630",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:631",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:632",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:633",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:634",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:635",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:636",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:637",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:638",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:639",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:640",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:641",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:642",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:643",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:644",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:645",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:646",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:647",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:648",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:649",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:650",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:651",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:652",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:653",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:654",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:655",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:656",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:657",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:658",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:665",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:666",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:667",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:668",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:669",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:670",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:671",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:672",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:673",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:674",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:675",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:676",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:677",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:678",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:679",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:680",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:681",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:682",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:683",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:684",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:685",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:686",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:687",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:688",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:689",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:690",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:691",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:692",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:693",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:694",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:695",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:696",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:697",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:698",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:699",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:700",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:701",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:702",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:703",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:704",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:705",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:706",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:707",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:708",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:709",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:710",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:711",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:712",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:713",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:714",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:715",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:716",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:717",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:718",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:719",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:720",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:721",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:722",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:723",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:724",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:725",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:726",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:727",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:728",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:729",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:730",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:731",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:732",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:733",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:734",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:735",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:736",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:737",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:738",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:739",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:740",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:741",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:742",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:743",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:744",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:745",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:746",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:747",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:748",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:749",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:750",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:751",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:752",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:753",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:754",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:755",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:756",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:757",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:758",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:759",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:760",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:761",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:762",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:763",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:764",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:765",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:766",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:767",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:768",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:769",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:770",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:771",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:772",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:773",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:774",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:775",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:776",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:777",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:778",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:779",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:780",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:781",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:782",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:783",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:784",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:785",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:789",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:790",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:791",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:792",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:793",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:794",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:795",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:796",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:797",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:798",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:800",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:802",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:803",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:804",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:805",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:806",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:807",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:808",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:809",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:810",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:811",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:813",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:814",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:815",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:816",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:817",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:818",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:820",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:822",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:823",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:824",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:825",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:826",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:827",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:828",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:829",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:830",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:831",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:832",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:833",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:837",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:838",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:839",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:847",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:848",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:849",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:850",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:851",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:852",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:853",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:855",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:856",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:857",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:858",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:859",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:860",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:861",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:862",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:865",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:866",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:867",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:868",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:869",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:871",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:872",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:873",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:874",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:875",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:876",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:877",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:878",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:879",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:881",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:882",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:883",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:884",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:886",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:887",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:888",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:888",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:889",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:890",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:891",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:892",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:893",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:894",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:895",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:896",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:897",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:898",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:900",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:901",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:902",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:903",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:904",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:905",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:906",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:907",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:908",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:909",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:910",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:911",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:913",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:914",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:915",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:916",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:917",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:918",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:919",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:920",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:921",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:922",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:923",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:924",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:925",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:926",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:927",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:928",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:929",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:930",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:931",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:932",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:933",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:934",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:935",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:937",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:938",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:939",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:940",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:941",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:942",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:943",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:944",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:945",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:947",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:948",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:949",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:950",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:952",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:954",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:957",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:958",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:959",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:960",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:961",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:962",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:963",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:964",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:965",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:970",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:971",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:972",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:973",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:974",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:975",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:976",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:977",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:978",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:979",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:980",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:981",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:982",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:983",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:984",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:985",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:986",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:987",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:988",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:989",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:990",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:991",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:992",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:994",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:995",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:996",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:997",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:998",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:999",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1001",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1002",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1003",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1004",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1007",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1008",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1011",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1012",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1013",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1014",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1016",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1017",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1018",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1019",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1021",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1022",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1023",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1024",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1025",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1026",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1027",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1028",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1029",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1032",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1033",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1034",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1035",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1036",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1037",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1038",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1038",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1040",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1041",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1042",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1043",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1044",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1045",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1047",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1048",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1049",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1062",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1063",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1065",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1068",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1069",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1070",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1072",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1076",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1077",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1078",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1078",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1080",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1081",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1082",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1084",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1086",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1087",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1089",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1090",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1091",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1092",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1093",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1094",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1095",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1096",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1097",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1098",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1099",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1100",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1109",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1110",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1111",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1112",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1113",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1114",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1115",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1116",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1117",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1118",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1119",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1120",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1121",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1122",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1123",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1124",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1125",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1126",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1127",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1128",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1129",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1130",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1131",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1132",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1133",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1134",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1135",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1136",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1137",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1138",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1139",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1140",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1141",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1142",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1143",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1144",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1145",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1146",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1147",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1148",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1149",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1150",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1151",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1152",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1153",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1154",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1155",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1156",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1157",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1158",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1159",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1160",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1161",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1162",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1163",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1164",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1165",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1166",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1167",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1168",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1169",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1170",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1171",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1172",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1173",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1174",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1175",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1176",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1177",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1178",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1179",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1180",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1181",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1182",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1183",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1184",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1185",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1186",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1187",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1188",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1189",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1190",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1191",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1192",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1193",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1194",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1195",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1196",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1197",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1198",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1199",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1200",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1201",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1202",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1203",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1204",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1205",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1206",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1207",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1208",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1209",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1210",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1211",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1212",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1213",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1214",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1215",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1216",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1217",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1218",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1219",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1220",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1221",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1222",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1223",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1224",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1225",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1226",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1227",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1228",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1229",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1230",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1231",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1232",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1233",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1234",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1235",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1236",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1237",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1238",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1239",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1240",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1241",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1242",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1243",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1244",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1245",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1246",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1247",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1248",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1249",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1250",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1251",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1252",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1253",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1254",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1255",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1265",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1265",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1266",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1267",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1268",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1269",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1270",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1271",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1272",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1273",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1274",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1275",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1276",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1277",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1278",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1279",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1280",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1281",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1282",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1283",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1284",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1285",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1286",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1287",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1288",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1289",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1290",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1291",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1292",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1293",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1294",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1295",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1296",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1297",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1298",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1299",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1300",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1301",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1302",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1303",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1304",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1305",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1306",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1307",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1309",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1310",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1311",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1314",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1316",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1317",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1318",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1319",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1320",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1321",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1322",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1324",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1325",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1326",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1327",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1330",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1331",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1332",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1333",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1334",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1336",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1338",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1339",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1340",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1342",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1343",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1345",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1346",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1347",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1348",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1349",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1350",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1351",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1352",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1353",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1354",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1355",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1356",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1357",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1358",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1359",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1360",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1361",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1363",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1364",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1366",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1367",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1368",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1369",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1370",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1371",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1372",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1373",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1375",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1376",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1377",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1378",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1379",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1380",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1381",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1382",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1384",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1385",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1386",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1387",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1388",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1390",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1392",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1393",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1394",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1395",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1396",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1397",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1398",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1399",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1400",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1401",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1402",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1403",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1404",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1405",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1406",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1407",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1409",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1410",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1411",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1412",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1413",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1414",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1416",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1419",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1420",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1421",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1422",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1423",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1424",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1425",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1426",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1427",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1428",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1429",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1430",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1431",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1432",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1433",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1438",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1439",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1440",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1441",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1442",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1443",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1445",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1446",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1450",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1451",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1452",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1454",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1455",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1456",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1457",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1458",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1459",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1460",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1464",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1465",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1466",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1467",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1468",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1469",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1471",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1472",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1473",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1474",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1476",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1477",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1478",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1479",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1480",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1494",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1495",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1496",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1497",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1498",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1499",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1500",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1501",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1502",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1503",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1504",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1505",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1506",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1507",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1508",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1509",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1510",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1511",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1512",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1514",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1515",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1516",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1519",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1520",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1521",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1522",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1523",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1524",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1525",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1529",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1530",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1531",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1532",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1533",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1534",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1535",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1536",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1539",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1540",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1541",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1543",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1544",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1545",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1546",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1547",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1548",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1549",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1550",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1551",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1554",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1555",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1556",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1557",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1558",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1559",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1560",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1561",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1562",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1563",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1565",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1566",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1567",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1568",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1569",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1570",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1571",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1572",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1573",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1573",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1574",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1575",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1576",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1577",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1579",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1580",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1581",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1582",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1583",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1584",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1586",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1587",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1588",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2014:1589",
+    "error": "HTTP 403: Forbidden"
+  }
+]

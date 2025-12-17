@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { Filter } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Filter, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -26,6 +27,8 @@ interface MobileFilterDrawerProps {
 
 export function MobileFilterDrawer(props: MobileFilterDrawerProps) {
   const [open, setOpen] = useState(false)
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const activeFilterCount = [
     props.selectedTypes.length > 0,
@@ -35,6 +38,18 @@ export function MobileFilterDrawer(props: MobileFilterDrawerProps) {
     props.dateFrom !== undefined,
     props.dateTo !== undefined,
   ].filter(Boolean).length
+
+  const hasFilters = activeFilterCount > 0
+
+  const clearAllFilters = useCallback(() => {
+    const params = new URLSearchParams()
+    const query = searchParams.get('q')
+    if (query) params.set('q', query)
+    const queryString = params.toString()
+    router.push(
+      queryString ? `${props.basePath}?${queryString}` : props.basePath
+    )
+  }, [router, searchParams, props.basePath])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -54,10 +69,21 @@ export function MobileFilterDrawer(props: MobileFilterDrawerProps) {
         className="w-[300px] overflow-y-auto sm:w-[340px]"
       >
         <SheetHeader>
-          <SheetTitle>Filter</SheetTitle>
+          <div className="flex items-center justify-between">
+            <SheetTitle>Filter</SheetTitle>
+            {hasFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="flex items-center text-xs text-primary hover:text-primary/80"
+              >
+                <X className="mr-1 h-3 w-3" />
+                Rensa alla
+              </button>
+            )}
+          </div>
         </SheetHeader>
         <div className="mt-6">
-          <CatalogueFilters {...props} />
+          <CatalogueFilters {...props} hideHeader />
         </div>
       </SheetContent>
     </Sheet>

@@ -22,6 +22,7 @@ import {
   NotYetInForceBanner,
   RelatedDocsPrefetcher,
 } from '@/components/features/law'
+import { VersionSelector } from '@/components/features/law-versions'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
 import { RelatedDocumentsSummary } from '@/components/features/cross-references'
@@ -446,28 +447,34 @@ export default async function LawPage({ params }: PageProps) {
             </div>
 
             {/* Quick Info Bar */}
-            <div className="mt-6 flex flex-wrap gap-4 text-sm text-muted-foreground border-t pt-4">
+            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-t pt-4">
               {formattedPublicationDate && (
                 <div className="flex items-center gap-1.5">
                   <CalendarDays className="h-4 w-4" />
                   <span>Publicerad {formattedPublicationDate}</span>
                 </div>
               )}
-              {law.source_url && (
-                <a
-                  href={law.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    'flex items-center gap-1.5 hover:underline ml-auto',
-                    theme.accent
-                  )}
-                >
-                  <Building2 className="h-4 w-4" />
-                  <span>Riksdagen</span>
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
+              <div className="flex items-center gap-2 ml-auto">
+                <VersionSelector
+                  lawSlug={law.slug}
+                  lawSfs={law.document_number.replace(/^SFS\s*/, '')}
+                />
+                {law.source_url && (
+                  <a
+                    href={law.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      'flex items-center gap-1.5 hover:underline',
+                      theme.accent
+                    )}
+                  >
+                    <Building2 className="h-4 w-4" />
+                    <span>Riksdagen</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
+              </div>
             </div>
           </header>
 

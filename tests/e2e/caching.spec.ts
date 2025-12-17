@@ -18,10 +18,16 @@ test.describe('Catalogue Caching Behavior', () => {
   test('should load catalogue page successfully', async ({ page }) => {
     // Wait for results to load
     await expect(page.locator('h1')).toContainText('Rättskällor')
-    await expect(page.locator('[data-testid="catalogue-results"]').or(page.locator('.space-y-4'))).toBeVisible()
+    await expect(
+      page
+        .locator('[data-testid="catalogue-results"]')
+        .or(page.locator('.space-y-4'))
+    ).toBeVisible()
   })
 
-  test('back navigation should be instant after viewing document', async ({ page }) => {
+  test('back navigation should be instant after viewing document', async ({
+    page,
+  }) => {
     // Navigate to catalogue
     await page.goto('/rattskallor')
     await page.waitForLoadState('networkidle')
@@ -76,7 +82,7 @@ test.describe('Catalogue Caching Behavior', () => {
 
     // Check that page 3 link uses static route format
     const page3Link = paginationNav.locator('a[href*="/sida/3"]')
-    const page3Exists = await page3Link.count() > 0
+    const page3Exists = (await page3Link.count()) > 0
 
     // If page 3 exists, it should use static URL pattern
     if (page3Exists) {
@@ -85,17 +91,23 @@ test.describe('Catalogue Caching Behavior', () => {
     }
   })
 
-  test('filter application should work from static pagination page', async ({ page }) => {
+  test('filter application should work from static pagination page', async ({
+    page,
+  }) => {
     // Start at static page
     await page.goto('/rattskallor/sida/2')
     await page.waitForLoadState('networkidle')
 
     // Apply a filter (if filters are visible)
-    const filterSection = page.locator('[data-testid="catalogue-filters"]').or(page.locator('aside'))
+    const filterSection = page
+      .locator('[data-testid="catalogue-filters"]')
+      .or(page.locator('aside'))
 
     if (await filterSection.isVisible()) {
       // Click on a content type filter if available
-      const lawFilter = filterSection.locator('text=Lagar').or(filterSection.locator('text=SFS'))
+      const lawFilter = filterSection
+        .locator('text=Lagar')
+        .or(filterSection.locator('text=SFS'))
 
       if (await lawFilter.isVisible()) {
         await lawFilter.click()
@@ -120,7 +132,7 @@ test.describe('Document Page Caching', () => {
       expect(response.status()).toBe(200)
 
       // For ISR pages, cache-control should indicate caching
-      const cacheControl = response.headers()['cache-control']
+      const _cacheControl = response.headers()['cache-control']
       // Vercel adds caching headers for static/ISR pages
       // We just verify the page loads, actual cache behavior is server-side
     }
@@ -161,11 +173,16 @@ test.describe('Cache Resilience', () => {
     await page.goto('/rattskallor')
 
     // Page should eventually render
-    await expect(page.locator('h1')).toContainText('Rättskällor', { timeout: 15000 })
+    await expect(page.locator('h1')).toContainText('Rättskällor', {
+      timeout: 15000,
+    })
 
     // Results or empty state should be visible
-    const hasResults = await page.locator('.space-y-4 > div').count() > 0
-    const hasEmptyState = await page.getByText(/Inga dokument/i).isVisible().catch(() => false)
+    const hasResults = (await page.locator('.space-y-4 > div').count()) > 0
+    const hasEmptyState = await page
+      .getByText(/Inga dokument/i)
+      .isVisible()
+      .catch(() => false)
 
     expect(hasResults || hasEmptyState).toBe(true)
   })

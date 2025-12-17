@@ -12,7 +12,12 @@
 
 import { prisma } from '../lib/prisma'
 import { ContentType, DocumentStatus } from '@prisma/client'
-import { fetchSFSLaws, fetchLawFullText, fetchLawHTML, generateSlug } from '../lib/external/riksdagen'
+import {
+  fetchSFSLaws,
+  fetchLawFullText,
+  fetchLawHTML,
+  generateSlug,
+} from '../lib/external/riksdagen'
 
 // Remaining missing SFS numbers
 const MISSING_SFS = [
@@ -45,7 +50,7 @@ const MISSING_SFS = [
 const DELAY_BETWEEN_REQUESTS = 1000
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -101,10 +106,10 @@ async function fetchHistoricalLaw(sfsNumber: string): Promise<{
 
       // Extract content
       const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
-      let contentHtml = bodyMatch ? bodyMatch[1] : html
+      const contentHtml = bodyMatch ? bodyMatch[1] : html
 
       // Convert to plain text
-      let fullText = contentHtml
+      const fullText = contentHtml
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
         .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, '')
@@ -124,7 +129,11 @@ async function fetchHistoricalLaw(sfsNumber: string): Promise<{
       let publicationDate: Date | null = null
       const dateMatch = html.match(/Utf[äa]rdad[:\s]+(\d{4})-(\d{2})-(\d{2})/i)
       if (dateMatch) {
-        publicationDate = new Date(parseInt(dateMatch[1]), parseInt(dateMatch[2]) - 1, parseInt(dateMatch[3]))
+        publicationDate = new Date(
+          parseInt(dateMatch[1]),
+          parseInt(dateMatch[2]) - 1,
+          parseInt(dateMatch[3])
+        )
       } else {
         const yearMatch = sfsNumber.match(/SFS (\d{4}):/)
         if (yearMatch) {
@@ -133,7 +142,13 @@ async function fetchHistoricalLaw(sfsNumber: string): Promise<{
       }
 
       if (fullText.length > 100) {
-        return { title, htmlContent: contentHtml, fullText, publicationDate, sourceUrl: url }
+        return {
+          title,
+          htmlContent: contentHtml,
+          fullText,
+          publicationDate,
+          sourceUrl: url,
+        }
       }
     } catch (error) {
       console.log(`  Error: ${error instanceof Error ? error.message : error}`)
@@ -161,7 +176,7 @@ async function fetchNewLawFromAPI(sfsNumber: string): Promise<{
   // Fetch the most recent page to find this law
   for (let page = 1; page <= 5; page++) {
     const result = await fetchSFSLaws(100, page, 'desc')
-    const law = result.laws.find(l => l.sfsNumber === sfsNumber)
+    const law = result.laws.find((l) => l.sfsNumber === sfsNumber)
     if (law) {
       const [htmlContent, fullText] = await Promise.all([
         fetchLawHTML(law.dokId),
@@ -257,7 +272,10 @@ async function main() {
       console.log(`  ✅ Inserted: ${lawData.title.substring(0, 50)}...`)
       inserted++
     } catch (error) {
-      console.error(`  ❌ DB error:`, error instanceof Error ? error.message : error)
+      console.error(
+        `  ❌ DB error:`,
+        error instanceof Error ? error.message : error
+      )
       failed++
     }
 

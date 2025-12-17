@@ -1,0 +1,14 @@
+[
+  {
+    "sfsNumber": "SFS 2003:429",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2003:586",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2003:588",
+    "error": "HTTP 403: Forbidden"
+  }
+]

@@ -1,0 +1,7 @@
+# SFS numbers in DB but NOT in API
+# Total: 3
+# Format: SFS\tTITLE
+#
+	för Riksbankens styrelse oeh förvaltning, utfärdad! den 8 Maj 1867
+1999:999	Test Law
+2000:123	Test Law 2

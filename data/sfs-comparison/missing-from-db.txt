@@ -1,0 +1,10 @@
+# SFS numbers in API but NOT in database
+# Total: 6
+# Format: SFS\tDATE\tDOK_ID\tTITLE
+#
+1878:bih. 56 s. 1	1878-07-12	sfs-1878-bih. 56 s. 1	Skrivelsen (1878:bih. 56 s.1) angående de å kronoparkerna i Arvidsjaurs socken belägna hemman och nybyggen tillhöriga ängar m.m.
+1883:bih. 39 s. 1	1883-06-22	sfs-1883-bih. 39 s. 1	Skrivelsen (1883:bih. 39 s.1) angående de å kronoparkerna i Gällivare socken belägna, hemman och nybyggen tillhöriga ängar m.m.
+1895:bih. 10 s. 1	1895-02-19	sfs-1895-bih. 10 s. 1	Kungl. Maj:ts Resolution (1895:bih.10s.1) på en av apostoliske vikarien, Biskopen m.m. Albertus Bitter gjord underdånig ansökning, det Kungl. Maj:t täcktes förklara romersk katolska kyrkans prästerskap äga rättighet att med laga verkan förrätta vigsel;
+1895:bih. 52 s. 1	1895-06-20	sfs-1895-bih. 52 s. 1	Kungl. Maj:ts Resolution (1895:bih.52s.1) på en av föreståndaren för franska reformerta församlingen i Stockholm Emil Giron gjord underdånig ansökning, det Kungl. Maj:t täckes förklara församlingens prästerskap äga rättighet att med laga verkan förrätta vigsel;
+1899:bih. 40 s. 3	1899-05-19	sfs-1899-bih. 40 s. 3	Kungl. Maj:ts Resolution (1899:bih.40s.1) angående rättighet för angliknska kyrkans prästerskap i allmänhet att med laga verkan förrätta vigsel här i riket;
+1901:bih. 56 s. 1	1901-05-31	sfs-1901-bih. 56 s. 1	Reglemente (1901:bih. 56 s.1) för August Abrahamsons stiftelse

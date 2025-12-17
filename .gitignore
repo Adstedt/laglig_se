@@ -37,3 +37,6 @@ pnpm-debug.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+# Large batch data files (LLM processing)
+data/batches/*.jsonl

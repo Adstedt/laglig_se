@@ -24,7 +24,7 @@ async function main() {
   console.log('=== Court Case Counts ===\n')
 
   let total = 0
-  let _totalTextSize = 0
+  const _totalTextSize = 0
 
   for (const court of courts) {
     const response = await fetch(
@@ -55,7 +55,9 @@ async function main() {
 
   console.log(`\n=== Storage Estimate ===`)
   console.log(`Avg size per case: ~${avgSizeKB}KB`)
-  console.log(`Estimated total: ~${totalSizeMB.toFixed(0)}MB (${totalSizeGB.toFixed(2)}GB)`)
+  console.log(
+    `Estimated total: ~${totalSizeMB.toFixed(0)}MB (${totalSizeGB.toFixed(2)}GB)`
+  )
 }
 
 main()

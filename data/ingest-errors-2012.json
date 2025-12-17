@@ -1,0 +1,50 @@
+[
+  {
+    "sfsNumber": "SFS 2012:393",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:395",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:396",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:397",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:398",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:399",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:400",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:704",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:705",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:706",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:997",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2012:998",
+    "error": "HTTP 403: Forbidden"
+  }
+]

@@ -74,7 +74,22 @@
       "mcp__chrome-devtools__evaluate_script",
       "mcp__chrome-devtools__navigate_page",
       "mcp__chrome-devtools__get_network_request",
-      "mcp__chrome-devtools__take_snapshot"
+      "mcp__chrome-devtools__take_snapshot",
+      "Bash(for year in 2021 2020 2019 2018 1977 1975)",
+      "Bash(do echo \"=== Syncing $year ===\")",
+      "Bash(done)",
+      "WebFetch(domain:bolagsverket.se)",
+      "WebFetch(domain:www.av.se)",
+      "WebFetch(domain:publikationer.konsumentverket.se)",
+      "WebFetch(domain:www.lagrummet.se)",
+      "WebFetch(domain:lagrummet.se)",
+      "Bash(sort:*)",
+      "Bash(grep:*)",
+      "Bash(for year in 2009 2008 2007 2006 2005 2004 2003 2002 2001 2000 1999 1998)",
+      "Bash(do echo \"\")",
+      "Bash(echo:*)",
+      "WebFetch(domain:intersolia.com)",
+      "WebFetch(domain:lezdkonjjjbvaghdwpog.supabase.co)"
     ],
     "deny": [],
     "ask": []

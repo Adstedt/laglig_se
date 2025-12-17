@@ -1,0 +1,137 @@
+# SFS numbers that have multiple dok_ids in the API
+# Total: 1
+#
+:
+  - c0s0riksg: utfärdadt vid slutet af års riksdag
+  - c0s0riksb: för Riksbankens styrelse oeh förvaltning, utfärdad! den 8 Maj 1867
+  - c1s0bf: för är 1869 och påföljande år, intill slutetaf det år, under hwars lopp ny Bewillnings-Stadga af Riksdagenfastställd blifwer
+  - c1s0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 11 Maj 1868
+  - c1s0riksg: utfårdadt vid sintet af 1868 års riksdag
+  - c2s0riksg: utfärdadt vid slutet af 1860 års riksdag
+  - c2s0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 14 Maj 1869
+  - c3s0riksg: RIKS GÄLD S-KONTORET
+  - c3s0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 10 Maj 1870
+  - c4s0riksg: utfärdadt vid slutet af 1871 års riksdag
+  - c5s0riksg: utfärdad! vid slutet af 1S72 års riksdag
+  - c5s0riksb: för Riksbankens styrelse och förvaltning, utlärdadt den 13 Maj 1872
+  - c6s0riksg: utfärdadt vid slutet af 1873 års riksdag
+  - c6s0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 23 Maj 1873
+  - c7s0riksg: RIK S G Ä L D S-KONTO It E T
+  - c7s0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 20 Maj 1874
+  - c8s0riksg: RIKS GÄLDS KONTO RE T
+  - c8s0riksb: för Riksbankens styrelse och förvaltning, utfårdadt den 19 Maj 1875
+  - c9s0riksg: RIKS GÄLD SKÖNT O RE T
+  - c9s0riksb: för Riksbankens styrelse och förvaltning, utfårdadt den 2 maj 1876
+  - cas0riksg: utfiirdadt vid slutet af 1877 års riksdag
+  - cas0riksb: för riksbankens styrelse och förvaltning, utfårdadt den 15 maj 1877
+  - cbs0riksg: utfärdadt vid slutet af 1878 års riksdag
+  - cbs0riksb: för riksbankens styrelse och förvaltning, utfärdadt den 14 maj 1878
+  - ccs0riksg: RIKS GÄLDS-KONTO RE T
+  - ccs0riksb: för Riksbankens styrelse och förvaltning, utfårdadt den 19 maj 1879
+  - cds0riksg: RIKS GÄLDS-KONTO RE T
+  - cds0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 12 maj 1880
+  - ces0riksg: utfärdadt vid slutet af 1881 års Riksdag
+  - ces0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 19 april 1881
+  - cfs0riksg: utfärdadt vid slutet af 1882 års Riksdag
+  - cfs0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 19 maj 1882
+  - cgs0riksg: utfårdadt vid slutet af 1883 års Riksdag
+  - cgs0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 9 Juni 1883
+  - chs0riksb: för Riksbankens styrelse och förvaltning, utfärdaclt den 13 Maj 1884
+  - chs0riksg: utfårdadt vid slutet af 1884 års riksdag
+  - cis0riksg: RIKS G Ä LDS-Tv O N T () RE T
+  - cis0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 21 Maj 1885
+  - cjs0riksg: RIK S G Ä L D S - K 0 N T 0 R E T
+  - cjs0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 16 Maj 1886
+  - cks6riksg: utfärda (It vid slutet af 1887 års riksdag
+  - cks6riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 4 Juli 1887
+  - cls0riksg: RIK 8 G Å L D S - K 0 N T 0 R E1
+  - cls0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 14 maj 1888
+  - cms0riksg: utiarvid slutet af 1889 års riksdag
+  - cms0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 15 maj 1889
+  - cns0riksg: utfärdadt vid slutet af 1890 års riksdag
+  - cns0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 17 maj 1890
+  - cos0riksg: utfärdadt vid slutet af 1891 års riksdag
+  - cos0riksb: för Riksbankens styrelse och förvaltning, ntfärdadt den 13 Maj 1891
+  - cps0riksg: REGLEMENTE FÖR RIKSGÄLDS-KONTORET
+  - cps0riksb: KSif. ram-! ; »itUOO ‘‘i 11T'! ; ■ ! I *
+  - cqs0riksg: utfärdadt vid slutet af 1893 års riksdag
+  - cqs0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 8 Maj 1893
+  - crs0riksg: utfårdadt vid slutet af 1894 års riksdag
+  - crs0riksb: u ><j tjjiilnm») i ii lo iiiJ / (i ttcnh:jJM -.111 'j J: >i {»i i; m i L/: -uH 11 j
+  - css0riksg: : 'yi • • f )f< <g; 4&‘W i rt >'• i <hlu v, :•r I ?l !h* »l ir^gnin&ivo!
+  - css0riksb: Reglemente för Riksbankens styrelse och förvaltning, utfärdadt den 14 Maj 1895
+  - cts0riksg: REGLEMENTE FÖR RIKSGÄLDS-KONTORET
+  - cts0riksb: Reglemente för Riksbankens styrelse och förvaltning
+  - cus0riksg: utfiirdadt vid slutet af 1897 års riksdag
+  - cus0riksb: för Riksbankens styrelse och förvaltning, utfärdadt den 18 Maj 1897
+  - cvs0riksg: utfärdadt vid slutet af 1898 års riksdag
+  - cvs0riksb: för Riksbankens styrelse och förvaltning
+  - cws0riksg: utfärd ad t vid slutet af 1899 års riksdag
+  - cws0riksb: för Riksbankens styrelse och förvaltning*
+  - cxs0riksg: utfärdadt Tid slutet af 1900 års riksdag
+  - cxs0riksb: i ilig /rabbi i:;j u '[j;If)ogi9 aioeqe i;
+  - cys0riksg: utfärd ad! vid slutet af 1901 års riksdag
+  - cys0riksb: för Riksbankens styrelse och förvaltning
+  - czs0riksg: Reglemente för Riksgäldskontoret
+  - czs0riksb: för Riksbankens styrelse och förvaltning
+  - d0s0riksb: för Riksbankens styrelse och förvaltning
+  - d0s0riksg: utfärdadt vid slutet af 1903 års riksdag
+  - d1s0riksg: utfärdad! vid slutet af 1904 års riksdag
+  - d1s0riksb: för Riksbankens styrelse och förvaltning
+  - d2s0riksg: utfärdadt vid slutet af 1905 års riksdag
+  - d2s0riksb: för Riksbankens styrelse och förvaltning*
+  - d3s0riksg: utfärdadt vid slutet af 1906 års riksdag
+  - d3s0riksb: för Riksbankens styrelse och förvaltning
+  - d4s0riksg: utfårdadt vid slutet af 1907 års riksdag
+  - d4s0riksb: för riksbankens styrelse och förvaltning
+  - d5s0riksg: utfärdad t vid slutet af 1908 års riksdag
+  - d6s0riksg: utfärdadt Tid slutet af 1909 års riksdag
+  - d6s0riksb: för riksbankens styrelse och förvaltning
+  - d7s0riksg: utfärdadt vid slutet af 1910 års riksdag
+  - d7s0riksb: för riksbankens styrelse och förvaltning
+  - d8s0riksg: utfärdadt vid slutet af 1911 års riksdag
+  - d8s0riksb: för riksbankens styrelse och förvaltning
+  - d9s0riksb: för riksbankens styrelse och förvaltning
+  - d9s0riksg: RIKSGÄLDSKO N T O R E T
+  - das0riksb: för riksbankens styrelse och förvaltning1
+  - das0riksg: utfärdadt Yid slutet af 1913 års riksdag
+  - dbs8riksb: för riksbankens styrelse och förvaltning
+  - dbs8riksg: utfärdat vid slutet af 1914 års senare riksdag
+  - dcs0riksb: för riksbankens styrelse och förvaltning
+  - dcs0riksg: utfärdat vid slutet ay 1915 års lagtima riksdag
+  - dds0riksb: för riksbankens styrelse och förvaltning
+  - dds0riksg: utfärdat Tid slutet ay 1916 års lagtima riksdag
+  - des0riksb: för riksbankens styrelse och förvaltning
+  - des0riksg: utfärdat vid slutet av 1917 års lagtima riksdag
+  - dfs0riksb: för riksbankens styrelse och förvaltning
+  - dfs0riksg: utfärdat Tid slutet av 1918 års lagtima riksdag
+  - dgs0riksg: utfärdat vid slutet av 1919 års lagtima riksdag
+  - dgs0riksb: Om reglementet för riksbankens styrelse och förvaltning
+  - dhs0riksb: för riksbankens styrelse och förvaltning
+  - dhs0riksg: utfärdat vid slutet av 1920 års lagtima riksdag
+  - dis0riksb: för riksbankens styrelse och förvaltning
+  - dis0riksg: utfärdat vid slutet av 1921 års lagtima riksdag
+  - djs0riksg: utfärdat vid slutet av 1922 års lagtima riksdag
+  - dks0riksg: utfärdat vid slutet av 1923 års lagtima riksdag
+  - dls0riksg: UTFÄRDAT VID SLUTET AV 1924 ÅRSLAGTIMA RIKSDAG
+  - dls0riksb: för riksbankens styrelse och förvaltning, utfärdat
+  - dms0riksg: UTFÄRDAT VID SLUTET AV 1925 ÅRSLAGTIMA RIKSDAG
+  - dns0riksg: UTFÄRDAT VID SLUTET AV 1926 ÅRSLAGTIMA RIKSDAG
+  - dos0riksg: UTFÄRDAT VID SLUTET AV 1927 ÅRSLAGTIMA RIKSDAG
+  - dps0riksg: UTFÄRDAT VID SLUTET AV 1928 ÅRSLAGTIMA RIKSDAG
+  - dqs0riksg: UTFÄRDAT VID SLUTET AV 1929 ÅRSLAGTIMA RIKSDAG
+  - drs0riksg: UTFÄRDAT DEN 4 JUNI 1930
+  - dss0riksb: STYRELSE OCH FÖRVALTNING
+  - dvs0riksb: för riksbankens styrelse och förvaltning, utfärdat den 15 juni 1934
+  - dws0riksg: UTFÄRDAT DEN 14 JUNI 1935
+  - dws0riksb: för riksbankens styrelse och förvaltning, utfärdat den 14 juni 1935
+  - dzs0riksg: UTFÄRDAT DEN 15 JUNI 1938
+  - dzs0riksb: för riksbankens styrelse och förvaltning(Bankoreglementet)
+  - e0s0riksg: UTFÄRDAT DEN 13 JUNI 1939
+  - e0s0riksb: för riksbankens styrelse och förvaltning(Bankoreglementet)
+  - e2s0riksg: UTFÄRDAT DEN 26 JUNI 1941
+  - e4s0riksb: för riksbankens styrelse och förvaltning(Bankoreglementet)
+  - e9s0riksg: UTFÄRDAT DEN 3 JULI 1948
+  - eds0riksg: UTFÄRDAT DEN 31 MAJ 1952
+  - efs0riksg: UTFÄRDAT DEN 31 MAJ 1954
+  - ejs8riksg: UTFÄRDAT DEN 31 JULI 1958

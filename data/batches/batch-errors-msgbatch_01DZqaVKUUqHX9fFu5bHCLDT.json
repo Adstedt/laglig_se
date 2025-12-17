@@ -1,0 +1,22 @@
+[
+  {
+    "sfsNumber": "SFS 2025:1382",
+    "error": "Unterminated string in JSON at position 24010"
+  },
+  {
+    "sfsNumber": "SFS 2025:264",
+    "error": "Unterminated string in JSON at position 13941"
+  },
+  {
+    "sfsNumber": "SFS 2025:376",
+    "error": "Unterminated string in JSON at position 23698"
+  },
+  {
+    "sfsNumber": "SFS 2025:662",
+    "error": "Unterminated string in JSON at position 13950"
+  },
+  {
+    "sfsNumber": "SFS 2025:856",
+    "error": "Unterminated string in JSON at position 22963"
+  }
+]

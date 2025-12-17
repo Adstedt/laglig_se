@@ -1,0 +1,78 @@
+[
+  {
+    "sfsNumber": "SFS 2001:280",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:282",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:283",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:284",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:285",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:287",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:288",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:289",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:424",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:425",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:426",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:428",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:429",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:430",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:431",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:735",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:736",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:737",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2001:738",
+    "error": "HTTP 403: Forbidden"
+  }
+]

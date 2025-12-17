@@ -1,0 +1,50 @@
+[
+  {
+    "sfsNumber": "SFS 2002:183",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:184",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:458",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:459",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:888",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:889",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:890",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:891",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:892",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:893",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:894",
+    "error": "HTTP 403: Forbidden"
+  },
+  {
+    "sfsNumber": "SFS 2002:896",
+    "error": "HTTP 403: Forbidden"
+  }
+]

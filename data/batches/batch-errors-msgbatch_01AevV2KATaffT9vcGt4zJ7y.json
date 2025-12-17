@@ -1,0 +1,10 @@
+[
+  {
+    "sfsNumber": "SFS 2021:538",
+    "error": "\nInvalid `prisma.sectionChange.createMany()` invocation in\nC:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\batch-parse-amendments.ts:512:36\n\n  509 \n  510 // Insert section changes\n  511 if (parsed.affectedSections?.length) {\n→ 512   await prisma.sectionChange.createMany(\nUnique constraint failed on the fields: (`amendment_id`,`chapter`,`section`,`change_type`)"
+  },
+  {
+    "sfsNumber": "SFS 2021:783",
+    "error": "\nInvalid `prisma.sectionChange.createMany()` invocation in\nC:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\batch-parse-amendments.ts:512:36\n\n  509 \n  510 // Insert section changes\n  511 if (parsed.affectedSections?.length) {\n→ 512   await prisma.sectionChange.createMany(\nUnique constraint failed on the fields: (`amendment_id`,`chapter`,`section`,`change_type`)"
+  }
+]

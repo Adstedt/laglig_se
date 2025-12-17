@@ -219,20 +219,23 @@ async function searchWithQuery(
     whereConditions.length > 0 ? `AND ${whereConditions.join(' AND ')}` : ''
 
   // Determine ORDER BY based on sortBy
+  // Secondary sort by document_number for consistent ordering within same date
   let orderByClause: string
   switch (sortBy) {
     case 'date_asc':
-      orderByClause = 'effective_date ASC NULLS LAST, rank DESC'
+      orderByClause = 'publication_date ASC NULLS LAST, document_number ASC'
       break
     case 'title':
-      orderByClause = 'title ASC, rank DESC'
+      orderByClause = 'title ASC, document_number ASC'
       break
     case 'relevance':
-      orderByClause = 'rank DESC, effective_date DESC NULLS LAST'
+      orderByClause =
+        'rank DESC, publication_date DESC NULLS LAST, document_number DESC'
       break
     case 'date_desc':
     default:
-      orderByClause = 'rank DESC, effective_date DESC NULLS LAST'
+      // Date sorting should prioritize date, then document number (higher = newer)
+      orderByClause = 'publication_date DESC NULLS LAST, document_number DESC'
       break
   }
 
@@ -244,7 +247,7 @@ async function searchWithQuery(
         ld.document_number,
         ld.content_type::text as content_type,
         ld.summary,
-        ld.effective_date,
+        ld.publication_date,
         ld.status::text as status,
         ld.slug,
         ds.subject_name as category,
@@ -279,7 +282,7 @@ async function searchWithQuery(
       document_number: string
       content_type: string
       summary: string | null
-      effective_date: Date | null
+      publication_date: Date | null
       status: string
       slug: string
       category: string | null
@@ -306,7 +309,7 @@ async function searchWithQuery(
         contentType: r.content_type,
         category: r.category,
         summary: r.summary,
-        effectiveDate: r.effective_date?.toISOString() ?? null,
+        effectiveDate: r.publication_date?.toISOString() ?? null,
         status: r.status,
         slug: r.slug,
         snippet: r.snippet || r.summary || '',
@@ -433,19 +436,27 @@ async function executeBrowseQuery(
     }
   }
 
-  // Determine orderBy
+  // Determine orderBy - use publication_date for date sorting
+  // Use nulls: 'last' to ensure NULL values don't appear at the top
+  // Secondary sort by document_number DESC for consistent ordering within same date
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let orderBy: any
   switch (sortBy) {
     case 'date_asc':
-      orderBy = { effective_date: 'asc' }
+      orderBy = [
+        { publication_date: { sort: 'asc', nulls: 'last' } },
+        { document_number: 'asc' },
+      ]
       break
     case 'title':
-      orderBy = { title: 'asc' }
+      orderBy = [{ title: 'asc' }, { document_number: 'asc' }]
       break
     case 'date_desc':
     default:
-      orderBy = { effective_date: 'desc' }
+      orderBy = [
+        { publication_date: { sort: 'desc', nulls: 'last' } },
+        { document_number: 'desc' },
+      ]
       break
   }
 
@@ -461,7 +472,7 @@ async function executeBrowseQuery(
         document_number: true,
         content_type: true,
         summary: true,
-        effective_date: true,
+        publication_date: true,
         status: true,
         slug: true,
         subjects: {
@@ -483,7 +494,7 @@ async function executeBrowseQuery(
       contentType: r.content_type,
       category: r.subjects[0]?.subject_name ?? null,
       summary: r.summary,
-      effectiveDate: r.effective_date?.toISOString() ?? null,
+      effectiveDate: r.publication_date?.toISOString() ?? null,
       status: r.status,
       slug: r.slug,
       snippet: r.summary || '',

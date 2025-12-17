@@ -14,6 +14,7 @@ import {
   Newspaper,
   BookMarked,
   ChevronDown,
+  Library,
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -158,6 +159,13 @@ export function Navbar() {
               <NavigationMenuContent>
                 <ul className="grid w-[400px] gap-1 p-3">
                   <ListItem
+                    href="/rattskallor"
+                    title="Rättskällor"
+                    icon={<Library className="h-4 w-4" />}
+                  >
+                    Bläddra bland alla rättskällor
+                  </ListItem>
+                  <ListItem
                     href="/lagar"
                     title="Svenska lagar"
                     icon={<BookOpen className="h-4 w-4" />}
@@ -168,17 +176,15 @@ export function Navbar() {
                     href="/rattsfall"
                     title="Rättsfall"
                     icon={<Gavel className="h-4 w-4" />}
-                    disabled
                   >
                     Sök i domar från svenska domstolar
                   </ListItem>
                   <ListItem
                     href="/eu"
-                    title="EU-direktiv"
+                    title="EU-lagstiftning"
                     icon={<Globe className="h-4 w-4" />}
-                    disabled
                   >
-                    EU-lagstiftning som påverkar Sverige
+                    EU-förordningar och EU-direktiv
                   </ListItem>
                   <ListItem
                     href="/foreskrifter"
@@ -310,17 +316,29 @@ export function Navbar() {
                 onNavigate={() => setIsOpen(false)}
               >
                 <Link
+                  href="/rattskallor"
+                  className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Rättskällor
+                </Link>
+                <Link
                   href="/lagar"
                   className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
                 >
                   Svenska lagar
                 </Link>
-                <span className="block rounded-lg px-3 py-2 text-sm text-muted-foreground/50">
-                  Rättsfall (kommer snart)
-                </span>
-                <span className="block rounded-lg px-3 py-2 text-sm text-muted-foreground/50">
-                  EU-direktiv (kommer snart)
-                </span>
+                <Link
+                  href="/rattsfall"
+                  className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Rättsfall
+                </Link>
+                <Link
+                  href="/eu"
+                  className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  EU-lagstiftning
+                </Link>
               </MobileNavSection>
 
               {/* Produkt */}

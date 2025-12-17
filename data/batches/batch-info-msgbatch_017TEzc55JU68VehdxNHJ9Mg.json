@@ -1,0 +1,31 @@
+{
+  "batchId": "msgbatch_017TEzc55JU68VehdxNHJ9Mg",
+  "createdAt": "2025-12-12T20:45:55.313Z",
+  "documentCount": 23,
+  "inputFile": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\data\\batches\\batch-input-2025-12-12T20-45-54-874Z.jsonl",
+  "sfsNumbers": [
+    "SFS_2018-1147",
+    "SFS_2018-1184",
+    "SFS_2018-1185",
+    "SFS_2018-1389",
+    "SFS_2018-393",
+    "SFS_2019-282",
+    "SFS_2019-327",
+    "SFS_2019-788",
+    "SFS_2020-1017",
+    "SFS_2020-118",
+    "SFS_2020-1227",
+    "SFS_2020-360",
+    "SFS_2020-361",
+    "SFS_2020-559",
+    "SFS_2020-560",
+    "SFS_2020-561",
+    "SFS_2020-717",
+    "SFS_2020-73",
+    "SFS_2020-803",
+    "SFS_2020-837",
+    "SFS_2020-849",
+    "SFS_2020-89",
+    "SFS_2021-1116"
+  ]
+}

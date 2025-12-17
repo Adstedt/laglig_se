@@ -23,9 +23,21 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { PrismaClient, ParseStatus, SectionChangeType } from '@prisma/client'
 import { parsePdf } from '../lib/external/pdf-parser'
-import { parseAmendmentWithLLM, type ParsedAmendmentLLM } from '../lib/external/llm-amendment-parser'
-import { downloadPdf, getStoragePath, uploadPdf, pdfExists } from '../lib/supabase/storage'
-import type { CrawlResult, CrawledDocument, DocumentType } from './crawl-sfs-index'
+import {
+  parseAmendmentWithLLM,
+  type ParsedAmendmentLLM,
+} from '../lib/external/llm-amendment-parser'
+import {
+  downloadPdf,
+  getStoragePath,
+  uploadPdf,
+  pdfExists,
+} from '../lib/supabase/storage'
+import type {
+  CrawlResult,
+  CrawledDocument,
+  DocumentType,
+} from './crawl-sfs-index'
 
 const prisma = new PrismaClient()
 
@@ -38,6 +50,8 @@ interface IngestStats {
   errorList: Array<{ sfsNumber: string; error: string }>
 }
 
+type IndexSource = 'svenskforfattningssamling' | 'rkrattsdb'
+
 interface IngestOptions {
   year: number
   limit: number
@@ -46,6 +60,7 @@ interface IngestOptions {
   skipLlm: boolean
   concurrency: number
   confidenceThreshold: number
+  source: IndexSource
 }
 
 /**
@@ -64,6 +79,74 @@ async function fetchPdf(url: string): Promise<Buffer> {
   }
 
   return Buffer.from(await response.arrayBuffer())
+}
+
+/**
+ * Generate markdown content from amendment data
+ */
+function generateMarkdown(
+  sfsNumber: string,
+  title: string | null,
+  fullText: string,
+  baseLawSfs: string | null,
+  baseLawName: string | null,
+  effectiveDate: string | null,
+  publicationDate: string | null,
+  affectedSections: Array<{
+    chapter?: string | null
+    section: string
+    changeType: string
+    description?: string | null
+  }> | null
+): string {
+  const lines: string[] = []
+
+  // YAML frontmatter
+  lines.push('---')
+  lines.push(`sfs: "${sfsNumber}"`)
+  if (baseLawSfs) lines.push(`baseLawSfs: "${baseLawSfs}"`)
+  if (baseLawName) lines.push(`baseLawName: "${baseLawName}"`)
+  if (effectiveDate) lines.push(`effectiveDate: "${effectiveDate}"`)
+  if (publicationDate) lines.push(`publicationDate: "${publicationDate}"`)
+  lines.push('---')
+  lines.push('')
+
+  // Title
+  if (title) {
+    lines.push(`# ${title}`)
+    lines.push('')
+  }
+
+  // Affected sections summary
+  if (affectedSections && affectedSections.length > 0) {
+    lines.push('## Ändringar')
+    lines.push('')
+
+    for (const section of affectedSections) {
+      const chapterPart = section.chapter ? `${section.chapter} kap. ` : ''
+      const changeLabel =
+        {
+          amended: 'ändras',
+          repealed: 'upphävs',
+          new: 'ny',
+          renumbered: 'omnumreras',
+        }[section.changeType] || section.changeType
+
+      let line = `- **${chapterPart}${section.section} §** (${changeLabel})`
+      if (section.description) {
+        line += `: ${section.description}`
+      }
+      lines.push(line)
+    }
+    lines.push('')
+  }
+
+  // Full text
+  lines.push('## Fulltext')
+  lines.push('')
+  lines.push(fullText)
+
+  return lines.join('\n')
 }
 
 /**
@@ -87,7 +170,23 @@ async function processDocument(
   stats: IngestStats,
   options: IngestOptions
 ): Promise<void> {
-  const { sfsNumber, title, pdfUrl, baseLawSfs, publishedDate } = doc
+  const {
+    sfsNumber: rawSfsNumber,
+    title,
+    pdfUrl,
+    baseLawSfs: rawBaseLawSfs,
+    publishedDate,
+  } = doc
+
+  // Normalize to "SFS YYYY:NNN" format for consistency with LegalDocument.document_number
+  const sfsNumber = rawSfsNumber.startsWith('SFS ')
+    ? rawSfsNumber
+    : `SFS ${rawSfsNumber}`
+  const baseLawSfs = rawBaseLawSfs
+    ? rawBaseLawSfs.startsWith('SFS ')
+      ? rawBaseLawSfs
+      : `SFS ${rawBaseLawSfs}`
+    : null
 
   try {
     // Check if already processed (resume mode)
@@ -118,7 +217,10 @@ async function processDocument(
 
     // Extract text from PDF (parsePdf expects Uint8Array)
     const pdfData = new Uint8Array(pdfBuffer)
-    const pdfResult = await parsePdf(pdfData, `SFS${sfsNumber.replace(':', '-')}.pdf`)
+    const pdfResult = await parsePdf(
+      pdfData,
+      `SFS${sfsNumber.replace(':', '-')}.pdf`
+    )
     const fullText = pdfResult.fullText
 
     // Parse with LLM (unless skipped)
@@ -135,6 +237,25 @@ async function processDocument(
       stats.lowConfidence++
     }
 
+    // Normalize LLM base law SFS to "SFS YYYY:NNN" format
+    const llmBaseLawSfs = llmResult?.baseLaw.sfsNumber
+      ? llmResult.baseLaw.sfsNumber.startsWith('SFS ')
+        ? llmResult.baseLaw.sfsNumber
+        : `SFS ${llmResult.baseLaw.sfsNumber}`
+      : null
+
+    // Generate markdown content
+    const markdownContent = generateMarkdown(
+      sfsNumber,
+      llmResult?.title || title,
+      fullText,
+      llmBaseLawSfs || baseLawSfs,
+      llmResult?.baseLaw.name || null,
+      llmResult?.effectiveDate || null,
+      llmResult?.publicationDate || publishedDate || null,
+      llmResult?.affectedSections || null
+    )
+
     // Upsert amendment document
     const amendmentDoc = await prisma.amendmentDocument.upsert({
       where: { sfs_number: sfsNumber },
@@ -143,16 +264,19 @@ async function processDocument(
         storage_path: getStoragePath(sfsNumber),
         original_url: pdfUrl,
         file_size: pdfBuffer.length,
-        base_law_sfs: llmResult?.baseLaw.sfsNumber || baseLawSfs || 'unknown',
+        base_law_sfs: llmBaseLawSfs || baseLawSfs || 'unknown',
         base_law_name: llmResult?.baseLaw.name || null,
         title: llmResult?.title || title,
-        effective_date: llmResult?.effectiveDate ? new Date(llmResult.effectiveDate) : null,
+        effective_date: llmResult?.effectiveDate
+          ? new Date(llmResult.effectiveDate)
+          : null,
         publication_date: llmResult?.publicationDate
           ? new Date(llmResult.publicationDate)
           : publishedDate
             ? new Date(publishedDate)
             : null,
         full_text: fullText,
+        markdown_content: markdownContent,
         parse_status: parseStatus,
         parsed_at: new Date(),
         confidence: llmResult?.confidence || null,
@@ -160,16 +284,19 @@ async function processDocument(
       update: {
         storage_path: getStoragePath(sfsNumber),
         file_size: pdfBuffer.length,
-        base_law_sfs: llmResult?.baseLaw.sfsNumber || baseLawSfs || 'unknown',
+        base_law_sfs: llmBaseLawSfs || baseLawSfs || 'unknown',
         base_law_name: llmResult?.baseLaw.name || null,
         title: llmResult?.title || title,
-        effective_date: llmResult?.effectiveDate ? new Date(llmResult.effectiveDate) : null,
+        effective_date: llmResult?.effectiveDate
+          ? new Date(llmResult.effectiveDate)
+          : null,
         publication_date: llmResult?.publicationDate
           ? new Date(llmResult.publicationDate)
           : publishedDate
             ? new Date(publishedDate)
             : null,
         full_text: fullText,
+        markdown_content: markdownContent,
         parse_status: parseStatus,
         parsed_at: new Date(),
         confidence: llmResult?.confidence || null,
@@ -242,6 +369,7 @@ async function main() {
     skipLlm: false,
     concurrency: 3, // Lower for LLM rate limits
     confidenceThreshold: 0.7,
+    source: 'svenskforfattningssamling',
   }
 
   for (let i = 0; i < args.length; i++) {
@@ -261,12 +389,16 @@ async function main() {
     } else if (args[i] === '--concurrency' && args[i + 1]) {
       options.concurrency = parseInt(args[i + 1], 10)
       i++
+    } else if (args[i] === '--source' && args[i + 1]) {
+      options.source = args[i + 1] as IndexSource
+      i++
     }
   }
 
   console.log('='.repeat(70))
   console.log('Amendment Ingestion Pipeline')
   console.log('='.repeat(70))
+  console.log(`Source: ${options.source}`)
   console.log(`Year: ${options.year}`)
   console.log(`Filter: ${options.filterType || 'all'}`)
   console.log(`Limit: ${options.limit || 'none'}`)
@@ -275,24 +407,52 @@ async function main() {
   console.log(`Concurrency: ${options.concurrency}`)
   console.log()
 
-  // Load crawl results
-  const indexPath = path.join(process.cwd(), 'data', `sfs-index-${options.year}.json`)
+  // Load crawl results - path depends on source
+  let indexPath: string
+  if (options.source === 'rkrattsdb') {
+    indexPath = path.join(
+      process.cwd(),
+      'data',
+      'sfs-indexes',
+      'rkrattsdb',
+      `sfs-index-${options.year}-rkrattsdb.json`
+    )
+  } else {
+    // svenskforfattningssamling - check new path first, fall back to old path
+    const newPath = path.join(
+      process.cwd(),
+      'data',
+      'sfs-indexes',
+      'svenskforfattningssamling',
+      `sfs-index-${options.year}.json`
+    )
+    const oldPath = path.join(
+      process.cwd(),
+      'data',
+      `sfs-index-${options.year}.json`
+    )
+    indexPath = fs.existsSync(newPath) ? newPath : oldPath
+  }
 
   if (!fs.existsSync(indexPath)) {
     console.error(`Index file not found: ${indexPath}`)
-    console.error(`Run: pnpm tsx scripts/crawl-sfs-index.ts --year ${options.year}`)
+    console.error(`Run the appropriate crawler for ${options.source}`)
     process.exit(1)
   }
 
-  const crawlResult: CrawlResult = JSON.parse(fs.readFileSync(indexPath, 'utf-8'))
+  const crawlResult: CrawlResult = JSON.parse(
+    fs.readFileSync(indexPath, 'utf-8')
+  )
   console.log(`Loaded ${crawlResult.totalDocuments} documents from index`)
 
   // Filter documents
   let documents = crawlResult.documents
 
   if (options.filterType) {
-    documents = documents.filter(d => d.documentType === options.filterType)
-    console.log(`Filtered to ${documents.length} ${options.filterType} documents`)
+    documents = documents.filter((d) => d.documentType === options.filterType)
+    console.log(
+      `Filtered to ${documents.length} ${options.filterType} documents`
+    )
   }
 
   if (options.limit > 0) {
@@ -319,7 +479,7 @@ async function main() {
 
     // Rate limiting between documents (for LLM)
     if (i > 0 && !options.skipLlm) {
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise((resolve) => setTimeout(resolve, 500))
     }
 
     await processDocument(doc, stats, options)
@@ -350,7 +510,7 @@ async function main() {
 
   if (stats.errorList.length > 0) {
     console.log('\nErrors:')
-    stats.errorList.slice(0, 10).forEach(e => {
+    stats.errorList.slice(0, 10).forEach((e) => {
       console.log(`  - ${e.sfsNumber}: ${e.error}`)
     })
     if (stats.errorList.length > 10) {
@@ -358,14 +518,18 @@ async function main() {
     }
 
     // Save error list
-    const errorPath = path.join(process.cwd(), 'data', `ingest-errors-${options.year}.json`)
+    const errorPath = path.join(
+      process.cwd(),
+      'data',
+      `ingest-errors-${options.year}.json`
+    )
     fs.writeFileSync(errorPath, JSON.stringify(stats.errorList, null, 2))
     console.log(`\nError list saved to: ${errorPath}`)
   }
 
   // Show database stats
   const dbCount = await prisma.amendmentDocument.count({
-    where: { sfs_number: { startsWith: `${options.year}:` } },
+    where: { sfs_number: { startsWith: `SFS ${options.year}:` } },
   })
   const sectionCount = await prisma.sectionChange.count()
   console.log(`\nDatabase stats:`)
@@ -375,7 +539,7 @@ async function main() {
   await prisma.$disconnect()
 }
 
-main().catch(async error => {
+main().catch(async (error) => {
   console.error(error)
   await prisma.$disconnect()
   process.exit(1)

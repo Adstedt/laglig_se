@@ -1,0 +1,26 @@
+[
+  {
+    "sfsNumber": "SFS 2021:538",
+    "error": "Expected double-quoted property name in JSON at position 12043"
+  },
+  {
+    "sfsNumber": "SFS 2021:783",
+    "error": "Unterminated string in JSON at position 12249"
+  },
+  {
+    "sfsNumber": "SFS 2022:1248",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2022:607",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2024:617",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "SFS 2024:647",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  }
+]

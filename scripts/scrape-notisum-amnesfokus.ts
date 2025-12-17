@@ -140,7 +140,7 @@ const AMNESFOKUS_PAGES = [
 const LAGLISTOR = [
   { name: 'Arbetsmiljö', listId: '72130' },
   { name: 'Arbetsmiljö för tjänsteföretag', listId: '72160' },
-  { name: 'Fastighet-Bygg', listId: '72162' },  // Changed / to - for file path safety
+  { name: 'Fastighet-Bygg', listId: '72162' }, // Changed / to - for file path safety
   { name: 'Hälsa och sjukvård', listId: '72163' },
   { name: 'Miljö', listId: '72129' },
   // New lists added
@@ -217,7 +217,11 @@ async function saveHtmlForDebug(page: Page, filename: string) {
 // ÄMNESFOKUS SCRAPER
 // ============================================
 
-async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): Promise<AmnesfokusPage> {
+async function scrapeAmnesfokusPage(
+  page: Page,
+  name: string,
+  pageId: string
+): Promise<AmnesfokusPage> {
   const url = `https://www.notisum.se/rn/focus?pageid=${pageId}`
   console.log(`\n  Scraping Ämnesfokus: ${name} (${url})`)
 
@@ -247,7 +251,10 @@ async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): P
     await page.screenshot({ path: result.screenshotPath, fullPage: true })
 
     // Save HTML for all pages to debug DOM structure
-    await saveHtmlForDebug(page, `amnesfokus-${name.replace(/[/\\?%*:|"<>]/g, '_')}.html`)
+    await saveHtmlForDebug(
+      page,
+      `amnesfokus-${name.replace(/[/\\?%*:|"<>]/g, '_')}.html`
+    )
 
     // Extract page data based on actual DOM structure from analysis:
     // 1. "Genvägar till de viktigaste dokumenten" - div.subject-area-links with direct document links
@@ -260,26 +267,44 @@ async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): P
         sectionName: string
         documentCount: number
         isExpanded: boolean
-        documents: { title: string; sfs: string | null; link: string; type: string }[]
+        documents: {
+          title: string
+          sfs: string | null
+          link: string
+          type: string
+        }[]
         subLists: { name: string; link: string }[]
       }[] = []
-      const newsItems: { date: string; sfs: string; title: string; link: string }[] = []
+      const newsItems: {
+        date: string
+        sfs: string
+        title: string
+        link: string
+      }[] = []
 
       // 1. GENVÄGAR TILL DE VIKTIGASTE DOKUMENTEN
       const shortcutsContainer = document.querySelector('.subject-area-links')
       if (shortcutsContainer) {
-        const shortcutDocs: { title: string; sfs: string | null; link: string; type: string }[] = []
-        const links = shortcutsContainer.querySelectorAll('a[href*="/rn/document"]')
+        const shortcutDocs: {
+          title: string
+          sfs: string | null
+          link: string
+          type: string
+        }[] = []
+        const links = shortcutsContainer.querySelectorAll(
+          'a[href*="/rn/document"]'
+        )
         links.forEach((a) => {
           const title = a.textContent?.trim() || ''
           const href = (a as HTMLAnchorElement).href || ''
-          const sfsMatch = title.match(/\((\d{4}:\d+)\)/) || title.match(/(\d{4}:\d+)/)
+          const sfsMatch =
+            title.match(/\((\d{4}:\d+)\)/) || title.match(/(\d{4}:\d+)/)
           if (title) {
             shortcutDocs.push({
               title,
               sfs: sfsMatch ? sfsMatch[1] : null,
               link: href,
-              type: title.includes('(EU)') ? 'eu' : 'shortcut'
+              type: title.includes('(EU)') ? 'eu' : 'shortcut',
             })
           }
         })
@@ -289,7 +314,7 @@ async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): P
           documentCount: shortcutDocs.length,
           isExpanded: true,
           documents: shortcutDocs,
-          subLists: []
+          subLists: [],
         })
       }
 
@@ -301,7 +326,8 @@ async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): P
 
         if (titleText.toLowerCase().includes('lagar och förordningar')) {
           const subLists: { name: string; link: string }[] = []
-          const treeLinks = container?.querySelectorAll('.table-treeview-list a') || []
+          const treeLinks =
+            container?.querySelectorAll('.table-treeview-list a') || []
           treeLinks.forEach((a) => {
             const text = a.textContent?.trim() || ''
             const href = (a as HTMLAnchorElement).href || ''
@@ -315,13 +341,14 @@ async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): P
             documentCount: 0,
             isExpanded: true,
             documents: [],
-            subLists
+            subLists,
           })
         }
 
         if (titleText.toLowerCase().includes('myndighetsföreskrifter')) {
           const subLists: { name: string; link: string }[] = []
-          const treeLinks = container?.querySelectorAll('.table-treeview-list a') || []
+          const treeLinks =
+            container?.querySelectorAll('.table-treeview-list a') || []
           treeLinks.forEach((a) => {
             const text = a.textContent?.trim() || ''
             const href = (a as HTMLAnchorElement).href || ''
@@ -335,7 +362,7 @@ async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): P
             documentCount: subLists.length,
             isExpanded: true,
             documents: [],
-            subLists
+            subLists,
           })
         }
 
@@ -362,18 +389,21 @@ async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): P
             documentCount: newsItems.length,
             isExpanded: true,
             documents: [],
-            subLists: []
+            subLists: [],
           })
         }
       })
 
       // Calculate total documents
-      const totalDocs = sections.reduce((sum, s) => sum + s.documentCount + s.documents.length, 0)
+      const totalDocs = sections.reduce(
+        (sum, s) => sum + s.documentCount + s.documents.length,
+        0
+      )
 
       return {
         sections,
         newsItems,
-        totalDocuments: totalDocs
+        totalDocuments: totalDocs,
       }
     })
 
@@ -381,16 +411,22 @@ async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): P
     result.newsItems = pageData.newsItems
     result.totalDocuments = pageData.totalDocuments
 
-    console.log(`    Total shortcuts: ${result.sections.find(s => s.sectionName.includes('GENVÄGAR'))?.documents.length || 0}`)
+    console.log(
+      `    Total shortcuts: ${result.sections.find((s) => s.sectionName.includes('GENVÄGAR'))?.documents.length || 0}`
+    )
     console.log(`    Sections found: ${result.sections.length}`)
-    result.sections.forEach(s => {
-      const docCount = s.documents.length > 0 ? `${s.documents.length} docs` : `${s.subLists.length} sub-lists`
+    result.sections.forEach((s) => {
+      const docCount =
+        s.documents.length > 0
+          ? `${s.documents.length} docs`
+          : `${s.subLists.length} sub-lists`
       console.log(`      - ${s.sectionName}: ${docCount}`)
     })
     console.log(`    News items: ${result.newsItems.length}`)
-
   } catch (error) {
-    console.error(`    Error: ${error instanceof Error ? error.message : 'Unknown'}`)
+    console.error(
+      `    Error: ${error instanceof Error ? error.message : 'Unknown'}`
+    )
   }
 
   return result
@@ -400,7 +436,11 @@ async function scrapeAmnesfokusPage(page: Page, name: string, pageId: string): P
 // LAGLISTA SCRAPER
 // ============================================
 
-async function scrapeLaglista(page: Page, name: string, listId: string): Promise<Laglista> {
+async function scrapeLaglista(
+  page: Page,
+  name: string,
+  listId: string
+): Promise<Laglista> {
   const url = `https://www.notisum.se/Rn/lawlist/?listid=${listId}`
   console.log(`\n  Scraping Laglista: ${name} (${url})`)
 
@@ -423,15 +463,25 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
     console.log('    Expanding all sections...')
     try {
       // Look for the expand button - it might be labeled differently
-      const expandButton = await page.locator('button:has-text("Öppna"), a:has-text("Öppna"), span:has-text("Öppna")').first()
-      if (await expandButton.count() > 0) {
+      const expandButton = await page
+        .locator(
+          'button:has-text("Öppna"), a:has-text("Öppna"), span:has-text("Öppna")'
+        )
+        .first()
+      if ((await expandButton.count()) > 0) {
         await expandButton.click()
         await page.waitForTimeout(3000)
       } else {
         // Try clicking all section headers to expand
-        const sectionHeaders = await page.locator('[class*="group"], [class*="header"], tr[onclick]').all()
+        const sectionHeaders = await page
+          .locator('[class*="group"], [class*="header"], tr[onclick]')
+          .all()
         for (const header of sectionHeaders.slice(0, 20)) {
-          try { await header.click() } catch { /* ignore */ }
+          try {
+            await header.click()
+          } catch {
+            /* ignore */
+          }
         }
         await page.waitForTimeout(2000)
       }
@@ -474,8 +524,10 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
       const docCountMatch = pageText.match(/Antal dokument[:\s]*(\d+)/i)
 
       // Find all section headers: <div class="group-header">01 ALLMÄNNA REGLER</div>
-      const sectionHeaders = document.querySelectorAll('.group-header, div.group-header')
-      const sectionMap = new Map<string, typeof sections[0]>()
+      const sectionHeaders = document.querySelectorAll(
+        '.group-header, div.group-header'
+      )
+      const sectionMap = new Map<string, (typeof sections)[0]>()
 
       sectionHeaders.forEach((header) => {
         const text = header.textContent?.trim() || ''
@@ -484,11 +536,13 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
           const section = {
             sectionNumber: match[1],
             sectionName: match[2].trim(),
-            documents: []
+            documents: [],
           }
           sections.push(section)
           // Find the parent container to map documents to this section
-          const container = header.closest('[id^="lawListGroupContainer"], .lawlist-table, .table-container')
+          const container = header.closest(
+            '[id^="lawListGroupContainer"], .lawlist-table, .table-container'
+          )
           if (container) {
             sectionMap.set(container.id || container.className, section)
           }
@@ -503,7 +557,9 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
         if (cells.length < 2) return
 
         // Find which section this row belongs to
-        const container = row.closest('[id^="lawListGroupContainer"], .lawlist-table, .table-container')
+        const container = row.closest(
+          '[id^="lawListGroupContainer"], .lawlist-table, .table-container'
+        )
         let currentSection = sections[sections.length - 1] // Default to last section
 
         if (container) {
@@ -513,7 +569,9 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
             const headerText = groupHeader.textContent?.trim() || ''
             const match = headerText.match(/^(\d{2})\s+/)
             if (match) {
-              const foundSection = sections.find(s => s.sectionNumber === match[1])
+              const foundSection = sections.find(
+                (s) => s.sectionNumber === match[1]
+              )
               if (foundSection) currentSection = foundSection
             }
           }
@@ -526,7 +584,7 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
             currentSection = {
               sectionNumber: '00',
               sectionName: 'UNCATEGORIZED',
-              documents: []
+              documents: [],
             }
             sections.push(currentSection)
           }
@@ -559,17 +617,22 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
         const link = (sfsLink as HTMLAnchorElement)?.href || null
 
         // Get amendment SFS (second SFS number on next line)
-        const allText = beteckningCell?.innerHTML || ''
+        const _allText = beteckningCell?.innerHTML || ''
         const sfsMatches = beteckningText.match(/SFS\s*\d{4}:\d+/gi) || []
         const amendmentSfs = sfsMatches.length > 1 ? sfsMatches[1] : null
 
         // Extract document name - it's usually after SFS numbers, in format "Name (year:number)"
-        const nameMatch = beteckningText.match(/([A-ZÅÄÖ][a-zåäö\-]+(?:\s+[a-zåäöA-ZÅÄÖ\-]+)*)\s*\(\d{4}:\d+\)/)
+        const nameMatch = beteckningText.match(
+          /([A-ZÅÄÖ][a-zåäö\-]+(?:\s+[a-zåäöA-ZÅÄÖ\-]+)*)\s*\(\d{4}:\d+\)/
+        )
         let documentName = nameMatch ? nameMatch[0] : ''
 
         // Fallback: get the text after SFS numbers but before the blue box
         if (!documentName) {
-          const lines = beteckningText.split('\n').map(l => l.trim()).filter(l => l)
+          const lines = beteckningText
+            .split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l)
           // Document name is usually on line 3 (after SFS and amendment)
           if (lines.length >= 3) {
             documentName = lines[2] || lines[1] || ''
@@ -577,7 +640,9 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
         }
 
         // Extract Notisum blue box comment
-        const noticeDiv = beteckningCell?.querySelector('.notice, .notice-info, .notice-inner')
+        const noticeDiv = beteckningCell?.querySelector(
+          '.notice, .notice-info, .notice-inner'
+        )
         let notisumComment: string | null = null
         if (noticeDiv) {
           notisumComment = noticeDiv.textContent?.trim() || null
@@ -589,7 +654,10 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
           // Skip the narrow column title span
           const summarySpan = summaryCell.querySelector('.narrow-column-title')
           if (summarySpan) {
-            summaryText = summaryCell.textContent?.replace(summarySpan.textContent || '', '').trim() || null
+            summaryText =
+              summaryCell.textContent
+                ?.replace(summarySpan.textContent || '', '')
+                .trim() || null
           } else {
             summaryText = summaryCell.textContent?.trim() || null
           }
@@ -598,9 +666,14 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
         // Get compliance text (Så här uppfyller vi kraven)
         let complianceText: string | null = null
         if (complianceCell) {
-          const complianceSpan = complianceCell.querySelector('.narrow-column-title')
+          const complianceSpan = complianceCell.querySelector(
+            '.narrow-column-title'
+          )
           if (complianceSpan) {
-            complianceText = complianceCell.textContent?.replace(complianceSpan.textContent || '', '').trim() || null
+            complianceText =
+              complianceCell.textContent
+                ?.replace(complianceSpan.textContent || '', '')
+                .trim() || null
           } else {
             complianceText = complianceCell.textContent?.trim() || null
           }
@@ -616,7 +689,7 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
             notisumComment,
             summaryText,
             complianceText,
-            link
+            link,
           })
         }
       })
@@ -627,39 +700,49 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
         const defaultSection = {
           sectionNumber: '00',
           sectionName: 'ALL DOCUMENTS',
-          documents: [] as typeof sections[0]['documents']
+          documents: [] as (typeof sections)[0]['documents'],
         }
         sections.push(defaultSection)
       }
 
       return {
         sections,
-        totalDocuments: docCountMatch ? parseInt(docCountMatch[1], 10) : docRows.length,
+        totalDocuments: docCountMatch
+          ? parseInt(docCountMatch[1], 10)
+          : docRows.length,
         lastUpdated: null,
-        description: null
+        description: null,
       }
     })
 
     result.sections = listData.sections
-    result.totalDocuments = listData.totalDocuments || result.sections.reduce((sum, s) => sum + s.documents.length, 0)
+    result.totalDocuments =
+      listData.totalDocuments ||
+      result.sections.reduce((sum, s) => sum + s.documents.length, 0)
     result.lastUpdated = listData.lastUpdated
     result.description = listData.description
 
-    const docCount = result.sections.reduce((sum, s) => sum + s.documents.length, 0)
+    const docCount = result.sections.reduce(
+      (sum, s) => sum + s.documents.length,
+      0
+    )
     console.log(`    Sections: ${result.sections.length}`)
     console.log(`    Documents extracted: ${docCount}`)
     console.log(`    Total documents (from page): ${result.totalDocuments}`)
     if (result.sections.length > 0) {
-      result.sections.slice(0, 5).forEach(s => {
-        console.log(`      ${s.sectionNumber} ${s.sectionName}: ${s.documents.length} docs`)
+      result.sections.slice(0, 5).forEach((s) => {
+        console.log(
+          `      ${s.sectionNumber} ${s.sectionName}: ${s.documents.length} docs`
+        )
       })
       if (result.sections.length > 5) {
         console.log(`      ... and ${result.sections.length - 5} more sections`)
       }
     }
-
   } catch (error) {
-    console.error(`    Error: ${error instanceof Error ? error.message : 'Unknown'}`)
+    console.error(
+      `    Error: ${error instanceof Error ? error.message : 'Unknown'}`
+    )
   }
 
   return result
@@ -731,10 +814,10 @@ async function main() {
     results.summary.totalAmnesfokus = results.amnesfokusPages.length
     results.summary.totalLaglistor = results.laglistor.length
     results.summary.totalDocumentsInLaglistor = results.laglistor.reduce(
-      (sum, ll) => sum + ll.sections.reduce((s, sec) => s + sec.documents.length, 0),
+      (sum, ll) =>
+        sum + ll.sections.reduce((s, sec) => s + sec.documents.length, 0),
       0
     )
-
   } catch (error) {
     console.error('\nScraping failed:', error)
   } finally {
@@ -754,64 +837,85 @@ async function main() {
 
   // Save Ämnesfokus summary CSV
   const afCsvPath = path.join(OUTPUT_DIR, 'amnesfokus-summary.csv')
-  const afCsvHeader = 'Name,PageId,URL,Total Documents,Sections Count,Shortcuts Count,SubLists Count,News Count\n'
-  const afCsvRows = results.amnesfokusPages.map(af => {
-    const shortcuts = af.sections.find(s => s.sectionName.includes('GENVÄGAR'))?.documents.length || 0
-    const subLists = af.sections.reduce((sum, s) => sum + s.subLists.length, 0)
-    return `"${af.name}","${af.pageId}","${af.url}",${af.totalDocuments},${af.sections.length},${shortcuts},${subLists},${af.newsItems.length}`
-  }).join('\n')
+  const afCsvHeader =
+    'Name,PageId,URL,Total Documents,Sections Count,Shortcuts Count,SubLists Count,News Count\n'
+  const afCsvRows = results.amnesfokusPages
+    .map((af) => {
+      const shortcuts =
+        af.sections.find((s) => s.sectionName.includes('GENVÄGAR'))?.documents
+          .length || 0
+      const subLists = af.sections.reduce(
+        (sum, s) => sum + s.subLists.length,
+        0
+      )
+      return `"${af.name}","${af.pageId}","${af.url}",${af.totalDocuments},${af.sections.length},${shortcuts},${subLists},${af.newsItems.length}`
+    })
+    .join('\n')
   fs.writeFileSync(afCsvPath, afCsvHeader + afCsvRows)
   console.log(`Ämnesfokus summary saved: ${afCsvPath}`)
 
   // Save Ämnesfokus shortcuts (GENVÄGAR) as separate CSV with all document details
   const afDocsCsvPath = path.join(OUTPUT_DIR, 'amnesfokus-documents.csv')
   const afDocsCsvHeader = 'Ämnesfokus,Section,Document Title,SFS,Type,Link\n'
-  const afDocsCsvRows = results.amnesfokusPages.flatMap(af =>
-    af.sections.flatMap(sec =>
-      sec.documents.map(doc =>
-        `"${af.name}","${sec.sectionName}","${doc.title.replace(/"/g, '""')}","${doc.sfs || ''}","${doc.type}","${doc.link}"`
+  const afDocsCsvRows = results.amnesfokusPages
+    .flatMap((af) =>
+      af.sections.flatMap((sec) =>
+        sec.documents.map(
+          (doc) =>
+            `"${af.name}","${sec.sectionName}","${doc.title.replace(/"/g, '""')}","${doc.sfs || ''}","${doc.type}","${doc.link}"`
+        )
       )
     )
-  ).join('\n')
+    .join('\n')
   fs.writeFileSync(afDocsCsvPath, afDocsCsvHeader + afDocsCsvRows)
   console.log(`Ämnesfokus documents saved: ${afDocsCsvPath}`)
 
   // Save Ämnesfokus sub-lists (for Lagar och förordningar, Myndighetsföreskrifter)
   const afSubListsCsvPath = path.join(OUTPUT_DIR, 'amnesfokus-sublists.csv')
   const afSubListsCsvHeader = 'Ämnesfokus,Section,SubList Name,Link\n'
-  const afSubListsCsvRows = results.amnesfokusPages.flatMap(af =>
-    af.sections.flatMap(sec =>
-      sec.subLists.map(sub =>
-        `"${af.name}","${sec.sectionName}","${sub.name.replace(/"/g, '""')}","${sub.link}"`
+  const afSubListsCsvRows = results.amnesfokusPages
+    .flatMap((af) =>
+      af.sections.flatMap((sec) =>
+        sec.subLists.map(
+          (sub) =>
+            `"${af.name}","${sec.sectionName}","${sub.name.replace(/"/g, '""')}","${sub.link}"`
+        )
       )
     )
-  ).join('\n')
+    .join('\n')
   fs.writeFileSync(afSubListsCsvPath, afSubListsCsvHeader + afSubListsCsvRows)
   console.log(`Ämnesfokus sub-lists saved: ${afSubListsCsvPath}`)
 
   // Save Ämnesfokus news items
   const afNewsCsvPath = path.join(OUTPUT_DIR, 'amnesfokus-news.csv')
   const afNewsCsvHeader = 'Ämnesfokus,Date,SFS,Title,Link\n'
-  const afNewsCsvRows = results.amnesfokusPages.flatMap(af =>
-    af.newsItems.map(news =>
-      `"${af.name}","${news.date}","${news.sfs}","${news.title.replace(/"/g, '""')}","${news.link}"`
+  const afNewsCsvRows = results.amnesfokusPages
+    .flatMap((af) =>
+      af.newsItems.map(
+        (news) =>
+          `"${af.name}","${news.date}","${news.sfs}","${news.title.replace(/"/g, '""')}","${news.link}"`
+      )
     )
-  ).join('\n')
+    .join('\n')
   fs.writeFileSync(afNewsCsvPath, afNewsCsvHeader + afNewsCsvRows)
   console.log(`Ämnesfokus news saved: ${afNewsCsvPath}`)
 
   // Save Laglistor documents CSV
   const llCsvPath = path.join(OUTPUT_DIR, 'laglistor-documents.csv')
-  const llCsvHeader = 'Laglista,Section Number,Section Name,Index,SFS Number,Amendment SFS,Document Name,Notisum Comment,Summary (Så här påverkas vi),Compliance,Link\n'
-  const llCsvRows = results.laglistor.flatMap(ll =>
-    ll.sections.flatMap(sec =>
-      sec.documents.map(doc =>
-        `"${ll.name}","${sec.sectionNumber}","${sec.sectionName}","${doc.index}","${doc.sfsNumber}","${doc.amendmentSfs || ''}",` +
-        `"${doc.documentName.replace(/"/g, '""')}","${(doc.notisumComment || '').replace(/"/g, '""').replace(/\n/g, ' ')}",` +
-        `"${(doc.summaryText || '').replace(/"/g, '""').replace(/\n/g, ' ')}","${(doc.complianceText || '').replace(/"/g, '""').replace(/\n/g, ' ')}","${doc.link || ''}"`
+  const llCsvHeader =
+    'Laglista,Section Number,Section Name,Index,SFS Number,Amendment SFS,Document Name,Notisum Comment,Summary (Så här påverkas vi),Compliance,Link\n'
+  const llCsvRows = results.laglistor
+    .flatMap((ll) =>
+      ll.sections.flatMap((sec) =>
+        sec.documents.map(
+          (doc) =>
+            `"${ll.name}","${sec.sectionNumber}","${sec.sectionName}","${doc.index}","${doc.sfsNumber}","${doc.amendmentSfs || ''}",` +
+            `"${doc.documentName.replace(/"/g, '""')}","${(doc.notisumComment || '').replace(/"/g, '""').replace(/\n/g, ' ')}",` +
+            `"${(doc.summaryText || '').replace(/"/g, '""').replace(/\n/g, ' ')}","${(doc.complianceText || '').replace(/"/g, '""').replace(/\n/g, ' ')}","${doc.link || ''}"`
+        )
       )
     )
-  ).join('\n')
+    .join('\n')
   fs.writeFileSync(llCsvPath, llCsvHeader + llCsvRows)
   console.log(`Laglistor documents saved: ${llCsvPath}`)
 
@@ -823,7 +927,9 @@ async function main() {
   console.log('='.repeat(70))
   console.log(`Ämnesfokus pages scraped: ${results.summary.totalAmnesfokus}`)
   console.log(`Laglistor scraped: ${results.summary.totalLaglistor}`)
-  console.log(`Total documents in Laglistor: ${results.summary.totalDocumentsInLaglistor}`)
+  console.log(
+    `Total documents in Laglistor: ${results.summary.totalDocumentsInLaglistor}`
+  )
   console.log('\nFiles created:')
   console.log(`  - ${jsonPath}`)
   console.log(`  - ${afCsvPath}`)

@@ -1,0 +1,15 @@
+{
+  "batchId": "msgbatch_01SXJSnRANqSeqCaRGhwbKbX",
+  "createdAt": "2025-12-12T20:55:40.930Z",
+  "type": "retry-failed",
+  "documentCount": 6,
+  "inputFile": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\data\\batches\\batch-retry-2025-12-12T20-55-40-477Z.jsonl",
+  "sfsNumbers": [
+    "SFS_2021-538",
+    "SFS_2021-783",
+    "SFS_2022-1248",
+    "SFS_2022-607",
+    "SFS_2024-617",
+    "SFS_2024-647"
+  ]
+}

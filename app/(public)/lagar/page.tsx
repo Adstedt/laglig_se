@@ -1,114 +1,145 @@
-import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
-import { ContentType } from '@prisma/client'
+import { Suspense } from 'react'
+import { CatalogueResults } from '@/components/features/catalogue/catalogue-results'
+import { CatalogueFilters } from '@/components/features/catalogue/catalogue-filters'
+import { CatalogueSearchBar } from '@/components/features/catalogue/catalogue-search-bar'
+import { MobileFilterDrawer } from '@/components/features/catalogue/mobile-filter-drawer'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { Metadata } from 'next'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 
-export const revalidate = 3600
+interface LagarPageProps {
+  searchParams: Promise<{
+    q?: string
+    status?: string
+    business?: string
+    categories?: string
+    from?: string
+    to?: string
+    page?: string
+    per_page?: string
+    sort?: string
+  }>
+}
 
 export const metadata: Metadata = {
-  title: 'Svenska lagar | Laglig.se',
+  title: 'Svenska lagar (SFS) | Laglig.se',
   description:
-    'Utforska Sveriges lagar och författningar. Sök bland tusentals SFS-dokument med full text och ändringshistorik.',
+    'Bläddra bland alla svenska lagar från Svensk författningssamling (SFS). Filtrera på status, kategori och datum.',
   openGraph: {
-    title: 'Svenska lagar | Laglig.se',
+    title: 'Svenska lagar (SFS) | Laglig.se',
     description:
-      'Utforska Sveriges lagar och författningar. Sök bland tusentals SFS-dokument.',
+      'Bläddra bland alla svenska lagar från Svensk författningssamling (SFS).',
     type: 'website',
+    locale: 'sv_SE',
   },
 }
 
-export default async function LawsListingPage() {
-  // Get some featured/recent laws
-  const recentLaws = await prisma.legalDocument.findMany({
-    where: { content_type: ContentType.SFS_LAW },
-    orderBy: { publication_date: 'desc' },
-    take: 20,
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      document_number: true,
-      publication_date: true,
-      summary: true,
-    },
-  })
+export default async function LagarPage({ searchParams }: LagarPageProps) {
+  const params = await searchParams
+  const query = params.q ?? ''
+  const statusFilter = params.status?.split(',').filter(Boolean) ?? []
+  const businessType = params.business as 'B2B' | 'PRIVATE' | 'BOTH' | undefined
+  const categories = params.categories?.split(',').filter(Boolean) ?? []
+  const dateFrom = params.from
+  const dateTo = params.to
+  const page = parseInt(params.page ?? '1', 10)
+  const perPage = parseInt(params.per_page ?? '25', 10)
+  const sortBy =
+    (params.sort as 'date_desc' | 'date_asc' | 'title' | 'relevance') ??
+    'date_desc'
 
-  const totalCount = await prisma.legalDocument.count({
-    where: { content_type: ContentType.SFS_LAW },
-  })
+  // Pre-filtered for SFS laws only
+  const contentTypes = ['SFS_LAW']
 
   return (
-    <main className="container mx-auto max-w-4xl px-4 py-8">
-      {/* Breadcrumbs */}
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Hem</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Lagar</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      {/* Header */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold">Svenska lagar</h1>
-        <p className="mt-2 text-muted-foreground">
-          Utforska {totalCount.toLocaleString('sv-SE')} svenska lagar och
-          författningar
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1
+          className="mb-2 text-2xl font-bold tracking-tight md:text-3xl"
+          style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
+        >
+          Svenska lagar
+        </h1>
+        <p className="mb-4 text-muted-foreground">
+          Bläddra bland alla lagar från Svensk författningssamling (SFS)
         </p>
-      </header>
+        <CatalogueSearchBar initialQuery={query} basePath="/lagar" />
+      </div>
 
-      {/* Laws list */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold">Senaste lagar</h2>
-        <div className="space-y-4">
-          {recentLaws.map((law) => (
-            <Card key={law.id}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-4">
-                  <CardTitle className="text-lg">
-                    <Link
-                      href={`/lagar/${law.slug}`}
-                      className="hover:text-primary hover:underline"
-                    >
-                      {law.title}
-                    </Link>
-                  </CardTitle>
-                  <Badge variant="secondary" className="shrink-0 font-mono">
-                    {law.document_number}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {law.summary && (
-                  <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
-                    {law.summary}
-                  </p>
-                )}
-                {law.publication_date && (
-                  <p className="text-xs text-muted-foreground">
-                    Publicerad:{' '}
-                    {new Date(law.publication_date).toLocaleDateString('sv-SE')}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+      <div className="flex gap-8">
+        {/* Filters Sidebar (Desktop) */}
+        <aside className="hidden w-64 flex-shrink-0 lg:block">
+          <div className="sticky top-24">
+            <CatalogueFilters
+              selectedTypes={contentTypes}
+              selectedStatus={statusFilter}
+              selectedBusinessType={businessType}
+              selectedCategories={categories}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              basePath="/lagar"
+              showContentTypeFilter={false}
+            />
+          </div>
+        </aside>
+
+        {/* Results */}
+        <main className="min-w-0 flex-1">
+          {/* Mobile Filter Button */}
+          <div className="mb-4 lg:hidden">
+            <MobileFilterDrawer
+              selectedTypes={contentTypes}
+              selectedStatus={statusFilter}
+              selectedBusinessType={businessType}
+              selectedCategories={categories}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              basePath="/lagar"
+              showContentTypeFilter={false}
+            />
+          </div>
+
+          <Suspense fallback={<CatalogueResultsSkeleton />}>
+            <CatalogueResults
+              query={query}
+              contentTypes={contentTypes}
+              status={statusFilter}
+              businessType={businessType}
+              categories={categories}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              page={page}
+              perPage={perPage}
+              sortBy={sortBy}
+              basePath="/lagar"
+            />
+          </Suspense>
+        </main>
+      </div>
+    </div>
+  )
+}
+
+function CatalogueResultsSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="mb-6 flex items-start justify-between">
+        <Skeleton className="h-5 w-48" />
+        <Skeleton className="h-9 w-[160px]" />
+      </div>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="rounded-xl border bg-card p-5">
+          <Skeleton className="mb-3 h-6 w-3/4" />
+          <div className="mb-3 flex gap-2">
+            <Skeleton className="h-5 w-20 rounded-full" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+          <Skeleton className="h-16 w-full" />
         </div>
-      </section>
-    </main>
+      ))}
+      <div className="mt-8 flex justify-center">
+        <Skeleton className="h-9 w-64" />
+      </div>
+    </div>
   )
 }

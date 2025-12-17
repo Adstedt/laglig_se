@@ -107,6 +107,7 @@ model LegalDocument {
   subjects              DocumentSubject[]
   versions              DocumentVersion[]
   change_events         ChangeEvent[]
+  law_sections          LawSection[]        // Story 2.13: Parsed sections for historical versions
 
   @@index([document_number])
   @@index([slug])
@@ -270,6 +271,31 @@ model DocumentSubject {
 }
 
 // ============================================================================
+// LAW SECTIONS - Epic 2: Story 2.13 Phase 3
+// Parsed sections from current law text for historical version reconstruction
+// ============================================================================
+
+model LawSection {
+  id                String   @id @default(cuid())
+  legal_document_id String
+  chapter           String?  // "5" or null for laws without chapters
+  section           String   // "12" or "2a"
+  html_content      String   @db.Text // The HTML for this section
+  text_content      String   @db.Text // Plain text (for search/diff)
+  heading           String?  // Section heading if any (e.g., "Tillämpningsområde")
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Relations
+  legal_document LegalDocument @relation(fields: [legal_document_id], references: [id], onDelete: Cascade)
+
+  @@unique([legal_document_id, chapter, section])
+  @@index([legal_document_id])
+  @@index([chapter, section])
+  @@map("law_sections")
+}
+
+// ============================================================================
 // AMENDMENT PDF DOCUMENTS - Epic 2: Story 2.13
 // ============================================================================
 
@@ -294,6 +320,9 @@ model AmendmentDocument {
 
   // Full text for search
   full_text       String?     @db.Text
+
+  // Markdown content for RAG
+  markdown_content String?    @db.Text
 
   // Processing status
   parse_status    ParseStatus @default(PENDING)

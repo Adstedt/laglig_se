@@ -19,13 +19,13 @@ import * as path from 'path'
 export type DocumentType = 'amendment' | 'repeal' | 'new_law'
 
 export interface CrawledDocument {
-  sfsNumber: string        // "2025:1461"
-  title: string            // "Lag om ändring i lagen (2023:875) om tilläggsskatt"
-  publishedDate: string    // "2025-12-10"
+  sfsNumber: string // "2025:1461"
+  title: string // "Lag om ändring i lagen (2023:875) om tilläggsskatt"
+  publishedDate: string // "2025-12-10"
   documentType: DocumentType
-  baseLawSfs: string | null  // "2023:875" for amendments, null for new laws
-  pdfUrl: string           // Full URL to PDF
-  htmlUrl: string          // Full URL to HTML page
+  baseLawSfs: string | null // "2023:875" for amendments, null for new laws
+  pdfUrl: string // Full URL to PDF
+  htmlUrl: string // Full URL to HTML page
 }
 
 export interface CrawlResult {
@@ -51,12 +51,18 @@ export function classifyDocument(title: string): DocumentType {
   const lowerTitle = title.toLowerCase()
 
   // Check for amendment pattern: "om ändring i"
-  if (lowerTitle.includes('om ändring i') || lowerTitle.includes('om ändring av')) {
+  if (
+    lowerTitle.includes('om ändring i') ||
+    lowerTitle.includes('om ändring av')
+  ) {
     return 'amendment'
   }
 
   // Check for repeal pattern: "om upphävande av"
-  if (lowerTitle.includes('om upphävande av') || lowerTitle.includes('om upphävande av')) {
+  if (
+    lowerTitle.includes('om upphävande av') ||
+    lowerTitle.includes('om upphävande av')
+  ) {
     return 'repeal'
   }
 
@@ -99,12 +105,13 @@ export function extractBaseLawSfs(title: string): string | null {
  *   <td ...><span data-lable="Publicerad">2025-12-10</span></td>
  * </tr>
  */
-function parseIndexPage(html: string, year: number): CrawledDocument[] {
+function _parseIndexPage(html: string, year: number): CrawledDocument[] {
   const documents: CrawledDocument[] = []
 
   // Match table rows with document data
   // Use a more specific pattern based on the actual HTML structure
-  const rowRegex = /<tr>[\s\S]*?<span[^>]*data-lable="SFS-nummer"[^>]*>(\d{4}:\d+)<\/span>[\s\S]*?<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>[\s\S]*?<span[^>]*data-lable="Publicerad"[^>]*>(\d{4}-\d{2}-\d{2})<\/span>[\s\S]*?<\/tr>/gi
+  const rowRegex =
+    /<tr>[\s\S]*?<span[^>]*data-lable="SFS-nummer"[^>]*>(\d{4}:\d+)<\/span>[\s\S]*?<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>[\s\S]*?<span[^>]*data-lable="Publicerad"[^>]*>(\d{4}-\d{2}-\d{2})<\/span>[\s\S]*?<\/tr>/gi
 
   let match
   while ((match = rowRegex.exec(html)) !== null) {
@@ -116,11 +123,14 @@ function parseIndexPage(html: string, year: number): CrawledDocument[] {
     }
 
     const documentType = classifyDocument(title)
-    const baseLawSfs = documentType === 'amendment' ? extractBaseLawSfs(title) : null
+    const baseLawSfs =
+      documentType === 'amendment' ? extractBaseLawSfs(title) : null
 
     // Construct full URLs
     const baseUrl = 'https://svenskforfattningssamling.se'
-    const htmlUrl = href.startsWith('http') ? href : `${baseUrl}/${href.replace(/^\.\.\//, '')}`
+    const htmlUrl = href.startsWith('http')
+      ? href
+      : `${baseUrl}/${href.replace(/^\.\.\//, '')}`
 
     // PDF URL pattern: /sites/default/files/sfs/YYYY-MM/SFSYYYY-NNNN.pdf
     const [sfsYear, sfsNum] = sfsNumber.split(':')
@@ -146,10 +156,12 @@ function parseIndexPage(html: string, year: number): CrawledDocument[] {
  * Pattern: <li class="next"><a href="regulations%3Fpage=1.html" ...>
  * %3F is URL-encoded '?', %3D is URL-encoded '='
  */
-function getNextPageNumber(html: string): number | null {
+function _getNextPageNumber(html: string): number | null {
   // Look for next page link in pagination
   // Pattern: page=N or page%3D=N (URL encoded)
-  const match = html.match(/<li\s+class="next"[^>]*>[\s\S]*?<a\s+href="[^"]*[?%].*?page[=%3D]*(\d+)/i)
+  const match = html.match(
+    /<li\s+class="next"[^>]*>[\s\S]*?<a\s+href="[^"]*[?%].*?page[=%3D]*(\d+)/i
+  )
   if (match) {
     return parseInt(match[1], 10)
   }
@@ -166,7 +178,7 @@ async function fetchPage(url: string): Promise<string> {
   const response = await fetch(url, {
     headers: {
       'User-Agent': 'Laglig.se/1.0 (Legal research; contact@laglig.se)',
-      'Accept': 'text/html',
+      Accept: 'text/html',
     },
   })
 
@@ -189,9 +201,11 @@ async function crawlYear(year: number): Promise<CrawlResult> {
   const indexHtml = await fetchPage(indexUrl)
 
   // Find the highest SFS number on the index page
-  const sfsNumbers = [...indexHtml.matchAll(/data-lable="SFS-nummer">(\d{4}):(\d+)</g)]
-    .filter(m => m[1] === String(year))
-    .map(m => parseInt(m[2], 10))
+  const sfsNumbers = [
+    ...indexHtml.matchAll(/data-lable="SFS-nummer">(\d{4}):(\d+)</g),
+  ]
+    .filter((m) => m[1] === String(year))
+    .map((m) => parseInt(m[2], 10))
 
   if (sfsNumbers.length === 0) {
     console.log(`  No documents found for ${year}`)
@@ -215,19 +229,21 @@ async function crawlYear(year: number): Promise<CrawlResult> {
 
     // Progress indicator
     if (sfsNum % 50 === 0 || sfsNum === latestSfsNum) {
-      console.log(`  Progress: ${sfsNum}/${latestSfsNum} (${allDocuments.length} found)`)
+      console.log(
+        `  Progress: ${sfsNum}/${latestSfsNum} (${allDocuments.length} found)`
+      )
     }
 
     // Rate limiting: 100ms between requests (10 req/sec)
     if (sfsNum > 1) {
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
     }
 
     try {
       const response = await fetch(docUrl, {
         headers: {
           'User-Agent': 'Laglig.se/1.0 (Legal research; contact@laglig.se)',
-          'Accept': 'text/html',
+          Accept: 'text/html',
         },
       })
 
@@ -246,7 +262,9 @@ async function crawlYear(year: number): Promise<CrawlResult> {
       // Pattern: href="../sites/default/files/sfs/YYYY-MM/SFSYYYY-N.pdf"
       const pdfMatch = html.match(/href="([^"]*\/sfs\/[^"]+\.pdf)"/i)
       const pdfPath = pdfMatch ? pdfMatch[1].replace(/^\.\./, '') : null
-      const pdfUrl = pdfPath ? `${baseUrl}${pdfPath.startsWith('/') ? '' : '/'}${pdfPath}` : ''
+      const pdfUrl = pdfPath
+        ? `${baseUrl}${pdfPath.startsWith('/') ? '' : '/'}${pdfPath}`
+        : ''
 
       // Extract publication date from PDF path or page content
       let publishedDate = `${year}-01-01`
@@ -259,7 +277,8 @@ async function crawlYear(year: number): Promise<CrawlResult> {
 
       const sfsNumber = `${year}:${sfsNum}`
       const documentType = classifyDocument(title)
-      const baseLawSfs = documentType === 'amendment' ? extractBaseLawSfs(title) : null
+      const baseLawSfs =
+        documentType === 'amendment' ? extractBaseLawSfs(title) : null
 
       allDocuments.push({
         sfsNumber,
@@ -270,7 +289,6 @@ async function crawlYear(year: number): Promise<CrawlResult> {
         pdfUrl,
         htmlUrl: docUrl,
       })
-
     } catch (error) {
       // Network error - skip this document
       console.error(`  Error fetching ${year}:${sfsNum}: ${error}`)
@@ -281,9 +299,10 @@ async function crawlYear(year: number): Promise<CrawlResult> {
 
   // Count by type
   const byType = {
-    amendment: allDocuments.filter(d => d.documentType === 'amendment').length,
-    repeal: allDocuments.filter(d => d.documentType === 'repeal').length,
-    new_law: allDocuments.filter(d => d.documentType === 'new_law').length,
+    amendment: allDocuments.filter((d) => d.documentType === 'amendment')
+      .length,
+    repeal: allDocuments.filter((d) => d.documentType === 'repeal').length,
+    new_law: allDocuments.filter((d) => d.documentType === 'new_law').length,
   }
 
   return {
@@ -328,9 +347,15 @@ async function main() {
   console.log('SUMMARY')
   console.log('='.repeat(70))
   console.log(`Total documents: ${result.totalDocuments}`)
-  console.log(`  - Amendments: ${result.byType.amendment} (${(result.byType.amendment / result.totalDocuments * 100).toFixed(1)}%)`)
-  console.log(`  - Repeals: ${result.byType.repeal} (${(result.byType.repeal / result.totalDocuments * 100).toFixed(1)}%)`)
-  console.log(`  - New laws: ${result.byType.new_law} (${(result.byType.new_law / result.totalDocuments * 100).toFixed(1)}%)`)
+  console.log(
+    `  - Amendments: ${result.byType.amendment} (${((result.byType.amendment / result.totalDocuments) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `  - Repeals: ${result.byType.repeal} (${((result.byType.repeal / result.totalDocuments) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `  - New laws: ${result.byType.new_law} (${((result.byType.new_law / result.totalDocuments) * 100).toFixed(1)}%)`
+  )
 
   // Output to file if specified
   if (outputPath) {
@@ -341,7 +366,11 @@ async function main() {
     console.log(`\nResults saved to: ${fullPath}`)
   } else {
     // Default output path
-    const defaultPath = path.join(process.cwd(), 'data', `sfs-index-${year}.json`)
+    const defaultPath = path.join(
+      process.cwd(),
+      'data',
+      `sfs-index-${year}.json`
+    )
     const dataDir = path.dirname(defaultPath)
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true })

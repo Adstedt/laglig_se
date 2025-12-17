@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { X } from 'lucide-react'
 
@@ -145,6 +144,7 @@ interface CatalogueFiltersProps {
   basePath: string
   showContentTypeFilter: boolean
   contentTypeOptions?: 'all' | 'court_cases' | 'eu'
+  hideHeader?: boolean
 }
 
 export function CatalogueFilters({
@@ -157,6 +157,7 @@ export function CatalogueFilters({
   basePath,
   showContentTypeFilter,
   contentTypeOptions = 'all',
+  hideHeader = false,
 }: CatalogueFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -226,16 +227,23 @@ export function CatalogueFilters({
 
   return (
     <div className="space-y-6">
-      {hasFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={clearAllFilters}
-          className="h-auto px-0 text-sm text-primary hover:bg-transparent hover:text-primary/80"
-        >
-          <X className="mr-1 h-3 w-3" />
-          Rensa alla filter
-        </Button>
+      {/* Fixed header row - always reserves space (hidden in mobile drawer) */}
+      {!hideHeader && (
+        <div className="flex h-5 items-center justify-between">
+          <span className="text-sm font-medium text-muted-foreground">
+            Filter
+          </span>
+          <button
+            onClick={clearAllFilters}
+            className={cn(
+              'flex items-center text-xs text-primary hover:text-primary/80',
+              !hasFilters && 'invisible'
+            )}
+          >
+            <X className="mr-1 h-3 w-3" />
+            Rensa alla
+          </button>
+        </div>
       )}
 
       {/* Content Type Filter */}

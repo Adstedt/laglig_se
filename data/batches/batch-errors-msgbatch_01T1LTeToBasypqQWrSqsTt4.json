@@ -1,0 +1,394 @@
+[
+  {
+    "sfsNumber": "2025:1043",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1054",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1055",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1060",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1061",
+    "error": "Unexpected end of JSON input"
+  },
+  {
+    "sfsNumber": "2025:1063",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1070",
+    "error": "Unterminated string in JSON at position 11797"
+  },
+  {
+    "sfsNumber": "2025:1075",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1106",
+    "error": "Unterminated string in JSON at position 11095"
+  },
+  {
+    "sfsNumber": "2025:1114",
+    "error": "Unterminated string in JSON at position 11864"
+  },
+  {
+    "sfsNumber": "2025:1134",
+    "error": "Unterminated string in JSON at position 12356"
+  },
+  {
+    "sfsNumber": "2025:1161",
+    "error": "Expected double-quoted property name in JSON at position 12034"
+  },
+  {
+    "sfsNumber": "2025:1245",
+    "error": "Unterminated string in JSON at position 11717"
+  },
+  {
+    "sfsNumber": "2025:1262",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1269",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:128",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1282",
+    "error": "Unterminated string in JSON at position 11034"
+  },
+  {
+    "sfsNumber": "2025:1302",
+    "error": "Unexpected end of JSON input"
+  },
+  {
+    "sfsNumber": "2025:1308",
+    "error": "Unterminated string in JSON at position 10900"
+  },
+  {
+    "sfsNumber": "2025:1311",
+    "error": "Expected double-quoted property name in JSON at position 11836"
+  },
+  {
+    "sfsNumber": "2025:1314",
+    "error": "Unterminated string in JSON at position 7104"
+  },
+  {
+    "sfsNumber": "2025:1315",
+    "error": "Unterminated string in JSON at position 11114"
+  },
+  {
+    "sfsNumber": "2025:1316",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1317",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1322",
+    "error": "Unterminated string in JSON at position 11604"
+  },
+  {
+    "sfsNumber": "2025:1330",
+    "error": "Unterminated string in JSON at position 12285"
+  },
+  {
+    "sfsNumber": "2025:1340",
+    "error": "Unterminated string in JSON at position 11377"
+  },
+  {
+    "sfsNumber": "2025:1345",
+    "error": "Unterminated string in JSON at position 11739"
+  },
+  {
+    "sfsNumber": "2025:1346",
+    "error": "Unexpected end of JSON input"
+  },
+  {
+    "sfsNumber": "2025:1357",
+    "error": "Unterminated string in JSON at position 11685"
+  },
+  {
+    "sfsNumber": "2025:1361",
+    "error": "Unterminated string in JSON at position 11557"
+  },
+  {
+    "sfsNumber": "2025:1382",
+    "error": "Unterminated string in JSON at position 11547"
+  },
+  {
+    "sfsNumber": "2025:1384",
+    "error": "Unterminated string in JSON at position 12511"
+  },
+  {
+    "sfsNumber": "2025:1386",
+    "error": "Unterminated string in JSON at position 12220"
+  },
+  {
+    "sfsNumber": "2025:1392",
+    "error": "Unterminated string in JSON at position 11856"
+  },
+  {
+    "sfsNumber": "2025:1414",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1415",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1416",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:1441",
+    "error": "Unterminated string in JSON at position 11493"
+  },
+  {
+    "sfsNumber": "2025:1442",
+    "error": "Unterminated string in JSON at position 11235"
+  },
+  {
+    "sfsNumber": "2025:1455",
+    "error": "Unterminated string in JSON at position 11974"
+  },
+  {
+    "sfsNumber": "2025:1456",
+    "error": "Unterminated string in JSON at position 12122"
+  },
+  {
+    "sfsNumber": "2025:1461",
+    "error": "Unterminated string in JSON at position 12001"
+  },
+  {
+    "sfsNumber": "2025:151",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:211",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:220",
+    "error": "Unterminated string in JSON at position 11779"
+  },
+  {
+    "sfsNumber": "2025:253",
+    "error": "Unterminated string in JSON at position 12227"
+  },
+  {
+    "sfsNumber": "2025:254",
+    "error": "Unterminated string in JSON at position 12460"
+  },
+  {
+    "sfsNumber": "2025:264",
+    "error": "Unterminated string in JSON at position 7117"
+  },
+  {
+    "sfsNumber": "2025:265",
+    "error": "Unterminated string in JSON at position 6980"
+  },
+  {
+    "sfsNumber": "2025:270",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:284",
+    "error": "Unterminated string in JSON at position 11464"
+  },
+  {
+    "sfsNumber": "2025:299",
+    "error": "Unterminated string in JSON at position 11590"
+  },
+  {
+    "sfsNumber": "2025:306",
+    "error": "Unterminated string in JSON at position 11126"
+  },
+  {
+    "sfsNumber": "2025:316",
+    "error": "Unterminated string in JSON at position 11749"
+  },
+  {
+    "sfsNumber": "2025:317",
+    "error": "Unterminated string in JSON at position 11694"
+  },
+  {
+    "sfsNumber": "2025:328",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:376",
+    "error": "Unterminated string in JSON at position 11944"
+  },
+  {
+    "sfsNumber": "2025:379",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:389",
+    "error": "Unterminated string in JSON at position 12158"
+  },
+  {
+    "sfsNumber": "2025:39",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:390",
+    "error": "Unterminated string in JSON at position 12167"
+  },
+  {
+    "sfsNumber": "2025:401",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:403",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:404",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:42",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:440",
+    "error": "Unterminated string in JSON at position 12571"
+  },
+  {
+    "sfsNumber": "2025:512",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:521",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:522",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:559",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:560",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:57",
+    "error": "Unterminated string in JSON at position 11866"
+  },
+  {
+    "sfsNumber": "2025:571",
+    "error": "Unterminated string in JSON at position 12110"
+  },
+  {
+    "sfsNumber": "2025:579",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:580",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:586",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:611",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:615",
+    "error": "Unterminated string in JSON at position 12505"
+  },
+  {
+    "sfsNumber": "2025:638",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:662",
+    "error": "Unterminated string in JSON at position 7108"
+  },
+  {
+    "sfsNumber": "2025:663",
+    "error": "Unterminated string in JSON at position 6976"
+  },
+  {
+    "sfsNumber": "2025:731",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:765",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:77",
+    "error": "Unterminated string in JSON at position 7117"
+  },
+  {
+    "sfsNumber": "2025:770",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:820",
+    "error": "Unterminated string in JSON at position 10984"
+  },
+  {
+    "sfsNumber": "2025:845",
+    "error": "Unterminated string in JSON at position 11328"
+  },
+  {
+    "sfsNumber": "2025:856",
+    "error": "Unterminated string in JSON at position 11540"
+  },
+  {
+    "sfsNumber": "2025:860",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:890",
+    "error": "Unterminated string in JSON at position 11743"
+  },
+  {
+    "sfsNumber": "2025:897",
+    "error": "Unexpected end of JSON input"
+  },
+  {
+    "sfsNumber": "2025:937",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:962",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:976",
+    "error": "Missing required field: baseLaw.sfsNumber"
+  },
+  {
+    "sfsNumber": "2025:979",
+    "error": "Expected property name or '}' in JSON at position 10978"
+  },
+  {
+    "sfsNumber": "2025:985",
+    "error": "Unterminated string in JSON at position 11846"
+  },
+  {
+    "sfsNumber": "2025:990",
+    "error": "Unterminated string in JSON at position 12053"
+  }
+]

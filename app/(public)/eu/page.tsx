@@ -1,96 +1,154 @@
-import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
-import { ContentType } from '@prisma/client'
+import { Suspense } from 'react'
+import { CatalogueResults } from '@/components/features/catalogue/catalogue-results'
+import { CatalogueFilters } from '@/components/features/catalogue/catalogue-filters'
+import { CatalogueSearchBar } from '@/components/features/catalogue/catalogue-search-bar'
+import { MobileFilterDrawer } from '@/components/features/catalogue/mobile-filter-drawer'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { Metadata } from 'next'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const revalidate = 3600
+interface EuPageProps {
+  searchParams: Promise<{
+    q?: string
+    types?: string
+    status?: string
+    business?: string
+    categories?: string
+    from?: string
+    to?: string
+    page?: string
+    per_page?: string
+    sort?: string
+  }>
+}
 
 export const metadata: Metadata = {
   title: 'EU-lagstiftning | Laglig.se',
   description:
-    'Utforska EU-förordningar och EU-direktiv som gäller i Sverige. Sök bland tusentals EU-rättsakter med svensk text.',
+    'Bläddra bland EU-förordningar och EU-direktiv som gäller i Sverige.',
   openGraph: {
     title: 'EU-lagstiftning | Laglig.se',
     description:
-      'Utforska EU-förordningar och EU-direktiv som gäller i Sverige.',
+      'Bläddra bland EU-förordningar och EU-direktiv som gäller i Sverige.',
     type: 'website',
+    locale: 'sv_SE',
   },
 }
 
-const EU_TYPES = [
-  { slug: 'forordningar', name: 'EU-förordningar', contentType: ContentType.EU_REGULATION, description: 'Direkt gällande EU-lagstiftning' },
-  { slug: 'direktiv', name: 'EU-direktiv', contentType: ContentType.EU_DIRECTIVE, description: 'Kräver nationell implementering' },
-]
+// EU legislation content types
+const EU_TYPES = ['EU_REGULATION', 'EU_DIRECTIVE']
 
-export default async function EuIndexPage() {
-  // Get counts for each EU type
-  const typeCounts = await Promise.all(
-    EU_TYPES.map(async (type) => {
-      const count = await prisma.legalDocument.count({
-        where: { content_type: type.contentType },
-      })
-      return { ...type, count }
-    })
-  )
-
-  const totalCount = typeCounts.reduce((sum, t) => sum + t.count, 0)
+export default async function EuPage({ searchParams }: EuPageProps) {
+  const params = await searchParams
+  const query = params.q ?? ''
+  // Allow sub-filtering within EU legislation
+  const selectedEuTypes = params.types?.split(',').filter(Boolean) ?? []
+  const contentTypes =
+    selectedEuTypes.length > 0
+      ? selectedEuTypes.filter((t) => EU_TYPES.includes(t))
+      : EU_TYPES
+  const statusFilter = params.status?.split(',').filter(Boolean) ?? []
+  const businessType = params.business as 'B2B' | 'PRIVATE' | 'BOTH' | undefined
+  const categories = params.categories?.split(',').filter(Boolean) ?? []
+  const dateFrom = params.from
+  const dateTo = params.to
+  const page = parseInt(params.page ?? '1', 10)
+  const perPage = parseInt(params.per_page ?? '25', 10)
+  const sortBy =
+    (params.sort as 'date_desc' | 'date_asc' | 'title' | 'relevance') ??
+    'date_desc'
 
   return (
-    <main className="container mx-auto max-w-4xl px-4 py-8">
-      {/* Breadcrumbs */}
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Hem</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>EU-lagstiftning</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      {/* Header */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold">EU-lagstiftning</h1>
-        <p className="mt-2 text-muted-foreground">
-          Utforska {totalCount.toLocaleString('sv-SE')} EU-rättsakter som gäller
-          i Sverige
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1
+          className="mb-2 text-2xl font-bold tracking-tight md:text-3xl"
+          style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
+        >
+          EU-lagstiftning
+        </h1>
+        <p className="mb-4 text-muted-foreground">
+          Bläddra bland EU-förordningar och EU-direktiv
         </p>
-      </header>
+        <CatalogueSearchBar initialQuery={query} basePath="/eu" />
+      </div>
 
-      {/* Types grid */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold">Välj typ</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          {typeCounts.map((type) => (
-            <Card key={type.slug} className="transition-shadow hover:shadow-md">
-              <Link href={`/eu/${type.slug}`}>
-                <CardHeader>
-                  <CardTitle className="text-lg">{type.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="mb-2 text-sm text-muted-foreground">
-                    {type.description}
-                  </p>
-                  <p className="text-sm font-medium">
-                    {type.count.toLocaleString('sv-SE')} dokument
-                  </p>
-                </CardContent>
-              </Link>
-            </Card>
-          ))}
+      <div className="flex gap-8">
+        {/* Filters Sidebar (Desktop) */}
+        <aside className="hidden w-64 flex-shrink-0 lg:block">
+          <div className="sticky top-24">
+            <CatalogueFilters
+              selectedTypes={selectedEuTypes}
+              selectedStatus={statusFilter}
+              selectedBusinessType={businessType}
+              selectedCategories={categories}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              basePath="/eu"
+              showContentTypeFilter={true}
+              contentTypeOptions="eu"
+            />
+          </div>
+        </aside>
+
+        {/* Results */}
+        <main className="min-w-0 flex-1">
+          {/* Mobile Filter Button */}
+          <div className="mb-4 lg:hidden">
+            <MobileFilterDrawer
+              selectedTypes={selectedEuTypes}
+              selectedStatus={statusFilter}
+              selectedBusinessType={businessType}
+              selectedCategories={categories}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              basePath="/eu"
+              showContentTypeFilter={true}
+              contentTypeOptions="eu"
+            />
+          </div>
+
+          <Suspense fallback={<CatalogueResultsSkeleton />}>
+            <CatalogueResults
+              query={query}
+              contentTypes={contentTypes}
+              status={statusFilter}
+              businessType={businessType}
+              categories={categories}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              page={page}
+              perPage={perPage}
+              sortBy={sortBy}
+              basePath="/eu"
+            />
+          </Suspense>
+        </main>
+      </div>
+    </div>
+  )
+}
+
+function CatalogueResultsSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="mb-6 flex items-start justify-between">
+        <Skeleton className="h-5 w-48" />
+        <Skeleton className="h-9 w-[160px]" />
+      </div>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="rounded-xl border bg-card p-5">
+          <Skeleton className="mb-3 h-6 w-3/4" />
+          <div className="mb-3 flex gap-2">
+            <Skeleton className="h-5 w-20 rounded-full" />
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </div>
+          <Skeleton className="h-16 w-full" />
         </div>
-      </section>
-    </main>
+      ))}
+      <div className="mt-8 flex justify-center">
+        <Skeleton className="h-9 w-64" />
+      </div>
+    </div>
   )
 }

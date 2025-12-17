@@ -9,9 +9,9 @@ async function check() {
       title: true,
       document_number: true,
       metadata: true,
-      full_text: true
+      full_text: true,
     },
-    take: 5
+    take: 5,
   })
 
   console.log('=== Sample SFS-lagar metadata ===\n')
@@ -37,23 +37,25 @@ async function check() {
       OR: [
         { title: { contains: 'upphävd', mode: 'insensitive' } },
         { title: { contains: 'upphört', mode: 'insensitive' } },
-      ]
+      ],
     },
     select: { title: true, document_number: true, content_type: true },
-    take: 10
+    take: 10,
   })
   console.log('Hittade:', maybeRepealed.length)
-  maybeRepealed.forEach(d => console.log('-', d.content_type, d.document_number, d.title))
+  maybeRepealed.forEach((d) =>
+    console.log('-', d.content_type, d.document_number, d.title)
+  )
 
   // Kolla metadata-nycklar som finns
   console.log('\n=== Unika metadata-nycklar (sample) ===')
-  const metaSample = await prisma.$queryRaw<any[]>`
+  const metaSample = await prisma.$queryRaw<{ key: string }[]>`
     SELECT DISTINCT jsonb_object_keys(metadata) as key
     FROM legal_documents
     WHERE metadata IS NOT NULL
     LIMIT 50
   `
-  console.log(metaSample.map(m => m.key))
+  console.log(metaSample.map((m) => m.key))
 }
 
 check().finally(() => prisma.$disconnect())
