@@ -12,10 +12,7 @@
  *   404 - Law not found
  */
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  getLawAmendmentTimeline,
-  getAvailableVersionDates,
-} from '@/lib/legal-document/version-reconstruction'
+import { getCachedAmendmentTimeline } from '@/lib/legal-document/version-cache'
 import { getPublicPdfUrl } from '@/lib/supabase/storage'
 import {
   HistoryRouteParamsSchema,
@@ -49,17 +46,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     const { sfs: decodedSfs } = parseResult.data
 
-    // Get amendment timeline and available dates
-    const [timeline, availableDates] = await Promise.all([
-      getLawAmendmentTimeline(decodedSfs),
-      getAvailableVersionDates(decodedSfs),
-    ])
-
-    // If no amendments found, check if law exists
-    if (timeline.length === 0) {
-      // Could add a check here for law existence if needed
-      // For now, return empty timeline
-    }
+    // Get amendment timeline (cached for 24h)
+    const timeline = await getCachedAmendmentTimeline(decodedSfs)
 
     // Transform timeline to include public PDF URLs
     const amendmentsWithPdfUrls = timeline.map((a) => ({
@@ -71,14 +59,17 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       pdfUrl: a.storagePath ? getPublicPdfUrl(a.storagePath) : null,
     }))
 
+    // Derive available version dates from timeline
+    const availableVersionDates = timeline
+      .filter((a) => a.effectiveDate)
+      .map((a) => a.effectiveDate!.toISOString().slice(0, 10))
+
     return NextResponse.json(
       {
         baseLawSfs: decodedSfs,
         totalAmendments: timeline.length,
         amendments: amendmentsWithPdfUrls,
-        availableVersionDates: availableDates.map(
-          (d) => d.toISOString().split('T')[0]
-        ),
+        availableVersionDates,
       },
       { status: 200 }
     )

@@ -506,23 +506,28 @@ export async function getSectionHistory(
 }
 
 /**
+ * Timeline entry for a single amendment
+ */
+export interface AmendmentTimelineEntry {
+  sfsNumber: string
+  effectiveDate: Date | null
+  title: string | null
+  sectionCount: number
+  changeTypes: {
+    amended: number
+    new: number
+    repealed: number
+    renumbered: number
+  }
+  storagePath: string | null
+}
+
+/**
  * Get a timeline of all amendments to a law
  */
-export async function getLawAmendmentTimeline(baseLawSfs: string): Promise<
-  Array<{
-    sfsNumber: string
-    effectiveDate: Date | null
-    title: string | null
-    sectionCount: number
-    changeTypes: {
-      amended: number
-      new: number
-      repealed: number
-      renumbered: number
-    }
-    storagePath: string | null
-  }>
-> {
+export async function getLawAmendmentTimeline(
+  baseLawSfs: string
+): Promise<AmendmentTimelineEntry[]> {
   const normalizedSfs = baseLawSfs.startsWith('SFS ')
     ? baseLawSfs
     : `SFS ${baseLawSfs}`

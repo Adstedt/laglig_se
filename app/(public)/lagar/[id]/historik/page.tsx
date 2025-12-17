@@ -2,10 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getCachedLawMetadata } from '@/lib/cache/cached-queries'
-import {
-  getLawAmendmentTimeline,
-  getAvailableVersionDates,
-} from '@/lib/legal-document/version-reconstruction'
+import { getCachedAmendmentTimeline } from '@/lib/legal-document/version-cache'
 import { getPublicPdfUrl } from '@/lib/supabase/storage'
 import {
   Breadcrumb,
@@ -60,11 +57,8 @@ export default async function HistoryPage({ params }: PageProps) {
   // Extract SFS number without "SFS " prefix
   const sfsNumber = law.document_number.replace(/^SFS\s*/, '')
 
-  // Fetch amendment history directly (no HTTP round-trip)
-  const [timeline, availableDates] = await Promise.all([
-    getLawAmendmentTimeline(sfsNumber),
-    getAvailableVersionDates(sfsNumber),
-  ])
+  // Fetch amendment history (cached for 24h)
+  const timeline = await getCachedAmendmentTimeline(sfsNumber)
 
   // Get theme for SFS laws
   const theme = getDocumentTheme('SFS_LAW')
@@ -81,10 +75,10 @@ export default async function HistoryPage({ params }: PageProps) {
     pdfUrl: a.storagePath ? getPublicPdfUrl(a.storagePath) : null,
   }))
 
-  // Format available dates (YYYY-MM-DD)
-  const availableVersionDates = availableDates.map((d) =>
-    d.toISOString().slice(0, 10)
-  )
+  // Derive available version dates from timeline (no separate query needed)
+  const availableVersionDates = timeline
+    .filter((a) => a.effectiveDate)
+    .map((a) => a.effectiveDate!.toISOString().slice(0, 10))
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">

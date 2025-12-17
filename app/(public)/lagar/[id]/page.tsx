@@ -21,6 +21,7 @@ import { LawSectionWithBanner } from './law-section-with-banner'
 import {
   NotYetInForceBanner,
   RelatedDocsPrefetcher,
+  TimelinePrefetcher,
 } from '@/components/features/law'
 import { VersionSelector } from '@/components/features/law-versions'
 import { getDocumentTheme } from '@/lib/document-themes'
@@ -687,6 +688,9 @@ export default async function LawPage({ params }: PageProps) {
               slug: a.amending_document?.slug ?? null,
             }))}
         />
+
+        {/* Prefetch history page and timeline for instant navigation */}
+        <TimelinePrefetcher lawSfs={law.document_number} lawSlug={law.slug} />
       </main>
     </>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -84,6 +84,69 @@ export function VersionByVersionTimeline({
     new Set()
   )
 
+  // Track how far we've prefetched for rolling prefetch
+  const prefetchedUpToRef = useRef(0)
+  const prefetchTriggerRef = useRef<HTMLDivElement>(null)
+  const PREFETCH_BATCH_SIZE = 5
+
+  // Prefetch first batch of diffs after initial render
+  useEffect(() => {
+    // Wait for page to settle before prefetching
+    const timer = setTimeout(() => {
+      const toPrefetch = amendments.slice(0, PREFETCH_BATCH_SIZE)
+      toPrefetch.forEach((amendment, index) => {
+        // Stagger prefetches to avoid overwhelming the server
+        setTimeout(() => {
+          // Only prefetch if not already in cache
+          if (!diffs.has(amendment.sfsNumber)) {
+            fetchDiff(amendment.sfsNumber, true)
+          }
+        }, index * 200) // 200ms between each prefetch
+      })
+      prefetchedUpToRef.current = PREFETCH_BATCH_SIZE
+    }, 500) // 500ms after page render
+
+    return () => clearTimeout(timer)
+    // Only run on mount - don't re-run when diffs changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amendments, baseLawSfs])
+
+  // Rolling prefetch: fetch next batch when user scrolls near the trigger
+  useEffect(() => {
+    const trigger = prefetchTriggerRef.current
+    if (!trigger) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          const currentPrefetched = prefetchedUpToRef.current
+          const nextBatch = amendments.slice(
+            currentPrefetched,
+            currentPrefetched + PREFETCH_BATCH_SIZE
+          )
+
+          if (nextBatch.length > 0) {
+            nextBatch.forEach((amendment, index) => {
+              setTimeout(() => {
+                if (!diffs.has(amendment.sfsNumber)) {
+                  fetchDiff(amendment.sfsNumber, true)
+                }
+              }, index * 200)
+            })
+            prefetchedUpToRef.current = currentPrefetched + nextBatch.length
+          }
+        }
+      },
+      { rootMargin: '300px' } // Trigger 300px before element is visible
+    )
+
+    observer.observe(trigger)
+
+    return () => observer.disconnect()
+    // Re-observe when amendments change or after we prefetch more
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amendments, baseLawSfs])
+
   const visibleAmendments = expanded
     ? amendments
     : amendments.slice(0, maxVisible)
@@ -112,21 +175,26 @@ export function VersionByVersionTimeline({
   }
 
   // Fetch diff for an amendment
+  // isPrefetch: if true, don't show loading state (background fetch)
   const fetchDiff = useCallback(
-    async (amendmentSfs: string) => {
+    async (amendmentSfs: string, isPrefetch = false) => {
       const sfsForApi = baseLawSfs.replace(/^SFS\s*/i, '')
       const amendmentForApi = amendmentSfs.replace(/^SFS\s*/i, '')
 
-      setLoadingDiffs((prev) => new Set(prev).add(amendmentSfs))
-      setErrors((prev) => {
-        const next = new Map(prev)
-        next.delete(amendmentSfs)
-        return next
-      })
+      // Only show loading state for user-initiated fetches
+      if (!isPrefetch) {
+        setLoadingDiffs((prev) => new Set(prev).add(amendmentSfs))
+        setErrors((prev) => {
+          const next = new Map(prev)
+          next.delete(amendmentSfs)
+          return next
+        })
+      }
 
       try {
         const res = await fetch(
-          `/api/laws/${encodeURIComponent(sfsForApi)}/diff/${encodeURIComponent(amendmentForApi)}`
+          `/api/laws/${encodeURIComponent(sfsForApi)}/diff/${encodeURIComponent(amendmentForApi)}`,
+          { priority: isPrefetch ? 'low' : 'high' } as RequestInit
         )
 
         if (!res.ok) {
@@ -136,15 +204,20 @@ export function VersionByVersionTimeline({
         const data: AmendmentDiff = await res.json()
         setDiffs((prev) => new Map(prev).set(amendmentSfs, data))
       } catch (_err) {
-        setErrors((prev) =>
-          new Map(prev).set(amendmentSfs, 'Kunde inte ladda ändringar')
-        )
+        // Only show errors for user-initiated fetches
+        if (!isPrefetch) {
+          setErrors((prev) =>
+            new Map(prev).set(amendmentSfs, 'Kunde inte ladda ändringar')
+          )
+        }
       } finally {
-        setLoadingDiffs((prev) => {
-          const next = new Set(prev)
-          next.delete(amendmentSfs)
-          return next
-        })
+        if (!isPrefetch) {
+          setLoadingDiffs((prev) => {
+            const next = new Set(prev)
+            next.delete(amendmentSfs)
+            return next
+          })
+        }
       }
     },
     [baseLawSfs]
@@ -405,6 +478,13 @@ export function VersionByVersionTimeline({
             </div>
           )
         })}
+
+        {/* Invisible trigger for rolling prefetch - placed at end of visible items */}
+        <div
+          ref={prefetchTriggerRef}
+          className="h-px w-full"
+          aria-hidden="true"
+        />
 
         {/* Show more/less button */}
         {hasMore && (

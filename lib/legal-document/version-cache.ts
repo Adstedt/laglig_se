@@ -7,7 +7,12 @@
  * - Cache invalidation on amendment sync
  */
 
-import { getLawVersionAtDate, LawVersionResult } from './version-reconstruction'
+import {
+  getLawVersionAtDate,
+  LawVersionResult,
+  getLawAmendmentTimeline,
+  AmendmentTimelineEntry,
+} from './version-reconstruction'
 import { compareLawVersions, LawVersionDiff } from './version-diff'
 
 // ============================================================================
@@ -125,6 +130,9 @@ const versionCache = new LRUCache<LawVersionResult>(500, 86400) // 500 entries, 
 // Cache for diffs (shorter TTL since they're computed on-demand)
 const diffCache = new LRUCache<LawVersionDiff>(200, 3600) // 200 entries, 1h TTL
 
+// Cache for amendment timelines (used by history page)
+const timelineCache = new LRUCache<AmendmentTimelineEntry[]>(200, 86400) // 200 entries, 24h TTL
+
 // ============================================================================
 // Cache Key Generators
 // ============================================================================
@@ -138,6 +146,12 @@ function diffCacheKey(sfs: string, dateA: Date, dateB: Date): string {
   const dateAStr = dateA.toISOString().split('T')[0]
   const dateBStr = dateB.toISOString().split('T')[0]
   return `law-diff:${sfs}:${dateAStr}:${dateBStr}`
+}
+
+function timelineCacheKey(sfs: string): string {
+  // Normalize SFS number for consistent cache keys
+  const normalizedSfs = sfs.replace(/^SFS\s*/i, '')
+  return `law-timeline:${normalizedSfs}`
 }
 
 // ============================================================================
@@ -197,6 +211,30 @@ export async function getCachedLawDiff(
   return result
 }
 
+/**
+ * Get amendment timeline for a law (with caching)
+ * Returns list of all amendments with their metadata
+ */
+export async function getCachedAmendmentTimeline(
+  baseLawSfs: string
+): Promise<AmendmentTimelineEntry[]> {
+  const key = timelineCacheKey(baseLawSfs)
+
+  // Try cache first
+  const cached = timelineCache.get(key)
+  if (cached) {
+    return cached
+  }
+
+  // Cache miss - fetch from database
+  const result = await getLawAmendmentTimeline(baseLawSfs)
+
+  // Always cache (even empty arrays are valid)
+  timelineCache.set(key, result)
+
+  return result
+}
+
 // ============================================================================
 // Cache Invalidation
 // ============================================================================
@@ -210,6 +248,7 @@ export async function getCachedLawDiff(
 export function invalidateLawCache(baseLawSfs: string): {
   versionsDeleted: number
   diffsDeleted: number
+  timelinesDeleted: number
 } {
   const normalizedSfs = baseLawSfs.replace(/^SFS\s*/i, '')
 
@@ -219,7 +258,10 @@ export function invalidateLawCache(baseLawSfs: string): {
   // Invalidate diff cache
   const diffsDeleted = diffCache.deletePattern(normalizedSfs)
 
-  return { versionsDeleted, diffsDeleted }
+  // Invalidate timeline cache
+  const timelinesDeleted = timelineCache.deletePattern(normalizedSfs)
+
+  return { versionsDeleted, diffsDeleted, timelinesDeleted }
 }
 
 /**
@@ -229,6 +271,7 @@ export function invalidateLawCache(baseLawSfs: string): {
 export function invalidateAllCaches(): void {
   versionCache.clear()
   diffCache.clear()
+  timelineCache.clear()
 }
 
 // ============================================================================
@@ -238,18 +281,22 @@ export function invalidateAllCaches(): void {
 export function getCacheStats(): {
   version: CacheStats
   diff: CacheStats
+  timeline: CacheStats
   hitRate: number
 } {
   const versionStats = versionCache.getStats()
   const diffStats = diffCache.getStats()
+  const timelineStats = timelineCache.getStats()
 
-  const totalHits = versionStats.hits + diffStats.hits
-  const totalRequests = totalHits + versionStats.misses + diffStats.misses
+  const totalHits = versionStats.hits + diffStats.hits + timelineStats.hits
+  const totalRequests =
+    totalHits + versionStats.misses + diffStats.misses + timelineStats.misses
   const hitRate = totalRequests > 0 ? totalHits / totalRequests : 0
 
   return {
     version: versionStats,
     diff: diffStats,
+    timeline: timelineStats,
     hitRate,
   }
 }
