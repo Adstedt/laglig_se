@@ -23,11 +23,11 @@ import {
 interface Amendment {
   sfsNumber: string
   effectiveDate: string | null // YYYY-MM-DD or null
-  title?: string
+  title?: string | undefined
   sectionsChanged: number
-  sectionsAdded?: number
-  sectionsRepealed?: number
-  pdfUrl?: string | null // Full URL to PDF in Supabase storage
+  sectionsAdded?: number | undefined
+  sectionsRepealed?: number | undefined
+  pdfUrl?: string | null | undefined // Full URL to PDF in Supabase storage
 }
 
 interface LineDiff {

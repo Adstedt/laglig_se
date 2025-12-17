@@ -3,6 +3,11 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getCachedLawMetadata } from '@/lib/cache/cached-queries'
 import {
+  getLawAmendmentTimeline,
+  getAvailableVersionDates,
+} from '@/lib/legal-document/version-reconstruction'
+import { getPublicPdfUrl } from '@/lib/supabase/storage'
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -52,48 +57,33 @@ export default async function HistoryPage({ params }: PageProps) {
     notFound()
   }
 
-  // Extract SFS number without "SFS " prefix for API call
+  // Extract SFS number without "SFS " prefix
   const sfsNumber = law.document_number.replace(/^SFS\s*/, '')
 
-  // Fetch amendment history
-  const historyRes = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/laws/${encodeURIComponent(sfsNumber)}/history`,
-    { cache: 'no-store' }
-  )
-
-  if (!historyRes.ok) {
-    throw new Error('Failed to fetch amendment history')
-  }
-
-  const historyData = await historyRes.json()
+  // Fetch amendment history directly (no HTTP round-trip)
+  const [timeline, availableDates] = await Promise.all([
+    getLawAmendmentTimeline(sfsNumber),
+    getAvailableVersionDates(sfsNumber),
+  ])
 
   // Get theme for SFS laws
   const theme = getDocumentTheme('SFS_LAW')
   const ThemeIcon = theme.icon
 
-  // Transform API response for timeline component
-  const amendments = (historyData.amendments || []).map(
-    (a: {
-      sfsNumber: string
-      effectiveDate: string | null
-      title?: string
-      sectionCount?: number
-      changeTypes?: {
-        amended: number
-        new: number
-        repealed: number
-        renumbered: number
-      }
-      pdfUrl?: string | null
-    }) => ({
-      sfsNumber: a.sfsNumber,
-      effectiveDate: a.effectiveDate,
-      title: a.title,
-      sectionsChanged: a.changeTypes?.amended || 0,
-      sectionsAdded: a.changeTypes?.new || 0,
-      sectionsRepealed: a.changeTypes?.repealed || 0,
-      pdfUrl: a.pdfUrl,
-    })
+  // Transform timeline for the component
+  const amendments = timeline.map((a) => ({
+    sfsNumber: a.sfsNumber,
+    effectiveDate: a.effectiveDate?.toISOString().slice(0, 10) ?? null,
+    title: a.title ?? undefined,
+    sectionsChanged: a.changeTypes?.amended || 0,
+    sectionsAdded: a.changeTypes?.new || 0,
+    sectionsRepealed: a.changeTypes?.repealed || 0,
+    pdfUrl: a.storagePath ? getPublicPdfUrl(a.storagePath) : null,
+  }))
+
+  // Format available dates (YYYY-MM-DD)
+  const availableVersionDates = availableDates.map((d) =>
+    d.toISOString().slice(0, 10)
   )
 
   return (
@@ -146,9 +136,7 @@ export default async function HistoryPage({ params }: PageProps) {
                 <Badge variant="secondary" className="font-mono text-sm">
                   {law.document_number}
                 </Badge>
-                <Badge variant="outline">
-                  {historyData.totalAmendments || 0} ändringar
-                </Badge>
+                <Badge variant="outline">{timeline.length} ändringar</Badge>
               </div>
             </div>
           </div>
@@ -197,35 +185,33 @@ export default async function HistoryPage({ params }: PageProps) {
         </Card>
 
         {/* Available Version Dates */}
-        {historyData.availableVersionDates &&
-          historyData.availableVersionDates.length > 0 && (
-            <Card className="mb-8">
-              <CardHeader className="border-b bg-muted/30">
-                <CardTitle className="text-base">
-                  Hoppa till version ({historyData.availableVersionDates.length}{' '}
-                  tillgängliga)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <div className="flex flex-wrap gap-2">
-                  {historyData.availableVersionDates.map((date: string) => (
-                    <Link key={date} href={`/lagar/${slug}/version/${date}`}>
-                      <Badge
-                        variant="outline"
-                        className="hover:bg-primary/10 cursor-pointer"
-                      >
-                        {new Date(date).toLocaleDateString('sv-SE', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </Badge>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+        {availableVersionDates.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader className="border-b bg-muted/30">
+              <CardTitle className="text-base">
+                Hoppa till version ({availableVersionDates.length} tillgängliga)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <div className="flex flex-wrap gap-2">
+                {availableVersionDates.map((date: string) => (
+                  <Link key={date} href={`/lagar/${slug}/version/${date}`}>
+                    <Badge
+                      variant="outline"
+                      className="hover:bg-primary/10 cursor-pointer"
+                    >
+                      {new Date(date).toLocaleDateString('sv-SE', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </Badge>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Footer */}
         <footer className="text-center text-sm text-muted-foreground py-4 border-t">
