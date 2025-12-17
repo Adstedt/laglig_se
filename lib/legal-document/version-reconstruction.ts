@@ -171,7 +171,7 @@ export async function getSectionTextAtDate(
   // This means the section hasn't changed since the law was originally enacted
   const legalDocument = await prisma.legalDocument.findFirst({
     where: {
-      document_number: { contains: normalizedSfs },
+      document_number: normalizedSfs,
       content_type: 'SFS_LAW',
     },
     select: { id: true },
@@ -225,7 +225,7 @@ export async function getLawVersionAtDate(
   // Find the base law document
   const legalDocument = await prisma.legalDocument.findFirst({
     where: {
-      document_number: { contains: normalizedSfs },
+      document_number: normalizedSfs,
       content_type: 'SFS_LAW',
     },
     select: {
@@ -432,7 +432,7 @@ export async function getSectionHistory(
   // Get current version from LawSection
   const legalDocument = await prisma.legalDocument.findFirst({
     where: {
-      document_number: { contains: normalizedSfs },
+      document_number: normalizedSfs,
       content_type: 'SFS_LAW',
     },
     select: { id: true },

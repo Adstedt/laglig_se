@@ -14,9 +14,9 @@ import {
 } from '../../legal-document/version-cache'
 
 describe('getCacheStats', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Clear caches before each test
-    invalidateAllCaches()
+    await invalidateAllCaches()
   })
 
   it('should return stats object with required properties', () => {
@@ -24,43 +24,60 @@ describe('getCacheStats', () => {
 
     expect(stats).toHaveProperty('version')
     expect(stats).toHaveProperty('diff')
-    expect(stats).toHaveProperty('hitRate')
+    expect(stats).toHaveProperty('timeline')
+    expect(stats).toHaveProperty('l1HitRate')
+    expect(stats).toHaveProperty('l2HitRate')
+    expect(stats).toHaveProperty('overallHitRate')
+    expect(stats).toHaveProperty('redisConfigured')
   })
 
-  it('should return version cache stats with hits, misses, size', () => {
+  it('should return version cache stats with l1Hits, l2Hits, misses', () => {
     const stats = getCacheStats()
 
-    expect(stats.version).toHaveProperty('hits')
+    expect(stats.version).toHaveProperty('l1Hits')
+    expect(stats.version).toHaveProperty('l2Hits')
     expect(stats.version).toHaveProperty('misses')
-    expect(stats.version).toHaveProperty('size')
 
-    expect(typeof stats.version.hits).toBe('number')
+    expect(typeof stats.version.l1Hits).toBe('number')
+    expect(typeof stats.version.l2Hits).toBe('number')
     expect(typeof stats.version.misses).toBe('number')
-    expect(typeof stats.version.size).toBe('number')
   })
 
-  it('should return diff cache stats with hits, misses, size', () => {
+  it('should return diff cache stats with l1Hits, l2Hits, misses', () => {
     const stats = getCacheStats()
 
-    expect(stats.diff).toHaveProperty('hits')
+    expect(stats.diff).toHaveProperty('l1Hits')
+    expect(stats.diff).toHaveProperty('l2Hits')
     expect(stats.diff).toHaveProperty('misses')
-    expect(stats.diff).toHaveProperty('size')
   })
 
-  it('should return hitRate as a number between 0 and 1', () => {
+  it('should return hit rates as numbers between 0 and 1', () => {
     const stats = getCacheStats()
 
-    expect(typeof stats.hitRate).toBe('number')
-    expect(stats.hitRate).toBeGreaterThanOrEqual(0)
-    expect(stats.hitRate).toBeLessThanOrEqual(1)
+    expect(typeof stats.l1HitRate).toBe('number')
+    expect(typeof stats.l2HitRate).toBe('number')
+    expect(typeof stats.overallHitRate).toBe('number')
+
+    expect(stats.l1HitRate).toBeGreaterThanOrEqual(0)
+    expect(stats.l1HitRate).toBeLessThanOrEqual(1)
+    expect(stats.l2HitRate).toBeGreaterThanOrEqual(0)
+    expect(stats.l2HitRate).toBeLessThanOrEqual(1)
+    expect(stats.overallHitRate).toBeGreaterThanOrEqual(0)
+    expect(stats.overallHitRate).toBeLessThanOrEqual(1)
   })
 
-  it('should return 0 hitRate when no requests made', () => {
-    invalidateAllCaches()
+  it('should return 0 hit rates when no requests made', async () => {
+    await invalidateAllCaches()
     const stats = getCacheStats()
 
-    // After clearing, with no requests, hitRate should be 0
-    expect(stats.hitRate).toBe(0)
+    // After clearing, with no requests, hit rates should be 0
+    expect(stats.overallHitRate).toBe(0)
+  })
+
+  it('should indicate whether Redis is configured', () => {
+    const stats = getCacheStats()
+
+    expect(typeof stats.redisConfigured).toBe('boolean')
   })
 })
 
@@ -103,41 +120,46 @@ describe('getPopularLaws', () => {
 })
 
 describe('invalidateAllCaches', () => {
-  it('should reset cache sizes to 0', () => {
-    invalidateAllCaches()
+  it('should reset stats to initial state', async () => {
+    await invalidateAllCaches()
     const stats = getCacheStats()
 
-    expect(stats.version.size).toBe(0)
-    expect(stats.diff.size).toBe(0)
+    // After invalidation, no requests have been made so all counts should be 0
+    expect(stats.version.l1Hits).toBe(0)
+    expect(stats.diff.l1Hits).toBe(0)
   })
 
-  it('should not throw when called multiple times', () => {
-    expect(() => {
-      invalidateAllCaches()
-      invalidateAllCaches()
-      invalidateAllCaches()
-    }).not.toThrow()
+  it('should not throw when called multiple times', async () => {
+    await expect(
+      (async () => {
+        await invalidateAllCaches()
+        await invalidateAllCaches()
+        await invalidateAllCaches()
+      })()
+    ).resolves.not.toThrow()
   })
 })
 
 describe('LRU Cache Behavior (via exported functions)', () => {
-  beforeEach(() => {
-    invalidateAllCaches()
+  beforeEach(async () => {
+    await invalidateAllCaches()
   })
 
-  it('should start with empty cache', () => {
+  it('should start with zero hits after invalidation', async () => {
     const stats = getCacheStats()
 
-    expect(stats.version.size).toBe(0)
-    expect(stats.diff.size).toBe(0)
+    expect(stats.version.l1Hits).toBe(0)
+    expect(stats.version.l2Hits).toBe(0)
+    expect(stats.diff.l1Hits).toBe(0)
+    expect(stats.diff.l2Hits).toBe(0)
   })
 
-  it('should track hits and misses correctly', () => {
+  it('should track misses correctly', () => {
     const initialStats = getCacheStats()
 
-    // Initial state should have 0 hits
-    expect(initialStats.version.hits).toBe(0)
-    expect(initialStats.diff.hits).toBe(0)
+    // Initial state should have 0 misses (no requests made)
+    expect(initialStats.version.misses).toBe(0)
+    expect(initialStats.diff.misses).toBe(0)
   })
 })
 
@@ -148,5 +170,26 @@ describe('Cache Key Generation', () => {
     // The actual caching requires database access, so we just verify no errors
     const stats = getCacheStats()
     expect(stats).toBeDefined()
+  })
+})
+
+describe('Two-Tier Cache Architecture', () => {
+  it('should report Redis configuration status', () => {
+    const stats = getCacheStats()
+
+    // In test environment, Redis is typically not configured
+    expect(typeof stats.redisConfigured).toBe('boolean')
+  })
+
+  it('should have separate L1 and L2 hit tracking', () => {
+    const stats = getCacheStats()
+
+    // Each cache type should track L1 and L2 hits separately
+    expect(stats.version).toHaveProperty('l1Hits')
+    expect(stats.version).toHaveProperty('l2Hits')
+    expect(stats.diff).toHaveProperty('l1Hits')
+    expect(stats.diff).toHaveProperty('l2Hits')
+    expect(stats.timeline).toHaveProperty('l1Hits')
+    expect(stats.timeline).toHaveProperty('l2Hits')
   })
 })

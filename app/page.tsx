@@ -10,6 +10,7 @@ import { ComplianceSection } from '@/components/features/landing/compliance-sect
 import { PricingSection } from '@/components/features/landing/pricing-section'
 import { FaqSection } from '@/components/features/landing/faq-section'
 import { CtaSection } from '@/components/features/landing/cta-section'
+import { BrowsePagesPrefetcher } from '@/components/features/landing/browse-pages-prefetcher'
 
 export default function Home() {
   return (
@@ -28,6 +29,8 @@ export default function Home() {
         <CtaSection />
       </main>
       <Footer />
+      {/* Prefetch browse pages for instant navigation */}
+      <BrowsePagesPrefetcher />
     </>
   )
 }

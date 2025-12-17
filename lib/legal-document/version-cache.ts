@@ -2,8 +2,9 @@
  * Caching Layer for Historical Law Versions
  *
  * Story 2.13 Phase 3: Provides caching for reconstructed law versions
- * - In-memory LRU cache with TTL (default)
- * - Optional Redis support via Upstash
+ * - Two-tier cache: L1 in-memory (per-instance) + L2 Redis (shared)
+ * - L1 provides fast access for hot items within a serverless instance
+ * - L2 Redis provides cross-user/cross-instance cache sharing
  * - Cache invalidation on amendment sync
  */
 
@@ -14,6 +15,7 @@ import {
   AmendmentTimelineEntry,
 } from './version-reconstruction'
 import { compareLawVersions, LawVersionDiff } from './version-diff'
+import { redis, isRedisConfigured } from '../cache/redis'
 
 // ============================================================================
 // Types
@@ -30,8 +32,14 @@ interface CacheStats {
   size: number
 }
 
+interface TwoTierStats {
+  l1Hits: number
+  l2Hits: number
+  misses: number
+}
+
 // ============================================================================
-// In-Memory LRU Cache
+// In-Memory LRU Cache (L1 - per instance, fast)
 // ============================================================================
 
 class LRUCache<T> {
@@ -124,34 +132,98 @@ class LRUCache<T> {
 // Cache Instances
 // ============================================================================
 
-// Cache for reconstructed law versions
-const versionCache = new LRUCache<LawVersionResult>(500, 86400) // 500 entries, 24h TTL
+// L1 In-memory caches (smaller, faster, per-instance)
+const versionCacheL1 = new LRUCache<LawVersionResult>(100, 300) // 100 entries, 5min TTL
+const diffCacheL1 = new LRUCache<LawVersionDiff>(50, 300) // 50 entries, 5min TTL
+const timelineCacheL1 = new LRUCache<AmendmentTimelineEntry[]>(50, 300) // 50 entries, 5min TTL
 
-// Cache for diffs (shorter TTL since they're computed on-demand)
-const diffCache = new LRUCache<LawVersionDiff>(200, 3600) // 200 entries, 1h TTL
+// L2 Redis TTLs (longer, shared across instances)
+const REDIS_VERSION_TTL = 86400 // 24 hours
+const REDIS_DIFF_TTL = 3600 // 1 hour
+const REDIS_TIMELINE_TTL = 86400 // 24 hours
 
-// Cache for amendment timelines (used by history page)
-const timelineCache = new LRUCache<AmendmentTimelineEntry[]>(200, 86400) // 200 entries, 24h TTL
+// Stats tracking - using Record type to ensure all keys exist
+const twoTierStats: Record<'version' | 'diff' | 'timeline', TwoTierStats> = {
+  version: { l1Hits: 0, l2Hits: 0, misses: 0 },
+  diff: { l1Hits: 0, l2Hits: 0, misses: 0 },
+  timeline: { l1Hits: 0, l2Hits: 0, misses: 0 },
+}
 
 // ============================================================================
 // Cache Key Generators
 // ============================================================================
 
 function versionCacheKey(sfs: string, date: Date): string {
-  const dateStr = date.toISOString().split('T')[0]
-  return `law-version:${sfs}:${dateStr}`
+  const normalizedSfs = sfs.replace(/^SFS\s*/i, '')
+  const dateStr = date.toISOString().slice(0, 10)
+  return `law-version:${normalizedSfs}:${dateStr}`
 }
 
 function diffCacheKey(sfs: string, dateA: Date, dateB: Date): string {
-  const dateAStr = dateA.toISOString().split('T')[0]
-  const dateBStr = dateB.toISOString().split('T')[0]
-  return `law-diff:${sfs}:${dateAStr}:${dateBStr}`
+  const normalizedSfs = sfs.replace(/^SFS\s*/i, '')
+  const dateAStr = dateA.toISOString().slice(0, 10)
+  const dateBStr = dateB.toISOString().slice(0, 10)
+  return `law-diff:${normalizedSfs}:${dateAStr}:${dateBStr}`
 }
 
 function timelineCacheKey(sfs: string): string {
-  // Normalize SFS number for consistent cache keys
   const normalizedSfs = sfs.replace(/^SFS\s*/i, '')
   return `law-timeline:${normalizedSfs}`
+}
+
+// ============================================================================
+// Two-Tier Cache Helper
+// ============================================================================
+
+async function getTwoTierCache<T>(
+  key: string,
+  l1Cache: LRUCache<T>,
+  redisTtl: number,
+  fetcher: () => Promise<T | null>,
+  statsKey: 'version' | 'diff' | 'timeline'
+): Promise<T | null> {
+  const stats = twoTierStats[statsKey]
+
+  // L1: Check in-memory cache first (fastest)
+  const l1Result = l1Cache.get(key)
+  if (l1Result !== null) {
+    stats.l1Hits++
+    return l1Result
+  }
+
+  // L2: Check Redis (shared across instances)
+  if (isRedisConfigured) {
+    try {
+      const l2Result = await redis.get<T>(key)
+      if (l2Result !== null) {
+        stats.l2Hits++
+        // Populate L1 for future requests in this instance
+        l1Cache.set(key, l2Result, 300) // 5 min L1 TTL
+        return l2Result
+      }
+    } catch (error) {
+      // Redis error - continue to fetcher
+      console.warn(`[CACHE] Redis read error for ${key}:`, error)
+    }
+  }
+
+  // Cache miss - fetch from database
+  stats.misses++
+  const result = await fetcher()
+
+  if (result !== null) {
+    // Populate both L1 and L2
+    l1Cache.set(key, result, 300) // 5 min L1 TTL
+
+    if (isRedisConfigured) {
+      // Write to Redis async (don't block)
+      redis.set(key, result, { ex: redisTtl }).catch((error) => {
+        console.warn(`[CACHE] Redis write error for ${key}:`, error)
+      })
+    }
+  }
+
+  return result
 }
 
 // ============================================================================
@@ -159,7 +231,7 @@ function timelineCacheKey(sfs: string): string {
 // ============================================================================
 
 /**
- * Get a law version at a specific date (with caching)
+ * Get a law version at a specific date (with two-tier caching)
  */
 export async function getCachedLawVersion(
   baseLawSfs: string,
@@ -167,24 +239,17 @@ export async function getCachedLawVersion(
 ): Promise<LawVersionResult | null> {
   const key = versionCacheKey(baseLawSfs, date)
 
-  // Try cache first
-  const cached = versionCache.get(key)
-  if (cached) {
-    return cached
-  }
-
-  // Cache miss - fetch from database
-  const result = await getLawVersionAtDate(baseLawSfs, date)
-
-  if (result) {
-    versionCache.set(key, result)
-  }
-
-  return result
+  return getTwoTierCache(
+    key,
+    versionCacheL1,
+    REDIS_VERSION_TTL,
+    () => getLawVersionAtDate(baseLawSfs, date),
+    'version'
+  )
 }
 
 /**
- * Get a diff between two law versions (with caching)
+ * Get a diff between two law versions (with two-tier caching)
  */
 export async function getCachedLawDiff(
   baseLawSfs: string,
@@ -195,24 +260,17 @@ export async function getCachedLawDiff(
   const [older, newer] = dateA < dateB ? [dateA, dateB] : [dateB, dateA]
   const key = diffCacheKey(baseLawSfs, older, newer)
 
-  // Try cache first
-  const cached = diffCache.get(key)
-  if (cached) {
-    return cached
-  }
-
-  // Cache miss - compute diff
-  const result = await compareLawVersions(baseLawSfs, older, newer)
-
-  if (result) {
-    diffCache.set(key, result)
-  }
-
-  return result
+  return getTwoTierCache(
+    key,
+    diffCacheL1,
+    REDIS_DIFF_TTL,
+    () => compareLawVersions(baseLawSfs, older, newer),
+    'diff'
+  )
 }
 
 /**
- * Get amendment timeline for a law (with caching)
+ * Get amendment timeline for a law (with two-tier caching)
  * Returns list of all amendments with their metadata
  */
 export async function getCachedAmendmentTimeline(
@@ -220,19 +278,18 @@ export async function getCachedAmendmentTimeline(
 ): Promise<AmendmentTimelineEntry[]> {
   const key = timelineCacheKey(baseLawSfs)
 
-  // Try cache first
-  const cached = timelineCache.get(key)
-  if (cached) {
-    return cached
-  }
+  const result = await getTwoTierCache(
+    key,
+    timelineCacheL1,
+    REDIS_TIMELINE_TTL,
+    async () => {
+      const timeline = await getLawAmendmentTimeline(baseLawSfs)
+      return timeline // Always return array (even empty)
+    },
+    'timeline'
+  )
 
-  // Cache miss - fetch from database
-  const result = await getLawAmendmentTimeline(baseLawSfs)
-
-  // Always cache (even empty arrays are valid)
-  timelineCache.set(key, result)
-
-  return result
+  return result ?? []
 }
 
 // ============================================================================
@@ -245,33 +302,71 @@ export async function getCachedAmendmentTimeline(
  *
  * @returns Object with counts of invalidated entries
  */
-export function invalidateLawCache(baseLawSfs: string): {
-  versionsDeleted: number
-  diffsDeleted: number
-  timelinesDeleted: number
-} {
+export async function invalidateLawCache(baseLawSfs: string): Promise<{
+  l1Deleted: number
+  l2Deleted: number
+}> {
   const normalizedSfs = baseLawSfs.replace(/^SFS\s*/i, '')
 
-  // Invalidate version cache
-  const versionsDeleted = versionCache.deletePattern(normalizedSfs)
+  // Invalidate L1 (in-memory)
+  const l1Versions = versionCacheL1.deletePattern(normalizedSfs)
+  const l1Diffs = diffCacheL1.deletePattern(normalizedSfs)
+  const l1Timelines = timelineCacheL1.deletePattern(normalizedSfs)
+  const l1Deleted = l1Versions + l1Diffs + l1Timelines
 
-  // Invalidate diff cache
-  const diffsDeleted = diffCache.deletePattern(normalizedSfs)
+  // Invalidate L2 (Redis)
+  let l2Deleted = 0
+  if (isRedisConfigured) {
+    try {
+      // Find and delete all keys matching this law
+      const patterns = [
+        `law-version:${normalizedSfs}:*`,
+        `law-diff:${normalizedSfs}:*`,
+        `law-timeline:${normalizedSfs}`,
+      ]
 
-  // Invalidate timeline cache
-  const timelinesDeleted = timelineCache.deletePattern(normalizedSfs)
+      for (const pattern of patterns) {
+        const keys = await redis.keys(pattern)
+        if (keys.length > 0) {
+          await Promise.all(keys.map((key) => redis.del(key)))
+          l2Deleted += keys.length
+        }
+      }
+    } catch (error) {
+      console.warn(
+        `[CACHE] Redis invalidation error for ${normalizedSfs}:`,
+        error
+      )
+    }
+  }
 
-  return { versionsDeleted, diffsDeleted, timelinesDeleted }
+  return { l1Deleted, l2Deleted }
 }
 
 /**
  * Invalidate all cached data
  * Call this on deployment or major data updates
  */
-export function invalidateAllCaches(): void {
-  versionCache.clear()
-  diffCache.clear()
-  timelineCache.clear()
+export async function invalidateAllCaches(): Promise<void> {
+  // Clear L1
+  versionCacheL1.clear()
+  diffCacheL1.clear()
+  timelineCacheL1.clear()
+
+  // Clear L2 Redis
+  if (isRedisConfigured) {
+    try {
+      const patterns = ['law-version:*', 'law-diff:*', 'law-timeline:*']
+      for (const pattern of patterns) {
+        const keys = await redis.keys(pattern)
+        if (keys.length > 0) {
+          await Promise.all(keys.map((key) => redis.del(key)))
+        }
+      }
+    } catch (error) {
+      console.warn('[CACHE] Redis clear error:', error)
+    }
+  }
 }
 
 // ============================================================================
@@ -279,25 +374,36 @@ export function invalidateAllCaches(): void {
 // ============================================================================
 
 export function getCacheStats(): {
-  version: CacheStats
-  diff: CacheStats
-  timeline: CacheStats
-  hitRate: number
+  version: TwoTierStats
+  diff: TwoTierStats
+  timeline: TwoTierStats
+  l1HitRate: number
+  l2HitRate: number
+  overallHitRate: number
+  redisConfigured: boolean
 } {
-  const versionStats = versionCache.getStats()
-  const diffStats = diffCache.getStats()
-  const timelineStats = timelineCache.getStats()
+  const version = twoTierStats.version
+  const diff = twoTierStats.diff
+  const timeline = twoTierStats.timeline
 
-  const totalHits = versionStats.hits + diffStats.hits + timelineStats.hits
-  const totalRequests =
-    totalHits + versionStats.misses + diffStats.misses + timelineStats.misses
-  const hitRate = totalRequests > 0 ? totalHits / totalRequests : 0
+  const totalL1Hits = version.l1Hits + diff.l1Hits + timeline.l1Hits
+  const totalL2Hits = version.l2Hits + diff.l2Hits + timeline.l2Hits
+  const totalMisses = version.misses + diff.misses + timeline.misses
+  const totalRequests = totalL1Hits + totalL2Hits + totalMisses
+
+  const l1HitRate = totalRequests > 0 ? totalL1Hits / totalRequests : 0
+  const l2HitRate = totalRequests > 0 ? totalL2Hits / totalRequests : 0
+  const overallHitRate =
+    totalRequests > 0 ? (totalL1Hits + totalL2Hits) / totalRequests : 0
 
   return {
-    version: versionStats,
-    diff: diffStats,
-    timeline: timelineStats,
-    hitRate,
+    version,
+    diff,
+    timeline,
+    l1HitRate,
+    l2HitRate,
+    overallHitRate,
+    redisConfigured: isRedisConfigured,
   }
 }
 
