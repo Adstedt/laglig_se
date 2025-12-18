@@ -13,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { prefetchBrowse } from '@/lib/hooks/use-catalogue-browse'
+import type { BrowseInput } from '@/app/actions/browse'
 
 const PER_PAGE_OPTIONS = [
   { value: '25', label: '25 per sida' },
@@ -70,22 +72,72 @@ export function CataloguePagination({
     [searchParams, basePath, useStaticPagination]
   )
 
-  // Pre-fetch page 2 after initial render
+  // Build BrowseInput from current search params for a given page
+  const buildBrowseInput = useCallback(
+    (page: number): BrowseInput => {
+      const query = searchParams.get('q') || undefined
+      const types = searchParams.get('types')?.split(',').filter(Boolean)
+      const status = searchParams.get('status')?.split(',').filter(Boolean)
+      const business = searchParams.get('business')
+      const categories = searchParams
+        .get('categories')
+        ?.split(',')
+        .filter(Boolean)
+      const dateFrom = searchParams.get('from') || undefined
+      const dateTo = searchParams.get('to') || undefined
+      const sortBy =
+        (searchParams.get('sort') as
+          | 'date_desc'
+          | 'date_asc'
+          | 'title'
+          | 'relevance') || 'date_desc'
+
+      return {
+        query,
+        contentTypes: types?.length
+          ? (types as BrowseInput['contentTypes'])
+          : undefined,
+        status: status?.length ? (status as BrowseInput['status']) : undefined,
+        businessType: business as BrowseInput['businessType'],
+        subjectCodes: categories?.length ? categories : undefined,
+        dateFrom,
+        dateTo,
+        page,
+        limit: perPage,
+        sortBy,
+      }
+    },
+    [searchParams, perPage]
+  )
+
+  // Pre-fetch page 2 route after initial render
   useEffect(() => {
     if (currentPage === 1 && totalPages > 1 && !isPrefetching) {
       setIsPrefetching(true)
       router.prefetch(buildPageUrl(2))
+      // Also prefetch page 2 data
+      prefetchBrowse(buildBrowseInput(2))
     }
-  }, [currentPage, totalPages, isPrefetching, router, buildPageUrl])
+  }, [
+    currentPage,
+    totalPages,
+    isPrefetching,
+    router,
+    buildPageUrl,
+    buildBrowseInput,
+  ])
 
-  // Pre-fetch on hover
+  // Pre-fetch route AND data on hover for instant page changes
   const handlePageHover = useCallback(
     (targetPage: number) => {
       if (targetPage >= 1 && targetPage <= totalPages) {
+        // Prefetch the route (for HTML/RSC)
         router.prefetch(buildPageUrl(targetPage))
+        // Prefetch the data (for SWR cache)
+        prefetchBrowse(buildBrowseInput(targetPage))
       }
     },
-    [router, buildPageUrl, totalPages]
+    [router, buildPageUrl, buildBrowseInput, totalPages]
   )
 
   const handlePerPageChange = useCallback(

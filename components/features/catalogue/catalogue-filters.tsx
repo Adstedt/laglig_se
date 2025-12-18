@@ -5,6 +5,8 @@ import { useCallback, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { X, Loader2 } from 'lucide-react'
+import { prefetchBrowse } from '@/lib/hooks/use-catalogue-browse'
+import type { BrowseInput } from '@/app/actions/browse'
 
 // All content types
 const ALL_CONTENT_TYPES = [
@@ -236,6 +238,97 @@ export function CatalogueFilters({
     dateFrom ||
     dateTo
 
+  // Build anticipated BrowseInput for prefetching on hover
+  const buildPrefetchInput = useCallback(
+    (changes: {
+      types?: string[]
+      status?: string[]
+      business?: string | undefined
+      categories?: string[]
+    }): BrowseInput => {
+      const query = searchParams.get('q') || undefined
+      const sortBy =
+        (searchParams.get('sort') as
+          | 'date_desc'
+          | 'date_asc'
+          | 'title'
+          | 'relevance') || 'date_desc'
+      const limit = parseInt(searchParams.get('per_page') || '25', 10)
+
+      return {
+        query,
+        contentTypes:
+          (changes.types ?? selectedTypes).length > 0
+            ? ((changes.types ?? selectedTypes) as BrowseInput['contentTypes'])
+            : undefined,
+        status:
+          (changes.status ?? selectedStatus).length > 0
+            ? ((changes.status ?? selectedStatus) as BrowseInput['status'])
+            : undefined,
+        businessType: (changes.business !== undefined
+          ? changes.business
+          : selectedBusinessType) as BrowseInput['businessType'],
+        subjectCodes:
+          (changes.categories ?? selectedCategories).length > 0
+            ? (changes.categories ?? selectedCategories)
+            : undefined,
+        dateFrom,
+        dateTo,
+        page: 1, // Always page 1 when filters change
+        limit,
+        sortBy,
+      }
+    },
+    [
+      searchParams,
+      selectedTypes,
+      selectedStatus,
+      selectedBusinessType,
+      selectedCategories,
+      dateFrom,
+      dateTo,
+    ]
+  )
+
+  // Prefetch on hover for instant filter changes
+  const prefetchTypeToggle = useCallback(
+    (value: string) => {
+      const newTypes = selectedTypes.includes(value)
+        ? selectedTypes.filter((v) => v !== value)
+        : [...selectedTypes, value]
+      prefetchBrowse(buildPrefetchInput({ types: newTypes }))
+    },
+    [selectedTypes, buildPrefetchInput]
+  )
+
+  const prefetchStatusToggle = useCallback(
+    (value: string) => {
+      const newStatus = selectedStatus.includes(value)
+        ? selectedStatus.filter((v) => v !== value)
+        : [...selectedStatus, value]
+      prefetchBrowse(buildPrefetchInput({ status: newStatus }))
+    },
+    [selectedStatus, buildPrefetchInput]
+  )
+
+  const prefetchBusinessType = useCallback(
+    (value: string) => {
+      const newBusiness = selectedBusinessType === value ? undefined : value
+      prefetchBrowse(buildPrefetchInput({ business: newBusiness }))
+    },
+    [selectedBusinessType, buildPrefetchInput]
+  )
+
+  const prefetchCategoryToggle = useCallback(
+    (value: string) => {
+      const newCategories = selectedCategories.includes(value)
+        ? selectedCategories.filter((v) => v !== value)
+        : [...selectedCategories, value]
+      prefetchBrowse(buildPrefetchInput({ categories: newCategories }))
+    },
+    [selectedCategories, buildPrefetchInput]
+  )
+
   return (
     <div
       className={cn(
@@ -274,6 +367,7 @@ export function CatalogueFilters({
               <label
                 key={type.value}
                 className="flex cursor-pointer items-center gap-2"
+                onMouseEnter={() => prefetchTypeToggle(type.value)}
               >
                 <input
                   type="checkbox"
@@ -304,6 +398,7 @@ export function CatalogueFilters({
             <label
               key={type.value}
               className="flex cursor-pointer items-center gap-2"
+              onMouseEnter={() => prefetchBusinessType(type.value)}
             >
               <input
                 type="radio"
@@ -330,6 +425,7 @@ export function CatalogueFilters({
             <label
               key={category.value}
               className="flex cursor-pointer items-center gap-2"
+              onMouseEnter={() => prefetchCategoryToggle(category.value)}
             >
               <input
                 type="checkbox"
@@ -356,6 +452,7 @@ export function CatalogueFilters({
             <label
               key={status.value}
               className="flex cursor-pointer items-center gap-2"
+              onMouseEnter={() => prefetchStatusToggle(status.value)}
             >
               <input
                 type="checkbox"

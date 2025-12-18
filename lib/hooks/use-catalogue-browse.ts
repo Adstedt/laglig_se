@@ -1,6 +1,6 @@
 'use client'
 
-import useSWR from 'swr'
+import useSWR, { preload } from 'swr'
 import type { BrowseInput, BrowseResponse } from '@/app/actions/browse'
 
 /**
@@ -27,6 +27,15 @@ async function fetcher(input: BrowseInput): Promise<BrowseResponse> {
  */
 function getCacheKey(input: BrowseInput): string {
   return `browse:${JSON.stringify(input)}`
+}
+
+/**
+ * Prefetch browse results into SWR cache
+ * Call this on hover to warm the cache before navigation
+ */
+export function prefetchBrowse(input: BrowseInput): void {
+  const key = getCacheKey(input)
+  preload(key, () => fetcher(input))
 }
 
 export interface UseCatalogueBrowseResult {
