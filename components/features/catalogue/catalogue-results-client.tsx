@@ -1,12 +1,33 @@
 'use client'
 
-import { useCatalogueBrowse } from '@/lib/hooks/use-catalogue-browse'
+import { useEffect } from 'react'
+import {
+  useCatalogueBrowse,
+  prefetchBrowse,
+} from '@/lib/hooks/use-catalogue-browse'
 import { CatalogueResultCard } from './catalogue-result-card'
 import { CataloguePagination } from './catalogue-pagination'
 import { CatalogueSortSelect } from './catalogue-sort-select'
 import { CataloguePrefetcher } from './catalogue-prefetcher'
 import { AlertCircle, Library, Loader2 } from 'lucide-react'
 import type { BrowseInput, BrowseResponse } from '@/app/actions/browse'
+
+// Common filter combinations to prefetch on page load
+const PREFETCH_FILTERS: Partial<BrowseInput>[] = [
+  { contentTypes: ['SFS_LAW'] }, // /lagar
+  {
+    contentTypes: [
+      'COURT_CASE_AD',
+      'COURT_CASE_HD',
+      'COURT_CASE_HFD',
+      'COURT_CASE_HOVR',
+      'COURT_CASE_MOD',
+      'COURT_CASE_MIG',
+    ],
+  }, // /rattsfall
+  { contentTypes: ['EU_REGULATION', 'EU_DIRECTIVE'] }, // /eu
+  { status: ['ACTIVE'] }, // Common status filter
+]
 
 interface CatalogueResultsClientProps {
   input: BrowseInput
@@ -40,6 +61,32 @@ export function CatalogueResultsClient({
     isValidating,
     error,
   } = useCatalogueBrowse(input, initialData)
+
+  // Prefetch common filter combinations on mount for instant filter switches
+  useEffect(() => {
+    // Only prefetch on the main catalogue page (no filters applied)
+    const hasNoFilters =
+      !input.contentTypes?.length &&
+      !input.status?.length &&
+      !input.businessType &&
+      !input.subjectCodes?.length &&
+      !input.query
+
+    if (hasNoFilters) {
+      // Stagger prefetches to avoid network congestion
+      PREFETCH_FILTERS.forEach((filter, index) => {
+        setTimeout(() => {
+          prefetchBrowse({
+            ...filter,
+            page: 1,
+            limit: input.limit || 25,
+            sortBy: input.sortBy || 'date_desc',
+          } as BrowseInput)
+        }, index * 200) // 200ms stagger
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount - intentionally empty deps
 
   // Show subtle loading indicator during revalidation (not skeleton!)
   const showLoadingIndicator = isValidating && !isLoading
