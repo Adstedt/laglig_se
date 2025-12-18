@@ -1,10 +1,10 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useTransition } from 'react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
-import { X } from 'lucide-react'
+import { X, Loader2 } from 'lucide-react'
 
 // All content types
 const ALL_CONTENT_TYPES = [
@@ -161,6 +161,7 @@ export function CatalogueFilters({
 }: CatalogueFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
 
   const getContentTypes = () => {
     switch (contentTypeOptions) {
@@ -193,7 +194,13 @@ export function CatalogueFilters({
       params.delete('page')
 
       const queryString = params.toString()
-      router.push(queryString ? `${basePath}?${queryString}` : basePath)
+      const newUrl = queryString ? `${basePath}?${queryString}` : basePath
+
+      // Use startTransition for non-blocking navigation
+      // This keeps the UI responsive while the route updates
+      startTransition(() => {
+        router.push(newUrl, { scroll: false })
+      })
     },
     [router, searchParams, basePath]
   )
@@ -214,7 +221,11 @@ export function CatalogueFilters({
     const query = searchParams.get('q')
     if (query) params.set('q', query)
     const queryString = params.toString()
-    router.push(queryString ? `${basePath}?${queryString}` : basePath)
+    const newUrl = queryString ? `${basePath}?${queryString}` : basePath
+
+    startTransition(() => {
+      router.push(newUrl, { scroll: false })
+    })
   }
 
   const hasFilters =
@@ -226,15 +237,24 @@ export function CatalogueFilters({
     dateTo
 
   return (
-    <div className="space-y-6">
+    <div
+      className={cn(
+        'space-y-6 transition-opacity duration-150',
+        isPending && 'pointer-events-none opacity-60'
+      )}
+    >
       {/* Fixed header row - always reserves space (hidden in mobile drawer) */}
       {!hideHeader && (
         <div className="flex h-5 items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">
+          <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             Filter
+            {isPending && (
+              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+            )}
           </span>
           <button
             onClick={clearAllFilters}
+            disabled={isPending}
             className={cn(
               'flex items-center text-xs text-primary hover:text-primary/80',
               !hasFilters && 'invisible'

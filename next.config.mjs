@@ -63,9 +63,57 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // Security headers for all routes
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+      // Edge caching for catalogue pages - stale-while-revalidate for instant repeat visits
+      {
+        source: '/rattskallor',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=3600',
+          },
+        ],
+      },
+      {
+        source: '/lagar',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=3600',
+          },
+        ],
+      },
+      {
+        source: '/rattsfall',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=3600',
+          },
+        ],
+      },
+      {
+        source: '/eu',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=3600',
+          },
+        ],
+      },
+      // Static pagination routes - longer cache (5 min edge, 1 hour stale)
+      {
+        source: '/rattskallor/sida/:page',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=300, stale-while-revalidate=3600',
+          },
+        ],
       },
     ]
   },

@@ -1,8 +1,5 @@
-import { browseDocumentsAction } from '@/app/actions/browse'
-import { CatalogueResultCard } from './catalogue-result-card'
-import { CataloguePagination } from './catalogue-pagination'
-import { CatalogueSortSelect } from './catalogue-sort-select'
-import { AlertCircle, Library } from 'lucide-react'
+import { browseDocumentsAction, type BrowseInput } from '@/app/actions/browse'
+import { CatalogueResultsClient } from './catalogue-results-client'
 
 interface CatalogueResultsProps {
   query: string
@@ -20,6 +17,19 @@ interface CatalogueResultsProps {
   useStaticPagination?: boolean
 }
 
+/**
+ * Server-side catalogue results component
+ *
+ * Hybrid SSR + SWR approach:
+ * 1. Server fetches data and renders initial HTML (fast first paint)
+ * 2. Client hydrates with SWR using server data as initialData
+ * 3. Subsequent filter/page changes use SWR's stale-while-revalidate
+ *
+ * Benefits:
+ * - SEO: Full HTML rendered server-side
+ * - Performance: No skeleton flash on filter changes (keepPreviousData)
+ * - UX: Instant feedback with subtle loading indicator
+ */
 export async function CatalogueResults({
   query,
   contentTypes,
@@ -34,7 +44,8 @@ export async function CatalogueResults({
   basePath,
   useStaticPagination = false,
 }: CatalogueResultsProps) {
-  const result = await browseDocumentsAction({
+  // Build the input object for both server fetch and client SWR
+  const input: BrowseInput = {
     query: query || undefined,
     contentTypes:
       contentTypes.length > 0
@@ -61,84 +72,18 @@ export async function CatalogueResults({
     page,
     limit: perPage,
     sortBy,
-  })
-
-  if (result.error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-          <AlertCircle className="h-8 w-8 text-destructive" />
-        </div>
-        <h2 className="mb-2 text-lg font-semibold">Något gick fel</h2>
-        <p className="max-w-md text-sm text-muted-foreground">{result.error}</p>
-      </div>
-    )
   }
 
-  if (!result.success || result.results.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-          <Library className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h2 className="mb-2 text-lg font-semibold">Inga dokument hittades</h2>
-        <p className="max-w-md text-sm text-muted-foreground">
-          {query
-            ? `Vi hittade inga dokument som matchar "${query}". Försök med andra sökord eller ta bort filter.`
-            : 'Inga dokument matchar de valda filtren. Försök med andra filter.'}
-        </p>
-      </div>
-    )
-  }
+  // Fetch data server-side for initial render
+  const initialData = await browseDocumentsAction(input)
 
-  const startIndex = (page - 1) * perPage + 1
-  const endIndex = Math.min(page * perPage, result.total)
-
+  // Pass to client component with SWR for subsequent interactions
   return (
-    <div>
-      {/* Results Header - items-start aligns text with filter header */}
-      <div className="mb-6 flex items-start justify-between">
-        <p className="h-5 text-sm leading-5 text-muted-foreground">
-          Visar {startIndex.toLocaleString('sv-SE')}-
-          {endIndex.toLocaleString('sv-SE')} av{' '}
-          <span className="font-medium text-foreground">
-            {result.total.toLocaleString('sv-SE')}
-          </span>{' '}
-          dokument
-          {result.queryTimeMs && (
-            <span className="ml-2 text-xs">
-              ({result.queryTimeMs.toFixed(0)}ms)
-            </span>
-          )}
-        </p>
-        <CatalogueSortSelect currentSort={sortBy} basePath={basePath} />
-      </div>
-
-      {/* Results List */}
-      <div className="space-y-4">
-        {result.results.map((doc, index) => (
-          <CatalogueResultCard
-            key={doc.id}
-            document={doc}
-            query={query}
-            position={startIndex + index}
-          />
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {result.totalPages > 1 && (
-        <div className="mt-8">
-          <CataloguePagination
-            currentPage={page}
-            totalPages={result.totalPages}
-            perPage={perPage}
-            total={result.total}
-            basePath={basePath}
-            useStaticPagination={useStaticPagination}
-          />
-        </div>
-      )}
-    </div>
+    <CatalogueResultsClient
+      input={input}
+      initialData={initialData}
+      basePath={basePath}
+      useStaticPagination={useStaticPagination}
+    />
   )
 }
