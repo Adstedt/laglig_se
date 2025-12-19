@@ -33,6 +33,23 @@ export interface EurLexDocument {
   eutReference: string | null // Official Journal reference
 }
 
+// Enhanced document with additional SPARQL metadata
+export interface EurLexDocumentEnhanced extends EurLexDocument {
+  // Enhanced metadata from SPARQL
+  eli: string | null // ELI URI
+  inForce: boolean | null // Is document in force
+  directoryCodes: string[] // EU directory classification codes
+  subjectMatters: string[] // Subject matter codes
+  eurovocConcepts: string[] // EuroVoc URIs
+  authors: string[] // Corporate bodies (EP, CONSIL, COM)
+  legalBasisCelex: string[] // CELEX of legal basis docs
+  citesCelex: string[] // CELEX of cited docs
+  endOfValidity: Date | null // Expiry date
+  signatureDate: Date | null // Signature date
+  transpositionDeadline: Date | null // Directives only
+  eeaRelevant: boolean | null // EEA relevance
+}
+
 export interface EurLexDocumentWithContent extends EurLexDocument {
   htmlContent: string | null
   fullText: string | null
@@ -64,6 +81,20 @@ export interface SPARQLResult {
   entryIntoForce?: SPARQLBinding
   eutReference?: SPARQLBinding
   count?: SPARQLBinding // For COUNT queries
+  // Enhanced single-valued fields
+  eli?: SPARQLBinding
+  inForce?: SPARQLBinding
+  endOfValidity?: SPARQLBinding
+  signatureDate?: SPARQLBinding
+  transpositionDeadline?: SPARQLBinding
+  eea?: SPARQLBinding
+  // GROUP_CONCAT aggregated fields (pipe-separated)
+  dirCodes?: SPARQLBinding
+  subjectMatters?: SPARQLBinding
+  eurovocs?: SPARQLBinding
+  authors?: SPARQLBinding
+  legalBases?: SPARQLBinding
+  citesWorks?: SPARQLBinding
 }
 
 export interface SPARQLResponse {
@@ -249,6 +280,209 @@ WHERE {
   ))
   ?expr cdm:expression_belongs_to_work ?work .
   ?expr cdm:expression_uses_language <http://publications.europa.eu/resource/authority/language/SWE> .
+  FILTER NOT EXISTS { ?work cdm:do_not_index "true"^^xsd:boolean }
+}
+`
+}
+
+// ============================================================================
+// Year-Based Query Builders with Enhanced Fields
+// ============================================================================
+
+/**
+ * Builds SPARQL query for fetching EU Regulations by year with enhanced metadata.
+ * Uses GROUP BY and GROUP_CONCAT to avoid row multiplication from multi-valued fields.
+ */
+export function buildRegulationsQueryByYear(
+  year: number,
+  limit: number = 500,
+  offset: number = 0
+): string {
+  return `
+PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?celex ?title ?docNumber ?publicationDate ?entryIntoForce ?eutReference
+       ?eli ?inForce ?endOfValidity ?signatureDate ?eea
+       (GROUP_CONCAT(DISTINCT ?dirCode; separator="|") AS ?dirCodes)
+       (GROUP_CONCAT(DISTINCT ?subjectMatter; separator="|") AS ?subjectMatters)
+       (GROUP_CONCAT(DISTINCT ?eurovoc; separator="|") AS ?eurovocs)
+       (GROUP_CONCAT(DISTINCT ?author; separator="|") AS ?authors)
+       (GROUP_CONCAT(DISTINCT ?legalBasis; separator="|") AS ?legalBases)
+       (GROUP_CONCAT(DISTINCT ?citesWork; separator="|") AS ?citesWorks)
+WHERE {
+  ?work cdm:resource_legal_id_celex ?celex .
+
+  # Filter for regulations (including implementing, delegated, financial)
+  ?work cdm:work_has_resource-type ?type .
+  FILTER(?type IN (
+    <http://publications.europa.eu/resource/authority/resource-type/REG>,
+    <http://publications.europa.eu/resource/authority/resource-type/REG_IMPL>,
+    <http://publications.europa.eu/resource/authority/resource-type/REG_DEL>,
+    <http://publications.europa.eu/resource/authority/resource-type/REG_FINANC>
+  ))
+
+  # Get Swedish expression and title
+  ?expr cdm:expression_belongs_to_work ?work .
+  ?expr cdm:expression_uses_language <http://publications.europa.eu/resource/authority/language/SWE> .
+  ?expr cdm:expression_title ?title .
+
+  # Required: publication date with year filter
+  ?work cdm:work_date_document ?publicationDate .
+  FILTER(YEAR(?publicationDate) = ${year})
+
+  # Optional core fields
+  OPTIONAL { ?work cdm:resource_legal_id_sector ?docNumber }
+  OPTIONAL { ?work cdm:resource_legal_date_entry-into-force ?entryIntoForce }
+  OPTIONAL { ?work cdm:work_part_of_collection_document ?eutReference }
+
+  # Enhanced single-valued fields
+  OPTIONAL { ?work cdm:resource_legal_eli ?eli }
+  OPTIONAL { ?work cdm:resource_legal_in-force ?inForce }
+  OPTIONAL { ?work cdm:resource_legal_date_end-of-validity ?endOfValidity }
+  OPTIONAL { ?work cdm:resource_legal_date_signature ?signatureDate }
+  OPTIONAL { ?work cdm:resource_legal_eea ?eea }
+
+  # Multi-valued fields (will be aggregated)
+  OPTIONAL { ?work cdm:resource_legal_is_about_concept_directory-code ?dirCode }
+  OPTIONAL { ?work cdm:resource_legal_is_about_subject-matter ?subjectMatter }
+  OPTIONAL { ?work cdm:work_is_about_concept_eurovoc ?eurovoc }
+  OPTIONAL { ?work cdm:work_created_by_agent ?author }
+  OPTIONAL { ?work cdm:resource_legal_based_on_resource_legal ?legalBasis }
+  OPTIONAL { ?work cdm:work_cites_work ?citesWork }
+
+  # Exclude non-indexed documents
+  FILTER NOT EXISTS { ?work cdm:do_not_index "true"^^xsd:boolean }
+}
+GROUP BY ?celex ?title ?docNumber ?publicationDate ?entryIntoForce ?eutReference
+         ?eli ?inForce ?endOfValidity ?signatureDate ?eea
+ORDER BY DESC(?publicationDate)
+LIMIT ${limit}
+OFFSET ${offset}
+`
+}
+
+/**
+ * Builds SPARQL query for fetching EU Directives by year with enhanced metadata.
+ * Uses GROUP BY and GROUP_CONCAT to avoid row multiplication from multi-valued fields.
+ */
+export function buildDirectivesQueryByYear(
+  year: number,
+  limit: number = 500,
+  offset: number = 0
+): string {
+  return `
+PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?celex ?title ?docNumber ?publicationDate ?entryIntoForce ?eutReference
+       ?eli ?inForce ?endOfValidity ?signatureDate ?eea ?transpositionDeadline
+       (GROUP_CONCAT(DISTINCT ?dirCode; separator="|") AS ?dirCodes)
+       (GROUP_CONCAT(DISTINCT ?subjectMatter; separator="|") AS ?subjectMatters)
+       (GROUP_CONCAT(DISTINCT ?eurovoc; separator="|") AS ?eurovocs)
+       (GROUP_CONCAT(DISTINCT ?author; separator="|") AS ?authors)
+       (GROUP_CONCAT(DISTINCT ?legalBasis; separator="|") AS ?legalBases)
+       (GROUP_CONCAT(DISTINCT ?citesWork; separator="|") AS ?citesWorks)
+WHERE {
+  ?work cdm:resource_legal_id_celex ?celex .
+
+  # Filter for directives (including implementing, delegated)
+  ?work cdm:work_has_resource-type ?type .
+  FILTER(?type IN (
+    <http://publications.europa.eu/resource/authority/resource-type/DIR>,
+    <http://publications.europa.eu/resource/authority/resource-type/DIR_IMPL>,
+    <http://publications.europa.eu/resource/authority/resource-type/DIR_DEL>
+  ))
+
+  # Get Swedish expression and title
+  ?expr cdm:expression_belongs_to_work ?work .
+  ?expr cdm:expression_uses_language <http://publications.europa.eu/resource/authority/language/SWE> .
+  ?expr cdm:expression_title ?title .
+
+  # Required: publication date with year filter
+  ?work cdm:work_date_document ?publicationDate .
+  FILTER(YEAR(?publicationDate) = ${year})
+
+  # Optional core fields
+  OPTIONAL { ?work cdm:resource_legal_id_sector ?docNumber }
+  OPTIONAL { ?work cdm:resource_legal_date_entry-into-force ?entryIntoForce }
+  OPTIONAL { ?work cdm:work_part_of_collection_document ?eutReference }
+
+  # Enhanced single-valued fields
+  OPTIONAL { ?work cdm:resource_legal_eli ?eli }
+  OPTIONAL { ?work cdm:resource_legal_in-force ?inForce }
+  OPTIONAL { ?work cdm:resource_legal_date_end-of-validity ?endOfValidity }
+  OPTIONAL { ?work cdm:resource_legal_date_signature ?signatureDate }
+  OPTIONAL { ?work cdm:resource_legal_eea ?eea }
+  OPTIONAL { ?work cdm:resource_legal_date_deadline ?transpositionDeadline }
+
+  # Multi-valued fields (will be aggregated)
+  OPTIONAL { ?work cdm:resource_legal_is_about_concept_directory-code ?dirCode }
+  OPTIONAL { ?work cdm:resource_legal_is_about_subject-matter ?subjectMatter }
+  OPTIONAL { ?work cdm:work_is_about_concept_eurovoc ?eurovoc }
+  OPTIONAL { ?work cdm:work_created_by_agent ?author }
+  OPTIONAL { ?work cdm:resource_legal_based_on_resource_legal ?legalBasis }
+  OPTIONAL { ?work cdm:work_cites_work ?citesWork }
+
+  # Exclude non-indexed documents
+  FILTER NOT EXISTS { ?work cdm:do_not_index "true"^^xsd:boolean }
+}
+GROUP BY ?celex ?title ?docNumber ?publicationDate ?entryIntoForce ?eutReference
+         ?eli ?inForce ?endOfValidity ?signatureDate ?eea ?transpositionDeadline
+ORDER BY DESC(?publicationDate)
+LIMIT ${limit}
+OFFSET ${offset}
+`
+}
+
+/**
+ * Builds SPARQL query to count regulations for a specific year
+ */
+export function buildRegulationsCountQueryByYear(year: number): string {
+  return `
+PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT (COUNT(DISTINCT ?work) AS ?count)
+WHERE {
+  ?work cdm:resource_legal_id_celex ?celex .
+  ?work cdm:work_has_resource-type ?type .
+  FILTER(?type IN (
+    <http://publications.europa.eu/resource/authority/resource-type/REG>,
+    <http://publications.europa.eu/resource/authority/resource-type/REG_IMPL>,
+    <http://publications.europa.eu/resource/authority/resource-type/REG_DEL>,
+    <http://publications.europa.eu/resource/authority/resource-type/REG_FINANC>
+  ))
+  ?expr cdm:expression_belongs_to_work ?work .
+  ?expr cdm:expression_uses_language <http://publications.europa.eu/resource/authority/language/SWE> .
+  ?work cdm:work_date_document ?publicationDate .
+  FILTER(YEAR(?publicationDate) = ${year})
+  FILTER NOT EXISTS { ?work cdm:do_not_index "true"^^xsd:boolean }
+}
+`
+}
+
+/**
+ * Builds SPARQL query to count directives for a specific year
+ */
+export function buildDirectivesCountQueryByYear(year: number): string {
+  return `
+PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT (COUNT(DISTINCT ?work) AS ?count)
+WHERE {
+  ?work cdm:resource_legal_id_celex ?celex .
+  ?work cdm:work_has_resource-type ?type .
+  FILTER(?type IN (
+    <http://publications.europa.eu/resource/authority/resource-type/DIR>,
+    <http://publications.europa.eu/resource/authority/resource-type/DIR_IMPL>,
+    <http://publications.europa.eu/resource/authority/resource-type/DIR_DEL>
+  ))
+  ?expr cdm:expression_belongs_to_work ?work .
+  ?expr cdm:expression_uses_language <http://publications.europa.eu/resource/authority/language/SWE> .
+  ?work cdm:work_date_document ?publicationDate .
+  FILTER(YEAR(?publicationDate) = ${year})
   FILTER NOT EXISTS { ?work cdm:do_not_index "true"^^xsd:boolean }
 }
 `
@@ -457,6 +691,218 @@ export async function getDirectivesCount(): Promise<number> {
   }
 
   return parseInt(countBinding.count.value, 10)
+}
+
+// ============================================================================
+// Year-Based Fetch Functions with Enhanced Metadata
+// ============================================================================
+
+/**
+ * Fetches EU regulations for a specific year with enhanced metadata
+ */
+export async function fetchRegulationsByYear(
+  year: number,
+  limit: number = 500,
+  offset: number = 0
+): Promise<EurLexDocumentEnhanced[]> {
+  const query = buildRegulationsQueryByYear(year, limit, offset)
+  const response = await executeSparqlQuery(query)
+
+  return aggregateEnhancedBindings(response.results.bindings, 'REG')
+}
+
+/**
+ * Fetches EU directives for a specific year with enhanced metadata
+ */
+export async function fetchDirectivesByYear(
+  year: number,
+  limit: number = 500,
+  offset: number = 0
+): Promise<EurLexDocumentEnhanced[]> {
+  const query = buildDirectivesQueryByYear(year, limit, offset)
+  const response = await executeSparqlQuery(query)
+
+  return aggregateEnhancedBindings(response.results.bindings, 'DIR')
+}
+
+/**
+ * Gets the total count of regulations for a specific year
+ */
+export async function getRegulationsCountByYear(year: number): Promise<number> {
+  const query = buildRegulationsCountQueryByYear(year)
+  const response = await executeSparqlQuery(query)
+
+  const countBinding = response.results.bindings[0]
+  if (!countBinding?.count?.value) {
+    return 0
+  }
+
+  return parseInt(countBinding.count.value, 10)
+}
+
+/**
+ * Gets the total count of directives for a specific year
+ */
+export async function getDirectivesCountByYear(year: number): Promise<number> {
+  const query = buildDirectivesCountQueryByYear(year)
+  const response = await executeSparqlQuery(query)
+
+  const countBinding = response.results.bindings[0]
+  if (!countBinding?.count?.value) {
+    return 0
+  }
+
+  return parseInt(countBinding.count.value, 10)
+}
+
+// ============================================================================
+// Relationship Data Fetching
+// ============================================================================
+
+/**
+ * Document relationships extracted from SPARQL
+ */
+export interface DocumentRelationships {
+  celex: string
+  citesCelex: string[] // Documents this one cites (vanity count)
+  legalBasisCelex: string[] // Legal basis documents (treaties, etc.)
+  amendedByCelex: string[] // Documents that amend this one - CRITICAL for change tracking
+  correctedByCelex: string[] // Documents that correct this one (Rättelser)
+}
+
+/**
+ * Builds SPARQL query to fetch relationship data for a batch of CELEX numbers.
+ * Uses separate query to avoid GROUP_CONCAT issues with multi-valued relationships.
+ *
+ * Note: SPARQL requires STR() for string comparison with typed literals.
+ * Citations are stored as Cellar URIs, so we need to look up the CELEX for each cited document.
+ */
+function buildRelationshipsQuery(celexNumbers: string[]): string {
+  // Build filter conditions using STR() for proper string matching
+  const celexConditions = celexNumbers
+    .map((c) => `STR(?celex) = "${c}"`)
+    .join(' || ')
+
+  // Optimized query - only fetch what we need:
+  // - CITES: for vanity count display
+  // - LEGAL_BASIS: for sidebar display
+  // - AMENDED_BY: CRITICAL for change tracking
+  // - CORRECTED_BY: important for official fixes
+  // Dropped: AMENDS (in HTML text), CITED_BY (too large, not actionable)
+  return `
+PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+
+SELECT ?celex ?relationType ?targetCelex
+WHERE {
+  ?work cdm:resource_legal_id_celex ?celex .
+  FILTER(${celexConditions})
+
+  {
+    # Documents this one CITES (for vanity count)
+    ?work cdm:work_cites_work ?target .
+    ?target cdm:resource_legal_id_celex ?targetCelex .
+    BIND("CITES" AS ?relationType)
+  } UNION {
+    # Legal basis (treaties, founding acts)
+    ?work cdm:resource_legal_based_on_resource_legal ?target .
+    ?target cdm:resource_legal_id_celex ?targetCelex .
+    BIND("LEGAL_BASIS" AS ?relationType)
+  } UNION {
+    # Documents that AMEND this one (reverse lookup) - CRITICAL for change tracking
+    ?amendingWork cdm:resource_legal_amends_resource_legal ?work .
+    ?amendingWork cdm:resource_legal_id_celex ?targetCelex .
+    BIND("AMENDED_BY" AS ?relationType)
+  } UNION {
+    # Documents that CORRECT this one (Rättelser)
+    ?correctingWork cdm:resource_legal_corrects_resource_legal ?work .
+    ?correctingWork cdm:resource_legal_id_celex ?targetCelex .
+    BIND("CORRECTED_BY" AS ?relationType)
+  }
+}
+`
+}
+
+/**
+ * Fetches relationship data for a batch of CELEX numbers.
+ * Returns a Map from CELEX to relationships.
+ *
+ * @param celexNumbers - Array of CELEX numbers to fetch relationships for
+ * @returns Map of CELEX -> DocumentRelationships
+ */
+export async function fetchDocumentRelationships(
+  celexNumbers: string[]
+): Promise<Map<string, DocumentRelationships>> {
+  if (celexNumbers.length === 0) {
+    return new Map()
+  }
+
+  // SPARQL has limits on VALUES clause size, batch if needed
+  const BATCH_SIZE = 50
+  const results = new Map<string, DocumentRelationships>()
+
+  // Initialize empty relationships for all CELEX numbers
+  for (const celex of celexNumbers) {
+    results.set(celex, {
+      celex,
+      citesCelex: [],
+      legalBasisCelex: [],
+      amendedByCelex: [],
+      correctedByCelex: [],
+    })
+  }
+
+  // Process in batches
+  for (let i = 0; i < celexNumbers.length; i += BATCH_SIZE) {
+    const batch = celexNumbers.slice(i, i + BATCH_SIZE)
+    const query = buildRelationshipsQuery(batch)
+
+    try {
+      const response = await executeSparqlQuery(query)
+
+      for (const binding of response.results.bindings) {
+        const celex = binding.celex?.value
+        const relationType = binding.relationType?.value
+        const targetCelex = binding.targetCelex?.value
+
+        if (!celex || !relationType || !targetCelex) continue
+
+        const rel = results.get(celex)
+        if (!rel) continue
+
+        // Add to appropriate array (avoiding duplicates)
+        switch (relationType) {
+          case 'CITES':
+            if (!rel.citesCelex.includes(targetCelex)) {
+              rel.citesCelex.push(targetCelex)
+            }
+            break
+          case 'LEGAL_BASIS':
+            if (!rel.legalBasisCelex.includes(targetCelex)) {
+              rel.legalBasisCelex.push(targetCelex)
+            }
+            break
+          case 'AMENDED_BY':
+            if (!rel.amendedByCelex.includes(targetCelex)) {
+              rel.amendedByCelex.push(targetCelex)
+            }
+            break
+          case 'CORRECTED_BY':
+            if (!rel.correctedByCelex.includes(targetCelex)) {
+              rel.correctedByCelex.push(targetCelex)
+            }
+            break
+        }
+      }
+    } catch (error) {
+      console.error(
+        `Failed to fetch relationships for batch starting at ${i}:`,
+        error
+      )
+      // Continue with next batch
+    }
+  }
+
+  return results
 }
 
 /**
@@ -764,6 +1210,143 @@ function parseSparqlBinding(
 }
 
 /**
+ * Parses SPARQL bindings with GROUP_CONCAT aggregated fields into EurLexDocumentEnhanced objects.
+ * Each row is already a unique document due to GROUP BY in the query.
+ */
+export function aggregateEnhancedBindings(
+  bindings: SPARQLResult[],
+  type: 'REG' | 'DIR'
+): EurLexDocumentEnhanced[] {
+  const results: EurLexDocumentEnhanced[] = []
+
+  for (const binding of bindings) {
+    const celex = binding.celex?.value
+    if (!celex) continue
+
+    // Parse pipe-separated multi-valued fields
+    const directoryCodes = parsePipeSeparatedCodes(binding.dirCodes?.value)
+    const subjectMatters = parsePipeSeparatedCodes(
+      binding.subjectMatters?.value
+    )
+    const eurovocConcepts = parsePipeSeparatedUris(binding.eurovocs?.value)
+    const authors = parsePipeSeparatedAuthors(binding.authors?.value)
+    const legalBasisCelex = parsePipeSeparatedCelexFromUris(
+      binding.legalBases?.value
+    )
+    const citesCelex = parsePipeSeparatedCelexFromUris(
+      binding.citesWorks?.value
+    )
+
+    results.push({
+      celex,
+      type,
+      title: binding.title?.value || '',
+      documentNumber: formatDocumentNumber(celex, type),
+      publicationDate: parseDate(binding.publicationDate?.value),
+      entryIntoForce: parseDate(binding.entryIntoForce?.value),
+      eurlexUrl: `https://eur-lex.europa.eu/legal-content/SV/ALL/?uri=CELEX:${celex}`,
+      eutReference: binding.eutReference?.value || null,
+      // Enhanced fields
+      eli: binding.eli?.value || null,
+      inForce: parseBooleanBinding(binding.inForce?.value),
+      directoryCodes,
+      subjectMatters,
+      eurovocConcepts,
+      authors,
+      legalBasisCelex,
+      citesCelex,
+      endOfValidity: parseDate(binding.endOfValidity?.value),
+      signatureDate: parseDate(binding.signatureDate?.value),
+      transpositionDeadline: parseDate(binding.transpositionDeadline?.value),
+      eeaRelevant: parseBooleanBinding(binding.eea?.value),
+    })
+  }
+
+  return results
+}
+
+/**
+ * Parses pipe-separated URIs and extracts the last path segment as code
+ */
+function parsePipeSeparatedCodes(value: string | undefined): string[] {
+  if (!value) return []
+  return value.split('|').filter(Boolean).map(extractCodeFromUri)
+}
+
+/**
+ * Parses pipe-separated URIs (keeps full URI)
+ */
+function parsePipeSeparatedUris(value: string | undefined): string[] {
+  if (!value) return []
+  return value.split('|').filter(Boolean)
+}
+
+/**
+ * Parses pipe-separated author URIs and extracts author codes
+ */
+function parsePipeSeparatedAuthors(value: string | undefined): string[] {
+  if (!value) return []
+  return value.split('|').filter(Boolean).map(extractAuthorCode)
+}
+
+/**
+ * Parses pipe-separated URIs and extracts CELEX numbers
+ */
+function parsePipeSeparatedCelexFromUris(value: string | undefined): string[] {
+  if (!value) return []
+  return value
+    .split('|')
+    .filter(Boolean)
+    .map(extractCelexFromUri)
+    .filter((c): c is string => c !== null)
+}
+
+/**
+ * Extracts a code from a URI (e.g., last path segment)
+ * Example: "http://publications.europa.eu/resource/authority/fd_555/15.10.10.00" -> "15.10.10.00"
+ */
+function extractCodeFromUri(uri: string): string {
+  const parts = uri.split('/')
+  return parts[parts.length - 1] || uri
+}
+
+/**
+ * Extracts author code from corporate body URI
+ * Example: "http://publications.europa.eu/resource/authority/corporate-body/EP" -> "EP"
+ */
+function extractAuthorCode(uri: string): string {
+  const parts = uri.split('/')
+  return parts[parts.length - 1] || uri
+}
+
+/**
+ * Extracts CELEX number from a work URI
+ * Example: "http://publications.europa.eu/resource/celex/32016R0679" -> "32016R0679"
+ */
+function extractCelexFromUri(uri: string): string | null {
+  // Try to find CELEX pattern in URI
+  const match = uri.match(/celex\/(\d+[A-Z]\d+)/)
+  if (match) return match[1]
+
+  // Also try to find CELEX pattern anywhere in the URI
+  const celexMatch = uri.match(/\b(3\d{4}[RLDB]\d{4,5})\b/)
+  if (celexMatch) return celexMatch[1]
+
+  return null
+}
+
+/**
+ * Parses boolean values from SPARQL (can be "1", "true", "false", etc.)
+ */
+function parseBooleanBinding(value: string | undefined): boolean | null {
+  if (!value) return null
+  const lower = value.toLowerCase()
+  if (lower === '1' || lower === 'true') return true
+  if (lower === '0' || lower === 'false') return false
+  return null
+}
+
+/**
  * Formats CELEX number to human-readable EU document number
  * Example: "32016R0679" -> "Regulation (EU) 2016/679"
  */
@@ -925,12 +1508,12 @@ export function extractEUMetadata(
   // ELI references - URIs like http://data.europa.eu/eli/...
   const eliMatches =
     fullText.match(/http:\/\/data\.europa\.eu\/eli\/[^\s"<>]+/gi) || []
-  const eliReferences = [...new Set(eliMatches)].slice(0, 20) // Limit to 20
+  const eliReferences = Array.from(new Set(eliMatches)).slice(0, 20) // Limit to 20
 
   // Referenced CELEX numbers in text
   // Pattern: 3YYYYTNNNNN (e.g., 32016R0679, 32014L0065)
   const celexMatches = fullText.match(/\b3\d{4}[RLDB]\d{4,5}\b/g) || []
-  const referencedCelex = [...new Set(celexMatches)].slice(0, 50) // Limit to 50
+  const referencedCelex = Array.from(new Set(celexMatches)).slice(0, 50) // Limit to 50
 
   // Word count
   const wordCount = fullText.split(/\s+/).filter((w) => w.length > 0).length

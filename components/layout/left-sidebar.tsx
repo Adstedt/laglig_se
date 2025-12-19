@@ -1,0 +1,263 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Scale,
+  BookOpen,
+  CheckSquare,
+  Users,
+  Bell,
+  Settings,
+  ChevronRight,
+  ChevronsUpDown,
+  Building2,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { TrialStatusWidget } from '@/components/layout/trial-status-widget'
+import { useLayoutStore } from '@/lib/stores/layout-store'
+import { useState } from 'react'
+
+interface LeftSidebarProps {
+  collapsed?: boolean
+  onToggle?: () => void
+}
+
+const platformItems = [
+  {
+    title: 'Dashboard',
+    icon: LayoutDashboard,
+    href: '/dashboard',
+  },
+  {
+    title: 'AI Chat',
+    icon: MessageSquare,
+    href: '#',
+    isToggle: true,
+  },
+  {
+    title: 'Laglistor',
+    icon: Scale,
+    href: '#',
+    isAccordion: true,
+    subItems: [
+      { title: 'Mina laglistor', href: '/laglistor' },
+      { title: 'Alla lagar', href: '/rattskallor' },
+    ],
+  },
+  {
+    title: 'Rättskällor',
+    icon: BookOpen,
+    href: '/rattskallor',
+  },
+  {
+    title: 'Inställningar',
+    icon: Settings,
+    href: '/settings',
+  },
+]
+
+const workItems = [
+  {
+    title: 'Uppgifter',
+    icon: CheckSquare,
+    href: '#',
+    disabled: true,
+  },
+  {
+    title: 'HR',
+    icon: Users,
+    href: '#',
+    isAccordion: true,
+    disabled: true,
+    subItems: [
+      { title: 'Anställda', href: '/hr/employees' },
+      { title: 'Efterlevnad', href: '/hr/compliance' },
+    ],
+  },
+  {
+    title: 'Ändringsbevakning',
+    icon: Bell,
+    href: '#',
+    disabled: true,
+  },
+]
+
+export function LeftSidebar({
+  collapsed,
+  onToggle: _onToggle,
+}: LeftSidebarProps) {
+  const pathname = usePathname()
+  const { toggleRightSidebar } = useLayoutStore()
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
+    {}
+  )
+
+  const isActive = (href: string) => {
+    if (href === '#') return false
+    if (href === '/dashboard') return pathname === '/dashboard'
+    return pathname.startsWith(href)
+  }
+
+  const toggleAccordion = (title: string) => {
+    setOpenAccordions((prev) => ({ ...prev, [title]: !prev[title] }))
+  }
+
+  const renderNavItem = (
+    item: (typeof platformItems)[0] & {
+      isToggle?: boolean
+      isAccordion?: boolean
+      disabled?: boolean
+      subItems?: { title: string; href: string }[]
+    }
+  ) => {
+    const Icon = item.icon
+    const active = isActive(item.href)
+
+    // Toggle button for AI Chat
+    if (item.isToggle) {
+      return (
+        <button
+          key={item.title}
+          onClick={toggleRightSidebar}
+          className={cn(
+            'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+            'hover:bg-accent hover:text-accent-foreground',
+            'text-muted-foreground'
+          )}
+        >
+          <Icon className="h-4 w-4" />
+          <span className="flex-1 text-left">{item.title}</span>
+        </button>
+      )
+    }
+
+    // Accordion menu item
+    if (item.isAccordion && item.subItems) {
+      const isOpen = openAccordions[item.title] ?? false
+      return (
+        <div key={item.title}>
+          <button
+            onClick={() => !item.disabled && toggleAccordion(item.title)}
+            disabled={item.disabled}
+            className={cn(
+              'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+              'hover:bg-accent hover:text-accent-foreground',
+              item.disabled ? 'opacity-50 cursor-not-allowed' : '',
+              'text-muted-foreground'
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            <span className="flex-1 text-left">{item.title}</span>
+            <ChevronRight
+              className={cn(
+                'h-4 w-4 transition-transform duration-200',
+                isOpen && 'rotate-90'
+              )}
+            />
+          </button>
+          {isOpen && !item.disabled && (
+            <div className="ml-7 mt-1 space-y-1 border-l border-border pl-3">
+              {item.subItems.map((subItem) => (
+                <Link
+                  key={subItem.title}
+                  href={subItem.href}
+                  className={cn(
+                    'block rounded-lg px-3 py-1.5 text-sm transition-colors',
+                    isActive(subItem.href)
+                      ? 'text-foreground font-medium'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {subItem.title}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // Regular menu item
+    if (item.disabled) {
+      return (
+        <span
+          key={item.title}
+          className={cn(
+            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
+            'opacity-50 cursor-not-allowed text-muted-foreground'
+          )}
+        >
+          <Icon className="h-4 w-4" />
+          <span>{item.title}</span>
+        </span>
+      )
+    }
+
+    return (
+      <Link
+        key={item.title}
+        href={item.href}
+        className={cn(
+          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+          active
+            ? 'bg-accent text-accent-foreground'
+            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+        )}
+      >
+        <Icon className="h-4 w-4" />
+        <span>{item.title}</span>
+      </Link>
+    )
+  }
+
+  return (
+    <aside
+      className={cn(
+        'flex h-full w-[240px] flex-col border-r bg-background transition-all duration-200',
+        'hidden md:flex', // Hide on mobile, show on md+
+        collapsed && 'md:w-0 md:overflow-hidden'
+      )}
+    >
+      {/* Workspace Selector */}
+      <div className="p-3">
+        <button className="flex w-full items-center gap-3 rounded-lg border bg-background p-3 text-left transition-colors hover:bg-accent">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Building2 className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">Min arbetsplats</p>
+            <p className="text-xs text-muted-foreground truncate">Provperiod</p>
+          </div>
+          <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-3">
+        {/* Platform Section */}
+        <div>
+          <h3 className="mb-1 px-3 text-xs font-medium text-muted-foreground">
+            Plattform
+          </h3>
+          <div className="space-y-0.5">{platformItems.map(renderNavItem)}</div>
+        </div>
+
+        {/* Work Section */}
+        <div className="mt-6">
+          <h3 className="mb-1 px-3 text-xs font-medium text-muted-foreground">
+            Arbete
+          </h3>
+          <div className="space-y-0.5">{workItems.map(renderNavItem)}</div>
+        </div>
+      </nav>
+
+      {/* Trial Status at bottom */}
+      <div className="border-t p-3">
+        <TrialStatusWidget />
+      </div>
+    </aside>
+  )
+}

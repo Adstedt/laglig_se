@@ -118,6 +118,11 @@ function MobileNavSection({
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [hasScrolled, setHasScrolled] = React.useState(false)
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -148,118 +153,125 @@ export function Navbar() {
           </span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <NavigationMenu className="hidden md:flex">
-          <NavigationMenuList>
-            {/* Lagar dropdown */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="h-9 rounded-full bg-transparent px-4 text-sm text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground data-[state=open]:bg-foreground/[0.04]">
-                Lagar
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-1 p-3">
-                  <ListItem
-                    href="/rattskallor"
-                    title="Rättskällor"
-                    icon={<Library className="h-4 w-4" />}
-                  >
-                    Bläddra bland alla rättskällor
-                  </ListItem>
-                  <ListItem
-                    href="/lagar"
-                    title="Svenska lagar"
-                    icon={<BookOpen className="h-4 w-4" />}
-                  >
-                    Utforska alla svenska lagar och förordningar
-                  </ListItem>
-                  <ListItem
-                    href="/rattsfall"
-                    title="Rättsfall"
-                    icon={<Gavel className="h-4 w-4" />}
-                  >
-                    Sök i domar från svenska domstolar
-                  </ListItem>
-                  <ListItem
-                    href="/eu"
-                    title="EU-lagstiftning"
-                    icon={<Globe className="h-4 w-4" />}
-                  >
-                    EU-förordningar och EU-direktiv
-                  </ListItem>
-                  <ListItem
-                    href="/foreskrifter"
-                    title="Föreskrifter"
-                    icon={<FileText className="h-4 w-4" />}
-                    disabled
-                  >
-                    Myndigheters föreskrifter och allmänna råd
-                  </ListItem>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+        {/* Desktop Navigation - only render after mount to avoid Radix hydration mismatch */}
+        {mounted ? (
+          <NavigationMenu className="hidden md:flex">
+            <NavigationMenuList>
+              {/* Lagar dropdown */}
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="h-9 rounded-full bg-transparent px-4 text-sm text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground data-[state=open]:bg-foreground/[0.04]">
+                  Lagar
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-1 p-3">
+                    <ListItem
+                      href="/rattskallor"
+                      title="Rättskällor"
+                      icon={<Library className="h-4 w-4" />}
+                    >
+                      Bläddra bland alla rättskällor
+                    </ListItem>
+                    <ListItem
+                      href="/lagar"
+                      title="Svenska lagar"
+                      icon={<BookOpen className="h-4 w-4" />}
+                    >
+                      Utforska alla svenska lagar och förordningar
+                    </ListItem>
+                    <ListItem
+                      href="/rattsfall"
+                      title="Rättsfall"
+                      icon={<Gavel className="h-4 w-4" />}
+                    >
+                      Sök i domar från svenska domstolar
+                    </ListItem>
+                    <ListItem
+                      href="/eu"
+                      title="EU-lagstiftning"
+                      icon={<Globe className="h-4 w-4" />}
+                    >
+                      EU-förordningar och EU-direktiv
+                    </ListItem>
+                    <ListItem
+                      href="/foreskrifter"
+                      title="Föreskrifter"
+                      icon={<FileText className="h-4 w-4" />}
+                      disabled
+                    >
+                      Myndigheters föreskrifter och allmänna råd
+                    </ListItem>
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
 
-            {/* Produkt dropdown */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="h-9 rounded-full bg-transparent px-4 text-sm text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground data-[state=open]:bg-foreground/[0.04]">
-                Produkt
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-1 p-3">
-                  <ListItem
-                    href="#how-it-works"
-                    title="Så fungerar det"
-                    icon={<Sparkles className="h-4 w-4" />}
-                  >
-                    Kom igång på under 3 minuter
-                  </ListItem>
-                  <ListItem
-                    href="#faq"
-                    title="Vanliga frågor"
-                    icon={<HelpCircle className="h-4 w-4" />}
-                  >
-                    Svar på de vanligaste frågorna
-                  </ListItem>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
+              {/* Produkt dropdown */}
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="h-9 rounded-full bg-transparent px-4 text-sm text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground data-[state=open]:bg-foreground/[0.04]">
+                  Produkt
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-1 p-3">
+                    <ListItem
+                      href="#how-it-works"
+                      title="Så fungerar det"
+                      icon={<Sparkles className="h-4 w-4" />}
+                    >
+                      Kom igång på under 3 minuter
+                    </ListItem>
+                    <ListItem
+                      href="#faq"
+                      title="Vanliga frågor"
+                      icon={<HelpCircle className="h-4 w-4" />}
+                    >
+                      Svar på de vanligaste frågorna
+                    </ListItem>
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
 
-            {/* Priser - enkel länk */}
-            <NavigationMenuItem>
-              <Link href="#pricing" legacyBehavior passHref>
-                <NavigationMenuLink className="inline-flex h-9 items-center justify-center rounded-full bg-transparent px-4 text-sm text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground">
-                  Priser
+              {/* Priser - enkel länk */}
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="#pricing"
+                    className="inline-flex h-9 items-center justify-center rounded-full bg-transparent px-4 text-sm text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
+                  >
+                    Priser
+                  </Link>
                 </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
+              </NavigationMenuItem>
 
-            {/* Resurser dropdown */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="h-9 rounded-full bg-transparent px-4 text-sm text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground data-[state=open]:bg-foreground/[0.04]">
-                Resurser
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-1 p-3">
-                  <ListItem
-                    href="/blogg"
-                    title="Blogg"
-                    icon={<Newspaper className="h-4 w-4" />}
-                    disabled
-                  >
-                    Artiklar om lagefterlevnad och compliance
-                  </ListItem>
-                  <ListItem
-                    href="/guider"
-                    title="Guider"
-                    icon={<BookMarked className="h-4 w-4" />}
-                    disabled
-                  >
-                    Djupgående guider för olika branscher
-                  </ListItem>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
+              {/* Resurser dropdown */}
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="h-9 rounded-full bg-transparent px-4 text-sm text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground data-[state=open]:bg-foreground/[0.04]">
+                  Resurser
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid w-[400px] gap-1 p-3">
+                    <ListItem
+                      href="/blogg"
+                      title="Blogg"
+                      icon={<Newspaper className="h-4 w-4" />}
+                      disabled
+                    >
+                      Artiklar om lagefterlevnad och compliance
+                    </ListItem>
+                    <ListItem
+                      href="/guider"
+                      title="Guider"
+                      icon={<BookMarked className="h-4 w-4" />}
+                      disabled
+                    >
+                      Djupgående guider för olika branscher
+                    </ListItem>
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+        ) : (
+          <div className="hidden md:flex md:h-9" />
+        )}
 
         {/* Desktop Auth */}
         <div className="hidden md:flex md:items-center md:gap-2">

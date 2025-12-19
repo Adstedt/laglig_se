@@ -28,8 +28,11 @@ model User {
   last_login_at  DateTime?
 
   // Relations
-  workspace_members WorkspaceMember[]
-  owned_workspaces  Workspace[]       @relation("WorkspaceOwner")
+  workspace_members  WorkspaceMember[] @relation("WorkspaceMemberUser")
+  invited_members    WorkspaceMember[] @relation("WorkspaceMemberInviter")
+  owned_workspaces   Workspace[]       @relation("WorkspaceOwner")
+  created_law_lists  LawList[]         @relation("LawListCreator")
+  added_law_list_items LawListItem[]   @relation("LawListItemAdder")
 
   @@index([email])
   @@map("users")
@@ -47,31 +50,116 @@ model Workspace {
   company_legal_name String?
   sni_code           String?
 
+  // Story 5.1: Multi-tenancy fields
+  company_logo      String?
+  subscription_tier SubscriptionTier @default(TRIAL)
+  trial_ends_at     DateTime?
+  status            WorkspaceStatus  @default(ACTIVE)
+  paused_at         DateTime?
+  deleted_at        DateTime?
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   // Relations
-  members WorkspaceMember[]
+  members         WorkspaceMember[]
+  company_profile CompanyProfile?
+  law_lists       LawList[]
 
   @@index([owner_id])
   @@index([org_number])
+  @@index([status])
   @@map("workspaces")
 }
 
 model WorkspaceMember {
-  id           String @id @default(uuid())
+  id           String        @id @default(uuid())
   user_id      String
   workspace_id String
-  role         String @default("MEMBER") // OWNER, ADMIN, MEMBER
+  role         WorkspaceRole @default(MEMBER)
 
-  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  // Story 5.1: Invitation tracking
+  invited_by String?
+  invited_at DateTime?
+
+  user      User      @relation("WorkspaceMemberUser", fields: [user_id], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  inviter   User?     @relation("WorkspaceMemberInviter", fields: [invited_by], references: [id])
 
   joined_at DateTime @default(now())
 
   @@unique([user_id, workspace_id])
   @@index([workspace_id])
+  @@index([invited_by])
   @@map("workspace_members")
+}
+
+// ============================================================================
+// WORKSPACE PROFILE & LAW LISTS - Story 5.1
+// ============================================================================
+
+model CompanyProfile {
+  id                 String  @id @default(uuid())
+  workspace_id       String  @unique
+  company_name       String
+  sni_code           String
+  legal_form         String  // AB, HB, EF, etc.
+  employee_count     Int
+  address            String?
+  contextual_answers Json?   // From onboarding questions
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@map("company_profiles")
+}
+
+model LawList {
+  id           String   @id @default(uuid())
+  workspace_id String
+  name         String   // "Huvudlista", "Lager Malmö", "GDPR Focus"
+  description  String?
+  is_default   Boolean  @default(false)
+  created_by   String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  workspace Workspace     @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  creator   User?         @relation("LawListCreator", fields: [created_by], references: [id])
+  items     LawListItem[]
+
+  @@index([workspace_id])
+  @@map("law_lists")
+}
+
+model LawListItem {
+  id          String @id @default(uuid())
+  law_list_id String
+  document_id String // FK to LegalDocument
+
+  // User-editable fields
+  commentary String?             // AI-generated reason or user note
+  status     LawListItemStatus   @default(NOT_STARTED)
+  priority   LawListItemPriority @default(MEDIUM)
+  notes      String?             @db.Text
+
+  // Metadata
+  source   LawListItemSource @default(MANUAL)
+  added_by String?
+  added_at DateTime          @default(now())
+
+  // Change tracking
+  last_change_acknowledged_at DateTime?
+  last_change_acknowledged_by String?
+
+  law_list LawList       @relation(fields: [law_list_id], references: [id], onDelete: Cascade)
+  document LegalDocument @relation(fields: [document_id], references: [id])
+  adder    User?         @relation("LawListItemAdder", fields: [added_by], references: [id])
+
+  @@unique([law_list_id, document_id])
+  @@index([law_list_id])
+  @@index([document_id])
+  @@index([status])
+  @@map("law_list_items")
 }
 
 // ============================================================================
@@ -108,6 +196,7 @@ model LegalDocument {
   versions              DocumentVersion[]
   change_events         ChangeEvent[]
   law_sections          LawSection[]        // Story 2.13: Parsed sections for historical versions
+  law_list_items        LawListItem[]       // Story 5.1: Law list items referencing this document
 
   @@index([document_number])
   @@index([slug])
@@ -161,6 +250,7 @@ enum ReferenceType {
   AMENDS
   REFERENCES
   RELATED
+  LEGAL_BASIS // EU document's legal foundation (treaty articles, delegating acts)
 }
 
 enum ChangeType {
@@ -169,6 +259,51 @@ enum ChangeType {
   REPEAL
   METADATA_UPDATE
   NEW_RULING
+}
+
+// ============================================================================
+// WORKSPACE MULTI-TENANCY ENUMS - Story 5.1
+// ============================================================================
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  HR_MANAGER
+  MEMBER
+  AUDITOR
+}
+
+enum WorkspaceStatus {
+  ACTIVE
+  PAUSED
+  DELETED
+}
+
+enum SubscriptionTier {
+  TRIAL
+  SOLO
+  TEAM
+  ENTERPRISE
+}
+
+enum LawListItemStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  REVIEW
+  COMPLIANT
+}
+
+enum LawListItemPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum LawListItemSource {
+  ONBOARDING
+  MANUAL
+  IMPORT
 }
 
 // ============================================================================
@@ -197,10 +332,28 @@ model EuDocument {
   eut_reference                    String? // "L 119/1" (Official Journal reference)
   national_implementation_measures Json? // Swedish implementing laws
 
+  // Enhanced metadata fields (from SPARQL API)
+  eli_identifier                   String? // ELI URI (http://data.europa.eu/eli/...)
+  in_force                         Boolean? // Is document currently in force
+  directory_codes                  String[] // EU directory classification codes
+  subject_matters                  String[] // Subject matter codes (ELSJ, PROT, INFO, etc.)
+  eurovoc_concepts                 String[] // EuroVoc descriptor URIs
+  authors                          String[] // Corporate bodies (EP, CONSIL, COM, etc.)
+  legal_basis_celex                String[] // CELEX numbers of legal basis documents
+  cites_celex                      String[] // CELEX numbers of cited documents (vanity count)
+  amended_by_celex                 String[] // CELEX of documents that amend this one - CRITICAL for change tracking
+  corrected_by_celex               String[] // CELEX of corrections (Rättelser)
+  end_of_validity                  DateTime? // When document expires (9999-12-31 = no expiry)
+  signature_date                   DateTime? // Date document was signed
+  transposition_deadline           DateTime? // For directives: implementation deadline
+  eea_relevant                     Boolean? // Relevant for European Economic Area
+
   // Relations
   document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
 
   @@index([celex_number])
+  @@index([in_force])
+  @@index([eli_identifier])
   @@map("eu_documents")
 }
 
