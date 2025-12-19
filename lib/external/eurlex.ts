@@ -95,6 +95,9 @@ export interface SPARQLResult {
   authors?: SPARQLBinding
   legalBases?: SPARQLBinding
   citesWorks?: SPARQLBinding
+  // Relationship query fields
+  relationType?: SPARQLBinding
+  targetCelex?: SPARQLBinding
 }
 
 export interface SPARQLResponse {
@@ -1326,11 +1329,11 @@ function extractAuthorCode(uri: string): string {
 function extractCelexFromUri(uri: string): string | null {
   // Try to find CELEX pattern in URI
   const match = uri.match(/celex\/(\d+[A-Z]\d+)/)
-  if (match) return match[1]
+  if (match?.[1]) return match[1]
 
   // Also try to find CELEX pattern anywhere in the URI
   const celexMatch = uri.match(/\b(3\d{4}[RLDB]\d{4,5})\b/)
-  if (celexMatch) return celexMatch[1]
+  if (celexMatch?.[1]) return celexMatch[1]
 
   return null
 }
