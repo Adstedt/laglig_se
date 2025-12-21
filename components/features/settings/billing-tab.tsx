@@ -31,31 +31,33 @@ export function BillingTab({ workspace }: BillingTabProps) {
     : null
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border bg-card p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <CreditCard className="h-5 w-5" />
+    <div className="space-y-4">
+      <div className="rounded-xl border bg-card p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <CreditCard className="h-4 w-4" />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">Fakturering</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h2 className="text-base font-semibold">Fakturering</h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
               Hantera din prenumeration och betalningsmetoder.
             </p>
           </div>
         </div>
 
-        <div className="mt-6 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border p-4">
+        <div className="mt-5 space-y-3">
+          <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
               <p className="text-sm font-medium">Nuvarande plan</p>
               <div className="mt-1 flex items-center gap-2">
                 {isTrial ? (
-                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
                     {tierLabel}
                   </span>
                 ) : (
-                  <Badge variant="secondary">{tierLabel}</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    {tierLabel}
+                  </Badge>
                 )}
                 {isTrial && trialEndsAt && (
                   <span className="text-xs text-muted-foreground">
@@ -64,10 +66,12 @@ export function BillingTab({ workspace }: BillingTabProps) {
                 )}
               </div>
             </div>
-            <Button disabled>Uppgradera</Button>
+            <Button disabled size="sm">
+              Uppgradera
+            </Button>
           </div>
 
-          <div className="rounded-lg border border-dashed p-4">
+          <div className="rounded-lg border border-dashed p-3">
             <p className="text-sm text-muted-foreground">
               Fakturering och betalningsmetoder kommer snart att vara
               tillgängliga.

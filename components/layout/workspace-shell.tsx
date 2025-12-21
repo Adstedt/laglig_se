@@ -4,6 +4,7 @@ import { LeftSidebar } from '@/components/layout/left-sidebar'
 import { MobileSidebar } from '@/components/layout/mobile-sidebar'
 import { Header } from '@/components/layout/header'
 import { RightSidebar } from '@/components/layout/right-sidebar'
+import { Breadcrumbs } from '@/components/layout/breadcrumbs'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { WorkspaceProvider } from '@/hooks/use-workspace'
 import { Toaster } from '@/components/ui/sonner'
@@ -67,6 +68,7 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
 
           {/* Main content */}
           <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
+            <Breadcrumbs />
             {children}
           </main>
 

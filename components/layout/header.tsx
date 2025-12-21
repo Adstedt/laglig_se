@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { Search, Bell, Scale, Menu } from 'lucide-react'
-import { Breadcrumbs } from '@/components/layout/breadcrumbs'
 import { UserMenu } from '@/components/layout/user-menu'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -47,10 +46,8 @@ export function Header({ user, onMenuToggle }: HeaderProps) {
           <span className="sr-only">Meny</span>
         </Button>
 
-        {/* Breadcrumbs */}
-        <div className="flex-1">
-          <Breadcrumbs />
-        </div>
+        {/* Spacer */}
+        <div className="flex-1" />
 
         {/* Global Search Placeholder */}
         <div className="relative hidden w-72 lg:block">

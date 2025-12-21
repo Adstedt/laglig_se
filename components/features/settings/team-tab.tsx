@@ -150,17 +150,17 @@ export function TeamTab({ members }: TeamTabProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header Card */}
-      <div className="rounded-2xl border bg-card p-6">
+      <div className="rounded-xl border bg-card p-5">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Users className="h-5 w-5" />
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Users className="h-4 w-4" />
             </div>
             <div className="flex-1">
-              <h2 className="text-lg font-semibold">Team</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <h2 className="text-base font-semibold">Team</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 Hantera teammedlemmar och roller.
               </p>
             </div>
@@ -168,7 +168,7 @@ export function TeamTab({ members }: TeamTabProps) {
 
           {/* Invite Button */}
           <Can permission="members:invite">
-            <Button disabled>
+            <Button disabled size="sm">
               <UserPlus className="mr-2 h-4 w-4" />
               Bjud in medlem
             </Button>
@@ -177,13 +177,13 @@ export function TeamTab({ members }: TeamTabProps) {
       </div>
 
       {/* Members Table */}
-      <div className="rounded-2xl border bg-card">
+      <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[300px]">Medlem</TableHead>
-              <TableHead>Roll</TableHead>
-              <TableHead>Gick med</TableHead>
+              <TableHead className="w-[280px] text-xs">Medlem</TableHead>
+              <TableHead className="text-xs">Roll</TableHead>
+              <TableHead className="text-xs">Gick med</TableHead>
               <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -193,21 +193,23 @@ export function TeamTab({ members }: TeamTabProps) {
                 {/* Member Info */}
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-8 w-8">
                       <AvatarImage
                         src={member.user.avatar_url || undefined}
                         alt={member.user.name || member.user.email}
                       />
-                      <AvatarFallback className={ROLE_COLORS[member.role]}>
+                      <AvatarFallback
+                        className={`text-xs ${ROLE_COLORS[member.role]}`}
+                      >
                         {getInitials(member.user.name, member.user.email)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">
+                      <p className="text-sm font-medium">
                         {member.user.name || member.user.email}
                       </p>
                       {member.user.name && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {member.user.email}
                         </p>
                       )}

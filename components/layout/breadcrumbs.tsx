@@ -10,7 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { Fragment } from 'react'
+import { useWorkspace } from '@/hooks/use-workspace'
 
 // Route name mappings for Swedish labels
 const routeLabels: Record<string, string> = {
@@ -29,50 +29,43 @@ const routeLabels: Record<string, string> = {
 
 export function Breadcrumbs() {
   const pathname = usePathname()
+  const { workspaceName } = useWorkspace()
 
   // Split path and filter empty segments
   const segments = pathname.split('/').filter(Boolean)
 
-  // Don't show breadcrumbs on root dashboard
-  if (
+  // Check if we're on the dashboard (root)
+  const isDashboard =
     segments.length === 0 ||
     (segments.length === 1 && segments[0] === 'dashboard')
-  ) {
-    return null
-  }
+
+  // Get the current page label
+  const currentSegment = segments[segments.length - 1]
+  const currentLabel = routeLabels[currentSegment || ''] || currentSegment
 
   return (
-    <Breadcrumb>
-      <BreadcrumbList>
+    <Breadcrumb className="mb-4">
+      <BreadcrumbList className="text-sm">
+        {/* Workspace name as root */}
         <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link href="/dashboard">Dashboard</Link>
-          </BreadcrumbLink>
+          {isDashboard ? (
+            <BreadcrumbPage>{workspaceName || 'Arbetsplats'}</BreadcrumbPage>
+          ) : (
+            <BreadcrumbLink asChild>
+              <Link href="/dashboard">{workspaceName || 'Arbetsplats'}</Link>
+            </BreadcrumbLink>
+          )}
         </BreadcrumbItem>
 
-        {segments.map((segment, index) => {
-          // Skip dashboard since it's already shown
-          if (segment === 'dashboard') return null
-
-          const href = '/' + segments.slice(0, index + 1).join('/')
-          const isLast = index === segments.length - 1
-          const label = routeLabels[segment] || segment
-
-          return (
-            <Fragment key={segment}>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                {isLast ? (
-                  <BreadcrumbPage>{label}</BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink asChild>
-                    <Link href={href}>{label}</Link>
-                  </BreadcrumbLink>
-                )}
-              </BreadcrumbItem>
-            </Fragment>
-          )
-        })}
+        {/* Current page (only if not on dashboard) */}
+        {!isDashboard && (
+          <>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{currentLabel}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </>
+        )}
       </BreadcrumbList>
     </Breadcrumb>
   )

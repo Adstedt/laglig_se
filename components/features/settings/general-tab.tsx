@@ -107,16 +107,16 @@ export function GeneralTab({ workspace }: GeneralTabProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header Card */}
-      <div className="rounded-2xl border bg-card p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Settings className="h-5 w-5" />
+      <div className="rounded-xl border bg-card p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Settings className="h-4 w-4" />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold">Allmänna inställningar</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h2 className="text-base font-semibold">Allmänna inställningar</h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
               Hantera arbetsplatsens namn och varumärke.
             </p>
           </div>
@@ -124,10 +124,12 @@ export function GeneralTab({ workspace }: GeneralTabProps) {
       </div>
 
       {/* Workspace Name Form */}
-      <div className="rounded-2xl border bg-card p-6">
-        <form onSubmit={form.handleSubmit(onSubmitName)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Arbetsplatsnamn</Label>
+      <div className="rounded-xl border bg-card p-5">
+        <form onSubmit={form.handleSubmit(onSubmitName)} className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="name" className="text-sm">
+              Arbetsplatsnamn
+            </Label>
             <Input
               id="name"
               {...form.register('name')}
@@ -149,10 +151,10 @@ export function GeneralTab({ workspace }: GeneralTabProps) {
       </div>
 
       {/* Logo Upload */}
-      <div className="rounded-2xl border bg-card p-6">
-        <div className="space-y-4">
+      <div className="rounded-xl border bg-card p-5">
+        <div className="space-y-3">
           <div>
-            <Label>Företagslogotyp</Label>
+            <Label className="text-sm">Företagslogotyp</Label>
             <p className="text-sm text-muted-foreground">
               PNG eller JPG, max 2MB
             </p>
@@ -160,7 +162,7 @@ export function GeneralTab({ workspace }: GeneralTabProps) {
 
           <div className="flex items-center gap-4">
             {/* Logo Preview */}
-            <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed bg-muted/50">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-dashed bg-muted/50">
               {logoPreview ? (
                 <img
                   src={logoPreview}
@@ -168,7 +170,7 @@ export function GeneralTab({ workspace }: GeneralTabProps) {
                   className="h-full w-full rounded-lg object-contain"
                 />
               ) : (
-                <Building2 className="h-8 w-8 text-muted-foreground" />
+                <Building2 className="h-6 w-6 text-muted-foreground" />
               )}
             </div>
 
@@ -176,7 +178,7 @@ export function GeneralTab({ workspace }: GeneralTabProps) {
             <div>
               <Label
                 htmlFor="logo-upload"
-                className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 {isUploadingLogo ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -199,10 +201,10 @@ export function GeneralTab({ workspace }: GeneralTabProps) {
       </div>
 
       {/* SNI Code (Read-only) */}
-      <div className="rounded-2xl border bg-card p-6">
-        <div className="space-y-4">
+      <div className="rounded-xl border bg-card p-5">
+        <div className="space-y-3">
           <div>
-            <Label>Bransch (SNI-kod)</Label>
+            <Label className="text-sm">Bransch (SNI-kod)</Label>
             <p className="text-sm text-muted-foreground">
               Sätts under registrering och kan inte ändras här.
             </p>
