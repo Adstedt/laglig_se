@@ -6,12 +6,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1
-          className="text-3xl font-bold"
-          style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
-        >
-          Dashboard
-        </h1>
+        <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="mt-2 text-muted-foreground">
           Välkommen tillbaka, {user?.name || user?.email}
         </p>
