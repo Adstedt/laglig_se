@@ -12,7 +12,6 @@ import {
   Bell,
   Settings,
   ChevronRight,
-  Building2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -23,6 +22,7 @@ import {
 } from '@/components/ui/sheet'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { useState } from 'react'
+import { WorkspaceSwitcher } from './workspace-switcher'
 
 interface MobileSidebarProps {
   open: boolean
@@ -242,17 +242,7 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
         <div className="flex flex-col h-[calc(100%-65px)]">
           {/* Workspace Selector */}
           <div className="p-3 border-b">
-            <button className="flex w-full items-center gap-3 rounded-lg border bg-background p-3 text-left transition-colors hover:bg-accent">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <Building2 className="h-4 w-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">Min arbetsplats</p>
-                <p className="text-xs text-muted-foreground truncate">
-                  Provperiod
-                </p>
-              </div>
-            </button>
+            <WorkspaceSwitcher onSwitchComplete={() => onOpenChange(false)} />
           </div>
 
           {/* Navigation */}

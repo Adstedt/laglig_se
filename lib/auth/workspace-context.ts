@@ -188,6 +188,7 @@ export async function getUserWorkspaces() {
       slug: m.workspace.slug,
       role: m.role,
       status: m.workspace.status,
+      company_logo: m.workspace.company_logo,
     }))
 }
 
