@@ -1,15 +1,7 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
-
-// Optimized font loading with swap display for better CLS
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-})
 
 export const metadata: Metadata = {
   title: {
@@ -29,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="sv" className={inter.variable}>
-      <body className="min-h-screen bg-white font-sans text-gray-900 antialiased">
+    <html lang="sv">
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         {children}
         {/* Vercel Analytics - Cookieless, GDPR-compliant tracking */}
         <Analytics />

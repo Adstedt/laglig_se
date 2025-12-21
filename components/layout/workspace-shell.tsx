@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/header'
 import { RightSidebar } from '@/components/layout/right-sidebar'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { WorkspaceProvider } from '@/hooks/use-workspace'
+import { Toaster } from '@/components/ui/sonner'
 import { useEffect, useState } from 'react'
 
 interface WorkspaceShellProps {
@@ -48,6 +49,7 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
 
   return (
     <WorkspaceProvider>
+      <Toaster position="top-right" richColors />
       <div className="flex h-screen flex-col overflow-hidden">
         {/* Full-width header at top */}
         <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
