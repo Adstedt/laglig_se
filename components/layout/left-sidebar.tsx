@@ -12,12 +12,11 @@ import {
   Bell,
   Settings,
   ChevronRight,
-  ChevronsUpDown,
-  Building2,
   Lock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TrialStatusWidget } from '@/components/layout/trial-status-widget'
+import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useState } from 'react'
@@ -245,16 +244,7 @@ export function LeftSidebar({
     >
       {/* Workspace Selector */}
       <div className="p-3">
-        <button className="flex w-full items-center gap-3 rounded-lg border bg-background p-3 text-left transition-colors hover:bg-accent">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Building2 className="h-4 w-4" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">Min arbetsplats</p>
-            <p className="text-xs text-muted-foreground truncate">Provperiod</p>
-          </div>
-          <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
-        </button>
+        <WorkspaceSwitcher />
       </div>
 
       {/* Navigation */}
