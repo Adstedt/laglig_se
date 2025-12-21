@@ -14,10 +14,12 @@ import {
   ChevronRight,
   ChevronsUpDown,
   Building2,
+  Lock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TrialStatusWidget } from '@/components/layout/trial-status-widget'
 import { useLayoutStore } from '@/lib/stores/layout-store'
+import { usePermissions } from '@/hooks/use-permissions'
 import { useState } from 'react'
 
 interface LeftSidebarProps {
@@ -25,7 +27,18 @@ interface LeftSidebarProps {
   onToggle?: () => void
 }
 
-const platformItems = [
+interface NavItem {
+  title: string
+  icon: React.ComponentType<{ className?: string }>
+  href: string
+  isToggle?: boolean
+  isAccordion?: boolean
+  disabled?: boolean
+  lockedReason?: string
+  subItems?: { title: string; href: string }[]
+}
+
+const platformItems: NavItem[] = [
   {
     title: 'Dashboard',
     icon: LayoutDashboard,
@@ -59,7 +72,7 @@ const platformItems = [
   },
 ]
 
-const workItems = [
+const workItems: NavItem[] = [
   {
     title: 'Uppgifter',
     icon: CheckSquare,
@@ -91,9 +104,23 @@ export function LeftSidebar({
 }: LeftSidebarProps) {
   const pathname = usePathname()
   const { toggleRightSidebar } = useLayoutStore()
+  const { can, isLoading } = usePermissions()
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
     {}
   )
+
+  // Permission-gated work items
+  const permissionGatedWorkItems: NavItem[] = workItems.map((item): NavItem => {
+    // HR menu requires employees:view permission
+    if (item.title === 'HR') {
+      const hasPermission = !isLoading && can.viewEmployees
+      if (hasPermission) {
+        return { ...item, disabled: false }
+      }
+      return { ...item, disabled: true, lockedReason: 'Kräver HR-behörighet' }
+    }
+    return item
+  })
 
   const isActive = (href: string) => {
     if (href === '#') return false
@@ -105,14 +132,7 @@ export function LeftSidebar({
     setOpenAccordions((prev) => ({ ...prev, [title]: !prev[title] }))
   }
 
-  const renderNavItem = (
-    item: (typeof platformItems)[0] & {
-      isToggle?: boolean
-      isAccordion?: boolean
-      disabled?: boolean
-      subItems?: { title: string; href: string }[]
-    }
-  ) => {
+  const renderNavItem = (item: NavItem) => {
     const Icon = item.icon
     const active = isActive(item.href)
 
@@ -189,9 +209,11 @@ export function LeftSidebar({
             'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
             'opacity-50 cursor-not-allowed text-muted-foreground'
           )}
+          title={item.lockedReason}
         >
           <Icon className="h-4 w-4" />
-          <span>{item.title}</span>
+          <span className="flex-1">{item.title}</span>
+          {item.lockedReason && <Lock className="h-3 w-3" />}
         </span>
       )
     }
@@ -250,7 +272,9 @@ export function LeftSidebar({
           <h3 className="mb-1 px-3 text-xs font-medium text-muted-foreground">
             Arbete
           </h3>
-          <div className="space-y-0.5">{workItems.map(renderNavItem)}</div>
+          <div className="space-y-0.5">
+            {permissionGatedWorkItems.map(renderNavItem)}
+          </div>
         </div>
       </nav>
 

@@ -1,7 +1,28 @@
 /**
- * Story 5.1: Role-Based Permission Utilities
+ * Story 5.1 + 5.2: Role-Based Permission Utilities
  * Defines granular permissions mapped to workspace roles.
- * See: docs/stories/in-progress/5.1.workspace-data-model-multi-tenancy.md
+ *
+ * Role Permissions Matrix (Story 5.2 source of truth):
+ * ┌─────────────────────────────────┬───────┬───────┬────────────┬────────┬─────────┐
+ * │ Action                          │ Owner │ Admin │ HR Manager │ Member │ Auditor │
+ * ├─────────────────────────────────┼───────┼───────┼────────────┼────────┼─────────┤
+ * │ Delete workspace                │  ✓    │       │            │        │         │
+ * │ Manage billing/subscription     │  ✓    │       │            │        │         │
+ * │ Manage workspace settings       │  ✓    │  ✓    │            │        │         │
+ * │ Invite/remove members           │  ✓    │  ✓    │     ✓      │        │         │
+ * │ Change member roles             │  ✓    │  ✓    │            │        │         │
+ * │ Create/delete law lists         │  ✓    │  ✓    │     ✓      │        │         │
+ * │ Add/remove documents            │  ✓    │  ✓    │     ✓      │        │         │
+ * │ Edit tasks/compliance status    │  ✓    │  ✓    │     ✓      │   ✓    │         │
+ * │ Mark changes as reviewed        │  ✓    │  ✓    │     ✓      │   ✓    │         │
+ * │ View employee data              │  ✓    │       │     ✓      │        │         │
+ * │ Manage employees                │  ✓    │       │     ✓      │        │         │
+ * │ Use AI chat                     │  ✓    │  ✓    │     ✓      │   ✓    │    ✓    │
+ * │ View lists/documents/kanban     │  ✓    │  ✓    │     ✓      │   ✓    │    ✓    │
+ * │ View activity log               │  ✓    │  ✓    │            │        │    ✓    │
+ * └─────────────────────────────────┴───────┴───────┴────────────┴────────┴─────────┘
+ *
+ * See: docs/stories/in-progress/5.2.user-roles-permissions.md
  */
 
 import type { WorkspaceRole } from '@prisma/client'
@@ -9,6 +30,7 @@ import type { WorkspaceRole } from '@prisma/client'
 export type Permission =
   | 'workspace:delete'
   | 'workspace:billing'
+  | 'workspace:settings'
   | 'members:invite'
   | 'members:remove'
   | 'members:change_role'
@@ -20,16 +42,19 @@ export type Permission =
   | 'changes:acknowledge'
   | 'employees:view'
   | 'employees:manage'
+  | 'activity:view'
+  | 'ai:chat'
   | 'read'
 
 /**
- * Role permissions matrix as defined in Story 5.1
+ * Role permissions matrix as defined in Story 5.1 + 5.2
  * Maps each role to its allowed permissions
  */
 const ROLE_PERMISSIONS: Record<WorkspaceRole, Permission[]> = {
   OWNER: [
     'workspace:delete',
     'workspace:billing',
+    'workspace:settings',
     'members:invite',
     'members:remove',
     'members:change_role',
@@ -41,9 +66,12 @@ const ROLE_PERMISSIONS: Record<WorkspaceRole, Permission[]> = {
     'changes:acknowledge',
     'employees:view',
     'employees:manage',
+    'activity:view',
+    'ai:chat',
     'read',
   ],
   ADMIN: [
+    'workspace:settings',
     'members:invite',
     'members:remove',
     'members:change_role',
@@ -53,6 +81,8 @@ const ROLE_PERMISSIONS: Record<WorkspaceRole, Permission[]> = {
     'documents:remove',
     'tasks:edit',
     'changes:acknowledge',
+    'activity:view',
+    'ai:chat',
     'read',
   ],
   HR_MANAGER: [
@@ -66,10 +96,11 @@ const ROLE_PERMISSIONS: Record<WorkspaceRole, Permission[]> = {
     'changes:acknowledge',
     'employees:view',
     'employees:manage',
+    'ai:chat',
     'read',
   ],
-  MEMBER: ['tasks:edit', 'changes:acknowledge', 'read'],
-  AUDITOR: ['read'],
+  MEMBER: ['tasks:edit', 'changes:acknowledge', 'ai:chat', 'read'],
+  AUDITOR: ['activity:view', 'ai:chat', 'read'],
 }
 
 /**
@@ -131,6 +162,15 @@ export const canViewEmployees = (role: WorkspaceRole) =>
 
 export const canManageEmployees = (role: WorkspaceRole) =>
   hasPermission(role, 'employees:manage')
+
+export const canManageSettings = (role: WorkspaceRole) =>
+  hasPermission(role, 'workspace:settings')
+
+export const canViewActivity = (role: WorkspaceRole) =>
+  hasPermission(role, 'activity:view')
+
+export const canUseAiChat = (role: WorkspaceRole) =>
+  hasPermission(role, 'ai:chat')
 
 // Alias for convenience
 export const canManageLists = canCreateLists

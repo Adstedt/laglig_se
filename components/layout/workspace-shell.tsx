@@ -5,6 +5,7 @@ import { MobileSidebar } from '@/components/layout/mobile-sidebar'
 import { Header } from '@/components/layout/header'
 import { RightSidebar } from '@/components/layout/right-sidebar'
 import { useLayoutStore } from '@/lib/stores/layout-store'
+import { WorkspaceProvider } from '@/hooks/use-workspace'
 import { useEffect, useState } from 'react'
 
 interface WorkspaceShellProps {
@@ -46,32 +47,34 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
   }, [toggleRightSidebar])
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      {/* Full-width header at top */}
-      <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
+    <WorkspaceProvider>
+      <div className="flex h-screen flex-col overflow-hidden">
+        {/* Full-width header at top */}
+        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
-      {/* Mobile sidebar drawer */}
-      <MobileSidebar open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} />
+        {/* Mobile sidebar drawer */}
+        <MobileSidebar open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} />
 
-      {/* Content area below header */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar - desktop only */}
-        <LeftSidebar
-          collapsed={leftSidebarCollapsed}
-          onToggle={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
-        />
+        {/* Content area below header */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Sidebar - desktop only */}
+          <LeftSidebar
+            collapsed={leftSidebarCollapsed}
+            onToggle={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+          />
 
-        {/* Main content */}
-        <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
-          {children}
-        </main>
+          {/* Main content */}
+          <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
+            {children}
+          </main>
 
-        {/* Right Sidebar - desktop only */}
-        <RightSidebar
-          isOpen={!rightSidebarFolded}
-          onToggle={toggleRightSidebar}
-        />
+          {/* Right Sidebar - desktop only */}
+          <RightSidebar
+            isOpen={!rightSidebarFolded}
+            onToggle={toggleRightSidebar}
+          />
+        </div>
       </div>
-    </div>
+    </WorkspaceProvider>
   )
 }

@@ -21,8 +21,10 @@ export default defineConfig({
     ],
   },
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './'),
-    },
+    alias: [
+      // More specific aliases must come first
+      { find: '@/hooks', replacement: path.resolve(__dirname, './lib/hooks') },
+      { find: '@', replacement: path.resolve(__dirname, './') },
+    ],
   },
 })
