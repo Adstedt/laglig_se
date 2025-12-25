@@ -47,7 +47,8 @@ export interface BrowseResult {
   contentType: string
   category: string | null
   summary: string | null
-  effectiveDate: string | null
+  effectiveDate: string | null // Publication date (for display)
+  inForceDate: string | null // Actual effective/in-force date
   status: string
   slug: string
   snippet: string
@@ -248,6 +249,7 @@ async function searchWithQuery(
         ld.content_type::text as content_type,
         ld.summary,
         ld.publication_date,
+        ld.effective_date,
         ld.status::text as status,
         ld.slug,
         ds.subject_name as category,
@@ -283,6 +285,7 @@ async function searchWithQuery(
       content_type: string
       summary: string | null
       publication_date: Date | null
+      effective_date: Date | null
       status: string
       slug: string
       category: string | null
@@ -310,6 +313,7 @@ async function searchWithQuery(
         category: r.category,
         summary: r.summary,
         effectiveDate: r.publication_date?.toISOString() ?? null,
+        inForceDate: r.effective_date?.toISOString() ?? null,
         status: r.status,
         slug: r.slug,
         snippet: r.snippet || r.summary || '',
@@ -473,6 +477,7 @@ async function executeBrowseQuery(
         content_type: true,
         summary: true,
         publication_date: true,
+        effective_date: true,
         status: true,
         slug: true,
         subjects: {
@@ -495,6 +500,7 @@ async function executeBrowseQuery(
       category: r.subjects[0]?.subject_name ?? null,
       summary: r.summary,
       effectiveDate: r.publication_date?.toISOString() ?? null,
+      inForceDate: r.effective_date?.toISOString() ?? null,
       status: r.status,
       slug: r.slug,
       snippet: r.summary || '',

@@ -62,6 +62,9 @@ export function CatalogueResultsClient({
     error,
   } = useCatalogueBrowse(input, initialData)
 
+  // Detect workspace mode from basePath - workspace routes use /browse prefix
+  const isWorkspace = basePath.startsWith('/browse')
+
   // Prefetch common filter combinations on mount for instant filter switches
   useEffect(() => {
     // Only prefetch on the main catalogue page (no filters applied)
@@ -159,6 +162,7 @@ export function CatalogueResultsClient({
             document={doc}
             query={input.query || ''}
             position={startIndex + index}
+            isWorkspace={isWorkspace}
           />
         ))}
       </div>

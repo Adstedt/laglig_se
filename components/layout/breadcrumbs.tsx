@@ -23,8 +23,54 @@ const routeLabels: Record<string, string> = {
   hr: 'HR',
   employees: 'Anställda',
   compliance: 'Efterlevnad',
+  browse: 'Rättskällor',
   lagar: 'Lagar',
-  rattskallor: 'Rättskällor',
+  rattskallor: 'Bläddra',
+  rattsfall: 'Rättsfall',
+  eu: 'EU-rätt',
+  // Law sub-routes
+  historik: 'Ändringshistorik',
+  version: 'Version',
+  // Court codes
+  hd: 'Högsta domstolen',
+  hovr: 'Hovrätten',
+  hfd: 'Högsta förvaltningsdomstolen',
+  ad: 'Arbetsdomstolen',
+  mod: 'Mark- och miljööverdomstolen',
+  mig: 'Migrationsöverdomstolen',
+  // EU types
+  forordningar: 'Förordningar',
+  direktiv: 'Direktiv',
+}
+
+// Segments that should be shown as intermediate links (not collapsed)
+const showAsLink = new Set([
+  'browse',
+  'lagar',
+  'rattsfall',
+  'eu',
+  'hd',
+  'hovr',
+  'hfd',
+  'ad',
+  'mod',
+  'mig',
+  'forordningar',
+  'direktiv',
+  'historik',
+  'version',
+])
+
+// Get a user-friendly label for a segment (truncate long slugs)
+function getSegmentLabel(segment: string): string {
+  if (routeLabels[segment]) {
+    return routeLabels[segment]
+  }
+  // For document slugs, show a truncated version
+  if (segment.length > 30) {
+    return segment.substring(0, 27) + '...'
+  }
+  return segment
 }
 
 export function Breadcrumbs() {
@@ -39,9 +85,33 @@ export function Breadcrumbs() {
     segments.length === 0 ||
     (segments.length === 1 && segments[0] === 'dashboard')
 
-  // Get the current page label
-  const currentSegment = segments[segments.length - 1]
-  const currentLabel = routeLabels[currentSegment || ''] || currentSegment
+  // Build breadcrumb items with proper hierarchy
+  const breadcrumbItems: Array<{ label: string; href?: string }> = []
+
+  if (!isDashboard) {
+    let currentPath = ''
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i]
+      if (!segment) continue
+
+      currentPath += `/${segment}`
+      const isLast = i === segments.length - 1
+
+      // Skip 'browse' in the breadcrumb display but keep in path
+      if (segment === 'browse') continue
+
+      const label = getSegmentLabel(segment)
+
+      if (isLast) {
+        // Last segment is current page (no link)
+        breadcrumbItems.push({ label })
+      } else if (showAsLink.has(segment)) {
+        // Known intermediate routes get links
+        breadcrumbItems.push({ label, href: currentPath })
+      }
+      // Unknown intermediate segments (like dynamic IDs) are skipped
+    }
+  }
 
   return (
     <Breadcrumb className="mb-4">
@@ -57,15 +127,21 @@ export function Breadcrumbs() {
           )}
         </BreadcrumbItem>
 
-        {/* Current page (only if not on dashboard) */}
-        {!isDashboard && (
-          <>
+        {/* Intermediate and current pages */}
+        {breadcrumbItems.map((item, index) => (
+          <span key={index} className="contents">
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{currentLabel}</BreadcrumbPage>
+              {item.href ? (
+                <BreadcrumbLink asChild>
+                  <Link href={item.href}>{item.label}</Link>
+                </BreadcrumbLink>
+              ) : (
+                <BreadcrumbPage>{item.label}</BreadcrumbPage>
+              )}
             </BreadcrumbItem>
-          </>
-        )}
+          </span>
+        ))}
       </BreadcrumbList>
     </Breadcrumb>
   )

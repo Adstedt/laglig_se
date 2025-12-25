@@ -13,9 +13,15 @@ export interface SwedishMeasure {
 
 interface LinkedSwedishLawsProps {
   measures: SwedishMeasure[]
+  isWorkspace?: boolean
 }
 
-export function LinkedSwedishLaws({ measures }: LinkedSwedishLawsProps) {
+export function LinkedSwedishLaws({
+  measures,
+  isWorkspace = false,
+}: LinkedSwedishLawsProps) {
+  // Prefix for internal links - workspace or public
+  const basePath = isWorkspace ? '/browse/lagar' : '/lagar'
   if (measures.length === 0) {
     return null
   }
@@ -75,7 +81,7 @@ export function LinkedSwedishLaws({ measures }: LinkedSwedishLawsProps) {
 
             if (hasLink) {
               return (
-                <Link key={index} href={`/lagar/${measure.slug}`}>
+                <Link key={index} href={`${basePath}/${measure.slug}`}>
                   {content}
                 </Link>
               )

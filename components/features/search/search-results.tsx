@@ -12,6 +12,7 @@ interface SearchResultsProps {
   dateFrom: string | undefined
   dateTo: string | undefined
   page: number
+  isWorkspace?: boolean
 }
 
 export async function SearchResults({
@@ -23,6 +24,7 @@ export async function SearchResults({
   dateFrom,
   dateTo,
   page,
+  isWorkspace = false,
 }: SearchResultsProps) {
   if (!query) {
     return (
@@ -130,6 +132,7 @@ export async function SearchResults({
             document={doc}
             query={query}
             position={(page - 1) * 20 + index + 1}
+            isWorkspace={isWorkspace}
           />
         ))}
       </div>

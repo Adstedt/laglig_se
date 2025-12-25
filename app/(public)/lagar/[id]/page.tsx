@@ -247,14 +247,19 @@ function extractLawMetadata(html: string): LawMetadata {
   // This is found right after the metadata block, before actual law content
   const afterHr = html.substring(hrIndex)
   // Look for the pattern in the first section (before any paragraph anchor)
+  // Some laws have long TOC, so search up to 3000 chars or until first paragraph marker
   const firstSectionEnd = afterHr.indexOf('<a class="paragraf"')
-  const firstSection =
+  const altSectionEnd = afterHr.indexOf('<h3 name="K')
+  const sectionEnd =
     firstSectionEnd > 0
-      ? afterHr.substring(0, firstSectionEnd)
-      : afterHr.substring(0, 500)
+      ? firstSectionEnd
+      : altSectionEnd > 0
+        ? altSectionEnd
+        : 3000
+  const firstSection = afterHr.substring(0, sectionEnd)
 
   const effectiveDateMatch = firstSection.match(
-    /\/Träder i kraft I:(\d{4})-(\d{2})-(\d{2})\//
+    /\/Träder i kraft I:(\d{4})-(\d{2})-(\d{2})(?:\/|<)/
   )
   if (effectiveDateMatch) {
     const year = parseInt(effectiveDateMatch[1] ?? '0')
@@ -416,6 +421,7 @@ export default async function LawPage({ params }: PageProps) {
             lawMetadata.effectiveDateFormatted && (
               <NotYetInForceBanner
                 effectiveDate={lawMetadata.effectiveDateFormatted}
+                title={law.title}
               />
             )}
 
@@ -442,7 +448,11 @@ export default async function LawPage({ params }: PageProps) {
                   <Badge variant="secondary" className="font-mono text-sm">
                     {law.document_number}
                   </Badge>
-                  <StatusBadge status={law.status} />
+                  <StatusBadge
+                    status={law.status}
+                    isNotYetInForce={lawMetadata.isNotYetInForce ?? false}
+                    effectiveDate={lawMetadata.effectiveDateFormatted}
+                  />
                 </div>
               </div>
             </div>
@@ -696,7 +706,27 @@ export default async function LawPage({ params }: PageProps) {
   )
 }
 
-function StatusBadge({ status }: { status: DocumentStatus }) {
+function StatusBadge({
+  status,
+  isNotYetInForce,
+  effectiveDate,
+}: {
+  status: DocumentStatus
+  isNotYetInForce?: boolean | undefined
+  effectiveDate?: string | undefined
+}) {
+  // If law is not yet in force, show special badge
+  if (isNotYetInForce && effectiveDate) {
+    return (
+      <Badge
+        variant="outline"
+        className="border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
+      >
+        Ikraft {effectiveDate}
+      </Badge>
+    )
+  }
+
   const statusConfig: Record<
     DocumentStatus,
     {

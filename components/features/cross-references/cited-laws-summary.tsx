@@ -24,9 +24,15 @@ interface CitedLaw {
 
 interface CitedLawsSummaryProps {
   citedLaws: CitedLaw[]
+  isWorkspace?: boolean
 }
 
-export function CitedLawsSummary({ citedLaws }: CitedLawsSummaryProps) {
+export function CitedLawsSummary({
+  citedLaws,
+  isWorkspace = false,
+}: CitedLawsSummaryProps) {
+  // Prefix for internal links - workspace or public
+  const basePath = isWorkspace ? '/browse/lagar' : '/lagar'
   // Default to collapsed
   const [expanded, setExpanded] = useState(false)
 
@@ -74,7 +80,7 @@ export function CitedLawsSummary({ citedLaws }: CitedLawsSummaryProps) {
             {citedLaws.slice(0, 5).map((law) => (
               <Link
                 key={law.id}
-                href={`/lagar/${law.slug}`}
+                href={`${basePath}/${law.slug}`}
                 className="flex items-center gap-2 p-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors group text-sm"
               >
                 <Badge className={cn('text-xs shrink-0', lawTheme.badge)}>

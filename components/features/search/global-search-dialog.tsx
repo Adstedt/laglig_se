@@ -75,7 +75,13 @@ const CONTENT_TYPE_HREF: Record<string, string> = {
   EU_DIRECTIVE: '/eu/direktiv',
 }
 
-export function GlobalSearchDialog() {
+interface GlobalSearchDialogProps {
+  isWorkspace?: boolean
+}
+
+export function GlobalSearchDialog({
+  isWorkspace = false,
+}: GlobalSearchDialogProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState<
@@ -89,6 +95,9 @@ export function GlobalSearchDialog() {
   const [recentSearches, setRecentSearches] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+
+  // URL prefix for workspace mode
+  const browsePrefix = isWorkspace ? '/browse' : ''
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -161,15 +170,19 @@ export function GlobalSearchDialog() {
     (slug: string | null, searchQuery?: string, contentType?: string) => {
       if (slug && contentType) {
         const basePath = CONTENT_TYPE_HREF[contentType] || '/lagar'
-        router.push(`${basePath}/${slug}`)
+        router.push(`${browsePrefix}${basePath}/${slug}`)
       } else if (searchQuery) {
         saveRecentSearch(searchQuery)
-        router.push(`/sok?q=${encodeURIComponent(searchQuery)}`)
+        // For full search, use workspace search page if in workspace
+        const searchUrl = isWorkspace
+          ? `/browse/sok?q=${encodeURIComponent(searchQuery)}`
+          : `/sok?q=${encodeURIComponent(searchQuery)}`
+        router.push(searchUrl)
       }
       setOpen(false)
       setQuery('')
     },
-    [router, saveRecentSearch]
+    [router, saveRecentSearch, browsePrefix, isWorkspace]
   )
 
   const clearRecentSearches = useCallback(() => {

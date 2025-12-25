@@ -14,18 +14,31 @@ interface CatalogueResultCardProps {
   document: BrowseResult
   query: string
   position: number
+  /** When true, links use /browse prefix to stay in workspace context */
+  isWorkspace?: boolean
 }
 
 export function CatalogueResultCard({
   document,
   position,
+  isWorkspace = false,
 }: CatalogueResultCardProps) {
   const router = useRouter()
   const cardRef = useRef<HTMLAnchorElement>(null)
   const theme = getDocumentTheme(document.contentType)
+
+  // Check if law is not yet in force (ACTIVE but future in-force date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const isNotYetInForce =
+    document.status === 'ACTIVE' &&
+    document.inForceDate &&
+    new Date(document.inForceDate) > today
   const ThemeIcon = theme.icon
 
-  const documentUrl = `${theme.href}/${document.slug}`
+  // In workspace mode, prefix URLs with /browse to stay in authenticated context
+  const baseHref = isWorkspace ? `/browse${theme.href}` : theme.href
+  const documentUrl = `${baseHref}/${document.slug}`
 
   // Initialize prefetch manager and trigger prefetch when card becomes visible
   useEffect(() => {
@@ -95,17 +108,22 @@ export function CatalogueResultCard({
           variant="outline"
           className={cn(
             'text-xs',
+            isNotYetInForce &&
+              'border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400',
             document.status === 'ACTIVE' &&
+              !isNotYetInForce &&
               'border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400',
             document.status === 'REPEALED' &&
               'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
           )}
         >
-          {document.status === 'ACTIVE'
-            ? 'Gällande'
-            : document.status === 'REPEALED'
-              ? 'Upphävd'
-              : document.status}
+          {isNotYetInForce
+            ? `Ikraft ${new Date(document.inForceDate!).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}`
+            : document.status === 'ACTIVE'
+              ? 'Gällande'
+              : document.status === 'REPEALED'
+                ? 'Upphävd'
+                : document.status}
         </Badge>
       </div>
 

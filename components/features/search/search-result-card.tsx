@@ -11,22 +11,34 @@ interface SearchResultCardProps {
   document: SearchResult
   query: string
   position: number
+  isWorkspace?: boolean
 }
 
 export function SearchResultCard({
   document,
   query,
   position,
+  isWorkspace = false,
 }: SearchResultCardProps) {
   const theme = getDocumentTheme(document.contentType)
   const ThemeIcon = theme.icon
+
+  // Check if law is not yet in force (ACTIVE but future effective date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const isNotYetInForce =
+    document.status === 'ACTIVE' &&
+    document.effectiveDate &&
+    new Date(document.effectiveDate) > today
 
   const handleClick = () => {
     // Track click for analytics (Epic AC12)
     trackSearchClickAction(query, document.id, position)
   }
 
-  const documentUrl = `${theme.href}/${document.slug}`
+  // Prefix for internal links - workspace or public
+  const baseHref = isWorkspace ? `/browse${theme.href}` : theme.href
+  const documentUrl = `${baseHref}/${document.slug}`
 
   return (
     <Link
@@ -63,17 +75,22 @@ export function SearchResultCard({
           variant="outline"
           className={cn(
             'text-xs',
+            isNotYetInForce &&
+              'border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400',
             document.status === 'ACTIVE' &&
+              !isNotYetInForce &&
               'border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400',
             document.status === 'REPEALED' &&
               'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
           )}
         >
-          {document.status === 'ACTIVE'
-            ? 'Gällande'
-            : document.status === 'REPEALED'
-              ? 'Upphävd'
-              : document.status}
+          {isNotYetInForce
+            ? `Ikraft ${new Date(document.effectiveDate!).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}`
+            : document.status === 'ACTIVE'
+              ? 'Gällande'
+              : document.status === 'REPEALED'
+                ? 'Upphävd'
+                : document.status}
         </Badge>
       </div>
 

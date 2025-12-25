@@ -65,6 +65,7 @@ interface VersionByVersionTimelineProps {
   baseLawSfs: string
   amendments: Amendment[]
   maxVisible?: number
+  isWorkspace?: boolean
 }
 
 export function VersionByVersionTimeline({
@@ -72,7 +73,10 @@ export function VersionByVersionTimeline({
   baseLawSfs,
   amendments,
   maxVisible = 15,
+  isWorkspace = false,
 }: VersionByVersionTimelineProps) {
+  // Prefix for internal links - workspace or public
+  const basePath = isWorkspace ? '/browse/lagar' : '/lagar'
   const [expanded, setExpanded] = useState(false)
   const [expandedAmendments, setExpandedAmendments] = useState<Set<string>>(
     new Set()
@@ -463,7 +467,7 @@ export function VersionByVersionTimeline({
                       {/* Link to full version */}
                       <div className="pt-2">
                         <Link
-                          href={`/lagar/${lawSlug}/version/${diff.effectiveDate}`}
+                          href={`${basePath}/${lawSlug}/version/${diff.effectiveDate}`}
                           className="text-xs text-primary hover:underline inline-flex items-center gap-1"
                           onClick={(e) => e.stopPropagation()}
                         >

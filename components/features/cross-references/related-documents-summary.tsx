@@ -37,13 +37,17 @@ interface RelatedDocumentsSummaryProps {
   }
   implementedDirectives: ImplementedDirective[]
   lawTitle: string
+  isWorkspace?: boolean
 }
 
 export function RelatedDocumentsSummary({
   citingCases,
   implementedDirectives,
   lawTitle,
+  isWorkspace = false,
 }: RelatedDocumentsSummaryProps) {
+  // Prefix for internal links - workspace or public
+  const browsePrefix = isWorkspace ? '/browse' : ''
   const hasCourtCases = citingCases.totalCount > 0
   const hasDirectives = implementedDirectives.length > 0
 
@@ -112,7 +116,7 @@ export function RelatedDocumentsSummary({
                   const theme = getDocumentTheme(courtCase.contentType)
                   const courtSegment =
                     COURT_URL_MAP[courtCase.contentType] || 'hd'
-                  const caseUrl = `/rattsfall/${courtSegment}/${courtCase.slug}`
+                  const caseUrl = `${browsePrefix}/rattsfall/${courtSegment}/${courtCase.slug}`
 
                   return (
                     <Link
@@ -133,7 +137,7 @@ export function RelatedDocumentsSummary({
               </div>
               {citingCases.totalCount > 3 && (
                 <Link
-                  href={`/sok?q=${encodeURIComponent(lawTitle)}&types=COURT_CASE_AD,COURT_CASE_HD,COURT_CASE_HFD,COURT_CASE_HOVR`}
+                  href={`${browsePrefix}/sok?q=${encodeURIComponent(lawTitle)}&types=COURT_CASE_AD,COURT_CASE_HD,COURT_CASE_HFD,COURT_CASE_HOVR`}
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-2"
                 >
                   Visa alla {citingCases.totalCount} rättsfall
@@ -154,7 +158,7 @@ export function RelatedDocumentsSummary({
                 {implementedDirectives.slice(0, 3).map((directive) => (
                   <Link
                     key={directive.id}
-                    href={`/eu/direktiv/${directive.slug}`}
+                    href={`${browsePrefix}/eu/direktiv/${directive.slug}`}
                     className="flex items-center gap-2 p-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors group text-sm"
                   >
                     <Badge className={cn('text-xs shrink-0', euTheme.badge)}>

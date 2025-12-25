@@ -29,6 +29,7 @@ interface VersionSelectorProps {
   lawSfs: string // e.g., "1977:1160"
   currentDate?: string // If viewing a historical version
   className?: string
+  isWorkspace?: boolean
 }
 
 export function VersionSelector({
@@ -36,8 +37,11 @@ export function VersionSelector({
   lawSfs,
   currentDate,
   className,
+  isWorkspace = false,
 }: VersionSelectorProps) {
   const router = useRouter()
+  // Prefix for internal links - workspace or public
+  const basePath = isWorkspace ? '/browse/lagar' : '/lagar'
   const [amendments, setAmendments] = useState<Amendment[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
@@ -76,17 +80,17 @@ export function VersionSelector({
 
   const handleVersionSelect = (date: string) => {
     setOpen(false)
-    router.push(`/lagar/${lawSlug}/version/${date}`)
+    router.push(`${basePath}/${lawSlug}/version/${date}`)
   }
 
   const handleCurrentVersion = () => {
     setOpen(false)
-    router.push(`/lagar/${lawSlug}`)
+    router.push(`${basePath}/${lawSlug}`)
   }
 
   const handleShowAll = () => {
     setOpen(false)
-    router.push(`/lagar/${lawSlug}/historik`)
+    router.push(`${basePath}/${lawSlug}/historik`)
   }
 
   const handleCalendarSelect = (date: Date | undefined) => {
@@ -94,7 +98,7 @@ export function VersionSelector({
       const dateStr = date.toISOString().split('T')[0]
       setOpen(false)
       setShowCalendar(false)
-      router.push(`/lagar/${lawSlug}/version/${dateStr}`)
+      router.push(`${basePath}/${lawSlug}/version/${dateStr}`)
     }
   }
 
