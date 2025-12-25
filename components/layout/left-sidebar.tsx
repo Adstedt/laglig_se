@@ -54,15 +54,19 @@ const platformItems: NavItem[] = [
     icon: Scale,
     href: '#',
     isAccordion: true,
-    subItems: [
-      { title: 'Mina laglistor', href: '/laglistor' },
-      { title: 'Alla lagar', href: '/rattskallor' },
-    ],
+    subItems: [{ title: 'Mina laglistor', href: '/laglistor' }],
   },
   {
     title: 'Rättskällor',
     icon: BookOpen,
-    href: '/rattskallor',
+    href: '#',
+    isAccordion: true,
+    subItems: [
+      { title: 'Bläddra alla', href: '/browse/rattskallor' },
+      { title: 'Svenska lagar', href: '/browse/lagar' },
+      { title: 'Rättsfall', href: '/browse/rattsfall' },
+      { title: 'EU-rätt', href: '/browse/eu' },
+    ],
   },
   {
     title: 'Inställningar',
