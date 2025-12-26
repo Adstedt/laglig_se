@@ -70,7 +70,8 @@ export function extractSectionAmendments(fullText: string): ParsedAmendments {
   // - Multiple paragraph sections
 
   // First, try to match sections with chapter numbers
-  const chapterSectionPattern = /(\d+)\s*kap\.\s*(\d+\s*[a-z]?)\s*§([^§]*?)Lag\s*\((\d{4}:\d+)\)\./gi
+  const chapterSectionPattern =
+    /(\d+)\s*kap\.\s*(\d+\s*[a-z]?)\s*§([^§]*?)Lag\s*\((\d{4}:\d+)\)\./gi
 
   for (const match of fullText.matchAll(chapterSectionPattern)) {
     const chapterNum = match[1]
@@ -89,7 +90,8 @@ export function extractSectionAmendments(fullText: string): ParsedAmendments {
   }
 
   // Then match standalone sections (not in chapters)
-  const simpleSectionPattern = /(?<!\d\s*kap\.\s*)(\d+\s*[a-z]?)\s*§([^§]*?)Lag\s*\((\d{4}:\d+)\)\./gi
+  const simpleSectionPattern =
+    /(?<!\d\s*kap\.\s*)(\d+\s*[a-z]?)\s*§([^§]*?)Lag\s*\((\d{4}:\d+)\)\./gi
 
   for (const match of fullText.matchAll(simpleSectionPattern)) {
     const sectionNum = match[1]?.trim() || ''
@@ -99,7 +101,9 @@ export function extractSectionAmendments(fullText: string): ParsedAmendments {
 
     // Check if this section was already captured as part of a chapter
     const existingChapterSection = amendments.find(
-      a => a.sectionNumber.endsWith(`:${sectionNum}`) || a.sectionNumber === sectionNum
+      (a) =>
+        a.sectionNumber.endsWith(`:${sectionNum}`) ||
+        a.sectionNumber === sectionNum
     )
     if (existingChapterSection) continue
 
@@ -124,29 +128,52 @@ export function extractSectionAmendments(fullText: string): ParsedAmendments {
  * @param amendmentSfs The SFS number to search for, e.g., "SFS 2025:732"
  * @returns Array of section identifiers that were modified
  */
-export function findChangedSections(fullText: string, amendmentSfs: string): string[] {
+export function findChangedSections(
+  fullText: string,
+  amendmentSfs: string
+): string[] {
   const { amendments } = extractSectionAmendments(fullText)
 
   return amendments
-    .filter(a => a.amendedBy === amendmentSfs)
-    .map(a => `${a.sectionNumber} §`)
+    .filter((a) => a.amendedBy === amendmentSfs)
+    .map((a) => `${a.sectionNumber} §`)
 }
 
 /**
  * Extract all unique SFS numbers from law text
  * Useful for building amendment history
+ *
+ * Matches both Lag and Förordning patterns:
+ * - "Lag (2025:1559)."
+ * - "Förordning (2025:1560)."
  */
 export function extractAllSfsReferences(fullText: string): string[] {
   if (!fullText) return []
 
-  const pattern = /Lag\s*\((\d{4}:\d+)\)/g
+  // Match both Lag and Förordning patterns
+  const pattern = /(?:Lag|Förordning)\s*\((\d{4}:\d+)\)/gi
   const sfsSet = new Set<string>()
 
   for (const match of fullText.matchAll(pattern)) {
-    sfsSet.add(`SFS ${match[1]}`)
+    if (match[1]) {
+      sfsSet.add(match[1]) // Return just "2025:1559" without "SFS " prefix
+    }
   }
 
   return Array.from(sfsSet).sort()
+}
+
+/**
+ * Extract amendments from a specific year
+ * Filters extractAllSfsReferences to only return amendments from the given year
+ */
+export function extractAmendmentsForYear(
+  fullText: string,
+  year: number
+): string[] {
+  const allRefs = extractAllSfsReferences(fullText)
+  const yearPrefix = `${year}:`
+  return allRefs.filter((sfs) => sfs.startsWith(yearPrefix))
 }
 
 /**
@@ -158,19 +185,24 @@ export function extractAllSfsReferences(fullText: string): string[] {
  *  2025:732
  *  1. Denna lag träder i kraft den 1 januari 2026."
  */
-export function parseTransitionalProvisions(fullText: string): Map<string, Date | null> {
+export function parseTransitionalProvisions(
+  fullText: string
+): Map<string, Date | null> {
   const effectiveDates = new Map<string, Date | null>()
 
   if (!fullText) return effectiveDates
 
   // Find the Övergångsbestämmelser section
-  const transitionMatch = fullText.match(/Övergångsbestämmelser\s*([\s\S]*?)(?=\n\n|$)/i)
+  const transitionMatch = fullText.match(
+    /Övergångsbestämmelser\s*([\s\S]*?)(?=\n\n|$)/i
+  )
   if (!transitionMatch?.[1]) return effectiveDates
 
   const transitionText = transitionMatch[1]
 
   // Pattern to match: "YYYY:NNNN\n1. Denna lag träder i kraft den D MONTH YYYY"
-  const entryPattern = /(\d{4}:\d+)\s*\n[^]*?(?:träder i kraft|tillämpas)[^]*?(?:den\s+)?(\d{1,2})\s*(januari|februari|mars|april|maj|juni|juli|augusti|september|oktober|november|december)\s*(\d{4})/gi
+  const entryPattern =
+    /(\d{4}:\d+)\s*\n[^]*?(?:träder i kraft|tillämpas)[^]*?(?:den\s+)?(\d{1,2})\s*(januari|februari|mars|april|maj|juni|juli|augusti|september|oktober|november|december)\s*(\d{4})/gi
 
   const monthMap: Record<string, number> = {
     januari: 0,

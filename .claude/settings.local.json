@@ -110,7 +110,14 @@
       "Bash(cmd //c \"taskkill /PID 18768 /F\")",
       "Bash(rm:*)",
       "Bash(timeout 10 bash:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "WebFetch(domain:portal.api.bolagsverket.se)",
+      "WebFetch(domain:developer.signicat.com)",
+      "WebFetch(domain:www.roaring.io)",
+      "Bash(git rm:*)",
+      "Bash(cmd //c \"taskkill /PID 27896 /F\")",
+      "Bash(TEST_USER_EMAIL=\"alexander.adstedt+10@kontorab.se\" TEST_USER_PASSWORD=\"KBty8611!!!!\" pnpm playwright test:*)",
+      "Skill(BMad:tasks:execute-checklist)"
     ],
     "deny": [],
     "ask": []

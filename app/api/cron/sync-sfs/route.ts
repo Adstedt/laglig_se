@@ -32,6 +32,12 @@ import {
 import { parseUndertitel } from '@/lib/sync/section-parser'
 import { sendSfsSyncEmail } from '@/lib/email/cron-notifications'
 import { invalidateLawCaches } from '@/lib/cache/invalidation'
+import {
+  classifyLawType,
+  classificationToMetadata,
+  fetchAndStorePdf,
+  type PdfMetadata,
+} from '@/lib/sfs'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -55,6 +61,9 @@ interface InsertedDoc {
   title: string
   publicerad: string
   datum: string
+  lawType: string
+  documentCategory: string
+  pdfFetched: boolean
 }
 
 interface SyncStats {
@@ -69,6 +78,10 @@ interface SyncStats {
   newestApiPublicerad: string | null
   newestInDb: boolean | null
   insertedDocs: InsertedDoc[]
+  // PDF stats (Story 2.28)
+  pdfsFetched: number
+  pdfsStored: number
+  pdfsFailed: number
 }
 
 const CONFIG = {
@@ -98,6 +111,10 @@ export async function GET(request: Request) {
     newestApiPublicerad: null,
     newestInDb: null,
     insertedDocs: [],
+    // PDF stats (Story 2.28)
+    pdfsFetched: 0,
+    pdfsStored: 0,
+    pdfsFailed: 0,
   }
 
   // Collect all log entries for detailed output
@@ -223,6 +240,30 @@ export async function GET(request: Request) {
           const slug = generateSlug(doc.titel, sfsNumber)
           const latestAmendment = parseUndertitel(doc.undertitel || '')
 
+          // Story 2.28: Classify the document
+          const classification = classifyLawType(doc.titel)
+          const classificationMeta = classificationToMetadata(classification)
+          console.log(
+            `[SYNC-SFS]   Classification: ${classification.type}/${classification.category} (confidence: ${classification.confidence})`
+          )
+
+          // Story 2.28: Fetch and store PDF
+          let pdfMetadata: PdfMetadata | null = null
+          stats.pdfsFetched++
+          const pdfResult = await fetchAndStorePdf(
+            doc.beteckning,
+            doc.datum || doc.publicerad
+          )
+          if (pdfResult.success) {
+            pdfMetadata = pdfResult.metadata
+            stats.pdfsStored++
+            console.log(`[SYNC-SFS]   PDF stored: ${pdfMetadata?.storagePath}`)
+          } else {
+            stats.pdfsFailed++
+            pdfMetadata = pdfResult.metadata // Store error metadata for retry
+            console.log(`[SYNC-SFS]   PDF failed: ${pdfResult.error}`)
+          }
+
           await prisma.$transaction(async (tx) => {
             const newDoc = await tx.legalDocument.create({
               data: {
@@ -244,6 +285,10 @@ export async function GET(request: Request) {
                   versionCount: 1,
                   fetchedAt: new Date().toISOString(),
                   method: 'cron-sync-catchup',
+                  // Story 2.28: Classification metadata
+                  ...classificationMeta,
+                  // Story 2.28: PDF metadata (spread to satisfy Prisma JSON type)
+                  pdf: pdfMetadata ? { ...pdfMetadata } : null,
                 },
               },
             })
@@ -275,6 +320,9 @@ export async function GET(request: Request) {
             title: doc.titel,
             publicerad: doc.publicerad,
             datum: doc.datum,
+            lawType: classification.type,
+            documentCategory: classification.category,
+            pdfFetched: pdfResult.success,
           })
           console.log(`[SYNC-SFS] ✓ INSERTED: ${sfsNumber}`)
           console.log(
@@ -341,6 +389,10 @@ export async function GET(request: Request) {
     console.log(`[SYNC-SFS] No SFS number:    ${stats.noSfsNumber}`)
     console.log(`[SYNC-SFS] Failed:           ${stats.failed}`)
     console.log(`[SYNC-SFS] Duration:         ${durationStr}`)
+    console.log(`[SYNC-SFS] ──── PDF Stats (Story 2.28) ────`)
+    console.log(`[SYNC-SFS] PDFs fetched:     ${stats.pdfsFetched}`)
+    console.log(`[SYNC-SFS] PDFs stored:      ${stats.pdfsStored}`)
+    console.log(`[SYNC-SFS] PDFs failed:      ${stats.pdfsFailed}`)
     console.log(`[SYNC-SFS] =====================================`)
 
     // Get current DB count
@@ -385,7 +437,7 @@ export async function GET(request: Request) {
       )
     }
 
-    // Send email notification
+    // Send email notification (with PDF stats from Story 2.28)
     await sendSfsSyncEmail(
       {
         apiCount: stats.apiCount,
@@ -394,6 +446,9 @@ export async function GET(request: Request) {
         skipped: stats.skipped,
         failed: stats.failed,
         dateRange: { from: 'catchup', to: 'latest' },
+        pdfsFetched: stats.pdfsFetched,
+        pdfsStored: stats.pdfsStored,
+        pdfsFailed: stats.pdfsFailed,
       },
       durationStr,
       true
@@ -418,7 +473,7 @@ export async function GET(request: Request) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error'
 
-    // Send failure notification email
+    // Send failure notification email (with PDF stats from Story 2.28)
     await sendSfsSyncEmail(
       {
         apiCount: stats.apiCount,
@@ -427,6 +482,9 @@ export async function GET(request: Request) {
         skipped: stats.skipped,
         failed: stats.failed,
         dateRange: { from: 'catchup', to: 'latest' },
+        pdfsFetched: stats.pdfsFetched,
+        pdfsStored: stats.pdfsStored,
+        pdfsFailed: stats.pdfsFailed,
       },
       durationStr,
       false,

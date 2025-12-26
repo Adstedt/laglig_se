@@ -11,14 +11,27 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { ContentType } from '@prisma/client'
+import { ContentType, ParseStatus } from '@prisma/client'
 import { fetchLawFullText, fetchLawHTML } from '@/lib/external/riksdagen'
 import { archiveDocumentVersion } from '@/lib/sync/version-archive'
 import { detectChanges } from '@/lib/sync/change-detection'
-import { parseUndertitel } from '@/lib/sync/section-parser'
+import {
+  parseUndertitel,
+  extractAllSfsReferences,
+} from '@/lib/sync/section-parser'
 import { createAmendmentFromChange } from '@/lib/sync/amendment-creator'
 import { sendSfsSyncEmail } from '@/lib/email/cron-notifications'
 import { invalidateLawCaches } from '@/lib/cache/invalidation'
+import {
+  classifyLawType,
+  classificationToMetadata,
+  fetchAndStorePdf,
+  type PdfMetadata,
+} from '@/lib/sfs'
+import { parsePdf } from '@/lib/external/pdf-parser'
+import { parseAmendmentWithLLM } from '@/lib/external/llm-amendment-parser'
+import { downloadPdf as downloadPdfFromStorage } from '@/lib/supabase/storage'
+import { SectionChangeType } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -44,6 +57,12 @@ interface SyncStats {
   notInDb: number
   failed: number
   dateRange: { from: string; to: string }
+  // Story 2.28: PDF and amendment stats
+  pdfsFetched: number
+  pdfsStored: number
+  pdfsFailed: number
+  amendmentsCreated: number
+  amendmentsParsed: number
 }
 
 const CONFIG = {
@@ -78,7 +97,20 @@ export async function GET(request: Request) {
       from: cutoffTime.toISOString(),
       to: now.toISOString(),
     },
+    // Story 2.28: PDF and amendment stats
+    pdfsFetched: 0,
+    pdfsStored: 0,
+    pdfsFailed: 0,
+    amendmentsCreated: 0,
+    amendmentsParsed: 0,
   }
+
+  // Story 2.28 AC8: Track amendments for post-transaction LLM parsing
+  const amendmentsToProcess: Array<{
+    id: string
+    sfsNumber: string
+    storagePath: string
+  }> = []
 
   try {
     // Fetch laws sorted by systemdatum (most recently modified first)
@@ -186,6 +218,75 @@ export async function GET(request: Request) {
             continue
           }
 
+          // Story 2.28: Classify the updated document
+          const classification = classifyLawType(doc.titel)
+          const classificationMeta = classificationToMetadata(classification)
+
+          // Story 2.28 Enhanced: Extract ALL amendments from full text, not just undertitel
+          // This catches multiple amendments to the same law on the same day
+          const currentYear = new Date().getFullYear()
+          const allSfsRefs = newFullText
+            ? extractAllSfsReferences(newFullText)
+            : []
+          const currentYearRefs = allSfsRefs.filter((sfs) =>
+            sfs.startsWith(`${currentYear}:`)
+          )
+
+          // Check which amendments we already have in the database
+          const existingAmendmentDocs = await prisma.amendmentDocument.findMany(
+            {
+              where: {
+                sfs_number: { in: currentYearRefs },
+              },
+              select: { sfs_number: true },
+            }
+          )
+          const existingSfsNumbers = new Set(
+            existingAmendmentDocs.map((a) => a.sfs_number)
+          )
+
+          // Filter to only NEW amendments we haven't processed yet
+          const newAmendments = currentYearRefs.filter(
+            (sfs) => !existingSfsNumbers.has(sfs)
+          )
+
+          console.log(
+            `[SYNC-SFS-UPDATES]   Full text has ${allSfsRefs.length} SFS refs, ${currentYearRefs.length} from ${currentYear}, ${newAmendments.length} new`
+          )
+
+          // Use systemdatum (base doc update time) as proxy for amendment publication date
+          const amendmentDate = doc.systemdatum.split(' ')[0] // Extract YYYY-MM-DD
+
+          // Track PDF metadata for all new amendments
+          const amendmentPdfResults: Map<string, PdfMetadata | null> = new Map()
+
+          // Fetch PDFs for ALL new amendments (not just undertitel)
+          for (const amendmentSfs of newAmendments) {
+            console.log(
+              `[SYNC-SFS-UPDATES]   Fetching amendment PDF: SFS ${amendmentSfs}`
+            )
+            stats.pdfsFetched++
+
+            const pdfResult = await fetchAndStorePdf(
+              amendmentSfs,
+              amendmentDate
+            )
+
+            if (pdfResult.success) {
+              amendmentPdfResults.set(amendmentSfs, pdfResult.metadata)
+              stats.pdfsStored++
+              console.log(
+                `[SYNC-SFS-UPDATES]     PDF stored: ${pdfResult.metadata?.storagePath}`
+              )
+            } else {
+              stats.pdfsFailed++
+              amendmentPdfResults.set(amendmentSfs, pdfResult.metadata)
+              console.log(
+                `[SYNC-SFS-UPDATES]     PDF failed: ${pdfResult.error}`
+              )
+            }
+          }
+
           await prisma.$transaction(async (tx) => {
             const archivedVersion = await archiveDocumentVersion(tx, {
               documentId: existing.id,
@@ -213,6 +314,42 @@ export async function GET(request: Request) {
               })
             }
 
+            // Story 2.28 Enhanced: Create AmendmentDocument for ALL new amendments
+            // Not just the undertitel one - this catches multiple amendments per day
+            const baseLawSfs = doc.beteckning // e.g., "1977:1160"
+            const baseLawNameMatch = doc.titel.match(/i\s+([^(]+?)\s*\(/i)
+            const baseLawName = baseLawNameMatch?.[1]?.trim() ?? null
+
+            for (const amendmentSfs of newAmendments) {
+              const pdfMeta = amendmentPdfResults.get(amendmentSfs)
+              if (!pdfMeta?.storagePath) continue
+
+              const newAmendmentDoc = await tx.amendmentDocument.create({
+                data: {
+                  sfs_number: amendmentSfs,
+                  storage_path: pdfMeta.storagePath,
+                  original_url: pdfMeta.originalUrl,
+                  file_size: pdfMeta.fileSize,
+                  base_law_sfs: baseLawSfs,
+                  base_law_name: baseLawName,
+                  title: `Ändring SFS ${amendmentSfs}`,
+                  parse_status: ParseStatus.PENDING,
+                },
+              })
+
+              stats.amendmentsCreated++
+              console.log(
+                `[SYNC-SFS-UPDATES]     AmendmentDocument created: ${amendmentSfs}`
+              )
+
+              // Story 2.28 AC8: Queue for post-transaction LLM parsing
+              amendmentsToProcess.push({
+                id: newAmendmentDoc.id,
+                sfsNumber: amendmentSfs,
+                storagePath: pdfMeta.storagePath,
+              })
+            }
+
             await tx.legalDocument.update({
               where: { id: existing.id },
               data: {
@@ -224,6 +361,8 @@ export async function GET(request: Request) {
                   systemdatum: doc.systemdatum,
                   latestAmendment,
                   lastSyncAt: new Date().toISOString(),
+                  // Story 2.28: Add classification metadata
+                  ...classificationMeta,
                 },
               },
             })
@@ -249,6 +388,107 @@ export async function GET(request: Request) {
       page++
     }
 
+    // Story 2.28 AC8: Process amendments with LLM parsing (outside main loop for timeout safety)
+    for (const amendment of amendmentsToProcess) {
+      try {
+        console.log(
+          `[SYNC-SFS-UPDATES] Parsing amendment with LLM: ${amendment.sfsNumber}`
+        )
+
+        // Download PDF from Supabase Storage
+        const pdfBuffer = await downloadPdfFromStorage(amendment.sfsNumber)
+        if (!pdfBuffer) {
+          console.log(
+            `[SYNC-SFS-UPDATES]   Failed to download PDF for parsing: ${amendment.sfsNumber}`
+          )
+          await prisma.amendmentDocument.update({
+            where: { id: amendment.id },
+            data: { parse_status: ParseStatus.FAILED },
+          })
+          continue
+        }
+
+        // Extract text from PDF
+        const parsedPdf = await parsePdf(
+          pdfBuffer,
+          `SFS${amendment.sfsNumber}.pdf`
+        )
+        console.log(
+          `[SYNC-SFS-UPDATES]   PDF text extracted: ${parsedPdf.fullText.length} chars`
+        )
+
+        // Parse with LLM to extract section changes
+        const llmResult = await parseAmendmentWithLLM(parsedPdf.fullText)
+        console.log(
+          `[SYNC-SFS-UPDATES]   LLM parsed: ${llmResult.affectedSections.length} sections, confidence: ${llmResult.confidence}`
+        )
+
+        // Map LLM change types to database enum
+        const mapChangeType = (
+          type: 'amended' | 'repealed' | 'new' | 'renumbered'
+        ): SectionChangeType => {
+          switch (type) {
+            case 'amended':
+              return SectionChangeType.AMENDED
+            case 'repealed':
+              return SectionChangeType.REPEALED
+            case 'new':
+              return SectionChangeType.NEW
+            case 'renumbered':
+              return SectionChangeType.RENUMBERED
+          }
+        }
+
+        // Create SectionChange records
+        await prisma.$transaction(async (tx) => {
+          // Create SectionChange records for each affected section
+          let sortOrder = 0
+          for (const section of llmResult.affectedSections) {
+            await tx.sectionChange.create({
+              data: {
+                amendment_id: amendment.id,
+                chapter: section.chapter,
+                section: section.section,
+                change_type: mapChangeType(section.changeType),
+                old_number: section.oldNumber ?? null,
+                description: section.description,
+                new_text: section.newText ?? null,
+                sort_order: sortOrder++,
+              },
+            })
+          }
+
+          // Update AmendmentDocument with parsed data
+          await tx.amendmentDocument.update({
+            where: { id: amendment.id },
+            data: {
+              title: llmResult.title || `Ändring SFS ${amendment.sfsNumber}`,
+              effective_date: llmResult.effectiveDate
+                ? new Date(llmResult.effectiveDate)
+                : null,
+              parse_status: ParseStatus.COMPLETED,
+              parsed_at: new Date(),
+            },
+          })
+        })
+
+        stats.amendmentsParsed++
+        console.log(
+          `[SYNC-SFS-UPDATES]   ✓ Amendment parsed successfully: ${amendment.sfsNumber}`
+        )
+      } catch (err) {
+        console.error(
+          `[SYNC-SFS-UPDATES]   ✗ LLM parsing failed for ${amendment.sfsNumber}:`,
+          err
+        )
+        // Mark as failed but don't block the sync
+        await prisma.amendmentDocument.update({
+          where: { id: amendment.id },
+          data: { parse_status: ParseStatus.FAILED },
+        })
+      }
+    }
+
     const duration = Date.now() - startTime.getTime()
     const durationStr = `${Math.round(duration / 1000)}s`
 
@@ -263,6 +503,16 @@ export async function GET(request: Request) {
     console.log(`[SYNC-SFS-UPDATES] Not in DB: ${stats.notInDb}`)
     console.log(`[SYNC-SFS-UPDATES] Failed: ${stats.failed}`)
     console.log(`[SYNC-SFS-UPDATES] Duration: ${durationStr}`)
+    console.log(`[SYNC-SFS-UPDATES] ──── PDF/Amendment Stats (Story 2.28) ────`)
+    console.log(`[SYNC-SFS-UPDATES] PDFs fetched: ${stats.pdfsFetched}`)
+    console.log(`[SYNC-SFS-UPDATES] PDFs stored: ${stats.pdfsStored}`)
+    console.log(`[SYNC-SFS-UPDATES] PDFs failed: ${stats.pdfsFailed}`)
+    console.log(
+      `[SYNC-SFS-UPDATES] Amendments created: ${stats.amendmentsCreated}`
+    )
+    console.log(
+      `[SYNC-SFS-UPDATES] Amendments parsed (LLM): ${stats.amendmentsParsed}`
+    )
     console.log(`[SYNC-SFS-UPDATES] ======================================`)
 
     // Invalidate caches if any documents were updated
@@ -274,7 +524,7 @@ export async function GET(request: Request) {
       )
     }
 
-    // Send email notification (reuse SFS sync email with updated stats)
+    // Send email notification (with PDF/amendment stats from Story 2.28)
     await sendSfsSyncEmail(
       {
         apiCount: stats.apiCount,
@@ -284,6 +534,11 @@ export async function GET(request: Request) {
         skipped: stats.skipped + stats.notInDb,
         failed: stats.failed,
         dateRange: stats.dateRange,
+        pdfsFetched: stats.pdfsFetched,
+        pdfsStored: stats.pdfsStored,
+        pdfsFailed: stats.pdfsFailed,
+        amendmentsCreated: stats.amendmentsCreated,
+        amendmentsParsed: stats.amendmentsParsed,
       },
       durationStr,
       true
@@ -304,7 +559,7 @@ export async function GET(request: Request) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error'
 
-    // Send failure notification email
+    // Send failure notification email (with PDF/amendment stats from Story 2.28)
     await sendSfsSyncEmail(
       {
         apiCount: stats.apiCount,
@@ -314,6 +569,11 @@ export async function GET(request: Request) {
         skipped: stats.skipped + stats.notInDb,
         failed: stats.failed,
         dateRange: stats.dateRange,
+        pdfsFetched: stats.pdfsFetched,
+        pdfsStored: stats.pdfsStored,
+        pdfsFailed: stats.pdfsFailed,
+        amendmentsCreated: stats.amendmentsCreated,
+        amendmentsParsed: stats.amendmentsParsed,
       },
       durationStr,
       false,

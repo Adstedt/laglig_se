@@ -31,6 +31,12 @@ export interface SfsSyncStats {
   skipped: number
   failed: number
   dateRange: { from: string; to: string }
+  // Story 2.28: PDF and amendment stats
+  pdfsFetched?: number
+  pdfsStored?: number
+  pdfsFailed?: number
+  amendmentsCreated?: number
+  amendmentsParsed?: number // Story 2.28 AC8: LLM-parsed amendments
 }
 
 export interface CourtSyncStats {
@@ -92,12 +98,16 @@ export async function sendSfsSyncEmail(
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>New Laws Inserted</strong></td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.inserted}</td>
       </tr>
-      ${stats.updated !== undefined ? `
+      ${
+        stats.updated !== undefined
+          ? `
       <tr style="background: ${stats.updated > 0 ? '#fff3cd' : '#f8f9fa'};">
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Laws Updated</strong></td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.updated}</td>
       </tr>
-      ` : ''}
+      `
+          : ''
+      }
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;">Fetched from API</td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.fetched}</td>
@@ -115,6 +125,48 @@ export async function sendSfsSyncEmail(
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.apiCount.toLocaleString()}</td>
       </tr>
     </table>
+
+    ${
+      stats.pdfsFetched !== undefined
+        ? `
+    <h3>PDF & Document Stats</h3>
+    <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
+      <tr style="background: ${stats.pdfsStored && stats.pdfsStored > 0 ? '#d4edda' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;"><strong>PDFs Stored</strong></td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pdfsStored || 0}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">PDFs Attempted</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pdfsFetched || 0}</td>
+      </tr>
+      <tr style="background: ${stats.pdfsFailed && stats.pdfsFailed > 0 ? '#f8d7da' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">PDFs Failed</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pdfsFailed || 0}</td>
+      </tr>
+      ${
+        stats.amendmentsCreated !== undefined
+          ? `
+      <tr style="background: ${stats.amendmentsCreated > 0 ? '#fff3cd' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">Amendments Created</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.amendmentsCreated}</td>
+      </tr>
+      `
+          : ''
+      }
+      ${
+        stats.amendmentsParsed !== undefined
+          ? `
+      <tr style="background: ${stats.amendmentsParsed > 0 ? '#d4edda' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">Amendments Parsed (LLM)</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.amendmentsParsed}</td>
+      </tr>
+      `
+          : ''
+      }
+    </table>
+    `
+        : ''
+    }
 
     <p style="margin-top: 16px; color: #666;">
       📅 Date range: ${stats.dateRange.from} to ${stats.dateRange.to}
