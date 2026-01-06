@@ -40,3 +40,22 @@ next-env.d.ts
 
 # Large batch data files (LLM processing)
 data/batches/*.jsonl
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Windows artifacts
+bash.exe.stackdump
+nul
+
+# Temp directories
+batches/
+results/
+
+# Temp screenshots
+scroll-check.png
+notisum-*.png
