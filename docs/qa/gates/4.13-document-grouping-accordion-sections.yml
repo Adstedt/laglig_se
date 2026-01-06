@@ -1,0 +1,58 @@
+schema: 1
+story: '4.13'
+story_title: 'Document Grouping with Accordion Sections'
+gate: PASS
+status_reason: 'All 14 acceptance criteria implemented with comprehensive test coverage (47 unit + 10 E2E). Clean architecture following established patterns.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-01-06T23:53:00Z'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-01-20T23:53:00Z'
+
+evidence:
+  tests_reviewed:
+    unit: 47
+    e2e: 10
+    total: 57
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All server actions use withWorkspace() authorization. Group operations verify same-list ownership. Zod validation on all inputs.'
+  performance:
+    status: PASS
+    notes: 'React.memo on heavy components. Debounced reorder. Collapsed groups defer child rendering. Tested with target of 50+ items per group.'
+  reliability:
+    status: PASS
+    notes: 'Optimistic updates with rollback on error. Proper error handling with Swedish toast messages. localStorage persistence for expansion state.'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation of concerns. TypeScript throughout. Follows existing Story 4.11/4.12 patterns. Well-documented components.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider adding @tanstack/react-virtual for groups exceeding 100 items'
+      refs: ['components/features/document-list/grouped-document-list.tsx']
+    - action: 'Add group color customization (currently documented but not implemented)'
+      refs: ['prisma/schema.prisma', 'components/features/document-list/group-manager.tsx']
+
+files_reviewed:
+  - prisma/schema.prisma
+  - app/actions/document-list.ts
+  - lib/stores/document-list-store.ts
+  - lib/validation/document-list.ts
+  - components/features/document-list/grouped-document-list.tsx
+  - components/features/document-list/group-selector.tsx
+  - components/features/document-list/group-manager.tsx
+  - components/features/document-list/group-filter-chip.tsx
+  - components/features/document-list/document-list-page-content.tsx
+  - tests/unit/lib/stores/document-list-store.test.ts
+  - tests/e2e/document-list.spec.ts
