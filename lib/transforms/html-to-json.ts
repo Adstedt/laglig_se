@@ -188,9 +188,7 @@ export function htmlToJson(
 // Extraction Functions
 // ============================================================================
 
-function createEmptyDocument(
-  options: HtmlToJsonOptions
-): LegalDocumentJson {
+function createEmptyDocument(options: HtmlToJsonOptions): LegalDocumentJson {
   return {
     type: options.documentType || 'law',
     title: null,
@@ -375,7 +373,8 @@ function parseSection(
   // Extract footnote references
   const footnoteRefs: string[] = []
   $el.find('sup a[href^="#fn"], sup.footnote-ref').each((_, fnRef) => {
-    const ref = $(fnRef).text().trim() || $(fnRef).attr('href')?.replace('#fn', '') || ''
+    const ref =
+      $(fnRef).text().trim() || $(fnRef).attr('href')?.replace('#fn', '') || ''
     if (ref) {
       footnoteRefs.push(ref)
     }
@@ -482,7 +481,9 @@ function getContentUntilNextHeading(
   }
 }
 
-function extractTransitionProvisions($: cheerio.CheerioAPI): TransitionProvision[] {
+function extractTransitionProvisions(
+  $: cheerio.CheerioAPI
+): TransitionProvision[] {
   const provisions: TransitionProvision[] = []
 
   // Look for transition provisions section
@@ -499,14 +500,19 @@ function extractTransitionProvisions($: cheerio.CheerioAPI): TransitionProvision
 
       // Check if this is actually transition provisions
       const text = $container.text().toLowerCase()
-      if (!text.includes('övergångsbestämmelser') && !text.includes('träder i kraft')) {
+      if (
+        !text.includes('övergångsbestämmelser') &&
+        !text.includes('träder i kraft')
+      ) {
         return
       }
 
       // Try structured lists first
       $container.find('ol > li, dl > dd').each((i, item) => {
         const itemContent = $(item).text().trim()
-        const dateMatch = itemContent.match(/(\d{4}-\d{2}-\d{2}|\d{1,2}\s+\w+\s+\d{4})/)
+        const dateMatch = itemContent.match(
+          /(\d{4}-\d{2}-\d{2}|\d{1,2}\s+\w+\s+\d{4})/
+        )
 
         provisions.push({
           number: String(i + 1),
@@ -558,18 +564,19 @@ function extractLegislativeReferences(text: string): LegislativeReference[] {
   const refs: LegislativeReference[] = []
 
   // Patterns for different reference types
-  const patterns: Array<{ type: LegislativeReference['type']; regex: RegExp }> = [
-    // prop. 2025/26:22 or Prop. 1996/97:141
-    { type: 'prop', regex: /[Pp]rop\.\s*(\d{4}\/\d{2,4}):(\d+)/g },
-    // bet. 2025/26:SkU5 or Bet. 1997/98:UbU3
-    { type: 'bet', regex: /[Bb]et\.\s*(\d{4}\/\d{2,4}):([A-Za-z]+\d+)/g },
-    // rskr. 2025/26:95 or Rskr. 1997/98:12
-    { type: 'rskr', regex: /[Rr]skr\.\s*(\d{4}\/\d{2,4}):(\d+)/g },
-    // SOU 2024:15
-    { type: 'sou', regex: /SOU\s*(\d{4}):(\d+)/gi },
-    // Ds 2024:15
-    { type: 'ds', regex: /Ds\s*(\d{4}):(\d+)/gi },
-  ]
+  const patterns: Array<{ type: LegislativeReference['type']; regex: RegExp }> =
+    [
+      // prop. 2025/26:22 or Prop. 1996/97:141
+      { type: 'prop', regex: /[Pp]rop\.\s*(\d{4}\/\d{2,4}):(\d+)/g },
+      // bet. 2025/26:SkU5 or Bet. 1997/98:UbU3
+      { type: 'bet', regex: /[Bb]et\.\s*(\d{4}\/\d{2,4}):([A-Za-z]+\d+)/g },
+      // rskr. 2025/26:95 or Rskr. 1997/98:12
+      { type: 'rskr', regex: /[Rr]skr\.\s*(\d{4}\/\d{2,4}):(\d+)/g },
+      // SOU 2024:15
+      { type: 'sou', regex: /SOU\s*(\d{4}):(\d+)/gi },
+      // Ds 2024:15
+      { type: 'ds', regex: /Ds\s*(\d{4}):(\d+)/gi },
+    ]
 
   for (const { type, regex } of patterns) {
     let match
@@ -622,7 +629,7 @@ function extractFootnotes($: cheerio.CheerioAPI): Footnote[] {
       footnotes.push({
         id: fnNumber,
         content: ddContent,
-        legislativeRefs: legislativeRefs.length > 0 ? legislativeRefs : undefined,
+        ...(legislativeRefs.length > 0 && { legislativeRefs }),
       })
     }
   })

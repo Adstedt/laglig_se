@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { prefetchManager } from '@/lib/prefetch'
-import { isCourtCase, getCaseTypeLabel } from '@/lib/court-case-utils'
+import { isCourtCase } from '@/lib/court-case-utils'
 import type { BrowseResult } from '@/app/actions/browse'
 
 interface CatalogueResultCardProps {
@@ -75,11 +75,6 @@ export function CatalogueResultCard({
   // Check if this is a court case
   const isCourtCaseDoc = isCourtCase(document.contentType)
 
-  // Get formatted case type label for court cases
-  const caseTypeLabel = isCourtCaseDoc
-    ? getCaseTypeLabel(document.isGuiding ?? false, document.caseType ?? undefined)
-    : null
-
   // For court cases, use case number as primary identifier
   const displayTitle = isCourtCaseDoc
     ? document.caseNumber || document.documentNumber
@@ -118,7 +113,9 @@ export function CatalogueResultCard({
               <ThemeIcon className="h-3.5 w-3.5" />
               {theme.label}
             </Badge>
-            <span className="text-muted-foreground">{document.documentNumber}</span>
+            <span className="text-muted-foreground">
+              {document.documentNumber}
+            </span>
             {document.effectiveDate && (
               <>
                 <span className="text-muted-foreground/40">•</span>
@@ -173,7 +170,9 @@ export function CatalogueResultCard({
               <ThemeIcon className="h-3.5 w-3.5" />
               {theme.label}
             </Badge>
-            <span className="text-muted-foreground">{document.documentNumber}</span>
+            <span className="text-muted-foreground">
+              {document.documentNumber}
+            </span>
             {document.effectiveDate && (
               <>
                 <span className="text-muted-foreground/40">•</span>

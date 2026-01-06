@@ -344,7 +344,7 @@ function processFootnoteDefinition(
     if (tagName === 'dt') {
       // Extract number from "1) " or "1)"
       const match = content.match(/(\d+)\)?/)
-      if (match) {
+      if (match?.[1]) {
         footnoteNum = match[1]
       }
     } else if (tagName === 'dd') {
@@ -411,7 +411,7 @@ function processTable(
     (row, idx) => idx > 0 && row.length >= 2 && row[0] === ''
   )
 
-  if (hasGroupedRows && rows.length > 0 && rows[0].length >= 3) {
+  if (hasGroupedRows && rows.length > 0 && (rows[0]?.length ?? 0) >= 3) {
     // Convert to nested list format for better readability
     return convertGroupedTableToLists(rows)
   }
@@ -459,15 +459,15 @@ function convertGroupedTableToLists(rows: string[][]): string {
 
     // Format remaining cells as "key: value" or just value
     if (remainingCells.length >= 2) {
-      const key = remainingCells[0].trim()
+      const key = remainingCells[0]?.trim() ?? ''
       const value = remainingCells.slice(1).join(' – ').trim()
       if (key && value) {
         lines.push(`- ${key}: ${value}`)
       } else if (key) {
         lines.push(`- ${key}`)
       }
-    } else if (remainingCells.length === 1 && remainingCells[0].trim()) {
-      lines.push(`- ${remainingCells[0].trim()}`)
+    } else if (remainingCells.length === 1 && remainingCells[0]?.trim()) {
+      lines.push(`- ${remainingCells[0]?.trim()}`)
     }
   }
 

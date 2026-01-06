@@ -307,12 +307,18 @@ export default async function WorkspaceCourtCasePage({ params }: PageProps) {
                   Domtexten är inte tillgänglig i digital form.
                 </p>
                 {(document.metadata as Record<string, unknown>)?.attachments &&
-                 Array.isArray((document.metadata as Record<string, unknown>).attachments) &&
-                 ((document.metadata as Record<string, unknown>).attachments as Array<{filename: string}>).length > 0 && (
+                Array.isArray(
+                  (document.metadata as Record<string, unknown>).attachments
+                ) &&
+                (
+                  (document.metadata as Record<string, unknown>)
+                    .attachments as Array<{ filename: string }>
+                ).length > 0 ? (
                   <p className="text-sm text-muted-foreground">
-                    Detta avgörande finns endast som PDF-bilaga hos Domstolsverket.
+                    Detta avgörande finns endast som PDF-bilaga hos
+                    Domstolsverket.
                   </p>
-                )}
+                ) : null}
               </div>
             )}
           </article>
@@ -323,19 +329,20 @@ export default async function WorkspaceCourtCasePage({ params }: PageProps) {
       <footer className="text-center text-sm text-muted-foreground py-4 border-t">
         <p>
           Källa: {courtInfo.name}
-          {document.source_url && (document.html_content || document.full_text) && (
-            <>
-              {' '}
-              <a
-                href={document.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                (visa original)
-              </a>
-            </>
-          )}
+          {document.source_url &&
+            (document.html_content || document.full_text) && (
+              <>
+                {' '}
+                <a
+                  href={document.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  (visa original)
+                </a>
+              </>
+            )}
         </p>
       </footer>
 

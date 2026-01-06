@@ -34,7 +34,9 @@ export const dynamicParams = true // Allow ISR for non-pre-generated pages
  * Safely convert a date that might be a string (from cache) or Date object
  * to an ISO string for JSON-LD structured data
  */
-function toISOStringOrUndefined(date: Date | string | null | undefined): string | undefined {
+function toISOStringOrUndefined(
+  date: Date | string | null | undefined
+): string | undefined {
   if (!date) return undefined
   if (typeof date === 'string') return date
   if (date instanceof Date) return date.toISOString()
@@ -44,7 +46,10 @@ function toISOStringOrUndefined(date: Date | string | null | undefined): string 
 /**
  * Safely convert a date to a formatted locale string for display
  */
-function formatDateOrNull(date: Date | string | null | undefined, options: Intl.DateTimeFormatOptions): string | null {
+function formatDateOrNull(
+  date: Date | string | null | undefined,
+  options: Intl.DateTimeFormatOptions
+): string | null {
   if (!date) return null
   const dateObj = typeof date === 'string' ? new Date(date) : date
   return dateObj.toLocaleDateString('sv-SE', options)
@@ -70,7 +75,10 @@ export async function generateStaticParams() {
     )
     return topCases
   } catch (error) {
-    console.error('[generateStaticParams] Error fetching top court cases:', error)
+    console.error(
+      '[generateStaticParams] Error fetching top court cases:',
+      error
+    )
     return [] // Fallback to ISR for all pages
   }
 }
@@ -326,20 +334,21 @@ export default async function CourtCasePage({ params }: PageProps) {
                 </div>
               )}
               {/* Only show source link if there's actual content (not empty page) */}
-              {document.source_url && (document.html_content || document.full_text) && (
-                <a
-                  href={document.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    'flex items-center gap-1.5 hover:underline ml-auto',
-                    theme.accent
-                  )}
-                >
-                  <span>Källa</span>
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
+              {document.source_url &&
+                (document.html_content || document.full_text) && (
+                  <a
+                    href={document.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      'flex items-center gap-1.5 hover:underline ml-auto',
+                      theme.accent
+                    )}
+                  >
+                    <span>Källa</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
             </div>
           </header>
 
@@ -428,13 +437,20 @@ export default async function CourtCasePage({ params }: PageProps) {
                     <p className="italic text-muted-foreground mb-4">
                       Domtexten är inte tillgänglig i digital form.
                     </p>
-                    {(document.metadata as Record<string, unknown>)?.attachments &&
-                     Array.isArray((document.metadata as Record<string, unknown>).attachments) &&
-                     ((document.metadata as Record<string, unknown>).attachments as Array<{filename: string}>).length > 0 && (
+                    {(document.metadata as Record<string, unknown>)
+                      ?.attachments &&
+                    Array.isArray(
+                      (document.metadata as Record<string, unknown>).attachments
+                    ) &&
+                    (
+                      (document.metadata as Record<string, unknown>)
+                        .attachments as Array<{ filename: string }>
+                    ).length > 0 ? (
                       <p className="text-sm text-muted-foreground">
-                        Detta avgörande finns endast som PDF-bilaga hos Domstolsverket.
+                        Detta avgörande finns endast som PDF-bilaga hos
+                        Domstolsverket.
                       </p>
-                    )}
+                    ) : null}
                   </div>
                 )}
               </article>
@@ -445,19 +461,20 @@ export default async function CourtCasePage({ params }: PageProps) {
           <footer className="text-center text-sm text-muted-foreground py-4 border-t">
             <p>
               Källa: {courtInfo.name}
-              {document.source_url && (document.html_content || document.full_text) && (
-                <>
-                  {' '}
-                  <a
-                    href={document.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    (visa original)
-                  </a>
-                </>
-              )}
+              {document.source_url &&
+                (document.html_content || document.full_text) && (
+                  <>
+                    {' '}
+                    <a
+                      href={document.source_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      (visa original)
+                    </a>
+                  </>
+                )}
             </p>
           </footer>
         </div>
