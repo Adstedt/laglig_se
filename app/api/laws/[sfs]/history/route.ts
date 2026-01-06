@@ -49,7 +49,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     // Get amendment timeline (cached for 24h)
     const timeline = await getCachedAmendmentTimeline(decodedSfs)
 
-    // Transform timeline to include public PDF URLs
+    // Transform timeline to include public PDF URLs and slugs
     const amendmentsWithPdfUrls = timeline.map((a) => ({
       sfsNumber: a.sfsNumber,
       effectiveDate: a.effectiveDate,
@@ -57,6 +57,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       sectionCount: a.sectionCount,
       changeTypes: a.changeTypes,
       pdfUrl: a.storagePath ? getPublicPdfUrl(a.storagePath) : null,
+      slug: a.slug, // Story 2.29: Include slug for linking to amendment detail page
     }))
 
     // Derive available version dates from timeline

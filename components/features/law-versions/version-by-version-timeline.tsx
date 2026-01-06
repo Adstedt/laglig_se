@@ -28,6 +28,7 @@ interface Amendment {
   sectionsAdded?: number | undefined
   sectionsRepealed?: number | undefined
   pdfUrl?: string | null | undefined // Full URL to PDF in Supabase storage
+  slug?: string | null | undefined // Story 2.29: Link to amendment detail page
 }
 
 interface LineDiff {
@@ -380,6 +381,22 @@ export function VersionByVersionTimeline({
                         <Edit className="h-3 w-3 mr-1" />
                         {amendment.sectionsChanged} ändrade
                       </Badge>
+                    )}
+
+                    {/* Story 2.29: Link to amendment detail page when available */}
+                    {amendment.slug && (
+                      <Link
+                        href={`${basePath}/andringar/${amendment.slug}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Badge
+                          variant="outline"
+                          className="text-xs hover:bg-primary/10 cursor-pointer gap-1"
+                        >
+                          <FileText className="h-3 w-3" />
+                          Detaljer
+                        </Badge>
+                      </Link>
                     )}
 
                     {/* PDF/Source link */}

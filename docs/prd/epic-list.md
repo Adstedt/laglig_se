@@ -96,8 +96,20 @@
 
 ---
 
-**Total Estimated Stories:** 70-86 across 8 epics
+## Epic 9: Legal Intelligence & AI Enrichment
 
-**Estimated Timeline:** 16 weeks (4 months) - aligns with 4-6 month MVP goal
+**Goal:** Enrich raw legal content with AI-generated contextual analysis using parliamentary documents (propositions, committee reports) to provide genuine legal insight beyond raw text.
+
+**Delivers:** AI-generated legal comments with parliamentary context, proposition summaries, cross-references to preparatory works, "why did this change?" explanations
+
+**Requirements covered:** FR4 (enhanced), NFR9, NFR24
+
+**Estimated stories:** 5-7
+
+---
+
+**Total Estimated Stories:** 75-93 across 9 epics
+
+**Estimated Timeline:** 18 weeks (4.5 months) - aligns with 4-6 month MVP goal
 
 ---

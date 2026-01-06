@@ -73,6 +73,7 @@ export default async function HistoryPage({ params }: PageProps) {
     sectionsAdded: a.changeTypes?.new || 0,
     sectionsRepealed: a.changeTypes?.repealed || 0,
     pdfUrl: a.storagePath ? getPublicPdfUrl(a.storagePath) : null,
+    slug: a.slug ?? undefined, // Story 2.29: Link to amendment detail page
   }))
 
   // Derive available version dates from timeline (no separate query needed)

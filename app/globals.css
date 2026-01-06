@@ -113,6 +113,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 /* Premium animations */
@@ -419,6 +420,196 @@ html {
   /* Content markers like "Innehåll:" - table of contents style */
   .legal-document > div > p:first-child {
     @apply text-base font-medium text-muted-foreground mb-6;
+  }
+
+  /* ==========================================================================
+   * Amendment HTML Content Styling
+   * Styles for LLM-generated HTML from PDF parsing (Story 2.29)
+   * ========================================================================== */
+
+  .amendment-html-content {
+    @apply leading-relaxed text-foreground;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  /* Hide the document header from LLM output - we render our own header */
+  .amendment-html-content .lovhead {
+    @apply hidden;
+  }
+
+  /* Main body wrapper */
+  .amendment-html-content .body {
+    @apply space-y-6;
+  }
+
+  /* Chapter sections */
+  .amendment-html-content .kapitel {
+    @apply mt-8 pt-6 border-t-2 border-border;
+  }
+
+  .amendment-html-content .kapitel:first-child {
+    @apply mt-0 pt-0 border-t-0;
+  }
+
+  .amendment-html-content .kapitel > h2 {
+    @apply text-lg font-bold text-foreground mb-4;
+  }
+
+  .amendment-html-content .kapitel > h2 .kapitel {
+    @apply border-none mt-0 pt-0;
+  }
+
+  /* Group headers (e.g., "Samhällsintroduktion") */
+  .amendment-html-content h3.group,
+  .amendment-html-content section.group > h3 {
+    @apply text-sm font-semibold text-muted-foreground uppercase tracking-wide mt-6 mb-3;
+  }
+
+  /* Section/paragraph wrappers */
+  .amendment-html-content section.ann,
+  .amendment-html-content section.paragraf {
+    @apply mt-6 first:mt-0;
+  }
+
+  /* Section headers (§) */
+  .amendment-html-content h3.paragraph {
+    @apply font-semibold text-base text-primary mb-2;
+  }
+
+  .amendment-html-content h3.paragraph .kapitel {
+    @apply text-muted-foreground font-normal mr-1;
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Paragraph text */
+  .amendment-html-content p.text {
+    @apply mb-3 text-foreground;
+  }
+
+  .amendment-html-content .element-body p.text:last-child {
+    @apply mb-0;
+  }
+
+  /* Intro text */
+  .amendment-html-content p.intro-text {
+    @apply text-muted-foreground italic mb-6 pb-4 border-b border-border;
+  }
+
+  /* Ordered lists */
+  .amendment-html-content ol.list {
+    @apply my-3 ml-6 space-y-2 list-decimal;
+  }
+
+  .amendment-html-content ol.list[type="a"] {
+    list-style-type: lower-alpha;
+  }
+
+  .amendment-html-content ol.list li {
+    @apply pl-1;
+  }
+
+  .amendment-html-content ol.list li p.text {
+    @apply mb-0;
+  }
+
+  /* Sub-lists */
+  .amendment-html-content ol.sub-list {
+    @apply mt-2 ml-4;
+  }
+
+  /* Unordered lists */
+  .amendment-html-content ul.list {
+    @apply my-3 ml-6 space-y-1 list-disc;
+  }
+
+  .amendment-html-content ul.list[style*="list-style: none"] {
+    @apply list-none ml-0;
+  }
+
+  /* Definition lists (term → reference) */
+  .amendment-html-content ul.definition-list {
+    @apply space-y-1;
+  }
+
+  .amendment-html-content ul.definition-list li p.text em {
+    @apply text-foreground not-italic;
+  }
+
+  /* Links / references */
+  .amendment-html-content a.ref {
+    @apply text-primary underline decoration-primary/30 underline-offset-2 transition-all;
+  }
+
+  .amendment-html-content a.ref:hover {
+    @apply decoration-primary;
+  }
+
+  /* Footnotes - inline markers */
+  .amendment-html-content sup.footnote {
+    @apply text-xs text-muted-foreground ml-0.5;
+  }
+
+  .amendment-html-content .footnote-link {
+    @apply text-primary no-underline cursor-help;
+  }
+
+  /* Footnote content blocks */
+  .amendment-html-content dl.footnote-content {
+    @apply text-xs text-muted-foreground bg-muted/50 rounded px-3 py-2 my-2;
+  }
+
+  .amendment-html-content dl.footnote-content dt {
+    @apply font-semibold inline;
+  }
+
+  .amendment-html-content dl.footnote-content dd {
+    @apply inline;
+  }
+
+  .amendment-html-content dl.footnote-content dd p.text {
+    @apply inline mb-0;
+  }
+
+  /* Footer / transition provisions */
+  .amendment-html-content footer.back {
+    @apply mt-10 pt-6 border-t-2 border-border;
+  }
+
+  .amendment-html-content .in-force-info h2 {
+    @apply text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4;
+  }
+
+  .amendment-html-content dl.in-force {
+    @apply space-y-2;
+  }
+
+  .amendment-html-content dl.in-force dt {
+    @apply font-semibold text-sm text-foreground;
+  }
+
+  .amendment-html-content dl.in-force dd {
+    @apply ml-0;
+  }
+
+  .amendment-html-content dl.in-force ol.list {
+    @apply my-2 space-y-1;
+  }
+
+  .amendment-html-content dl.in-force ol.list li p.text {
+    @apply text-sm text-foreground/80;
+  }
+
+  /* Signature block */
+  .amendment-html-content footer.back > p.text {
+    @apply text-sm text-muted-foreground mt-4;
+  }
+
+  .amendment-html-content footer.back > p.text[style*="text-align: right"] {
+    @apply text-right;
   }
 }
 

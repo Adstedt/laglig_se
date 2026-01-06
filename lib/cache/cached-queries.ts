@@ -14,6 +14,7 @@
 import { unstable_cache } from 'next/cache'
 import { prisma, withRetry } from '@/lib/prisma'
 import { ContentType } from '@prisma/client'
+import { parseSfsFromSlug } from '@/lib/sfs/amendment-slug'
 
 /**
  * Get a cached law document by slug
@@ -319,5 +320,104 @@ export const getAllTopCourtCasesForStaticGeneration = unstable_cache(
   {
     revalidate: 86400, // 24 hour TTL
     tags: ['court-cases', 'static-generation'],
+  }
+)
+
+/**
+ * Get a cached amendment document by slug (Story 2.29)
+ * Used by /lagar/andringar/[id]/page.tsx
+ *
+ * Looks up both LegalDocument (for page display) and AmendmentDocument (for details)
+ */
+export const getCachedAmendment = unstable_cache(
+  async (slug: string) => {
+    // First get the LegalDocument
+    const legalDoc = await withRetry(() =>
+      prisma.legalDocument.findUnique({
+        where: { slug, content_type: ContentType.SFS_AMENDMENT },
+        include: {
+          subjects: {
+            select: {
+              subject_code: true,
+              subject_name: true,
+            },
+          },
+        },
+      })
+    )
+
+    if (!legalDoc) return null
+
+    // Extract the SFS number to find the AmendmentDocument
+    const sfsNumber = parseSfsFromSlug(slug)
+    if (!sfsNumber) {
+      return { ...legalDoc, amendmentDetails: null, baseLaw: null }
+    }
+
+    // Get detailed amendment info from AmendmentDocument
+    const amendmentDoc = await withRetry(() =>
+      prisma.amendmentDocument.findUnique({
+        where: { sfs_number: sfsNumber },
+        include: {
+          section_changes: {
+            orderBy: { sort_order: 'asc' },
+          },
+        },
+      })
+    )
+
+    // Get base law info if available
+    let baseLaw = null
+    if (amendmentDoc?.base_law_sfs) {
+      baseLaw = await withRetry(() =>
+        prisma.legalDocument.findUnique({
+          where: { document_number: `SFS ${amendmentDoc.base_law_sfs}` },
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            document_number: true,
+          },
+        })
+      )
+    }
+
+    return {
+      ...legalDoc,
+      amendmentDetails: amendmentDoc,
+      baseLaw,
+    }
+  },
+  ['amendment-by-slug'],
+  {
+    revalidate: 3600, // 1 hour TTL
+    tags: ['amendments', 'laws', 'documents'],
+  }
+)
+
+/**
+ * Get cached amendment metadata for SEO (Story 2.29)
+ * Used by generateMetadata in /lagar/andringar/[id]/page.tsx
+ */
+export const getCachedAmendmentMetadata = unstable_cache(
+  async (slug: string) => {
+    return withRetry(() =>
+      prisma.legalDocument.findUnique({
+        where: { slug, content_type: ContentType.SFS_AMENDMENT },
+        select: {
+          title: true,
+          document_number: true,
+          summary: true,
+          full_text: true,
+          slug: true,
+          metadata: true,
+        },
+      })
+    )
+  },
+  ['amendment-metadata'],
+  {
+    revalidate: 3600, // 1 hour TTL
+    tags: ['amendments', 'laws', 'documents'],
   }
 )

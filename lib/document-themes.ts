@@ -1,4 +1,4 @@
-import { FileText, Scale, Landmark, type LucideIcon } from 'lucide-react'
+import { FileText, Scale, Landmark, FilePenLine, type LucideIcon } from 'lucide-react'
 
 export type DocumentTheme = {
   icon: LucideIcon
@@ -21,6 +21,18 @@ export const DOCUMENT_THEMES: Record<string, DocumentTheme> = {
     accentLight: 'bg-amber-50 dark:bg-amber-950/30',
     border: 'border-amber-200 dark:border-amber-800',
     href: '/lagar',
+  },
+
+  // SFS Amendments - Orange (distinct from base laws)
+  SFS_AMENDMENT: {
+    icon: FilePenLine,
+    label: 'Ändringsförfattning',
+    badge:
+      'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300',
+    accent: 'text-orange-700 dark:text-orange-400',
+    accentLight: 'bg-orange-50 dark:bg-orange-950/30',
+    border: 'border-orange-200 dark:border-orange-800',
+    href: '/lagar/andringar',
   },
 
   // Court cases - Blue

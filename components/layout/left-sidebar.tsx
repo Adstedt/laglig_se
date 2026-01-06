@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import {
   LayoutDashboard,
   MessageSquare,
@@ -13,13 +13,16 @@ import {
   Settings,
   ChevronRight,
   Lock,
+  Star,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TrialStatusWidget } from '@/components/layout/trial-status-widget'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { usePermissions } from '@/hooks/use-permissions'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getDocumentLists, type DocumentListSummary } from '@/app/actions/document-list'
 
 interface LeftSidebarProps {
   collapsed?: boolean
@@ -32,12 +35,14 @@ interface NavItem {
   href: string
   isToggle?: boolean
   isAccordion?: boolean
+  isDynamicLists?: boolean // Story 4.13: Flag for dynamic list loading
   disabled?: boolean
   lockedReason?: string
-  subItems?: { title: string; href: string }[]
+  subItems?: { title: string; href: string; isDefault?: boolean }[]
 }
 
-const platformItems: NavItem[] = [
+// Story 4.13 Task 0: Base platform items (Laglistor will have dynamic subItems)
+const getBasePlatformItems = (): NavItem[] => [
   {
     title: 'Dashboard',
     icon: LayoutDashboard,
@@ -54,6 +59,7 @@ const platformItems: NavItem[] = [
     icon: Scale,
     href: '#',
     isAccordion: true,
+    isDynamicLists: true, // Story 4.13: Flag for dynamic list loading
     subItems: [{ title: 'Mina laglistor', href: '/laglistor' }],
   },
   {
@@ -106,11 +112,55 @@ export function LeftSidebar({
   onToggle: _onToggle,
 }: LeftSidebarProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { toggleRightSidebar } = useLayoutStore()
   const { can, isLoading } = usePermissions()
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
     {}
   )
+
+  // Story 4.13 Task 0: Dynamic law lists for sidebar
+  const [lawLists, setLawLists] = useState<DocumentListSummary[]>([])
+  const [isLoadingLists, setIsLoadingLists] = useState(false)
+  const [listsLoaded, setListsLoaded] = useState(false)
+
+  // Get active list ID from URL
+  const activeListIdFromUrl = searchParams.get('list')
+
+  // Fetch law lists when Laglistor accordion is opened
+  useEffect(() => {
+    if (openAccordions['Laglistor'] && !listsLoaded && !isLoadingLists) {
+      setIsLoadingLists(true)
+      getDocumentLists()
+        .then((result) => {
+          if (result.success && result.data) {
+            setLawLists(result.data)
+          }
+        })
+        .finally(() => {
+          setIsLoadingLists(false)
+          setListsLoaded(true)
+        })
+    }
+  }, [openAccordions, listsLoaded, isLoadingLists])
+
+  // Build platform items with dynamic law lists
+  // Story 4.13: Always show "Mina laglistor" first, then individual lists below
+  const platformItems = getBasePlatformItems().map((item) => {
+    if (item.isDynamicLists) {
+      const baseItem = { title: 'Mina laglistor', href: '/laglistor', isDefault: false }
+      const listItems = lawLists.map((list) => ({
+        title: list.name,
+        href: `/laglistor?list=${list.id}`,
+        isDefault: list.isDefault,
+      }))
+      return {
+        ...item,
+        subItems: [baseItem, ...listItems],
+      }
+    }
+    return item
+  })
 
   // Permission-gated work items
   const permissionGatedWorkItems: NavItem[] = workItems.map((item): NavItem => {
@@ -174,6 +224,10 @@ export function LeftSidebar({
           >
             <Icon className="h-4 w-4" />
             <span className="flex-1 text-left">{item.title}</span>
+            {/* Story 4.13: Show loading indicator for dynamic lists */}
+            {item.isDynamicLists && isLoadingLists && isOpen && (
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+            )}
             <ChevronRight
               className={cn(
                 'h-4 w-4 transition-transform duration-200',
@@ -183,20 +237,40 @@ export function LeftSidebar({
           </button>
           {isOpen && !item.disabled && (
             <div className="ml-7 mt-1 space-y-1 border-l border-border pl-3">
-              {item.subItems.map((subItem) => (
-                <Link
-                  key={subItem.title}
-                  href={subItem.href}
-                  className={cn(
-                    'block rounded-lg px-3 py-1.5 text-sm transition-colors',
-                    isActive(subItem.href)
-                      ? 'text-foreground font-medium'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  {subItem.title}
-                </Link>
-              ))}
+              {item.subItems.map((subItem) => {
+                // Story 4.13 Task 0: Check if this list is active based on URL param
+                const isSpecificListLink = subItem.href.includes('?list=')
+                const isListActive =
+                  item.isDynamicLists &&
+                  activeListIdFromUrl &&
+                  subItem.href.includes(`list=${activeListIdFromUrl}`)
+
+                // "Mina laglistor" (no ?list=) should only highlight when no list param in URL
+                const isBaseListActive =
+                  item.isDynamicLists &&
+                  !isSpecificListLink &&
+                  pathname === '/laglistor' &&
+                  !activeListIdFromUrl
+
+                return (
+                  <Link
+                    key={subItem.href}
+                    href={subItem.href}
+                    className={cn(
+                      'flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors',
+                      isListActive || isBaseListActive || (!item.isDynamicLists && isActive(subItem.href))
+                        ? 'text-foreground font-medium bg-accent/50'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {/* Story 4.13: Show star for default list */}
+                    {subItem.isDefault && (
+                      <Star className="h-3 w-3 text-amber-500 fill-amber-500 flex-shrink-0" />
+                    )}
+                    <span className="truncate">{subItem.title}</span>
+                  </Link>
+                )
+              })}
             </div>
           )}
         </div>

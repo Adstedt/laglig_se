@@ -28,6 +28,7 @@ import {
   fetchAndStorePdf,
   type PdfMetadata,
 } from '@/lib/sfs'
+import { createLegalDocumentFromAmendment } from '@/lib/sfs/amendment-to-legal-document'
 import { parsePdf } from '@/lib/external/pdf-parser'
 import { parseAmendmentWithLLM } from '@/lib/external/llm-amendment-parser'
 import { downloadPdf as downloadPdfFromStorage } from '@/lib/supabase/storage'
@@ -63,6 +64,8 @@ interface SyncStats {
   pdfsFailed: number
   amendmentsCreated: number
   amendmentsParsed: number
+  // Story 2.29: LegalDocument creation for amendments
+  legalDocsCreated: number
 }
 
 const CONFIG = {
@@ -103,6 +106,8 @@ export async function GET(request: Request) {
     pdfsFailed: 0,
     amendmentsCreated: 0,
     amendmentsParsed: 0,
+    // Story 2.29: LegalDocument creation
+    legalDocsCreated: 0,
   }
 
   // Story 2.28 AC8: Track amendments for post-transaction LLM parsing
@@ -459,17 +464,42 @@ export async function GET(request: Request) {
           }
 
           // Update AmendmentDocument with parsed data
-          await tx.amendmentDocument.update({
+          const updatedAmendment = await tx.amendmentDocument.update({
             where: { id: amendment.id },
             data: {
               title: llmResult.title || `Ändring SFS ${amendment.sfsNumber}`,
               effective_date: llmResult.effectiveDate
                 ? new Date(llmResult.effectiveDate)
                 : null,
+              full_text: parsedPdf.fullText,
               parse_status: ParseStatus.COMPLETED,
               parsed_at: new Date(),
             },
           })
+
+          // Story 2.29: Create LegalDocument entry for this amendment
+          // This enables amendments to be browsable and searchable
+          const legalDocResult = await createLegalDocumentFromAmendment(tx, {
+            id: updatedAmendment.id,
+            sfs_number: updatedAmendment.sfs_number,
+            title: updatedAmendment.title,
+            base_law_sfs: updatedAmendment.base_law_sfs,
+            base_law_name: updatedAmendment.base_law_name,
+            effective_date: updatedAmendment.effective_date,
+            publication_date: updatedAmendment.publication_date,
+            original_url: updatedAmendment.original_url,
+            storage_path: updatedAmendment.storage_path,
+            full_text: parsedPdf.fullText,
+            markdown_content: updatedAmendment.markdown_content,
+            confidence: updatedAmendment.confidence,
+          })
+
+          if (legalDocResult.isNew) {
+            stats.legalDocsCreated++
+            console.log(
+              `[SYNC-SFS-UPDATES]     LegalDocument created: ${legalDocResult.slug}`
+            )
+          }
         })
 
         stats.amendmentsParsed++
@@ -512,6 +542,9 @@ export async function GET(request: Request) {
     )
     console.log(
       `[SYNC-SFS-UPDATES] Amendments parsed (LLM): ${stats.amendmentsParsed}`
+    )
+    console.log(
+      `[SYNC-SFS-UPDATES] LegalDocs created (2.29): ${stats.legalDocsCreated}`
     )
     console.log(`[SYNC-SFS-UPDATES] ======================================`)
 

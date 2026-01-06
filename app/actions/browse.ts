@@ -9,6 +9,7 @@ import { safeTrack, trackAsync } from '@/lib/analytics'
 // Content types aligned with Architecture 9.5.1 ContentType enum
 const ContentTypeEnum = z.enum([
   'SFS_LAW',
+  'SFS_AMENDMENT', // Story 2.29: Amendment documents
   'COURT_CASE_AD',
   'COURT_CASE_HD',
   'COURT_CASE_HFD',
@@ -52,6 +53,12 @@ export interface BrowseResult {
   status: string
   slug: string
   snippet: string
+  // Court case specific fields (null for non-court-cases)
+  courtName: string | null
+  caseNumber: string | null
+  caseName: string | null // benamning (e.g., "Andnöden")
+  caseType: string | null // DOM_ELLER_BESLUT, PROVNINGSTILLSTAND, REFERAT
+  isGuiding: boolean | null // true = Prejudikat
 }
 
 export interface BrowseResponse {
@@ -252,7 +259,10 @@ async function searchWithQuery(
         ld.effective_date,
         ld.status::text as status,
         ld.slug,
+        ld.metadata,
         ds.subject_name as category,
+        cc.court_name,
+        cc.case_number,
         ts_rank_cd(ld.search_vector, plainto_tsquery('pg_catalog.swedish', $1)) AS rank,
         ts_headline(
           'pg_catalog.swedish',
@@ -262,6 +272,7 @@ async function searchWithQuery(
         ) AS snippet
       FROM legal_documents ld
       LEFT JOIN document_subjects ds ON ds.document_id = ld.id
+      LEFT JOIN court_cases cc ON cc.document_id = ld.id
       WHERE ld.search_vector @@ plainto_tsquery('pg_catalog.swedish', $1)
       ${whereClause}
     ),
@@ -288,7 +299,10 @@ async function searchWithQuery(
       effective_date: Date | null
       status: string
       slug: string
+      metadata: Record<string, unknown> | null
       category: string | null
+      court_name: string | null
+      case_number: string | null
       rank: number
       snippet: string
       total_count: bigint | number
@@ -305,19 +319,30 @@ async function searchWithQuery(
 
     const response: BrowseResponse = {
       success: true,
-      results: results.map((r) => ({
-        id: r.id,
-        title: r.title,
-        documentNumber: r.document_number,
-        contentType: r.content_type,
-        category: r.category,
-        summary: r.summary,
-        effectiveDate: r.publication_date?.toISOString() ?? null,
-        inForceDate: r.effective_date?.toISOString() ?? null,
-        status: r.status,
-        slug: r.slug,
-        snippet: r.snippet || r.summary || '',
-      })),
+      results: results.map((r) => {
+        const isCourtCase = r.content_type.startsWith('COURT_CASE_')
+        const metadata = r.metadata
+
+        return {
+          id: r.id,
+          title: r.title,
+          documentNumber: r.document_number,
+          contentType: r.content_type,
+          category: r.category,
+          summary: r.summary,
+          effectiveDate: r.publication_date?.toISOString() ?? null,
+          inForceDate: r.effective_date?.toISOString() ?? null,
+          status: r.status,
+          slug: r.slug,
+          snippet: r.snippet || r.summary || '',
+          // Court case specific fields
+          courtName: r.court_name ?? null,
+          caseNumber: r.case_number ?? null,
+          caseName: isCourtCase ? ((metadata?.case_name as string) ?? null) : null,
+          caseType: isCourtCase ? ((metadata?.case_type as string) ?? null) : null,
+          isGuiding: isCourtCase ? ((metadata?.is_guiding as boolean) ?? null) : null,
+        }
+      }),
       total,
       page,
       totalPages,
@@ -480,9 +505,16 @@ async function executeBrowseQuery(
         effective_date: true,
         status: true,
         slug: true,
+        metadata: true, // For court case: is_guiding, case_type, case_name
         subjects: {
           select: { subject_name: true },
           take: 1,
+        },
+        court_case: {
+          select: {
+            court_name: true,
+            case_number: true,
+          },
         },
       },
     }),
@@ -492,19 +524,31 @@ async function executeBrowseQuery(
   const totalPages = Math.ceil(count / limit)
 
   return {
-    results: results.map((r) => ({
-      id: r.id,
-      title: r.title,
-      documentNumber: r.document_number,
-      contentType: r.content_type,
-      category: r.subjects[0]?.subject_name ?? null,
-      summary: r.summary,
-      effectiveDate: r.publication_date?.toISOString() ?? null,
-      inForceDate: r.effective_date?.toISOString() ?? null,
-      status: r.status,
-      slug: r.slug,
-      snippet: r.summary || '',
-    })),
+    results: results.map((r) => {
+      // Extract court case metadata if available
+      const metadata = r.metadata as Record<string, unknown> | null
+      const isCourtCase = r.content_type.startsWith('COURT_CASE_')
+
+      return {
+        id: r.id,
+        title: r.title,
+        documentNumber: r.document_number,
+        contentType: r.content_type,
+        category: r.subjects[0]?.subject_name ?? null,
+        summary: r.summary,
+        effectiveDate: r.publication_date?.toISOString() ?? null,
+        inForceDate: r.effective_date?.toISOString() ?? null,
+        status: r.status,
+        slug: r.slug,
+        snippet: r.summary || '',
+        // Court case specific fields
+        courtName: r.court_case?.court_name ?? null,
+        caseNumber: r.court_case?.case_number ?? null,
+        caseName: isCourtCase ? ((metadata?.case_name as string) ?? null) : null,
+        caseType: isCourtCase ? ((metadata?.case_type as string) ?? null) : null,
+        isGuiding: isCourtCase ? ((metadata?.is_guiding as boolean) ?? null) : null,
+      }
+    }),
     total: count,
     page,
     totalPages,

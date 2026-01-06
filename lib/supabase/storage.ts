@@ -104,7 +104,7 @@ export async function getSignedUrl(sfsNumber: string): Promise<string | null> {
 }
 
 /**
- * Download PDF content from storage
+ * Download PDF content from storage using sfsNumber (generates path)
  */
 export async function downloadPdf(sfsNumber: string): Promise<Buffer | null> {
   const client = getStorageClient()
@@ -114,6 +114,33 @@ export async function downloadPdf(sfsNumber: string): Promise<Buffer | null> {
 
   if (error || !data) return null
   return Buffer.from(await data.arrayBuffer())
+}
+
+/**
+ * Download PDF content from storage using explicit storage path
+ * Tries multiple path variations to handle inconsistent storage paths
+ */
+export async function downloadPdfByPath(storagePath: string): Promise<Buffer | null> {
+  const client = getStorageClient()
+
+  // Try the exact path first
+  let { data, error } = await client.storage.from(BUCKET_NAME).download(storagePath)
+
+  if (!error && data) {
+    return Buffer.from(await data.arrayBuffer())
+  }
+
+  // If path is like "2025/SFS2025-1.pdf", try "SFS 2025/SFS2025-1.pdf"
+  if (storagePath.match(/^\d{4}\//)) {
+    const [year, filename] = storagePath.split('/')
+    const altPath = `SFS ${year}/${filename}`
+    const result = await client.storage.from(BUCKET_NAME).download(altPath)
+    if (!result.error && result.data) {
+      return Buffer.from(await result.data.arrayBuffer())
+    }
+  }
+
+  return null
 }
 
 /**

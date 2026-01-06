@@ -325,7 +325,8 @@ export default async function CourtCasePage({ params }: PageProps) {
                   <span>Underinstans: {courtCase.lower_court}</span>
                 </div>
               )}
-              {document.source_url && (
+              {/* Only show source link if there's actual content (not empty page) */}
+              {document.source_url && (document.html_content || document.full_text) && (
                 <a
                   href={document.source_url}
                   target="_blank"
@@ -423,17 +424,18 @@ export default async function CourtCasePage({ params }: PageProps) {
                     {document.full_text}
                   </div>
                 ) : (
-                  <p className="italic text-muted-foreground py-8 text-center">
-                    Ingen domtext tillgänglig.{' '}
-                    <a
-                      href={document.source_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      Läs på källan →
-                    </a>
-                  </p>
+                  <div className="py-8 text-center">
+                    <p className="italic text-muted-foreground mb-4">
+                      Domtexten är inte tillgänglig i digital form.
+                    </p>
+                    {(document.metadata as Record<string, unknown>)?.attachments &&
+                     Array.isArray((document.metadata as Record<string, unknown>).attachments) &&
+                     ((document.metadata as Record<string, unknown>).attachments as Array<{filename: string}>).length > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        Detta avgörande finns endast som PDF-bilaga hos Domstolsverket.
+                      </p>
+                    )}
+                  </div>
                 )}
               </article>
             </CardContent>
@@ -442,15 +444,20 @@ export default async function CourtCasePage({ params }: PageProps) {
           {/* Footer */}
           <footer className="text-center text-sm text-muted-foreground py-4 border-t">
             <p>
-              Källa:{' '}
-              <a
-                href={document.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                {courtInfo.name}
-              </a>
+              Källa: {courtInfo.name}
+              {document.source_url && (document.html_content || document.full_text) && (
+                <>
+                  {' '}
+                  <a
+                    href={document.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    (visa original)
+                  </a>
+                </>
+              )}
             </p>
           </footer>
         </div>

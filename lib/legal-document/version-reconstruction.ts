@@ -520,6 +520,8 @@ export interface AmendmentTimelineEntry {
     renumbered: number
   }
   storagePath: string | null
+  /** Story 2.29: Slug for linking to amendment detail page */
+  slug: string | null
 }
 
 /**
@@ -538,6 +540,26 @@ export async function getLawAmendmentTimeline(
       section_changes: true,
     },
   })
+
+  // Story 2.29: Look up LegalDocument slugs for amendments
+  // Normalize SFS numbers to handle case where sfs_number might already have "SFS " prefix
+  const sfsNumbers = amendments.map((a) => {
+    const num = a.sfs_number.replace(/^SFS\s*/i, '')
+    return `SFS ${num}`
+  })
+  const legalDocs = await prisma.legalDocument.findMany({
+    where: {
+      document_number: { in: sfsNumbers },
+      content_type: 'SFS_AMENDMENT',
+    },
+    select: {
+      document_number: true,
+      slug: true,
+    },
+  })
+
+  // Create a map for quick lookup: "SFS 2022:1109" -> "slug"
+  const slugMap = new Map(legalDocs.map((d) => [d.document_number, d.slug]))
 
   // Sort with effective_date DESC, nulls at the end
   const sorted = amendments.sort((a, b) => {
@@ -569,6 +591,7 @@ export async function getLawAmendmentTimeline(
       ).length,
     },
     storagePath: a.storage_path,
+    slug: slugMap.get(`SFS ${a.sfs_number.replace(/^SFS\s*/i, '')}`) ?? null,
   }))
 }
 
