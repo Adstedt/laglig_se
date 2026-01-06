@@ -19,7 +19,7 @@
     },
     {
       "path": "/api/cron/generate-summaries",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 3 * * *"
     },
     {
       "path": "/api/cron/prewarm-cache",
