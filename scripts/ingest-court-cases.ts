@@ -215,6 +215,13 @@ async function processCourtCase(
   stats.processed++
 
   try {
+    // Skip PROVNINGSTILLSTAND (leave to appeal) cases - they have no actual content
+    // Only the granted leave, not the judgment itself which is a separate record
+    if (dto.typ === 'PROVNINGSTILLSTAND') {
+      stats.skipped++
+      return
+    }
+
     const courtCode = dto.domstol?.domstolKod
     const contentType = mapCourtCodeToContentType(courtCode)
 
@@ -251,6 +258,8 @@ async function processCourtCase(
               api_id: dto.id,
               ecli: dto.ecliNummer,
               is_guiding: dto.arVagledande,
+              case_type: dto.typ, // DOM_ELLER_BESLUT, PROVNINGSTILLSTAND, REFERAT
+              case_name: dto.benamning || null, // "Andnöden", "Internetförtalet" etc.
               case_numbers: dto.malNummerLista,
               keywords: dto.nyckelordLista,
               legal_areas: dto.rattsomradeLista,
@@ -292,6 +301,8 @@ async function processCourtCase(
               api_id: dto.id,
               ecli: dto.ecliNummer,
               is_guiding: dto.arVagledande,
+              case_type: dto.typ, // DOM_ELLER_BESLUT, PROVNINGSTILLSTAND, REFERAT
+              case_name: dto.benamning || null, // "Andnöden", "Internetförtalet" etc.
               case_numbers: dto.malNummerLista,
               keywords: dto.nyckelordLista,
               legal_areas: dto.rattsomradeLista,
