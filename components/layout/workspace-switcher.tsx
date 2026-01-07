@@ -20,6 +20,7 @@ import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { useWorkspace } from '@/lib/hooks/use-workspace'
 import { CreateWorkspaceModal } from '@/components/features/workspace/create-workspace-modal'
+import { useDocumentListStore } from '@/lib/stores/document-list-store'
 import type { WorkspaceRole } from '@prisma/client'
 
 interface WorkspaceItem {
@@ -100,6 +101,8 @@ export function WorkspaceSwitcher({
 
       if (res.ok) {
         setOpen(false)
+        // Clear document list store cache before refreshing (different workspace = different data)
+        useDocumentListStore.getState().reset()
         // Refresh the workspace context and reload
         await refresh()
         router.refresh()

@@ -20,9 +20,10 @@ import { cn } from '@/lib/utils'
 import { TrialStatusWidget } from '@/components/layout/trial-status-widget'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
 import { useLayoutStore } from '@/lib/stores/layout-store'
+import { useDocumentListStore } from '@/lib/stores/document-list-store'
 import { usePermissions } from '@/hooks/use-permissions'
-import { useState, useEffect } from 'react'
-import { getDocumentLists, type DocumentListSummary } from '@/app/actions/document-list'
+import { useWorkspace } from '@/lib/hooks/use-workspace'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 interface LeftSidebarProps {
   collapsed?: boolean
@@ -115,40 +116,54 @@ export function LeftSidebar({
   const searchParams = useSearchParams()
   const { toggleRightSidebar } = useLayoutStore()
   const { can, isLoading } = usePermissions()
+  const { workspaceId } = useWorkspace()
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
     {}
   )
 
-  // Story 4.13 Task 0: Dynamic law lists for sidebar
-  const [lawLists, setLawLists] = useState<DocumentListSummary[]>([])
-  const [isLoadingLists, setIsLoadingLists] = useState(false)
+  // Story 4.14: Use Zustand store for lists - syncs with document list page
+  const { lists: lawLists, isLoadingLists, fetchLists } = useDocumentListStore()
   const [listsLoaded, setListsLoaded] = useState(false)
+  const prevWorkspaceIdRef = useRef(workspaceId)
+
+  // Reset listsLoaded when workspace changes (so lists are refetched)
+  useEffect(() => {
+    if (
+      prevWorkspaceIdRef.current &&
+      workspaceId &&
+      prevWorkspaceIdRef.current !== workspaceId
+    ) {
+      setListsLoaded(false)
+    }
+    prevWorkspaceIdRef.current = workspaceId
+  }, [workspaceId])
 
   // Get active list ID from URL
   const activeListIdFromUrl = searchParams.get('list')
 
-  // Fetch law lists when Laglistor accordion is opened
-  useEffect(() => {
-    if (openAccordions['Laglistor'] && !listsLoaded && !isLoadingLists) {
-      setIsLoadingLists(true)
-      getDocumentLists()
-        .then((result) => {
-          if (result.success && result.data) {
-            setLawLists(result.data)
-          }
-        })
-        .finally(() => {
-          setIsLoadingLists(false)
-          setListsLoaded(true)
-        })
+  // Memoize fetchLists to avoid re-renders
+  const loadLists = useCallback(() => {
+    if (!listsLoaded && !isLoadingLists) {
+      fetchLists().then(() => setListsLoaded(true))
     }
-  }, [openAccordions, listsLoaded, isLoadingLists])
+  }, [listsLoaded, isLoadingLists, fetchLists])
+
+  // Story 4.14: Fetch law lists when Laglistor accordion is opened (using store)
+  useEffect(() => {
+    if (openAccordions['Laglistor']) {
+      loadLists()
+    }
+  }, [openAccordions, loadLists])
 
   // Build platform items with dynamic law lists
   // Story 4.13: Always show "Mina laglistor" first, then individual lists below
   const platformItems = getBasePlatformItems().map((item) => {
     if (item.isDynamicLists) {
-      const baseItem = { title: 'Mina laglistor', href: '/laglistor', isDefault: false }
+      const baseItem = {
+        title: 'Mina laglistor',
+        href: '/laglistor',
+        isDefault: false,
+      }
       const listItems = lawLists.map((list) => ({
         title: list.name,
         href: `/laglistor?list=${list.id}`,
@@ -258,7 +273,9 @@ export function LeftSidebar({
                     href={subItem.href}
                     className={cn(
                       'flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors',
-                      isListActive || isBaseListActive || (!item.isDynamicLists && isActive(subItem.href))
+                      isListActive ||
+                        isBaseListActive ||
+                        (!item.isDynamicLists && isActive(subItem.href))
                         ? 'text-foreground font-medium bg-accent/50'
                         : 'text-muted-foreground hover:text-foreground'
                     )}
