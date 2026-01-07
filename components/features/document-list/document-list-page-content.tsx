@@ -105,16 +105,13 @@ export function DocumentListPageContent({
   const filteredItems = useDocumentListStore(selectFilteredByGroupItems)
 
   // Story 4.13 Task 0: Handle list change with URL update
-  // Story 4.14: setActiveList handles caching + background refresh, no need for separate fetchItems
+  // Story 4.14: Just update URL - let useEffect handle setActiveList (same as sidebar)
   const handleListChange = useCallback(
     (listId: string) => {
-      setActiveList(listId) // Handles cache check + fetch internally
-      // Clear group filter when switching lists
-      clearGroupFilter()
-      // Update URL with shallow routing (no page reload)
+      // Only update URL - useEffect will handle setActiveList for consistency
       router.push(`/laglistor?list=${listId}`, { scroll: false })
     },
-    [setActiveList, clearGroupFilter, router]
+    [router]
   )
 
   // Story 4.13 Task 11: Handle group filter with URL update
@@ -182,8 +179,9 @@ export function DocumentListPageContent({
       lists.some((l) => l.id === listIdFromUrl)
     ) {
       setActiveList(listIdFromUrl) // Handles cache check + fetch internally
+      clearGroupFilter() // Clear group filter when switching lists
     }
-  }, [listIdFromUrl, activeListId, lists, setActiveList])
+  }, [listIdFromUrl, activeListId, lists, setActiveList, clearGroupFilter])
 
   // Story 4.13 Task 11: Watch for group URL param changes
   const groupIdFromUrl = searchParams.get('group')
