@@ -74,7 +74,7 @@ export default async function WorkspaceHistoryPage({ params }: PageProps) {
     .map((a) => a.effectiveDate!.toISOString().slice(0, 10))
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       {/* Hero Header */}
       <header className="rounded-xl bg-card p-6 shadow-sm border">
         <div className="flex items-start gap-4">

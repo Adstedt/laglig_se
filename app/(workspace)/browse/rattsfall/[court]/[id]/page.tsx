@@ -160,7 +160,7 @@ export default async function WorkspaceCourtCasePage({ params }: PageProps) {
   const ThemeIcon = theme.icon
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       {/* Hero Header */}
       <header className="rounded-xl bg-card p-6 shadow-sm border">
         <div className="flex items-start gap-4">

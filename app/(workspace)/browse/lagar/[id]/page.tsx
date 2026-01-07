@@ -240,7 +240,7 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
     : {}
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       {/* Banner for laws not yet in force */}
       {lawMetadata.isNotYetInForce && lawMetadata.effectiveDateFormatted && (
         <NotYetInForceBanner
