@@ -115,15 +115,21 @@ export const DocumentListCard = forwardRef<
         <GripVertical className="h-4 w-4" />
       </button>
 
-      {/* Title - fixed height for 2 lines with fade effect */}
+      {/* Title - fixed height for 2 lines with end fade effect */}
       <div className="relative h-10 overflow-hidden">
-        <Link href={documentUrl} className="block group/link">
-          <h3 className="pr-8 text-sm font-semibold leading-5 text-foreground group-hover/link:text-foreground/80 line-clamp-2">
+        <Link href={documentUrl} className="block group/link pr-8">
+          <h3 className="text-sm font-semibold leading-5 text-foreground group-hover/link:text-foreground/80 line-clamp-2">
             {item.document.title}
           </h3>
         </Link>
-        {/* Fade effect for long titles */}
-        <div className="absolute bottom-0 left-0 right-8 h-3 bg-gradient-to-t from-card to-transparent pointer-events-none opacity-0 group-[:has(h3.line-clamp-2)]:opacity-100" />
+        {/* Fade effect - positioned at end of second line only */}
+        <div
+          className="absolute bottom-0 right-8 h-5 w-10 pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(to right, transparent, hsl(var(--card)) 70%)',
+          }}
+        />
       </div>
 
       {/* Meta row: Badge + Document number - fixed height */}
@@ -143,46 +149,44 @@ export const DocumentListCard = forwardRef<
       <div className="flex-1 min-h-2" />
 
       {/* Status row - fixed at bottom */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5">
+        <Badge
+          variant="outline"
+          className={cn('text-xs py-0', statusConfig.className)}
+        >
+          {statusConfig.label}
+        </Badge>
+        {priorityConfig && (
           <Badge
             variant="outline"
-            className={cn('text-xs py-0', statusConfig.className)}
+            className={cn('text-xs py-0', priorityConfig.className)}
           >
-            {statusConfig.label}
+            {priorityConfig.label}
           </Badge>
-          {priorityConfig && (
-            <Badge
-              variant="outline"
-              className={cn('text-xs py-0', priorityConfig.className)}
-            >
-              {priorityConfig.label}
-            </Badge>
-          )}
-        </div>
-
-        {/* Remove button - bottom right, visible on hover */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  'h-6 w-6 shrink-0',
-                  'opacity-0 group-hover:opacity-100 transition-opacity',
-                  'text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10'
-                )}
-                onClick={onRemove}
-                disabled={isRemoving}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Ta bort från listan</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        )}
       </div>
+
+      {/* Remove button - bottom right, aligned with drag handle */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                'absolute bottom-3 right-2 h-6 w-6',
+                'opacity-0 group-hover:opacity-100 transition-opacity',
+                'text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10'
+              )}
+              onClick={onRemove}
+              disabled={isRemoving}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Ta bort från listan</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   )
 })

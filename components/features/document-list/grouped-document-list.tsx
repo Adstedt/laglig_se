@@ -9,7 +9,6 @@
 import { useState, useCallback, useEffect, useMemo, memo } from 'react'
 import {
   DndContext,
-  closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -17,13 +16,16 @@ import {
   type DragEndEvent,
   DragOverlay,
   type DragStartEvent,
+  type DragOverEvent,
+  closestCenter,
+  useDroppable,
 } from '@dnd-kit/core'
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
-  verticalListSortingStrategy,
+  rectSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import {
@@ -101,6 +103,7 @@ export function GroupedDocumentList({
   const [removingItemId, setRemovingItemId] = useState<string | null>(null)
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [overGroupId, setOverGroupId] = useState<string | null>(null)
 
   // Sync local items with props
   useEffect(() => {
@@ -161,13 +164,54 @@ export function GroupedDocumentList({
   // Handle drag start
   const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string)
+    setOverGroupId(null)
   }, [])
+
+  // Handle drag over - track which group we're hovering over
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { over, active } = event
+      if (!over) {
+        setOverGroupId(null)
+        return
+      }
+
+      const activeItem = localItems.find((item) => item.id === active.id)
+      if (!activeItem) return
+
+      const overId = over.id as string
+
+      // Check if over a group header
+      if (overId.startsWith('group-header-')) {
+        const groupId = overId.replace('group-header-', '')
+        const targetGroupId = groupId === UNGROUPED_ID ? null : groupId
+        // Only highlight if different from current group
+        if (activeItem.groupId !== targetGroupId) {
+          setOverGroupId(groupId)
+        } else {
+          setOverGroupId(null)
+        }
+        return
+      }
+
+      // Check if over a card in a different group
+      const overItem = localItems.find((item) => item.id === overId)
+      if (overItem && activeItem.groupId !== overItem.groupId) {
+        // Highlight the target group
+        setOverGroupId(overItem.groupId ?? UNGROUPED_ID)
+      } else {
+        setOverGroupId(null)
+      }
+    },
+    [localItems]
+  )
 
   // Handle drag end
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {
       const { active, over } = event
       setActiveId(null)
+      setOverGroupId(null)
 
       if (!over) return
 
@@ -185,15 +229,27 @@ export function GroupedDocumentList({
         return
       }
 
-      // Otherwise, handle reordering within the same list
+      // Dropped on another card
       if (active.id !== over.id) {
-        const oldIndex = localItems.findIndex((item) => item.id === active.id)
-        const newIndex = localItems.findIndex((item) => item.id === over.id)
+        const overItem = localItems.find((item) => item.id === over.id)
+        if (!overItem) return
 
-        if (oldIndex !== -1 && newIndex !== -1) {
-          const newItems = arrayMove(localItems, oldIndex, newIndex)
-          setLocalItems(newItems)
-          debouncedReorder(newItems)
+        const sameGroup = activeItem.groupId === overItem.groupId
+
+        if (sameGroup) {
+          // Same group - just reorder
+          const oldIndex = localItems.findIndex((item) => item.id === active.id)
+          const newIndex = localItems.findIndex((item) => item.id === over.id)
+
+          if (oldIndex !== -1 && newIndex !== -1) {
+            const newItems = arrayMove(localItems, oldIndex, newIndex)
+            setLocalItems(newItems)
+            debouncedReorder(newItems)
+          }
+        } else {
+          // Different group - move to that group
+          const targetGroupId = overItem.groupId
+          await onMoveToGroup(activeItem.id, targetGroupId)
         }
       }
     },
@@ -288,72 +344,79 @@ export function GroupedDocumentList({
         </div>
       </div>
 
-      {/* Drag-and-drop context */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="flex flex-col gap-3">
-          {/* Render groups */}
-          {groups.map((group) => {
-            const groupItems = groupedItems[group.id] || []
-            const isExpanded = expandedGroups[group.id] ?? true
+      {/* Drag-and-drop context - overflow-hidden prevents horizontal scroll when dragging */}
+      <div className="overflow-hidden">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex flex-col gap-3">
+            {/* Render groups */}
+            {groups.map((group) => {
+              const groupItems = groupedItems[group.id] || []
+              const isExpanded = expandedGroups[group.id] ?? true
 
-            return (
+              return (
+                <GroupAccordion
+                  key={group.id}
+                  groupId={group.id}
+                  name={group.name}
+                  itemCount={groupItems.length}
+                  isExpanded={isExpanded}
+                  onToggle={() => onToggleGroup(group.id)}
+                  onFilter={
+                    onFilterByGroup
+                      ? () => onFilterByGroup(group.id)
+                      : undefined
+                  }
+                  items={groupItems}
+                  onRemoveItem={handleRemoveClick}
+                  removingItemId={removingItemId}
+                  isDropTarget={overGroupId === group.id}
+                />
+              )
+            })}
+
+            {/* Ungrouped items section */}
+            {(ungroupedItems.length > 0 || !hasGroups) && (
               <GroupAccordion
-                key={group.id}
-                groupId={group.id}
-                name={group.name}
-                itemCount={groupItems.length}
-                isExpanded={isExpanded}
-                onToggle={() => onToggleGroup(group.id)}
+                groupId={UNGROUPED_ID}
+                name="Ogrupperade"
+                itemCount={ungroupedItems.length}
+                isExpanded={expandedGroups[UNGROUPED_ID] ?? true}
+                onToggle={() => onToggleGroup(UNGROUPED_ID)}
                 onFilter={
-                  onFilterByGroup ? () => onFilterByGroup(group.id) : undefined
+                  onFilterByGroup
+                    ? () => onFilterByGroup(UNGROUPED_ID)
+                    : undefined
                 }
-                items={groupItems}
+                items={ungroupedItems}
                 onRemoveItem={handleRemoveClick}
                 removingItemId={removingItemId}
+                isUngrouped
+                isDropTarget={overGroupId === UNGROUPED_ID}
               />
-            )
-          })}
+            )}
+          </div>
 
-          {/* Ungrouped items section */}
-          {(ungroupedItems.length > 0 || !hasGroups) && (
-            <GroupAccordion
-              groupId={UNGROUPED_ID}
-              name="Ogrupperade"
-              itemCount={ungroupedItems.length}
-              isExpanded={expandedGroups[UNGROUPED_ID] ?? true}
-              onToggle={() => onToggleGroup(UNGROUPED_ID)}
-              onFilter={
-                onFilterByGroup
-                  ? () => onFilterByGroup(UNGROUPED_ID)
-                  : undefined
-              }
-              items={ungroupedItems}
-              onRemoveItem={handleRemoveClick}
-              removingItemId={removingItemId}
-              isUngrouped
-            />
-          )}
-        </div>
-
-        {/* Drag overlay */}
-        <DragOverlay>
-          {activeItem && (
-            <div className="opacity-80 shadow-lg">
-              <DocumentListCard
-                item={activeItem}
-                onRemove={() => {}}
-                isDragging
-                isRemoving={false}
-              />
-            </div>
-          )}
-        </DragOverlay>
-      </DndContext>
+          {/* Drag overlay */}
+          <DragOverlay>
+            {activeItem && (
+              <div className="opacity-80 shadow-lg">
+                <DocumentListCard
+                  item={activeItem}
+                  onRemove={() => {}}
+                  isDragging
+                  isRemoving={false}
+                />
+              </div>
+            )}
+          </DragOverlay>
+        </DndContext>
+      </div>
 
       {/* Load more button */}
       {hasMore && (
@@ -394,6 +457,7 @@ interface GroupAccordionProps {
   onRemoveItem: (_item: DocumentListItem) => void
   removingItemId: string | null
   isUngrouped?: boolean | undefined
+  isDropTarget?: boolean | undefined // Highlight when dragging item will drop here
 }
 
 // Story 4.13 Task 13: Memoized GroupAccordion for performance
@@ -408,11 +472,11 @@ const GroupAccordion = memo(function GroupAccordion({
   onRemoveItem,
   removingItemId,
   isUngrouped = false,
+  isDropTarget = false,
 }: GroupAccordionProps) {
-  // Make the header a drop target
-  const { setNodeRef, isOver } = useSortable({
+  // Make the entire group container a drop target
+  const { setNodeRef } = useDroppable({
     id: `group-header-${groupId}`,
-    disabled: false,
   })
 
   return (
@@ -420,8 +484,8 @@ const GroupAccordion = memo(function GroupAccordion({
       <div
         ref={setNodeRef}
         className={cn(
-          'rounded-lg border transition-colors',
-          isOver && 'ring-2 ring-primary border-primary bg-primary/5'
+          'rounded-lg border-2 border-transparent transition-colors',
+          isDropTarget && 'border-primary bg-primary/5'
         )}
       >
         {/* Group header - chevron toggles expand, name filters */}
@@ -497,9 +561,10 @@ const GroupAccordion = memo(function GroupAccordion({
                 Inga dokument i denna grupp.
               </p>
             ) : (
+              /* Per-group SortableContext for smooth reordering within group */
               <SortableContext
                 items={items.map((item) => item.id)}
-                strategy={verticalListSortingStrategy}
+                strategy={rectSortingStrategy}
               >
                 {/* Fluid grid: cards auto-fit between 220px-320px */}
                 <div
