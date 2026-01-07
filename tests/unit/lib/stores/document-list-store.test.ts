@@ -12,6 +12,8 @@ vi.mock('@/app/actions/document-list', () => ({
   addDocumentToList: vi.fn(),
   removeDocumentFromList: vi.fn(),
   reorderListItems: vi.fn(),
+  updateListItem: vi.fn(),
+  bulkUpdateListItems: vi.fn(),
   // Story 4.13: Group actions
   getListGroups: vi.fn(),
   moveItemToGroup: vi.fn(),
@@ -42,9 +44,16 @@ import {
   selectIsGroupExpanded,
   selectActiveGroupFilterInfo,
   selectFilteredByGroupItems,
+  // Story 4.14: Cache types
+  type ListCacheEntry,
+  type DocumentInfo,
 } from '@/lib/stores/document-list-store'
 import * as actions from '@/app/actions/document-list'
-import type { DocumentListSummary, DocumentListItem, ListGroupSummary } from '@/app/actions/document-list'
+import type {
+  DocumentListSummary,
+  DocumentListItem,
+  ListGroupSummary,
+} from '@/app/actions/document-list'
 
 describe('Document List Store', () => {
   const mockLists: DocumentListSummary[] = [
@@ -157,6 +166,8 @@ describe('Document List Store', () => {
       lists: [],
       activeListId: null,
       listItems: [],
+      // Story 4.14: Per-list item cache
+      itemsByList: new Map<string, ListCacheEntry>(),
       contentTypeFilter: null,
       page: 1,
       limit: 50,
@@ -179,6 +190,8 @@ describe('Document List Store', () => {
       isRemovingItem: null,
       isReordering: false,
       isUpdatingItem: null,
+      // Story 4.14: Race condition handling
+      fetchAbortController: null,
       error: null,
       _rollbackItems: null,
     })
@@ -237,6 +250,66 @@ describe('Document List Store', () => {
 
       const state = useDocumentListStore.getState()
       expect(state.listItems).toEqual(mockItems) // Items unchanged
+    })
+
+    // Story 4.14: Instant switching tests
+    it('should return cached items instantly without fetch call', async () => {
+      // Pre-populate cache
+      const cache = new Map<string, ListCacheEntry>()
+      cache.set('list-2', { items: mockItems, fetchedAt: Date.now() })
+
+      useDocumentListStore.setState({
+        lists: mockLists,
+        activeListId: 'list-1',
+        listItems: [],
+        itemsByList: cache,
+      })
+
+      // Mock should NOT be called for cached list
+      vi.mocked(actions.getDocumentListItems).mockClear()
+
+      // Act - switch to cached list
+      useDocumentListStore.getState().setActiveList('list-2')
+
+      // Assert - items should be immediately available from cache
+      const state = useDocumentListStore.getState()
+      expect(state.activeListId).toBe('list-2')
+      expect(state.listItems).toEqual(mockItems)
+      // No loading state for cached switch
+      expect(state.isLoadingItems).toBe(false)
+    })
+
+    it('should trigger fetch with loading state for uncached list', async () => {
+      vi.mocked(actions.getDocumentListItems).mockResolvedValue({
+        success: true,
+        data: { items: mockItems, total: mockItems.length, hasMore: false },
+      })
+
+      useDocumentListStore.setState({
+        lists: mockLists,
+        activeListId: 'list-1',
+        listItems: mockItems,
+        itemsByList: new Map(), // Empty cache
+      })
+
+      // Act - switch to uncached list
+      useDocumentListStore.getState().setActiveList('list-2')
+
+      // Assert - loading state should be set immediately
+      const stateAfterSwitch = useDocumentListStore.getState()
+      expect(stateAfterSwitch.activeListId).toBe('list-2')
+      expect(stateAfterSwitch.isLoadingItems).toBe(true)
+      expect(stateAfterSwitch.listItems).toEqual([]) // Cleared for uncached
+
+      // Wait for fetch to complete
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10))
+      })
+
+      // Fetch should have been called
+      expect(actions.getDocumentListItems).toHaveBeenCalledWith(
+        expect.objectContaining({ listId: 'list-2' })
+      )
     })
   })
 
@@ -336,7 +409,9 @@ describe('Document List Store', () => {
 
   describe('removeItem (optimistic update)', () => {
     it('should remove item optimistically', async () => {
-      vi.mocked(actions.removeDocumentFromList).mockResolvedValue({ success: true })
+      vi.mocked(actions.removeDocumentFromList).mockResolvedValue({
+        success: true,
+      })
 
       useDocumentListStore.setState({
         activeListId: 'list-1',
@@ -417,8 +492,6 @@ describe('Document List Store', () => {
         activeListId: 'list-1',
         listItems: mockItems,
       })
-
-      const _originalItems = [...mockItems]
 
       let result: boolean
       await act(async () => {
@@ -582,7 +655,11 @@ describe('Document List Store', () => {
       it('should collapse all groups including ungrouped', () => {
         useDocumentListStore.setState({
           groups: mockGroups,
-          expandedGroups: { 'group-1': true, 'group-2': true, '__ungrouped__': true },
+          expandedGroups: {
+            'group-1': true,
+            'group-2': true,
+            __ungrouped__: true,
+          },
         })
 
         useDocumentListStore.getState().collapseAllGroups()
@@ -655,7 +732,9 @@ describe('Document List Store', () => {
 
       let result: boolean
       await act(async () => {
-        result = await useDocumentListStore.getState().moveToGroup('item-2', 'group-1')
+        result = await useDocumentListStore
+          .getState()
+          .moveToGroup('item-2', 'group-1')
       })
 
       expect(result!).toBe(true)
@@ -679,7 +758,9 @@ describe('Document List Store', () => {
 
       let result: boolean
       await act(async () => {
-        result = await useDocumentListStore.getState().moveToGroup('item-1', null)
+        result = await useDocumentListStore
+          .getState()
+          .moveToGroup('item-1', null)
       })
 
       expect(result!).toBe(true)
@@ -704,7 +785,9 @@ describe('Document List Store', () => {
 
       let result: boolean
       await act(async () => {
-        result = await useDocumentListStore.getState().moveToGroup('item-1', 'group-2')
+        result = await useDocumentListStore
+          .getState()
+          .moveToGroup('item-1', 'group-2')
       })
 
       expect(result!).toBe(false)
@@ -721,7 +804,9 @@ describe('Document List Store', () => {
 
       let result: boolean
       await act(async () => {
-        result = await useDocumentListStore.getState().moveToGroup('item-1', 'group-1')
+        result = await useDocumentListStore
+          .getState()
+          .moveToGroup('item-1', 'group-1')
       })
 
       expect(result!).toBe(false)
@@ -736,7 +821,9 @@ describe('Document List Store', () => {
           groups: mockGroups,
         })
 
-        const { grouped, ungrouped } = selectGroupedItems(useDocumentListStore.getState())
+        const { grouped, ungrouped } = selectGroupedItems(
+          useDocumentListStore.getState()
+        )
 
         // group-1 has item-1 and item-3
         expect(grouped['group-1']).toHaveLength(2)
@@ -757,7 +844,9 @@ describe('Document List Store', () => {
           groups: mockGroups,
         })
 
-        const { grouped, ungrouped } = selectGroupedItems(useDocumentListStore.getState())
+        const { grouped, ungrouped } = selectGroupedItems(
+          useDocumentListStore.getState()
+        )
 
         expect(grouped['group-1']).toHaveLength(0)
         expect(grouped['group-2']).toHaveLength(0)
@@ -771,7 +860,9 @@ describe('Document List Store', () => {
           listItems: mockItems,
         })
 
-        const itemsInGroup1 = selectItemsInGroup('group-1')(useDocumentListStore.getState())
+        const itemsInGroup1 = selectItemsInGroup('group-1')(
+          useDocumentListStore.getState()
+        )
 
         expect(itemsInGroup1).toHaveLength(2)
         expect(itemsInGroup1.map((i) => i.id)).toContain('item-1')
@@ -783,7 +874,9 @@ describe('Document List Store', () => {
           listItems: mockItems,
         })
 
-        const ungroupedItems = selectItemsInGroup(null)(useDocumentListStore.getState())
+        const ungroupedItems = selectItemsInGroup(null)(
+          useDocumentListStore.getState()
+        )
 
         expect(ungroupedItems).toHaveLength(1)
         expect(ungroupedItems[0]?.id).toBe('item-2')
@@ -808,8 +901,12 @@ describe('Document List Store', () => {
           expandedGroups: { 'group-1': false, 'group-2': true },
         })
 
-        expect(selectIsGroupExpanded('group-1')(useDocumentListStore.getState())).toBe(false)
-        expect(selectIsGroupExpanded('group-2')(useDocumentListStore.getState())).toBe(true)
+        expect(
+          selectIsGroupExpanded('group-1')(useDocumentListStore.getState())
+        ).toBe(false)
+        expect(
+          selectIsGroupExpanded('group-2')(useDocumentListStore.getState())
+        ).toBe(true)
       })
 
       it('should default to expanded for undefined group', () => {
@@ -817,7 +914,9 @@ describe('Document List Store', () => {
           expandedGroups: {},
         })
 
-        expect(selectIsGroupExpanded('group-1')(useDocumentListStore.getState())).toBe(true)
+        expect(
+          selectIsGroupExpanded('group-1')(useDocumentListStore.getState())
+        ).toBe(true)
       })
     })
 
@@ -828,7 +927,9 @@ describe('Document List Store', () => {
           groups: mockGroups,
         })
 
-        const info = selectActiveGroupFilterInfo(useDocumentListStore.getState())
+        const info = selectActiveGroupFilterInfo(
+          useDocumentListStore.getState()
+        )
 
         expect(info?.id).toBe('group-1')
         expect(info?.name).toBe('GDPR Lagar')
@@ -840,7 +941,9 @@ describe('Document List Store', () => {
           groups: mockGroups,
         })
 
-        const info = selectActiveGroupFilterInfo(useDocumentListStore.getState())
+        const info = selectActiveGroupFilterInfo(
+          useDocumentListStore.getState()
+        )
 
         expect(info?.id).toBe('__ungrouped__')
         expect(info?.name).toBe('Ogrupperade')
@@ -852,7 +955,9 @@ describe('Document List Store', () => {
           groups: mockGroups,
         })
 
-        const info = selectActiveGroupFilterInfo(useDocumentListStore.getState())
+        const info = selectActiveGroupFilterInfo(
+          useDocumentListStore.getState()
+        )
 
         expect(info).toBeNull()
       })
@@ -863,7 +968,9 @@ describe('Document List Store', () => {
           groups: mockGroups,
         })
 
-        const info = selectActiveGroupFilterInfo(useDocumentListStore.getState())
+        const info = selectActiveGroupFilterInfo(
+          useDocumentListStore.getState()
+        )
 
         expect(info).toBeNull()
       })
@@ -876,7 +983,9 @@ describe('Document List Store', () => {
           activeGroupFilter: null,
         })
 
-        const items = selectFilteredByGroupItems(useDocumentListStore.getState())
+        const items = selectFilteredByGroupItems(
+          useDocumentListStore.getState()
+        )
 
         expect(items).toHaveLength(3)
       })
@@ -887,7 +996,9 @@ describe('Document List Store', () => {
           activeGroupFilter: 'group-1',
         })
 
-        const items = selectFilteredByGroupItems(useDocumentListStore.getState())
+        const items = selectFilteredByGroupItems(
+          useDocumentListStore.getState()
+        )
 
         expect(items).toHaveLength(2)
         expect(items.map((i) => i.id)).toContain('item-1')
@@ -900,10 +1011,290 @@ describe('Document List Store', () => {
           activeGroupFilter: '__ungrouped__',
         })
 
-        const items = selectFilteredByGroupItems(useDocumentListStore.getState())
+        const items = selectFilteredByGroupItems(
+          useDocumentListStore.getState()
+        )
 
         expect(items).toHaveLength(1)
         expect(items[0]?.id).toBe('item-2')
+      })
+    })
+  })
+
+  // ===========================================================================
+  // Story 4.14: Document List Performance Tests
+  // ===========================================================================
+
+  describe('Story 4.14: Per-List Item Cache', () => {
+    describe('getCachedItems', () => {
+      it('should return null for unknown list', () => {
+        const result = useDocumentListStore
+          .getState()
+          .getCachedItems('unknown-list')
+        expect(result).toBeNull()
+      })
+
+      it('should return items for cached list', () => {
+        useDocumentListStore
+          .getState()
+          .setCachedItems('list-1', mockItems, mockItems.length)
+
+        const result = useDocumentListStore.getState().getCachedItems('list-1')
+
+        expect(result).toEqual(mockItems)
+      })
+    })
+
+    describe('setCachedItems', () => {
+      it('should store items correctly', () => {
+        useDocumentListStore
+          .getState()
+          .setCachedItems('list-1', mockItems, mockItems.length)
+
+        const state = useDocumentListStore.getState()
+        const cached = state.itemsByList.get('list-1')
+
+        expect(cached).toBeDefined()
+        expect(cached?.items).toEqual(mockItems)
+        expect(cached?.fetchedAt).toBeDefined()
+        expect(cached?.fetchedAt).toBeLessThanOrEqual(Date.now())
+      })
+
+      it('should evict oldest entry when exceeding 10 lists', () => {
+        // Add 10 lists with delays to ensure different timestamps
+        for (let i = 0; i < 10; i++) {
+          const cache = new Map(useDocumentListStore.getState().itemsByList)
+          cache.set(`list-${i}`, {
+            items: [],
+            fetchedAt: Date.now() - (10 - i) * 1000,
+          })
+          useDocumentListStore.setState({ itemsByList: cache })
+        }
+
+        // Verify we have 10 lists
+        expect(useDocumentListStore.getState().itemsByList.size).toBe(10)
+
+        // Add 11th list
+        useDocumentListStore.getState().setCachedItems('list-new', [], 0)
+
+        const state = useDocumentListStore.getState()
+
+        // Should still have 10 lists (oldest evicted)
+        expect(state.itemsByList.size).toBe(10)
+        // Oldest list (list-0) should be gone
+        expect(state.itemsByList.has('list-0')).toBe(false)
+        // New list should exist
+        expect(state.itemsByList.has('list-new')).toBe(true)
+      })
+    })
+
+    describe('invalidateListCache', () => {
+      it('should remove specific list from cache', () => {
+        useDocumentListStore
+          .getState()
+          .setCachedItems('list-1', mockItems, mockItems.length)
+        useDocumentListStore.getState().setCachedItems('list-2', [], 0)
+
+        useDocumentListStore.getState().invalidateListCache('list-1')
+
+        const state = useDocumentListStore.getState()
+        expect(state.itemsByList.has('list-1')).toBe(false)
+        expect(state.itemsByList.has('list-2')).toBe(true)
+      })
+    })
+
+    describe('updateActiveListCache', () => {
+      it('should cache current listItems for active list', () => {
+        useDocumentListStore.setState({
+          activeListId: 'list-1',
+          listItems: mockItems,
+          total: mockItems.length,
+        })
+
+        useDocumentListStore.getState().updateActiveListCache()
+
+        const cached = useDocumentListStore.getState().getCachedItems('list-1')
+        expect(cached).toEqual(mockItems)
+      })
+
+      it('should not cache if no active list', () => {
+        useDocumentListStore.setState({
+          activeListId: null,
+          listItems: mockItems,
+        })
+
+        useDocumentListStore.getState().updateActiveListCache()
+
+        const state = useDocumentListStore.getState()
+        expect(state.itemsByList.size).toBe(0)
+      })
+    })
+
+    describe('addItem true optimistic update', () => {
+      const mockDocumentInfo: DocumentInfo = {
+        id: 'doc-new',
+        title: 'New Document',
+        documentNumber: 'SFS 2024:123',
+        contentType: 'SFS_LAW',
+        slug: 'sfs-2024-123',
+        summary: 'A new law',
+      }
+
+      it('should create optimistic item before server response', async () => {
+        // Mock slow server response
+        let resolveServerCall: (_value: { success: boolean }) => void
+        vi.mocked(actions.addDocumentToList).mockImplementation(
+          () =>
+            new Promise((resolve) => {
+              resolveServerCall = resolve
+            })
+        )
+
+        useDocumentListStore.setState({
+          activeListId: 'list-1',
+          listItems: [],
+          lists: mockLists,
+          itemsByList: new Map(),
+        })
+
+        // Start add operation
+        const addPromise = useDocumentListStore
+          .getState()
+          .addItem('list-1', 'doc-new', mockDocumentInfo, 'My commentary')
+
+        // Check state immediately - item should be added optimistically
+        const stateAfterOptimistic = useDocumentListStore.getState()
+        expect(stateAfterOptimistic.listItems).toHaveLength(1)
+        expect(stateAfterOptimistic.listItems[0]?.document.id).toBe('doc-new')
+        expect(stateAfterOptimistic.listItems[0]?.document.title).toBe(
+          'New Document'
+        )
+        expect(stateAfterOptimistic.listItems[0]?.commentary).toBe(
+          'My commentary'
+        )
+        expect(stateAfterOptimistic.listItems[0]?.id).toMatch(/^temp-/)
+        // No loading state
+        expect(stateAfterOptimistic.isAddingItem).toBe(false)
+
+        // Resolve server call
+        resolveServerCall!({ success: true })
+        await addPromise
+
+        // Item should still be there
+        const finalState = useDocumentListStore.getState()
+        expect(finalState.listItems).toHaveLength(1)
+      })
+
+      it('should rollback on server error', async () => {
+        vi.mocked(actions.addDocumentToList).mockResolvedValue({
+          success: false,
+          error: 'Document already in list',
+        })
+
+        useDocumentListStore.setState({
+          activeListId: 'list-1',
+          listItems: mockItems, // Start with existing items
+          lists: mockLists,
+          itemsByList: new Map(),
+        })
+
+        const initialCount = mockItems.length
+
+        let result: boolean
+        await act(async () => {
+          result = await useDocumentListStore
+            .getState()
+            .addItem('list-1', 'doc-new', mockDocumentInfo)
+        })
+
+        expect(result!).toBe(false)
+        const state = useDocumentListStore.getState()
+        // Optimistic item should be rolled back
+        expect(state.listItems).toHaveLength(initialCount)
+        // Error should be set
+        expect(state.error).toBe('Document already in list')
+      })
+
+      it('should rollback on exception', async () => {
+        vi.mocked(actions.addDocumentToList).mockRejectedValue(
+          new Error('Network error')
+        )
+
+        useDocumentListStore.setState({
+          activeListId: 'list-1',
+          listItems: [],
+          lists: mockLists,
+          itemsByList: new Map(),
+        })
+
+        let result: boolean
+        await act(async () => {
+          result = await useDocumentListStore
+            .getState()
+            .addItem('list-1', 'doc-new', mockDocumentInfo)
+        })
+
+        expect(result!).toBe(false)
+        const state = useDocumentListStore.getState()
+        expect(state.listItems).toHaveLength(0) // Rolled back
+        expect(state.error).toBe('Något gick fel')
+      })
+    })
+
+    describe('fetchItems stale response handling', () => {
+      it('should discard stale response when user switched lists during fetch', async () => {
+        const list1Items: DocumentListItem[] = [mockItems[0]!]
+        const list2Items: DocumentListItem[] = [mockItems[1]!]
+
+        // Mock slow response for list-1
+        vi.mocked(actions.getDocumentListItems).mockImplementation(
+          async ({ listId }) => {
+            if (listId === 'list-1') {
+              // Slow response
+              await new Promise((resolve) => setTimeout(resolve, 50))
+              return {
+                success: true,
+                data: { items: list1Items, total: 1, hasMore: false },
+              }
+            }
+            // Fast response for list-2
+            return {
+              success: true,
+              data: { items: list2Items, total: 1, hasMore: false },
+            }
+          }
+        )
+
+        useDocumentListStore.setState({
+          lists: mockLists,
+          activeListId: 'list-1',
+          listItems: [],
+          itemsByList: new Map(),
+        })
+
+        // Start fetching list-1
+        const fetchPromise = useDocumentListStore
+          .getState()
+          .fetchItems(true, false)
+
+        // Immediately switch to list-2 (before list-1 fetch completes)
+        await act(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 10))
+          useDocumentListStore.getState().setActiveList('list-2')
+        })
+
+        // Wait for list-1 fetch to complete
+        await fetchPromise
+
+        // Wait a bit more for list-2 fetch to complete
+        await act(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100))
+        })
+
+        // Assert - should show list-2 items, not list-1
+        const state = useDocumentListStore.getState()
+        expect(state.activeListId).toBe('list-2')
+        expect(state.listItems).toEqual(list2Items)
       })
     })
   })

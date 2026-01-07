@@ -157,6 +157,7 @@ export function DocumentListPageContent({
 
       if (targetListId) {
         fetchItems(true)
+        fetchGroups() // Ensure groups are loaded on init
       }
 
       // Sync URL if it doesn't match active list

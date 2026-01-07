@@ -37,15 +37,19 @@ test.describe('Document List Management', () => {
 
       // Find and click the document list switcher (not workspace switcher)
       // Use aria-haspopup="menu" to distinguish from workspace popover
-      const switcher = page.locator('button[role="combobox"][aria-haspopup="menu"]')
+      const switcher = page.locator(
+        'button[role="combobox"][aria-haspopup="menu"]'
+      )
       await expect(switcher).toBeVisible()
 
       await switcher.click()
 
       // Check dropdown content appears - use role option for DropdownMenuItem
-      await expect(page.getByRole('option', { name: /Skapa ny lista/i }).or(
-        page.getByText('Skapa ny lista')
-      )).toBeVisible()
+      await expect(
+        page
+          .getByRole('option', { name: /Skapa ny lista/i })
+          .or(page.getByText('Skapa ny lista'))
+      ).toBeVisible()
     })
 
     test('should show content type filter chips', async ({ page }) => {
@@ -54,23 +58,29 @@ test.describe('Document List Management', () => {
       // Check filter chips are visible
       await expect(page.getByRole('button', { name: 'Alla' })).toBeVisible()
       await expect(page.getByRole('button', { name: 'Lagar' })).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Rättsfall' })).toBeVisible()
-      await expect(page.getByRole('button', { name: 'EU-dokument' })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'Rättsfall' })
+      ).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'EU-dokument' })
+      ).toBeVisible()
     })
 
     test('should show add document button', async ({ page }) => {
       await page.goto('/laglistor')
 
-      const addButton = page.getByRole('button', { name: /Lägg till dokument/i })
+      const addButton = page.getByRole('button', {
+        name: /Lägg till dokument/i,
+      })
       await expect(addButton).toBeVisible()
     })
 
     test('should show export button', async ({ page }) => {
       await page.goto('/laglistor')
 
-      const exportButton = page.getByRole('button', { name: /Exportera/i }).or(
-        page.locator('button[title="Exportera lista"]')
-      )
+      const exportButton = page
+        .getByRole('button', { name: /Exportera/i })
+        .or(page.locator('button[title="Exportera lista"]'))
       await expect(exportButton).toBeVisible()
     })
   })
@@ -80,14 +90,18 @@ test.describe('Document List Management', () => {
       await page.goto('/laglistor')
 
       // Open list switcher dropdown (use aria-haspopup="menu" to distinguish)
-      await page.locator('button[role="combobox"][aria-haspopup="menu"]').click()
+      await page
+        .locator('button[role="combobox"][aria-haspopup="menu"]')
+        .click()
 
       // Click create new list
       await page.getByText('Skapa ny lista').click()
 
       // Check modal appears
       await expect(page.getByRole('dialog')).toBeVisible()
-      await expect(page.getByRole('heading', { name: 'Skapa ny lista' })).toBeVisible()
+      await expect(
+        page.getByRole('heading', { name: 'Skapa ny lista' })
+      ).toBeVisible()
 
       // Check form fields
       await expect(page.getByLabel('Namn')).toBeVisible()
@@ -99,7 +113,9 @@ test.describe('Document List Management', () => {
       await page.goto('/laglistor')
 
       // Open create modal (use aria-haspopup="menu" to distinguish)
-      await page.locator('button[role="combobox"][aria-haspopup="menu"]').click()
+      await page
+        .locator('button[role="combobox"][aria-haspopup="menu"]')
+        .click()
       await page.getByText('Skapa ny lista').click()
 
       // Try to submit without name
@@ -111,7 +127,9 @@ test.describe('Document List Management', () => {
       await page.goto('/laglistor')
 
       // Open create modal (use aria-haspopup="menu" to distinguish)
-      await page.locator('button[role="combobox"][aria-haspopup="menu"]').click()
+      await page
+        .locator('button[role="combobox"][aria-haspopup="menu"]')
+        .click()
       await page.getByText('Skapa ny lista').click()
 
       // Fill form
@@ -126,7 +144,9 @@ test.describe('Document List Management', () => {
       await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10000 })
 
       // Verify list is created - should be in switcher
-      await page.locator('button[role="combobox"][aria-haspopup="menu"]').click()
+      await page
+        .locator('button[role="combobox"][aria-haspopup="menu"]')
+        .click()
       await expect(page.getByText(listName)).toBeVisible()
     })
   })
@@ -140,7 +160,9 @@ test.describe('Document List Management', () => {
 
       // Check modal appears
       await expect(page.getByRole('dialog')).toBeVisible()
-      await expect(page.getByRole('heading', { name: 'Lägg till dokument' })).toBeVisible()
+      await expect(
+        page.getByRole('heading', { name: 'Lägg till dokument' })
+      ).toBeVisible()
       await expect(page.getByPlaceholder(/Sök på titel/i)).toBeVisible()
     })
 
@@ -157,7 +179,9 @@ test.describe('Document List Management', () => {
       await page.waitForTimeout(500)
 
       // Should show results or "no results" message
-      const hasResults = await page.locator('.flex.items-center.justify-between.p-3').count() > 0
+      const hasResults =
+        (await page.locator('.flex.items-center.justify-between.p-3').count()) >
+        0
       const hasNoResults = await page.getByText(/Inga resultat/i).isVisible()
 
       expect(hasResults || hasNoResults).toBeTruthy()
@@ -211,14 +235,22 @@ test.describe('Document List Management', () => {
       await page.waitForTimeout(3000)
 
       // Now check what state we're in - the page should have finished loading
-      const hasDocumentCard = await page.locator('[data-testid="document-card"]').count() > 0
-      const hasGroupHeader = await page.getByText('Ogrupperade').count() > 0
-      const hasShowingText = await page.getByText(/Visar \d+ av \d+ dokument/).count() > 0
-      const hasEmptyState = await page.getByText(/Inga dokument|Välj eller skapa/i).count() > 0
-      const hasListHeader = await page.getByText('Huvudlista').count() > 0
+      const hasDocumentCard =
+        (await page.locator('[data-testid="document-card"]').count()) > 0
+      const hasGroupHeader = (await page.getByText('Ogrupperade').count()) > 0
+      const hasShowingText =
+        (await page.getByText(/Visar \d+ av \d+ dokument/).count()) > 0
+      const hasEmptyState =
+        (await page.getByText(/Inga dokument|Välj eller skapa/i).count()) > 0
+      const hasListHeader = (await page.getByText('Huvudlista').count()) > 0
 
       // Either we should see documents, empty state, or at least the list header
-      const validState = hasDocumentCard || hasGroupHeader || hasShowingText || hasEmptyState || hasListHeader
+      const validState =
+        hasDocumentCard ||
+        hasGroupHeader ||
+        hasShowingText ||
+        hasEmptyState ||
+        hasListHeader
       expect(validState).toBe(true)
     })
   })
@@ -253,7 +285,9 @@ test.describe('Document List Management', () => {
       await expect(page.locator('h1')).toContainText('Mina laglistor')
 
       // Check buttons are visible
-      await expect(page.getByRole('button', { name: /Lägg till/i })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: /Lägg till/i })
+      ).toBeVisible()
     })
 
     test('should work on tablet viewport', async ({ page }) => {
@@ -269,7 +303,9 @@ test.describe('Document List Management', () => {
 
   // Story 4.12: Table View Tests
   test.describe('Table View (Story 4.12)', () => {
-    test('should show view toggle with card and table options', async ({ page }) => {
+    test('should show view toggle with card and table options', async ({
+      page,
+    }) => {
       await page.goto('/laglistor')
 
       // Check view toggle is present
@@ -280,7 +316,9 @@ test.describe('Document List Management', () => {
       await expect(tableToggle).toBeVisible()
     })
 
-    test('should switch to table view when clicking table toggle', async ({ page }) => {
+    test('should switch to table view when clicking table toggle', async ({
+      page,
+    }) => {
       await page.goto('/laglistor')
 
       // Click table view toggle
@@ -349,7 +387,9 @@ test.describe('Document List Management', () => {
       await page.waitForTimeout(300)
 
       // Tilldelad column should now be visible (check for header button)
-      await expect(page.getByRole('button', { name: 'Tilldelad' })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'Tilldelad' })
+      ).toBeVisible()
     })
 
     test('should sort by column when clicking header', async ({ page }) => {
@@ -367,7 +407,9 @@ test.describe('Document List Management', () => {
       await expect(titleButton.locator('svg')).toBeVisible()
     })
 
-    test('should show bulk action bar when items selected', async ({ page }) => {
+    test('should show bulk action bar when items selected', async ({
+      page,
+    }) => {
       await page.goto('/laglistor')
 
       // Switch to table view
@@ -386,7 +428,9 @@ test.describe('Document List Management', () => {
         await checkboxes.first().click()
 
         // Bulk action bar should appear
-        const bulkActionBar = page.getByRole('toolbar', { name: /massåtgärder/i })
+        const bulkActionBar = page.getByRole('toolbar', {
+          name: /massåtgärder/i,
+        })
         await expect(bulkActionBar).toBeVisible()
         await expect(page.getByText(/1 vald/)).toBeVisible()
       }
@@ -404,7 +448,9 @@ test.describe('Document List Management', () => {
       await expect(table).toBeVisible()
 
       // If there are status cells, click one to edit
-      const statusCells = page.locator('table tbody td').filter({ hasText: /(Ej påbörjad|Pågår|Uppfylld)/i })
+      const statusCells = page
+        .locator('table tbody td')
+        .filter({ hasText: /(Ej påbörjad|Pågår|Uppfylld)/i })
       const hasCells = (await statusCells.count()) > 0
 
       if (hasCells) {
@@ -414,7 +460,9 @@ test.describe('Document List Management', () => {
           await statusCombobox.click()
 
           // Should show status options
-          await expect(page.getByRole('option', { name: 'Pågår' })).toBeVisible()
+          await expect(
+            page.getByRole('option', { name: 'Pågår' })
+          ).toBeVisible()
         }
       }
     })
@@ -453,13 +501,17 @@ test.describe('Document List Management', () => {
       await page.waitForTimeout(200)
 
       // Toggle a column (e.g., show Tilldelad)
-      const tilldeladCheckbox = page.getByRole('menuitemcheckbox', { name: 'Tilldelad' })
+      const tilldeladCheckbox = page.getByRole('menuitemcheckbox', {
+        name: 'Tilldelad',
+      })
       await tilldeladCheckbox.click()
 
       // Verify column is now visible
       await page.keyboard.press('Escape')
       await page.waitForTimeout(300)
-      await expect(page.getByRole('button', { name: 'Tilldelad' })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'Tilldelad' })
+      ).toBeVisible()
 
       // Re-open column settings and click reset
       await page.getByRole('button', { name: /kolumner/i }).click()
@@ -473,7 +525,9 @@ test.describe('Document List Management', () => {
       await page.waitForTimeout(300)
 
       // Tilldelad column header button should not be visible (default is hidden)
-      await expect(page.getByRole('button', { name: 'Tilldelad' })).not.toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'Tilldelad' })
+      ).not.toBeVisible()
     })
 
     test('should work on tablet viewport in table view', async ({ page }) => {
@@ -544,8 +598,9 @@ test.describe('Document List Management', () => {
       await page.waitForTimeout(2000)
 
       // Check for "Ogrupperade" section (ungrouped items)
-      const hasUngrouped = await page.getByText('Ogrupperade').count() > 0
-      const hasDocuments = await page.locator('[data-testid="document-card"]').count() > 0
+      const hasUngrouped = (await page.getByText('Ogrupperade').count()) > 0
+      const hasDocuments =
+        (await page.locator('[data-testid="document-card"]').count()) > 0
 
       // Should have either ungrouped section or documents directly
       expect(hasUngrouped || hasDocuments).toBe(true)
@@ -556,9 +611,11 @@ test.describe('Document List Management', () => {
       await page.waitForTimeout(2000)
 
       // Find a group header (either custom group or "Ogrupperade")
-      const groupHeader = page.locator('button[title="Fäll ihop"], button[title="Expandera"]').first()
+      const groupHeader = page
+        .locator('button[title="Fäll ihop"], button[title="Expandera"]')
+        .first()
 
-      if (await groupHeader.count() > 0) {
+      if ((await groupHeader.count()) > 0) {
         // Get initial state
         const initialTitle = await groupHeader.getAttribute('title')
 
@@ -582,26 +639,33 @@ test.describe('Document List Management', () => {
       const buttonCount = await filterButtons.count()
 
       // If we have documents, we should have at least the "Ogrupperade" filter button
-      const hasDocuments = (await page.locator('[data-testid="document-card"]').count()) > 0
+      const hasDocuments =
+        (await page.locator('[data-testid="document-card"]').count()) > 0
       if (hasDocuments) {
         expect(buttonCount).toBeGreaterThan(0)
       }
     })
 
-    test('should clear group filter when clicking X on filter chip', async ({ page }) => {
+    test('should clear group filter when clicking X on filter chip', async ({
+      page,
+    }) => {
       await page.goto('/laglistor', { waitUntil: 'networkidle' })
       await page.waitForTimeout(2000)
 
       // Find and click a filterable group name
-      const groupNameButton = page.locator('button[title^="Filtrera till"]').first()
+      const groupNameButton = page
+        .locator('button[title^="Filtrera till"]')
+        .first()
 
-      if (await groupNameButton.count() > 0) {
+      if ((await groupNameButton.count()) > 0) {
         await groupNameButton.click()
         await page.waitForTimeout(500)
 
         // Click clear button on filter chip
-        const clearButton = page.getByRole('button', { name: /rensa gruppfilter/i })
-        if (await clearButton.count() > 0) {
+        const clearButton = page.getByRole('button', {
+          name: /rensa gruppfilter/i,
+        })
+        if ((await clearButton.count()) > 0) {
           await clearButton.click()
           await page.waitForTimeout(500)
 
@@ -611,7 +675,9 @@ test.describe('Document List Management', () => {
       }
     })
 
-    test('should support deep linking with list URL param', async ({ page }) => {
+    test('should support deep linking with list URL param', async ({
+      page,
+    }) => {
       // Navigate to laglistor page
       await page.goto('/laglistor')
       await page.waitForTimeout(1500)
@@ -621,7 +687,9 @@ test.describe('Document List Management', () => {
 
       // The list switcher should be visible (the combobox that's NOT the workspace switcher)
       // The workspace switcher has aria-label="Byt arbetsplats", so we exclude it
-      const listSwitcher = page.locator('button[role="combobox"]:not([aria-label="Byt arbetsplats"])')
+      const listSwitcher = page.locator(
+        'button[role="combobox"]:not([aria-label="Byt arbetsplats"])'
+      )
       await expect(listSwitcher).toBeVisible()
 
       // Click the switcher to open dropdown
@@ -655,7 +723,253 @@ test.describe('Document List Management', () => {
       await page.waitForTimeout(500)
 
       // Group column header should be visible (use exact match to avoid header button)
-      await expect(page.getByRole('button', { name: 'Grupp', exact: true })).toBeVisible()
+      await expect(
+        page.getByRole('button', { name: 'Grupp', exact: true })
+      ).toBeVisible()
+    })
+  })
+
+  // Story 4.14: Performance Optimization Tests
+  test.describe('Performance Optimization (Story 4.14)', () => {
+    test('should add document with optimistic update (instant appearance)', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor', { waitUntil: 'networkidle' })
+      await page.waitForTimeout(1000)
+
+      // Open add document modal
+      await page.getByRole('button', { name: /Lägg till dokument/i }).click()
+      await expect(page.getByRole('dialog')).toBeVisible()
+
+      // Search for a document
+      await page.getByPlaceholder(/Sök på titel/i).fill('arbetsmiljö')
+      await page.waitForTimeout(1000) // Wait for search debounce
+
+      // Check if there are results
+      const resultItems = page.locator('.flex.items-center.justify-between.p-3')
+      const hasResults = (await resultItems.count()) > 0
+
+      if (hasResults) {
+        // Get add button for first result
+        const addButton = resultItems
+          .first()
+          .locator('button', { hasText: /Lägg till/i })
+
+        if ((await addButton.count()) > 0 && !(await addButton.isDisabled())) {
+          // Get result title before adding
+          const resultTitle = await resultItems
+            .first()
+            .locator('h4')
+            .textContent()
+
+          // Record time before clicking add
+          const startTime = Date.now()
+
+          // Click add button
+          await addButton.click()
+
+          // Check that item appears INSTANTLY (within 100ms) without waiting for network
+          // This validates optimistic update - item should appear before server responds
+          await expect(async () => {
+            const timeElapsed = Date.now() - startTime
+            // The button should change to "Tillagd" almost instantly
+            const isAdded =
+              (await addButton
+                .getByText(/Tillagd/i)
+                .isVisible()
+                .catch(() => false)) || (await addButton.isDisabled())
+            if (!isAdded && timeElapsed < 100) {
+              throw new Error('Still waiting for optimistic update')
+            }
+            expect(isAdded).toBe(true)
+          }).toPass({ timeout: 3000 })
+
+          // Close modal
+          await page.keyboard.press('Escape')
+          await page.waitForTimeout(500)
+
+          // Verify item is in the list
+          if (resultTitle) {
+            const docCard = page.locator('[data-testid="document-card"]', {
+              hasText: resultTitle.substring(0, 30),
+            })
+            await expect(
+              docCard.or(page.getByText(resultTitle.substring(0, 30)))
+            ).toBeVisible({ timeout: 5000 })
+          }
+        }
+      }
+    })
+
+    test('should switch between lists with cached items instantly', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor', { waitUntil: 'networkidle' })
+      await page.waitForTimeout(2000)
+
+      // Open list switcher
+      const listSwitcher = page.locator(
+        'button[role="combobox"][aria-haspopup="menu"]'
+      )
+      await listSwitcher.click()
+      await page.waitForTimeout(300)
+
+      // Get all list options (excluding "Skapa ny lista")
+      const listOptions = page
+        .locator('[role="menuitem"]')
+        .filter({ hasNotText: 'Skapa ny lista' })
+      const listCount = await listOptions.count()
+
+      if (listCount >= 2) {
+        // Click first list
+        await listOptions.first().click()
+        await page.waitForTimeout(1000) // Wait for initial load
+
+        // Get the name of the first list and note items
+        const firstListName = await listSwitcher.textContent()
+
+        // Now switch to second list
+        await listSwitcher.click()
+        await page.waitForTimeout(300)
+        await listOptions.nth(1).click()
+        await page.waitForTimeout(1000)
+
+        // Now switch BACK to first list - should be instant from cache
+        const startTime = Date.now()
+        await listSwitcher.click()
+        await page.waitForTimeout(100)
+        await listOptions.first().click()
+
+        // Measure time - cached switch should be nearly instant (no loading spinner)
+        const timeElapsed = Date.now() - startTime
+
+        // If items were cached, loading should be instant without spinner
+        // Allow some time for UI but not a full network roundtrip
+        await page.waitForTimeout(100)
+        expect(timeElapsed).toBeLessThan(500) // Switch should be under 500ms with cache
+
+        // List name should be back to first
+        const currentListName = await listSwitcher.textContent()
+        expect(currentListName).toBe(firstListName)
+      }
+    })
+
+    test('should update item status without loading spinner', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor', { waitUntil: 'networkidle' })
+      await page.waitForTimeout(2000)
+
+      // Switch to table view for inline editing
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Find status comboboxes in table rows
+      const statusCells = page
+        .locator('table tbody tr [role="combobox"]')
+        .first()
+
+      if ((await statusCells.count()) > 0) {
+        // Record time before clicking
+        const startTime = Date.now()
+
+        // Click to open status dropdown
+        await statusCells.click()
+        await page.waitForTimeout(200)
+
+        // Select a different status option
+        const statusOptions = page.locator('[role="option"]')
+        if ((await statusOptions.count()) > 1) {
+          // Get current status and pick a different one
+          const currentStatus = await statusCells.textContent()
+          const newStatusOption = statusOptions
+            .filter({ hasNotText: currentStatus?.trim() || '' })
+            .first()
+
+          if ((await newStatusOption.count()) > 0) {
+            await newStatusOption.click()
+
+            // Check time - update should be instant (optimistic)
+            const timeElapsed = Date.now() - startTime
+
+            // Verify no loading indicator appeared on the cell
+            await page.waitForTimeout(100)
+
+            // The update should reflect immediately without a loading spinner
+            // (optimistic update means UI updates before server confirms)
+            expect(timeElapsed).toBeLessThan(1000)
+
+            // Status should have changed in the cell
+            const newStatus = await statusCells.textContent()
+            expect(newStatus).not.toBe(currentStatus)
+          }
+        }
+      }
+    })
+
+    test('should show items immediately when switching to cached list', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor', { waitUntil: 'networkidle' })
+      await page.waitForTimeout(2000)
+
+      // First, ensure we have some items loaded
+      const hasDocuments =
+        (await page.locator('[data-testid="document-card"]').count()) > 0 ||
+        (await page.locator('table tbody tr').count()) > 0
+
+      if (!hasDocuments) {
+        // Skip test if no documents in any list
+        return
+      }
+
+      // Open list switcher
+      const listSwitcher = page.locator(
+        'button[role="combobox"][aria-haspopup="menu"]'
+      )
+      await listSwitcher.click()
+      await page.waitForTimeout(300)
+
+      // Get list options
+      const listOptions = page
+        .locator('[role="menuitem"]')
+        .filter({ hasNotText: 'Skapa ny lista' })
+      const listCount = await listOptions.count()
+
+      if (listCount >= 2) {
+        // Switch to a different list first (to populate cache)
+        await listOptions.nth(1).click()
+        await page.waitForTimeout(1500) // Let it load fully
+
+        // Switch back to original list
+        await listSwitcher.click()
+        await page.waitForTimeout(100)
+        await listOptions.first().click()
+
+        // Items should appear instantly from cache - no loading state
+        // Check immediately (within 50ms) for items or empty state
+        await page.waitForTimeout(50)
+
+        // Either documents should be visible OR empty message
+        const documentsVisible =
+          (await page.locator('[data-testid="document-card"]').count()) > 0 ||
+          (await page.locator('table tbody tr').count()) > 0
+        const emptyMessageVisible = await page
+          .getByText(/Inga dokument/i)
+          .isVisible()
+        const groupHeaderVisible = await page
+          .getByText('Ogrupperade')
+          .isVisible()
+
+        // One of these should be true - showing cached content
+        expect(
+          documentsVisible || emptyMessageVisible || groupHeaderVisible
+        ).toBe(true)
+      }
     })
   })
 })

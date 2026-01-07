@@ -46,7 +46,10 @@ import {
 import { DocumentListCard } from './document-list-card'
 import { DocumentListGridSkeleton } from './document-list-skeleton'
 import { RemoveConfirmation } from './remove-confirmation'
-import type { DocumentListItem, ListGroupSummary } from '@/app/actions/document-list'
+import type {
+  DocumentListItem,
+  ListGroupSummary,
+} from '@/app/actions/document-list'
 import { useDebouncedCallback } from 'use-debounce'
 import { cn } from '@/lib/utils'
 
@@ -58,15 +61,17 @@ interface GroupedDocumentListProps {
   hasMore: boolean
   isLoading: boolean
   onLoadMore: () => void
-  onRemoveItem: (itemId: string) => Promise<boolean>
-  onReorderItems: (items: Array<{ id: string; position: number }>) => Promise<boolean>
-  onMoveToGroup: (itemId: string, groupId: string | null) => Promise<boolean>
-  onToggleGroup: (groupId: string) => void
+  onRemoveItem: (_itemId: string) => Promise<boolean>
+  onReorderItems: (
+    _items: Array<{ id: string; position: number }>
+  ) => Promise<boolean>
+  onMoveToGroup: (_itemId: string, _groupId: string | null) => Promise<boolean>
+  onToggleGroup: (_groupId: string) => void
   onExpandAll: () => void
   onCollapseAll: () => void
   onManageGroups: () => void
   // Story 4.13 Task 11: Filter by group
-  onFilterByGroup?: ((groupId: string) => void) | undefined
+  onFilterByGroup?: ((_groupId: string) => void) | undefined
   emptyMessage?: string | undefined
 }
 
@@ -91,7 +96,8 @@ export function GroupedDocumentList({
   onFilterByGroup,
   emptyMessage = 'Inga dokument i listan.',
 }: GroupedDocumentListProps) {
-  const [removeConfirmItem, setRemoveConfirmItem] = useState<DocumentListItem | null>(null)
+  const [removeConfirmItem, setRemoveConfirmItem] =
+    useState<DocumentListItem | null>(null)
   const [removingItemId, setRemovingItemId] = useState<string | null>(null)
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -211,7 +217,9 @@ export function GroupedDocumentList({
   }
 
   // Get the active item for drag overlay
-  const activeItem = activeId ? localItems.find((item) => item.id === activeId) : null
+  const activeItem = activeId
+    ? localItems.find((item) => item.id === activeId)
+    : null
 
   // Loading state
   if (isLoading && items.length === 0) {
@@ -236,7 +244,11 @@ export function GroupedDocumentList({
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           Visar {items.length} av {total} dokument.
-          {hasGroups && <span className="hidden sm:inline ml-1">Dra till grupprubriker för att flytta.</span>}
+          {hasGroups && (
+            <span className="hidden sm:inline ml-1">
+              Dra till grupprubriker för att flytta.
+            </span>
+          )}
         </p>
         <div className="flex items-center gap-1 sm:gap-2">
           {hasGroups && (
@@ -297,7 +309,9 @@ export function GroupedDocumentList({
                 itemCount={groupItems.length}
                 isExpanded={isExpanded}
                 onToggle={() => onToggleGroup(group.id)}
-                onFilter={onFilterByGroup ? () => onFilterByGroup(group.id) : undefined}
+                onFilter={
+                  onFilterByGroup ? () => onFilterByGroup(group.id) : undefined
+                }
                 items={groupItems}
                 onRemoveItem={handleRemoveClick}
                 removingItemId={removingItemId}
@@ -313,7 +327,11 @@ export function GroupedDocumentList({
               itemCount={ungroupedItems.length}
               isExpanded={expandedGroups[UNGROUPED_ID] ?? true}
               onToggle={() => onToggleGroup(UNGROUPED_ID)}
-              onFilter={onFilterByGroup ? () => onFilterByGroup(UNGROUPED_ID) : undefined}
+              onFilter={
+                onFilterByGroup
+                  ? () => onFilterByGroup(UNGROUPED_ID)
+                  : undefined
+              }
               items={ungroupedItems}
               onRemoveItem={handleRemoveClick}
               removingItemId={removingItemId}
@@ -340,11 +358,7 @@ export function GroupedDocumentList({
       {/* Load more button */}
       {hasMore && (
         <div className="flex justify-center pt-4">
-          <Button
-            variant="outline"
-            onClick={onLoadMore}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={onLoadMore} disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -377,7 +391,7 @@ interface GroupAccordionProps {
   onToggle: () => void
   onFilter?: (() => void) | undefined // Story 4.13 Task 11: Filter by group click
   items: DocumentListItem[]
-  onRemoveItem: (item: DocumentListItem) => void
+  onRemoveItem: (_item: DocumentListItem) => void
   removingItemId: string | null
   isUngrouped?: boolean | undefined
 }
@@ -463,7 +477,9 @@ const GroupAccordion = memo(function GroupAccordion({
               {name}
             </button>
           ) : (
-            <span className="font-medium flex-1 text-left text-sm sm:text-base">{name}</span>
+            <span className="font-medium flex-1 text-left text-sm sm:text-base">
+              {name}
+            </span>
           )}
 
           {/* Item count badge - simplified on mobile */}
@@ -485,8 +501,14 @@ const GroupAccordion = memo(function GroupAccordion({
                 items={items.map((item) => item.id)}
                 strategy={verticalListSortingStrategy}
               >
-                {/* Responsive grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
-                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 pt-2">
+                {/* Fluid grid: cards auto-fit between 220px-320px */}
+                <div
+                  className="grid gap-3 sm:gap-4 pt-2"
+                  style={{
+                    gridTemplateColumns:
+                      'repeat(auto-fit, minmax(220px, 320px))',
+                  }}
+                >
                   {items.map((item) => (
                     <SortableCard
                       key={item.id}

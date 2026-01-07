@@ -37,8 +37,10 @@ interface DocumentListGridProps {
   hasMore: boolean
   isLoading: boolean
   onLoadMore: () => void
-  onRemoveItem: (itemId: string) => Promise<boolean>
-  onReorderItems: (items: Array<{ id: string; position: number }>) => Promise<boolean>
+  onRemoveItem: (_itemId: string) => Promise<boolean>
+  onReorderItems: (
+    _items: Array<{ id: string; position: number }>
+  ) => Promise<boolean>
   emptyMessage?: string
 }
 
@@ -52,7 +54,8 @@ export function DocumentListGrid({
   onReorderItems,
   emptyMessage = 'Inga dokument i listan.',
 }: DocumentListGridProps) {
-  const [removeConfirmItem, setRemoveConfirmItem] = useState<DocumentListItem | null>(null)
+  const [removeConfirmItem, setRemoveConfirmItem] =
+    useState<DocumentListItem | null>(null)
   const [removingItemId, setRemovingItemId] = useState<string | null>(null)
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
 
@@ -153,7 +156,12 @@ export function DocumentListGrid({
           items={localItems.map((item) => item.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div
+            className="grid gap-4"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 320px))',
+            }}
+          >
             {localItems.map((item) => (
               <SortableCard
                 key={item.id}
@@ -169,11 +177,7 @@ export function DocumentListGrid({
       {/* Load more button */}
       {hasMore && (
         <div className="flex justify-center pt-4">
-          <Button
-            variant="outline"
-            onClick={onLoadMore}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={onLoadMore} disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

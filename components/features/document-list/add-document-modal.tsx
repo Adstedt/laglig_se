@@ -24,8 +24,20 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Search, Plus, Check, Loader2, ChevronLeft, ChevronRight, FileText, Scale } from 'lucide-react'
-import { searchLegalDocuments, type SearchResult } from '@/app/actions/document-list'
+import {
+  Search,
+  Plus,
+  Check,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Scale,
+} from 'lucide-react'
+import {
+  searchLegalDocuments,
+  type SearchResult,
+} from '@/app/actions/document-list'
 import { browseDocumentsAction } from '@/app/actions/browse'
 import {
   getContentTypeLabel,
@@ -37,19 +49,51 @@ import { useDebouncedCallback } from 'use-debounce'
 import { cn } from '@/lib/utils'
 import type { ContentType } from '@prisma/client'
 
+// Story 4.14: Document info for optimistic updates
+export interface DocumentInfoForAdd {
+  id: string
+  title: string
+  documentNumber: string
+  contentType: ContentType
+  slug: string
+  summary?: string | null
+}
+
 interface AddDocumentModalProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   listId: string | null
-  onAddDocument: (documentId: string) => Promise<boolean>
+  onAddDocument: (
+    _documentId: string,
+    _documentInfo: DocumentInfoForAdd
+  ) => Promise<boolean>
 }
 
 // Browse categories with their content types
 const BROWSE_CATEGORIES = [
   { id: 'laws', label: 'Lagar', types: ['SFS_LAW'] as ContentType[] },
-  { id: 'amendments', label: 'Ändringar', types: ['SFS_AMENDMENT'] as ContentType[] },
-  { id: 'courtCases', label: 'Rättsfall', types: ['COURT_CASE_HD', 'COURT_CASE_HFD', 'COURT_CASE_AD', 'COURT_CASE_HOVR', 'COURT_CASE_MOD', 'COURT_CASE_MIG'] as ContentType[] },
-  { id: 'euDocs', label: 'EU-rätt', types: ['EU_REGULATION', 'EU_DIRECTIVE'] as ContentType[] },
+  {
+    id: 'amendments',
+    label: 'Ändringar',
+    types: ['SFS_AMENDMENT'] as ContentType[],
+  },
+  {
+    id: 'courtCases',
+    label: 'Rättsfall',
+    types: [
+      'COURT_CASE_HD',
+      'COURT_CASE_HFD',
+      'COURT_CASE_AD',
+      'COURT_CASE_HOVR',
+      'COURT_CASE_MOD',
+      'COURT_CASE_MIG',
+    ] as ContentType[],
+  },
+  {
+    id: 'euDocs',
+    label: 'EU-rätt',
+    types: ['EU_REGULATION', 'EU_DIRECTIVE'] as ContentType[],
+  },
 ]
 
 // Fixed heights for consistent modal sizing across tabs
@@ -106,45 +150,42 @@ export function AddDocumentModal({
   }, [activeTab, browseCategory, browsePage, listId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounced search
-  const debouncedSearch = useDebouncedCallback(
-    async (searchQuery: string) => {
-      if (!searchQuery.trim() || !listId) {
+  const debouncedSearch = useDebouncedCallback(async (searchQuery: string) => {
+    if (!searchQuery.trim() || !listId) {
+      setSearchResults([])
+      setSearchTotal(0)
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    setError(null)
+
+    try {
+      const result = await searchLegalDocuments({
+        query: searchQuery,
+        excludeListId: listId,
+        limit: 20,
+        offset: 0,
+      })
+
+      if (result.success && result.data) {
+        setSearchResults(result.data.results)
+        setSearchTotal(result.data.total)
+      } else {
+        setError(result.error ?? 'Sökningen misslyckades')
         setSearchResults([])
         setSearchTotal(0)
-        setIsSearching(false)
-        return
       }
-
-      setIsSearching(true)
-      setError(null)
-
-      try {
-        const result = await searchLegalDocuments({
-          query: searchQuery,
-          excludeListId: listId,
-          limit: 20,
-          offset: 0,
-        })
-
-        if (result.success && result.data) {
-          setSearchResults(result.data.results)
-          setSearchTotal(result.data.total)
-        } else {
-          setError(result.error ?? 'Sökningen misslyckades')
-          setSearchResults([])
-          setSearchTotal(0)
-        }
-      } catch (err) {
-        console.error('Search error:', err)
-        setError('Något gick fel')
-        setSearchResults([])
-        setSearchTotal(0)
-      } finally {
-        setIsSearching(false)
-      }
-    },
-    300
-  )
+    } catch (err) {
+      console.error('Search error:', err)
+      setError('Något gick fel')
+      setSearchResults([])
+      setSearchTotal(0)
+    } finally {
+      setIsSearching(false)
+    }
+  }, 300)
 
   // Load browse results
   const loadBrowseResults = async () => {
@@ -153,7 +194,7 @@ export function AddDocumentModal({
     setIsBrowsing(true)
     setError(null)
 
-    const category = BROWSE_CATEGORIES.find(c => c.id === browseCategory)
+    const category = BROWSE_CATEGORIES.find((c) => c.id === browseCategory)
     if (!category) return
 
     try {
@@ -165,7 +206,7 @@ export function AddDocumentModal({
       })
 
       if (result.success) {
-        const transformed: SearchResult[] = result.results.map(doc => ({
+        const transformed: SearchResult[] = result.results.map((doc) => ({
           id: doc.id,
           title: doc.title,
           documentNumber: doc.documentNumber,
@@ -205,14 +246,23 @@ export function AddDocumentModal({
     [debouncedSearch]
   )
 
-  // Handle add document
+  // Handle add document (Story 4.14: Pass document info for optimistic update)
   const handleAdd = async (document: SearchResult) => {
     if (!listId || document.alreadyInList || addedIds.has(document.id)) return
 
     setAddingId(document.id)
 
     try {
-      const success = await onAddDocument(document.id)
+      // Story 4.14: Pass document info for true optimistic update
+      const documentInfo: DocumentInfoForAdd = {
+        id: document.id,
+        title: document.title,
+        documentNumber: document.documentNumber,
+        contentType: document.contentType,
+        slug: document.slug,
+        summary: document.summary,
+      }
+      const success = await onAddDocument(document.id, documentInfo)
 
       if (success) {
         setAddedIds((prev) => new Set([...prev, document.id]))
@@ -241,7 +291,10 @@ export function AddDocumentModal({
         </DialogHeader>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'search' | 'browse')}>
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as 'search' | 'browse')}
+        >
           <div className="px-6 pb-4">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="search" className="gap-2">
@@ -258,7 +311,12 @@ export function AddDocumentModal({
           {/* Search Tab */}
           <TabsContent value="search" className="mt-0 focus-visible:ring-0">
             {/* Header - fixed height */}
-            <div className={cn("px-6 flex items-center border-b bg-muted/30", HEADER_HEIGHT)}>
+            <div
+              className={cn(
+                'px-6 flex items-center border-b bg-muted/30',
+                HEADER_HEIGHT
+              )}
+            >
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -266,7 +324,6 @@ export function AddDocumentModal({
                   value={query}
                   onChange={handleSearchChange}
                   className="pl-10 bg-background"
-                  autoFocus
                 />
               </div>
             </div>
@@ -275,11 +332,7 @@ export function AddDocumentModal({
             <ScrollArea className={SCROLL_HEIGHT}>
               <div className="p-4">
                 {error && activeTab === 'search' ? (
-                  <EmptyState
-                    icon={Search}
-                    title="Fel"
-                    description={error}
-                  />
+                  <EmptyState icon={Search} title="Fel" description={error} />
                 ) : isSearching ? (
                   <SearchResultsSkeleton />
                 ) : query && searchResults.length === 0 ? (
@@ -311,13 +364,17 @@ export function AddDocumentModal({
             </ScrollArea>
 
             {/* Footer - fixed height */}
-            <div className={cn("px-6 flex items-center border-t bg-muted/30", FOOTER_HEIGHT)}>
+            <div
+              className={cn(
+                'px-6 flex items-center border-t bg-muted/30',
+                FOOTER_HEIGHT
+              )}
+            >
               {query && !isSearching && (
                 <p className="text-sm text-muted-foreground">
                   {searchTotal > 0
                     ? `${searchTotal} ${searchTotal === 1 ? 'resultat' : 'resultat'} för "${query}"`
-                    : `Inga resultat för "${query}"`
-                  }
+                    : `Inga resultat för "${query}"`}
                 </p>
               )}
             </div>
@@ -326,12 +383,19 @@ export function AddDocumentModal({
           {/* Browse Tab */}
           <TabsContent value="browse" className="mt-0 focus-visible:ring-0">
             {/* Header - fixed height with category buttons */}
-            <div className={cn("px-6 flex items-center border-b bg-muted/30", HEADER_HEIGHT)}>
+            <div
+              className={cn(
+                'px-6 flex items-center border-b bg-muted/30',
+                HEADER_HEIGHT
+              )}
+            >
               <div className="flex flex-wrap gap-2">
                 {BROWSE_CATEGORIES.map((category) => (
                   <Button
                     key={category.id}
-                    variant={browseCategory === category.id ? 'default' : 'outline'}
+                    variant={
+                      browseCategory === category.id ? 'default' : 'outline'
+                    }
                     size="sm"
                     onClick={() => {
                       setBrowseCategory(category.id)
@@ -349,11 +413,7 @@ export function AddDocumentModal({
             <ScrollArea className={SCROLL_HEIGHT}>
               <div className="p-4">
                 {error && activeTab === 'browse' ? (
-                  <EmptyState
-                    icon={FileText}
-                    title="Fel"
-                    description={error}
-                  />
+                  <EmptyState icon={FileText} title="Fel" description={error} />
                 ) : isBrowsing ? (
                   <SearchResultsSkeleton />
                 ) : browseResults.length === 0 ? (
@@ -379,19 +439,23 @@ export function AddDocumentModal({
             </ScrollArea>
 
             {/* Footer - fixed height */}
-            <div className={cn("px-6 flex items-center justify-between border-t bg-muted/30", FOOTER_HEIGHT)}>
+            <div
+              className={cn(
+                'px-6 flex items-center justify-between border-t bg-muted/30',
+                FOOTER_HEIGHT
+              )}
+            >
               <p className="text-sm text-muted-foreground">
                 {browseTotal > 0
                   ? `${browseTotal.toLocaleString('sv-SE')} dokument i kategorin`
-                  : 'Laddar...'
-                }
+                  : 'Laddar...'}
               </p>
               {browseTotal > browseLimit && (
                 <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setBrowsePage(p => p - 1)}
+                    onClick={() => setBrowsePage((p) => p - 1)}
                     disabled={!canGoPrev || isBrowsing}
                     className="h-8 w-8 p-0"
                   >
@@ -403,7 +467,7 @@ export function AddDocumentModal({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setBrowsePage(p => p + 1)}
+                    onClick={() => setBrowsePage((p) => p + 1)}
                     disabled={!canGoNext || isBrowsing}
                     className="h-8 w-8 p-0"
                   >
@@ -423,7 +487,7 @@ export function AddDocumentModal({
 function EmptyState({
   icon: Icon,
   title,
-  description
+  description,
 }: {
   icon: React.ElementType
   title: string
@@ -461,7 +525,9 @@ function DocumentResultItem({
     <div
       className={cn(
         'flex items-start gap-3 p-3 rounded-lg border transition-colors',
-        isDisabled ? 'opacity-60 bg-muted/30' : 'hover:bg-muted/50 hover:border-muted-foreground/20'
+        isDisabled
+          ? 'opacity-60 bg-muted/30'
+          : 'hover:bg-muted/50 hover:border-muted-foreground/20'
       )}
     >
       <div className="flex-1 min-w-0">
