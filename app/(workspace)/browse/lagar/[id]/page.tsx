@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import { DocumentStatus } from '@prisma/client'
 import type { Metadata } from 'next'
 import sanitizeHtml from 'sanitize-html'
@@ -397,7 +396,18 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
       <RelatedDocumentsSummary
         citingCases={citingCases}
         implementedDirectives={implementedDirectives}
+        amendments={law.base_amendments.map((a) => ({
+          id: a.id,
+          title: a.amending_law_title,
+          slug: a.amending_document?.slug ?? null,
+          effectiveDate: a.effective_date
+            ? typeof a.effective_date === 'string'
+              ? a.effective_date
+              : a.effective_date.toISOString()
+            : null,
+        }))}
         lawTitle={law.title}
+        lawSlug={law.slug}
         isWorkspace
       />
 
@@ -437,45 +447,6 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
         sourceUrl={law.source_url}
         isLawNotYetInForce={lawMetadata.isNotYetInForce ?? false}
       />
-
-      {/* Amendments Section */}
-      {law.base_amendments.length > 0 && (
-        <Card>
-          <CardHeader className="border-b bg-muted/30">
-            <CardTitle className="text-lg">
-              Ändringar ({law.base_amendments.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y">
-              {law.base_amendments.map((amendment) => (
-                <div
-                  key={amendment.id}
-                  className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
-                >
-                  <div className="min-w-0 flex-1">
-                    {amendment.amending_document ? (
-                      <Link
-                        href={`/browse/lagar/${amendment.amending_document.slug}`}
-                        className="font-medium text-primary hover:underline line-clamp-1"
-                      >
-                        {amendment.amending_law_title}
-                      </Link>
-                    ) : (
-                      <span className="font-medium line-clamp-1">
-                        {amendment.amending_law_title}
-                      </span>
-                    )}
-                  </div>
-                  <div className="ml-4 shrink-0 text-sm text-muted-foreground">
-                    {formatDateOrNull(amendment.effective_date, {}) ?? '—'}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Footer */}
       <footer className="text-center text-sm text-muted-foreground py-4 border-t">

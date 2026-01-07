@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ArrowUpRight,
   LinkIcon,
+  FilePenLine,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -30,36 +31,49 @@ const COURT_URL_MAP: Record<string, string> = {
   COURT_CASE_MIG: 'mig',
 }
 
+export interface Amendment {
+  id: string
+  title: string
+  slug: string | null
+  effectiveDate: string | null
+}
+
 interface RelatedDocumentsSummaryProps {
   citingCases: {
     cases: CitingCourtCase[]
     totalCount: number
   }
   implementedDirectives: ImplementedDirective[]
+  amendments?: Amendment[]
   lawTitle: string
+  lawSlug?: string
   isWorkspace?: boolean
 }
 
 export function RelatedDocumentsSummary({
   citingCases,
   implementedDirectives,
+  amendments = [],
   lawTitle,
+  lawSlug,
   isWorkspace = false,
 }: RelatedDocumentsSummaryProps) {
   // Prefix for internal links - workspace or public
   const browsePrefix = isWorkspace ? '/browse' : ''
   const hasCourtCases = citingCases.totalCount > 0
   const hasDirectives = implementedDirectives.length > 0
+  const hasAmendments = amendments.length > 0
 
   // Default to collapsed
   const [expanded, setExpanded] = useState(false)
 
   // Don't render if no related documents
-  if (!hasCourtCases && !hasDirectives) {
+  if (!hasCourtCases && !hasDirectives && !hasAmendments) {
     return null
   }
 
   const euTheme = getDocumentTheme('EU_DIRECTIVE')
+  const amendmentTheme = getDocumentTheme('SFS_AMENDMENT')
 
   return (
     <Card
@@ -89,6 +103,12 @@ export function RelatedDocumentsSummary({
                 <Badge className="gap-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/50 dark:text-purple-300">
                   <Landmark className="h-3.5 w-3.5" />
                   {implementedDirectives.length} EU-direktiv
+                </Badge>
+              )}
+              {hasAmendments && (
+                <Badge className="gap-1.5 bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/50 dark:text-orange-300">
+                  <FilePenLine className="h-3.5 w-3.5" />
+                  {amendments.length} ändringar
                 </Badge>
               )}
             </div>
@@ -176,6 +196,72 @@ export function RelatedDocumentsSummary({
                   Visa alla {implementedDirectives.length} EU-direktiv
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
+              )}
+            </div>
+          )}
+
+          {/* Amendments Preview */}
+          {hasAmendments && (
+            <div
+              className={cn(
+                'mt-4',
+                (hasCourtCases || hasDirectives) && 'pt-4 border-t'
+              )}
+            >
+              <h4 className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                <FilePenLine className="h-4 w-4 text-orange-600" />
+                Ändringsförfattningar
+              </h4>
+              <div className="space-y-1">
+                {amendments.slice(0, 5).map((amendment) => {
+                  const amendmentUrl = amendment.slug
+                    ? `${browsePrefix}/lagar/andringar/${amendment.slug}`
+                    : null
+
+                  return (
+                    <div
+                      key={amendment.id}
+                      className="flex items-center gap-2 p-2 -mx-2 rounded-md hover:bg-muted/50 transition-colors group text-sm"
+                    >
+                      <Badge
+                        className={cn('text-xs shrink-0', amendmentTheme.badge)}
+                      >
+                        Ändring
+                      </Badge>
+                      {amendmentUrl ? (
+                        <Link
+                          href={amendmentUrl}
+                          className="truncate text-foreground group-hover:text-primary flex-1"
+                        >
+                          {amendment.title}
+                        </Link>
+                      ) : (
+                        <span className="truncate text-foreground flex-1">
+                          {amendment.title}
+                        </span>
+                      )}
+                      {amendment.effectiveDate && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {new Date(amendment.effectiveDate).toLocaleDateString(
+                            'sv-SE'
+                          )}
+                        </span>
+                      )}
+                      {amendmentUrl && (
+                        <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary shrink-0" />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              {amendments.length > 5 && lawSlug && (
+                <Link
+                  href={`${browsePrefix}/lagar/${lawSlug}/historik`}
+                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-2"
+                >
+                  Visa alla {amendments.length} ändringar
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
               )}
             </div>
           )}

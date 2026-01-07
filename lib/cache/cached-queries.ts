@@ -43,7 +43,6 @@ export const getCachedLaw = unstable_cache(
               },
             },
             orderBy: { effective_date: 'desc' },
-            take: 10,
           },
         },
       })
