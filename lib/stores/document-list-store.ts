@@ -5,7 +5,11 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { ContentType, LawListItemStatus, LawListItemPriority } from '@prisma/client'
+import type {
+  ContentType,
+  LawListItemStatus,
+  LawListItemPriority,
+} from '@prisma/client'
 import type { VisibilityState } from '@tanstack/react-table'
 import {
   getDocumentLists,
@@ -29,6 +33,22 @@ import { DEFAULT_COLUMN_VISIBILITY } from '@/components/features/document-list/c
 // Story 4.12: View mode type
 export type ViewMode = 'card' | 'table'
 
+// Story 4.14: Cache entry type
+export interface ListCacheEntry {
+  items: DocumentListItem[]
+  fetchedAt: number
+}
+
+// Story 4.14: Document info for optimistic item creation
+export interface DocumentInfo {
+  id: string
+  title: string
+  documentNumber: string
+  contentType: ContentType
+  slug: string
+  summary?: string | null
+}
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -38,6 +58,9 @@ export interface DocumentListState {
   lists: DocumentListSummary[]
   activeListId: string | null
   listItems: DocumentListItem[]
+
+  // Story 4.14: Per-list item cache
+  itemsByList: Map<string, ListCacheEntry>
 
   // Filtering
   contentTypeFilter: ContentType[] | null // null = show all
@@ -68,23 +91,36 @@ export interface DocumentListState {
   isReordering: boolean
   isUpdatingItem: string | null // Story 4.12: item ID being updated
 
+  // Story 4.14: Race condition handling
+  fetchAbortController: AbortController | null
+
   // Errors
   error: string | null
 
   // Actions
   fetchLists: () => Promise<void>
   setActiveList: (_listId: string) => void
-  fetchItems: (_reset?: boolean) => Promise<void>
+  fetchItems: (
+    _reset?: boolean,
+    _isBackgroundRefresh?: boolean
+  ) => Promise<void>
   loadMoreItems: () => Promise<void>
 
   // Content type filtering
   setContentTypeFilter: (_filter: ContentType[] | null) => void
   setContentTypeGroupFilter: (_groupId: string | null) => void
 
-  // Optimistic item operations
-  addItem: (_listId: string, _documentId: string, _commentary?: string) => Promise<boolean>
+  // Optimistic item operations (Story 4.14: True optimistic with DocumentInfo)
+  addItem: (
+    _listId: string,
+    _documentId: string,
+    _documentInfo: DocumentInfo,
+    _commentary?: string
+  ) => Promise<boolean>
   removeItem: (_listItemId: string) => Promise<boolean>
-  reorderItems: (_items: Array<{ id: string; position: number }>) => Promise<boolean>
+  reorderItems: (
+    _items: Array<{ id: string; position: number }>
+  ) => Promise<boolean>
 
   // Story 4.12: Table view actions
   setViewMode: (_mode: ViewMode) => void
@@ -115,7 +151,10 @@ export interface DocumentListState {
   expandAllGroups: () => void
   collapseAllGroups: () => void
   moveToGroup: (_itemId: string, _groupId: string | null) => Promise<boolean>
-  bulkMoveToGroupAction: (_itemIds: string[], _groupId: string | null) => Promise<boolean>
+  bulkMoveToGroupAction: (
+    _itemIds: string[],
+    _groupId: string | null
+  ) => Promise<boolean>
   // Story 4.13 Task 11: Group filter mode
   setActiveGroupFilter: (_groupId: string | null) => void
   clearGroupFilter: () => void
@@ -123,6 +162,17 @@ export interface DocumentListState {
   // Utilities
   clearError: () => void
   reset: () => void
+
+  // Story 4.14: Cache actions
+  getCachedItems: (_listId: string) => DocumentListItem[] | null
+  isCacheStale: (_listId: string, _maxAgeMs?: number) => boolean
+  setCachedItems: (
+    _listId: string,
+    _items: DocumentListItem[],
+    _total: number
+  ) => void
+  invalidateListCache: (_listId: string) => void
+  updateActiveListCache: () => void
 
   // Optimistic update helpers (internal)
   _rollbackItems: DocumentListItem[] | null
@@ -136,6 +186,8 @@ const initialState = {
   lists: [],
   activeListId: null,
   listItems: [],
+  // Story 4.14: Per-list item cache
+  itemsByList: new Map<string, ListCacheEntry>(),
   contentTypeFilter: null,
   page: 1,
   limit: 50,
@@ -158,6 +210,8 @@ const initialState = {
   isRemovingItem: null,
   isReordering: false,
   isUpdatingItem: null,
+  // Story 4.14: Race condition handling
+  fetchAbortController: null,
   error: null,
   _rollbackItems: null,
 }
@@ -186,14 +240,15 @@ export const useDocumentListStore = create<DocumentListState>()(
 
             // Set active list to first list if not set or if current doesn't exist
             let activeId = currentActiveId
-            if (!activeId || !lists.find(l => l.id === activeId)) {
-              activeId = lists.find(l => l.isDefault)?.id ?? lists[0]?.id ?? null
+            if (!activeId || !lists.find((l) => l.id === activeId)) {
+              activeId =
+                lists.find((l) => l.isDefault)?.id ?? lists[0]?.id ?? null
             }
 
             set({
               lists,
               activeListId: activeId,
-              isLoadingLists: false
+              isLoadingLists: false,
             })
 
             // Fetch items for active list
@@ -203,41 +258,65 @@ export const useDocumentListStore = create<DocumentListState>()(
           } else {
             set({
               error: result.error ?? 'Kunde inte hämta listor',
-              isLoadingLists: false
+              isLoadingLists: false,
             })
           }
         } catch (error) {
           console.error('Error fetching lists:', error)
           set({
             error: 'Något gick fel',
-            isLoadingLists: false
+            isLoadingLists: false,
           })
         }
       },
 
       // ========================================================================
-      // Set Active List
+      // Set Active List (Story 4.14: Instant switching with cache + abort handling)
       // ========================================================================
       setActiveList: (listId: string) => {
-        const { activeListId } = get()
+        const { activeListId, getCachedItems, fetchAbortController } = get()
         if (listId === activeListId) return
 
-        set({
-          activeListId: listId,
-          listItems: [],
-          page: 1,
-          total: 0,
-          hasMore: false
-        })
+        // Story 4.14 Task 7: Abort any pending fetch before starting new one
+        if (fetchAbortController) {
+          fetchAbortController.abort()
+        }
 
-        // Fetch items for new list
-        get().fetchItems(true)
+        const cachedItems = getCachedItems(listId)
+
+        if (cachedItems) {
+          // Story 4.14: Instant switch from cache - no loading state
+          set({
+            activeListId: listId,
+            listItems: cachedItems,
+            page: 1,
+            fetchAbortController: null,
+          })
+          // Only background refresh if cache is stale (>5 min old)
+          // This avoids re-render jank from slow API responses (~1-2s)
+          if (get().isCacheStale(listId)) {
+            get().fetchItems(true, true)
+          }
+        } else {
+          // No cache - show loading state
+          set({
+            activeListId: listId,
+            listItems: [],
+            page: 1,
+            total: 0,
+            hasMore: false,
+            isLoadingItems: true,
+            fetchAbortController: null,
+          })
+          // Normal fetch with loading state
+          get().fetchItems(true, false)
+        }
       },
 
       // ========================================================================
-      // Fetch Items
+      // Fetch Items (Story 4.14: Background refresh support)
       // ========================================================================
-      fetchItems: async (reset = false) => {
+      fetchItems: async (reset = false, isBackgroundRefresh = false) => {
         const { activeListId, contentTypeFilter, page, limit } = get()
 
         if (!activeListId) {
@@ -245,21 +324,34 @@ export const useDocumentListStore = create<DocumentListState>()(
           return
         }
 
-        set({ isLoadingItems: true, error: null })
+        // Story 4.14: Track the list ID we're fetching for (stale response detection)
+        const listIdBeingFetched = activeListId
+
+        // Only show loading state for non-background fetches
+        if (!isBackgroundRefresh) {
+          set({ isLoadingItems: true, error: null })
+        }
 
         try {
           const currentPage = reset ? 1 : page
 
           const result = await getDocumentListItems({
-            listId: activeListId,
+            listId: listIdBeingFetched,
             page: currentPage,
             limit,
             contentTypeFilter: contentTypeFilter ?? undefined,
           })
 
+          // Story 4.14: Check for stale response (user switched lists during fetch)
+          if (get().activeListId !== listIdBeingFetched) {
+            // Stale response - user switched lists, discard this data
+            return
+          }
+
           if (result.success && result.data) {
             const { items, total, hasMore } = result.data
 
+            // Update state
             set({
               listItems: reset ? items : [...get().listItems, ...items],
               total,
@@ -267,18 +359,31 @@ export const useDocumentListStore = create<DocumentListState>()(
               page: currentPage,
               isLoadingItems: false,
             })
+
+            // Story 4.14: Update cache after successful fetch
+            get().setCachedItems(listIdBeingFetched, get().listItems, total)
           } else {
-            set({
-              error: result.error ?? 'Kunde inte hämta dokument',
-              isLoadingItems: false
-            })
+            // Don't show error for background refresh failures
+            if (!isBackgroundRefresh) {
+              set({
+                error: result.error ?? 'Kunde inte hämta dokument',
+                isLoadingItems: false,
+              })
+            } else {
+              set({ isLoadingItems: false })
+            }
           }
         } catch (error) {
           console.error('Error fetching items:', error)
-          set({
-            error: 'Något gick fel',
-            isLoadingItems: false
-          })
+          // Don't show error for background refresh failures
+          if (!isBackgroundRefresh) {
+            set({
+              error: 'Något gick fel',
+              isLoadingItems: false,
+            })
+          } else {
+            set({ isLoadingItems: false })
+          }
         }
       },
 
@@ -301,7 +406,7 @@ export const useDocumentListStore = create<DocumentListState>()(
         set({
           contentTypeFilter: filter,
           page: 1,
-          listItems: []
+          listItems: [],
         })
         get().fetchItems(true)
       },
@@ -316,10 +421,48 @@ export const useDocumentListStore = create<DocumentListState>()(
       },
 
       // ========================================================================
-      // Add Item (Optimistic)
+      // Add Item (Story 4.14: True Optimistic Update)
       // ========================================================================
-      addItem: async (listId: string, documentId: string, commentary?: string) => {
-        set({ isAddingItem: true, error: null })
+      addItem: async (
+        listId: string,
+        documentId: string,
+        documentInfo: DocumentInfo,
+        commentary?: string
+      ) => {
+        const { listItems, activeListId } = get()
+
+        // Story 4.14: Create optimistic item with temp ID
+        const tempId = `temp-${Date.now()}`
+        const tempItem: DocumentListItem = {
+          id: tempId,
+          position: listItems.length,
+          status: 'NOT_STARTED',
+          priority: 'MEDIUM',
+          commentary: commentary ?? null,
+          notes: null,
+          addedAt: new Date(),
+          dueDate: null,
+          assignee: null,
+          groupId: null,
+          groupName: null,
+          document: {
+            id: documentInfo.id,
+            title: documentInfo.title,
+            documentNumber: documentInfo.documentNumber,
+            contentType: documentInfo.contentType,
+            slug: documentInfo.slug,
+            summary: documentInfo.summary ?? null,
+            effectiveDate: null,
+          },
+        }
+
+        // Story 4.14: Instant UI update - add optimistic item immediately
+        // No loading state (isAddingItem: false)
+        set({
+          listItems: [...listItems, tempItem],
+          isAddingItem: false,
+          error: null,
+        })
 
         try {
           const result = await addDocumentToList({
@@ -329,33 +472,36 @@ export const useDocumentListStore = create<DocumentListState>()(
           })
 
           if (result.success) {
-            // Refresh items to get the new item with full data
-            await get().fetchItems(true)
+            // Story 4.14: Update cache with new items
+            const currentItems = get().listItems
+            if (activeListId === listId) {
+              get().setCachedItems(listId, currentItems, get().total + 1)
+            }
 
             // Update list item count
-            set(state => ({
-              lists: state.lists.map(l =>
-                l.id === listId
-                  ? { ...l, itemCount: l.itemCount + 1 }
-                  : l
+            set((state) => ({
+              lists: state.lists.map((l) =>
+                l.id === listId ? { ...l, itemCount: l.itemCount + 1 } : l
               ),
-              isAddingItem: false,
+              total: state.total + 1,
             }))
 
             return true
           } else {
-            set({
+            // Story 4.14: Rollback - remove temp item on failure
+            set((state) => ({
+              listItems: state.listItems.filter((i) => i.id !== tempId),
               error: result.error ?? 'Kunde inte lägga till dokument',
-              isAddingItem: false
-            })
+            }))
             return false
           }
         } catch (error) {
           console.error('Error adding item:', error)
-          set({
+          // Story 4.14: Rollback - remove temp item on error
+          set((state) => ({
+            listItems: state.listItems.filter((i) => i.id !== tempId),
             error: 'Något gick fel',
-            isAddingItem: false
-          })
+          }))
           return false
         }
       },
@@ -372,7 +518,7 @@ export const useDocumentListStore = create<DocumentListState>()(
         // Optimistic update
         set({
           isRemovingItem: listItemId,
-          listItems: listItems.filter(item => item.id !== listItemId),
+          listItems: listItems.filter((item) => item.id !== listItemId),
           _rollbackItems: rollbackItems,
         })
 
@@ -381,8 +527,8 @@ export const useDocumentListStore = create<DocumentListState>()(
 
           if (result.success) {
             // Update list item count
-            set(state => ({
-              lists: state.lists.map(l =>
+            set((state) => ({
+              lists: state.lists.map((l) =>
                 l.id === activeListId
                   ? { ...l, itemCount: Math.max(0, l.itemCount - 1) }
                   : l
@@ -391,6 +537,9 @@ export const useDocumentListStore = create<DocumentListState>()(
               isRemovingItem: null,
               _rollbackItems: null,
             }))
+
+            // Story 4.14: Update cache after removal
+            get().updateActiveListCache()
 
             return true
           } else {
@@ -428,15 +577,17 @@ export const useDocumentListStore = create<DocumentListState>()(
         const rollbackItems = [...listItems]
 
         // Optimistic update - sort by new positions
-        const positionMap = new Map(items.map(i => [i.id, i.position]))
-        const updatedItems = [...listItems].sort((a, b) => {
-          const posA = positionMap.get(a.id) ?? a.position
-          const posB = positionMap.get(b.id) ?? b.position
-          return posA - posB
-        }).map((item, idx) => ({
-          ...item,
-          position: positionMap.get(item.id) ?? idx,
-        }))
+        const positionMap = new Map(items.map((i) => [i.id, i.position]))
+        const updatedItems = [...listItems]
+          .sort((a, b) => {
+            const posA = positionMap.get(a.id) ?? a.position
+            const posB = positionMap.get(b.id) ?? b.position
+            return posA - posB
+          })
+          .map((item, idx) => ({
+            ...item,
+            position: positionMap.get(item.id) ?? idx,
+          }))
 
         set({
           isReordering: true,
@@ -451,6 +602,8 @@ export const useDocumentListStore = create<DocumentListState>()(
           })
 
           if (result.success) {
+            // Story 4.14: Update cache after reorder
+            get().updateActiveListCache()
             set({
               isReordering: false,
               _rollbackItems: null,
@@ -484,10 +637,12 @@ export const useDocumentListStore = create<DocumentListState>()(
       // ========================================================================
       setViewMode: (mode: ViewMode) => set({ viewMode: mode }),
 
-      setColumnVisibility: (visibility: VisibilityState) => set({ columnVisibility: visibility }),
+      setColumnVisibility: (visibility: VisibilityState) =>
+        set({ columnVisibility: visibility }),
 
       setSelectedItemIds: (ids: string[]) => set({ selectedItemIds: ids }),
 
+      // Story 4.14: Optimistic update without refetch
       updateItem: async (
         itemId: string,
         updates: {
@@ -495,14 +650,21 @@ export const useDocumentListStore = create<DocumentListState>()(
           priority?: LawListItemPriority
           dueDate?: Date | null
           assignedTo?: string | null
+          groupId?: string | null
         }
       ) => {
-        const { listItems } = get()
+        const { listItems, activeListId, groups } = get()
 
         // Store rollback state
         const rollbackItems = [...listItems]
 
-        // Optimistic update
+        // Find group name if updating group
+        const groupName =
+          updates.groupId !== undefined
+            ? (groups.find((g) => g.id === updates.groupId)?.name ?? null)
+            : undefined
+
+        // Story 4.14: Optimistic update (no loading state for better UX)
         set({
           isUpdatingItem: itemId,
           listItems: listItems.map((item) =>
@@ -511,13 +673,22 @@ export const useDocumentListStore = create<DocumentListState>()(
                   ...item,
                   status: updates.status ?? item.status,
                   priority: updates.priority ?? item.priority,
-                  dueDate: updates.dueDate !== undefined ? updates.dueDate : item.dueDate,
+                  dueDate:
+                    updates.dueDate !== undefined
+                      ? updates.dueDate
+                      : item.dueDate,
                   assignee:
                     updates.assignedTo !== undefined
                       ? updates.assignedTo === null
                         ? null
-                        : item.assignee // Keep current if assigning (will refresh)
+                        : item.assignee // Keep current if assigning
                       : item.assignee,
+                  groupId:
+                    updates.groupId !== undefined
+                      ? updates.groupId
+                      : item.groupId,
+                  groupName:
+                    groupName !== undefined ? groupName : item.groupName,
                 }
               : item
           ),
@@ -531,9 +702,9 @@ export const useDocumentListStore = create<DocumentListState>()(
           })
 
           if (result.success) {
-            // Refresh to get the full assignee data if assignedTo was updated
-            if (updates.assignedTo !== undefined) {
-              await get().fetchItems(true)
+            // Story 4.14: Update cache instead of refetching
+            if (activeListId) {
+              get().updateActiveListCache()
             }
             set({ isUpdatingItem: null, _rollbackItems: null })
             return true
@@ -596,6 +767,8 @@ export const useDocumentListStore = create<DocumentListState>()(
           })
 
           if (result.success) {
+            // Story 4.14: Update cache instead of refetching
+            get().updateActiveListCache()
             set({ isReordering: false, _rollbackItems: null })
             return true
           } else {
@@ -716,7 +889,7 @@ export const useDocumentListStore = create<DocumentListState>()(
                   ...item,
                   groupId,
                   groupName: groupId
-                    ? get().groups.find((g) => g.id === groupId)?.name ?? null
+                    ? (get().groups.find((g) => g.id === groupId)?.name ?? null)
                     : null,
                 }
               : item
@@ -731,6 +904,8 @@ export const useDocumentListStore = create<DocumentListState>()(
           })
 
           if (result.success) {
+            // Story 4.14: Update cache after group move
+            get().updateActiveListCache()
             // Refresh groups to update item counts
             await get().fetchGroups()
             set({ isMovingItems: false, _rollbackItems: null })
@@ -756,14 +931,17 @@ export const useDocumentListStore = create<DocumentListState>()(
         }
       },
 
-      bulkMoveToGroupAction: async (itemIds: string[], groupId: string | null) => {
+      bulkMoveToGroupAction: async (
+        itemIds: string[],
+        groupId: string | null
+      ) => {
         const { listItems, activeListId } = get()
         if (!activeListId || itemIds.length === 0) return false
 
         // Store rollback state
         const rollbackItems = [...listItems]
         const targetGroupName = groupId
-          ? get().groups.find((g) => g.id === groupId)?.name ?? null
+          ? (get().groups.find((g) => g.id === groupId)?.name ?? null)
           : null
 
         // Optimistic update
@@ -786,6 +964,8 @@ export const useDocumentListStore = create<DocumentListState>()(
           })
 
           if (result.success) {
+            // Story 4.14: Update cache after bulk group move
+            get().updateActiveListCache()
             // Refresh groups to update item counts
             await get().fetchGroups()
             set({ isMovingItems: false, _rollbackItems: null })
@@ -825,6 +1005,55 @@ export const useDocumentListStore = create<DocumentListState>()(
       },
 
       // ========================================================================
+      // Story 4.14: Cache Actions
+      // ========================================================================
+      getCachedItems: (listId: string) => {
+        const cached = get().itemsByList.get(listId)
+        if (!cached) return null
+        return cached.items
+      },
+
+      isCacheStale: (listId: string, maxAgeMs = 5 * 60 * 1000) => {
+        const cached = get().itemsByList.get(listId)
+        if (!cached) return true
+        return Date.now() - cached.fetchedAt > maxAgeMs
+      },
+
+      setCachedItems: (
+        listId: string,
+        items: DocumentListItem[],
+        _total: number
+      ) => {
+        const cache = new Map(get().itemsByList)
+        cache.set(listId, { items, fetchedAt: Date.now() })
+
+        // LRU eviction: Keep last 10 lists
+        if (cache.size > 10) {
+          const oldest = [...cache.entries()].sort(
+            (a, b) => a[1].fetchedAt - b[1].fetchedAt
+          )[0]
+          if (oldest) {
+            cache.delete(oldest[0])
+          }
+        }
+
+        set({ itemsByList: cache })
+      },
+
+      invalidateListCache: (listId: string) => {
+        const cache = new Map(get().itemsByList)
+        cache.delete(listId)
+        set({ itemsByList: cache })
+      },
+
+      updateActiveListCache: () => {
+        const { activeListId, listItems, total } = get()
+        if (activeListId) {
+          get().setCachedItems(activeListId, listItems, total)
+        }
+      },
+
+      // ========================================================================
       // Utilities
       // ========================================================================
       clearError: () => set({ error: null }),
@@ -851,10 +1080,9 @@ export const useDocumentListStore = create<DocumentListState>()(
 // ============================================================================
 
 export const selectActiveList = (state: DocumentListState) =>
-  state.lists.find(l => l.id === state.activeListId)
+  state.lists.find((l) => l.id === state.activeListId)
 
-export const selectFilteredItemCount = (state: DocumentListState) =>
-  state.total
+export const selectFilteredItemCount = (state: DocumentListState) => state.total
 
 export const selectIsLoading = (state: DocumentListState) =>
   state.isLoadingLists || state.isLoadingItems
@@ -888,16 +1116,18 @@ export const selectGroupedItems = (state: DocumentListState) => {
   return { grouped, ungrouped }
 }
 
-export const selectItemsInGroup = (groupId: string | null) => (state: DocumentListState) =>
-  state.listItems.filter((item) =>
-    groupId === null ? !item.groupId : item.groupId === groupId
-  )
+export const selectItemsInGroup =
+  (groupId: string | null) => (state: DocumentListState) =>
+    state.listItems.filter((item) =>
+      groupId === null ? !item.groupId : item.groupId === groupId
+    )
 
 export const selectUngroupedItemCount = (state: DocumentListState) =>
   state.listItems.filter((item) => !item.groupId).length
 
-export const selectIsGroupExpanded = (groupId: string) => (state: DocumentListState) =>
-  state.expandedGroups[groupId] ?? true // Default to expanded
+export const selectIsGroupExpanded =
+  (groupId: string) => (state: DocumentListState) =>
+    state.expandedGroups[groupId] ?? true // Default to expanded
 
 // Story 4.13 Task 11: Get active group filter info
 export const selectActiveGroupFilterInfo = (state: DocumentListState) => {
