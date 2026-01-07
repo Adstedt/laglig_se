@@ -21,14 +21,17 @@ import { GroupedDocumentList } from './grouped-document-list'
 import { GroupManager } from './group-manager'
 import { GroupFilterChip } from './group-filter-chip'
 import { ContentTypeFilter } from './content-type-filter'
-import { AddDocumentModal } from './add-document-modal'
+import { AddDocumentModal, type DocumentInfoForAdd } from './add-document-modal'
 import { ManageListModal } from './manage-list-modal'
 import { ExportDropdown } from './export-dropdown'
 import { ViewToggle } from './view-toggle'
 import { Button } from '@/components/ui/button'
 import { Plus, Settings, FolderPlus } from 'lucide-react'
-import type { DocumentListSummary, WorkspaceMemberOption } from '@/app/actions/document-list'
-import { getWorkspaceMembers, updateListItem, bulkUpdateListItems } from '@/app/actions/document-list'
+import type {
+  DocumentListSummary,
+  WorkspaceMemberOption,
+} from '@/app/actions/document-list'
+import { getWorkspaceMembers } from '@/app/actions/document-list'
 import type { LawListItemStatus, LawListItemPriority } from '@prisma/client'
 
 interface DocumentListPageContentProps {
@@ -42,8 +45,12 @@ export function DocumentListPageContent({
 }: DocumentListPageContentProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
-  const [manageModalMode, setManageModalMode] = useState<'create' | 'edit'>('create')
-  const [workspaceMembers, setWorkspaceMembers] = useState<WorkspaceMemberOption[]>([])
+  const [manageModalMode, setManageModalMode] = useState<'create' | 'edit'>(
+    'create'
+  )
+  const [workspaceMembers, setWorkspaceMembers] = useState<
+    WorkspaceMemberOption[]
+  >([])
   // Story 4.13: Group management modal
   const [isGroupManagerOpen, setIsGroupManagerOpen] = useState(false)
 
@@ -68,6 +75,9 @@ export function DocumentListPageContent({
     addItem,
     removeItem,
     reorderItems,
+    // Story 4.14: Use store's optimistic update methods
+    updateItem,
+    bulkUpdateItems,
     error,
     clearError,
     // Story 4.12: Table view state
@@ -89,21 +99,22 @@ export function DocumentListPageContent({
   } = useDocumentListStore()
 
   const activeList = useDocumentListStore(selectActiveList)
-  const activeGroupFilterInfo = useDocumentListStore(selectActiveGroupFilterInfo)
+  const activeGroupFilterInfo = useDocumentListStore(
+    selectActiveGroupFilterInfo
+  )
   const filteredItems = useDocumentListStore(selectFilteredByGroupItems)
 
   // Story 4.13 Task 0: Handle list change with URL update
+  // Story 4.14: setActiveList handles caching + background refresh, no need for separate fetchItems
   const handleListChange = useCallback(
     (listId: string) => {
-      setActiveList(listId)
+      setActiveList(listId) // Handles cache check + fetch internally
       // Clear group filter when switching lists
       clearGroupFilter()
-      // Fetch items for the new list
-      fetchItems(true)
       // Update URL with shallow routing (no page reload)
       router.push(`/laglistor?list=${listId}`, { scroll: false })
     },
-    [setActiveList, clearGroupFilter, fetchItems, router]
+    [setActiveList, clearGroupFilter, router]
   )
 
   // Story 4.13 Task 11: Handle group filter with URL update
@@ -161,27 +172,34 @@ export function DocumentListPageContent({
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Story 4.13 Task 0: Watch for URL param changes (e.g., from sidebar navigation)
+  // Story 4.14: setActiveList handles caching + fetch internally
+  const listIdFromUrl = searchParams.get('list')
   useEffect(() => {
-    const listIdFromUrl = searchParams.get('list')
-
     // If URL has a list param and it's different from current active list, switch to it
-    if (listIdFromUrl && listIdFromUrl !== activeListId && lists.some((l) => l.id === listIdFromUrl)) {
-      setActiveList(listIdFromUrl)
-      fetchItems(true)
+    if (
+      listIdFromUrl &&
+      listIdFromUrl !== activeListId &&
+      lists.some((l) => l.id === listIdFromUrl)
+    ) {
+      setActiveList(listIdFromUrl) // Handles cache check + fetch internally
     }
-  }, [searchParams, activeListId, lists, setActiveList, fetchItems])
+  }, [listIdFromUrl, activeListId, lists, setActiveList])
 
   // Story 4.13 Task 11: Watch for group URL param changes
+  const groupIdFromUrl = searchParams.get('group')
   useEffect(() => {
-    const groupIdFromUrl = searchParams.get('group')
-
     // Sync store with URL group param
     if (groupIdFromUrl && groupIdFromUrl !== activeGroupFilter) {
       setActiveGroupFilter(groupIdFromUrl)
     } else if (!groupIdFromUrl && activeGroupFilter) {
       clearGroupFilter()
     }
-  }, [searchParams, activeGroupFilter, setActiveGroupFilter, clearGroupFilter])
+  }, [
+    groupIdFromUrl,
+    activeGroupFilter,
+    setActiveGroupFilter,
+    clearGroupFilter,
+  ])
 
   // Clear error on unmount
   useEffect(() => {
@@ -240,12 +258,16 @@ export function DocumentListPageContent({
     fetchLists()
   }
 
-  const handleAddDocument = async (documentId: string) => {
+  // Story 4.14: Accept document info for true optimistic update
+  const handleAddDocument = async (
+    documentId: string,
+    documentInfo: DocumentInfoForAdd
+  ) => {
     if (!activeListId) return false
-    return addItem(activeListId, documentId)
+    return addItem(activeListId, documentId, documentInfo)
   }
 
-  // Story 4.12 & 4.13: Handle inline item updates in table view (including group)
+  // Story 4.12 & 4.14: Handle inline item updates using store's optimistic method
   const handleUpdateItem = async (
     itemId: string,
     updates: {
@@ -256,22 +278,16 @@ export function DocumentListPageContent({
       groupId?: string | null
     }
   ) => {
-    const result = await updateListItem({
-      listItemId: itemId,
-      ...updates,
-    })
-    if (result.success) {
-      // Refresh items to get updated data
-      fetchItems(true)
-      // Also refresh groups to update item counts
-      if (updates.groupId !== undefined) {
-        fetchGroups()
-      }
+    // Story 4.14: Use store's optimistic update (no refetch needed)
+    const success = await updateItem(itemId, updates)
+    // Refresh groups to update item counts when group changes
+    if (success && updates.groupId !== undefined) {
+      fetchGroups()
     }
-    return result.success
+    return success
   }
 
-  // Story 4.12: Handle bulk updates from table component
+  // Story 4.12 & 4.14: Handle bulk updates using store's optimistic method
   const handleTableBulkUpdate = async (
     itemIds: string[],
     updates: {
@@ -279,17 +295,8 @@ export function DocumentListPageContent({
       priority?: LawListItemPriority
     }
   ): Promise<boolean> => {
-    if (!activeListId || itemIds.length === 0) return false
-
-    const result = await bulkUpdateListItems({
-      listId: activeListId,
-      itemIds,
-      updates,
-    })
-    if (result.success) {
-      fetchItems(true)
-    }
-    return result.success
+    // Story 4.14: Use store's optimistic bulk update (no refetch needed)
+    return bulkUpdateItems(itemIds, updates)
   }
 
   return (
