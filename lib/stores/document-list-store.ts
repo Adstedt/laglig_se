@@ -36,6 +36,7 @@ export type ViewMode = 'card' | 'table'
 // Story 4.14: Cache entry type
 export interface ListCacheEntry {
   items: DocumentListItem[]
+  total: number // Distinguish genuinely empty list (total=0) from corrupted cache
   fetchedAt: number
 }
 
@@ -165,6 +166,7 @@ export interface DocumentListState {
 
   // Story 4.14: Cache actions
   getCachedItems: (_listId: string) => DocumentListItem[] | null
+  getCachedTotal: (_listId: string) => number | null
   isCacheStale: (_listId: string, _maxAgeMs?: number) => boolean
   setCachedItems: (
     _listId: string,
@@ -274,7 +276,12 @@ export const useDocumentListStore = create<DocumentListState>()(
       // Set Active List (Story 4.14: Instant switching with cache + abort handling)
       // ========================================================================
       setActiveList: (listId: string) => {
-        const { activeListId, getCachedItems, fetchAbortController } = get()
+        const {
+          activeListId,
+          getCachedItems,
+          getCachedTotal,
+          fetchAbortController,
+        } = get()
         if (listId === activeListId) return
 
         // Story 4.14 Task 7: Abort any pending fetch before starting new one
@@ -283,12 +290,17 @@ export const useDocumentListStore = create<DocumentListState>()(
         }
 
         const cachedItems = getCachedItems(listId)
+        const cachedTotal = getCachedTotal(listId)
+        // Valid cache: has items, OR is genuinely empty (total === 0)
+        const hasValidCache =
+          cachedItems !== null && (cachedItems.length > 0 || cachedTotal === 0)
 
-        if (cachedItems) {
+        if (hasValidCache) {
           // Story 4.14: Instant switch from cache - no loading state
           set({
             activeListId: listId,
             listItems: cachedItems,
+            total: cachedTotal ?? cachedItems.length,
             page: 1,
             fetchAbortController: null,
           })
@@ -1013,6 +1025,11 @@ export const useDocumentListStore = create<DocumentListState>()(
         return cached.items
       },
 
+      getCachedTotal: (listId: string) => {
+        const cached = get().itemsByList.get(listId)
+        return cached?.total ?? null
+      },
+
       isCacheStale: (listId: string, maxAgeMs = 5 * 60 * 1000) => {
         const cached = get().itemsByList.get(listId)
         if (!cached) return true
@@ -1022,10 +1039,10 @@ export const useDocumentListStore = create<DocumentListState>()(
       setCachedItems: (
         listId: string,
         items: DocumentListItem[],
-        _total: number
+        total: number
       ) => {
         const cache = new Map(get().itemsByList)
-        cache.set(listId, { items, fetchedAt: Date.now() })
+        cache.set(listId, { items, total, fetchedAt: Date.now() })
 
         // LRU eviction: Keep last 10 lists
         if (cache.size > 10) {
