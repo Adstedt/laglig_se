@@ -58,21 +58,28 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 
 ---
 
-### 3. Kanban-Style Compliance Workspace
+### 3. Task-Centric Compliance Workflow
 
-**Interaction:** Law cards move across columns (Not Started → In Progress → Blocked → Review → Compliant) via drag-and-drop, Jira-style.
+**Interaction:** Four-layer architecture with Jira-style modals:
+
+1. **Law List** - Primary compliance view showing list items with status, responsible person, progress
+2. **Legal Document Modal** - Jira-style two-panel (60% scrollable left, 40% static right) for deep work on a law: AI summary, tasks, evidence, activity log, collapsible legal text
+3. **Task Workspace** - Kanban board where task cards (not laws) move through customizable columns (default: Att göra, Pågående, Klar)
+4. **Task Modal** - Same two-panel layout for task details, assignees, due dates, evidence, comments
 
 **Why it works:**
 
-- **Familiar mental model** - Most users know Kanban from Trello/Jira/Asana
-- **Visual progress** - See compliance status at a glance
-- **Flexible workflow** - Users customize columns, add notes
+- **Familiar mental model** - Mimics Jira's issue modal layout users already know
+- **Separation of concerns** - Laws define what to comply with; tasks define how to achieve compliance
+- **Multi-list flexibility** - Same law can appear on multiple lists with independent tracking
+- **Visual progress** - Task Kanban shows operational progress; law list shows compliance status
 
 **Implementation notes:**
 
-- Use @dnd-kit or react-beautiful-dnd
-- Auto-save on card move
-- Mobile: Swipe instead of drag
+- Use @dnd-kit for Task Kanban drag-and-drop
+- Modal proportions: 80% viewport width, 90% height (matching Jira)
+- Left panel scrollable, right panel fixed position
+- Mobile: Full-screen modal with tab navigation
 
 ---
 
@@ -105,13 +112,16 @@ Laglig.se transforms legal compliance from bureaucratic drudgery into intuitive,
 1. **Public Law Pages** - SEO entry point
 2. **Dynamic Onboarding Widget** - Conversion engine
 3. **Dashboard (Summary View)** - Default landing after login
-4. **Kanban Compliance Workspace** - Primary workspace
-5. **AI Chat Sidebar** - Always accessible
-6. **Individual Law Page** - Deep dive with tabs
-7. **HR Module - Employee List** - Table/card views
-8. **HR Module - Employee Profile** - 4 tabs
-9. **Law List - Changes Tab** - Review unacknowledged changes
-10. **Workspace Settings** - Configuration
+4. **Law List (Compliance View)** - Primary compliance dashboard with status, responsible person, progress
+5. **Legal Document Modal** - Jira-style two-panel deep workspace for law compliance
+6. **Task Workspace** - Kanban board with customizable columns + List/Calendar/Summary views
+7. **Task Modal** - Jira-style two-panel for task details and evidence
+8. **AI Chat Sidebar** - Always accessible
+9. **Individual Law Page** - Deep dive with tabs (public)
+10. **HR Module - Employee List** - Table/card views
+11. **HR Module - Employee Profile** - 4 tabs
+12. **Law List - Changes Tab** - Review unacknowledged changes
+13. **Workspace Settings** - Configuration
 
 ---
 
