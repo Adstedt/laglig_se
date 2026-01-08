@@ -1,0 +1,58 @@
+# Quality Gate: Story 6.1
+schema: 1
+story: '6.1'
+story_title: 'Refactor Dashboard Summary View'
+gate: CONCERNS
+status_reason: 'Implementation uses wrong field (status/COMPLIANT) instead of compliance_status/UPPFYLLD for compliance calculations per AC2.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-01-08T13:45:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'DATA-001'
+    severity: medium
+    finding: 'Dashboard queries use status field with COMPLIANT value instead of compliance_status with UPPFYLLD'
+    suggested_action: 'Update lib/db/queries/dashboard.ts lines 24 and 148 to use compliance_status === UPPFYLLD'
+    suggested_owner: dev
+
+quality_score: 90  # 100 - (10 * 1 CONCERNS issue)
+expires: '2026-01-22T00:00:00Z'
+
+evidence:
+  tests_reviewed: 35
+  e2e_tests_reviewed: 15
+  risks_identified: 1
+  trace:
+    ac_covered: [1, 3, 4, 5, 6, 7, 8]
+    ac_gaps: [2]  # AC2 compliance calculation uses wrong field
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Workspace isolation properly enforced via getWorkspaceContext()'
+  performance:
+    status: PASS
+    notes: 'Server Components, parallel queries, <2s load verified'
+  reliability:
+    status: PASS
+    notes: 'Error boundaries and graceful fallbacks implemented'
+  maintainability:
+    status: PASS
+    notes: 'Clean component architecture, proper TypeScript, well-tested'
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 1, low: 0 }
+  highest: 'medium'
+  recommendations:
+    must_fix:
+      - 'Change compliance field from status to compliance_status'
+    monitor: []
+
+recommendations:
+  immediate:
+    - action: 'Update getComplianceStats() to filter by compliance_status === UPPFYLLD'
+      refs: ['lib/db/queries/dashboard.ts:24']
+    - action: 'Update getTopLists() to filter by compliance_status === UPPFYLLD'
+      refs: ['lib/db/queries/dashboard.ts:148']
+  future: []

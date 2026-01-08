@@ -1,55 +1,63 @@
-import { getCurrentUser } from '@/lib/auth/session'
+/**
+ * Story 6.1: Dashboard Page
+ * Server component that renders the compliance dashboard with widgets
+ */
+
+import { getWorkspaceContext } from '@/lib/auth/workspace-context'
+import { getDashboardData } from '@/lib/db/queries/dashboard'
+import {
+  ComplianceProgressRing,
+  TaskSummaryCards,
+  RecentActivityFeed,
+  QuickActions,
+  ListOverview,
+  WidgetErrorBoundary,
+} from '@/components/features/dashboard'
 
 export default async function DashboardPage() {
-  const user = await getCurrentUser()
+  const context = await getWorkspaceContext()
+
+  const { complianceStats, taskCounts, recentActivity, topLists } =
+    await getDashboardData(context.workspaceId, context.userId)
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Välkommen tillbaka, {user?.name || user?.email}
+          Välkommen tillbaka! Här är en översikt av din efterlevnadsstatus.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border bg-card p-5">
-          <h2 className="text-base font-semibold">Profilinformation</h2>
-          <dl className="mt-4 space-y-2">
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">
-                E-post
-              </dt>
-              <dd className="text-sm">{user?.email}</dd>
-            </div>
-            {user?.name && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">
-                  Namn
-                </dt>
-                <dd className="text-sm">{user.name}</dd>
-              </div>
-            )}
-          </dl>
-        </div>
+      {/* Top row: Compliance Ring + Quick Actions */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <WidgetErrorBoundary widgetName="Efterlevnad">
+          <ComplianceProgressRing
+            compliant={complianceStats.compliant}
+            total={complianceStats.total}
+          />
+        </WidgetErrorBoundary>
 
-        <div className="rounded-xl border bg-card p-5">
-          <h2 className="text-base font-semibold">Snabbåtgärder</h2>
-          <div className="mt-3 space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Dashboard-funktioner kommer snart...
-            </p>
-          </div>
-        </div>
+        <WidgetErrorBoundary widgetName="Snabbåtgärder">
+          <QuickActions />
+        </WidgetErrorBoundary>
+      </div>
 
-        <div className="rounded-xl border bg-card p-5">
-          <h2 className="text-base font-semibold">Senaste aktivitet</h2>
-          <div className="mt-3 space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Ingen aktivitet ännu
-            </p>
-          </div>
-        </div>
+      {/* Task Summary Cards */}
+      <WidgetErrorBoundary widgetName="Uppgiftsöversikt">
+        <TaskSummaryCards counts={taskCounts} />
+      </WidgetErrorBoundary>
+
+      {/* Bottom row: Activity Feed + List Overview */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <WidgetErrorBoundary widgetName="Senaste aktivitet">
+          <RecentActivityFeed activities={recentActivity} />
+        </WidgetErrorBoundary>
+
+        <WidgetErrorBoundary widgetName="Mina listor">
+          <ListOverview lists={topLists} />
+        </WidgetErrorBoundary>
       </div>
     </div>
   )
