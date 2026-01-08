@@ -22,18 +22,28 @@ model User {
   email          String    @unique
   name           String?
   avatar_url     String?
-  password_hash  String?   // NULL for OAuth users (future), Supabase Auth manages passwords
+  password_hash  String? // NULL for OAuth users (future), Supabase Auth manages passwords
   email_verified Boolean   @default(false)
   created_at     DateTime  @default(now())
   last_login_at  DateTime?
 
   // Relations
-  workspace_members  WorkspaceMember[] @relation("WorkspaceMemberUser")
-  invited_members    WorkspaceMember[] @relation("WorkspaceMemberInviter")
-  owned_workspaces   Workspace[]       @relation("WorkspaceOwner")
-  created_law_lists  LawList[]         @relation("LawListCreator")
-  added_law_list_items LawListItem[]   @relation("LawListItemAdder")
-  assigned_law_list_items LawListItem[] @relation("LawListItemAssignee")
+  workspace_members       WorkspaceMember[] @relation("WorkspaceMemberUser")
+  invited_members         WorkspaceMember[] @relation("WorkspaceMemberInviter")
+  owned_workspaces        Workspace[]       @relation("WorkspaceOwner")
+  created_law_lists       LawList[]         @relation("LawListCreator")
+  added_law_list_items    LawListItem[]     @relation("LawListItemAdder")
+  assigned_law_list_items LawListItem[]     @relation("LawListItemAssignee")
+
+  // Epic 6: Compliance workflow relations
+  responsible_items        LawListItem[]            @relation("LawListItemResponsible")
+  assigned_tasks           Task[]                   @relation("TaskAssignee")
+  created_tasks            Task[]                   @relation("TaskCreator")
+  comments                 Comment[]
+  uploaded_evidence        Evidence[]
+  notifications            Notification[]
+  notification_preferences NotificationPreference[]
+  activity_logs            ActivityLog[]
 
   @@index([email])
   @@map("users")
@@ -66,6 +76,15 @@ model Workspace {
   members         WorkspaceMember[]
   company_profile CompanyProfile?
   law_lists       LawList[]
+
+  // Epic 6: Compliance workflow relations
+  task_columns             TaskColumn[]
+  tasks                    Task[]
+  comments                 Comment[]
+  evidence                 Evidence[]
+  notifications            Notification[]
+  notification_preferences NotificationPreference[]
+  activity_logs            ActivityLog[]
 
   @@index([owner_id])
   @@index([org_number])
@@ -104,10 +123,10 @@ model CompanyProfile {
   workspace_id       String  @unique
   company_name       String
   sni_code           String
-  legal_form         String  // AB, HB, EF, etc.
+  legal_form         String // AB, HB, EF, etc.
   employee_count     Int
   address            String?
-  contextual_answers Json?   // From onboarding questions
+  contextual_answers Json? // From onboarding questions
 
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
@@ -117,17 +136,17 @@ model CompanyProfile {
 model LawList {
   id           String   @id @default(uuid())
   workspace_id String
-  name         String   // "Huvudlista", "Lager Malmö", "GDPR Focus"
+  name         String // "Huvudlista", "Lager Malmö", "GDPR Focus"
   description  String?
   is_default   Boolean  @default(false)
   created_by   String?
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 
-  workspace Workspace       @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-  creator   User?           @relation("LawListCreator", fields: [created_by], references: [id])
+  workspace Workspace      @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  creator   User?          @relation("LawListCreator", fields: [created_by], references: [id])
   items     LawListItem[]
-  groups    LawListGroup[]  // Story 4.13: Groups for organizing items
+  groups    LawListGroup[] // Story 4.13: Groups for organizing items
 
   @@index([workspace_id])
   @@map("law_lists")
@@ -137,7 +156,7 @@ model LawList {
 model LawListGroup {
   id          String   @id @default(uuid())
   law_list_id String
-  name        String   // "Arbetsmiljö", "GDPR", "Ekonomi"
+  name        String // "Arbetsmiljö", "GDPR", "Ekonomi"
   position    Float    @default(0) // For ordering groups (float allows inserting between)
   created_at  DateTime @default(now())
 
@@ -155,7 +174,7 @@ model LawListItem {
   document_id String // FK to LegalDocument
 
   // User-editable fields
-  commentary String?             // AI-generated reason or user note
+  commentary String? // AI-generated reason or user note
   status     LawListItemStatus   @default(NOT_STARTED)
   priority   LawListItemPriority @default(MEDIUM)
   notes      String?             @db.Text
@@ -165,25 +184,39 @@ model LawListItem {
 
   // Story 4.12: Table view enhancements
   due_date    DateTime? // Review/compliance deadline
-  assigned_to String?   // FK to workspace member
+  assigned_to String? // FK to workspace member
 
   // Story 4.13: Grouping
   group_id String? // FK to LawListGroup (nullable - ungrouped items go to "Övrigt")
 
+  // Epic 6: Compliance tracking fields
+  compliance_status   ComplianceStatus @default(EJ_PABORJAD)
+  responsible_user_id String? // Assigned responsible person
+  business_context    String?          @db.Text // Why this law matters to the business
+  ai_commentary       String?          @db.Text // AI-generated analysis
+  category            String? // Custom categorization
+
   // Metadata
-  source   LawListItemSource @default(MANUAL)
-  added_by String?
-  added_at DateTime          @default(now())
+  source     LawListItemSource @default(MANUAL)
+  added_by   String?
+  added_at   DateTime          @default(now())
+  updated_at DateTime          @updatedAt
 
   // Change tracking
   last_change_acknowledged_at DateTime?
   last_change_acknowledged_by String?
 
-  law_list LawList        @relation(fields: [law_list_id], references: [id], onDelete: Cascade)
-  document LegalDocument  @relation(fields: [document_id], references: [id])
-  adder    User?          @relation("LawListItemAdder", fields: [added_by], references: [id])
-  assignee User?          @relation("LawListItemAssignee", fields: [assigned_to], references: [id])
-  group    LawListGroup?  @relation(fields: [group_id], references: [id], onDelete: SetNull) // Story 4.13
+  law_list         LawList       @relation(fields: [law_list_id], references: [id], onDelete: Cascade)
+  document         LegalDocument @relation(fields: [document_id], references: [id])
+  adder            User?         @relation("LawListItemAdder", fields: [added_by], references: [id])
+  assignee         User?         @relation("LawListItemAssignee", fields: [assigned_to], references: [id])
+  responsible_user User?         @relation("LawListItemResponsible", fields: [responsible_user_id], references: [id])
+  group            LawListGroup? @relation(fields: [group_id], references: [id], onDelete: SetNull) // Story 4.13
+
+  // Epic 6: Relations to tasks, comments, evidence
+  task_links TaskListItemLink[]
+  comments   Comment[]
+  evidence   Evidence[]
 
   @@unique([law_list_id, document_id])
   @@index([law_list_id])
@@ -191,6 +224,8 @@ model LawListItem {
   @@index([status])
   @@index([law_list_id, position]) // Story 4.11: Fast ordered queries
   @@index([group_id]) // Story 4.13: Fast group queries
+  @@index([compliance_status]) // Epic 6: Fast compliance queries
+  @@index([responsible_user_id]) // Epic 6: Fast responsible person queries
   @@map("law_list_items")
 }
 
@@ -199,39 +234,39 @@ model LawListItem {
 // ============================================================================
 
 model LegalDocument {
-  id               String         @id @default(uuid())
+  id               String                       @id @default(uuid())
   content_type     ContentType
-  document_number  String         @unique // "SFS 1977:1160", "NJA 2023 s. 45"
+  document_number  String                       @unique // "SFS 1977:1160", "NJA 2023 s. 45"
   title            String
-  slug             String         @unique
-  summary          String?        @db.Text // AI-generated summary
-  full_text        String?        @db.Text // Plain text for RAG, search, embeddings
-  html_content     String?        @db.Text // SSOT - LLM-generated or API-sourced HTML for rendering
-  markdown_content String?        @db.Text // Derived from HTML - for Chat/RAG context
-  json_content     Json?                   // Derived from HTML - for structured queries
+  slug             String                       @unique
+  summary          String?                      @db.Text // AI-generated summary
+  full_text        String?                      @db.Text // Plain text for RAG, search, embeddings
+  html_content     String?                      @db.Text // SSOT - LLM-generated or API-sourced HTML for rendering
+  markdown_content String?                      @db.Text // Derived from HTML - for Chat/RAG context
+  json_content     Json? // Derived from HTML - for structured queries
   effective_date   DateTime?
   publication_date DateTime?
-  status           DocumentStatus @default(ACTIVE)
+  status           DocumentStatus               @default(ACTIVE)
   source_url       String
   metadata         Json? // Type-specific metadata storage (includes filbilaga if present)
   search_vector    Unsupported("tsvector")? // Full-text search
   embedding        Unsupported("vector(1536)")? // Semantic search
-  created_at       DateTime       @default(now())
-  updated_at       DateTime       @updatedAt
+  created_at       DateTime                     @default(now())
+  updated_at       DateTime                     @updatedAt
 
   // Relations
-  court_case            CourtCase?
-  eu_document           EuDocument?
-  source_references     CrossReference[]    @relation("SourceDocument")
-  target_references     CrossReference[]    @relation("TargetDocument")
-  base_amendments       Amendment[]         @relation("BaseDocument")
-  amending_amendments   Amendment[]         @relation("AmendingDocument")
-  subjects              DocumentSubject[]
-  versions              DocumentVersion[]
-  change_events         ChangeEvent[]
-  law_sections          LawSection[]        // Story 2.13: Parsed sections for historical versions
-  law_list_items        LawListItem[]       // Story 5.1: Law list items referencing this document
-  legislative_refs      LegislativeRef[]    // Story 2.29: Extracted prop/bet/rskr references
+  court_case          CourtCase?
+  eu_document         EuDocument?
+  source_references   CrossReference[]  @relation("SourceDocument")
+  target_references   CrossReference[]  @relation("TargetDocument")
+  base_amendments     Amendment[]       @relation("BaseDocument")
+  amending_amendments Amendment[]       @relation("AmendingDocument")
+  subjects            DocumentSubject[]
+  versions            DocumentVersion[]
+  change_events       ChangeEvent[]
+  law_sections        LawSection[] // Story 2.13: Parsed sections for historical versions
+  law_list_items      LawListItem[] // Story 5.1: Law list items referencing this document
+  legislative_refs    LegislativeRef[] // Story 2.29: Extracted prop/bet/rskr references
 
   @@index([document_number])
   @@index([slug])
@@ -247,7 +282,7 @@ model LegalDocument {
 
 enum ContentType {
   SFS_LAW
-  SFS_AMENDMENT      // Story 2.13: Amendment documents (ändringsförfattningar)
+  SFS_AMENDMENT // Story 2.13: Amendment documents (ändringsförfattningar)
   COURT_CASE_AD
   COURT_CASE_HD
   COURT_CASE_HOVR
@@ -267,11 +302,11 @@ enum DocumentStatus {
 
 // Story 2.29: Legislative reference types (prop, bet, rskr, etc.)
 enum LegislativeRefType {
-  PROP  // Proposition (government bill)
-  BET   // Betänkande (committee report)
-  RSKR  // Riksdagsskrivelse (parliamentary decision)
-  SOU   // Statens offentliga utredningar
-  DS    // Departementsserien
+  PROP // Proposition (government bill)
+  BET // Betänkande (committee report)
+  RSKR // Riksdagsskrivelse (parliamentary decision)
+  SOU // Statens offentliga utredningar
+  DS // Departementsserien
 }
 
 // Story 2.29: Extracted legislative references from amendment footnotes
@@ -280,12 +315,12 @@ model LegislativeRef {
   id                String             @id @default(uuid())
   legal_document_id String
   ref_type          LegislativeRefType
-  reference         String             // Full ref: "Prop. 2024/25:59"
-  year              String             // Parliamentary year: "2024/25"
-  number            String             // Document number: "59" or "JuU22"
+  reference         String // Full ref: "Prop. 2024/25:59"
+  year              String // Parliamentary year: "2024/25"
+  number            String // Document number: "59" or "JuU22"
   created_at        DateTime           @default(now())
 
-  legal_document    LegalDocument      @relation(fields: [legal_document_id], references: [id], onDelete: Cascade)
+  legal_document LegalDocument @relation(fields: [legal_document_id], references: [id], onDelete: Cascade)
 
   @@unique([legal_document_id, ref_type, reference])
   @@index([reference])
@@ -371,12 +406,44 @@ enum LawListItemSource {
 }
 
 // ============================================================================
+// EPIC 6: COMPLIANCE WORKFLOW ENUMS
+// ============================================================================
+
+// Swedish compliance statuses for LawListItem
+enum ComplianceStatus {
+  EJ_PABORJAD // Not started (gray)
+  PAGAENDE // In progress (blue)
+  UPPFYLLD // Compliant (green)
+  EJ_UPPFYLLD // Non-compliant (red)
+  EJ_TILLAMPLIG // Not applicable (gray, strikethrough)
+}
+
+// Task priority levels
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Notification types
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_DUE_SOON // 3 days before due
+  TASK_OVERDUE
+  COMMENT_ADDED
+  MENTION // @mention in comment
+  STATUS_CHANGED
+  WEEKLY_DIGEST
+}
+
+// ============================================================================
 // TYPE-SPECIFIC TABLES - Epic 2: Story 2.1
 // ============================================================================
 
 model CourtCase {
-  id            String        @id @default(uuid())
-  document_id   String        @unique
+  id            String   @id @default(uuid())
+  document_id   String   @unique
   court_name    String // "Högsta domstolen", "Hovrätten över Skåne och Blekinge"
   case_number   String // "B 1234-23"
   lower_court   String?
@@ -390,27 +457,27 @@ model CourtCase {
 }
 
 model EuDocument {
-  id                               String        @id @default(uuid())
-  document_id                      String        @unique
-  celex_number                     String        @unique // "32016R0679" (GDPR)
+  id                               String  @id @default(uuid())
+  document_id                      String  @unique
+  celex_number                     String  @unique // "32016R0679" (GDPR)
   eut_reference                    String? // "L 119/1" (Official Journal reference)
   national_implementation_measures Json? // Swedish implementing laws
 
   // Enhanced metadata fields (from SPARQL API)
-  eli_identifier                   String? // ELI URI (http://data.europa.eu/eli/...)
-  in_force                         Boolean? // Is document currently in force
-  directory_codes                  String[] // EU directory classification codes
-  subject_matters                  String[] // Subject matter codes (ELSJ, PROT, INFO, etc.)
-  eurovoc_concepts                 String[] // EuroVoc descriptor URIs
-  authors                          String[] // Corporate bodies (EP, CONSIL, COM, etc.)
-  legal_basis_celex                String[] // CELEX numbers of legal basis documents
-  cites_celex                      String[] // CELEX numbers of cited documents (vanity count)
-  amended_by_celex                 String[] // CELEX of documents that amend this one - CRITICAL for change tracking
-  corrected_by_celex               String[] // CELEX of corrections (Rättelser)
-  end_of_validity                  DateTime? // When document expires (9999-12-31 = no expiry)
-  signature_date                   DateTime? // Date document was signed
-  transposition_deadline           DateTime? // For directives: implementation deadline
-  eea_relevant                     Boolean? // Relevant for European Economic Area
+  eli_identifier         String? // ELI URI (http://data.europa.eu/eli/...)
+  in_force               Boolean? // Is document currently in force
+  directory_codes        String[] // EU directory classification codes
+  subject_matters        String[] // Subject matter codes (ELSJ, PROT, INFO, etc.)
+  eurovoc_concepts       String[] // EuroVoc descriptor URIs
+  authors                String[] // Corporate bodies (EP, CONSIL, COM, etc.)
+  legal_basis_celex      String[] // CELEX numbers of legal basis documents
+  cites_celex            String[] // CELEX numbers of cited documents (vanity count)
+  amended_by_celex       String[] // CELEX of documents that amend this one - CRITICAL for change tracking
+  corrected_by_celex     String[] // CELEX of corrections (Rättelser)
+  end_of_validity        DateTime? // When document expires (9999-12-31 = no expiry)
+  signature_date         DateTime? // Date document was signed
+  transposition_deadline DateTime? // For directives: implementation deadline
+  eea_relevant           Boolean? // Relevant for European Economic Area
 
   // Relations
   document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
@@ -439,31 +506,31 @@ model CrossReference {
 }
 
 model Amendment {
-  id                       String                    @id @default(uuid())
-  base_document_id         String // Law being amended (FK to legal_documents)
-  amending_document_id     String? // Amending law (FK to legal_documents) - NULL for detected amendments where amending law doesn't exist as separate doc
+  id                   String  @id @default(uuid())
+  base_document_id     String // Law being amended (FK to legal_documents)
+  amending_document_id String? // Amending law (FK to legal_documents) - NULL for detected amendments where amending law doesn't exist as separate doc
 
   // 7 competitive-feature fields
-  amending_law_title       String // "Lag (2025:732) om ändring i arbetsrättslagstiftningen"
-  publication_date         DateTime? // When amending law was published
-  effective_date           DateTime? // When amendment takes effect (can be future)
-  affected_sections_raw    String? // Notisum format: "ändr. 6 kap. 17 §; upph. 8 kap. 4 §"
-  affected_sections        Json? // Parsed: {amended: ["6:17"], repealed: ["8:4"], new: [], renumbered: []}
-  summary                  String?                   @db.Text // 2-3 sentence GPT-4 generated plain language summary (Swedish)
-  summary_generated_by     SummaryGeneratedBy?
+  amending_law_title    String // "Lag (2025:732) om ändring i arbetsrättslagstiftningen"
+  publication_date      DateTime? // When amending law was published
+  effective_date        DateTime? // When amendment takes effect (can be future)
+  affected_sections_raw String? // Notisum format: "ändr. 6 kap. 17 §; upph. 8 kap. 4 §"
+  affected_sections     Json? // Parsed: {amended: ["6:17"], repealed: ["8:4"], new: [], renumbered: []}
+  summary               String?             @db.Text // 2-3 sentence GPT-4 generated plain language summary (Swedish)
+  summary_generated_by  SummaryGeneratedBy?
 
   // Additional implementation fields
   detected_method          AmendmentDetectedMethod?
   detected_from_version_id String? // FK to DocumentVersion that captured this amendment
   metadata                 Json? // Debugging/additional data
 
-  created_at               DateTime                  @default(now())
-  updated_at               DateTime                  @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   // Relations
-  base_document          LegalDocument    @relation("BaseDocument", fields: [base_document_id], references: [id], onDelete: Cascade)
-  amending_document      LegalDocument?   @relation("AmendingDocument", fields: [amending_document_id], references: [id], onDelete: Cascade)
-  detected_from_version  DocumentVersion? @relation(fields: [detected_from_version_id], references: [id])
+  base_document         LegalDocument    @relation("BaseDocument", fields: [base_document_id], references: [id], onDelete: Cascade)
+  amending_document     LegalDocument?   @relation("AmendingDocument", fields: [amending_document_id], references: [id], onDelete: Cascade)
+  detected_from_version DocumentVersion? @relation(fields: [detected_from_version_id], references: [id])
 
   @@index([base_document_id])
   @@index([amending_document_id])
@@ -495,11 +562,11 @@ model DocumentSubject {
 model LawSection {
   id                String   @id @default(cuid())
   legal_document_id String
-  chapter           String?  // "5" or null for laws without chapters
-  section           String   // "12" or "2a"
+  chapter           String? // "5" or null for laws without chapters
+  section           String // "12" or "2a"
   html_content      String   @db.Text // The HTML for this section
   text_content      String   @db.Text // Plain text (for search/diff)
-  heading           String?  // Section heading if any (e.g., "Tillämpningsområde")
+  heading           String? // Section heading if any (e.g., "Tillämpningsområde")
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 
@@ -518,38 +585,38 @@ model LawSection {
 
 // Stores the amendment document (PDF) itself - one row per SFS amendment number
 model AmendmentDocument {
-  id              String      @id @default(cuid())
-  sfs_number      String      @unique // "2022:1109"
+  id         String @id @default(cuid())
+  sfs_number String @unique // "2022:1109"
 
   // Storage
-  storage_path    String      // Supabase: "2022/SFS2022-1109.pdf"
-  original_url    String      // Source URL for reference
-  file_size       Int?        // Bytes
+  storage_path String // Supabase: "2022/SFS2022-1109.pdf"
+  original_url String // Source URL for reference
+  file_size    Int? // Bytes
 
   // Base law reference
-  base_law_sfs    String      // "1977:1160" - the law being amended
-  base_law_name   String?     // "arbetsmiljölagen"
+  base_law_sfs  String // "1977:1160" - the law being amended
+  base_law_name String? // "arbetsmiljölagen"
 
   // Document metadata
-  title           String?     // "Lag om ändring i arbetsmiljölagen (1977:1160)"
-  effective_date  DateTime?   // When changes take effect
-  publication_date DateTime?  // When published (Utfärdad)
+  title            String? // "Lag om ändring i arbetsmiljölagen (1977:1160)"
+  effective_date   DateTime? // When changes take effect
+  publication_date DateTime? // When published (Utfärdad)
 
   // Full text for search
-  full_text       String?     @db.Text
+  full_text String? @db.Text
 
   // Markdown content for RAG
-  markdown_content String?    @db.Text
+  markdown_content String? @db.Text
 
   // Processing status
-  parse_status    ParseStatus @default(PENDING)
-  parse_error     String?
-  parsed_at       DateTime?
-  confidence      Float?      // LLM confidence score (0-1)
+  parse_status ParseStatus @default(PENDING)
+  parse_error  String?
+  parsed_at    DateTime?
+  confidence   Float? // LLM confidence score (0-1)
 
   // Timestamps
-  created_at      DateTime    @default(now())
-  updated_at      DateTime    @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   // Relations
   section_changes SectionChange[]
@@ -562,27 +629,27 @@ model AmendmentDocument {
 
 // Individual section changes within an amendment
 model SectionChange {
-  id              String      @id @default(cuid())
-  amendment_id    String
+  id           String @id @default(cuid())
+  amendment_id String
 
   // Section reference
-  chapter         String?     // "7" for "7 kap." or null
-  section         String      // "15" or "2a"
+  chapter String? // "7" for "7 kap." or null
+  section String // "15" or "2a"
 
   // Change details
-  change_type     SectionChangeType
-  old_number      String?     // For renumbering: original number
-  description     String?     // Brief description of change
+  change_type SectionChangeType
+  old_number  String? // For renumbering: original number
+  description String? // Brief description of change
 
   // Text content (extracted from PDF)
-  old_text        String?     @db.Text  // Previous text (if available)
-  new_text        String?     @db.Text  // New text content
+  old_text String? @db.Text // Previous text (if available)
+  new_text String? @db.Text // New text content
 
   // Ordering within the amendment
-  sort_order      Int         @default(0)
+  sort_order Int @default(0)
 
   // Relations
-  amendment       AmendmentDocument @relation(fields: [amendment_id], references: [id], onDelete: Cascade)
+  amendment AmendmentDocument @relation(fields: [amendment_id], references: [id], onDelete: Cascade)
 
   @@unique([amendment_id, chapter, section, change_type])
   @@index([amendment_id])
@@ -598,10 +665,10 @@ enum ParseStatus {
 }
 
 enum SectionChangeType {
-  AMENDED       // "ska ha följande lydelse"
-  REPEALED      // "upphävs", "upphöra att gälla"
-  NEW           // "nya paragrafer", "införas"
-  RENUMBERED    // "X § blir Y §"
+  AMENDED // "ska ha följande lydelse"
+  REPEALED // "upphävs", "upphöra att gälla"
+  NEW // "nya paragrafer", "införas"
+  RENUMBERED // "X § blir Y §"
 }
 
 // ============================================================================
@@ -609,15 +676,15 @@ enum SectionChangeType {
 // ============================================================================
 
 model DocumentVersion {
-  id               String        @id @default(cuid())
-  document_id      String
-  version_number   Int
-  full_text        String        @db.Text
-  html_content     String?       @db.Text
-  amendment_sfs    String? // "SFS 2025:732" - which amendment created this version
+  id                 String    @id @default(cuid())
+  document_id        String
+  version_number     Int
+  full_text          String    @db.Text
+  html_content       String?   @db.Text
+  amendment_sfs      String? // "SFS 2025:732" - which amendment created this version
   source_systemdatum DateTime? // API systemdatum at time of capture
-  changed_sections Json? // ["7 §", "12 §"] - sections modified
-  created_at       DateTime      @default(now())
+  changed_sections   Json? // ["7 §", "12 §"] - sections modified
+  created_at         DateTime  @default(now())
 
   // Relations
   document   LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
@@ -629,22 +696,22 @@ model DocumentVersion {
 }
 
 model ChangeEvent {
-  id                  String      @id @default(cuid())
-  document_id         String
-  content_type        ContentType
-  change_type         ChangeType
-  amendment_sfs       String? // "SFS 2025:732"
-  previous_version_id String?
-  new_version_id      String?
-  old_value           String?     @db.Text // For metadata changes
-  new_value           String?     @db.Text // For metadata changes
-  diff_summary        String?     @db.Text // Unified diff or structured summary
-  changed_sections    Json? // Sections that were modified
-  ai_summary          String?     @db.Text // GPT-4 generated summary
+  id                      String      @id @default(cuid())
+  document_id             String
+  content_type            ContentType
+  change_type             ChangeType
+  amendment_sfs           String? // "SFS 2025:732"
+  previous_version_id     String?
+  new_version_id          String?
+  old_value               String?     @db.Text // For metadata changes
+  new_value               String?     @db.Text // For metadata changes
+  diff_summary            String?     @db.Text // Unified diff or structured summary
+  changed_sections        Json? // Sections that were modified
+  ai_summary              String?     @db.Text // GPT-4 generated summary
   ai_summary_generated_at DateTime?
-  detected_at         DateTime    @default(now())
-  processed_at        DateTime?
-  notification_sent   Boolean     @default(false)
+  detected_at             DateTime    @default(now())
+  processed_at            DateTime?
+  notification_sent       Boolean     @default(false)
 
   // Relations
   document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
@@ -654,4 +721,244 @@ model ChangeEvent {
   @@index([change_type])
   @@index([detected_at])
   @@map("change_events")
+}
+
+// ============================================================================
+// EPIC 6: COMPLIANCE WORKFLOW MODELS
+// Task-centric compliance tracking with Kanban workflow
+// ============================================================================
+
+// Custom Kanban columns for task workflow
+model TaskColumn {
+  id           String   @id @default(uuid())
+  workspace_id String
+  name         String // "Att göra", "Pågående", "Klar", etc.
+  color        String // Hex color code
+  position     Int // Column order (0-7, max 8 columns)
+  is_default   Boolean  @default(false) // System-provided column
+  is_done      Boolean  @default(false) // Tasks here count as completed
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  // Relations
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@unique([workspace_id, position])
+  @@index([workspace_id])
+  @@map("task_columns")
+}
+
+// First-class task entity with Kanban workflow support
+model Task {
+  id           String  @id @default(uuid())
+  workspace_id String
+  column_id    String // Current Kanban column
+  title        String
+  description  String? @db.Text
+
+  // Assignment & scheduling
+  assignee_id String?
+  created_by  String
+  due_date    DateTime?
+  priority    TaskPriority @default(MEDIUM)
+
+  // Position in column for drag-and-drop
+  position Int
+
+  // Timestamps
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  completed_at DateTime?
+
+  // Relations
+  workspace       Workspace          @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  column          TaskColumn         @relation(fields: [column_id], references: [id])
+  assignee        User?              @relation("TaskAssignee", fields: [assignee_id], references: [id])
+  creator         User               @relation("TaskCreator", fields: [created_by], references: [id])
+  list_item_links TaskListItemLink[]
+  comments        Comment[]
+  evidence        Evidence[]
+
+  @@index([workspace_id])
+  @@index([column_id])
+  @@index([assignee_id])
+  @@index([due_date])
+  @@index([workspace_id, column_id, position]) // Fast Kanban board queries
+  @@map("tasks")
+}
+
+// Many-to-many relationship between Tasks and LawListItems
+model TaskListItemLink {
+  id               String   @id @default(uuid())
+  task_id          String
+  law_list_item_id String
+  created_at       DateTime @default(now())
+
+  // Relations
+  task          Task        @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  law_list_item LawListItem @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+
+  @@unique([task_id, law_list_item_id])
+  @@index([task_id])
+  @@index([law_list_item_id])
+  @@map("task_list_item_links")
+}
+
+// Threaded comments supporting 3-level nesting and @mentions
+model Comment {
+  id           String   @id @default(uuid())
+  workspace_id String
+  author_id    String
+  content      String   @db.Text
+  mentions     String[] // Array of mentioned user IDs
+
+  // Polymorphic parent (one of these must be set)
+  task_id          String?
+  law_list_item_id String?
+
+  // Threading (max 3 levels)
+  parent_id String?
+  depth     Int     @default(0) // 0 = root, 1 = reply, 2 = reply-to-reply
+
+  // Timestamps
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  edited_at  DateTime?
+
+  // Relations
+  workspace     Workspace    @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  author        User         @relation(fields: [author_id], references: [id])
+  task          Task?        @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  law_list_item LawListItem? @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+  parent        Comment?     @relation("CommentThread", fields: [parent_id], references: [id], onDelete: Cascade)
+  replies       Comment[]    @relation("CommentThread")
+
+  @@index([workspace_id])
+  @@index([task_id])
+  @@index([law_list_item_id])
+  @@index([parent_id])
+  @@index([author_id])
+  @@map("comments")
+}
+
+// File attachments stored in Supabase Storage
+model Evidence {
+  id           String @id @default(uuid())
+  workspace_id String
+  uploaded_by  String
+
+  // File metadata
+  filename     String
+  file_size    Int // Bytes
+  mime_type    String
+  storage_path String // Supabase Storage path
+
+  // Optional description
+  description String? @db.Text
+
+  // Polymorphic parent (one of these must be set)
+  task_id          String?
+  law_list_item_id String?
+
+  // Timestamps
+  created_at DateTime @default(now())
+
+  // Relations
+  workspace     Workspace    @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  uploader      User         @relation(fields: [uploaded_by], references: [id])
+  task          Task?        @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  law_list_item LawListItem? @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id])
+  @@index([task_id])
+  @@index([law_list_item_id])
+  @@index([uploaded_by])
+  @@map("evidence")
+}
+
+// In-app notification system for user alerts
+model Notification {
+  id           String           @id @default(uuid())
+  workspace_id String
+  user_id      String // Recipient
+  type         NotificationType
+
+  // Content
+  title String
+  body  String? @db.Text
+
+  // Link to related entity
+  entity_type String? // 'task', 'comment', 'list_item', etc.
+  entity_id   String?
+
+  // Status
+  read_at    DateTime?
+  created_at DateTime  @default(now())
+
+  // Relations
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id])
+
+  @@index([user_id, read_at])
+  @@index([workspace_id])
+  @@index([created_at])
+  @@map("notifications")
+}
+
+// User notification preferences per workspace
+model NotificationPreference {
+  id           String @id @default(uuid())
+  user_id      String
+  workspace_id String
+
+  // Per-type settings
+  task_assigned_enabled  Boolean @default(true)
+  task_due_soon_enabled  Boolean @default(true)
+  task_overdue_enabled   Boolean @default(true)
+  comment_added_enabled  Boolean @default(true)
+  mention_enabled        Boolean @default(true)
+  status_changed_enabled Boolean @default(true)
+  weekly_digest_enabled  Boolean @default(true)
+
+  // Channel settings
+  email_enabled Boolean @default(true)
+  push_enabled  Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, workspace_id])
+  @@map("notification_preferences")
+}
+
+// Audit trail for compliance activities
+model ActivityLog {
+  id           String @id @default(uuid())
+  workspace_id String
+  user_id      String
+
+  // What changed
+  entity_type String // 'list_item', 'task', 'comment', 'evidence'
+  entity_id   String
+  action      String // 'created', 'updated', 'deleted', 'status_changed', etc.
+
+  // Change details
+  old_value Json?
+  new_value Json?
+
+  created_at DateTime @default(now())
+
+  // Relations
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id])
+
+  @@index([workspace_id, created_at])
+  @@index([entity_type, entity_id])
+  @@index([user_id])
+  @@map("activity_logs")
 }
