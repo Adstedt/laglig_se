@@ -17,7 +17,7 @@ As documented in Section 1.2, laglig.se uses a **hybrid API architecture** that 
 | --------------------------- | -------------- | ----------------------------------------------------- |
 | **User forms & mutations**  | Server Actions | Type-safe, no API boilerplate, automatic revalidation |
 | **AI chat interactions**    | Server Actions | Streaming responses, minimal latency                  |
-| **Kanban card updates**     | Server Actions | Optimistic updates, real-time sync                    |
+| **Task/compliance updates** | Server Actions | Optimistic updates, real-time sync (Epic 6)           |
 | **Authentication flows**    | Server Actions | Tight Next.js integration, session management         |
 | **Stripe webhooks**         | REST API       | External service callbacks require public endpoints   |
 | **Vercel Cron jobs**        | REST API       | Scheduled tasks need HTTP endpoints                   |
@@ -54,23 +54,50 @@ type ActionResult<T> =
    - `saveContextualAnswersAction(input)` - Store Phase 2 answers
    - `generateFinalLawListAction(sessionId)` - GPT-4 Phase 2 generation
 
-3. **Kanban** (`app/actions/kanban.ts`)
-   - `moveKanbanCardAction(input)` - Update card status/position
-   - `addKanbanCommentAction(input)` - Add comment to card
-   - `createTaskAction(input)` - Create task on card
-   - `updateTaskAction(input)` - Update task status
+3. **Compliance Workflow** (`app/actions/compliance.ts`) - _Epic 6 Revision_
+   - **List Items:**
+     - `updateListItemStatusAction(input)` - Update compliance status
+     - `assignResponsibleAction(input)` - Assign responsible person
+     - `updateBusinessContextAction(input)` - Update "Why this matters"
+   - **Tasks:**
+     - `createTaskAction(input)` - Create new task
+     - `updateTaskAction(input)` - Update task details
+     - `moveTaskToColumnAction(input)` - Move task in Kanban
+     - `linkTaskToListItemAction(input)` - Link task to list item(s)
+   - **Task Columns:**
+     - `createColumnAction(input)` - Add custom column
+     - `updateColumnAction(input)` - Rename/reorder column
+     - `deleteColumnAction(input)` - Remove custom column
+   - **Comments:**
+     - `addCommentAction(input)` - Add comment to task/list item
+     - `updateCommentAction(input)` - Edit existing comment
+     - `deleteCommentAction(input)` - Remove comment
+   - **Evidence:**
+     - `uploadEvidenceAction(input)` - Upload file to task/list item
+     - `deleteEvidenceAction(input)` - Remove evidence file
+   - **Activity:**
+     - `getActivityLogAction(input)` - Fetch history for entity
 
-4. **AI Chat** (`app/actions/ai-chat.ts`)
+4. **Notifications** (`app/actions/notifications.ts`) - _Epic 6_
+   - `getNotificationsAction(input)` - Fetch user notifications
+   - `markAsReadAction(input)` - Mark notification(s) as read
+   - `markAllAsReadAction(workspaceId)` - Mark all as read
+   - `updateNotificationPreferencesAction(input)` - Update user settings
+
+5. **Search** (`app/actions/search.ts`) - _Epic 6_
+   - `globalSearchAction(input)` - Search across laws, tasks, comments, evidence
+
+6. **AI Chat** (`app/actions/ai-chat.ts`)
    - `sendAIChatMessageAction(input)` - Send message + stream AI response
    - `getChatHistoryAction(workspaceId)` - Retrieve conversation history
 
-5. **HR Module** (`app/actions/hr.ts`)
+7. **HR Module** (`app/actions/hr.ts`)
    - `createEmployeeAction(input)` - Add new employee
    - `updateEmployeeAction(input)` - Update employee data
    - `syncFortnoxEmployeesAction(workspaceId)` - Sync from Fortnox API
    - `attachCollectiveAgreementAction(input)` - Link kollektivavtal to employee
 
-6. **Workspace** (`app/actions/workspace.ts`)
+8. **Workspace** (`app/actions/workspace.ts`)
    - `createWorkspaceAction(input)` - Create new workspace
    - `inviteMemberAction(input)` - Send workspace invitation
    - `updateMemberRoleAction(input)` - Change member permissions
@@ -99,6 +126,8 @@ type ActionResult<T> =
 - `GET /api/v1/cron/detect-sfs-changes` - Daily SFS change detection (02:00 CET)
 - `GET /api/v1/cron/detect-court-case-changes` - Daily court case detection (02:30 CET)
 - `GET /api/v1/cron/generate-embeddings` - Batch embedding generation
+- `GET /api/v1/cron/send-due-date-reminders` - Daily task due date reminders (08:00 CET) - _Epic 6_
+- `GET /api/v1/cron/send-weekly-digest` - Weekly compliance summary (Sunday 18:00 CET) - _Epic 6_
 
 ### Webhook Endpoints
 
