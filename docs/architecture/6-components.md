@@ -182,54 +182,187 @@ interface OnboardingState {
 
 ---
 
-### 6.3.4 Kanban Board Component
+### 6.3.4 Task-Centric Compliance Components
 
-**Responsibility:** Drag-and-drop law compliance tracking board (Epic 6, Stories 6.2-6.8)
+> **Epic 6 Revision (2026-01-08):** Replaced law-in-Kanban model with task-centric compliance workflow.
+> Laws stay static in Law List; tasks move through Kanban columns.
+
+**Responsibility:** Compliance tracking with Legal Document Modal, Task Workspace, and Task Modal (Epic 6, Stories 6.1-6.13)
+
+#### 6.3.4.1 Law List Component
 
 **Key Interfaces:**
 
-- `<KanbanBoard />` - Root board with 5 columns: Not Started, In Progress, Blocked, Review, Compliant (Story 6.2)
-- `<KanbanColumn />` - Single status column with draggable cards
-- `<LawCard />` - Draggable law card (FR26, Story 6.3):
-  - Compact variant (list view)
-  - Standard Kanban card (with priority badge, assignee avatars)
-  - Expanded modal variant (full details)
-- `<CardDetailModal />` - Full card view (Story 6.3):
-  - AI summary (200 words)
-  - Priority dropdown (High/Medium/Low)
-  - Assigned employees multi-select
-  - Due date picker
-  - Notes textarea (markdown)
-  - Tags input
-- `<TaskList />` - Task management within card (Story 6.4)
-- `<BulkActionsToolbar />` - Multi-card operations (Story 6.8)
-- `<FilterBar />` - Filter by category, priority, assignee, tags (Story 6.6)
+- `<LawListTable />` - Primary compliance view table (Story 6.2):
+  - Columns: Law title, SFS number, compliance status, responsible person, task progress, due date
+  - Row click opens Legal Document Modal
+- `<ComplianceStatusBadge />` - Color-coded status (Ej påbörjad, Pågående, Uppfylld, Ej uppfylld, Ej tillämplig)
+- `<ResponsibleAvatar />` - Assigned person avatar
+- `<TaskProgressIndicator />` - Progress bar showing completed/total tasks
+- `<LawListFilters />` - Filter by status, responsible person, category, due date
 
-**Dependencies:**
+**Location:** `app/(workspace)/[workspaceId]/lists/[listId]/page.tsx`
 
-- `app/actions/kanban.ts` (Server Actions for mutations)
-- `@dnd-kit/core` (drag-and-drop library)
-- Zustand kanban store (optimistic updates)
+#### 6.3.4.2 Legal Document Modal Component
+
+**Responsibility:** Jira-style two-panel modal for law compliance work (Story 6.3)
+
+**Layout:** 80% viewport width, 90% viewport height
+
+**Key Interfaces:**
+
+- `<LegalDocumentModal />` - Root modal container
+- **Left Panel (60%, scrollable):**
+  - `<LawHeader />` - Title, SFS number, status dropdown
+  - `<AISummary />` - AI-generated plain-Swedish summary
+  - `<BusinessContext />` - Editable "Why this matters" section
+  - `<RelatedDocuments />` - Cross-references, amendments
+  - `<TaskListSection />` - Tasks linked to this list item (Story 6.7)
+  - `<EvidenceGallery />` - Uploaded evidence files (Story 6.8)
+  - `<ActivityLog />` - Change history timeline (Story 6.10)
+  - `<LegalTextCollapsible />` - Full law text (collapsed by default)
+- **Right Panel (40%, static):**
+  - `<StatusSelector />` - Compliance status dropdown
+  - `<ResponsibleSelector />` - Assign responsible person (Story 6.13)
+  - `<DueDatePicker />` - Compliance deadline
+  - `<CategorySelector />` - Custom categorization
+  - `<CommentThread />` - Threaded comments (Story 6.9)
 
 **State Management:**
 
 ```typescript
-interface KanbanState {
-  cards: Record<string, LawInWorkspace[]> // Keyed by status
-  selectedCard: string | null
-  draggedCard: string | null
-  optimisticUpdates: Map<string, Partial<LawInWorkspace>>
+interface LegalDocumentModalState {
+  listItemId: string
+  leftPanelTab: 'summary' | 'tasks' | 'evidence' | 'history' | 'legal-text'
+  isEditing: boolean
+  pendingChanges: Partial<LawListItem>
+}
+```
+
+**Location:** `components/features/compliance/legal-document-modal/`
+
+#### 6.3.4.3 Task Workspace Component
+
+**Responsibility:** Kanban board for tasks, not laws (Story 6.4)
+
+**Key Interfaces:**
+
+- `<TaskWorkspace />` - Root workspace with view switcher
+- **Views:**
+  - `<TaskKanbanBoard />` - Default: draggable task cards in columns
+  - `<TaskListView />` - Table view with sorting
+  - `<TaskCalendarView />` - Calendar with due dates
+  - `<TaskSummaryView />` - Analytics dashboard
+- `<TaskColumn />` - Single Kanban column (default: Att göra, Pågående, Klar)
+- `<TaskCard />` - Draggable task card:
+  - Title, priority badge, assignee avatar
+  - Due date indicator (red if overdue)
+  - Linked laws count badge
+  - Evidence count badge
+- `<ColumnCustomizer />` - Add/rename/reorder columns (Story 6.5)
+- `<TaskFilters />` - Filter by assignee, priority, due date, linked law
+
+**State Management:**
+
+```typescript
+interface TaskWorkspaceState {
+  columns: TaskColumn[]
+  tasks: Record<string, Task[]> // Keyed by column_id
+  view: 'kanban' | 'list' | 'calendar' | 'summary'
+  draggedTask: string | null
+  selectedTasks: string[]
 }
 ```
 
 **Technology Stack:**
 
-- Client Component (requires interactivity)
-- @dnd-kit/core for drag-and-drop
+- Client Component (drag-and-drop interactivity)
+- `@dnd-kit/core` for drag-and-drop
 - Optimistic UI updates with Zustand
 - Server Actions for persistence
 
-**Location:** `app/(workspace)/[workspaceId]/kanban/page.tsx`
+**Location:** `app/(workspace)/[workspaceId]/tasks/page.tsx`
+
+#### 6.3.4.4 Task Modal Component
+
+**Responsibility:** Jira-style two-panel modal for task details (Story 6.6)
+
+**Layout:** 80% viewport width, 90% viewport height (same as Legal Document Modal)
+
+**Key Interfaces:**
+
+- `<TaskModal />` - Root modal container
+- **Left Panel (60%, scrollable):**
+  - `<TaskHeader />` - Title, status in column
+  - `<TaskDescription />` - Rich text description (markdown)
+  - `<LinkedLaws />` - Laws this task relates to (clickable)
+  - `<EvidenceGallery />` - Task-specific evidence (Story 6.8)
+  - `<ActivityLog />` - Task change history (Story 6.10)
+- **Right Panel (40%, static):**
+  - `<ColumnSelector />` - Move task between columns
+  - `<AssigneeSelector />` - Single assignee dropdown
+  - `<PrioritySelector />` - Low/Medium/High/Critical
+  - `<DueDatePicker />` - Task deadline
+  - `<CommentThread />` - Threaded comments (Story 6.9)
+
+**Location:** `components/features/compliance/task-modal/`
+
+#### 6.3.4.5 Evidence Upload Components
+
+**Responsibility:** File attachments for compliance proof (Story 6.8)
+
+**Key Interfaces:**
+
+- `<EvidenceUploader />` - Drag-and-drop file upload zone
+- `<EvidenceGallery />` - Grid/list view of uploaded files
+- `<EvidenceCard />` - Single file card with preview
+- `<EvidencePreviewModal />` - Full-screen file viewer
+
+**Supported Types:** PDF, images (PNG, JPG), documents (DOC, DOCX, XLS, XLSX)
+
+**Location:** `components/features/compliance/evidence/`
+
+#### 6.3.4.6 Comment Components
+
+**Responsibility:** Threaded discussions on tasks and list items (Story 6.9)
+
+**Key Interfaces:**
+
+- `<CommentThread />` - Root comment list
+- `<CommentItem />` - Single comment with author, timestamp
+- `<CommentReply />` - Reply form (max 3 levels deep)
+- `<CommentEditor />` - Rich text input with @mention support
+- `<MentionSuggestions />` - Dropdown of workspace members
+
+**Location:** `components/features/compliance/comments/`
+
+#### 6.3.4.7 Notification Components
+
+**Responsibility:** In-app and email notifications (Story 6.11)
+
+**Key Interfaces:**
+
+- `<NotificationBell />` - Header bell icon with unread count badge
+- `<NotificationDropdown />` - Dropdown panel with recent notifications
+- `<NotificationItem />` - Single notification row
+- `<NotificationSettings />` - User preferences page
+
+**Location:** `components/features/notifications/`
+
+#### 6.3.4.8 Global Search Component
+
+**Responsibility:** Cmd+K / Ctrl+K global search (Story 6.12)
+
+**Key Interfaces:**
+
+- `<GlobalSearchModal />` - Search modal with autofocus input
+- `<SearchResults />` - Results grouped by type (laws, tasks, comments, evidence)
+- `<SearchResultItem />` - Single result with title, snippet, breadcrumb
+- `<RecentSearches />` - Recent searches when input empty
+
+**Keyboard Navigation:** Arrow keys to navigate, Enter to open, ESC to close
+
+**Location:** `components/features/search/`
 
 ---
 
