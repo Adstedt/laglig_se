@@ -1,8 +1,14 @@
 # 4. Data Models
 
-**This section defines ALL core business entities that power Laglig.se.** These models support multi-tenancy, RAG-powered AI, employee compliance tracking, Kanban workflows, and legal content management across 170,000+ documents.
+**This section defines ALL core business entities that power Laglig.se.** These models support multi-tenancy, RAG-powered AI, employee compliance tracking, task-centric compliance workflows, and legal content management across 170,000+ documents.
 
-**Total Entities:** 29 (including 4 join tables)
+**Total Entities:** 35 (including 5 join tables, 2 deprecated)
+
+> **Epic 6 Revision (2026-01-08):** Data model updated to support task-centric compliance workflow. Key changes:
+>
+> - Enhanced `LawListItem` (4.13) as compliance tracking unit
+> - Deprecated `LawInWorkspace` (4.14) and `LawTask` (4.15) - superseded by new model
+> - Added: Task (4.30), TaskColumn (4.31), TaskListItemLink (4.32), Comment (4.33), Evidence (4.34), Notification (4.35), NotificationPreference (4.36)
 
 **Data Model Architecture:**
 
@@ -744,81 +750,62 @@ interface LawList {
 
 ---
 
-## 4.13 LawListItem (Join Table)
+## 4.13 LawListItem (Compliance Tracking Unit) ⭐ **CRITICAL - Epic 6 Core Entity**
 
-**Purpose:** Many-to-many relationship between law lists and legal documents.
+**Purpose:** Instance of a legal document on a specific list with independent compliance tracking. This is the core entity for the compliance workflow - the same law can appear on multiple lists (e.g., "Lager Stockholm", "Lager Malmö") with independent status, tasks, and evidence per list.
+
+> **Epic 6 Enhancement:** Expanded from simple join table to full compliance tracking unit. Replaces the deprecated `LawInWorkspace` (4.14) model.
 
 **Key Attributes:**
 
-- `id`: UUID
+- `id`: UUID - Primary key
 - `law_list_id`: UUID - FK to LawList
-- `law_id`: UUID - FK to LegalDocument
-- `position`: float - Sort order
-- `added_at`: DateTime
+- `legal_document_id`: UUID - FK to LegalDocument
+- `position`: float - Sort order within list
 
-**TypeScript Interface:**
+**Compliance Tracking:**
 
-```typescript
-interface LawListItem {
-  id: string
-  law_list_id: string
-  law_id: string
-  position: number
-  added_at: Date
-}
-```
+- `compliance_status`: enum - "EJ_PABORJAD", "PAGAENDE", "UPPFYLLD", "EJ_UPPFYLLD", "EJ_TILLAMPLIG"
+- `responsible_user_id`: UUID | null - FK to User (main owner for this law on this list)
+- `business_context`: TEXT | null - Markdown: "Hur påverkar denna lag oss?"
+- `due_date`: Date | null - Compliance deadline
 
-**Design Decisions:**
+**AI-Generated Content:**
 
-- Composite unique index on `(law_list_id, law_id)`
-
----
-
-## 4.14 LawInWorkspace ⭐ **CRITICAL - This is the Kanban card!**
-
-**Purpose:** Represents laws in a workspace's compliance tracking system. Each law has status (Kanban column), priority, assigned employees, notes, and tasks. This is what appears on the Kanban board - NOT a generic "ComplianceItem".
-
-**Key Attributes:**
-
-- `id`: UUID
-- `workspace_id`: UUID - FK to Workspace
-- `law_id`: UUID - FK to LegalDocument
-- `status`: enum - "NOT_STARTED", "IN_PROGRESS", "BLOCKED", "REVIEW", "COMPLIANT" (5 Kanban columns)
-- `priority`: enum - "LOW", "MEDIUM", "HIGH"
-- `assigned_employee_ids`: UUID[] - Array of Employee IDs
-- `due_date`: Date | null
-- `notes`: TEXT | null - Markdown notes
-- `tags`: string[] - Custom tags
-- `position`: float - Sort order within Kanban column
 - `ai_commentary`: TEXT | null - Personalized explanation from onboarding AI
 - `category`: string | null - "Grundläggande", "Arbetsmiljö", "Branschspecifika", etc.
-- `added_at`: DateTime - When added to workspace
+
+**Timestamps:**
+
+- `added_at`: DateTime
 - `updated_at`: DateTime
 
 **TypeScript Interface:**
 
 ```typescript
-type LawStatus =
-  | 'NOT_STARTED'
-  | 'IN_PROGRESS'
-  | 'BLOCKED'
-  | 'REVIEW'
-  | 'COMPLIANT'
-type Priority = 'LOW' | 'MEDIUM' | 'HIGH'
+type ComplianceStatus =
+  | 'EJ_PABORJAD' // Not started (gray)
+  | 'PAGAENDE' // In progress (blue)
+  | 'UPPFYLLD' // Compliant (green)
+  | 'EJ_UPPFYLLD' // Non-compliant (red)
+  | 'EJ_TILLAMPLIG' // Not applicable (gray, strikethrough)
 
-interface LawInWorkspace {
+interface LawListItem {
   id: string
-  workspace_id: string
-  law_id: string // FK to LegalDocument
-  status: LawStatus
-  priority: Priority
-  assigned_employee_ids: string[] // Array of Employee UUIDs
+  law_list_id: string
+  legal_document_id: string
+  position: number
+
+  // Compliance tracking
+  compliance_status: ComplianceStatus
+  responsible_user_id: string | null
+  business_context: string | null
   due_date: Date | null
-  notes: string | null
-  tags: string[]
-  position: number // Float for drag-and-drop
+
+  // AI-generated
   ai_commentary: string | null
   category: string | null
+
   added_at: Date
   updated_at: Date
 }
@@ -826,99 +813,93 @@ interface LawInWorkspace {
 
 **Relationships:**
 
-- Belongs to one `Workspace`
+- Belongs to one `LawList`
 - Belongs to one `LegalDocument`
-- References many `Employee` (via assigned_employee_ids array)
-- Has many `LawTask` (sub-tasks)
+- Optionally has one `User` as responsible person
+- Has many `Task` (via `TaskListItemLink` join table)
+- Referenced in `ActivityLog` entries
 
 **Design Decisions:**
 
-- **This is THE Kanban card entity** (PRD lines 2863-2899)
-- Composite unique index on `(workspace_id, law_id)` - each law appears once per workspace
-- Index on `(workspace_id, status, position)` for fast Kanban board queries
-- `position` is float (allows inserting between cards: 1.0, 2.0, 1.5)
-- `assigned_employee_ids` as UUID array (no join table needed for simple many-to-many)
+- Composite unique index on `(law_list_id, legal_document_id)` - each law appears once per list
+- Index on `(law_list_id, compliance_status)` for filtered list views
+- Index on `responsible_user_id` for "my assigned laws" queries
+- `position` is float (allows inserting between items: 1.0, 2.0, 1.5)
+- `compliance_status` is manual for MVP (user sets directly); derived status is post-MVP enhancement
+- `business_context` supports markdown for rich documentation
 - `ai_commentary` populated during onboarding Phase 1/2 (e.g., "Gäller eftersom ni har 12 anställda")
-- `category` assigned during onboarding for grouping laws in dashboard
 
-**Example:**
+**Multi-List Scenario Example:**
+
+The same GDPR law can appear on multiple lists with independent tracking:
 
 ```typescript
+// List: "Lager Stockholm"
 {
-  workspace_id: "ws-123",
-  law_id: "law-456", // Arbetsmiljölagen (SFS 1977:1160)
-  status: "IN_PROGRESS",
-  priority: "HIGH",
-  assigned_employee_ids: ["emp-789", "emp-012"],
-  due_date: "2025-03-31",
-  notes: "Need to update employee handbook section 5.2",
-  tags: ["arbetsmiljö", "q1-2025"],
-  position: 2.5,
-  ai_commentary: "Gäller eftersom ni har 12 anställda och arbetar med farliga maskiner",
-  category: "Arbetsmiljö"
+  law_list_id: "list-stockholm",
+  legal_document_id: "gdpr-uuid",
+  compliance_status: "UPPFYLLD",
+  responsible_user_id: "user-anna",
+  business_context: "GDPR compliance for Stockholm warehouse customer data",
+  // ... tasks and evidence specific to Stockholm
+}
+
+// List: "Lager Malmö"
+{
+  law_list_id: "list-malmo",
+  legal_document_id: "gdpr-uuid",
+  compliance_status: "PAGAENDE",
+  responsible_user_id: "user-erik",
+  business_context: "GDPR compliance for Malmö warehouse - new facility",
+  // ... different tasks and evidence for Malmö
 }
 ```
 
 ---
 
-## 4.15 LawTask
+## 4.14 LawInWorkspace ⚠️ **DEPRECATED**
 
-**Purpose:** Sub-tasks within law cards. Breaks down compliance into actionable steps. Per PRD Story 6.4 line 2917.
+> **DEPRECATED (Epic 6 Revision 2026-01-08):** This entity is superseded by the enhanced `LawListItem` (4.13) model.
+>
+> **Migration Path:**
+>
+> - Compliance status → `LawListItem.compliance_status`
+> - AI commentary → `LawListItem.ai_commentary`
+> - Category → `LawListItem.category`
+> - Tasks → `Task` (4.30) via `TaskListItemLink` (4.32)
+> - Notes → `LawListItem.business_context`
+>
+> **Reason for Deprecation:** The old model had laws moving through Kanban columns. The new model separates concerns:
+>
+> - `LawListItem` holds compliance status (what we comply with)
+> - `Task` holds work items that move through Kanban (how we achieve compliance)
 
-**Key Attributes:**
+**Original Purpose:** Represented laws on a workspace's Kanban board with status columns.
 
-- `id`: UUID
-- `law_in_workspace_id`: UUID - FK to LawInWorkspace
-- `workspace_id`: UUID - FK to Workspace
-- `title`: string - Task description
-- `description`: TEXT | null - Details
-- `assigned_to`: UUID | null - FK to User
-- `due_date`: Date | null
-- `completed`: boolean
-- `completed_at`: DateTime | null
-- `created_at`: DateTime
+**Status:** Do not use for new development. Existing data should be migrated to `LawListItem` + `Task` model.
 
-**TypeScript Interface:**
+---
 
-```typescript
-interface LawTask {
-  id: string
-  law_in_workspace_id: string
-  workspace_id: string
-  title: string
-  description: string | null
-  assigned_to: string | null // FK to User
-  due_date: Date | null
-  completed: boolean
-  completed_at: Date | null
-  created_at: Date
-}
-```
+## 4.15 LawTask ⚠️ **DEPRECATED**
 
-**Relationships:**
+> **DEPRECATED (Epic 6 Revision 2026-01-08):** This entity is superseded by the first-class `Task` (4.30) model.
+>
+> **Migration Path:**
+>
+> - Task data → `Task` (4.30)
+> - Law linkage → `TaskListItemLink` (4.32) - now supports linking to multiple list items
+> - Comments → `Comment` (4.33) - now supports threaded discussions
+> - Evidence → `Evidence` (4.34) - now supports file attachments
+>
+> **Reason for Deprecation:** The old model had tasks nested inside law cards. The new model:
+>
+> - Tasks are first-class entities with their own Kanban workspace
+> - Tasks can link to multiple list items (cross-list compliance work)
+> - Tasks have threaded comments, evidence attachments, and full audit trail
 
-- Belongs to one `LawInWorkspace`
-- Belongs to one `Workspace`
-- Optionally assigned to one `User`
+**Original Purpose:** Sub-tasks nested within law cards on the Kanban board.
 
-**Design Decisions:**
-
-- Index on `(law_in_workspace_id, completed)` for task progress queries
-- Task completion percentage shown on Kanban card: "3/5 tasks complete"
-- Overdue tasks (due_date < now() AND completed = false) highlighted red in UI
-
-**Example:**
-
-```typescript
-{
-  law_in_workspace_id: "liw-123", // Arbetsmiljölagen
-  title: "Update employee handbook Section 5.2",
-  description: "Add new safety protocols for machinery operation",
-  assigned_to: "user-456",
-  due_date: "2025-02-28",
-  completed: false
-}
-```
+**Status:** Do not use for new development. Existing data should be migrated to `Task` model.
 
 ---
 
@@ -1705,6 +1686,550 @@ for (const job of jobs) {
     })
   }
 }
+```
+
+---
+
+## 4.30 Task ⭐ **Epic 6 - First-Class Task Entity**
+
+**Purpose:** First-class task entity for compliance work items. Tasks move through customizable Kanban columns and can link to multiple list items across different lists. This is the core of the task-centric compliance workflow.
+
+**Key Attributes:**
+
+- `id`: UUID - Primary key
+- `workspace_id`: UUID - FK to Workspace
+- `title`: string - Task title (required)
+- `description`: TEXT | null - Rich text description (markdown)
+
+**Kanban Status:**
+
+- `status_column_id`: UUID - FK to TaskColumn (determines Kanban column)
+- `position`: float - Sort order within column
+
+**Assignment & Scheduling:**
+
+- `assignee_id`: UUID | null - FK to User
+- `due_date`: Date | null - Hard deadline
+- `priority`: enum - "LOW", "MEDIUM", "HIGH"
+
+**Metadata:**
+
+- `labels`: string[] - Custom tags/labels
+- `created_by_id`: UUID - FK to User (creator)
+- `created_at`: DateTime
+- `updated_at`: DateTime
+
+**TypeScript Interface:**
+
+```typescript
+type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH'
+
+interface Task {
+  id: string
+  workspace_id: string
+  title: string
+  description: string | null
+
+  // Kanban
+  status_column_id: string
+  position: number
+
+  // Assignment
+  assignee_id: string | null
+  due_date: Date | null
+  priority: TaskPriority
+
+  // Metadata
+  labels: string[]
+  created_by_id: string
+  created_at: Date
+  updated_at: Date
+}
+```
+
+**Relationships:**
+
+- Belongs to one `Workspace`
+- Belongs to one `TaskColumn` (status)
+- Optionally assigned to one `User`
+- Created by one `User`
+- Has many `LawListItem` (via `TaskListItemLink` join table)
+- Has many `Comment`
+- Has many `Evidence`
+- Referenced in `ActivityLog` entries
+
+**Design Decisions:**
+
+- Index on `(workspace_id, status_column_id, position)` for Kanban board queries
+- Index on `(assignee_id, due_date)` for "my tasks" and due date queries
+- `position` is float for drag-and-drop insertion
+- `labels` as string array (simple tagging, no separate Labels table for MVP)
+- Tasks link to list items via `TaskListItemLink`, enabling:
+  - One task linked to multiple list items (cross-list work)
+  - Evidence on task counts toward all linked list items
+
+**Example:**
+
+```typescript
+{
+  id: "task-123",
+  workspace_id: "ws-456",
+  title: "Uppdatera personuppgiftspolicy",
+  description: "Revidera policy för att inkludera nya GDPR-krav...",
+  status_column_id: "col-pagaende", // "Pågående" column
+  position: 2.5,
+  assignee_id: "user-anna",
+  due_date: "2025-02-28",
+  priority: "HIGH",
+  labels: ["GDPR", "policy"],
+  created_by_id: "user-erik",
+  created_at: "2025-01-08T10:00:00Z",
+  updated_at: "2025-01-08T14:30:00Z"
+}
+```
+
+---
+
+## 4.31 TaskColumn
+
+**Purpose:** Custom Kanban columns per workspace. Default columns are "Att göra", "Pågående", "Klar" but users can add up to 8 total columns.
+
+**Key Attributes:**
+
+- `id`: UUID - Primary key
+- `workspace_id`: UUID - FK to Workspace
+- `name`: string - Column display name (Swedish)
+- `sort_order`: integer - Column position (0 = leftmost)
+- `color`: string | null - Hex color for column header (e.g., "#10b981")
+- `is_default`: boolean - True for system columns (cannot be deleted)
+- `created_at`: DateTime
+
+**TypeScript Interface:**
+
+```typescript
+interface TaskColumn {
+  id: string
+  workspace_id: string
+  name: string
+  sort_order: number
+  color: string | null
+  is_default: boolean
+  created_at: Date
+}
+```
+
+**Relationships:**
+
+- Belongs to one `Workspace`
+- Has many `Task`
+
+**Design Decisions:**
+
+- Unique index on `(workspace_id, sort_order)` for ordered column queries
+- Max 8 columns enforced at application level
+- Default columns seeded on workspace creation:
+  - "Att göra" (sort_order: 0, is_default: true)
+  - "Pågående" (sort_order: 1, is_default: true)
+  - "Klar" (sort_order: 2, is_default: true)
+- Default columns can be renamed but not deleted
+- When custom column is deleted, tasks move to first default column ("Att göra")
+
+**Example:**
+
+```typescript
+// Default columns for new workspace
+[
+  { name: "Att göra", sort_order: 0, is_default: true, color: null },
+  { name: "Pågående", sort_order: 1, is_default: true, color: "#3b82f6" },
+  { name: "Klar", sort_order: 2, is_default: true, color: "#10b981" },
+]
+
+// With custom columns added
+[
+  { name: "Backlog", sort_order: 0, is_default: false, color: "#6b7280" },
+  { name: "Att göra", sort_order: 1, is_default: true, color: null },
+  { name: "Pågående", sort_order: 2, is_default: true, color: "#3b82f6" },
+  { name: "Granskning", sort_order: 3, is_default: false, color: "#f59e0b" },
+  { name: "Klar", sort_order: 4, is_default: true, color: "#10b981" },
+]
+```
+
+---
+
+## 4.32 TaskListItemLink (Join Table)
+
+**Purpose:** Many-to-many relationship between tasks and list items. Enables tasks to link to multiple laws across different lists.
+
+**Key Attributes:**
+
+- `id`: UUID - Primary key
+- `task_id`: UUID - FK to Task
+- `list_item_id`: UUID - FK to LawListItem
+
+**TypeScript Interface:**
+
+```typescript
+interface TaskListItemLink {
+  id: string
+  task_id: string
+  list_item_id: string
+}
+```
+
+**Relationships:**
+
+- Belongs to one `Task`
+- Belongs to one `LawListItem`
+
+**Design Decisions:**
+
+- Composite unique index on `(task_id, list_item_id)` prevents duplicates
+- Enables cross-list task linking (one task for GDPR compliance across Stockholm + Malmö warehouses)
+- When task completed, evidence flows up to all linked list items
+- Deleting a list item removes links but doesn't delete the task
+
+**Example Use Case:**
+
+```typescript
+// Single task linked to same law on multiple lists
+{
+  task_id: "task-gdpr-policy",
+  list_item_id: "li-stockholm-gdpr"  // GDPR on Stockholm list
+}
+{
+  task_id: "task-gdpr-policy",
+  list_item_id: "li-malmo-gdpr"      // GDPR on Malmö list
+}
+// Completing this task and attaching evidence counts for both locations
+```
+
+---
+
+## 4.33 Comment
+
+**Purpose:** Threaded comments on tasks. Supports replies (max 3 levels deep), @mentions, and markdown formatting.
+
+**Key Attributes:**
+
+- `id`: UUID - Primary key
+- `task_id`: UUID - FK to Task
+- `parent_comment_id`: UUID | null - FK to Comment (for threading, null = root comment)
+- `user_id`: UUID - FK to User (author)
+- `content`: TEXT - Comment text (markdown supported)
+- `original_content`: TEXT | null - Stored when edited (for edit history)
+- `edited_at`: DateTime | null - When last edited
+- `created_at`: DateTime
+- `updated_at`: DateTime
+
+**TypeScript Interface:**
+
+```typescript
+interface Comment {
+  id: string
+  task_id: string
+  parent_comment_id: string | null
+  user_id: string
+  content: string
+  original_content: string | null
+  edited_at: Date | null
+  created_at: Date
+  updated_at: Date
+}
+```
+
+**Relationships:**
+
+- Belongs to one `Task`
+- Optionally belongs to one `Comment` (parent for threading)
+- Has many `Comment` (replies)
+- Belongs to one `User` (author)
+
+**Design Decisions:**
+
+- Index on `(task_id, created_at)` for chronological comment listing
+- Max 3 nesting levels enforced at application level (root -> reply -> reply-to-reply)
+- `original_content` preserved on edit for audit/undo
+- @mentions parsed from content (regex: `@[username]`), trigger notifications
+- Soft delete option: set `content = "[Deleted]"` instead of hard delete
+
+**Example:**
+
+```typescript
+// Root comment
+{
+  id: "comment-1",
+  task_id: "task-123",
+  parent_comment_id: null,
+  user_id: "user-anna",
+  content: "Har uppdaterat policyn enligt nya kraven. @erik kan du granska?",
+  created_at: "2025-01-08T14:00:00Z"
+}
+
+// Reply to root comment
+{
+  id: "comment-2",
+  task_id: "task-123",
+  parent_comment_id: "comment-1",
+  user_id: "user-erik",
+  content: "Ser bra ut! Godkänt.",
+  created_at: "2025-01-08T15:30:00Z"
+}
+```
+
+---
+
+## 4.34 Evidence
+
+**Purpose:** File attachments on tasks proving compliance work. Files stored in Supabase Storage with metadata in database.
+
+**Key Attributes:**
+
+- `id`: UUID - Primary key
+- `task_id`: UUID - FK to Task
+- `filename`: string - Original filename
+- `storage_path`: string - Supabase Storage path
+- `file_size`: integer - Size in bytes
+- `mime_type`: string - MIME type (e.g., "application/pdf")
+- `uploaded_by_id`: UUID - FK to User
+- `created_at`: DateTime
+
+**TypeScript Interface:**
+
+```typescript
+interface Evidence {
+  id: string
+  task_id: string
+  filename: string
+  storage_path: string
+  file_size: number
+  mime_type: string
+  uploaded_by_id: string
+  created_at: Date
+}
+```
+
+**Relationships:**
+
+- Belongs to one `Task`
+- Uploaded by one `User`
+
+**Design Decisions:**
+
+- Index on `task_id` for fetching evidence per task
+- Storage path format: `/{workspace_id}/evidence/{task_id}/{uuid}_{filename}`
+- Max file size: 25MB (enforced at upload)
+- Max files per task: 20 (enforced at application level)
+- Accepted MIME types: PDF, images (PNG, JPG, GIF), Office docs (DOC, DOCX, XLS, XLSX, PPT, PPTX)
+- Supabase Storage RLS: Only workspace members can access
+- Evidence aggregated in Legal Document Modal -> Bevis tab (all evidence from linked tasks)
+- Deleting task deletes evidence files from storage
+
+**Example:**
+
+```typescript
+{
+  id: "evidence-123",
+  task_id: "task-456",
+  filename: "gdpr-policy-v2.pdf",
+  storage_path: "/ws-789/evidence/task-456/abc123_gdpr-policy-v2.pdf",
+  file_size: 245678,
+  mime_type: "application/pdf",
+  uploaded_by_id: "user-anna",
+  created_at: "2025-01-08T16:00:00Z"
+}
+```
+
+---
+
+## 4.35 Notification
+
+**Purpose:** User notifications for compliance activities (task assignments, due dates, comments, @mentions). Supports both in-app and email delivery.
+
+**Key Attributes:**
+
+- `id`: UUID - Primary key
+- `user_id`: UUID - FK to User (recipient)
+- `type`: enum - Notification type (see below)
+- `title`: string - Short notification title
+- `body`: TEXT | null - Notification body text
+- `entity_type`: string - "task", "comment", "list_item"
+- `entity_id`: UUID - ID of related entity
+- `read_at`: DateTime | null - When user read notification (null = unread)
+- `created_at`: DateTime
+
+**Notification Types:**
+
+- `TASK_ASSIGNED` - Task assigned to user
+- `TASK_DUE_SOON` - Task due in 3 days
+- `TASK_OVERDUE` - Task past due date
+- `COMMENT_ADDED` - Comment on user's task
+- `MENTION` - @mentioned in comment
+- `STATUS_CHANGED` - Status changed on user's task
+- `RESPONSIBLE_ASSIGNED` - Assigned as responsible for list item
+
+**TypeScript Interface:**
+
+```typescript
+type NotificationType =
+  | 'TASK_ASSIGNED'
+  | 'TASK_DUE_SOON'
+  | 'TASK_OVERDUE'
+  | 'COMMENT_ADDED'
+  | 'MENTION'
+  | 'STATUS_CHANGED'
+  | 'RESPONSIBLE_ASSIGNED'
+
+interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  body: string | null
+  entity_type: string
+  entity_id: string
+  read_at: Date | null
+  created_at: Date
+}
+```
+
+**Relationships:**
+
+- Belongs to one `User` (recipient)
+- References one entity (Task, Comment, or LawListItem)
+
+**Design Decisions:**
+
+- Index on `(user_id, read_at, created_at DESC)` for unread notifications query
+- Retention: 30 days, then auto-deleted by cron job
+- Unread count shown in header bell icon
+- Click notification -> Navigate to relevant modal
+- Email notifications triggered based on `NotificationPreference` settings
+
+**Example:**
+
+```typescript
+{
+  id: "notif-123",
+  user_id: "user-anna",
+  type: "TASK_ASSIGNED",
+  title: "Ny uppgift tilldelad",
+  body: "Erik har tilldelat dig uppgiften 'Uppdatera personuppgiftspolicy'",
+  entity_type: "task",
+  entity_id: "task-456",
+  read_at: null,
+  created_at: "2025-01-08T10:00:00Z"
+}
+```
+
+---
+
+## 4.36 NotificationPreference
+
+**Purpose:** User-level preferences for notification delivery. Controls which notification types trigger emails and at what frequency.
+
+**Key Attributes:**
+
+- `id`: UUID - Primary key
+- `user_id`: UUID - FK to User (unique)
+- `task_assigned_email`: boolean - Email on task assignment
+- `task_due_email`: boolean - Email on due date reminders
+- `comment_email`: boolean - Email on new comments
+- `mention_email`: boolean - Email on @mentions
+- `digest_frequency`: enum - "IMMEDIATE", "DAILY", "WEEKLY", "OFF"
+- `updated_at`: DateTime
+
+**TypeScript Interface:**
+
+```typescript
+type DigestFrequency = 'IMMEDIATE' | 'DAILY' | 'WEEKLY' | 'OFF'
+
+interface NotificationPreference {
+  id: string
+  user_id: string
+  task_assigned_email: boolean
+  task_due_email: boolean
+  comment_email: boolean
+  mention_email: boolean
+  digest_frequency: DigestFrequency
+  updated_at: Date
+}
+```
+
+**Relationships:**
+
+- Belongs to one `User` (one-to-one)
+
+**Design Decisions:**
+
+- Unique index on `user_id` (one preference record per user)
+- Default values on creation: all true, digest_frequency = "IMMEDIATE"
+- Settings page at `/settings/notifications`
+- Digest frequencies:
+  - IMMEDIATE: Email sent within minutes
+  - DAILY: Bundled in daily digest (08:00 CET)
+  - WEEKLY: Bundled in weekly digest (Sunday 18:00 CET)
+  - OFF: No email notifications (in-app only)
+- @mention emails always sent immediately regardless of digest setting (high priority)
+
+**Example:**
+
+```typescript
+{
+  id: "pref-123",
+  user_id: "user-anna",
+  task_assigned_email: true,
+  task_due_email: true,
+  comment_email: false,  // Disabled - too noisy
+  mention_email: true,
+  digest_frequency: "DAILY",
+  updated_at: "2025-01-08T10:00:00Z"
+}
+```
+
+---
+
+## Data Model Summary (Epic 6 Revision)
+
+**Entity Count:** 35 total (29 original + 7 new - 1 merged)
+
+**New Entities (Epic 6):**
+
+| Entity                      | Purpose                             |
+| --------------------------- | ----------------------------------- |
+| 4.30 Task                   | First-class task with Kanban status |
+| 4.31 TaskColumn             | Custom Kanban columns               |
+| 4.32 TaskListItemLink       | Task <-> ListItem many-to-many      |
+| 4.33 Comment                | Threaded comments on tasks          |
+| 4.34 Evidence               | File attachments on tasks           |
+| 4.35 Notification           | User notifications                  |
+| 4.36 NotificationPreference | Notification settings               |
+
+**Enhanced Entities:**
+
+| Entity           | Changes                                                                        |
+| ---------------- | ------------------------------------------------------------------------------ |
+| 4.13 LawListItem | Now compliance tracking unit with status, responsible person, business context |
+
+**Deprecated Entities:**
+
+| Entity              | Replacement        |
+| ------------------- | ------------------ |
+| 4.14 LawInWorkspace | LawListItem (4.13) |
+| 4.15 LawTask        | Task (4.30)        |
+
+**Key Relationships (Epic 6 Compliance Workflow):**
+
+```
+LawList
+  |-- LawListItem (compliance tracking)
+        |-- compliance_status
+        |-- responsible_user
+        |-- business_context
+        |-- Tasks (via TaskListItemLink)
+              |-- status (via TaskColumn)
+              |-- assignee
+              |-- Comments (threaded)
+              |-- Evidence (files)
 ```
 
 ---
