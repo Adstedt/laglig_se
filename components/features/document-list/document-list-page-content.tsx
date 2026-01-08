@@ -26,6 +26,8 @@ import { AddDocumentModal, type DocumentInfoForAdd } from './add-document-modal'
 import { ManageListModal } from './manage-list-modal'
 import { ExportDropdown } from './export-dropdown'
 import { ViewToggle } from './view-toggle'
+// Story 6.3: Legal Document Modal
+import { LegalDocumentModal } from './legal-document-modal'
 // Story 6.2: Compliance filters and search
 import {
   ComplianceFilters,
@@ -68,6 +70,10 @@ export function DocumentListPageContent({
   >([])
   // Story 4.13: Group management modal
   const [isGroupManagerOpen, setIsGroupManagerOpen] = useState(false)
+  // Story 6.3: Legal document modal
+  const [selectedListItemId, setSelectedListItemId] = useState<string | null>(
+    null
+  )
 
   // Story 6.2 Task 8 & 9: Compliance filters and search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -624,6 +630,8 @@ export function DocumentListPageContent({
           workspaceMembers={workspaceMembers}
           groups={groups}
           onMoveToGroup={moveToGroup}
+          // Story 6.3: Open legal document modal on row click
+          onRowClick={setSelectedListItemId}
           emptyMessage={
             activeListId
               ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
@@ -660,6 +668,12 @@ export function DocumentListPageContent({
           onGroupsUpdated={handleGroupsUpdated}
         />
       )}
+
+      {/* Story 6.3: Legal document modal */}
+      <LegalDocumentModal
+        listItemId={selectedListItemId}
+        onClose={() => setSelectedListItemId(null)}
+      />
     </div>
   )
 }

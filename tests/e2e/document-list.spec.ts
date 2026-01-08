@@ -1291,6 +1291,418 @@ test.describe('Document List Management', () => {
     })
   })
 
+  // Story 6.3: Legal Document Modal Tests
+  test.describe('Legal Document Modal (Story 6.3)', () => {
+    test('should open modal when clicking on table row', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Click on a row (not on interactive elements like checkboxes or buttons)
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        // Click on the title cell (non-interactive area)
+        const titleCell = rows.first().locator('td').nth(4) // Title column
+        await titleCell.click()
+        await page.waitForTimeout(500)
+
+        // Modal should open
+        await expect(page.getByRole('dialog')).toBeVisible()
+      }
+    })
+
+    test('should display law title and document number in modal', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Click on a row
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        // Modal should show document title (h2)
+        await expect(
+          page.getByRole('dialog').locator('h2').first()
+        ).toBeVisible()
+      }
+    })
+
+    test('should show breadcrumb navigation in modal header', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        // Modal should show breadcrumb (list name > law title)
+        const modal = page.getByRole('dialog')
+        await expect(modal).toBeVisible()
+
+        // Should have breadcrumb navigation element
+        await expect(modal.locator('nav').first()).toBeVisible()
+      }
+    })
+
+    test('should close modal when clicking close button', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        // Modal should be open
+        await expect(page.getByRole('dialog')).toBeVisible()
+
+        // Click close button
+        await page.getByRole('button', { name: /stäng/i }).click()
+        await page.waitForTimeout(300)
+
+        // Modal should be closed
+        await expect(page.getByRole('dialog')).not.toBeVisible()
+      }
+    })
+
+    test('should close modal when pressing Escape', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        // Modal should be open
+        await expect(page.getByRole('dialog')).toBeVisible()
+
+        // Press Escape
+        await page.keyboard.press('Escape')
+        await page.waitForTimeout(300)
+
+        // Modal should be closed
+        await expect(page.getByRole('dialog')).not.toBeVisible()
+      }
+    })
+
+    test('should show lagtext section with expand/collapse', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        // Modal should show Lagtext section
+        const modal = page.getByRole('dialog')
+        await expect(modal.getByText('Lagtext')).toBeVisible()
+
+        // Should have expand button
+        const expandButton = modal.getByRole('button', { name: /visa mer/i })
+        const collapseButton = modal.getByRole('button', {
+          name: /visa mindre/i,
+        })
+
+        // Either expand or collapse button should be visible
+        const hasExpandOrCollapse =
+          (await expandButton.isVisible().catch(() => false)) ||
+          (await collapseButton.isVisible().catch(() => false))
+        expect(hasExpandOrCollapse).toBeTruthy()
+      }
+    })
+
+    test('should show business context textarea', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        // Modal should show business context section
+        const modal = page.getByRole('dialog')
+        await expect(modal.getByText(/hur påverkar denna lag/i)).toBeVisible()
+
+        // Should have textarea
+        await expect(modal.locator('textarea')).toBeVisible()
+      }
+    })
+
+    test('should show activity tabs', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        const modal = page.getByRole('dialog')
+
+        // Should show activity tabs
+        await expect(modal.getByRole('tab', { name: 'Alla' })).toBeVisible()
+        await expect(
+          modal.getByRole('tab', { name: 'Kommentarer' })
+        ).toBeVisible()
+        await expect(
+          modal.getByRole('tab', { name: 'Uppgifter' })
+        ).toBeVisible()
+        await expect(modal.getByRole('tab', { name: 'Bevis' })).toBeVisible()
+        await expect(modal.getByRole('tab', { name: 'Historik' })).toBeVisible()
+      }
+    })
+
+    test('should show right panel with details box', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        const modal = page.getByRole('dialog')
+
+        // Should show details section
+        await expect(modal.getByText('Detaljer')).toBeVisible()
+        await expect(modal.getByText('Status')).toBeVisible()
+      }
+    })
+
+    test('should show quick links box with navigation', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        const modal = page.getByRole('dialog')
+
+        // Should show quick links section
+        await expect(modal.getByText('Snabblänkar')).toBeVisible()
+        await expect(
+          modal.getByRole('link', { name: /visa fullständig lag/i })
+        ).toBeVisible()
+      }
+    })
+
+    test('should show tasks and evidence summary boxes', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        const modal = page.getByRole('dialog')
+
+        // Should show tasks summary section
+        await expect(modal.getByText('Uppgifter').first()).toBeVisible()
+
+        // Should show evidence summary section
+        await expect(modal.getByText('Bevis').first()).toBeVisible()
+      }
+    })
+
+    test('should update compliance status from modal', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        const modal = page.getByRole('dialog')
+
+        // Find status dropdown in modal (first combobox in details section)
+        const statusDropdown = modal.locator('[role="combobox"]').first()
+
+        if ((await statusDropdown.count()) > 0) {
+          // Get current status
+          const currentStatus = await statusDropdown.textContent()
+
+          // Open dropdown
+          await statusDropdown.click()
+          await page.waitForTimeout(200)
+
+          // Select different status
+          const targetStatus = currentStatus?.includes('Uppfylld')
+            ? 'Pågående'
+            : 'Uppfylld'
+          await page.getByRole('option', { name: targetStatus }).click()
+          await page.waitForTimeout(500)
+
+          // Verify status changed
+          const newStatus = await statusDropdown.textContent()
+          expect(newStatus).toContain(targetStatus)
+        }
+      }
+    })
+
+    test('should display modal on mobile viewport', async ({ page }) => {
+      // Set mobile viewport
+      await page.setViewportSize({ width: 375, height: 667 })
+
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        const titleCell = rows.first().locator('td').nth(4)
+        await titleCell.click()
+        await page.waitForTimeout(1000)
+
+        // Modal should be visible and take full screen on mobile
+        const modal = page.getByRole('dialog')
+        await expect(modal).toBeVisible()
+      }
+    })
+  })
+
   // Story 4.14: Performance Optimization Tests
   test.describe('Performance Optimization (Story 4.14)', () => {
     test('should add document with optimistic update (instant appearance)', async ({
