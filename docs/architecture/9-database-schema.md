@@ -18,6 +18,10 @@ Laglig.se uses **PostgreSQL** via **Supabase** with the **pgvector** extension f
 
 The database schema is organized into these logical domains:
 
+> **Epic 6 Revision (2026-01-08):** Law Management updated to task-centric compliance workflow.
+> LawInWorkspace and LawTask deprecated in favor of LawListItem as compliance tracking unit
+> plus new Task, TaskColumn, TaskListItemLink, Comment, Evidence entities.
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                   Database Domains                       │
@@ -33,7 +37,7 @@ The database schema is organized into these logical domains:
 │  ├─ WorkspaceMember    │  ├─ Employee                   │
 │  └─ WorkspaceInvite    │  ├─ Department                 │
 │                        │  ├─ EmployeeDocument           │
-│  3. Legal Content      │  ├─Employeeote               │
+│  3. Legal Content      │  ├─ EmployeeNote               │
 │  ├─ LegalDocument      │  ├─ Kollektivavtal             │
 │  ├─ LegalCategory      │  └─ EmployeeKollektivavtal     │
 │  ├─ CourtCase          │                                 │
@@ -41,17 +45,29 @@ The database schema is organized into these logical domains:
 │  └─ Amendment          │  ├─ LawVersionHistory          │
 │                        │  ├─ ChangeNotification         │
 │  4. Law Management     │  └─ NotificationPreference     │
-│  ├─ LawInWorkspace     │                                 │
-│  ├─ LawList            │  9. Background Jobs             │
-│  ├─ LawListItem        │  └─ BackgroundJob              │
-│  └─ LawTask            │                                 │
-│                        │  10. Billing/Usage             │
-│  5. Analytics          │  ├─ Subscription               │
-│  ├─ OnboardingSession  │  ├─ WorkspaceUsage             │
-│  ├─ WorkspaceAuditLog  │  └─ UnitEconomics              │
-│  └─ KanbanConfig       │                                 │
+│  ├─ LawList            │                                 │
+│  ├─ LawListItem ★      │  9. Compliance Workflow ★       │
+│  ├─ Task ★             │  ├─ Task                       │
+│  ├─ TaskColumn ★       │  ├─ TaskColumn                 │
+│  ├─ TaskListItemLink ★ │  ├─ TaskListItemLink           │
+│  ├─ Comment ★          │  ├─ Comment                    │
+│  ├─ Evidence ★         │  ├─ Evidence                   │
+│  └─ ActivityLog ★      │  └─ ActivityLog                │
+│                        │                                 │
+│  5. Analytics          │  10. Notifications ★            │
+│  ├─ OnboardingSession  │  ├─ Notification               │
+│  └─ WorkspaceAuditLog  │  └─ NotificationPreference     │
+│                        │                                 │
+│                        │  11. Background Jobs            │
+│                        │  └─ BackgroundJob              │
+│                        │                                 │
+│                        │  12. Billing/Usage             │
+│                        │  ├─ Subscription               │
+│                        │  ├─ WorkspaceUsage             │
+│                        │  └─ UnitEconomics              │
 │                                                           │
-│  * Redis-based, not in PostgreSQL                        │
+│  ★ = New/Updated for Epic 6                              │
+│  * = Redis-based, not in PostgreSQL                      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -78,10 +94,18 @@ model User {
   chat_messages     AIChatMessage[]
   chat_sessions     AIChatSession[]   @relation("SessionCreator")
   created_law_lists LawList[]
-  assigned_tasks    LawTask[]         @relation("TaskAssignee")
   audit_logs        WorkspaceAuditLog[]
-  notifications     NotificationPreference[]
+  notification_prefs NotificationPreference[]
   employee_notes    EmployeeNote[]    @relation("NoteAuthor")
+
+  // Epic 6: Compliance workflow relations
+  assigned_tasks    Task[]            @relation("TaskAssignee")
+  created_tasks     Task[]            @relation("TaskCreator")
+  responsible_items LawListItem[]     @relation("ResponsibleUser")
+  comments          Comment[]
+  evidence          Evidence[]
+  notifications     Notification[]
+  activity_logs     ActivityLog[]
 
   @@index([email])
   @@map("users")
@@ -157,7 +181,6 @@ model Workspace {
   members          WorkspaceMember[]
   invitations      WorkspaceInvite[]
   law_lists        LawList[]
-  laws_in_workspace LawInWorkspace[]
   employees        Employee[]
   departments      Department[]
   kollektivavtal   Kollektivavtal[]
@@ -167,9 +190,16 @@ model Workspace {
   audit_logs       WorkspaceAuditLog[]
   usage_records    WorkspaceUsage[]
   unit_economics   UnitEconomics[]
-  kanban_config    KanbanConfig?
   subscription     Subscription?
   background_jobs  BackgroundJob[]
+
+  // Epic 6: Compliance workflow relations
+  tasks            Task[]
+  task_columns     TaskColumn[]
+  comments         Comment[]
+  evidence         Evidence[]
+  notifications    Notification[]
+  activity_logs    ActivityLog[]
 
   @@index([slug])
   @@index([owner_id])
@@ -382,61 +412,66 @@ model LawList {
   @@map("law_lists")
 }
 
+// Epic 6 Revision: LawListItem is now the compliance tracking unit
+// Each list item represents independent compliance tracking for a law on a specific list
 model LawListItem {
-  id                String   @id @default(uuid())
-  law_list_id       String
-  legal_document_id String
-  position          Int      // For ordering
-  added_at          DateTime @default(now())
+  id                  String           @id @default(uuid())
+  law_list_id         String
+  legal_document_id   String
+  position            Int              // For ordering in list
+
+  // Compliance tracking (Epic 6)
+  compliance_status   ComplianceStatus @default(EJ_PABORJAD)
+  responsible_user_id String?          // Assigned responsible person
+  business_context    String?          @db.Text  // Why this law matters
+  due_date            DateTime?        // Compliance deadline
+  ai_commentary       String?          @db.Text  // AI-generated analysis
+  category            String?          // Custom categorization
+
+  added_at            DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
 
   // Relations
-  law_list          LawList       @relation(fields: [law_list_id], references: [id])
-  legal_document    LegalDocument @relation(fields: [legal_document_id], references: [id])
+  law_list            LawList          @relation(fields: [law_list_id], references: [id], onDelete: Cascade)
+  legal_document      LegalDocument    @relation(fields: [legal_document_id], references: [id])
+  responsible_user    User?            @relation("ResponsibleUser", fields: [responsible_user_id], references: [id])
+  task_links          TaskListItemLink[]  // Tasks linked to this list item
+  evidence            Evidence[]          // Evidence attached directly
+  comments            Comment[]           // Comments on this list item
 
   @@unique([law_list_id, legal_document_id])
   @@index([law_list_id])
+  @@index([legal_document_id])
+  @@index([compliance_status])
+  @@index([responsible_user_id])
   @@map("law_list_items")
+}
+
+// Swedish compliance statuses
+enum ComplianceStatus {
+  EJ_PABORJAD    // Not started (gray)
+  PAGAENDE       // In progress (blue)
+  UPPFYLLD       // Compliant (green)
+  EJ_UPPFYLLD    // Non-compliant (red)
+  EJ_TILLAMPLIG  // Not applicable (gray, strikethrough)
 }
 ```
 
-### 9.6.2 Kanban Board
+### 9.6.2 ~~Kanban Board~~ (DEPRECATED)
+
+> **⚠️ DEPRECATED (Epic 6):** LawInWorkspace replaced by LawListItem as compliance tracking unit.
+> Compliance status now tracked per list item, not per law-in-workspace.
+> **Migration:** Move status/notes to LawListItem, delete LawInWorkspace records.
 
 ```prisma
-model LawInWorkspace {
-  id                String           @id @default(uuid())
-  workspace_id      String
-  legal_document_id String
-  status            KanbanStatus     @default(NOT_STARTED)
-  priority          Priority         @default(MEDIUM)
-  assigned_to       String[]         // Array of user IDs
-  notes             String?          @db.Text
-  due_date          DateTime?
-  position          Int              // Position in column
+// DEPRECATED - Do not use in new code
+// model LawInWorkspace { ... }
+// enum KanbanStatus { ... }
+```
 
-  created_at        DateTime         @default(now())
-  updated_at        DateTime         @updatedAt
+### 9.6.2.1 Priority Enum (Retained)
 
-  // Relations
-  workspace         Workspace        @relation(fields: [workspace_id], references: [id])
-  legal_document    LegalDocument    @relation(fields: [legal_document_id], references: [id])
-  tasks             LawTask[]
-
-  @@unique([workspace_id, legal_document_id])
-  @@index([workspace_id, status])
-  @@index([assigned_to])
-  @@map("laws_in_workspace")
-}
-
-enum KanbanStatus {
-  NOT_STARTED
-  IN_PROGRESS
-  BLOCKED
-  REVIEW
-  COMPLIANT
-  CUSTOM_1    // User-defined column
-  CUSTOM_2    // User-defined column
-}
-
+```prisma
 enum Priority {
   LOW
   MEDIUM
@@ -445,52 +480,48 @@ enum Priority {
 }
 ```
 
-### 9.6.3 Task Management
+### 9.6.3 ~~Task Management~~ (DEPRECATED)
+
+> **⚠️ DEPRECATED (Epic 6):** LawTask replaced by Task entity with Kanban workflow.
+> Tasks are now first-class entities linked to LawListItems via TaskListItemLink.
+> **Migration:** Convert LawTask to Task, create TaskListItemLink for each relation.
 
 ```prisma
-model LawTask {
-  id                 String   @id @default(uuid())
-  law_in_workspace_id String
-  title              String
-  description        String?  @db.Text
-  assigned_to        String?
-  due_date           DateTime?
-  completed_at       DateTime?
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
-
-  // Relations
-  law_in_workspace   LawInWorkspace @relation(fields: [law_in_workspace_id], references: [id])
-  assignee           User?          @relation("TaskAssignee", fields: [assigned_to], references: [id])
-
-  @@index([law_in_workspace_id])
-  @@index([assigned_to])
-  @@map("law_tasks")
-}
+// DEPRECATED - Do not use in new code
+// model LawTask { ... }
 ```
 
-### 9.6.4 Kanban Customization
+### 9.6.4 Task Columns (Epic 6)
+
+> **Epic 6 Revision:** Replaced JSON-based KanbanConfig with proper TaskColumn entity
+> for user-customizable Kanban columns. Maximum 8 columns per workspace.
 
 ```prisma
-model KanbanConfig {
+model TaskColumn {
   id           String   @id @default(uuid())
-  workspace_id String   @unique
-  columns      Json     // Array of column definitions
+  workspace_id String
+  name         String   // "Att göra", "Pågående", "Klar", etc.
+  color        String   // Hex color code
+  position     Int      // Column order (0-7)
+  is_default   Boolean  @default(false)  // System-provided column
+  is_done      Boolean  @default(false)  // Tasks here count as completed
 
-  // Example columns JSON:
-  // [{
-  //   "id": "not_started",
-  //   "name": "Ej Påbörjad",
-  //   "position": 0,
-  //   "color": "#gray",
-  //   "isDefault": true
-  // }]
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
   // Relations
-  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+  workspace    Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  tasks        Task[]
 
-  @@map("kanban_configs")
+  @@unique([workspace_id, position])
+  @@index([workspace_id])
+  @@map("task_columns")
 }
+
+// Default columns created for new workspaces:
+// 1. "Att göra" (To Do) - position: 0, color: #6B7280 (gray)
+// 2. "Pågående" (In Progress) - position: 1, color: #3B82F6 (blue)
+// 3. "Klar" (Done) - position: 2, color: #22C55E (green), is_done: true
 ```
 
 ---
@@ -1202,11 +1233,273 @@ Critical indexes for query optimization based on the 38 workflows:
 
 ```sql
 -- Example RLS policy for workspace isolation
-CREATE POLICY "workspace_isolation" ON laws_in_workspace
+CREATE POLICY "workspace_isolation" ON law_list_items
+  FOR ALL USING (
+    law_list_id IN (
+      SELECT ll.id FROM law_lists ll
+      JOIN workspace_members wm ON wm.workspace_id = ll.workspace_id
+      WHERE wm.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "task_isolation" ON tasks
   FOR ALL USING (workspace_id IN (
     SELECT workspace_id FROM workspace_members
     WHERE user_id = auth.uid()
   ));
+```
+
+---
+
+## 9.16 Epic 6: Compliance Workflow Entities
+
+> **Added 2026-01-08:** New entities supporting the task-centric compliance workflow.
+
+### 9.16.1 Task
+
+First-class task entity with Kanban workflow support.
+
+```prisma
+model Task {
+  id                String    @id @default(uuid())
+  workspace_id      String
+  column_id         String    // Current Kanban column
+  title             String
+  description       String?   @db.Text
+
+  // Assignment & scheduling
+  assignee_id       String?
+  created_by        String
+  due_date          DateTime?
+  priority          Priority  @default(MEDIUM)
+
+  // Position in column for drag-and-drop
+  position          Int
+
+  // Timestamps
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  completed_at      DateTime?
+
+  // Relations
+  workspace         Workspace   @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  column            TaskColumn  @relation(fields: [column_id], references: [id])
+  assignee          User?       @relation("TaskAssignee", fields: [assignee_id], references: [id])
+  creator           User        @relation("TaskCreator", fields: [created_by], references: [id])
+  list_item_links   TaskListItemLink[]
+  comments          Comment[]
+  evidence          Evidence[]
+
+  @@index([workspace_id])
+  @@index([column_id])
+  @@index([assignee_id])
+  @@index([due_date])
+  @@map("tasks")
+}
+```
+
+### 9.16.2 TaskListItemLink
+
+Many-to-many relationship between Tasks and LawListItems.
+Enables a task to be linked to multiple laws, and a law to have multiple tasks.
+
+```prisma
+model TaskListItemLink {
+  id              String   @id @default(uuid())
+  task_id         String
+  law_list_item_id String
+  created_at      DateTime @default(now())
+
+  // Relations
+  task            Task        @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  law_list_item   LawListItem @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+
+  @@unique([task_id, law_list_item_id])
+  @@index([task_id])
+  @@index([law_list_item_id])
+  @@map("task_list_item_links")
+}
+```
+
+### 9.16.3 Comment
+
+Threaded comments supporting 3-level nesting and @mentions.
+
+```prisma
+model Comment {
+  id                String    @id @default(uuid())
+  workspace_id      String
+  author_id         String
+  content           String    @db.Text
+  mentions          String[]  // Array of mentioned user IDs
+
+  // Polymorphic parent (one of these must be set)
+  task_id           String?
+  law_list_item_id  String?
+
+  // Threading (max 3 levels)
+  parent_id         String?
+  depth             Int       @default(0)  // 0 = root, 1 = reply, 2 = reply-to-reply
+
+  // Timestamps
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  edited_at         DateTime?
+
+  // Relations
+  workspace         Workspace    @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  author            User         @relation(fields: [author_id], references: [id])
+  task              Task?        @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  law_list_item     LawListItem? @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+  parent            Comment?     @relation("CommentThread", fields: [parent_id], references: [id])
+  replies           Comment[]    @relation("CommentThread")
+
+  @@index([workspace_id])
+  @@index([task_id])
+  @@index([law_list_item_id])
+  @@index([parent_id])
+  @@index([author_id])
+  @@map("comments")
+}
+```
+
+### 9.16.4 Evidence
+
+File attachments stored in Supabase Storage.
+Evidence attached to tasks flows up to linked list items for compliance visibility.
+
+```prisma
+model Evidence {
+  id                String   @id @default(uuid())
+  workspace_id      String
+  uploaded_by       String
+
+  // File metadata
+  filename          String
+  file_size         Int      // Bytes
+  mime_type         String
+  storage_path      String   // Supabase Storage path
+
+  // Optional description
+  description       String?  @db.Text
+
+  // Polymorphic parent (one of these must be set)
+  task_id           String?
+  law_list_item_id  String?
+
+  // Timestamps
+  created_at        DateTime @default(now())
+
+  // Relations
+  workspace         Workspace    @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  uploader          User         @relation(fields: [uploaded_by], references: [id])
+  task              Task?        @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  law_list_item     LawListItem? @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id])
+  @@index([task_id])
+  @@index([law_list_item_id])
+  @@map("evidence")
+}
+```
+
+### 9.16.5 Notification
+
+In-app notification system for user alerts.
+
+```prisma
+model Notification {
+  id           String           @id @default(uuid())
+  workspace_id String
+  user_id      String           // Recipient
+  type         NotificationType
+
+  // Content
+  title        String
+  body         String?          @db.Text
+
+  // Link to related entity
+  entity_type  String?          // 'task', 'comment', 'list_item', etc.
+  entity_id    String?
+
+  // Status
+  read_at      DateTime?
+  created_at   DateTime         @default(now())
+
+  // Relations
+  workspace    Workspace        @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [user_id], references: [id])
+
+  @@index([user_id, read_at])
+  @@index([workspace_id])
+  @@index([created_at])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_DUE_SOON      // 3 days before due
+  TASK_OVERDUE
+  COMMENT_ADDED
+  MENTION            // @mention in comment
+  STATUS_CHANGED
+  WEEKLY_DIGEST
+}
+```
+
+### 9.16.6 ActivityLog
+
+Audit trail for compliance activities on list items and tasks.
+
+```prisma
+model ActivityLog {
+  id           String   @id @default(uuid())
+  workspace_id String
+  user_id      String
+
+  // What changed
+  entity_type  String   // 'list_item', 'task', 'comment', 'evidence'
+  entity_id    String
+  action       String   // 'created', 'updated', 'deleted', 'status_changed', etc.
+
+  // Change details
+  old_value    Json?
+  new_value    Json?
+
+  created_at   DateTime @default(now())
+
+  // Relations
+  workspace    Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [user_id], references: [id])
+
+  @@index([workspace_id, created_at])
+  @@index([entity_type, entity_id])
+  @@index([user_id])
+  @@map("activity_logs")
+}
+```
+
+---
+
+## 9.17 Epic 6 Performance Indexes
+
+Additional indexes for Epic 6 compliance workflow queries:
+
+```prisma
+// Task Kanban board
+@@index([workspace_id, column_id, position])  // Load column tasks in order
+@@index([assignee_id, due_date])              // "My tasks due soon"
+
+// Evidence gallery
+@@index([task_id, created_at])                // Task evidence timeline
+@@index([law_list_item_id, created_at])       // List item evidence
+
+// Activity timeline
+@@index([entity_type, entity_id, created_at]) // Entity history
+@@index([workspace_id, created_at DESC])      // Global activity feed
+
+// Notification badge
+@@index([user_id, read_at])                   // Unread count
 ```
 
 ---
