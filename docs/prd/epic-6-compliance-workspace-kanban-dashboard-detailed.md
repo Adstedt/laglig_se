@@ -46,15 +46,17 @@ This supports organizations with multiple facilities, departments, or compliance
 
 ---
 
-## Story 6.1: Build Dashboard Summary View
+## Story 6.1: Refactor Dashboard Summary View
 
 **As a** user,
 **I want** to see a dashboard when I log in,
 **so that** I get an overview of my compliance status and priorities.
 
+**Implementation Note:** Dashboard already exists at `/dashboard` (basic version). This story refactors it with compliance-focused widgets.
+
 **Acceptance Criteria:**
 
-1. Dashboard page created at `/dashboard` (default landing after login)
+1. Refactor existing dashboard page at `/dashboard` (default landing after login)
 2. **Compliance Progress Ring:** Circular progress chart showing % of list items marked "Uppfylld" vs total
 3. **Task Summary Cards:**
    - Förfallna uppgifter (overdue count, red)
@@ -70,15 +72,17 @@ This supports organizations with multiple facilities, departments, or compliance
 
 ---
 
-## Story 6.2: Build Law List Compliance View
+## Story 6.2: Enhance Law List with Compliance View
 
 **As a** user,
 **I want** to see my law list with compliance status per item,
 **so that** I know which laws need attention.
 
+**Implementation Note:** Law list table already exists with good UX. This story enhances it with compliance-specific columns and functionality rather than replacing the existing table.
+
 **Acceptance Criteria:**
 
-1. Law List page displays all list items for selected list
+1. Enhance existing law list table to display compliance data per list item
 2. Each row shows:
    - Legal document title
    - SFS/document number
@@ -108,61 +112,135 @@ This supports organizations with multiple facilities, departments, or compliance
 **I want** to click a law in my list to open a detailed modal,
 **so that** I can manage compliance for that specific law in context.
 
+**Design Reference:** Mimic Jira's issue modal layout as closely as possible while maintaining Laglig's design language.
+
 **Acceptance Criteria:**
 
-1. Clicking list item opens large modal (80% viewport, Jira-style)
+1. Clicking list item opens large modal (80% viewport width, 90% height, Jira-style)
 2. Modal is scoped to that specific list item (not the global legal document)
 
-**Modal Header:** 3. Legal document title + SFS number 4. Category badge 5. Compliance status dropdown (editable) 6. Responsible person selector 7. "Visa fullständig lag" link → Opens law detail page in new tab 8. Close button (X) + ESC key closes modal
+**Modal Layout (Two-Panel Jira-Style):**
 
-**Modal Tabs:** 9. **Översikt (Overview):**
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ [Breadcrumb: List Name / Law Title]                    [X] Close        │
+├─────────────────────────────────────────────┬───────────────────────────┤
+│                                             │                           │
+│  LEFT PANEL (60% width, SCROLLABLE)         │  RIGHT PANEL (40% width)  │
+│  ─────────────────────────────────────────  │  STATIC (fixed position)  │
+│                                             │                           │
+│  ┌─ Law Title + SFS Number ─────────────┐   │  ┌─ Detaljer ───────────┐ │
+│  │ Arbetsmiljölagen (1977:1160)         │   │  │                      │ │
+│  │ [Category Badge] [Status Dropdown ▼] │   │  │ Status: [Dropdown ▼] │ │
+│  └──────────────────────────────────────┘   │  │ Ansvarig: [User ▼]   │ │
+│                                             │  │ Skapad: 2025-01-01   │ │
+│  ┌─ Lagtext (collapsible) ──────────────┐   │  │ Uppdaterad: 2025-01-08│ │
+│  │ Actual law content from legal_doc    │   │  │                      │ │
+│  │ in scrollable container (max 300px)  │   │  └──────────────────────┘ │
+│  │ "Visa mer" expands, "Visa mindre"    │   │                           │
+│  └──────────────────────────────────────┘   │  ┌─ Snabblänkar ────────┐ │
+│                                             │  │ [Visa fullständig lag]│ │
+│  ┌─ Affärskontext ──────────────────────┐   │  │ [Fråga AI om lagen]  │ │
+│  │ "Hur påverkar denna lag oss?"        │   │  └──────────────────────┘ │
+│  │ [Markdown textarea, auto-saves]      │   │                           │
+│  └──────────────────────────────────────┘   │  ┌─ Uppgifter ──────────┐ │
+│                                             │  │ 3/5 klara            │ │
+│  ┌─ Aktivitet ──────────────────────────┐   │  │ [Progress bar]       │ │
+│  │ [Alla] [Kommentarer] [Uppgifter]     │   │  │ • Uppgift 1 ✓        │ │
+│  │ [Bevis] [Historik]                   │   │  │ • Uppgift 2 ⏳       │ │
+│  │                                      │   │  │ • Uppgift 3 ○        │ │
+│  │ Tab content scrolls here...          │   │  │ [+ Skapa uppgift]    │ │
+│  │ - Comments (threaded)                │   │  └──────────────────────┘ │
+│  │ - Task list                          │   │                           │
+│  │ - Evidence grid                      │   │  ┌─ Bevis ──────────────┐ │
+│  │ - History log                        │   │  │ 4 filer              │ │
+│  │                                      │   │  │ [📄] [📄] [📄] [📄] │ │
+│  └──────────────────────────────────────┘   │  └──────────────────────┘ │
+│                                             │                           │
+└─────────────────────────────────────────────┴───────────────────────────┘
+```
 
-- Business context textarea: "Hur påverkar denna lag oss?"
-- Markdown supported, auto-saves
-- AI summary of the law (read-only, from Epic 3)
-- Quick stats: X tasks, Y evidence files, last updated date
+**Modal Header:** 3. Breadcrumb showing: List name → Law title 4. Close button (X) top-right + ESC key closes modal
 
-10. **Uppgifter (Tasks):**
-    - List of tasks linked to this list item
-    - Task cards show: title, status badge, assignee avatar, due date
-    - "Skapa uppgift" button → Task creation form
+**Left Panel (Scrollable - 60% width):** 5. **Law Header:** Title + SFS number + Category badge + Status dropdown 6. **Lagtext Section (Collapsible):**
+
+- Shows actual legal document content from the linked legal_document
+- Initial view: First 300px with gradient fade
+- "Visa mer" button expands to show full content (scrollable within section)
+- "Visa mindre" collapses back
+- Helps users reference the actual law without leaving modal
+
+7. **Affärskontext (Business Context):**
+   - Textarea: "Hur påverkar denna lag oss?"
+   - Markdown supported, auto-saves on blur
+   - Placeholder text guiding user
+8. **Aktivitet Section with Tabs:**
+   - **Alla:** Combined feed of comments, task updates, evidence uploads, changes
+   - **Kommentarer:** Threaded comments (Jira-style)
+   - **Uppgifter:** Task list with status, click opens Task Modal
+   - **Bevis:** Evidence grid/list with previews
+   - **Historik:** Audit log of all changes
+
+**Right Panel (Static/Fixed - 40% width):** 9. **Detaljer Box:**
+
+- Status dropdown (Ej påbörjad, Pågående, Uppfylld, Ej uppfylld, Ej tillämplig)
+- Ansvarig (Responsible person selector)
+- Created date
+- Last updated date
+
+10. **Snabblänkar Box:**
+    - "Visa fullständig lag" → Opens law detail page in new tab
+    - "Fråga AI om lagen" → Opens AI chat with law context
+11. **Uppgifter Summary Box:**
+    - Task progress: "3/5 klara" with progress bar
+    - List of tasks (max 5 shown) with status indicators
     - Click task → Opens Task Modal (Story 6.6)
+    - "+ Skapa uppgift" button
+12. **Bevis Summary Box:**
+    - File count: "4 filer"
+    - Thumbnail grid of recent evidence
+    - Click → Scrolls to Evidence tab in left panel
 
-11. **Bevis (Evidence):**
-    - Grid/list of evidence files attached to tasks for this list item
-    - Evidence "flows up" from tasks
-    - Each file shows: filename, upload date, uploader, linked task
-    - Preview capability for images/PDFs
-    - Download button
-
-12. **Historik (History):**
-    - Audit log of all changes to this list item
-    - Entries: status changes, responsible changes, context edits
-    - Format: "Anna ändrade status från Pågående till Uppfylld - 2025-01-07 14:32"
-    - Filterable by action type
-
-**Mobile Behavior:** 13. Modal becomes full-screen on mobile 14. Tabs become horizontal scrollable pills
+**Mobile Behavior:** 13. Modal becomes full-screen on mobile 14. Two-panel layout collapses to single column (left panel content, then right panel details below) 15. Tabs become horizontal scrollable pills
 
 ---
 
-## Story 6.4: Implement Task Workspace (Kanban + List View)
+## Story 6.4: Implement Task Workspace (Jira-Style with Tabs)
 
 **As a** user,
 **I want** a dedicated workspace to manage all my tasks,
 **so that** I can track compliance work across all laws.
 
+**Design Reference:** Mimic Jira's project workspace with tab-based navigation (Summary, Active sprints, List, Calendar, All work).
+
 **Acceptance Criteria:**
 
 1. Task Workspace page at `/workspace/tasks`
-2. Toggle between Kanban view and List view
+2. **Tab Navigation Bar** (Jira-style, horizontal tabs below header):
 
-**Kanban View:** 3. Default columns (Swedish): Att göra, Pågående, Klar 4. Drag-and-drop tasks between columns 5. Task cards show: title, linked law badge, assignee avatar, due date, priority indicator 6. Overdue tasks highlighted (red border) 7. Column headers show count: "Pågående (5)"
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Uppgifter                                            [+ Ny uppgift]    │
+├─────────────────────────────────────────────────────────────────────────┤
+│  [Sammanfattning] [Aktiva] [Lista] [Kalender] [Alla uppgifter]          │
+│  ─────────────────────────────────────────────────────────────────────  │
+│  [Search...] [Filter ▼] [Assignee ▼] [Type ▼] [More filters ▼]         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
-**List View:** 8. Table with columns: Task title, Status, Linked law, Assignee, Due date, Priority 9. Sortable columns 10. Bulk select + bulk actions
+**Tab 1: Sammanfattning (Summary):** 3. Status overview donut chart: Open, In Progress, Done counts 4. Priority breakdown bar chart: Blocker, Critical, Major, Minor counts 5. Recent activity feed (last 10 task updates) 6. Team workload distribution (tasks per assignee) 7. Overdue tasks alert section 8. "View all work items" link → Alla uppgifter tab
 
-**Filtering (both views):** 11. Filter by: status, assignee, linked law/list, due date range, priority 12. Search by task title 13. Filter state persisted in URL
+**Tab 2: Aktiva (Active - Kanban Board):** 9. Default columns (Swedish): Att göra, Pågående, Klar 10. Drag-and-drop tasks between columns 11. Task cards show: title, linked law badge, assignee avatar, due date, priority indicator 12. Overdue tasks highlighted (red border) 13. Column headers show count: "Pågående (5)" 14. Swimlanes option: Group by assignee (like Jira screenshot)
 
-**Performance:** 14. Smooth with 200+ tasks 15. Virtual scrolling for list view if needed
+**Tab 3: Lista (List View):** 15. Table with columns: Type icon, Key, Summary, Status, Comments, Assignee, Due date, Priority, Labels 16. Sortable columns (click header) 17. Inline quick-edit for status 18. Bulk select + bulk actions (change status, assign, delete) 19. Customizable columns (show/hide via settings)
+
+**Tab 4: Kalender (Calendar View):** 20. Monthly calendar grid 21. Tasks displayed on their due dates 22. Sprint/period bars shown across date ranges (if applicable) 23. Click date → Create task with that due date 24. Click task → Opens Task Modal 25. Filter by assignee, status, type
+
+**Tab 5: Alla uppgifter (All Work):** 26. Complete history of all tasks ever created 27. Includes completed/archived tasks 28. Table view with full filtering capability 29. Status filter includes: All, Open, In Progress, Done, Archived 30. Export to CSV option
+
+**Filtering (all tabs except Summary):** 31. Filter by: status, assignee, linked law/list, due date range, priority, labels 32. Search by task title/description 33. Filter state persisted in URL 34. Quick filters: "My tasks", "Overdue", "Due this week"
+
+**Performance:** 35. Smooth with 200+ tasks 36. Virtual scrolling for list views 37. Lazy-load calendar events by visible month
 
 ---
 
@@ -192,27 +270,70 @@ This supports organizations with multiple facilities, departments, or compliance
 **I want** to click a task to see full details,
 **so that** I can manage task execution and collaboration.
 
+**Design Reference:** Use SAME proportions as Legal Document Modal (Story 6.3) for UX consistency - users should "feel at home" switching between modals.
+
 **Acceptance Criteria:**
 
-1. Clicking task opens large modal (Jira-style, 70% viewport)
+1. Clicking task opens large modal (80% viewport width, 90% height - SAME as Legal Document Modal)
 
-**Modal Header:** 2. Task title (editable inline) 3. Status dropdown (moves task between columns) 4. Priority dropdown: Hög, Medium, Låg 5. Close button (X) + ESC key
+**Modal Layout (Two-Panel - Matching Legal Document Modal):**
 
-**Modal Left Panel (Main Content):** 6. **Beskrivning:** Rich text editor (markdown), auto-saves 7. **Aktivitet:** Tabs for Alla, Kommentarer, Historik 8. **Comments:**
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ [Breadcrumb: Uppgifter / Task Title]                   [X] Close        │
+├─────────────────────────────────────────────┬───────────────────────────┤
+│                                             │                           │
+│  LEFT PANEL (60% width, SCROLLABLE)         │  RIGHT PANEL (40% width)  │
+│  ─────────────────────────────────────────  │  STATIC (fixed position)  │
+│                                             │                           │
+│  ┌─ Task Title (editable) ──────────────┐   │  ┌─ Detaljer ───────────┐ │
+│  │ [Inline edit on click]               │   │  │ Status: [Dropdown ▼] │ │
+│  │ [Status Badge] [Priority Badge]      │   │  │ Ansvarig: [User ▼]   │ │
+│  └──────────────────────────────────────┘   │  │ Förfallodatum: [📅]  │ │
+│                                             │  │ Prioritet: [▼]       │ │
+│  ┌─ Beskrivning ────────────────────────┐   │  │ Skapad: 2025-01-01   │ │
+│  │ [Rich text editor, markdown]         │   │  │ Av: Anna Andersson   │ │
+│  │ [Auto-saves on blur]                 │   │  └──────────────────────┘ │
+│  └──────────────────────────────────────┘   │                           │
+│                                             │  ┌─ Länkade lagar ──────┐ │
+│  ┌─ Aktivitet ──────────────────────────┐   │  │ • Arbetsmiljölagen   │ │
+│  │ [Alla] [Kommentarer] [Historik]      │   │  │ • GDPR               │ │
+│  │                                      │   │  │ [+ Lägg till länk]   │ │
+│  │ Comment input box at top:            │   │  └──────────────────────┘ │
+│  │ ┌──────────────────────────────────┐ │   │                           │
+│  │ │ "Lägg till en kommentar..."      │ │   │  ┌─ Bevis ──────────────┐ │
+│  │ │ [Suggest reply] [Status update]  │ │   │  │ [Drag files here]    │ │
+│  │ └──────────────────────────────────┘ │   │  │ 📄 policy.pdf        │ │
+│  │                                      │   │  │ 📄 checklist.xlsx    │ │
+│  │ Threaded comments below...           │   │  │ [+ Välj fil]         │ │
+│  │ History entries...                   │   │  └──────────────────────┘ │
+│  │                                      │   │                           │
+│  └──────────────────────────────────────┘   │  ┌─ Etiketter ──────────┐ │
+│                                             │  │ [GDPR] [Urgent] [+]  │ │
+│                                             │  └──────────────────────┘ │
+└─────────────────────────────────────────────┴───────────────────────────┘
+```
 
-- Threaded replies (Jira-style)
-- User avatar + name + timestamp
-- Markdown supported in comments
-- Edit/delete own comments
-- "Svara" button for threading
+**Modal Header:** 2. Breadcrumb: "Uppgifter / [Task Title]" 3. Close button (X) + ESC key closes modal
 
-9. **History:**
-   - All changes: status, assignee, due date, description edits
-   - Format: "Anna ändrade status till Klar - 2025-01-07"
+**Left Panel (Scrollable - 60% width):** 4. **Task Title:** Large, editable inline on click 5. **Status + Priority Badges:** Visual indicators below title 6. **Beskrivning:** Rich text editor (markdown), auto-saves on blur 7. **Aktivitet Section with Tabs:**
 
-**Modal Right Panel (Details Sidebar):** 10. **Ansvarig:** User selector dropdown 11. **Förfallodatum:** Date picker (hard deadline) 12. **Prioritet:** Hög/Medium/Låg selector 13. **Länkade lagar:** List of linked list items with badges - Click → Opens that Legal Document Modal - "Lägg till länk" → Search and add more list items 14. **Bevis (Evidence):** - File upload area (drag-and-drop) - List of attached files with preview/download - Upload to Supabase Storage - Accepted types: PDF, images, Office docs - Max file size: 25MB 15. **Etiketter (Labels):** Tag input for custom labels
+- **Alla:** Combined feed of comments and history
+- **Kommentarer:** Threaded comments only
+- **Historik:** Change log only
 
-**Footer:** 16. Created date + creator 17. Last updated date 18. "Radera uppgift" button (with confirmation)
+8. **Comment Input Box (always visible at top of Aktivitet):**
+   - Avatar + "Lägg till en kommentar..." placeholder
+   - Quick action buttons: "Suggest a reply...", "Status update...", "Thanks..."
+   - Like Jira's comment input with suggestions
+
+**Comments (Jira-style threaded):** 9. Threaded replies with nesting 10. User avatar + name + timestamp 11. Markdown supported in comments 12. Edit/delete own comments (with "Redigerad" indicator) 13. "Svara" button for threading 14. @mentions with autocomplete
+
+**History:** 15. All changes: status, assignee, due date, description edits 16. Format: "Anna ändrade status till Klar - 2025-01-07 14:32"
+
+**Right Panel (Static/Fixed - 40% width):** 17. **Detaljer Box:** - Status dropdown (moves task between columns) - Ansvarig: User selector dropdown - Förfallodatum: Date picker (hard deadline) - Prioritet: Hög/Medium/Låg selector - Skapad: Date + creator name 18. **Länkade lagar Box:** - List of linked list items with category badges - Click → Opens that Legal Document Modal - "+ Lägg till länk" → Search and add more list items - Shows "relates to" / "blocked by" relationship types (future) 19. **Bevis Box:** - Drag-and-drop zone - List of attached files with icons - Preview on hover for images - Upload to Supabase Storage - Accepted types: PDF, images, Office docs - Max file size: 25MB 20. **Etiketter Box:** - Tag input for custom labels - Click to add, X to remove
+
+**Footer:** 21. Created date + creator (subtle text) 22. Last updated timestamp 23. "Radera uppgift" button (with confirmation modal)
 
 ---
 
