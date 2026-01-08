@@ -14,7 +14,7 @@
 
 **FR6:** The AI chatbot SHALL stream components (law cards, task suggestions) back to the frontend based on conversation context, enabling intelligent workflow automation.
 
-**FR7:** The system SHALL provide a Kanban-style compliance workspace with columns (Not Started, In Progress, Blocked, Review, Compliant) where users can drag law cards and add notes.
+**FR7:** The system SHALL provide a compliance workflow system with: (a) Law List as the primary compliance view displaying list items with manual compliance status (Ej påbörjad, Pågående, Klar, Ej tillämpbar), responsible person assignment, task progress indicators, and due dates; (b) Legal Document Modal (Jira-style two-panel: 60% scrollable left, 40% static right) containing AI summary, contextual commentary, related documents, task list, evidence gallery, activity log, and collapsible legal text; (c) Task Workspace with customizable Kanban columns (default: Att göra, Pågående, Klar; user-configurable up to 8 columns) plus List, Calendar, and Summary views; (d) Task Modal (same two-panel layout) for task details, assignees, due dates, evidence uploads, and threaded comments; supporting multi-list scenarios where the same legal document can appear on different lists with independent compliance tracking per list item.
 
 **FR8:** The system SHALL monitor all legal content types daily (SFS laws via Riksdagen API, court cases via Domstolsverket API, EU legislation via EUR-Lex API) and detect changes (amendments, new sections, repeals, metadata updates), storing complete change history indefinitely.
 
