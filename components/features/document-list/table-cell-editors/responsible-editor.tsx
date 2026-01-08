@@ -1,7 +1,8 @@
 'use client'
 
 /**
- * Story 4.12: Inline Assignee Editor for Table View
+ * Story 6.2: Inline Responsible Person Editor for Table View
+ * Similar to AssigneeEditor but for compliance responsible (responsible_user_id)
  */
 
 import { useState } from 'react'
@@ -16,10 +17,11 @@ import { Loader2, User } from 'lucide-react'
 import type { WorkspaceMemberOption } from '@/app/actions/document-list'
 import { cn } from '@/lib/utils'
 
-interface AssigneeEditorProps {
+interface ResponsibleEditorProps {
   value: string | null
   members: WorkspaceMemberOption[]
   onChange: (_value: string | null) => Promise<void>
+  className?: string
 }
 
 function getInitials(name: string | null, email: string): string {
@@ -33,11 +35,12 @@ function getInitials(name: string | null, email: string): string {
   return email.substring(0, 2).toUpperCase()
 }
 
-export function AssigneeEditor({
+export function ResponsibleEditor({
   value,
   members,
   onChange,
-}: AssigneeEditorProps) {
+  className,
+}: ResponsibleEditorProps) {
   const [isLoading, setIsLoading] = useState(false)
   const currentMember = members.find((m) => m.id === value)
 
@@ -62,7 +65,8 @@ export function AssigneeEditor({
       <SelectTrigger
         className={cn(
           'h-9 w-10 border-0 bg-transparent hover:bg-muted/50 focus:ring-0 p-0 justify-center [&>svg]:hidden',
-          isLoading && 'opacity-50'
+          isLoading && 'opacity-50',
+          className
         )}
         title={currentMember?.name || currentMember?.email || 'Ej tilldelad'}
       >

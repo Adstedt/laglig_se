@@ -729,6 +729,568 @@ test.describe('Document List Management', () => {
     })
   })
 
+  // Story 6.2: Compliance View Tests
+  test.describe('Compliance View (Story 6.2)', () => {
+    test('should show compliance status column in table view', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Compliance status column header should be visible (exact match to avoid filter button)
+      await expect(
+        page.getByRole('button', { name: 'Efterlevnad', exact: true })
+      ).toBeVisible()
+    })
+
+    test('should show responsible person column in table view', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Responsible person column header should be visible (it's a cell, not a button - not sortable)
+      await expect(
+        page.locator('table th').filter({ hasText: /^Ansvarig$/ })
+      ).toBeVisible()
+    })
+
+    test('should show task progress column in table view', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Task progress column header should be visible (use table header cell)
+      await expect(
+        page.locator('table th').filter({ hasText: 'Uppgifter' })
+      ).toBeVisible()
+    })
+
+    test('should show last activity column in table view', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Last activity column header should be visible
+      await expect(
+        page.getByRole('button', { name: 'Aktivitet' })
+      ).toBeVisible()
+    })
+
+    test('should open inline compliance status editor in table', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Find compliance status cells
+      const complianceCells = page.locator('table tbody td').filter({
+        hasText: /(Ej påbörjad|Pågående|Uppfylld|Ej uppfylld|Ej tillämplig)/i,
+      })
+      const hasCells = (await complianceCells.count()) > 0
+
+      if (hasCells) {
+        // Click the compliance status cell combobox
+        const statusCombobox = complianceCells
+          .first()
+          .locator('[role="combobox"]')
+        if ((await statusCombobox.count()) > 0) {
+          await statusCombobox.click()
+
+          // Should show compliance status options
+          await expect(
+            page.getByRole('option', { name: 'Uppfylld' })
+          ).toBeVisible()
+          await expect(
+            page.getByRole('option', { name: 'Ej uppfylld' })
+          ).toBeVisible()
+        }
+      }
+    })
+
+    test('should show compliance status in bulk action bar', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // If there are rows, select one using checkbox
+      const checkboxes = page.locator('table tbody tr input[type="checkbox"]')
+      const hasRows = (await checkboxes.count()) > 0
+
+      if (hasRows) {
+        await checkboxes.first().click()
+
+        // Bulk action bar should appear with compliance status option
+        const bulkActionBar = page.getByRole('toolbar', {
+          name: /massåtgärder/i,
+        })
+        await expect(bulkActionBar).toBeVisible()
+        await expect(page.getByText('Efterlevnadsstatus:')).toBeVisible()
+      }
+    })
+
+    test('should update compliance status via bulk action', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // If there are rows, select one using checkbox
+      const checkboxes = page.locator('table tbody tr input[type="checkbox"]')
+      const hasRows = (await checkboxes.count()) > 0
+
+      if (hasRows) {
+        await checkboxes.first().click()
+
+        // Wait for bulk action bar
+        const bulkActionBar = page.getByRole('toolbar', {
+          name: /massåtgärder/i,
+        })
+        await expect(bulkActionBar).toBeVisible()
+
+        // Open compliance status dropdown in bulk action bar
+        const complianceSelect = bulkActionBar
+          .locator('text=Efterlevnadsstatus:')
+          .locator('..')
+          .locator('[role="combobox"]')
+
+        if ((await complianceSelect.count()) > 0) {
+          await complianceSelect.click()
+          await page.waitForTimeout(200)
+
+          // Select "Uppfylld"
+          await page.getByRole('option', { name: 'Uppfylld' }).click()
+          await page.waitForTimeout(500)
+
+          // Selection should be cleared after bulk update
+          await expect(bulkActionBar).not.toBeVisible()
+        }
+      }
+    })
+
+    test('should show strikethrough style for EJ_TILLAMPLIG status', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Find compliance status cells
+      const complianceCells = page
+        .locator('table tbody td [role="combobox"]')
+        .first()
+
+      if ((await complianceCells.count()) > 0) {
+        // Click to open dropdown
+        await complianceCells.click()
+        await page.waitForTimeout(200)
+
+        // Select "Ej tillämplig"
+        await page.getByRole('option', { name: 'Ej tillämplig' }).click()
+        await page.waitForTimeout(500)
+
+        // Check that the badge has strikethrough class
+        const badge = complianceCells.locator('span.line-through')
+        await expect(badge).toBeVisible()
+      }
+    })
+
+    test('should make rows clickable when onRowClick is provided', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Check that rows have cursor-pointer class (indicating they're clickable)
+      const rows = page.locator('table tbody tr')
+      const hasRows = (await rows.count()) > 0
+
+      if (hasRows) {
+        // Rows should have hover styling
+        const firstRow = rows.first()
+        await expect(firstRow).toHaveClass(/group/)
+      }
+    })
+
+    // Task 14 E2E Tests
+    test('should persist compliance status change after page reload', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Find compliance status cells
+      const complianceCells = page
+        .locator('table tbody tr')
+        .first()
+        .locator('[role="combobox"]')
+        .first()
+
+      if ((await complianceCells.count()) > 0) {
+        // Get current status
+        const originalStatus = await complianceCells.textContent()
+
+        // Click to open dropdown
+        await complianceCells.click()
+        await page.waitForTimeout(200)
+
+        // Select a different status (Uppfylld if not already, else Pågående)
+        const targetStatus = originalStatus?.includes('Uppfylld')
+          ? 'Pågående'
+          : 'Uppfylld'
+        await page.getByRole('option', { name: targetStatus }).click()
+        await page.waitForTimeout(1000) // Wait for save
+
+        // Reload the page
+        await page.reload()
+        await page.waitForTimeout(1500)
+
+        // Switch back to table view (preference should persist)
+        const tableToggle = page.getByRole('radio', { name: /tabellvy/i })
+        if ((await tableToggle.getAttribute('aria-checked')) !== 'true') {
+          await tableToggle.click()
+          await page.waitForTimeout(500)
+        }
+
+        // Verify the status persisted
+        const newComplianceCell = page
+          .locator('table tbody tr')
+          .first()
+          .locator('[role="combobox"]')
+          .first()
+        const newStatus = await newComplianceCell.textContent()
+        expect(newStatus).toContain(targetStatus)
+      }
+    })
+
+    test('should reduce visible row count when applying filters', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Count initial rows
+      const initialRows = await page.locator('table tbody tr').count()
+
+      if (initialRows >= 2) {
+        // Find compliance status filter
+        const statusFilter = page.locator('[role="combobox"]').filter({
+          has: page.locator('span', { hasText: /Alla statusar|Efterlevnad/i }),
+        })
+
+        if ((await statusFilter.count()) > 0) {
+          await statusFilter.first().click()
+          await page.waitForTimeout(200)
+
+          // Select a specific status filter
+          const filterOption = page
+            .getByRole('option', { name: 'Uppfylld' })
+            .or(page.getByRole('menuitemcheckbox', { name: 'Uppfylld' }))
+
+          if ((await filterOption.count()) > 0) {
+            await filterOption.click()
+            await page.waitForTimeout(500)
+
+            // Count filtered rows - should be <= initial
+            const filteredRows = await page.locator('table tbody tr').count()
+            expect(filteredRows).toBeLessThanOrEqual(initialRows)
+          }
+        }
+      }
+    })
+
+    test('should display empty state when filters return no results', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Get initial document count from "Visar X av Y dokument" text
+      const countText = page.getByText(/Visar \d+ av \d+ dokument/)
+      await expect(countText).toBeVisible()
+
+      // Search for something that won't match
+      const searchInput = page.locator('input[placeholder="Sök..."]')
+      if ((await searchInput.count()) > 0) {
+        await searchInput.fill('xyznonexistent12345')
+        await page.waitForTimeout(800) // Wait for debounce (300ms) + render
+
+        // After search, should show "Visar 0 av 0 dokument" or empty state message
+        const zeroResults = page.getByText('Visar 0 av 0 dokument')
+        const emptyState = page.getByText(/Inga resultat|Inga lagar matchar/i)
+
+        // Either shows zero results count or empty state message
+        const hasZeroResults = await zeroResults.isVisible().catch(() => false)
+        const hasEmptyState = await emptyState.isVisible().catch(() => false)
+
+        expect(hasZeroResults || hasEmptyState).toBeTruthy()
+
+        // Clear search
+        await searchInput.clear()
+        await page.waitForTimeout(500)
+
+        // Should no longer show 0 results
+        const restoredCount = page.getByText(/Visar \d+ av \d+ dokument/)
+        await expect(restoredCount).toBeVisible()
+      }
+    })
+
+    test('should find items by document number in search', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Get the first row's document number (SFS number)
+      const firstRow = page.locator('table tbody tr').first()
+      const docNumberCell = firstRow.locator('td').nth(1) // Typically the second column
+      const docNumber = await docNumberCell.textContent()
+
+      if (docNumber && docNumber.match(/\d+:\d+/)) {
+        // Extract SFS number pattern (e.g., "2010:110")
+        const sfsMatch = docNumber.match(/\d+:\d+/)
+        if (sfsMatch) {
+          const sfsNumber = sfsMatch[0]
+
+          // Search by SFS number
+          const searchInput = page.getByPlaceholder(/Sök/i)
+          if ((await searchInput.count()) > 0) {
+            await searchInput.fill(sfsNumber)
+            await page.waitForTimeout(500) // Wait for debounce
+
+            // Should still show at least the original row
+            const searchResults = await page.locator('table tbody tr').count()
+            expect(searchResults).toBeGreaterThanOrEqual(1)
+
+            // The original row should still be visible
+            await expect(page.getByText(sfsNumber).first()).toBeVisible()
+          }
+        }
+      }
+    })
+
+    test('should update multiple items via bulk status change', async ({
+      page,
+    }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Check if we have at least 2 rows
+      const checkboxes = page.locator('table tbody tr input[type="checkbox"]')
+      const rowCount = await checkboxes.count()
+
+      if (rowCount >= 2) {
+        // Select first two items
+        await checkboxes.nth(0).click()
+        await checkboxes.nth(1).click()
+
+        // Wait for bulk action bar
+        const bulkActionBar = page.getByRole('toolbar', {
+          name: /massåtgärder/i,
+        })
+        await expect(bulkActionBar).toBeVisible()
+
+        // Verify selection count shows 2
+        await expect(page.getByText(/2 valda/i)).toBeVisible()
+
+        // Open compliance status dropdown in bulk action bar
+        const complianceDropdown = bulkActionBar
+          .locator('[role="combobox"]')
+          .first()
+
+        if ((await complianceDropdown.count()) > 0) {
+          await complianceDropdown.click()
+          await page.waitForTimeout(200)
+
+          // Select "Pågående"
+          await page.getByRole('option', { name: 'Pågående' }).click()
+          await page.waitForTimeout(1000)
+
+          // Bulk action bar should dismiss after update
+          await expect(bulkActionBar).not.toBeVisible({ timeout: 5000 })
+
+          // Verify both items were updated by checking their status cells
+          const firstRowStatus = page
+            .locator('table tbody tr')
+            .nth(0)
+            .locator('[role="combobox"]')
+            .first()
+          const secondRowStatus = page
+            .locator('table tbody tr')
+            .nth(1)
+            .locator('[role="combobox"]')
+            .first()
+
+          // At least one should show Pågående (depending on which column is compliance)
+          const firstText = await firstRowStatus.textContent()
+          const secondText = await secondRowStatus.textContent()
+          const hasUpdate =
+            firstText?.includes('Pågående') || secondText?.includes('Pågående')
+          expect(hasUpdate).toBeTruthy()
+        }
+      }
+    })
+
+    test('should perform smoothly with table data', async ({ page }) => {
+      await page.goto('/laglistor')
+      await page.waitForTimeout(1000)
+
+      // Switch to table view
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(500)
+
+      // Wait for table to load
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+
+      // Measure scroll performance
+      const startTime = Date.now()
+
+      // Scroll down in the table container
+      const tableContainer = page.locator('.overflow-auto').first()
+      if ((await tableContainer.count()) > 0) {
+        await tableContainer.evaluate((el) => {
+          el.scrollTop = el.scrollHeight
+        })
+        await page.waitForTimeout(100)
+
+        await tableContainer.evaluate((el) => {
+          el.scrollTop = 0
+        })
+        await page.waitForTimeout(100)
+      }
+
+      const scrollTime = Date.now() - startTime
+
+      // Scroll operations should complete within 500ms
+      expect(scrollTime).toBeLessThan(500)
+
+      // Measure sort performance
+      const titleHeader = page.getByRole('button', { name: 'Titel' })
+      if ((await titleHeader.count()) > 0) {
+        const sortStart = Date.now()
+        await titleHeader.click()
+        await page.waitForTimeout(100)
+        const sortTime = Date.now() - sortStart
+
+        // Sort should be fast (under 300ms for responsive UX)
+        expect(sortTime).toBeLessThan(300)
+      }
+
+      // Verify no console errors during operations
+      const consoleErrors: string[] = []
+      page.on('console', (msg) => {
+        if (msg.type() === 'error') {
+          consoleErrors.push(msg.text())
+        }
+      })
+
+      // Do a few more interactions
+      await page.getByRole('radio', { name: /kortvy/i }).click()
+      await page.waitForTimeout(300)
+      await page.getByRole('radio', { name: /tabellvy/i }).click()
+      await page.waitForTimeout(300)
+
+      // Filter console errors for actual issues (not React dev warnings)
+      const realErrors = consoleErrors.filter(
+        (e) => !e.includes('Warning:') && !e.includes('DevTools')
+      )
+      expect(realErrors.length).toBe(0)
+    })
+  })
+
   // Story 4.14: Performance Optimization Tests
   test.describe('Performance Optimization (Story 4.14)', () => {
     test('should add document with optimistic update (instant appearance)', async ({

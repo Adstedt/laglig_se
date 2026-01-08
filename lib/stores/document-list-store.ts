@@ -9,6 +9,7 @@ import type {
   ContentType,
   LawListItemStatus,
   LawListItemPriority,
+  ComplianceStatus,
 } from '@prisma/client'
 import type { VisibilityState } from '@tanstack/react-table'
 import {
@@ -135,6 +136,9 @@ export interface DocumentListState {
       dueDate?: Date | null
       assignedTo?: string | null
       groupId?: string | null
+      // Story 6.2: Compliance fields
+      complianceStatus?: ComplianceStatus
+      responsibleUserId?: string | null
     }
   ) => Promise<boolean>
   bulkUpdateItems: (
@@ -142,6 +146,8 @@ export interface DocumentListState {
     _updates: {
       status?: LawListItemStatus
       priority?: LawListItemPriority
+      complianceStatus?: ComplianceStatus // Story 6.2
+      responsibleUserId?: string | null // Story 6.2
     }
   ) => Promise<boolean>
 
@@ -457,6 +463,10 @@ export const useDocumentListStore = create<DocumentListState>()(
           assignee: null,
           groupId: null,
           groupName: null,
+          // Story 6.2: Compliance fields
+          complianceStatus: 'EJ_PABORJAD',
+          responsibleUser: null,
+          category: null,
           document: {
             id: documentInfo.id,
             title: documentInfo.title,
@@ -663,6 +673,9 @@ export const useDocumentListStore = create<DocumentListState>()(
           dueDate?: Date | null
           assignedTo?: string | null
           groupId?: string | null
+          // Story 6.2: Compliance fields
+          complianceStatus?: ComplianceStatus
+          responsibleUserId?: string | null
         }
       ) => {
         const { listItems, activeListId, groups } = get()
@@ -676,7 +689,7 @@ export const useDocumentListStore = create<DocumentListState>()(
             ? (groups.find((g) => g.id === updates.groupId)?.name ?? null)
             : undefined
 
-        // Story 4.14: Optimistic update (no loading state for better UX)
+        // Story 4.14 & 6.2: Optimistic update (no loading state for better UX)
         set({
           isUpdatingItem: itemId,
           listItems: listItems.map((item) =>
@@ -701,6 +714,19 @@ export const useDocumentListStore = create<DocumentListState>()(
                       : item.groupId,
                   groupName:
                     groupName !== undefined ? groupName : item.groupName,
+                  // Story 6.2: Compliance fields (optimistic update)
+                  complianceStatus:
+                    updates.complianceStatus !== undefined
+                      ? updates.complianceStatus
+                      : item.complianceStatus,
+                  // For responsibleUser: clear if null, keep existing if assigning
+                  // (server will return full user data on next fetch)
+                  responsibleUser:
+                    updates.responsibleUserId !== undefined
+                      ? updates.responsibleUserId === null
+                        ? null
+                        : item.responsibleUser // Keep existing until server confirms
+                      : item.responsibleUser,
                 }
               : item
           ),
@@ -746,6 +772,8 @@ export const useDocumentListStore = create<DocumentListState>()(
         updates: {
           status?: LawListItemStatus
           priority?: LawListItemPriority
+          complianceStatus?: ComplianceStatus // Story 6.2
+          responsibleUserId?: string | null // Story 6.2
         }
       ) => {
         const { listItems, activeListId } = get()
@@ -755,7 +783,7 @@ export const useDocumentListStore = create<DocumentListState>()(
         // Store rollback state
         const rollbackItems = [...listItems]
 
-        // Optimistic update
+        // Story 4.14 & 6.2: Optimistic update
         set({
           isReordering: true, // Reuse loading state
           listItems: listItems.map((item) =>
@@ -764,6 +792,15 @@ export const useDocumentListStore = create<DocumentListState>()(
                   ...item,
                   status: updates.status ?? item.status,
                   priority: updates.priority ?? item.priority,
+                  complianceStatus:
+                    updates.complianceStatus ?? item.complianceStatus,
+                  // Story 6.2: Optimistic responsibleUser update
+                  responsibleUser:
+                    updates.responsibleUserId !== undefined
+                      ? updates.responsibleUserId === null
+                        ? null
+                        : item.responsibleUser // Keep existing until server confirms
+                      : item.responsibleUser,
                 }
               : item
           ),

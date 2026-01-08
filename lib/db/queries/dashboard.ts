@@ -8,8 +8,7 @@ import { startOfWeek, endOfWeek } from 'date-fns'
 
 /**
  * Get compliance statistics for the workspace
- * Counts LawListItems by status (COMPLIANT = compliant)
- * TODO: Change to compliance_status === 'UPPFYLLD' once Epic 6 migration is applied
+ * Story 6.2: Uses compliance_status (Efterlevnad) field, not legacy status
  */
 export async function getComplianceStats(workspaceId: string) {
   const items = await prisma.lawListItem.findMany({
@@ -17,12 +16,14 @@ export async function getComplianceStats(workspaceId: string) {
       law_list: { workspace_id: workspaceId },
     },
     select: {
-      status: true,
+      compliance_status: true,
     },
   })
 
   const total = items.length
-  const compliant = items.filter((item) => item.status === 'COMPLIANT').length
+  const compliant = items.filter(
+    (item) => item.compliance_status === 'UPPFYLLD'
+  ).length
 
   return { total, compliant }
 }
@@ -135,7 +136,7 @@ export async function getRecentActivity(workspaceId: string) {
 
 /**
  * Get top 5 lists for the workspace with compliance summary
- * TODO: Change to compliance_status === 'UPPFYLLD' once Epic 6 migration is applied
+ * Story 6.2: Uses compliance_status (Efterlevnad) field, not legacy status
  */
 export async function getTopLists(workspaceId: string) {
   const lists = await prisma.lawList.findMany({
@@ -147,7 +148,7 @@ export async function getTopLists(workspaceId: string) {
       name: true,
       items: {
         select: {
-          status: true,
+          compliance_status: true,
         },
       },
     },
@@ -157,8 +158,9 @@ export async function getTopLists(workspaceId: string) {
     id: list.id,
     name: list.name,
     totalCount: list.items.length,
-    compliantCount: list.items.filter((item) => item.status === 'COMPLIANT')
-      .length,
+    compliantCount: list.items.filter(
+      (item) => item.compliance_status === 'UPPFYLLD'
+    ).length,
   }))
 }
 

@@ -33,6 +33,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import {
   Table,
   TableBody,
@@ -55,7 +56,6 @@ import {
 } from 'lucide-react'
 import { RemoveConfirmation } from './remove-confirmation'
 import { BulkActionBar } from './bulk-action-bar'
-import { StatusEditor } from './table-cell-editors/status-editor'
 import { PriorityEditor } from './table-cell-editors/priority-editor'
 import { DueDateEditor } from './table-cell-editors/due-date-editor'
 import { AssigneeEditor } from './table-cell-editors/assignee-editor'
@@ -64,13 +64,24 @@ import {
   getContentTypeBadgeColor,
   getContentTypeLabel,
 } from '@/lib/utils/content-type'
-import type { DocumentListItem, WorkspaceMemberOption, ListGroupSummary } from '@/app/actions/document-list'
+import type {
+  DocumentListItem,
+  WorkspaceMemberOption,
+  ListGroupSummary,
+} from '@/app/actions/document-list'
 import type { LawListItemStatus, LawListItemPriority } from '@prisma/client'
 import { useDebouncedCallback } from 'use-debounce'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { GroupEditor } from './table-cell-editors/group-editor'
-import { ColumnSettings } from './column-settings'
+// Story 6.2: Compliance view components
+import { ComplianceStatusEditor } from './table-cell-editors/compliance-status-editor'
+import { ResponsibleEditor } from './table-cell-editors/responsible-editor'
+import { TaskProgressCell } from './table-cells/task-progress-cell'
+import { LastActivityCell } from './table-cells/last-activity-cell'
+import { CellErrorBoundary } from './table-cells/cell-error-boundary'
+import type { ComplianceStatus } from '@prisma/client'
+import type { TaskProgress, LastActivity } from '@/lib/db/queries/list-items'
 
 // ============================================================================
 // Props
@@ -83,31 +94,42 @@ interface DocumentListTableProps {
   isLoading: boolean
   workspaceMembers: WorkspaceMemberOption[]
   columnVisibility: VisibilityState
-  onColumnVisibilityChange: (visibility: VisibilityState) => void
+  onColumnVisibilityChange: (_visibility: VisibilityState) => void
   onLoadMore: () => void
-  onRemoveItem: (itemId: string) => Promise<boolean>
-  onReorderItems: (items: Array<{ id: string; position: number }>) => Promise<boolean>
+  onRemoveItem: (_itemId: string) => Promise<boolean>
+  onReorderItems: (
+    _items: Array<{ id: string; position: number }>
+  ) => Promise<boolean>
   onUpdateItem: (
-    itemId: string,
-    updates: {
+    _itemId: string,
+    _updates: {
       status?: LawListItemStatus
       priority?: LawListItemPriority
       dueDate?: Date | null
       assignedTo?: string | null
       groupId?: string | null // Story 4.13
+      // Story 6.2: Compliance fields
+      complianceStatus?: ComplianceStatus
+      responsibleUserId?: string | null
     }
   ) => Promise<boolean>
   onBulkUpdate: (
-    itemIds: string[],
-    updates: {
+    _itemIds: string[],
+    _updates: {
       status?: LawListItemStatus
       priority?: LawListItemPriority
+      complianceStatus?: ComplianceStatus // Story 6.2
+      responsibleUserId?: string | null // Story 6.2
     }
   ) => Promise<boolean>
   // Story 4.13: Group props
   groups?: ListGroupSummary[]
-  onMoveToGroup?: (itemId: string, groupId: string | null) => Promise<boolean>
+  onMoveToGroup?: (_itemId: string, _groupId: string | null) => Promise<boolean>
   emptyMessage?: string
+  // Story 6.2: Compliance view props
+  taskProgress?: Map<string, TaskProgress>
+  lastActivity?: Map<string, LastActivity>
+  onRowClick?: (_listItemId: string) => void
 }
 
 // ============================================================================
@@ -136,7 +158,7 @@ function getDocumentUrl(item: DocumentListItem): string {
 
 export function DocumentListTable({
   items,
-  total,
+  total: _total, // Info row moved to parent component
   hasMore,
   isLoading,
   workspaceMembers,
@@ -151,11 +173,16 @@ export function DocumentListTable({
   groups = [],
   onMoveToGroup,
   emptyMessage = 'Inga dokument i listan.',
+  // Story 6.2: Compliance view props
+  taskProgress,
+  lastActivity,
+  onRowClick,
 }: DocumentListTableProps) {
   // Local state
   const [sorting, setSorting] = useState<SortingState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [removeConfirmItem, setRemoveConfirmItem] = useState<DocumentListItem | null>(null)
+  const [removeConfirmItem, setRemoveConfirmItem] =
+    useState<DocumentListItem | null>(null)
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
 
   // Sync local items with props
@@ -215,7 +242,9 @@ export function DocumentListTable({
                   ? 'indeterminate'
                   : false
             }
-            onCheckedChange={(value: boolean) => table.toggleAllPageRowsSelected(value)}
+            onCheckedChange={(value: boolean) =>
+              table.toggleAllPageRowsSelected(value)
+            }
             aria-label="Välj alla"
           />
         ),
@@ -283,29 +312,36 @@ export function DocumentListTable({
         cell: ({ row }) => (
           <Link
             href={getDocumentUrl(row.original)}
-            className="hover:underline line-clamp-2"
+            className="hover:underline line-clamp-1"
+            title={row.original.document.title}
           >
             {row.original.document.title}
           </Link>
         ),
         size: 300,
       },
-      // Status (inline editable)
+      // Story 6.2: Compliance Status (inline editable)
+      // Note: Legacy "status" field removed - it's now used for task workflow only
+      // Efterlevnad (ComplianceStatus) is the overall compliance status for laws/documents
       {
-        id: 'status',
-        accessorKey: 'status',
+        id: 'complianceStatus',
+        accessorKey: 'complianceStatus',
         header: ({ column }) => (
-          <SortableHeader column={column} label="Status" />
+          <SortableHeader column={column} label="Efterlevnad" />
         ),
         cell: ({ row }) => (
-          <StatusEditor
-            value={row.original.status}
-            onChange={async (newStatus) => {
-              await onUpdateItem(row.original.id, { status: newStatus })
-            }}
-          />
+          <CellErrorBoundary>
+            <ComplianceStatusEditor
+              value={row.original.complianceStatus}
+              onChange={async (newStatus) => {
+                await onUpdateItem(row.original.id, {
+                  complianceStatus: newStatus,
+                })
+              }}
+            />
+          </CellErrorBoundary>
         ),
-        size: 140,
+        size: 150,
       },
       // Priority (inline editable)
       {
@@ -341,13 +377,11 @@ export function DocumentListTable({
         ),
         size: 140,
       },
-      // Assignee (inline editable)
+      // Assignee (inline editable) - avatar only
       {
         id: 'assignee',
         accessorFn: (row) => row.assignee?.name ?? row.assignee?.email ?? '',
-        header: ({ column }) => (
-          <SortableHeader column={column} label="Tilldelad" />
-        ),
+        header: 'Tilldelad',
         cell: ({ row }) => (
           <AssigneeEditor
             value={row.original.assignee?.id ?? null}
@@ -357,7 +391,64 @@ export function DocumentListTable({
             }}
           />
         ),
-        size: 160,
+        enableSorting: false,
+        size: 60,
+      },
+      // Story 6.2: Responsible Person (inline editable) - avatar only
+      {
+        id: 'responsiblePerson',
+        accessorFn: (row) =>
+          row.responsibleUser?.name ?? row.responsibleUser?.email ?? '',
+        header: 'Ansvarig',
+        cell: ({ row }) => (
+          <CellErrorBoundary>
+            <ResponsibleEditor
+              value={row.original.responsibleUser?.id ?? null}
+              members={workspaceMembers}
+              onChange={async (newUserId) => {
+                await onUpdateItem(row.original.id, {
+                  responsibleUserId: newUserId,
+                })
+              }}
+            />
+          </CellErrorBoundary>
+        ),
+        enableSorting: false,
+        size: 60,
+      },
+      // Story 6.2: Task Progress
+      {
+        id: 'taskProgress',
+        header: 'Uppgifter',
+        cell: ({ row }) => {
+          const progress = taskProgress?.get(row.original.id)
+          return (
+            <CellErrorBoundary>
+              <TaskProgressCell
+                completed={progress?.completed ?? null}
+                total={progress?.total ?? null}
+              />
+            </CellErrorBoundary>
+          )
+        },
+        enableSorting: false,
+        size: 140,
+      },
+      // Story 6.2: Last Activity
+      {
+        id: 'lastActivity',
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Aktivitet" />
+        ),
+        cell: ({ row }) => {
+          const activity = lastActivity?.get(row.original.id)
+          return (
+            <CellErrorBoundary>
+              <LastActivityCell activity={activity ?? null} />
+            </CellErrorBoundary>
+          )
+        },
+        size: 120,
       },
       // Notes indicator
       {
@@ -415,12 +506,7 @@ export function DocumentListTable({
         header: '',
         cell: ({ row }) => (
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              className="h-8 w-8"
-            >
+            <Button variant="ghost" size="icon" asChild className="h-8 w-8">
               <Link href={getDocumentUrl(row.original)} title="Visa dokument">
                 <Eye className="h-4 w-4" />
               </Link>
@@ -440,7 +526,14 @@ export function DocumentListTable({
         size: 80,
       },
     ],
-    [onUpdateItem, workspaceMembers, groups, onMoveToGroup]
+    [
+      onUpdateItem,
+      workspaceMembers,
+      groups,
+      onMoveToGroup,
+      taskProgress,
+      lastActivity,
+    ]
   )
 
   // Table instance
@@ -455,7 +548,8 @@ export function DocumentListTable({
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
     onColumnVisibilityChange: (updater) => {
-      const newVisibility = typeof updater === 'function' ? updater(columnVisibility) : updater
+      const newVisibility =
+        typeof updater === 'function' ? updater(columnVisibility) : updater
       onColumnVisibilityChange(newVisibility)
     },
     getCoreRowModel: getCoreRowModel(),
@@ -469,10 +563,12 @@ export function DocumentListTable({
     (id) => rowSelection[id]
   )
 
-  // Handle bulk update
+  // Handle bulk update (Story 6.2: Added complianceStatus and responsibleUserId)
   const handleBulkUpdate = async (updates: {
     status?: LawListItemStatus
     priority?: LawListItemPriority
+    complianceStatus?: ComplianceStatus
+    responsibleUserId?: string | null
   }) => {
     await onBulkUpdate(selectedItemIds, updates)
     setRowSelection({})
@@ -505,19 +601,9 @@ export function DocumentListTable({
           selectedCount={selectedItemIds.length}
           onClearSelection={() => setRowSelection({})}
           onBulkUpdate={handleBulkUpdate}
+          workspaceMembers={workspaceMembers}
         />
       )}
-
-      {/* Info and column settings (matching card view layout) */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Visar {items.length} av {total} dokument.
-        </p>
-        <ColumnSettings
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={onColumnVisibilityChange}
-        />
-      </div>
 
       {/* Table with DnD - overflow-x-auto contains horizontal scroll within table */}
       <div className="rounded-md border overflow-x-auto">
@@ -525,6 +611,7 @@ export function DocumentListTable({
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
+          modifiers={[restrictToVerticalAxis]}
         >
           <Table>
             <TableHeader>
@@ -535,7 +622,8 @@ export function DocumentListTable({
                       key={header.id}
                       style={{ width: header.getSize() }}
                       className={cn(
-                        header.id === 'title' && 'sticky left-0 bg-background z-10'
+                        header.id === 'title' &&
+                          'sticky left-0 bg-background z-10'
                       )}
                     >
                       {header.isPlaceholder
@@ -555,12 +643,15 @@ export function DocumentListTable({
                 strategy={verticalListSortingStrategy}
               >
                 {table.getRowModel().rows.length > 0 ? (
-                  table.getRowModel().rows.map((row) => (
-                    <SortableRow
-                      key={row.id}
-                      row={row}
-                    />
-                  ))
+                  table
+                    .getRowModel()
+                    .rows.map((row) => (
+                      <SortableRow
+                        key={row.id}
+                        row={row}
+                        {...(onRowClick ? { onRowClick } : {})}
+                      />
+                    ))
                 ) : (
                   <TableRow>
                     <TableCell
@@ -614,7 +705,7 @@ function SortableHeader({
 }: {
   column: {
     getIsSorted: () => false | 'asc' | 'desc'
-    toggleSorting: (desc?: boolean) => void
+    toggleSorting: (_desc?: boolean) => void
   }
   label: string
 }) {
@@ -644,8 +735,12 @@ function SortableHeader({
 
 function SortableRow({
   row,
+  onRowClick,
 }: {
-  row: ReturnType<ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']>['rows'][number]
+  row: ReturnType<
+    ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
+  >['rows'][number]
+  onRowClick?: (_listItemId: string) => void
 }) {
   const {
     attributes,
@@ -662,12 +757,31 @@ function SortableRow({
     opacity: isDragging ? 0.5 : 1,
   }
 
+  // Story 6.2: Handle row click (ignore interactive elements)
+  const handleRowClick = useCallback(
+    (e: React.MouseEvent<HTMLTableRowElement>) => {
+      if (!onRowClick) return
+      const target = e.target as HTMLElement
+      // Don't trigger if clicking on interactive elements
+      if (
+        target.closest(
+          'button, input, select, a, [role="combobox"], [role="checkbox"]'
+        )
+      ) {
+        return
+      }
+      onRowClick(row.original.id)
+    },
+    [onRowClick, row.original.id]
+  )
+
   return (
     <TableRow
       ref={setNodeRef}
       style={style}
       data-state={row.getIsSelected() && 'selected'}
-      className="group"
+      className={cn('group', onRowClick && 'cursor-pointer hover:bg-muted/50')}
+      onClick={handleRowClick}
     >
       {row.getVisibleCells().map((cell) => (
         <TableCell

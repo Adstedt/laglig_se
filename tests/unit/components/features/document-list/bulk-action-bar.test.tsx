@@ -1,5 +1,6 @@
 /**
- * Story 4.12: BulkActionBar Component Tests
+ * Story 4.12 & 6.2: BulkActionBar Component Tests
+ * Updated: Tests compliance status instead of legacy status
  */
 
 import { describe, it, expect, vi } from 'vitest'
@@ -49,7 +50,7 @@ describe('BulkActionBar', () => {
     expect(onClearSelection).toHaveBeenCalledTimes(1)
   })
 
-  it('calls onBulkUpdate with status when selecting status option', async () => {
+  it('calls onBulkUpdate with complianceStatus when selecting compliance option', async () => {
     const user = userEvent.setup()
     const onBulkUpdate = vi.fn().mockResolvedValue(undefined)
     render(
@@ -60,18 +61,20 @@ describe('BulkActionBar', () => {
       />
     )
 
-    // Find and click the status dropdown
-    const statusTrigger = screen.getAllByRole('combobox')[0]
-    await user.click(statusTrigger)
+    // Find and click the compliance status dropdown (first combobox)
+    const complianceTrigger = screen.getAllByRole('combobox')[0]
+    await user.click(complianceTrigger)
 
-    // Select "Pågår" (IN_PROGRESS)
+    // Select "Pågående" (PAGAENDE)
     await waitFor(() => {
-      expect(screen.getByText('Pågår')).toBeInTheDocument()
+      expect(screen.getByText('Pågående')).toBeInTheDocument()
     })
-    await user.click(screen.getByText('Pågår'))
+    await user.click(screen.getByText('Pågående'))
 
     await waitFor(() => {
-      expect(onBulkUpdate).toHaveBeenCalledWith({ status: 'IN_PROGRESS' })
+      expect(onBulkUpdate).toHaveBeenCalledWith({
+        complianceStatus: 'PAGAENDE',
+      })
     })
   })
 
@@ -117,14 +120,14 @@ describe('BulkActionBar', () => {
       />
     )
 
-    // Trigger a status change
-    const statusTrigger = screen.getAllByRole('combobox')[0]
-    await user.click(statusTrigger)
+    // Trigger a compliance status change
+    const complianceTrigger = screen.getAllByRole('combobox')[0]
+    await user.click(complianceTrigger)
 
     await waitFor(() => {
-      expect(screen.getByText('Blockerad')).toBeInTheDocument()
+      expect(screen.getByText('Uppfylld')).toBeInTheDocument()
     })
-    await user.click(screen.getByText('Blockerad'))
+    await user.click(screen.getByText('Uppfylld'))
 
     // Should show loading spinner (Loader2 component)
     await waitFor(() => {
@@ -158,9 +161,9 @@ describe('BulkActionBar', () => {
       />
     )
 
-    // Trigger a status change
-    const statusTrigger = screen.getAllByRole('combobox')[0]
-    await user.click(statusTrigger)
+    // Trigger a compliance status change
+    const complianceTrigger = screen.getAllByRole('combobox')[0]
+    await user.click(complianceTrigger)
 
     await waitFor(() => {
       expect(screen.getByText('Uppfylld')).toBeInTheDocument()
@@ -189,10 +192,13 @@ describe('BulkActionBar', () => {
 
     // Should have toolbar role
     expect(screen.getByRole('toolbar')).toBeInTheDocument()
-    expect(screen.getByRole('toolbar')).toHaveAttribute('aria-label', 'Massåtgärder')
+    expect(screen.getByRole('toolbar')).toHaveAttribute(
+      'aria-label',
+      'Massåtgärder'
+    )
   })
 
-  it('shows all status options in dropdown', async () => {
+  it('shows all compliance status options in dropdown', async () => {
     const user = userEvent.setup()
     render(
       <BulkActionBar
@@ -202,15 +208,15 @@ describe('BulkActionBar', () => {
       />
     )
 
-    const statusTrigger = screen.getAllByRole('combobox')[0]
-    await user.click(statusTrigger)
+    const complianceTrigger = screen.getAllByRole('combobox')[0]
+    await user.click(complianceTrigger)
 
     await waitFor(() => {
       expect(screen.getByText('Ej påbörjad')).toBeInTheDocument()
-      expect(screen.getByText('Pågår')).toBeInTheDocument()
-      expect(screen.getByText('Blockerad')).toBeInTheDocument()
-      expect(screen.getByText('Granskning')).toBeInTheDocument()
+      expect(screen.getByText('Pågående')).toBeInTheDocument()
       expect(screen.getByText('Uppfylld')).toBeInTheDocument()
+      expect(screen.getByText('Ej uppfylld')).toBeInTheDocument()
+      expect(screen.getByText('Ej tillämplig')).toBeInTheDocument()
     })
   })
 
@@ -231,6 +237,73 @@ describe('BulkActionBar', () => {
       expect(screen.getByText('Låg')).toBeInTheDocument()
       expect(screen.getByText('Medel')).toBeInTheDocument()
       expect(screen.getByText('Hög')).toBeInTheDocument()
+    })
+  })
+
+  it('shows responsible person dropdown when workspaceMembers provided', async () => {
+    const user = userEvent.setup()
+    const mockMembers = [
+      {
+        id: 'user-1',
+        name: 'Alice',
+        email: 'alice@example.com',
+        avatarUrl: null,
+      },
+      { id: 'user-2', name: 'Bob', email: 'bob@example.com', avatarUrl: null },
+    ]
+    render(
+      <BulkActionBar
+        selectedCount={1}
+        onClearSelection={vi.fn()}
+        onBulkUpdate={vi.fn()}
+        workspaceMembers={mockMembers}
+      />
+    )
+
+    // Should show "Ansvarig:" label
+    expect(screen.getByText('Ansvarig:')).toBeInTheDocument()
+
+    // Find and click the responsible dropdown (third combobox)
+    const responsibleTrigger = screen.getAllByRole('combobox')[2]
+    await user.click(responsibleTrigger)
+
+    await waitFor(() => {
+      expect(screen.getByText('Ingen')).toBeInTheDocument()
+      expect(screen.getByText('Alice')).toBeInTheDocument()
+      expect(screen.getByText('Bob')).toBeInTheDocument()
+    })
+  })
+
+  it('calls onBulkUpdate with responsibleUserId when selecting responsible person', async () => {
+    const user = userEvent.setup()
+    const onBulkUpdate = vi.fn().mockResolvedValue(undefined)
+    const mockMembers = [
+      {
+        id: 'user-1',
+        name: 'Alice',
+        email: 'alice@example.com',
+        avatarUrl: null,
+      },
+    ]
+    render(
+      <BulkActionBar
+        selectedCount={2}
+        onClearSelection={vi.fn()}
+        onBulkUpdate={onBulkUpdate}
+        workspaceMembers={mockMembers}
+      />
+    )
+
+    const responsibleTrigger = screen.getAllByRole('combobox')[2]
+    await user.click(responsibleTrigger)
+
+    await waitFor(() => {
+      expect(screen.getByText('Alice')).toBeInTheDocument()
+    })
+    await user.click(screen.getByText('Alice'))
+
+    await waitFor(() => {
+      expect(onBulkUpdate).toHaveBeenCalledWith({ responsibleUserId: 'user-1' })
     })
   })
 })

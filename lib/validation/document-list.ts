@@ -30,16 +30,17 @@ export const LawListItemStatusEnum = z.enum([
   'COMPLIANT',
 ])
 
-export const LawListItemPriorityEnum = z.enum([
-  'LOW',
-  'MEDIUM',
-  'HIGH',
-])
+export const LawListItemPriorityEnum = z.enum(['LOW', 'MEDIUM', 'HIGH'])
 
-export const LawListItemSourceEnum = z.enum([
-  'ONBOARDING',
-  'MANUAL',
-  'IMPORT',
+export const LawListItemSourceEnum = z.enum(['ONBOARDING', 'MANUAL', 'IMPORT'])
+
+// Story 6.2: Compliance status enum (Swedish labels in UI)
+export const ComplianceStatusEnum = z.enum([
+  'EJ_PABORJAD',
+  'PAGAENDE',
+  'UPPFYLLD',
+  'EJ_UPPFYLLD',
+  'EJ_TILLAMPLIG',
 ])
 
 export const ExportFormatEnum = z.enum(['csv', 'pdf'])
@@ -122,37 +123,64 @@ export const RemoveDocumentFromListSchema = z.object({
   listItemId: z.string().uuid('Ogiltigt list-item-ID'),
 })
 
-export type RemoveDocumentFromListInput = z.infer<typeof RemoveDocumentFromListSchema>
+export type RemoveDocumentFromListInput = z.infer<
+  typeof RemoveDocumentFromListSchema
+>
 
 /**
  * Update a list item (status, priority, notes, due_date, assigned_to, group_id)
  * Story 4.12: Added dueDate and assignedTo for table view
  * Story 4.13: Added groupId for group assignment
+ * Story 6.2: Added complianceStatus and responsibleUserId for compliance view
  */
 export const UpdateListItemSchema = z.object({
   listItemId: z.string().uuid('Ogiltigt list-item-ID'),
   status: LawListItemStatusEnum.optional(),
   priority: LawListItemPriorityEnum.optional(),
-  notes: z.string().max(10000, 'Anteckningarna får vara max 10000 tecken').nullable().optional(),
-  commentary: z.string().max(1000, 'Kommentaren får vara max 1000 tecken').nullable().optional(),
+  notes: z
+    .string()
+    .max(10000, 'Anteckningarna får vara max 10000 tecken')
+    .nullable()
+    .optional(),
+  commentary: z
+    .string()
+    .max(1000, 'Kommentaren får vara max 1000 tecken')
+    .nullable()
+    .optional(),
   dueDate: z.date().nullable().optional(), // Story 4.12: Review deadline
   assignedTo: z.string().uuid('Ogiltigt användar-ID').nullable().optional(), // Story 4.12: Assignee
   groupId: z.string().uuid('Ogiltigt grupp-ID').nullable().optional(), // Story 4.13: Group assignment
+  // Story 6.2: Compliance tracking
+  complianceStatus: ComplianceStatusEnum.optional(),
+  responsibleUserId: z
+    .string()
+    .uuid('Ogiltigt användar-ID')
+    .nullable()
+    .optional(),
 })
 
 export type UpdateListItemInput = z.infer<typeof UpdateListItemSchema>
 
 /**
  * Story 4.12: Bulk update multiple list items (status, priority, etc.)
+ * Story 6.2: Added complianceStatus and responsibleUserId for bulk compliance updates
  */
 export const BulkUpdateListItemsSchema = z.object({
   listId: z.string().uuid('Ogiltigt list-ID'),
-  itemIds: z.array(z.string().uuid('Ogiltigt item-ID')).min(1, 'Minst ett objekt krävs'),
+  itemIds: z
+    .array(z.string().uuid('Ogiltigt item-ID'))
+    .min(1, 'Minst ett objekt krävs'),
   updates: z.object({
     status: LawListItemStatusEnum.optional(),
     priority: LawListItemPriorityEnum.optional(),
     dueDate: z.date().nullable().optional(),
     assignedTo: z.string().uuid('Ogiltigt användar-ID').nullable().optional(),
+    complianceStatus: ComplianceStatusEnum.optional(), // Story 6.2
+    responsibleUserId: z
+      .string()
+      .uuid('Ogiltigt användar-ID')
+      .nullable()
+      .optional(), // Story 6.2
   }),
 })
 
@@ -163,12 +191,14 @@ export type BulkUpdateListItemsInput = z.infer<typeof BulkUpdateListItemsSchema>
  */
 export const ReorderListItemsSchema = z.object({
   listId: z.string().uuid('Ogiltigt list-ID'),
-  items: z.array(
-    z.object({
-      id: z.string().uuid('Ogiltigt item-ID'),
-      position: z.number().min(0, 'Position måste vara positiv'),
-    })
-  ).min(1, 'Minst ett objekt krävs'),
+  items: z
+    .array(
+      z.object({
+        id: z.string().uuid('Ogiltigt item-ID'),
+        position: z.number().min(0, 'Position måste vara positiv'),
+      })
+    )
+    .min(1, 'Minst ett objekt krävs'),
 })
 
 export type ReorderListItemsInput = z.infer<typeof ReorderListItemsSchema>
@@ -216,7 +246,9 @@ export const GetDocumentListItemsSchema = z.object({
   contentTypeFilter: z.array(ContentTypeEnum).optional(),
 })
 
-export type GetDocumentListItemsInput = z.infer<typeof GetDocumentListItemsSchema>
+export type GetDocumentListItemsInput = z.infer<
+  typeof GetDocumentListItemsSchema
+>
 
 // ============================================================================
 // EXPORT SCHEMAS
@@ -311,7 +343,9 @@ export type MoveItemToGroupInput = z.infer<typeof MoveItemToGroupSchema>
  */
 export const BulkMoveToGroupSchema = z.object({
   listId: z.string().uuid('Ogiltigt list-ID'),
-  itemIds: z.array(z.string().uuid('Ogiltigt item-ID')).min(1, 'Minst ett objekt krävs'),
+  itemIds: z
+    .array(z.string().uuid('Ogiltigt item-ID'))
+    .min(1, 'Minst ett objekt krävs'),
   groupId: z.string().uuid('Ogiltigt grupp-ID').nullable(),
 })
 
@@ -322,12 +356,14 @@ export type BulkMoveToGroupInput = z.infer<typeof BulkMoveToGroupSchema>
  */
 export const ReorderGroupsSchema = z.object({
   listId: z.string().uuid('Ogiltigt list-ID'),
-  groups: z.array(
-    z.object({
-      id: z.string().uuid('Ogiltigt grupp-ID'),
-      position: z.number().min(0, 'Position måste vara positiv'),
-    })
-  ).min(1, 'Minst en grupp krävs'),
+  groups: z
+    .array(
+      z.object({
+        id: z.string().uuid('Ogiltigt grupp-ID'),
+        position: z.number().min(0, 'Position måste vara positiv'),
+      })
+    )
+    .min(1, 'Minst en grupp krävs'),
 })
 
 export type ReorderGroupsInput = z.infer<typeof ReorderGroupsSchema>

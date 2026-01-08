@@ -1,13 +1,14 @@
 'use client'
 
 /**
- * Story 4.11, 4.12 & 4.13: Document List Page Content
+ * Story 4.11, 4.12, 4.13 & 6.2: Document List Page Content
  * Main client component that orchestrates the document list UI
  *
  * Story 4.13 Task 0: Added URL deep linking support via ?list={listId} query param
+ * Story 6.2 Task 8 & 9: Added compliance filters and search functionality
  */
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo, useTransition } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   useDocumentListStore,
@@ -25,6 +26,16 @@ import { AddDocumentModal, type DocumentInfoForAdd } from './add-document-modal'
 import { ManageListModal } from './manage-list-modal'
 import { ExportDropdown } from './export-dropdown'
 import { ViewToggle } from './view-toggle'
+// Story 6.2: Compliance filters and search
+import {
+  ComplianceFilters,
+  parseFiltersFromUrl,
+  hasActiveFilters as checkHasActiveFilters,
+  type ComplianceFiltersState,
+} from './compliance-filters'
+import { FilterEmptyState } from './filter-empty-state'
+import { SearchInput } from './search-input'
+import { ColumnSettings } from './column-settings'
 import { Button } from '@/components/ui/button'
 import { Plus, Settings, FolderPlus } from 'lucide-react'
 import type {
@@ -32,7 +43,11 @@ import type {
   WorkspaceMemberOption,
 } from '@/app/actions/document-list'
 import { getWorkspaceMembers } from '@/app/actions/document-list'
-import type { LawListItemStatus, LawListItemPriority } from '@prisma/client'
+import type {
+  LawListItemStatus,
+  LawListItemPriority,
+  ComplianceStatus,
+} from '@prisma/client'
 
 interface DocumentListPageContentProps {
   initialLists: DocumentListSummary[]
@@ -54,9 +69,42 @@ export function DocumentListPageContent({
   // Story 4.13: Group management modal
   const [isGroupManagerOpen, setIsGroupManagerOpen] = useState(false)
 
+  // Story 6.2 Task 8 & 9: Compliance filters and search state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [complianceFilters, setComplianceFilters] =
+    useState<ComplianceFiltersState>({
+      complianceStatus: [],
+      category: [],
+      responsibleUserId: null,
+    })
+
   // Story 4.13 Task 0: URL deep linking
   const searchParams = useSearchParams()
   const router = useRouter()
+
+  // Use transition for non-urgent URL updates
+  const [, startTransition] = useTransition()
+
+  // Story 6.2: Handle search from SearchInput component (already debounced)
+  const handleSearch = useCallback(
+    (query: string) => {
+      setSearchQuery(query)
+      startTransition(() => {
+        const params = new URLSearchParams(searchParams.toString())
+        if (query) {
+          params.set('q', query)
+        } else {
+          params.delete('q')
+        }
+        const newUrl = `?${params.toString()}`
+        const currentUrl = `?${searchParams.toString()}`
+        if (newUrl !== currentUrl) {
+          router.replace(newUrl, { scroll: false })
+        }
+      })
+    },
+    [searchParams, router]
+  )
 
   const {
     lists,
@@ -103,6 +151,93 @@ export function DocumentListPageContent({
     selectActiveGroupFilterInfo
   )
   const filteredItems = useDocumentListStore(selectFilteredByGroupItems)
+
+  // Story 6.2: Initialize filters and search from URL on mount
+  useEffect(() => {
+    const urlFilters = parseFiltersFromUrl(searchParams)
+    setComplianceFilters(urlFilters)
+    const urlSearch = searchParams.get('q') ?? ''
+    setSearchQuery(urlSearch)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Story 6.2: Client-side filtering of items (filters + search)
+  const filteredAndSearchedItems = useMemo(() => {
+    let items = activeGroupFilter ? filteredItems : listItems
+
+    // Apply compliance status filter
+    if (complianceFilters.complianceStatus.length > 0) {
+      items = items.filter((item) =>
+        complianceFilters.complianceStatus.includes(item.complianceStatus)
+      )
+    }
+
+    // Apply category filter
+    if (complianceFilters.category.length > 0) {
+      items = items.filter(
+        (item) =>
+          item.category && complianceFilters.category.includes(item.category)
+      )
+    }
+
+    // Apply responsible person filter
+    if (complianceFilters.responsibleUserId) {
+      items = items.filter(
+        (item) =>
+          item.responsibleUser?.id === complianceFilters.responsibleUserId
+      )
+    }
+
+    // Apply search filter (title or document number)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim()
+      items = items.filter(
+        (item) =>
+          item.document.title.toLowerCase().includes(query) ||
+          item.document.documentNumber.toLowerCase().includes(query)
+      )
+    }
+
+    return items
+  }, [
+    listItems,
+    filteredItems,
+    activeGroupFilter,
+    complianceFilters,
+    searchQuery,
+  ])
+
+  // Story 6.2: Extract unique categories from items
+  const categories = useMemo(() => {
+    const categorySet = new Set<string>()
+    listItems.forEach((item) => {
+      if (item.category) {
+        categorySet.add(item.category)
+      }
+    })
+    return Array.from(categorySet).sort()
+  }, [listItems])
+
+  // Story 6.2: Check if any filters or search are active
+  const hasFiltersOrSearch = useMemo(
+    () => checkHasActiveFilters(complianceFilters) || !!searchQuery.trim(),
+    [complianceFilters, searchQuery]
+  )
+
+  // Story 6.2: Clear all filters and search
+  const clearAllFiltersAndSearch = useCallback(() => {
+    setComplianceFilters({
+      complianceStatus: [],
+      category: [],
+      responsibleUserId: null,
+    })
+    setSearchQuery('')
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('status')
+    params.delete('category')
+    params.delete('responsible')
+    params.delete('q')
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }, [searchParams, router])
 
   // Story 4.13 Task 0: Handle list change with URL update
   // Story 4.14: Just update URL - let useEffect handle setActiveList (same as sidebar)
@@ -266,7 +401,7 @@ export function DocumentListPageContent({
     return addItem(activeListId, documentId, documentInfo)
   }
 
-  // Story 4.12 & 4.14: Handle inline item updates using store's optimistic method
+  // Story 4.12, 4.14 & 6.2: Handle inline item updates using store's optimistic method
   const handleUpdateItem = async (
     itemId: string,
     updates: {
@@ -275,6 +410,8 @@ export function DocumentListPageContent({
       dueDate?: Date | null
       assignedTo?: string | null
       groupId?: string | null
+      complianceStatus?: ComplianceStatus
+      responsibleUserId?: string | null
     }
   ) => {
     // Story 4.14: Use store's optimistic update (no refetch needed)
@@ -286,12 +423,14 @@ export function DocumentListPageContent({
     return success
   }
 
-  // Story 4.12 & 4.14: Handle bulk updates using store's optimistic method
+  // Story 4.12, 4.14 & 6.2: Handle bulk updates using store's optimistic method
   const handleTableBulkUpdate = async (
     itemIds: string[],
     updates: {
       status?: LawListItemStatus
       priority?: LawListItemPriority
+      complianceStatus?: ComplianceStatus
+      responsibleUserId?: string | null
     }
   ): Promise<boolean> => {
     // Story 4.14: Use store's optimistic bulk update (no refetch needed)
@@ -351,8 +490,8 @@ export function DocumentListPageContent({
         </div>
       </div>
 
-      {/* Content type filter chips */}
-      <div className="flex flex-wrap items-center gap-3">
+      {/* Content type pills and group filter */}
+      <div className="flex flex-wrap items-center gap-2">
         <ContentTypeFilter
           activeFilter={contentTypeFilter}
           onFilterChange={setContentTypeGroupFilter}
@@ -365,6 +504,38 @@ export function DocumentListPageContent({
             onClear={handleClearGroupFilter}
           />
         )}
+      </div>
+
+      {/* Story 6.2: Document count (left) + Search, filters, column settings (right) */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">
+          Visar{' '}
+          {hasFiltersOrSearch
+            ? filteredAndSearchedItems.length
+            : activeGroupFilter
+              ? filteredItems.length
+              : listItems.length}{' '}
+          av {total} dokument.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            initialValue={searchParams.get('q') ?? ''}
+            onSearch={handleSearch}
+            placeholder="Sök..."
+          />
+          <ComplianceFilters
+            filters={complianceFilters}
+            onFiltersChange={setComplianceFilters}
+            workspaceMembers={workspaceMembers}
+            categories={categories}
+          />
+          {viewMode === 'table' && (
+            <ColumnSettings
+              columnVisibility={columnVisibility}
+              onColumnVisibilityChange={setColumnVisibility}
+            />
+          )}
+        </div>
       </div>
 
       {/* Error message */}
@@ -381,14 +552,34 @@ export function DocumentListPageContent({
       )}
 
       {/* Document grid or table based on view mode */}
-      {/* Story 4.13 Task 11: When group filter is active, show filtered items in flat view */}
-      {viewMode === 'card' ? (
+      {/* Story 4.13 & 6.2: Use filtered items and show empty state when filters return no results */}
+      {hasFiltersOrSearch &&
+      filteredAndSearchedItems.length === 0 &&
+      !isLoadingItems ? (
+        <FilterEmptyState
+          searchQuery={searchQuery}
+          hasActiveFilters={checkHasActiveFilters(complianceFilters)}
+          onClearFilters={clearAllFiltersAndSearch}
+        />
+      ) : viewMode === 'card' ? (
         <GroupedDocumentList
-          items={activeGroupFilter ? filteredItems : listItems}
-          groups={activeGroupFilter ? [] : groups} // Hide groups when filtering
+          items={
+            hasFiltersOrSearch
+              ? filteredAndSearchedItems
+              : activeGroupFilter
+                ? filteredItems
+                : listItems
+          }
+          groups={hasFiltersOrSearch || activeGroupFilter ? [] : groups} // Hide groups when filtering
           expandedGroups={expandedGroups}
-          total={activeGroupFilter ? filteredItems.length : total}
-          hasMore={activeGroupFilter ? false : hasMore} // Disable pagination when filtering
+          total={
+            hasFiltersOrSearch
+              ? filteredAndSearchedItems.length
+              : activeGroupFilter
+                ? filteredItems.length
+                : total
+          }
+          hasMore={hasFiltersOrSearch || activeGroupFilter ? false : hasMore} // Disable pagination when filtering
           isLoading={isLoadingItems}
           onLoadMore={loadMoreItems}
           onRemoveItem={removeItem}
@@ -407,9 +598,21 @@ export function DocumentListPageContent({
         />
       ) : (
         <DocumentListTable
-          items={activeGroupFilter ? filteredItems : listItems}
-          total={activeGroupFilter ? filteredItems.length : total}
-          hasMore={activeGroupFilter ? false : hasMore}
+          items={
+            hasFiltersOrSearch
+              ? filteredAndSearchedItems
+              : activeGroupFilter
+                ? filteredItems
+                : listItems
+          }
+          total={
+            hasFiltersOrSearch
+              ? filteredAndSearchedItems.length
+              : activeGroupFilter
+                ? filteredItems.length
+                : total
+          }
+          hasMore={hasFiltersOrSearch || activeGroupFilter ? false : hasMore}
           isLoading={isLoadingItems}
           columnVisibility={columnVisibility}
           onColumnVisibilityChange={setColumnVisibility}

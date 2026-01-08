@@ -42,7 +42,12 @@ import {
   type BulkMoveToGroupInput,
   type ReorderGroupsInput,
 } from '@/lib/validation/document-list'
-import type { ContentType, LawListItemStatus, LawListItemPriority } from '@prisma/client'
+import type {
+  ContentType,
+  LawListItemStatus,
+  LawListItemPriority,
+  ComplianceStatus,
+} from '@prisma/client'
 import { getContentTypeLabel } from '@/lib/utils/content-type'
 
 // ============================================================================
@@ -68,7 +73,8 @@ export interface DocumentListItem {
   notes: string | null
   addedAt: Date
   dueDate: Date | null // Story 4.12
-  assignee: { // Story 4.12
+  assignee: {
+    // Story 4.12
     id: string
     name: string | null
     email: string
@@ -77,6 +83,15 @@ export interface DocumentListItem {
   // Story 4.13: Group information
   groupId: string | null
   groupName: string | null
+  // Story 6.2: Compliance tracking fields
+  complianceStatus: ComplianceStatus
+  responsibleUser: {
+    id: string
+    name: string | null
+    email: string
+    avatarUrl: string | null
+  } | null
+  category: string | null
   document: {
     id: string
     title: string
@@ -119,6 +134,9 @@ interface LawListItemUpdateData {
   due_date?: Date | null // Story 4.12
   assigned_to?: string | null // Story 4.12
   group_id?: string | null // Story 4.13
+  // Story 6.2: Compliance tracking
+  compliance_status?: ComplianceStatus
+  responsible_user_id?: string | null
 }
 
 // ============================================================================
@@ -128,7 +146,9 @@ interface LawListItemUpdateData {
 /**
  * Get all document lists for the current workspace
  */
-export async function getDocumentLists(): Promise<ActionResult<DocumentListSummary[]>> {
+export async function getDocumentLists(): Promise<
+  ActionResult<DocumentListSummary[]>
+> {
   try {
     return await withWorkspace(async (ctx) => {
       const lists = await prisma.lawList.findMany({
@@ -136,10 +156,7 @@ export async function getDocumentLists(): Promise<ActionResult<DocumentListSumma
         include: {
           _count: { select: { items: true } },
         },
-        orderBy: [
-          { is_default: 'desc' },
-          { created_at: 'asc' },
-        ],
+        orderBy: [{ is_default: 'desc' }, { created_at: 'asc' }],
       })
 
       return {
@@ -170,7 +187,10 @@ export async function createDocumentList(
   try {
     const parsed = CreateDocumentListSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -213,7 +233,10 @@ export async function updateDocumentList(
   try {
     const parsed = UpdateDocumentListSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -244,8 +267,10 @@ export async function updateDocumentList(
       // Build update data object, only including defined fields
       const updateData: LawListUpdateData = {}
       if (parsed.data.name !== undefined) updateData.name = parsed.data.name
-      if (parsed.data.description !== undefined) updateData.description = parsed.data.description
-      if (parsed.data.isDefault !== undefined) updateData.is_default = parsed.data.isDefault
+      if (parsed.data.description !== undefined)
+        updateData.description = parsed.data.description
+      if (parsed.data.isDefault !== undefined)
+        updateData.is_default = parsed.data.isDefault
 
       await prisma.lawList.update({
         where: { id: parsed.data.listId },
@@ -270,7 +295,10 @@ export async function deleteDocumentList(
   try {
     const parsed = DeleteDocumentListSchema.safeParse({ listId })
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -312,11 +340,16 @@ export async function deleteDocumentList(
  */
 export async function getDocumentListItems(
   input: GetDocumentListItemsInput
-): Promise<ActionResult<{ items: DocumentListItem[]; total: number; hasMore: boolean }>> {
+): Promise<
+  ActionResult<{ items: DocumentListItem[]; total: number; hasMore: boolean }>
+> {
   try {
     const parsed = GetDocumentListItemsSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     const { listId, page, limit, contentTypeFilter } = parsed.data
@@ -376,6 +409,15 @@ export async function getDocumentListItems(
                 name: true,
               },
             },
+            // Story 6.2: Include responsible user for compliance view
+            responsible_user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar_url: true,
+              },
+            },
           },
           orderBy: { position: 'asc' },
           skip: offset,
@@ -399,15 +441,29 @@ export async function getDocumentListItems(
             notes: item.notes,
             addedAt: item.added_at,
             dueDate: item.due_date, // Story 4.12
-            assignee: item.assignee ? { // Story 4.12
-              id: item.assignee.id,
-              name: item.assignee.name,
-              email: item.assignee.email,
-              avatarUrl: item.assignee.avatar_url,
-            } : null,
+            assignee: item.assignee
+              ? {
+                  // Story 4.12
+                  id: item.assignee.id,
+                  name: item.assignee.name,
+                  email: item.assignee.email,
+                  avatarUrl: item.assignee.avatar_url,
+                }
+              : null,
             // Story 4.13: Group information
             groupId: item.group?.id ?? null,
             groupName: item.group?.name ?? null,
+            // Story 6.2: Compliance tracking fields
+            complianceStatus: item.compliance_status,
+            responsibleUser: item.responsible_user
+              ? {
+                  id: item.responsible_user.id,
+                  name: item.responsible_user.name,
+                  email: item.responsible_user.email,
+                  avatarUrl: item.responsible_user.avatar_url,
+                }
+              : null,
+            category: item.category,
             document: {
               id: item.document.id,
               title: item.document.title,
@@ -438,7 +494,10 @@ export async function addDocumentToList(
   try {
     const parsed = AddDocumentToListSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -502,8 +561,12 @@ export async function addDocumentToList(
     }, 'documents:add')
   } catch (error) {
     console.error('Error adding document to list:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    return { success: false, error: `Kunde inte lägga till dokument: ${errorMessage}` }
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error'
+    return {
+      success: false,
+      error: `Kunde inte lägga till dokument: ${errorMessage}`,
+    }
   }
 }
 
@@ -516,7 +579,10 @@ export async function removeDocumentFromList(
   try {
     const parsed = RemoveDocumentFromListSchema.safeParse({ listItemId })
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -552,7 +618,10 @@ export async function updateListItem(
   try {
     const parsed = UpdateListItemSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -568,13 +637,19 @@ export async function updateListItem(
 
       // Build update data object, only including defined fields
       const itemUpdateData: LawListItemUpdateData = {}
-      if (parsed.data.status !== undefined) itemUpdateData.status = parsed.data.status
-      if (parsed.data.priority !== undefined) itemUpdateData.priority = parsed.data.priority
-      if (parsed.data.notes !== undefined) itemUpdateData.notes = parsed.data.notes
-      if (parsed.data.commentary !== undefined) itemUpdateData.commentary = parsed.data.commentary
+      if (parsed.data.status !== undefined)
+        itemUpdateData.status = parsed.data.status
+      if (parsed.data.priority !== undefined)
+        itemUpdateData.priority = parsed.data.priority
+      if (parsed.data.notes !== undefined)
+        itemUpdateData.notes = parsed.data.notes
+      if (parsed.data.commentary !== undefined)
+        itemUpdateData.commentary = parsed.data.commentary
       // Story 4.12: Handle new fields
-      if (parsed.data.dueDate !== undefined) itemUpdateData.due_date = parsed.data.dueDate
-      if (parsed.data.assignedTo !== undefined) itemUpdateData.assigned_to = parsed.data.assignedTo
+      if (parsed.data.dueDate !== undefined)
+        itemUpdateData.due_date = parsed.data.dueDate
+      if (parsed.data.assignedTo !== undefined)
+        itemUpdateData.assigned_to = parsed.data.assignedTo
       // Story 4.13: Handle group assignment
       if (parsed.data.groupId !== undefined) {
         // If moving to a group, verify it belongs to the same list
@@ -586,11 +661,19 @@ export async function updateListItem(
             },
           })
           if (!group) {
-            return { success: false, error: 'Gruppen hittades inte i denna lista' }
+            return {
+              success: false,
+              error: 'Gruppen hittades inte i denna lista',
+            }
           }
         }
         itemUpdateData.group_id = parsed.data.groupId
       }
+      // Story 6.2: Handle compliance fields
+      if (parsed.data.complianceStatus !== undefined)
+        itemUpdateData.compliance_status = parsed.data.complianceStatus
+      if (parsed.data.responsibleUserId !== undefined)
+        itemUpdateData.responsible_user_id = parsed.data.responsibleUserId
 
       await prisma.lawListItem.update({
         where: { id: parsed.data.listItemId },
@@ -615,7 +698,10 @@ export async function reorderListItems(
   try {
     const parsed = ReorderListItemsSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -659,7 +745,10 @@ export async function bulkUpdateListItems(
   try {
     const parsed = BulkUpdateListItemsSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -690,10 +779,19 @@ export async function bulkUpdateListItems(
 
       // Build update data
       const updateData: LawListItemUpdateData = {}
-      if (parsed.data.updates.status !== undefined) updateData.status = parsed.data.updates.status
-      if (parsed.data.updates.priority !== undefined) updateData.priority = parsed.data.updates.priority
-      if (parsed.data.updates.dueDate !== undefined) updateData.due_date = parsed.data.updates.dueDate
-      if (parsed.data.updates.assignedTo !== undefined) updateData.assigned_to = parsed.data.updates.assignedTo
+      if (parsed.data.updates.status !== undefined)
+        updateData.status = parsed.data.updates.status
+      if (parsed.data.updates.priority !== undefined)
+        updateData.priority = parsed.data.updates.priority
+      if (parsed.data.updates.dueDate !== undefined)
+        updateData.due_date = parsed.data.updates.dueDate
+      if (parsed.data.updates.assignedTo !== undefined)
+        updateData.assigned_to = parsed.data.updates.assignedTo
+      // Story 6.2: Compliance status and responsible person bulk update
+      if (parsed.data.updates.complianceStatus !== undefined)
+        updateData.compliance_status = parsed.data.updates.complianceStatus
+      if (parsed.data.updates.responsibleUserId !== undefined)
+        updateData.responsible_user_id = parsed.data.updates.responsibleUserId
 
       // Bulk update
       const result = await prisma.lawListItem.updateMany({
@@ -727,7 +825,10 @@ export async function searchLegalDocuments(
   try {
     const parsed = SearchDocumentsSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     const { query, contentTypes, excludeListId, limit, offset } = parsed.data
@@ -843,19 +944,19 @@ export async function searchLegalDocuments(
 /**
  * Get export data for a document list (used by client-side CSV generation)
  */
-export async function getExportData(
-  listId: string
-): Promise<ActionResult<{
-  listName: string
-  items: Array<{
-    title: string
-    documentNumber: string
-    contentType: string
-    status: string
-    priority: string
-    commentary: string | null
+export async function getExportData(listId: string): Promise<
+  ActionResult<{
+    listName: string
+    items: Array<{
+      title: string
+      documentNumber: string
+      contentType: string
+      status: string
+      priority: string
+      commentary: string | null
+    }>
   }>
-}>> {
+> {
   try {
     return await withWorkspace(async (ctx) => {
       const list = await prisma.lawList.findFirst({
@@ -918,7 +1019,9 @@ export interface WorkspaceMemberOption {
   avatarUrl: string | null
 }
 
-export async function getWorkspaceMembers(): Promise<ActionResult<WorkspaceMemberOption[]>> {
+export async function getWorkspaceMembers(): Promise<
+  ActionResult<WorkspaceMemberOption[]>
+> {
   try {
     return await withWorkspace(async (ctx) => {
       const members = await prisma.workspaceMember.findMany({
@@ -959,7 +1062,9 @@ export async function getWorkspaceMembers(): Promise<ActionResult<WorkspaceMembe
 /**
  * Get or create the default document list for the current workspace
  */
-export async function getOrCreateDefaultList(): Promise<ActionResult<{ id: string; name: string }>> {
+export async function getOrCreateDefaultList(): Promise<
+  ActionResult<{ id: string; name: string }>
+> {
   try {
     return await withWorkspace(async (ctx) => {
       // Try to find existing default list
@@ -1025,7 +1130,10 @@ export async function createListGroup(
   try {
     const parsed = CreateListGroupSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -1088,7 +1196,10 @@ export async function updateListGroup(
   try {
     const parsed = UpdateListGroupSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -1113,14 +1224,18 @@ export async function updateListGroup(
         })
 
         if (existingGroup) {
-          return { success: false, error: 'En grupp med det namnet finns redan' }
+          return {
+            success: false,
+            error: 'En grupp med det namnet finns redan',
+          }
         }
       }
 
       // Build update data
       const updateData: { name?: string; position?: number } = {}
       if (parsed.data.name !== undefined) updateData.name = parsed.data.name
-      if (parsed.data.position !== undefined) updateData.position = parsed.data.position
+      if (parsed.data.position !== undefined)
+        updateData.position = parsed.data.position
 
       await prisma.lawListGroup.update({
         where: { id: parsed.data.groupId },
@@ -1139,13 +1254,14 @@ export async function updateListGroup(
 /**
  * Delete a group - items move to ungrouped (group_id = null)
  */
-export async function deleteListGroup(
-  groupId: string
-): Promise<ActionResult> {
+export async function deleteListGroup(groupId: string): Promise<ActionResult> {
   try {
     const parsed = DeleteListGroupSchema.safeParse({ groupId })
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -1182,7 +1298,10 @@ export async function getListGroups(
   try {
     const parsed = GetListGroupsSchema.safeParse({ listId })
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -1232,7 +1351,10 @@ export async function moveItemToGroup(
   try {
     const parsed = MoveItemToGroupSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -1256,7 +1378,10 @@ export async function moveItemToGroup(
         })
 
         if (!group) {
-          return { success: false, error: 'Gruppen hittades inte i denna lista' }
+          return {
+            success: false,
+            error: 'Gruppen hittades inte i denna lista',
+          }
         }
       }
 
@@ -1283,7 +1408,10 @@ export async function bulkMoveToGroup(
   try {
     const parsed = BulkMoveToGroupSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
@@ -1309,7 +1437,10 @@ export async function bulkMoveToGroup(
         })
 
         if (!group) {
-          return { success: false, error: 'Gruppen hittades inte i denna lista' }
+          return {
+            success: false,
+            error: 'Gruppen hittades inte i denna lista',
+          }
         }
       }
 
@@ -1353,7 +1484,10 @@ export async function reorderGroups(
   try {
     const parsed = ReorderGroupsSchema.safeParse(input)
     if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message ?? 'Valideringsfel' }
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
     }
 
     return await withWorkspace(async (ctx) => {
