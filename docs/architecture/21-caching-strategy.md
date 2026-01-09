@@ -35,8 +35,9 @@ export const getWorkspaceContext = cache(async () => { ... })
 
 **Already implemented in:**
 
-- `lib/auth/session.ts` - `getServerSession()`
 - `lib/auth/workspace-context.ts` - `getWorkspaceContext()`
+
+**Note:** `getServerSession()` in `lib/auth/session.ts` is intentionally NOT wrapped with `cache()` as it can interfere with authentication flows. JWT session decoding is already efficient.
 
 **When to use:**
 
