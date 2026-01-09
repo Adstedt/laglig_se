@@ -4,6 +4,7 @@
  * See: docs/stories/in-progress/5.1.workspace-data-model-multi-tenancy.md
  */
 
+import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from './session'
@@ -45,62 +46,68 @@ export const ACTIVE_WORKSPACE_COOKIE = 'active_workspace_id'
  * Get the current workspace context from session and cookies.
  * Returns user ID, workspace ID, role, and permission checker.
  *
+ * Wrapped with React's cache() to deduplicate calls within a single request.
+ * This prevents redundant database queries when multiple server actions
+ * or components call getWorkspaceContext() in the same request.
+ *
  * @throws {WorkspaceAccessError} If user is not authenticated or has no workspace access
  */
-export async function getWorkspaceContext(): Promise<WorkspaceContext> {
-  const session = await getServerSession()
+export const getWorkspaceContext = cache(
+  async (): Promise<WorkspaceContext> => {
+    const session = await getServerSession()
 
-  if (!session?.user?.email) {
-    throw new WorkspaceAccessError('Unauthorized: No session', 'UNAUTHORIZED')
+    if (!session?.user?.email) {
+      throw new WorkspaceAccessError('Unauthorized: No session', 'UNAUTHORIZED')
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    })
+
+    if (!user) {
+      throw new WorkspaceAccessError(
+        'Unauthorized: User not found',
+        'UNAUTHORIZED'
+      )
+    }
+
+    // Get active workspace from cookie or default to first workspace
+    const cookieStore = await cookies()
+    const activeWorkspaceId = cookieStore.get(ACTIVE_WORKSPACE_COOKIE)?.value
+
+    const member = await prisma.workspaceMember.findFirst({
+      where: activeWorkspaceId
+        ? { workspace_id: activeWorkspaceId, user_id: user.id }
+        : { user_id: user.id },
+      include: { workspace: true },
+      orderBy: { joined_at: 'asc' },
+    })
+
+    if (!member) {
+      throw new WorkspaceAccessError('No workspace access', 'NO_WORKSPACE')
+    }
+
+    // Check if workspace is deleted
+    if (member.workspace.status === 'DELETED') {
+      throw new WorkspaceAccessError(
+        'Workspace has been deleted',
+        'WORKSPACE_DELETED'
+      )
+    }
+
+    const role = member.role
+
+    return {
+      userId: user.id,
+      workspaceId: member.workspace_id,
+      workspaceName: member.workspace.name,
+      workspaceSlug: member.workspace.slug,
+      workspaceStatus: member.workspace.status,
+      role,
+      hasPermission: (permission) => hasPermission(role, permission),
+    }
   }
-
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-  })
-
-  if (!user) {
-    throw new WorkspaceAccessError(
-      'Unauthorized: User not found',
-      'UNAUTHORIZED'
-    )
-  }
-
-  // Get active workspace from cookie or default to first workspace
-  const cookieStore = await cookies()
-  const activeWorkspaceId = cookieStore.get(ACTIVE_WORKSPACE_COOKIE)?.value
-
-  const member = await prisma.workspaceMember.findFirst({
-    where: activeWorkspaceId
-      ? { workspace_id: activeWorkspaceId, user_id: user.id }
-      : { user_id: user.id },
-    include: { workspace: true },
-    orderBy: { joined_at: 'asc' },
-  })
-
-  if (!member) {
-    throw new WorkspaceAccessError('No workspace access', 'NO_WORKSPACE')
-  }
-
-  // Check if workspace is deleted
-  if (member.workspace.status === 'DELETED') {
-    throw new WorkspaceAccessError(
-      'Workspace has been deleted',
-      'WORKSPACE_DELETED'
-    )
-  }
-
-  const role = member.role
-
-  return {
-    userId: user.id,
-    workspaceId: member.workspace_id,
-    workspaceName: member.workspace.name,
-    workspaceSlug: member.workspace.slug,
-    workspaceStatus: member.workspace.status,
-    role,
-    hasPermission: (permission) => hasPermission(role, permission),
-  }
-}
+)
 
 /**
  * Execute a callback with workspace context, optionally requiring a specific permission.
