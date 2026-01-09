@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useForm } from 'react-hook-form'
 import { signIn } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { LoginSchema } from '@/lib/validation/auth'
 import type { z } from 'zod'
@@ -19,7 +19,6 @@ const ERROR_MESSAGES: Record<string, string> = {
 }
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string>('')
   const [successMessage, setSuccessMessage] = useState<string>('')
@@ -65,11 +64,12 @@ function LoginForm() {
       }
 
       // Redirect to dashboard or callback URL
+      // Use hard navigation to bypass Next.js Router Cache after auth state change
       const callbackUrl =
         searchParams?.get('callbackUrl') ||
         searchParams?.get('redirect') ||
         '/dashboard'
-      router.push(callbackUrl)
+      window.location.href = callbackUrl
     } catch (err) {
       setError('An error occurred. Please try again.')
       // eslint-disable-next-line no-console
