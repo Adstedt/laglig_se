@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useForm } from 'react-hook-form'
 import { signIn } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { LoginSchema } from '@/lib/validation/auth'
 import type { z } from 'zod'
@@ -19,6 +19,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 }
 
 function LoginForm() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string>('')
   const [successMessage, setSuccessMessage] = useState<string>('')
@@ -68,15 +69,7 @@ function LoginForm() {
         searchParams?.get('callbackUrl') ||
         searchParams?.get('redirect') ||
         '/dashboard'
-
-      // IMPORTANT: Use hard navigation after login to bypass Next.js Router Cache.
-      // The Router Cache (staleTimes) caches navigation responses. If the user
-      // previously tried to access /dashboard while unauthenticated, the redirect
-      // to /login is cached. router.push() would serve this cached redirect even
-      // after successful login. Hard navigation ensures a fresh server request
-      // with the new auth cookie. This is the documented pattern for auth state changes.
-      // See: https://nextjs.org/docs/app/building-your-application/caching#invalidation-1
-      window.location.href = callbackUrl
+      router.push(callbackUrl)
     } catch (err) {
       setError('An error occurred. Please try again.')
       // eslint-disable-next-line no-console
