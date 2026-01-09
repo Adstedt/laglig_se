@@ -22,20 +22,29 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('__Secure-next-auth.session-token')
   const legacyCookie = request.cookies.get('next-auth.session-token')
 
+  const secret = process.env.NEXTAUTH_SECRET || ''
+
   console.log('[Middleware Debug]', {
     pathname,
     cookieCount: allCookies.length,
     cookieNames: allCookies.map((c) => c.name),
     hasSecureCookie: !!sessionCookie,
     hasLegacyCookie: !!legacyCookie,
-    hasSecret: !!process.env.NEXTAUTH_SECRET,
-    secretLength: process.env.NEXTAUTH_SECRET?.length,
+    secureCookieLength: sessionCookie?.value?.length,
+    hasSecret: !!secret,
+    secretLength: secret.length,
+    // Log first/last 4 chars to verify it's the same secret (safe partial reveal)
+    secretPrefix: secret.substring(0, 4),
+    secretSuffix: secret.substring(secret.length - 4),
   })
 
-  // Verify JWT token - explicitly pass secret for Edge Runtime compatibility
+  // Verify JWT token with explicit configuration for Edge Runtime
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET!,
+    secret: secret,
+    // Explicitly specify cookie name and secure mode
+    cookieName: '__Secure-next-auth.session-token',
+    secureCookie: true,
   })
 
   console.log('[Middleware Debug] Token result:', {
