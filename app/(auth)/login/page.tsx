@@ -64,10 +64,12 @@ function LoginForm() {
         return
       }
 
-      // Redirect to dashboard or original page
-      const redirect = searchParams?.get('redirect') || '/dashboard'
-      router.push(redirect)
-      router.refresh()
+      // Redirect to dashboard or callback URL
+      const callbackUrl =
+        searchParams?.get('callbackUrl') ||
+        searchParams?.get('redirect') ||
+        '/dashboard'
+      router.push(callbackUrl)
     } catch (err) {
       setError('An error occurred. Please try again.')
       // eslint-disable-next-line no-console
