@@ -20,11 +20,14 @@ export async function middleware(request: NextRequest) {
   // Verify JWT token with explicit configuration for Edge Runtime
   // Note: cookieName and secureCookie must be explicitly set for Vercel Edge
   // because auto-detection doesn't work reliably in Edge Runtime
+  const isSecure = request.url.startsWith('https://')
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET!,
-    cookieName: '__Secure-next-auth.session-token',
-    secureCookie: true,
+    cookieName: isSecure
+      ? '__Secure-next-auth.session-token'
+      : 'next-auth.session-token',
+    secureCookie: isSecure,
   })
 
   // If no valid token, redirect to login
