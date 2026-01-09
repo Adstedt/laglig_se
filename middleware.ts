@@ -17,14 +17,35 @@ import { getToken } from 'next-auth/jwt'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Debug: Log cookie information (visible in Vercel function logs)
+  const allCookies = request.cookies.getAll()
+  const sessionCookie = request.cookies.get('__Secure-next-auth.session-token')
+  const legacyCookie = request.cookies.get('next-auth.session-token')
+
+  console.log('[Middleware Debug]', {
+    pathname,
+    cookieCount: allCookies.length,
+    cookieNames: allCookies.map((c) => c.name),
+    hasSecureCookie: !!sessionCookie,
+    hasLegacyCookie: !!legacyCookie,
+    hasSecret: !!process.env.NEXTAUTH_SECRET,
+    secretLength: process.env.NEXTAUTH_SECRET?.length,
+  })
+
   // Verify JWT token - explicitly pass secret for Edge Runtime compatibility
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET!,
   })
 
+  console.log('[Middleware Debug] Token result:', {
+    hasToken: !!token,
+    tokenEmail: token?.email,
+  })
+
   // If no valid token, redirect to login
   if (!token) {
+    console.log('[Middleware Debug] No token, redirecting to login')
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('callbackUrl', request.url)
     return NextResponse.redirect(loginUrl)
