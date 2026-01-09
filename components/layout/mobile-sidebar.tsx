@@ -71,8 +71,7 @@ const workItems = [
   {
     title: 'Uppgifter',
     icon: CheckSquare,
-    href: '#',
-    disabled: true,
+    href: '/tasks',
   },
   {
     title: 'HR',

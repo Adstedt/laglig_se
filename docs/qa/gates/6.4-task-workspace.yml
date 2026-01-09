@@ -1,0 +1,93 @@
+# Quality Gate: Story 6.4 - Task Workspace
+schema: 1
+story: '6.4'
+story_title: 'Implement Task Workspace (Jira-Style with Tabs)'
+gate: CONCERNS
+status_reason: 'Core functionality gaps - Kanban drag-drop and bulk actions not wired to server actions. Medium-severity issues that should be addressed before production.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-01-09T12:00:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'FUNC-001'
+    severity: medium
+    finding: 'Kanban drag-and-drop does not persist to server - handleDragEnd has TODO comment but no API call'
+    suggested_action: 'Wire handleDragEnd to call updateTaskStatus server action'
+    suggested_owner: dev
+    refs: ['components/features/tasks/task-workspace/kanban-tab.tsx:165-168']
+  - id: 'FUNC-002'
+    severity: medium
+    finding: 'Bulk update actions only log to console, do not call server actions'
+    suggested_action: 'Connect handleBulkUpdate to updateTasksBulk and deleteTasksBulk server actions'
+    suggested_owner: dev
+    refs: ['components/features/tasks/task-workspace/list-tab.tsx:416-423']
+  - id: 'FUNC-003'
+    severity: medium
+    finding: 'Delete button in bulk action bar has no onClick handler'
+    suggested_action: 'Add onClick handler to call deleteTasksBulk with selected task IDs'
+    suggested_owner: dev
+    refs: ['components/features/tasks/task-workspace/bulk-action-bar.tsx:133-136']
+  - id: 'UI-001'
+    severity: low
+    finding: 'Quick action buttons in summary tab have no onClick handlers'
+    suggested_action: 'Add navigation to filtered views when quick action buttons are clicked'
+    suggested_owner: dev
+    refs: ['components/features/tasks/task-workspace/summary-tab.tsx:243-273']
+  - id: 'UI-002'
+    severity: low
+    finding: 'CSV export button missing from UI despite server action existing'
+    suggested_action: 'Add Export CSV button to Alla uppgifter tab (AC 29)'
+    suggested_owner: dev
+    refs: ['app/actions/tasks.ts:691-752']
+  - id: 'SEC-001'
+    severity: low
+    finding: 'Bulk operations missing 50 task rate limit validation'
+    suggested_action: 'Add taskIds.length <= 50 validation to updateTasksBulk and deleteTasksBulk'
+    suggested_owner: dev
+    refs: ['app/actions/tasks.ts:429-491', 'app/actions/tasks.ts:959-988']
+
+quality_score: 60  # 100 - (20*0 FAILs) - (10*4 medium CONCERNS) = 60
+
+expires: '2026-01-23T12:00:00Z'  # 2 weeks from review
+
+evidence:
+  tests_reviewed: 0
+  risks_identified: 6
+  trace:
+    ac_covered: [1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36]
+    ac_gaps: [5, 6, 14, 22, 29]  # Deferred: Activity feed, Team workload, Swimlanes, Click-to-create, CSV button
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All server actions use withWorkspace() authorization; Zod validation on inputs; workspace isolation enforced'
+  performance:
+    status: CONCERNS
+    notes: 'Virtual scrolling for 200+ tasks not implemented; search not debounced'
+  reliability:
+    status: PASS
+    notes: 'ActionResult pattern for error handling; graceful error messages in Swedish'
+  maintainability:
+    status: PASS
+    notes: 'Consistent patterns; proper TypeScript typing; shadcn/ui components; loading skeletons'
+
+recommendations:
+  immediate:
+    - action: 'Wire Kanban handleDragEnd to call updateTaskStatus'
+      refs: ['components/features/tasks/task-workspace/kanban-tab.tsx:165-168']
+    - action: 'Connect bulk actions to server actions in list-tab.tsx'
+      refs: ['components/features/tasks/task-workspace/list-tab.tsx:416-423']
+    - action: 'Add onClick to delete button in bulk-action-bar.tsx'
+      refs: ['components/features/tasks/task-workspace/bulk-action-bar.tsx:133-136']
+  future:
+    - action: 'Implement Zustand store for Kanban optimistic updates (Task 9)'
+      refs: ['lib/stores/kanban-store.ts']
+    - action: 'Add virtual scrolling with @tanstack/react-virtual for large task lists'
+      refs: ['components/features/tasks/task-workspace/list-tab.tsx']
+    - action: 'Implement mobile responsive adaptations (Task 10)'
+      refs: ['components/features/tasks/task-workspace/']
+    - action: 'Add unit tests (Task 12) and E2E tests (Task 13)'
+      refs: ['tests/unit/components/features/tasks/', 'tests/e2e/']
+    - action: 'Add debounced search for performance with 200+ tasks'
+      refs: ['components/features/tasks/task-workspace/task-filters.tsx']

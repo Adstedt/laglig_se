@@ -86,8 +86,7 @@ const workItems: NavItem[] = [
   {
     title: 'Uppgifter',
     icon: CheckSquare,
-    href: '#',
-    disabled: true,
+    href: '/tasks',
   },
   {
     title: 'HR',
