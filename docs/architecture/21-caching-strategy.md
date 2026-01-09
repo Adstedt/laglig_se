@@ -259,6 +259,111 @@ function TaskList() {
 }
 ```
 
+## Special Case: Frequently-Modified Data (Law Lists, Tasks)
+
+For features where users actively work and modify data, **avoid long server-side caching**. Instead:
+
+### Strategy: Client-Side State Management + Optimistic Updates
+
+**Already implemented in `lib/stores/document-list-store.ts`:**
+
+```typescript
+// Zustand store with:
+// - Client-side cache (itemsByList Map)
+// - Optimistic updates (instant UI feedback)
+// - Rollback on failure
+// - 5-minute staleness check
+// - LRU eviction (keeps last 10 lists)
+
+// Usage in components:
+const { listItems, updateItem, addItem } = useDocumentListStore()
+
+// Optimistic update - instant feel
+await updateItem(itemId, { status: 'COMPLETED' })
+```
+
+### Pattern for New Task/Kanban Features
+
+```typescript
+// 1. Create Zustand store (similar to document-list-store)
+export const useTaskStore = create<TaskState>()((set, get) => ({
+  tasks: [],
+  columns: [],
+
+  // Optimistic update with rollback
+  updateTask: async (taskId, updates) => {
+    const rollback = [...get().tasks]
+
+    // Instant UI update
+    set({
+      tasks: get().tasks.map((t) =>
+        t.id === taskId ? { ...t, ...updates } : t
+      ),
+    })
+
+    // Server sync
+    const result = await updateTaskAction(taskId, updates)
+    if (!result.success) {
+      set({ tasks: rollback, error: result.error })
+    }
+  },
+
+  // Optimistic drag-and-drop
+  moveTask: async (taskId, newColumnId, newPosition) => {
+    const rollback = [...get().tasks]
+
+    // Instant reorder
+    set({ tasks: reorderTasks(get().tasks, taskId, newColumnId, newPosition) })
+
+    // Server sync
+    const result = await moveTaskAction(taskId, newColumnId, newPosition)
+    if (!result.success) {
+      set({ tasks: rollback })
+    }
+  },
+}))
+```
+
+### Server-Side: Minimal Initial Load
+
+For pages with Zustand stores, the server only needs to provide initial data:
+
+```typescript
+// app/(workspace)/tasks/page.tsx
+export default async function TasksPage() {
+  const ctx = await getWorkspaceContext() // Cached per request
+
+  // Light query - just get initial data, client handles the rest
+  const initialTasks = await getTasksForWorkspace(ctx.workspaceId)
+
+  return (
+    <TaskBoard initialTasks={initialTasks} />
+  )
+}
+
+// Component hydrates Zustand store with initial data
+function TaskBoard({ initialTasks }) {
+  const { tasks, setTasks } = useTaskStore()
+
+  useEffect(() => {
+    if (tasks.length === 0) {
+      setTasks(initialTasks)
+    }
+  }, [])
+
+  // All subsequent updates via Zustand (instant, optimistic)
+}
+```
+
+### Key Principles for Heavy-Use Features
+
+1. **NO long `unstable_cache`** - Data changes too frequently
+2. **YES `cache()` for auth/context** - Still deduplicate within request
+3. **Zustand for state** - Single source of truth on client
+4. **Optimistic updates** - Instant UI feedback
+5. **Rollback on failure** - Graceful error handling
+6. **Background sync** - Refresh stale data silently
+
 ## Performance Targets
 
 | Route Type                      | Target Load Time |
