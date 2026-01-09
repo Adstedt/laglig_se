@@ -2,8 +2,8 @@
 schema: 1
 story: '6.4'
 story_title: 'Implement Task Workspace (Jira-Style with Tabs)'
-gate: CONCERNS
-status_reason: 'Core functionality gaps - Kanban drag-drop and bulk actions not wired to server actions. Medium-severity issues that should be addressed before production.'
+gate: WAIVED
+status_reason: 'Story owner moved to Done. Issues documented for future work - Kanban persistence, bulk actions, CSV export to be addressed in follow-up.'
 reviewer: 'Quinn (Test Architect)'
 updated: '2026-01-09T12:00:00Z'
 

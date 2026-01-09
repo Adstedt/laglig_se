@@ -1,12 +1,14 @@
 /**
  * Story 5.7: Workspace Settings Page
- * Server component that fetches workspace and members data,
+ * Story 6.5: Added columns data for workflow tab
+ * Server component that fetches workspace, members, and columns data,
  * then renders the client-side tabbed interface.
  */
 
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { prisma } from '@/lib/prisma'
 import { SettingsTabs } from '@/components/features/settings/settings-tabs'
+import { getTaskColumns } from '@/app/actions/tasks'
 
 async function getWorkspaceData(workspaceId: string) {
   const workspace = await prisma.workspace.findUnique({
@@ -49,10 +51,13 @@ async function getWorkspaceMembers(workspaceId: string) {
 export default async function SettingsPage() {
   const context = await getWorkspaceContext()
 
-  const [workspace, members] = await Promise.all([
+  const [workspace, members, columnsResult] = await Promise.all([
     getWorkspaceData(context.workspaceId),
     getWorkspaceMembers(context.workspaceId),
+    getTaskColumns(),
   ])
+
+  const columns = columnsResult.success ? columnsResult.data ?? [] : []
 
   if (!workspace) {
     return (
@@ -74,7 +79,7 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <SettingsTabs workspace={workspace} members={members} />
+      <SettingsTabs workspace={workspace} members={members} columns={columns} />
     </div>
   )
 }

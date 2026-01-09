@@ -1021,6 +1021,368 @@ export async function deleteTasksBulk(
   }
 }
 
+// ============================================================================
+// Task Column Management Actions (Story 6.5)
+// ============================================================================
+
+const MAX_COLUMNS = 8
+
+const CreateTaskColumnSchema = z.object({
+  name: z.string().min(1, 'Kolumnnamn krävs').max(50, 'Max 50 tecken'),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'Ogiltig färgkod')
+    .optional(),
+})
+
+const UpdateTaskColumnSchema = z.object({
+  name: z.string().min(1, 'Kolumnnamn krävs').max(50, 'Max 50 tecken').optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, 'Ogiltig färgkod')
+    .optional(),
+  is_done: z.boolean().optional(),
+})
+
+/**
+ * Create a new task column
+ */
+export async function createTaskColumn(
+  name: string,
+  color?: string
+): Promise<ActionResult<TaskColumnWithCount>> {
+  try {
+    const validated = CreateTaskColumnSchema.parse({ name, color })
+
+    return await withWorkspace(async ({ workspaceId }) => {
+      // Check max columns limit
+      const existingCount = await prisma.taskColumn.count({
+        where: { workspace_id: workspaceId },
+      })
+
+      if (existingCount >= MAX_COLUMNS) {
+        return {
+          success: false,
+          error: `Max ${MAX_COLUMNS} kolumner tillåtna`,
+        }
+      }
+
+      // Check for duplicate names
+      const duplicateName = await prisma.taskColumn.findFirst({
+        where: {
+          workspace_id: workspaceId,
+          name: validated.name,
+        },
+      })
+
+      if (duplicateName) {
+        return {
+          success: false,
+          error: 'En kolumn med detta namn finns redan',
+        }
+      }
+
+      // Get max position
+      const maxPosition = await prisma.taskColumn.aggregate({
+        where: { workspace_id: workspaceId },
+        _max: { position: true },
+      })
+
+      const newColumn = await prisma.taskColumn.create({
+        data: {
+          workspace_id: workspaceId,
+          name: validated.name,
+          color: validated.color ?? '#6b7280',
+          position: (maxPosition._max.position ?? -1) + 1,
+          is_default: false,
+          is_done: false,
+        },
+        include: {
+          _count: {
+            select: { tasks: true },
+          },
+        },
+      })
+
+      revalidatePath('/tasks')
+      revalidatePath('/settings')
+      return { success: true, data: newColumn as TaskColumnWithCount }
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.issues[0]?.message ?? 'Ogiltiga data' }
+    }
+    console.error('createTaskColumn error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+/**
+ * Update task column (name, color, is_done)
+ */
+export async function updateTaskColumn(
+  columnId: string,
+  updates: { name?: string; color?: string; is_done?: boolean }
+): Promise<ActionResult<TaskColumnWithCount>> {
+  try {
+    const validated = UpdateTaskColumnSchema.parse(updates)
+
+    return await withWorkspace(async ({ workspaceId }) => {
+      // Verify column belongs to workspace
+      const column = await prisma.taskColumn.findFirst({
+        where: { id: columnId, workspace_id: workspaceId },
+      })
+
+      if (!column) {
+        return { success: false, error: 'Kolumnen hittades inte' }
+      }
+
+      // Check for duplicate names if name is being updated
+      if (validated.name && validated.name !== column.name) {
+        const duplicateName = await prisma.taskColumn.findFirst({
+          where: {
+            workspace_id: workspaceId,
+            name: validated.name,
+            id: { not: columnId },
+          },
+        })
+
+        if (duplicateName) {
+          return {
+            success: false,
+            error: 'En kolumn med detta namn finns redan',
+          }
+        }
+      }
+
+      // Validate at least one is_done column remains
+      if (validated.is_done === false && column.is_done) {
+        const otherDoneColumns = await prisma.taskColumn.count({
+          where: {
+            workspace_id: workspaceId,
+            is_done: true,
+            id: { not: columnId },
+          },
+        })
+
+        if (otherDoneColumns === 0) {
+          return {
+            success: false,
+            error: 'Minst en kolumn måste vara en slutförd-kolumn',
+          }
+        }
+      }
+
+      const updatedColumn = await prisma.taskColumn.update({
+        where: { id: columnId },
+        data: {
+          ...(validated.name && { name: validated.name }),
+          ...(validated.color && { color: validated.color }),
+          ...(validated.is_done !== undefined && { is_done: validated.is_done }),
+        },
+        include: {
+          _count: {
+            select: { tasks: true },
+          },
+        },
+      })
+
+      revalidatePath('/tasks')
+      revalidatePath('/settings')
+      return { success: true, data: updatedColumn as TaskColumnWithCount }
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.issues[0]?.message ?? 'Ogiltiga data' }
+    }
+    console.error('updateTaskColumn error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+/**
+ * Delete task column (non-default only)
+ * Migrates tasks to first column before deletion
+ */
+export async function deleteTaskColumn(
+  columnId: string
+): Promise<ActionResult<{ deletedId: string; migratedCount: number }>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      // Verify column belongs to workspace
+      const column = await prisma.taskColumn.findFirst({
+        where: { id: columnId, workspace_id: workspaceId },
+        include: {
+          _count: {
+            select: { tasks: true },
+          },
+        },
+      })
+
+      if (!column) {
+        return { success: false, error: 'Kolumnen hittades inte' }
+      }
+
+      // Cannot delete default columns
+      if (column.is_default) {
+        return { success: false, error: 'Standardkolumner kan inte raderas' }
+      }
+
+      // Get first column (migration target)
+      const firstColumn = await prisma.taskColumn.findFirst({
+        where: { workspace_id: workspaceId },
+        orderBy: { position: 'asc' },
+      })
+
+      if (!firstColumn || firstColumn.id === columnId) {
+        return { success: false, error: 'Kan inte hitta målkolumn för uppgifter' }
+      }
+
+      const migratedCount = column._count.tasks
+
+      // Use transaction to migrate tasks and delete column
+      await prisma.$transaction(async (tx) => {
+        // Migrate tasks to first column
+        if (migratedCount > 0) {
+          await tx.task.updateMany({
+            where: { column_id: columnId },
+            data: { column_id: firstColumn.id },
+          })
+        }
+
+        // Delete the column
+        await tx.taskColumn.delete({
+          where: { id: columnId },
+        })
+
+        // Reorder remaining columns to fill gap
+        const remainingColumns = await tx.taskColumn.findMany({
+          where: { workspace_id: workspaceId },
+          orderBy: { position: 'asc' },
+        })
+
+        for (let i = 0; i < remainingColumns.length; i++) {
+          const col = remainingColumns[i]
+          if (col && col.position !== i) {
+            await tx.taskColumn.update({
+              where: { id: col.id },
+              data: { position: i },
+            })
+          }
+        }
+      })
+
+      revalidatePath('/tasks')
+      revalidatePath('/settings')
+      return { success: true, data: { deletedId: columnId, migratedCount } }
+    })
+  } catch (error) {
+    console.error('deleteTaskColumn error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+/**
+ * Reorder columns
+ */
+export async function reorderTaskColumns(
+  columnIds: string[]
+): Promise<ActionResult<TaskColumnWithCount[]>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      // Verify all IDs belong to workspace
+      const columns = await prisma.taskColumn.findMany({
+        where: { workspace_id: workspaceId },
+      })
+
+      const workspaceColumnIds = new Set(columns.map((c) => c.id))
+
+      for (const id of columnIds) {
+        if (!workspaceColumnIds.has(id)) {
+          return { success: false, error: 'Ogiltig kolumn-ID' }
+        }
+      }
+
+      // Verify all workspace columns are included
+      if (columnIds.length !== columns.length) {
+        return { success: false, error: 'Alla kolumner måste inkluderas' }
+      }
+
+      // Update positions based on array index
+      await prisma.$transaction(
+        columnIds.map((id, index) =>
+          prisma.taskColumn.update({
+            where: { id },
+            data: { position: index },
+          })
+        )
+      )
+
+      // Fetch updated columns
+      const updatedColumns = await prisma.taskColumn.findMany({
+        where: { workspace_id: workspaceId },
+        orderBy: { position: 'asc' },
+        include: {
+          _count: {
+            select: { tasks: true },
+          },
+        },
+      })
+
+      revalidatePath('/tasks')
+      revalidatePath('/settings')
+      return { success: true, data: updatedColumns as TaskColumnWithCount[] }
+    })
+  } catch (error) {
+    console.error('reorderTaskColumns error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+/**
+ * Get task count for a specific column (used in delete dialog)
+ */
+export async function getColumnTaskCount(
+  columnId: string
+): Promise<ActionResult<number>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      const column = await prisma.taskColumn.findFirst({
+        where: { id: columnId, workspace_id: workspaceId },
+        include: {
+          _count: {
+            select: { tasks: true },
+          },
+        },
+      })
+
+      if (!column) {
+        return { success: false, error: 'Kolumnen hittades inte' }
+      }
+
+      return { success: true, data: column._count.tasks }
+    })
+  } catch (error) {
+    console.error('getColumnTaskCount error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
 /**
  * Get workspace members (for assignee picker)
  */

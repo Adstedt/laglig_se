@@ -10,13 +10,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useWorkspace } from '@/hooks/use-workspace'
 import { hasPermission } from '@/lib/auth/permissions'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Settings, Users, CreditCard, Bell, Plug } from 'lucide-react'
+import { Settings, Users, CreditCard, Bell, Plug, Columns } from 'lucide-react'
 import type { WorkspaceRole, SubscriptionTier } from '@prisma/client'
 import { GeneralTab } from './general-tab'
 import { TeamTab } from './team-tab'
 import { BillingTab } from './billing-tab'
 import { NotificationsTab } from './notifications-tab'
 import { IntegrationsTab } from './integrations-tab'
+import { WorkflowTab } from './workflow-tab'
+import type { TaskColumnWithCount } from '@/app/actions/tasks'
 
 export interface WorkspaceData {
   id: string
@@ -42,9 +44,10 @@ export interface MemberData {
 interface SettingsTabsProps {
   workspace: WorkspaceData
   members: MemberData[]
+  columns: TaskColumnWithCount[]
 }
 
-export function SettingsTabs({ workspace, members }: SettingsTabsProps) {
+export function SettingsTabs({ workspace, members, columns }: SettingsTabsProps) {
   const { role, isLoading } = useWorkspace()
 
   // Show loading skeleton while checking permissions
@@ -86,6 +89,10 @@ export function SettingsTabs({ workspace, members }: SettingsTabsProps) {
           <Plug className="h-4 w-4" />
           <span className="hidden sm:inline">Integrationer</span>
         </TabsTrigger>
+        <TabsTrigger value="workflow" className="gap-2">
+          <Columns className="h-4 w-4" />
+          <span className="hidden sm:inline">Arbetsflöde</span>
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="general">
@@ -108,6 +115,10 @@ export function SettingsTabs({ workspace, members }: SettingsTabsProps) {
 
       <TabsContent value="integrations">
         <IntegrationsTab />
+      </TabsContent>
+
+      <TabsContent value="workflow">
+        <WorkflowTab columns={columns} />
       </TabsContent>
     </Tabs>
   )
