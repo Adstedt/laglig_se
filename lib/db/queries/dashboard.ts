@@ -1,8 +1,12 @@
 /**
  * Story 6.1: Dashboard Data Fetching Functions
  * Server-side queries for dashboard widgets with graceful error handling
+ *
+ * Uses unstable_cache for time-based caching (30s) to reduce database load.
+ * See docs/architecture/21-caching-strategy.md for caching patterns.
  */
 
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { startOfWeek, endOfWeek } from 'date-fns'
 
@@ -165,9 +169,9 @@ export async function getTopLists(workspaceId: string) {
 }
 
 /**
- * Fetch all dashboard data in parallel
+ * Fetch all dashboard data in parallel (internal, uncached)
  */
-export async function getDashboardData(workspaceId: string, userId: string) {
+async function fetchDashboardData(workspaceId: string, userId: string) {
   const [complianceStats, taskCounts, recentActivity, topLists] =
     await Promise.all([
       getComplianceStats(workspaceId),
@@ -183,3 +187,18 @@ export async function getDashboardData(workspaceId: string, userId: string) {
     topLists,
   }
 }
+
+/**
+ * Fetch all dashboard data with 30-second caching.
+ * Cache is keyed by workspaceId and userId to ensure user-specific data.
+ * Use revalidateTag('dashboard') to invalidate after mutations.
+ */
+export const getDashboardData = (workspaceId: string, userId: string) =>
+  unstable_cache(
+    () => fetchDashboardData(workspaceId, userId),
+    ['dashboard-data', workspaceId, userId],
+    {
+      revalidate: 30, // Cache for 30 seconds
+      tags: ['dashboard', `workspace-${workspaceId}`],
+    }
+  )()
