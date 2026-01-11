@@ -189,7 +189,10 @@
       "Bash(components/features/cross-references/index.ts )",
       "Bash(components/features/cross-references/related-documents-summary.tsx )",
       "Bash(lib/cache/cached-queries.ts)",
-      "Bash(timeout 180 npx tsx:*)"
+      "Bash(timeout 180 npx tsx:*)",
+      "Bash(pnpm install:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm run:*)"
     ],
     "deny": [],
     "ask": []

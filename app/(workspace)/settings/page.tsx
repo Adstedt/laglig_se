@@ -1,16 +1,18 @@
 /**
  * Story 5.7: Workspace Settings Page
  * Story 6.5: Added columns data for workflow tab
+ * Story 6.0: Added 300s caching for settings data per architecture spec
  * Server component that fetches workspace, members, and columns data,
  * then renders the client-side tabbed interface.
  */
 
+import { unstable_cache } from 'next/cache'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { prisma } from '@/lib/prisma'
 import { SettingsTabs } from '@/components/features/settings/settings-tabs'
 import { getTaskColumns } from '@/app/actions/tasks'
 
-async function getWorkspaceData(workspaceId: string) {
+async function getWorkspaceDataInternal(workspaceId: string) {
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
     select: {
@@ -26,7 +28,7 @@ async function getWorkspaceData(workspaceId: string) {
   return workspace
 }
 
-async function getWorkspaceMembers(workspaceId: string) {
+async function getWorkspaceMembersInternal(workspaceId: string) {
   const members = await prisma.workspaceMember.findMany({
     where: { workspace_id: workspaceId },
     select: {
@@ -48,6 +50,32 @@ async function getWorkspaceMembers(workspaceId: string) {
   return members
 }
 
+/**
+ * Get workspace data with 300-second cache (5 minutes)
+ */
+const getWorkspaceData = (workspaceId: string) =>
+  unstable_cache(
+    () => getWorkspaceDataInternal(workspaceId),
+    ['workspace-settings', workspaceId],
+    {
+      revalidate: 300, // Cache for 5 minutes
+      tags: ['workspace-settings', `workspace-${workspaceId}`],
+    }
+  )()
+
+/**
+ * Get workspace members with 300-second cache (5 minutes)
+ */
+const getWorkspaceMembers = (workspaceId: string) =>
+  unstable_cache(
+    () => getWorkspaceMembersInternal(workspaceId),
+    ['workspace-members', workspaceId],
+    {
+      revalidate: 300, // Cache for 5 minutes
+      tags: ['workspace-members', `workspace-${workspaceId}`],
+    }
+  )()
+
 export default async function SettingsPage() {
   const context = await getWorkspaceContext()
 
@@ -57,7 +85,7 @@ export default async function SettingsPage() {
     getTaskColumns(),
   ])
 
-  const columns = columnsResult.success ? columnsResult.data ?? [] : []
+  const columns = columnsResult.success ? (columnsResult.data ?? []) : []
 
   if (!workspace) {
     return (

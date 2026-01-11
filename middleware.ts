@@ -4,8 +4,10 @@ import { getToken } from 'next-auth/jwt'
 
 /**
  * Story 5.1: Workspace access middleware
+ * Story 6.0: Performance optimizations
  * - Checks authentication via NextAuth JWT token
- * - Validates workspace access for workspace-scoped routes
+ * - Skip middleware for static assets and API routes
+ * - Cache JWT verification results in memory
  * - Full workspace verification happens in Server Components/Actions via getWorkspaceContext()
  *
  * Note: Uses getToken() directly instead of withAuth wrapper for better Edge Runtime
@@ -14,21 +16,72 @@ import { getToken } from 'next-auth/jwt'
  * Note: Prisma is not available in Edge runtime, so full workspace membership
  * verification is deferred to Server Components using lib/auth/workspace-context.ts
  */
+
+// Simple in-memory cache for JWT verification (Edge Runtime compatible)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const jwtCache = new Map<string, { token: any; expires: number }>()
+const JWT_CACHE_TTL = 60 * 1000 // 60 seconds
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Verify JWT token with explicit configuration for Edge Runtime
-  // Note: cookieName and secureCookie must be explicitly set for Vercel Edge
-  // because auto-detection doesn't work reliably in Edge Runtime
-  const isSecure = request.url.startsWith('https://')
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET!,
-    cookieName: isSecure
+  // Story 6.0: Skip middleware for static assets and public API routes
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api/public') ||
+    pathname.startsWith('/static') ||
+    pathname.includes('.') // Skip files with extensions (images, etc.)
+  ) {
+    return NextResponse.next()
+  }
+
+  // Story 6.0: Check JWT cache first
+  const sessionCookie = request.cookies.get(
+    request.url.startsWith('https://')
       ? '__Secure-next-auth.session-token'
-      : 'next-auth.session-token',
-    secureCookie: isSecure,
-  })
+      : 'next-auth.session-token'
+  )
+
+  let token = null
+  const cacheKey = sessionCookie?.value || ''
+
+  if (cacheKey) {
+    const cached = jwtCache.get(cacheKey)
+    if (cached && cached.expires > Date.now()) {
+      token = cached.token
+    }
+  }
+
+  // If not in cache, verify JWT token
+  if (!token) {
+    const isSecure = request.url.startsWith('https://')
+    token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET!,
+      cookieName: isSecure
+        ? '__Secure-next-auth.session-token'
+        : 'next-auth.session-token',
+      secureCookie: isSecure,
+    })
+
+    // Cache the result
+    if (token && cacheKey) {
+      jwtCache.set(cacheKey, {
+        token,
+        expires: Date.now() + JWT_CACHE_TTL,
+      })
+
+      // Clean up old entries periodically
+      if (jwtCache.size > 100) {
+        const now = Date.now()
+        for (const [key, value] of jwtCache.entries()) {
+          if (value.expires < now) {
+            jwtCache.delete(key)
+          }
+        }
+      }
+    }
+  }
 
   // If no valid token, redirect to login
   if (!token) {
@@ -64,9 +117,22 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    // Protected workspace routes
     '/dashboard/:path*',
+    '/settings/:path*',
+    '/laglistor/:path*',
+    '/tasks/:path*',
+    '/hr/:path*',
+
+    // Workspace-scoped routes
     '/workspace/:path*',
     '/w/:path*', // Story 5.1: Workspace-scoped routes
+
+    // Protected API routes
     '/api/protected/:path*',
+    '/api/workspace/:path*',
+
+    // Story 6.0: Exclude static assets and public routes
+    '/((?!_next|api/public|static|.*\\.).*)',
   ],
 }

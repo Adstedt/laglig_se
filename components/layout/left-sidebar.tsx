@@ -270,6 +270,7 @@ export function LeftSidebar({
                   <Link
                     key={subItem.href}
                     href={subItem.href}
+                    prefetch={true}
                     className={cn(
                       'flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors',
                       isListActive ||
@@ -315,6 +316,7 @@ export function LeftSidebar({
       <Link
         key={item.title}
         href={item.href}
+        prefetch={true}
         className={cn(
           'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
           active

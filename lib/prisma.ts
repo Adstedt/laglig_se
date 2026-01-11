@@ -1,11 +1,34 @@
 import { PrismaClient } from '@prisma/client'
 
+/**
+ * Story 6.0: Optimized connection pool configuration
+ * Uses connection pooling parameters for better performance
+ */
 const prismaClientSingleton = () => {
+  // Parse DATABASE_URL to add connection pool parameters if not present
+  const databaseUrl = process.env.DATABASE_URL
+  if (databaseUrl && !databaseUrl.includes('pgbouncer=true')) {
+    // Add optimal pool settings to the connection string
+    const url = new URL(databaseUrl)
+    url.searchParams.set('pgbouncer', 'true')
+    url.searchParams.set('connection_limit', '10')
+    url.searchParams.set('pool_timeout', '20')
+    process.env.DATABASE_URL = url.toString()
+  }
+
   return new PrismaClient({
     log:
       process.env.NODE_ENV === 'development'
         ? ['query', 'error', 'warn']
         : ['error'],
+    // Story 6.0: Add query performance logging in development
+    ...(process.env.NODE_ENV === 'development' && {
+      log: [
+        { level: 'query', emit: 'event' },
+        { level: 'error', emit: 'stdout' },
+        { level: 'warn', emit: 'stdout' },
+      ],
+    }),
   })
 }
 
@@ -18,6 +41,16 @@ export const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
 
 if (process.env.NODE_ENV !== 'production') {
   globalThis.prismaGlobal = prisma
+}
+
+// Story 6.0: Log slow queries in development
+if (process.env.NODE_ENV === 'development' && prisma.$on) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prisma.$on('query' as any, (e: any) => {
+    if (e.duration > 100) {
+      console.warn(`⚠️ Slow query (${e.duration}ms):`, e.query)
+    }
+  })
 }
 
 // Graceful shutdown in production

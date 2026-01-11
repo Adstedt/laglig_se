@@ -2,7 +2,8 @@
  * Story 6.1: Dashboard Data Fetching Functions
  * Server-side queries for dashboard widgets with graceful error handling
  *
- * Uses unstable_cache for time-based caching (30s) to reduce database load.
+ * Uses unstable_cache for time-based caching (60s) to reduce database load.
+ * Story 6.0: Updated cache duration from 30s to 60s per architecture spec
  * See docs/architecture/21-caching-strategy.md for caching patterns.
  */
 
@@ -189,16 +190,18 @@ async function fetchDashboardData(workspaceId: string, userId: string) {
 }
 
 /**
- * Fetch all dashboard data with 30-second caching.
+ * Fetch all dashboard data with 60-second caching.
  * Cache is keyed by workspaceId and userId to ensure user-specific data.
  * Use revalidateTag('dashboard') to invalidate after mutations.
+ *
+ * Story 6.0: Updated cache duration from 30s to 60s per architecture spec
  */
 export const getDashboardData = (workspaceId: string, userId: string) =>
   unstable_cache(
     () => fetchDashboardData(workspaceId, userId),
     ['dashboard-data', workspaceId, userId],
     {
-      revalidate: 30, // Cache for 30 seconds
+      revalidate: 60, // Cache for 60 seconds (per architecture spec)
       tags: ['dashboard', `workspace-${workspaceId}`],
     }
   )()

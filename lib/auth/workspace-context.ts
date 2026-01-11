@@ -2,9 +2,13 @@
  * Story 5.1: Workspace Context Helper
  * Provides utilities for getting the current workspace context and checking permissions.
  * See: docs/stories/in-progress/5.1.workspace-data-model-multi-tenancy.md
+ *
+ * Story 6.0: Added request-level caching with React cache()
+ * See: docs/stories/6.0.performance-optimization-caching.md
  */
 
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from './session'
 import { hasPermission, type Permission } from './permissions'
@@ -42,12 +46,10 @@ export class WorkspaceAccessError extends Error {
 export const ACTIVE_WORKSPACE_COOKIE = 'active_workspace_id'
 
 /**
- * Get the current workspace context from session and cookies.
- * Returns user ID, workspace ID, role, and permission checker.
- *
- * @throws {WorkspaceAccessError} If user is not authenticated or has no workspace access
+ * Internal implementation of getWorkspaceContext.
+ * This function performs the actual database queries.
  */
-export async function getWorkspaceContext(): Promise<WorkspaceContext> {
+async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
   const session = await getServerSession()
 
   if (!session?.user?.email) {
@@ -101,6 +103,23 @@ export async function getWorkspaceContext(): Promise<WorkspaceContext> {
     hasPermission: (permission) => hasPermission(role, permission),
   }
 }
+
+/**
+ * Get the current workspace context from session and cookies.
+ * Returns user ID, workspace ID, role, and permission checker.
+ *
+ * This function is cached at the request level using React cache(),
+ * ensuring that multiple calls within the same request will reuse the same result.
+ *
+ * @throws {WorkspaceAccessError} If user is not authenticated or has no workspace access
+ */
+export const getWorkspaceContext = cache(getWorkspaceContextInternal)
+
+/**
+ * Get the current workspace context (uncached version).
+ * Use this only when you need to bypass the request-level cache.
+ */
+export const getWorkspaceContextUncached = getWorkspaceContextInternal
 
 /**
  * Execute a callback with workspace context, optionally requiring a specific permission.
