@@ -120,39 +120,26 @@ async function fetchListItemDetailsInternal(
   listItemId: string,
   workspaceId: string
 ): Promise<ListItemDetails | null> {
-  const funcStart = Date.now()
-  console.log(`   📌 [Internal] Starting fetchListItemDetailsInternal`)
-  
   // Try Redis cache first (shared across all workspaces for the same item)
   const cacheKey = `list-item-details:${listItemId}`
-  console.log(`   📌 [Internal +${Date.now() - funcStart}ms] Checking cache for key: ${cacheKey}`)
-  console.log(`      Session workspace ID: ${workspaceId}`)
-  
+  // Cache check for key: ${cacheKey}
+
   try {
-    const cacheCheckStart = Date.now()
     const cached = await redis.get(cacheKey)
-    console.log(`   📌 [Internal +${Date.now() - funcStart}ms] Cache check took ${Date.now() - cacheCheckStart}ms`)
-    console.log(`   Cache result type: ${typeof cached}`)
-    console.log(`   Cache result is null? ${cached === null}`)
-    
+
     if (cached) {
       // Handle both JSON string and object (Upstash may auto-parse)
       const parsed = typeof cached === 'string' ? JSON.parse(cached) : cached
-      console.log(`   Cached item workspace: ${parsed.law_list?.workspace_id}`)
-      console.log(`   Workspace match? ${parsed.law_list?.workspace_id === workspaceId}`)
-      
+      // Check workspace match
+
       // Verify workspace access on cached data
       if (parsed.law_list?.workspace_id === workspaceId) {
-        console.log(`   📌 [Internal +${Date.now() - funcStart}ms] ⚡ Cache HIT! Workspace matches`)
-        
+        // Cache HIT - workspace matches
+
         // Get HTML content from centralized document cache
-        const docFetchStart = Date.now()
-        console.log(`   📌 [Internal +${Date.now() - funcStart}ms] Getting document HTML from cache...`)
         const cachedDoc = await getCachedDocument(parsed.document.id)
-        console.log(`   📌 [Internal +${Date.now() - funcStart}ms] Document fetch took ${Date.now() - docFetchStart}ms`)
         const htmlContent = cachedDoc?.htmlContent || null
-        console.log(`   📌 [Internal +${Date.now() - funcStart}ms] Has HTML content? ${!!htmlContent}`)
-        
+
         // Transform to expected format
         return {
           id: parsed.id,
@@ -175,30 +162,30 @@ async function fetchListItemDetailsInternal(
             status: parsed.document.status,
             sourceUrl: parsed.document.source_url,
             contentType: parsed.document.content_type,
-            effectiveDate: parsed.document.effective_date ? new Date(parsed.document.effective_date) : null,
+            effectiveDate: parsed.document.effective_date
+              ? new Date(parsed.document.effective_date)
+              : null,
           },
           lawList: {
             id: parsed.law_list.id,
             name: parsed.law_list.name,
           },
-          responsibleUser: parsed.responsible_user ? {
-            id: parsed.responsible_user.id,
-            name: parsed.responsible_user.name,
-            email: parsed.responsible_user.email,
-            avatarUrl: parsed.responsible_user.avatar_url,
-          } : null,
+          responsibleUser: parsed.responsible_user
+            ? {
+                id: parsed.responsible_user.id,
+                name: parsed.responsible_user.name,
+                email: parsed.responsible_user.email,
+                avatarUrl: parsed.responsible_user.avatar_url,
+              }
+            : null,
         }
-      } else {
-        console.log('❌ Cache MISS - workspace mismatch')
       }
-    } else {
-      console.log('❌ Cache MISS - no cached item')
     }
-  } catch (error) {
-    console.warn('❌ Cache read error:', error)
+  } catch {
+    // Cache read error - will fetch from database
   }
-  
-  console.log('📊 Fetching from database...')
+
+  // Fetch from database
   // Cache miss - fetch from database
   const item = await prisma.lawListItem.findFirst({
     where: { id: listItemId },
@@ -237,26 +224,20 @@ async function fetchListItemDetailsInternal(
   })
 
   if (!item) {
-    console.log('❌ Item not found in database at all')
     return null
   }
 
-  console.log('📊 Found item with workspace:', {
-    itemWorkspaceId: item.law_list.workspace_id,
-    sessionWorkspaceId: workspaceId,
-    matches: item.law_list.workspace_id === workspaceId
-  })
+  // Verify workspace access
 
   // Verify workspace access
   if (item.law_list.workspace_id !== workspaceId) {
-    console.log('❌ Workspace mismatch - access denied')
     return null
   }
 
   // Get HTML content from centralized cache (shared across all users/views)
   const cachedDoc = await getCachedDocument(item.document.id)
   const htmlContent = cachedDoc?.htmlContent || null
-  
+
   // Cache the item for future requests (1 hour TTL)
   // Note: We cache the item WITHOUT the HTML content to save space
   // The HTML is cached separately in the document cache
@@ -265,13 +246,12 @@ async function fetchListItemDetailsInternal(
       ...item,
       document: {
         ...item.document,
-        html_content: null // Don't duplicate HTML in item cache
-      }
+        html_content: null, // Don't duplicate HTML in item cache
+      },
     })
-    console.log('📝 Caching list item (without HTML):', cacheKey.substring(0, 30))
     await redis.set(cacheKey, cacheData, { ex: 3600 })
-  } catch (error) {
-    console.warn('Cache write error:', error)
+  } catch {
+    // Cache write error - non-critical
   }
 
   return {
@@ -319,56 +299,29 @@ async function fetchListItemDetailsInternal(
 export async function getListItemDetails(
   listItemId: string
 ): Promise<ActionResult<ListItemDetails>> {
-  const startTime = Date.now()
-  console.log('\n🚀 ===========================================')
-  console.log(`🚀 MODAL OPEN START: ${listItemId}`)
-  console.log(`🚀 Time: ${new Date().toISOString()}`)
-  console.log('🚀 ===========================================\n')
-  
   try {
-    console.log(`⏱️ [${Date.now() - startTime}ms] Calling withWorkspace...`)
-    
     return await withWorkspace(async (ctx) => {
-      console.log(`⏱️ [${Date.now() - startTime}ms] Inside withWorkspace, got context`)
-      console.log(`   Workspace: ${ctx.workspaceId}`)
-      console.log(`   User: ${ctx.userId}`)
-      
-      console.log(`⏱️ [${Date.now() - startTime}ms] Calling fetchListItemDetailsInternal...`)
       const result = await fetchListItemDetailsInternal(
         listItemId,
         ctx.workspaceId
       )
-      console.log(`⏱️ [${Date.now() - startTime}ms] fetchListItemDetailsInternal returned`)
-      
+
       if (!result) {
-        console.error('List item not found:', {
-          listItemId,
-          workspaceId: ctx.workspaceId,
-          userId: ctx.userId
-        })
         return {
           success: false,
-          error: 'List item not found or access denied'
+          error: 'List item not found or access denied',
         }
       }
-      
-      console.log(`⏱️ [${Date.now() - startTime}ms] Preparing response...`)
-      const response = {
+
+      return {
         success: true,
-        data: result
+        data: result,
       }
-      
-      console.log('\n🏁 ===========================================')
-      console.log(`🏁 MODAL DATA READY: Total time: ${Date.now() - startTime}ms`)
-      console.log('🏁 ===========================================\n')
-      
-      return response
     }, 'read')
-  } catch (error) {
-    console.error(`⏱️ [${Date.now() - startTime}ms] ERROR:`, error)
+  } catch {
     return {
       success: false,
-      error: 'Failed to fetch list item details'
+      error: 'Failed to fetch list item details',
     }
   }
 }
@@ -539,23 +492,25 @@ export async function updateListItemResponsible(
  * Fetch the full HTML and text content of a document
  * This is separated from getListItemDetails for performance
  * as these fields can be megabytes for large laws
- * 
+ *
  * Story P.1: Now uses Redis caching with 24-hour TTL to improve performance
  */
 export async function getDocumentContent(
   documentId: string
-): Promise<ActionResult<{ fullText: string | null; htmlContent: string | null }>> {
+): Promise<
+  ActionResult<{ fullText: string | null; htmlContent: string | null }>
+> {
   try {
     // Use the new caching strategy for document content
     const cachedDoc = await getCachedDocument(documentId)
-    
+
     if (!cachedDoc) {
       return {
         success: false,
         error: 'Document not found',
       }
     }
-    
+
     const data = {
       fullText: cachedDoc.fullText,
       htmlContent: cachedDoc.htmlContent,
@@ -585,19 +540,13 @@ export async function getDocumentContent(
 export async function getTasksForListItem(
   listItemId: string
 ): Promise<ActionResult<TaskProgress | null>> {
-  const startTime = Date.now()
-  console.log(`\n📋 TASKS: Starting getTasksForListItem for ${listItemId}`)
-  
   try {
     return await withWorkspace(async (ctx) => {
-      console.log(`📋 TASKS: [${Date.now() - startTime}ms] Got workspace context`)
-      
       // Verify item belongs to workspace
       const item = await prisma.lawListItem.findFirst({
         where: { id: listItemId },
         include: { law_list: { select: { workspace_id: true } } },
       })
-      console.log(`📋 TASKS: [${Date.now() - startTime}ms] Verified workspace access`)
 
       if (!item || item.law_list.workspace_id !== ctx.workspaceId) {
         return { success: false, error: 'Laglistpost hittades inte' }
@@ -667,19 +616,13 @@ export async function getTasksForListItem(
 export async function getEvidenceForListItem(
   listItemId: string
 ): Promise<ActionResult<EvidenceSummary[] | null>> {
-  const startTime = Date.now()
-  console.log(`\n📎 EVIDENCE: Starting getEvidenceForListItem for ${listItemId}`)
-  
   try {
     return await withWorkspace(async (ctx) => {
-      console.log(`📎 EVIDENCE: [${Date.now() - startTime}ms] Got workspace context`)
-      
       // Verify item belongs to workspace
       const item = await prisma.lawListItem.findFirst({
         where: { id: listItemId },
         include: { law_list: { select: { workspace_id: true } } },
       })
-      console.log(`📎 EVIDENCE: [${Date.now() - startTime}ms] Verified workspace access`)
 
       if (!item || item.law_list.workspace_id !== ctx.workspaceId) {
         return { success: false, error: 'Laglistpost hittades inte' }

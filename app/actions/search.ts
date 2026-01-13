@@ -9,7 +9,7 @@ import { safeTrack } from '@/lib/analytics'
 
 // Rate limiter: 10 requests per minute for anonymous users
 // Only initialize if Redis is configured
-const ratelimit = isRedisConfigured
+const ratelimit = isRedisConfigured()
   ? new Ratelimit({
       redis,
       limiter: Ratelimit.slidingWindow(10, '1 m'),
@@ -130,7 +130,7 @@ export async function searchDocumentsAction(
   // Check cache for common queries
   const cacheKey = `search:${JSON.stringify({ query, contentTypes, status, businessType, subjectCodes, dateFrom, dateTo, page, limit })}`
 
-  if (isRedisConfigured) {
+  if (isRedisConfigured()) {
     try {
       const cached = await redis.get(cacheKey)
       if (cached && typeof cached === 'string') {
@@ -286,7 +286,7 @@ export async function searchDocumentsAction(
     }
 
     // Cache successful results for 5 minutes
-    if (isRedisConfigured && results.length > 0) {
+    if (isRedisConfigured() && results.length > 0) {
       try {
         await redis.set(cacheKey, JSON.stringify(response), { ex: 300 })
       } catch {

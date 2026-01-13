@@ -37,22 +37,22 @@ export function useListItemDetails(
 ): UseListItemDetailsResult {
   // Use ref to persist start time across re-renders
   const startTimeRef = useRef<number | null>(null)
-  
+
   // Set start time only once when modal opens
   useEffect(() => {
     if (listItemId && !startTimeRef.current) {
       startTimeRef.current = Date.now()
-      console.log(`🎬 [CLIENT] Modal loading started for ${listItemId}`)
-      console.log(`🎬 [CLIENT] Time: ${new Date().toISOString()}`)
-      // Also store globally for modal component
+      // Store globally for modal component
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(window as any).__modalStartTime = startTimeRef.current
     } else if (!listItemId) {
       // Reset when modal closes
       startTimeRef.current = null
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(window as any).__modalStartTime = null
     }
   }, [listItemId])
-  
+
   // Fetch list item details
   const {
     data: listItemData,
@@ -62,14 +62,7 @@ export function useListItemDetails(
   } = useSWR(
     listItemId ? `list-item:${listItemId}` : null,
     async () => {
-      const fetchStart = Date.now()
-      console.log(`🎬 [CLIENT] Starting main data fetch...`)
-      
       const result = await getListItemDetails(listItemId!)
-      
-      const fetchTime = Date.now() - fetchStart
-      console.log(`🎬 [CLIENT] Main data fetch completed in ${fetchTime}ms`)
-      
       if (!result.success || !result.data) {
         throw new Error(result.error ?? 'Kunde inte ladda dokumentet')
       }
@@ -82,20 +75,11 @@ export function useListItemDetails(
     }
   )
 
-  // TEMPORARILY DISABLED: Tasks and Evidence fetching to test performance
-  // These were taking 4-5 seconds and blocking the modal
-  
-  /*
-  // Fetch task progress
+  // Fetch task progress (non-blocking - SWR loads async after main content)
   const { data: taskData, mutate: mutateTaskProgress } = useSWR(
     listItemId ? `list-item-tasks:${listItemId}` : null,
     async () => {
-      const taskStart = Date.now()
-      console.log(`🎬 [CLIENT] Starting tasks fetch...`)
-      
       const result = await getTasksForListItem(listItemId!)
-      
-      console.log(`🎬 [CLIENT] Tasks fetch completed in ${Date.now() - taskStart}ms`)
       return result.success ? (result.data ?? null) : null
     },
     {
@@ -104,16 +88,11 @@ export function useListItemDetails(
     }
   )
 
-  // Fetch evidence
+  // Fetch evidence (non-blocking - SWR loads async after main content)
   const { data: evidenceData } = useSWR(
     listItemId ? `list-item-evidence:${listItemId}` : null,
     async () => {
-      const evidenceStart = Date.now()
-      console.log(`🎬 [CLIENT] Starting evidence fetch...`)
-      
       const result = await getEvidenceForListItem(listItemId!)
-      
-      console.log(`🎬 [CLIENT] Evidence fetch completed in ${Date.now() - evidenceStart}ms`)
       return result.success ? (result.data ?? null) : null
     },
     {
@@ -121,12 +100,6 @@ export function useListItemDetails(
       dedupingInterval: 30000,
     }
   )
-  */
-  
-  // Temporarily return null for tasks and evidence
-  const taskData = null
-  const evidenceData = null
-  const mutateTaskProgress = async () => {}
 
   // Fetch workspace members (shared across all modals)
   const { data: membersData } = useSWR(

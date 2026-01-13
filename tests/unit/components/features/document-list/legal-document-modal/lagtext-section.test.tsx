@@ -85,7 +85,7 @@ describe('LagtextSection', () => {
       <LagtextSection {...defaultProps} htmlContent={null} fullText={null} />
     )
 
-    expect(screen.getByText(/lagtext ej tillgänglig/i)).toBeInTheDocument()
+    expect(screen.getByText(/Ingen lagtext tillgänglig/i)).toBeInTheDocument()
   })
 
   it('always shows "Visa på egen sida" link', () => {

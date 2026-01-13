@@ -192,7 +192,7 @@ async function getTwoTierCache<T>(
   }
 
   // L2: Check Redis (shared across instances)
-  if (isRedisConfigured) {
+  if (isRedisConfigured()) {
     try {
       const l2Result = await redis.get<T>(key)
       if (l2Result !== null) {
@@ -215,7 +215,7 @@ async function getTwoTierCache<T>(
     // Populate both L1 and L2
     l1Cache.set(key, result, 300) // 5 min L1 TTL
 
-    if (isRedisConfigured) {
+    if (isRedisConfigured()) {
       // Write to Redis async (don't block)
       redis.set(key, result, { ex: redisTtl }).catch((error) => {
         console.warn(`[CACHE] Redis write error for ${key}:`, error)
@@ -316,7 +316,7 @@ export async function invalidateLawCache(baseLawSfs: string): Promise<{
 
   // Invalidate L2 (Redis)
   let l2Deleted = 0
-  if (isRedisConfigured) {
+  if (isRedisConfigured()) {
     try {
       // Find and delete all keys matching this law
       const patterns = [
@@ -354,7 +354,7 @@ export async function invalidateAllCaches(): Promise<void> {
   timelineCacheL1.clear()
 
   // Clear L2 Redis
-  if (isRedisConfigured) {
+  if (isRedisConfigured()) {
     try {
       const patterns = ['law-version:*', 'law-diff:*', 'law-timeline:*']
       for (const pattern of patterns) {
@@ -403,7 +403,7 @@ export function getCacheStats(): {
     l1HitRate,
     l2HitRate,
     overallHitRate,
-    redisConfigured: isRedisConfigured,
+    redisConfigured: isRedisConfigured(),
   }
 }
 

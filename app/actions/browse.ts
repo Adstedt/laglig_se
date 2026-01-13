@@ -338,9 +338,15 @@ async function searchWithQuery(
           // Court case specific fields
           courtName: r.court_name ?? null,
           caseNumber: r.case_number ?? null,
-          caseName: isCourtCase ? ((metadata?.case_name as string) ?? null) : null,
-          caseType: isCourtCase ? ((metadata?.case_type as string) ?? null) : null,
-          isGuiding: isCourtCase ? ((metadata?.is_guiding as boolean) ?? null) : null,
+          caseName: isCourtCase
+            ? ((metadata?.case_name as string) ?? null)
+            : null,
+          caseType: isCourtCase
+            ? ((metadata?.case_type as string) ?? null)
+            : null,
+          isGuiding: isCourtCase
+            ? ((metadata?.is_guiding as boolean) ?? null)
+            : null,
         }
       }),
       total,
@@ -350,7 +356,7 @@ async function searchWithQuery(
     }
 
     // Cache results
-    if (isRedisConfigured && results.length > 0) {
+    if (isRedisConfigured() && results.length > 0) {
       try {
         await redis.set(cacheKey, JSON.stringify(response), { ex: 300 })
       } catch {
@@ -544,9 +550,15 @@ async function executeBrowseQuery(
         // Court case specific fields
         courtName: r.court_case?.court_name ?? null,
         caseNumber: r.court_case?.case_number ?? null,
-        caseName: isCourtCase ? ((metadata?.case_name as string) ?? null) : null,
-        caseType: isCourtCase ? ((metadata?.case_type as string) ?? null) : null,
-        isGuiding: isCourtCase ? ((metadata?.is_guiding as boolean) ?? null) : null,
+        caseName: isCourtCase
+          ? ((metadata?.case_name as string) ?? null)
+          : null,
+        caseType: isCourtCase
+          ? ((metadata?.case_type as string) ?? null)
+          : null,
+        isGuiding: isCourtCase
+          ? ((metadata?.is_guiding as boolean) ?? null)
+          : null,
       }
     }),
     total: count,
@@ -646,19 +658,17 @@ async function browseWithoutQuery(
   const cacheTtl = isDefault ? 3600 : 300 // 1 hour for default, 5 min for filtered
 
   // Check Redis cache first (Layer 4: Redis Cache)
-  if (isRedisConfigured) {
+  if (isRedisConfigured()) {
     try {
       const cached = await redis.get(cacheKey)
       if (cached && typeof cached === 'string') {
         const parsedCache = JSON.parse(cached) as BrowseResponse
-        console.log(`[CACHE HIT] Redis: ${cacheKey.substring(0, 50)}...`)
         return {
           ...parsedCache,
           queryTimeMs: performance.now() - startTime,
           cached: true,
         }
       }
-      console.log(`[CACHE MISS] Redis: ${cacheKey.substring(0, 50)}...`)
     } catch {
       // Cache read error, continue to query
     }
@@ -697,7 +707,7 @@ async function browseWithoutQuery(
     }
 
     // Store in Redis cache (async, don't await)
-    if (isRedisConfigured) {
+    if (isRedisConfigured()) {
       redis
         .set(cacheKey, JSON.stringify(response), { ex: cacheTtl })
         .catch(() => {

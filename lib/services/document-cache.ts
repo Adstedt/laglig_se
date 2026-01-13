@@ -1,10 +1,10 @@
 /**
  * Centralized Document Caching Service
- * 
+ *
  * This service provides a unified caching layer for legal document HTML content.
  * Any part of the application that needs document HTML should use this service
  * to benefit from shared caching across all access patterns.
- * 
+ *
  * Benefits:
  * - Single cache entry per document (not per view/user)
  * - Shared across public browsing, user lists, search, etc.
@@ -48,7 +48,7 @@ export async function getCachedDocument(
   documentId: string
 ): Promise<CachedDocument | null> {
   const cacheKey = `document:${documentId}`
-  
+
   const result = await getCachedOrFetch(
     cacheKey,
     async () => {
@@ -76,17 +76,18 @@ export async function getCachedDocument(
               lower_court: true,
               decision_date: true,
               parties: true,
-            }
+            },
           },
-        }
+        },
       })
-      
+
       if (!doc) return null
-      
+
       // Transform to consistent format
       // Extract metadata fields if they exist
-      const metadata = doc.metadata as any || {}
-      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const metadata = (doc.metadata as any) || {}
+
       return {
         id: doc.id,
         documentNumber: doc.document_number,
@@ -111,7 +112,7 @@ export async function getCachedDocument(
     },
     DOCUMENT_CACHE_TTL
   )
-  
+
   return result.data
 }
 
@@ -123,36 +124,33 @@ export async function getCachedDocumentBySlug(
 ): Promise<CachedDocument | null> {
   // First check if we have a cached mapping from slug to ID
   const slugCacheKey = `document:slug:${slug}`
-  
+
   try {
     const cachedId = await redis.get(slugCacheKey)
     if (cachedId) {
-      const documentId = typeof cachedId === 'string' ? cachedId : String(cachedId)
-      console.log(`🔗 Slug mapping cache HIT: ${slug} → ${documentId}`)
+      const documentId =
+        typeof cachedId === 'string' ? cachedId : String(cachedId)
       return getCachedDocument(documentId)
     }
-  } catch (error) {
-    console.warn('Redis slug mapping read error:', error)
+  } catch {
+    // Redis read error - continue to database
   }
-  
-  console.log(`🔗 Slug mapping cache MISS: ${slug}`)
-  
+
   // No cached mapping, fetch from database
   const doc = await prisma.legalDocument.findFirst({
     where: { slug },
-    select: { id: true }
+    select: { id: true },
   })
-  
+
   if (!doc) return null
-  
+
   // Cache the slug->id mapping for 24 hours
   try {
     await redis.set(slugCacheKey, doc.id, { ex: DOCUMENT_CACHE_TTL })
-    console.log(`💾 Cached slug mapping: ${slug} → ${doc.id}`)
-  } catch (error) {
-    console.warn('Redis slug mapping write error:', error)
+  } catch {
+    // Redis write error - continue without caching
   }
-  
+
   // Now get the full document (which will cache it)
   return getCachedDocument(doc.id)
 }
@@ -165,24 +163,25 @@ export async function getCachedDocumentByNumber(
 ): Promise<CachedDocument | null> {
   // Check cached mapping
   const numberCacheKey = `document:number:${documentNumber}`
-  
+
   const cachedId = await redis.get(numberCacheKey)
   if (cachedId) {
-    const documentId = typeof cachedId === 'string' ? cachedId : String(cachedId)
+    const documentId =
+      typeof cachedId === 'string' ? cachedId : String(cachedId)
     return getCachedDocument(documentId)
   }
-  
+
   // No cached mapping, fetch from database
   const doc = await prisma.legalDocument.findFirst({
     where: { document_number: documentNumber },
-    select: { id: true }
+    select: { id: true },
   })
-  
+
   if (!doc) return null
-  
+
   // Cache the number->id mapping
   await redis.set(numberCacheKey, doc.id, { ex: DOCUMENT_CACHE_TTL })
-  
+
   return getCachedDocument(doc.id)
 }
 
@@ -193,7 +192,7 @@ export async function getCachedDocuments(
   documentIds: string[]
 ): Promise<Map<string, CachedDocument>> {
   const results = new Map<string, CachedDocument>()
-  
+
   // Get all documents in parallel
   const promises = documentIds.map(async (id) => {
     const doc = await getCachedDocument(id)
@@ -201,7 +200,7 @@ export async function getCachedDocuments(
       results.set(id, doc)
     }
   })
-  
+
   await Promise.all(promises)
   return results
 }
@@ -211,37 +210,31 @@ export async function getCachedDocuments(
  * This can be called by a cron job to pre-cache frequently accessed documents
  */
 export async function warmDocumentCache(limit: number = 100): Promise<void> {
-  console.log(`🔥 Warming document cache with top ${limit} documents...`)
-  
   // Get the most frequently accessed documents
   // You could track access patterns or use a heuristic like:
   // - Documents in the most law lists
   // - Most recently updated documents
   // - Documents with specific tags
-  
+
   const popularDocuments = await prisma.lawListItem.groupBy({
     by: ['document_id'],
     _count: {
-      document_id: true
+      document_id: true,
     },
     orderBy: {
       _count: {
-        document_id: 'desc'
-      }
+        document_id: 'desc',
+      },
     },
-    take: limit
+    take: limit,
   })
-  
+
   // Cache each document
-  let cached = 0
   for (const item of popularDocuments) {
     if (item.document_id) {
-      const doc = await getCachedDocument(item.document_id)
-      if (doc) cached++
+      await getCachedDocument(item.document_id)
     }
   }
-  
-  console.log(`✅ Warmed cache with ${cached} documents`)
 }
 
 /**
@@ -252,12 +245,10 @@ export async function invalidateDocument(documentId: string): Promise<void> {
     `document:${documentId}`,
     // Also clear any slug/number mappings
   ]
-  
+
   for (const key of keys) {
     await redis.del(key)
   }
-  
-  console.log(`🗑️ Invalidated cache for document ${documentId}`)
 }
 
 /**
@@ -270,12 +261,13 @@ export async function getDocumentCacheStats(): Promise<{
 }> {
   try {
     const keys = await redis.keys('document:*')
-    const documentKeys = keys.filter(k => 
-      k.startsWith('document:') && 
-      !k.includes(':slug:') && 
-      !k.includes(':number:')
+    const documentKeys = keys.filter(
+      (k) =>
+        k.startsWith('document:') &&
+        !k.includes(':slug:') &&
+        !k.includes(':number:')
     )
-    
+
     // Estimate size (rough calculation)
     let totalSize = 0
     if (documentKeys.length > 0) {
@@ -290,7 +282,7 @@ export async function getDocumentCacheStats(): Promise<{
       const avgSize = totalSize / sample.length
       totalSize = avgSize * documentKeys.length
     }
-    
+
     return {
       cachedDocuments: documentKeys.length,
       estimatedSize: totalSize,
@@ -299,7 +291,7 @@ export async function getDocumentCacheStats(): Promise<{
     console.warn('Failed to get cache stats:', error)
     return {
       cachedDocuments: 0,
-      estimatedSize: 0
+      estimatedSize: 0,
     }
   }
 }

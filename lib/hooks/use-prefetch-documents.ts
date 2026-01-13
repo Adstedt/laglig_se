@@ -1,7 +1,10 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { prefetchDocuments, prefetchListItemDetails } from '@/app/actions/prefetch-documents'
+import {
+  prefetchDocuments,
+  prefetchListItemDetails,
+} from '@/app/actions/prefetch-documents'
 
 interface UsePrefetchOptions {
   enabled?: boolean
@@ -18,49 +21,42 @@ export function usePrefetchDocuments(
 ) {
   const { enabled = true, delay = 500 } = options
   const hasPrefetched = useRef(false)
-  const timeoutRef = useRef<NodeJS.Timeout>()
-  
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+
   useEffect(() => {
     if (!enabled || hasPrefetched.current || items.length === 0) {
       return
     }
-    
+
     // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
-    
+
     // Delay prefetch slightly to prioritize initial render
     timeoutRef.current = setTimeout(() => {
       hasPrefetched.current = true
-      
+
       // Extract unique document IDs
-      const documentIds = [...new Set(items.map(item => item.document_id))]
-      const listItemIds = items.map(item => item.id)
-      
-      console.log(`🔥 Starting pre-fetch for ${documentIds.length} documents`)
-      
+      const documentIds = [...new Set(items.map((item) => item.document_id))]
+      const listItemIds = items.map((item) => item.id)
+
       // Pre-fetch in parallel (fire and forget)
       Promise.all([
         prefetchDocuments(documentIds.slice(0, 20)), // Limit to first 20 to avoid overload
-        prefetchListItemDetails(listItemIds.slice(0, 20))
-      ]).then(([docResult, itemResult]) => {
-        console.log('✨ Pre-fetch complete:', { 
-          documents: docResult.stats,
-          items: itemResult.stats 
-        })
-      }).catch(error => {
-        console.error('Pre-fetch failed:', error)
+        prefetchListItemDetails(listItemIds.slice(0, 20)),
+      ]).catch(() => {
+        // Pre-fetch failed - not critical
       })
     }, delay)
-    
+
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
     }
   }, [items, enabled, delay])
-  
+
   // Reset when items change significantly
   useEffect(() => {
     hasPrefetched.current = false
@@ -76,21 +72,21 @@ export function usePrefetchOnHover(
   listItemId: string | null
 ) {
   const prefetchedRef = useRef(new Set<string>())
-  
+
   const prefetch = () => {
     if (!documentId || !listItemId) return
-    
+
     const key = `${documentId}-${listItemId}`
     if (prefetchedRef.current.has(key)) return
-    
+
     prefetchedRef.current.add(key)
-    
+
     // Pre-fetch both document content and list item details
     Promise.all([
       prefetchDocuments([documentId]),
-      prefetchListItemDetails([listItemId])
+      prefetchListItemDetails([listItemId]),
     ]).catch(console.error)
   }
-  
+
   return { prefetch }
 }

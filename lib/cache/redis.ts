@@ -38,16 +38,14 @@ function initRedis(): Redis {
   if (_redis === null) {
     const redisUrl = process.env.UPSTASH_REDIS_REST_URL
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
-    
+
     if (redisUrl && redisToken) {
-      console.log('🚀 Initializing Redis client with Upstash')
       _redis = new Redis({
         url: redisUrl,
         token: redisToken,
       })
       _isConfigured = true
     } else {
-      console.log('⚠️ Redis not configured, using no-op client')
       _redis = noopRedis
       _isConfigured = false
     }
@@ -60,7 +58,7 @@ export const redis = new Proxy({} as Redis, {
   get(target, prop, receiver) {
     const client = initRedis()
     return Reflect.get(client, prop, receiver)
-  }
+  },
 })
 
 // Check if Redis is properly configured (lazy evaluation)
@@ -125,8 +123,7 @@ export async function getCachedOrFetch<T>(
     const cached = await redis.get(key)
     if (cached !== null) {
       cacheHits++
-      console.log(`[CACHE HIT] ${key.substring(0, 60)}...`)
-      
+
       // Refresh TTL for frequently accessed items (sliding window)
       // Only for document content, not for frequently changing data
       if (key.startsWith('document:content:')) {
@@ -134,14 +131,14 @@ export async function getCachedOrFetch<T>(
           // Ignore expire errors - not critical
         })
       }
-      
+
       // Parse the JSON string back to object
-      const parsedData = typeof cached === 'string' ? JSON.parse(cached) : cached
+      const parsedData =
+        typeof cached === 'string' ? JSON.parse(cached) : cached
       return { data: parsedData as T, cached: true }
     }
 
     cacheMisses++
-    console.log(`[CACHE MISS] ${key.substring(0, 60)}...`)
   } catch (error) {
     // Redis read error - log but continue to fetcher
     console.warn(`[CACHE ERROR] Failed to read ${key}:`, error)
@@ -181,7 +178,6 @@ export async function invalidateCachePattern(pattern: string): Promise<number> {
     }
 
     await Promise.all(keys.map((key) => redis.del(key)))
-    console.log(`[CACHE INVALIDATE] Cleared ${keys.length} keys matching ${pattern}`)
     return keys.length
   } catch (error) {
     console.warn(`[CACHE ERROR] Failed to invalidate ${pattern}:`, error)
@@ -201,7 +197,6 @@ export async function invalidateCacheKey(key: string): Promise<boolean> {
 
   try {
     await redis.del(key)
-    console.log(`[CACHE INVALIDATE] Cleared key: ${key}`)
     return true
   } catch (error) {
     console.warn(`[CACHE ERROR] Failed to invalidate ${key}:`, error)
