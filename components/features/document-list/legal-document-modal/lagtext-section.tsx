@@ -53,7 +53,7 @@ function cleanLawHtml(html: string): string {
 }
 
 export function LagtextSection({
-  documentId,
+  documentId: _documentId,
   htmlContent,
   fullText,
   slug,
@@ -99,7 +99,6 @@ export function LagtextSection({
       </div>
     )
   }
-
 
   return (
     <div className="space-y-2">
