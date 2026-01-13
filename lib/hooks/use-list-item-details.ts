@@ -4,8 +4,6 @@ import { useRef, useEffect } from 'react'
 import useSWR from 'swr'
 import {
   getListItemDetails,
-  getTasksForListItem,
-  getEvidenceForListItem,
   type ListItemDetails,
   type TaskProgress,
   type EvidenceSummary,
@@ -75,31 +73,12 @@ export function useListItemDetails(
     }
   )
 
-  // Fetch task progress (non-blocking - SWR loads async after main content)
-  const { data: taskData, mutate: mutateTaskProgress } = useSWR(
-    listItemId ? `list-item-tasks:${listItemId}` : null,
-    async () => {
-      const result = await getTasksForListItem(listItemId!)
-      return result.success ? (result.data ?? null) : null
-    },
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 30000,
-    }
-  )
-
-  // Fetch evidence (non-blocking - SWR loads async after main content)
-  const { data: evidenceData } = useSWR(
-    listItemId ? `list-item-evidence:${listItemId}` : null,
-    async () => {
-      const result = await getEvidenceForListItem(listItemId!)
-      return result.success ? (result.data ?? null) : null
-    },
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 30000,
-    }
-  )
+  // DISABLED: Tasks/Evidence queries cause 15-20s load times in production
+  // These need query optimization before re-enabling
+  // TODO: Add database indexes, optimize joins, or lazy-load after modal renders
+  const taskData = null
+  const evidenceData = null
+  const mutateTaskProgress = async () => {}
 
   // Fetch workspace members (shared across all modals)
   const { data: membersData } = useSWR(
