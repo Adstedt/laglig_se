@@ -267,6 +267,7 @@ model LegalDocument {
   law_sections        LawSection[] // Story 2.13: Parsed sections for historical versions
   law_list_items      LawListItem[] // Story 5.1: Law list items referencing this document
   legislative_refs    LegislativeRef[] // Story 2.29: Extracted prop/bet/rskr references
+  visits              DocumentVisit? // Story P.1: Visit tracking for cache optimization
 
   @@index([document_number])
   @@index([slug])
@@ -278,6 +279,25 @@ model LegalDocument {
   @@index([content_type, effective_date(sort: Desc)], name: "idx_browse_content_date")
   @@index([publication_date(sort: Desc)], name: "idx_publication_date")
   @@map("legal_documents")
+}
+
+// ============================================================================
+// DOCUMENT VISITS TRACKING - Story P.1: Performance Optimization
+// ============================================================================
+
+model DocumentVisit {
+  document_id   String   @id // TEXT to match legal_documents.id type
+  visit_count   Int      @default(1)
+  last_visited  DateTime @default(now())
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  
+  // Relations
+  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  
+  @@index([visit_count(sort: Desc)]) // For finding most visited
+  @@index([last_visited(sort: Desc)]) // For recent activity
+  @@map("document_visits")
 }
 
 enum ContentType {

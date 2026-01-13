@@ -39,6 +39,22 @@ export function LegalDocumentModal({
     mutate: handleDataUpdate,
     mutateTaskProgress: handleTasksUpdate,
   } = useListItemDetails(listItemId)
+  
+  // Log render states
+  if (typeof window !== 'undefined' && listItemId) {
+    const startTime = (window as any).__modalStartTime
+    const elapsed = startTime ? Date.now() - startTime : 0
+    
+    if (isLoading) {
+      console.log(`🎬 [CLIENT +${elapsed}ms] Modal rendering skeleton (loading)...`)
+    } else if (error) {
+      console.log(`🎬 [CLIENT +${elapsed}ms] Modal rendering error: ${error}`)
+    } else if (listItem) {
+      console.log(`🎬 [CLIENT +${elapsed}ms] ✅ MODAL FULLY RENDERED with data!`)
+      console.log(`🎬 [CLIENT] Total time from click to render: ${elapsed}ms`)
+      console.log(`🎬 [CLIENT] Has tasks: ${!!taskProgress}, Has evidence: ${!!evidence}`)
+    }
+  }
 
   // Scroll to evidence tab
   const scrollToEvidenceTab = useCallback(() => {
@@ -73,6 +89,8 @@ export function LegalDocumentModal({
             'w-full max-h-[90vh] max-w-[min(80vw,1280px)] p-0 gap-0',
             // Styling - overflow visible to allow flyout, no border (children handle it)
             'bg-transparent shadow-none overflow-visible',
+            // Remove focus outline
+            'focus:outline-none focus-visible:outline-none',
             // Mobile full-screen
             'max-md:max-w-full max-md:max-h-full max-md:h-full max-md:overflow-hidden',
             // Simple fade animation only - no zoom to avoid transform conflicts

@@ -12,6 +12,7 @@ import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from './session'
 import { hasPermission, type Permission } from './permissions'
+import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import type { WorkspaceRole, WorkspaceStatus } from '@prisma/client'
 
 export interface WorkspaceContext {
@@ -50,15 +51,49 @@ export const ACTIVE_WORKSPACE_COOKIE = 'active_workspace_id'
  * This function performs the actual database queries.
  */
 async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
+  const startTime = Date.now()
+  console.log(`      🔐 [Auth] Getting workspace context...`)
+  
   const session = await getServerSession()
+  console.log(`      🔐 [Auth +${Date.now() - startTime}ms] Got session`)
 
   if (!session?.user?.email) {
     throw new WorkspaceAccessError('Unauthorized: No session', 'UNAUTHORIZED')
   }
 
+  // Get active workspace from cookie first (needed for cache key)
+  const cookieStore = await cookies()
+  const activeWorkspaceId = cookieStore.get(ACTIVE_WORKSPACE_COOKIE)?.value
+  console.log(`      🔐 [Auth +${Date.now() - startTime}ms] Got cookies`)
+
+  // Try Redis cache for auth context (5 minute TTL)
+  if (isRedisConfigured()) {
+    const cacheKey = `auth:context:${session.user.email}:${activeWorkspaceId || 'default'}`
+    console.log(`      🔐 [Auth +${Date.now() - startTime}ms] Checking Redis cache for auth context...`)
+    
+    try {
+      const cached = await redis.get(cacheKey)
+      if (cached) {
+        console.log(`      🔐 [Auth +${Date.now() - startTime}ms] ⚡ Auth cache HIT! Skipping DB queries`)
+        const context = typeof cached === 'string' ? JSON.parse(cached) : cached
+        // Recreate the hasPermission function
+        return {
+          ...context,
+          hasPermission: (permission: Permission) => hasPermission(context.role, permission),
+        }
+      }
+      console.log(`      🔐 [Auth +${Date.now() - startTime}ms] Auth cache MISS, fetching from DB`)
+    } catch (error) {
+      console.warn(`      🔐 [Auth] Redis error, falling back to DB:`, error)
+    }
+  }
+
+  // Cache miss or Redis not configured - fetch from database
+  const userQueryStart = Date.now()
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
   })
+  console.log(`      🔐 [Auth +${Date.now() - startTime}ms] User query took ${Date.now() - userQueryStart}ms`)
 
   if (!user) {
     throw new WorkspaceAccessError(
@@ -67,10 +102,7 @@ async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
     )
   }
 
-  // Get active workspace from cookie or default to first workspace
-  const cookieStore = await cookies()
-  const activeWorkspaceId = cookieStore.get(ACTIVE_WORKSPACE_COOKIE)?.value
-
+  const memberQueryStart = Date.now()
   const member = await prisma.workspaceMember.findFirst({
     where: activeWorkspaceId
       ? { workspace_id: activeWorkspaceId, user_id: user.id }
@@ -78,6 +110,7 @@ async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
     include: { workspace: true },
     orderBy: { joined_at: 'asc' },
   })
+  console.log(`      🔐 [Auth +${Date.now() - startTime}ms] Member query took ${Date.now() - memberQueryStart}ms`)
 
   if (!member) {
     throw new WorkspaceAccessError('No workspace access', 'NO_WORKSPACE')
@@ -93,15 +126,40 @@ async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
 
   const role = member.role
 
-  return {
+  console.log(`      🔐 [Auth +${Date.now() - startTime}ms] Total auth time: ${Date.now() - startTime}ms`)
+
+  const context = {
     userId: user.id,
     workspaceId: member.workspace_id,
     workspaceName: member.workspace.name,
     workspaceSlug: member.workspace.slug,
     workspaceStatus: member.workspace.status,
     role,
-    hasPermission: (permission) => hasPermission(role, permission),
+    hasPermission: (permission: Permission) => hasPermission(role, permission),
   }
+
+  // Cache the context in Redis (excluding the function)
+  if (isRedisConfigured()) {
+    const cacheKey = `auth:context:${session.user.email}:${activeWorkspaceId || 'default'}`
+    const cacheData = {
+      userId: context.userId,
+      workspaceId: context.workspaceId,
+      workspaceName: context.workspaceName,
+      workspaceSlug: context.workspaceSlug,
+      workspaceStatus: context.workspaceStatus,
+      role: context.role,
+    }
+    
+    try {
+      // Cache for 5 minutes (auth changes are rare)
+      await redis.set(cacheKey, JSON.stringify(cacheData), { ex: 300 })
+      console.log(`      🔐 [Auth] Cached auth context in Redis`)
+    } catch (error) {
+      console.warn(`      🔐 [Auth] Failed to cache auth context:`, error)
+    }
+  }
+
+  return context
 }
 
 /**

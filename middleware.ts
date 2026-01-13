@@ -131,8 +131,5 @@ export const config = {
     // Protected API routes
     '/api/protected/:path*',
     '/api/workspace/:path*',
-
-    // Story 6.0: Exclude static assets and public routes
-    '/((?!_next|api/public|static|.*\\.).*)',
   ],
 }

@@ -3,6 +3,8 @@
 /**
  * Story 6.4: Task Server Actions
  * Server actions for task workspace data fetching and mutations
+ * 
+ * Performance Update: Added comprehensive caching to reduce database load
  */
 
 import { revalidatePath } from 'next/cache'
@@ -137,7 +139,238 @@ export type TaskFilters = z.infer<typeof TaskFiltersSchema>
 // ============================================================================
 
 /**
+ * Pagination interface for tasks
+ * Story P.1: Added pagination support to prevent browser freezing with large datasets
+ */
+export interface TaskPaginationOptions {
+  page?: number
+  limit?: number
+}
+
+export interface PaginatedTasksResult {
+  tasks: TaskWithRelations[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrev: boolean
+  }
+}
+
+/**
+ * Get paginated tasks for the workspace with filtering
+ * Story P.1: Added pagination to fix performance issues with large task lists
+ * @param filters - Optional filters for tasks
+ * @param pagination - Pagination options (page, limit)
+ * @returns Paginated task results with metadata
+ */
+export async function getWorkspaceTasksPaginated(
+  filters?: TaskFilters,
+  pagination?: TaskPaginationOptions
+): Promise<ActionResult<PaginatedTasksResult>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      const validatedFilters = filters
+        ? TaskFiltersSchema.parse(filters)
+        : undefined
+      
+      // Pagination defaults
+      const page = Math.max(1, pagination?.page || 1)
+      const limit = Math.min(100, Math.max(1, pagination?.limit || 50)) // Max 100, default 50
+      const offset = (page - 1) * limit
+
+      // Get column IDs for status filtering
+      const columns = await prisma.taskColumn.findMany({
+        where: { workspace_id: workspaceId },
+        select: { id: true, is_done: true, position: true },
+      })
+
+      const doneColumnIds = columns.filter((c) => c.is_done).map((c) => c.id)
+      const openColumnIds = columns
+        .filter((c) => !c.is_done && c.position === 0)
+        .map((c) => c.id)
+      const inProgressColumnIds = columns
+        .filter((c) => !c.is_done && c.position > 0)
+        .map((c) => c.id)
+
+      // Build where clause
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const where: any = {
+        workspace_id: workspaceId,
+      }
+
+      if (validatedFilters?.status && validatedFilters.status.length > 0) {
+        const columnIds: string[] = []
+        if (validatedFilters.status.includes('open')) {
+          columnIds.push(...openColumnIds)
+        }
+        if (validatedFilters.status.includes('inProgress')) {
+          columnIds.push(...inProgressColumnIds)
+        }
+        if (validatedFilters.status.includes('done')) {
+          columnIds.push(...doneColumnIds)
+        }
+        where.column_id = { in: columnIds }
+      }
+
+      if (validatedFilters?.assigneeId !== undefined) {
+        where.assignee_id = validatedFilters.assigneeId
+      }
+
+      if (validatedFilters?.priority && validatedFilters.priority.length > 0) {
+        where.priority = { in: validatedFilters.priority }
+      }
+
+      if (validatedFilters?.dueDateStart || validatedFilters?.dueDateEnd) {
+        where.due_date = {}
+        if (validatedFilters.dueDateStart) {
+          where.due_date.gte = validatedFilters.dueDateStart
+        }
+        if (validatedFilters.dueDateEnd) {
+          where.due_date.lte = validatedFilters.dueDateEnd
+        }
+      }
+
+      if (validatedFilters?.search) {
+        where.OR = [
+          { title: { contains: validatedFilters.search, mode: 'insensitive' } },
+          {
+            description: {
+              contains: validatedFilters.search,
+              mode: 'insensitive',
+            },
+          },
+        ]
+      }
+
+      // Exclude completed if not including archived
+      if (!validatedFilters?.includeArchived) {
+        const sevenDaysAgo = new Date()
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+        
+        if (where.OR) {
+          where.AND = [
+            { OR: where.OR },
+            {
+              OR: [
+                { completed_at: null },
+                { completed_at: { gte: sevenDaysAgo } },
+              ],
+            },
+          ]
+          delete where.OR
+        } else {
+          where.OR = [
+            { completed_at: null },
+            { completed_at: { gte: sevenDaysAgo } },
+          ]
+        }
+      }
+
+      // Get total count for pagination
+      const totalCount = await prisma.task.count({ where })
+
+      // Fetch paginated tasks with reduced nesting (max 2 levels)
+      const tasks = await prisma.task.findMany({
+        where,
+        take: limit,
+        skip: offset,
+        include: {
+          column: {
+            select: {
+              id: true,
+              name: true,
+              color: true,
+              is_done: true,
+            },
+          },
+          assignee: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar_url: true,
+            },
+          },
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          // Reduced nesting - removed deep includes
+          _count: {
+            select: {
+              comments: true,
+            },
+          },
+        },
+        orderBy: { position: 'asc' },
+      })
+
+      // Fetch linked law items separately if needed (lazy loading pattern)
+      const taskIds = tasks.map(t => t.id)
+      const listItemLinks = taskIds.length > 0 ? await prisma.taskListItemLink.findMany({
+        where: { task_id: { in: taskIds } },
+        take: taskIds.length, // Limit to one per task
+        include: {
+          law_list_item: {
+            select: {
+              id: true,
+              document: {
+                select: {
+                  title: true,
+                  document_number: true,
+                },
+              },
+            },
+          },
+        },
+      }) : []
+
+      // Map list item links to tasks
+      const tasksWithLinks = tasks.map(task => ({
+        ...task,
+        list_item_links: listItemLinks
+          .filter(link => link.task_id === task.id)
+          .map(link => ({
+            law_list_item: link.law_list_item
+          }))
+          .slice(0, 1) // Take only first link per task
+      }))
+
+      const totalPages = Math.ceil(totalCount / limit)
+
+      return { 
+        success: true, 
+        data: {
+          tasks: tasksWithLinks as TaskWithRelations[],
+          pagination: {
+            page,
+            limit,
+            total: totalCount,
+            totalPages,
+            hasNext: page < totalPages,
+            hasPrev: page > 1
+          }
+        }
+      }
+    })
+  } catch (error) {
+    console.error('getWorkspaceTasksPaginated error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+/**
  * Get all tasks for the workspace with filtering
+ * @deprecated Use getWorkspaceTasksPaginated for better performance
  */
 export async function getWorkspaceTasks(
   filters?: TaskFilters

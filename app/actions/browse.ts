@@ -107,7 +107,7 @@ export async function browseDocumentsAction(
   const cacheKey = `browse:${JSON.stringify({ query, contentTypes, status, businessType, subjectCodes, dateFrom, dateTo, page, limit, sortBy })}`
 
   // Check cache
-  if (isRedisConfigured) {
+  if (isRedisConfigured()) {
     try {
       const cached = await redis.get(cacheKey)
       if (cached && typeof cached === 'string') {

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { useEffect, useState } from 'react'
 
 interface UserMenuProps {
   user: {
@@ -23,6 +24,12 @@ interface UserMenuProps {
 }
 
 export function UserMenu({ user }: UserMenuProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const initials = user.name
     ? user.name
         .split(' ')
@@ -31,6 +38,17 @@ export function UserMenu({ user }: UserMenuProps) {
         .toUpperCase()
         .slice(0, 2)
     : user.email?.[0]?.toUpperCase() || 'U'
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+        <Avatar className="h-9 w-9">
+          <AvatarFallback>{initials}</AvatarFallback>
+        </Avatar>
+      </Button>
+    )
+  }
 
   return (
     <DropdownMenu>

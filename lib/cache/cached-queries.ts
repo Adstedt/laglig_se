@@ -15,17 +15,32 @@ import { unstable_cache } from 'next/cache'
 import { prisma, withRetry } from '@/lib/prisma'
 import { ContentType } from '@prisma/client'
 import { parseSfsFromSlug } from '@/lib/sfs/amendment-slug'
+import { getCachedDocument } from '@/lib/services/document-cache'
 
 /**
  * Get a cached law document by slug
  * Used by /lagar/[id]/page.tsx
+ * 
+ * UPDATED: Now uses centralized Redis cache for document content
+ * This means when ANY user accesses a document ANYWHERE (modal, public, etc),
+ * all subsequent accesses benefit from the same cache entry!
  */
 export const getCachedLaw = unstable_cache(
   async (slug: string) => {
-    return withRetry(() =>
+    // First get the document metadata and relations (lighter query)
+    const doc = await withRetry(() =>
       prisma.legalDocument.findUnique({
         where: { slug, content_type: ContentType.SFS_LAW },
-        include: {
+        select: {
+          id: true, // Need ID to fetch from centralized cache
+          title: true,
+          document_number: true,
+          slug: true,
+          status: true,
+          source_url: true,
+          publication_date: true,
+          effective_date: true,
+          // Don't fetch HTML here - get from centralized cache
           subjects: {
             select: {
               subject_code: true,
@@ -47,6 +62,22 @@ export const getCachedLaw = unstable_cache(
         },
       })
     )
+    
+    if (!doc) return null
+    
+    // Now get the HTML content from centralized Redis cache
+    // This is shared across ALL users and ALL access patterns!
+    const cachedDoc = await getCachedDocument(doc.id)
+    console.log(`📚 Public page fetching document ${doc.document_number} - cache ${cachedDoc ? 'HIT' : 'MISS'}`)
+    
+    // Merge the cached content with the metadata
+    return {
+      ...doc,
+      html_content: cachedDoc?.htmlContent || null,
+      summary: cachedDoc?.summary || null,
+      full_text: cachedDoc?.fullText || null,
+      content_type: ContentType.SFS_LAW,
+    }
   },
   ['law-by-slug'],
   {

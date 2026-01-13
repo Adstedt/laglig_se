@@ -11,11 +11,6 @@
 
 import { Redis } from '@upstash/redis'
 
-// Initialize Redis client from environment variables
-// Falls back to a no-op client if not configured (for development)
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
-
 // Create a no-op Redis client for development/testing when Redis is not configured
 // This implements AC: 33-34 - graceful fallback when Redis unavailable
 const noopRedis = {
@@ -26,6 +21,8 @@ const noopRedis = {
   expire: async () => 1,
   keys: async () => [],
   mget: async () => [],
+  ttl: async () => -1,
+  type: async () => 'none',
   pipeline: () => ({
     get: () => noopRedis,
     set: () => noopRedis,
@@ -33,16 +30,46 @@ const noopRedis = {
   }),
 } as unknown as Redis
 
-export const redis: Redis =
-  redisUrl && redisToken
-    ? new Redis({
+// Lazy initialization to ensure env vars are loaded
+let _redis: Redis | null = null
+let _isConfigured: boolean | null = null
+
+function initRedis(): Redis {
+  if (_redis === null) {
+    const redisUrl = process.env.UPSTASH_REDIS_REST_URL
+    const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
+    
+    if (redisUrl && redisToken) {
+      console.log('🚀 Initializing Redis client with Upstash')
+      _redis = new Redis({
         url: redisUrl,
         token: redisToken,
       })
-    : noopRedis
+      _isConfigured = true
+    } else {
+      console.log('⚠️ Redis not configured, using no-op client')
+      _redis = noopRedis
+      _isConfigured = false
+    }
+  }
+  return _redis
+}
 
-// Check if Redis is properly configured
-export const isRedisConfigured = Boolean(redisUrl && redisToken)
+// Export a proxy that lazy-initializes on first use
+export const redis = new Proxy({} as Redis, {
+  get(target, prop, receiver) {
+    const client = initRedis()
+    return Reflect.get(client, prop, receiver)
+  }
+})
+
+// Check if Redis is properly configured (lazy evaluation)
+export const isRedisConfigured = () => {
+  if (_isConfigured === null) {
+    initRedis()
+  }
+  return _isConfigured!
+}
 
 // Cache metrics counters (for monitoring hit rates - AC: 19)
 let cacheHits = 0
@@ -88,7 +115,7 @@ export async function getCachedOrFetch<T>(
   ttl: number = 3600
 ): Promise<{ data: T; cached: boolean }> {
   // Skip cache if Redis is not configured
-  if (!isRedisConfigured) {
+  if (!isRedisConfigured()) {
     const data = await fetcher()
     return { data, cached: false }
   }
@@ -99,7 +126,18 @@ export async function getCachedOrFetch<T>(
     if (cached !== null) {
       cacheHits++
       console.log(`[CACHE HIT] ${key.substring(0, 60)}...`)
-      return { data: cached as T, cached: true }
+      
+      // Refresh TTL for frequently accessed items (sliding window)
+      // Only for document content, not for frequently changing data
+      if (key.startsWith('document:content:')) {
+        await redis.expire(key, ttl).catch(() => {
+          // Ignore expire errors - not critical
+        })
+      }
+      
+      // Parse the JSON string back to object
+      const parsedData = typeof cached === 'string' ? JSON.parse(cached) : cached
+      return { data: parsedData as T, cached: true }
     }
 
     cacheMisses++
@@ -115,7 +153,8 @@ export async function getCachedOrFetch<T>(
 
   // Try to store in cache (async, don't block)
   try {
-    await redis.set(key, data, { ex: ttl })
+    // Stringify the data before storing (Redis expects strings)
+    await redis.set(key, JSON.stringify(data), { ex: ttl })
   } catch (error) {
     // Redis write error - log but don't fail (AC: 34)
     console.warn(`[CACHE ERROR] Failed to write ${key}:`, error)
@@ -131,7 +170,7 @@ export async function getCachedOrFetch<T>(
  * @param pattern - Key pattern to match (e.g., "browse:*")
  */
 export async function invalidateCachePattern(pattern: string): Promise<number> {
-  if (!isRedisConfigured) {
+  if (!isRedisConfigured()) {
     return 0
   }
 
@@ -156,7 +195,7 @@ export async function invalidateCachePattern(pattern: string): Promise<number> {
  * @param key - Exact cache key to delete
  */
 export async function invalidateCacheKey(key: string): Promise<boolean> {
-  if (!isRedisConfigured) {
+  if (!isRedisConfigured()) {
     return true
   }
 

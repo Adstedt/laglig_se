@@ -56,11 +56,16 @@ export function WorkspaceSwitcher({
     isLoading: contextLoading,
     refresh,
   } = useWorkspace()
+  const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([])
   const [loading, setLoading] = useState(false)
   const [switching, setSwitching] = useState<string | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Fetch workspaces when popover opens
   useEffect(() => {
@@ -137,6 +142,47 @@ export function WorkspaceSwitcher({
 
   // Check if current role is auditor
   const isAuditor = role === 'AUDITOR'
+
+  // Prevent hydration mismatch by not rendering popover until mounted
+  if (!mounted) {
+    return (
+      <Button
+        variant="outline"
+        className="w-full justify-start gap-3 h-auto p-3"
+      >
+        <Avatar className="h-8 w-8 rounded-lg">
+          <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-sm font-semibold">
+            {workspaceName ? getWorkspaceInitial(workspaceName) : 'A'}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0 text-left">
+          {contextLoading ? (
+            <>
+              <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+              <div className="h-3 w-16 bg-muted animate-pulse rounded mt-1" />
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-medium truncate">
+                {workspaceName || 'Arbetsplats'}
+              </p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground truncate">
+                  {roleLabel}
+                </span>
+                {isAuditor && (
+                  <span className="inline-flex items-center rounded px-1 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                    Endast läsning
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+        <ChevronsUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
+      </Button>
+    )
+  }
 
   return (
     <>

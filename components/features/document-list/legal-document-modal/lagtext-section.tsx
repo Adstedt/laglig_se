@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 
 interface LagtextSectionProps {
+  documentId: string
   htmlContent: string | null
   fullText: string | null
   slug: string
@@ -52,6 +53,7 @@ function cleanLawHtml(html: string): string {
 }
 
 export function LagtextSection({
+  documentId,
   htmlContent,
   fullText,
   slug,
@@ -90,13 +92,14 @@ export function LagtextSection({
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-foreground">Lagtext</h3>
         <div className="text-muted-foreground italic py-4 text-sm">
-          Lagtext ej tillgänglig
+          Ingen lagtext tillgänglig
         </div>
         {/* Quick links row */}
         <QuickLinksRow slug={slug} sourceUrl={sourceUrl} hasPdf={hasPdf} />
       </div>
     )
   }
+
 
   return (
     <div className="space-y-2">

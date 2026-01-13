@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState, useCallback, useMemo, useTransition } from 'react'
+import { usePrefetchDocuments } from '@/lib/hooks/use-prefetch-documents'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   useDocumentListStore,
@@ -227,6 +228,15 @@ export function DocumentListPageContent({
   const hasFiltersOrSearch = useMemo(
     () => checkHasActiveFilters(complianceFilters) || !!searchQuery.trim(),
     [complianceFilters, searchQuery]
+  )
+
+  // Pre-fetch visible documents for instant modal opening
+  usePrefetchDocuments(
+    filteredAndSearchedItems.slice(0, 20).map(item => ({
+      id: item.id,
+      document_id: item.documentId
+    })),
+    { enabled: !isLoadingItems, delay: 800 }
   )
 
   // Story 6.2: Clear all filters and search

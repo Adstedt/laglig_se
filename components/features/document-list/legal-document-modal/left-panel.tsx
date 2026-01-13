@@ -26,6 +26,7 @@ export function LeftPanel({ listItem }: LeftPanelProps) {
 
       {/* Lagtext Section */}
       <LagtextSection
+        documentId={listItem.legalDocument.id}
         htmlContent={listItem.legalDocument.htmlContent}
         fullText={listItem.legalDocument.fullText}
         slug={listItem.legalDocument.slug}

@@ -297,6 +297,15 @@ export default async function LawPage({ params }: PageProps) {
   if (!law) {
     notFound()
   }
+  
+  // Track visit for cache warming optimization (non-blocking)
+  if (law.id) {
+    import('@/app/actions/track-visit').then(({ trackDocumentVisit }) => {
+      trackDocumentVisit(law.id).catch(() => {
+        // Silently fail - tracking should never break the page
+      })
+    })
+  }
 
   // Fetch cross-references in parallel
   const [citingCases, implementedDirectives] = await Promise.all([
