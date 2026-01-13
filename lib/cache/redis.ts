@@ -55,7 +55,7 @@ function initRedis(): Redis {
 
 // Export a proxy that lazy-initializes on first use
 export const redis = new Proxy({} as Redis, {
-  get(target, prop, receiver) {
+  get(_target, prop, receiver) {
     const client = initRedis()
     return Reflect.get(client, prop, receiver)
   },
