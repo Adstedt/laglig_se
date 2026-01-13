@@ -49,6 +49,7 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   experimental: {
+    instrumentationHook: true, // Enable instrumentation for cache warming
     // Router Cache Configuration (Story 2.19, Story 6.0)
     // This re-enables client-side caching that was disabled by default in Next.js 15
     // - dynamic: 300s (5 min) - Caches dynamic routes to reduce refetch frequency

@@ -14,7 +14,6 @@
 
 import { prisma } from '@/lib/prisma'
 import { getCachedOrFetch, redis } from '@/lib/cache/redis'
-import type { Prisma } from '@prisma/client'
 
 const DOCUMENT_CACHE_TTL = 86400 // 24 hours
 

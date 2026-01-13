@@ -192,7 +192,13 @@
       "Bash(timeout 180 npx tsx:*)",
       "Bash(pnpm install:*)",
       "Bash(cat:*)",
-      "Bash(pnpm run:*)"
+      "Bash(pnpm run:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(npx next build:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm test:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

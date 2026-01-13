@@ -547,27 +547,19 @@ export async function getDocumentContent(
 ): Promise<ActionResult<{ fullText: string | null; htmlContent: string | null }>> {
   try {
     // Use the new caching strategy for document content
-    const data = await getCachedDocumentContent(
-      documentId,
-      async () => {
-        const document = await prisma.legalDocument.findUnique({
-          where: { id: documentId },
-          select: {
-            full_text: true,
-            html_content: true,
-          },
-        })
-
-        if (!document) {
-          throw new Error('Document not found')
-        }
-
-        return {
-          fullText: document.full_text,
-          htmlContent: document.html_content,
-        }
+    const cachedDoc = await getCachedDocument(documentId)
+    
+    if (!cachedDoc) {
+      return {
+        success: false,
+        error: 'Document not found',
       }
-    )
+    }
+    
+    const data = {
+      fullText: cachedDoc.fullText,
+      htmlContent: cachedDoc.htmlContent,
+    }
 
     return {
       success: true,

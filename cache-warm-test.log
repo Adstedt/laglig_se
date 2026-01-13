@@ -1,0 +1,27 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying 127.0.0.1:3000...
+* Connected to localhost (127.0.0.1) port 3000 (#0)
+> POST /api/cron/warm-cache HTTP/1.1
+> Host: localhost:3000
+> User-Agent: curl/7.88.1
+> Accept: */*
+> 
+  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0< HTTP/1.1 200 OK
+< Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https:; font-src 'self'; connect-src 'self' https://api.openai.com https://*.supabase.co https://*.sentry.io https://vercel.live wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+< X-Frame-Options: DENY
+< X-Content-Type-Options: nosniff
+< Referrer-Policy: strict-origin-when-cross-origin
+< Strict-Transport-Security: max-age=31536000; includeSubDomains
+< Permissions-Policy: camera=(), microphone=(), geolocation=()
+< vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+< content-type: application/json
+< Date: Tue, 13 Jan 2026 20:39:37 GMT
+< Connection: keep-alive
+< Keep-Alive: timeout=5
+< Transfer-Encoding: chunked
+< 
+  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0{ [306 bytes data]
+100   294    0   294    0     0    133      0 --:--:--  0:00:02 --:--:--   133
+* Connection #0 to host localhost left intact
+{"success":true,"stats":{"duration":"1.7s","processed":10,"alreadyCached":0,"newlyCached":0,"failed":10,"coverage":{"totalUniqueDocuments":10,"cachedDocuments":200,"coveragePercent":"2000%","estimatedHitRate":"80-90%"}},"warmedDocuments":[],"message":"Warmed 0 new documents, 0 already cached"}

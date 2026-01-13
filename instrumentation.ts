@@ -1,6 +1,18 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     await import('./sentry.server.config')
+
+    // Cache warming on startup
+    const shouldWarmCache =
+      process.env.NODE_ENV === 'production' ||
+      process.env.ENABLE_CACHE_WARMING === 'true'
+
+    if (shouldWarmCache) {
+      const { warmCacheOnStartup } = await import('@/lib/cache/warm-on-startup')
+      warmCacheOnStartup()
+      console.log('📦 Server instrumentation initialized')
+      console.log('   Cache warming: enabled')
+    }
   }
 
   if (process.env.NEXT_RUNTIME === 'edge') {
