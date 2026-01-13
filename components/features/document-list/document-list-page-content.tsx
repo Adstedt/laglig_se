@@ -232,9 +232,9 @@ export function DocumentListPageContent({
 
   // Pre-fetch visible documents for instant modal opening
   usePrefetchDocuments(
-    filteredAndSearchedItems.slice(0, 20).map(item => ({
+    filteredAndSearchedItems.slice(0, 20).map((item) => ({
       id: item.id,
-      document_id: item.documentId
+      document_id: item.document.id,
     })),
     { enabled: !isLoadingItems, delay: 800 }
   )
