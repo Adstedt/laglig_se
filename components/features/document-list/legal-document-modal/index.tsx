@@ -3,6 +3,9 @@
 /**
  * Story 6.3: Legal Document Modal
  * Jira-style deep workspace for managing compliance on a specific law
+ *
+ * Performance optimization: Accepts initialData from list view to display instantly,
+ * only fetches missing data (htmlContent, businessContext, aiCommentary)
  */
 
 import { useState, useCallback } from 'react'
@@ -15,30 +18,41 @@ import { LeftPanel } from './left-panel'
 import { RightPanel } from './right-panel'
 import { AiChatPanel } from './ai-chat-panel'
 import { ModalSkeleton } from './modal-skeleton'
-import { useListItemDetails } from '@/lib/hooks/use-list-item-details'
+import {
+  useListItemDetails,
+  type InitialListItemData,
+  type WorkspaceMember,
+} from '@/lib/hooks/use-list-item-details'
 
 interface LegalDocumentModalProps {
   listItemId: string | null
   onClose: () => void
+  /** Pre-loaded data from list view for instant display */
+  initialData?: InitialListItemData | null
+  /** Pre-loaded workspace members (fetch once at page level) */
+  workspaceMembers?: WorkspaceMember[]
 }
 
 export function LegalDocumentModal({
   listItemId,
   onClose,
+  initialData,
+  workspaceMembers: preloadedMembers,
 }: LegalDocumentModalProps) {
   const [aiChatOpen, setAiChatOpen] = useState(false)
 
-  // Use SWR hook for cached data fetching
+  // Use SWR hook - pass initialData for instant display, only fetch missing data
   const {
     listItem,
     taskProgress,
     evidence,
     workspaceMembers,
     isLoading,
+    isLoadingContent,
     error,
     mutate: handleDataUpdate,
     mutateTaskProgress: handleTasksUpdate,
-  } = useListItemDetails(listItemId)
+  } = useListItemDetails(listItemId, initialData, preloadedMembers)
 
   // Scroll to evidence tab
   const scrollToEvidenceTab = useCallback(() => {
@@ -137,7 +151,7 @@ export function LegalDocumentModal({
                 <div className="grid flex-1 min-h-0 grid-cols-1 md:grid-cols-[3fr_2fr]">
                   {/* Left panel - scrollable */}
                   <ScrollArea className="h-full">
-                    <LeftPanel listItem={listItem} />
+                    <LeftPanel listItem={listItem} isLoadingContent={isLoadingContent} />
                   </ScrollArea>
 
                   {/* Right panel - sticky on desktop, below on mobile */}

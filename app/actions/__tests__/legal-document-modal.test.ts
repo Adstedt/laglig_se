@@ -234,7 +234,6 @@ describe('legal-document-modal actions', () => {
 
       // Assertions
       expect(result.success).toBe(true)
-      expect(result.data?.fullText).toBe('Database text')
       expect(result.data?.htmlContent).toBe('<p>Database HTML</p>')
     })
 

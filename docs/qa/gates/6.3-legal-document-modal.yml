@@ -7,7 +7,7 @@ story_title: 'Implement Legal Document Modal (Jira-Style Deep Workspace)'
 gate: PASS
 status_reason: 'All 15 acceptance criteria met with comprehensive test coverage (31 unit + 14 E2E tests). Strong security posture with workspace authorization, input validation, and XSS prevention. Well-architected modal with documented patterns for reuse.'
 reviewer: 'Quinn (Test Architect)'
-updated: '2026-01-09T00:12:00Z'
+updated: '2026-01-14T00:00:00Z'
 
 waiver: { active: false }
 
@@ -45,6 +45,9 @@ recommendations:
       refs: ['components/features/document-list/legal-document-modal/index.tsx']
 
 history:
+  - at: '2026-01-14T00:00:00Z'
+    gate: PASS
+    note: 'UX fix - replaced "Ingen lagtext tillgänglig" loading message with skeleton loader for htmlContent. Prevents confusing error-like message during async content fetch.'
   - at: '2026-01-09T00:12:00Z'
     gate: PASS
     note: 'Initial review - all acceptance criteria met, comprehensive test coverage, excellent code quality'

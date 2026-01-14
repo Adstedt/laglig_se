@@ -34,8 +34,8 @@ const noopRedis = {
 let _redis: Redis | null = null
 let _isConfigured: boolean | null = null
 
-function initRedis(): Redis {
-  if (_redis === null) {
+function initRedis(forceReinit = false): Redis {
+  if (_redis === null || forceReinit) {
     const redisUrl = process.env.UPSTASH_REDIS_REST_URL
     const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN
 
@@ -51,6 +51,13 @@ function initRedis(): Redis {
     }
   }
   return _redis
+}
+
+// Force reinitialization (useful for tests)
+export function reinitializeRedis(): void {
+  _redis = null
+  _isConfigured = null
+  initRedis(true)
 }
 
 // Export a proxy that lazy-initializes on first use
@@ -200,6 +207,67 @@ export async function invalidateCacheKey(key: string): Promise<boolean> {
     return true
   } catch (error) {
     console.warn(`[CACHE ERROR] Failed to invalidate ${key}:`, error)
+    return false
+  }
+}
+
+/**
+ * Set a value in cache with TTL
+ * Story P.2: Added for server-side caching layer
+ */
+export async function setCacheValue<T>(
+  key: string,
+  value: T,
+  ttl: number = 3600
+): Promise<boolean> {
+  if (!isRedisConfigured()) {
+    return false
+  }
+
+  try {
+    await redis.set(key, JSON.stringify(value), { ex: ttl })
+    return true
+  } catch (error) {
+    console.warn(`[CACHE ERROR] Failed to set ${key}:`, error)
+    return false
+  }
+}
+
+/**
+ * Get a value from cache
+ * Story P.2: Added for server-side caching layer
+ */
+export async function getCacheValue<T>(key: string): Promise<T | null> {
+  if (!isRedisConfigured()) {
+    return null
+  }
+
+  try {
+    const cached = await redis.get(key)
+    if (cached !== null) {
+      return typeof cached === 'string' ? JSON.parse(cached) as T : cached as T
+    }
+    return null
+  } catch (error) {
+    console.warn(`[CACHE ERROR] Failed to get ${key}:`, error)
+    return null
+  }
+}
+
+/**
+ * Check if a key exists in cache
+ * Story P.2: Added for server-side caching layer
+ */
+export async function cacheExists(key: string): Promise<boolean> {
+  if (!isRedisConfigured()) {
+    return false
+  }
+
+  try {
+    const type = await redis.type(key)
+    return type !== 'none'
+  } catch (error) {
+    console.warn(`[CACHE ERROR] Failed to check ${key}:`, error)
     return false
   }
 }

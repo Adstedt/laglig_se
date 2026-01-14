@@ -475,6 +475,8 @@ export const useDocumentListStore = create<DocumentListState>()(
             slug: documentInfo.slug,
             summary: documentInfo.summary ?? null,
             effectiveDate: null,
+            sourceUrl: null,
+            status: 'ACTIVE',
           },
         }
 

@@ -198,7 +198,16 @@
       "Bash(npx next build:*)",
       "Bash(pnpm build:*)",
       "Bash(pnpm test:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(npm run build:*)",
+      "Bash(sed:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

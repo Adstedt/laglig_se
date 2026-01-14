@@ -9,6 +9,7 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
 import { ChevronDown, ChevronUp, ExternalLink, FileDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { LawContentWrapper } from '@/app/(public)/lagar/[id]/law-content-wrapper'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -21,6 +22,7 @@ interface LagtextSectionProps {
   sourceUrl: string | null
   maxCollapsedHeight?: number
   maxExpandedHeight?: number
+  isLoading?: boolean
 }
 
 /**
@@ -60,6 +62,7 @@ export function LagtextSection({
   sourceUrl,
   maxCollapsedHeight = 300,
   maxExpandedHeight = 600,
+  isLoading,
 }: LagtextSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -86,6 +89,24 @@ export function LagtextSection({
   }, [htmlContent])
 
   const hasContent = cleanedHtmlContent || fullText
+
+  // Show skeleton while loading content
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-foreground">Lagtext</h3>
+        <div className="space-y-3 py-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-[95%]" />
+          <Skeleton className="h-4 w-[90%]" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-[85%]" />
+        </div>
+        {/* Quick links row */}
+        <QuickLinksRow slug={slug} sourceUrl={sourceUrl} hasPdf={hasPdf} />
+      </div>
+    )
+  }
 
   if (!hasContent) {
     return (

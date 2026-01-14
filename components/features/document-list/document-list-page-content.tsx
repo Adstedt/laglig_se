@@ -29,6 +29,7 @@ import { ExportDropdown } from './export-dropdown'
 import { ViewToggle } from './view-toggle'
 // Story 6.3: Legal Document Modal
 import { LegalDocumentModal } from './legal-document-modal'
+import type { InitialListItemData } from '@/lib/hooks/use-list-item-details'
 // Story 6.2: Compliance filters and search
 import {
   ComplianceFilters,
@@ -71,7 +72,8 @@ export function DocumentListPageContent({
   >([])
   // Story 4.13: Group management modal
   const [isGroupManagerOpen, setIsGroupManagerOpen] = useState(false)
-  // Story 6.3: Legal document modal
+  // Story 6.3: Legal document modal - Now with URL state management
+  // Modal state is derived from URL, not local state
   const [selectedListItemId, setSelectedListItemId] = useState<string | null>(
     null
   )
@@ -91,6 +93,30 @@ export function DocumentListPageContent({
 
   // Use transition for non-urgent URL updates
   const [, startTransition] = useTransition()
+
+  // Handle opening the modal by updating URL
+  const handleOpenModal = useCallback((listItemId: string) => {
+    // Update local state immediately for instant feedback
+    setSelectedListItemId(listItemId)
+    // Then update URL in background without blocking UI
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('document', listItemId)
+      router.push(`?${params.toString()}`, { scroll: false })
+    })
+  }, [searchParams, router])
+
+  // Handle closing the modal by removing from URL
+  const handleCloseModal = useCallback(() => {
+    // Update local state immediately for instant feedback
+    setSelectedListItemId(null)
+    // Then update URL in background without blocking UI
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('document')
+      router.push(`?${params.toString()}`, { scroll: false })
+    })
+  }, [searchParams, router])
 
   // Story 6.2: Handle search from SearchInput component (already debounced)
   const handleSearch = useCallback(
@@ -230,6 +256,38 @@ export function DocumentListPageContent({
     [complianceFilters, searchQuery]
   )
 
+  // Story 6.3 Performance: Get selected item data for instant modal display
+  const selectedItemInitialData = useMemo((): InitialListItemData | null => {
+    if (!selectedListItemId) return null
+    const item = listItems.find((i) => i.id === selectedListItemId)
+    if (!item) return null
+
+    return {
+      id: item.id,
+      position: item.position,
+      complianceStatus: item.complianceStatus,
+      category: item.category,
+      addedAt: item.addedAt,
+      dueDate: item.dueDate,
+      responsibleUser: item.responsibleUser,
+      document: {
+        id: item.document.id,
+        title: item.document.title,
+        documentNumber: item.document.documentNumber,
+        contentType: item.document.contentType,
+        slug: item.document.slug,
+        summary: item.document.summary,
+        effectiveDate: item.document.effectiveDate,
+        sourceUrl: item.document.sourceUrl,
+        status: item.document.status,
+      },
+      lawList: {
+        id: activeListId ?? '',
+        name: activeList?.name ?? '',
+      },
+    }
+  }, [selectedListItemId, listItems, activeListId, activeList])
+
   // Pre-fetch visible documents for instant modal opening
   usePrefetchDocuments(
     filteredAndSearchedItems.slice(0, 20).map((item) => ({
@@ -350,6 +408,16 @@ export function DocumentListPageContent({
     setActiveGroupFilter,
     clearGroupFilter,
   ])
+
+  // Story 6.3: Watch for document URL param changes (for modal)
+  const documentIdFromUrl = searchParams.get('document')
+  useEffect(() => {
+    // Only sync from URL to state when they differ (e.g., browser back/forward)
+    // This prevents double updates when we programmatically change the URL
+    if (documentIdFromUrl !== selectedListItemId) {
+      setSelectedListItemId(documentIdFromUrl)
+    }
+  }, [documentIdFromUrl]) // Remove selectedListItemId from deps to prevent loops
 
   // Clear error on unmount
   useEffect(() => {
@@ -606,6 +674,7 @@ export function DocumentListPageContent({
           onCollapseAll={collapseAllGroups}
           onManageGroups={() => setIsGroupManagerOpen(true)}
           onFilterByGroup={handleFilterByGroup}
+          onRowClick={handleOpenModal}
           emptyMessage={
             activeListId
               ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
@@ -640,8 +709,8 @@ export function DocumentListPageContent({
           workspaceMembers={workspaceMembers}
           groups={groups}
           onMoveToGroup={moveToGroup}
-          // Story 6.3: Open legal document modal on row click
-          onRowClick={setSelectedListItemId}
+          // Story 6.3: Open legal document modal on row click (via URL)
+          onRowClick={handleOpenModal}
           emptyMessage={
             activeListId
               ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
@@ -679,10 +748,12 @@ export function DocumentListPageContent({
         />
       )}
 
-      {/* Story 6.3: Legal document modal */}
+      {/* Story 6.3: Legal document modal - pass initialData for instant display */}
       <LegalDocumentModal
         listItemId={selectedListItemId}
-        onClose={() => setSelectedListItemId(null)}
+        onClose={handleCloseModal}
+        initialData={selectedItemInitialData}
+        workspaceMembers={workspaceMembers}
       />
     </div>
   )

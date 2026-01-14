@@ -32,7 +32,6 @@ export interface ListItemDetails {
     id: string
     title: string
     documentNumber: string
-    fullText: string | null
     htmlContent: string | null
     summary: string | null
     slug: string
@@ -155,7 +154,6 @@ async function fetchListItemDetailsInternal(
             id: parsed.document.id,
             title: parsed.document.title,
             documentNumber: parsed.document.document_number,
-            fullText: null,
             htmlContent: htmlContent, // From centralized cache
             summary: parsed.document.summary,
             slug: parsed.document.slug,
@@ -268,7 +266,6 @@ async function fetchListItemDetailsInternal(
       id: item.document.id,
       title: item.document.title,
       documentNumber: item.document.document_number,
-      fullText: null,
       htmlContent: htmlContent, // From centralized cache
       summary: item.document.summary,
       slug: item.document.slug,
@@ -497,9 +494,7 @@ export async function updateListItemResponsible(
  */
 export async function getDocumentContent(
   documentId: string
-): Promise<
-  ActionResult<{ fullText: string | null; htmlContent: string | null }>
-> {
+): Promise<ActionResult<{ htmlContent: string | null }>> {
   try {
     // Use the new caching strategy for document content
     const cachedDoc = await getCachedDocument(documentId)
@@ -511,14 +506,9 @@ export async function getDocumentContent(
       }
     }
 
-    const data = {
-      fullText: cachedDoc.fullText,
-      htmlContent: cachedDoc.htmlContent,
-    }
-
     return {
       success: true,
-      data,
+      data: { htmlContent: cachedDoc.htmlContent },
     }
   } catch (error) {
     console.error('Error fetching document content:', error)

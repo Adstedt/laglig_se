@@ -3,6 +3,9 @@
 /**
  * Story 5.9: Workspace Server Actions
  * Server actions for workspace creation and management.
+ * 
+ * Story P.2: Enhanced with cache invalidation
+ * @see docs/stories/P.2.systematic-caching.story.md
  */
 
 import { z } from 'zod'
@@ -11,6 +14,10 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from '@/lib/auth/session'
 import { setActiveWorkspace } from '@/lib/auth/workspace-context'
+import { 
+  invalidateWorkspaceCache, 
+  invalidateUserCache 
+} from '@/lib/cache/workspace-cache'
 
 // ============================================================================
 // Validation Schemas
@@ -111,6 +118,10 @@ export async function createWorkspace(formData: FormData): Promise<{
 
     // Set as active workspace
     await setActiveWorkspace(workspace.id)
+    
+    // Invalidate user cache to refresh workspace list
+    await invalidateUserCache(user.id, ['context'])
+    
     revalidatePath('/')
 
     return { success: true, workspaceId: workspace.id }
@@ -135,4 +146,186 @@ export async function createWorkspaceAndRedirect(
 
   // If failed, the form will display the error
   // This shouldn't happen in normal flow since we return before redirect
+}
+
+/**
+ * Update workspace settings with cache invalidation
+ * Story P.2: Added cache invalidation
+ */
+export async function updateWorkspaceSettings(
+  workspaceId: string,
+  data: {
+    name?: string
+    company_org_number?: string
+    company_logo?: string
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.email) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    // Update workspace
+    await prisma.workspace.update({
+      where: { id: workspaceId },
+      data
+    })
+
+    // Invalidate workspace cache
+    await invalidateWorkspaceCache(workspaceId, ['context', 'settings'])
+    
+    revalidatePath('/settings/workspace')
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating workspace:', error)
+    return { success: false, error: 'Failed to update workspace' }
+  }
+}
+
+/**
+ * Add member to workspace with cache invalidation
+ * Story P.2: Added cache invalidation
+ */
+export async function addWorkspaceMember(
+  workspaceId: string,
+  email: string,
+  role: 'OWNER' | 'ADMIN' | 'HR_MANAGER' | 'MEMBER' | 'AUDITOR'
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.email) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    // Find or create user
+    let user = await prisma.user.findUnique({
+      where: { email }
+    })
+
+    if (!user) {
+      // Create invited user placeholder
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: email.split('@')[0] || null,
+        }
+      })
+    }
+
+    // Add as member
+    await prisma.workspaceMember.create({
+      data: {
+        workspace_id: workspaceId,
+        user_id: user.id,
+        role,
+        joined_at: new Date()
+      }
+    })
+
+    // Invalidate workspace members cache
+    await invalidateWorkspaceCache(workspaceId, ['members'])
+    
+    revalidatePath('/settings/workspace')
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error adding member:', error)
+    return { success: false, error: 'Failed to add member' }
+  }
+}
+
+/**
+ * Remove member from workspace with cache invalidation
+ * Story P.2: Added cache invalidation
+ */
+export async function removeWorkspaceMember(
+  workspaceId: string,
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.email) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    // Find the member first
+    const member = await prisma.workspaceMember.findFirst({
+      where: {
+        workspace_id: workspaceId,
+        user_id: userId
+      }
+    })
+
+    if (!member) {
+      return { success: false, error: 'Member not found' }
+    }
+
+    // Delete by id
+    await prisma.workspaceMember.delete({
+      where: {
+        id: member.id
+      }
+    })
+
+    // Invalidate both workspace and user cache
+    await invalidateWorkspaceCache(workspaceId, ['members'])
+    await invalidateUserCache(userId, ['context'])
+    
+    revalidatePath('/settings/workspace')
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error removing member:', error)
+    return { success: false, error: 'Failed to remove member' }
+  }
+}
+
+/**
+ * Switch active workspace with cache warming
+ * Story P.2: Added cache warming for new workspace
+ */
+export async function switchWorkspace(
+  workspaceId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.email) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    // Verify user has access to this workspace
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+    
+    if (!user) {
+      return { success: false, error: 'User not found' }
+    }
+
+    const member = await prisma.workspaceMember.findFirst({
+      where: {
+        workspace_id: workspaceId,
+        user_id: user.id
+      }
+    })
+
+    if (!member) {
+      return { success: false, error: 'No access to this workspace' }
+    }
+
+    // Set as active workspace
+    await setActiveWorkspace(workspaceId)
+    
+    // Invalidate old workspace context
+    await invalidateUserCache(user.id, ['context'])
+    
+    revalidatePath('/')
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error switching workspace:', error)
+    return { success: false, error: 'Failed to switch workspace' }
+  }
 }

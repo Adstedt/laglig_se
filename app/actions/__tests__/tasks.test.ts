@@ -324,12 +324,16 @@ describe('tasks actions', () => {
       expect(result.success).toBe(true)
       expect(result.data).toBeDefined()
       if (result.data && result.data.tasks.length >= 2) {
-        expect(result.data.tasks[0].list_item_links).toHaveLength(1)
-        const firstLink = result.data.tasks[0].list_item_links[0]
-        if (firstLink) {
-          expect(firstLink.law_list_item.document.title).toBe('Labor Law 2024')
+        const task0 = result.data.tasks[0]
+        const task1 = result.data.tasks[1]
+        if (task0 && task1) {
+          expect(task0.list_item_links).toHaveLength(1)
+          const firstLink = task0.list_item_links[0]
+          if (firstLink) {
+            expect(firstLink.law_list_item.document.title).toBe('Labor Law 2024')
+          }
+          expect(task1.list_item_links).toHaveLength(0) // No links for task-2
         }
-        expect(result.data.tasks[1].list_item_links).toHaveLength(0) // No links for task-2
       }
 
       // Verify lazy loading query was made

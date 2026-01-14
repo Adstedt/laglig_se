@@ -61,6 +61,7 @@ const PRIORITY_CONFIG: Record<string, { label: string; className: string }> = {
 interface DocumentListCardProps {
   item: DocumentListItem
   onRemove: () => void
+  onRowClick?: ((_itemId: string) => void) | undefined
   isDragging?: boolean
   dragHandleProps?: React.HTMLAttributes<HTMLButtonElement>
   isRemoving?: boolean
@@ -70,7 +71,7 @@ export const DocumentListCard = forwardRef<
   HTMLDivElement,
   DocumentListCardProps
 >(function DocumentListCard(
-  { item, onRemove, isDragging, dragHandleProps, isRemoving },
+  { item, onRemove, onRowClick, isDragging, dragHandleProps, isRemoving },
   ref
 ) {
   const theme = getDocumentTheme(item.document.contentType)
@@ -117,11 +118,23 @@ export const DocumentListCard = forwardRef<
 
       {/* Title - fixed height for 2 lines with end fade effect */}
       <div className="relative h-10 overflow-hidden">
-        <Link href={documentUrl} className="block group/link pr-8">
-          <h3 className="text-sm font-semibold leading-5 text-foreground group-hover/link:text-foreground/80 line-clamp-2">
-            {item.document.title}
-          </h3>
-        </Link>
+        {onRowClick ? (
+          <button
+            type="button"
+            onClick={() => onRowClick(item.id)}
+            className="block group/link pr-8 text-left w-full"
+          >
+            <h3 className="text-sm font-semibold leading-5 text-foreground group-hover/link:text-foreground/80 line-clamp-2">
+              {item.document.title}
+            </h3>
+          </button>
+        ) : (
+          <Link href={documentUrl} className="block group/link pr-8">
+            <h3 className="text-sm font-semibold leading-5 text-foreground group-hover/link:text-foreground/80 line-clamp-2">
+              {item.document.title}
+            </h3>
+          </Link>
+        )}
         {/* Fade effect - positioned at end of second line only */}
         <div
           className="absolute bottom-0 right-8 h-5 w-10 pointer-events-none"

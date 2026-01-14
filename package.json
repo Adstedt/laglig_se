@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
+    "test:integration": "vitest run --config vitest.integration.config.mts",
     "test:e2e": "playwright test",
     "ingest-laws": "npx tsx scripts/ingest-laws.ts",
     "db:migrate": "prisma migrate deploy && pnpm db:indexes",

@@ -100,6 +100,9 @@ export interface DocumentListItem {
     slug: string
     summary: string | null
     effectiveDate: Date | null
+    // Story 6.3 Performance: For instant modal display
+    sourceUrl: string | null
+    status: string
   }
 }
 
@@ -391,6 +394,9 @@ export async function getDocumentListItems(
                 slug: true,
                 summary: true,
                 effective_date: true,
+                // Story 6.3 Performance: Include for instant modal display
+                source_url: true,
+                status: true,
               },
             },
             // Story 4.12: Include assignee for table view
@@ -472,6 +478,8 @@ export async function getDocumentListItems(
               slug: item.document.slug,
               summary: item.document.summary,
               effectiveDate: item.document.effective_date,
+              sourceUrl: item.document.source_url,
+              status: item.document.status,
             },
           })),
           total,

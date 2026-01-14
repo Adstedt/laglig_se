@@ -74,6 +74,8 @@ interface GroupedDocumentListProps {
   onManageGroups: () => void
   // Story 4.13 Task 11: Filter by group
   onFilterByGroup?: ((_groupId: string) => void) | undefined
+  // Story 6.3: Open modal on document click
+  onRowClick?: ((_itemId: string) => void) | undefined
   emptyMessage?: string | undefined
 }
 
@@ -96,6 +98,7 @@ export function GroupedDocumentList({
   onCollapseAll,
   onManageGroups,
   onFilterByGroup,
+  onRowClick,
   emptyMessage = 'Inga dokument i listan.',
 }: GroupedDocumentListProps) {
   const [removeConfirmItem, setRemoveConfirmItem] =
@@ -374,6 +377,7 @@ export function GroupedDocumentList({
                   }
                   items={groupItems}
                   onRemoveItem={handleRemoveClick}
+                  onRowClick={onRowClick}
                   removingItemId={removingItemId}
                   isDropTarget={overGroupId === group.id}
                 />
@@ -395,6 +399,7 @@ export function GroupedDocumentList({
                 }
                 items={ungroupedItems}
                 onRemoveItem={handleRemoveClick}
+                onRowClick={onRowClick}
                 removingItemId={removingItemId}
                 isUngrouped
                 isDropTarget={overGroupId === UNGROUPED_ID}
@@ -455,6 +460,7 @@ interface GroupAccordionProps {
   onFilter?: (() => void) | undefined // Story 4.13 Task 11: Filter by group click
   items: DocumentListItem[]
   onRemoveItem: (_item: DocumentListItem) => void
+  onRowClick?: ((_itemId: string) => void) | undefined // Story 6.3: Open modal
   removingItemId: string | null
   isUngrouped?: boolean | undefined
   isDropTarget?: boolean | undefined // Highlight when dragging item will drop here
@@ -470,6 +476,7 @@ const GroupAccordion = memo(function GroupAccordion({
   onFilter,
   items,
   onRemoveItem,
+  onRowClick,
   removingItemId,
   isUngrouped = false,
   isDropTarget = false,
@@ -579,6 +586,7 @@ const GroupAccordion = memo(function GroupAccordion({
                       key={item.id}
                       item={item}
                       onRemove={() => onRemoveItem(item)}
+                      onRowClick={onRowClick}
                       isRemoving={removingItemId === item.id}
                     />
                   ))}
@@ -596,10 +604,12 @@ const GroupAccordion = memo(function GroupAccordion({
 const SortableCard = memo(function SortableCard({
   item,
   onRemove,
+  onRowClick,
   isRemoving,
 }: {
   item: DocumentListItem
   onRemove: () => void
+  onRowClick?: ((_itemId: string) => void) | undefined
   isRemoving: boolean
 }) {
   const {
@@ -626,6 +636,7 @@ const SortableCard = memo(function SortableCard({
       <DocumentListCard
         item={item}
         onRemove={onRemove}
+        onRowClick={onRowClick}
         isDragging={isDragging}
         dragHandleProps={{ ...attributes, ...listeners }}
         isRemoving={isRemoving}

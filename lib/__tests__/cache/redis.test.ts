@@ -8,7 +8,7 @@
  * - Cache invalidation functions
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterAll, beforeAll } from 'vitest'
 import {
   isRedisConfigured,
   getCacheMetrics,
@@ -16,16 +16,42 @@ import {
   getCachedOrFetch,
   invalidateCachePattern,
   invalidateCacheKey,
+  reinitializeRedis,
 } from '../../cache/redis'
 
 describe('Redis Cache Module', () => {
+  let originalUrl: string | undefined
+  let originalToken: string | undefined
+
+  beforeAll(() => {
+    // Save original env vars
+    originalUrl = process.env.UPSTASH_REDIS_REST_URL
+    originalToken = process.env.UPSTASH_REDIS_REST_TOKEN
+    
+    // Clear Redis env vars for unit tests (test fallback behavior)
+    delete process.env.UPSTASH_REDIS_REST_URL
+    delete process.env.UPSTASH_REDIS_REST_TOKEN
+    
+    // Reinitialize Redis with no-op client
+    reinitializeRedis()
+  })
+
+  afterAll(() => {
+    // Restore original env vars
+    if (originalUrl) process.env.UPSTASH_REDIS_REST_URL = originalUrl
+    if (originalToken) process.env.UPSTASH_REDIS_REST_TOKEN = originalToken
+    
+    // Reinitialize Redis with real client
+    reinitializeRedis()
+  })
+
   beforeEach(() => {
     resetCacheMetrics()
   })
 
   describe('isRedisConfigured', () => {
     it('should return boolean indicating Redis configuration status', () => {
-      expect(typeof isRedisConfigured).toBe('boolean')
+      expect(typeof isRedisConfigured()).toBe('boolean')
     })
   })
 

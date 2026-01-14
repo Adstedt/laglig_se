@@ -13,9 +13,10 @@ import type { ListItemDetails } from '@/app/actions/legal-document-modal'
 
 interface LeftPanelProps {
   listItem: ListItemDetails
+  isLoadingContent?: boolean
 }
 
-export function LeftPanel({ listItem }: LeftPanelProps) {
+export function LeftPanel({ listItem, isLoadingContent }: LeftPanelProps) {
   return (
     <div className="p-6 space-y-6">
       {/* Law Header */}
@@ -28,9 +29,10 @@ export function LeftPanel({ listItem }: LeftPanelProps) {
       <LagtextSection
         documentId={listItem.legalDocument.id}
         htmlContent={listItem.legalDocument.htmlContent}
-        fullText={listItem.legalDocument.fullText}
+        fullText={null}
         slug={listItem.legalDocument.slug}
         sourceUrl={listItem.legalDocument.sourceUrl}
+        isLoading={isLoadingContent || false}
       />
 
       {/* Business Context */}

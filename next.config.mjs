@@ -48,8 +48,70 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  
+  // Story P.2: Image Optimization Configuration (AC: 19-21)
+  images: {
+    // Enable modern image formats
+    formats: ['image/avif', 'image/webp'],
+    // Define external image domains
+    domains: [
+      'supabase.co',
+      'avatars.githubusercontent.com',
+      'lh3.googleusercontent.com',
+    ],
+    // Device sizes for responsive images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    // Image sizes for different layouts
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Minimize images in production
+    minimumCacheTTL: 60,
+    // Disable static imports for runtime optimization
+    disableStaticImages: false,
+  },
+  
+  // Story P.2: Compiler optimizations (AC: 23)
+  compiler: {
+    // Remove console logs in production
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
+  
+  // Story P.2: Bundle size optimizations
+  webpack: (config, { isServer }) => {
+    // Optimize bundle splitting
+    if (!isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          // Vendor code splitting
+          vendor: {
+            name: 'vendor',
+            chunks: 'all',
+            test: /node_modules/,
+            priority: 20,
+          },
+          // Common modules
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            priority: 10,
+            reuseExistingChunk: true,
+            enforce: true,
+          },
+        },
+      }
+    }
+    return config
+  },
+  
   experimental: {
     instrumentationHook: true, // Enable instrumentation for cache warming
+    // Story P.2: Enable optimizeCss for smaller CSS bundles
+    optimizeCss: true,
     // Router Cache Configuration (Story 2.19, Story 6.0)
     // This re-enables client-side caching that was disabled by default in Next.js 15
     // - dynamic: 300s (5 min) - Caches dynamic routes to reduce refetch frequency
