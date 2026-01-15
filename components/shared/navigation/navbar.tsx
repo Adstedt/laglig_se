@@ -143,13 +143,13 @@ export function Navbar() {
     >
       <nav className="container mx-auto flex h-16 items-center justify-between px-4 md:h-[72px]">
         {/* Logo */}
-        <Link href="/" className="transition-opacity hover:opacity-90">
+        <Link href="/" className="ml-2 transition-opacity hover:opacity-90">
           <Image
             src="/images/logo-final.png"
             alt="Laglig.se"
-            width={220}
-            height={84}
-            className="h-8 md:h-10 w-auto invert dark:invert-0"
+            width={176}
+            height={67}
+            className="my-2 h-6 md:h-8 w-auto invert dark:invert-0"
             priority
           />
         </Link>
@@ -318,13 +318,13 @@ export function Navbar() {
               className="w-[300px] overflow-y-auto sm:w-[340px]"
             >
               <SheetHeader>
-                <SheetTitle>
+                <SheetTitle className="ml-2">
                   <Image
                     src="/images/logo-final.png"
                     alt="Laglig.se"
-                    width={180}
-                    height={69}
-                    className="h-8 w-auto invert dark:invert-0"
+                    width={144}
+                    height={55}
+                    className="my-2 h-6 w-auto invert dark:invert-0"
                   />
                 </SheetTitle>
               </SheetHeader>

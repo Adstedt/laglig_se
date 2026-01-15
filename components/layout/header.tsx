@@ -21,13 +21,13 @@ export function Header({ user, onMenuToggle }: HeaderProps) {
     <header className="sticky top-0 z-50 flex h-[60px] shrink-0 items-center border-b bg-background">
       {/* Logo section - fixed width to align with sidebar, hidden on mobile */}
       <div className="hidden md:flex h-full w-[240px] items-center px-4">
-        <Link href="/dashboard">
+        <Link href="/dashboard" className="ml-2">
           <Image
             src="/images/logo-final.png"
             alt="Laglig.se"
-            width={200}
-            height={77}
-            className="h-9 w-auto invert dark:invert-0"
+            width={160}
+            height={62}
+            className="my-2 h-7 w-auto invert dark:invert-0"
             priority
           />
         </Link>
