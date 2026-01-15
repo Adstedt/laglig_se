@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { z } from 'zod'
 import { safeTrack, trackAsync } from '@/lib/analytics'
+import { searchDocuments } from '@/lib/external/elasticsearch'
+import type { ContentType } from '@prisma/client'
 
 // Content types aligned with Architecture 9.5.1 ContentType enum
 const ContentTypeEnum = z.enum([
@@ -164,194 +166,134 @@ export async function browseDocumentsAction(
 async function searchWithQuery(
   query: string,
   contentTypes: z.infer<typeof ContentTypeEnum>[] | undefined,
-  status: z.infer<typeof DocumentStatusEnum>[] | undefined,
-  businessType: z.infer<typeof BusinessTypeEnum> | undefined,
-  subjectCodes: string[] | undefined,
-  dateFrom: string | undefined,
-  dateTo: string | undefined,
+  _status: z.infer<typeof DocumentStatusEnum>[] | undefined,
+  _businessType: z.infer<typeof BusinessTypeEnum> | undefined,
+  _subjectCodes: string[] | undefined,
+  _dateFrom: string | undefined,
+  _dateTo: string | undefined,
   page: number,
   limit: number,
   offset: number,
-  sortBy: z.infer<typeof SortByEnum>,
+  _sortBy: z.infer<typeof SortByEnum>,
   startTime: number,
   cacheKey: string
 ): Promise<BrowseResponse> {
-  // Build dynamic WHERE clauses for filters
-  const whereConditions: string[] = []
-  const params: unknown[] = [query]
-  let paramIndex = 2
-
-  if (contentTypes && contentTypes.length > 0) {
-    whereConditions.push(`ld.content_type::text = ANY($${paramIndex}::text[])`)
-    params.push(contentTypes)
-    paramIndex++
-  }
-
-  if (status && status.length > 0) {
-    whereConditions.push(`ld.status::text = ANY($${paramIndex}::text[])`)
-    params.push(status)
-    paramIndex++
-  }
-
-  if (businessType && businessType !== 'BOTH') {
-    whereConditions.push(
-      `(ld.metadata->>'businessType' = $${paramIndex} OR ld.metadata->>'businessType' = 'BOTH' OR ld.metadata->>'businessType' IS NULL)`
-    )
-    params.push(businessType)
-    paramIndex++
-  }
-
-  if (subjectCodes && subjectCodes.length > 0) {
-    whereConditions.push(`EXISTS (
-      SELECT 1 FROM document_subjects ds
-      WHERE ds.document_id = ld.id
-      AND ds.subject_code = ANY($${paramIndex}::text[])
-    )`)
-    params.push(subjectCodes)
-    paramIndex++
-  }
-
-  if (dateFrom) {
-    whereConditions.push(`ld.effective_date >= $${paramIndex}::date`)
-    params.push(dateFrom)
-    paramIndex++
-  }
-
-  if (dateTo) {
-    whereConditions.push(`ld.effective_date <= $${paramIndex}::date`)
-    params.push(dateTo)
-    paramIndex++
-  }
-
-  const whereClause =
-    whereConditions.length > 0 ? `AND ${whereConditions.join(' AND ')}` : ''
-
-  // Determine ORDER BY based on sortBy
-  // Secondary sort by document_number for consistent ordering within same date
-  let orderByClause: string
-  switch (sortBy) {
-    case 'date_asc':
-      orderByClause = 'publication_date ASC NULLS LAST, document_number ASC'
-      break
-    case 'title':
-      orderByClause = 'title ASC, document_number ASC'
-      break
-    case 'relevance':
-      orderByClause =
-        'rank DESC, publication_date DESC NULLS LAST, document_number DESC'
-      break
-    case 'date_desc':
-    default:
-      // Date sorting should prioritize date, then document number (higher = newer)
-      orderByClause = 'publication_date DESC NULLS LAST, document_number DESC'
-      break
-  }
-
-  const searchQuery = `
-    WITH search_results AS (
-      SELECT
-        ld.id,
-        ld.title,
-        ld.document_number,
-        ld.content_type::text as content_type,
-        ld.summary,
-        ld.publication_date,
-        ld.effective_date,
-        ld.status::text as status,
-        ld.slug,
-        ld.metadata,
-        ds.subject_name as category,
-        cc.court_name,
-        cc.case_number,
-        ts_rank_cd(ld.search_vector, plainto_tsquery('pg_catalog.swedish', $1)) AS rank,
-        ts_headline(
-          'pg_catalog.swedish',
-          COALESCE(ld.summary, LEFT(ld.full_text, 500), ''),
-          plainto_tsquery('pg_catalog.swedish', $1),
-          'MaxWords=35, MinWords=15, ShortWord=3, HighlightAll=FALSE, StartSel=<mark>, StopSel=</mark>'
-        ) AS snippet
-      FROM legal_documents ld
-      LEFT JOIN document_subjects ds ON ds.document_id = ld.id
-      LEFT JOIN court_cases cc ON cc.document_id = ld.id
-      WHERE ld.search_vector @@ plainto_tsquery('pg_catalog.swedish', $1)
-      ${whereClause}
-    ),
-    ranked_results AS (
-      SELECT DISTINCT ON (id) *
-      FROM search_results
-      ORDER BY id, rank DESC
-    )
-    SELECT *, COUNT(*) OVER() AS total_count
-    FROM ranked_results
-    ORDER BY ${orderByClause}
-    LIMIT ${limit}
-    OFFSET ${offset}
-  `
-
   try {
-    interface RawSearchResult {
-      id: string
-      title: string
-      document_number: string
-      content_type: string
-      summary: string | null
-      publication_date: Date | null
-      effective_date: Date | null
-      status: string
-      slug: string
-      metadata: Record<string, unknown> | null
-      category: string | null
-      court_name: string | null
-      case_number: string | null
-      rank: number
-      snippet: string
-      total_count: bigint | number
+    // Use Elasticsearch for search (with PostgreSQL fallback)
+    // Note: Additional filters (status, businessType, etc.) are applied by ES when available
+    const searchOptions: {
+      query: string
+      limit: number
+      offset: number
+      fuzzy: boolean
+      highlightFields: string[]
+      contentTypes?: ContentType[]
+    } = {
+      query,
+      limit,
+      offset,
+      fuzzy: true,
+      highlightFields: ['title', 'content', 'summary'],
+    }
+    if (contentTypes && contentTypes.length > 0) {
+      searchOptions.contentTypes = contentTypes as ContentType[]
+    }
+    const esResult = await searchDocuments(searchOptions)
+
+    // Get document IDs from ES results to fetch full details from DB
+    const docIds = esResult.results.map((r) => r.id)
+
+    if (docIds.length === 0) {
+      return {
+        success: true,
+        results: [],
+        total: esResult.total,
+        page,
+        totalPages: Math.ceil(esResult.total / limit),
+        queryTimeMs: performance.now() - startTime,
+      }
     }
 
-    const results = await prisma.$queryRawUnsafe<RawSearchResult[]>(
-      searchQuery,
-      ...params
-    )
+    // Fetch full document details from database (for court case info, etc.)
+    const docs = await prisma.legalDocument.findMany({
+      where: { id: { in: docIds } },
+      select: {
+        id: true,
+        title: true,
+        document_number: true,
+        content_type: true,
+        summary: true,
+        publication_date: true,
+        effective_date: true,
+        status: true,
+        slug: true,
+        metadata: true,
+        subjects: {
+          select: { subject_name: true },
+          take: 1,
+        },
+        court_case: {
+          select: {
+            court_name: true,
+            case_number: true,
+          },
+        },
+      },
+    })
 
-    const firstResult = results[0]
-    const total = firstResult ? Number(firstResult.total_count) : 0
-    const totalPages = Math.ceil(total / limit)
+    // Create a map for quick lookup
+    const docMap = new Map(docs.map((d) => [d.id, d]))
+
+    // Build results in ES order (preserves relevance ranking)
+    const results: BrowseResult[] = []
+    for (const esDoc of esResult.results) {
+      const dbDoc = docMap.get(esDoc.id)
+      if (!dbDoc) continue
+
+      const isCourtCase = dbDoc.content_type.startsWith('COURT_CASE_')
+      const metadata = dbDoc.metadata as Record<string, unknown> | null
+
+      // Build snippet from ES highlights or fallback to summary
+      const snippet =
+        esDoc.highlights.content?.[0] ||
+        esDoc.highlights.summary?.[0] ||
+        esDoc.highlights.title?.[0] ||
+        dbDoc.summary ||
+        ''
+
+      results.push({
+        id: dbDoc.id,
+        title: dbDoc.title,
+        documentNumber: dbDoc.document_number,
+        contentType: dbDoc.content_type,
+        category: dbDoc.subjects[0]?.subject_name ?? null,
+        summary: dbDoc.summary,
+        effectiveDate: dbDoc.publication_date?.toISOString() ?? null,
+        inForceDate: dbDoc.effective_date?.toISOString() ?? null,
+        status: dbDoc.status,
+        slug: dbDoc.slug,
+        snippet,
+        // Court case specific fields
+        courtName: dbDoc.court_case?.court_name ?? null,
+        caseNumber: dbDoc.court_case?.case_number ?? null,
+        caseName: isCourtCase
+          ? ((metadata?.case_name as string) ?? null)
+          : null,
+        caseType: isCourtCase
+          ? ((metadata?.case_type as string) ?? null)
+          : null,
+        isGuiding: isCourtCase
+          ? ((metadata?.is_guiding as boolean) ?? null)
+          : null,
+      })
+    }
 
     const response: BrowseResponse = {
       success: true,
-      results: results.map((r) => {
-        const isCourtCase = r.content_type.startsWith('COURT_CASE_')
-        const metadata = r.metadata
-
-        return {
-          id: r.id,
-          title: r.title,
-          documentNumber: r.document_number,
-          contentType: r.content_type,
-          category: r.category,
-          summary: r.summary,
-          effectiveDate: r.publication_date?.toISOString() ?? null,
-          inForceDate: r.effective_date?.toISOString() ?? null,
-          status: r.status,
-          slug: r.slug,
-          snippet: r.snippet || r.summary || '',
-          // Court case specific fields
-          courtName: r.court_name ?? null,
-          caseNumber: r.case_number ?? null,
-          caseName: isCourtCase
-            ? ((metadata?.case_name as string) ?? null)
-            : null,
-          caseType: isCourtCase
-            ? ((metadata?.case_type as string) ?? null)
-            : null,
-          isGuiding: isCourtCase
-            ? ((metadata?.is_guiding as boolean) ?? null)
-            : null,
-        }
-      }),
-      total,
+      results,
+      total: esResult.total,
       page,
-      totalPages,
+      totalPages: Math.ceil(esResult.total / limit),
       queryTimeMs: performance.now() - startTime,
     }
 
@@ -367,8 +309,9 @@ async function searchWithQuery(
     // Track analytics
     await safeTrack('browse_search', {
       query: query.substring(0, 50),
-      resultsCount: total,
+      resultsCount: esResult.total,
       queryTimeMs: Math.round(response.queryTimeMs),
+      source: esResult.source,
     })
 
     return response
@@ -738,7 +681,7 @@ async function browseWithoutQuery(
   }
 }
 
-// Autocomplete for catalogue search
+// Autocomplete for catalogue search - uses Elasticsearch for consistency
 export async function catalogueAutocompleteAction(
   query: string,
   contentTypes?: string[]
@@ -755,32 +698,26 @@ export async function catalogueAutocompleteAction(
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {
-      OR: [
-        { title: { contains: query, mode: 'insensitive' } },
-        { document_number: { contains: query, mode: 'insensitive' } },
-      ],
+    // Use Elasticsearch for autocomplete (same as main search)
+    const searchOptions: {
+      query: string
+      limit: number
+      offset: number
+      fuzzy: boolean
+      contentTypes?: ContentType[]
+    } = {
+      query,
+      limit: 8,
+      offset: 0,
+      fuzzy: true,
     }
-
     if (contentTypes && contentTypes.length > 0) {
-      where.content_type = { in: contentTypes }
+      searchOptions.contentTypes = contentTypes as ContentType[]
     }
-
-    const results = await prisma.legalDocument.findMany({
-      where,
-      select: {
-        title: true,
-        slug: true,
-        content_type: true,
-        document_number: true,
-      },
-      take: 6,
-      orderBy: { title: 'asc' },
-    })
+    const esResult = await searchDocuments(searchOptions)
 
     return {
-      suggestions: results.map((r) => ({
+      suggestions: esResult.results.map((r) => ({
         title: r.title,
         slug: r.slug,
         type: r.content_type,

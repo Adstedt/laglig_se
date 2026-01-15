@@ -8,8 +8,19 @@ import { useDebouncedCallback } from 'use-debounce'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { catalogueAutocompleteAction } from '@/app/actions/browse'
-import { getDocumentTheme } from '@/lib/document-themes'
+import { getDocumentTheme, type DocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
+
+/**
+ * Get the correct href for a document based on whether we're in workspace mode
+ */
+function getWorkspaceAwareHref(theme: DocumentTheme, basePath: string): string {
+  // If basePath starts with /browse, we're in workspace mode
+  if (basePath.startsWith('/browse')) {
+    return `/browse${theme.href}`
+  }
+  return theme.href
+}
 
 interface CatalogueSearchBarProps {
   initialQuery: string
@@ -122,7 +133,8 @@ export function CatalogueSearchBar({
           const suggestion = suggestions[selectedIndex]
           if (suggestion) {
             const theme = getDocumentTheme(suggestion.type)
-            router.push(`${theme.href}/${suggestion.slug}`)
+            const href = getWorkspaceAwareHref(theme, basePath)
+            router.push(`${href}/${suggestion.slug}`)
             setShowSuggestions(false)
           }
         }
@@ -195,11 +207,12 @@ export function CatalogueSearchBar({
             {suggestions.map((suggestion, index) => {
               const theme = getDocumentTheme(suggestion.type)
               const ThemeIcon = theme.icon
+              const href = getWorkspaceAwareHref(theme, basePath)
 
               return (
                 <li key={`${suggestion.type}-${suggestion.slug}`}>
                   <Link
-                    href={`${theme.href}/${suggestion.slug}`}
+                    href={`${href}/${suggestion.slug}`}
                     className={cn(
                       'flex items-center gap-3 px-4 py-3 hover:bg-muted',
                       index === selectedIndex && 'bg-muted'
