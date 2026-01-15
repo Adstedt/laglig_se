@@ -28,7 +28,8 @@ const jwtCache = new Map<string, { token: any; expires: number }>()
 const JWT_CACHE_TTL = 60 * 1000 // 60 seconds
 
 // Story P.2: Initialize rate limiter (AC: 25)
-// Development: 100 req/min, Production: 30 req/min for better UX
+// Rate limiting for API abuse prevention
+// Normal page navigation should not hit these limits
 const isDevelopment = process.env.NODE_ENV === 'development'
 const ratelimit =
   process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
@@ -38,7 +39,7 @@ const ratelimit =
           token: process.env.UPSTASH_REDIS_REST_TOKEN,
         }),
         limiter: Ratelimit.slidingWindow(
-          isDevelopment ? 100 : 30, // More lenient in dev
+          isDevelopment ? 500 : 300, // 300 req/min in prod (5 req/sec average)
           '60 s'
         ),
         analytics: true,
@@ -67,10 +68,24 @@ export async function proxy(request: NextRequest) {
   const country = geo?.country || 'SE'
   const isEU = isEUCountry(country)
 
-  // Skip rate limiting for admin routes in development
-  const skipRateLimit = isDevelopment && pathname.startsWith('/admin')
+  // Skip rate limiting for authenticated workspace routes and API calls
+  // Only apply rate limiting to public routes and auth endpoints
+  const skipRateLimit =
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/laglistor') ||
+    pathname.startsWith('/tasks') ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/browse') ||
+    pathname.startsWith('/workspace') ||
+    pathname.startsWith('/api/workspace') ||
+    pathname.startsWith('/api/laws') ||
+    pathname.startsWith('/api/search') ||
+    pathname.startsWith('/api/browse') ||
+    pathname.startsWith('/api/actions')
 
   // Story P.2: Rate limiting at edge (AC: 25)
+  // Only apply to public routes and auth endpoints to prevent abuse
   if (ratelimit && !skipRateLimit) {
     const ip = (request as NextRequest & { ip?: string }).ip ?? '127.0.0.1'
     const identifier = request.headers.get('authorization') || ip
