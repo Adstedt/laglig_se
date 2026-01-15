@@ -82,6 +82,7 @@ interface SyncStats {
   pdfsFetched: number
   pdfsStored: number
   pdfsFailed: number
+  earlyTerminated: boolean
 }
 
 const CONFIG = {
@@ -93,9 +94,11 @@ const CONFIG = {
 export async function GET(request: Request) {
   const startTime = new Date()
 
-  // Verify authorization
+  // Verify authorization (skip in development for testing)
   const authHeader = request.headers.get('authorization')
-  if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
+  const isDevelopment = process.env.NODE_ENV === 'development'
+  
+  if (!isDevelopment && CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -115,6 +118,7 @@ export async function GET(request: Request) {
     pdfsFetched: 0,
     pdfsStored: 0,
     pdfsFailed: 0,
+    earlyTerminated: false,
   }
 
   // Collect all log entries for detailed output
@@ -185,6 +189,7 @@ export async function GET(request: Request) {
       let pageInserted = 0
       let pageSkipped = 0
       let pageNoSfs = 0
+      let consecutiveExisting = 0 // Track consecutive existing documents for early termination
 
       for (const doc of documents) {
         stats.fetched++
@@ -193,6 +198,7 @@ export async function GET(request: Request) {
         if (!doc.beteckning) {
           stats.noSfsNumber++
           pageNoSfs++
+          consecutiveExisting = 0 // Reset counter on non-SFS doc
           logEntries.push(`[ ] (no SFS number) dok_id=${doc.dok_id} - skipped`)
           continue
         }
@@ -209,11 +215,26 @@ export async function GET(request: Request) {
         if (existing) {
           stats.skipped++
           pageSkipped++
+          consecutiveExisting++
           logEntries.push(
             `[✓] ${sfsNumber.padEnd(20)} exists (publicerad: ${doc.publicerad})`
           )
+          
+          // Early termination: If we've seen 20 consecutive existing docs, we're likely caught up
+          if (consecutiveExisting >= 20) {
+            console.log(
+              `[SYNC-SFS] Early termination: Found ${consecutiveExisting} consecutive existing documents`
+            )
+            console.log(`[SYNC-SFS] Assuming we're caught up with the API`)
+            stats.earlyTerminated = true
+            break
+          }
+          
           continue
         }
+
+        // Reset counter when we find a new document
+        consecutiveExisting = 0
 
         // New document - insert it
         logEntries.push(
@@ -344,6 +365,12 @@ export async function GET(request: Request) {
         `[SYNC-SFS] Page ${page} summary: ${pageInserted} inserted, ${pageSkipped} exist, ${pageNoSfs} no SFS`
       )
 
+      // Break out if early termination triggered
+      if (stats.earlyTerminated) {
+        console.log(`[SYNC-SFS] Stopping page iteration due to early termination`)
+        break
+      }
+
       // Continue to next page if available
       if (page >= totalPages) {
         console.log(`[SYNC-SFS] Reached last API page`)
@@ -388,6 +415,7 @@ export async function GET(request: Request) {
     console.log(`[SYNC-SFS] Already exist:    ${stats.skipped}`)
     console.log(`[SYNC-SFS] No SFS number:    ${stats.noSfsNumber}`)
     console.log(`[SYNC-SFS] Failed:           ${stats.failed}`)
+    console.log(`[SYNC-SFS] Early terminated: ${stats.earlyTerminated ? 'YES' : 'NO'}`)
     console.log(`[SYNC-SFS] Duration:         ${durationStr}`)
     console.log(`[SYNC-SFS] ──── PDF Stats (Story 2.28) ────`)
     console.log(`[SYNC-SFS] PDFs fetched:     ${stats.pdfsFetched}`)

@@ -207,7 +207,8 @@
       "Bash(npx vitest run:*)",
       "Bash(npm run build:*)",
       "Bash(sed:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(vercel logs:*)"
     ],
     "deny": [],
     "ask": []
