@@ -54,11 +54,20 @@ const nextConfig = {
   images: {
     // Enable modern image formats
     formats: ['image/avif', 'image/webp'],
-    // Define external image domains
-    domains: [
-      'supabase.co',
-      'avatars.githubusercontent.com',
-      'lh3.googleusercontent.com',
+    // Define external image patterns using remotePatterns (replaces deprecated domains)
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
     ],
     // Device sizes for responsive images
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
