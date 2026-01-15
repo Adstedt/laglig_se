@@ -137,11 +137,13 @@ export function LagtextSection({
             maxHeight: isExpanded ? maxExpandedHeight : maxCollapsedHeight,
           }}
         >
-          <article className="legal-document">
-            <LawContentWrapper
-              htmlContent={cleanedHtmlContent ?? ''}
-              fallbackText={fullText}
-            />
+          <article className="legal-document-modal">
+            <div className="legal-document">
+              <LawContentWrapper
+                htmlContent={cleanedHtmlContent ?? ''}
+                fallbackText={fullText}
+              />
+            </div>
           </article>
         </div>
 

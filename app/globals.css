@@ -423,6 +423,75 @@ html {
   }
 
   /* ==========================================================================
+   * Compact Modal Styles - Tighter spacing for legal document modals
+   * ========================================================================== */
+  
+  .legal-document-modal .legal-document {
+    font-size: 0.9375rem; /* 15px instead of 17px */
+    line-height: 1.65; /* Tighter than 1.8 */
+  }
+
+  /* Smaller paragraph markers in modal */
+  .legal-document-modal .legal-document a.paragraf {
+    font-size: 1rem; /* 16px instead of 18px */
+    margin-top: 1.75rem; /* Instead of 2.5rem */
+    margin-bottom: 0.5rem; /* Instead of 0.75rem */
+    padding-top: 0.75rem; /* Instead of 1.25rem */
+  }
+
+  /* Smaller section headers in modal */
+  .legal-document-modal .legal-document h2,
+  .legal-document-modal .legal-document h4 {
+    @apply text-lg mb-2; /* Instead of text-xl mb-3 */
+    margin-top: 1.75rem; /* Instead of 2.5rem */
+    padding-top: 0.75rem; /* Instead of 1.25rem */
+  }
+
+  .legal-document-modal .legal-document h3 {
+    @apply text-sm font-semibold mt-4 mb-1.5; /* Smaller than base */
+  }
+
+  /* Tighter paragraph spacing in modal */
+  .legal-document-modal .legal-document p {
+    @apply mb-3; /* Instead of mb-4 */
+  }
+
+  /* Tighter list spacing in modal */
+  .legal-document-modal .legal-document ol,
+  .legal-document-modal .legal-document ul {
+    @apply my-3 ml-5 space-y-1.5; /* Instead of my-4 ml-6 space-y-2 */
+  }
+
+  .legal-document-modal .legal-document li {
+    @apply pl-1.5; /* Instead of pl-2 */
+  }
+
+  /* Smaller table spacing in modal */
+  .legal-document-modal .legal-document table {
+    @apply my-4 text-xs; /* Instead of my-6 text-sm */
+  }
+
+  .legal-document-modal .legal-document th,
+  .legal-document-modal .legal-document td {
+    @apply px-3 py-2; /* Instead of px-4 py-3 */
+  }
+
+  /* Smaller blockquotes in modal */
+  .legal-document-modal .legal-document blockquote {
+    @apply pl-4 my-4; /* Instead of pl-6 my-6 */
+  }
+
+  /* Less spacing after line breaks in modal */
+  .legal-document-modal .legal-document br {
+    margin-top: 0.25rem; /* Instead of 0.5rem */
+  }
+
+  /* Smaller first paragraph marker in modal */
+  .legal-document-modal .legal-document > div > p:first-child {
+    @apply text-sm mb-4; /* Instead of text-base mb-6 */
+  }
+
+  /* ==========================================================================
    * Amendment HTML Content Styling
    * Styles for LLM-generated HTML from PDF parsing (Story 2.29)
    * ========================================================================== */

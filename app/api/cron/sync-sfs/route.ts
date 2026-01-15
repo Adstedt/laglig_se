@@ -89,6 +89,8 @@ const CONFIG = {
   PAGE_SIZE: 100,
   MAX_PAGES: 3, // Check 300 docs (covers ~2-3 weeks of new laws)
   DELAY_MS: 100,
+  MAX_INSERTS_PER_RUN: 20, // Limit inserts to avoid timeout
+  TIMEOUT_BUFFER_MS: 30000, // Stop 30 seconds before timeout
 }
 
 export async function GET(request: Request) {
@@ -133,11 +135,20 @@ export async function GET(request: Request) {
     console.log(
       `[SYNC-SFS] Max pages: ${CONFIG.MAX_PAGES} (${CONFIG.MAX_PAGES * CONFIG.PAGE_SIZE} docs)`
     )
+    console.log(`[SYNC-SFS] Max inserts per run: ${CONFIG.MAX_INSERTS_PER_RUN} (timeout protection)`)
     console.log(`[SYNC-SFS] ========================================`)
 
     let page = 0
+    const maxRuntime = (maxDuration * 1000) - CONFIG.TIMEOUT_BUFFER_MS // Stop 30s before timeout
 
     while (page < CONFIG.MAX_PAGES) {
+      // Check if we're approaching timeout
+      const elapsed = Date.now() - startTime.getTime()
+      if (elapsed > maxRuntime) {
+        console.log(`[SYNC-SFS] Approaching timeout (elapsed: ${Math.round(elapsed/1000)}s), stopping gracefully`)
+        stats.earlyTerminated = true
+        break
+      }
       page++
       stats.pagesChecked = page
 
@@ -236,6 +247,18 @@ export async function GET(request: Request) {
         // Reset counter when we find a new document
         consecutiveExisting = 0
 
+        // Check if we've hit our insert limit for this run
+        if (stats.inserted >= CONFIG.MAX_INSERTS_PER_RUN) {
+          console.log(
+            `[SYNC-SFS] Reached insert limit (${CONFIG.MAX_INSERTS_PER_RUN}), will continue in next run`
+          )
+          logEntries.push(
+            `[!] ${sfsNumber.padEnd(20)} SKIPPED (insert limit reached)`
+          )
+          stats.earlyTerminated = true
+          break
+        }
+
         // New document - insert it
         logEntries.push(
           `[+] ${sfsNumber.padEnd(20)} NEW (publicerad: ${doc.publicerad})`
@@ -268,21 +291,37 @@ export async function GET(request: Request) {
             `[SYNC-SFS]   Classification: ${classification.type}/${classification.category} (confidence: ${classification.confidence})`
           )
 
-          // Story 2.28: Fetch and store PDF
+          // Story 2.28: Fetch and store PDF (skip if we have many to insert to avoid timeout)
           let pdfMetadata: PdfMetadata | null = null
-          stats.pdfsFetched++
-          const pdfResult = await fetchAndStorePdf(
-            doc.beteckning,
-            doc.datum || doc.publicerad
-          )
-          if (pdfResult.success) {
-            pdfMetadata = pdfResult.metadata
-            stats.pdfsStored++
-            console.log(`[SYNC-SFS]   PDF stored: ${pdfMetadata?.storagePath}`)
+          let pdfSuccessful = false
+          const skipPdfForSpeed = stats.inserted > 5 && (Date.now() - startTime.getTime()) > 120000 // Skip PDFs after 5 inserts and 2 minutes
+          
+          if (!skipPdfForSpeed) {
+            stats.pdfsFetched++
+            const pdfResult = await fetchAndStorePdf(
+              doc.beteckning,
+              doc.datum || doc.publicerad
+            )
+            if (pdfResult.success) {
+              pdfMetadata = pdfResult.metadata
+              pdfSuccessful = true
+              stats.pdfsStored++
+              console.log(`[SYNC-SFS]   PDF stored: ${pdfMetadata?.storagePath}`)
+            } else {
+              stats.pdfsFailed++
+              pdfMetadata = pdfResult.metadata // Store error metadata for retry
+              console.log(`[SYNC-SFS]   PDF failed: ${pdfResult.error}`)
+            }
           } else {
-            stats.pdfsFailed++
-            pdfMetadata = pdfResult.metadata // Store error metadata for retry
-            console.log(`[SYNC-SFS]   PDF failed: ${pdfResult.error}`)
+            console.log(`[SYNC-SFS]   PDF skipped (timeout protection) - will retry later`)
+            pdfMetadata = {
+              storagePath: '',
+              storageBucket: 'sfs-pdfs',
+              originalUrl: '',
+              fileSize: 0,
+              fetchedAt: new Date().toISOString(),
+              error: 'Skipped due to timeout protection'
+            } as PdfMetadata
           }
 
           await prisma.$transaction(async (tx) => {
@@ -343,7 +382,7 @@ export async function GET(request: Request) {
             datum: doc.datum,
             lawType: classification.type,
             documentCategory: classification.category,
-            pdfFetched: pdfResult.success,
+            pdfFetched: pdfSuccessful,
           })
           console.log(`[SYNC-SFS] ✓ INSERTED: ${sfsNumber}`)
           console.log(
