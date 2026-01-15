@@ -133,5 +133,8 @@
     "*.{json,css,md}": [
       "prettier --write"
     ]
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed-multi-content.ts"
   }
 }
