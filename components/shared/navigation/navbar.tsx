@@ -299,132 +299,137 @@ export function Navbar() {
           </Button>
         </div>
 
-        {/* Mobile Menu */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-full md:hidden"
-              data-testid="mobile-menu-trigger"
+        {/* Mobile Menu - Render after mount to avoid hydration issues */}
+        {mounted ? (
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-full md:hidden"
+                data-testid="mobile-menu-trigger"
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Öppna meny</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="w-[300px] overflow-y-auto sm:w-[340px]"
             >
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Öppna meny</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="right"
-            className="w-[300px] overflow-y-auto sm:w-[340px]"
-          >
-            <SheetHeader>
-              <SheetTitle>
-                <Image
-                  src="/images/logo-final.png"
-                  alt="Laglig.se"
-                  width={180}
-                  height={69}
-                  className="h-8 w-auto invert dark:invert-0"
-                />
-              </SheetTitle>
-            </SheetHeader>
-            <div className="mt-8 flex flex-col">
-              {/* Lagar */}
-              <MobileNavSection
-                title="Lagar"
-                onNavigate={() => setIsOpen(false)}
-              >
-                <Link
-                  href="/rattskallor"
-                  className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+              <SheetHeader>
+                <SheetTitle>
+                  <Image
+                    src="/images/logo-final.png"
+                    alt="Laglig.se"
+                    width={180}
+                    height={69}
+                    className="h-8 w-auto invert dark:invert-0"
+                  />
+                </SheetTitle>
+              </SheetHeader>
+              <div className="mt-8 flex flex-col">
+                {/* Lagar */}
+                <MobileNavSection
+                  title="Lagar"
+                  onNavigate={() => setIsOpen(false)}
                 >
-                  Rättskällor
-                </Link>
-                <Link
-                  href="/lagar"
-                  className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Svenska lagar
-                </Link>
-                <Link
-                  href="/rattsfall"
-                  className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Rättsfall
-                </Link>
-                <Link
-                  href="/eu"
-                  className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  EU-lagstiftning
-                </Link>
-              </MobileNavSection>
-
-              {/* Produkt */}
-              <MobileNavSection
-                title="Produkt"
-                onNavigate={() => setIsOpen(false)}
-              >
-                <Link
-                  href="#how-it-works"
-                  onClick={() => setIsOpen(false)}
-                  className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Så fungerar det
-                </Link>
-                <Link
-                  href="#faq"
-                  onClick={() => setIsOpen(false)}
-                  className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Vanliga frågor
-                </Link>
-              </MobileNavSection>
-
-              {/* Priser */}
-              <Link
-                href="#pricing"
-                onClick={() => setIsOpen(false)}
-                className="border-b border-border/50 px-3 py-3 text-base font-medium"
-              >
-                Priser
-              </Link>
-
-              {/* Resurser */}
-              <MobileNavSection
-                title="Resurser"
-                onNavigate={() => setIsOpen(false)}
-              >
-                <span className="block rounded-lg px-3 py-2 text-sm text-muted-foreground/50">
-                  Blogg (kommer snart)
-                </span>
-                <span className="block rounded-lg px-3 py-2 text-sm text-muted-foreground/50">
-                  Guider (kommer snart)
-                </span>
-              </MobileNavSection>
-
-              {/* Auth buttons */}
-              <div className="mt-6 flex flex-col gap-3 px-3">
-                <Button
-                  variant="outline"
-                  asChild
-                  className="h-11 w-full rounded-full"
-                >
-                  <Link href="/login" onClick={() => setIsOpen(false)}>
-                    Logga in
+                  <Link
+                    href="/rattskallor"
+                    className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Rättskällor
                   </Link>
-                </Button>
-                <Button
-                  asChild
-                  className="h-11 w-full rounded-full bg-foreground text-background hover:bg-foreground/90"
-                >
-                  <Link href="/signup" onClick={() => setIsOpen(false)}>
-                    Kom igång
+                  <Link
+                    href="/lagar"
+                    className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Svenska lagar
                   </Link>
-                </Button>
+                  <Link
+                    href="/rattsfall"
+                    className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Rättsfall
+                  </Link>
+                  <Link
+                    href="/eu"
+                    className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    EU-lagstiftning
+                  </Link>
+                </MobileNavSection>
+
+                {/* Produkt */}
+                <MobileNavSection
+                  title="Produkt"
+                  onNavigate={() => setIsOpen(false)}
+                >
+                  <Link
+                    href="#how-it-works"
+                    onClick={() => setIsOpen(false)}
+                    className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Så fungerar det
+                  </Link>
+                  <Link
+                    href="#faq"
+                    onClick={() => setIsOpen(false)}
+                    className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Vanliga frågor
+                  </Link>
+                </MobileNavSection>
+
+                {/* Priser */}
+                <Link
+                  href="#pricing"
+                  onClick={() => setIsOpen(false)}
+                  className="border-b border-border/50 px-3 py-3 text-base font-medium"
+                >
+                  Priser
+                </Link>
+
+                {/* Resurser */}
+                <MobileNavSection
+                  title="Resurser"
+                  onNavigate={() => setIsOpen(false)}
+                >
+                  <span className="block rounded-lg px-3 py-2 text-sm text-muted-foreground/50">
+                    Blogg (kommer snart)
+                  </span>
+                  <span className="block rounded-lg px-3 py-2 text-sm text-muted-foreground/50">
+                    Guider (kommer snart)
+                  </span>
+                </MobileNavSection>
+
+                {/* Auth buttons */}
+                <div className="mt-6 flex flex-col gap-3 px-3">
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="h-11 w-full rounded-full"
+                  >
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      Logga in
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    className="h-11 w-full rounded-full bg-foreground text-background hover:bg-foreground/90"
+                  >
+                    <Link href="/signup" onClick={() => setIsOpen(false)}>
+                      Kom igång
+                    </Link>
+                  </Button>
+                </div>
               </div>
-            </div>
-          </SheetContent>
-        </Sheet>
+            </SheetContent>
+          </Sheet>
+        ) : (
+          // Placeholder to prevent layout shift
+          <div className="h-9 w-9 md:hidden" />
+        )}
       </nav>
     </header>
   )
