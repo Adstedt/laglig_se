@@ -2,9 +2,9 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Menu,
-  Scale,
   BookOpen,
   Gavel,
   Globe,
@@ -142,15 +142,16 @@ export function Navbar() {
       )}
     >
       <nav className="container mx-auto flex h-16 items-center justify-between px-4 md:h-[72px]">
-        {/* Logo - placeholder until new logo arrives */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 transition-opacity hover:opacity-70"
-        >
-          <Scale className="h-6 w-6" />
-          <span className="text-lg font-semibold tracking-tight">
-            Laglig.se
-          </span>
+        {/* Logo */}
+        <Link href="/" className="transition-opacity hover:opacity-90">
+          <Image
+            src="/images/logo.png"
+            alt="Laglig.se"
+            width={200}
+            height={50}
+            className="h-12 md:h-14 w-auto invert dark:invert-0"
+            priority
+          />
         </Link>
 
         {/* Desktop Navigation - only render after mount to avoid Radix hydration mismatch */}
@@ -316,9 +317,14 @@ export function Navbar() {
             className="w-[300px] overflow-y-auto sm:w-[340px]"
           >
             <SheetHeader>
-              <SheetTitle className="flex items-center gap-2">
-                <Scale className="h-5 w-5" />
-                <span className="font-semibold tracking-tight">Laglig.se</span>
+              <SheetTitle>
+                <Image
+                  src="/images/logo.png"
+                  alt="Laglig.se"
+                  width={150}
+                  height={38}
+                  className="h-10 w-auto invert dark:invert-0"
+                />
               </SheetTitle>
             </SheetHeader>
             <div className="mt-8 flex flex-col">

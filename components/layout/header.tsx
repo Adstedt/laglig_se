@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Search, Bell, Scale, Menu } from 'lucide-react'
+import Image from 'next/image'
+import { Search, Bell, Menu } from 'lucide-react'
 import { UserMenu } from '@/components/layout/user-menu'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -20,16 +21,15 @@ export function Header({ user, onMenuToggle }: HeaderProps) {
     <header className="sticky top-0 z-50 flex h-[60px] shrink-0 items-center border-b bg-background">
       {/* Logo section - fixed width to align with sidebar, hidden on mobile */}
       <div className="hidden md:flex h-full w-[240px] items-center px-4">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Scale className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span
-            className="text-lg font-semibold"
-            style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
-          >
-            Laglig.se
-          </span>
+        <Link href="/dashboard">
+          <Image
+            src="/images/logo.png"
+            alt="Laglig.se"
+            width={180}
+            height={45}
+            className="h-11 w-auto invert dark:invert-0"
+            priority
+          />
         </Link>
       </div>
 
