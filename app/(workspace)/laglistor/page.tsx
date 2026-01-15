@@ -5,13 +5,20 @@
 
 import { Suspense } from 'react'
 import { Metadata } from 'next'
-import { getDocumentLists, getOrCreateDefaultList } from '@/app/actions/document-list'
+import {
+  getDocumentLists,
+  getOrCreateDefaultList,
+} from '@/app/actions/document-list'
 import { DocumentListPageContent } from '@/components/features/document-list/document-list-page-content'
 import { DocumentListPageSkeleton } from '@/components/features/document-list/document-list-skeleton'
 
+// Force dynamic rendering since this page requires authentication
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Mina laglistor | Laglig',
-  description: 'Hantera dina personliga laglistor och håll koll på relevanta rättsliga krav.',
+  description:
+    'Hantera dina personliga laglistor och håll koll på relevanta rättsliga krav.',
 }
 
 export default async function DocumentListsPage() {
@@ -21,8 +28,10 @@ export default async function DocumentListsPage() {
     getOrCreateDefaultList(),
   ])
 
-  const lists = listsResult.success ? listsResult.data ?? [] : []
-  const defaultListId = defaultListResult.success ? (defaultListResult.data?.id ?? null) : null
+  const lists = listsResult.success ? (listsResult.data ?? []) : []
+  const defaultListId = defaultListResult.success
+    ? (defaultListResult.data?.id ?? null)
+    : null
 
   return (
     <div className="space-y-6">

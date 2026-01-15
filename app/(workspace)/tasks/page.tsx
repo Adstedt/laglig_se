@@ -14,6 +14,9 @@ import {
   getWorkspaceMembers,
 } from '@/app/actions/tasks'
 
+// Force dynamic rendering since this page requires authentication
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Uppgifter | Laglig',
   description:

@@ -7,6 +7,14 @@
  */
 
 import { track as vercelTrack } from '@vercel/analytics/server'
+import { headers } from 'next/headers'
+
+/**
+ * Check if we're in a build/generation environment
+ */
+function isBuildTime(): boolean {
+  return process.env.NODE_ENV === 'production' && !process.env.VERCEL
+}
 
 /**
  * Safely track an analytics event.
@@ -15,13 +23,32 @@ import { track as vercelTrack } from '@vercel/analytics/server'
  *
  * @param event - Event name
  * @param properties - Event properties
+ * @param request - Optional request or headers for context
  */
 export async function safeTrack(
   event: string,
-  properties?: Record<string, string | number | boolean | null>
+  properties?: Record<string, string | number | boolean | null>,
+  request?: Request | Headers
 ): Promise<void> {
+  // Skip tracking during build time
+  if (isBuildTime()) {
+    return
+  }
+
   try {
-    await vercelTrack(event, properties)
+    // Try to get headers if not provided
+    const trackHeaders = request || (await headers().catch(() => null))
+
+    // Only track if we have valid context
+    if (trackHeaders) {
+      // Properly format the options based on the type of headers
+      const options =
+        trackHeaders instanceof Headers
+          ? { headers: trackHeaders }
+          : { request: trackHeaders as Request }
+
+      await vercelTrack(event, properties, options)
+    }
   } catch (error) {
     // Silently ignore "No session context found" errors during build
     // These occur during static page generation when there's no request
@@ -31,8 +58,10 @@ export async function safeTrack(
     ) {
       return
     }
-    // Log other unexpected errors but don't throw
-    console.warn(`[Analytics] Failed to track "${event}":`, error)
+    // Only log in development, not during builds
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[Analytics] Failed to track "${event}":`, error)
+    }
   }
 }
 
@@ -42,9 +71,10 @@ export async function safeTrack(
  */
 export function trackAsync(
   event: string,
-  properties?: Record<string, string | number | boolean | null>
+  properties?: Record<string, string | number | boolean | null>,
+  request?: Request | Headers
 ): void {
-  safeTrack(event, properties).catch(() => {
+  safeTrack(event, properties, request).catch(() => {
     // Already handled in safeTrack
   })
 }
