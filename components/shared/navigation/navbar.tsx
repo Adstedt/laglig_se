@@ -145,11 +145,11 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="transition-opacity hover:opacity-90">
           <Image
-            src="/images/logo.png"
+            src="/images/logo-final.png"
             alt="Laglig.se"
-            width={200}
-            height={50}
-            className="h-12 md:h-14 w-auto invert dark:invert-0"
+            width={220}
+            height={84}
+            className="h-8 md:h-10 w-auto invert dark:invert-0"
             priority
           />
         </Link>
@@ -319,11 +319,11 @@ export function Navbar() {
             <SheetHeader>
               <SheetTitle>
                 <Image
-                  src="/images/logo.png"
+                  src="/images/logo-final.png"
                   alt="Laglig.se"
-                  width={150}
-                  height={38}
-                  className="h-10 w-auto invert dark:invert-0"
+                  width={180}
+                  height={69}
+                  className="h-8 w-auto invert dark:invert-0"
                 />
               </SheetTitle>
             </SheetHeader>

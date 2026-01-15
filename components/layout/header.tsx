@@ -23,11 +23,11 @@ export function Header({ user, onMenuToggle }: HeaderProps) {
       <div className="hidden md:flex h-full w-[240px] items-center px-4">
         <Link href="/dashboard">
           <Image
-            src="/images/logo.png"
+            src="/images/logo-final.png"
             alt="Laglig.se"
-            width={180}
-            height={45}
-            className="h-11 w-auto invert dark:invert-0"
+            width={200}
+            height={77}
+            className="h-9 w-auto invert dark:invert-0"
             priority
           />
         </Link>

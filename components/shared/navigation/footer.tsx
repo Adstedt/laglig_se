@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 import Link from 'next/link'
-import { Scale, Mail } from 'lucide-react'
+import Image from 'next/image'
+import { Mail } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,9 +37,15 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Logo & Tagline */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2">
-              <Scale className="h-6 w-6" />
-              <span className="text-xl font-bold">Laglig.se</span>
+            <Link href="/">
+              <Image
+                src="/images/logo-final.png"
+                alt="Laglig.se"
+                width={140}
+                height={54}
+                className="h-8 w-auto invert dark:invert-0"
+                priority
+              />
             </Link>
             <p className="text-sm text-muted-foreground">
               AI-driven lagefterlevnad för svenska företag
