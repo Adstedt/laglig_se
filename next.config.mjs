@@ -45,6 +45,7 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  productionBrowserSourceMaps: false, // Disable source maps in production for security
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -109,7 +110,6 @@ const nextConfig = {
   },
   
   experimental: {
-    instrumentationHook: true, // Enable instrumentation for cache warming
     // Story P.2: Enable optimizeCss for smaller CSS bundles
     optimizeCss: true,
     // Router Cache Configuration (Story 2.19, Story 6.0)

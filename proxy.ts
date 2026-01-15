@@ -30,20 +30,21 @@ const JWT_CACHE_TTL = 60 * 1000 // 60 seconds
 // Story P.2: Initialize rate limiter (AC: 25)
 // Development: 100 req/min, Production: 30 req/min for better UX
 const isDevelopment = process.env.NODE_ENV === 'development'
-const ratelimit = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-  ? new Ratelimit({
-      redis: new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      }),
-      limiter: Ratelimit.slidingWindow(
-        isDevelopment ? 100 : 30, // More lenient in dev
-        '60 s'
-      ),
-      analytics: true,
-      prefix: '@upstash/ratelimit',
-    })
-  : null
+const ratelimit =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Ratelimit({
+        redis: new Redis({
+          url: process.env.UPSTASH_REDIS_REST_URL,
+          token: process.env.UPSTASH_REDIS_REST_TOKEN,
+        }),
+        limiter: Ratelimit.slidingWindow(
+          isDevelopment ? 100 : 30, // More lenient in dev
+          '60 s'
+        ),
+        analytics: true,
+        prefix: '@upstash/ratelimit',
+      })
+    : null
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -60,21 +61,24 @@ export async function middleware(request: NextRequest) {
   }
 
   // Story P.2: Geo-routing for EU users (AC: 26)
-  const geo = (request as any).geo
+  const geo = (
+    request as NextRequest & { geo?: { country?: string; region?: string } }
+  ).geo
   const country = geo?.country || 'SE'
   const isEU = isEUCountry(country)
-  
+
   // Skip rate limiting for admin routes in development
   const skipRateLimit = isDevelopment && pathname.startsWith('/admin')
-  
+
   // Story P.2: Rate limiting at edge (AC: 25)
   if (ratelimit && !skipRateLimit) {
-    const ip = (request as any).ip ?? '127.0.0.1'
+    const ip = (request as NextRequest & { ip?: string }).ip ?? '127.0.0.1'
     const identifier = request.headers.get('authorization') || ip
-    
+
     try {
-      const { success, limit, reset, remaining } = await ratelimit.limit(identifier)
-      
+      const { success, limit, reset, remaining } =
+        await ratelimit.limit(identifier)
+
       if (!success) {
         // Return 429 Too Many Requests
         return new NextResponse('Too Many Requests', {
@@ -87,22 +91,24 @@ export async function middleware(request: NextRequest) {
           },
         })
       }
-      
+
       // Add rate limit headers to successful responses
       const response = await handleAuthAndRouting(request, isEU)
       response.headers.set('X-RateLimit-Limit', limit.toString())
       response.headers.set('X-RateLimit-Remaining', remaining.toString())
       response.headers.set('X-RateLimit-Reset', new Date(reset).toISOString())
-      
+
       // Story P.2: Track edge function performance (AC: 27)
       const duration = Date.now() - startTime
       response.headers.set('X-Edge-Duration', duration.toString())
-      
+
       // Log slow edge functions
       if (duration > 50) {
-        console.warn(`[EDGE] Slow middleware execution: ${duration}ms for ${pathname}`)
+        console.warn(
+          `[EDGE] Slow middleware execution: ${duration}ms for ${pathname}`
+        )
       }
-      
+
       return response
     } catch (error) {
       // If rate limiting fails, continue without it
@@ -113,15 +119,20 @@ export async function middleware(request: NextRequest) {
   return handleAuthAndRouting(request, isEU)
 }
 
-async function handleAuthAndRouting(request: NextRequest, isEU: boolean): Promise<NextResponse> {
+async function handleAuthAndRouting(
+  request: NextRequest,
+  isEU: boolean
+): Promise<NextResponse> {
   const { pathname } = request.nextUrl
-  
+
   // Story P.2: Add geo headers for downstream use (AC: 26)
   const response = NextResponse.next()
-  const geo = (request as any).geo
+  const geo = (
+    request as NextRequest & { geo?: { country?: string; region?: string } }
+  ).geo
   response.headers.set('X-User-Country', geo?.country || 'SE')
   response.headers.set('X-User-Region', isEU ? 'EU' : 'NON-EU')
-  
+
   // Story 6.0: Check JWT cache first
   const sessionCookie = request.cookies.get(
     request.url.startsWith('https://')
@@ -171,7 +182,7 @@ async function handleAuthAndRouting(request: NextRequest, isEU: boolean): Promis
   }
 
   // Protected routes require authentication
-  const isProtectedRoute = 
+  const isProtectedRoute =
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/settings') ||
     pathname.startsWith('/laglistor') ||
@@ -213,11 +224,37 @@ async function handleAuthAndRouting(request: NextRequest, isEU: boolean): Promis
  */
 function isEUCountry(country: string): boolean {
   const euCountries = [
-    'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR',
-    'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL',
-    'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', // Sweden is EU
+    'AT',
+    'BE',
+    'BG',
+    'HR',
+    'CY',
+    'CZ',
+    'DK',
+    'EE',
+    'FI',
+    'FR',
+    'DE',
+    'GR',
+    'HU',
+    'IE',
+    'IT',
+    'LV',
+    'LT',
+    'LU',
+    'MT',
+    'NL',
+    'PL',
+    'PT',
+    'RO',
+    'SK',
+    'SI',
+    'ES',
+    'SE', // Sweden is EU
     // EEA countries
-    'IS', 'LI', 'NO',
+    'IS',
+    'LI',
+    'NO',
   ]
   return euCountries.includes(country.toUpperCase())
 }
@@ -238,13 +275,13 @@ export const config = {
     // Protected API routes
     '/api/protected/:path*',
     '/api/workspace/:path*',
-    
+
     // Story P.2: Public routes for rate limiting
     '/api/auth/:path*',
     '/api/public/:path*',
     '/login',
     '/signup',
-    
+
     // Story P.2: All routes except static assets (for geo-routing)
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
