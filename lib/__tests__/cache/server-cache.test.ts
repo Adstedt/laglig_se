@@ -1,6 +1,6 @@
 /**
  * Tests for Server-Side Caching Layer (Story P.2)
- * 
+ *
  * @see docs/stories/P.2.systematic-caching.story.md
  */
 
@@ -8,20 +8,17 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import {
   SERVER_CACHE_TAGS,
   REVALIDATION_TIMES,
-  createCachedServerFunction,
-  createRequestCache,
   hybridCache,
   trackCacheOperation,
   getCacheMetrics,
   resetCacheMetrics,
-  createCachedQuery,
   batchCacheWarm,
   monitorCacheHealth,
 } from '@/lib/cache/server-cache'
 
 // Mock Next.js cache functions
 vi.mock('next/cache', () => ({
-  unstable_cache: vi.fn((fn, keyParts, options) => fn),
+  unstable_cache: vi.fn((fn, _keyParts, _options) => fn),
   revalidateTag: vi.fn(),
   revalidatePath: vi.fn(),
 }))
@@ -119,7 +116,7 @@ describe('Server Cache', () => {
     })
 
     it('should track slow queries', () => {
-      trackCacheOperation(true, 50)  // Fast
+      trackCacheOperation(true, 50) // Fast
       trackCacheOperation(true, 150) // Slow (>100ms)
       trackCacheOperation(false, 200) // Slow
 
@@ -147,9 +144,9 @@ describe('Server Cache', () => {
     it('should reset metrics correctly', () => {
       trackCacheOperation(true, 50)
       trackCacheOperation(false, 150)
-      
+
       resetCacheMetrics()
-      
+
       const metrics = getCacheMetrics()
       expect(metrics.hits).toBe(0)
       expect(metrics.misses).toBe(0)
@@ -162,7 +159,9 @@ describe('Server Cache', () => {
     it('should return data from Redis when available', async () => {
       const { redis, isRedisConfigured } = await import('@/lib/cache/redis')
       vi.mocked(isRedisConfigured).mockReturnValue(true)
-      vi.mocked(redis.get).mockResolvedValue(JSON.stringify({ value: 'cached' }))
+      vi.mocked(redis.get).mockResolvedValue(
+        JSON.stringify({ value: 'cached' })
+      )
 
       const result = await hybridCache(
         'test-key',
@@ -201,7 +200,9 @@ describe('Server Cache', () => {
       vi.mocked(isRedisConfigured).mockReturnValue(true)
       vi.mocked(redis.get).mockRejectedValue(new Error('Redis error'))
 
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation()
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
 
       const result = await hybridCache(
         'test-key',
@@ -236,7 +237,9 @@ describe('Server Cache', () => {
     })
 
     it('should handle partial failures in batch warming', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
       const operations = {
         success: async () => ({ data: 'ok' }),
@@ -373,7 +376,7 @@ describe('Server Cache', () => {
       trackCacheOperation(true, 50)
       trackCacheOperation(false, 150) // One slow miss
 
-      const metrics = getCacheMetrics()
+      getCacheMetrics() // Ensure tracking works
       const cachedOpsLatency = (20 + 30 + 40 + 50) / 4
       expect(cachedOpsLatency).toBeLessThan(100) // AC: Sub-100ms for cached
     })

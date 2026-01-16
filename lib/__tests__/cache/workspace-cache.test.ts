@@ -1,6 +1,6 @@
 /**
  * Tests for Workspace Caching Module (Story P.2)
- * 
+ *
  * @see docs/stories/P.2.systematic-caching.story.md
  */
 
@@ -8,11 +8,6 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import {
   WORKSPACE_CACHE_KEYS,
   CACHE_TTL,
-  getCachedWorkspaceContext,
-  getCachedWorkspaceMembers,
-  getCachedLawLists,
-  getCachedListItems,
-  getCachedUserPreferences,
   invalidateWorkspaceCache,
   invalidateUserCache,
   invalidateLawListCache,
@@ -32,7 +27,7 @@ vi.mock('@/lib/cache/redis', () => ({
     expire: vi.fn(),
   },
   isRedisConfigured: vi.fn(() => true),
-  getCachedOrFetch: vi.fn().mockImplementation(async (key, fetcher, ttl) => {
+  getCachedOrFetch: vi.fn().mockImplementation(async (_key, fetcher, _ttl) => {
     const data = await fetcher()
     return { data, cached: false }
   }),
@@ -193,15 +188,17 @@ describe('Workspace Cache', () => {
 
       // Mock getCachedOrFetch from redis module
       const { getCachedOrFetch } = await import('@/lib/cache/redis')
-      vi.mocked(getCachedOrFetch).mockImplementation(async (key, fetcher, ttl) => {
-        const data = await fetcher()
-        return { data, cached: false }
-      })
+      vi.mocked(getCachedOrFetch).mockImplementation(
+        async (_key, fetcher, _ttl) => {
+          const data = await fetcher()
+          return { data, cached: false }
+        }
+      )
 
       await warmWorkspaceCache('user123', 'workspace456', {
         context: async () => mockContext,
-        members: async () => mockMembers,
-        lists: async () => mockLists,
+        members: async () => mockMembers as never,
+        lists: async () => mockLists as never,
         preferences: async () => mockPrefs,
       })
 
@@ -213,13 +210,15 @@ describe('Workspace Cache', () => {
 
       // Mock getCachedOrFetch from redis module
       const { getCachedOrFetch } = await import('@/lib/cache/redis')
-      vi.mocked(getCachedOrFetch).mockImplementation(async (key, fetcher, ttl) => {
-        const data = await fetcher()
-        return { data, cached: false }
-      })
+      vi.mocked(getCachedOrFetch).mockImplementation(
+        async (_key, fetcher, _ttl) => {
+          const data = await fetcher()
+          return { data, cached: false }
+        }
+      )
 
       await warmWorkspaceCache('user123', 'workspace456', {
-        lists: async () => mockLists,
+        lists: async () => mockLists as never,
       })
 
       expect(getCachedOrFetch).toHaveBeenCalledTimes(1)
@@ -273,12 +272,14 @@ describe('Workspace Cache', () => {
     })
 
     it('should log warning for slow operations', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation()
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
       const mockResult = { data: 'test', cached: false }
-      
+
       // Mock a slow operation
       const mockFn = vi.fn().mockImplementation(async () => {
-        await new Promise(resolve => setTimeout(resolve, 150))
+        await new Promise((resolve) => setTimeout(resolve, 150))
         return mockResult
       })
 
@@ -296,7 +297,9 @@ describe('Workspace Cache', () => {
     })
 
     it('should handle errors in performance measurement', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation()
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
       const mockError = new Error('Test error')
       const mockFn = vi.fn().mockRejectedValue(mockError)
 
@@ -317,18 +320,26 @@ describe('Workspace Cache', () => {
     it('should achieve >90% hit rate for workspace data', async () => {
       // Simulate cache hits and misses
       const cacheResults = [
-        true, true, true, true, true,  // 5 hits
-        true, true, true, true, false,  // 1 miss
+        true,
+        true,
+        true,
+        true,
+        true, // 5 hits
+        true,
+        true,
+        true,
+        true,
+        false, // 1 miss
       ]
-      
+
       let hits = 0
       let total = 0
-      
+
       for (const cached of cacheResults) {
         total++
         if (cached) hits++
       }
-      
+
       const hitRate = (hits / total) * 100
       expect(hitRate).toBeGreaterThanOrEqual(90) // AC: >90% hit rate
     })
@@ -336,20 +347,36 @@ describe('Workspace Cache', () => {
     it('should achieve >95% hit rate for law lists', async () => {
       // Simulate cache hits for law lists
       const cacheResults = [
-        true, true, true, true, true,
-        true, true, true, true, true,
-        true, true, true, true, true,
-        true, true, true, true, false, // 1 miss out of 20
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false, // 1 miss out of 20
       ]
-      
+
       let hits = 0
       let total = 0
-      
+
       for (const cached of cacheResults) {
         total++
         if (cached) hits++
       }
-      
+
       const hitRate = (hits / total) * 100
       expect(hitRate).toBeGreaterThanOrEqual(95) // AC: >95% hit rate
     })
