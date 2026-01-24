@@ -3,9 +3,12 @@
 /**
  * Story 6.4: Task List View Tab
  * Table-based view matching the document-list-table visual style
+ *
+ * Story P.4: Added virtualization for large datasets (>100 items)
  */
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, memo } from 'react'
+import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import {
   useReactTable,
   getCoreRowModel,
@@ -65,6 +68,15 @@ import type { WorkspaceMember } from './index'
 import { TaskFilters } from './task-filters'
 import { BulkActionBar } from './bulk-action-bar'
 import { toast } from 'sonner'
+
+// ============================================================================
+// Story P.4: Virtualization Configuration
+// ============================================================================
+
+const VIRTUALIZATION_THRESHOLD = 100
+const ESTIMATED_ROW_HEIGHT = 56
+const OVERSCAN_COUNT = 5
+const VIRTUAL_TABLE_MAX_HEIGHT = 600
 
 // ============================================================================
 // Props
@@ -131,6 +143,9 @@ export function ListTab({
   const [statusFilter, setStatusFilter] = useState<string[]>([])
   const [priorityFilter, setPriorityFilter] = useState<string[]>([])
   const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
+
+  // Story P.4: Virtualization state
+  const tableContainerRef = useRef<HTMLDivElement>(null)
 
   // Filter tasks
   const filteredTasks = useMemo(() => {
@@ -432,6 +447,17 @@ export function ListTab({
     enableRowSelection: true,
   })
 
+  // Story P.4: Row virtualizer for large datasets
+  const rows = table.getRowModel().rows
+  const shouldVirtualize = rows.length > VIRTUALIZATION_THRESHOLD
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => ESTIMATED_ROW_HEIGHT,
+    overscan: OVERSCAN_COUNT,
+    enabled: shouldVirtualize,
+  })
+
   // Selected item IDs
   const selectedItemIds = Object.keys(rowSelection).filter(
     (id) => rowSelection[id]
@@ -583,9 +609,23 @@ export function ListTab({
       )}
 
       {/* Table - matching document-list-table styling */}
-      <div className="rounded-md border overflow-x-auto">
+      {/* Story P.4: Use ref for virtualization scroll element */}
+      <div
+        ref={tableContainerRef}
+        className={cn(
+          'rounded-md border overflow-x-auto',
+          shouldVirtualize && 'overflow-y-auto'
+        )}
+        style={
+          shouldVirtualize ? { maxHeight: VIRTUAL_TABLE_MAX_HEIGHT } : undefined
+        }
+      >
         <Table>
-          <TableHeader>
+          <TableHeader
+            className={
+              shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
+            }
+          >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -604,27 +644,41 @@ export function ListTab({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={cn(
-                    'group cursor-pointer hover:bg-muted/50',
-                    isOverdue(row.original) && 'bg-destructive/5'
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+          <TableBody
+            style={
+              shouldVirtualize
+                ? {
+                    height: `${rowVirtualizer.getTotalSize()}px`,
+                    position: 'relative',
+                  }
+                : undefined
+            }
+          >
+            {rows.length > 0 ? (
+              shouldVirtualize ? (
+                // Story P.4: Virtualized rendering for large datasets
+                rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                  const row = rows[virtualItem.index]
+                  if (!row) return null
+                  return (
+                    <VirtualTaskRow
+                      key={row.id}
+                      row={row}
+                      virtualItem={virtualItem}
+                      isOverdue={isOverdue(row.original)}
+                    />
+                  )
+                })
+              ) : (
+                // Standard rendering for small datasets
+                rows.map((row) => (
+                  <TaskRow
+                    key={row.id}
+                    row={row}
+                    isOverdue={isOverdue(row.original)}
+                  />
+                ))
+              )
             ) : (
               <TableRow>
                 <TableCell
@@ -675,3 +729,71 @@ function SortableHeader({
     </Button>
   )
 }
+
+// ============================================================================
+// Story P.4: Task Row Components (memoized for performance)
+// ============================================================================
+
+type TaskRowType = ReturnType<
+  ReturnType<typeof useReactTable<TaskWithRelations>>['getRowModel']
+>['rows'][number]
+
+const TaskRow = memo(function TaskRow({
+  row,
+  isOverdue,
+}: {
+  row: TaskRowType
+  isOverdue: boolean
+}) {
+  return (
+    <TableRow
+      data-state={row.getIsSelected() && 'selected'}
+      className={cn(
+        'group cursor-pointer hover:bg-muted/50',
+        isOverdue && 'bg-destructive/5'
+      )}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  )
+})
+
+const VirtualTaskRow = memo(function VirtualTaskRow({
+  row,
+  virtualItem,
+  isOverdue,
+}: {
+  row: TaskRowType
+  virtualItem: VirtualItem
+  isOverdue: boolean
+}) {
+  const style: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: `${virtualItem.size}px`,
+    transform: `translateY(${virtualItem.start}px)`,
+  }
+
+  return (
+    <TableRow
+      style={style}
+      data-state={row.getIsSelected() && 'selected'}
+      className={cn(
+        'group cursor-pointer hover:bg-muted/50',
+        isOverdue && 'bg-destructive/5'
+      )}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  )
+})
