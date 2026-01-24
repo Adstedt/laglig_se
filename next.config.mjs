@@ -1,4 +1,10 @@
 import { withSentryConfig } from '@sentry/nextjs'
+import bundleAnalyzer from '@next/bundle-analyzer'
+
+// Story P.4: Bundle analyzer configuration
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 /**
  * Security headers configuration
@@ -192,7 +198,8 @@ const nextConfig = {
   },
 }
 
-export default withSentryConfig(nextConfig, {
+// Story P.4: Wrap with bundle analyzer, then Sentry
+export default withSentryConfig(withBundleAnalyzer(nextConfig), {
   // Sentry webpack plugin options
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,

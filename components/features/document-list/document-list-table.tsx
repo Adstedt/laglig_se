@@ -3,9 +3,13 @@
 /**
  * Story 4.12: Document List Table View
  * TanStack Table with sorting, selection, and inline editing
+ *
+ * Story P.4: Added virtualization for large datasets (>100 items)
+ * Uses @tanstack/react-virtual for efficient rendering
  */
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react'
+import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import {
   useReactTable,
   getCoreRowModel,
@@ -82,6 +86,22 @@ import { LastActivityCell } from './table-cells/last-activity-cell'
 import { CellErrorBoundary } from './table-cells/cell-error-boundary'
 import type { ComplianceStatus } from '@prisma/client'
 import type { TaskProgress, LastActivity } from '@/lib/db/queries/list-items'
+
+// ============================================================================
+// Story P.4: Virtualization Configuration
+// ============================================================================
+
+/** Enable virtualization when items exceed this threshold */
+const VIRTUALIZATION_THRESHOLD = 100
+
+/** Estimated row height for virtualization calculations */
+const ESTIMATED_ROW_HEIGHT = 52
+
+/** Number of rows to render outside viewport for smooth scrolling */
+const OVERSCAN_COUNT = 5
+
+/** Maximum height of virtualized table container */
+const VIRTUAL_TABLE_MAX_HEIGHT = 600
 
 // ============================================================================
 // Props
@@ -184,6 +204,10 @@ export function DocumentListTable({
   const [removeConfirmItem, setRemoveConfirmItem] =
     useState<DocumentListItem | null>(null)
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
+
+  // Story P.4: Virtualization state
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+  const shouldVirtualize = localItems.length > VIRTUALIZATION_THRESHOLD
 
   // Sync local items with props
   useEffect(() => {
@@ -558,6 +582,16 @@ export function DocumentListTable({
     enableRowSelection: true,
   })
 
+  // Story P.4: Row virtualizer for large datasets
+  const rows = table.getRowModel().rows
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => ESTIMATED_ROW_HEIGHT,
+    overscan: OVERSCAN_COUNT,
+    enabled: shouldVirtualize,
+  })
+
   // Selected items
   const selectedItemIds = Object.keys(rowSelection).filter(
     (id) => rowSelection[id]
@@ -606,7 +640,17 @@ export function DocumentListTable({
       )}
 
       {/* Table with DnD - overflow-x-auto contains horizontal scroll within table */}
-      <div className="rounded-md border overflow-x-auto">
+      {/* Story P.4: Use ref for virtualization scroll element */}
+      <div
+        ref={tableContainerRef}
+        className={cn(
+          'rounded-md border overflow-x-auto',
+          shouldVirtualize && 'overflow-y-auto'
+        )}
+        style={
+          shouldVirtualize ? { maxHeight: VIRTUAL_TABLE_MAX_HEIGHT } : undefined
+        }
+      >
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -614,7 +658,11 @@ export function DocumentListTable({
           modifiers={[restrictToVerticalAxis]}
         >
           <Table>
-            <TableHeader>
+            <TableHeader
+              className={
+                shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
+              }
+            >
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -637,21 +685,45 @@ export function DocumentListTable({
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody>
+            <TableBody
+              style={
+                shouldVirtualize
+                  ? {
+                      height: `${rowVirtualizer.getTotalSize()}px`,
+                      position: 'relative',
+                    }
+                  : undefined
+              }
+            >
               <SortableContext
                 items={localItems.map((item) => item.id)}
                 strategy={verticalListSortingStrategy}
               >
-                {table.getRowModel().rows.length > 0 ? (
-                  table
-                    .getRowModel()
-                    .rows.map((row) => (
+                {rows.length > 0 ? (
+                  shouldVirtualize ? (
+                    // Story P.4: Virtualized rendering for large datasets
+                    rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                      const row = rows[virtualItem.index]
+                      if (!row) return null
+                      return (
+                        <VirtualSortableRow
+                          key={row.id}
+                          row={row}
+                          virtualItem={virtualItem}
+                          {...(onRowClick ? { onRowClick } : {})}
+                        />
+                      )
+                    })
+                  ) : (
+                    // Standard rendering for small datasets
+                    rows.map((row) => (
                       <SortableRow
                         key={row.id}
                         row={row}
                         {...(onRowClick ? { onRowClick } : {})}
                       />
                     ))
+                  )
                 ) : (
                   <TableRow>
                     <TableCell
@@ -730,10 +802,10 @@ function SortableHeader({
 }
 
 // ============================================================================
-// Sortable Row Component
+// Sortable Row Component (Story P.4: Wrapped with memo)
 // ============================================================================
 
-function SortableRow({
+const SortableRow = memo(function SortableRow({
   row,
   onRowClick,
 }: {
@@ -806,4 +878,92 @@ function SortableRow({
       ))}
     </TableRow>
   )
-}
+})
+
+// ============================================================================
+// Story P.4: Virtual Sortable Row Component for large datasets
+// ============================================================================
+
+const VirtualSortableRow = memo(function VirtualSortableRow({
+  row,
+  virtualItem,
+  onRowClick,
+}: {
+  row: ReturnType<
+    ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
+  >['rows'][number]
+  virtualItem: VirtualItem
+  onRowClick?: (_listItemId: string) => void
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: row.id })
+
+  const style: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: `${virtualItem.size}px`,
+    transform: transform
+      ? `translate3d(${transform.x}px, ${virtualItem.start + transform.y}px, 0)`
+      : `translateY(${virtualItem.start}px)`,
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  }
+
+  // Handle row click (ignore interactive elements)
+  const handleRowClick = useCallback(
+    (e: React.MouseEvent<HTMLTableRowElement>) => {
+      if (!onRowClick) return
+      const target = e.target as HTMLElement
+      if (
+        target.closest(
+          'button, input, select, a, [role="combobox"], [role="checkbox"]'
+        )
+      ) {
+        return
+      }
+      onRowClick(row.original.id)
+    },
+    [onRowClick, row.original.id]
+  )
+
+  return (
+    <TableRow
+      ref={setNodeRef}
+      style={style}
+      data-state={row.getIsSelected() && 'selected'}
+      className={cn('group', onRowClick && 'cursor-pointer hover:bg-muted/50')}
+      onClick={handleRowClick}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <TableCell
+          key={cell.id}
+          className={cn(
+            cell.column.id === 'title' && 'sticky left-0 bg-background z-10'
+          )}
+        >
+          {cell.column.id === 'dragHandle' ? (
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground"
+              aria-label="Dra för att flytta"
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+          ) : (
+            flexRender(cell.column.columnDef.cell, cell.getContext())
+          )}
+        </TableCell>
+      ))}
+    </TableRow>
+  )
+})
