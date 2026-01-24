@@ -108,10 +108,12 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       // Actions
       setCurrentWorkspace: (workspace, role) =>
         set((state) => {
+          // Capture previous ID before mutation for comparison
+          const previousWorkspaceId = state.currentWorkspace?.id
           state.currentWorkspace = workspace
           state.currentRole = role
           // Clear cached data when switching workspaces
-          if (workspace.id !== state.currentWorkspace?.id) {
+          if (workspace.id !== previousWorkspaceId) {
             state.members = []
             state.membersLastFetched = null
             state.lawLists = []

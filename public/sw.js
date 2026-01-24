@@ -236,15 +236,3 @@ self.addEventListener('fetch', (event) => {
     )
   }
 })
-
-// ============================================================================
-// Log service worker activation
-// ============================================================================
-
-self.addEventListener('activate', (_event) => {
-  // Service worker activated
-})
-
-self.addEventListener('install', (_event) => {
-  // Service worker installed
-})
