@@ -29,7 +29,7 @@ export function LeftPanel({ listItem, isLoadingContent }: LeftPanelProps) {
       {/* Lagtext and Business Context Accordions */}
       <Accordion
         type="multiple"
-        defaultValue={['lagtext', 'business-context']}
+        defaultValue={['business-context']}
         className="space-y-2"
       >
         {/* Lagtext Section */}
