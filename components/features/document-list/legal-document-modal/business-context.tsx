@@ -157,7 +157,7 @@ export function BusinessContext({
                 className={cn(
                   'cursor-pointer rounded-md border border-transparent',
                   'hover:border-input hover:bg-muted/30 transition-colors',
-                  'p-2 -m-2',
+                  'p-3',
                   'group relative'
                 )}
               >
