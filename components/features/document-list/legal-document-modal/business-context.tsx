@@ -2,86 +2,211 @@
 
 /**
  * Story 6.3: Business Context
- * Auto-saving textarea for describing how a law affects the business
+ * Rich text editor for describing how a law affects the business
+ * Uses Jira-style accordion with Save/Cancel workflow
  */
 
-import { useState, useCallback } from 'react'
-import { useDebouncedCallback } from 'use-debounce'
-import { Textarea } from '@/components/ui/textarea'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import {
+  RichTextEditor,
+  RichTextDisplay,
+} from '@/components/ui/rich-text-editor'
+import { Button } from '@/components/ui/button'
+import { Loader2, Check, HelpCircle, Pencil } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { updateListItemBusinessContext } from '@/app/actions/legal-document-modal'
 import { toast } from 'sonner'
-import { Loader2, Check } from 'lucide-react'
 
 interface BusinessContextProps {
   listItemId: string
   initialContent: string | null
 }
 
+type SaveStatus = 'idle' | 'saving' | 'saved'
+
 export function BusinessContext({
   listItemId,
   initialContent,
 }: BusinessContextProps) {
   const [content, setContent] = useState(initialContent ?? '')
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>(
-    'idle'
-  )
+  const [editedContent, setEditedContent] = useState(initialContent ?? '')
+  const [isEditing, setIsEditing] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const lastSavedRef = useRef(initialContent ?? '')
 
-  const debouncedSave = useDebouncedCallback(async (value: string) => {
+  // Update local state when initialContent changes
+  useEffect(() => {
+    setContent(initialContent ?? '')
+    setEditedContent(initialContent ?? '')
+    lastSavedRef.current = initialContent ?? ''
+  }, [initialContent])
+
+  const handleSave = useCallback(async () => {
+    // Strip HTML tags for comparison and check if empty
+    const strippedContent = editedContent.replace(/<[^>]*>/g, '').trim()
+    const trimmed = strippedContent ? editedContent : null
+
+    // Skip save if unchanged
+    if (trimmed === lastSavedRef.current) {
+      setIsEditing(false)
+      return
+    }
+
     setSaveStatus('saving')
-    try {
-      const result = await updateListItemBusinessContext(listItemId, value)
-      if (!result.success) {
-        throw new Error(result.error ?? 'Kunde inte spara')
-      }
+    const result = await updateListItemBusinessContext(
+      listItemId,
+      trimmed ?? ''
+    )
+
+    if (result.success) {
+      lastSavedRef.current = trimmed ?? ''
+      setContent(trimmed ?? '')
       setSaveStatus('saved')
+      setIsEditing(false)
       setTimeout(() => setSaveStatus('idle'), 2000)
-    } catch (error) {
-      toast.error('Kunde inte spara', {
-        description:
-          error instanceof Error ? error.message : 'Försök igen senare',
-      })
+    } else {
+      toast.error('Kunde inte spara', { description: result.error })
       setSaveStatus('idle')
     }
-  }, 1000)
+  }, [listItemId, editedContent])
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setContent(e.target.value)
-      debouncedSave(e.target.value)
-    },
-    [debouncedSave]
-  )
+  const handleCancel = () => {
+    setEditedContent(content)
+    setIsEditing(false)
+  }
+
+  const handleStartEdit = () => {
+    setEditedContent(content)
+    setIsEditing(true)
+  }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-base font-semibold text-foreground">
-          Hur påverkar denna lag oss?
-        </span>
-        {saveStatus === 'saving' && (
-          <span className="text-xs text-muted-foreground flex items-center">
-            <Loader2 className="h-3 w-3 animate-spin mr-1" />
-            Sparar...
-          </span>
-        )}
-        {saveStatus === 'saved' && (
-          <span className="text-xs text-green-600 flex items-center">
-            <Check className="h-3 w-3 mr-1" />
-            Sparat
-          </span>
-        )}
-      </div>
+    <Accordion
+      type="multiple"
+      defaultValue={['business-context']}
+      className="space-y-2"
+    >
+      <AccordionItem
+        value="business-context"
+        className="border rounded-lg border-border/60"
+      >
+        <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
+          <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+            <HelpCircle className="h-4 w-4" />
+            <span>Hur påverkar denna lag oss?</span>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="px-4 pb-4">
+          {isEditing ? (
+            <div className="space-y-3">
+              <SaveStatusIndicator status={saveStatus} align="end" />
 
-      <Textarea
-        value={content}
-        onChange={handleChange}
-        placeholder="Beskriv hur denna lag påverkar er verksamhet..."
-        className="min-h-[100px] resize-y"
-      />
+              <RichTextEditor
+                content={editedContent}
+                onChange={setEditedContent}
+                placeholder="Beskriv hur denna lag påverkar er verksamhet..."
+              />
 
-      <p className="text-xs text-muted-foreground">
-        Stödjer Markdown-formatering
-      </p>
+              {/* Save/Cancel buttons */}
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={saveStatus === 'saving'}
+                >
+                  {saveStatus === 'saving' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      Sparar...
+                    </>
+                  ) : (
+                    'Spara'
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleCancel}
+                  disabled={saveStatus === 'saving'}
+                >
+                  Avbryt
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <SaveStatusIndicator status={saveStatus} align="end" />
+
+              {/* Clickable display area */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={handleStartEdit}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleStartEdit()
+                  }
+                }}
+                className={cn(
+                  'cursor-pointer rounded-md border border-transparent',
+                  'hover:border-input hover:bg-muted/30 transition-colors',
+                  'p-2 -m-2',
+                  'group relative'
+                )}
+              >
+                <RichTextDisplay content={content} />
+
+                {/* Edit hint on hover */}
+                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+                    <Pencil className="h-3 w-3" />
+                    Klicka för att redigera
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  )
+}
+
+function SaveStatusIndicator({
+  status,
+  align = 'start',
+}: {
+  status: SaveStatus
+  align?: 'start' | 'end'
+}) {
+  if (status === 'idle') return null
+
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-1 text-xs text-muted-foreground',
+        align === 'end' && 'justify-end'
+      )}
+    >
+      {status === 'saving' && (
+        <>
+          <Loader2 className="h-3 w-3 animate-spin" />
+          <span>Sparar...</span>
+        </>
+      )}
+      {status === 'saved' && (
+        <>
+          <Check className="h-3 w-3 text-green-500" />
+          <span>Sparat</span>
+        </>
+      )}
     </div>
   )
 }
