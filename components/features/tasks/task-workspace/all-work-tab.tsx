@@ -64,6 +64,7 @@ interface AllWorkTabProps {
   initialTasks: TaskWithRelations[]
   initialColumns: TaskColumnWithCount[]
   workspaceMembers: WorkspaceMember[]
+  onTaskClick?: (_taskId: string) => void
 }
 
 // ============================================================================
@@ -105,6 +106,7 @@ export function AllWorkTab({
   initialTasks,
   initialColumns: _initialColumns,
   workspaceMembers: _workspaceMembers,
+  onTaskClick,
 }: AllWorkTabProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'created_at', desc: true },
@@ -442,6 +444,7 @@ export function AllWorkTab({
                     'cursor-pointer hover:bg-muted/50',
                     row.original.column.is_done && 'opacity-60'
                   )}
+                  onClick={() => onTaskClick?.(row.original.id)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

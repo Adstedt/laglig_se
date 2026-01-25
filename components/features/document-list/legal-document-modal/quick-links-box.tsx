@@ -39,9 +39,11 @@ export function QuickLinksBox({
   const lawUrl = getDocumentUrl(contentType, slug)
 
   return (
-    <Card>
+    <Card className="border-border/60">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium">Snabblänkar</CardTitle>
+        <CardTitle className="text-base font-semibold text-foreground">
+          Snabblänkar
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {/* View full law */}

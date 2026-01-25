@@ -40,9 +40,11 @@ export function EvidenceSummaryBox({
   // Handle model not existing (graceful fallback)
   if (evidence === null) {
     return (
-      <Card>
+      <Card className="border-border/60">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">Bevis</CardTitle>
+          <CardTitle className="text-base font-semibold text-foreground">
+            Bevis
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <EvidenceEmptyState />
@@ -54,10 +56,12 @@ export function EvidenceSummaryBox({
   const count = evidence.length
 
   return (
-    <Card>
+    <Card className="border-border/60">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium">Bevis</CardTitle>
+          <CardTitle className="text-base font-semibold text-foreground">
+            Bevis
+          </CardTitle>
           {count > 0 && (
             <span className="text-xs text-muted-foreground">
               {count} {count === 1 ? 'fil' : 'filer'} bifogade

@@ -41,14 +41,18 @@ export function DetailsBox({
   }
 
   return (
-    <Card>
+    <Card className="border-border/60">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium">Detaljer</CardTitle>
+        <CardTitle className="text-base font-semibold text-foreground">
+          Detaljer
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Document Number */}
         <div className="flex items-center justify-between min-h-[32px]">
-          <span className="text-sm text-muted-foreground">Dokumentnummer</span>
+          <span className="text-sm font-medium text-foreground/70">
+            Dokumentnummer
+          </span>
           <span className="text-sm font-mono">
             {listItem.legalDocument.documentNumber}
           </span>
@@ -57,7 +61,9 @@ export function DetailsBox({
         {/* Category */}
         {listItem.category && (
           <div className="flex items-center justify-between min-h-[32px]">
-            <span className="text-sm text-muted-foreground">Kategori</span>
+            <span className="text-sm font-medium text-foreground/70">
+              Kategori
+            </span>
             <Badge variant="secondary" className="text-xs">
               {listItem.category}
             </Badge>
@@ -66,7 +72,7 @@ export function DetailsBox({
 
         {/* Status */}
         <div className="flex items-center justify-between min-h-[32px]">
-          <span className="text-sm text-muted-foreground">Status</span>
+          <span className="text-sm font-medium text-foreground/70">Status</span>
           <ComplianceStatusEditor
             value={listItem.complianceStatus}
             onChange={handleStatusChange}
@@ -76,7 +82,9 @@ export function DetailsBox({
 
         {/* Responsible */}
         <div className="flex items-center justify-between min-h-[32px]">
-          <span className="text-sm text-muted-foreground">Ansvarig</span>
+          <span className="text-sm font-medium text-foreground/70">
+            Ansvarig
+          </span>
           <div className="flex items-center gap-2">
             <ResponsibleEditor
               value={listItem.responsibleUser?.id ?? null}
@@ -95,7 +103,9 @@ export function DetailsBox({
         {/* Due date (if set) */}
         {listItem.dueDate && (
           <div className="flex items-center justify-between min-h-[32px]">
-            <span className="text-sm text-muted-foreground">Deadline</span>
+            <span className="text-sm font-medium text-foreground/70">
+              Deadline
+            </span>
             <span className="text-sm">
               {format(new Date(listItem.dueDate), 'd MMM yyyy', { locale: sv })}
             </span>
@@ -104,7 +114,7 @@ export function DetailsBox({
 
         {/* Created date */}
         <div className="flex items-center justify-between min-h-[32px]">
-          <span className="text-sm text-muted-foreground">Skapad</span>
+          <span className="text-sm font-medium text-foreground/70">Skapad</span>
           <span className="text-sm">
             {format(new Date(listItem.addedAt), 'd MMM yyyy', { locale: sv })}
           </span>
@@ -112,7 +122,7 @@ export function DetailsBox({
 
         {/* Last updated */}
         <div className="flex items-center justify-between min-h-[32px]">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm font-medium text-foreground/70">
             Senast uppdaterad
           </span>
           <span

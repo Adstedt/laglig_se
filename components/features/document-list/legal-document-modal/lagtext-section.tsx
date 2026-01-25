@@ -94,7 +94,7 @@ export function LagtextSection({
   if (isLoading) {
     return (
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-foreground">Lagtext</h3>
+        <h3 className="text-base font-semibold text-foreground">Lagtext</h3>
         <div className="space-y-3 py-2">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-[95%]" />
@@ -111,7 +111,7 @@ export function LagtextSection({
   if (!hasContent) {
     return (
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-foreground">Lagtext</h3>
+        <h3 className="text-base font-semibold text-foreground">Lagtext</h3>
         <div className="text-muted-foreground italic py-4 text-sm">
           Ingen lagtext tillgänglig
         </div>
@@ -123,7 +123,7 @@ export function LagtextSection({
 
   return (
     <div className="space-y-2">
-      <h3 className="text-sm font-medium text-foreground">Lagtext</h3>
+      <h3 className="text-base font-semibold text-foreground">Lagtext</h3>
 
       <div className="relative">
         {/* Content container using the same component as law browse pages */}

@@ -55,7 +55,7 @@ export function BusinessContext({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground">
+        <span className="text-base font-semibold text-foreground">
           Hur påverkar denna lag oss?
         </span>
         {saveStatus === 'saving' && (
