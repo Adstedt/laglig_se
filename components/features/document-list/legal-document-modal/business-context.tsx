@@ -2,13 +2,12 @@
 
 /**
  * Story 6.3: Business Context
- * Rich text editor for describing how a law affects the business
- * Uses Jira-style accordion with Save/Cancel workflow
+ * Rich text editor accordion item for describing how a law affects the business
+ * Uses Jira-style click-to-edit with Save/Cancel workflow
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
-  Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
@@ -87,95 +86,89 @@ export function BusinessContext({
   }
 
   return (
-    <Accordion
-      type="multiple"
-      defaultValue={['business-context']}
-      className="space-y-2"
+    <AccordionItem
+      value="business-context"
+      className="border rounded-lg border-border/60"
     >
-      <AccordionItem
-        value="business-context"
-        className="border rounded-lg border-border/60"
-      >
-        <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
-          <div className="flex items-center gap-2 text-base font-semibold text-foreground">
-            <HelpCircle className="h-4 w-4" />
-            <span>Hur påverkar denna lag oss?</span>
-          </div>
-        </AccordionTrigger>
-        <AccordionContent className="px-4 pb-4">
-          {isEditing ? (
-            <div className="space-y-3">
-              <SaveStatusIndicator status={saveStatus} align="end" />
+      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
+        <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <HelpCircle className="h-4 w-4" />
+          <span>Hur påverkar denna lag oss?</span>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4">
+        {isEditing ? (
+          <div className="space-y-3">
+            <SaveStatusIndicator status={saveStatus} align="end" />
 
-              <RichTextEditor
-                content={editedContent}
-                onChange={setEditedContent}
-                placeholder="Beskriv hur denna lag påverkar er verksamhet..."
-              />
+            <RichTextEditor
+              content={editedContent}
+              onChange={setEditedContent}
+              placeholder="Beskriv hur denna lag påverkar er verksamhet..."
+            />
 
-              {/* Save/Cancel buttons */}
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  onClick={handleSave}
-                  disabled={saveStatus === 'saving'}
-                >
-                  {saveStatus === 'saving' ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      Sparar...
-                    </>
-                  ) : (
-                    'Spara'
-                  )}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleCancel}
-                  disabled={saveStatus === 'saving'}
-                >
-                  Avbryt
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <SaveStatusIndicator status={saveStatus} align="end" />
-
-              {/* Clickable display area */}
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={handleStartEdit}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    handleStartEdit()
-                  }
-                }}
-                className={cn(
-                  'cursor-pointer rounded-md border border-transparent',
-                  'hover:border-input hover:bg-muted/30 transition-colors',
-                  'p-3',
-                  'group relative'
-                )}
+            {/* Save/Cancel buttons */}
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={saveStatus === 'saving'}
               >
-                <RichTextDisplay content={content} />
+                {saveStatus === 'saving' ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    Sparar...
+                  </>
+                ) : (
+                  'Spara'
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleCancel}
+                disabled={saveStatus === 'saving'}
+              >
+                Avbryt
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <SaveStatusIndicator status={saveStatus} align="end" />
 
-                {/* Edit hint on hover */}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-                    <Pencil className="h-3 w-3" />
-                    Klicka för att redigera
-                  </div>
+            {/* Clickable display area */}
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={handleStartEdit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleStartEdit()
+                }
+              }}
+              className={cn(
+                'cursor-pointer rounded-md border border-transparent',
+                'hover:border-input hover:bg-muted/30 transition-colors',
+                'p-3',
+                'group relative'
+              )}
+            >
+              <RichTextDisplay content={content} />
+
+              {/* Edit hint on hover */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+                  <Pencil className="h-3 w-3" />
+                  Klicka för att redigera
                 </div>
               </div>
             </div>
-          )}
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+          </div>
+        )}
+      </AccordionContent>
+    </AccordionItem>
   )
 }
 

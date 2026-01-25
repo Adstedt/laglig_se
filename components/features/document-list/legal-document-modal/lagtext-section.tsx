@@ -2,13 +2,12 @@
 
 /**
  * Story 6.3: Lagtext Section
- * Collapsible accordion with legal text, expand/collapse for long content
+ * Accordion item with legal text, expand/collapse for long content
  * Reuses the same rendering components as the law browse pages
  */
 
 import { useState, useMemo, useRef, useCallback } from 'react'
 import {
-  Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
@@ -103,89 +102,87 @@ export function LagtextSection({
   const hasContent = cleanedHtmlContent || fullText
 
   return (
-    <Accordion type="multiple" defaultValue={['lagtext']} className="space-y-2">
-      <AccordionItem
-        value="lagtext"
-        className="border rounded-lg border-border/60"
-      >
-        <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
-          <div className="flex items-center gap-2 text-base font-semibold text-foreground">
-            <Scale className="h-4 w-4" />
-            <span>Lagtext</span>
+    <AccordionItem
+      value="lagtext"
+      className="border rounded-lg border-border/60"
+    >
+      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
+        <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <Scale className="h-4 w-4" />
+          <span>Lagtext</span>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4">
+        {isLoading ? (
+          <div className="space-y-3 py-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-[95%]" />
+            <Skeleton className="h-4 w-[90%]" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-[85%]" />
           </div>
-        </AccordionTrigger>
-        <AccordionContent className="px-4 pb-4">
-          {isLoading ? (
-            <div className="space-y-3 py-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-[95%]" />
-              <Skeleton className="h-4 w-[90%]" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-[85%]" />
-            </div>
-          ) : !hasContent ? (
-            <div className="text-muted-foreground italic py-4 text-sm">
-              Ingen lagtext tillgänglig
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="relative">
-                {/* Content container using the same component as law browse pages */}
-                <div
-                  ref={contentRef}
-                  className={cn(
-                    'transition-all duration-300',
-                    isExpanded ? 'overflow-y-auto' : 'overflow-hidden'
-                  )}
-                  style={{
-                    maxHeight: isExpanded
-                      ? maxExpandedHeight
-                      : maxCollapsedHeight,
-                  }}
-                >
-                  <article className="legal-document-modal">
-                    <div className="legal-document">
-                      <LawContentWrapper
-                        htmlContent={cleanedHtmlContent ?? ''}
-                        fallbackText={fullText}
-                      />
-                    </div>
-                  </article>
-                </div>
-
-                {/* Gradient fade when collapsed */}
-                {!isExpanded && (
-                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        ) : !hasContent ? (
+          <div className="text-muted-foreground italic py-4 text-sm">
+            Ingen lagtext tillgänglig
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="relative">
+              {/* Content container using the same component as law browse pages */}
+              <div
+                ref={contentRef}
+                className={cn(
+                  'transition-all duration-300',
+                  isExpanded ? 'overflow-y-auto' : 'overflow-hidden'
                 )}
+                style={{
+                  maxHeight: isExpanded
+                    ? maxExpandedHeight
+                    : maxCollapsedHeight,
+                }}
+              >
+                <article className="legal-document-modal">
+                  <div className="legal-document">
+                    <LawContentWrapper
+                      htmlContent={cleanedHtmlContent ?? ''}
+                      fallbackText={fullText}
+                    />
+                  </div>
+                </article>
               </div>
 
-              {/* Expand/Collapse button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleToggle}
-                className="w-full justify-center"
-              >
-                {isExpanded ? (
-                  <>
-                    <ChevronUp className="h-4 w-4 mr-1" />
-                    Visa mindre
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4 mr-1" />
-                    Visa mer
-                  </>
-                )}
-              </Button>
+              {/* Gradient fade when collapsed */}
+              {!isExpanded && (
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+              )}
             </div>
-          )}
 
-          {/* Quick links row */}
-          <QuickLinksRow slug={slug} sourceUrl={sourceUrl} hasPdf={hasPdf} />
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+            {/* Expand/Collapse button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleToggle}
+              className="w-full justify-center"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="h-4 w-4 mr-1" />
+                  Visa mindre
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-4 w-4 mr-1" />
+                  Visa mer
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Quick links row */}
+        <QuickLinksRow slug={slug} sourceUrl={sourceUrl} hasPdf={hasPdf} />
+      </AccordionContent>
+    </AccordionItem>
   )
 }
 
