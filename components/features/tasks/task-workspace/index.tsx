@@ -6,7 +6,7 @@
  * Main client component that orchestrates the task workspace UI
  */
 
-import { Suspense, useState, useCallback, useMemo } from 'react'
+import { Suspense, useState, useCallback, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { TabNavigation, type TaskTab } from './tab-navigation'
 import { SummaryTab } from './summary-tab'
@@ -57,8 +57,16 @@ export function TaskWorkspace({
   const [tasks, setTasks] = useState(initialTasks)
   const [columns] = useState(initialColumns)
 
-  // Story 6.6: Task modal state
+  // Story 6.6: Task modal state - synced with URL param
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+
+  // Sync modal state with URL param on mount and changes
+  const taskIdFromUrl = searchParams.get('task')
+  useEffect(() => {
+    if (taskIdFromUrl !== selectedTaskId) {
+      setSelectedTaskId(taskIdFromUrl)
+    }
+  }, [taskIdFromUrl]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get initial data for the selected task (for instant modal display)
   const selectedTaskData = useMemo(() => {
@@ -67,11 +75,24 @@ export function TaskWorkspace({
   }, [selectedTaskId, tasks])
 
   const handleTaskClick = useCallback((taskId: string) => {
+    // Update local state immediately for instant feedback
     setSelectedTaskId(taskId)
+    // Update URL instantly using History API (faster than router.push)
+    const params = new URLSearchParams(window.location.search)
+    params.set('task', taskId)
+    window.history.pushState(null, '', `?${params.toString()}`)
   }, [])
 
   const handleModalClose = useCallback(() => {
+    // Update local state immediately for instant feedback
     setSelectedTaskId(null)
+    // Update URL instantly using History API (faster than router.push)
+    const params = new URLSearchParams(window.location.search)
+    params.delete('task')
+    const newUrl = params.toString()
+      ? `?${params.toString()}`
+      : window.location.pathname
+    window.history.pushState(null, '', newUrl)
   }, [])
 
   // Callback for when task is updated in modal - syncs back to workspace

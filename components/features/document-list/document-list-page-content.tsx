@@ -98,25 +98,24 @@ export function DocumentListPageContent({
   const handleOpenModal = useCallback((listItemId: string) => {
     // Update local state immediately for instant feedback
     setSelectedListItemId(listItemId)
-    // Then update URL in background without blocking UI
-    startTransition(() => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set('document', listItemId)
-      router.push(`?${params.toString()}`, { scroll: false })
-    })
-  }, [searchParams, router])
+    // Update URL instantly using History API (faster than router.push)
+    const params = new URLSearchParams(window.location.search)
+    params.set('document', listItemId)
+    window.history.pushState(null, '', `?${params.toString()}`)
+  }, [])
 
   // Handle closing the modal by removing from URL
   const handleCloseModal = useCallback(() => {
     // Update local state immediately for instant feedback
     setSelectedListItemId(null)
-    // Then update URL in background without blocking UI
-    startTransition(() => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.delete('document')
-      router.push(`?${params.toString()}`, { scroll: false })
-    })
-  }, [searchParams, router])
+    // Update URL instantly using History API (faster than router.push)
+    const params = new URLSearchParams(window.location.search)
+    params.delete('document')
+    const newUrl = params.toString()
+      ? `?${params.toString()}`
+      : window.location.pathname
+    window.history.pushState(null, '', newUrl)
+  }, [])
 
   // Story 6.2: Handle search from SearchInput component (already debounced)
   const handleSearch = useCallback(
