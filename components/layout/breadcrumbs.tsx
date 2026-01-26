@@ -20,6 +20,8 @@ const routeLabels: Record<string, string> = {
   billing: 'Fakturering',
   'ai-chat': 'AI Chat',
   kanban: 'Uppgifter',
+  tasks: 'Uppgifter',
+  documents: 'Mina dokument',
   hr: 'HR',
   employees: 'Anställda',
   compliance: 'Efterlevnad',
