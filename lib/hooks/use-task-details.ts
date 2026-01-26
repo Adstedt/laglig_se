@@ -81,6 +81,10 @@ export interface InitialTaskData {
         title: string
         document_number: string
       }
+      law_list?: {
+        id: string
+        name: string
+      }
     }
   }>
 }
@@ -112,6 +116,7 @@ interface UseTaskDetailsResult {
   optimisticUpdateTitle: (_title: string) => void
   optimisticUpdateAssignee: (_assignee: WorkspaceMember | null) => void
   optimisticUpdateDueDate: (_dueDate: Date | null) => void
+  optimisticUpdateLinks: (_links: TaskDetails['list_item_links']) => void
 }
 
 /**
@@ -160,6 +165,10 @@ function initialDataToTaskDetails(
           title: link.law_list_item.document.title,
           document_number: link.law_list_item.document.document_number,
           slug: '',
+        },
+        law_list: link.law_list_item.law_list ?? {
+          id: '',
+          name: 'Okänd lista',
         },
       },
     })),
@@ -354,6 +363,22 @@ export function useTaskDetails(
     [mutateFullData]
   )
 
+  const optimisticUpdateLinks = useCallback(
+    (links: TaskDetails['list_item_links']) => {
+      mutateFullData(
+        (current) => {
+          if (!current) return current
+          return {
+            ...current,
+            list_item_links: links,
+          }
+        },
+        { revalidate: false }
+      )
+    },
+    [mutateFullData]
+  )
+
   const handleMutate = async () => {
     await mutateFullData()
   }
@@ -389,5 +414,6 @@ export function useTaskDetails(
     optimisticUpdateTitle,
     optimisticUpdateAssignee,
     optimisticUpdateDueDate,
+    optimisticUpdateLinks,
   }
 }

@@ -67,6 +67,7 @@ export function TaskModal({
     optimisticUpdateTitle,
     optimisticUpdateAssignee,
     optimisticUpdateDueDate,
+    optimisticUpdateLinks,
   } = useTaskDetails(taskId, initialData, preloadedMembers, preloadedColumns)
 
   // Workspace members for child components
@@ -156,9 +157,9 @@ export function TaskModal({
                 />
 
                 {/* Two-panel layout */}
-                <div className="grid flex-1 min-h-0 grid-cols-1 md:grid-cols-[3fr_2fr]">
+                <div className="grid flex-1 min-h-0 grid-cols-1 md:grid-cols-[3fr_2fr] overflow-hidden">
                   {/* Left panel - scrollable */}
-                  <ScrollArea className="h-full">
+                  <ScrollArea className="h-full min-w-0">
                     <LeftPanel
                       task={task}
                       workspaceMembers={workspaceMembers}
@@ -178,7 +179,6 @@ export function TaskModal({
                     columns={preloadedColumns}
                     onUpdate={handleDataUpdate}
                     onAiChatToggle={() => setAiChatOpen(!aiChatOpen)}
-                    onClose={onClose}
                     onOptimisticStatusChange={(columnId) => {
                       optimisticUpdateStatus(columnId)
                       // Sync back to parent workspace
@@ -232,6 +232,9 @@ export function TaskModal({
                       if (taskId) {
                         onTaskUpdate?.(taskId, { due_date: dueDate })
                       }
+                    }}
+                    onOptimisticLinksChange={(links) => {
+                      optimisticUpdateLinks(links)
                     }}
                   />
                 </div>

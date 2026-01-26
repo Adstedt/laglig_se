@@ -1,11 +1,15 @@
 'use client'
 
 /**
- * Story 6.6: Linked Laws Box
- * Display and manage linked legal documents
+ * Story 6.6: Linked Documents Box
+ * Display and manage linked legal documents with cascading selection
+ *
+ * Performance:
+ * - Optimistic UI for link/unlink operations
+ * - SWR caching for law lists (5 min) and items (2 min)
  */
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,70 +19,131 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Scale, Plus, X, ExternalLink, Search, Loader2 } from 'lucide-react'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import {
+  Scale,
+  Plus,
+  X,
+  ExternalLink,
+  FolderOpen,
+  FileText,
+  ChevronRight,
+  Check,
+  Loader2,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { unlinkListItemFromTask } from '@/app/actions/task-modal'
+import {
+  unlinkListItemFromTask,
+  linkListItemToTask,
+} from '@/app/actions/task-modal'
+import { useLawLists, useLawListItems } from '@/lib/hooks/use-law-lists'
+import type {
+  LawListForLinking,
+  LawListItemForLinking,
+} from '@/app/actions/tasks'
 import { toast } from 'sonner'
+import { useDebounce } from '@/lib/hooks/use-debounce'
+import type { TaskDetails } from '@/app/actions/task-modal'
 
-interface LinkedLaw {
-  id: string
-  law_list_item: {
-    id: string
-    document: {
-      id: string
-      title: string
-      document_number: string
-      slug: string
-    }
-  }
-}
+// Use the same type as TaskDetails to ensure compatibility
+type LinkedLaw = TaskDetails['list_item_links'][number]
 
 interface LinkedLawsBoxProps {
   taskId: string
   links: LinkedLaw[]
   onUpdate: () => Promise<void>
+  /** Optimistic update callback for immediate UI feedback */
+  onOptimisticUpdate?: ((_links: LinkedLaw[]) => void) | undefined
 }
 
-export function LinkedLawsBox({ taskId, links, onUpdate }: LinkedLawsBoxProps) {
-  const [searchDialogOpen, setSearchDialogOpen] = useState(false)
+export function LinkedLawsBox({
+  taskId,
+  links,
+  onUpdate,
+  onOptimisticUpdate,
+}: LinkedLawsBoxProps) {
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [unlinkingId, setUnlinkingId] = useState<string | null>(null)
 
-  const handleUnlink = async (listItemId: string) => {
-    const result = await unlinkListItemFromTask(taskId, listItemId)
-    if (result.success) {
-      await onUpdate()
-    } else {
-      toast.error('Kunde inte ta bort länk', { description: result.error })
-    }
-  }
+  // Optimistic unlink
+  const handleUnlink = useCallback(
+    async (listItemId: string) => {
+      const linkToRemove = links.find((l) => l.law_list_item.id === listItemId)
+      if (!linkToRemove) return
+
+      // Optimistic update - immediately remove from UI
+      setUnlinkingId(listItemId)
+      const optimisticLinks = links.filter(
+        (l) => l.law_list_item.id !== listItemId
+      )
+      onOptimisticUpdate?.(optimisticLinks)
+
+      const result = await unlinkListItemFromTask(taskId, listItemId)
+
+      if (result.success) {
+        // Revalidate to sync with server
+        await onUpdate()
+      } else {
+        // Revert on error
+        onOptimisticUpdate?.(links)
+        toast.error('Kunde inte ta bort länk', { description: result.error })
+      }
+
+      setUnlinkingId(null)
+    },
+    [taskId, links, onUpdate, onOptimisticUpdate]
+  )
+
+  // Group links by law list
+  const groupedLinks = links.reduce(
+    (acc, link) => {
+      const listName = link.law_list_item.law_list?.name || 'Okänd lista'
+      if (!acc[listName]) {
+        acc[listName] = []
+      }
+      acc[listName].push(link)
+      return acc
+    },
+    {} as Record<string, LinkedLaw[]>
+  )
 
   return (
-    <Card className="border-border/60">
+    <Card className="border-border/60 w-full overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold text-foreground">
-            Länkade lagar
+            Länkade dokument
           </CardTitle>
-          <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Länka lag till uppgift</DialogTitle>
+                <DialogTitle>Länka dokument till uppgift</DialogTitle>
               </DialogHeader>
-              <LawSearchDialog
+              <DocumentLinkDialog
                 taskId={taskId}
-                existingLinks={links.map((l) => l.law_list_item.id)}
-                onLink={async () => {
-                  await onUpdate()
-                  setSearchDialogOpen(false)
-                }}
+                links={links}
+                onLink={onUpdate}
+                onOptimisticLink={onOptimisticUpdate}
               />
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                  Stäng
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
@@ -87,52 +152,76 @@ export function LinkedLawsBox({ taskId, links, onUpdate }: LinkedLawsBoxProps) {
         {links.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-4 text-center">
             <Scale className="h-8 w-8 text-muted-foreground/50 mb-2" />
-            <p className="text-sm text-muted-foreground">Inga länkade lagar</p>
+            <p className="text-sm text-muted-foreground">
+              Inga länkade dokument
+            </p>
             <Button
               variant="link"
               size="sm"
               className="text-xs mt-1"
-              onClick={() => setSearchDialogOpen(true)}
+              onClick={() => setDialogOpen(true)}
             >
               + Lägg till länk
             </Button>
           </div>
         ) : (
-          <div className="space-y-2">
-            {links.map((link) => (
-              <div
-                key={link.id}
-                className={cn(
-                  'flex items-start justify-between gap-2 p-2 rounded-md',
-                  'bg-muted/50 hover:bg-muted transition-colors group'
-                )}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs shrink-0">
-                      {link.law_list_item.document.document_number}
-                    </Badge>
-                    <a
-                      href={`/browse/lagar/${link.law_list_item.document.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                    </a>
-                  </div>
-                  <p className="text-sm truncate mt-1">
-                    {link.law_list_item.document.title}
-                  </p>
+          <div className="space-y-3 overflow-hidden">
+            {Object.entries(groupedLinks).map(([listName, listLinks]) => (
+              <div key={listName} className="space-y-1.5 overflow-hidden">
+                {/* List header */}
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+                  <FolderOpen className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{listName}</span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => handleUnlink(link.law_list_item.id)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
+                {/* Documents in list */}
+                <div className="space-y-1 pl-4 overflow-hidden">
+                  {listLinks.map((link) => {
+                    const isUnlinking = unlinkingId === link.law_list_item.id
+                    return (
+                      <div
+                        key={link.id}
+                        className={cn(
+                          'flex items-center gap-2 p-2 rounded-md overflow-hidden',
+                          'bg-muted/50 hover:bg-muted transition-colors group',
+                          isUnlinking && 'opacity-50'
+                        )}
+                      >
+                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div className="w-0 flex-1">
+                          <p className="text-sm truncate">
+                            {link.law_list_item.document.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {link.law_list_item.document.document_number}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <a
+                            href={`/browse/lagar/${link.law_list_item.document.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1 rounded hover:bg-background"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                          </a>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={() => handleUnlink(link.law_list_item.id)}
+                            disabled={isUnlinking}
+                          >
+                            {isUnlinking ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <X className="h-3.5 w-3.5" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             ))}
           </div>
@@ -142,115 +231,242 @@ export function LinkedLawsBox({ taskId, links, onUpdate }: LinkedLawsBoxProps) {
   )
 }
 
-interface LawSearchDialogProps {
+interface DocumentLinkDialogProps {
   taskId: string
-  existingLinks: string[]
+  links: LinkedLaw[]
   onLink: () => Promise<void>
+  onOptimisticLink?: ((_links: LinkedLaw[]) => void) | undefined
 }
 
-function LawSearchDialog({
+function DocumentLinkDialog({
   taskId,
-  existingLinks,
+  links,
   onLink,
-}: LawSearchDialogProps) {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isSearching, setIsSearching] = useState(false)
-  const [results, setResults] = useState<
-    Array<{
-      id: string
-      document: { title: string; document_number: string }
-    }>
-  >([])
-  const [isLinking, setIsLinking] = useState<string | null>(null)
+  onOptimisticLink,
+}: DocumentLinkDialogProps) {
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return
+  // Two-level navigation
+  const [currentList, setCurrentList] = useState<LawListForLinking | null>(null)
 
-    setIsSearching(true)
-    // TODO: Implement search endpoint
-    // For now, show placeholder
-    setResults([])
-    setIsSearching(false)
+  // Linking state
+  const [linkingItemId, setLinkingItemId] = useState<string | null>(null)
+  const [optimisticLinkedIds, setOptimisticLinkedIds] = useState<Set<string>>(
+    new Set()
+  )
+
+  // Cached data
+  const { lists, isLoading: isLoadingLists } = useLawLists()
+  const { items, isLoading: isLoadingItems } = useLawListItems(
+    currentList?.id ?? null,
+    debouncedSearch
+  )
+
+  // Existing + optimistically linked IDs
+  const existingLinkIds = new Set(links.map((l) => l.law_list_item.id))
+  const allLinkedIds = new Set([...existingLinkIds, ...optimisticLinkedIds])
+
+  // Navigate into a list
+  const handleSelectList = (list: LawListForLinking) => {
+    setCurrentList(list)
+    setSearch('')
   }
 
-  const handleLink = async (listItemId: string) => {
-    setIsLinking(listItemId)
+  // Navigate back to lists
+  const handleBackToLists = () => {
+    setCurrentList(null)
+    setSearch('')
+  }
 
-    const { linkListItemToTask } = await import('@/app/actions/task-modal')
-    const result = await linkListItemToTask(taskId, listItemId)
+  // Optimistic link
+  const handleLinkItem = async (item: LawListItemForLinking) => {
+    setLinkingItemId(item.id)
 
-    if (result.success) {
-      await onLink()
-    } else {
-      toast.error('Kunde inte länka', { description: result.error })
+    // Optimistic update - mark as linked immediately
+    setOptimisticLinkedIds((prev) => new Set([...prev, item.id]))
+
+    // Create optimistic link object
+    const optimisticLink: LinkedLaw = {
+      id: `temp-${item.id}`,
+      law_list_item: {
+        id: item.id,
+        document: {
+          id: item.documentId,
+          title: item.documentTitle,
+          document_number: item.documentNumber,
+          slug: '',
+        },
+        law_list: currentList
+          ? { id: currentList.id, name: currentList.name }
+          : { id: '', name: 'Okänd lista' },
+      },
     }
+    onOptimisticLink?.([...links, optimisticLink])
 
-    setIsLinking(null)
+    try {
+      const result = await linkListItemToTask(taskId, item.id)
+      if (result.success) {
+        toast.success('Dokument länkat')
+        await onLink()
+      } else {
+        // Revert optimistic update
+        setOptimisticLinkedIds((prev) => {
+          const next = new Set(prev)
+          next.delete(item.id)
+          return next
+        })
+        onOptimisticLink?.(links)
+        toast.error('Kunde inte länka dokument', { description: result.error })
+      }
+    } catch (error) {
+      console.error('Failed to link item:', error)
+      // Revert optimistic update
+      setOptimisticLinkedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(item.id)
+        return next
+      })
+      onOptimisticLink?.(links)
+      toast.error('Kunde inte länka dokument')
+    } finally {
+      setLinkingItemId(null)
+    }
   }
+
+  // Filter lists by search when at list level
+  const filteredLists = !currentList
+    ? lists.filter((list) =>
+        list.name.toLowerCase().includes(search.toLowerCase())
+      )
+    : lists
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            placeholder="Sök efter lag..."
-            className="pl-9"
-          />
-        </div>
-        <Button onClick={handleSearch} disabled={isSearching}>
-          {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sök'}
-        </Button>
+    <Command shouldFilter={false} className="border rounded-lg overflow-hidden">
+      {/* Breadcrumb header */}
+      <div className="flex items-center gap-1 px-3 py-2 border-b bg-muted/30 text-sm">
+        <button
+          type="button"
+          onClick={handleBackToLists}
+          className={cn(
+            'hover:underline text-muted-foreground',
+            !currentList && 'font-medium text-foreground'
+          )}
+          disabled={!currentList}
+        >
+          Listor
+        </button>
+        {currentList && (
+          <>
+            <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+            <span className="font-medium truncate">{currentList.name}</span>
+          </>
+        )}
       </div>
 
-      <ScrollArea className="h-[300px]">
-        {results.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <Scale className="h-12 w-12 text-muted-foreground/30 mb-4" />
-            <p className="text-sm text-muted-foreground">
-              {searchQuery
-                ? 'Inga lagar hittades'
-                : 'Sök efter lagar i din laglista'}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {results.map((item) => {
-              const isLinked = existingLinks.includes(item.id)
-              return (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-3 rounded-md border"
-                >
-                  <div className="min-w-0">
-                    <Badge variant="outline" className="text-xs mb-1">
-                      {item.document.document_number}
-                    </Badge>
-                    <p className="text-sm truncate">{item.document.title}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant={isLinked ? 'secondary' : 'default'}
-                    disabled={isLinked || isLinking === item.id}
-                    onClick={() => handleLink(item.id)}
-                  >
-                    {isLinking === item.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : isLinked ? (
-                      'Länkad'
-                    ) : (
-                      'Länka'
-                    )}
-                  </Button>
+      <CommandInput
+        placeholder={currentList ? 'Sök dokument...' : 'Sök lista...'}
+        value={search}
+        onValueChange={setSearch}
+      />
+
+      {/* Fixed height list area */}
+      <CommandList className="max-h-[280px] min-h-[200px]">
+        {/* Lists view */}
+        {!currentList && (
+          <>
+            <CommandEmpty>
+              {isLoadingLists ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Laddar listor...
                 </div>
-              )
-            })}
-          </div>
+              ) : (
+                'Inga listor hittades'
+              )}
+            </CommandEmpty>
+            <CommandGroup>
+              {filteredLists.map((list) => (
+                <CommandItem
+                  key={list.id}
+                  value={list.id}
+                  onSelect={() => handleSelectList(list)}
+                  className="cursor-pointer"
+                >
+                  <FolderOpen className="mr-2 h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="flex-1 truncate font-medium">
+                    {list.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground ml-2 shrink-0">
+                    {list.itemCount}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground ml-1 shrink-0" />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </>
         )}
-      </ScrollArea>
-    </div>
+
+        {/* Items view */}
+        {currentList && (
+          <>
+            <CommandEmpty>
+              {isLoadingItems ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Laddar dokument...
+                </div>
+              ) : (
+                'Inga dokument hittades'
+              )}
+            </CommandEmpty>
+            <CommandGroup>
+              {items.map((item) => {
+                const isLinked = allLinkedIds.has(item.id)
+                const isLinking = linkingItemId === item.id
+                return (
+                  <CommandItem
+                    key={item.id}
+                    value={item.id}
+                    onSelect={() =>
+                      !isLinked && !isLinking && handleLinkItem(item)
+                    }
+                    className={cn(
+                      'cursor-pointer',
+                      isLinked && 'opacity-50 cursor-not-allowed'
+                    )}
+                    disabled={isLinked || isLinking}
+                  >
+                    {isLinking ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" />
+                    ) : isLinked ? (
+                      <Check className="mr-2 h-4 w-4 text-green-500 shrink-0" />
+                    ) : (
+                      <FileText className="mr-2 h-4 w-4 text-muted-foreground shrink-0" />
+                    )}
+                    <div className="w-0 flex-1">
+                      <div className="truncate text-sm">
+                        {item.documentTitle}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {item.documentNumber}
+                      </div>
+                    </div>
+                    {isLinked && (
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 shrink-0 text-xs"
+                      >
+                        Länkad
+                      </Badge>
+                    )}
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+          </>
+        )}
+      </CommandList>
+    </Command>
   )
 }

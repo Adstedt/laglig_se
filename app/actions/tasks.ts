@@ -3,7 +3,7 @@
 /**
  * Story 6.4: Task Server Actions
  * Server actions for task workspace data fetching and mutations
- * 
+ *
  * Performance Update: Added comprehensive caching to reduce database load
  */
 
@@ -64,6 +64,10 @@ export interface TaskWithRelations {
       document: {
         title: string
         document_number: string
+      }
+      law_list: {
+        id: string
+        name: string
       }
     }
   }>
@@ -175,7 +179,7 @@ export async function getWorkspaceTasksPaginated(
       const validatedFilters = filters
         ? TaskFiltersSchema.parse(filters)
         : undefined
-      
+
       // Pagination defaults
       const page = Math.max(1, pagination?.page || 1)
       const limit = Math.min(100, Math.max(1, pagination?.limit || 50)) // Max 100, default 50
@@ -249,7 +253,7 @@ export async function getWorkspaceTasksPaginated(
       if (!validatedFilters?.includeArchived) {
         const sevenDaysAgo = new Date()
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-        
+
         if (where.OR) {
           where.AND = [
             { OR: where.OR },
@@ -312,40 +316,49 @@ export async function getWorkspaceTasksPaginated(
       })
 
       // Fetch linked law items separately if needed (lazy loading pattern)
-      const taskIds = tasks.map(t => t.id)
-      const listItemLinks = taskIds.length > 0 ? await prisma.taskListItemLink.findMany({
-        where: { task_id: { in: taskIds } },
-        take: taskIds.length, // Limit to one per task
-        include: {
-          law_list_item: {
-            select: {
-              id: true,
-              document: {
-                select: {
-                  title: true,
-                  document_number: true,
+      const taskIds = tasks.map((t) => t.id)
+      const listItemLinks =
+        taskIds.length > 0
+          ? await prisma.taskListItemLink.findMany({
+              where: { task_id: { in: taskIds } },
+              take: taskIds.length, // Limit to one per task
+              include: {
+                law_list_item: {
+                  select: {
+                    id: true,
+                    document: {
+                      select: {
+                        title: true,
+                        document_number: true,
+                      },
+                    },
+                    law_list: {
+                      select: {
+                        id: true,
+                        name: true,
+                      },
+                    },
+                  },
                 },
               },
-            },
-          },
-        },
-      }) : []
+            })
+          : []
 
       // Map list item links to tasks
-      const tasksWithLinks = tasks.map(task => ({
+      const tasksWithLinks = tasks.map((task) => ({
         ...task,
         list_item_links: listItemLinks
-          .filter(link => link.task_id === task.id)
-          .map(link => ({
-            law_list_item: link.law_list_item
+          .filter((link) => link.task_id === task.id)
+          .map((link) => ({
+            law_list_item: link.law_list_item,
           }))
-          .slice(0, 1) // Take only first link per task
+          .slice(0, 1), // Take only first link per task
       }))
 
       const totalPages = Math.ceil(totalCount / limit)
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: {
           tasks: tasksWithLinks as TaskWithRelations[],
           pagination: {
@@ -354,9 +367,9 @@ export async function getWorkspaceTasksPaginated(
             total: totalCount,
             totalPages,
             hasNext: page < totalPages,
-            hasPrev: page > 1
-          }
-        }
+            hasPrev: page > 1,
+          },
+        },
       }
     })
   } catch (error) {
@@ -505,6 +518,12 @@ export async function getWorkspaceTasks(
                     select: {
                       title: true,
                       document_number: true,
+                    },
+                  },
+                  law_list: {
+                    select: {
+                      id: true,
+                      name: true,
                     },
                   },
                 },
@@ -1080,44 +1099,94 @@ export async function getOverdueTasks(limit: number = 5): Promise<
 
 /**
  * Create a new task
+ * Story 6.7: Extended to support optional columnId and linked law items
  */
 export async function createTask(data: {
   title: string
   description?: string
-  columnId: string
+  columnId?: string // Optional - uses first column if not provided
   assigneeId?: string
   dueDate?: Date
   priority?: TaskPriority
+  linkedListItemIds?: string[] // Story 6.7: Link task to law list items
 }): Promise<ActionResult<TaskWithRelations>> {
   try {
     return await withWorkspace(async ({ workspaceId, userId }) => {
-      // Verify column belongs to workspace
-      const column = await prisma.taskColumn.findFirst({
-        where: { id: data.columnId, workspace_id: workspaceId },
-      })
+      // Story 6.7: Get column - use provided ID or find first (default) column
+      const column = data.columnId
+        ? await prisma.taskColumn.findFirst({
+            where: { id: data.columnId, workspace_id: workspaceId },
+          })
+        : await prisma.taskColumn.findFirst({
+            where: { workspace_id: workspaceId },
+            orderBy: { position: 'asc' },
+          })
 
       if (!column) {
-        return { success: false, error: 'Kolumnen hittades inte' }
+        return { success: false, error: 'Ingen kolumn hittades' }
       }
 
       // Get max position in column
       const maxPosition = await prisma.task.aggregate({
-        where: { column_id: data.columnId },
+        where: { column_id: column.id },
         _max: { position: true },
       })
 
-      const task = await prisma.task.create({
-        data: {
-          workspace_id: workspaceId,
-          column_id: data.columnId,
-          title: data.title,
-          description: data.description ?? null,
-          assignee_id: data.assigneeId ?? null,
-          due_date: data.dueDate ?? null,
-          priority: data.priority ?? 'MEDIUM',
-          position: (maxPosition._max.position ?? -1) + 1,
-          created_by: userId,
-        },
+      // Create task with optional linked list items in transaction
+      const task = await prisma.$transaction(async (tx) => {
+        const newTask = await tx.task.create({
+          data: {
+            workspace_id: workspaceId,
+            column_id: column.id,
+            title: data.title,
+            description: data.description ?? null,
+            assignee_id: data.assigneeId ?? null,
+            due_date: data.dueDate ?? null,
+            priority: data.priority ?? 'MEDIUM',
+            position: (maxPosition._max.position ?? -1) + 1,
+            created_by: userId,
+          },
+        })
+
+        // Story 6.7: Create law list item links if provided
+        if (data.linkedListItemIds && data.linkedListItemIds.length > 0) {
+          // Verify all list items belong to workspace
+          const validListItems = await tx.lawListItem.findMany({
+            where: {
+              id: { in: data.linkedListItemIds },
+              law_list: { workspace_id: workspaceId },
+            },
+            select: { id: true },
+          })
+
+          if (validListItems.length > 0) {
+            await tx.taskListItemLink.createMany({
+              data: validListItems.map((item) => ({
+                task_id: newTask.id,
+                law_list_item_id: item.id,
+              })),
+            })
+          }
+        }
+
+        // Story 6.7: Log activity
+        await tx.activityLog.create({
+          data: {
+            workspace_id: workspaceId,
+            user_id: userId,
+            entity_type: 'task',
+            entity_id: newTask.id,
+            action: 'created',
+            new_value: { title: newTask.title },
+          },
+        })
+
+        return newTask
+      })
+
+      // Fetch full task with relations
+      const fullTask = await prisma.task.findUnique({
+        where: { id: task.id },
         include: {
           column: {
             select: {
@@ -1153,6 +1222,12 @@ export async function createTask(data: {
                       document_number: true,
                     },
                   },
+                  law_list: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
                 },
               },
             },
@@ -1166,7 +1241,7 @@ export async function createTask(data: {
       })
 
       revalidatePath('/tasks')
-      return { success: true, data: task as TaskWithRelations }
+      return { success: true, data: fullTask as TaskWithRelations }
     })
   } catch (error) {
     console.error('createTask error:', error)
@@ -1269,7 +1344,11 @@ const CreateTaskColumnSchema = z.object({
 })
 
 const UpdateTaskColumnSchema = z.object({
-  name: z.string().min(1, 'Kolumnnamn krävs').max(50, 'Max 50 tecken').optional(),
+  name: z
+    .string()
+    .min(1, 'Kolumnnamn krävs')
+    .max(50, 'Max 50 tecken')
+    .optional(),
   color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, 'Ogiltig färgkod')
@@ -1343,7 +1422,10 @@ export async function createTaskColumn(
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.issues[0]?.message ?? 'Ogiltiga data' }
+      return {
+        success: false,
+        error: error.issues[0]?.message ?? 'Ogiltiga data',
+      }
     }
     console.error('createTaskColumn error:', error)
     return {
@@ -1414,7 +1496,9 @@ export async function updateTaskColumn(
         data: {
           ...(validated.name && { name: validated.name }),
           ...(validated.color && { color: validated.color }),
-          ...(validated.is_done !== undefined && { is_done: validated.is_done }),
+          ...(validated.is_done !== undefined && {
+            is_done: validated.is_done,
+          }),
         },
         include: {
           _count: {
@@ -1429,7 +1513,10 @@ export async function updateTaskColumn(
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.issues[0]?.message ?? 'Ogiltiga data' }
+      return {
+        success: false,
+        error: error.issues[0]?.message ?? 'Ogiltiga data',
+      }
     }
     console.error('updateTaskColumn error:', error)
     return {
@@ -1474,7 +1561,10 @@ export async function deleteTaskColumn(
       })
 
       if (!firstColumn || firstColumn.id === columnId) {
-        return { success: false, error: 'Kan inte hitta målkolumn för uppgifter' }
+        return {
+          success: false,
+          error: 'Kan inte hitta målkolumn för uppgifter',
+        }
       }
 
       const migratedCount = column._count.tasks
@@ -1657,6 +1747,220 @@ export async function getWorkspaceMembers(): Promise<
     })
   } catch (error) {
     console.error('getWorkspaceMembers error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+// ============================================================================
+// Story 6.7: Law List Item Search (for task linking)
+// ============================================================================
+
+export interface LawListItemForLinking {
+  id: string
+  documentId: string
+  documentTitle: string
+  documentNumber: string
+  listId: string
+  listName: string
+}
+
+export interface LawListForLinking {
+  id: string
+  name: string
+  itemCount: number
+}
+
+/**
+ * Get all law lists in the workspace (for document linking selector)
+ * Story 6.7: First step in cascading selection
+ */
+export async function getWorkspaceLawLists(): Promise<
+  ActionResult<LawListForLinking[]>
+> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      const lists = await prisma.lawList.findMany({
+        where: { workspace_id: workspaceId },
+        include: {
+          _count: {
+            select: { items: true },
+          },
+        },
+        orderBy: { name: 'asc' },
+      })
+
+      return {
+        success: true,
+        data: lists.map((list) => ({
+          id: list.id,
+          name: list.name,
+          itemCount: list._count.items,
+        })),
+      }
+    })
+  } catch (error) {
+    console.error('getWorkspaceLawLists error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+/**
+ * Get items within a specific law list (for document linking selector)
+ * Story 6.7: Second step in cascading selection
+ */
+export async function getLawListItemsForLinking(
+  listId: string,
+  query?: string
+): Promise<ActionResult<LawListItemForLinking[]>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      // Verify list belongs to workspace
+      const list = await prisma.lawList.findFirst({
+        where: { id: listId, workspace_id: workspaceId },
+      })
+
+      if (!list) {
+        return { success: false, error: 'Listan hittades inte' }
+      }
+
+      // Build where clause
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const whereClause: any = { law_list_id: listId }
+
+      if (query && query.length > 0) {
+        whereClause.OR = [
+          {
+            document: {
+              title: { contains: query, mode: 'insensitive' },
+            },
+          },
+          {
+            document: {
+              document_number: { contains: query, mode: 'insensitive' },
+            },
+          },
+        ]
+      }
+
+      const items = await prisma.lawListItem.findMany({
+        where: whereClause,
+        include: {
+          document: {
+            select: {
+              id: true,
+              title: true,
+              document_number: true,
+            },
+          },
+          law_list: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { position: 'asc' },
+      })
+
+      return {
+        success: true,
+        data: items.map((item) => ({
+          id: item.id,
+          documentId: item.document.id,
+          documentTitle: item.document.title,
+          documentNumber: item.document.document_number,
+          listId: item.law_list.id,
+          listName: item.law_list.name,
+        })),
+      }
+    })
+  } catch (error) {
+    console.error('getLawListItemsForLinking error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+/**
+ * Search law list items for linking to tasks
+ * Story 6.7: Used by the law-link-selector component (legacy flat search)
+ */
+export async function searchLawListItemsForLinking(
+  query: string,
+  limit: number = 20
+): Promise<ActionResult<LawListItemForLinking[]>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      // Build where clause - handle empty query case
+      const whereClause =
+        query.length > 0
+          ? {
+              law_list: { workspace_id: workspaceId },
+              OR: [
+                {
+                  document: {
+                    title: { contains: query, mode: 'insensitive' as const },
+                  },
+                },
+                {
+                  document: {
+                    document_number: {
+                      contains: query,
+                      mode: 'insensitive' as const,
+                    },
+                  },
+                },
+              ],
+            }
+          : {
+              law_list: { workspace_id: workspaceId },
+            }
+
+      const items = await prisma.lawListItem.findMany({
+        where: whereClause,
+        take: limit,
+        include: {
+          document: {
+            select: {
+              id: true,
+              title: true,
+              document_number: true,
+            },
+          },
+          law_list: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          document: { title: 'asc' },
+        },
+      })
+
+      return {
+        success: true,
+        data: items.map((item) => ({
+          id: item.id,
+          documentId: item.document.id,
+          documentTitle: item.document.title,
+          documentNumber: item.document.document_number,
+          listId: item.law_list.id,
+          listName: item.law_list.name,
+        })),
+      }
+    })
+  } catch (error) {
+    console.error('searchLawListItemsForLinking error:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Ett fel uppstod',
