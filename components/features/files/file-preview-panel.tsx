@@ -159,6 +159,7 @@ export function FilePreviewPanel({
       setFileUrl(null)
       setImageDimensions(null)
       setPdfPageCount(undefined)
+      setLightboxOpen(false) // Reset lightbox when panel closes
       return
     }
 
@@ -197,7 +198,14 @@ export function FilePreviewPanel({
   }, [fileUrl, file])
 
   // Reset edit state when file changes
+  // Don't close panel if lightbox is open (user likely pressed Escape to close lightbox)
   const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && lightboxOpen) {
+      // Lightbox is open, so this close was likely triggered by Escape key
+      // Just close the lightbox, not the panel
+      setLightboxOpen(false)
+      return
+    }
     if (!newOpen) {
       setIsEditing(false)
     }

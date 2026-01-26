@@ -5,7 +5,7 @@
  * AC: 18 - PDF page viewer with navigation and zoom
  */
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import {
   ChevronLeft,
@@ -67,6 +67,37 @@ export function PdfPreview({
   const [error, setError] = useState<string | null>(null)
   const [isPasswordProtected, setIsPasswordProtected] = useState(false)
   const [isWorkerReady, setIsWorkerReady] = useState(false)
+  const [pdfData, setPdfData] = useState<Uint8Array | null>(null)
+
+  // Fetch PDF as Uint8Array to avoid CORS issues with signed URLs
+  // Using Uint8Array instead of ArrayBuffer to prevent detachment issues
+  useEffect(() => {
+    if (!url) return
+
+    const fetchPdf = async () => {
+      try {
+        const response = await fetch(url)
+        if (!response.ok) {
+          throw new Error('Failed to fetch PDF')
+        }
+        const buffer = await response.arrayBuffer()
+        // Convert to Uint8Array to prevent detachment
+        setPdfData(new Uint8Array(buffer))
+      } catch (err) {
+        console.error('Failed to fetch PDF:', err)
+        setError('Kunde inte hämta PDF-filen')
+        setIsLoading(false)
+      }
+    }
+
+    fetchPdf()
+  }, [url])
+
+  // Memoize file object to prevent unnecessary reloads
+  const fileObject = useMemo(() => {
+    if (!pdfData) return null
+    return { data: pdfData }
+  }, [pdfData])
 
   // Configure PDF.js worker on client-side only
   useEffect(() => {
@@ -251,12 +282,12 @@ export function PdfPreview({
 
       {/* PDF Content */}
       <div className="flex-1 overflow-auto flex items-center justify-center p-4 bg-muted/10">
-        {(isLoading || !isWorkerReady) && (
+        {(isLoading || !isWorkerReady || !fileObject) && (
           <Skeleton className="w-[400px] h-[500px]" />
         )}
-        {isWorkerReady && (
+        {isWorkerReady && fileObject && (
           <Document
-            file={url}
+            file={fileObject}
             onLoadSuccess={handleLoadSuccess}
             onLoadError={handleLoadError}
             loading={null}
@@ -290,6 +321,26 @@ export function PdfThumbnail({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(false)
   const [isWorkerReady, setIsWorkerReady] = useState(false)
+  const [pdfData, setPdfData] = useState<Uint8Array | null>(null)
+
+  // Fetch PDF as Uint8Array to avoid CORS and detachment issues
+  useEffect(() => {
+    if (!url) return
+
+    const fetchPdf = async () => {
+      try {
+        const response = await fetch(url)
+        if (!response.ok) throw new Error('Failed to fetch')
+        const buffer = await response.arrayBuffer()
+        setPdfData(new Uint8Array(buffer))
+      } catch {
+        setError(true)
+        setIsLoading(false)
+      }
+    }
+
+    fetchPdf()
+  }, [url])
 
   // Configure PDF.js worker on client-side only
   useEffect(() => {
@@ -306,18 +357,24 @@ export function PdfThumbnail({
     setupWorker()
   }, [])
 
+  // Memoize file object to prevent unnecessary reloads
+  const fileObject = useMemo(() => {
+    if (!pdfData) return null
+    return { data: pdfData }
+  }, [pdfData])
+
   return (
     <div className={cn('relative', className)}>
-      {(isLoading || !isWorkerReady) && !error && (
+      {(isLoading || !isWorkerReady || !fileObject) && !error && (
         <Skeleton className="absolute inset-0" />
       )}
       {error ? (
         <div className="flex items-center justify-center h-full text-muted-foreground">
           <AlertCircle className="h-6 w-6" />
         </div>
-      ) : isWorkerReady ? (
+      ) : isWorkerReady && fileObject ? (
         <Document
-          file={url}
+          file={fileObject}
           onLoadSuccess={() => setIsLoading(false)}
           onLoadError={() => {
             setIsLoading(false)
