@@ -362,6 +362,13 @@ export async function updateListItemBusinessContext(
         data: { business_context: content || null },
       })
 
+      // Invalidate Redis cache for this list item
+      try {
+        await redis.del(`list-item-details:${listItemId}`)
+      } catch {
+        // Cache invalidation error - non-critical
+      }
+
       revalidatePath('/laglistor')
       return { success: true }
     }, 'tasks:edit')
@@ -409,6 +416,13 @@ export async function updateListItemComplianceStatus(
         where: { id: listItemId },
         data: { compliance_status: status },
       })
+
+      // Invalidate Redis cache for this list item
+      try {
+        await redis.del(`list-item-details:${listItemId}`)
+      } catch {
+        // Cache invalidation error - non-critical
+      }
 
       revalidatePath('/laglistor')
       return { success: true }
@@ -471,6 +485,13 @@ export async function updateListItemResponsible(
         where: { id: listItemId },
         data: { responsible_user_id: userId },
       })
+
+      // Invalidate Redis cache for this list item
+      try {
+        await redis.del(`list-item-details:${listItemId}`)
+      } catch {
+        // Cache invalidation error - non-critical
+      }
 
       revalidatePath('/laglistor')
       return { success: true }

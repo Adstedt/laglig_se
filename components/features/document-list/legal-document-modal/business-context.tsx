@@ -7,6 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { mutate } from 'swr'
 import {
   AccordionContent,
   AccordionItem,
@@ -69,6 +70,29 @@ export function BusinessContext({
       setSaveStatus('saved')
       setIsEditing(false)
       setTimeout(() => setSaveStatus('idle'), 2000)
+
+      // Optimistically update SWR caches so reopening modal shows new value instantly
+      // Update extra fields cache (used when initialData is provided)
+      mutate(
+        `list-item-extra:${listItemId}`,
+        (
+          current:
+            | { businessContext: string | null; aiCommentary: string | null }
+            | undefined
+        ) => ({
+          businessContext: trimmed,
+          aiCommentary: current?.aiCommentary ?? null,
+        }),
+        { revalidate: false }
+      )
+      // Update full data cache (used when no initialData)
+      mutate(
+        `list-item:${listItemId}`,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (current: any) =>
+          current ? { ...current, businessContext: trimmed } : current,
+        { revalidate: false }
+      )
     } else {
       toast.error('Kunde inte spara', { description: result.error })
       setSaveStatus('idle')
