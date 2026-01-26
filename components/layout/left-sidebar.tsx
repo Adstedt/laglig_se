@@ -8,6 +8,7 @@ import {
   Scale,
   BookOpen,
   CheckSquare,
+  FolderOpen,
   Users,
   Bell,
   Settings,
@@ -87,6 +88,11 @@ const workItems: NavItem[] = [
     title: 'Uppgifter',
     icon: CheckSquare,
     href: '/tasks',
+  },
+  {
+    title: 'Dokument',
+    icon: FolderOpen,
+    href: '/documents',
   },
   {
     title: 'HR',

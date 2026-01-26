@@ -75,10 +75,10 @@ export interface TaskDetails {
     }
   }>
   comments: TaskComment[]
-  evidence: TaskEvidence[]
+  evidence: TaskEvidence[] // Story 6.7a: Now sourced from file_links
   _count: {
     comments: number
-    evidence: number
+    evidence: number // Story 6.7a: Now counts file_links
   }
 }
 
@@ -101,12 +101,16 @@ export interface TaskComment {
   replies?: TaskComment[]
 }
 
+// Story 6.7a: Updated to use WorkspaceFile with many-to-many links
 export interface TaskEvidence {
-  id: string
+  id: string // This is now the file_link id
+  file_id: string
   filename: string
+  original_filename: string
   file_size: number
   mime_type: string
   storage_path: string
+  category: string
   description: string | null
   created_at: Date
   uploader: {
@@ -322,15 +326,20 @@ export async function getTaskDetails(
               },
             },
           },
-          evidence: {
-            orderBy: { created_at: 'desc' },
+          // Story 6.7a: Use file_links instead of evidence
+          file_links: {
+            orderBy: { linked_at: 'desc' },
             include: {
-              uploader: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                  avatar_url: true,
+              file: {
+                include: {
+                  uploader: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                      avatar_url: true,
+                    },
+                  },
                 },
               },
             },
@@ -338,7 +347,7 @@ export async function getTaskDetails(
           _count: {
             select: {
               comments: true,
-              evidence: true,
+              file_links: true,
             },
           },
         },
@@ -349,11 +358,30 @@ export async function getTaskDetails(
       }
 
       // Transform to TaskDetails type with labels (stored in metadata or separate field)
+      // Story 6.7a: Transform file_links to evidence format for backward compatibility
+      const evidence: TaskEvidence[] = task.file_links.map((link) => ({
+        id: link.id,
+        file_id: link.file.id,
+        filename: link.file.filename,
+        original_filename: link.file.original_filename,
+        file_size: link.file.file_size,
+        mime_type: link.file.mime_type,
+        storage_path: link.file.storage_path,
+        category: link.file.category,
+        description: link.file.description,
+        created_at: link.file.created_at,
+        uploader: link.file.uploader,
+      }))
+
       const taskDetails: TaskDetails = {
         ...task,
         labels: [], // TODO: Add labels field to Task model if needed
         comments: task.comments as unknown as TaskComment[],
-        evidence: task.evidence as unknown as TaskEvidence[],
+        evidence,
+        _count: {
+          comments: task._count.comments,
+          evidence: task._count.file_links,
+        },
       }
 
       return { success: true, data: taskDetails }

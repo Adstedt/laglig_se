@@ -40,7 +40,9 @@ model User {
   assigned_tasks           Task[]                   @relation("TaskAssignee")
   created_tasks            Task[]                   @relation("TaskCreator")
   comments                 Comment[]
-  uploaded_evidence        Evidence[]
+  uploaded_files           WorkspaceFile[]
+  file_task_links          FileTaskLink[]           @relation("FileTaskLinkUser")
+  file_list_item_links     FileListItemLink[]       @relation("FileListItemLinkUser")
   notifications            Notification[]
   notification_preferences NotificationPreference[]
   activity_logs            ActivityLog[]
@@ -81,7 +83,7 @@ model Workspace {
   task_columns             TaskColumn[]
   tasks                    Task[]
   comments                 Comment[]
-  evidence                 Evidence[]
+  files                    WorkspaceFile[]
   notifications            Notification[]
   notification_preferences NotificationPreference[]
   activity_logs            ActivityLog[]
@@ -213,10 +215,10 @@ model LawListItem {
   responsible_user User?         @relation("LawListItemResponsible", fields: [responsible_user_id], references: [id])
   group            LawListGroup? @relation(fields: [group_id], references: [id], onDelete: SetNull) // Story 4.13
 
-  // Epic 6: Relations to tasks, comments, evidence
+  // Epic 6: Relations to tasks, comments, files
   task_links TaskListItemLink[]
   comments   Comment[]
-  evidence   Evidence[]
+  file_links FileListItemLink[]
 
   @@unique([law_list_id, document_id])
   @@index([law_list_id])
@@ -286,15 +288,15 @@ model LegalDocument {
 // ============================================================================
 
 model DocumentVisit {
-  document_id   String   @id // TEXT to match legal_documents.id type
-  visit_count   Int      @default(1)
-  last_visited  DateTime @default(now())
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-  
+  document_id  String   @id // TEXT to match legal_documents.id type
+  visit_count  Int      @default(1)
+  last_visited DateTime @default(now())
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
   // Relations
   document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
-  
+
   @@index([visit_count(sort: Desc)]) // For finding most visited
   @@index([last_visited(sort: Desc)]) // For recent activity
   @@map("document_visits")
@@ -798,7 +800,7 @@ model Task {
   creator         User               @relation("TaskCreator", fields: [created_by], references: [id])
   list_item_links TaskListItemLink[]
   comments        Comment[]
-  evidence        Evidence[]
+  file_links      FileTaskLink[]
 
   @@index([workspace_id])
   @@index([column_id])
@@ -862,39 +864,82 @@ model Comment {
   @@map("comments")
 }
 
-// File attachments stored in Supabase Storage
-model Evidence {
+// Story 6.7a: Workspace files with many-to-many links to tasks and list items
+model WorkspaceFile {
   id           String @id @default(uuid())
   workspace_id String
   uploaded_by  String
 
   // File metadata
-  filename     String
-  file_size    Int // Bytes
-  mime_type    String
-  storage_path String // Supabase Storage path
+  filename          String // Display name (editable)
+  original_filename String // Original upload name (preserved)
+  file_size         Int // Bytes
+  mime_type         String
+  storage_path      String // Supabase Storage path
+  category          FileCategory @default(OVRIGT)
 
   // Optional description
   description String? @db.Text
 
-  // Polymorphic parent (one of these must be set)
-  task_id          String?
-  law_list_item_id String?
-
   // Timestamps
   created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   // Relations
-  workspace     Workspace    @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-  uploader      User         @relation(fields: [uploaded_by], references: [id])
-  task          Task?        @relation(fields: [task_id], references: [id], onDelete: Cascade)
-  law_list_item LawListItem? @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+  workspace       Workspace          @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  uploader        User               @relation(fields: [uploaded_by], references: [id])
+  task_links      FileTaskLink[]
+  list_item_links FileListItemLink[]
 
   @@index([workspace_id])
-  @@index([task_id])
-  @@index([law_list_item_id])
   @@index([uploaded_by])
-  @@map("evidence")
+  @@index([category])
+  @@map("workspace_files")
+}
+
+// Story 6.7a: File category enum
+enum FileCategory {
+  BEVIS // Evidence for compliance
+  POLICY // Internal policies
+  AVTAL // Agreements/contracts
+  CERTIFIKAT // Certificates
+  OVRIGT // Other/miscellaneous
+}
+
+// Story 6.7a: Many-to-many File <-> Task
+model FileTaskLink {
+  id        String   @id @default(uuid())
+  file_id   String
+  task_id   String
+  linked_at DateTime @default(now())
+  linked_by String // User who created the link
+
+  file WorkspaceFile @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  task Task          @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  user User          @relation("FileTaskLinkUser", fields: [linked_by], references: [id])
+
+  @@unique([file_id, task_id])
+  @@index([file_id])
+  @@index([task_id])
+  @@map("file_task_links")
+}
+
+// Story 6.7a: Many-to-many File <-> LawListItem
+model FileListItemLink {
+  id           String   @id @default(uuid())
+  file_id      String
+  list_item_id String
+  linked_at    DateTime @default(now())
+  linked_by    String
+
+  file      WorkspaceFile @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  list_item LawListItem   @relation(fields: [list_item_id], references: [id], onDelete: Cascade)
+  user      User          @relation("FileListItemLinkUser", fields: [linked_by], references: [id])
+
+  @@unique([file_id, list_item_id])
+  @@index([file_id])
+  @@index([list_item_id])
+  @@map("file_list_item_links")
 }
 
 // In-app notification system for user alerts
