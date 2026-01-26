@@ -7,6 +7,7 @@
 import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { Search, Bell, Menu, Plus } from 'lucide-react'
 import { UserMenu } from '@/components/layout/user-menu'
 import { Input } from '@/components/ui/input'
@@ -25,6 +26,8 @@ interface HeaderProps {
 }
 
 export function Header({ user, onMenuToggle }: HeaderProps) {
+  const router = useRouter()
+
   // Story 6.7: Global task creation modal state
   const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false)
 
@@ -32,6 +35,12 @@ export function Header({ user, onMenuToggle }: HeaderProps) {
   const handleOpenCreateTaskModal = useCallback(() => {
     setCreateTaskModalOpen(true)
   }, [])
+
+  // Story 6.7: Refresh page data when task is created from header
+  // This ensures the task workspace (if visible) gets the new task
+  const handleTaskCreated = useCallback(() => {
+    router.refresh()
+  }, [router])
 
   // Story 6.7: Register global keyboard shortcut (Ctrl+Shift+T / Cmd+Shift+T)
   useGlobalKeyboardShortcuts({
@@ -115,6 +124,7 @@ export function Header({ user, onMenuToggle }: HeaderProps) {
         open={createTaskModalOpen}
         onOpenChange={setCreateTaskModalOpen}
         currentUserId={user.id}
+        onTaskCreated={handleTaskCreated}
       />
     </>
   )
