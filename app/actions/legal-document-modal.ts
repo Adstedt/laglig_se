@@ -639,42 +639,31 @@ export async function getEvidenceForListItem(
         return { success: false, error: 'Laglistpost hittades inte' }
       }
 
-      // Try to fetch evidence - graceful fallback if Evidence model doesn't exist
-      try {
-        const evidence = await prisma.evidence.findMany({
-          where: {
-            task: {
-              list_item_links: { some: { law_list_item_id: listItemId } },
+      // Story 6.7a: Fetch files linked to this list item via file_list_item_links
+      const fileLinks = await prisma.fileListItemLink.findMany({
+        where: { list_item_id: listItemId },
+        include: {
+          file: {
+            select: {
+              id: true,
+              filename: true,
+              mime_type: true,
+              created_at: true,
             },
           },
-          select: {
-            id: true,
-            filename: true,
-            mime_type: true,
-            created_at: true,
-          },
-          orderBy: { created_at: 'desc' },
-          take: 10,
-        })
+        },
+        orderBy: { linked_at: 'desc' },
+        take: 10,
+      })
 
-        return {
-          success: true,
-          data: evidence.map((e) => ({
-            id: e.id,
-            filename: e.filename,
-            mimeType: e.mime_type,
-            createdAt: e.created_at,
-          })),
-        }
-      } catch (evidenceError) {
-        // Table doesn't exist - graceful fallback
-        if (
-          evidenceError instanceof Error &&
-          evidenceError.message.includes('does not exist')
-        ) {
-          return { success: true, data: null }
-        }
-        throw evidenceError
+      return {
+        success: true,
+        data: fileLinks.map((link) => ({
+          id: link.file.id,
+          filename: link.file.filename,
+          mimeType: link.file.mime_type,
+          createdAt: link.file.created_at,
+        })),
       }
     }, 'read')
   } catch (error) {
