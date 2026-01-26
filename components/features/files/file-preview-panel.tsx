@@ -379,9 +379,9 @@ export function FilePreviewPanel({
                   onFullscreen={() => setLightboxOpen(true)}
                   className="min-h-[300px]"
                 />
-              ) : isPdf && fileUrl ? (
+              ) : isPdf ? (
                 <PdfPreview
-                  url={fileUrl}
+                  url={`/api/files/${file.id}`}
                   filename={file.filename}
                   onOpenInNewTab={handleDownload}
                   className="min-h-[400px]"
