@@ -864,18 +864,22 @@ model Comment {
   @@map("comments")
 }
 
-// Story 6.7a: Workspace files with many-to-many links to tasks and list items
+// Story 6.7a & 6.7b: Workspace files with folder hierarchy and many-to-many links
 model WorkspaceFile {
   id           String @id @default(uuid())
   workspace_id String
   uploaded_by  String
 
-  // File metadata
+  // Story 6.7b: Folder hierarchy support
+  parent_folder_id String? // null = root level
+  is_folder        Boolean @default(false) // true = folder, false = file
+
+  // File metadata (null for folders)
   filename          String // Display name (editable)
-  original_filename String // Original upload name (preserved)
-  file_size         Int // Bytes
-  mime_type         String
-  storage_path      String // Supabase Storage path
+  original_filename String? // Original upload name (preserved) - null for folders
+  file_size         Int? // Bytes - null for folders (computed from contents)
+  mime_type         String? // null for folders
+  storage_path      String? // Supabase Storage path - null for folders
   category          FileCategory @default(OVRIGT)
 
   // Optional description
@@ -888,12 +892,18 @@ model WorkspaceFile {
   // Relations
   workspace       Workspace          @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
   uploader        User               @relation(fields: [uploaded_by], references: [id])
+  parent_folder   WorkspaceFile?     @relation("FolderChildren", fields: [parent_folder_id], references: [id], onDelete: Cascade)
+  children        WorkspaceFile[]    @relation("FolderChildren")
   task_links      FileTaskLink[]
   list_item_links FileListItemLink[]
 
+  // Story 6.7b: Unique filename within same folder
+  @@unique([workspace_id, parent_folder_id, filename], name: "unique_filename_in_folder")
   @@index([workspace_id])
+  @@index([parent_folder_id])
   @@index([uploaded_by])
   @@index([category])
+  @@index([is_folder])
   @@map("workspace_files")
 }
 

@@ -16,7 +16,8 @@ interface EvidenceSummaryBoxProps {
   onViewAll: () => void
 }
 
-function getFileIcon(mimeType: string) {
+function getFileIcon(mimeType: string | null) {
+  if (!mimeType) return FileText // Default icon for folders
   if (mimeType.startsWith('image/')) {
     return Image
   }

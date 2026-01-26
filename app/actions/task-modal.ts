@@ -106,10 +106,10 @@ export interface TaskEvidence {
   id: string // This is now the file_link id
   file_id: string
   filename: string
-  original_filename: string
-  file_size: number
-  mime_type: string
-  storage_path: string
+  original_filename: string | null // Nullable for folders (Story 6.7b)
+  file_size: number | null // Nullable for folders (Story 6.7b)
+  mime_type: string | null // Nullable for folders (Story 6.7b)
+  storage_path: string | null // Nullable for folders (Story 6.7b)
   category: string
   description: string | null
   created_at: Date

@@ -46,8 +46,13 @@ export const ACCEPT_STRING = ACCEPTED_TYPES.join(',')
 // Utilities (shared)
 // ============================================================================
 
-export function getFileIcon(mimeType: string, className?: string) {
+export function getFileIcon(mimeType: string | null, className?: string) {
   const iconClass = cn('h-4 w-4', className)
+
+  // Default icon for folders or unknown types
+  if (!mimeType) {
+    return <File className={iconClass} aria-hidden="true" />
+  }
 
   if (mimeType.startsWith('image/')) {
     return <ImageIcon className={iconClass} aria-hidden="true" />
@@ -81,7 +86,8 @@ export function getFileIcon(mimeType: string, className?: string) {
   return <File className={iconClass} aria-hidden="true" />
 }
 
-export function formatFileSize(bytes: number): string {
+export function formatFileSize(bytes: number | null): string {
+  if (bytes === null) return 'Mapp' // Folders don't have size
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`

@@ -73,7 +73,7 @@ export interface TaskProgress {
 export interface EvidenceSummary {
   id: string
   filename: string
-  mimeType: string
+  mimeType: string | null // Nullable for folders (Story 6.7b)
   createdAt: Date
 }
 

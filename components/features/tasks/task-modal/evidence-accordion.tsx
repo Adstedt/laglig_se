@@ -55,7 +55,9 @@ const ACCEPTED_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 ]
 
-function getFileIcon(mimeType: string) {
+function getFileIcon(mimeType: string | null) {
+  if (!mimeType)
+    return <File className="h-4 w-4 text-muted-foreground" aria-hidden="true" /> // Default icon for folders
   if (mimeType.startsWith('image/')) {
     return <ImageIcon className="h-4 w-4 text-blue-500" aria-hidden="true" />
   }
@@ -65,7 +67,8 @@ function getFileIcon(mimeType: string) {
   return <File className="h-4 w-4 text-foreground/70" aria-hidden="true" />
 }
 
-function formatFileSize(bytes: number): string {
+function formatFileSize(bytes: number | null): string {
+  if (bytes === null) return 'Mapp' // Folders don't have size
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`

@@ -613,15 +613,17 @@ export async function deleteFile(fileId: string): Promise<ActionResult> {
         }
       }
 
-      // Delete from storage
-      const storageClient = getStorageClient()
-      const { error: deleteError } = await storageClient.storage
-        .from(BUCKET_NAME)
-        .remove([file.storage_path])
+      // Delete from storage (only if file has storage_path - folders don't)
+      if (file.storage_path) {
+        const storageClient = getStorageClient()
+        const { error: deleteError } = await storageClient.storage
+          .from(BUCKET_NAME)
+          .remove([file.storage_path])
 
-      if (deleteError) {
-        console.error('Storage delete error:', deleteError)
-        // Continue with database deletion even if storage fails
+        if (deleteError) {
+          console.error('Storage delete error:', deleteError)
+          // Continue with database deletion even if storage fails
+        }
       }
 
       // Delete from database (cascades to links)
@@ -918,6 +920,11 @@ export async function getFileDownloadUrl(
         return { success: false, error: 'Filen hittades inte' }
       }
 
+      // Folders don't have storage_path
+      if (!file.storage_path) {
+        return { success: false, error: 'Mappar kan inte laddas ner' }
+      }
+
       const storageClient = getStorageClient()
       const { data, error } = await storageClient.storage
         .from(BUCKET_NAME)
@@ -974,10 +981,14 @@ export async function deleteFilesBulk(
         return { success: false, error: 'Inga filer att radera' }
       }
 
-      // Delete from storage
-      const storageClient = getStorageClient()
-      const paths = files.map((f) => f.storage_path)
-      await storageClient.storage.from(BUCKET_NAME).remove(paths)
+      // Delete from storage (filter out folders which don't have storage_path)
+      const paths = files
+        .map((f) => f.storage_path)
+        .filter((p): p is string => p !== null)
+      if (paths.length > 0) {
+        const storageClient = getStorageClient()
+        await storageClient.storage.from(BUCKET_NAME).remove(paths)
+      }
 
       // Delete from database
       const deleteResult = await prisma.workspaceFile.deleteMany({
