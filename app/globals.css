@@ -425,7 +425,7 @@ html {
   /* ==========================================================================
    * Compact Modal Styles - Tighter spacing for legal document modals
    * ========================================================================== */
-  
+
   .legal-document-modal .legal-document {
     font-size: 0.9375rem; /* 15px instead of 17px */
     line-height: 1.65; /* Tighter than 1.8 */
@@ -573,7 +573,7 @@ html {
     @apply my-3 ml-6 space-y-2 list-decimal;
   }
 
-  .amendment-html-content ol.list[type="a"] {
+  .amendment-html-content ol.list[type='a'] {
     list-style-type: lower-alpha;
   }
 
@@ -595,7 +595,7 @@ html {
     @apply my-3 ml-6 space-y-1 list-disc;
   }
 
-  .amendment-html-content ul.list[style*="list-style: none"] {
+  .amendment-html-content ul.list[style*='list-style: none'] {
     @apply list-none ml-0;
   }
 
@@ -677,7 +677,7 @@ html {
     @apply text-sm text-muted-foreground mt-4;
   }
 
-  .amendment-html-content footer.back > p.text[style*="text-align: right"] {
+  .amendment-html-content footer.back > p.text[style*='text-align: right'] {
     @apply text-right;
   }
 }
@@ -689,4 +689,52 @@ html {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ==========================================================================
+ * Tiptap Rich Text Editor Styles
+ * ========================================================================== */
+
+.tiptap {
+  outline: none;
+}
+
+/* Placeholder styling */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap.is-editor-empty::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  position: absolute;
+}
+
+/* Focus state */
+.tiptap:focus {
+  outline: none;
+}
+
+/* Ensure proper list rendering */
+.tiptap ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.tiptap ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+}
+
+.tiptap ul ul {
+  list-style-type: circle;
+}
+
+.tiptap ul ul ul {
+  list-style-type: square;
 }

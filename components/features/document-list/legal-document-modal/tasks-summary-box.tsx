@@ -25,9 +25,11 @@ export function TasksSummaryBox({
   // Handle model not existing (graceful fallback)
   if (taskProgress === null) {
     return (
-      <Card>
+      <Card className="border-border/60">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium">Uppgifter</CardTitle>
+          <CardTitle className="text-base font-semibold text-foreground">
+            Uppgifter
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <TasksEmptyState />
@@ -40,10 +42,12 @@ export function TasksSummaryBox({
   const progressPercent = total > 0 ? (completed / total) * 100 : 0
 
   return (
-    <Card>
+    <Card className="border-border/60">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium">Uppgifter</CardTitle>
+          <CardTitle className="text-base font-semibold text-foreground">
+            Uppgifter
+          </CardTitle>
           {total > 0 && (
             <span className="text-xs text-muted-foreground">
               {completed}/{total} klara

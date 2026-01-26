@@ -34,13 +34,14 @@ import type { WorkspaceMember } from './index'
 interface CalendarTabProps {
   initialTasks: TaskWithRelations[]
   workspaceMembers: WorkspaceMember[]
+  onTaskClick?: (_taskId: string) => void
 }
 
 // ============================================================================
 // Main Component
 // ============================================================================
 
-export function CalendarTab({ initialTasks }: CalendarTabProps) {
+export function CalendarTab({ initialTasks, onTaskClick }: CalendarTabProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
 
   // Get tasks with due dates
@@ -145,7 +146,11 @@ export function CalendarTab({ initialTasks }: CalendarTabProps) {
                   {/* Tasks */}
                   <div className="space-y-1">
                     {dayTasks.slice(0, 3).map((task) => (
-                      <CalendarTask key={task.id} task={task} />
+                      <CalendarTask
+                        key={task.id}
+                        task={task}
+                        onClick={() => onTaskClick?.(task.id)}
+                      />
                     ))}
                     {dayTasks.length > 3 && (
                       <button className="text-xs text-muted-foreground hover:text-foreground">
@@ -187,7 +192,13 @@ export function CalendarTab({ initialTasks }: CalendarTabProps) {
 // Calendar Task Component
 // ============================================================================
 
-function CalendarTask({ task }: { task: TaskWithRelations }) {
+function CalendarTask({
+  task,
+  onClick,
+}: {
+  task: TaskWithRelations
+  onClick?: () => void
+}) {
   const isOverdue =
     !task.column.is_done &&
     task.due_date &&
@@ -195,13 +206,22 @@ function CalendarTask({ task }: { task: TaskWithRelations }) {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       className={cn(
-        'text-xs p-1 rounded truncate cursor-pointer transition-colors',
+        'text-xs p-1 rounded truncate cursor-pointer transition-colors hover:opacity-80',
         task.column.is_done && 'bg-green-100 text-green-700',
         !task.column.is_done && !isOverdue && 'bg-blue-100 text-blue-700',
         isOverdue && 'bg-red-100 text-red-700'
       )}
       title={task.title}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick?.()
+        }
+      }}
     >
       {task.title}
     </div>

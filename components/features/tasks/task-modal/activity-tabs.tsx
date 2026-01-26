@@ -1,22 +1,30 @@
 'use client'
 
 /**
- * Story 6.3: Activity Tabs
- * Tabbed activity section with Alla, Kommentarer, Uppgifter, Bevis, Historik
+ * Story 6.6: Activity Tabs
+ * Tabbed activity section with Alla, Kommentarer, Historik
  */
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ActivityFeed } from './activity-feed'
 import { CommentsTab } from './comments-tab'
-import { TasksTab } from './tasks-tab'
-import { EvidenceTab } from './evidence-tab'
 import { HistoryTab } from './history-tab'
+import type { TaskComment } from '@/app/actions/task-modal'
+import type { WorkspaceMember } from '../task-workspace'
 
 interface ActivityTabsProps {
-  listItemId: string
+  taskId: string
+  comments: TaskComment[]
+  workspaceMembers: WorkspaceMember[]
+  onUpdate: () => Promise<void>
 }
 
-export function ActivityTabs({ listItemId }: ActivityTabsProps) {
+export function ActivityTabs({
+  taskId,
+  comments,
+  workspaceMembers,
+  onUpdate,
+}: ActivityTabsProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-base font-semibold text-foreground">Aktivitet</h3>
@@ -38,20 +46,6 @@ export function ActivityTabs({ listItemId }: ActivityTabsProps) {
             Kommentarer
           </TabsTrigger>
           <TabsTrigger
-            id="activity-tab-uppgifter"
-            value="uppgifter"
-            className="whitespace-nowrap px-3 py-1.5 text-sm data-[state=active]:bg-background"
-          >
-            Uppgifter
-          </TabsTrigger>
-          <TabsTrigger
-            id="activity-tab-bevis"
-            value="bevis"
-            className="whitespace-nowrap px-3 py-1.5 text-sm data-[state=active]:bg-background"
-          >
-            Bevis
-          </TabsTrigger>
-          <TabsTrigger
             id="activity-tab-historik"
             value="historik"
             className="whitespace-nowrap px-3 py-1.5 text-sm data-[state=active]:bg-background"
@@ -64,35 +58,31 @@ export function ActivityTabs({ listItemId }: ActivityTabsProps) {
           value="alla"
           className="mt-4 max-h-[400px] overflow-y-auto"
         >
-          <ActivityFeed listItemId={listItemId} />
+          <ActivityFeed
+            taskId={taskId}
+            comments={comments}
+            workspaceMembers={workspaceMembers}
+            onUpdate={onUpdate}
+          />
         </TabsContent>
 
         <TabsContent
           value="kommentarer"
           className="mt-4 max-h-[400px] overflow-y-auto"
         >
-          <CommentsTab listItemId={listItemId} />
-        </TabsContent>
-
-        <TabsContent
-          value="uppgifter"
-          className="mt-4 max-h-[400px] overflow-y-auto"
-        >
-          <TasksTab listItemId={listItemId} />
-        </TabsContent>
-
-        <TabsContent
-          value="bevis"
-          className="mt-4 max-h-[400px] overflow-y-auto"
-        >
-          <EvidenceTab listItemId={listItemId} />
+          <CommentsTab
+            taskId={taskId}
+            comments={comments}
+            workspaceMembers={workspaceMembers}
+            onUpdate={onUpdate}
+          />
         </TabsContent>
 
         <TabsContent
           value="historik"
           className="mt-4 max-h-[400px] overflow-y-auto"
         >
-          <HistoryTab listItemId={listItemId} />
+          <HistoryTab taskId={taskId} />
         </TabsContent>
       </Tabs>
     </div>

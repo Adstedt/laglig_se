@@ -5,7 +5,7 @@
  * Drag-and-drop Kanban board for task management
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import {
   DndContext,
   closestCorners,
@@ -41,9 +41,11 @@ import { formatDistanceToNow } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import {
   updateTaskStatus,
+  createTask,
   type TaskWithRelations,
   type TaskColumnWithCount,
 } from '@/app/actions/tasks'
+import { Input } from '@/components/ui/input'
 import type { WorkspaceMember } from './index'
 import { TaskFilters } from './task-filters'
 import { toast } from 'sonner'
@@ -56,6 +58,8 @@ interface KanbanTabProps {
   initialTasks: TaskWithRelations[]
   initialColumns: TaskColumnWithCount[]
   workspaceMembers: WorkspaceMember[]
+  onTaskClick?: (_taskId: string) => void
+  onTaskCreated?: (_task: TaskWithRelations) => void
 }
 
 // ============================================================================
@@ -77,9 +81,16 @@ export function KanbanTab({
   initialTasks,
   initialColumns,
   workspaceMembers,
+  onTaskClick,
+  onTaskCreated,
 }: KanbanTabProps) {
   const [tasks, setTasks] = useState(initialTasks)
   const [columns] = useState(initialColumns)
+
+  // Sync local state when parent's tasks change (e.g., from modal updates)
+  useEffect(() => {
+    setTasks(initialTasks)
+  }, [initialTasks])
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string[]>([])
@@ -227,6 +238,13 @@ export function KanbanTab({
               key={column.id}
               column={column}
               tasks={getColumnTasks(column.id)}
+              onTaskClick={onTaskClick}
+              onTaskCreated={(newTask) => {
+                // Update local state for immediate display
+                setTasks((prev) => [...prev, newTask])
+                // Also notify parent for cross-tab sync
+                onTaskCreated?.(newTask)
+              }}
             />
           ))}
         </div>
@@ -246,9 +264,60 @@ export function KanbanTab({
 interface KanbanColumnProps {
   column: TaskColumnWithCount
   tasks: TaskWithRelations[]
+  onTaskClick?: ((_taskId: string) => void) | undefined
+  onTaskCreated?: ((_task: TaskWithRelations) => void) | undefined
 }
 
-function KanbanColumn({ column, tasks }: KanbanColumnProps) {
+function KanbanColumn({
+  column,
+  tasks,
+  onTaskClick,
+  onTaskCreated,
+}: KanbanColumnProps) {
+  const [isAddingTask, setIsAddingTask] = useState(false)
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
+  const addTaskInputRef = useRef<HTMLInputElement>(null)
+
+  // Focus input when adding task (ref-based for accessibility)
+  useEffect(() => {
+    if (isAddingTask && addTaskInputRef.current) {
+      addTaskInputRef.current.focus()
+    }
+  }, [isAddingTask])
+
+  const handleAddTask = async () => {
+    if (!newTaskTitle.trim() || isCreating) return
+
+    setIsCreating(true)
+    const result = await createTask({
+      title: newTaskTitle.trim(),
+      columnId: column.id,
+    })
+
+    if (result.success && result.data) {
+      toast.success('Uppgift skapad')
+      setNewTaskTitle('')
+      setIsAddingTask(false)
+      onTaskCreated?.(result.data)
+    } else {
+      toast.error('Kunde inte skapa uppgift', {
+        description: result.error,
+      })
+    }
+    setIsCreating(false)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleAddTask()
+    } else if (e.key === 'Escape') {
+      setIsAddingTask(false)
+      setNewTaskTitle('')
+    }
+  }
+
   return (
     <div className="w-80 flex-shrink-0">
       <Card className="bg-muted/30">
@@ -266,12 +335,55 @@ function KanbanColumn({ column, tasks }: KanbanColumnProps) {
                 {tasks.length}
               </Badge>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setIsAddingTask(true)}
+            >
               <Plus className="h-4 w-4" />
             </Button>
           </div>
         </CardHeader>
         <CardContent className="px-3 pb-3">
+          {isAddingTask && (
+            <div className="mb-2">
+              <Input
+                ref={addTaskInputRef}
+                placeholder="Uppgiftens titel..."
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={() => {
+                  if (!newTaskTitle.trim()) {
+                    setIsAddingTask(false)
+                  }
+                }}
+                disabled={isCreating}
+                className="text-sm"
+              />
+              <div className="flex gap-2 mt-2">
+                <Button
+                  size="sm"
+                  onClick={handleAddTask}
+                  disabled={!newTaskTitle.trim() || isCreating}
+                >
+                  {isCreating ? 'Skapar...' : 'Skapa'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setIsAddingTask(false)
+                    setNewTaskTitle('')
+                  }}
+                  disabled={isCreating}
+                >
+                  Avbryt
+                </Button>
+              </div>
+            </div>
+          )}
           <SortableContext
             items={tasks.map((t) => t.id)}
             strategy={verticalListSortingStrategy}
@@ -279,7 +391,11 @@ function KanbanColumn({ column, tasks }: KanbanColumnProps) {
           >
             <div className="space-y-2 min-h-[100px]">
               {tasks.map((task) => (
-                <SortableTaskCard key={task.id} task={task} />
+                <SortableTaskCard
+                  key={task.id}
+                  task={task}
+                  onTaskClick={onTaskClick}
+                />
               ))}
             </div>
           </SortableContext>
@@ -293,7 +409,13 @@ function KanbanColumn({ column, tasks }: KanbanColumnProps) {
 // Sortable Task Card Component
 // ============================================================================
 
-function SortableTaskCard({ task }: { task: TaskWithRelations }) {
+function SortableTaskCard({
+  task,
+  onTaskClick,
+}: {
+  task: TaskWithRelations
+  onTaskClick?: ((_taskId: string) => void) | undefined
+}) {
   const {
     attributes,
     listeners,
@@ -310,7 +432,11 @@ function SortableTaskCard({ task }: { task: TaskWithRelations }) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <TaskCard task={task} isDragging={isDragging} />
+      <TaskCard
+        task={task}
+        isDragging={isDragging}
+        onClick={() => onTaskClick?.(task.id)}
+      />
     </div>
   )
 }
@@ -321,10 +447,11 @@ function SortableTaskCard({ task }: { task: TaskWithRelations }) {
 
 interface TaskCardProps {
   task: TaskWithRelations
-  isDragging?: boolean
+  isDragging?: boolean | undefined
+  onClick?: (() => void) | undefined
 }
 
-function TaskCard({ task, isDragging }: TaskCardProps) {
+function TaskCard({ task, isDragging, onClick }: TaskCardProps) {
   const isOverdue =
     task.due_date &&
     !task.column.is_done &&
@@ -336,8 +463,15 @@ function TaskCard({ task, isDragging }: TaskCardProps) {
         'cursor-grab border-l-4 transition-shadow',
         PRIORITY_COLORS[task.priority as keyof typeof PRIORITY_COLORS],
         isDragging && 'opacity-50 shadow-lg',
-        isOverdue && 'border-l-red-500'
+        isOverdue && 'border-l-red-500',
+        onClick && 'cursor-pointer hover:shadow-md'
       )}
+      onClick={(e) => {
+        // Only trigger click if not dragging and not clicking a button
+        if (!isDragging && !(e.target as HTMLElement).closest('button')) {
+          onClick?.()
+        }
+      }}
     >
       <CardContent className="p-3 space-y-2">
         {/* Title */}

@@ -7,7 +7,7 @@
  * Story P.4: Added virtualization for large datasets (>100 items)
  */
 
-import { useState, useMemo, useCallback, useRef, memo } from 'react'
+import { useState, useMemo, useCallback, useRef, memo, useEffect } from 'react'
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import {
   useReactTable,
@@ -86,6 +86,7 @@ interface ListTabProps {
   initialTasks: TaskWithRelations[]
   initialColumns: TaskColumnWithCount[]
   workspaceMembers: WorkspaceMember[]
+  onTaskClick?: (_taskId: string) => void
 }
 
 // ============================================================================
@@ -134,9 +135,15 @@ export function ListTab({
   initialTasks,
   initialColumns,
   workspaceMembers,
+  onTaskClick,
 }: ListTabProps) {
   const [tasks, setTasks] = useState(initialTasks)
   const [sorting, setSorting] = useState<SortingState>([])
+
+  // Sync local state when parent's tasks change (e.g., from modal updates)
+  useEffect(() => {
+    setTasks(initialTasks)
+  }, [initialTasks])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [searchQuery, setSearchQuery] = useState('')
@@ -666,6 +673,7 @@ export function ListTab({
                       row={row}
                       virtualItem={virtualItem}
                       isOverdue={isOverdue(row.original)}
+                      onTaskClick={onTaskClick}
                     />
                   )
                 })
@@ -676,6 +684,7 @@ export function ListTab({
                     key={row.id}
                     row={row}
                     isOverdue={isOverdue(row.original)}
+                    onTaskClick={onTaskClick}
                   />
                 ))
               )
@@ -741,9 +750,11 @@ type TaskRowType = ReturnType<
 const TaskRow = memo(function TaskRow({
   row,
   isOverdue,
+  onTaskClick,
 }: {
   row: TaskRowType
   isOverdue: boolean
+  onTaskClick?: ((_taskId: string) => void) | undefined
 }) {
   return (
     <TableRow
@@ -752,6 +763,14 @@ const TaskRow = memo(function TaskRow({
         'group cursor-pointer hover:bg-muted/50',
         isOverdue && 'bg-destructive/5'
       )}
+      onClick={(e) => {
+        // Only trigger click if not clicking checkbox or button
+        if (
+          !(e.target as HTMLElement).closest('button, input[type="checkbox"]')
+        ) {
+          onTaskClick?.(row.original.id)
+        }
+      }}
     >
       {row.getVisibleCells().map((cell) => (
         <TableCell key={cell.id}>
@@ -766,10 +785,12 @@ const VirtualTaskRow = memo(function VirtualTaskRow({
   row,
   virtualItem,
   isOverdue,
+  onTaskClick,
 }: {
   row: TaskRowType
   virtualItem: VirtualItem
   isOverdue: boolean
+  onTaskClick?: ((_taskId: string) => void) | undefined
 }) {
   const style: React.CSSProperties = {
     position: 'absolute',
@@ -788,6 +809,14 @@ const VirtualTaskRow = memo(function VirtualTaskRow({
         'group cursor-pointer hover:bg-muted/50',
         isOverdue && 'bg-destructive/5'
       )}
+      onClick={(e) => {
+        // Only trigger click if not clicking checkbox or button
+        if (
+          !(e.target as HTMLElement).closest('button, input[type="checkbox"]')
+        ) {
+          onTaskClick?.(row.original.id)
+        }
+      }}
     >
       {row.getVisibleCells().map((cell) => (
         <TableCell key={cell.id}>
