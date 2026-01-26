@@ -55,6 +55,11 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+
+  // Story 6.7a: Increase Server Actions body size limit for file uploads (25MB)
+  serverActions: {
+    bodySizeLimit: '25mb',
+  },
   
   // Story P.2: Image Optimization Configuration (AC: 19-21)
   images: {

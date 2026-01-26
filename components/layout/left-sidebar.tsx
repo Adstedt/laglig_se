@@ -90,7 +90,7 @@ const workItems: NavItem[] = [
     href: '/tasks',
   },
   {
-    title: 'Dokument',
+    title: 'Mina filer',
     icon: FolderOpen,
     href: '/documents',
   },

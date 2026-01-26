@@ -3,6 +3,10 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
+// react-pdf styles for PDF preview component
+import 'react-pdf/dist/Page/AnnotationLayer.css'
+import 'react-pdf/dist/Page/TextLayer.css'
+
 export const metadata: Metadata = {
   title: {
     default: 'Laglig.se - Svenska lagar och juridisk efterlevnad',

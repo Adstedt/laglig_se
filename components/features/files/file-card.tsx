@@ -2,16 +2,48 @@
 
 /**
  * Story 6.7a: File Card
- * Grid view card for workspace files
+ * Grid view card for workspace files - Dropbox-inspired design
  */
 
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
-import { getFileIcon, formatFileSize } from './file-dropzone'
+import {
+  FileText,
+  Image as ImageIcon,
+  FileSpreadsheet,
+  File,
+  Presentation,
+} from 'lucide-react'
+import { formatFileSize } from './file-dropzone'
 import type { FileCategory } from '@prisma/client'
 import type { WorkspaceFileWithLinks } from '@/app/actions/files'
+
+// ============================================================================
+// Utilities
+// ============================================================================
+
+/**
+ * Truncate filename in the middle, preserving start and extension
+ * e.g., "Resultatrapport_20210101-20211231_Monthly.pdf" -> "Resultatrapport_202...nthly.pdf"
+ */
+function truncateMiddle(filename: string, maxLength: number = 28): string {
+  if (filename.length <= maxLength) return filename
+
+  const extMatch = filename.match(/\.[^.]+$/)
+  const ext = extMatch ? extMatch[0] : ''
+  const nameWithoutExt = ext ? filename.slice(0, -ext.length) : filename
+
+  // Keep more of the start, less of the end (before extension)
+  const availableLength = maxLength - ext.length - 3 // 3 for "..."
+  const startLength = Math.ceil(availableLength * 0.65)
+  const endLength = Math.floor(availableLength * 0.35)
+
+  const start = nameWithoutExt.slice(0, startLength)
+  const end = nameWithoutExt.slice(-endLength)
+
+  return `${start}...${end}${ext}`
+}
 
 // ============================================================================
 // Category Configuration
@@ -36,6 +68,96 @@ export const categoryColors: Record<FileCategory, string> = {
 }
 
 // ============================================================================
+// File Type Configuration - Dropbox-style extension badges
+// ============================================================================
+
+interface FileTypeConfig {
+  label: string
+  bgColor: string
+  textColor: string
+  icon: React.ReactNode
+}
+
+function getFileTypeConfig(mimeType: string, filename: string): FileTypeConfig {
+  const ext = filename.split('.').pop()?.toLowerCase() || ''
+
+  // PDF
+  if (mimeType === 'application/pdf') {
+    return {
+      label: 'PDF',
+      bgColor: 'bg-red-500',
+      textColor: 'text-white',
+      icon: <FileText className="h-8 w-8 text-red-500" />,
+    }
+  }
+
+  // Excel / Spreadsheet
+  if (
+    mimeType.includes('spreadsheet') ||
+    mimeType.includes('excel') ||
+    ext === 'xlsx' ||
+    ext === 'xls' ||
+    ext === 'csv'
+  ) {
+    return {
+      label: ext.toUpperCase() || 'XLSX',
+      bgColor: 'bg-green-600',
+      textColor: 'text-white',
+      icon: <FileSpreadsheet className="h-8 w-8 text-green-600" />,
+    }
+  }
+
+  // PowerPoint / Presentation
+  if (
+    mimeType.includes('presentation') ||
+    mimeType.includes('powerpoint') ||
+    ext === 'pptx' ||
+    ext === 'ppt'
+  ) {
+    return {
+      label: ext.toUpperCase() || 'PPTX',
+      bgColor: 'bg-orange-500',
+      textColor: 'text-white',
+      icon: <Presentation className="h-8 w-8 text-orange-500" />,
+    }
+  }
+
+  // Word / Document
+  if (
+    mimeType.includes('word') ||
+    mimeType.includes('document') ||
+    ext === 'docx' ||
+    ext === 'doc'
+  ) {
+    return {
+      label: ext.toUpperCase() || 'DOCX',
+      bgColor: 'bg-blue-600',
+      textColor: 'text-white',
+      icon: <FileText className="h-8 w-8 text-blue-600" />,
+    }
+  }
+
+  // Images
+  if (mimeType.startsWith('image/')) {
+    const imgExt = ext.toUpperCase() || mimeType.split('/')[1]?.toUpperCase()
+    return {
+      label: imgExt || 'IMG',
+      bgColor: 'bg-purple-500',
+      textColor: 'text-white',
+      icon: <ImageIcon className="h-8 w-8 text-purple-500" />,
+    }
+  }
+
+  // Default
+  return {
+    label: ext.toUpperCase() || 'FILE',
+    bgColor: 'bg-gray-500',
+    textColor: 'text-white',
+    icon: <File className="h-8 w-8 text-gray-500" />,
+  }
+}
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -45,10 +167,15 @@ interface FileCardProps {
   onSelect?: (_fileId: string, _selected: boolean) => void
   onClick?: (_file: WorkspaceFileWithLinks) => void
   showSelection?: boolean
+  // Drag and drop props
+  draggable?: boolean
+  isDragging?: boolean
+  onDragStart?: (_e: React.DragEvent) => void
+  onDragEnd?: () => void
 }
 
 // ============================================================================
-// Component
+// Component - Dropbox-inspired design
 // ============================================================================
 
 export function FileCard({
@@ -57,11 +184,14 @@ export function FileCard({
   onSelect,
   onClick,
   showSelection = false,
+  draggable = false,
+  isDragging = false,
+  onDragStart,
+  onDragEnd,
 }: FileCardProps) {
-  const isImage = file.mime_type.startsWith('image/')
+  const fileTypeConfig = getFileTypeConfig(file.mime_type, file.filename)
 
   const handleClick = (e: React.MouseEvent) => {
-    // Don't trigger onClick if clicking on checkbox
     if ((e.target as HTMLElement).closest('[data-checkbox]')) {
       return
     }
@@ -72,76 +202,71 @@ export function FileCard({
     onSelect?.(file.id, checked)
   }
 
-  const formattedDate = new Date(file.created_at).toLocaleDateString('sv-SE', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-
-  const linkCount = file.task_links.length + file.list_item_links.length
-
   return (
     <Card
+      draggable={draggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       className={cn(
-        'group cursor-pointer transition-all hover:shadow-md',
-        'hover:border-primary/50',
-        selected && 'ring-2 ring-primary border-primary'
+        'group cursor-pointer transition-all duration-200 aspect-square',
+        'hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5',
+        'border-transparent',
+        selected && 'ring-2 ring-primary border-primary shadow-md',
+        isDragging && 'opacity-50 scale-95'
       )}
       onClick={handleClick}
     >
-      <CardContent className="p-3">
-        {/* Header with checkbox and category */}
-        <div className="flex items-start justify-between mb-2">
+      <CardContent className="p-0 h-full flex flex-col">
+        {/* Thumbnail / Preview area - takes most of the square */}
+        <div className="relative flex-1 bg-gradient-to-br from-muted/50 to-muted rounded-t-lg overflow-hidden">
+          {/* Selection checkbox */}
           {showSelection && (
-            <div data-checkbox>
+            <div
+              data-checkbox
+              className={cn(
+                'absolute top-3 left-3 z-10 transition-opacity',
+                selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              )}
+            >
               <Checkbox
                 checked={selected}
                 onCheckedChange={handleCheckboxChange}
                 aria-label={`Välj ${file.filename}`}
+                className="h-5 w-5 bg-background/90 border-2"
               />
             </div>
           )}
-          <Badge
-            variant="secondary"
-            className={cn(
-              'text-[10px] font-medium ml-auto',
-              categoryColors[file.category]
-            )}
-          >
-            {categoryLabels[file.category]}
-          </Badge>
-        </div>
 
-        {/* File preview / icon */}
-        <div className="flex justify-center items-center h-20 mb-3 bg-muted/30 rounded-md overflow-hidden">
-          {isImage ? (
-            // Image thumbnail - actual preview would require signed URL
-            <div className="flex items-center justify-center w-full h-full">
-              {getFileIcon(file.mime_type, 'h-10 w-10 text-muted-foreground')}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center">
-              {getFileIcon(file.mime_type, 'h-10 w-10')}
-            </div>
-          )}
-        </div>
-
-        {/* File info */}
-        <div className="space-y-1">
-          <p className="text-sm font-medium truncate" title={file.filename}>
-            {file.filename}
-          </p>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{formatFileSize(file.file_size)}</span>
-            <span>{formattedDate}</span>
+          {/* File type icon - centered */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="scale-[2]">{fileTypeConfig.icon}</div>
           </div>
 
-          {/* Link count indicator */}
-          {linkCount > 0 && (
-            <p className="text-xs text-muted-foreground">
-              Länkad till {linkCount} {linkCount === 1 ? 'objekt' : 'objekt'}
-            </p>
-          )}
+          {/* File type badge - bottom right corner */}
+          <div className="absolute bottom-3 right-3">
+            <span
+              className={cn(
+                'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold tracking-wide shadow-sm',
+                fileTypeConfig.bgColor,
+                fileTypeConfig.textColor
+              )}
+            >
+              {fileTypeConfig.label}
+            </span>
+          </div>
+        </div>
+
+        {/* File info - fixed height at bottom */}
+        <div className="p-3 space-y-0.5 flex-shrink-0">
+          <p
+            className="text-sm font-medium leading-tight"
+            title={file.filename}
+          >
+            {truncateMiddle(file.filename)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {formatFileSize(file.file_size)}
+          </p>
         </div>
       </CardContent>
     </Card>
@@ -149,24 +274,20 @@ export function FileCard({
 }
 
 // ============================================================================
-// Skeleton
+// Skeleton - Matches new Dropbox-inspired design
 // ============================================================================
 
 export function FileCardSkeleton() {
   return (
-    <Card>
-      <CardContent className="p-3">
-        <div className="flex items-start justify-between mb-2">
-          <div className="h-4 w-4 bg-muted rounded animate-pulse" />
-          <div className="h-5 w-12 bg-muted rounded animate-pulse" />
-        </div>
-        <div className="h-20 mb-3 bg-muted/50 rounded-md animate-pulse" />
-        <div className="space-y-2">
-          <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
-          <div className="flex justify-between">
-            <div className="h-3 w-12 bg-muted rounded animate-pulse" />
-            <div className="h-3 w-16 bg-muted rounded animate-pulse" />
-          </div>
+    <Card className="border-transparent aspect-square">
+      <CardContent className="p-0 h-full flex flex-col">
+        {/* Thumbnail skeleton */}
+        <div className="flex-1 bg-muted rounded-t-lg animate-pulse" />
+
+        {/* Info skeleton */}
+        <div className="p-3 space-y-1.5 flex-shrink-0">
+          <div className="h-4 w-4/5 bg-muted rounded animate-pulse" />
+          <div className="h-3 w-16 bg-muted rounded animate-pulse" />
         </div>
       </CardContent>
     </Card>

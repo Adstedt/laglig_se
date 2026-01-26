@@ -1,11 +1,12 @@
 'use client'
 
 /**
- * Story 6.7a: File Preview Panel
+ * Story 6.7a & 6.7b: File Preview Panel
  * Slide-in panel showing file details with edit/delete capabilities
+ * Enhanced with rich previews for images, PDFs, and Office documents
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Sheet,
   SheetContent,
@@ -45,11 +46,18 @@ import {
   X,
   Pencil,
   Save,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { getFileIcon, formatFileSize } from './file-dropzone'
 import { categoryLabels, categoryColors } from './file-card'
+import { ImagePreview } from './preview/image-preview'
+import { PdfPreview } from './preview/pdf-preview'
+import { OfficePreview, OfficeFallback } from './preview/office-preview'
+import { FileLightbox } from './preview/lightbox'
+import { MetadataPanel } from './preview/metadata-panel'
 import {
   updateFile,
   deleteFile,
@@ -73,6 +81,32 @@ interface FilePreviewPanelProps {
 }
 
 // ============================================================================
+// Helpers
+// ============================================================================
+
+function isImageFile(mimeType: string | null | undefined): boolean {
+  return mimeType?.startsWith('image/') ?? false
+}
+
+function isPdfFile(mimeType: string | null | undefined): boolean {
+  return mimeType === 'application/pdf'
+}
+
+function isOfficeFile(mimeType: string | null | undefined): boolean {
+  if (!mimeType) return false
+  return (
+    mimeType.includes('word') ||
+    mimeType.includes('excel') ||
+    mimeType.includes('spreadsheet') ||
+    mimeType.includes('powerpoint') ||
+    mimeType.includes('presentation') ||
+    mimeType === 'application/msword' ||
+    mimeType === 'application/vnd.ms-excel' ||
+    mimeType === 'application/vnd.ms-powerpoint'
+  )
+}
+
+// ============================================================================
 // Component
 // ============================================================================
 
@@ -90,9 +124,88 @@ export function FilePreviewPanel({
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [fileUrl, setFileUrl] = useState<string | null>(null)
+  const [isLoadingUrl, setIsLoadingUrl] = useState(false)
+  const [imageDimensions, setImageDimensions] = useState<{
+    width: number
+    height: number
+  } | null>(null)
+  const [pdfPageCount, setPdfPageCount] = useState<number | undefined>(
+    undefined
+  )
+
+  // Load expanded state from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('filePreviewExpanded')
+    if (stored === 'true') {
+      setIsExpanded(true)
+    }
+  }, [])
+
+  // Persist expanded state
+  const toggleExpanded = useCallback(() => {
+    setIsExpanded((prev) => {
+      const newValue = !prev
+      localStorage.setItem('filePreviewExpanded', String(newValue))
+      return newValue
+    })
+  }, [])
+
+  // Load file URL when file changes
+  useEffect(() => {
+    if (!file || !open) {
+      setFileUrl(null)
+      setImageDimensions(null)
+      setPdfPageCount(undefined)
+      setLightboxOpen(false) // Reset lightbox when panel closes
+      return
+    }
+
+    // Only load URL for previewable files
+    if (
+      isImageFile(file.mime_type) ||
+      isPdfFile(file.mime_type) ||
+      isOfficeFile(file.mime_type)
+    ) {
+      setIsLoadingUrl(true)
+      getFileDownloadUrl(file.id)
+        .then((result) => {
+          if (result.success && result.data?.url) {
+            setFileUrl(result.data.url)
+          } else {
+            setFileUrl(null)
+          }
+        })
+        .catch(() => setFileUrl(null))
+        .finally(() => setIsLoadingUrl(false))
+    }
+  }, [file, open])
+
+  // Extract image dimensions when URL loads
+  useEffect(() => {
+    if (!fileUrl || !file || !isImageFile(file.mime_type)) {
+      setImageDimensions(null)
+      return
+    }
+
+    const img = new Image()
+    img.onload = () => {
+      setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight })
+    }
+    img.src = fileUrl
+  }, [fileUrl, file])
 
   // Reset edit state when file changes
+  // Don't close panel if lightbox is open (user likely pressed Escape to close lightbox)
   const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && lightboxOpen) {
+      // Lightbox is open, so this close was likely triggered by Escape key
+      // Just close the lightbox, not the panel
+      setLightboxOpen(false)
+      return
+    }
     if (!newOpen) {
       setIsEditing(false)
     }
@@ -167,7 +280,6 @@ export function FilePreviewPanel({
       const result = await getFileDownloadUrl(file.id)
 
       if (result.success && result.data?.url) {
-        // Open in new tab or trigger download
         window.open(result.data.url, '_blank')
       } else {
         toast.error(result.error || 'Kunde inte hämta nedladdningslänk')
@@ -203,8 +315,9 @@ export function FilePreviewPanel({
 
   if (!file) return null
 
-  const isImage = file.mime_type.startsWith('image/')
-  const isPdf = file.mime_type === 'application/pdf'
+  const isImage = isImageFile(file.mime_type)
+  const isPdf = isPdfFile(file.mime_type)
+  const isOffice = isOfficeFile(file.mime_type)
 
   const formattedDate = new Date(file.created_at).toLocaleDateString('sv-SE', {
     day: 'numeric',
@@ -214,276 +327,330 @@ export function FilePreviewPanel({
     minute: '2-digit',
   })
 
-  return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
-        <SheetHeader className="space-y-1">
-          <SheetTitle className="pr-8 truncate">
-            {isEditing ? 'Redigera fil' : file.filename}
-          </SheetTitle>
-          <SheetDescription>
-            {formatFileSize(file.file_size)} - Uppladdad {formattedDate}
-          </SheetDescription>
-        </SheetHeader>
+  // Panel width: 640px default, 50vw when expanded
+  // Must override sm:max-w-sm from sheetVariants with !max-w-none or specific max-width
+  const panelWidth = isExpanded
+    ? 'w-[50vw] max-w-[50vw]'
+    : 'w-[640px] max-w-[640px]'
 
-        <div className="mt-6 space-y-6">
-          {/* Preview Section */}
-          <div className="flex justify-center items-center h-48 bg-muted/30 rounded-lg overflow-hidden">
-            {isImage ? (
-              <div className="flex flex-col items-center gap-2">
-                {getFileIcon(file.mime_type, 'h-16 w-16 text-muted-foreground')}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownload}
-                  disabled={isDownloading}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Öppna bild
-                </Button>
-              </div>
-            ) : isPdf ? (
-              <div className="flex flex-col items-center gap-2">
-                {getFileIcon(file.mime_type, 'h-16 w-16')}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownload}
-                  disabled={isDownloading}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Öppna PDF
-                </Button>
+  return (
+    <>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
+        <SheetContent
+          className={cn(
+            'overflow-y-auto transition-all duration-200 sm:max-w-none',
+            panelWidth
+          )}
+        >
+          {/* Expand button - matches close button styling exactly */}
+          <button
+            type="button"
+            onClick={toggleExpanded}
+            className="absolute right-10 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            title={isExpanded ? 'Minimera' : 'Expandera'}
+          >
+            {isExpanded ? (
+              <Minimize2 className="h-4 w-4" />
+            ) : (
+              <Maximize2 className="h-4 w-4" />
+            )}
+          </button>
+
+          <SheetHeader className="space-y-1">
+            <SheetTitle className="pr-16 truncate">
+              {isEditing ? 'Redigera fil' : file.filename}
+            </SheetTitle>
+            <SheetDescription>
+              {formatFileSize(file.file_size)} - Uppladdad {formattedDate}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="mt-6 space-y-6">
+            {/* Rich Preview Section */}
+            <div className="bg-muted/30 rounded-lg overflow-hidden">
+              {isLoadingUrl ? (
+                <div className="flex items-center justify-center h-[300px]">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : isImage && fileUrl ? (
+                <ImagePreview
+                  url={fileUrl}
+                  alt={file.filename}
+                  onFullscreen={() => setLightboxOpen(true)}
+                  className="min-h-[300px]"
+                />
+              ) : isPdf ? (
+                <PdfPreview
+                  url={`/api/files/${file.id}`}
+                  filename={file.filename}
+                  onOpenInNewTab={handleDownload}
+                  className="min-h-[400px]"
+                />
+              ) : isOffice && fileUrl ? (
+                <OfficePreview
+                  url={fileUrl}
+                  filename={file.filename}
+                  mimeType={file.mime_type || ''}
+                  onDownload={handleDownload}
+                  className="min-h-[400px]"
+                />
+              ) : isOffice ? (
+                <OfficeFallback
+                  mimeType={file.mime_type || ''}
+                  onDownload={handleDownload}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 gap-2">
+                  {getFileIcon(file.mime_type, 'h-16 w-16')}
+                  <p className="text-sm text-muted-foreground">
+                    Förhandsgranskning ej tillgänglig
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Öppna fil
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Metadata Panel */}
+            <MetadataPanel
+              file={{
+                filename: file.filename,
+                original_filename: file.original_filename,
+                file_size: file.file_size,
+                mime_type: file.mime_type,
+                created_at: file.created_at,
+                updated_at: file.updated_at,
+              }}
+              imageUrl={isImage ? (fileUrl ?? undefined) : undefined}
+              pdfPageCount={pdfPageCount}
+              imageDimensions={imageDimensions ?? undefined}
+            />
+
+            <Separator />
+
+            {/* Edit Form or Details */}
+            {isEditing ? (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="filename">Filnamn</Label>
+                  <Input
+                    id="filename"
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                    placeholder="Ange filnamn"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="category">Kategori</Label>
+                  <Select
+                    value={editedCategory}
+                    onValueChange={(value) =>
+                      setEditedCategory(value as FileCategory)
+                    }
+                  >
+                    <SelectTrigger id="category">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(Object.keys(categoryLabels) as FileCategory[]).map(
+                        (cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {categoryLabels[cat]}
+                          </SelectItem>
+                        )
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    onClick={handleSave}
+                    disabled={isSaving || !editedName.trim()}
+                  >
+                    {isSaving && (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    )}
+                    <Save className="h-4 w-4 mr-2" />
+                    Spara
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={cancelEditing}
+                    disabled={isSaving}
+                  >
+                    Avbryt
+                  </Button>
+                </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-2">
-                {getFileIcon(file.mime_type, 'h-16 w-16')}
-                <p className="text-sm text-muted-foreground">
-                  Förhandsgranskning ej tillgänglig
-                </p>
-              </div>
+              <>
+                {/* File Details */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Kategori
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className={cn('text-xs', categoryColors[file.category])}
+                    >
+                      {categoryLabels[file.category]}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Uppladdad av
+                    </span>
+                    <span className="text-sm">
+                      {file.uploader.name || file.uploader.email}
+                    </span>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Linked Items */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium">Länkade objekt</h4>
+                    {onLinkClick && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onLinkClick(file)}
+                      >
+                        <LinkIcon className="h-4 w-4 mr-1" />
+                        Länka till
+                      </Button>
+                    )}
+                  </div>
+
+                  {file.task_links.length === 0 &&
+                  file.list_item_links.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      Filen är inte länkad till några uppgifter eller lagar.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {file.task_links.map((link) => (
+                        <div
+                          key={link.id}
+                          className="flex items-center justify-between text-sm bg-muted/50 rounded-md p-2"
+                        >
+                          <span className="truncate">{link.task.title}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={() => handleUnlink('task', link.task.id)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                      {file.list_item_links.map((link) => (
+                        <div
+                          key={link.id}
+                          className="flex items-center justify-between text-sm bg-muted/50 rounded-md p-2"
+                        >
+                          <span className="truncate">
+                            {link.list_item.document.title}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={() =>
+                              handleUnlink('list_item', link.list_item.id)
+                            }
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={startEditing}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Redigera
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                  >
+                    {isDownloading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-2" />
+                    )}
+                    Ladda ner
+                  </Button>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Radera
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Radera fil?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Är du säker på att du vill radera &quot;
+                          {file.filename}
+                          &quot;? Denna åtgärd kan inte ångras och filen kommer
+                          tas bort från alla länkade uppgifter och lagar.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDelete}
+                          disabled={isDeleting}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {isDeleting && (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          )}
+                          Radera
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </>
             )}
           </div>
+        </SheetContent>
+      </Sheet>
 
-          <Separator />
-
-          {/* Edit Form or Details */}
-          {isEditing ? (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="filename">Filnamn</Label>
-                <Input
-                  id="filename"
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
-                  placeholder="Ange filnamn"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Kategori</Label>
-                <Select
-                  value={editedCategory}
-                  onValueChange={(value) =>
-                    setEditedCategory(value as FileCategory)
-                  }
-                >
-                  <SelectTrigger id="category">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(categoryLabels) as FileCategory[]).map(
-                      (cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {categoryLabels[cat]}
-                        </SelectItem>
-                      )
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button
-                  onClick={handleSave}
-                  disabled={isSaving || !editedName.trim()}
-                >
-                  {isSaving && (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  )}
-                  <Save className="h-4 w-4 mr-2" />
-                  Spara
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={cancelEditing}
-                  disabled={isSaving}
-                >
-                  Avbryt
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* File Details */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Kategori
-                  </span>
-                  <Badge
-                    variant="secondary"
-                    className={cn('text-xs', categoryColors[file.category])}
-                  >
-                    {categoryLabels[file.category]}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Storlek</span>
-                  <span className="text-sm">
-                    {formatFileSize(file.file_size)}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Typ</span>
-                  <span className="text-sm">{file.mime_type}</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">
-                    Uppladdad av
-                  </span>
-                  <span className="text-sm">
-                    {file.uploader.name || file.uploader.email}
-                  </span>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Linked Items */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium">Länkade objekt</h4>
-                  {onLinkClick && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onLinkClick(file)}
-                    >
-                      <LinkIcon className="h-4 w-4 mr-1" />
-                      Länka till
-                    </Button>
-                  )}
-                </div>
-
-                {file.task_links.length === 0 &&
-                file.list_item_links.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Filen är inte länkad till några uppgifter eller lagar.
-                  </p>
-                ) : (
-                  <div className="space-y-2">
-                    {file.task_links.map((link) => (
-                      <div
-                        key={link.id}
-                        className="flex items-center justify-between text-sm bg-muted/50 rounded-md p-2"
-                      >
-                        <span className="truncate">{link.task.title}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={() => handleUnlink('task', link.task.id)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                    {file.list_item_links.map((link) => (
-                      <div
-                        key={link.id}
-                        className="flex items-center justify-between text-sm bg-muted/50 rounded-md p-2"
-                      >
-                        <span className="truncate">
-                          {link.list_item.document.title}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={() =>
-                            handleUnlink('list_item', link.list_item.id)
-                          }
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <Separator />
-
-              {/* Actions */}
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline" onClick={startEditing}>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Redigera
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={handleDownload}
-                  disabled={isDownloading}
-                >
-                  {isDownloading ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Download className="h-4 w-4 mr-2" />
-                  )}
-                  Ladda ner
-                </Button>
-
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Radera
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Radera fil?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Är du säker på att du vill radera &quot;{file.filename}
-                        &quot;? Denna åtgärd kan inte ångras och filen kommer
-                        tas bort från alla länkade uppgifter och lagar.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDelete}
-                        disabled={isDeleting}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        {isDeleting && (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        )}
-                        Radera
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+      {/* Full-screen lightbox for images */}
+      {isImage && fileUrl && (
+        <FileLightbox
+          open={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          slides={[{ src: fileUrl, title: file.filename }]}
+        />
+      )}
+    </>
   )
 }
