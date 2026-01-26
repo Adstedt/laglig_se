@@ -3,11 +3,14 @@
 /**
  * Story 6.4: Task Workspace Root Component
  * Story 6.6: Added TaskModal integration
+ * Story 6.7: Added "Ny uppgift" button and CreateTaskModal
  * Main client component that orchestrates the task workspace UI
  */
 
 import { Suspense, useState, useCallback, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { TabNavigation, type TaskTab } from './tab-navigation'
 import { SummaryTab } from './summary-tab'
 import { KanbanTab } from './kanban-tab'
@@ -16,6 +19,7 @@ import { CalendarTab } from './calendar-tab'
 import { AllWorkTab } from './all-work-tab'
 import { WorkspaceSkeleton } from './workspace-skeleton'
 import { TaskModal } from '../task-modal'
+import { CreateTaskModal } from '../create-task-modal'
 import type {
   TaskWithRelations,
   TaskColumnWithCount,
@@ -38,6 +42,7 @@ interface TaskWorkspaceProps {
   initialColumns: TaskColumnWithCount[]
   initialStats: TaskSummaryStats
   workspaceMembers: WorkspaceMember[]
+  currentUserId?: string // Story 6.7: For "Tilldela mig" in create modal
 }
 
 // ============================================================================
@@ -49,6 +54,7 @@ export function TaskWorkspace({
   initialColumns,
   initialStats,
   workspaceMembers,
+  currentUserId,
 }: TaskWorkspaceProps) {
   const searchParams = useSearchParams()
   const currentTab = (searchParams.get('tab') ?? 'sammanfattning') as TaskTab
@@ -59,6 +65,9 @@ export function TaskWorkspace({
 
   // Story 6.6: Task modal state - synced with URL param
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+
+  // Story 6.7: Create task modal state
+  const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false)
 
   // Sync modal state with URL param on mount and changes
   const taskIdFromUrl = searchParams.get('task')
@@ -114,8 +123,18 @@ export function TaskWorkspace({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Tab Navigation */}
-      <TabNavigation currentTab={currentTab} />
+      {/* Story 6.7: Header with "Ny uppgift" button and Tab Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <TabNavigation currentTab={currentTab} />
+        <Button
+          size="sm"
+          onClick={() => setCreateTaskModalOpen(true)}
+          className="self-start sm:self-auto"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Ny uppgift
+        </Button>
+      </div>
 
       {/* Tab Content */}
       <Suspense fallback={<WorkspaceSkeleton tab={currentTab} />}>
@@ -164,6 +183,14 @@ export function TaskWorkspace({
         workspaceMembers={workspaceMembers}
         columns={columns}
         onTaskUpdate={handleTaskUpdate}
+      />
+
+      {/* Story 6.7: Create Task Modal */}
+      <CreateTaskModal
+        open={createTaskModalOpen}
+        onOpenChange={setCreateTaskModalOpen}
+        currentUserId={currentUserId}
+        onTaskCreated={handleTaskCreated}
       />
     </div>
   )

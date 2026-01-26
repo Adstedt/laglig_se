@@ -68,6 +68,10 @@ export interface TaskDetails {
         document_number: string
         slug: string
       }
+      law_list: {
+        id: string
+        name: string
+      }
     }
   }>
   comments: TaskComment[]
@@ -266,6 +270,12 @@ export async function getTaskDetails(
                       title: true,
                       document_number: true,
                       slug: true,
+                    },
+                  },
+                  law_list: {
+                    select: {
+                      id: true,
+                      name: true,
                     },
                   },
                 },
