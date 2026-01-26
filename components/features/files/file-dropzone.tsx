@@ -136,6 +136,8 @@ export interface FileDropzoneProps {
   className?: string
   variant?: 'default' | 'compact'
   showProgress?: boolean
+  /** Story 6.7b: Current folder name to display upload destination */
+  folderName?: string | null
 }
 
 // ============================================================================
@@ -152,6 +154,7 @@ export function FileDropzone({
   className,
   variant = 'default',
   showProgress = false,
+  folderName,
 }: FileDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
@@ -364,7 +367,11 @@ export function FileDropzone({
               isCompact ? 'text-xs' : 'text-sm'
             )}
           >
-            {isCompact ? 'Dra filer hit' : 'Dra och släpp filer här'}
+            {isCompact
+              ? 'Dra filer hit'
+              : folderName
+                ? `Ladda upp till "${folderName}"`
+                : 'Dra och släpp filer här'}
           </p>
           <Button
             variant="link"

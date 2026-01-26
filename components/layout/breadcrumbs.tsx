@@ -21,7 +21,7 @@ const routeLabels: Record<string, string> = {
   'ai-chat': 'AI Chat',
   kanban: 'Uppgifter',
   tasks: 'Uppgifter',
-  documents: 'Mina dokument',
+  documents: 'Mina filer',
   hr: 'HR',
   employees: 'Anställda',
   compliance: 'Efterlevnad',

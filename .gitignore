@@ -29,6 +29,9 @@ pnpm-debug.log*
 .DS_Store
 *.pem
 
+# PDF.js worker (copied by postinstall)
+public/pdf.worker.min.mjs
+
 # vercel
 .vercel
 
