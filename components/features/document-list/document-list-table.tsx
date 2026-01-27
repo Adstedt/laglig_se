@@ -143,13 +143,18 @@ interface DocumentListTableProps {
     }
   ) => Promise<boolean>
   // Story 4.13: Group props
-  groups?: ListGroupSummary[]
-  onMoveToGroup?: (_itemId: string, _groupId: string | null) => Promise<boolean>
-  emptyMessage?: string
+  groups?: ListGroupSummary[] | undefined
+  onMoveToGroup?:
+    | ((_itemId: string, _groupId: string | null) => Promise<boolean>)
+    | undefined
+  emptyMessage?: string | undefined
   // Story 6.2: Compliance view props
-  taskProgress?: Map<string, TaskProgress>
-  lastActivity?: Map<string, LastActivity>
-  onRowClick?: (_listItemId: string) => void
+  taskProgress?: Map<string, TaskProgress> | undefined
+  lastActivity?: Map<string, LastActivity> | undefined
+  onRowClick?: ((_listItemId: string) => void) | undefined
+  // Story 6.14: Props for nested usage in GroupedDocumentListTable
+  hideGroupColumn?: boolean | undefined
+  disableDndContext?: boolean | undefined
 }
 
 // ============================================================================
@@ -197,6 +202,9 @@ export function DocumentListTable({
   taskProgress,
   lastActivity,
   onRowClick,
+  // Story 6.14: Props for nested usage in GroupedDocumentListTable
+  hideGroupColumn = false,
+  disableDndContext = false,
 }: DocumentListTableProps) {
   // Local state
   const [sorting, setSorting] = useState<SortingState>([])
@@ -560,6 +568,14 @@ export function DocumentListTable({
     ]
   )
 
+  // Story 6.14: Compute effective column visibility (hide group column when in grouped mode)
+  const effectiveColumnVisibility = useMemo(() => {
+    if (hideGroupColumn) {
+      return { ...columnVisibility, group: false }
+    }
+    return columnVisibility
+  }, [columnVisibility, hideGroupColumn])
+
   // Table instance
   const table = useReactTable({
     data: localItems,
@@ -567,7 +583,7 @@ export function DocumentListTable({
     state: {
       sorting,
       rowSelection,
-      columnVisibility,
+      columnVisibility: effectiveColumnVisibility,
     },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
@@ -641,6 +657,7 @@ export function DocumentListTable({
 
       {/* Table with DnD - overflow-x-auto contains horizontal scroll within table */}
       {/* Story P.4: Use ref for virtualization scroll element */}
+      {/* Story 6.14: Conditionally wrap with DndContext (skip when nested in GroupedDocumentListTable) */}
       <div
         ref={tableContainerRef}
         className={cn(
@@ -651,12 +668,8 @@ export function DocumentListTable({
           shouldVirtualize ? { maxHeight: VIRTUAL_TABLE_MAX_HEIGHT } : undefined
         }
       >
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-          modifiers={[restrictToVerticalAxis]}
-        >
+        {disableDndContext ? (
+          // Story 6.14: When nested, skip DndContext wrapper (parent provides it)
           <Table>
             <TableHeader
               className={
@@ -701,7 +714,6 @@ export function DocumentListTable({
               >
                 {rows.length > 0 ? (
                   shouldVirtualize ? (
-                    // Story P.4: Virtualized rendering for large datasets
                     rowVirtualizer.getVirtualItems().map((virtualItem) => {
                       const row = rows[virtualItem.index]
                       if (!row) return null
@@ -715,7 +727,6 @@ export function DocumentListTable({
                       )
                     })
                   ) : (
-                    // Standard rendering for small datasets
                     rows.map((row) => (
                       <SortableRow
                         key={row.id}
@@ -737,7 +748,98 @@ export function DocumentListTable({
               </SortableContext>
             </TableBody>
           </Table>
-        </DndContext>
+        ) : (
+          // Standard: wrap with DndContext for standalone usage
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+          >
+            <Table>
+              <TableHeader
+                className={
+                  shouldVirtualize
+                    ? 'sticky top-0 z-20 bg-background'
+                    : undefined
+                }
+              >
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        style={{ width: header.getSize() }}
+                        className={cn(
+                          header.id === 'title' &&
+                            'sticky left-0 bg-background z-10'
+                        )}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody
+                style={
+                  shouldVirtualize
+                    ? {
+                        height: `${rowVirtualizer.getTotalSize()}px`,
+                        position: 'relative',
+                      }
+                    : undefined
+                }
+              >
+                <SortableContext
+                  items={localItems.map((item) => item.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {rows.length > 0 ? (
+                    shouldVirtualize ? (
+                      // Story P.4: Virtualized rendering for large datasets
+                      rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                        const row = rows[virtualItem.index]
+                        if (!row) return null
+                        return (
+                          <VirtualSortableRow
+                            key={row.id}
+                            row={row}
+                            virtualItem={virtualItem}
+                            {...(onRowClick ? { onRowClick } : {})}
+                          />
+                        )
+                      })
+                    ) : (
+                      // Standard rendering for small datasets
+                      rows.map((row) => (
+                        <SortableRow
+                          key={row.id}
+                          row={row}
+                          {...(onRowClick ? { onRowClick } : {})}
+                        />
+                      ))
+                    )
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        {isLoading ? 'Laddar...' : 'Inga resultat.'}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </SortableContext>
+              </TableBody>
+            </Table>
+          </DndContext>
+        )}
       </div>
 
       {/* Load more */}

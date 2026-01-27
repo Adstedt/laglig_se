@@ -481,18 +481,34 @@ const GroupAccordion = memo(function GroupAccordion({
   isUngrouped = false,
   isDropTarget = false,
 }: GroupAccordionProps) {
+  // Local state for instant toggle response, synced with prop
+  const [localExpanded, setLocalExpanded] = useState(isExpanded)
+
+  // Sync local state when prop changes (e.g., expand all / collapse all)
+  useEffect(() => {
+    setLocalExpanded(isExpanded)
+  }, [isExpanded])
+
+  // Handle toggle with instant local update
+  const handleToggle = useCallback(() => {
+    setLocalExpanded((prev) => !prev)
+    onToggle()
+  }, [onToggle])
+
   // Make the entire group container a drop target
   const { setNodeRef } = useDroppable({
     id: `group-header-${groupId}`,
   })
 
   return (
-    <Collapsible open={isExpanded} onOpenChange={onToggle}>
+    <Collapsible open={localExpanded} onOpenChange={handleToggle}>
       <div
         ref={setNodeRef}
         className={cn(
-          'rounded-lg border-2 border-transparent transition-colors',
-          isDropTarget && 'border-primary bg-primary/5'
+          'rounded-lg border transition-colors',
+          isDropTarget
+            ? 'border-primary border-2 bg-primary/5'
+            : 'border-border/50 bg-muted/20'
         )}
       >
         {/* Group header - chevron toggles expand, name filters */}
