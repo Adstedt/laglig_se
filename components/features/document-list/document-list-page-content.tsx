@@ -20,6 +20,8 @@ import {
 import { DocumentListSwitcher } from './document-list-switcher'
 import { DocumentListTable } from './document-list-table'
 import { GroupedDocumentList } from './grouped-document-list'
+// Story 6.14: Grouped accordion tables for table view
+import { GroupedDocumentListTable } from './grouped-document-list-table'
 import { GroupManager } from './group-manager'
 import { GroupFilterChip } from './group-filter-chip'
 import { ContentTypeFilter } from './content-type-filter'
@@ -521,9 +523,9 @@ export function DocumentListPageContent({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {/* Header row with list switcher and actions */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <DocumentListSwitcher
           lists={lists}
           activeListId={activeListId}
@@ -533,7 +535,6 @@ export function DocumentListPageContent({
         />
 
         <div className="flex items-center gap-2">
-          {/* Story 4.12: View toggle */}
           <ViewToggle value={viewMode} onChange={setViewMode} />
 
           <Button
@@ -550,7 +551,6 @@ export function DocumentListPageContent({
             disabled={!activeListId || listItems.length === 0}
           />
 
-          {/* Story 4.13: Manage groups button (shown in both views) */}
           <Button
             variant="outline"
             onClick={() => setIsGroupManagerOpen(true)}
@@ -573,33 +573,21 @@ export function DocumentListPageContent({
         </div>
       </div>
 
-      {/* Content type pills and group filter */}
-      <div className="flex flex-wrap items-center gap-2">
-        <ContentTypeFilter
-          activeFilter={contentTypeFilter}
-          onFilterChange={setContentTypeGroupFilter}
-        />
-
-        {/* Story 4.13 Task 11: Group filter chip */}
-        {activeGroupFilterInfo && (
-          <GroupFilterChip
-            groupName={activeGroupFilterInfo.name}
-            onClear={handleClearGroupFilter}
+      {/* Filters row: Content type pills (left) + Search, filters, columns (right) */}
+      <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <ContentTypeFilter
+            activeFilter={contentTypeFilter}
+            onFilterChange={setContentTypeGroupFilter}
           />
-        )}
-      </div>
+          {activeGroupFilterInfo && (
+            <GroupFilterChip
+              groupName={activeGroupFilterInfo.name}
+              onClear={handleClearGroupFilter}
+            />
+          )}
+        </div>
 
-      {/* Story 6.2: Document count (left) + Search, filters, column settings (right) */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground">
-          Visar{' '}
-          {hasFiltersOrSearch
-            ? filteredAndSearchedItems.length
-            : activeGroupFilter
-              ? filteredItems.length
-              : listItems.length}{' '}
-          av {total} dokument.
-        </p>
         <div className="flex flex-wrap items-center gap-2">
           <SearchInput
             initialValue={searchParams.get('q') ?? ''}
@@ -621,6 +609,20 @@ export function DocumentListPageContent({
         </div>
       </div>
 
+      {/* Document count - only for flat table view (grouped views show their own) */}
+      {viewMode === 'table' &&
+        (groups.length === 0 || hasFiltersOrSearch || activeGroupFilter) && (
+          <p className="text-sm text-muted-foreground">
+            Visar{' '}
+            {hasFiltersOrSearch
+              ? filteredAndSearchedItems.length
+              : activeGroupFilter
+                ? filteredItems.length
+                : listItems.length}{' '}
+            av {total} dokument.
+          </p>
+        )}
+
       {/* Error message */}
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
@@ -636,6 +638,7 @@ export function DocumentListPageContent({
 
       {/* Document grid or table based on view mode */}
       {/* Story 4.13 & 6.2: Use filtered items and show empty state when filters return no results */}
+      {/* Story 6.14: Add grouped table view when in table mode with groups and no filters */}
       {hasFiltersOrSearch &&
       filteredAndSearchedItems.length === 0 &&
       !isLoadingItems ? (
@@ -680,7 +683,40 @@ export function DocumentListPageContent({
               : 'Välj eller skapa en lista för att komma igång.'
           }
         />
+      ) : viewMode === 'table' &&
+        groups.length > 0 &&
+        !hasFiltersOrSearch &&
+        !activeGroupFilter ? (
+        // Story 6.14: Grouped accordion tables for table view
+        <GroupedDocumentListTable
+          items={listItems}
+          groups={groups}
+          expandedGroups={expandedGroups}
+          total={total}
+          hasMore={hasMore}
+          isLoading={isLoadingItems}
+          columnVisibility={columnVisibility}
+          onColumnVisibilityChange={setColumnVisibility}
+          onLoadMore={loadMoreItems}
+          onUpdateItem={handleUpdateItem}
+          onBulkUpdate={handleTableBulkUpdate}
+          onRemoveItem={removeItem}
+          onReorderItems={reorderItems}
+          onMoveToGroup={moveToGroup}
+          onToggleGroup={toggleGroupExpanded}
+          onExpandAll={expandAllGroups}
+          onCollapseAll={collapseAllGroups}
+          onFilterByGroup={handleFilterByGroup}
+          onRowClick={handleOpenModal}
+          workspaceMembers={workspaceMembers}
+          emptyMessage={
+            activeListId
+              ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
+              : 'Välj eller skapa en lista för att komma igång.'
+          }
+        />
       ) : (
+        // Flat table view (when no groups, or filters/search active, or filtering by specific group)
         <DocumentListTable
           items={
             hasFiltersOrSearch
