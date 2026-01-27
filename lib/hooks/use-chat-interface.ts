@@ -3,6 +3,10 @@
 /**
  * Story 3.3: Shared Chat Interface Hook
  * Provides chat functionality for sidebar, task modal, and legal document modal
+ *
+ * Task 6: Chat history persistence
+ * - Loads chat history on mount
+ * - Saves messages to database via server actions
  */
 
 import { useCallback, useState, useRef, useMemo, useEffect } from 'react'
@@ -11,6 +15,12 @@ import { DefaultChatTransport, type UIMessage } from 'ai'
 import { track } from '@vercel/analytics'
 import type { Citation } from '@/lib/ai/citations'
 import { createCitationsFromContext } from '@/lib/ai/citations'
+import {
+  getChatHistory,
+  saveChatMessage,
+  clearChatHistory as clearChatHistoryAction,
+  type ChatMessageData,
+} from '@/app/actions/ai-chat'
 
 export type ChatContextType = 'global' | 'task' | 'law'
 
@@ -43,6 +53,25 @@ export interface UseChatInterfaceReturn {
   retryAfter: number | undefined
   handleRetry: () => void
   isLoading: boolean
+  isLoadingHistory: boolean
+  clearHistory: () => Promise<void>
+}
+
+// Map ChatContextType to Prisma enum format
+function toPrismaContextType(
+  contextType: ChatContextType
+): 'GLOBAL' | 'TASK' | 'LAW' {
+  return contextType.toUpperCase() as 'GLOBAL' | 'TASK' | 'LAW'
+}
+
+// Convert persisted messages to UIMessage format
+function toUIMessages(messages: ChatMessageData[]): UIMessage[] {
+  return messages.map((msg) => ({
+    id: msg.id,
+    role: msg.role === 'USER' ? 'user' : 'assistant',
+    parts: [{ type: 'text' as const, text: msg.content }],
+    createdAt: msg.createdAt,
+  }))
 }
 
 export function useChatInterface(
@@ -58,8 +87,11 @@ export function useChatInterface(
 
   const [citations, setCitations] = useState<Citation[]>([])
   const [retryAfter, setRetryAfter] = useState<number | undefined>(undefined)
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true)
+  const [historyLoaded, setHistoryLoaded] = useState(false)
   const lastMessageRef = useRef<string>('')
   const startTimeRef = useRef<number>(0)
+  const pendingSaveRef = useRef<Set<string>>(new Set())
 
   // Create transport with body data for context
   const transport = useMemo(
@@ -98,6 +130,20 @@ export function useChatInterface(
         durationMs: duration,
       })
 
+      // Persist assistant message to database
+      if (responseText && !pendingSaveRef.current.has(message.id)) {
+        pendingSaveRef.current.add(message.id)
+        saveChatMessage({
+          role: 'ASSISTANT',
+          content: responseText,
+          contextType: toPrismaContextType(contextType),
+          contextId,
+        }).catch((err) => {
+          console.error('Failed to save assistant message:', err)
+          pendingSaveRef.current.delete(message.id)
+        })
+      }
+
       onResponseComplete?.()
     },
     onError: (err) => {
@@ -118,6 +164,36 @@ export function useChatInterface(
       }
     },
   })
+
+  // Load chat history on mount
+  useEffect(() => {
+    if (historyLoaded) return
+
+    async function loadHistory() {
+      setIsLoadingHistory(true)
+      try {
+        const result = await getChatHistory({
+          contextType: toPrismaContextType(contextType),
+          contextId,
+          limit: 50,
+        })
+
+        if (result.success && result.data && result.data.length > 0) {
+          const uiMessages = toUIMessages(result.data)
+          setMessages(uiMessages)
+          // Mark these message IDs as already saved
+          result.data.forEach((msg) => pendingSaveRef.current.add(msg.id))
+        }
+      } catch (err) {
+        console.error('Failed to load chat history:', err)
+      } finally {
+        setIsLoadingHistory(false)
+        setHistoryLoaded(true)
+      }
+    }
+
+    loadHistory()
+  }, [contextType, contextId, historyLoaded, setMessages])
 
   // Update citations when messages change (from response metadata)
   const updateCitationsFromMessage = useCallback((msg: UIMessage) => {
@@ -164,6 +240,16 @@ export function useChatInterface(
         hasContext: !!contextId,
       })
 
+      // Persist user message to database
+      saveChatMessage({
+        role: 'USER',
+        content: content.trim(),
+        contextType: toPrismaContextType(contextType),
+        contextId,
+      }).catch((err) => {
+        console.error('Failed to save user message:', err)
+      })
+
       // Send message using the parts format
       sendChatMessage({ parts: [{ type: 'text', text: content }] })
       onMessageSent?.()
@@ -183,6 +269,22 @@ export function useChatInterface(
     }
   }, [messages, sendMessage, setMessages])
 
+  // Clear chat history (both local state and database)
+  const clearHistory = useCallback(async () => {
+    try {
+      await clearChatHistoryAction({
+        contextType: toPrismaContextType(contextType),
+        contextId,
+      })
+      // Clear local state
+      setMessages([])
+      pendingSaveRef.current.clear()
+    } catch (err) {
+      console.error('Failed to clear chat history:', err)
+      throw err
+    }
+  }, [contextType, contextId, setMessages])
+
   const isLoading = status === 'streaming' || status === 'submitted'
 
   return {
@@ -195,6 +297,8 @@ export function useChatInterface(
     retryAfter,
     handleRetry,
     isLoading,
+    isLoadingHistory,
+    clearHistory,
   }
 }
 
