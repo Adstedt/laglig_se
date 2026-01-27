@@ -13,7 +13,7 @@ async function main() {
 
   // Find all <p> elements after the Författningskommentar section
   let inFkSection = false
-  let fkContent: string[] = []
+  const fkContent: string[] = []
 
   $('p').each((_, el) => {
     const text = $(el).text().trim()
@@ -35,12 +35,16 @@ async function main() {
     }
   })
 
-  console.log(`Extracted ${fkContent.length} paragraphs from Författningskommentar\n`)
+  console.log(
+    `Extracted ${fkContent.length} paragraphs from Författningskommentar\n`
+  )
 
   // Show first 20 paragraphs to understand format
   console.log('=== FIRST 20 PARAGRAPHS ===\n')
   fkContent.slice(0, 20).forEach((p, i) => {
-    console.log(`[${i + 1}] ${p.substring(0, 150)}${p.length > 150 ? '...' : ''}`)
+    console.log(
+      `[${i + 1}] ${p.substring(0, 150)}${p.length > 150 ? '...' : ''}`
+    )
     console.log()
   })
 
@@ -51,8 +55,12 @@ async function main() {
 
   // Search for "Paragrafen" patterns
   console.log('\n=== PARAGRAPHS STARTING WITH "Paragrafen" ===\n')
-  const withPara = fkContent.filter((p) => p.startsWith('Paragrafen') || p.startsWith('I paragrafen'))
-  withPara.slice(0, 5).forEach((p) => console.log(`- ${p.substring(0, 200)}...`))
+  const withPara = fkContent.filter(
+    (p) => p.startsWith('Paragrafen') || p.startsWith('I paragrafen')
+  )
+  withPara
+    .slice(0, 5)
+    .forEach((p) => console.log(`- ${p.substring(0, 200)}...`))
 }
 
 main()

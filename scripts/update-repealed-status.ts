@@ -51,7 +51,9 @@ async function updateRepealedStatus() {
   const additionalCount = Number(count2Result[0].count)
 
   if (additionalCount > 0) {
-    console.log(`\nFound ${additionalCount} additional with "upphört att gälla"`)
+    console.log(
+      `\nFound ${additionalCount} additional with "upphört att gälla"`
+    )
 
     const result2 = await prisma.$executeRaw`
       UPDATE legal_documents
@@ -66,11 +68,11 @@ async function updateRepealedStatus() {
   // Show final stats
   const stats = await prisma.legalDocument.groupBy({
     by: ['status'],
-    _count: true
+    _count: true,
   })
 
   console.log('\n=== Final status distribution ===')
-  stats.forEach(s => console.log(`${s.status}: ${s._count}`))
+  stats.forEach((s) => console.log(`${s.status}: ${s._count}`))
 }
 
 updateRepealedStatus()

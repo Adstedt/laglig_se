@@ -88,7 +88,10 @@ export async function generateMetadata({
   }
 
   // Use cached query for better performance (Story 2.19)
-  const document = await getCachedEuLegislationMetadata(id, typeInfo.contentType)
+  const document = await getCachedEuLegislationMetadata(
+    id,
+    typeInfo.contentType
+  )
 
   if (!document) {
     return { title: 'EU-dokument hittades inte | Laglig.se' }

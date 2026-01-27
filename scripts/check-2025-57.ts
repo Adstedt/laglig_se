@@ -6,14 +6,14 @@ async function main() {
   // Check the LegalDocument
   const doc = await prisma.legalDocument.findFirst({
     where: {
-      document_number: 'SFS 2025:57'
+      document_number: 'SFS 2025:57',
     },
     select: {
       id: true,
       title: true,
       slug: true,
       html_content: true,
-    }
+    },
   })
 
   if (doc) {
@@ -29,7 +29,7 @@ async function main() {
 
     // Check AmendmentDocument
     const amendment = await prisma.amendmentDocument.findFirst({
-      where: { sfs_number: '2025:57' }
+      where: { sfs_number: '2025:57' },
     })
 
     if (amendment) {

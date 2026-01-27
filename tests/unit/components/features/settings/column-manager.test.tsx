@@ -25,7 +25,6 @@ import {
   createTaskColumn,
   updateTaskColumn,
   deleteTaskColumn,
-  reorderTaskColumns,
 } from '@/app/actions/tasks'
 
 // Mock sonner toast
@@ -133,7 +132,9 @@ describe('ColumnManager', () => {
     it('shows "Ny kolumn" button', () => {
       render(<ColumnManager initialColumns={mockColumns} />)
 
-      expect(screen.getByRole('button', { name: /ny kolumn/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /ny kolumn/i })
+      ).toBeInTheDocument()
     })
   })
 
@@ -142,7 +143,9 @@ describe('ColumnManager', () => {
       render(<ColumnManager initialColumns={mockColumns} />)
 
       // Default columns should not have delete buttons
-      const deleteButtons = screen.queryAllByRole('button', { name: /radera kolumn/i })
+      const deleteButtons = screen.queryAllByRole('button', {
+        name: /radera kolumn/i,
+      })
       expect(deleteButtons).toHaveLength(0)
     })
 
@@ -150,7 +153,9 @@ describe('ColumnManager', () => {
       const columnsWithCustom = [...mockColumns, mockCustomColumn]
       render(<ColumnManager initialColumns={columnsWithCustom} />)
 
-      const deleteButton = screen.getByRole('button', { name: /radera kolumn granskning/i })
+      const deleteButton = screen.getByRole('button', {
+        name: /radera kolumn granskning/i,
+      })
       expect(deleteButton).toBeInTheDocument()
     })
   })
@@ -163,7 +168,9 @@ describe('ColumnManager', () => {
       await user.click(screen.getByRole('button', { name: /ny kolumn/i }))
 
       expect(screen.getByRole('dialog')).toBeInTheDocument()
-      expect(screen.getByRole('heading', { name: 'Ny kolumn' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: 'Ny kolumn' })
+      ).toBeInTheDocument()
       expect(screen.getByLabelText('Kolumnnamn')).toBeInTheDocument()
     })
 
@@ -225,7 +232,9 @@ describe('ColumnManager', () => {
       const columnsWithCustom = [...mockColumns, mockCustomColumn]
       render(<ColumnManager initialColumns={columnsWithCustom} />)
 
-      const deleteButton = screen.getByRole('button', { name: /radera kolumn granskning/i })
+      const deleteButton = screen.getByRole('button', {
+        name: /radera kolumn granskning/i,
+      })
       await user.click(deleteButton)
 
       expect(screen.getByText('Radera kolumn?')).toBeInTheDocument()
@@ -237,7 +246,9 @@ describe('ColumnManager', () => {
       const columnsWithCustom = [...mockColumns, mockCustomColumn]
       render(<ColumnManager initialColumns={columnsWithCustom} />)
 
-      const deleteButton = screen.getByRole('button', { name: /radera kolumn granskning/i })
+      const deleteButton = screen.getByRole('button', {
+        name: /radera kolumn granskning/i,
+      })
       await user.click(deleteButton)
 
       // Check for the dialog content
@@ -256,7 +267,9 @@ describe('ColumnManager', () => {
       const columnsWithCustom = [...mockColumns, mockCustomColumn]
       render(<ColumnManager initialColumns={columnsWithCustom} />)
 
-      const deleteButton = screen.getByRole('button', { name: /radera kolumn granskning/i })
+      const deleteButton = screen.getByRole('button', {
+        name: /radera kolumn granskning/i,
+      })
       await user.click(deleteButton)
       await user.click(screen.getByRole('button', { name: /^radera$/i }))
 
@@ -292,7 +305,9 @@ describe('ColumnManager', () => {
       fireEvent.blur(input)
 
       await waitFor(() => {
-        expect(updateTaskColumn).toHaveBeenCalledWith('col_1', { name: 'Ny uppgift' })
+        expect(updateTaskColumn).toHaveBeenCalledWith('col_1', {
+          name: 'Ny uppgift',
+        })
       })
     })
 
@@ -352,7 +367,9 @@ describe('ColumnManager', () => {
       await user.click(toggle)
 
       await waitFor(() => {
-        expect(updateTaskColumn).toHaveBeenCalledWith('col_4', { is_done: true })
+        expect(updateTaskColumn).toHaveBeenCalledWith('col_4', {
+          is_done: true,
+        })
       })
     })
   })
@@ -373,7 +390,9 @@ describe('ColumnManager', () => {
       await user.click(screen.getByRole('button', { name: /skapa kolumn/i }))
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('En kolumn med detta namn finns redan')
+        expect(toast.error).toHaveBeenCalledWith(
+          'En kolumn med detta namn finns redan'
+        )
       })
     })
 
@@ -388,12 +407,16 @@ describe('ColumnManager', () => {
       const columnsWithCustom = [...mockColumns, mockCustomColumn]
       render(<ColumnManager initialColumns={columnsWithCustom} />)
 
-      const deleteButton = screen.getByRole('button', { name: /radera kolumn granskning/i })
+      const deleteButton = screen.getByRole('button', {
+        name: /radera kolumn granskning/i,
+      })
       await user.click(deleteButton)
       await user.click(screen.getByRole('button', { name: /^radera$/i }))
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Standardkolumner kan inte raderas')
+        expect(toast.error).toHaveBeenCalledWith(
+          'Standardkolumner kan inte raderas'
+        )
       })
     })
   })

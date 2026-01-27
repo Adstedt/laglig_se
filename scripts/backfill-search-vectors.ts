@@ -57,17 +57,19 @@ async function backfill() {
     processed += result
     const elapsed = Date.now() - start
     const remaining = total - processed
-    const estimatedRemaining = Math.ceil((remaining / BATCH_SIZE) * elapsed / 1000)
+    const estimatedRemaining = Math.ceil(
+      ((remaining / BATCH_SIZE) * elapsed) / 1000
+    )
 
     console.log(
       `Batch ${batchNum}: ${result} docs in ${elapsed}ms | ` +
-      `Progress: ${processed}/${total} (${((processed / total) * 100).toFixed(1)}%) | ` +
-      `Est. remaining: ${estimatedRemaining}s`
+        `Progress: ${processed}/${total} (${((processed / total) * 100).toFixed(1)}%) | ` +
+        `Est. remaining: ${estimatedRemaining}s`
     )
 
     // Small delay to avoid overwhelming the database
     if (remaining > 0) {
-      await new Promise(resolve => setTimeout(resolve, 50))
+      await new Promise((resolve) => setTimeout(resolve, 50))
     }
   }
 

@@ -7,7 +7,7 @@ import * as fs from 'fs'
 
 const NOTISUM_CREDENTIALS = {
   username: 'pr32602',
-  password: 'KBty8611!'
+  password: 'KBty8611!',
 }
 
 const EXAMPLES = [
@@ -17,7 +17,8 @@ const EXAMPLES = [
     pattern: 'Definition Lists',
     amendmentUrl: 'https://www.notisum.se/rn/document/?id=20251461',
     baseLawUrl: 'https://www.notisum.se/rn/document/?id=20230875',
-    pdfUrl: 'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-12/SFS2025-1461.pdf'
+    pdfUrl:
+      'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-12/SFS2025-1461.pdf',
   },
   {
     id: 2,
@@ -25,7 +26,8 @@ const EXAMPLES = [
     pattern: 'Unknown - to analyze',
     amendmentUrl: 'https://www.notisum.se/rn/document/?id=20251379',
     baseLawUrl: 'https://www.notisum.se/rn/document/?id=19900314',
-    pdfUrl: 'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-12/SFS2025-1379.pdf'
+    pdfUrl:
+      'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-12/SFS2025-1379.pdf',
   },
   {
     id: 3,
@@ -33,7 +35,8 @@ const EXAMPLES = [
     pattern: 'Unknown - to analyze',
     amendmentUrl: 'https://www.notisum.se/rn/document/?id=20251351',
     baseLawUrl: 'https://www.notisum.se/rn/document/?id=20061043',
-    pdfUrl: 'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1351.pdf'
+    pdfUrl:
+      'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1351.pdf',
   },
   {
     id: 4,
@@ -41,7 +44,8 @@ const EXAMPLES = [
     pattern: 'Unknown - to analyze',
     amendmentUrl: 'https://www.notisum.se/rn/document/?id=20251345',
     baseLawUrl: 'https://www.notisum.se/rn/document/?id=19970857',
-    pdfUrl: 'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1345.pdf'
+    pdfUrl:
+      'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1345.pdf',
   },
   {
     id: 5,
@@ -49,7 +53,8 @@ const EXAMPLES = [
     pattern: 'Unknown - to analyze',
     amendmentUrl: 'https://www.notisum.se/rn/document/?id=20251344',
     baseLawUrl: 'https://www.notisum.se/rn/document/?id=20140836',
-    pdfUrl: 'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1344.pdf'
+    pdfUrl:
+      'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1344.pdf',
   },
   {
     id: 6,
@@ -57,7 +62,8 @@ const EXAMPLES = [
     pattern: 'Unknown - to analyze',
     amendmentUrl: 'https://www.notisum.se/rn/document/?id=20251317',
     baseLawUrl: 'https://www.notisum.se/rn/document/?id=19980808',
-    pdfUrl: 'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1317.pdf'
+    pdfUrl:
+      'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1317.pdf',
   },
   {
     id: 7,
@@ -65,8 +71,9 @@ const EXAMPLES = [
     pattern: 'Unknown - to analyze',
     amendmentUrl: 'https://www.notisum.se/rn/document/?id=20251312',
     baseLawUrl: 'https://www.notisum.se/rn/document/?id=20100800',
-    pdfUrl: 'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1312.pdf'
-  }
+    pdfUrl:
+      'https://svenskforfattningssamling.se/sites/default/files/sfs/2025-11/SFS2025-1312.pdf',
+  },
 ]
 
 const LOGIN_URL = 'https://www.notisum.se/login/'
@@ -107,7 +114,7 @@ async function waitForLogin(page: any): Promise<boolean> {
   return false
 }
 
-async function analyzeAmendmentPage(page: any, example: typeof EXAMPLES[0]) {
+async function analyzeAmendmentPage(page: any, example: (typeof EXAMPLES)[0]) {
   console.log(`\n${'='.repeat(60)}`)
   console.log(`Analyzing Example ${example.id}: SFS ${example.sfs}`)
   console.log(`${'='.repeat(60)}`)
@@ -120,7 +127,8 @@ async function analyzeAmendmentPage(page: any, example: typeof EXAMPLES[0]) {
   console.log(`\nTitle: ${title}`)
 
   // Get the main document content container
-  const contentSelector = '.document-content, .rn-document-content, article, main'
+  const contentSelector =
+    '.document-content, .rn-document-content, article, main'
   const contentExists = await page.locator(contentSelector).count()
 
   let htmlStructure = ''
@@ -141,21 +149,31 @@ async function analyzeAmendmentPage(page: any, example: typeof EXAMPLES[0]) {
     fs.mkdirSync(outputDir, { recursive: true })
   }
 
-  fs.writeFileSync(`${outputDir}/example-${example.id}-${example.sfs.replace(':', '-')}.html`, htmlStructure)
-  fs.writeFileSync(`${outputDir}/example-${example.id}-${example.sfs.replace(':', '-')}.txt`, textContent || '')
+  fs.writeFileSync(
+    `${outputDir}/example-${example.id}-${example.sfs.replace(':', '-')}.html`,
+    htmlStructure
+  )
+  fs.writeFileSync(
+    `${outputDir}/example-${example.id}-${example.sfs.replace(':', '-')}.txt`,
+    textContent || ''
+  )
 
   // Analyze structure
   console.log('\n--- HTML Structure Analysis ---')
 
   // Check for specific elements
-  const hasDefinitionList = htmlStructure.includes('<dl') || htmlStructure.includes('definition')
+  const hasDefinitionList =
+    htmlStructure.includes('<dl') || htmlStructure.includes('definition')
   const hasOrderedList = htmlStructure.includes('<ol')
   const hasUnorderedList = htmlStructure.includes('<ul')
   const hasParagraphs = htmlStructure.includes('<p')
-  const hasHeadings = htmlStructure.includes('<h2') || htmlStructure.includes('<h3')
+  const hasHeadings =
+    htmlStructure.includes('<h2') || htmlStructure.includes('<h3')
   const hasTable = htmlStructure.includes('<table')
-  const hasBold = htmlStructure.includes('<b>') || htmlStructure.includes('<strong')
-  const hasItalic = htmlStructure.includes('<i>') || htmlStructure.includes('<em')
+  const hasBold =
+    htmlStructure.includes('<b>') || htmlStructure.includes('<strong')
+  const hasItalic =
+    htmlStructure.includes('<i>') || htmlStructure.includes('<em')
 
   console.log(`- Definition list (<dl>): ${hasDefinitionList}`)
   console.log(`- Ordered list (<ol>): ${hasOrderedList}`)
@@ -175,7 +193,8 @@ async function analyzeAmendmentPage(page: any, example: typeof EXAMPLES[0]) {
   }
 
   // Check for definition patterns
-  const defPattern = /([a-zåäö]+(?:\s+[a-zåäö]+)*)\s+i\s+(\d+(?:\s*kap\.)?\s*\d*\s*§)/gi
+  const defPattern =
+    /([a-zåäö]+(?:\s+[a-zåäö]+)*)\s+i\s+(\d+(?:\s*kap\.)?\s*\d*\s*§)/gi
   const definitions = textContent?.match(defPattern) || []
   console.log(`\n- Definition patterns found: ${definitions.length}`)
   if (definitions.length > 0) {
@@ -185,7 +204,7 @@ async function analyzeAmendmentPage(page: any, example: typeof EXAMPLES[0]) {
   // Take screenshot
   await page.screenshot({
     path: `${outputDir}/example-${example.id}-${example.sfs.replace(':', '-')}.png`,
-    fullPage: true
+    fullPage: true,
   })
 
   console.log(`\nFiles saved to ${outputDir}/`)
@@ -201,7 +220,7 @@ async function analyzeAmendmentPage(page: any, example: typeof EXAMPLES[0]) {
     hasHeadings,
     hasTable,
     sectionCount: sections.length,
-    definitionCount: definitions.length
+    definitionCount: definitions.length,
   }
 }
 
@@ -249,12 +268,17 @@ async function main() {
       if (r.hasTable) features.push('TABLE')
       console.log(`Example ${r.id} (${r.sfs}): ${r.title?.slice(0, 50)}...`)
       console.log(`  Features: ${features.join(', ') || 'NONE'}`)
-      console.log(`  Sections: ${r.sectionCount}, Definitions: ${r.definitionCount}`)
+      console.log(
+        `  Sections: ${r.sectionCount}, Definitions: ${r.definitionCount}`
+      )
     }
   }
 
   // Save summary
-  fs.writeFileSync('scripts/notisum-analysis/summary.json', JSON.stringify(results, null, 2))
+  fs.writeFileSync(
+    'scripts/notisum-analysis/summary.json',
+    JSON.stringify(results, null, 2)
+  )
 
   await browser.close()
 }

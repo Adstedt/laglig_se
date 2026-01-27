@@ -34,7 +34,9 @@ describe('Content Type Utilities', () => {
   describe('getContentTypeFullLabel', () => {
     it('returns correct full Swedish labels', () => {
       expect(getContentTypeFullLabel('SFS_LAW')).toBe('Lag')
-      expect(getContentTypeFullLabel('SFS_AMENDMENT')).toBe('Ändringsförfattning')
+      expect(getContentTypeFullLabel('SFS_AMENDMENT')).toBe(
+        'Ändringsförfattning'
+      )
       expect(getContentTypeFullLabel('COURT_CASE_HD')).toBe('Högsta domstolen')
       expect(getContentTypeFullLabel('COURT_CASE_AD')).toBe('Arbetsdomstolen')
     })
@@ -158,23 +160,39 @@ describe('Content Type Utilities', () => {
   describe('URL Generation', () => {
     describe('getDocumentUrl', () => {
       it('generates correct URL for SFS law', () => {
-        expect(getDocumentUrl('SFS_LAW', 'test-slug', false)).toBe('/lagar/test-slug')
-        expect(getDocumentUrl('SFS_LAW', 'test-slug', true)).toBe('/browse/lagar/test-slug')
+        expect(getDocumentUrl('SFS_LAW', 'test-slug', false)).toBe(
+          '/lagar/test-slug'
+        )
+        expect(getDocumentUrl('SFS_LAW', 'test-slug', true)).toBe(
+          '/browse/lagar/test-slug'
+        )
       })
 
       it('generates correct URL for amendments', () => {
-        expect(getDocumentUrl('SFS_AMENDMENT', 'test-slug', false)).toBe('/lagar/andringar/test-slug')
-        expect(getDocumentUrl('SFS_AMENDMENT', 'test-slug', true)).toBe('/browse/lagar/andringar/test-slug')
+        expect(getDocumentUrl('SFS_AMENDMENT', 'test-slug', false)).toBe(
+          '/lagar/andringar/test-slug'
+        )
+        expect(getDocumentUrl('SFS_AMENDMENT', 'test-slug', true)).toBe(
+          '/browse/lagar/andringar/test-slug'
+        )
       })
 
       it('generates correct URL for court cases', () => {
-        expect(getDocumentUrl('COURT_CASE_HD', 'test-slug', false)).toBe('/rattsfall/hd/test-slug')
-        expect(getDocumentUrl('COURT_CASE_AD', 'test-slug', true)).toBe('/browse/rattsfall/ad/test-slug')
+        expect(getDocumentUrl('COURT_CASE_HD', 'test-slug', false)).toBe(
+          '/rattsfall/hd/test-slug'
+        )
+        expect(getDocumentUrl('COURT_CASE_AD', 'test-slug', true)).toBe(
+          '/browse/rattsfall/ad/test-slug'
+        )
       })
 
       it('generates correct URL for EU documents', () => {
-        expect(getDocumentUrl('EU_REGULATION', 'test-slug', false)).toBe('/eu/forordning/test-slug')
-        expect(getDocumentUrl('EU_DIRECTIVE', 'test-slug', true)).toBe('/browse/eu/direktiv/test-slug')
+        expect(getDocumentUrl('EU_REGULATION', 'test-slug', false)).toBe(
+          '/eu/forordning/test-slug'
+        )
+        expect(getDocumentUrl('EU_DIRECTIVE', 'test-slug', true)).toBe(
+          '/browse/eu/direktiv/test-slug'
+        )
       })
     })
   })

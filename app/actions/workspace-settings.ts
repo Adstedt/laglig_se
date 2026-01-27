@@ -61,9 +61,7 @@ export async function updateWorkspaceName(
   }
 }
 
-export async function uploadWorkspaceLogo(
-  formData: FormData
-): Promise<{
+export async function uploadWorkspaceLogo(formData: FormData): Promise<{
   success: boolean
   message?: string
   error?: string

@@ -123,7 +123,8 @@ describe('extractAffectedSections', () => {
 
   it('should extract amended sections with footnote markers', () => {
     // Real pattern from SFS 2019:614 PDF
-    const text = '2 kap. 8 § arbetsmiljölagen (1977:1160)2 ska ha följande lydelse'
+    const text =
+      '2 kap. 8 § arbetsmiljölagen (1977:1160)2 ska ha följande lydelse'
     const sections = extractAffectedSections(text)
     expect(sections).toContainEqual({
       chapter: '2',
@@ -134,7 +135,8 @@ describe('extractAffectedSections', () => {
 
   it('should extract amended sections with law name and SFS reference', () => {
     // Real pattern from SFS 2020:449 PDF
-    const text = '6 kap. 17 § arbetsmiljölagen (1977:1160)2 ska ha följande lydelse'
+    const text =
+      '6 kap. 17 § arbetsmiljölagen (1977:1160)2 ska ha följande lydelse'
     const sections = extractAffectedSections(text)
     expect(sections).toContainEqual({
       chapter: '6',
@@ -209,8 +211,7 @@ describe('extractAffectedSections', () => {
 
 describe('extractTitle', () => {
   it('should extract title for amendment law', () => {
-    const text =
-      'Lag om ändring i arbetsmiljölagen (1977:1160) Utfärdad den...'
+    const text = 'Lag om ändring i arbetsmiljölagen (1977:1160) Utfärdad den...'
     expect(extractTitle(text)).toBe(
       'Lag om ändring i arbetsmiljölagen (1977:1160)'
     )

@@ -9,7 +9,12 @@ import Anthropic from '@anthropic-ai/sdk'
 import { parsePdfFromPath } from '../lib/external/pdf-parser'
 import * as path from 'path'
 
-const FIXTURES_DIR = path.join(process.cwd(), 'tests', 'fixtures', 'amendment-pdfs')
+const FIXTURES_DIR = path.join(
+  process.cwd(),
+  'tests',
+  'fixtures',
+  'amendment-pdfs'
+)
 
 // The exact prompt we send
 const AMENDMENT_PARSE_PROMPT = `You are an expert Swedish legal document parser. Analyze this amendment document (ändringsförfattning) and extract ALL structured data.
@@ -90,7 +95,7 @@ async function main() {
   // Build the prompt
   const prompt = AMENDMENT_PARSE_PROMPT.replace('{fullText}', fullText)
 
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
   console.log('PROMPT SENT TO CLAUDE')
   console.log('='.repeat(80))
   console.log()
@@ -135,7 +140,9 @@ async function main() {
   console.log('='.repeat(80))
   console.log(`Input tokens: ${response.usage.input_tokens}`)
   console.log(`Output tokens: ${response.usage.output_tokens}`)
-  console.log(`Estimated cost: $${((response.usage.input_tokens * 0.003 + response.usage.output_tokens * 0.015) / 1000).toFixed(4)}`)
+  console.log(
+    `Estimated cost: $${((response.usage.input_tokens * 0.003 + response.usage.output_tokens * 0.015) / 1000).toFixed(4)}`
+  )
 }
 
 main().catch(console.error)

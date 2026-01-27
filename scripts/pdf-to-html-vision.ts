@@ -130,7 +130,10 @@ async function convertPdfToHtml(pdfPath: string): Promise<string> {
   let chunkCount = 0
 
   for await (const event of stream) {
-    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+    if (
+      event.type === 'content_block_delta' &&
+      event.delta.type === 'text_delta'
+    ) {
       fullText += event.delta.text
       chunkCount++
       if (chunkCount % 50 === 0) {
@@ -154,8 +157,14 @@ async function convertPdfToHtml(pdfPath: string): Promise<string> {
 
 async function main() {
   const pdfPath = path.join(__dirname, '../test-results/SFS2025-1461.pdf')
-  const outputPath = path.join(__dirname, '../test-results/SFS2025-1461-vision.html')
-  const promptPath = path.join(__dirname, '../test-results/pdf-to-html-prompt.md')
+  const outputPath = path.join(
+    __dirname,
+    '../test-results/SFS2025-1461-vision.html'
+  )
+  const promptPath = path.join(
+    __dirname,
+    '../test-results/pdf-to-html-prompt.md'
+  )
 
   // Save the prompt for review
   const fullPrompt = `# PDF to HTML Vision Prompt
@@ -201,7 +210,6 @@ ${USER_PROMPT}
     console.log(`  - Section headers (<h3>): ${sectionCount}`)
     console.log(`  - List items (<li>): ${listItemCount}`)
     console.log(`  - HTML length: ${cleanHtml.length} chars`)
-
   } catch (error) {
     console.error('Error:', error)
     process.exit(1)

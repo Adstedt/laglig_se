@@ -81,7 +81,9 @@ async function showData() {
       const sections = a.affected_sections as { amended?: string[] } | null
       const sectionList = sections?.amended?.slice(0, 5).join(', ') || 'N/A'
       console.log(`  ${a.amending_law_title}:`)
-      console.log(`    Sections: ${sectionList}${(sections?.amended?.length || 0) > 5 ? '...' : ''}`)
+      console.log(
+        `    Sections: ${sectionList}${(sections?.amended?.length || 0) > 5 ? '...' : ''}`
+      )
       console.log(`    Method: ${a.detected_method}`)
     }
     if (amendments.length > 10) {
@@ -110,7 +112,8 @@ async function showData() {
     for (const e of changeEvents) {
       console.log(`  ${e.change_type}: ${e.amendment_sfs || 'N/A'}`)
       console.log(`    Detected: ${e.detected_at}`)
-      if (e.ai_summary) console.log(`    Summary: ${e.ai_summary.substring(0, 100)}...`)
+      if (e.ai_summary)
+        console.log(`    Summary: ${e.ai_summary.substring(0, 100)}...`)
     }
   }
 

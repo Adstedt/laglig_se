@@ -14,14 +14,14 @@ async function main() {
       content_type: 'SFS_AMENDMENT',
       html_content: { not: null },
       document_number: { startsWith: 'SFS 2025' },
-      title: { contains: 'Lag' }
+      title: { contains: 'Lag' },
     },
     select: {
       document_number: true,
       title: true,
-      html_content: true
+      html_content: true,
     },
-    take: 20
+    take: 20,
   })
 
   console.log(`Found ${docs.length} 2025 lagar with html_content\n`)
@@ -29,7 +29,9 @@ async function main() {
   let totalRefs = 0
 
   for (const doc of docs) {
-    const json = htmlToJson(doc.html_content || '', { documentType: 'amendment' })
+    const json = htmlToJson(doc.html_content || '', {
+      documentType: 'amendment',
+    })
 
     console.log(`${doc.document_number}: ${doc.title?.substring(0, 50)}`)
     console.log(`  Footnotes: ${json.footnotes.length}`)
@@ -37,7 +39,9 @@ async function main() {
     for (const fn of json.footnotes.slice(0, 3)) {
       console.log(`    [${fn.id}]: ${fn.content.substring(0, 60)}...`)
       if (fn.legislativeRefs && fn.legislativeRefs.length > 0) {
-        console.log(`      → Refs: ${fn.legislativeRefs.map(r => r.reference).join(', ')}`)
+        console.log(
+          `      → Refs: ${fn.legislativeRefs.map((r) => r.reference).join(', ')}`
+        )
       }
     }
 
@@ -52,4 +56,6 @@ async function main() {
   console.log(`Total legislative refs in 2025 lagar: ${totalRefs}`)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

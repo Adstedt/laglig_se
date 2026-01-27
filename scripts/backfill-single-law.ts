@@ -66,7 +66,9 @@ async function backfillSingle() {
 
   console.log(`\nCreated ${amendments.length} amendments:`)
   for (const a of amendments) {
-    console.log(` - ${a.amending_law_title}: ${JSON.stringify(a.affected_sections)}`)
+    console.log(
+      ` - ${a.amending_law_title}: ${JSON.stringify(a.affected_sections)}`
+    )
   }
 
   // Verify

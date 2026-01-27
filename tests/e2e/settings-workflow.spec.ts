@@ -153,7 +153,9 @@ test.describe('Settings Workflow Tab', () => {
     await input.press('Escape')
 
     // Original name should be restored
-    await expect(page.locator('button:has-text("Att göra")').first()).toBeVisible()
+    await expect(
+      page.locator('button:has-text("Att göra")').first()
+    ).toBeVisible()
     await expect(page.locator('text=Ändrat namn')).not.toBeVisible()
   })
 
@@ -208,7 +210,9 @@ test.describe('Settings Workflow Tab', () => {
     const alertDialog = page.locator('[role="alertdialog"]')
     await expect(alertDialog).toBeVisible()
     await expect(alertDialog.locator('text=Radera kolumn?')).toBeVisible()
-    await expect(alertDialog.locator('text=/uppgifter flyttas till/i')).toBeVisible()
+    await expect(
+      alertDialog.locator('text=/uppgifter flyttas till/i')
+    ).toBeVisible()
   })
 
   test('should delete custom column', async ({ page }) => {

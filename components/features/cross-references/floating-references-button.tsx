@@ -43,7 +43,9 @@ export function FloatingReferencesButton({
     <div
       className={cn(
         'fixed bottom-24 right-4 z-40 transition-all duration-300',
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0 pointer-events-none'
+        isVisible
+          ? 'translate-y-0 opacity-100'
+          : 'translate-y-16 opacity-0 pointer-events-none'
       )}
     >
       <div className="flex flex-col items-end gap-2">
@@ -51,10 +53,14 @@ export function FloatingReferencesButton({
         <div
           className={cn(
             'bg-card rounded-lg shadow-lg border p-3 transition-all duration-200 origin-bottom-right',
-            isExpanded ? 'scale-100 opacity-100' : 'scale-95 opacity-0 pointer-events-none h-0 p-0 overflow-hidden'
+            isExpanded
+              ? 'scale-100 opacity-100'
+              : 'scale-95 opacity-0 pointer-events-none h-0 p-0 overflow-hidden'
           )}
         >
-          <p className="text-xs text-muted-foreground mb-2 font-medium">Relaterade dokument</p>
+          <p className="text-xs text-muted-foreground mb-2 font-medium">
+            Relaterade dokument
+          </p>
           <div className="flex flex-col gap-1.5">
             {courtCaseCount > 0 && (
               <button

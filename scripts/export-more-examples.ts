@@ -13,7 +13,7 @@ async function main() {
   const docs = await prisma.legalDocument.findMany({
     where: {
       document_number: { startsWith: 'SFS 1998:100' },
-      html_content: { not: null }
+      html_content: { not: null },
     },
     select: {
       document_number: true,
@@ -22,7 +22,7 @@ async function main() {
     },
     orderBy: { document_number: 'asc' },
     skip: 1,
-    take: 3
+    take: 3,
   })
 
   for (const doc of docs) {
@@ -43,4 +43,6 @@ async function main() {
   }
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

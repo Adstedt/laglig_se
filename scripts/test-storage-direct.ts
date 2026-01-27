@@ -11,7 +11,7 @@ async function main() {
   // Get actual storage_path from DB
   const amendment = await prisma.amendmentDocument.findFirst({
     where: { sfs_number: 'SFS 2025:1' },
-    select: { sfs_number: true, storage_path: true }
+    select: { sfs_number: true, storage_path: true },
   })
 
   console.log('Amendment from DB:')

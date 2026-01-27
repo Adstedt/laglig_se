@@ -6,10 +6,7 @@
  */
 
 import { PrismaClient, ContentType, DocumentStatus } from '@prisma/client'
-import {
-  generateAmendmentSlug,
-  generateAmendmentTitle,
-} from './amendment-slug'
+import { generateAmendmentSlug, generateAmendmentTitle } from './amendment-slug'
 
 type PrismaTransaction = Omit<
   PrismaClient,

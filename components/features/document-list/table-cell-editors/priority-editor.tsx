@@ -15,7 +15,11 @@ import { Loader2 } from 'lucide-react'
 import type { LawListItemPriority } from '@prisma/client'
 import { cn } from '@/lib/utils'
 
-const PRIORITY_OPTIONS: { value: LawListItemPriority; label: string; color: string }[] = [
+const PRIORITY_OPTIONS: {
+  value: LawListItemPriority
+  label: string
+  color: string
+}[] = [
   { value: 'LOW', label: 'Låg', color: 'bg-slate-100 text-slate-700' },
   { value: 'MEDIUM', label: 'Medel', color: 'bg-amber-100 text-amber-700' },
   { value: 'HIGH', label: 'Hög', color: 'bg-rose-100 text-rose-700' },
@@ -23,7 +27,7 @@ const PRIORITY_OPTIONS: { value: LawListItemPriority; label: string; color: stri
 
 interface PriorityEditorProps {
   value: LawListItemPriority
-  onChange: (value: LawListItemPriority) => Promise<void>
+  onChange: (_value: LawListItemPriority) => Promise<void>
 }
 
 export function PriorityEditor({ value, onChange }: PriorityEditorProps) {

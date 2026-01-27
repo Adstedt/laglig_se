@@ -9,7 +9,7 @@ async function main() {
   // Get a doc with footnotes
   const doc = await prisma.legalDocument.findFirst({
     where: { document_number: 'SFS 1998:1003' },
-    select: { html_content: true, json_content: true }
+    select: { html_content: true, json_content: true },
   })
 
   if (!doc) {
@@ -44,14 +44,17 @@ async function main() {
   // Look for footnote IDs
   const footnoteIds = html.match(/id="[^"]*[Ff]ootnote[^"]*"/gi) || []
   console.log('Footnote IDs found:', footnoteIds.length)
-  footnoteIds.slice(0, 5).forEach(id => console.log('  ', id))
+  footnoteIds.slice(0, 5).forEach((id) => console.log('  ', id))
 
   // Extract text around "Prop." mentions
   console.log('\n=== Context around Prop/Bet/Rskr mentions ===\n')
   const contextPattern = /.{0,50}[Pp]rop\.\s*\d{4}\/\d{2,4}:\d+.{0,50}/g
   const contexts = html.match(contextPattern) || []
-  contexts.forEach(ctx => {
-    const clean = ctx.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  contexts.forEach((ctx) => {
+    const clean = ctx
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
     console.log('Context:', clean)
   })
 
@@ -68,4 +71,6 @@ async function main() {
   console.log(JSON.stringify(jsonContent?.footnotes, null, 2))
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

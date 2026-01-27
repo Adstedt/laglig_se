@@ -18,7 +18,7 @@ export type ViewMode = 'card' | 'table'
 
 interface ViewToggleProps {
   value: ViewMode
-  onChange: (value: ViewMode) => void
+  onChange: (_value: ViewMode) => void
 }
 
 export function ViewToggle({ value, onChange }: ViewToggleProps) {
@@ -37,11 +37,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
       >
         <Tooltip>
           <TooltipTrigger asChild>
-            <ToggleGroupItem
-              value="card"
-              aria-label="Kortvy"
-              className="px-3"
-            >
+            <ToggleGroupItem value="card" aria-label="Kortvy" className="px-3">
               <LayoutGrid className="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>

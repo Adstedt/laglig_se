@@ -71,9 +71,10 @@ const LIMIT = parseInt(
   args.find((a) => a.startsWith('--limit='))?.split('=')[1] || '0',
   10
 )
-const COURT_FILTER = args.find((a) => a.startsWith('--court='))?.split('=')[1]?.toUpperCase() as
-  | CourtType
-  | undefined
+const COURT_FILTER = args
+  .find((a) => a.startsWith('--court='))
+  ?.split('=')[1]
+  ?.toUpperCase() as CourtType | undefined
 
 // ============================================================================
 // Types
@@ -120,7 +121,10 @@ function htmlToPlainText(html: string | undefined): string | null {
   if (!html) return null
 
   // Remove script and style tags
-  let text = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+  let text = html.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    ''
+  )
   text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
 
   // Convert block elements to newlines
@@ -267,7 +271,9 @@ async function processCourtCase(
 
   // New case - insert
   if (DRY_RUN) {
-    console.log(`  Would insert: ${documentNumber} - ${title.substring(0, 50)}...`)
+    console.log(
+      `  Would insert: ${documentNumber} - ${title.substring(0, 50)}...`
+    )
     stats.inserted++
     return true
   }
@@ -297,19 +303,22 @@ async function processCourtCase(
             keywords: dto.nyckelordLista || [],
             legal_areas: dto.rattsomradeLista || [],
             ad_case_number: dto.arbetsdomstolenDomsnummer || null,
-            attachments: dto.bilagaLista?.map((b) => ({
-              id: b.fillagringId,
-              filename: b.filnamn,
-            })) || [],
+            attachments:
+              dto.bilagaLista?.map((b) => ({
+                id: b.fillagringId,
+                filename: b.filnamn,
+              })) || [],
             group_id: dto.gruppKorrelationsnummer || null,
-            related_cases: dto.hanvisadePubliceringarLista?.map((h) => ({
-              gruppKorrelationsnummer: h.gruppKorrelationsnummer || null,
-              publiceringId: h.publiceringId || null,
-            })) || [],
-            sfs_refs: dto.lagrumLista?.map((l) => ({
-              sfsNummer: l.sfsNummer,
-              referens: l.referens || null,
-            })) || [],
+            related_cases:
+              dto.hanvisadePubliceringarLista?.map((h) => ({
+                gruppKorrelationsnummer: h.gruppKorrelationsnummer || null,
+                publiceringId: h.publiceringId || null,
+              })) || [],
+            sfs_refs:
+              dto.lagrumLista?.map((l) => ({
+                sfsNummer: l.sfsNummer,
+                referens: l.referens || null,
+              })) || [],
             ingested_at: new Date().toISOString(),
             sync_source: 'sync-court-cases',
           },
@@ -334,7 +343,10 @@ async function processCourtCase(
 
       // Create cross-references (outside transaction for performance)
       if (!SKIP_REFS && dto.lagrumLista && dto.lagrumLista.length > 0) {
-        const refsCreated = await createCrossReferences(legalDoc.id, dto.lagrumLista)
+        const refsCreated = await createCrossReferences(
+          legalDoc.id,
+          dto.lagrumLista
+        )
         stats.crossRefsCreated += refsCreated
       }
     })
@@ -371,7 +383,9 @@ async function syncCourt(court: CourtType): Promise<SyncStats> {
   console.log('')
   console.log('━'.repeat(60))
   console.log(`📜 Syncing: ${config.name}`)
-  console.log(`   Court code: ${Array.isArray(config.code) ? config.code.join(', ') : config.code}`)
+  console.log(
+    `   Court code: ${Array.isArray(config.code) ? config.code.join(', ') : config.code}`
+  )
   console.log(`   Content type: ${config.contentType}`)
   console.log('━'.repeat(60))
 
@@ -447,8 +461,12 @@ async function syncCourt(court: CourtType): Promise<SyncStats> {
     console.log(`     New cases:      ${stats.inserted.toLocaleString()}`)
     console.log(`     Skipped:        ${stats.skipped.toLocaleString()}`)
     console.log(`     Errors:         ${stats.errors.toLocaleString()}`)
-    console.log(`     Cross-refs:     ${stats.crossRefsCreated.toLocaleString()}`)
-    console.log(`     Change events:  ${stats.changeEventsCreated.toLocaleString()}`)
+    console.log(
+      `     Cross-refs:     ${stats.crossRefsCreated.toLocaleString()}`
+    )
+    console.log(
+      `     Change events:  ${stats.changeEventsCreated.toLocaleString()}`
+    )
     console.log(`     Early stop:     ${stats.earlyTerminated}`)
   } catch (error) {
     console.error(`  ❌ Fatal error syncing ${court}:`, error)
@@ -514,8 +532,14 @@ async function main() {
     const totalInserted = allStats.reduce((sum, s) => sum + s.inserted, 0)
     const totalSkipped = allStats.reduce((sum, s) => sum + s.skipped, 0)
     const totalErrors = allStats.reduce((sum, s) => sum + s.errors, 0)
-    const totalCrossRefs = allStats.reduce((sum, s) => sum + s.crossRefsCreated, 0)
-    const totalChangeEvents = allStats.reduce((sum, s) => sum + s.changeEventsCreated, 0)
+    const totalCrossRefs = allStats.reduce(
+      (sum, s) => sum + s.crossRefsCreated,
+      0
+    )
+    const totalChangeEvents = allStats.reduce(
+      (sum, s) => sum + s.changeEventsCreated,
+      0
+    )
 
     console.log('')
     console.log('═'.repeat(60))
@@ -544,13 +568,22 @@ async function main() {
     // Log final DB counts if not dry run
     if (!DRY_RUN) {
       console.log('')
-      const [adCount, hdCount, hfdCount, hovrCount, changeEventCount] = await Promise.all([
-        prisma.legalDocument.count({ where: { content_type: 'COURT_CASE_AD' } }),
-        prisma.legalDocument.count({ where: { content_type: 'COURT_CASE_HD' } }),
-        prisma.legalDocument.count({ where: { content_type: 'COURT_CASE_HFD' } }),
-        prisma.legalDocument.count({ where: { content_type: 'COURT_CASE_HOVR' } }),
-        prisma.changeEvent.count({ where: { change_type: 'NEW_RULING' } }),
-      ])
+      const [adCount, hdCount, hfdCount, hovrCount, changeEventCount] =
+        await Promise.all([
+          prisma.legalDocument.count({
+            where: { content_type: 'COURT_CASE_AD' },
+          }),
+          prisma.legalDocument.count({
+            where: { content_type: 'COURT_CASE_HD' },
+          }),
+          prisma.legalDocument.count({
+            where: { content_type: 'COURT_CASE_HFD' },
+          }),
+          prisma.legalDocument.count({
+            where: { content_type: 'COURT_CASE_HOVR' },
+          }),
+          prisma.changeEvent.count({ where: { change_type: 'NEW_RULING' } }),
+        ])
 
       console.log('Database totals:')
       console.log(`  COURT_CASE_AD:   ${adCount.toLocaleString()}`)

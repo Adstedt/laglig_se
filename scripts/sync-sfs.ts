@@ -20,7 +20,11 @@
  */
 
 import { prisma } from '../lib/prisma'
-import { fetchLawFullText, fetchLawHTML, generateSlug } from '../lib/external/riksdagen'
+import {
+  fetchLawFullText,
+  fetchLawHTML,
+  generateSlug,
+} from '../lib/external/riksdagen'
 import { ContentType, DocumentStatus, ChangeType } from '@prisma/client'
 import { archiveDocumentVersion } from '../lib/sync/version-archive'
 import { detectChanges } from '../lib/sync/change-detection'
@@ -43,7 +47,11 @@ const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
 const VERBOSE = args.includes('--verbose')
 const NO_EARLY_STOP = args.includes('--no-early-stop')
-const MAX_PAGES = parseInt(args.find(a => a.startsWith('--max-pages='))?.split('=')[1] || CONFIG.DEFAULT_MAX_PAGES.toString(), 10)
+const MAX_PAGES = parseInt(
+  args.find((a) => a.startsWith('--max-pages='))?.split('=')[1] ||
+    CONFIG.DEFAULT_MAX_PAGES.toString(),
+  10
+)
 
 // ============================================================================
 // Types
@@ -83,9 +91,11 @@ interface StoredMetadata {
 // API Functions
 // ============================================================================
 
-async function fetchSFSBySystemdatum(
-  page: number = 1
-): Promise<{ documents: RiksdagenDocument[]; totalCount: number; hasMore: boolean }> {
+async function fetchSFSBySystemdatum(page: number = 1): Promise<{
+  documents: RiksdagenDocument[]
+  totalCount: number
+  hasMore: boolean
+}> {
   const url = new URL('https://data.riksdagen.se/dokumentlista/')
   url.searchParams.set('doktyp', 'sfs')
   url.searchParams.set('utformat', 'json')
@@ -118,7 +128,7 @@ async function fetchSFSBySystemdatum(
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 function parseSystemdatum(systemdatum: string): Date {
@@ -218,7 +228,9 @@ async function syncSFS() {
 
             // Early termination check
             if (!NO_EARLY_STOP && consecutiveSkips >= EARLY_STOP_THRESHOLD) {
-              console.log(`\nEarly termination: ${consecutiveSkips} consecutive unchanged laws`)
+              console.log(
+                `\nEarly termination: ${consecutiveSkips} consecutive unchanged laws`
+              )
               stats.earlyTerminated = true
               hasMore = false
               break
@@ -231,7 +243,9 @@ async function syncSFS() {
 
           if (DRY_RUN) {
             const amendment = parseUndertitel(doc.undertitel || '')
-            console.log(`  Would update: ${sfsNumber}${amendment ? ` (${amendment})` : ''}`)
+            console.log(
+              `  Would update: ${sfsNumber}${amendment ? ` (${amendment})` : ''}`
+            )
             stats.updated++
             continue
           }
@@ -290,21 +304,26 @@ async function syncSFS() {
                   html_content: newHtml,
                   updated_at: new Date(),
                   metadata: {
-                    ...(existing.metadata as object || {}),
+                    ...((existing.metadata as object) || {}),
                     systemdatum: doc.systemdatum,
                     latestAmendment,
-                    versionCount: ((storedMeta?.versionCount || 1) + 1),
+                    versionCount: (storedMeta?.versionCount || 1) + 1,
                     lastSyncAt: new Date().toISOString(),
                   },
                 },
               })
             })
 
-            console.log(`  Updated: ${sfsNumber}${latestAmendment ? ` (${latestAmendment})` : ''}`)
+            console.log(
+              `  Updated: ${sfsNumber}${latestAmendment ? ` (${latestAmendment})` : ''}`
+            )
             stats.updated++
             await sleep(CONFIG.DELAY_BETWEEN_UPDATES)
           } catch (error) {
-            console.error(`  Error updating ${sfsNumber}:`, error instanceof Error ? error.message : error)
+            console.error(
+              `  Error updating ${sfsNumber}:`,
+              error instanceof Error ? error.message : error
+            )
             stats.failed++
           }
         } else {
@@ -312,7 +331,9 @@ async function syncSFS() {
           consecutiveSkips = 0 // Reset counter
 
           if (DRY_RUN) {
-            console.log(`  Would insert: ${sfsNumber} - ${doc.titel.substring(0, 50)}...`)
+            console.log(
+              `  Would insert: ${sfsNumber} - ${doc.titel.substring(0, 50)}...`
+            )
             stats.inserted++
             continue
           }
@@ -387,7 +408,10 @@ async function syncSFS() {
             stats.inserted++
             await sleep(CONFIG.DELAY_BETWEEN_REQUESTS)
           } catch (error) {
-            console.error(`  Error inserting ${sfsNumber}:`, error instanceof Error ? error.message : error)
+            console.error(
+              `  Error inserting ${sfsNumber}:`,
+              error instanceof Error ? error.message : error
+            )
             stats.failed++
           }
         }
@@ -420,7 +444,6 @@ async function syncSFS() {
     })
     console.log(``)
     console.log(`Total SFS_LAW in DB: ${finalCount}`)
-
   } catch (error) {
     console.error('Sync failed:', error)
     process.exit(1)

@@ -35,7 +35,10 @@ export async function invalidateLawCaches(): Promise<{
       revalidateTag(tag)
       console.log(`[CACHE INVALIDATION] Revalidated tag: ${tag}`)
     } catch (error) {
-      console.warn(`[CACHE INVALIDATION] Failed to revalidate tag ${tag}:`, error)
+      console.warn(
+        `[CACHE INVALIDATION] Failed to revalidate tag ${tag}:`,
+        error
+      )
     }
   }
 
@@ -66,7 +69,10 @@ export async function invalidateCourtCaseCaches(): Promise<{
       revalidateTag(tag)
       console.log(`[CACHE INVALIDATION] Revalidated tag: ${tag}`)
     } catch (error) {
-      console.warn(`[CACHE INVALIDATION] Failed to revalidate tag ${tag}:`, error)
+      console.warn(
+        `[CACHE INVALIDATION] Failed to revalidate tag ${tag}:`,
+        error
+      )
     }
   }
 
@@ -85,7 +91,9 @@ export async function invalidateEuCaches(): Promise<{
   redisKeysCleared: number
   tagsRevalidated: string[]
 }> {
-  console.log('[CACHE INVALIDATION] Starting EU legislation cache invalidation...')
+  console.log(
+    '[CACHE INVALIDATION] Starting EU legislation cache invalidation...'
+  )
 
   // Clear Redis browse cache keys
   const redisKeysCleared = await invalidateCachePattern('browse:*')
@@ -97,7 +105,10 @@ export async function invalidateEuCaches(): Promise<{
       revalidateTag(tag)
       console.log(`[CACHE INVALIDATION] Revalidated tag: ${tag}`)
     } catch (error) {
-      console.warn(`[CACHE INVALIDATION] Failed to revalidate tag ${tag}:`, error)
+      console.warn(
+        `[CACHE INVALIDATION] Failed to revalidate tag ${tag}:`,
+        error
+      )
     }
   }
 
@@ -137,7 +148,10 @@ export async function invalidateAllCaches(): Promise<{
       revalidateTag(tag)
       console.log(`[CACHE INVALIDATION] Revalidated tag: ${tag}`)
     } catch (error) {
-      console.warn(`[CACHE INVALIDATION] Failed to revalidate tag ${tag}:`, error)
+      console.warn(
+        `[CACHE INVALIDATION] Failed to revalidate tag ${tag}:`,
+        error
+      )
     }
   }
 

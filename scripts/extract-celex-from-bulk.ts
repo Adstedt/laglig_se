@@ -24,7 +24,10 @@ interface DocumentRecord {
   hasHtml: boolean
 }
 
-function extractFromRdf(rdfPath: string, uuid: string): Partial<DocumentRecord> | null {
+function extractFromRdf(
+  rdfPath: string,
+  uuid: string
+): Partial<DocumentRecord> | null {
   // Read file in chunks to avoid memory issues - only read first 50KB
   // CELEX and title are usually in the first part of the RDF
   const fd = fs.openSync(rdfPath, 'r')
@@ -45,11 +48,15 @@ function extractFromRdf(rdfPath: string, uuid: string): Partial<DocumentRecord> 
   const type = typeMatch ? typeMatch[1] : 'UNKNOWN'
 
   // Extract Swedish title - expression_title xml:lang="sv"
-  const titleMatch = rdfContent.match(/expression_title[^>]*xml:lang="sv">([^<]+)</)
+  const titleMatch = rdfContent.match(
+    /expression_title[^>]*xml:lang="sv">([^<]+)</
+  )
   const title = titleMatch ? titleMatch[1] : null
 
   // Extract publication date - work_date_document
-  const dateMatch = rdfContent.match(/work_date_document[^>]*>(\d{4}-\d{2}-\d{2})</)
+  const dateMatch = rdfContent.match(
+    /work_date_document[^>]*>(\d{4}-\d{2}-\d{2})</
+  )
   const publicationDate = dateMatch ? dateMatch[1] : null
 
   return {
@@ -75,27 +82,33 @@ async function main() {
 
   // Get list of folders
   console.log('📂 Scanning metadata directory...')
-  const metadataFolders = fs.readdirSync(METADATA_DIR).filter(f => {
+  const metadataFolders = fs.readdirSync(METADATA_DIR).filter((f) => {
     const fullPath = path.join(METADATA_DIR, f)
     return fs.statSync(fullPath).isDirectory()
   })
-  console.log(`   Found ${metadataFolders.length.toLocaleString()} metadata folders`)
+  console.log(
+    `   Found ${metadataFolders.length.toLocaleString()} metadata folders`
+  )
 
   // Check FMX and HTML directories
   console.log('')
   console.log('📂 Scanning FMX directory...')
-  const fmxFolders = new Set(fs.readdirSync(FMX_DIR).filter(f => {
-    const fullPath = path.join(FMX_DIR, f)
-    return fs.statSync(fullPath).isDirectory()
-  }))
+  const fmxFolders = new Set(
+    fs.readdirSync(FMX_DIR).filter((f) => {
+      const fullPath = path.join(FMX_DIR, f)
+      return fs.statSync(fullPath).isDirectory()
+    })
+  )
   console.log(`   Found ${fmxFolders.size.toLocaleString()} FMX folders`)
 
   console.log('')
   console.log('📂 Scanning HTML directory...')
-  const htmlFolders = new Set(fs.readdirSync(HTML_DIR).filter(f => {
-    const fullPath = path.join(HTML_DIR, f)
-    return fs.statSync(fullPath).isDirectory()
-  }))
+  const htmlFolders = new Set(
+    fs.readdirSync(HTML_DIR).filter((f) => {
+      const fullPath = path.join(HTML_DIR, f)
+      return fs.statSync(fullPath).isDirectory()
+    })
+  )
   console.log(`   Found ${htmlFolders.size.toLocaleString()} HTML folders`)
 
   // Process each metadata folder
@@ -136,31 +149,34 @@ async function main() {
 
       records.push(record)
       typeCounts[record.type] = (typeCounts[record.type] || 0) + 1
-
     } catch (error) {
       errors.push(`Error processing ${uuid}: ${(error as Error).message}`)
     }
 
     processed++
     if (processed % 10000 === 0) {
-      console.log(`   Processed ${processed.toLocaleString()}/${metadataFolders.length.toLocaleString()}...`)
+      console.log(
+        `   Processed ${processed.toLocaleString()}/${metadataFolders.length.toLocaleString()}...`
+      )
     }
   }
 
   // Calculate coverage stats
-  const withFmx = records.filter(r => r.hasFmx).length
-  const withHtml = records.filter(r => r.hasHtml).length
-  const withBoth = records.filter(r => r.hasFmx && r.hasHtml).length
-  const withEither = records.filter(r => r.hasFmx || r.hasHtml).length
-  const withNeither = records.filter(r => !r.hasFmx && !r.hasHtml).length
-  const withTitle = records.filter(r => r.title).length
+  const withFmx = records.filter((r) => r.hasFmx).length
+  const withHtml = records.filter((r) => r.hasHtml).length
+  const withBoth = records.filter((r) => r.hasFmx && r.hasHtml).length
+  const withEither = records.filter((r) => r.hasFmx || r.hasHtml).length
+  const withNeither = records.filter((r) => !r.hasFmx && !r.hasHtml).length
+  const withTitle = records.filter((r) => r.title).length
 
   console.log('')
   console.log('═══════════════════════════════════════════════════════════')
   console.log('  RESULTS')
   console.log('═══════════════════════════════════════════════════════════')
   console.log('')
-  console.log(`📊 Total documents with CELEX: ${records.length.toLocaleString()}`)
+  console.log(
+    `📊 Total documents with CELEX: ${records.length.toLocaleString()}`
+  )
   console.log(`   Errors/skipped: ${errors.length.toLocaleString()}`)
   console.log('')
   console.log('📋 By document type:')
@@ -189,17 +205,31 @@ async function main() {
   Object.entries(typeCounts)
     .sort((a, b) => b[1] - a[1])
     .forEach(([type, count]) => {
-      console.log(`   ${type} (${typeNames[type] || 'Unknown'}): ${count.toLocaleString()}`)
+      console.log(
+        `   ${type} (${typeNames[type] || 'Unknown'}): ${count.toLocaleString()}`
+      )
     })
 
   console.log('')
   console.log('📦 Content coverage:')
-  console.log(`   Has FMX content: ${withFmx.toLocaleString()} (${(withFmx/records.length*100).toFixed(1)}%)`)
-  console.log(`   Has HTML content: ${withHtml.toLocaleString()} (${(withHtml/records.length*100).toFixed(1)}%)`)
-  console.log(`   Has both: ${withBoth.toLocaleString()} (${(withBoth/records.length*100).toFixed(1)}%)`)
-  console.log(`   Has either: ${withEither.toLocaleString()} (${(withEither/records.length*100).toFixed(1)}%)`)
-  console.log(`   Has neither (metadata only): ${withNeither.toLocaleString()} (${(withNeither/records.length*100).toFixed(1)}%)`)
-  console.log(`   Has Swedish title: ${withTitle.toLocaleString()} (${(withTitle/records.length*100).toFixed(1)}%)`)
+  console.log(
+    `   Has FMX content: ${withFmx.toLocaleString()} (${((withFmx / records.length) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `   Has HTML content: ${withHtml.toLocaleString()} (${((withHtml / records.length) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `   Has both: ${withBoth.toLocaleString()} (${((withBoth / records.length) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `   Has either: ${withEither.toLocaleString()} (${((withEither / records.length) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `   Has neither (metadata only): ${withNeither.toLocaleString()} (${((withNeither / records.length) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    `   Has Swedish title: ${withTitle.toLocaleString()} (${((withTitle / records.length) * 100).toFixed(1)}%)`
+  )
 
   // Save to file
   const output = {
@@ -238,7 +268,7 @@ async function main() {
   console.log('')
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Fatal error:', error)
   process.exit(1)
 })

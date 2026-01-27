@@ -67,7 +67,9 @@ function parseArgs(): IngestConfig {
       if (court && COURT_CONFIGS[court]) {
         config.courts = [court]
       } else {
-        console.error(`Invalid court: ${court}. Valid courts: ${Object.keys(COURT_CONFIGS).join(', ')}`)
+        console.error(
+          `Invalid court: ${court}. Valid courts: ${Object.keys(COURT_CONFIGS).join(', ')}`
+        )
         process.exit(1)
       }
     } else if (arg.startsWith('--limit=')) {
@@ -163,7 +165,10 @@ function htmlToPlainText(html: string | undefined): string | null {
   if (!html) return null
 
   // Remove script and style tags
-  let text = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+  let text = html.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    ''
+  )
   text = text.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
 
   // Convert block elements to newlines
@@ -335,8 +340,15 @@ async function processCourtCase(
         })
 
         // Create cross-references for cited SFS laws
-        if (!config.skipCrossReferences && dto.lagrumLista && dto.lagrumLista.length > 0) {
-          const refsCreated = await createCrossReferences(legalDoc.id, dto.lagrumLista)
+        if (
+          !config.skipCrossReferences &&
+          dto.lagrumLista &&
+          dto.lagrumLista.length > 0
+        ) {
+          const refsCreated = await createCrossReferences(
+            legalDoc.id,
+            dto.lagrumLista
+          )
           stats.crossRefsCreated += refsCreated
         }
       }
@@ -344,7 +356,10 @@ async function processCourtCase(
     }
   } catch (error) {
     stats.errors++
-    console.error(`  ❌ Error processing case ${generateDocumentNumber(dto)}:`, error)
+    console.error(
+      `  ❌ Error processing case ${generateDocumentNumber(dto)}:`,
+      error
+    )
   }
 
   logProgress(stats)
@@ -416,12 +431,17 @@ async function createCrossReferences(
 /**
  * Ingest all cases from a specific court
  */
-async function ingestCourt(court: CourtType, config: IngestConfig): Promise<ProgressStats> {
+async function ingestCourt(
+  court: CourtType,
+  config: IngestConfig
+): Promise<ProgressStats> {
   const courtConfig = COURT_CONFIGS[court]
   console.log('')
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
   console.log(`📜 Ingesting: ${courtConfig.name}`)
-  console.log(`   Court code: ${Array.isArray(courtConfig.code) ? courtConfig.code.join(', ') : courtConfig.code}`)
+  console.log(
+    `   Court code: ${Array.isArray(courtConfig.code) ? courtConfig.code.join(', ') : courtConfig.code}`
+  )
   console.log(`   Content type: ${courtConfig.contentType}`)
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
 
@@ -466,7 +486,9 @@ async function ingestCourt(court: CourtType, config: IngestConfig): Promise<Prog
   console.log(`     Inserted:  ${stats.inserted.toLocaleString()} new`)
   console.log(`     Updated:   ${stats.updated.toLocaleString()} existing`)
   console.log(`     Errors:    ${stats.errors.toLocaleString()}`)
-  console.log(`     Cross-refs: ${stats.crossRefsCreated.toLocaleString()} created`)
+  console.log(
+    `     Cross-refs: ${stats.crossRefsCreated.toLocaleString()} created`
+  )
   console.log(`     Duration:  ${Math.round(elapsed)}s`)
 
   return stats
@@ -511,7 +533,10 @@ async function main() {
     const totalInserted = allStats.reduce((sum, s) => sum + s.inserted, 0)
     const totalUpdated = allStats.reduce((sum, s) => sum + s.updated, 0)
     const totalErrors = allStats.reduce((sum, s) => sum + s.errors, 0)
-    const totalCrossRefs = allStats.reduce((sum, s) => sum + s.crossRefsCreated, 0)
+    const totalCrossRefs = allStats.reduce(
+      (sum, s) => sum + s.crossRefsCreated,
+      0
+    )
     const totalDuration = (Date.now() - overallStartTime) / 1000
 
     console.log('')
@@ -523,17 +548,22 @@ async function main() {
     console.log(`  Total inserted:  ${totalInserted.toLocaleString()} new`)
     console.log(`  Total updated:   ${totalUpdated.toLocaleString()} existing`)
     console.log(`  Total errors:    ${totalErrors.toLocaleString()}`)
-    console.log(`  Cross-references: ${totalCrossRefs.toLocaleString()} created`)
-    console.log(`  Total duration:  ${Math.round(totalDuration / 60)}m ${Math.round(totalDuration % 60)}s`)
+    console.log(
+      `  Cross-references: ${totalCrossRefs.toLocaleString()} created`
+    )
+    console.log(
+      `  Total duration:  ${Math.round(totalDuration / 60)}m ${Math.round(totalDuration % 60)}s`
+    )
     console.log('')
 
     // Log per-court summary
     console.log('  Per-court breakdown:')
     for (const stats of allStats) {
       const courtConfig = COURT_CONFIGS[stats.court]
-      console.log(`    ${stats.court} (${courtConfig.name}): ${stats.inserted} new, ${stats.updated} updated`)
+      console.log(
+        `    ${stats.court} (${courtConfig.name}): ${stats.inserted} new, ${stats.updated} updated`
+      )
     }
-
   } catch (error) {
     console.error('')
     console.error('❌ Fatal error during ingestion:')

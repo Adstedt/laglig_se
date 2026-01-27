@@ -9,10 +9,12 @@ async function main() {
   // Delete bad records with double SFS
   const deleted = await prisma.legalDocument.deleteMany({
     where: {
-      document_number: { startsWith: 'SFS SFS' }
-    }
+      document_number: { startsWith: 'SFS SFS' },
+    },
   })
   console.log('Deleted bad records:', deleted.count)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

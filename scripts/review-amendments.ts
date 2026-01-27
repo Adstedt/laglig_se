@@ -10,7 +10,12 @@ interface JsonContent {
   title?: string
   metadata?: Record<string, unknown>
   sections?: unknown[]
-  footnotes?: Array<{ id?: string; number?: string; text?: string; content?: string }>
+  footnotes?: Array<{
+    id?: string
+    number?: string
+    text?: string
+    content?: string
+  }>
   definitions?: unknown[]
   transitionProvisions?: unknown[]
 }
@@ -20,17 +25,17 @@ async function main() {
   const docs = await prisma.legalDocument.findMany({
     where: {
       content_type: 'SFS_AMENDMENT',
-      html_content: { not: null }
+      html_content: { not: null },
     },
     select: {
       document_number: true,
       title: true,
       html_content: true,
       markdown_content: true,
-      json_content: true
+      json_content: true,
     },
     take: 10,
-    orderBy: { document_number: 'asc' }
+    orderBy: { document_number: 'asc' },
   })
 
   console.log(`\nReviewing ${docs.length} amendments with html_content...\n`)
@@ -41,7 +46,7 @@ async function main() {
     withBet: 0,
     withRskr: 0,
     withFootnotes: 0,
-    allRefs: [] as string[]
+    allRefs: [] as string[],
   }
 
   for (const doc of docs) {
@@ -61,7 +66,9 @@ async function main() {
       console.log('Footnotes content:')
       for (const fn of footnotes) {
         const text = fn.text || fn.content || ''
-        console.log(`  [${fn.number || fn.id}]: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`)
+        console.log(
+          `  [${fn.number || fn.id}]: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`
+        )
 
         // Extract references from footnotes
         const propMatch = text.match(/[Pp]rop\.\s*\d{4}\/\d{2,4}:\d+/g)
@@ -87,11 +94,16 @@ async function main() {
     }
 
     // Also check HTML for footnote sections
-    const footnoteSection = html.match(/<div[^>]*class="[^"]*footnote[^"]*"[^>]*>[\s\S]*?<\/div>/gi)
+    const footnoteSection = html.match(
+      /<div[^>]*class="[^"]*footnote[^"]*"[^>]*>[\s\S]*?<\/div>/gi
+    )
     if (footnoteSection) {
       console.log('\nFootnote HTML sections found:', footnoteSection.length)
       for (const section of footnoteSection.slice(0, 2)) {
-        const text = section.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+        const text = section
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
         console.log(`  HTML footnote: ${text.substring(0, 120)}...`)
       }
     }
@@ -115,7 +127,9 @@ async function main() {
   console.log(`Documents with rskr refs: ${summary.withRskr}`)
   console.log(`\nAll unique references found:`)
   const uniqueRefs = [...new Set(summary.allRefs)]
-  uniqueRefs.forEach(ref => console.log(`  ${ref}`))
+  uniqueRefs.forEach((ref) => console.log(`  ${ref}`))
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

@@ -4,7 +4,7 @@ import { prisma } from '../lib/prisma'
 async function check() {
   const las = await prisma.legalDocument.findFirst({
     where: { document_number: 'SFS 1982:80' },
-    select: { full_text: true }
+    select: { full_text: true },
   })
 
   if (las?.full_text) {
@@ -21,7 +21,9 @@ async function check() {
     }
 
     // Kolla om det finns "Författningen har upphävts" (hela lagen upphävd)
-    const hasForfattningen = text.toLowerCase().includes('författningen har upphävts')
+    const hasForfattningen = text
+      .toLowerCase()
+      .includes('författningen har upphävts')
     console.log('\nInnehåller "Författningen har upphävts":', hasForfattningen)
 
     // Visa de första 300 tecknen för att se header-strukturen

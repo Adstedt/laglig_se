@@ -1,0 +1,299 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.9.0",
+  "name": "2025-488",
+  "origin": {
+    "mimetype": "text/html",
+    "binary_hash": 13359165701463035137,
+    "filename": "2025-488.html"
+  },
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/texts/0"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [
+    {
+      "self_ref": "#/groups/0",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/3"
+        },
+        {
+          "$ref": "#/texts/4"
+        }
+      ],
+      "content_layer": "body",
+      "name": "header-2",
+      "label": "section"
+    },
+    {
+      "self_ref": "#/groups/1",
+      "parent": {
+        "$ref": "#/texts/4"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "name": "footer",
+      "label": "section"
+    },
+    {
+      "self_ref": "#/groups/2",
+      "parent": {
+        "$ref": "#/texts/8"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/9"
+        }
+      ],
+      "content_layer": "body",
+      "name": "group",
+      "label": "inline"
+    }
+  ],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/1"
+        },
+        {
+          "$ref": "#/texts/2"
+        },
+        {
+          "$ref": "#/groups/0"
+        },
+        {
+          "$ref": "#/texts/8"
+        }
+      ],
+      "content_layer": "body",
+      "label": "title",
+      "prov": [],
+      "orig": "SFS 2025:488 Förordning om ändring i förordningen (2008:975) om uppgiftsskyldighet i vissa fall enligt socialtjänstlagen (2001:453)",
+      "text": "SFS 2025:488 Förordning om ändring i förordningen (2008:975) om uppgiftsskyldighet i vissa fall enligt socialtjänstlagen (2001:453)"
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Utfärdad den 22 maj 2025",
+      "text": "Utfärdad den 22 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Regeringen föreskriver att rubriken till förordningen (2008:975) om uppgiftsskyldighet i vissa fall enligt socialtjänstlagen (2001:453) samt 1 § ska ha följande lydelse.",
+      "text": "Regeringen föreskriver att rubriken till förordningen (2008:975) om uppgiftsskyldighet i vissa fall enligt socialtjänstlagen (2001:453) samt 1 § ska ha följande lydelse."
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [],
+      "orig": "Förordning om uppgiftsskyldighet i vissa fall på socialtjänstens område",
+      "text": "Förordning om uppgiftsskyldighet i vissa fall på socialtjänstens område",
+      "level": 2
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/5"
+        },
+        {
+          "$ref": "#/texts/6"
+        },
+        {
+          "$ref": "#/texts/7"
+        },
+        {
+          "$ref": "#/groups/1"
+        }
+      ],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [],
+      "orig": "1 § 1)",
+      "text": "1 § 1)",
+      "formatting": {
+        "bold": false,
+        "italic": false,
+        "underline": false,
+        "strikethrough": false,
+        "script": "super"
+      },
+      "level": 2
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/texts/4"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "1)",
+      "text": "1)"
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/texts/4"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Senaste lydelse 2009:1200.",
+      "text": "Senaste lydelse 2009:1200."
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/texts/4"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Denna förordning innehåller bestämmelser om vilka uppgifter som Centrala studiestödsnämnden, Försäkringskassan, arbetslöshetskassorna, Arbetsförmedlingen, Skatteverket och Pensionsmyndigheten ska lämna till socialnämnden enligt 15 kap. 10-12 §§ socialtjänstlagen (2025:400).",
+      "text": "Denna förordning innehåller bestämmelser om vilka uppgifter som Centrala studiestödsnämnden, Försäkringskassan, arbetslöshetskassorna, Arbetsförmedlingen, Skatteverket och Pensionsmyndigheten ska lämna till socialnämnden enligt 15 kap. 10-12 §§ socialtjänstlagen (2025:400)."
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [
+        {
+          "$ref": "#/groups/2"
+        },
+        {
+          "$ref": "#/texts/10"
+        },
+        {
+          "$ref": "#/texts/11"
+        },
+        {
+          "$ref": "#/texts/12"
+        },
+        {
+          "$ref": "#/texts/13"
+        }
+      ],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [],
+      "orig": "Ikraftträdande- och övergångsbestämmelser",
+      "text": "Ikraftträdande- och övergångsbestämmelser",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/groups/2"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "SFS 2025:488",
+      "text": "SFS 2025:488",
+      "hyperlink": "\\rn\\goext.aspx?ref=2025488&lang=sv"
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/texts/8"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Denna förordning träder i kraft den 1 juli 2025.",
+      "text": "Denna förordning träder i kraft den 1 juli 2025."
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/texts/8"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "På regeringens vägnar",
+      "text": "På regeringens vägnar"
+    },
+    {
+      "self_ref": "#/texts/12",
+      "parent": {
+        "$ref": "#/texts/8"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "JAKOB FORSSMED",
+      "text": "JAKOB FORSSMED"
+    },
+    {
+      "self_ref": "#/texts/13",
+      "parent": {
+        "$ref": "#/texts/8"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Cecilia Torstensson (Socialdepartementet)",
+      "text": "Cecilia Torstensson (Socialdepartementet)"
+    }
+  ],
+  "pictures": [],
+  "tables": [],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {}
+}

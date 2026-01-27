@@ -26,7 +26,9 @@ const results: ValidationResult[] = []
  */
 async function testCacheConfiguration() {
   const nextConfig = await import('../next.config.mjs')
-  const config = nextConfig.default as { experimental?: { staleTimes?: { dynamic?: number; static?: number } } }
+  const config = nextConfig.default as {
+    experimental?: { staleTimes?: { dynamic?: number; static?: number } }
+  }
 
   const staleTimes = config?.experimental?.staleTimes
   const hasStaleTimes = staleTimes?.dynamic === 60 && staleTimes?.static === 180
@@ -47,7 +49,8 @@ function testCacheMetrics() {
   resetCacheMetrics()
 
   const metrics = getCacheMetrics()
-  const hasMetrics = metrics.hits === 0 && metrics.misses === 0 && metrics.total === 0
+  const hasMetrics =
+    metrics.hits === 0 && metrics.misses === 0 && metrics.total === 0
 
   results.push({
     test: 'Cache Metrics Tracking',
@@ -104,7 +107,8 @@ async function testCachedQueryFunctions() {
     ]
 
     const foundFunctions = requiredFunctions.filter(
-      (fn) => typeof (cachedQueries as Record<string, unknown>)[fn] === 'function'
+      (fn) =>
+        typeof (cachedQueries as Record<string, unknown>)[fn] === 'function'
     )
 
     results.push({
@@ -139,7 +143,8 @@ async function testCacheInvalidation() {
     ]
 
     const foundFunctions = requiredFunctions.filter(
-      (fn) => typeof (invalidation as Record<string, unknown>)[fn] === 'function'
+      (fn) =>
+        typeof (invalidation as Record<string, unknown>)[fn] === 'function'
     )
 
     results.push({
@@ -163,7 +168,9 @@ async function testCacheInvalidation() {
  * Test 6: Verify Redis fallback (graceful degradation)
  */
 async function testRedisFallback() {
-  const { isRedisConfigured, getCachedOrFetch } = await import('../lib/cache/redis')
+  const { isRedisConfigured, getCachedOrFetch } = await import(
+    '../lib/cache/redis'
+  )
 
   // Test that getCachedOrFetch works even when Redis is not configured
   try {
@@ -230,7 +237,9 @@ async function runValidation() {
   } else {
     console.log('\n🎉 All cache performance validations passed!')
     console.log('\nNext steps:')
-    console.log('1. Run database indexes: pnpm tsx scripts/apply-browse-indexes.ts')
+    console.log(
+      '1. Run database indexes: pnpm tsx scripts/apply-browse-indexes.ts'
+    )
     console.log('2. Deploy and monitor cache hit rates in production')
     console.log('3. Use Vercel Analytics to verify page load times')
   }

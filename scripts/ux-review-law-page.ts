@@ -13,7 +13,7 @@ async function reviewLawPage() {
   // Screenshot 1: Header and top of page
   await page.screenshot({
     path: 'screenshots/ux-review-1-header.png',
-    fullPage: false
+    fullPage: false,
   })
   console.log('1. Header screenshot saved')
 
@@ -22,7 +22,7 @@ async function reviewLawPage() {
   await page.waitForTimeout(500)
   await page.screenshot({
     path: 'screenshots/ux-review-2-related-docs.png',
-    fullPage: false
+    fullPage: false,
   })
   console.log('2. Related docs section screenshot saved')
 
@@ -31,7 +31,7 @@ async function reviewLawPage() {
   await page.waitForTimeout(500)
   await page.screenshot({
     path: 'screenshots/ux-review-3-chapter1.png',
-    fullPage: false
+    fullPage: false,
   })
   console.log('3. Chapter 1 content screenshot saved')
 
@@ -42,7 +42,7 @@ async function reviewLawPage() {
     await page.waitForTimeout(500)
     await page.screenshot({
       path: 'screenshots/ux-review-4-chapter2.png',
-      fullPage: false
+      fullPage: false,
     })
     console.log('4. Chapter 2 heading screenshot saved')
   }
@@ -54,7 +54,7 @@ async function reviewLawPage() {
     await page.waitForTimeout(500)
     await page.screenshot({
       path: 'screenshots/ux-review-5-chapter6.png',
-      fullPage: false
+      fullPage: false,
     })
     console.log('5. Chapter 6 screenshot saved')
   }
@@ -66,7 +66,7 @@ async function reviewLawPage() {
     await page.waitForTimeout(500)
     await page.screenshot({
       path: 'screenshots/ux-review-6-future-amendment.png',
-      fullPage: false
+      fullPage: false,
     })
     console.log('6. Future amendment highlight screenshot saved')
   } else {
@@ -74,11 +74,13 @@ async function reviewLawPage() {
   }
 
   // Screenshot 7: Scroll to bottom to see cross-references
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight - 1000))
+  await page.evaluate(() =>
+    window.scrollTo(0, document.body.scrollHeight - 1000)
+  )
   await page.waitForTimeout(500)
   await page.screenshot({
     path: 'screenshots/ux-review-7-bottom.png',
-    fullPage: false
+    fullPage: false,
   })
   console.log('7. Bottom section screenshot saved')
 
@@ -87,7 +89,7 @@ async function reviewLawPage() {
   await page.waitForTimeout(1000)
   await page.screenshot({
     path: 'screenshots/ux-review-8-fab.png',
-    fullPage: false
+    fullPage: false,
   })
   console.log('8. FAB visibility screenshot saved')
 
@@ -101,21 +103,29 @@ async function reviewLawPage() {
     // Count elements
     const chapters = document.querySelectorAll('h3[name^="K"]').length
     const paragraphs = document.querySelectorAll('a.paragraf').length
-    const futureAmendments = document.querySelectorAll('.future-amendment-highlight').length
+    const futureAmendments = document.querySelectorAll(
+      '.future-amendment-highlight'
+    ).length
 
     // Check for TOC
     const toc = document.querySelector('.sfstoc')
 
     // Check banner
-    const banner = document.querySelector('[class*="amber"]') || document.querySelector('[class*="warning"]')
+    const banner =
+      document.querySelector('[class*="amber"]') ||
+      document.querySelector('[class*="warning"]')
 
     // Check related docs section
-    const relatedDocs = document.querySelector('[class*="related"]') ||
-                        Array.from(document.querySelectorAll('button')).find(b => b.textContent?.includes('Relaterade'))
+    const relatedDocs =
+      document.querySelector('[class*="related"]') ||
+      Array.from(document.querySelectorAll('button')).find((b) =>
+        b.textContent?.includes('Relaterade')
+      )
 
     // Check FAB
-    const fab = document.querySelector('button[class*="fixed"]') ||
-                document.querySelector('[class*="floating"]')
+    const fab =
+      document.querySelector('button[class*="fixed"]') ||
+      document.querySelector('[class*="floating"]')
 
     return {
       pageHeight,
@@ -125,7 +135,7 @@ async function reviewLawPage() {
       hasToc: !!toc,
       hasBanner: !!banner,
       hasRelatedDocs: !!relatedDocs,
-      hasFab: !!fab
+      hasFab: !!fab,
     }
   })
 

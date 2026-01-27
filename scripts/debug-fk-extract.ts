@@ -23,7 +23,9 @@ async function main() {
 
   // Look for the actual content section - it has "14.1 Förslaget till lag om ändring i brottsbalken"
   // followed by actual commentary text starting with "35 kap. Om preskription"
-  const contentMatch = fullText.match(/14\.1\s*Förslaget till lag om ändring i brottsbalken\s*([\s\S]*?)(?=14\.2\s*Förslaget|Bilaga\s*1)/i)
+  const contentMatch = fullText.match(
+    /14\.1\s*Förslaget till lag om ändring i brottsbalken\s*([\s\S]*?)(?=14\.2\s*Förslaget|Bilaga\s*1)/i
+  )
 
   if (contentMatch) {
     console.log('\n=== 14.1 SECTION (actual commentary) ===')
@@ -46,7 +48,9 @@ async function main() {
     console.log('Could not find 14.1 section')
 
     // Try alternative: look for "35 kap. Om preskription"
-    const altMatch = fullText.match(/35\s*kap\.\s*Om\s*preskription([\s\S]{0,5000})/i)
+    const altMatch = fullText.match(
+      /35\s*kap\.\s*Om\s*preskription([\s\S]{0,5000})/i
+    )
     if (altMatch) {
       console.log('\n=== Found "35 kap. Om preskription" ===')
       console.log(altMatch[0].substring(0, 2000))

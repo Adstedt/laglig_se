@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 async function main() {
   const docs = await prisma.legalDocument.findMany({
     where: { content_type: 'SFS_AMENDMENT', html_content: { not: null } },
-    select: { document_number: true, title: true, html_content: true }
+    select: { document_number: true, title: true, html_content: true },
   })
 
   let lagar = 0
@@ -56,4 +56,6 @@ async function main() {
   }
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

@@ -18,7 +18,7 @@ async function verifyUxChanges() {
     await page.waitForTimeout(300)
     await page.screenshot({
       path: 'screenshots/verify-1-paragraph-styling.png',
-      fullPage: false
+      fullPage: false,
     })
     console.log('1. Paragraph styling screenshot saved')
   }
@@ -29,7 +29,7 @@ async function verifyUxChanges() {
   await page.waitForTimeout(500)
   await page.screenshot({
     path: 'screenshots/verify-2-law-references.png',
-    fullPage: false
+    fullPage: false,
   })
   console.log('2. Law references screenshot saved')
 
@@ -38,7 +38,7 @@ async function verifyUxChanges() {
   await page.waitForTimeout(500)
   await page.screenshot({
     path: 'screenshots/verify-3-buttons.png',
-    fullPage: false
+    fullPage: false,
   })
   console.log('3. Buttons (FAB + back-to-top) screenshot saved')
 
@@ -49,7 +49,7 @@ async function verifyUxChanges() {
     await page.waitForTimeout(500)
     await page.screenshot({
       path: 'screenshots/verify-4-future-amendment.png',
-      fullPage: false
+      fullPage: false,
     })
     console.log('4. Future amendment screenshot saved')
   }
@@ -61,7 +61,7 @@ async function verifyUxChanges() {
   // Check if § styling was applied
   const paragrafBold = await page.$('a.paragraf b')
   if (paragrafBold) {
-    const style = await paragrafBold.evaluate(el => el.getAttribute('style'))
+    const style = await paragrafBold.evaluate((el) => el.getAttribute('style'))
     console.log('§ bold style:', style ? 'Applied' : 'Not found')
   }
 

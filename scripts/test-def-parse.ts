@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 async function main() {
   const doc = await prisma.legalDocument.findFirst({
     where: { document_number: 'SFS 2025:1461' },
-    select: { full_text: true }
+    select: { full_text: true },
   })
 
   if (doc?.full_text) {
@@ -18,7 +18,8 @@ async function main() {
       console.log('=== Testing regex on definition section ===\n')
 
       // The pattern from the parser
-      const defPattern = /([a-zåäö][a-zåäö\s\-–]+?)\s+i\s+((?:\d+\s*kap\.\s*)?\d+(?:\s*[a-z])?\s*(?:–\d+(?:\s*[a-z])?\s*)?§§?(?:\s+(?:första|andra|tredje)\s+stycket)?)/gi
+      const defPattern =
+        /([a-zåäö][a-zåäö\s\-–]+?)\s+i\s+((?:\d+\s*kap\.\s*)?\d+(?:\s*[a-z])?\s*(?:–\d+(?:\s*[a-z])?\s*)?§§?(?:\s+(?:första|andra|tredje)\s+stycket)?)/gi
 
       let match
       let count = 0

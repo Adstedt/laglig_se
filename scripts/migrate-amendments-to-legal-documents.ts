@@ -55,11 +55,14 @@ async function migrateAmendmentsToLegalDocuments(
   const existingDocs = await prisma.legalDocument.findMany({
     select: { document_number: true },
   })
-  const existingDocNumbers = new Set(existingDocs.map(d => d.document_number))
+  const existingDocNumbers = new Set(existingDocs.map((d) => d.document_number))
   console.log(`   Found ${existingDocNumbers.size} existing records to skip\n`)
 
   // Build where clause
-  const whereClause: { parse_status: ParseStatus; base_law_sfs?: { contains: string } } = {
+  const whereClause: {
+    parse_status: ParseStatus
+    base_law_sfs?: { contains: string }
+  } = {
     parse_status: ParseStatus.COMPLETED,
   }
   if (baseLawFilter) {
@@ -75,7 +78,7 @@ async function migrateAmendmentsToLegalDocuments(
   })
 
   // Filter to only amendments that don't exist yet
-  const amendments = allAmendments.filter(a => {
+  const amendments = allAmendments.filter((a) => {
     const sfsNum = a.sfs_number.replace(/^SFS\s*/i, '')
     const documentNumber = `SFS ${sfsNum}`
     return !existingDocNumbers.has(documentNumber)
@@ -84,7 +87,9 @@ async function migrateAmendmentsToLegalDocuments(
   // Apply limit after filtering
   const limitedAmendments = limit ? amendments.slice(0, limit) : amendments
 
-  console.log(`📋 Found ${allAmendments.length} total amendments, ${limitedAmendments.length} need migration\n`)
+  console.log(
+    `📋 Found ${allAmendments.length} total amendments, ${limitedAmendments.length} need migration\n`
+  )
 
   for (const amendment of limitedAmendments) {
     stats.processed++
@@ -158,7 +163,10 @@ async function migrateAmendmentsToLegalDocuments(
       stats.created++
     } catch (error) {
       // Handle unique constraint errors silently (record already exists)
-      if (error instanceof Error && error.message.includes('Unique constraint')) {
+      if (
+        error instanceof Error &&
+        error.message.includes('Unique constraint')
+      ) {
         stats.skipped++
         continue
       }
@@ -178,15 +186,19 @@ async function main() {
   const dryRun = args.includes('--dry-run')
 
   // Parse --limit=N argument
-  const limitArg = args.find(arg => arg.startsWith('--limit='))
+  const limitArg = args.find((arg) => arg.startsWith('--limit='))
   const limit = limitArg ? parseInt(limitArg.split('=')[1], 10) : undefined
 
   // Parse --base-law=XXXX:XXXX argument
-  const baseLawArg = args.find(arg => arg.startsWith('--base-law='))
+  const baseLawArg = args.find((arg) => arg.startsWith('--base-law='))
   const baseLawFilter = baseLawArg ? baseLawArg.split('=')[1] : undefined
 
   try {
-    const stats = await migrateAmendmentsToLegalDocuments(dryRun, limit, baseLawFilter)
+    const stats = await migrateAmendmentsToLegalDocuments(
+      dryRun,
+      limit,
+      baseLawFilter
+    )
 
     console.log('\n' + '='.repeat(50))
     console.log('📊 Migration Summary:')

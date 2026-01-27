@@ -59,9 +59,10 @@ export function ExportDropdown({
           escapeCsvField(item.commentary ?? ''),
         ])
 
-        const csv = [headers.join(';'), ...rows.map((row) => row.join(';'))].join(
-          '\n'
-        )
+        const csv = [
+          headers.join(';'),
+          ...rows.map((row) => row.join(';')),
+        ].join('\n')
 
         // Add BOM for Excel compatibility
         const bom = '\uFEFF'

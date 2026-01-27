@@ -18,7 +18,7 @@ import {
 
 interface RemoveConfirmationProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   documentTitle: string
   onConfirm: () => void
 }
@@ -36,10 +36,12 @@ export function RemoveConfirmation({
           <AlertDialogTitle>Ta bort dokument från listan?</AlertDialogTitle>
           <AlertDialogDescription>
             Är du säker på att du vill ta bort{' '}
-            <strong className="text-foreground">{documentTitle}</strong> från listan?
+            <strong className="text-foreground">{documentTitle}</strong> från
+            listan?
             <br />
             <br />
-            Dokumentet kommer fortfarande vara tillgängligt i databasen och kan läggas till igen senare.
+            Dokumentet kommer fortfarande vara tillgängligt i databasen och kan
+            läggas till igen senare.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

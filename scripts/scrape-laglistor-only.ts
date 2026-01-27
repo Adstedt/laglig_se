@@ -119,7 +119,11 @@ async function saveHtmlForDebug(page: Page, filename: string) {
 // LAGLISTA SCRAPER
 // ============================================
 
-async function scrapeLaglista(page: Page, name: string, listId: string): Promise<Laglista> {
+async function scrapeLaglista(
+  page: Page,
+  name: string,
+  listId: string
+): Promise<Laglista> {
   const url = `https://www.notisum.se/Rn/lawlist/?listid=${listId}`
   console.log(`\n  Scraping Laglista: ${name} (${url})`)
 
@@ -141,14 +145,24 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
     // Click "Öppna / Stäng rubriker" to expand all sections
     console.log('    Expanding all sections...')
     try {
-      const expandButton = await page.locator('button:has-text("Öppna"), a:has-text("Öppna"), span:has-text("Öppna")').first()
-      if (await expandButton.count() > 0) {
+      const expandButton = await page
+        .locator(
+          'button:has-text("Öppna"), a:has-text("Öppna"), span:has-text("Öppna")'
+        )
+        .first()
+      if ((await expandButton.count()) > 0) {
         await expandButton.click()
         await page.waitForTimeout(3000)
       } else {
-        const sectionHeaders = await page.locator('[class*="group"], [class*="header"], tr[onclick]').all()
+        const sectionHeaders = await page
+          .locator('[class*="group"], [class*="header"], tr[onclick]')
+          .all()
         for (const header of sectionHeaders.slice(0, 20)) {
-          try { await header.click() } catch { /* ignore */ }
+          try {
+            await header.click()
+          } catch {
+            /* ignore */
+          }
         }
         await page.waitForTimeout(2000)
       }
@@ -158,7 +172,10 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
 
     // Take screenshot after expansion
     const safeName = name.replace(/[^a-zA-Z0-9]/g, '_')
-    result.screenshotPath = path.join(SCREENSHOT_DIR, `laglista-${safeName}.png`)
+    result.screenshotPath = path.join(
+      SCREENSHOT_DIR,
+      `laglista-${safeName}.png`
+    )
     await page.screenshot({ path: result.screenshotPath, fullPage: true })
 
     // Save HTML for debugging
@@ -185,7 +202,9 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
       const docCountMatch = pageText.match(/Antal dokument[:\s]*(\d+)/i)
 
       // Find all section headers
-      const sectionHeaders = document.querySelectorAll('.group-header, div.group-header')
+      const sectionHeaders = document.querySelectorAll(
+        '.group-header, div.group-header'
+      )
 
       sectionHeaders.forEach((header) => {
         const text = header.textContent?.trim() || ''
@@ -194,7 +213,7 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
           sections.push({
             sectionNumber: match[1],
             sectionName: match[2].trim(),
-            documents: []
+            documents: [],
           })
         }
       })
@@ -213,7 +232,7 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
             currentSection = {
               sectionNumber: '00',
               sectionName: 'UNCATEGORIZED',
-              documents: []
+              documents: [],
             }
             sections.push(currentSection)
           }
@@ -223,7 +242,9 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
         // Index cell has "Index" span and a 4-digit number
         // Beteckning cell has "Beteckning" span and SFS link
         const firstCellText = cells[0]?.textContent?.trim() || ''
-        const hasIndexColumn = firstCellText.includes('Index') || /^\d{4}$/.test(firstCellText.replace(/Index/i, '').trim())
+        const hasIndexColumn =
+          firstCellText.includes('Index') ||
+          /^\d{4}$/.test(firstCellText.replace(/Index/i, '').trim())
 
         let index = ''
         let beteckningCell: Element | null
@@ -254,17 +275,24 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
         const sfsMatches = beteckningText.match(/SFS\s*\d{4}:\d+/gi) || []
         const amendmentSfs = sfsMatches.length > 1 ? sfsMatches[1] : null
 
-        const nameMatch = beteckningText.match(/([A-ZÅÄÖ][a-zåäö\-]+(?:\s+[a-zåäöA-ZÅÄÖ\-]+)*)\s*\(\d{4}:\d+\)/)
+        const nameMatch = beteckningText.match(
+          /([A-ZÅÄÖ][a-zåäö\-]+(?:\s+[a-zåäöA-ZÅÄÖ\-]+)*)\s*\(\d{4}:\d+\)/
+        )
         let documentName = nameMatch ? nameMatch[0] : ''
 
         if (!documentName) {
-          const lines = beteckningText.split('\n').map(l => l.trim()).filter(l => l)
+          const lines = beteckningText
+            .split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l)
           if (lines.length >= 3) {
             documentName = lines[2] || lines[1] || ''
           }
         }
 
-        const noticeDiv = beteckningCell?.querySelector('.notice, .notice-info, .notice-inner')
+        const noticeDiv = beteckningCell?.querySelector(
+          '.notice, .notice-info, .notice-inner'
+        )
         let notisumComment: string | null = null
         if (noticeDiv) {
           notisumComment = noticeDiv.textContent?.trim() || null
@@ -274,7 +302,10 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
         if (summaryCell) {
           const summarySpan = summaryCell.querySelector('.narrow-column-title')
           if (summarySpan) {
-            summaryText = summaryCell.textContent?.replace(summarySpan.textContent || '', '').trim() || null
+            summaryText =
+              summaryCell.textContent
+                ?.replace(summarySpan.textContent || '', '')
+                .trim() || null
           } else {
             summaryText = summaryCell.textContent?.trim() || null
           }
@@ -282,9 +313,14 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
 
         let complianceText: string | null = null
         if (complianceCell) {
-          const complianceSpan = complianceCell.querySelector('.narrow-column-title')
+          const complianceSpan = complianceCell.querySelector(
+            '.narrow-column-title'
+          )
           if (complianceSpan) {
-            complianceText = complianceCell.textContent?.replace(complianceSpan.textContent || '', '').trim() || null
+            complianceText =
+              complianceCell.textContent
+                ?.replace(complianceSpan.textContent || '', '')
+                .trim() || null
           } else {
             complianceText = complianceCell.textContent?.trim() || null
           }
@@ -299,7 +335,7 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
             notisumComment,
             summaryText,
             complianceText,
-            link
+            link,
           })
         }
       })
@@ -308,38 +344,48 @@ async function scrapeLaglista(page: Page, name: string, listId: string): Promise
         sections.push({
           sectionNumber: '00',
           sectionName: 'ALL DOCUMENTS',
-          documents: []
+          documents: [],
         })
       }
 
       return {
         sections,
-        totalDocuments: docCountMatch ? parseInt(docCountMatch[1], 10) : docRows.length,
+        totalDocuments: docCountMatch
+          ? parseInt(docCountMatch[1], 10)
+          : docRows.length,
         lastUpdated: null,
-        description: null
+        description: null,
       }
     })
 
     result.sections = listData.sections
-    result.totalDocuments = listData.totalDocuments || result.sections.reduce((sum, s) => sum + s.documents.length, 0)
+    result.totalDocuments =
+      listData.totalDocuments ||
+      result.sections.reduce((sum, s) => sum + s.documents.length, 0)
     result.lastUpdated = listData.lastUpdated
     result.description = listData.description
 
-    const docCount = result.sections.reduce((sum, s) => sum + s.documents.length, 0)
+    const docCount = result.sections.reduce(
+      (sum, s) => sum + s.documents.length,
+      0
+    )
     console.log(`    Sections: ${result.sections.length}`)
     console.log(`    Documents extracted: ${docCount}`)
     console.log(`    Total documents (from page): ${result.totalDocuments}`)
     if (result.sections.length > 0) {
-      result.sections.slice(0, 5).forEach(s => {
-        console.log(`      ${s.sectionNumber} ${s.sectionName}: ${s.documents.length} docs`)
+      result.sections.slice(0, 5).forEach((s) => {
+        console.log(
+          `      ${s.sectionNumber} ${s.sectionName}: ${s.documents.length} docs`
+        )
       })
       if (result.sections.length > 5) {
         console.log(`      ... and ${result.sections.length - 5} more sections`)
       }
     }
-
   } catch (error) {
-    console.error(`    Error: ${error instanceof Error ? error.message : 'Unknown'}`)
+    console.error(
+      `    Error: ${error instanceof Error ? error.message : 'Unknown'}`
+    )
   }
 
   return result
@@ -381,11 +427,17 @@ async function main() {
 
       // Save after each to avoid data loss
       const jsonPath = path.join(OUTPUT_DIR, 'laglistor-data.json')
-      fs.writeFileSync(jsonPath, JSON.stringify({ laglistor, scrapedAt: new Date().toISOString() }, null, 2))
+      fs.writeFileSync(
+        jsonPath,
+        JSON.stringify(
+          { laglistor, scrapedAt: new Date().toISOString() },
+          null,
+          2
+        )
+      )
 
       await page.waitForTimeout(1000)
     }
-
   } catch (error) {
     console.error('\nScraping failed:', error)
   } finally {
@@ -405,7 +457,9 @@ async function main() {
     try {
       const existingData = JSON.parse(fs.readFileSync(fullDataPath, 'utf-8'))
       existingLaglistor = existingData.laglistor || []
-      console.log(`\nLoaded ${existingLaglistor.length} existing Laglistor from notisum-full-data.json`)
+      console.log(
+        `\nLoaded ${existingLaglistor.length} existing Laglistor from notisum-full-data.json`
+      )
     } catch (e) {
       console.log('\nCould not load existing data, will save new data only')
     }
@@ -414,7 +468,9 @@ async function main() {
   // Merge: keep existing lists, add/update new ones
   const mergedLaglistor = [...existingLaglistor]
   for (const newList of laglistor) {
-    const existingIndex = mergedLaglistor.findIndex(l => l.name === newList.name || l.url === newList.url)
+    const existingIndex = mergedLaglistor.findIndex(
+      (l) => l.name === newList.name || l.url === newList.url
+    )
     if (existingIndex >= 0) {
       // Replace existing with new
       mergedLaglistor[existingIndex] = newList
@@ -426,29 +482,44 @@ async function main() {
 
   // Save new scraped data separately
   const jsonPath = path.join(OUTPUT_DIR, 'laglistor-new-data.json')
-  fs.writeFileSync(jsonPath, JSON.stringify({ laglistor, scrapedAt: new Date().toISOString() }, null, 2))
+  fs.writeFileSync(
+    jsonPath,
+    JSON.stringify({ laglistor, scrapedAt: new Date().toISOString() }, null, 2)
+  )
   console.log(`New data saved: ${jsonPath}`)
 
   // Save combined Laglistor CSV (all lists)
   const llCsvPath = path.join(OUTPUT_DIR, 'laglistor-all-combined.csv')
-  const llCsvHeader = 'Laglista,Section Number,Section Name,Index,SFS Number,Amendment SFS,Document Name,Notisum Comment,Summary (Så här påverkas vi),Compliance,Link\n'
-  const llCsvRows = mergedLaglistor.flatMap(ll =>
-    ll.sections.flatMap(sec =>
-      sec.documents.map(doc =>
-        `"${ll.name}","${sec.sectionNumber}","${sec.sectionName}","${doc.index}","${doc.sfsNumber}","${doc.amendmentSfs || ''}",` +
-        `"${doc.documentName.replace(/"/g, '""')}","${(doc.notisumComment || '').replace(/"/g, '""').replace(/\n/g, ' ')}",` +
-        `"${(doc.summaryText || '').replace(/"/g, '""').replace(/\n/g, ' ')}","${(doc.complianceText || '').replace(/"/g, '""').replace(/\n/g, ' ')}","${doc.link || ''}"`
+  const llCsvHeader =
+    'Laglista,Section Number,Section Name,Index,SFS Number,Amendment SFS,Document Name,Notisum Comment,Summary (Så här påverkas vi),Compliance,Link\n'
+  const llCsvRows = mergedLaglistor
+    .flatMap((ll) =>
+      ll.sections.flatMap((sec) =>
+        sec.documents.map(
+          (doc) =>
+            `"${ll.name}","${sec.sectionNumber}","${sec.sectionName}","${doc.index}","${doc.sfsNumber}","${doc.amendmentSfs || ''}",` +
+            `"${doc.documentName.replace(/"/g, '""')}","${(doc.notisumComment || '').replace(/"/g, '""').replace(/\n/g, ' ')}",` +
+            `"${(doc.summaryText || '').replace(/"/g, '""').replace(/\n/g, ' ')}","${(doc.complianceText || '').replace(/"/g, '""').replace(/\n/g, ' ')}","${doc.link || ''}"`
+        )
       )
     )
-  ).join('\n')
+    .join('\n')
   fs.writeFileSync(llCsvPath, llCsvHeader + llCsvRows)
   console.log(`Combined Laglistor saved: ${llCsvPath}`)
 
   // ========================================
   // PRINT SUMMARY
   // ========================================
-  const newDocs = laglistor.reduce((sum, ll) => sum + ll.sections.reduce((s, sec) => s + sec.documents.length, 0), 0)
-  const totalDocs = mergedLaglistor.reduce((sum, ll) => sum + ll.sections.reduce((s, sec) => s + sec.documents.length, 0), 0)
+  const newDocs = laglistor.reduce(
+    (sum, ll) =>
+      sum + ll.sections.reduce((s, sec) => s + sec.documents.length, 0),
+    0
+  )
+  const totalDocs = mergedLaglistor.reduce(
+    (sum, ll) =>
+      sum + ll.sections.reduce((s, sec) => s + sec.documents.length, 0),
+    0
+  )
 
   console.log('\n' + '='.repeat(70))
   console.log('SCRAPING COMPLETE')
@@ -456,7 +527,7 @@ async function main() {
   console.log(`NEW Laglistor scraped: ${laglistor.length}`)
   console.log(`NEW documents extracted: ${newDocs}`)
   console.log('\nNew Laglistor breakdown:')
-  laglistor.forEach(ll => {
+  laglistor.forEach((ll) => {
     const docs = ll.sections.reduce((sum, s) => sum + s.documents.length, 0)
     const status = docs > 0 ? '✓' : '❌'
     console.log(`  ${status} ${ll.name}: ${docs} documents`)
@@ -465,7 +536,7 @@ async function main() {
   console.log(`Total Laglistor: ${mergedLaglistor.length}`)
   console.log(`Total documents: ${totalDocs}`)
   console.log('\nAll Laglistor:')
-  mergedLaglistor.forEach(ll => {
+  mergedLaglistor.forEach((ll) => {
     const docs = ll.sections.reduce((sum, s) => sum + s.documents.length, 0)
     const status = docs > 0 ? '✓' : '❌'
     console.log(`  ${status} ${ll.name}: ${docs} documents`)

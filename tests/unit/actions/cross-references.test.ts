@@ -64,7 +64,9 @@ describe('Cross-Reference Actions', () => {
         },
       ]
 
-      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(mockRefs as never)
+      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(
+        mockRefs as never
+      )
       vi.mocked(prisma.crossReference.count).mockResolvedValue(2)
 
       const result = await getCourtCasesCitingLaw('law-123', 10)
@@ -141,7 +143,9 @@ describe('Cross-Reference Actions', () => {
         },
       ]
 
-      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(mockRefs as never)
+      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(
+        mockRefs as never
+      )
       vi.mocked(prisma.crossReference.count).mockResolvedValue(3)
 
       const result = await getCourtCasesCitingLaw('law-123', 10)
@@ -170,7 +174,9 @@ describe('Cross-Reference Actions', () => {
         },
       }))
 
-      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(mockRefs as never)
+      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(
+        mockRefs as never
+      )
       vi.mocked(prisma.crossReference.count).mockResolvedValue(15)
 
       const result = await getCourtCasesCitingLaw('law-123', 5)
@@ -215,7 +221,9 @@ describe('Cross-Reference Actions', () => {
         },
       ]
 
-      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(mockRefs as never)
+      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(
+        mockRefs as never
+      )
       vi.mocked(prisma.crossReference.count).mockResolvedValue(2)
 
       const result = await getCourtCasesCitingLaw('law-123', 10)
@@ -255,7 +263,9 @@ describe('Cross-Reference Actions', () => {
         },
       ]
 
-      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(mockRefs as never)
+      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(
+        mockRefs as never
+      )
 
       const result = await getImplementedEuDirectives('law-123')
 
@@ -289,7 +299,9 @@ describe('Cross-Reference Actions', () => {
         },
       ]
 
-      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(mockRefs as never)
+      vi.mocked(prisma.crossReference.findMany).mockResolvedValue(
+        mockRefs as never
+      )
 
       const result = await getImplementedEuDirectives('law-123')
 
@@ -386,9 +398,7 @@ describe('Cross-Reference Actions', () => {
       expect(prisma.legalDocument.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
-            OR: expect.arrayContaining([
-              { document_number: '2018:218' },
-            ]),
+            OR: expect.arrayContaining([{ document_number: '2018:218' }]),
           }),
         })
       )

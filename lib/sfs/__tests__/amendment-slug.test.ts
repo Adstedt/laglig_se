@@ -39,11 +39,7 @@ describe('generateAmendmentSlug', () => {
   })
 
   it('normalizes Swedish characters', () => {
-    const slug = generateAmendmentSlug(
-      '2024:100',
-      null,
-      'ärendelagen'
-    )
+    const slug = generateAmendmentSlug('2024:100', null, 'ärendelagen')
     expect(slug).toBe('lag-om-andring-i-arendelagen-2024-100')
   })
 

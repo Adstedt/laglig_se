@@ -25,7 +25,13 @@ import {
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -51,7 +57,9 @@ export function ColumnManager({ initialColumns }: ColumnManagerProps) {
   const [isPending, startTransition] = useTransition()
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<TaskColumnWithCount | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<TaskColumnWithCount | null>(
+    null
+  )
   const [isDeleting, setIsDeleting] = useState(false)
 
   const sensors = useSensors(
@@ -63,7 +71,9 @@ export function ColumnManager({ initialColumns }: ColumnManagerProps) {
   const canToggleIsDone = (columnId: string) => {
     const column = columns.find((c) => c.id === columnId)
     if (!column?.is_done) return true // Can always toggle on
-    const otherDoneColumns = columns.filter((c) => c.id !== columnId && c.is_done)
+    const otherDoneColumns = columns.filter(
+      (c) => c.id !== columnId && c.is_done
+    )
     return otherDoneColumns.length > 0
   }
 
@@ -277,7 +287,10 @@ export function ColumnManagerSkeleton() {
       </CardHeader>
       <CardContent className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 rounded-lg border p-3">
+          <div
+            key={i}
+            className="flex items-center gap-3 rounded-lg border p-3"
+          >
             <Skeleton className="h-5 w-5" />
             <Skeleton className="h-8 w-8 rounded-full" />
             <Skeleton className="h-5 flex-1" />

@@ -17,16 +17,29 @@ import { Badge } from '@/components/ui/badge'
 export const revalidate = 3600
 export const dynamicParams = true
 
-const EU_TYPE_MAP: Record<string, { contentType: ContentType; name: string; namePlural: string }> = {
-  forordningar: { contentType: ContentType.EU_REGULATION, name: 'EU-förordning', namePlural: 'EU-förordningar' },
-  direktiv: { contentType: ContentType.EU_DIRECTIVE, name: 'EU-direktiv', namePlural: 'EU-direktiv' },
+const EU_TYPE_MAP: Record<
+  string,
+  { contentType: ContentType; name: string; namePlural: string }
+> = {
+  forordningar: {
+    contentType: ContentType.EU_REGULATION,
+    name: 'EU-förordning',
+    namePlural: 'EU-förordningar',
+  },
+  direktiv: {
+    contentType: ContentType.EU_DIRECTIVE,
+    name: 'EU-direktiv',
+    namePlural: 'EU-direktiv',
+  },
 }
 
 interface PageProps {
   params: Promise<{ type: string }>
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { type } = await params
   const typeInfo = EU_TYPE_MAP[type]
 
@@ -120,7 +133,10 @@ export default async function EuTypeListingPage({ params }: PageProps) {
                     </Link>
                   </CardTitle>
                   {doc.eu_document?.celex_number && (
-                    <Badge variant="outline" className="shrink-0 font-mono text-xs">
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 font-mono text-xs"
+                    >
                       {doc.eu_document.celex_number}
                     </Badge>
                   )}
@@ -136,7 +152,9 @@ export default async function EuTypeListingPage({ params }: PageProps) {
                   <span>{doc.document_number}</span>
                   {doc.publication_date && (
                     <span>
-                      {new Date(doc.publication_date).toLocaleDateString('sv-SE')}
+                      {new Date(doc.publication_date).toLocaleDateString(
+                        'sv-SE'
+                      )}
                     </span>
                   )}
                 </div>

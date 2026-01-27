@@ -1,0 +1,970 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.9.0",
+  "name": "2025-490",
+  "origin": {
+    "mimetype": "application/pdf",
+    "binary_hash": 12892112712725282602,
+    "filename": "2025-490.pdf"
+  },
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/texts/0"
+      },
+      {
+        "$ref": "#/texts/1"
+      },
+      {
+        "$ref": "#/pictures/0"
+      },
+      {
+        "$ref": "#/texts/2"
+      },
+      {
+        "$ref": "#/texts/3"
+      },
+      {
+        "$ref": "#/texts/4"
+      },
+      {
+        "$ref": "#/texts/5"
+      },
+      {
+        "$ref": "#/groups/0"
+      },
+      {
+        "$ref": "#/texts/17"
+      },
+      {
+        "$ref": "#/texts/18"
+      },
+      {
+        "$ref": "#/texts/19"
+      },
+      {
+        "$ref": "#/texts/20"
+      },
+      {
+        "$ref": "#/texts/21"
+      },
+      {
+        "$ref": "#/groups/1"
+      },
+      {
+        "$ref": "#/texts/23"
+      },
+      {
+        "$ref": "#/texts/24"
+      },
+      {
+        "$ref": "#/texts/25"
+      },
+      {
+        "$ref": "#/texts/26"
+      },
+      {
+        "$ref": "#/texts/27"
+      },
+      {
+        "$ref": "#/texts/28"
+      },
+      {
+        "$ref": "#/texts/29"
+      },
+      {
+        "$ref": "#/texts/30"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [
+    {
+      "self_ref": "#/groups/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/6"
+        },
+        {
+          "$ref": "#/texts/7"
+        },
+        {
+          "$ref": "#/texts/8"
+        },
+        {
+          "$ref": "#/texts/9"
+        },
+        {
+          "$ref": "#/texts/10"
+        },
+        {
+          "$ref": "#/texts/11"
+        },
+        {
+          "$ref": "#/texts/12"
+        },
+        {
+          "$ref": "#/texts/13"
+        },
+        {
+          "$ref": "#/texts/14"
+        },
+        {
+          "$ref": "#/texts/15"
+        },
+        {
+          "$ref": "#/texts/16"
+        }
+      ],
+      "content_layer": "body",
+      "name": "list",
+      "label": "list"
+    },
+    {
+      "self_ref": "#/groups/1",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/22"
+        }
+      ],
+      "content_layer": "body",
+      "name": "list",
+      "label": "list"
+    }
+  ],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 15.166,
+            "t": 93.71000001406253,
+            "r": 23.391,
+            "b": 10.65000001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 23]
+        }
+      ],
+      "orig": "1 2 3 4 5 6 7 8 9 0 : ;",
+      "text": "1 2 3 4 5 6 7 8 9 0 : ;"
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 26.665,
+            "t": 93.71000001406253,
+            "r": 34.89,
+            "b": 10.65000001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 23]
+        }
+      ],
+      "orig": "1 2 3 4 5 6 7 8 9 0 : ;",
+      "text": "1 2 3 4 5 6 7 8 9 0 : ;"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 734.0180000140625,
+            "r": 291.129,
+            "b": 718.3910000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 26]
+        }
+      ],
+      "orig": "Svensk författningssamling",
+      "text": "Svensk författningssamling",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 690.2680000140625,
+            "r": 394.606,
+            "b": 648.1630000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 83]
+        }
+      ],
+      "orig": "Förordning om ändring i förordningen (2009:607) med instruktion för Konsumentverket",
+      "text": "Förordning om ändring i förordningen (2009:607) med instruktion för Konsumentverket",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 634.4100000140625,
+            "r": 188.791,
+            "b": 624.9510000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 24]
+        }
+      ],
+      "orig": "Utfärdad den 22 maj 2025",
+      "text": "Utfärdad den 22 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 607.1920000140625,
+            "r": 415.317,
+            "b": 584.1240000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 115]
+        }
+      ],
+      "orig": "Regeringen föreskriver att 3 § förordningen (2009:607) med instruktion för Konsumentverket ska ha följande lydelse.",
+      "text": "Regeringen föreskriver att 3 § förordningen (2009:607) med instruktion för Konsumentverket ska ha följande lydelse."
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 553.5920000140625,
+            "r": 322.537,
+            "b": 543.2970000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 57]
+        }
+      ],
+      "orig": "3 § 1     Myndigheten ska utöver uppgifterna i 1 och 2 §§",
+      "text": "3 § 1     Myndigheten ska utöver uppgifterna i 1 och 2 §§",
+      "enumerated": false,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 539.1470000140625,
+            "r": 412.453,
+            "b": 516.0790000140624,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 107]
+        }
+      ],
+      "orig": "1. bevaka och analysera marknaderna ur ett konsumentperspektiv samt vid behov vidta eller föreslå åtgärder,",
+      "text": "bevaka och analysera marknaderna ur ett konsumentperspektiv samt vid behov vidta eller föreslå åtgärder,",
+      "enumerated": true,
+      "marker": "1."
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 511.92900001406247,
+            "r": 412.453,
+            "b": 488.8610000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 106]
+        }
+      ],
+      "orig": "2. bevaka och analysera förutsättningarna för konsumenter att agera på ett ur miljösynpunkt hållbart sätt,",
+      "text": "bevaka och analysera förutsättningarna för konsumenter att agera på ett ur miljösynpunkt hållbart sätt,",
+      "enumerated": true,
+      "marker": "2."
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 484.7110000140625,
+            "r": 415.317,
+            "b": 448.0340000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 173]
+        }
+      ],
+      "orig": "3. stödja, med bl.a. utbildning och information, konsumentverksamhet i kommunerna i frågor som rör konsumentskydd och konsumentlagstiftning samt budget- och skuldrådgivning,",
+      "text": "stödja, med bl.a. utbildning och information, konsumentverksamhet i kommunerna i frågor som rör konsumentskydd och konsumentlagstiftning samt budget- och skuldrådgivning,",
+      "enumerated": true,
+      "marker": "3."
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 443.8840000140625,
+            "r": 412.454,
+            "b": 407.2070000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 175]
+        }
+      ],
+      "orig": "4. utföra pris- och konsumtionsundersökningar som kan utgöra underlag för regeringens beslut om riksnorm enligt 12 kap. 1 § första stycket socialtjänstförordningen (2025:468),",
+      "text": "utföra pris- och konsumtionsundersökningar som kan utgöra underlag för regeringens beslut om riksnorm enligt 12 kap. 1 § första stycket socialtjänstförordningen (2025:468),",
+      "enumerated": true,
+      "marker": "4."
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 403.0570000140625,
+            "r": 412.442,
+            "b": 366.3800000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 203]
+        }
+      ],
+      "orig": "5. bistå  Försäkringskassan  med  ett  referensmaterial  om  vad  som  utgör normala levnadskostnader i syfte att underlätta Försäkringskassans bedömning av merkostnader på grund av funktionsnedsättning,",
+      "text": "bistå  Försäkringskassan  med  ett  referensmaterial  om  vad  som  utgör normala levnadskostnader i syfte att underlätta Försäkringskassans bedömning av merkostnader på grund av funktionsnedsättning,",
+      "enumerated": true,
+      "marker": "5."
+    },
+    {
+      "self_ref": "#/texts/12",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 362.2300000140625,
+            "r": 415.318,
+            "b": 311.94400001406257,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 286]
+        }
+      ],
+      "orig": "6. vara kontaktmyndighet för svenska  myndigheters  samarbete  med myndigheter  inom  EES  och  med  Europeiska  kommissionen  i  konsumentrelaterade frågor som  rör informationssamhällets tjänster enligt lagen (2002:562) om elektronisk handel och andra informationssamhällets tjänster,",
+      "text": "vara kontaktmyndighet för svenska  myndigheters  samarbete  med myndigheter  inom  EES  och  med  Europeiska  kommissionen  i  konsumentrelaterade frågor som  rör informationssamhällets tjänster enligt lagen (2002:562) om elektronisk handel och andra informationssamhällets tjänster,",
+      "enumerated": true,
+      "marker": "6."
+    },
+    {
+      "self_ref": "#/texts/13",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 307.7940000140625,
+            "r": 415.329,
+            "b": 257.5080000140624,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 272]
+        }
+      ],
+      "orig": "7. vara  kontaktmyndighet enligt Europaparlamentets och rådets förordning (EU) 2017/2394 av den 12 december 2017 om samarbete mellan de nationella  myndigheter  som  har  tillsynsansvar  för  konsumentskyddslagstiftningen och om upphävande av förordning (EG) nr 2006/2004,",
+      "text": "vara  kontaktmyndighet enligt Europaparlamentets och rådets förordning (EU) 2017/2394 av den 12 december 2017 om samarbete mellan de nationella  myndigheter  som  har  tillsynsansvar  för  konsumentskyddslagstiftningen och om upphävande av förordning (EG) nr 2006/2004,",
+      "enumerated": true,
+      "marker": "7."
+    },
+    {
+      "self_ref": "#/texts/14",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 253.35800001406255,
+            "r": 415.318,
+            "b": 216.68100001406253,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 220]
+        }
+      ],
+      "orig": "8. fullgöra  de  uppgifter  som  en  behörig  myndighet  har  enligt  Europaparlamentets  och  rådets  förordning  (EU)  2017/2394,  i  fråga  om  att kontrollera att sådana regler som myndigheten har tillsyn över följs,",
+      "text": "fullgöra  de  uppgifter  som  en  behörig  myndighet  har  enligt  Europaparlamentets  och  rådets  förordning  (EU)  2017/2394,  i  fråga  om  att kontrollera att sådana regler som myndigheten har tillsyn över följs,",
+      "enumerated": true,
+      "marker": "8."
+    },
+    {
+      "self_ref": "#/texts/15",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 212.53100001406256,
+            "r": 415.329,
+            "b": 135.02700001406242,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 382]
+        }
+      ],
+      "orig": "9. bistå konsumenter vid gränsöverskridande tvister samt samarbeta och utbyta  information  med  alternativa  tvistlösningsorgan  enligt  artikel 14 respektive 17 i Europaparlamentets och rådets direktiv 2013/11/EU av den 21 maj 2013 om alternativ tvistlösning vid konsumenttvister och om ändring av förordning (EG) nr 2006/2004 och direktiv 2009/22/EG, i den ursprungliga lydelsen,",
+      "text": "bistå konsumenter vid gränsöverskridande tvister samt samarbeta och utbyta  information  med  alternativa  tvistlösningsorgan  enligt  artikel 14 respektive 17 i Europaparlamentets och rådets direktiv 2013/11/EU av den 21 maj 2013 om alternativ tvistlösning vid konsumenttvister och om ändring av förordning (EG) nr 2006/2004 och direktiv 2009/22/EG, i den ursprungliga lydelsen,",
+      "enumerated": true,
+      "marker": "9."
+    },
+    {
+      "self_ref": "#/texts/16",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 130.87700001406256,
+            "r": 415.329,
+            "b": 107.80900001406246,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 145]
+        }
+      ],
+      "orig": "10. vara kontaktpunkt för tvistlösning online enligt Europaparlamentets och rådets förordning (EU) nr 524/2013 av den 21 maj 2013 om tvistlösning",
+      "text": "vara kontaktpunkt för tvistlösning online enligt Europaparlamentets och rådets förordning (EU) nr 524/2013 av den 21 maj 2013 om tvistlösning",
+      "enumerated": true,
+      "marker": "10."
+    },
+    {
+      "self_ref": "#/texts/17",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "footnote",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 79.79900001406247,
+            "r": 166.435,
+            "b": 71.65600001406256,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 28]
+        }
+      ],
+      "orig": "1  Senaste lydelse 2023:734.",
+      "text": "1  Senaste lydelse 2023:734."
+    },
+    {
+      "self_ref": "#/texts/18",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 432.7,
+            "t": 689.3690000140625,
+            "r": 508.178,
+            "b": 654.3910000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 39]
+        }
+      ],
+      "orig": "SFS 2025:490 Publicerad den 28 maj 2025",
+      "text": "SFS 2025:490 Publicerad den 28 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/19",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "label": "page_footer",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 529.244,
+            "t": 89.23600001406248,
+            "r": 534.994,
+            "b": 79.77700001406254,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 1]
+        }
+      ],
+      "orig": "1",
+      "text": "1"
+    },
+    {
+      "self_ref": "#/texts/20",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "label": "page_header",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 450.7,
+            "t": 805.0620000140625,
+            "r": 514.566,
+            "b": 795.5180000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 12]
+        }
+      ],
+      "orig": "SFS 2025:490",
+      "text": "SFS 2025:490"
+    },
+    {
+      "self_ref": "#/texts/21",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 65.2,
+            "t": 804.7770000140625,
+            "r": 415.318,
+            "b": 781.7090000140624,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 99]
+        }
+      ],
+      "orig": "online vid konsumenttvister och om ändring av förordning (EG) nr 2006/2004 och direktiv 2009/22/EG,",
+      "text": "online vid konsumenttvister och om ändring av förordning (EG) nr 2006/2004 och direktiv 2009/22/EG,"
+    },
+    {
+      "self_ref": "#/texts/22",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 65.2,
+            "t": 777.5590000140625,
+            "r": 415.329,
+            "b": 700.0550000140624,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 441]
+        }
+      ],
+      "orig": "11. fullgöra de skyldigheter som en behörig myndighet har enligt Europaparlamentets  och  rådets  direktiv  2014/17/EU  av  den  4 februari  2014  om konsumentkreditavtal  som  avser  bostadsfastighet  och  om  ändring  av direktiven 2008/48/EG och 2013/36/EU och förordning (EU) nr 1093/2010, i den ursprungliga lydelsen, inom ramen för sin befogenhet och i fråga om att kontrollera att sådana regler som myndigheten har tillsyn över följs,",
+      "text": "fullgöra de skyldigheter som en behörig myndighet har enligt Europaparlamentets  och  rådets  direktiv  2014/17/EU  av  den  4 februari  2014  om konsumentkreditavtal  som  avser  bostadsfastighet  och  om  ändring  av direktiven 2008/48/EG och 2013/36/EU och förordning (EU) nr 1093/2010, i den ursprungliga lydelsen, inom ramen för sin befogenhet och i fråga om att kontrollera att sådana regler som myndigheten har tillsyn över följs,",
+      "enumerated": true,
+      "marker": "11."
+    },
+    {
+      "self_ref": "#/texts/23",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 65.2,
+            "t": 695.9050000140625,
+            "r": 412.442,
+            "b": 672.8370000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 90]
+        }
+      ],
+      "orig": "12. fullgöra uppgifter som svensk representant i nätverket av europeiska konsumentcentrum,",
+      "text": "12. fullgöra uppgifter som svensk representant i nätverket av europeiska konsumentcentrum,"
+    },
+    {
+      "self_ref": "#/texts/24",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 76.55,
+            "t": 668.6870000140625,
+            "r": 387.291,
+            "b": 659.2280000140624,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 67]
+        }
+      ],
+      "orig": "13. ta fram och utveckla statistik inom sitt verksamhetsområde, och",
+      "text": "13. ta fram och utveckla statistik inom sitt verksamhetsområde, och"
+    },
+    {
+      "self_ref": "#/texts/25",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 65.2,
+            "t": 655.0780000140625,
+            "r": 413.339,
+            "b": 632.0100000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 150]
+        }
+      ],
+      "orig": "14. vara  godkänd  enhet  för  väckande  av  grupptalan  enligt  9 §  lagen (2023:730) om grupptalan till skydd för konsumenters kollektiva intressen.",
+      "text": "14. vara  godkänd  enhet  för  väckande  av  grupptalan  enligt  9 §  lagen (2023:730) om grupptalan till skydd för konsumenters kollektiva intressen."
+    },
+    {
+      "self_ref": "#/texts/26",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 76.55,
+            "t": 613.2600000140625,
+            "r": 296.901,
+            "b": 603.8010000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 48]
+        }
+      ],
+      "orig": "Denna förordning träder i kraft den 1 juli 2025.",
+      "text": "Denna förordning träder i kraft den 1 juli 2025."
+    },
+    {
+      "self_ref": "#/texts/27",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 65.2,
+            "t": 586.0420000140625,
+            "r": 170.252,
+            "b": 576.5830000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 21]
+        }
+      ],
+      "orig": "På regeringens vägnar",
+      "text": "På regeringens vägnar"
+    },
+    {
+      "self_ref": "#/texts/28",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 65.2,
+            "t": 558.8240000140624,
+            "r": 156.556,
+            "b": 549.3650000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 13]
+        }
+      ],
+      "orig": "ERIK SLOTTNER",
+      "text": "ERIK SLOTTNER"
+    },
+    {
+      "self_ref": "#/texts/29",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 256.548,
+            "t": 545.2150000140625,
+            "r": 362.888,
+            "b": 522.1470000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 37]
+        }
+      ],
+      "orig": "Linda Utterberg (Finansdepartementet)",
+      "text": "Linda Utterberg (Finansdepartementet)"
+    },
+    {
+      "self_ref": "#/texts/30",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "label": "page_footer",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 529.124,
+            "t": 87.02600001406245,
+            "r": 534.874,
+            "b": 77.5670000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 1]
+        }
+      ],
+      "orig": "2",
+      "text": "2"
+    }
+  ],
+  "pictures": [
+    {
+      "self_ref": "#/pictures/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "picture",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 63.27922058105469,
+            "t": 808.7986145019531,
+            "r": 95.15624237060547,
+            "b": 757.6478729248047,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 0]
+        }
+      ],
+      "captions": [],
+      "references": [],
+      "footnotes": [],
+      "annotations": []
+    }
+  ],
+  "tables": [],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {
+    "1": {
+      "size": {
+        "width": 595.2999877929688,
+        "height": 841.9000244140625
+      },
+      "page_no": 1
+    },
+    "2": {
+      "size": {
+        "width": 595.2999877929688,
+        "height": 841.9000244140625
+      },
+      "page_no": 2
+    }
+  }
+}

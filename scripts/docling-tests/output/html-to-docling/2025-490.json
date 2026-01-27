@@ -1,0 +1,718 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.9.0",
+  "name": "2025-490",
+  "origin": {
+    "mimetype": "text/html",
+    "binary_hash": 5798809923123525966,
+    "filename": "2025-490.html"
+  },
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/texts/0"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [
+    {
+      "self_ref": "#/groups/0",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/3"
+        }
+      ],
+      "content_layer": "body",
+      "name": "header-2",
+      "label": "section"
+    },
+    {
+      "self_ref": "#/groups/1",
+      "parent": {
+        "$ref": "#/texts/3"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/7"
+        },
+        {
+          "$ref": "#/texts/8"
+        },
+        {
+          "$ref": "#/texts/9"
+        },
+        {
+          "$ref": "#/texts/10"
+        },
+        {
+          "$ref": "#/texts/11"
+        },
+        {
+          "$ref": "#/texts/12"
+        },
+        {
+          "$ref": "#/texts/13"
+        },
+        {
+          "$ref": "#/texts/17"
+        },
+        {
+          "$ref": "#/texts/21"
+        },
+        {
+          "$ref": "#/texts/22"
+        },
+        {
+          "$ref": "#/texts/26"
+        },
+        {
+          "$ref": "#/texts/27"
+        },
+        {
+          "$ref": "#/texts/28"
+        },
+        {
+          "$ref": "#/texts/29"
+        }
+      ],
+      "content_layer": "body",
+      "name": "ordered list",
+      "label": "list"
+    },
+    {
+      "self_ref": "#/groups/2",
+      "parent": {
+        "$ref": "#/texts/13"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/14"
+        },
+        {
+          "$ref": "#/texts/15"
+        },
+        {
+          "$ref": "#/texts/16"
+        }
+      ],
+      "content_layer": "body",
+      "name": "group",
+      "label": "inline"
+    },
+    {
+      "self_ref": "#/groups/3",
+      "parent": {
+        "$ref": "#/texts/17"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/18"
+        },
+        {
+          "$ref": "#/texts/19"
+        },
+        {
+          "$ref": "#/texts/20"
+        }
+      ],
+      "content_layer": "body",
+      "name": "group",
+      "label": "inline"
+    },
+    {
+      "self_ref": "#/groups/4",
+      "parent": {
+        "$ref": "#/texts/22"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/23"
+        },
+        {
+          "$ref": "#/texts/24"
+        },
+        {
+          "$ref": "#/texts/25"
+        }
+      ],
+      "content_layer": "body",
+      "name": "group",
+      "label": "inline"
+    },
+    {
+      "self_ref": "#/groups/5",
+      "parent": {
+        "$ref": "#/texts/3"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "name": "footer",
+      "label": "section"
+    },
+    {
+      "self_ref": "#/groups/6",
+      "parent": {
+        "$ref": "#/texts/30"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/31"
+        }
+      ],
+      "content_layer": "body",
+      "name": "group",
+      "label": "inline"
+    }
+  ],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/1"
+        },
+        {
+          "$ref": "#/texts/2"
+        },
+        {
+          "$ref": "#/groups/0"
+        },
+        {
+          "$ref": "#/texts/30"
+        }
+      ],
+      "content_layer": "body",
+      "label": "title",
+      "prov": [],
+      "orig": "SFS 2025:490 Förordning om ändring i förordningen (2009:607) med instruktion för Konsumentverket",
+      "text": "SFS 2025:490 Förordning om ändring i förordningen (2009:607) med instruktion för Konsumentverket"
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Utfärdad den 22 maj 2025",
+      "text": "Utfärdad den 22 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Regeringen föreskriver att 3 § förordningen (2009:607) med instruktion för Konsumentverket ska ha följande lydelse.",
+      "text": "Regeringen föreskriver att 3 § förordningen (2009:607) med instruktion för Konsumentverket ska ha följande lydelse."
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/4"
+        },
+        {
+          "$ref": "#/texts/5"
+        },
+        {
+          "$ref": "#/texts/6"
+        },
+        {
+          "$ref": "#/groups/1"
+        },
+        {
+          "$ref": "#/groups/5"
+        }
+      ],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [],
+      "orig": "3 § 1)",
+      "text": "3 § 1)",
+      "formatting": {
+        "bold": false,
+        "italic": false,
+        "underline": false,
+        "strikethrough": false,
+        "script": "super"
+      },
+      "level": 2
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/texts/3"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "1)",
+      "text": "1)"
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/texts/3"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Senaste lydelse 2023:734.",
+      "text": "Senaste lydelse 2023:734."
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/texts/3"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Myndigheten ska utöver uppgifterna i 1 och 2 §§",
+      "text": "Myndigheten ska utöver uppgifterna i 1 och 2 §§"
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "bevaka och analysera marknaderna ur ett konsumentperspektiv samt vid behov vidta eller föreslå åtgärder,",
+      "text": "bevaka och analysera marknaderna ur ett konsumentperspektiv samt vid behov vidta eller föreslå åtgärder,",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "bevaka och analysera förutsättningarna för konsumenter att agera på ett ur miljösynpunkt hållbart sätt,",
+      "text": "bevaka och analysera förutsättningarna för konsumenter att agera på ett ur miljösynpunkt hållbart sätt,",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "stödja, med bl.a. utbildning och information, konsumentverksamhet i kommunerna i frågor som rör konsumentskydd och konsumentlagstiftning samt budget- och skuldrådgivning,",
+      "text": "stödja, med bl.a. utbildning och information, konsumentverksamhet i kommunerna i frågor som rör konsumentskydd och konsumentlagstiftning samt budget- och skuldrådgivning,",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "utföra pris- och konsumtionsundersökningar som kan utgöra underlag för regeringens beslut om riksnorm enligt 12 kap. 1 § första stycket socialtjänstförordningen (2025:468),",
+      "text": "utföra pris- och konsumtionsundersökningar som kan utgöra underlag för regeringens beslut om riksnorm enligt 12 kap. 1 § första stycket socialtjänstförordningen (2025:468),",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "bistå Försäkringskassan med ett referensmaterial om vad som utgör normala levnadskostnader i syfte att underlätta Försäkringskassans bedömning av merkostnader på grund av funktionsnedsättning,",
+      "text": "bistå Försäkringskassan med ett referensmaterial om vad som utgör normala levnadskostnader i syfte att underlätta Försäkringskassans bedömning av merkostnader på grund av funktionsnedsättning,",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/12",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "vara kontaktmyndighet för svenska myndigheters samarbete med myndigheter inom EES och med Europeiska kommissionen i konsumentrelaterade frågor som rör informationssamhällets tjänster enligt lagen (2002:562) om elektronisk handel och andra informationssamhällets tjänster,",
+      "text": "vara kontaktmyndighet för svenska myndigheters samarbete med myndigheter inom EES och med Europeiska kommissionen i konsumentrelaterade frågor som rör informationssamhällets tjänster enligt lagen (2002:562) om elektronisk handel och andra informationssamhällets tjänster,",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/13",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [
+        {
+          "$ref": "#/groups/2"
+        }
+      ],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "",
+      "text": "",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/14",
+      "parent": {
+        "$ref": "#/groups/2"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "vara kontaktmyndighet enligt",
+      "text": "vara kontaktmyndighet enligt"
+    },
+    {
+      "self_ref": "#/texts/15",
+      "parent": {
+        "$ref": "#/groups/2"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Europaparlamentets och rådets förordning (EU) 2017/2394",
+      "text": "Europaparlamentets och rådets förordning (EU) 2017/2394",
+      "hyperlink": "\\rn\\document\\?id=CELEX32017R2394"
+    },
+    {
+      "self_ref": "#/texts/16",
+      "parent": {
+        "$ref": "#/groups/2"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "av den 12 december 2017 om samarbete mellan de nationella myndigheter som har tillsynsansvar för konsumentskyddslagstiftningen och om upphävande av förordning (EG) nr 2006/2004,",
+      "text": "av den 12 december 2017 om samarbete mellan de nationella myndigheter som har tillsynsansvar för konsumentskyddslagstiftningen och om upphävande av förordning (EG) nr 2006/2004,"
+    },
+    {
+      "self_ref": "#/texts/17",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [
+        {
+          "$ref": "#/groups/3"
+        }
+      ],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "",
+      "text": "",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/18",
+      "parent": {
+        "$ref": "#/groups/3"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "fullgöra de uppgifter som en behörig myndighet har enligt",
+      "text": "fullgöra de uppgifter som en behörig myndighet har enligt"
+    },
+    {
+      "self_ref": "#/texts/19",
+      "parent": {
+        "$ref": "#/groups/3"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Europaparlamentets och rådets förordning (EU) 2017/2394",
+      "text": "Europaparlamentets och rådets förordning (EU) 2017/2394",
+      "hyperlink": "\\rn\\document\\?id=CELEX32017R2394"
+    },
+    {
+      "self_ref": "#/texts/20",
+      "parent": {
+        "$ref": "#/groups/3"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": ", i fråga om att kontrollera att sådana regler som myndigheten har tillsyn över följs,",
+      "text": ", i fråga om att kontrollera att sådana regler som myndigheten har tillsyn över följs,"
+    },
+    {
+      "self_ref": "#/texts/21",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "bistå konsumenter vid gränsöverskridande tvister samt samarbeta och utbyta information med alternativa tvistlösningsorgan enligt artikel 14 respektive 17 i Europaparlamentets och rådets direktiv 2013/11/EU av den 21 maj 2013 om alternativ tvistlösning vid konsumenttvister och om ändring av förordning (EG) nr 2006/2004 och direktiv 2009/22/EG, i den ursprungliga lydelsen,",
+      "text": "bistå konsumenter vid gränsöverskridande tvister samt samarbeta och utbyta information med alternativa tvistlösningsorgan enligt artikel 14 respektive 17 i Europaparlamentets och rådets direktiv 2013/11/EU av den 21 maj 2013 om alternativ tvistlösning vid konsumenttvister och om ändring av förordning (EG) nr 2006/2004 och direktiv 2009/22/EG, i den ursprungliga lydelsen,",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/22",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [
+        {
+          "$ref": "#/groups/4"
+        }
+      ],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "",
+      "text": "",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/23",
+      "parent": {
+        "$ref": "#/groups/4"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "vara kontaktpunkt för tvistlösning online enligt",
+      "text": "vara kontaktpunkt för tvistlösning online enligt"
+    },
+    {
+      "self_ref": "#/texts/24",
+      "parent": {
+        "$ref": "#/groups/4"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Europaparlamentets och rådets förordning (EU) nr 524/2013",
+      "text": "Europaparlamentets och rådets förordning (EU) nr 524/2013",
+      "hyperlink": "\\rn\\document\\?id=CELEX32013R0524"
+    },
+    {
+      "self_ref": "#/texts/25",
+      "parent": {
+        "$ref": "#/groups/4"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "av den 21 maj 2013 om tvistlösning online vid konsumenttvister och om ändring av förordning (EG) nr 2006/2004 och direktiv 2009/22/EG,",
+      "text": "av den 21 maj 2013 om tvistlösning online vid konsumenttvister och om ändring av förordning (EG) nr 2006/2004 och direktiv 2009/22/EG,"
+    },
+    {
+      "self_ref": "#/texts/26",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "fullgöra de skyldigheter som en behörig myndighet har enligt Europaparlamentets och rådets direktiv 2014/17/EU av den 4 februari 2014 om konsumentkreditavtal som avser bostadsfastighet och om ändring av direktiven 2008/48/EG och 2013/36/EU och förordning (EU) nr 1093/2010, i den ursprungliga lydelsen, inom ramen för sin befogenhet och i fråga om att kontrollera att sådana regler som myndigheten har tillsyn över följs,",
+      "text": "fullgöra de skyldigheter som en behörig myndighet har enligt Europaparlamentets och rådets direktiv 2014/17/EU av den 4 februari 2014 om konsumentkreditavtal som avser bostadsfastighet och om ändring av direktiven 2008/48/EG och 2013/36/EU och förordning (EU) nr 1093/2010, i den ursprungliga lydelsen, inom ramen för sin befogenhet och i fråga om att kontrollera att sådana regler som myndigheten har tillsyn över följs,",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/27",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "fullgöra uppgifter som svensk representant i nätverket av europeiska konsumentcentrum,",
+      "text": "fullgöra uppgifter som svensk representant i nätverket av europeiska konsumentcentrum,",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/28",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "ta fram och utveckla statistik inom sitt verksamhetsområde, och",
+      "text": "ta fram och utveckla statistik inom sitt verksamhetsområde, och",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/29",
+      "parent": {
+        "$ref": "#/groups/1"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [],
+      "orig": "vara godkänd enhet för väckande av grupptalan enligt 9 § lagen (2023:730) om grupptalan till skydd för konsumenters kollektiva intressen.",
+      "text": "vara godkänd enhet för väckande av grupptalan enligt 9 § lagen (2023:730) om grupptalan till skydd för konsumenters kollektiva intressen.",
+      "enumerated": true,
+      "marker": ""
+    },
+    {
+      "self_ref": "#/texts/30",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [
+        {
+          "$ref": "#/groups/6"
+        },
+        {
+          "$ref": "#/texts/32"
+        },
+        {
+          "$ref": "#/texts/33"
+        },
+        {
+          "$ref": "#/texts/34"
+        },
+        {
+          "$ref": "#/texts/35"
+        }
+      ],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [],
+      "orig": "Ikraftträdande- och övergångsbestämmelser",
+      "text": "Ikraftträdande- och övergångsbestämmelser",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/31",
+      "parent": {
+        "$ref": "#/groups/6"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "SFS 2025:490",
+      "text": "SFS 2025:490",
+      "hyperlink": "\\rn\\goext.aspx?ref=2025490&lang=sv"
+    },
+    {
+      "self_ref": "#/texts/32",
+      "parent": {
+        "$ref": "#/texts/30"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Denna förordning träder i kraft den 1 juli 2025.",
+      "text": "Denna förordning träder i kraft den 1 juli 2025."
+    },
+    {
+      "self_ref": "#/texts/33",
+      "parent": {
+        "$ref": "#/texts/30"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "På regeringens vägnar",
+      "text": "På regeringens vägnar"
+    },
+    {
+      "self_ref": "#/texts/34",
+      "parent": {
+        "$ref": "#/texts/30"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "ERIK SLOTTNER",
+      "text": "ERIK SLOTTNER"
+    },
+    {
+      "self_ref": "#/texts/35",
+      "parent": {
+        "$ref": "#/texts/30"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Linda Utterberg (Finansdepartementet)",
+      "text": "Linda Utterberg (Finansdepartementet)"
+    }
+  ],
+  "pictures": [],
+  "tables": [],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {}
+}

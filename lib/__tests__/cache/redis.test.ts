@@ -27,11 +27,11 @@ describe('Redis Cache Module', () => {
     // Save original env vars
     originalUrl = process.env.UPSTASH_REDIS_REST_URL
     originalToken = process.env.UPSTASH_REDIS_REST_TOKEN
-    
+
     // Clear Redis env vars for unit tests (test fallback behavior)
     delete process.env.UPSTASH_REDIS_REST_URL
     delete process.env.UPSTASH_REDIS_REST_TOKEN
-    
+
     // Reinitialize Redis with no-op client
     reinitializeRedis()
   })
@@ -40,7 +40,7 @@ describe('Redis Cache Module', () => {
     // Restore original env vars
     if (originalUrl) process.env.UPSTASH_REDIS_REST_URL = originalUrl
     if (originalToken) process.env.UPSTASH_REDIS_REST_TOKEN = originalToken
-    
+
     // Reinitialize Redis with real client
     reinitializeRedis()
   })

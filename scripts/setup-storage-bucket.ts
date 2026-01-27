@@ -20,7 +20,9 @@ async function main() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !serviceRoleKey) {
-    console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
+    console.error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
+    )
     process.exit(1)
   }
 
@@ -40,16 +42,20 @@ async function main() {
   console.log()
 
   // Check if bucket exists
-  const { data: buckets, error: listError } = await supabase.storage.listBuckets()
+  const { data: buckets, error: listError } =
+    await supabase.storage.listBuckets()
 
   if (listError) {
     console.error('Error listing buckets:', listError.message)
     process.exit(1)
   }
 
-  console.log('Existing buckets:', buckets?.map(b => b.name).join(', ') || 'none')
+  console.log(
+    'Existing buckets:',
+    buckets?.map((b) => b.name).join(', ') || 'none'
+  )
 
-  const existingBucket = buckets?.find(b => b.name === BUCKET_NAME)
+  const existingBucket = buckets?.find((b) => b.name === BUCKET_NAME)
 
   if (existingBucket) {
     console.log(`\nBucket "${BUCKET_NAME}" already exists.`)

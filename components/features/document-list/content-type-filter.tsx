@@ -11,7 +11,7 @@ import type { ContentType } from '@prisma/client'
 
 interface ContentTypeFilterProps {
   activeFilter: ContentType[] | null
-  onFilterChange: (groupId: string | null) => void
+  onFilterChange: (_groupId: string | null) => void
 }
 
 export function ContentTypeFilter({

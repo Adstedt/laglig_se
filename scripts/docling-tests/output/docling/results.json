@@ -1,0 +1,47 @@
+[
+  {
+    "sfs": "2025:491",
+    "success": true,
+    "html_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-491.html",
+    "md_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-491.md",
+    "json_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-491.json",
+    "html_length": 4648,
+    "md_length": 1726
+  },
+  {
+    "sfs": "2025:490",
+    "success": true,
+    "html_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-490.html",
+    "md_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-490.md",
+    "json_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-490.json",
+    "html_length": 6732,
+    "md_length": 3521
+  },
+  {
+    "sfs": "2025:489",
+    "success": true,
+    "html_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-489.html",
+    "md_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-489.md",
+    "json_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-489.json",
+    "html_length": 3724,
+    "md_length": 971
+  },
+  {
+    "sfs": "2025:488",
+    "success": true,
+    "html_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-488.html",
+    "md_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-488.md",
+    "json_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-488.json",
+    "html_length": 3737,
+    "md_length": 984
+  },
+  {
+    "sfs": "2025:487",
+    "success": true,
+    "html_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-487.html",
+    "md_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-487.md",
+    "json_path": "C:\\Users\\audri\\Desktop\\dev\\laglig_se\\scripts\\docling-tests\\output\\docling\\2025-487.json",
+    "html_length": 3953,
+    "md_length": 1199
+  }
+]

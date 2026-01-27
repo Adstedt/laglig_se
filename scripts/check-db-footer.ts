@@ -4,7 +4,7 @@ const prisma = new PrismaClient()
 async function main() {
   const doc = await prisma.legalDocument.findFirst({
     where: { document_number: 'SFS 2025:57' },
-    select: { html_content: true, updated_at: true }
+    select: { html_content: true, updated_at: true },
   })
 
   const html = doc?.html_content || ''
@@ -14,7 +14,10 @@ async function main() {
   console.log('')
 
   // Check for key sections
-  console.log('Has Samhällsintroduktion:', html.includes('Samhällsintroduktion'))
+  console.log(
+    'Has Samhällsintroduktion:',
+    html.includes('Samhällsintroduktion')
+  )
   console.log('Has Ikraftträdande:', html.includes('Ikraftträdande'))
   console.log('Has footer BACK0001:', html.includes('BACK0001'))
   console.log('')

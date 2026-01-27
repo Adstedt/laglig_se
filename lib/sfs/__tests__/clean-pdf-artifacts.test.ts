@@ -25,7 +25,9 @@ describe('cleanPdfArtifacts', () => {
     const input = 'SFS 2017:1309\n\nLag om ändring i marknadsföringslagen'
     const result = cleanPdfArtifacts(input)
     // The SFS number alone on a line should be removed
-    expect(result?.split('\n').filter(l => l.trim() === 'SFS 2017:1309')).toHaveLength(0)
+    expect(
+      result?.split('\n').filter((l) => l.trim() === 'SFS 2017:1309')
+    ).toHaveLength(0)
   })
 
   it('removes page numbers', () => {
@@ -96,7 +98,8 @@ Mer text här.`
   })
 
   it('truncates at sentence boundary', () => {
-    const input = 'Detta är en lång mening som innehåller många ord. Detta är en annan mening. Och en till.'
+    const input =
+      'Detta är en lång mening som innehåller många ord. Detta är en annan mening. Och en till.'
     const result = extractCleanSummary(input, 60)
     expect(result?.endsWith('.')).toBe(true)
     expect(result!.length).toBeLessThanOrEqual(70) // Some margin for finding break point

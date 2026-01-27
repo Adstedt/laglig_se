@@ -75,7 +75,7 @@ const MISSING_SFS = [
 const DELAY_BETWEEN_REQUESTS = 1000 // 1 second between requests
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -129,13 +129,12 @@ async function fetchLawFromWebsite(sfsNumber: string): Promise<{
 
     // Try to extract the document content
     // Pattern 1: Look for the law text container
-    const contentMatch = html.match(
-      /<div[^>]*class="[^"]*document-content[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/main>/i
-    ) || html.match(
-      /<article[^>]*>([\s\S]*?)<\/article>/i
-    ) || html.match(
-      /<main[^>]*>([\s\S]*?)<\/main>/i
-    )
+    const contentMatch =
+      html.match(
+        /<div[^>]*class="[^"]*document-content[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/main>/i
+      ) ||
+      html.match(/<article[^>]*>([\s\S]*?)<\/article>/i) ||
+      html.match(/<main[^>]*>([\s\S]*?)<\/main>/i)
 
     if (contentMatch) {
       contentHtml = contentMatch[1]
@@ -180,9 +179,10 @@ async function fetchLawFromWebsite(sfsNumber: string): Promise<{
     // Extract publication date from metadata or content
     // Pattern: "Utfärdad: 1905-03-16" or similar
     let publicationDate: Date | null = null
-    const dateMatch = html.match(/Utf[äa]rdad[:\s]+(\d{4})-(\d{2})-(\d{2})/i)
-      || html.match(/Utfärdad[:\s]+(\d{4})-(\d{2})-(\d{2})/i)
-      || html.match(/(\d{4})-(\d{2})-(\d{2})/)
+    const dateMatch =
+      html.match(/Utf[äa]rdad[:\s]+(\d{4})-(\d{2})-(\d{2})/i) ||
+      html.match(/Utfärdad[:\s]+(\d{4})-(\d{2})-(\d{2})/i) ||
+      html.match(/(\d{4})-(\d{2})-(\d{2})/)
 
     if (dateMatch) {
       const year = parseInt(dateMatch[1])
@@ -205,7 +205,10 @@ async function fetchLawFromWebsite(sfsNumber: string): Promise<{
       sourceUrl: url,
     }
   } catch (error) {
-    console.error(`  Error fetching ${url}:`, error instanceof Error ? error.message : error)
+    console.error(
+      `  Error fetching ${url}:`,
+      error instanceof Error ? error.message : error
+    )
     return null
   }
 }
@@ -303,7 +306,10 @@ async function ingestMissingSFS() {
       console.log(`  ✅ Inserted: ${lawData.title.substring(0, 60)}...`)
       inserted++
     } catch (error) {
-      console.error(`  ❌ Database error:`, error instanceof Error ? error.message : error)
+      console.error(
+        `  ❌ Database error:`,
+        error instanceof Error ? error.message : error
+      )
       failed++
     }
 

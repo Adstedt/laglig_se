@@ -35,7 +35,10 @@ async function findMissingSFS() {
   }
 
   // Phase 1: DESC pages 2-100
-  const descPages = Math.min(Math.ceil(totalCount / CONFIG.PAGE_SIZE), CONFIG.API_MAX_PAGE)
+  const descPages = Math.min(
+    Math.ceil(totalCount / CONFIG.PAGE_SIZE),
+    CONFIG.API_MAX_PAGE
+  )
   console.log(`Fetching DESC pages 2-${descPages}...`)
 
   for (let page = 2; page <= descPages; page++) {
@@ -75,7 +78,7 @@ async function findMissingSFS() {
     select: { document_number: true },
   })
 
-  const dbSfsNumbers = new Set(dbDocuments.map(d => d.document_number))
+  const dbSfsNumbers = new Set(dbDocuments.map((d) => d.document_number))
   console.log(`Database SFS_LAW count: ${dbSfsNumbers.size}`)
 
   // Step 3: Find the differences

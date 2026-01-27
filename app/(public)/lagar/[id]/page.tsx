@@ -80,9 +80,6 @@ export async function generateStaticParams() {
       '@/lib/cache/cached-queries'
     )
     const topLaws = await getTopLawsForStaticGeneration(50)
-    console.log(
-      `[generateStaticParams] Pre-generating ${topLaws.length} law pages`
-    )
     return topLaws.map((law) => ({ id: law.slug }))
   } catch (error) {
     console.error('[generateStaticParams] Error fetching top laws:', error)
@@ -297,7 +294,7 @@ export default async function LawPage({ params }: PageProps) {
   if (!law) {
     notFound()
   }
-  
+
   // Track visit for cache warming optimization (non-blocking)
   if (law.id) {
     import('@/app/actions/track-visit').then(({ trackDocumentVisit }) => {

@@ -7,7 +7,9 @@ interface FloatingImplementationsButtonProps {
   implementationCount: number
 }
 
-export function FloatingImplementationsButton({ implementationCount }: FloatingImplementationsButtonProps) {
+export function FloatingImplementationsButton({
+  implementationCount,
+}: FloatingImplementationsButtonProps) {
   const handleScrollToImplementations = () => {
     // Scroll to the Swedish implementations section
     const element = document.querySelector('[data-implementations-section]')

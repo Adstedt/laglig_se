@@ -42,7 +42,9 @@ const CONFIG = {
 // Parse command line args
 const args = process.argv.slice(2)
 const limitArg = args.find((a) => a.startsWith('--limit'))
-const LIMIT = limitArg ? parseInt(args[args.indexOf(limitArg) + 1] || '0', 10) : 0
+const LIMIT = limitArg
+  ? parseInt(args[args.indexOf(limitArg) + 1] || '0', 10)
+  : 0
 const FORCE = args.includes('--force')
 
 // ============================================================================
@@ -77,7 +79,11 @@ function formatDuration(ms: number): string {
   }
 }
 
-function calculateETA(processed: number, total: number, startTime: number): string {
+function calculateETA(
+  processed: number,
+  total: number,
+  startTime: number
+): string {
   if (processed === 0) return 'calculating...'
 
   const elapsed = Date.now() - startTime
@@ -119,10 +125,14 @@ async function backfillEUContent(): Promise<void> {
     // Get EU documents that need content
     const whereClause = FORCE
       ? {
-          content_type: { in: [ContentType.EU_REGULATION, ContentType.EU_DIRECTIVE] },
+          content_type: {
+            in: [ContentType.EU_REGULATION, ContentType.EU_DIRECTIVE],
+          },
         }
       : {
-          content_type: { in: [ContentType.EU_REGULATION, ContentType.EU_DIRECTIVE] },
+          content_type: {
+            in: [ContentType.EU_REGULATION, ContentType.EU_DIRECTIVE],
+          },
           OR: [{ full_text: null }, { html_content: null }],
         }
 
@@ -223,10 +233,14 @@ async function backfillEUContent(): Promise<void> {
       stats.processed++
 
       // Log progress
-      if (stats.processed % CONFIG.logEveryN === 0 || stats.processed === stats.total) {
+      if (
+        stats.processed % CONFIG.logEveryN === 0 ||
+        stats.processed === stats.total
+      ) {
         const percentage = ((stats.processed / stats.total) * 100).toFixed(1)
         const eta = calculateETA(stats.processed, stats.total, stats.startTime)
-        const docType = doc.content_type === ContentType.EU_REGULATION ? 'REG' : 'DIR'
+        const docType =
+          doc.content_type === ContentType.EU_REGULATION ? 'REG' : 'DIR'
 
         console.log(
           `   [${stats.processed.toLocaleString()}/${stats.total.toLocaleString()}] (${percentage}%) - ` +
@@ -263,7 +277,9 @@ async function backfillEUContent(): Promise<void> {
   console.log('')
 
   if (stats.updated > 0) {
-    console.log(`✅ Backfill complete! ${stats.updated.toLocaleString()} documents now have full text content.`)
+    console.log(
+      `✅ Backfill complete! ${stats.updated.toLocaleString()} documents now have full text content.`
+    )
   } else {
     console.log('⚠️ No documents were updated.')
   }

@@ -39,10 +39,10 @@ import {
 
 interface ManageListModalProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   mode: 'create' | 'edit'
   list?: DocumentListSummary | undefined
-  onCreated: (listId: string) => void
+  onCreated: (_listId: string) => void
   onUpdated: () => void
   onDeleted: () => void
 }
@@ -56,7 +56,6 @@ export function ManageListModal({
   onUpdated,
   onDeleted,
 }: ManageListModalProps) {
-
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isDefault, setIsDefault] = useState(false)
@@ -202,9 +201,7 @@ export function ManageListModal({
               />
             </div>
 
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
             <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
               {mode === 'edit' && list && !list.isDefault && (

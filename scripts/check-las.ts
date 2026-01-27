@@ -9,8 +9,8 @@ async function check() {
       title: true,
       document_number: true,
       status: true,
-      full_text: true
-    }
+      full_text: true,
+    },
   })
 
   if (las) {
@@ -21,7 +21,9 @@ async function check() {
     console.log(las.full_text?.substring(0, 1000))
 
     // Kolla om texten innehåller "har upphävts"
-    const hasUpphavts = las.full_text?.toLowerCase().includes('har upphävts genom')
+    const hasUpphavts = las.full_text
+      ?.toLowerCase()
+      .includes('har upphävts genom')
     console.log('\nInnehåller "har upphävts genom":', hasUpphavts)
   } else {
     console.log('Hittade inte SFS 1982:80')

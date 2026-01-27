@@ -7,22 +7,30 @@ const prisma = new PrismaClient()
 
 async function main() {
   const amendmentDocs = await prisma.amendmentDocument.count()
-  
-  const legalDocsAmendments = await prisma.legalDocument.count({ 
-    where: { content_type: 'SFS_AMENDMENT' } 
+
+  const legalDocsAmendments = await prisma.legalDocument.count({
+    where: { content_type: 'SFS_AMENDMENT' },
   })
-  const withHtml = await prisma.legalDocument.count({ 
-    where: { content_type: 'SFS_AMENDMENT', html_content: { not: '' } } 
+  const withHtml = await prisma.legalDocument.count({
+    where: { content_type: 'SFS_AMENDMENT', html_content: { not: '' } },
   })
-  
+
   console.log('=== Migration Status ===')
   console.log('AmendmentDocument total:', amendmentDocs)
   console.log('')
   console.log('LegalDocument (SFS_AMENDMENT):', legalDocsAmendments)
   console.log('  - with html_content:', withHtml)
-  console.log('  - without html_content (need LLM):', legalDocsAmendments - withHtml)
+  console.log(
+    '  - without html_content (need LLM):',
+    legalDocsAmendments - withHtml
+  )
   console.log('')
-  console.log('Missing from LegalDocument:', amendmentDocs - legalDocsAmendments)
+  console.log(
+    'Missing from LegalDocument:',
+    amendmentDocs - legalDocsAmendments
+  )
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

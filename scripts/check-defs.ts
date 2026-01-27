@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient()
 
 async function main() {
   const doc = await prisma.legalDocument.findFirst({
     where: { document_number: 'SFS 2025:1461' },
-    select: { full_text: true }
-  });
+    select: { full_text: true },
+  })
 
   if (doc?.full_text) {
     // Find the definition list section
@@ -18,7 +18,7 @@ async function main() {
     }
   }
 
-  await prisma.$disconnect();
+  await prisma.$disconnect()
 }
 
-main().catch(console.error);
+main().catch(console.error)

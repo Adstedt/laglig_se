@@ -13,7 +13,10 @@ async function investigate() {
   console.log('')
 
   const allDocs: { dok_id: string; beteckning: string; titel: string }[] = []
-  const seenSFS = new Map<string, { dok_id: string; beteckning: string; titel: string }[]>()
+  const seenSFS = new Map<
+    string,
+    { dok_id: string; beteckning: string; titel: string }[]
+  >()
 
   // Fetch all pages (up to 100 pages * 100 per page = 10,000)
   // Then fetch ASC to get the rest
@@ -46,16 +49,26 @@ async function investigate() {
 
     for (const doc of docs) {
       const sfsNumber = `SFS ${doc.beteckning}`
-      allDocs.push({ dok_id: doc.dok_id, beteckning: doc.beteckning, titel: doc.titel })
+      allDocs.push({
+        dok_id: doc.dok_id,
+        beteckning: doc.beteckning,
+        titel: doc.titel,
+      })
 
       if (!seenSFS.has(sfsNumber)) {
         seenSFS.set(sfsNumber, [])
       }
-      seenSFS.get(sfsNumber)!.push({ dok_id: doc.dok_id, beteckning: doc.beteckning, titel: doc.titel })
+      seenSFS.get(sfsNumber)!.push({
+        dok_id: doc.dok_id,
+        beteckning: doc.beteckning,
+        titel: doc.titel,
+      })
     }
 
     if (page % 10 === 0) {
-      console.log(`  Fetched page ${page}... (${allDocs.length} docs, ${seenSFS.size} unique)`)
+      console.log(
+        `  Fetched page ${page}... (${allDocs.length} docs, ${seenSFS.size} unique)`
+      )
     }
   }
 
@@ -83,16 +96,26 @@ async function investigate() {
 
     for (const doc of docs) {
       const sfsNumber = `SFS ${doc.beteckning}`
-      allDocs.push({ dok_id: doc.dok_id, beteckning: doc.beteckning, titel: doc.titel })
+      allDocs.push({
+        dok_id: doc.dok_id,
+        beteckning: doc.beteckning,
+        titel: doc.titel,
+      })
 
       if (!seenSFS.has(sfsNumber)) {
         seenSFS.set(sfsNumber, [])
       }
-      seenSFS.get(sfsNumber)!.push({ dok_id: doc.dok_id, beteckning: doc.beteckning, titel: doc.titel })
+      seenSFS.get(sfsNumber)!.push({
+        dok_id: doc.dok_id,
+        beteckning: doc.beteckning,
+        titel: doc.titel,
+      })
     }
 
     if (page % 10 === 0) {
-      console.log(`  Fetched page ${page}... (${allDocs.length} docs, ${seenSFS.size} unique)`)
+      console.log(
+        `  Fetched page ${page}... (${allDocs.length} docs, ${seenSFS.size} unique)`
+      )
     }
   }
 
@@ -131,7 +154,7 @@ async function investigate() {
 
   // Check for different dok_ids with same beteckning
   const sameBeteckningDifferentId = duplicates.filter(([_, docs]) => {
-    const ids = new Set(docs.map(d => d.dok_id))
+    const ids = new Set(docs.map((d) => d.dok_id))
     return ids.size > 1
   })
 
@@ -146,7 +169,9 @@ async function investigate() {
     for (const [sfsNumber, docs] of sameBeteckningDifferentId.slice(0, 10)) {
       console.log(`${sfsNumber}:`)
       for (const doc of docs) {
-        console.log(`  dok_id: ${doc.dok_id}, titel: ${doc.titel?.substring(0, 50)}`)
+        console.log(
+          `  dok_id: ${doc.dok_id}, titel: ${doc.titel?.substring(0, 50)}`
+        )
       }
       console.log('')
     }

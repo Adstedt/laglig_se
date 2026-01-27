@@ -52,7 +52,14 @@ export async function archiveDocumentVersion(
   tx: TransactionClient,
   params: ArchiveVersionParams
 ): Promise<DocumentVersion> {
-  const { documentId, fullText, htmlContent, amendmentSfs, sourceSystemdatum, changedSections } = params
+  const {
+    documentId,
+    fullText,
+    htmlContent,
+    amendmentSfs,
+    sourceSystemdatum,
+    changedSections,
+  } = params
 
   // Get current highest version number
   const latestVersion = await tx.documentVersion.findFirst({
@@ -182,7 +189,8 @@ export async function createInitialVersion(
     sourceSystemdatum: Date | null
   }
 ): Promise<DocumentVersion | null> {
-  const { documentId, fullText, htmlContent, amendmentSfs, sourceSystemdatum } = params
+  const { documentId, fullText, htmlContent, amendmentSfs, sourceSystemdatum } =
+    params
 
   // Check if version 1 already exists
   const existing = await tx.documentVersion.findUnique({

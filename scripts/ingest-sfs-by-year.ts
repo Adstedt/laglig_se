@@ -15,7 +15,11 @@
  */
 
 import { prisma } from '../lib/prisma'
-import { fetchLawFullText, fetchLawHTML, generateSlug } from '../lib/external/riksdagen'
+import {
+  fetchLawFullText,
+  fetchLawHTML,
+  generateSlug,
+} from '../lib/external/riksdagen'
 import { ContentType, DocumentStatus } from '@prisma/client'
 
 // ============================================================================
@@ -32,8 +36,15 @@ const CONFIG = {
 
 // Parse command line arguments
 const args = process.argv.slice(2)
-const START_YEAR = parseInt(args.find(a => a.startsWith('--start-year='))?.split('=')[1] || '1757', 10)
-const END_YEAR = parseInt(args.find(a => a.startsWith('--end-year='))?.split('=')[1] || new Date().getFullYear().toString(), 10)
+const START_YEAR = parseInt(
+  args.find((a) => a.startsWith('--start-year='))?.split('=')[1] || '1757',
+  10
+)
+const END_YEAR = parseInt(
+  args.find((a) => a.startsWith('--end-year='))?.split('=')[1] ||
+    new Date().getFullYear().toString(),
+  10
+)
 const DRY_RUN = args.includes('--dry-run')
 
 // ============================================================================
@@ -64,7 +75,11 @@ interface YearStats {
 async function fetchSFSByYear(
   year: number,
   page: number = 1
-): Promise<{ documents: RiksdagenDocument[]; totalCount: number; hasMore: boolean }> {
+): Promise<{
+  documents: RiksdagenDocument[]
+  totalCount: number
+  hasMore: boolean
+}> {
   const url = new URL('https://data.riksdagen.se/dokumentlista/')
   url.searchParams.set('doktyp', 'sfs')
   url.searchParams.set('utformat', 'json')
@@ -99,7 +114,7 @@ async function fetchSFSByYear(
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 // ============================================================================
@@ -183,8 +198,15 @@ async function ingestByYear() {
         const sfsNumber = `SFS ${doc.beteckning}`
 
         // Progress logging
-        if ((yearStats.inserted + yearStats.skipped + yearStats.failed) % CONFIG.PROGRESS_LOG_INTERVAL === 0 && i > 0) {
-          console.log(`   Progress: ${i}/${allDocuments.length} (Inserted: ${yearStats.inserted}, Skipped: ${yearStats.skipped})`)
+        if (
+          (yearStats.inserted + yearStats.skipped + yearStats.failed) %
+            CONFIG.PROGRESS_LOG_INTERVAL ===
+            0 &&
+          i > 0
+        ) {
+          console.log(
+            `   Progress: ${i}/${allDocuments.length} (Inserted: ${yearStats.inserted}, Skipped: ${yearStats.skipped})`
+          )
         }
 
         // Check if already exists
@@ -242,16 +264,23 @@ async function ingestByYear() {
           yearStats.inserted++
           await sleep(CONFIG.DELAY_BETWEEN_REQUESTS)
         } catch (error) {
-          console.error(`   ❌ Error processing ${sfsNumber}:`, error instanceof Error ? error.message : error)
+          console.error(
+            `   ❌ Error processing ${sfsNumber}:`,
+            error instanceof Error ? error.message : error
+          )
           yearStats.failed++
         }
       }
 
       // Year summary
-      console.log(`   ✅ Year ${year} complete: Inserted ${yearStats.inserted}, Skipped ${yearStats.skipped}, Failed ${yearStats.failed}`)
-
+      console.log(
+        `   ✅ Year ${year} complete: Inserted ${yearStats.inserted}, Skipped ${yearStats.skipped}, Failed ${yearStats.failed}`
+      )
     } catch (error) {
-      console.error(`❌ Error processing year ${year}:`, error instanceof Error ? error.message : error)
+      console.error(
+        `❌ Error processing year ${year}:`,
+        error instanceof Error ? error.message : error
+      )
     }
 
     // Update global stats
@@ -297,13 +326,17 @@ async function ingestByYear() {
   console.log(`📊 Net change: +${finalDbCount - initialDbCount}`)
 
   // Verify against current API total
-  const verifyResponse = await fetch('https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json&sz=1')
+  const verifyResponse = await fetch(
+    'https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json&sz=1'
+  )
   const verifyData = await verifyResponse.json()
   const currentApiTotal = parseInt(verifyData.dokumentlista['@traffar'], 10)
 
   console.log('')
   console.log(`📊 Current API total: ${currentApiTotal}`)
-  console.log(`📊 DB coverage: ${((finalDbCount / currentApiTotal) * 100).toFixed(2)}%`)
+  console.log(
+    `📊 DB coverage: ${((finalDbCount / currentApiTotal) * 100).toFixed(2)}%`
+  )
 
   if (finalDbCount < currentApiTotal) {
     console.log(`⚠️  Gap remaining: ${currentApiTotal - finalDbCount} laws`)
@@ -312,12 +345,16 @@ async function ingestByYear() {
   }
 
   // List years with issues
-  const yearsWithGaps = yearStatsList.filter(y => y.failed > 0 || y.fetched < y.apiCount)
+  const yearsWithGaps = yearStatsList.filter(
+    (y) => y.failed > 0 || y.fetched < y.apiCount
+  )
   if (yearsWithGaps.length > 0) {
     console.log('')
     console.log('⚠️  Years with potential issues:')
-    yearsWithGaps.forEach(y => {
-      console.log(`   ${y.year}: API=${y.apiCount}, Fetched=${y.fetched}, Failed=${y.failed}`)
+    yearsWithGaps.forEach((y) => {
+      console.log(
+        `   ${y.year}: API=${y.apiCount}, Fetched=${y.fetched}, Failed=${y.failed}`
+      )
     })
   }
 

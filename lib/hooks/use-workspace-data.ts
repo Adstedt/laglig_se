@@ -1,9 +1,9 @@
 /**
  * useWorkspaceData Hook (Story P.2)
- * 
+ *
  * React hook that manages workspace data fetching with caching.
  * Coordinates between client-side store and server-side cache.
- * 
+ *
  * @see docs/stories/P.2.systematic-caching.story.md
  */
 
@@ -11,11 +11,11 @@
 
 import { useEffect, useCallback, useRef } from 'react'
 import { useWorkspaceStore } from '@/lib/stores/workspace-store'
-import type { 
-  Workspace, 
-  WorkspaceMember, 
+import type {
+  Workspace,
+  WorkspaceMember,
   LawList,
-  WorkspaceRole 
+  WorkspaceRole,
 } from '@prisma/client'
 
 interface UseWorkspaceDataOptions {
@@ -59,7 +59,7 @@ export function useWorkspaceData(
     fetchLists = true,
     refreshInterval,
   } = options
-  
+
   const {
     currentWorkspace,
     currentRole,
@@ -75,30 +75,30 @@ export function useWorkspaceData(
     setLoadingMembers,
     setLoadingLists,
   } = useWorkspaceStore()
-  
+
   const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const fetchInProgressRef = useRef({
     members: false,
     lists: false,
   })
-  
+
   /**
    * Fetch workspace members from API
    */
   const fetchWorkspaceMembers = useCallback(async () => {
     if (!workspaceId || fetchInProgressRef.current.members) return
-    
+
     fetchInProgressRef.current.members = true
     setLoadingMembers(true)
-    
+
     const startTime = performance.now()
-    
+
     try {
       const response = await fetch(`/api/workspace/${workspaceId}/members`)
       if (response.ok) {
         const data = await response.json()
         setMembers(data.members)
-        
+
         const duration = performance.now() - startTime
         if (duration < 100) {
           console.log(`[CACHE HIT] Members loaded in ${duration.toFixed(2)}ms`)
@@ -111,24 +111,24 @@ export function useWorkspaceData(
       fetchInProgressRef.current.members = false
     }
   }, [workspaceId, setMembers, setLoadingMembers])
-  
+
   /**
    * Fetch law lists from API
    */
   const fetchLawLists = useCallback(async () => {
     if (!workspaceId || fetchInProgressRef.current.lists) return
-    
+
     fetchInProgressRef.current.lists = true
     setLoadingLists(true)
-    
+
     const startTime = performance.now()
-    
+
     try {
       const response = await fetch(`/api/workspace/${workspaceId}/lists`)
       if (response.ok) {
         const data = await response.json()
         setLawLists(data.lists)
-        
+
         const duration = performance.now() - startTime
         if (duration < 100) {
           console.log(`[CACHE HIT] Lists loaded in ${duration.toFixed(2)}ms`)
@@ -141,21 +141,21 @@ export function useWorkspaceData(
       fetchInProgressRef.current.lists = false
     }
   }, [workspaceId, setLawLists, setLoadingLists])
-  
+
   /**
    * Check if data needs refetching based on cache TTL
    */
   const checkAndFetchData = useCallback(async () => {
     const tasks: Promise<void>[] = []
-    
+
     if (fetchMembers && shouldRefetchMembers && shouldRefetchMembers()) {
       tasks.push(fetchWorkspaceMembers())
     }
-    
+
     if (fetchLists && shouldRefetchLists && shouldRefetchLists()) {
       tasks.push(fetchLawLists())
     }
-    
+
     if (tasks.length > 0) {
       await Promise.all(tasks)
     }
@@ -167,25 +167,25 @@ export function useWorkspaceData(
     fetchWorkspaceMembers,
     fetchLawLists,
   ])
-  
+
   /**
    * Force refetch functions
    */
   const refetchMembers = useCallback(async () => {
     await fetchWorkspaceMembers()
   }, [fetchWorkspaceMembers])
-  
+
   const refetchLists = useCallback(async () => {
     await fetchLawLists()
   }, [fetchLawLists])
-  
+
   const refetchAll = useCallback(async () => {
     await Promise.all([
       fetchMembers ? fetchWorkspaceMembers() : Promise.resolve(),
       fetchLists ? fetchLawLists() : Promise.resolve(),
     ])
   }, [fetchMembers, fetchLists, fetchWorkspaceMembers, fetchLawLists])
-  
+
   /**
    * Initial data fetch and refresh interval
    */
@@ -193,7 +193,7 @@ export function useWorkspaceData(
     if (workspaceId || currentWorkspace) {
       // Initial fetch
       checkAndFetchData()
-      
+
       // Set up refresh interval if specified
       if (refreshInterval) {
         intervalRef.current = setInterval(() => {
@@ -201,14 +201,14 @@ export function useWorkspaceData(
         }, refreshInterval)
       }
     }
-    
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
       }
     }
   }, [workspaceId, currentWorkspace, refreshInterval, checkAndFetchData])
-  
+
   return {
     workspace: currentWorkspace,
     members,
@@ -238,7 +238,7 @@ export function useWorkspaceData(
 export function usePrefetchWorkspaceData() {
   const setMembers = useWorkspaceStore((state) => state.setMembers)
   const setLawLists = useWorkspaceStore((state) => state.setLawLists)
-  
+
   const prefetchWorkspace = useCallback(
     async (workspaceId: string) => {
       try {
@@ -247,12 +247,12 @@ export function usePrefetchWorkspaceData() {
           fetch(`/api/workspace/${workspaceId}/members`),
           fetch(`/api/workspace/${workspaceId}/lists`),
         ])
-        
+
         if (membersRes.ok) {
           const membersData = await membersRes.json()
           setMembers(membersData.members)
         }
-        
+
         if (listsRes.ok) {
           const listsData = await listsRes.json()
           setLawLists(listsData.lists)
@@ -263,7 +263,7 @@ export function usePrefetchWorkspaceData() {
     },
     [setMembers, setLawLists]
   )
-  
+
   return { prefetchWorkspace }
 }
 
@@ -276,7 +276,7 @@ export function useWorkspacePerformance() {
     cacheHits: 0,
     totalDuration: 0,
   })
-  
+
   const trackPerformance = useCallback((cached: boolean, duration: number) => {
     performanceRef.current.fetchCount++
     if (cached) {
@@ -284,7 +284,7 @@ export function useWorkspacePerformance() {
     }
     performanceRef.current.totalDuration += duration
   }, [])
-  
+
   const getMetrics = useCallback(() => {
     const { fetchCount, cacheHits, totalDuration } = performanceRef.current
     return {
@@ -294,7 +294,7 @@ export function useWorkspacePerformance() {
       averageDuration: fetchCount > 0 ? totalDuration / fetchCount : 0,
     }
   }, [])
-  
+
   const resetMetrics = useCallback(() => {
     performanceRef.current = {
       fetchCount: 0,
@@ -302,7 +302,7 @@ export function useWorkspacePerformance() {
       totalDuration: 0,
     }
   }, [])
-  
+
   return {
     trackPerformance,
     getMetrics,

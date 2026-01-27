@@ -1,9 +1,9 @@
 /**
  * Optimized Image Component (Story P.2)
- * 
+ *
  * Wrapper around Next.js Image with lazy loading and WebP support.
  * Implements AC: 19-21 for static asset optimization.
- * 
+ *
  * @see docs/stories/P.2.systematic-caching.story.md
  */
 
@@ -112,7 +112,7 @@ export function OptimizedImage({
               )}
             />
           )}
-          
+
           {/* Optimized image */}
           {fill ? (
             <Image
@@ -189,10 +189,7 @@ export function ResponsiveImage({
   quality?: number
 }) {
   return (
-    <div 
-      className={cn('relative w-full', className)}
-      style={{ aspectRatio }}
-    >
+    <div className={cn('relative w-full', className)} style={{ aspectRatio }}>
       <OptimizedImage
         src={src}
         alt={alt}

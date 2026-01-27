@@ -6,7 +6,8 @@ async function captureScreenshot() {
   const page = await context.newPage()
 
   // Navigate to the specific amendment page
-  const url = 'http://localhost:3000/lagar/andringar/lag-om-andring-i-lagen-om-tillaggsskatt-2025-1461'
+  const url =
+    'http://localhost:3000/lagar/andringar/lag-om-andring-i-lagen-om-tillaggsskatt-2025-1461'
   console.log(`Navigating to: ${url}`)
 
   await page.goto(url, { waitUntil: 'networkidle' })

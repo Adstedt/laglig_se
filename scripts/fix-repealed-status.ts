@@ -62,18 +62,18 @@ async function fixRepealedStatus() {
   // Verify LAS is now ACTIVE
   const las = await prisma.legalDocument.findFirst({
     where: { document_number: 'SFS 1982:80' },
-    select: { title: true, status: true }
+    select: { title: true, status: true },
   })
   console.log(`\nVerification - LAS (SFS 1982:80): ${las?.status}`)
 
   // Show final stats
   const stats = await prisma.legalDocument.groupBy({
     by: ['status'],
-    _count: true
+    _count: true,
   })
 
   console.log('\n=== Final status distribution ===')
-  stats.forEach(s => console.log(`${s.status}: ${s._count}`))
+  stats.forEach((s) => console.log(`${s.status}: ${s._count}`))
 }
 
 fixRepealedStatus()

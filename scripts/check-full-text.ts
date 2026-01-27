@@ -11,7 +11,7 @@ async function main() {
     select: {
       full_text: true,
       html_content: true,
-    }
+    },
   })
 
   console.log('=== full_text length:', doc?.full_text?.length || 0)
@@ -25,7 +25,10 @@ async function main() {
 
   // Check if Samhällsintroduktion is in full_text
   console.log('\n=== Content checks in full_text ===')
-  console.log('Has Samhällsintroduktion:', doc?.full_text?.includes('Samhällsintroduktion'))
+  console.log(
+    'Has Samhällsintroduktion:',
+    doc?.full_text?.includes('Samhällsintroduktion')
+  )
   console.log('Has Ikraftträdande:', doc?.full_text?.includes('Ikraftträdande'))
 
   await prisma.$disconnect()

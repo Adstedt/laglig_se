@@ -12,21 +12,33 @@ interface LawSectionWithBannerProps {
   isLawNotYetInForce?: boolean
 }
 
-export function LawSectionWithBanner({ htmlContent, fallbackText, sourceUrl, isLawNotYetInForce }: LawSectionWithBannerProps) {
-  const [futureAmendments, setFutureAmendments] = useState<{ date: string; formattedDate: string }[]>([])
+export function LawSectionWithBanner({
+  htmlContent,
+  fallbackText,
+  sourceUrl,
+  isLawNotYetInForce,
+}: LawSectionWithBannerProps) {
+  const [futureAmendments, setFutureAmendments] = useState<
+    { date: string; formattedDate: string }[]
+  >([])
 
-  const handleFutureAmendmentsFound = useCallback((amendments: { date: string; formattedDate: string }[]) => {
-    // Only update if we found new amendments (prevent infinite loop)
-    if (amendments.length > 0 && futureAmendments.length === 0) {
-      setFutureAmendments(amendments)
-    }
-  }, [futureAmendments.length])
+  const handleFutureAmendmentsFound = useCallback(
+    (amendments: { date: string; formattedDate: string }[]) => {
+      // Only update if we found new amendments (prevent infinite loop)
+      if (amendments.length > 0 && futureAmendments.length === 0) {
+        setFutureAmendments(amendments)
+      }
+    },
+    [futureAmendments.length]
+  )
 
   return (
     <>
       {/* Banner appears ABOVE the card when future amendments are found */}
       {/* Don't show if the entire law hasn't entered into force yet - that's redundant */}
-      {!isLawNotYetInForce && <FutureAmendmentsBanner amendments={futureAmendments} />}
+      {!isLawNotYetInForce && (
+        <FutureAmendmentsBanner amendments={futureAmendments} />
+      )}
 
       {/* Law Content Card */}
       <Card className="mb-8">

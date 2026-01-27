@@ -29,11 +29,21 @@ async function main() {
   const total = amendments.length
   console.log('Full amendment corpus split:')
   console.log('  Total:', total)
-  console.log('  Lagar (laws):', lagar, `(${(lagar/total*100).toFixed(1)}%)`)
-  console.log('  Förordningar (regulations):', forordningar, `(${(forordningar/total*100).toFixed(1)}%)`)
-  console.log('  Other:', other, `(${(other/total*100).toFixed(1)}%)`)
+  console.log(
+    '  Lagar (laws):',
+    lagar,
+    `(${((lagar / total) * 100).toFixed(1)}%)`
+  )
+  console.log(
+    '  Förordningar (regulations):',
+    forordningar,
+    `(${((forordningar / total) * 100).toFixed(1)}%)`
+  )
+  console.log('  Other:', other, `(${((other / total) * 100).toFixed(1)}%)`)
   console.log('')
   console.log('Expected prop/bet/rskr refs after full batch:', lagar)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

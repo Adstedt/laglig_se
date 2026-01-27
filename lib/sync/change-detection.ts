@@ -78,7 +78,11 @@ export function computeDiff(oldText: string, newText: string): DiffResult {
 /**
  * Generate a human-readable summary of changes
  */
-function generateDiffSummary(added: number, removed: number, unchanged: number): string {
+function generateDiffSummary(
+  added: number,
+  removed: number,
+  unchanged: number
+): string {
   const parts: string[] = []
 
   if (added > 0) {
@@ -93,7 +97,8 @@ function generateDiffSummary(added: number, removed: number, unchanged: number):
   }
 
   const total = added + removed + unchanged
-  const changePercent = total > 0 ? ((added + removed) / total * 100).toFixed(1) : '0'
+  const changePercent =
+    total > 0 ? (((added + removed) / total) * 100).toFixed(1) : '0'
 
   return `${parts.join(', ')} (${changePercent}% changed)`
 }
@@ -111,14 +116,19 @@ export function generateUnifiedDiff(
   newText: string,
   contextLines: number = 3
 ): string {
-  return Diff.createPatch('document', oldText, newText, 'old', 'new', { context: contextLines })
+  return Diff.createPatch('document', oldText, newText, 'old', 'new', {
+    context: contextLines,
+  })
 }
 
 /**
  * Check if two texts are semantically different
  * Ignores whitespace differences
  */
-export function hasSubstantiveChanges(oldText: string, newText: string): boolean {
+export function hasSubstantiveChanges(
+  oldText: string,
+  newText: string
+): boolean {
   // Normalize whitespace for comparison
   const normalizedOld = oldText.replace(/\s+/g, ' ').trim()
   const normalizedNew = newText.replace(/\s+/g, ' ').trim()
@@ -166,9 +176,10 @@ export async function detectChanges(
 
   // Generate unified diff for storage (truncated to prevent huge records)
   const unifiedDiff = generateUnifiedDiff(oldFullText, newFullText)
-  const truncatedDiff = unifiedDiff.length > 50000
-    ? unifiedDiff.substring(0, 50000) + '\n... [truncated]'
-    : unifiedDiff
+  const truncatedDiff =
+    unifiedDiff.length > 50000
+      ? unifiedDiff.substring(0, 50000) + '\n... [truncated]'
+      : unifiedDiff
 
   // Build create data object conditionally to handle exactOptionalPropertyTypes
   const createData: {

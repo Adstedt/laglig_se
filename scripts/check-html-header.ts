@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 async function main() {
   const doc = await prisma.legalDocument.findFirst({
     where: { document_number: 'SFS 1998:1003', html_content: { not: null } },
-    select: { html_content: true, document_number: true }
+    select: { html_content: true, document_number: true },
   })
 
   if (!doc?.html_content) {
@@ -34,4 +34,6 @@ async function main() {
   console.log('rskr:', rskrMatches)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

@@ -18,17 +18,33 @@ async function main() {
 
   console.log(`\nAmendment Documents for ${year} (showing ${docs.length}):\n`)
 
-  docs.forEach(doc => {
+  docs.forEach((doc) => {
     console.log('='.repeat(60))
     console.log('SFS:', doc.sfs_number)
-    console.log('Title:', doc.title?.substring(0, 70) + (doc.title && doc.title.length > 70 ? '...' : ''))
+    console.log(
+      'Title:',
+      doc.title?.substring(0, 70) +
+        (doc.title && doc.title.length > 70 ? '...' : '')
+    )
     console.log('Base Law:', doc.base_law_sfs, '-', doc.base_law_name)
-    console.log('Effective:', doc.effective_date?.toISOString().split('T')[0] || 'N/A')
-    console.log('Status:', doc.parse_status, '- Confidence:', doc.confidence?.toFixed(2) || 'N/A')
+    console.log(
+      'Effective:',
+      doc.effective_date?.toISOString().split('T')[0] || 'N/A'
+    )
+    console.log(
+      'Status:',
+      doc.parse_status,
+      '- Confidence:',
+      doc.confidence?.toFixed(2) || 'N/A'
+    )
     console.log('Section Changes:', doc.section_changes.length)
-    doc.section_changes.forEach(sc => {
-      const loc = sc.chapter ? `${sc.chapter} kap. ${sc.section} §` : `${sc.section} §`
-      console.log(`  - ${loc} (${sc.change_type}) ${sc.description?.substring(0, 40) || ''}`)
+    doc.section_changes.forEach((sc) => {
+      const loc = sc.chapter
+        ? `${sc.chapter} kap. ${sc.section} §`
+        : `${sc.section} §`
+      console.log(
+        `  - ${loc} (${sc.change_type}) ${sc.description?.substring(0, 40) || ''}`
+      )
     })
     console.log()
   })
@@ -50,7 +66,7 @@ async function main() {
   console.log(`Total amendment docs (${year}): ${totalDocs}`)
   console.log(`Total section changes: ${totalChanges}`)
   console.log('By status:')
-  byStatus.forEach(s => console.log(`  - ${s.parse_status}: ${s._count}`))
+  byStatus.forEach((s) => console.log(`  - ${s.parse_status}: ${s._count}`))
 
   await prisma.$disconnect()
 }

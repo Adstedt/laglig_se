@@ -11,11 +11,11 @@ async function main() {
   const amendments = await prisma.amendmentDocument.findMany({
     where: {
       parse_status: 'COMPLETED',
-      sfs_number: { startsWith: '2025:' }
+      sfs_number: { startsWith: '2025:' },
     },
     select: { sfs_number: true, storage_path: true },
     orderBy: { sfs_number: 'asc' },
-    take: 10
+    take: 10,
   })
 
   console.log('Sample 2025 amendments:')

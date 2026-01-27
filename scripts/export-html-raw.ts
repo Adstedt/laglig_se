@@ -10,21 +10,26 @@ async function main() {
   const doc = await prisma.legalDocument.findFirst({
     where: {
       document_number: 'SFS 1998:1000',
-      html_content: { not: null }
+      html_content: { not: null },
     },
     select: {
       html_content: true,
-    }
+    },
   })
-  
+
   if (!doc || !doc.html_content) {
     console.log('No document found')
     return
   }
 
-  const outputPath = resolve(process.cwd(), 'test-results/SFS1998-1000-raw.html')
+  const outputPath = resolve(
+    process.cwd(),
+    'test-results/SFS1998-1000-raw.html'
+  )
   writeFileSync(outputPath, doc.html_content, 'utf-8')
   console.log('Written to:', outputPath)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

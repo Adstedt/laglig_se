@@ -10,7 +10,13 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { extractText } from 'unpdf'
 
-const FIXTURES_DIR = path.join(__dirname, '..', 'tests', 'fixtures', 'amendment-pdfs')
+const FIXTURES_DIR = path.join(
+  __dirname,
+  '..',
+  'tests',
+  'fixtures',
+  'amendment-pdfs'
+)
 
 interface AmendmentAnalysis {
   filename: string
@@ -41,7 +47,8 @@ const PATTERNS = {
   baseLawPattern: /i\s+([^(]+)\s*\((?:SFS\s*)?(\d{4}:\d+)\)/i,
 
   // "X § ska ha följande lydelse" or "X § upphävs"
-  sectionAmendPattern: /(\d+(?:\s*[a-z])?)\s*§\s*ska\s+ha\s+följande\s+lydelse/gi,
+  sectionAmendPattern:
+    /(\d+(?:\s*[a-z])?)\s*§\s*ska\s+ha\s+följande\s+lydelse/gi,
   sectionRepealPattern: /(\d+(?:\s*[a-z])?)\s*§\s*upphävs/gi,
   sectionNewPattern: /ny(?:a)?\s+(?:paragraf(?:er)?|§|bestämmelse)/gi,
 
@@ -49,28 +56,30 @@ const PATTERNS = {
   chapterPattern: /(\d+)\s*kap\./gi,
 
   // Effective date: "Denna lag träder i kraft den X"
-  effectiveDatePattern: /(?:Denna\s+(?:lag|förordning)|Lagen|Förordningen)\s+träder\s+i\s+kraft\s+den\s+(\d+\s+\w+\s+\d{4}|\d{1,2}\s+\w+\s+\d{4})/i,
+  effectiveDatePattern:
+    /(?:Denna\s+(?:lag|förordning)|Lagen|Förordningen)\s+träder\s+i\s+kraft\s+den\s+(\d+\s+\w+\s+\d{4}|\d{1,2}\s+\w+\s+\d{4})/i,
 
   // Alternative effective date: "träder i kraft den 1 juli 2028"
-  effectiveDateAltPattern: /träder\s+i\s+kraft\s+(?:den\s+)?(\d{1,2})\s+(\w+)\s+(\d{4})/i,
+  effectiveDateAltPattern:
+    /träder\s+i\s+kraft\s+(?:den\s+)?(\d{1,2})\s+(\w+)\s+(\d{4})/i,
 
   // Transition provisions header
   transitionPattern: /Övergångsbestämmelser|Ikraftträdande/i,
 }
 
 const SWEDISH_MONTHS: Record<string, string> = {
-  'januari': '01',
-  'februari': '02',
-  'mars': '03',
-  'april': '04',
-  'maj': '05',
-  'juni': '06',
-  'juli': '07',
-  'augusti': '08',
-  'september': '09',
-  'oktober': '10',
-  'november': '11',
-  'december': '12',
+  januari: '01',
+  februari: '02',
+  mars: '03',
+  april: '04',
+  maj: '05',
+  juni: '06',
+  juli: '07',
+  augusti: '08',
+  september: '09',
+  oktober: '10',
+  november: '11',
+  december: '12',
 }
 
 function parseSwedishDate(dateStr: string): string | null {
@@ -92,7 +101,9 @@ async function analyzePdf(filePath: string): Promise<AmendmentAnalysis | null> {
   const stats = fs.statSync(filePath)
 
   // Determine source from filename
-  const source = filename.includes('rkrattsdb') ? 'rkrattsdb' : 'svenskforfattningssamling'
+  const source = filename.includes('rkrattsdb')
+    ? 'rkrattsdb'
+    : 'svenskforfattningssamling'
 
   // Extract SFS number from filename (e.g., SFS2025-1461.pdf -> 2025:1461)
   const sfsMatch = filename.match(/SFS(\d{4})-(\d+)/)
@@ -177,7 +188,7 @@ async function main() {
   console.log()
 
   // Get all PDFs in fixtures directory
-  const files = fs.readdirSync(FIXTURES_DIR).filter(f => f.endsWith('.pdf'))
+  const files = fs.readdirSync(FIXTURES_DIR).filter((f) => f.endsWith('.pdf'))
 
   console.log(`Found ${files.length} PDF files to analyze\n`)
 
@@ -196,10 +207,18 @@ async function main() {
       console.log(`  - Pages: ${analysis.pageCount}`)
       console.log(`  - Text length: ${analysis.textLength} chars`)
       console.log(`  - Base law: ${analysis.baseLaw || 'NOT DETECTED'}`)
-      console.log(`  - Effective date: ${analysis.effectiveDate || 'NOT DETECTED'}`)
-      console.log(`  - Sections affected: ${analysis.affectedSections.length > 0 ? analysis.affectedSections.join(', ') : 'NONE DETECTED'}`)
-      console.log(`  - Has ingress: ${analysis.structurePatterns.hasIngressText}`)
-      console.log(`  - Has chapters: ${analysis.structurePatterns.hasChapterNumbers}`)
+      console.log(
+        `  - Effective date: ${analysis.effectiveDate || 'NOT DETECTED'}`
+      )
+      console.log(
+        `  - Sections affected: ${analysis.affectedSections.length > 0 ? analysis.affectedSections.join(', ') : 'NONE DETECTED'}`
+      )
+      console.log(
+        `  - Has ingress: ${analysis.structurePatterns.hasIngressText}`
+      )
+      console.log(
+        `  - Has chapters: ${analysis.structurePatterns.hasChapterNumbers}`
+      )
       console.log()
     }
   }
@@ -209,38 +228,70 @@ async function main() {
   console.log('SUMMARY REPORT')
   console.log('='.repeat(80))
 
-  const svfAnalyses = analyses.filter(a => a.source === 'svenskforfattningssamling')
-  const rkAnalyses = analyses.filter(a => a.source === 'rkrattsdb')
+  const svfAnalyses = analyses.filter(
+    (a) => a.source === 'svenskforfattningssamling'
+  )
+  const rkAnalyses = analyses.filter((a) => a.source === 'rkrattsdb')
 
-  console.log(`\nSvenskforfattningssamling.se (2018+): ${svfAnalyses.length} documents`)
+  console.log(
+    `\nSvenskforfattningssamling.se (2018+): ${svfAnalyses.length} documents`
+  )
   console.log(`rkrattsdb.gov.se (pre-2018): ${rkAnalyses.length} documents`)
 
   // Structure analysis
-  const withIngress = analyses.filter(a => a.structurePatterns.hasIngressText).length
-  const withChapters = analyses.filter(a => a.structurePatterns.hasChapterNumbers).length
-  const withEffectiveDate = analyses.filter(a => a.effectiveDate).length
-  const withBaseLaw = analyses.filter(a => a.baseLaw).length
+  const withIngress = analyses.filter(
+    (a) => a.structurePatterns.hasIngressText
+  ).length
+  const withChapters = analyses.filter(
+    (a) => a.structurePatterns.hasChapterNumbers
+  ).length
+  const withEffectiveDate = analyses.filter((a) => a.effectiveDate).length
+  const withBaseLaw = analyses.filter((a) => a.baseLaw).length
 
   console.log(`\nDetection rates:`)
-  console.log(`  - Ingress text: ${withIngress}/${analyses.length} (${Math.round(100*withIngress/analyses.length)}%)`)
-  console.log(`  - Chapter numbers: ${withChapters}/${analyses.length} (${Math.round(100*withChapters/analyses.length)}%)`)
-  console.log(`  - Effective date: ${withEffectiveDate}/${analyses.length} (${Math.round(100*withEffectiveDate/analyses.length)}%)`)
-  console.log(`  - Base law: ${withBaseLaw}/${analyses.length} (${Math.round(100*withBaseLaw/analyses.length)}%)`)
+  console.log(
+    `  - Ingress text: ${withIngress}/${analyses.length} (${Math.round((100 * withIngress) / analyses.length)}%)`
+  )
+  console.log(
+    `  - Chapter numbers: ${withChapters}/${analyses.length} (${Math.round((100 * withChapters) / analyses.length)}%)`
+  )
+  console.log(
+    `  - Effective date: ${withEffectiveDate}/${analyses.length} (${Math.round((100 * withEffectiveDate) / analyses.length)}%)`
+  )
+  console.log(
+    `  - Base law: ${withBaseLaw}/${analyses.length} (${Math.round((100 * withBaseLaw) / analyses.length)}%)`
+  )
 
   // Save detailed analysis to research doc
   const researchOutput = generateResearchDoc(analyses)
-  const outputPath = path.join(__dirname, '..', 'docs', 'research', 'amendment-pdf-structure.md')
+  const outputPath = path.join(
+    __dirname,
+    '..',
+    'docs',
+    'research',
+    'amendment-pdf-structure.md'
+  )
   fs.writeFileSync(outputPath, researchOutput)
   console.log(`\nDetailed analysis saved to: ${outputPath}`)
 
   // Save raw text samples for debugging
-  const samplesDir = path.join(__dirname, '..', 'tests', 'fixtures', 'amendment-pdfs', 'text-samples')
+  const samplesDir = path.join(
+    __dirname,
+    '..',
+    'tests',
+    'fixtures',
+    'amendment-pdfs',
+    'text-samples'
+  )
   if (!fs.existsSync(samplesDir)) {
     fs.mkdirSync(samplesDir, { recursive: true })
   }
 
   for (const analysis of analyses) {
-    const samplePath = path.join(samplesDir, `${analysis.sfsNumber.replace(':', '-')}.txt`)
+    const samplePath = path.join(
+      samplesDir,
+      `${analysis.sfsNumber.replace(':', '-')}.txt`
+    )
     fs.writeFileSync(samplePath, analysis.rawText)
   }
   console.log(`Raw text samples saved to: ${samplesDir}`)
@@ -265,7 +316,10 @@ The modern source for Swedish statutes. PDFs are:
 - Consistently formatted
 - ~300-500KB average size
 
-${analyses.filter(a => a.source === 'svenskforfattningssamling').map(a => `
+${analyses
+  .filter((a) => a.source === 'svenskforfattningssamling')
+  .map(
+    (a) => `
 #### ${a.sfsNumber}
 - **File:** ${a.filename}
 - **Pages:** ${a.pageCount}
@@ -273,7 +327,9 @@ ${analyses.filter(a => a.source === 'svenskforfattningssamling').map(a => `
 - **Effective date:** ${a.effectiveDate || 'Not detected'}
 - **Sections affected:** ${a.affectedSections.join(', ') || 'None detected'}
 - **Sample text:** \`${a.sampleText.substring(0, 200)}...\`
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 ### rkrattsdb.gov.se (1998-2018)
 
@@ -282,7 +338,10 @@ The historical archive. PDFs are:
 - May be scanned (older documents)
 - Variable formatting
 
-${analyses.filter(a => a.source === 'rkrattsdb').map(a => `
+${analyses
+  .filter((a) => a.source === 'rkrattsdb')
+  .map(
+    (a) => `
 #### ${a.sfsNumber}
 - **File:** ${a.filename}
 - **Pages:** ${a.pageCount}
@@ -290,7 +349,9 @@ ${analyses.filter(a => a.source === 'rkrattsdb').map(a => `
 - **Effective date:** ${a.effectiveDate || 'Not detected'}
 - **Sections affected:** ${a.affectedSections.join(', ') || 'None detected'}
 - **Sample text:** \`${a.sampleText.substring(0, 200)}...\`
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 ## Common Structure Patterns
 

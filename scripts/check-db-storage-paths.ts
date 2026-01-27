@@ -20,9 +20,9 @@ async function main() {
     const amendment = await prisma.amendmentDocument.findFirst({
       where: {
         parse_status: 'COMPLETED',
-        sfs_number: { startsWith: `SFS ${year}:` }
+        sfs_number: { startsWith: `SFS ${year}:` },
       },
-      select: { sfs_number: true, storage_path: true }
+      select: { sfs_number: true, storage_path: true },
     })
 
     if (amendment) {
@@ -37,7 +37,10 @@ async function main() {
           .download(amendment.storage_path)
 
         if (error) {
-          console.log('Download with DB path: FAILED -', error.message || 'empty error')
+          console.log(
+            'Download with DB path: FAILED -',
+            error.message || 'empty error'
+          )
 
           // Try with different path patterns
           const patterns = [
@@ -59,7 +62,11 @@ async function main() {
             }
           }
         } else if (data) {
-          console.log('Download with DB path: SUCCESS -', (await data.arrayBuffer()).byteLength, 'bytes')
+          console.log(
+            'Download with DB path: SUCCESS -',
+            (await data.arrayBuffer()).byteLength,
+            'bytes'
+          )
         }
       }
     }

@@ -21,7 +21,13 @@ async function main() {
     return
   }
 
-  console.log('Folders found:', folders?.filter(f => !f.name.endsWith('.pdf')).map(f => f.name).join(', '))
+  console.log(
+    'Folders found:',
+    folders
+      ?.filter((f) => !f.name.endsWith('.pdf'))
+      .map((f) => f.name)
+      .join(', ')
+  )
 
   // Count files in key years
   const years = ['1998', '2000', '2010', '2020', '2024', '2025']
@@ -33,7 +39,7 @@ async function main() {
     if (error) {
       console.log(`${year}: Error - ${error.message}`)
     } else {
-      const pdfCount = data?.filter(f => f.name.endsWith('.pdf')).length || 0
+      const pdfCount = data?.filter((f) => f.name.endsWith('.pdf')).length || 0
       console.log(`${year}: ${pdfCount} PDFs`)
     }
   }

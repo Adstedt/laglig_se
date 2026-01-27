@@ -34,7 +34,10 @@ function normalizeSwedish(text: string): string {
  * - "Lag (2024:123) om ändring i lagen (2010:456) om miljöbalken" → "lagen-om-miljobalken"
  * - "Förordning (2023:789) om ändring i arbetsmiljöförordningen (1977:1166)" → "arbetsmiljoforordningen"
  */
-function extractBaseLawName(title: string, baseLawName?: string | null): string {
+function extractBaseLawName(
+  title: string,
+  baseLawName?: string | null
+): string {
   // If baseLawName is provided directly (from AmendmentDocument), use it
   if (baseLawName) {
     return normalizeSwedish(baseLawName)
@@ -50,7 +53,9 @@ function extractBaseLawName(title: string, baseLawName?: string | null): string 
   // Fallback: extract anything after "om ändring i"
   const fallbackMatch = title.match(/om ändring i\s+(.+)$/i)
   if (fallbackMatch?.[1]) {
-    return normalizeSwedish(fallbackMatch[1].replace(/\s*\(\d{4}:\d+\)\s*/g, ''))
+    return normalizeSwedish(
+      fallbackMatch[1].replace(/\s*\(\d{4}:\d+\)\s*/g, '')
+    )
   }
 
   return 'lag'

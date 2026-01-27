@@ -99,7 +99,7 @@ export async function GET(request: Request) {
   // Verify authorization (skip in development for testing)
   const authHeader = request.headers.get('authorization')
   const isDevelopment = process.env.NODE_ENV === 'development'
-  
+
   if (!isDevelopment && CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -135,17 +135,21 @@ export async function GET(request: Request) {
     console.log(
       `[SYNC-SFS] Max pages: ${CONFIG.MAX_PAGES} (${CONFIG.MAX_PAGES * CONFIG.PAGE_SIZE} docs)`
     )
-    console.log(`[SYNC-SFS] Max inserts per run: ${CONFIG.MAX_INSERTS_PER_RUN} (timeout protection)`)
+    console.log(
+      `[SYNC-SFS] Max inserts per run: ${CONFIG.MAX_INSERTS_PER_RUN} (timeout protection)`
+    )
     console.log(`[SYNC-SFS] ========================================`)
 
     let page = 0
-    const maxRuntime = (maxDuration * 1000) - CONFIG.TIMEOUT_BUFFER_MS // Stop 30s before timeout
+    const maxRuntime = maxDuration * 1000 - CONFIG.TIMEOUT_BUFFER_MS // Stop 30s before timeout
 
     while (page < CONFIG.MAX_PAGES) {
       // Check if we're approaching timeout
       const elapsed = Date.now() - startTime.getTime()
       if (elapsed > maxRuntime) {
-        console.log(`[SYNC-SFS] Approaching timeout (elapsed: ${Math.round(elapsed/1000)}s), stopping gracefully`)
+        console.log(
+          `[SYNC-SFS] Approaching timeout (elapsed: ${Math.round(elapsed / 1000)}s), stopping gracefully`
+        )
         stats.earlyTerminated = true
         break
       }
@@ -230,7 +234,7 @@ export async function GET(request: Request) {
           logEntries.push(
             `[✓] ${sfsNumber.padEnd(20)} exists (publicerad: ${doc.publicerad})`
           )
-          
+
           // Early termination: If we've seen 20 consecutive existing docs, we're likely caught up
           if (consecutiveExisting >= 20) {
             console.log(
@@ -240,7 +244,7 @@ export async function GET(request: Request) {
             stats.earlyTerminated = true
             break
           }
-          
+
           continue
         }
 
@@ -294,8 +298,9 @@ export async function GET(request: Request) {
           // Story 2.28: Fetch and store PDF (skip if we have many to insert to avoid timeout)
           let pdfMetadata: PdfMetadata | null = null
           let pdfSuccessful = false
-          const skipPdfForSpeed = stats.inserted > 5 && (Date.now() - startTime.getTime()) > 120000 // Skip PDFs after 5 inserts and 2 minutes
-          
+          const skipPdfForSpeed =
+            stats.inserted > 5 && Date.now() - startTime.getTime() > 120000 // Skip PDFs after 5 inserts and 2 minutes
+
           if (!skipPdfForSpeed) {
             stats.pdfsFetched++
             const pdfResult = await fetchAndStorePdf(
@@ -306,21 +311,25 @@ export async function GET(request: Request) {
               pdfMetadata = pdfResult.metadata
               pdfSuccessful = true
               stats.pdfsStored++
-              console.log(`[SYNC-SFS]   PDF stored: ${pdfMetadata?.storagePath}`)
+              console.log(
+                `[SYNC-SFS]   PDF stored: ${pdfMetadata?.storagePath}`
+              )
             } else {
               stats.pdfsFailed++
               pdfMetadata = pdfResult.metadata // Store error metadata for retry
               console.log(`[SYNC-SFS]   PDF failed: ${pdfResult.error}`)
             }
           } else {
-            console.log(`[SYNC-SFS]   PDF skipped (timeout protection) - will retry later`)
+            console.log(
+              `[SYNC-SFS]   PDF skipped (timeout protection) - will retry later`
+            )
             pdfMetadata = {
               storagePath: '',
               storageBucket: 'sfs-pdfs',
               originalUrl: '',
               fileSize: 0,
               fetchedAt: new Date().toISOString(),
-              error: 'Skipped due to timeout protection'
+              error: 'Skipped due to timeout protection',
             } as PdfMetadata
           }
 
@@ -406,7 +415,9 @@ export async function GET(request: Request) {
 
       // Break out if early termination triggered
       if (stats.earlyTerminated) {
-        console.log(`[SYNC-SFS] Stopping page iteration due to early termination`)
+        console.log(
+          `[SYNC-SFS] Stopping page iteration due to early termination`
+        )
         break
       }
 
@@ -454,7 +465,9 @@ export async function GET(request: Request) {
     console.log(`[SYNC-SFS] Already exist:    ${stats.skipped}`)
     console.log(`[SYNC-SFS] No SFS number:    ${stats.noSfsNumber}`)
     console.log(`[SYNC-SFS] Failed:           ${stats.failed}`)
-    console.log(`[SYNC-SFS] Early terminated: ${stats.earlyTerminated ? 'YES' : 'NO'}`)
+    console.log(
+      `[SYNC-SFS] Early terminated: ${stats.earlyTerminated ? 'YES' : 'NO'}`
+    )
     console.log(`[SYNC-SFS] Duration:         ${durationStr}`)
     console.log(`[SYNC-SFS] ──── PDF Stats (Story 2.28) ────`)
     console.log(`[SYNC-SFS] PDFs fetched:     ${stats.pdfsFetched}`)

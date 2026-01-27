@@ -52,7 +52,7 @@ import { cn } from '@/lib/utils'
 
 interface GroupManagerProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   listId: string
   onGroupsUpdated: () => void
 }
@@ -78,7 +78,9 @@ export function GroupManager({
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false)
 
   // Delete confirmation
-  const [groupToDelete, setGroupToDelete] = useState<ListGroupSummary | null>(null)
+  const [groupToDelete, setGroupToDelete] = useState<ListGroupSummary | null>(
+    null
+  )
   const [isDeleting, setIsDeleting] = useState(false)
 
   // Reordering state
@@ -217,7 +219,7 @@ export function GroupManager({
 
   // Move group up/down
   const handleMoveGroup = async (groupId: string, direction: 'up' | 'down') => {
-    const currentIndex = groups.findIndex(g => g.id === groupId)
+    const currentIndex = groups.findIndex((g) => g.id === groupId)
     if (currentIndex === -1) return
 
     const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
@@ -303,13 +305,14 @@ export function GroupManager({
                       <div
                         key={group.id}
                         className={cn(
-                          "flex items-center gap-2 rounded-md border p-2",
-                          editingGroupId === group.id && "ring-2 ring-primary"
+                          'flex items-center gap-2 rounded-md border p-2',
+                          editingGroupId === group.id && 'ring-2 ring-primary'
                         )}
                       >
                         {editingGroupId === group.id ? (
                           // Edit mode
                           <>
+                            {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
                             <Input
                               value={editingName}
                               onChange={(e) => setEditingName(e.target.value)}
@@ -366,8 +369,12 @@ export function GroupManager({
                                 size="icon"
                                 variant="ghost"
                                 className="h-5 w-5 p-0"
-                                onClick={() => handleMoveGroup(group.id, 'down')}
-                                disabled={index === groups.length - 1 || isReordering}
+                                onClick={() =>
+                                  handleMoveGroup(group.id, 'down')
+                                }
+                                disabled={
+                                  index === groups.length - 1 || isReordering
+                                }
                               >
                                 <ChevronDown className="h-3 w-3" />
                               </Button>
@@ -375,7 +382,9 @@ export function GroupManager({
 
                             {/* Group name and count */}
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{group.name}</p>
+                              <p className="font-medium truncate">
+                                {group.name}
+                              </p>
                               <p className="text-xs text-muted-foreground">
                                 {group.itemCount} dokument
                               </p>
@@ -408,6 +417,7 @@ export function GroupManager({
                 {/* Create new group */}
                 {isCreating ? (
                   <div className="flex items-center gap-2">
+                    {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
                     <Input
                       value={newGroupName}
                       onChange={(e) => setNewGroupName(e.target.value)}
@@ -463,13 +473,17 @@ export function GroupManager({
       </Dialog>
 
       {/* Delete confirmation */}
-      <AlertDialog open={!!groupToDelete} onOpenChange={() => setGroupToDelete(null)}>
+      <AlertDialog
+        open={!!groupToDelete}
+        onOpenChange={() => setGroupToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Ta bort gruppen?</AlertDialogTitle>
             <AlertDialogDescription>
               Är du säker på att du vill ta bort gruppen{' '}
-              <strong className="text-foreground">{groupToDelete?.name}</strong>?
+              <strong className="text-foreground">{groupToDelete?.name}</strong>
+              ?
               <br />
               <br />
               {groupToDelete?.itemCount && groupToDelete.itemCount > 0 ? (

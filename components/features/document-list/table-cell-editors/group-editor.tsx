@@ -24,7 +24,7 @@ interface GroupEditorProps {
   value: string | null
   groupName: string | null
   groups: ListGroupSummary[]
-  onChange: (groupId: string | null) => Promise<boolean>
+  onChange: (_groupId: string | null) => Promise<boolean>
   className?: string
 }
 

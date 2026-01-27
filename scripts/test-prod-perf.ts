@@ -61,7 +61,7 @@ async function testProductionPerformance() {
     console.log('\n4. Testing Laglistor...')
     // Open accordion
     const laglistorBtn = page.locator('button:has-text("Laglistor")')
-    if (await laglistorBtn.count() > 0) {
+    if ((await laglistorBtn.count()) > 0) {
       await laglistorBtn.click()
       await page.waitForTimeout(300)
     }
@@ -108,9 +108,9 @@ async function testProductionPerformance() {
 
     const targets: Record<string, number> = {
       'Login → Dashboard': 3000,
-      'Settings': 500,
+      Settings: 500,
       'Dashboard (return)': 500,
-      'Laglistor': 1000,
+      Laglistor: 1000,
       'Settings (2nd)': 300,
       'Dashboard (2nd)': 300,
     }
@@ -123,14 +123,15 @@ async function testProductionPerformance() {
       )
     }
 
-    const avgTime = Math.round(results.reduce((sum, r) => sum + r.time, 0) / results.length)
+    const avgTime = Math.round(
+      results.reduce((sum, r) => sum + r.time, 0) / results.length
+    )
     console.log('-'.repeat(50))
     console.log(`Average: ${avgTime}ms`)
 
     // Keep browser open
     console.log('\n📊 Browser open for 30s for manual inspection...')
     await page.waitForTimeout(30000)
-
   } catch (error) {
     console.error('Error:', error)
     await page.waitForTimeout(10000)

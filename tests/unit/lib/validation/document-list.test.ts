@@ -190,7 +190,13 @@ describe('Document List Validation Schemas', () => {
     })
 
     it('validates all status values', () => {
-      const statuses = ['NOT_STARTED', 'IN_PROGRESS', 'BLOCKED', 'REVIEW', 'COMPLIANT']
+      const statuses = [
+        'NOT_STARTED',
+        'IN_PROGRESS',
+        'BLOCKED',
+        'REVIEW',
+        'COMPLIANT',
+      ]
       statuses.forEach((status) => {
         const result = UpdateListItemSchema.safeParse({
           listItemId: validUUID,
@@ -394,7 +400,13 @@ describe('Document List Validation Schemas', () => {
 
     describe('LawListItemStatusEnum', () => {
       it('validates all statuses', () => {
-        const statuses = ['NOT_STARTED', 'IN_PROGRESS', 'BLOCKED', 'REVIEW', 'COMPLIANT']
+        const statuses = [
+          'NOT_STARTED',
+          'IN_PROGRESS',
+          'BLOCKED',
+          'REVIEW',
+          'COMPLIANT',
+        ]
         statuses.forEach((status) => {
           expect(LawListItemStatusEnum.safeParse(status).success).toBe(true)
         })

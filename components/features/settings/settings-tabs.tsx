@@ -47,7 +47,11 @@ interface SettingsTabsProps {
   columns: TaskColumnWithCount[]
 }
 
-export function SettingsTabs({ workspace, members, columns }: SettingsTabsProps) {
+export function SettingsTabs({
+  workspace,
+  members,
+  columns,
+}: SettingsTabsProps) {
   const { role, isLoading } = useWorkspace()
 
   // Show loading skeleton while checking permissions

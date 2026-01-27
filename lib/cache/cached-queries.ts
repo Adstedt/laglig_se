@@ -20,7 +20,7 @@ import { getCachedDocument } from '@/lib/services/document-cache'
 /**
  * Get a cached law document by slug
  * Used by /lagar/[id]/page.tsx
- * 
+ *
  * UPDATED: Now uses centralized Redis cache for document content
  * This means when ANY user accesses a document ANYWHERE (modal, public, etc),
  * all subsequent accesses benefit from the same cache entry!
@@ -62,14 +62,16 @@ export const getCachedLaw = unstable_cache(
         },
       })
     )
-    
+
     if (!doc) return null
-    
+
     // Now get the HTML content from centralized Redis cache
     // This is shared across ALL users and ALL access patterns!
     const cachedDoc = await getCachedDocument(doc.id)
-    console.log(`📚 Public page fetching document ${doc.document_number} - cache ${cachedDoc ? 'HIT' : 'MISS'}`)
-    
+    console.log(
+      `📚 Public page fetching document ${doc.document_number} - cache ${cachedDoc ? 'HIT' : 'MISS'}`
+    )
+
     // Merge the cached content with the metadata
     return {
       ...doc,

@@ -1,4 +1,10 @@
-import { FileText, Scale, Landmark, FilePenLine, type LucideIcon } from 'lucide-react'
+import {
+  FileText,
+  Scale,
+  Landmark,
+  FilePenLine,
+  type LucideIcon,
+} from 'lucide-react'
 
 export type DocumentTheme = {
   icon: LucideIcon

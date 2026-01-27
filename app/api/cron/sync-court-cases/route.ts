@@ -80,7 +80,9 @@ function htmlToPlainText(html: string | undefined): string | null {
   return text || null
 }
 
-type PrismaTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
+type PrismaTransaction = Parameters<
+  Parameters<typeof prisma.$transaction>[0]
+>[0]
 
 async function createCrossReferences(
   tx: PrismaTransaction,

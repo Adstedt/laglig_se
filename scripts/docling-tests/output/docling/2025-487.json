@@ -1,0 +1,478 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.9.0",
+  "name": "2025-487",
+  "origin": {
+    "mimetype": "application/pdf",
+    "binary_hash": 11816531656944285563,
+    "filename": "2025-487.pdf"
+  },
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/texts/0"
+      },
+      {
+        "$ref": "#/texts/1"
+      },
+      {
+        "$ref": "#/pictures/0"
+      },
+      {
+        "$ref": "#/texts/2"
+      },
+      {
+        "$ref": "#/texts/3"
+      },
+      {
+        "$ref": "#/texts/4"
+      },
+      {
+        "$ref": "#/texts/5"
+      },
+      {
+        "$ref": "#/texts/6"
+      },
+      {
+        "$ref": "#/texts/7"
+      },
+      {
+        "$ref": "#/texts/8"
+      },
+      {
+        "$ref": "#/texts/9"
+      },
+      {
+        "$ref": "#/texts/10"
+      },
+      {
+        "$ref": "#/texts/11"
+      },
+      {
+        "$ref": "#/texts/12"
+      },
+      {
+        "$ref": "#/texts/13"
+      },
+      {
+        "$ref": "#/texts/14"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 15.166,
+            "t": 93.71000001406253,
+            "r": 23.391,
+            "b": 10.65000001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 23]
+        }
+      ],
+      "orig": "1 2 3 4 5 6 7 8 9 0 : ;",
+      "text": "1 2 3 4 5 6 7 8 9 0 : ;"
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 26.665,
+            "t": 93.71000001406253,
+            "r": 34.89,
+            "b": 10.65000001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 23]
+        }
+      ],
+      "orig": "1 2 3 4 5 6 7 8 9 0 : ;",
+      "text": "1 2 3 4 5 6 7 8 9 0 : ;"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 734.0180000140625,
+            "r": 291.129,
+            "b": 718.3910000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 26]
+        }
+      ],
+      "orig": "Svensk författningssamling",
+      "text": "Svensk författningssamling",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 690.2680000140625,
+            "r": 401.606,
+            "b": 632.8680000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 123]
+        }
+      ],
+      "orig": "Förordning om ändring i förordningen (2007:1233) med instruktion för Statens beredning för medicinsk och social utvärdering",
+      "text": "Förordning om ändring i förordningen (2007:1233) med instruktion för Statens beredning för medicinsk och social utvärdering",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 619.1150000140625,
+            "r": 188.791,
+            "b": 609.6560000140624,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 24]
+        }
+      ],
+      "orig": "Utfärdad den 22 maj 2025",
+      "text": "Utfärdad den 22 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 591.8970000140625,
+            "r": 415.329,
+            "b": 555.2200000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 167]
+        }
+      ],
+      "orig": "Regeringen föreskriver att 1 § förordningen (2007:1233) med instruktion för Statens  beredning  för  medicinsk  och  social  utvärdering 1   ska  ha  följande lydelse.",
+      "text": "Regeringen föreskriver att 1 § förordningen (2007:1233) med instruktion för Statens  beredning  för  medicinsk  och  social  utvärdering 1   ska  ha  följande lydelse."
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 524.6880000140625,
+            "r": 415.33,
+            "b": 432.73900001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 528]
+        }
+      ],
+      "orig": "1 § 2     Statens beredning för medicinsk och social utvärdering har till uppgift att  utvärdera  det  vetenskapliga  stödet  för  tillämpade  och  nya  metoder  i hälso- och sjukvården och i den verksamhet som bedrivs med stöd av socialtjänstlagen (2025:400) och lagen (1993:387) om stöd och service till vissa funktionshindrade ur, där det är aktuellt, ett medicinskt, socialt, ekonomiskt, samhälleligt  och  etiskt  perspektiv.  Myndigheten  ska  i  sin  utvärdering  inkludera ett jämställdhetsperspektiv där det är möjligt.",
+      "text": "1 § 2     Statens beredning för medicinsk och social utvärdering har till uppgift att  utvärdera  det  vetenskapliga  stödet  för  tillämpade  och  nya  metoder  i hälso- och sjukvården och i den verksamhet som bedrivs med stöd av socialtjänstlagen (2025:400) och lagen (1993:387) om stöd och service till vissa funktionshindrade ur, där det är aktuellt, ett medicinskt, socialt, ekonomiskt, samhälleligt  och  etiskt  perspektiv.  Myndigheten  ska  i  sin  utvärdering  inkludera ett jämställdhetsperspektiv där det är möjligt."
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 76.55,
+            "t": 413.98900001406247,
+            "r": 296.902,
+            "b": 404.53000001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 48]
+        }
+      ],
+      "orig": "Denna förordning träder i kraft den 1 juli 2025.",
+      "text": "Denna förordning träder i kraft den 1 juli 2025."
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 386.7710000140625,
+            "r": 170.253,
+            "b": 377.3120000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 21]
+        }
+      ],
+      "orig": "På regeringens vägnar",
+      "text": "På regeringens vägnar"
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 359.5530000140625,
+            "r": 168.734,
+            "b": 350.0940000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 14]
+        }
+      ],
+      "orig": "JAKOB FORSSMED",
+      "text": "JAKOB FORSSMED"
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "footnote",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 90.79900001406247,
+            "r": 254.167,
+            "b": 82.65600001406256,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 52]
+        }
+      ],
+      "orig": "1  Senaste lydelse av förordningens rubrik 2015:167.",
+      "text": "1  Senaste lydelse av förordningens rubrik 2015:167."
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "footnote",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 79.79900001406247,
+            "r": 166.435,
+            "b": 71.65600001406256,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 28]
+        }
+      ],
+      "orig": "2  Senaste lydelse 2023:293.",
+      "text": "2  Senaste lydelse 2023:293."
+    },
+    {
+      "self_ref": "#/texts/12",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 256.548,
+            "t": 345.9440000140625,
+            "r": 360.957,
+            "b": 322.87600001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 35]
+        }
+      ],
+      "orig": "Sarah Cagnell (Socialdepartementet)",
+      "text": "Sarah Cagnell (Socialdepartementet)"
+    },
+    {
+      "self_ref": "#/texts/13",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 432.7,
+            "t": 689.3690000140625,
+            "r": 508.178,
+            "b": 654.3910000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 39]
+        }
+      ],
+      "orig": "SFS 2025:487 Publicerad den 28 maj 2025",
+      "text": "SFS 2025:487 Publicerad den 28 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/14",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "label": "page_footer",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 529.244,
+            "t": 89.23600001406248,
+            "r": 534.994,
+            "b": 79.77700001406254,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 1]
+        }
+      ],
+      "orig": "1",
+      "text": "1"
+    }
+  ],
+  "pictures": [
+    {
+      "self_ref": "#/pictures/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "picture",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 63.221519470214844,
+            "t": 808.9286842346191,
+            "r": 95.24517059326172,
+            "b": 757.5659561157227,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 0]
+        }
+      ],
+      "captions": [],
+      "references": [],
+      "footnotes": [],
+      "annotations": []
+    }
+  ],
+  "tables": [],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {
+    "1": {
+      "size": {
+        "width": 595.2999877929688,
+        "height": 841.9000244140625
+      },
+      "page_no": 1
+    }
+  }
+}
