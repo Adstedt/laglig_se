@@ -47,6 +47,9 @@ model User {
   notification_preferences NotificationPreference[]
   activity_logs            ActivityLog[]
 
+  // Epic 3: AI Chat
+  chat_messages ChatMessage[]
+
   @@index([email])
   @@map("users")
 }
@@ -87,6 +90,9 @@ model Workspace {
   notifications            Notification[]
   notification_preferences NotificationPreference[]
   activity_logs            ActivityLog[]
+
+  // Epic 3: AI Chat
+  chat_messages ChatMessage[]
 
   @@index([owner_id])
   @@index([org_number])
@@ -1009,6 +1015,42 @@ model NotificationPreference {
 
   @@unique([user_id, workspace_id])
   @@map("notification_preferences")
+}
+
+// ============================================================================
+// AI CHAT MESSAGES - Epic 3: Story 3.3
+// Chat history persistence for AI conversations
+// ============================================================================
+
+model ChatMessage {
+  id           String          @id @default(uuid())
+  workspace_id String
+  user_id      String
+  role         ChatMessageRole
+  content      String          @db.Text
+  context_type ChatContextType @default(GLOBAL)
+  context_id   String? // References task_id or law_list_item_id depending on context_type
+  created_at   DateTime        @default(now())
+
+  // Relations
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, context_type, context_id])
+  @@index([workspace_id, created_at])
+  @@index([user_id])
+  @@map("chat_messages")
+}
+
+enum ChatMessageRole {
+  USER
+  ASSISTANT
+}
+
+enum ChatContextType {
+  GLOBAL
+  TASK
+  LAW
 }
 
 // Audit trail for compliance activities

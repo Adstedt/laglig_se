@@ -133,7 +133,7 @@ export function LegalDocumentModal({
                   'bg-background border shadow-lg rounded-lg',
                   'transition-[border-radius] duration-100',
                   aiChatOpen
-                    ? 'lg:rounded-r-none lg:border-r-transparent delay-200'
+                    ? 'lg:rounded-r-none lg:border-r-0 delay-200'
                     : 'delay-0'
                 )}
               >
@@ -176,6 +176,7 @@ export function LegalDocumentModal({
                 className={cn(
                   'hidden lg:block absolute top-0 bottom-0 left-full z-0',
                   'w-[320px] xl:w-[380px] transition-all duration-300 ease-out',
+                  'rounded-r-lg overflow-hidden',
                   aiChatOpen
                     ? 'translate-x-0 opacity-100 shadow-lg'
                     : 'translate-x-[-100%] opacity-0 shadow-none pointer-events-none'
