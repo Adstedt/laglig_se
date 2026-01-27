@@ -26,8 +26,16 @@ describe('EU Legislation Ingestion', () => {
     await prisma.crossReference.deleteMany({
       where: {
         OR: [
-          { source_document: { content_type: { in: ['EU_REGULATION', 'EU_DIRECTIVE'] } } },
-          { target_document: { content_type: { in: ['EU_REGULATION', 'EU_DIRECTIVE'] } } },
+          {
+            source_document: {
+              content_type: { in: ['EU_REGULATION', 'EU_DIRECTIVE'] },
+            },
+          },
+          {
+            target_document: {
+              content_type: { in: ['EU_REGULATION', 'EU_DIRECTIVE'] },
+            },
+          },
         ],
       },
     })
@@ -95,7 +103,8 @@ describe('EU Legislation Ingestion', () => {
         title: 'Test Europaparlamentets och rådets förordning',
         content_type: ContentType.EU_REGULATION,
         status: 'ACTIVE' as const,
-        source_url: 'https://eur-lex.europa.eu/legal-content/SV/ALL/?uri=CELEX:32099R0999',
+        source_url:
+          'https://eur-lex.europa.eu/legal-content/SV/ALL/?uri=CELEX:32099R0999',
         slug: 'test-eu-regulation-32099r0999',
         publication_date: new Date('2099-01-01'),
         metadata: {
@@ -119,7 +128,8 @@ describe('EU Legislation Ingestion', () => {
         title: 'Test Europaparlamentets och rådets direktiv',
         content_type: ContentType.EU_DIRECTIVE,
         status: 'ACTIVE' as const,
-        source_url: 'https://eur-lex.europa.eu/legal-content/SV/ALL/?uri=CELEX:32099L0888',
+        source_url:
+          'https://eur-lex.europa.eu/legal-content/SV/ALL/?uri=CELEX:32099L0888',
         slug: 'test-eu-directive-32099l0888',
         metadata: {
           celex: 'TEST_32099L0888',
@@ -254,9 +264,9 @@ describe('EU Legislation Ingestion', () => {
       })
 
       expect(sfsWithRefs?.source_references.length).toBe(1)
-      expect(sfsWithRefs?.source_references[0]?.target_document.document_number).toBe(
-        'TEST_Directive (EU) 2099/555'
-      )
+      expect(
+        sfsWithRefs?.source_references[0]?.target_document.document_number
+      ).toBe('TEST_Directive (EU) 2099/555')
 
       // Verify lookup from EU directive
       const directiveWithRefs = await prisma.legalDocument.findUnique({
@@ -269,9 +279,9 @@ describe('EU Legislation Ingestion', () => {
       })
 
       expect(directiveWithRefs?.target_references.length).toBe(1)
-      expect(directiveWithRefs?.target_references[0]?.source_document.document_number).toBe(
-        'TEST_SFS 2099:999'
-      )
+      expect(
+        directiveWithRefs?.target_references[0]?.source_document.document_number
+      ).toBe('TEST_SFS 2099:999')
     })
   })
 
@@ -281,7 +291,8 @@ describe('EU Legislation Ingestion', () => {
         {
           title: 'Europaparlamentets och rådets förordning (EU) 2016/679',
           celex: '32016R0679',
-          expected: 'europaparlamentets-och-radets-forordning-eu-201-32016r0679',
+          expected:
+            'europaparlamentets-och-radets-forordning-eu-201-32016r0679',
         },
         {
           title: 'Kommissionens förordning',
@@ -335,7 +346,9 @@ describe('EU Legislation Ingestion', () => {
     it('verifies Swedish content in titles', async () => {
       const docs = await prisma.legalDocument.findMany({
         where: {
-          content_type: { in: [ContentType.EU_REGULATION, ContentType.EU_DIRECTIVE] },
+          content_type: {
+            in: [ContentType.EU_REGULATION, ContentType.EU_DIRECTIVE],
+          },
         },
         take: 20,
       })

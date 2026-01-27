@@ -10,7 +10,7 @@ if (process.env.CI !== 'true') {
   console.log('Test Setup - Redis Config:', {
     url: process.env.UPSTASH_REDIS_REST_URL ? '✓ Set' : '✗ Missing',
     token: process.env.UPSTASH_REDIS_REST_TOKEN ? '✓ Set' : '✗ Missing',
-    envLoaded: envResult.error ? '✗ Failed' : '✓ Success'
+    envLoaded: envResult.error ? '✗ Failed' : '✓ Success',
   })
 }
 

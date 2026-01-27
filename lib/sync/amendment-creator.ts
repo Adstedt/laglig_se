@@ -9,7 +9,10 @@
 
 import type { Prisma, Amendment } from '@prisma/client'
 import { AmendmentDetectedMethod } from '@prisma/client'
-import { findChangedSections, parseTransitionalProvisions } from './section-parser'
+import {
+  findChangedSections,
+  parseTransitionalProvisions,
+} from './section-parser'
 
 // ============================================================================
 // Types
@@ -47,7 +50,8 @@ export async function createAmendmentFromChange(
   tx: TransactionClient,
   params: CreateAmendmentParams
 ): Promise<Amendment | null> {
-  const { baseDocumentId, amendmentSfs, fullText, detectedFromVersionId } = params
+  const { baseDocumentId, amendmentSfs, fullText, detectedFromVersionId } =
+    params
 
   // Check if this amendment already exists for this base document
   const existing = await tx.amendment.findFirst({
@@ -76,7 +80,12 @@ export async function createAmendmentFromChange(
     publication_date: null
     effective_date: Date | null
     affected_sections_raw?: string
-    affected_sections?: { amended: string[]; repealed: string[]; new: string[]; renumbered: string[] }
+    affected_sections?: {
+      amended: string[]
+      repealed: string[]
+      new: string[]
+      renumbered: string[]
+    }
     detected_method: typeof AmendmentDetectedMethod.RIKSDAGEN_TEXT_PARSING
     detected_from_version_id?: string
     summary: null
@@ -167,7 +176,12 @@ export async function extractAllAmendments(
       publication_date: null
       effective_date: Date | null
       affected_sections_raw?: string
-      affected_sections?: { amended: string[]; repealed: string[]; new: string[]; renumbered: string[] }
+      affected_sections?: {
+        amended: string[]
+        repealed: string[]
+        new: string[]
+        renumbered: string[]
+      }
       detected_method: typeof AmendmentDetectedMethod.RIKSDAGEN_TEXT_PARSING
       detected_from_version_id?: string
       summary: null

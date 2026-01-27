@@ -9,7 +9,7 @@ interface ContentWithStyledHeadingsProps {
 
 export function ContentWithStyledHeadings({
   htmlContent,
-  className
+  className,
 }: ContentWithStyledHeadingsProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 

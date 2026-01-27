@@ -79,7 +79,13 @@ export function validateLlmOutput(
     return {
       valid: false,
       cleanedHtml: null,
-      errors: [{ code: 'EMPTY_OUTPUT', message: 'LLM output is empty', severity: 'error' }],
+      errors: [
+        {
+          code: 'EMPTY_OUTPUT',
+          message: 'LLM output is empty',
+          severity: 'error',
+        },
+      ],
       warnings: [],
       metrics: createEmptyMetrics(),
     }
@@ -280,9 +286,7 @@ function calculateMetrics($: cheerio.CheerioAPI): QualityMetrics {
   // Typical amendment has 500-10000 chars
   const outputRatio = charCount / 3000 // 3000 is median
   const appearsComplete =
-    charCount > 200 &&
-    sectionCount > 0 &&
-    paragraphCount > 0
+    charCount > 200 && sectionCount > 0 && paragraphCount > 0
 
   return {
     charCount,

@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 async function main() {
   // Check raw count first
   const count = await prisma.legalDocument.count({
-    where: { content_type: 'SFS_AMENDMENT' }
+    where: { content_type: 'SFS_AMENDMENT' },
   })
   console.log('Total amendments:', count)
 
@@ -17,8 +17,10 @@ async function main() {
     where: {
       OR: [
         { document_number: 'SFS 2025:57' },
-        { slug: 'lag-om-andring-i-lagen-om-mottagande-av-asylsokande-mfl-2025-57' }
-      ]
+        {
+          slug: 'lag-om-andring-i-lagen-om-mottagande-av-asylsokande-mfl-2025-57',
+        },
+      ],
     },
     select: {
       id: true,
@@ -26,8 +28,8 @@ async function main() {
       slug: true,
       content_type: true,
       html_content: true,
-      updated_at: true
-    }
+      updated_at: true,
+    },
   })
 
   if (doc) {
@@ -42,7 +44,10 @@ async function main() {
     // Check content
     const html = doc.html_content || ''
     console.log('\nContent checks:')
-    console.log('- Has Samhällsintroduktion:', html.includes('Samhällsintroduktion'))
+    console.log(
+      '- Has Samhällsintroduktion:',
+      html.includes('Samhällsintroduktion')
+    )
     console.log('- Has Ikraftträdande:', html.includes('Ikraftträdande'))
     console.log('- Has footer:', html.includes('<footer'))
   } else {
@@ -51,10 +56,12 @@ async function main() {
     // List all documents to debug
     const all = await prisma.legalDocument.findMany({
       take: 10,
-      select: { document_number: true, slug: true, content_type: true }
+      select: { document_number: true, slug: true, content_type: true },
     })
     console.log('\nFirst 10 documents:')
-    all.forEach(d => console.log(`  ${d.content_type}: ${d.document_number} -> ${d.slug}`))
+    all.forEach((d) =>
+      console.log(`  ${d.content_type}: ${d.document_number} -> ${d.slug}`)
+    )
   }
 
   await prisma.$disconnect()

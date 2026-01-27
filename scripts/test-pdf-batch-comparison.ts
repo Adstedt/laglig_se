@@ -66,7 +66,9 @@ async function submitBatches() {
     const sfsNumber = pdfFile.replace('.pdf', '')
     const pdfBuffer = fs.readFileSync(pdfPath)
     const pdfBase64 = pdfBuffer.toString('base64')
-    console.log(`Prepared: ${sfsNumber} (${(pdfBuffer.length / 1024).toFixed(0)} KB)`)
+    console.log(
+      `Prepared: ${sfsNumber} (${(pdfBuffer.length / 1024).toFixed(0)} KB)`
+    )
 
     const messageParams: Anthropic.Messages.MessageCreateParamsNonStreaming = {
       model: 'claude-opus-4-20250514', // Will be overridden per batch
@@ -125,7 +127,9 @@ async function submitBatches() {
   }
   fs.writeFileSync(BATCH_IDS_FILE, JSON.stringify(batchIds, null, 2))
   console.log(`\nBatch IDs saved to: ${BATCH_IDS_FILE}`)
-  console.log('\nRun "pnpm tsx scripts/test-pdf-batch-comparison.ts status" to check progress')
+  console.log(
+    '\nRun "pnpm tsx scripts/test-pdf-batch-comparison.ts status" to check progress'
+  )
 }
 
 async function checkStatus() {
@@ -138,7 +142,10 @@ async function checkStatus() {
 
   console.log('=== Batch Status ===\n')
 
-  for (const [model, batchId] of Object.entries({ opus: batchIds.opus, sonnet: batchIds.sonnet })) {
+  for (const [model, batchId] of Object.entries({
+    opus: batchIds.opus,
+    sonnet: batchIds.sonnet,
+  })) {
     const batch = await anthropic.messages.batches.retrieve(batchId as string)
     console.log(`${model.toUpperCase()}:`)
     console.log(`  ID: ${batch.id}`)
@@ -160,12 +167,17 @@ async function downloadResults() {
   const batchIds = JSON.parse(fs.readFileSync(BATCH_IDS_FILE, 'utf-8'))
   const results: Record<string, any> = { opus: {}, sonnet: {} }
 
-  for (const [model, batchId] of Object.entries({ opus: batchIds.opus, sonnet: batchIds.sonnet })) {
+  for (const [model, batchId] of Object.entries({
+    opus: batchIds.opus,
+    sonnet: batchIds.sonnet,
+  })) {
     console.log(`\nDownloading ${model} results...`)
     const batch = await anthropic.messages.batches.retrieve(batchId as string)
 
     if (batch.processing_status !== 'ended') {
-      console.log(`  Batch not finished yet. Status: ${batch.processing_status}`)
+      console.log(
+        `  Batch not finished yet. Status: ${batch.processing_status}`
+      )
       continue
     }
 
@@ -193,14 +205,18 @@ async function downloadResults() {
       const result = JSON.parse(line)
       const customId = result.custom_id
       if (!customId) {
-        console.log('  Skipping result without custom_id:', JSON.stringify(result).slice(0, 100))
+        console.log(
+          '  Skipping result without custom_id:',
+          JSON.stringify(result).slice(0, 100)
+        )
         continue
       }
       const sfsNumber = customId.replace(`${model}-`, '')
 
       if (result.result.type === 'succeeded') {
         const message = result.result.message
-        const html = message.content[0].type === 'text' ? message.content[0].text : ''
+        const html =
+          message.content[0].type === 'text' ? message.content[0].text : ''
 
         // Clean markdown fences
         let cleanHtml = html
@@ -210,7 +226,10 @@ async function downloadResults() {
         cleanHtml = cleanHtml.trim()
 
         // Save HTML file
-        fs.writeFileSync(path.join(OUTPUT_DIR, `${sfsNumber}-${model}.html`), cleanHtml)
+        fs.writeFileSync(
+          path.join(OUTPUT_DIR, `${sfsNumber}-${model}.html`),
+          cleanHtml
+        )
 
         totalInput += message.usage.input_tokens
         totalOutput += message.usage.output_tokens
@@ -221,7 +240,9 @@ async function downloadResults() {
           htmlLength: cleanHtml.length,
         }
 
-        console.log(`  ✓ ${sfsNumber}: ${message.usage.input_tokens} in / ${message.usage.output_tokens} out`)
+        console.log(
+          `  ✓ ${sfsNumber}: ${message.usage.input_tokens} in / ${message.usage.output_tokens} out`
+        )
       } else {
         console.log(`  ✗ ${sfsNumber}: ${result.result.type}`)
         if (result.result.type === 'errored') {
@@ -233,7 +254,8 @@ async function downloadResults() {
     // Calculate cost (with 50% batch discount)
     const costPerMTokIn = model === 'opus' ? 7.5 : 1.5
     const costPerMTokOut = model === 'opus' ? 37.5 : 7.5
-    const cost = (totalInput * costPerMTokIn + totalOutput * costPerMTokOut) / 1_000_000
+    const cost =
+      (totalInput * costPerMTokIn + totalOutput * costPerMTokOut) / 1_000_000
 
     results[model].totals = {
       inputTokens: totalInput,
@@ -243,17 +265,24 @@ async function downloadResults() {
   }
 
   // Save summary
-  fs.writeFileSync(path.join(OUTPUT_DIR, 'results.json'), JSON.stringify(results, null, 2))
+  fs.writeFileSync(
+    path.join(OUTPUT_DIR, 'results.json'),
+    JSON.stringify(results, null, 2)
+  )
 
   // Print summary
   console.log('\n=== SUMMARY ===\n')
   console.log('Model   | Input Tok | Output Tok | Cost (batch)')
   console.log('--------|-----------|------------|-------------')
   if (results.opus.totals) {
-    console.log(`Opus    | ${results.opus.totals.inputTokens.toLocaleString().padStart(9)} | ${results.opus.totals.outputTokens.toLocaleString().padStart(10)} | $${results.opus.totals.cost}`)
+    console.log(
+      `Opus    | ${results.opus.totals.inputTokens.toLocaleString().padStart(9)} | ${results.opus.totals.outputTokens.toLocaleString().padStart(10)} | $${results.opus.totals.cost}`
+    )
   }
   if (results.sonnet.totals) {
-    console.log(`Sonnet  | ${results.sonnet.totals.inputTokens.toLocaleString().padStart(9)} | ${results.sonnet.totals.outputTokens.toLocaleString().padStart(10)} | $${results.sonnet.totals.cost}`)
+    console.log(
+      `Sonnet  | ${results.sonnet.totals.inputTokens.toLocaleString().padStart(9)} | ${results.sonnet.totals.outputTokens.toLocaleString().padStart(10)} | $${results.sonnet.totals.cost}`
+    )
   }
 
   console.log(`\nHTML files saved to: ${OUTPUT_DIR}`)
@@ -273,5 +302,7 @@ switch (command) {
     downloadResults().catch(console.error)
     break
   default:
-    console.log('Usage: pnpm tsx scripts/test-pdf-batch-comparison.ts [submit|status|results]')
+    console.log(
+      'Usage: pnpm tsx scripts/test-pdf-batch-comparison.ts [submit|status|results]'
+    )
 }

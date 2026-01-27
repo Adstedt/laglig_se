@@ -70,9 +70,7 @@ interface SyncStats {
 // API Functions
 // ============================================================================
 
-async function fetchLatestSFS(
-  page: number = 1
-): Promise<{
+async function fetchLatestSFS(page: number = 1): Promise<{
   documents: RiksdagenDocument[]
   totalCount: number
   hasMore: boolean

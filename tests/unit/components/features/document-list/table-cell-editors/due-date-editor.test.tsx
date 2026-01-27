@@ -39,7 +39,9 @@ describe('DueDateEditor', () => {
     const onChange = vi.fn()
     // Date in the past relative to mocked current date (2026-01-15)
     const pastDate = new Date('2026-01-10')
-    const { container } = render(<DueDateEditor value={pastDate} onChange={onChange} />)
+    const { container } = render(
+      <DueDateEditor value={pastDate} onChange={onChange} />
+    )
 
     // Should have destructive (red) text class
     const button = container.querySelector('button')
@@ -50,7 +52,9 @@ describe('DueDateEditor', () => {
     const onChange = vi.fn()
     // Same as mocked current date
     const todayDate = new Date('2026-01-15')
-    const { container } = render(<DueDateEditor value={todayDate} onChange={onChange} />)
+    const { container } = render(
+      <DueDateEditor value={todayDate} onChange={onChange} />
+    )
 
     // Should not have destructive class
     const button = container.querySelector('button')
@@ -60,7 +64,9 @@ describe('DueDateEditor', () => {
   it('does not show overdue indicator for future dates', () => {
     const onChange = vi.fn()
     const futureDate = new Date('2026-02-01')
-    const { container } = render(<DueDateEditor value={futureDate} onChange={onChange} />)
+    const { container } = render(
+      <DueDateEditor value={futureDate} onChange={onChange} />
+    )
 
     // Should not have destructive class
     const button = container.querySelector('button')

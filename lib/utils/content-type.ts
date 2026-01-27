@@ -4,13 +4,7 @@
  */
 
 import type { ContentType } from '@prisma/client'
-import {
-  Scale,
-  FileEdit,
-  Gavel,
-  Globe,
-  type LucideIcon,
-} from 'lucide-react'
+import { Scale, FileEdit, Gavel, Globe, type LucideIcon } from 'lucide-react'
 
 // ============================================================================
 // LABELS - Swedish display names
@@ -56,19 +50,31 @@ export function getContentTypeFullLabel(type: ContentType): string {
 
 const CONTENT_TYPE_COLORS: Record<ContentType, string> = {
   SFS_LAW: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  SFS_AMENDMENT: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  COURT_CASE_AD: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_HD: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_HOVR: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_HFD: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_MOD: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_MIG: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  EU_REGULATION: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  EU_DIRECTIVE: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+  SFS_AMENDMENT:
+    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  COURT_CASE_AD:
+    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  COURT_CASE_HD:
+    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  COURT_CASE_HOVR:
+    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  COURT_CASE_HFD:
+    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  COURT_CASE_MOD:
+    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  COURT_CASE_MIG:
+    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  EU_REGULATION:
+    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  EU_DIRECTIVE:
+    'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
 }
 
 export function getContentTypeBadgeColor(type: ContentType): string {
-  return CONTENT_TYPE_COLORS[type] ?? 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
+  return (
+    CONTENT_TYPE_COLORS[type] ??
+    'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
+  )
 }
 
 // ============================================================================
@@ -105,10 +111,7 @@ const COURT_CASE_TYPES: ContentType[] = [
   'COURT_CASE_MIG',
 ]
 
-const EU_DOCUMENT_TYPES: ContentType[] = [
-  'EU_REGULATION',
-  'EU_DIRECTIVE',
-]
+const EU_DOCUMENT_TYPES: ContentType[] = ['EU_REGULATION', 'EU_DIRECTIVE']
 
 export function isCourtCase(type: ContentType): boolean {
   return COURT_CASE_TYPES.includes(type)
@@ -165,8 +168,8 @@ export const CONTENT_TYPE_GROUPS: ContentTypeGroup[] = [
  * Used for filter chips in the UI
  */
 export function groupContentTypes(types: ContentType[]): ContentTypeGroup[] {
-  return CONTENT_TYPE_GROUPS.filter(group =>
-    group.types.some(t => types.includes(t))
+  return CONTENT_TYPE_GROUPS.filter((group) =>
+    group.types.some((t) => types.includes(t))
   )
 }
 
@@ -174,15 +177,17 @@ export function groupContentTypes(types: ContentType[]): ContentTypeGroup[] {
  * Get all content types for a group ID
  */
 export function getContentTypesForGroup(groupId: string): ContentType[] {
-  const group = CONTENT_TYPE_GROUPS.find(g => g.id === groupId)
+  const group = CONTENT_TYPE_GROUPS.find((g) => g.id === groupId)
   return group?.types ?? []
 }
 
 /**
  * Get group for a content type
  */
-export function getGroupForContentType(type: ContentType): ContentTypeGroup | undefined {
-  return CONTENT_TYPE_GROUPS.find(group => group.types.includes(type))
+export function getGroupForContentType(
+  type: ContentType
+): ContentTypeGroup | undefined {
+  return CONTENT_TYPE_GROUPS.find((group) => group.types.includes(type))
 }
 
 // ============================================================================

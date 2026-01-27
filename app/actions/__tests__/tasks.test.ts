@@ -4,7 +4,10 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { getWorkspaceTasksPaginated, type TaskPaginationOptions } from '../tasks'
+import {
+  getWorkspaceTasksPaginated,
+  type TaskPaginationOptions,
+} from '../tasks'
 import { prisma } from '@/lib/prisma'
 import * as workspaceContext from '@/lib/auth/workspace-context'
 
@@ -41,7 +44,7 @@ describe('tasks actions', () => {
     const mockColumns = [
       { id: 'col-1', is_done: false, position: 0 }, // Open
       { id: 'col-2', is_done: false, position: 1 }, // In Progress
-      { id: 'col-3', is_done: true, position: 2 },  // Done
+      { id: 'col-3', is_done: true, position: 2 }, // Done
     ]
 
     const mockTasks = [
@@ -114,20 +117,24 @@ describe('tasks actions', () => {
 
     it('should fetch paginated tasks with default pagination (page 1, limit 50)', async () => {
       // Mock withWorkspace to execute the callback
-      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (callback) => {
-        return callback({
-          workspaceId: 'workspace-001',
-          userId: 'user-123',
-          workspaceName: 'Test Workspace',
-          workspaceSlug: 'test-workspace',
-          workspaceStatus: 'ACTIVE' as any,
-          role: 'OWNER' as any,
-          hasPermission: () => true
-        })
-      })
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(
+        async (callback) => {
+          return callback({
+            workspaceId: 'workspace-001',
+            userId: 'user-123',
+            workspaceName: 'Test Workspace',
+            workspaceSlug: 'test-workspace',
+            workspaceStatus: 'ACTIVE' as any,
+            role: 'OWNER' as any,
+            hasPermission: () => true,
+          })
+        }
+      )
 
       // Mock Prisma queries
-      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(mockColumns as any)
+      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(
+        mockColumns as any
+      )
       vi.mocked(prisma.task.count).mockResolvedValue(100)
       vi.mocked(prisma.task.findMany).mockResolvedValue(mockTasks as any)
       vi.mocked(prisma.taskListItemLink.findMany).mockResolvedValue([])
@@ -160,20 +167,24 @@ describe('tasks actions', () => {
 
     it('should respect custom pagination options', async () => {
       // Mock withWorkspace to execute the callback
-      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (callback) => {
-        return callback({
-          workspaceId: 'workspace-001',
-          userId: 'user-123',
-          workspaceName: 'Test Workspace',
-          workspaceSlug: 'test-workspace',
-          workspaceStatus: 'ACTIVE' as any,
-          role: 'OWNER' as any,
-          hasPermission: () => true
-        })
-      })
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(
+        async (callback) => {
+          return callback({
+            workspaceId: 'workspace-001',
+            userId: 'user-123',
+            workspaceName: 'Test Workspace',
+            workspaceSlug: 'test-workspace',
+            workspaceStatus: 'ACTIVE' as any,
+            role: 'OWNER' as any,
+            hasPermission: () => true,
+          })
+        }
+      )
 
       // Mock Prisma queries
-      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(mockColumns as any)
+      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(
+        mockColumns as any
+      )
       vi.mocked(prisma.task.count).mockResolvedValue(150)
       vi.mocked(prisma.task.findMany).mockResolvedValue(mockTasks as any)
       vi.mocked(prisma.taskListItemLink.findMany).mockResolvedValue([])
@@ -209,20 +220,24 @@ describe('tasks actions', () => {
 
     it('should enforce maximum limit of 100 items per page', async () => {
       // Mock withWorkspace to execute the callback
-      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (callback) => {
-        return callback({
-          workspaceId: 'workspace-001',
-          userId: 'user-123',
-          workspaceName: 'Test Workspace',
-          workspaceSlug: 'test-workspace',
-          workspaceStatus: 'ACTIVE' as any,
-          role: 'OWNER' as any,
-          hasPermission: () => true
-        })
-      })
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(
+        async (callback) => {
+          return callback({
+            workspaceId: 'workspace-001',
+            userId: 'user-123',
+            workspaceName: 'Test Workspace',
+            workspaceSlug: 'test-workspace',
+            workspaceStatus: 'ACTIVE' as any,
+            role: 'OWNER' as any,
+            hasPermission: () => true,
+          })
+        }
+      )
 
       // Mock Prisma queries
-      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(mockColumns as any)
+      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(
+        mockColumns as any
+      )
       vi.mocked(prisma.task.count).mockResolvedValue(500)
       vi.mocked(prisma.task.findMany).mockResolvedValue([])
       vi.mocked(prisma.taskListItemLink.findMany).mockResolvedValue([])
@@ -250,20 +265,24 @@ describe('tasks actions', () => {
 
     it('should handle empty results gracefully', async () => {
       // Mock withWorkspace to execute the callback
-      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (callback) => {
-        return callback({
-          workspaceId: 'workspace-001',
-          userId: 'user-123',
-          workspaceName: 'Test Workspace',
-          workspaceSlug: 'test-workspace',
-          workspaceStatus: 'ACTIVE' as any,
-          role: 'OWNER' as any,
-          hasPermission: () => true
-        })
-      })
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(
+        async (callback) => {
+          return callback({
+            workspaceId: 'workspace-001',
+            userId: 'user-123',
+            workspaceName: 'Test Workspace',
+            workspaceSlug: 'test-workspace',
+            workspaceStatus: 'ACTIVE' as any,
+            role: 'OWNER' as any,
+            hasPermission: () => true,
+          })
+        }
+      )
 
       // Mock Prisma queries for empty results
-      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(mockColumns as any)
+      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(
+        mockColumns as any
+      )
       vi.mocked(prisma.task.count).mockResolvedValue(0)
       vi.mocked(prisma.task.findMany).mockResolvedValue([])
       vi.mocked(prisma.taskListItemLink.findMany).mockResolvedValue([])
@@ -286,17 +305,19 @@ describe('tasks actions', () => {
 
     it('should fetch linked law items separately (lazy loading)', async () => {
       // Mock withWorkspace to execute the callback
-      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (callback) => {
-        return callback({
-          workspaceId: 'workspace-001',
-          userId: 'user-123',
-          workspaceName: 'Test Workspace',
-          workspaceSlug: 'test-workspace',
-          workspaceStatus: 'ACTIVE' as any,
-          role: 'OWNER' as any,
-          hasPermission: () => true
-        })
-      })
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(
+        async (callback) => {
+          return callback({
+            workspaceId: 'workspace-001',
+            userId: 'user-123',
+            workspaceName: 'Test Workspace',
+            workspaceSlug: 'test-workspace',
+            workspaceStatus: 'ACTIVE' as any,
+            role: 'OWNER' as any,
+            hasPermission: () => true,
+          })
+        }
+      )
 
       const mockListItemLinks = [
         {
@@ -312,10 +333,14 @@ describe('tasks actions', () => {
       ]
 
       // Mock Prisma queries
-      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(mockColumns as any)
+      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(
+        mockColumns as any
+      )
       vi.mocked(prisma.task.count).mockResolvedValue(2)
       vi.mocked(prisma.task.findMany).mockResolvedValue(mockTasks as any)
-      vi.mocked(prisma.taskListItemLink.findMany).mockResolvedValue(mockListItemLinks as any)
+      vi.mocked(prisma.taskListItemLink.findMany).mockResolvedValue(
+        mockListItemLinks as any
+      )
 
       // Call the function
       const result = await getWorkspaceTasksPaginated()
@@ -330,7 +355,9 @@ describe('tasks actions', () => {
           expect(task0.list_item_links).toHaveLength(1)
           const firstLink = task0.list_item_links[0]
           if (firstLink) {
-            expect(firstLink.law_list_item.document.title).toBe('Labor Law 2024')
+            expect(firstLink.law_list_item.document.title).toBe(
+              'Labor Law 2024'
+            )
           }
           expect(task1.list_item_links).toHaveLength(0) // No links for task-2
         }
@@ -360,20 +387,24 @@ describe('tasks actions', () => {
 
     it('should correctly calculate last page pagination', async () => {
       // Mock withWorkspace to execute the callback
-      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (callback) => {
-        return callback({
-          workspaceId: 'workspace-001',
-          userId: 'user-123',
-          workspaceName: 'Test Workspace',
-          workspaceSlug: 'test-workspace',
-          workspaceStatus: 'ACTIVE' as any,
-          role: 'OWNER' as any,
-          hasPermission: () => true
-        })
-      })
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(
+        async (callback) => {
+          return callback({
+            workspaceId: 'workspace-001',
+            userId: 'user-123',
+            workspaceName: 'Test Workspace',
+            workspaceSlug: 'test-workspace',
+            workspaceStatus: 'ACTIVE' as any,
+            role: 'OWNER' as any,
+            hasPermission: () => true,
+          })
+        }
+      )
 
       // Mock Prisma queries
-      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(mockColumns as any)
+      vi.mocked(prisma.taskColumn.findMany).mockResolvedValue(
+        mockColumns as any
+      )
       vi.mocked(prisma.task.count).mockResolvedValue(123) // Odd number for testing
       vi.mocked(prisma.task.findMany).mockResolvedValue([mockTasks[0]] as any) // Single task on last page
       vi.mocked(prisma.taskListItemLink.findMany).mockResolvedValue([])
@@ -395,7 +426,7 @@ describe('tasks actions', () => {
         total: 123,
         totalPages: 3,
         hasNext: false, // No next page
-        hasPrev: true,  // Has previous page
+        hasPrev: true, // Has previous page
       })
     })
   })

@@ -22,7 +22,7 @@ interface JsonContent {
 async function main() {
   const doc = await prisma.legalDocument.findFirst({
     where: { document_number: 'SFS 2025:151' },
-    select: { document_number: true, json_content: true }
+    select: { document_number: true, json_content: true },
   })
 
   console.log('=== Storage Location ===')
@@ -42,4 +42,6 @@ async function main() {
   console.log(JSON.stringify(json?.footnotes?.[0], null, 2))
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

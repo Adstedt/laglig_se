@@ -18,7 +18,14 @@ import { resolve } from 'path'
 config({ path: resolve(process.cwd(), '.env.local') })
 config({ path: resolve(process.cwd(), '.env') })
 
-import { writeFileSync, readFileSync, existsSync, mkdirSync, appendFileSync, unlinkSync } from 'fs'
+import {
+  writeFileSync,
+  readFileSync,
+  existsSync,
+  mkdirSync,
+  appendFileSync,
+  unlinkSync,
+} from 'fs'
 import { join } from 'path'
 import Anthropic from '@anthropic-ai/sdk'
 import { prisma } from '../lib/prisma'
@@ -36,7 +43,10 @@ import {
   generateAmendmentSlug,
   generateAmendmentTitle,
 } from '../lib/sfs/amendment-slug'
-import { htmlToMarkdown, htmlToPlainText } from '../lib/transforms/html-to-markdown'
+import {
+  htmlToMarkdown,
+  htmlToPlainText,
+} from '../lib/transforms/html-to-markdown'
 import { htmlToJson } from '../lib/transforms/html-to-json'
 
 // ============================================================================
@@ -137,7 +147,9 @@ async function processAmendmentBatch(
 
       const pdfBuffer = await downloadPdfByPath(amendment.storage_path)
       if (!pdfBuffer) {
-        throw new Error(`Failed to download PDF for ${amendment.sfs_number} (path: ${amendment.storage_path})`)
+        throw new Error(
+          `Failed to download PDF for ${amendment.sfs_number} (path: ${amendment.storage_path})`
+        )
       }
 
       // Convert to base64
@@ -206,7 +218,9 @@ async function prepare(args: string[]) {
   const chunkSize = getArgValue(args, '--chunk-size', 5000)
   const fromFile = getArgValue(args, '--from-file', '')
 
-  console.log(`Preparing batch files (limit: ${limit}, offset: ${offset}, concurrency: ${concurrency}, chunk-size: ${chunkSize}, dryRun: ${dryRun})...`)
+  console.log(
+    `Preparing batch files (limit: ${limit}, offset: ${offset}, concurrency: ${concurrency}, chunk-size: ${chunkSize}, dryRun: ${dryRun})...`
+  )
 
   let toProcess: AmendmentDoc[]
 
@@ -214,11 +228,17 @@ async function prepare(args: string[]) {
     // Read specific SFS numbers from file
     console.log(`Reading SFS numbers from ${fromFile}...`)
     const fileContent = readFileSync(fromFile, 'utf-8')
-    const sfsNumbers = fileContent.trim().split('\n').map(s => s.trim()).filter(Boolean)
+    const sfsNumbers = fileContent
+      .trim()
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean)
     console.log(`Found ${sfsNumbers.length} SFS numbers in file`)
 
     // Convert to full format: "2025:1" -> "SFS 2025:1"
-    const fullSfsNumbers = sfsNumbers.map(s => s.startsWith('SFS') ? s : `SFS ${s}`)
+    const fullSfsNumbers = sfsNumbers.map((s) =>
+      s.startsWith('SFS') ? s : `SFS ${s}`
+    )
 
     // Fetch amendments for these specific SFS numbers
     const amendments = await prisma.amendmentDocument.findMany({
@@ -256,13 +276,17 @@ async function prepare(args: string[]) {
       existing.map((d) => d.document_number.replace('SFS ', ''))
     )
 
-    const allToProcess = amendments.filter((a) => !existingSet.has(a.sfs_number))
+    const allToProcess = amendments.filter(
+      (a) => !existingSet.has(a.sfs_number)
+    )
     console.log(`${allToProcess.length} documents need processing total`)
 
     // Apply offset to skip already processed documents
     toProcess = offset > 0 ? allToProcess.slice(offset) : allToProcess
     if (offset > 0) {
-      console.log(`Skipping first ${offset} documents (offset), processing ${toProcess.length}`)
+      console.log(
+        `Skipping first ${offset} documents (offset), processing ${toProcess.length}`
+      )
     }
   }
 
@@ -288,8 +312,13 @@ async function prepare(args: string[]) {
     const chunkEnd = Math.min(chunkStart + chunkSize, toProcess.length)
     const chunkDocs = toProcess.slice(chunkStart, chunkEnd)
 
-    const batchPath = join(BATCH_DIR, `batch-${batchTimestamp}-part${chunkIndex + 1 + Math.floor(offset / chunkSize)}.jsonl`)
-    console.log(`\n=== Processing chunk ${chunkIndex + 1}/${totalChunks} (${chunkDocs.length} docs) ===`)
+    const batchPath = join(
+      BATCH_DIR,
+      `batch-${batchTimestamp}-part${chunkIndex + 1 + Math.floor(offset / chunkSize)}.jsonl`
+    )
+    console.log(
+      `\n=== Processing chunk ${chunkIndex + 1}/${totalChunks} (${chunkDocs.length} docs) ===`
+    )
 
     // Delete file if exists (start fresh)
     if (existsSync(batchPath)) {
@@ -304,7 +333,9 @@ async function prepare(args: string[]) {
       const batchNum = Math.floor(i / concurrency) + 1
       const totalBatches = Math.ceil(chunkDocs.length / concurrency)
 
-      process.stdout.write(`\rBatch ${batchNum}/${totalBatches} (${i + batch.length}/${chunkDocs.length} in chunk)...`)
+      process.stdout.write(
+        `\rBatch ${batchNum}/${totalBatches} (${i + batch.length}/${chunkDocs.length} in chunk)...`
+      )
 
       const { requests, failed } = await processAmendmentBatch(batch)
 
@@ -328,7 +359,9 @@ async function prepare(args: string[]) {
     const rate = totalProcessed / elapsed
     const remaining = (toProcess.length - totalProcessed) / rate
     console.log(`\n  Written: ${batchPath} (${chunkCount} requests)`)
-    console.log(`  Progress: ${totalProcessed}/${toProcess.length} total (${rate.toFixed(1)}/s, ~${Math.ceil(remaining / 60)} min remaining)`)
+    console.log(
+      `  Progress: ${totalProcessed}/${toProcess.length} total (${rate.toFixed(1)}/s, ~${Math.ceil(remaining / 60)} min remaining)`
+    )
   }
 
   const elapsed = (Date.now() - startTime) / 1000
@@ -345,7 +378,9 @@ async function prepare(args: string[]) {
   console.log(`\n  Estimated total cost: $${cost.costUsd}`)
   console.log(`\nTo submit all batches:`)
   for (const file of createdFiles) {
-    console.log(`  pnpm tsx scripts/batch-process-amendments.ts submit --batch-file ${file}`)
+    console.log(
+      `  pnpm tsx scripts/batch-process-amendments.ts submit --batch-file ${file}`
+    )
   }
 }
 
@@ -393,8 +428,12 @@ async function submit(args: string[]) {
   console.log(`  Batch ID: ${batch.id}`)
   console.log(`  Status: ${batch.processing_status}`)
   console.log(`  Request counts:`)
-  console.log(`    Total: ${batch.request_counts.processing + batch.request_counts.succeeded + batch.request_counts.errored + batch.request_counts.canceled + batch.request_counts.expired}`)
-  console.log(`\nTo check status: pnpm tsx scripts/batch-process-amendments.ts status --batch-id ${batch.id}`)
+  console.log(
+    `    Total: ${batch.request_counts.processing + batch.request_counts.succeeded + batch.request_counts.errored + batch.request_counts.canceled + batch.request_counts.expired}`
+  )
+  console.log(
+    `\nTo check status: pnpm tsx scripts/batch-process-amendments.ts status --batch-id ${batch.id}`
+  )
 }
 
 // ============================================================================
@@ -422,7 +461,9 @@ async function status(args: string[]) {
 
   if (batch.processing_status === 'ended') {
     console.log(`\nBatch complete! Download results:`)
-    console.log(`  pnpm tsx scripts/batch-process-amendments.ts download --batch-id ${batchId}`)
+    console.log(
+      `  pnpm tsx scripts/batch-process-amendments.ts download --batch-id ${batchId}`
+    )
   }
 }
 
@@ -441,7 +482,9 @@ async function download(args: string[]) {
   const batch = await anthropic.messages.batches.retrieve(batchId)
 
   if (batch.processing_status !== 'ended') {
-    console.error(`Batch is not complete yet. Status: ${batch.processing_status}`)
+    console.error(
+      `Batch is not complete yet. Status: ${batch.processing_status}`
+    )
     process.exit(1)
   }
 
@@ -460,7 +503,9 @@ async function download(args: string[]) {
 
   console.log(`Downloaded ${lines.length} results to ${resultsPath}`)
   console.log(`\nProcess results:`)
-  console.log(`  pnpm tsx scripts/batch-process-amendments.ts process --results-file ${resultsPath}`)
+  console.log(
+    `  pnpm tsx scripts/batch-process-amendments.ts process --results-file ${resultsPath}`
+  )
 }
 
 // ============================================================================
@@ -554,19 +599,18 @@ async function processResults(args: string[]) {
         // Get amendment metadata for upsert
         const amendment = await prisma.amendmentDocument.findFirst({
           where: {
-            OR: [
-              { sfs_number: sfsNumber },
-              { sfs_number: `SFS ${sfsNumber}` },
-            ],
+            OR: [{ sfs_number: sfsNumber }, { sfs_number: `SFS ${sfsNumber}` }],
           },
         })
 
         const documentNumber = `SFS ${sfsNumber}`
-        const title = amendment?.title ?? generateAmendmentTitle(
-          sfsNumber,
-          amendment?.base_law_sfs ?? null,
-          amendment?.base_law_name ?? null
-        )
+        const title =
+          amendment?.title ??
+          generateAmendmentTitle(
+            sfsNumber,
+            amendment?.base_law_sfs ?? null,
+            amendment?.base_law_name ?? null
+          )
         const slug = generateAmendmentSlug(
           sfsNumber,
           title,
@@ -587,7 +631,9 @@ async function processResults(args: string[]) {
             full_text: plainText,
             effective_date: amendment?.effective_date,
             publication_date: amendment?.publication_date,
-            source_url: amendment?.original_url ?? `https://rkrattsbaser.gov.se/sfst?bet=${sfsNumber}`,
+            source_url:
+              amendment?.original_url ??
+              `https://rkrattsbaser.gov.se/sfst?bet=${sfsNumber}`,
             status: 'ACTIVE',
           },
           update: {
@@ -607,7 +653,10 @@ async function processResults(args: string[]) {
           })
 
           // Map ref types to enum values
-          const refTypeMap: Record<string, 'PROP' | 'BET' | 'RSKR' | 'SOU' | 'DS'> = {
+          const refTypeMap: Record<
+            string,
+            'PROP' | 'BET' | 'RSKR' | 'SOU' | 'DS'
+          > = {
             prop: 'PROP',
             bet: 'BET',
             rskr: 'RSKR',
@@ -736,8 +785,16 @@ async function listPending(args: string[]) {
 // Utilities
 // ============================================================================
 
-function getArgValue(args: string[], flag: string, defaultValue: number): number
-function getArgValue(args: string[], flag: string, defaultValue: string): string
+function getArgValue(
+  _args: string[],
+  _flag: string,
+  _defaultValue: number
+): number
+function getArgValue(
+  _args: string[],
+  _flag: string,
+  _defaultValue: string
+): string
 function getArgValue(
   args: string[],
   flag: string,

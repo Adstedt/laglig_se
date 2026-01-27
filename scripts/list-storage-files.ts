@@ -20,7 +20,7 @@ async function main() {
     console.log('Error:', error)
   } else {
     console.log('Found', data?.length, 'files:')
-    data?.slice(0, 10).forEach(f => console.log(' ', f.name))
+    data?.slice(0, 10).forEach((f) => console.log(' ', f.name))
   }
 
   // Also try a file we know worked (from earlier batches)
@@ -42,7 +42,11 @@ async function main() {
       if (dlError) {
         console.log('Download error:', dlError)
       } else if (pdf) {
-        console.log('Success! Got', (await pdf.arrayBuffer()).byteLength, 'bytes')
+        console.log(
+          'Success! Got',
+          (await pdf.arrayBuffer()).byteLength,
+          'bytes'
+        )
       }
     }
   }

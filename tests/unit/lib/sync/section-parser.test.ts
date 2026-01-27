@@ -105,7 +105,9 @@ describe('Section Parser', () => {
     })
 
     it('should return empty for text without sections', () => {
-      const result = extractSectionAmendments('Just some plain text without sections.')
+      const result = extractSectionAmendments(
+        'Just some plain text without sections.'
+      )
 
       expect(result.amendments).toEqual([])
       expect(result.uniqueSfsNumbers).toEqual([])

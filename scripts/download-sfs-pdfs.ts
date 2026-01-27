@@ -17,7 +17,11 @@ dotenv.config({ path: '.env.local' })
 import * as fs from 'fs'
 import * as path from 'path'
 import { uploadPdf, listPdfsForYear } from '../lib/supabase/storage'
-import type { CrawlResult, CrawledDocument, DocumentType } from './crawl-sfs-index'
+import type {
+  CrawlResult,
+  CrawledDocument,
+  DocumentType,
+} from './crawl-sfs-index'
 
 interface DownloadStats {
   total: number
@@ -125,14 +129,16 @@ async function main() {
     process.exit(1)
   }
 
-  const crawlResult: CrawlResult = JSON.parse(fs.readFileSync(indexPath, 'utf-8'))
+  const crawlResult: CrawlResult = JSON.parse(
+    fs.readFileSync(indexPath, 'utf-8')
+  )
   console.log(`Loaded ${crawlResult.totalDocuments} documents from index`)
 
   // Filter documents
   let documents = crawlResult.documents
 
   if (filterType) {
-    documents = documents.filter(d => d.documentType === filterType)
+    documents = documents.filter((d) => d.documentType === filterType)
     console.log(`Filtered to ${documents.length} ${filterType} documents`)
   }
 
@@ -170,11 +176,13 @@ async function main() {
 
     // Rate limiting: 200ms between batches
     if (i > 0) {
-      await new Promise(resolve => setTimeout(resolve, 200))
+      await new Promise((resolve) => setTimeout(resolve, 200))
     }
 
     // Process batch in parallel
-    await Promise.all(batch.map(doc => processDocument(doc, stats, existingPdfs)))
+    await Promise.all(
+      batch.map((doc) => processDocument(doc, stats, existingPdfs))
+    )
 
     // Progress update
     const processed = Math.min(i + concurrency, documents.length)
@@ -201,7 +209,7 @@ async function main() {
 
   if (stats.errorList.length > 0) {
     console.log('\nErrors:')
-    stats.errorList.slice(0, 10).forEach(e => {
+    stats.errorList.slice(0, 10).forEach((e) => {
       console.log(`  - ${e.sfsNumber}: ${e.error}`)
     })
     if (stats.errorList.length > 10) {
@@ -209,7 +217,11 @@ async function main() {
     }
 
     // Save error list
-    const errorPath = path.join(process.cwd(), 'data', `sfs-download-errors-${year}.json`)
+    const errorPath = path.join(
+      process.cwd(),
+      'data',
+      `sfs-download-errors-${year}.json`
+    )
     fs.writeFileSync(errorPath, JSON.stringify(stats.errorList, null, 2))
     console.log(`\nError list saved to: ${errorPath}`)
   }

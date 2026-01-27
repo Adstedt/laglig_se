@@ -70,9 +70,6 @@ export async function generateStaticParams() {
       '@/lib/cache/cached-queries'
     )
     const topCases = await getAllTopCourtCasesForStaticGeneration(35) // 35 per court = ~210 total
-    console.log(
-      `[generateStaticParams] Pre-generating ${topCases.length} court case pages`
-    )
     return topCases
   } catch (error) {
     console.error(

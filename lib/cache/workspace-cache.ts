@@ -1,18 +1,14 @@
 /**
  * Workspace-Specific Caching Module (Story P.2)
- * 
+ *
  * Provides caching layer for workspace data with proper isolation and TTL management.
  * Implements user-specific caching for logged-in users to improve performance.
- * 
+ *
  * @see docs/stories/P.2.systematic-caching.story.md
  */
 
 import { redis, isRedisConfigured, getCachedOrFetch } from './redis'
-import type { 
-  WorkspaceMember, 
-  LawList,
-  LawListItem 
-} from '@prisma/client'
+import type { WorkspaceMember, LawList, LawListItem } from '@prisma/client'
 
 /**
  * Cache key generators for workspace-specific data
@@ -20,29 +16,24 @@ import type {
  */
 export const WORKSPACE_CACHE_KEYS = {
   // User-specific workspace context (5 min TTL)
-  CONTEXT: (userId: string, workspaceId: string) => 
+  CONTEXT: (userId: string, workspaceId: string) =>
     `workspace:context:${userId}:${workspaceId}`,
-  
+
   // Workspace members list (1 hour TTL)
-  MEMBERS: (workspaceId: string) => 
-    `workspace:members:${workspaceId}`,
-  
+  MEMBERS: (workspaceId: string) => `workspace:members:${workspaceId}`,
+
   // Workspace law lists (5 min TTL)
-  LAW_LISTS: (workspaceId: string) => 
-    `workspace:lists:${workspaceId}`,
-  
+  LAW_LISTS: (workspaceId: string) => `workspace:lists:${workspaceId}`,
+
   // Individual law list items (5 min TTL)
-  LIST_ITEMS: (listId: string) => 
-    `list:items:${listId}`,
-  
+  LIST_ITEMS: (listId: string) => `list:items:${listId}`,
+
   // User preferences (30 min TTL)
-  USER_PREFS: (userId: string) => 
-    `user:prefs:${userId}`,
-  
+  USER_PREFS: (userId: string) => `user:prefs:${userId}`,
+
   // Workspace settings (30 min TTL)
-  SETTINGS: (workspaceId: string) =>
-    `workspace:settings:${workspaceId}`,
-  
+  SETTINGS: (workspaceId: string) => `workspace:settings:${workspaceId}`,
+
   // User's frequently accessed documents (2 hours TTL)
   USER_FREQUENT_DOCS: (userId: string, workspaceId: string) =>
     `user:frequent:${userId}:${workspaceId}`,
@@ -53,13 +44,13 @@ export const WORKSPACE_CACHE_KEYS = {
  * Based on data volatility and access patterns
  */
 export const CACHE_TTL = {
-  WORKSPACE_CONTEXT: 300,     // 5 minutes
-  WORKSPACE_MEMBERS: 3600,     // 1 hour
-  WORKSPACE_SETTINGS: 1800,    // 30 minutes  
-  USER_PREFERENCES: 1800,      // 30 minutes
-  LAW_LISTS: 300,             // 5 minutes
-  LIST_ITEMS: 300,            // 5 minutes
-  USER_FREQUENT_DOCS: 7200,   // 2 hours
+  WORKSPACE_CONTEXT: 300, // 5 minutes
+  WORKSPACE_MEMBERS: 3600, // 1 hour
+  WORKSPACE_SETTINGS: 1800, // 30 minutes
+  USER_PREFERENCES: 1800, // 30 minutes
+  LAW_LISTS: 300, // 5 minutes
+  LIST_ITEMS: 300, // 5 minutes
+  USER_FREQUENT_DOCS: 7200, // 2 hours
 }
 
 /**
@@ -145,10 +136,10 @@ export async function invalidateWorkspaceCache(
   if (!isRedisConfigured()) return
 
   const keysToInvalidate: string[] = []
-  
+
   // If no specific types, invalidate all workspace cache
   const typesToInvalidate = types || ['context', 'members', 'lists', 'settings']
-  
+
   for (const type of typesToInvalidate) {
     switch (type) {
       case 'context':
@@ -168,7 +159,7 @@ export async function invalidateWorkspaceCache(
         break
     }
   }
-  
+
   // Invalidate all matching keys
   await Promise.all(
     keysToInvalidate.map(async (pattern) => {
@@ -176,7 +167,7 @@ export async function invalidateWorkspaceCache(
         // Pattern-based invalidation
         const keys = await redis.keys(pattern)
         if (keys.length > 0) {
-          await Promise.all(keys.map(key => redis.del(key)))
+          await Promise.all(keys.map((key) => redis.del(key)))
         }
       } else {
         // Direct key invalidation
@@ -197,7 +188,7 @@ export async function invalidateUserCache(
 
   const keysToInvalidate: string[] = []
   const typesToInvalidate = types || ['preferences', 'frequent', 'context']
-  
+
   for (const type of typesToInvalidate) {
     switch (type) {
       case 'preferences':
@@ -211,13 +202,13 @@ export async function invalidateUserCache(
         break
     }
   }
-  
+
   await Promise.all(
     keysToInvalidate.map(async (pattern) => {
       if (pattern.includes('*')) {
         const keys = await redis.keys(pattern)
         if (keys.length > 0) {
-          await Promise.all(keys.map(key => redis.del(key)))
+          await Promise.all(keys.map((key) => redis.del(key)))
         }
       } else {
         await redis.del(pattern)
@@ -235,15 +226,13 @@ export async function invalidateLawListCache(
 ): Promise<void> {
   if (!isRedisConfigured()) return
 
-  const keysToInvalidate = [
-    WORKSPACE_CACHE_KEYS.LIST_ITEMS(listId)
-  ]
-  
+  const keysToInvalidate = [WORKSPACE_CACHE_KEYS.LIST_ITEMS(listId)]
+
   if (workspaceId) {
     keysToInvalidate.push(WORKSPACE_CACHE_KEYS.LAW_LISTS(workspaceId))
   }
-  
-  await Promise.all(keysToInvalidate.map(key => redis.del(key)))
+
+  await Promise.all(keysToInvalidate.map((key) => redis.del(key)))
 }
 
 /**
@@ -263,35 +252,29 @@ export async function warmWorkspaceCache(
   if (!isRedisConfigured()) return
 
   const warmingTasks: Promise<any>[] = []
-  
+
   // Warm context cache
   if (fetchers.context) {
     warmingTasks.push(
       getCachedWorkspaceContext(userId, workspaceId, fetchers.context)
     )
   }
-  
+
   // Warm members cache
   if (fetchers.members) {
-    warmingTasks.push(
-      getCachedWorkspaceMembers(workspaceId, fetchers.members)
-    )
+    warmingTasks.push(getCachedWorkspaceMembers(workspaceId, fetchers.members))
   }
-  
+
   // Warm law lists cache
   if (fetchers.lists) {
-    warmingTasks.push(
-      getCachedLawLists(workspaceId, fetchers.lists)
-    )
+    warmingTasks.push(getCachedLawLists(workspaceId, fetchers.lists))
   }
-  
+
   // Warm user preferences
   if (fetchers.preferences) {
-    warmingTasks.push(
-      getCachedUserPreferences(userId, fetchers.preferences)
-    )
+    warmingTasks.push(getCachedUserPreferences(userId, fetchers.preferences))
   }
-  
+
   // Execute all warming tasks in parallel
   await Promise.all(warmingTasks)
 }
@@ -300,9 +283,7 @@ export async function warmWorkspaceCache(
  * Get cache statistics for workspace
  * Used for monitoring cache performance
  */
-export async function getWorkspaceCacheStats(
-  workspaceId: string
-): Promise<{
+export async function getWorkspaceCacheStats(workspaceId: string): Promise<{
   totalKeys: number
   memoryUsage: number
   keysByType: Record<string, number>
@@ -320,10 +301,10 @@ export async function getWorkspaceCacheStats(
       `workspace:settings:${workspaceId}`,
       `list:items:*`, // Would need to filter by workspace
     ]
-    
+
     let totalKeys = 0
     const keysByType: Record<string, number> = {}
-    
+
     for (const pattern of patterns) {
       const keys = await redis.keys(pattern)
       const type = pattern.split(':')[0]
@@ -332,11 +313,11 @@ export async function getWorkspaceCacheStats(
       }
       totalKeys += keys.length
     }
-    
+
     // Estimate memory usage (rough calculation)
     // Assuming average 1KB per cached item
     const memoryUsage = totalKeys * 1024
-    
+
     return {
       totalKeys,
       memoryUsage,
@@ -357,27 +338,32 @@ export async function measureWorkspaceCachePerformance<T>(
   fn: () => Promise<T>
 ): Promise<{ result: T; duration: number; cached: boolean }> {
   const startTime = performance.now()
-  
+
   try {
     const result = await fn()
     const duration = performance.now() - startTime
-    
+
     // Check if result has cached property (from getCachedOrFetch)
     const cached = (result as any)?.cached || false
-    
+
     // Log performance metrics for monitoring
     if (duration > 100) {
-      console.warn(`[CACHE PERF] Slow ${operation}: ${duration.toFixed(2)}ms (cached: ${cached})`)
+      console.warn(
+        `[CACHE PERF] Slow ${operation}: ${duration.toFixed(2)}ms (cached: ${cached})`
+      )
     }
-    
-    return { 
-      result, 
+
+    return {
+      result,
       duration,
-      cached
+      cached,
     }
   } catch (error) {
     const duration = performance.now() - startTime
-    console.error(`[CACHE PERF] Failed ${operation}: ${duration.toFixed(2)}ms`, error)
+    console.error(
+      `[CACHE PERF] Failed ${operation}: ${duration.toFixed(2)}ms`,
+      error
+    )
     throw error
   }
 }

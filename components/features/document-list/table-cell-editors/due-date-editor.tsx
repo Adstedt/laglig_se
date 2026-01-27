@@ -7,7 +7,12 @@
 import { useState } from 'react'
 import { format, isPast, isToday } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { Calendar as CalendarIcon, X, Loader2, AlertTriangle } from 'lucide-react'
+import {
+  Calendar as CalendarIcon,
+  X,
+  Loader2,
+  AlertTriangle,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -19,7 +24,7 @@ import { cn } from '@/lib/utils'
 
 interface DueDateEditorProps {
   value: Date | null
-  onChange: (value: Date | null) => Promise<void>
+  onChange: (_value: Date | null) => Promise<void>
 }
 
 export function DueDateEditor({ value, onChange }: DueDateEditorProps) {
@@ -70,7 +75,10 @@ export function DueDateEditor({ value, onChange }: DueDateEditorProps) {
                 role="button"
                 tabIndex={0}
                 onClick={handleClear}
-                onKeyDown={(e) => e.key === 'Enter' && handleClear(e as unknown as React.MouseEvent)}
+                onKeyDown={(e) =>
+                  e.key === 'Enter' &&
+                  handleClear(e as unknown as React.MouseEvent)
+                }
                 className="ml-1 rounded-full p-0.5 hover:bg-muted cursor-pointer"
                 aria-label="Rensa deadline"
               >

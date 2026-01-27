@@ -1,9 +1,9 @@
 /**
  * User Session Caching Module (Story P.2)
- * 
+ *
  * Provides caching layer for user-specific data and preferences.
  * Implements session-level caching to reduce database queries.
- * 
+ *
  * @see docs/stories/P.2.systematic-caching.story.md
  */
 
@@ -42,40 +42,35 @@ export interface FrequentDocument {
  */
 export const USER_CACHE_KEYS = {
   // User session data (30 min TTL)
-  SESSION: (userId: string) => 
-    `user:session:${userId}`,
-  
+  SESSION: (userId: string) => `user:session:${userId}`,
+
   // User's workspaces list (5 min TTL)
-  WORKSPACES: (userId: string) => 
-    `user:workspaces:${userId}`,
-  
+  WORKSPACES: (userId: string) => `user:workspaces:${userId}`,
+
   // User's recent activity (10 min TTL)
-  RECENT_ACTIVITY: (userId: string) =>
-    `user:activity:${userId}`,
-  
+  RECENT_ACTIVITY: (userId: string) => `user:activity:${userId}`,
+
   // User's saved searches (1 hour TTL)
-  SAVED_SEARCHES: (userId: string) =>
-    `user:searches:${userId}`,
-  
+  SAVED_SEARCHES: (userId: string) => `user:searches:${userId}`,
+
   // User's document access history (2 hours TTL)
   DOCUMENT_HISTORY: (userId: string, workspaceId: string) =>
     `user:history:${userId}:${workspaceId}`,
-  
+
   // User's notification preferences (1 hour TTL)
-  NOTIFICATIONS: (userId: string) =>
-    `user:notifications:${userId}`,
+  NOTIFICATIONS: (userId: string) => `user:notifications:${userId}`,
 }
 
 /**
  * Cache TTL values for user data
  */
 export const USER_CACHE_TTL = {
-  SESSION: 1800,           // 30 minutes
-  WORKSPACES: 300,         // 5 minutes
-  RECENT_ACTIVITY: 600,    // 10 minutes
-  SAVED_SEARCHES: 3600,    // 1 hour
-  DOCUMENT_HISTORY: 7200,  // 2 hours
-  NOTIFICATIONS: 3600,     // 1 hour
+  SESSION: 1800, // 30 minutes
+  WORKSPACES: 300, // 5 minutes
+  RECENT_ACTIVITY: 600, // 10 minutes
+  SAVED_SEARCHES: 3600, // 1 hour
+  DOCUMENT_HISTORY: 7200, // 2 hours
+  NOTIFICATIONS: 3600, // 1 hour
 }
 
 /**
@@ -127,18 +122,20 @@ export async function trackDocumentAccess(
 
   const historyKey = USER_CACHE_KEYS.DOCUMENT_HISTORY(userId, workspaceId)
   const frequentKey = `user:frequent:${userId}:${workspaceId}`
-  
+
   try {
     // Get existing history
     const historyData = await redis.get(historyKey)
-    const history: FrequentDocument[] = historyData 
-      ? (typeof historyData === 'string' ? JSON.parse(historyData) : historyData)
+    const history: FrequentDocument[] = historyData
+      ? typeof historyData === 'string'
+        ? JSON.parse(historyData)
+        : historyData
       : []
-    
+
     // Find or create document entry
-    const existingIndex = history.findIndex(d => d.documentId === documentId)
+    const existingIndex = history.findIndex((d) => d.documentId === documentId)
     const now = new Date()
-    
+
     if (existingIndex >= 0 && history[existingIndex]) {
       // Update existing entry
       history[existingIndex].accessCount++
@@ -150,21 +147,19 @@ export async function trackDocumentAccess(
         documentTitle,
         documentType,
         accessCount: 1,
-        lastAccessedAt: now
+        lastAccessedAt: now,
       })
     }
-    
+
     // Sort by access count and keep top 20
     history.sort((a, b) => b.accessCount - a.accessCount)
     const topDocuments = history.slice(0, 20)
-    
+
     // Update cache
-    await redis.set(
-      historyKey, 
-      JSON.stringify(topDocuments),
-      { ex: USER_CACHE_TTL.DOCUMENT_HISTORY }
-    )
-    
+    await redis.set(historyKey, JSON.stringify(topDocuments), {
+      ex: USER_CACHE_TTL.DOCUMENT_HISTORY,
+    })
+
     // Update frequently accessed documents (top 10)
     const frequentDocs = topDocuments.slice(0, 10)
     await redis.set(
@@ -187,16 +182,18 @@ export async function getFrequentDocuments(
   if (!isRedisConfigured()) return [] as FrequentDocument[]
 
   const key = `user:frequent:${userId}:${workspaceId}`
-  
+
   try {
     const data = await redis.get(key)
     if (data) {
-      return typeof data === 'string' ? JSON.parse(data) as FrequentDocument[] : data as FrequentDocument[]
+      return typeof data === 'string'
+        ? (JSON.parse(data) as FrequentDocument[])
+        : (data as FrequentDocument[])
     }
   } catch (error) {
     console.error('[USER CACHE] Failed to get frequent documents:', error)
   }
-  
+
   return [] as FrequentDocument[]
 }
 
@@ -208,7 +205,7 @@ export async function updateUserActivity(userId: string): Promise<void> {
 
   const key = USER_CACHE_KEYS.RECENT_ACTIVITY(userId)
   const now = new Date().toISOString()
-  
+
   try {
     await redis.set(key, now, { ex: USER_CACHE_TTL.RECENT_ACTIVITY })
   } catch (error) {
@@ -219,11 +216,13 @@ export async function updateUserActivity(userId: string): Promise<void> {
 /**
  * Get user's last activity timestamp
  */
-export async function getUserLastActivity(userId: string): Promise<Date | null> {
+export async function getUserLastActivity(
+  userId: string
+): Promise<Date | null> {
   if (!isRedisConfigured()) return null
 
   const key = USER_CACHE_KEYS.RECENT_ACTIVITY(userId)
-  
+
   try {
     const data = await redis.get(key)
     if (data) {
@@ -233,7 +232,7 @@ export async function getUserLastActivity(userId: string): Promise<Date | null> 
   } catch (error) {
     console.error('[USER CACHE] Failed to get activity:', error)
   }
-  
+
   return null
 }
 
@@ -248,27 +247,27 @@ export async function saveUserSearch(
   if (!isRedisConfigured()) return
 
   const key = USER_CACHE_KEYS.SAVED_SEARCHES(userId)
-  
+
   try {
     const searchesData = await redis.get(key)
     const searches = searchesData
-      ? (typeof searchesData === 'string' ? JSON.parse(searchesData) : searchesData)
+      ? typeof searchesData === 'string'
+        ? JSON.parse(searchesData)
+        : searchesData
       : []
-    
+
     // Add new search (keep last 10)
     searches.unshift({
       query,
       filters,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
-    
+
     const recentSearches = searches.slice(0, 10)
-    
-    await redis.set(
-      key,
-      JSON.stringify(recentSearches),
-      { ex: USER_CACHE_TTL.SAVED_SEARCHES }
-    )
+
+    await redis.set(key, JSON.stringify(recentSearches), {
+      ex: USER_CACHE_TTL.SAVED_SEARCHES,
+    })
   } catch (error) {
     console.error('[USER CACHE] Failed to save search:', error)
   }
@@ -281,16 +280,18 @@ export async function getUserSearches(userId: string): Promise<any[]> {
   if (!isRedisConfigured()) return [] as any[]
 
   const key = USER_CACHE_KEYS.SAVED_SEARCHES(userId)
-  
+
   try {
     const data = await redis.get(key)
     if (data) {
-      return typeof data === 'string' ? JSON.parse(data) as any[] : data as any[]
+      return typeof data === 'string'
+        ? (JSON.parse(data) as any[])
+        : (data as any[])
     }
   } catch (error) {
     console.error('[USER CACHE] Failed to get searches:', error)
   }
-  
+
   return [] as any[]
 }
 
@@ -311,14 +312,14 @@ export async function invalidateAllUserCache(userId: string): Promise<void> {
     `user:frequent:${userId}:*`,
     `workspace:context:${userId}:*`,
   ]
-  
+
   try {
     await Promise.all(
       patterns.map(async (pattern) => {
         if (pattern.includes('*')) {
           const keys = await redis.keys(pattern)
           if (keys.length > 0) {
-            await Promise.all(keys.map(key => redis.del(key)))
+            await Promise.all(keys.map((key) => redis.del(key)))
           }
         } else {
           await redis.del(pattern)
@@ -344,19 +345,19 @@ export async function warmUserSessionCache(
   if (!isRedisConfigured()) return
 
   const warmingTasks: Promise<any>[] = []
-  
+
   if (fetchers.session) {
     warmingTasks.push(getCachedUserSession(userId, fetchers.session))
   }
-  
+
   if (fetchers.workspaces) {
     warmingTasks.push(getCachedUserWorkspaces(userId, fetchers.workspaces))
   }
-  
+
   if (fetchers.preferences) {
     warmingTasks.push(getCachedPreferences(userId, fetchers.preferences))
   }
-  
+
   await Promise.all(warmingTasks)
 }
 
@@ -383,10 +384,10 @@ export async function getUserCacheStats(userId: string): Promise<{
       `user:prefs:${userId}`,
       `user:frequent:${userId}:*`,
     ]
-    
+
     let totalKeys = 0
     const keysByType: Record<string, number> = {}
-    
+
     for (const pattern of patterns) {
       if (pattern.includes('*')) {
         const keys = await redis.keys(pattern)
@@ -406,13 +407,13 @@ export async function getUserCacheStats(userId: string): Promise<{
         }
       }
     }
-    
+
     const lastActivity = await getUserLastActivity(userId)
-    
+
     return {
       totalKeys,
       keysByType,
-      lastActivity
+      lastActivity,
     }
   } catch (error) {
     console.error('[USER CACHE] Failed to get stats:', error)

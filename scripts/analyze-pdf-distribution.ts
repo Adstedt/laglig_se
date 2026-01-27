@@ -44,10 +44,12 @@ async function main() {
     const attachments = meta?.attachments as unknown[] | undefined
     const hasPdf = attachments && attachments.length > 0
     const courtType = c.content_type
-    const year = c.court_case?.decision_date?.getFullYear()?.toString() || 'unknown'
+    const year =
+      c.court_case?.decision_date?.getFullYear()?.toString() || 'unknown'
 
     // By court type
-    if (!byCourtType[courtType]) byCourtType[courtType] = { total: 0, withPdf: 0 }
+    if (!byCourtType[courtType])
+      byCourtType[courtType] = { total: 0, withPdf: 0 }
     byCourtType[courtType].total++
     if (hasPdf) byCourtType[courtType].withPdf++
 

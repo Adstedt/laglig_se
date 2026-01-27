@@ -29,7 +29,7 @@ const COLUMN_COLORS = [
 
 interface ColumnColorPickerProps {
   color: string
-  onColorChange: (color: string) => void
+  onColorChange: (_color: string) => void
   disabled?: boolean
 }
 
@@ -104,7 +104,10 @@ export function ColumnColorPicker({
 
           {/* Custom hex input */}
           <div className="space-y-1.5">
-            <Label htmlFor="custom-color" className="text-xs text-muted-foreground">
+            <Label
+              htmlFor="custom-color"
+              className="text-xs text-muted-foreground"
+            >
               Anpassad färg
             </Label>
             <div className="flex items-center gap-2">

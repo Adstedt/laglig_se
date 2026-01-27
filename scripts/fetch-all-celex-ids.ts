@@ -32,10 +32,13 @@ interface SPARQLResult {
 }
 
 async function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function executeSparqlQuery(query: string, retries = 3): Promise<SPARQLResult> {
+async function executeSparqlQuery(
+  query: string,
+  retries = 3
+): Promise<SPARQLResult> {
   const url = `${SPARQL_ENDPOINT}?query=${encodeURIComponent(query)}&format=application/json`
 
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -43,7 +46,7 @@ async function executeSparqlQuery(query: string, retries = 3): Promise<SPARQLRes
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'Laglig.se/1.0 (https://laglig.se; contact@laglig.se)',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       })
 
@@ -55,7 +58,10 @@ async function executeSparqlQuery(query: string, retries = 3): Promise<SPARQLRes
       try {
         return JSON.parse(text)
       } catch {
-        console.error(`Failed to parse JSON (attempt ${attempt}):`, text.substring(0, 200))
+        console.error(
+          `Failed to parse JSON (attempt ${attempt}):`,
+          text.substring(0, 200)
+        )
         throw new Error('Invalid JSON response')
       }
     } catch (error) {
@@ -105,7 +111,11 @@ async function getCountByType(typeCode: string): Promise<number> {
   return parseInt(result.results.bindings[0]?.count?.value || '0')
 }
 
-async function fetchBatchByType(typeCode: string, offset: number, limit: number): Promise<CelexRecord[]> {
+async function fetchBatchByType(
+  typeCode: string,
+  offset: number,
+  limit: number
+): Promise<CelexRecord[]> {
   const query = `
     PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
     SELECT DISTINCT ?celex ?title ?pubDate WHERE {
@@ -123,7 +133,7 @@ async function fetchBatchByType(typeCode: string, offset: number, limit: number)
 
   const result = await executeSparqlQuery(query)
 
-  return result.results.bindings.map(binding => {
+  return result.results.bindings.map((binding) => {
     const celex = binding.celex?.value || ''
 
     return {
@@ -191,20 +201,23 @@ async function main() {
 
         offset += BATCH_SIZE
         await sleep(DELAY_BETWEEN_BATCHES)
-
       } catch (error) {
-        console.log(` ✗ FAILED at offset ${offset}: ${(error as Error).message}`)
+        console.log(
+          ` ✗ FAILED at offset ${offset}: ${(error as Error).message}`
+        )
         // Continue to next type instead of stopping
         break
       }
     }
 
-    console.log(`   Total for ${docType.code}: ${typeCounts[docType.code]?.toLocaleString() || 0}`)
+    console.log(
+      `   Total for ${docType.code}: ${typeCounts[docType.code]?.toLocaleString() || 0}`
+    )
   }
 
   // Deduplicate by CELEX
   const uniqueRecords = Array.from(
-    new Map(allRecords.map(r => [r.celex, r])).values()
+    new Map(allRecords.map((r) => [r.celex, r])).values()
   )
 
   console.log('')
@@ -212,15 +225,19 @@ async function main() {
   console.log('  RESULTS')
   console.log('═══════════════════════════════════════════════════════════')
   console.log('')
-  console.log(`📊 Total unique CELEX IDs: ${uniqueRecords.length.toLocaleString()}`)
+  console.log(
+    `📊 Total unique CELEX IDs: ${uniqueRecords.length.toLocaleString()}`
+  )
   console.log('')
   console.log('📋 By document type:')
 
   Object.entries(typeCounts)
     .sort((a, b) => b[1] - a[1])
     .forEach(([type, count]) => {
-      const docType = DOCUMENT_TYPES.find(d => d.code === type)
-      console.log(`   ${type} (${docType?.name || 'Unknown'}): ${count.toLocaleString()}`)
+      const docType = DOCUMENT_TYPES.find((d) => d.code === type)
+      console.log(
+        `   ${type} (${docType?.name || 'Unknown'}): ${count.toLocaleString()}`
+      )
     })
 
   // Save to file
@@ -237,7 +254,7 @@ async function main() {
   console.log('')
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Fatal error:', error)
   process.exit(1)
 })

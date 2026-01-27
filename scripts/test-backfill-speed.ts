@@ -22,7 +22,13 @@ async function test() {
   const elapsed = Date.now() - start
   console.log('Updated', result, 'rows in', elapsed, 'ms')
   console.log('Per row:', (elapsed / 100).toFixed(1), 'ms')
-  console.log('Estimated time for remaining ~27,680 docs:', Math.round((elapsed / 100) * 27680 / 1000), 'seconds')
+  console.log(
+    'Estimated time for remaining ~27,680 docs:',
+    Math.round(((elapsed / 100) * 27680) / 1000),
+    'seconds'
+  )
 }
 
-test().catch(console.error).finally(() => prisma.$disconnect())
+test()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

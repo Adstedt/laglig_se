@@ -127,7 +127,13 @@ describe('SettingsTabs', () => {
     })
 
     it('shows loading skeleton while workspace context loads', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       // Should show skeletons, not tabs
       expect(screen.queryByText('Allmänt')).not.toBeInTheDocument()
@@ -144,7 +150,13 @@ describe('SettingsTabs', () => {
     })
 
     it('renders all tabs for OWNER including Arbetsflöde', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       expect(screen.getByText('Allmänt')).toBeInTheDocument()
       expect(screen.getByText('Team')).toBeInTheDocument()
@@ -155,7 +167,13 @@ describe('SettingsTabs', () => {
     })
 
     it('shows General tab content by default', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       expect(screen.getByText('Allmänna inställningar')).toBeInTheDocument()
     })
@@ -169,7 +187,13 @@ describe('SettingsTabs', () => {
     })
 
     it('hides Billing tab for non-OWNER', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       expect(screen.getByText('Allmänt')).toBeInTheDocument()
       expect(screen.getByText('Team')).toBeInTheDocument()
@@ -187,13 +211,25 @@ describe('SettingsTabs', () => {
     })
 
     it('hides Billing tab for MEMBER', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       expect(screen.queryByText('Fakturering')).not.toBeInTheDocument()
     })
 
     it('still shows other tabs for MEMBER', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       expect(screen.getByText('Allmänt')).toBeInTheDocument()
       expect(screen.getByText('Team')).toBeInTheDocument()
@@ -210,7 +246,13 @@ describe('SettingsTabs', () => {
     })
 
     it('hides Billing tab for AUDITOR', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       expect(screen.queryByText('Fakturering')).not.toBeInTheDocument()
     })
@@ -224,7 +266,13 @@ describe('SettingsTabs', () => {
     })
 
     it('hides Billing tab for HR_MANAGER', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       expect(screen.queryByText('Fakturering')).not.toBeInTheDocument()
     })
@@ -238,13 +286,25 @@ describe('SettingsTabs', () => {
     })
 
     it('shows Arbetsflöde tab for all roles', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       expect(screen.getByText('Arbetsflöde')).toBeInTheDocument()
     })
 
     it('renders Arbetsflöde tab with Columns icon', () => {
-      render(<SettingsTabs workspace={mockWorkspace} members={mockMembers} columns={mockColumns} />)
+      render(
+        <SettingsTabs
+          workspace={mockWorkspace}
+          members={mockMembers}
+          columns={mockColumns}
+        />
+      )
 
       // Find the tab button with Arbetsflöde text
       const tab = screen.getByRole('tab', { name: /arbetsflöde/i })

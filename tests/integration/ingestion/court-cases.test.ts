@@ -52,7 +52,8 @@ describe('Court Case Ingestion', () => {
           slug: 'test-ad-2024-nr-10',
           content_type: ContentType.COURT_CASE_AD,
           full_text: 'Detta är ett testfall.\n\nDomslut: Käromålet ogillas.',
-          html_content: '<p>Detta är ett testfall.</p><p>Domslut: Käromålet ogillas.</p>',
+          html_content:
+            '<p>Detta är ett testfall.</p><p>Domslut: Käromålet ogillas.</p>',
           publication_date: new Date('2024-01-15'),
           status: DocumentStatus.ACTIVE,
           source_url: 'https://rattspraxis.etjanst.domstol.se/test',
@@ -249,9 +250,9 @@ describe('Court Case Ingestion', () => {
       })
 
       expect(caseWithRefs?.source_references).toHaveLength(1)
-      expect(caseWithRefs?.source_references[0]?.target_document.document_number).toBe(
-        'TEST-SFS 1977:480'
-      )
+      expect(
+        caseWithRefs?.source_references[0]?.target_document.document_number
+      ).toBe('TEST-SFS 1977:480')
     })
 
     it('should handle multiple law references from single court case', async () => {
@@ -262,7 +263,8 @@ describe('Court Case Ingestion', () => {
           title: 'Test Case with Multiple Refs',
           slug: 'test-case-multi-refs',
           content_type: ContentType.COURT_CASE_AD,
-          full_text: 'Enligt semesterlagen (1977:480) och arbetsmiljölagen (1977:1160)...',
+          full_text:
+            'Enligt semesterlagen (1977:480) och arbetsmiljölagen (1977:1160)...',
           status: DocumentStatus.ACTIVE,
           source_url: 'https://test.com',
         },
@@ -357,7 +359,9 @@ describe('Court Case Ingestion', () => {
       })
 
       expect(adCases).toHaveLength(2)
-      expect(adCases.every((c) => c.content_type === 'COURT_CASE_AD')).toBe(true)
+      expect(adCases.every((c) => c.content_type === 'COURT_CASE_AD')).toBe(
+        true
+      )
     })
 
     it('should query court cases with court_case relation', async () => {
@@ -512,7 +516,8 @@ describe('Court Case Ingestion', () => {
 
   describe('Content Verification', () => {
     it('should store both full_text and html_content', async () => {
-      const htmlContent = '<div><h1>Dom</h1><p>Domslut: Överklagandet avslås.</p></div>'
+      const htmlContent =
+        '<div><h1>Dom</h1><p>Domslut: Överklagandet avslås.</p></div>'
       const plainText = 'Dom\n\nDomslut: Överklagandet avslås.'
 
       const courtCase = await prisma.legalDocument.create({
@@ -564,11 +569,12 @@ describe('Court Case Ingestion', () => {
       })
 
       expect(retrieved?.metadata).toMatchObject(metadata)
-      expect((retrieved?.metadata as Record<string, unknown>).case_numbers).toEqual([
-        'A 100/23',
-        'A 101/23',
-      ])
-      expect((retrieved?.metadata as Record<string, unknown>).keywords).toContain('avskedande')
+      expect(
+        (retrieved?.metadata as Record<string, unknown>).case_numbers
+      ).toEqual(['A 100/23', 'A 101/23'])
+      expect(
+        (retrieved?.metadata as Record<string, unknown>).keywords
+      ).toContain('avskedande')
     })
   })
 })

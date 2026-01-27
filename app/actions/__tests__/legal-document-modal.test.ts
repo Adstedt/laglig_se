@@ -77,20 +77,24 @@ describe('legal-document-modal actions', () => {
       }
 
       // Mock withWorkspace to execute the callback
-      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (callback) => {
-        return callback({
-          workspaceId: 'workspace-001',
-          userId: 'user-123',
-          workspaceName: 'Test Workspace',
-          workspaceSlug: 'test-workspace',
-          workspaceStatus: 'ACTIVE' as any,
-          role: 'OWNER' as any,
-          hasPermission: () => true
-        })
-      })
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(
+        async (callback) => {
+          return callback({
+            workspaceId: 'workspace-001',
+            userId: 'user-123',
+            workspaceName: 'Test Workspace',
+            workspaceSlug: 'test-workspace',
+            workspaceStatus: 'ACTIVE' as any,
+            role: 'OWNER' as any,
+            hasPermission: () => true,
+          })
+        }
+      )
 
       // Mock Prisma query
-      vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue(mockListItem as any)
+      vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue(
+        mockListItem as any
+      )
 
       // Call the function
       const result = await getListItemDetails('item-123')
@@ -101,13 +105,13 @@ describe('legal-document-modal actions', () => {
       expect(result.data?.id).toBe('item-123')
       expect(result.data?.legalDocument.title).toBe('Test Law')
       expect(result.data?.responsibleUser?.name).toBe('John Doe')
-      
+
       // Verify withWorkspace was called with correct permission
       expect(workspaceContext.withWorkspace).toHaveBeenCalledWith(
         expect.any(Function),
         'read'
       )
-      
+
       // Verify Prisma query was called
       expect(prisma.lawListItem.findFirst).toHaveBeenCalledWith({
         where: { id: 'item-123' },
@@ -117,17 +121,19 @@ describe('legal-document-modal actions', () => {
 
     it('should return error when list item is not found', async () => {
       // Mock withWorkspace to execute the callback
-      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (callback) => {
-        return callback({
-          workspaceId: 'workspace-001',
-          userId: 'user-123',
-          workspaceName: 'Test Workspace',
-          workspaceSlug: 'test-workspace',
-          workspaceStatus: 'ACTIVE' as any,
-          role: 'OWNER' as any,
-          hasPermission: () => true
-        })
-      })
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(
+        async (callback) => {
+          return callback({
+            workspaceId: 'workspace-001',
+            userId: 'user-123',
+            workspaceName: 'Test Workspace',
+            workspaceSlug: 'test-workspace',
+            workspaceStatus: 'ACTIVE' as any,
+            role: 'OWNER' as any,
+            hasPermission: () => true,
+          })
+        }
+      )
 
       // Mock Prisma to return null (item not found)
       vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue(null)
@@ -152,20 +158,24 @@ describe('legal-document-modal actions', () => {
       }
 
       // Mock withWorkspace to execute the callback
-      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (callback) => {
-        return callback({
-          workspaceId: 'workspace-001',
-          userId: 'user-123',
-          workspaceName: 'Test Workspace',
-          workspaceSlug: 'test-workspace',
-          workspaceStatus: 'ACTIVE' as any,
-          role: 'OWNER' as any,
-          hasPermission: () => true
-        })
-      })
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(
+        async (callback) => {
+          return callback({
+            workspaceId: 'workspace-001',
+            userId: 'user-123',
+            workspaceName: 'Test Workspace',
+            workspaceSlug: 'test-workspace',
+            workspaceStatus: 'ACTIVE' as any,
+            role: 'OWNER' as any,
+            hasPermission: () => true,
+          })
+        }
+      )
 
       // Mock Prisma query
-      vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue(mockListItem as any)
+      vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue(
+        mockListItem as any
+      )
 
       // Call the function
       const result = await getListItemDetails('item-123')
@@ -198,7 +208,9 @@ describe('legal-document-modal actions', () => {
       }
 
       // Mock cache function to return content
-      vi.mocked(cacheStrategies.getCachedDocumentContent).mockResolvedValue(mockContent)
+      vi.mocked(cacheStrategies.getCachedDocumentContent).mockResolvedValue(
+        mockContent
+      )
 
       // Call the function
       const result = await getDocumentContent('doc-123')
@@ -206,7 +218,7 @@ describe('legal-document-modal actions', () => {
       // Assertions
       expect(result.success).toBe(true)
       expect(result.data).toEqual(mockContent)
-      
+
       // Verify cache function was called
       expect(cacheStrategies.getCachedDocumentContent).toHaveBeenCalledWith(
         'doc-123',
@@ -224,7 +236,9 @@ describe('legal-document-modal actions', () => {
       vi.mocked(cacheStrategies.getCachedDocumentContent).mockImplementation(
         async (_, fetcher) => {
           // Mock Prisma for the fetcher
-          vi.mocked(prisma.legalDocument.findUnique).mockResolvedValue(mockDocument as any)
+          vi.mocked(prisma.legalDocument.findUnique).mockResolvedValue(
+            mockDocument as any
+          )
           return fetcher()
         }
       )

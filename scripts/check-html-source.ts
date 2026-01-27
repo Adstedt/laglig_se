@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 async function main() {
   const docs = await prisma.legalDocument.findMany({
     where: { content_type: 'SFS_AMENDMENT', html_content: { not: null } },
-    select: { document_number: true, html_content: true }
+    select: { document_number: true, html_content: true },
   })
 
   let llmProcessed = 0
@@ -17,7 +17,10 @@ async function main() {
   for (const doc of docs) {
     const html = doc.html_content || ''
     // LLM-generated HTML has <article class="sfs">
-    if (html.includes('<article class="sfs"') || html.includes('class="lovhead"')) {
+    if (
+      html.includes('<article class="sfs"') ||
+      html.includes('class="lovhead"')
+    ) {
       llmProcessed++
     } else {
       legacyHtml++
@@ -30,4 +33,6 @@ async function main() {
   console.log('  Total:', docs.length)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

@@ -12,13 +12,13 @@ async function main() {
   const docs = await prisma.legalDocument.findMany({
     where: {
       content_type: 'SFS_AMENDMENT',
-      html_content: { not: null }
+      html_content: { not: null },
     },
     select: {
       id: true,
       document_number: true,
-      html_content: true
-    }
+      html_content: true,
+    },
   })
 
   console.log(`\nRegenerating json_content for ${docs.length} amendments...\n`)
@@ -29,12 +29,14 @@ async function main() {
 
   for (const doc of docs) {
     // Re-parse HTML with updated parser
-    const freshJson = htmlToJson(doc.html_content || '', { documentType: 'amendment' })
+    const freshJson = htmlToJson(doc.html_content || '', {
+      documentType: 'amendment',
+    })
 
     // Update the database
     await prisma.legalDocument.update({
       where: { id: doc.id },
-      data: { json_content: freshJson as object }
+      data: { json_content: freshJson as object },
     })
 
     updated++
@@ -42,7 +44,9 @@ async function main() {
     if (freshJson.legislativeReferences.length > 0) {
       withRefs++
       totalRefs += freshJson.legislativeReferences.length
-      console.log(`${doc.document_number}: ${freshJson.legislativeReferences.length} refs (${freshJson.legislativeReferences.map(r => r.type).join(', ')})`)
+      console.log(
+        `${doc.document_number}: ${freshJson.legislativeReferences.length} refs (${freshJson.legislativeReferences.map((r) => r.type).join(', ')})`
+      )
     }
 
     if (updated % 20 === 0) {
@@ -58,4 +62,6 @@ async function main() {
   console.log(`Total legislative references: ${totalRefs}`)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

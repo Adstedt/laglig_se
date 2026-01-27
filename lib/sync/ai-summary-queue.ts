@@ -163,7 +163,8 @@ export function generateAmendmentSummaryPrompt(params: {
   affectedSections: string[]
   diffSummary?: string
 }): string {
-  const { lawTitle, lawNumber, amendmentSfs, affectedSections, diffSummary } = params
+  const { lawTitle, lawNumber, amendmentSfs, affectedSections, diffSummary } =
+    params
 
   return `Du är en svensk juridisk expert. Skriv en kort sammanfattning (2-3 meningar) på svenska som förklarar vad denna lagändring innebär för vanliga människor.
 
@@ -206,7 +207,9 @@ Skriv en enkel, begriplig sammanfattning utan juridisk jargong. Förklara vad so
  * @param limit Maximum number of summaries to process per call
  * @returns Number of summaries generated
  */
-export async function processPendingSummaries(limit: number = 5): Promise<number> {
+export async function processPendingSummaries(
+  limit: number = 5
+): Promise<number> {
   // Note: Actual implementation requires OpenAI client
   // This will be called from api/cron/generate-summaries route
 
@@ -217,6 +220,8 @@ export async function processPendingSummaries(limit: number = 5): Promise<number
   // 4. Save results using saveChangeSummary + saveAmendmentSummary
   // 5. Handle errors and retries
 
-  console.log(`[AI Summary Queue] Would process up to ${limit} pending summaries`)
+  console.log(
+    `[AI Summary Queue] Would process up to ${limit} pending summaries`
+  )
   return 0
 }

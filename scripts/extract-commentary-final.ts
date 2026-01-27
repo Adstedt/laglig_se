@@ -19,7 +19,10 @@ interface PropCommentary {
   sections: SectionCommentary[]
 }
 
-async function fetchPropCommentary(year: string, number: string): Promise<PropCommentary | null> {
+async function fetchPropCommentary(
+  year: string,
+  number: string
+): Promise<PropCommentary | null> {
   // Step 1: Get dok_id
   const listUrl = `https://data.riksdagen.se/dokumentlista/?doktyp=prop&rm=${encodeURIComponent(year)}&nr=${number}&utformat=json`
   const listRes = await fetch(listUrl)

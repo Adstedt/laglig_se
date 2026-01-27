@@ -39,7 +39,9 @@ async function verifyAC5BidirectionalNavigation() {
     console.log('  Source slug:', citingRef.source_document.slug)
     console.log('  Target (Law):', citingRef.target_document.title)
     console.log('  Target slug:', citingRef.target_document.slug)
-    console.log('  Bidirectional: Law page can show this case via target_document_id lookup ✓')
+    console.log(
+      '  Bidirectional: Law page can show this case via target_document_id lookup ✓'
+    )
   } else {
     console.log('\n⚠ No CITES references found')
   }
@@ -50,7 +52,9 @@ async function verifyAC5BidirectionalNavigation() {
     _count: true,
   })
   console.log('\nReference types distribution:')
-  refTypes.forEach((rt) => console.log('  ' + rt.reference_type + ':', rt._count))
+  refTypes.forEach((rt) =>
+    console.log('  ' + rt.reference_type + ':', rt._count)
+  )
 
   // Test 4: Orphan check
   const orphans = await prisma.$queryRaw<{ orphan_count: bigint }[]>`
@@ -87,7 +91,9 @@ async function verifyAC5BidirectionalNavigation() {
     console.log('  EU Directive:', implementsRef.target_document.title)
     console.log('  Bidirectional: Both pages can navigate to each other ✓')
   } else {
-    console.log('\n⚠ No IMPLEMENTS references found (may need EU directive ingestion)')
+    console.log(
+      '\n⚠ No IMPLEMENTS references found (may need EU directive ingestion)'
+    )
   }
 
   console.log('\n')
@@ -158,7 +164,11 @@ async function verifyAC8SampleVerification() {
     if (hdCase.source_references.length > 0) {
       console.log('  Cited laws:')
       hdCase.source_references.forEach((ref) => {
-        console.log('    -', ref.target_document.title, '(' + ref.target_document.document_number + ')')
+        console.log(
+          '    -',
+          ref.target_document.title,
+          '(' + ref.target_document.document_number + ')'
+        )
       })
     } else {
       console.log('  ⚠ No cited laws found for this case')
@@ -202,10 +212,16 @@ async function verifyAC8SampleVerification() {
     if (gdprDirective.target_references.length > 0) {
       console.log('  Swedish implementing laws:')
       gdprDirective.target_references.forEach((ref) => {
-        console.log('    -', ref.source_document.title, '(' + ref.source_document.document_number + ')')
+        console.log(
+          '    -',
+          ref.source_document.title,
+          '(' + ref.source_document.document_number + ')'
+        )
       })
     } else {
-      console.log('  ⚠ No Swedish implementing laws linked via cross_references')
+      console.log(
+        '  ⚠ No Swedish implementing laws linked via cross_references'
+      )
     }
   } else {
     console.log('  ⚠ GDPR directive not found in database')

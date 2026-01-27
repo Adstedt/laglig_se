@@ -19,7 +19,9 @@ describe('ColumnSettings', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: /kolumner/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /kolumner/i })
+    ).toBeInTheDocument()
   })
 
   it('opens dropdown when clicking button', async () => {
@@ -116,7 +118,9 @@ describe('ColumnSettings', () => {
 
     await user.click(screen.getByText('Återställ standard'))
 
-    expect(onColumnVisibilityChange).toHaveBeenCalledWith(DEFAULT_COLUMN_VISIBILITY)
+    expect(onColumnVisibilityChange).toHaveBeenCalledWith(
+      DEFAULT_COLUMN_VISIBILITY
+    )
   })
 
   it('reflects current visibility state in checkboxes', async () => {

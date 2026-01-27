@@ -9,28 +9,30 @@ async function check() {
       OR: [
         { title: { contains: 'dataskydd', mode: 'insensitive' } },
         { title: { contains: 'personuppgift', mode: 'insensitive' } },
-      ]
+      ],
     },
     select: { title: true, document_number: true },
-    take: 5
+    take: 5,
   })
   console.log('Lagar med dataskydd/personuppgift i titel:')
-  laws.forEach(l => console.log('-', l.document_number, l.title))
+  laws.forEach((l) => console.log('-', l.document_number, l.title))
 
   // Kolla om summary innehåller GDPR
   const withGDPR = await prisma.legalDocument.findMany({
     where: {
-      summary: { contains: 'GDPR', mode: 'insensitive' }
+      summary: { contains: 'GDPR', mode: 'insensitive' },
     },
     select: { title: true, document_number: true, content_type: true },
-    take: 10
+    take: 10,
   })
   console.log('\nDokument med GDPR i summary:')
-  withGDPR.forEach(l => console.log('-', l.content_type, l.document_number, l.title))
+  withGDPR.forEach((l) =>
+    console.log('-', l.content_type, l.document_number, l.title)
+  )
 
   // Kolla totalt antal SFS-lagar
   const sfsCount = await prisma.legalDocument.count({
-    where: { content_type: 'SFS_LAW' }
+    where: { content_type: 'SFS_LAW' },
   })
   console.log('\nTotalt antal SFS-lagar:', sfsCount)
 }

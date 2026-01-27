@@ -245,7 +245,9 @@ export async function getCacheValue<T>(key: string): Promise<T | null> {
   try {
     const cached = await redis.get(key)
     if (cached !== null) {
-      return typeof cached === 'string' ? JSON.parse(cached) as T : cached as T
+      return typeof cached === 'string'
+        ? (JSON.parse(cached) as T)
+        : (cached as T)
     }
     return null
   } catch (error) {

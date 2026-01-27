@@ -17,20 +17,34 @@ import { Badge } from '@/components/ui/badge'
 export const revalidate = 3600
 export const dynamicParams = true
 
-const COURT_URL_MAP: Record<string, { contentType: ContentType; name: string }> = {
+const COURT_URL_MAP: Record<
+  string,
+  { contentType: ContentType; name: string }
+> = {
   hd: { contentType: ContentType.COURT_CASE_HD, name: 'Högsta domstolen' },
   hovr: { contentType: ContentType.COURT_CASE_HOVR, name: 'Hovrätten' },
-  hfd: { contentType: ContentType.COURT_CASE_HFD, name: 'Högsta förvaltningsdomstolen' },
+  hfd: {
+    contentType: ContentType.COURT_CASE_HFD,
+    name: 'Högsta förvaltningsdomstolen',
+  },
   ad: { contentType: ContentType.COURT_CASE_AD, name: 'Arbetsdomstolen' },
-  mod: { contentType: ContentType.COURT_CASE_MOD, name: 'Mark- och miljööverdomstolen' },
-  mig: { contentType: ContentType.COURT_CASE_MIG, name: 'Migrationsöverdomstolen' },
+  mod: {
+    contentType: ContentType.COURT_CASE_MOD,
+    name: 'Mark- och miljööverdomstolen',
+  },
+  mig: {
+    contentType: ContentType.COURT_CASE_MIG,
+    name: 'Migrationsöverdomstolen',
+  },
 }
 
 interface PageProps {
   params: Promise<{ court: string }>
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { court } = await params
   const courtInfo = COURT_URL_MAP[court]
 

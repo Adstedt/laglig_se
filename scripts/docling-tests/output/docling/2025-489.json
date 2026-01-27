@@ -1,0 +1,479 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.9.0",
+  "name": "2025-489",
+  "origin": {
+    "mimetype": "application/pdf",
+    "binary_hash": 13227246420380667916,
+    "filename": "2025-489.pdf"
+  },
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/texts/0"
+      },
+      {
+        "$ref": "#/texts/1"
+      },
+      {
+        "$ref": "#/pictures/0"
+      },
+      {
+        "$ref": "#/texts/2"
+      },
+      {
+        "$ref": "#/texts/3"
+      },
+      {
+        "$ref": "#/texts/4"
+      },
+      {
+        "$ref": "#/texts/5"
+      },
+      {
+        "$ref": "#/texts/6"
+      },
+      {
+        "$ref": "#/texts/7"
+      },
+      {
+        "$ref": "#/texts/8"
+      },
+      {
+        "$ref": "#/texts/9"
+      },
+      {
+        "$ref": "#/texts/10"
+      },
+      {
+        "$ref": "#/texts/11"
+      },
+      {
+        "$ref": "#/texts/12"
+      },
+      {
+        "$ref": "#/texts/13"
+      },
+      {
+        "$ref": "#/texts/14"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 15.166,
+            "t": 93.71000001406253,
+            "r": 23.391,
+            "b": 10.65000001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 23]
+        }
+      ],
+      "orig": "1 2 3 4 5 6 7 8 9 0 : ;",
+      "text": "1 2 3 4 5 6 7 8 9 0 : ;"
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 26.665,
+            "t": 93.71000001406253,
+            "r": 34.89,
+            "b": 10.65000001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 23]
+        }
+      ],
+      "orig": "1 2 3 4 5 6 7 8 9 0 : ;",
+      "text": "1 2 3 4 5 6 7 8 9 0 : ;"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 734.0180000140625,
+            "r": 291.129,
+            "b": 718.3910000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 26]
+        }
+      ],
+      "orig": "Svensk författningssamling",
+      "text": "Svensk författningssamling",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 690.2680000140625,
+            "r": 137.93,
+            "b": 678.7530000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 10]
+        }
+      ],
+      "orig": "Förordning",
+      "text": "Förordning",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 674.9730000140624,
+            "r": 387.62,
+            "b": 663.4580000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 51]
+        }
+      ],
+      "orig": "om ändring i studiestödsdataförordningen (2009:321)",
+      "text": "om ändring i studiestödsdataförordningen (2009:321)",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 649.7050000140625,
+            "r": 188.791,
+            "b": 640.2460000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 24]
+        }
+      ],
+      "orig": "Utfärdad den 22 maj 2025",
+      "text": "Utfärdad den 22 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 622.4870000140625,
+            "r": 415.329,
+            "b": 599.4190000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 95]
+        }
+      ],
+      "orig": "Regeringen föreskriver att 13 § studiestödsdataförordningen (2009:321) ska ha följande lydelse.",
+      "text": "Regeringen föreskriver att 13 § studiestödsdataförordningen (2009:321) ska ha följande lydelse."
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 568.0510000140625,
+            "r": 415.317,
+            "b": 517.7650000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 255]
+        }
+      ],
+      "orig": "13 § En socialnämnd  får  ha  direktåtkomst  till  personuppgifter  som behandlas i Centrala studiestödsnämndens studiestödsverksamhet i den utsträckning som anges i 2 § förordningen (2008:975) om uppgiftsskyldighet i vissa fall på socialtjänstens område.",
+      "text": "13 § En socialnämnd  får  ha  direktåtkomst  till  personuppgifter  som behandlas i Centrala studiestödsnämndens studiestödsverksamhet i den utsträckning som anges i 2 § förordningen (2008:975) om uppgiftsskyldighet i vissa fall på socialtjänstens område."
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 513.6150000140625,
+            "r": 415.317,
+            "b": 463.3290000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 255]
+        }
+      ],
+      "orig": "En  socialnämnd  får  ha  direktåtkomst  enligt  första  stycket  först  sedan Centrala  studiestödsnämnden  har  försäkrat  sig  om  att  handläggare  hos socialnämnden bara kan ta del av uppgifter om personer som är aktuella i ärenden hos socialnämnden.",
+      "text": "En  socialnämnd  får  ha  direktåtkomst  enligt  första  stycket  först  sedan Centrala  studiestödsnämnden  har  försäkrat  sig  om  att  handläggare  hos socialnämnden bara kan ta del av uppgifter om personer som är aktuella i ärenden hos socialnämnden."
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 76.55,
+            "t": 444.5790000140625,
+            "r": 296.901,
+            "b": 435.1200000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 48]
+        }
+      ],
+      "orig": "Denna förordning träder i kraft den 1 juli 2025.",
+      "text": "Denna förordning träder i kraft den 1 juli 2025."
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 417.3610000140625,
+            "r": 170.252,
+            "b": 407.9020000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 21]
+        }
+      ],
+      "orig": "På regeringens vägnar",
+      "text": "På regeringens vägnar"
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 390.14300001406247,
+            "r": 161.041,
+            "b": 380.6840000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 13]
+        }
+      ],
+      "orig": "JOHAN PEHRSON",
+      "text": "JOHAN PEHRSON"
+    },
+    {
+      "self_ref": "#/texts/12",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 256.548,
+            "t": 376.5340000140625,
+            "r": 386.521,
+            "b": 353.4660000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 37]
+        }
+      ],
+      "orig": "Angela Öst (Utbildningsdepartementet)",
+      "text": "Angela Öst (Utbildningsdepartementet)"
+    },
+    {
+      "self_ref": "#/texts/13",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 432.7,
+            "t": 689.3690000140625,
+            "r": 508.178,
+            "b": 654.3910000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 39]
+        }
+      ],
+      "orig": "SFS 2025:489 Publicerad den 28 maj 2025",
+      "text": "SFS 2025:489 Publicerad den 28 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/14",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "label": "page_footer",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 529.244,
+            "t": 89.23600001406248,
+            "r": 534.994,
+            "b": 79.77700001406254,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 1]
+        }
+      ],
+      "orig": "1",
+      "text": "1"
+    }
+  ],
+  "pictures": [
+    {
+      "self_ref": "#/pictures/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "picture",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 63.242637634277344,
+            "t": 808.8970375061035,
+            "r": 95.19108581542969,
+            "b": 757.5785675048828,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 0]
+        }
+      ],
+      "captions": [],
+      "references": [],
+      "footnotes": [],
+      "annotations": []
+    }
+  ],
+  "tables": [],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {
+    "1": {
+      "size": {
+        "width": 595.2999877929688,
+        "height": 841.9000244140625
+      },
+      "page_no": 1
+    }
+  }
+}

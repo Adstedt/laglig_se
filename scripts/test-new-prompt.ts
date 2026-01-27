@@ -12,7 +12,7 @@ config({ path: resolve(process.cwd(), '.env') })
 
 import Anthropic from '@anthropic-ai/sdk'
 import { PrismaClient } from '@prisma/client'
-import { downloadPdf, getStoragePath, getStorageClient } from '../lib/supabase/storage'
+import { getStoragePath, getStorageClient } from '../lib/supabase/storage'
 import {
   AMENDMENT_PDF_SYSTEM_PROMPT,
   getAmendmentPdfUserPrompt,
@@ -75,7 +75,10 @@ async function getPdfBuffer(sfsNumber: string): Promise<Buffer | null> {
   return null
 }
 import { validateLlmOutput } from '../lib/sfs/llm-output-validator'
-import { htmlToMarkdown, htmlToPlainText } from '../lib/transforms/html-to-markdown'
+import {
+  htmlToMarkdown,
+  htmlToPlainText,
+} from '../lib/transforms/html-to-markdown'
 import { htmlToJson } from '../lib/transforms/html-to-json'
 
 const prisma = new PrismaClient()
@@ -91,11 +94,8 @@ async function main() {
   // 1. Get amendment info
   const amendment = await prisma.amendmentDocument.findFirst({
     where: {
-      OR: [
-        { sfs_number: sfsNumber },
-        { sfs_number: `SFS ${sfsNumber}` },
-      ]
-    }
+      OR: [{ sfs_number: sfsNumber }, { sfs_number: `SFS ${sfsNumber}` }],
+    },
   })
 
   if (!amendment) {
@@ -188,11 +188,15 @@ async function main() {
   console.log('')
 
   // Check for version-references section
-  const hasVersionRefs = validation.cleanedHtml?.includes('class="version-references"')
+  const hasVersionRefs = validation.cleanedHtml?.includes(
+    'class="version-references"'
+  )
   console.log('Has version-references section:', hasVersionRefs)
 
   // Check for clean paragraph headers (no superscript on §)
-  const hasDirtyHeaders = validation.cleanedHtml?.match(/<h3 class="paragraph">[^<]*§<sup/)
+  const hasDirtyHeaders = validation.cleanedHtml?.match(
+    /<h3 class="paragraph">[^<]*§<sup/
+  )
   console.log('Has clean paragraph headers:', !hasDirtyHeaders)
   console.log('')
 

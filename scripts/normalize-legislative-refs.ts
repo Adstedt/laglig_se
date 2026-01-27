@@ -31,7 +31,13 @@ async function main() {
 
   // Get all refs
   const refs = await prisma.legislativeRef.findMany({
-    select: { id: true, ref_type: true, reference: true, year: true, number: true },
+    select: {
+      id: true,
+      ref_type: true,
+      reference: true,
+      year: true,
+      number: true,
+    },
   })
 
   console.log(`Found ${refs.length} references to check\n`)

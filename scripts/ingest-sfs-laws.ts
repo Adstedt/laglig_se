@@ -104,16 +104,20 @@ async function ingestSFSLaws() {
     console.log(`📄 API max page limit: ${CONFIG.API_MAX_PAGE}`)
     console.log('')
     console.log(`📋 Ingestion plan:`)
-    console.log(`   Phase 1: Pages 1-${descPages} descending (newest ${lawsCoveredByDesc} laws)`)
+    console.log(
+      `   Phase 1: Pages 1-${descPages} descending (newest ${lawsCoveredByDesc} laws)`
+    )
     if (ascPagesNeeded > 0) {
-      console.log(`   Phase 2: Pages 1-${ascPagesNeeded} ascending (oldest ${remainingLaws} laws)`)
+      console.log(
+        `   Phase 2: Pages 1-${ascPagesNeeded} ascending (oldest ${remainingLaws} laws)`
+      )
     }
     console.log('')
 
     // ========================================================================
     // Phase 1: Fetch newest laws (descending order, pages 1 to API_MAX_PAGE)
     // ========================================================================
-    console.log('=' .repeat(80))
+    console.log('='.repeat(80))
     console.log('PHASE 1: Fetching newest laws (descending order)')
     console.log('='.repeat(80))
 

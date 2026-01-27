@@ -9,12 +9,12 @@ import { Redis } from '@upstash/redis'
 function createRedisClient() {
   const url = process.env.UPSTASH_REDIS_REST_URL
   const token = process.env.UPSTASH_REDIS_REST_TOKEN
-  
+
   if (!url || !token) {
     console.warn('⚠️ Redis not configured - caching disabled')
     return null
   }
-  
+
   return new Redis({ url, token })
 }
 
@@ -37,27 +37,27 @@ export async function getCachedOrFetch<T>(
     const data = await fetcher()
     return { data, cached: false }
   }
-  
+
   try {
     const cached = await redis.get(key)
     if (cached) {
-      return { 
-        data: typeof cached === 'string' ? JSON.parse(cached) : cached as T, 
-        cached: true 
+      return {
+        data: typeof cached === 'string' ? JSON.parse(cached) : (cached as T),
+        cached: true,
       }
     }
   } catch (error) {
     console.warn('Redis read error:', error)
   }
-  
+
   // Fetch and cache
   const data = await fetcher()
-  
+
   try {
     await redis.set(key, JSON.stringify(data), { ex: ttl })
   } catch (error) {
     console.warn('Redis write error:', error)
   }
-  
+
   return { data, cached: false }
 }

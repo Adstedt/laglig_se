@@ -6,7 +6,11 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 interface JsonContent {
-  footnotes?: Array<{ id: string; content: string; legislativeRefs?: unknown[] }>
+  footnotes?: Array<{
+    id: string
+    content: string
+    legislativeRefs?: unknown[]
+  }>
   legislativeReferences?: Array<{ type: string; reference: string }>
 }
 
@@ -14,12 +18,12 @@ async function main() {
   const docs = await prisma.legalDocument.findMany({
     where: {
       content_type: 'SFS_AMENDMENT',
-      html_content: { not: null }
+      html_content: { not: null },
     },
     select: {
       document_number: true,
-      json_content: true
-    }
+      json_content: true,
+    },
   })
 
   let totalFootnotes = 0
@@ -48,4 +52,6 @@ async function main() {
   console.log('  Docs with refs:', docsWithLegRefs)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

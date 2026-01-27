@@ -23,9 +23,9 @@ async function main() {
     return
   }
 
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log('STEP 1: AMENDMENT')
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log(`Document: ${amendment.document_number}`)
   console.log(`Title: ${amendment.title}`)
 
@@ -35,19 +35,21 @@ async function main() {
     select: { ref_type: true, reference: true, year: true, number: true },
   })
 
-  console.log('\n' + '=' .repeat(70))
+  console.log('\n' + '='.repeat(70))
   console.log('STEP 2: LEGISLATIVE REFERENCES (from legislative_refs table)')
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log('ref_type | reference            | year     | number')
   console.log('-'.repeat(60))
   for (const r of refs) {
-    console.log(`${r.ref_type.padEnd(8)} | ${r.reference.padEnd(20)} | ${r.year.padEnd(8)} | ${r.number}`)
+    console.log(
+      `${r.ref_type.padEnd(8)} | ${r.reference.padEnd(20)} | ${r.year.padEnd(8)} | ${r.number}`
+    )
   }
 
   // Step 3: Build Riksdag API URLs
-  console.log('\n' + '=' .repeat(70))
+  console.log('\n' + '='.repeat(70))
   console.log('STEP 3: RIKSDAG API URLS')
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
 
   for (const r of refs) {
     const doktyp = r.ref_type.toLowerCase()
@@ -66,24 +68,24 @@ async function main() {
   }
 
   // Step 4: What we'd extract
-  console.log('\n' + '=' .repeat(70))
+  console.log('\n' + '='.repeat(70))
   console.log('STEP 4: SECTIONS TO EXTRACT FROM PROP')
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log(`
-From Prop. ${refs.find(r => r.ref_type === 'PROP')?.reference || '2024/25:59'}:
+From Prop. ${refs.find((r) => r.ref_type === 'PROP')?.reference || '2024/25:59'}:
   - "Författningskommentar" → Detailed commentary per section
   - "Skälen för regeringens förslag" → Government's reasoning
   - "Lagförslaget" → The proposed law text
 
-From Bet. ${refs.find(r => r.ref_type === 'BET')?.reference || '2024/25:JuU22'}:
+From Bet. ${refs.find((r) => r.ref_type === 'BET')?.reference || '2024/25:JuU22'}:
   - "Utskottets överväganden" → Committee's considerations
   - "Reservationer" → Minority opinions (if any)
 `)
 
   // Step 5: Example output
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log('STEP 5: GENERATED COMMENT (example output)')
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log(`
 ## Kommentar till ändringarna i brottsbalken (SFS 2025:151)
 

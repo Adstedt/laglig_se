@@ -30,11 +30,16 @@ async function main() {
   console.log()
 
   doc.section_changes.forEach((sc, i) => {
-    const loc = sc.chapter ? `${sc.chapter} kap. ${sc.section} §` : `${sc.section} §`
+    const loc = sc.chapter
+      ? `${sc.chapter} kap. ${sc.section} §`
+      : `${sc.section} §`
     console.log(`--- ${i + 1}. ${loc} [${sc.change_type}] ---`)
     console.log('Description:', sc.description || '(none)')
     if (sc.new_text) {
-      console.log('newText:', sc.new_text.substring(0, 300) + (sc.new_text.length > 300 ? '...' : ''))
+      console.log(
+        'newText:',
+        sc.new_text.substring(0, 300) + (sc.new_text.length > 300 ? '...' : '')
+      )
     } else {
       console.log('newText: NULL')
     }

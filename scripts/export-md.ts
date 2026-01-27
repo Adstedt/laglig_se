@@ -10,13 +10,13 @@ async function main() {
   const doc = await prisma.legalDocument.findFirst({
     where: {
       document_number: 'SFS 1998:1000',
-      markdown_content: { not: null }
+      markdown_content: { not: null },
     },
     select: {
       markdown_content: true,
-    }
+    },
   })
-  
+
   if (!doc || !doc.markdown_content) {
     console.log('No document found')
     return
@@ -29,4 +29,6 @@ async function main() {
   console.log(doc.markdown_content)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

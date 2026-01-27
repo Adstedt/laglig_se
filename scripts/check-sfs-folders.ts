@@ -20,7 +20,7 @@ async function main() {
     console.log('Error:', e1.message)
   } else {
     console.log('Found', d1?.length, 'files:')
-    d1?.forEach(f => console.log(' ', f.name))
+    d1?.forEach((f) => console.log(' ', f.name))
   }
 
   // Check 'SFS 1998' folder
@@ -33,7 +33,7 @@ async function main() {
     console.log('Error:', e2.message)
   } else {
     console.log('Found', d2?.length, 'files:')
-    d2?.forEach(f => console.log(' ', f.name))
+    d2?.forEach((f) => console.log(' ', f.name))
   }
 
   // Try downloading from "SFS 2025" folder

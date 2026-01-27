@@ -11,7 +11,7 @@ async function main() {
   // Test downloading a 2025 amendment (was failing before)
   const amendment2025 = await prisma.amendmentDocument.findFirst({
     where: { sfs_number: 'SFS 2025:1' },
-    select: { sfs_number: true, storage_path: true }
+    select: { sfs_number: true, storage_path: true },
   })
 
   console.log('Testing 2025 amendment:')
@@ -20,13 +20,16 @@ async function main() {
 
   if (amendment2025?.storage_path) {
     const pdf = await downloadPdfByPath(amendment2025.storage_path)
-    console.log('  Download result:', pdf ? `SUCCESS (${pdf.length} bytes)` : 'FAILED')
+    console.log(
+      '  Download result:',
+      pdf ? `SUCCESS (${pdf.length} bytes)` : 'FAILED'
+    )
   }
 
   // Test downloading a 1998 amendment (was working before)
   const amendment1998 = await prisma.amendmentDocument.findFirst({
     where: { sfs_number: { startsWith: 'SFS 1998:' } },
-    select: { sfs_number: true, storage_path: true }
+    select: { sfs_number: true, storage_path: true },
   })
 
   console.log('\nTesting 1998 amendment:')
@@ -35,7 +38,10 @@ async function main() {
 
   if (amendment1998?.storage_path) {
     const pdf = await downloadPdfByPath(amendment1998.storage_path)
-    console.log('  Download result:', pdf ? `SUCCESS (${pdf.length} bytes)` : 'FAILED')
+    console.log(
+      '  Download result:',
+      pdf ? `SUCCESS (${pdf.length} bytes)` : 'FAILED'
+    )
   }
 
   await prisma.$disconnect()

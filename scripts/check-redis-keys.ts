@@ -5,11 +5,11 @@ dotenv.config({ path: '.env.local' })
 
 async function checkKeys() {
   console.log('🔍 Checking all keys in Redis...\n')
-  
+
   try {
     // This might not work with all Redis providers
     const keys = await redis.keys('*')
-    
+
     if (keys.length === 0) {
       console.log('❌ No keys found in Redis')
     } else {
@@ -24,19 +24,15 @@ async function checkKeys() {
   } catch (error) {
     // Fallback - check specific patterns
     console.log('Checking specific key patterns...\n')
-    
+
     // Test if any keys exist
     await redis.set('test:ping', 'pong', { ex: 10 })
     const test = await redis.get('test:ping')
     console.log('Test key works:', test, '\n')
-    
+
     // Try specific patterns
-    const patterns = [
-      'list-item-details:*',
-      'document:content:*',
-      'test:*'
-    ]
-    
+    const patterns = ['list-item-details:*', 'document:content:*', 'test:*']
+
     for (const pattern of patterns) {
       console.log(`Checking pattern: ${pattern}`)
       // Note: keys() might not be available in all Redis providers

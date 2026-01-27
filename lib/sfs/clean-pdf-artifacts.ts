@@ -182,7 +182,10 @@ export function formatLegalText(content: string | null): string | null {
   formatted = formatted.replace(/(följande lydelse\.)/gi, '$1\n\n')
 
   // Add line break before definition list items (word "i X §")
-  formatted = formatted.replace(/(\s)([a-zåäö]+(?:\s+[a-zåäö]+)*\s+i\s+\d+)/g, '\n$2')
+  formatted = formatted.replace(
+    /(\s)([a-zåäö]+(?:\s+[a-zåäö]+)*\s+i\s+\d+)/g,
+    '\n$2'
+  )
 
   // Add paragraph breaks before "Prop.", "SFS", "Publicerad"
   formatted = formatted.replace(/(\s)(Prop\.\s+\d{4})/g, '\n\n$2')

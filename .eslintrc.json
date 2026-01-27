@@ -11,6 +11,56 @@
       "error",
       { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
     ],
-    "no-console": ["warn", { "allow": ["error", "warn"] }]
-  }
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+    ],
+    "no-console": ["warn", { "allow": ["error", "warn"] }],
+    "jsx-a11y/no-autofocus": ["warn", { "ignoreNonDOM": true }]
+  },
+  "overrides": [
+    {
+      "files": [
+        "app/api/cron/**/*.ts",
+        "lib/**/*.ts",
+        "scripts/**/*.ts",
+        "scripts/**/*.js",
+        "prisma/**/*.ts",
+        "instrumentation.ts",
+        "public/sw.js",
+        "components/shared/service-worker-provider.tsx"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": [
+        "**/__tests__/**/*.ts",
+        "**/__tests__/**/*.tsx",
+        "tests/**/*.ts",
+        "tests/**/*.tsx",
+        "*.spec.ts",
+        "*.test.ts"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-console": "off",
+        "no-unused-vars": [
+          "error",
+          { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_|^expect$" }
+        ]
+      }
+    },
+    {
+      "files": ["lib/cache/**/*.ts", "scripts/**/*.ts", "scripts/**/*.js"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-unused-vars": [
+          "error",
+          { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
+        ]
+      }
+    }
+  ]
 }

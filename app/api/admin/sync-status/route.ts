@@ -130,7 +130,7 @@ export async function GET(request: Request) {
       crossReferences: {
         total: crossReferenceCount,
       },
-      recentChanges: recentChangeEvents.map(event => ({
+      recentChanges: recentChangeEvents.map((event) => ({
         id: event.id,
         type: event.change_type,
         documentNumber: event.document.document_number,

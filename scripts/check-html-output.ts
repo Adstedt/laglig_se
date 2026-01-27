@@ -4,7 +4,7 @@ const prisma = new PrismaClient()
 async function main() {
   const doc = await prisma.legalDocument.findFirst({
     where: { document_number: 'SFS 2025:57' },
-    select: { html_content: true }
+    select: { html_content: true },
   })
 
   const html = doc?.html_content || ''

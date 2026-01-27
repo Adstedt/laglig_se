@@ -9,16 +9,16 @@ async function main() {
   const docs = await prisma.legalDocument.findMany({
     where: {
       content_type: 'SFS_AMENDMENT',
-      html_content: { not: null }
+      html_content: { not: null },
     },
     select: {
       document_number: true,
       slug: true,
       title: true,
-      html_content: true
+      html_content: true,
     },
     orderBy: { updated_at: 'desc' },
-    take: 10
+    take: 10,
   })
 
   console.log('Amendments with html_content:', docs.length)

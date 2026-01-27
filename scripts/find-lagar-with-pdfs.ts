@@ -9,18 +9,15 @@ async function main() {
   // Get amendments with PDFs that are lagar (parse_status indicates PDF was processed)
   const amendments = await prisma.amendmentDocument.findMany({
     where: {
-      OR: [
-        { title: { contains: 'Lag (' } },
-        { title: { contains: 'Lag om' } },
-      ],
-      parse_status: 'COMPLETED' // This means PDF exists and was downloaded
+      OR: [{ title: { contains: 'Lag (' } }, { title: { contains: 'Lag om' } }],
+      parse_status: 'COMPLETED', // This means PDF exists and was downloaded
     },
     select: {
       sfs_number: true,
       title: true,
     },
     orderBy: { sfs_number: 'desc' },
-    take: 20
+    take: 20,
   })
 
   console.log('Lagar with parse_status=COMPLETED (have PDFs):')
@@ -31,13 +28,10 @@ async function main() {
   // Count by year
   const allWithPdf = await prisma.amendmentDocument.findMany({
     where: {
-      OR: [
-        { title: { contains: 'Lag (' } },
-        { title: { contains: 'Lag om' } },
-      ],
-      parse_status: 'COMPLETED'
+      OR: [{ title: { contains: 'Lag (' } }, { title: { contains: 'Lag om' } }],
+      parse_status: 'COMPLETED',
     },
-    select: { sfs_number: true }
+    select: { sfs_number: true },
   })
 
   const byYear: Record<string, number> = {}
@@ -47,9 +41,13 @@ async function main() {
   }
 
   console.log('\nLagar with PDFs by year:')
-  Object.entries(byYear).sort((a, b) => b[0].localeCompare(a[0])).forEach(([year, count]) => {
-    console.log(`  ${year}: ${count}`)
-  })
+  Object.entries(byYear)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .forEach(([year, count]) => {
+      console.log(`  ${year}: ${count}`)
+    })
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

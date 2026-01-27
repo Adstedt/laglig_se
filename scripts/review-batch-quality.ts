@@ -36,7 +36,10 @@ interface QualityResult {
 }
 
 function extractText(html: string): string {
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 function analyzeResult(r: ResultItem): QualityResult {
@@ -54,9 +57,11 @@ function analyzeResult(r: ResultItem): QualityResult {
   const hasSections = html.includes('class="ann"')
   const hasChapters = html.includes('class="kapitel"')
   const hasFootnotes = html.includes('footnote')
-  const hasTransitions = html.includes('Ikraftträdande') || html.includes('träder i kraft')
+  const hasTransitions =
+    html.includes('Ikraftträdande') || html.includes('träder i kraft')
   const hasSignature = html.includes('regeringens vägnar')
-  const hasLists = html.includes('<ol class="list"') || html.includes('<ul class="list"')
+  const hasLists =
+    html.includes('<ol class="list"') || html.includes('<ul class="list"')
 
   const issues: string[] = []
 
@@ -92,7 +97,8 @@ function analyzeResult(r: ResultItem): QualityResult {
 }
 
 function main() {
-  const resultsFile = process.argv[2] || 'results/msgbatch_013GhaXV767FaagfG5nVR1HL.jsonl'
+  const resultsFile =
+    process.argv[2] || 'results/msgbatch_013GhaXV767FaagfG5nVR1HL.jsonl'
 
   console.log('='.repeat(70))
   console.log('BATCH LLM PARSING QUALITY REPORT')
@@ -118,45 +124,65 @@ function main() {
   }
 
   // Summary
-  const passed = results.filter(r => r.status === 'PASS').length
-  const warnings = results.filter(r => r.status === 'WARNING').length
-  const errors = results.filter(r => r.status === 'ERROR').length
+  const passed = results.filter((r) => r.status === 'PASS').length
+  const warnings = results.filter((r) => r.status === 'WARNING').length
+  const errors = results.filter((r) => r.status === 'ERROR').length
 
   console.log('SUMMARY')
   console.log('-'.repeat(40))
   console.log(`Total documents processed: ${results.length}`)
   console.log(`API errors: ${apiErrors}`)
   console.log(``)
-  console.log(`✅ Passed: ${passed} (${((passed/results.length)*100).toFixed(1)}%)`)
+  console.log(
+    `✅ Passed: ${passed} (${((passed / results.length) * 100).toFixed(1)}%)`
+  )
   console.log(`⚠️  Warnings: ${warnings}`)
   console.log(`❌ Errors: ${errors}`)
   console.log('')
 
   // Size distribution
-  const sizes = results.map(r => r.textLength).sort((a, b) => a - b)
+  const sizes = results.map((r) => r.textLength).sort((a, b) => a - b)
   console.log('SIZE DISTRIBUTION')
   console.log('-'.repeat(40))
   console.log(`Min: ${sizes[0]} chars`)
   console.log(`Max: ${sizes[sizes.length - 1]} chars`)
   console.log(`Median: ${sizes[Math.floor(sizes.length / 2)]} chars`)
-  console.log(`Average: ${Math.round(sizes.reduce((a, b) => a + b, 0) / sizes.length)} chars`)
+  console.log(
+    `Average: ${Math.round(sizes.reduce((a, b) => a + b, 0) / sizes.length)} chars`
+  )
   console.log('')
 
   // Structure coverage
   console.log('STRUCTURE COVERAGE')
   console.log('-'.repeat(40))
-  console.log(`Has article wrapper: ${results.filter(r => r.hasArticle).length}/${results.length}`)
-  console.log(`Has body div: ${results.filter(r => r.hasBody).length}/${results.length}`)
-  console.log(`Has sections (§): ${results.filter(r => r.hasSections).length}/${results.length}`)
-  console.log(`Has chapters (kap.): ${results.filter(r => r.hasChapters).length}/${results.length}`)
-  console.log(`Has footnotes: ${results.filter(r => r.hasFootnotes).length}/${results.length}`)
-  console.log(`Has transitions: ${results.filter(r => r.hasTransitions).length}/${results.length}`)
-  console.log(`Has signature: ${results.filter(r => r.hasSignature).length}/${results.length}`)
-  console.log(`Has lists: ${results.filter(r => r.hasLists).length}/${results.length}`)
+  console.log(
+    `Has article wrapper: ${results.filter((r) => r.hasArticle).length}/${results.length}`
+  )
+  console.log(
+    `Has body div: ${results.filter((r) => r.hasBody).length}/${results.length}`
+  )
+  console.log(
+    `Has sections (§): ${results.filter((r) => r.hasSections).length}/${results.length}`
+  )
+  console.log(
+    `Has chapters (kap.): ${results.filter((r) => r.hasChapters).length}/${results.length}`
+  )
+  console.log(
+    `Has footnotes: ${results.filter((r) => r.hasFootnotes).length}/${results.length}`
+  )
+  console.log(
+    `Has transitions: ${results.filter((r) => r.hasTransitions).length}/${results.length}`
+  )
+  console.log(
+    `Has signature: ${results.filter((r) => r.hasSignature).length}/${results.length}`
+  )
+  console.log(
+    `Has lists: ${results.filter((r) => r.hasLists).length}/${results.length}`
+  )
   console.log('')
 
   // Documents with issues
-  const docsWithIssues = results.filter(r => r.issues.length > 0)
+  const docsWithIssues = results.filter((r) => r.issues.length > 0)
   if (docsWithIssues.length > 0) {
     console.log('DOCUMENTS REQUIRING REVIEW')
     console.log('-'.repeat(40))
@@ -171,16 +197,18 @@ function main() {
   console.log('SAMPLE OUTPUTS FOR MANUAL REVIEW')
   console.log('-'.repeat(40))
   const samples = [
-    results.find(r => r.charCount > 8000), // Large doc
-    results.find(r => r.charCount < 1000 && r.status === 'PASS'), // Small doc
-    results.find(r => r.hasChapters && r.hasFootnotes), // Complex doc
+    results.find((r) => r.charCount > 8000), // Large doc
+    results.find((r) => r.charCount < 1000 && r.status === 'PASS'), // Small doc
+    results.find((r) => r.hasChapters && r.hasFootnotes), // Complex doc
   ].filter(Boolean)
 
   for (const sample of samples) {
     if (!sample) continue
-    console.log(`- ${sample.sfsNumber}: ${sample.textLength} chars, ` +
-      `${sample.hasSections ? 'has sections' : 'no sections'}, ` +
-      `${sample.hasFootnotes ? 'has footnotes' : 'no footnotes'}`)
+    console.log(
+      `- ${sample.sfsNumber}: ${sample.textLength} chars, ` +
+        `${sample.hasSections ? 'has sections' : 'no sections'}, ` +
+        `${sample.hasFootnotes ? 'has footnotes' : 'no footnotes'}`
+    )
   }
   console.log('')
 
@@ -199,7 +227,14 @@ function main() {
 
   // Export detailed results
   const outputFile = resultsFile.replace('.jsonl', '-quality-report.json')
-  writeFileSync(outputFile, JSON.stringify({ summary: { passed, warnings, errors, qualityScore }, results }, null, 2))
+  writeFileSync(
+    outputFile,
+    JSON.stringify(
+      { summary: { passed, warnings, errors, qualityScore }, results },
+      null,
+      2
+    )
+  )
   console.log(`\nDetailed report saved to: ${outputFile}`)
 }
 

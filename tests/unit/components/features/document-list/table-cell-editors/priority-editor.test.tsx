@@ -68,7 +68,7 @@ describe('PriorityEditor', () => {
 
     // Click on Medel option in dropdown
     const options = screen.getAllByText('Medel')
-    const dropdownOption = options.find(el => el.closest('[role="option"]'))
+    const dropdownOption = options.find((el) => el.closest('[role="option"]'))
     if (dropdownOption) {
       await user.click(dropdownOption)
     }

@@ -17,17 +17,18 @@ import { Settings2 } from 'lucide-react'
 import type { VisibilityState } from '@tanstack/react-table'
 
 // Column definitions with Swedish labels
-const COLUMN_OPTIONS: { id: string; label: string; defaultVisible: boolean }[] = [
-  { id: 'type', label: 'Typ', defaultVisible: true },
-  { id: 'documentNumber', label: 'Dokument', defaultVisible: true },
-  { id: 'title', label: 'Titel', defaultVisible: true },
-  { id: 'status', label: 'Status', defaultVisible: true },
-  { id: 'priority', label: 'Prioritet', defaultVisible: true },
-  { id: 'dueDate', label: 'Deadline', defaultVisible: true },
-  { id: 'assignee', label: 'Tilldelad', defaultVisible: false },
-  { id: 'notes', label: 'Anteckningar', defaultVisible: false },
-  { id: 'addedAt', label: 'Tillagd', defaultVisible: false },
-]
+const COLUMN_OPTIONS: { id: string; label: string; defaultVisible: boolean }[] =
+  [
+    { id: 'type', label: 'Typ', defaultVisible: true },
+    { id: 'documentNumber', label: 'Dokument', defaultVisible: true },
+    { id: 'title', label: 'Titel', defaultVisible: true },
+    { id: 'status', label: 'Status', defaultVisible: true },
+    { id: 'priority', label: 'Prioritet', defaultVisible: true },
+    { id: 'dueDate', label: 'Deadline', defaultVisible: true },
+    { id: 'assignee', label: 'Tilldelad', defaultVisible: false },
+    { id: 'notes', label: 'Anteckningar', defaultVisible: false },
+    { id: 'addedAt', label: 'Tillagd', defaultVisible: false },
+  ]
 
 // Default visibility state
 export const DEFAULT_COLUMN_VISIBILITY: VisibilityState = COLUMN_OPTIONS.reduce(
@@ -40,7 +41,7 @@ export const DEFAULT_COLUMN_VISIBILITY: VisibilityState = COLUMN_OPTIONS.reduce(
 
 interface ColumnSettingsProps {
   columnVisibility: VisibilityState
-  onColumnVisibilityChange: (visibility: VisibilityState) => void
+  onColumnVisibilityChange: (_visibility: VisibilityState) => void
 }
 
 export function ColumnSettings({

@@ -22,12 +22,16 @@ async function main() {
   const prop = 'Prop. 2024/25:59'
   const amendments = await prisma.legislativeRef.findMany({
     where: { reference: prop },
-    include: { legal_document: { select: { document_number: true, title: true } } },
+    include: {
+      legal_document: { select: { document_number: true, title: true } },
+    },
   })
 
   console.log(`\n=== Amendments referencing ${prop} ===`)
   for (const a of amendments) {
-    console.log(`  ${a.legal_document.document_number}: ${a.legal_document.title?.substring(0, 50)}`)
+    console.log(
+      `  ${a.legal_document.document_number}: ${a.legal_document.title?.substring(0, 50)}`
+    )
   }
 
   // Unique references
@@ -39,7 +43,10 @@ async function main() {
 
   console.log(`\n=== Unique Propositions (${uniqueProps.length}) ===`)
   uniqueProps.slice(0, 10).forEach((p) => console.log(`  ${p.reference}`))
-  if (uniqueProps.length > 10) console.log(`  ... and ${uniqueProps.length - 10} more`)
+  if (uniqueProps.length > 10)
+    console.log(`  ... and ${uniqueProps.length - 10} more`)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

@@ -2,7 +2,7 @@
 
 /**
  * Track document visits for cache warming optimization
- * 
+ *
  * This lightweight tracking helps us identify the most popular documents
  * in public browsing (/rattskallor) to complement law list-based warming
  */
@@ -43,41 +43,41 @@ export async function getMostPopularDocuments(limit: number = 200) {
     prisma.lawListItem.groupBy({
       by: ['document_id'],
       _count: {
-        document_id: true
+        document_id: true,
       },
       orderBy: {
         _count: {
-          document_id: 'desc'
-        }
+          document_id: 'desc',
+        },
       },
-      take: limit
+      take: limit,
     }),
-    
+
     // Top visited documents in public pages
     prisma.$queryRaw<Array<{ document_id: string; visit_count: number }>>`
       SELECT document_id, visit_count 
       FROM document_visits 
       ORDER BY visit_count DESC 
       LIMIT ${limit}
-    `
+    `,
   ])
-  
+
   // Combine and deduplicate, prioritizing by total popularity
   const documentScores = new Map<string, number>()
-  
+
   // Weight law list inclusion higher (these are actively used documents)
-  lawListDocs.forEach(item => {
+  lawListDocs.forEach((item) => {
     if (item.document_id) {
       documentScores.set(item.document_id, item._count.document_id * 2) // 2x weight
     }
   })
-  
+
   // Add visit counts
-  visitedDocs.forEach(item => {
+  visitedDocs.forEach((item) => {
     const current = documentScores.get(item.document_id) || 0
     documentScores.set(item.document_id, current + item.visit_count)
   })
-  
+
   // Sort by combined score and return top N
   const sortedDocs = Array.from(documentScores.entries())
     .sort((a, b) => b[1] - a[1])
@@ -85,11 +85,13 @@ export async function getMostPopularDocuments(limit: number = 200) {
     .map(([docId, score]) => ({
       document_id: docId,
       score,
-      source: lawListDocs.some(d => d.document_id === docId) ? 
-        (visitedDocs.some(d => d.document_id === docId) ? 'both' : 'law_lists') : 
-        'public_visits'
+      source: lawListDocs.some((d) => d.document_id === docId)
+        ? visitedDocs.some((d) => d.document_id === docId)
+          ? 'both'
+          : 'law_lists'
+        : 'public_visits',
     }))
-  
+
   return sortedDocs
 }
 
@@ -100,7 +102,7 @@ export async function getMostPopularDocuments(limit: number = 200) {
 export async function cleanupOldVisits(daysToKeep: number = 90) {
   const cutoffDate = new Date()
   cutoffDate.setDate(cutoffDate.getDate() - daysToKeep)
-  
+
   await prisma.$executeRaw`
     DELETE FROM document_visits 
     WHERE last_visited < ${cutoffDate}

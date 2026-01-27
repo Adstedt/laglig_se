@@ -120,11 +120,15 @@ export async function downloadPdf(sfsNumber: string): Promise<Buffer | null> {
  * Download PDF content from storage using explicit storage path
  * Tries multiple path variations to handle inconsistent storage paths
  */
-export async function downloadPdfByPath(storagePath: string): Promise<Buffer | null> {
+export async function downloadPdfByPath(
+  storagePath: string
+): Promise<Buffer | null> {
   const client = getStorageClient()
 
   // Try the exact path first
-  let { data, error } = await client.storage.from(BUCKET_NAME).download(storagePath)
+  const { data, error } = await client.storage
+    .from(BUCKET_NAME)
+    .download(storagePath)
 
   if (!error && data) {
     return Buffer.from(await data.arrayBuffer())

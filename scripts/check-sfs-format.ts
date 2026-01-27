@@ -13,7 +13,7 @@ async function main() {
     where: { parse_status: 'COMPLETED' },
     select: { sfs_number: true, storage_path: true },
     take: 3,
-    orderBy: { sfs_number: 'desc' }
+    orderBy: { sfs_number: 'desc' },
   })
 
   for (const a of amendments) {
@@ -28,4 +28,6 @@ async function main() {
   }
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

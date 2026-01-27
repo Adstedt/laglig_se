@@ -81,7 +81,8 @@ function initialDataToListItem(
   return {
     id: initial.id,
     position: initial.position,
-    complianceStatus: initial.complianceStatus as ListItemDetails['complianceStatus'],
+    complianceStatus:
+      initial.complianceStatus as ListItemDetails['complianceStatus'],
     businessContext: extraData?.businessContext ?? null,
     aiCommentary: extraData?.aiCommentary ?? null,
     category: initial.category,
@@ -144,10 +145,7 @@ export function useListItemDetails(
 
   // Fetch HTML content separately (always needed, as list doesn't have it)
   const documentId = initialData?.document.id ?? fullData?.legalDocument.id
-  const {
-    data: contentData,
-    isLoading: isLoadingContent,
-  } = useSWR(
+  const { data: contentData, isLoading: isLoadingContent } = useSWR(
     listItemId && documentId ? `document-content:${documentId}` : null,
     async () => {
       const result = await getDocumentContent(documentId!)
@@ -165,9 +163,7 @@ export function useListItemDetails(
 
   // Fetch extra fields not in list (businessContext, aiCommentary)
   // Only if we have initialData (otherwise fullData has everything)
-  const {
-    data: extraFields,
-  } = useSWR(
+  const { data: extraFields } = useSWR(
     listItemId && initialData ? `list-item-extra:${listItemId}` : null,
     async () => {
       const result = await getListItemDetails(listItemId!)

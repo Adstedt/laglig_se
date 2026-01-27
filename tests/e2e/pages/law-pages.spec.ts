@@ -8,16 +8,22 @@ test.describe('SFS Law Pages', () => {
     await expect(page).toHaveTitle(/Svenska lagar/)
 
     // Check breadcrumbs
-    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible()
+    await expect(
+      page.getByRole('navigation', { name: 'Breadcrumb' })
+    ).toBeVisible()
 
     // Check heading
-    await expect(page.getByRole('heading', { name: 'Svenska lagar', level: 1 })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Svenska lagar', level: 1 })
+    ).toBeVisible()
 
     // Check that laws are listed
     await expect(page.locator('article, [class*="card"]').first()).toBeVisible()
   })
 
-  test('should render individual law page with SSR content', async ({ page }) => {
+  test('should render individual law page with SSR content', async ({
+    page,
+  }) => {
     // First go to listing to find a law
     await page.goto('/lagar', { waitUntil: 'networkidle' })
 
@@ -41,7 +47,9 @@ test.describe('SFS Law Pages', () => {
     expect(page.url()).toMatch(/\/lagar\/[^/]+$/)
 
     // Check breadcrumbs
-    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible()
+    await expect(
+      page.getByRole('navigation', { name: 'Breadcrumb' })
+    ).toBeVisible()
 
     // Check page has main heading
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
@@ -64,8 +72,13 @@ test.describe('SFS Law Pages', () => {
     await expect(metaDescription).toHaveAttribute('content', /.+/)
 
     // Check Open Graph tags (use head)
-    await expect(page.locator('head meta[property="og:title"]')).toHaveAttribute('content', /.+/)
-    await expect(page.locator('head meta[property="og:type"]')).toHaveAttribute('content', 'article')
+    await expect(
+      page.locator('head meta[property="og:title"]')
+    ).toHaveAttribute('content', /.+/)
+    await expect(page.locator('head meta[property="og:type"]')).toHaveAttribute(
+      'content',
+      'article'
+    )
 
     // Check canonical URL (use head)
     const canonical = page.locator('head link[rel="canonical"]')
@@ -101,7 +114,9 @@ test.describe('SFS Law Pages', () => {
 
     // Should show 404 content
     await expect(page.getByText('404')).toBeVisible()
-    await expect(page.getByRole('heading', { name: /kunde inte hittas/i })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: /kunde inte hittas/i })
+    ).toBeVisible()
   })
 })
 
@@ -110,7 +125,9 @@ test.describe('Court Case Pages', () => {
     await page.goto('/rattsfall')
 
     await expect(page).toHaveTitle(/Svenska rättsfall/)
-    await expect(page.getByRole('heading', { name: 'Svenska rättsfall', level: 1 })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Svenska rättsfall', level: 1 })
+    ).toBeVisible()
 
     // Should show court options
     await expect(page.getByText('Högsta domstolen')).toBeVisible()
@@ -120,7 +137,9 @@ test.describe('Court Case Pages', () => {
     await page.goto('/rattsfall/hd')
 
     await expect(page).toHaveTitle(/Högsta domstolen/)
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Högsta domstolen')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'Högsta domstolen'
+    )
   })
 
   test('should render individual court case page', async ({ page }) => {
@@ -130,7 +149,7 @@ test.describe('Court Case Pages', () => {
     const firstCaseLink = page.locator('a[href^="/rattsfall/hd/"]').first()
 
     // Skip if no cases exist
-    if (await firstCaseLink.count() === 0) {
+    if ((await firstCaseLink.count()) === 0) {
       test.skip()
       return
     }
@@ -138,7 +157,9 @@ test.describe('Court Case Pages', () => {
     await firstCaseLink.click()
 
     // Verify breadcrumbs and heading
-    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible()
+    await expect(
+      page.getByRole('navigation', { name: 'Breadcrumb' })
+    ).toBeVisible()
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
 })
@@ -148,7 +169,9 @@ test.describe('EU Legislation Pages', () => {
     await page.goto('/eu')
 
     await expect(page).toHaveTitle(/EU-lagstiftning/)
-    await expect(page.getByRole('heading', { name: 'EU-lagstiftning', level: 1 })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'EU-lagstiftning', level: 1 })
+    ).toBeVisible()
 
     // Should show EU type options
     await expect(page.getByText('EU-förordningar')).toBeVisible()
@@ -159,7 +182,9 @@ test.describe('EU Legislation Pages', () => {
     await page.goto('/eu/forordningar')
 
     await expect(page).toHaveTitle(/EU-förordningar/)
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('EU-förordningar')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'EU-förordningar'
+    )
   })
 
   test('should render individual EU document page', async ({ page }) => {
@@ -168,14 +193,16 @@ test.describe('EU Legislation Pages', () => {
     const firstDocLink = page.locator('a[href^="/eu/forordningar/"]').first()
 
     // Skip if no documents exist
-    if (await firstDocLink.count() === 0) {
+    if ((await firstDocLink.count()) === 0) {
       test.skip()
       return
     }
 
     await firstDocLink.click()
 
-    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible()
+    await expect(
+      page.getByRole('navigation', { name: 'Breadcrumb' })
+    ).toBeVisible()
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 
     // Check for CELEX number
@@ -245,7 +272,9 @@ test.describe('Sitemap and Robots', () => {
 })
 
 test.describe('Legal Disclaimer', () => {
-  test('should show legal disclaimer in footer on homepage', async ({ page }) => {
+  test('should show legal disclaimer in footer on homepage', async ({
+    page,
+  }) => {
     // Footer is on homepage, not law listing page
     await page.goto('/')
 
@@ -254,7 +283,9 @@ test.describe('Legal Disclaimer', () => {
 
     // Check disclaimer text
     await expect(page.getByText(/Juridisk ansvarsfriskrivning/)).toBeVisible()
-    await expect(page.getByText(/AI-assisterad juridisk information/)).toBeVisible()
+    await expect(
+      page.getByText(/AI-assisterad juridisk information/)
+    ).toBeVisible()
     await expect(page.getByText(/inte juridisk rådgivning/)).toBeVisible()
   })
 })

@@ -40,7 +40,9 @@ async function main() {
 
     console.log(`✅ API Response received`)
     console.log(`   Total cases in API: ${result.total}`)
-    console.log(`   Cases in this batch: ${result.publiceringLista?.length || 0}`)
+    console.log(
+      `   Cases in this batch: ${result.publiceringLista?.length || 0}`
+    )
     console.log('')
 
     const cases = result.publiceringLista || []
@@ -89,18 +91,34 @@ async function main() {
 
     console.log('')
     console.log('Field Coverage:')
-    console.log(`  📝 innehall (full text):     ${withFullText}/${cases.length} cases (${Math.round(withFullText/cases.length*100)}%)`)
-    console.log(`  📋 sammanfattning (summary): ${withSummary}/${cases.length} cases`)
-    console.log(`  📎 bilagaLista (attachments): ${withAttachments}/${cases.length} cases (${totalAttachments} total attachments)`)
-    console.log(`  ⚖️  lagrumLista (SFS refs):   ${withLagrumRefs}/${cases.length} cases (${totalLagrumRefs} total refs)`)
-    console.log(`  🏷️  nyckelordLista (keywords): ${withKeywords}/${cases.length} cases`)
-    console.log(`  🔗 ecliNummer (ECLI):         ${withEcli}/${cases.length} cases`)
-    console.log(`  #️⃣  arbetsdomstolenDomsnummer: ${withAdNumber}/${cases.length} cases`)
+    console.log(
+      `  📝 innehall (full text):     ${withFullText}/${cases.length} cases (${Math.round((withFullText / cases.length) * 100)}%)`
+    )
+    console.log(
+      `  📋 sammanfattning (summary): ${withSummary}/${cases.length} cases`
+    )
+    console.log(
+      `  📎 bilagaLista (attachments): ${withAttachments}/${cases.length} cases (${totalAttachments} total attachments)`
+    )
+    console.log(
+      `  ⚖️  lagrumLista (SFS refs):   ${withLagrumRefs}/${cases.length} cases (${totalLagrumRefs} total refs)`
+    )
+    console.log(
+      `  🏷️  nyckelordLista (keywords): ${withKeywords}/${cases.length} cases`
+    )
+    console.log(
+      `  🔗 ecliNummer (ECLI):         ${withEcli}/${cases.length} cases`
+    )
+    console.log(
+      `  #️⃣  arbetsdomstolenDomsnummer: ${withAdNumber}/${cases.length} cases`
+    )
     console.log('')
 
     if (withFullText > 0) {
       const avgLength = Math.round(totalFullTextLength / withFullText)
-      console.log(`  📏 Average full text length: ${avgLength.toLocaleString()} characters`)
+      console.log(
+        `  📏 Average full text length: ${avgLength.toLocaleString()} characters`
+      )
     }
 
     // Verify HTML content in innehall
@@ -109,20 +127,27 @@ async function main() {
     console.log('🔍 HTML Content Verification')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-    const caseWithHtml = cases.find((c) => c.innehall && c.innehall.length > 100)
+    const caseWithHtml = cases.find(
+      (c) => c.innehall && c.innehall.length > 100
+    )
     if (caseWithHtml && caseWithHtml.innehall) {
       const htmlContent = caseWithHtml.innehall
       const hasHtmlTags = /<[^>]+>/.test(htmlContent)
       const hasParagraphs = /<p\b/i.test(htmlContent)
       const hasHeadings = /<h[1-6]\b/i.test(htmlContent)
-      const hasStrong = /<strong\b/i.test(htmlContent) || /<b\b/i.test(htmlContent)
+      const hasStrong =
+        /<strong\b/i.test(htmlContent) || /<b\b/i.test(htmlContent)
 
       console.log('')
       console.log(`Sample case: ${generateDocumentNumber(caseWithHtml)}`)
-      console.log(`  Content length: ${htmlContent.length.toLocaleString()} characters`)
+      console.log(
+        `  Content length: ${htmlContent.length.toLocaleString()} characters`
+      )
       console.log(`  Contains HTML tags: ${hasHtmlTags ? '✅ YES' : '❌ NO'}`)
       console.log(`  Contains <p> tags: ${hasParagraphs ? '✅ YES' : '❌ NO'}`)
-      console.log(`  Contains heading tags: ${hasHeadings ? '✅ YES' : '❌ NO'}`)
+      console.log(
+        `  Contains heading tags: ${hasHeadings ? '✅ YES' : '❌ NO'}`
+      )
       console.log(`  Contains emphasis tags: ${hasStrong ? '✅ YES' : '❌ NO'}`)
 
       console.log('')
@@ -186,12 +211,18 @@ async function main() {
     for (const c of cases.slice(0, 10)) {
       console.log('')
       console.log(`  ${generateDocumentNumber(c)}`)
-      console.log(`    Title: ${generateTitle(c).substring(0, 70)}${generateTitle(c).length > 70 ? '...' : ''}`)
+      console.log(
+        `    Title: ${generateTitle(c).substring(0, 70)}${generateTitle(c).length > 70 ? '...' : ''}`
+      )
       console.log(`    Court: ${c.domstol?.domstolNamn || 'N/A'}`)
       console.log(`    Case #: ${extractCaseNumber(c) || 'N/A'}`)
-      console.log(`    Date: ${parseApiDate(c.avgorandedatum)?.toISOString().split('T')[0] || 'N/A'}`)
+      console.log(
+        `    Date: ${parseApiDate(c.avgorandedatum)?.toISOString().split('T')[0] || 'N/A'}`
+      )
       console.log(`    Type: ${c.typ || 'N/A'}`)
-      console.log(`    Full text: ${c.innehall ? `${c.innehall.length.toLocaleString()} chars` : 'N/A'}`)
+      console.log(
+        `    Full text: ${c.innehall ? `${c.innehall.length.toLocaleString()} chars` : 'N/A'}`
+      )
       console.log(`    Attachments: ${c.bilagaLista?.length || 0}`)
       console.log(`    SFS refs: ${c.lagrumLista?.length || 0}`)
     }
@@ -203,8 +234,12 @@ async function main() {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     console.log('')
     console.log(`  Fetched: ${cases.length} cases`)
-    console.log(`  With full text: ${withFullText} (${Math.round(withFullText/cases.length*100)}%)`)
-    console.log(`  With attachments: ${withAttachments} (${totalAttachments} total)`)
+    console.log(
+      `  With full text: ${withFullText} (${Math.round((withFullText / cases.length) * 100)}%)`
+    )
+    console.log(
+      `  With attachments: ${withAttachments} (${totalAttachments} total)`
+    )
     console.log(`  With SFS refs: ${withLagrumRefs} (${totalLagrumRefs} total)`)
     console.log('')
 
@@ -219,7 +254,6 @@ async function main() {
 
     console.log('')
     console.log('✅ Test script completed successfully')
-
   } catch (error) {
     console.error('')
     console.error('❌ Error during test:')

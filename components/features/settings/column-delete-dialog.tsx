@@ -18,7 +18,7 @@ import {
 
 interface ColumnDeleteDialogProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (_open: boolean) => void
   columnName: string
   taskCount: number
   targetColumnName: string
@@ -47,7 +47,8 @@ export function ColumnDeleteDialog({
               </p>
               {taskCount > 0 ? (
                 <p>
-                  <strong>{taskCount}</strong> uppgift{taskCount !== 1 ? 'er' : ''} flyttas till{' '}
+                  <strong>{taskCount}</strong> uppgift
+                  {taskCount !== 1 ? 'er' : ''} flyttas till{' '}
                   <strong>{targetColumnName}</strong>.
                 </p>
               ) : (

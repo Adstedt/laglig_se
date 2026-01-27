@@ -34,7 +34,7 @@ export const UNGROUPED_VALUE = '__ungrouped__'
 interface GroupSelectorProps {
   groups: ListGroupSummary[]
   value: string | null
-  onChange: (groupId: string | null) => void
+  onChange: (_groupId: string | null) => void
   onManageGroups?: () => void
   disabled?: boolean
   isLoading?: boolean

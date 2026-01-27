@@ -13,7 +13,11 @@
  */
 
 import { prisma } from '../lib/prisma'
-import { fetchLawFullText, fetchLawHTML, generateSlug } from '../lib/external/riksdagen'
+import {
+  fetchLawFullText,
+  fetchLawHTML,
+  generateSlug,
+} from '../lib/external/riksdagen'
 import { ContentType, DocumentStatus } from '@prisma/client'
 
 // ============================================================================
@@ -675,7 +679,7 @@ const MISSING_SFS = [
 // ============================================================================
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -751,8 +755,8 @@ async function ingestMissingByID() {
   }
 
   // Skip historical "bih." laws - they need special handling
-  const standardLaws = MISSING_SFS.filter(sfs => !sfs.includes('bih.'))
-  const historicalLaws = MISSING_SFS.filter(sfs => sfs.includes('bih.'))
+  const standardLaws = MISSING_SFS.filter((sfs) => !sfs.includes('bih.'))
+  const historicalLaws = MISSING_SFS.filter((sfs) => sfs.includes('bih.'))
 
   console.log(`📋 Standard laws to fetch: ${standardLaws.length}`)
   console.log(`📋 Historical "bih." laws (skipped): ${historicalLaws.length}`)
@@ -763,15 +767,18 @@ async function ingestMissingByID() {
     stats.processed++
 
     // Progress logging
-    if (stats.processed % CONFIG.PROGRESS_LOG_INTERVAL === 0 || stats.processed === 1) {
+    if (
+      stats.processed % CONFIG.PROGRESS_LOG_INTERVAL === 0 ||
+      stats.processed === 1
+    ) {
       const percent = Math.round((stats.processed / standardLaws.length) * 100)
       const elapsed = Date.now() - startTime.getTime()
       const rate = stats.processed / (elapsed / 1000)
       const remaining = (standardLaws.length - stats.processed) / rate
       console.log(
         `📈 Progress: ${stats.processed}/${standardLaws.length} (${percent}%) | ` +
-        `Inserted: ${stats.inserted} | Failed: ${stats.failed} | ` +
-        `ETA: ${Math.round(remaining / 60)}m`
+          `Inserted: ${stats.inserted} | Failed: ${stats.failed} | ` +
+          `ETA: ${Math.round(remaining / 60)}m`
       )
     }
 
@@ -805,7 +812,8 @@ async function ingestMissingByID() {
 
       // Use metadata for title, or generate from SFS number
       const title = metadata?.title || `Lag ${sfsNumber.substring(4)}`
-      const publicationDate = metadata?.publicationDate || extractYearFromSFS(sfsNumber)
+      const publicationDate =
+        metadata?.publicationDate || extractYearFromSFS(sfsNumber)
 
       // Generate slug
       const slug = generateSlug(title, sfsNumber)
@@ -833,7 +841,10 @@ async function ingestMissingByID() {
 
       stats.inserted++
     } catch (error) {
-      console.error(`  ❌ Error processing ${sfsNumber}:`, error instanceof Error ? error.message : error)
+      console.error(
+        `  ❌ Error processing ${sfsNumber}:`,
+        error instanceof Error ? error.message : error
+      )
       stats.failed++
     }
 
@@ -868,7 +879,9 @@ async function ingestMissingByID() {
   console.log(`📊 Total SFS_LAW in database: ${finalCount}`)
 
   // Check remaining gap
-  const apiResponse = await fetch('https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json&sz=1')
+  const apiResponse = await fetch(
+    'https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json&sz=1'
+  )
   const apiData = await apiResponse.json()
   const apiTotal = parseInt(apiData.dokumentlista['@traffar'], 10)
 
@@ -877,8 +890,10 @@ async function ingestMissingByID() {
   console.log('')
 
   if (historicalLaws.length > 0) {
-    console.log('⚠️  Historical "bih." laws were skipped (need special handling):')
-    historicalLaws.forEach(sfs => console.log(`   - ${sfs}`))
+    console.log(
+      '⚠️  Historical "bih." laws were skipped (need special handling):'
+    )
+    historicalLaws.forEach((sfs) => console.log(`   - ${sfs}`))
   }
 
   await prisma.$disconnect()

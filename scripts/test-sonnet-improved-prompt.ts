@@ -38,8 +38,14 @@ const USER_PROMPT = `Convert this Swedish legal amendment PDF to minimal semanti
 IMPORTANT: For definition lists (like in 2 kap. 1 §), keep each "term i X §" as a single line item. Do NOT split them into separate elements.`
 
 async function testImprovedPrompt() {
-  const pdfPath = path.join(__dirname, '../tests/fixtures/amendment-pdfs/SFS2025-1461.pdf')
-  const outputPath = path.join(__dirname, '../test-results/pdf-batch-comparison/SFS2025-1461-sonnet-v2.html')
+  const pdfPath = path.join(
+    __dirname,
+    '../tests/fixtures/amendment-pdfs/SFS2025-1461.pdf'
+  )
+  const outputPath = path.join(
+    __dirname,
+    '../test-results/pdf-batch-comparison/SFS2025-1461-sonnet-v2.html'
+  )
 
   console.log('Testing improved Sonnet prompt on SFS2025-1461...')
 
@@ -74,7 +80,10 @@ async function testImprovedPrompt() {
   let html = ''
   let chunks = 0
   for await (const event of stream) {
-    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+    if (
+      event.type === 'content_block_delta' &&
+      event.delta.type === 'text_delta'
+    ) {
       html += event.delta.text
       chunks++
       if (chunks % 500 === 0) process.stdout.write('.')
@@ -93,17 +102,23 @@ async function testImprovedPrompt() {
 
   fs.writeFileSync(outputPath, cleanHtml)
 
-  console.log(`Tokens: ${response.usage.input_tokens} in / ${response.usage.output_tokens} out`)
+  console.log(
+    `Tokens: ${response.usage.input_tokens} in / ${response.usage.output_tokens} out`
+  )
   console.log(`Saved to: ${outputPath}`)
 
   // Quick check - look for definition format
-  const hasCorrectFormat = cleanHtml.includes('balansvärde i 5 kap. 5 §') ||
-                           cleanHtml.includes('>balansvärde i 5 kap. 5 §<')
-  const hasSplitFormat = cleanHtml.includes('>balansvärde</') && cleanHtml.includes('>i 5 kap. 5 §<')
+  const hasCorrectFormat =
+    cleanHtml.includes('balansvärde i 5 kap. 5 §') ||
+    cleanHtml.includes('>balansvärde i 5 kap. 5 §<')
+  const hasSplitFormat =
+    cleanHtml.includes('>balansvärde</') && cleanHtml.includes('>i 5 kap. 5 §<')
 
   console.log('\n=== FORMAT CHECK ===')
   console.log(`Single-line definitions: ${hasCorrectFormat ? '✓ YES' : '✗ NO'}`)
-  console.log(`Split definitions: ${hasSplitFormat ? '✗ YES (bad)' : '✓ NO (good)'}`)
+  console.log(
+    `Split definitions: ${hasSplitFormat ? '✗ YES (bad)' : '✓ NO (good)'}`
+  )
 }
 
 testImprovedPrompt().catch(console.error)

@@ -31,7 +31,9 @@ async function testSfsSync() {
     console.log('\n   Most recently updated SFS docs:')
     for (const doc of recentDocs) {
       const meta = doc.metadata as { systemdatum?: string } | null
-      console.log(`   - ${doc.document_number}: ${doc.title.substring(0, 50)}...`)
+      console.log(
+        `   - ${doc.document_number}: ${doc.title.substring(0, 50)}...`
+      )
       console.log(`     Updated: ${doc.updated_at?.toISOString()}`)
       console.log(`     Systemdatum: ${meta?.systemdatum || 'N/A'}`)
     }
@@ -39,7 +41,8 @@ async function testSfsSync() {
 
   // 2. Check Riksdagen API for latest updates
   console.log('\n2. Fetching latest from Riksdagen API...')
-  const apiUrl = 'https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json&sz=5&sort=systemdatum&sortorder=desc'
+  const apiUrl =
+    'https://data.riksdagen.se/dokumentlista/?doktyp=sfs&utformat=json&sz=5&sort=systemdatum&sortorder=desc'
 
   const response = await fetch(apiUrl, {
     headers: {
@@ -101,7 +104,9 @@ async function testSfsSync() {
   console.log('\n=== Summary ===')
   if (totalDocs === 0) {
     console.log('WARNING: No SFS documents in database!')
-    console.log('The cron job will try to insert all documents, which will timeout.')
+    console.log(
+      'The cron job will try to insert all documents, which will timeout.'
+    )
     console.log('You need to run the initial ingestion script first.')
   } else if (totalDocs < 10000) {
     console.log(`WARNING: Only ${totalDocs} SFS docs in DB (API has ~11,400)`)

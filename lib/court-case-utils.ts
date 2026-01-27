@@ -113,7 +113,11 @@ export interface CourtCaseDisplayData {
  */
 export function extractCourtCaseDisplayData(
   metadata: Record<string, unknown> | null,
-  courtCase: { court_name: string; case_number: string; decision_date: Date | string | null } | null
+  courtCase: {
+    court_name: string
+    case_number: string
+    decision_date: Date | string | null
+  } | null
 ): CourtCaseDisplayData {
   const isGuiding = (metadata?.is_guiding as boolean) ?? false
   const rawType = metadata?.case_type as string | undefined
@@ -122,7 +126,7 @@ export function extractCourtCaseDisplayData(
   const courtName = courtCase?.court_name || 'Domstol'
   const caseNumber = courtCase?.case_number || ''
   const decisionDate = courtCase?.decision_date
-    ? new Date(courtCase.decision_date).toISOString().split('T')[0] ?? null
+    ? (new Date(courtCase.decision_date).toISOString().split('T')[0] ?? null)
     : null
 
   return {

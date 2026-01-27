@@ -8,7 +8,7 @@ const prisma = new PrismaClient()
 async function main() {
   const docs = await prisma.legalDocument.findMany({
     where: { content_type: 'SFS_AMENDMENT', html_content: { not: null } },
-    select: { document_number: true, title: true, html_content: true }
+    select: { document_number: true, title: true, html_content: true },
   })
 
   let llmLagar = 0
@@ -20,7 +20,10 @@ async function main() {
     const title = (doc.title || '').toLowerCase()
 
     // Only count LLM-processed docs
-    if (!html.includes('<article class="sfs"') && !html.includes('class="lovhead"')) {
+    if (
+      !html.includes('<article class="sfs"') &&
+      !html.includes('class="lovhead"')
+    ) {
       continue
     }
 
@@ -30,7 +33,12 @@ async function main() {
       llmLagar++
       if (hasRefs) llmLagarWithRefs++
       else {
-        console.log('LAG without refs:', doc.document_number, '-', doc.title?.substring(0, 50))
+        console.log(
+          'LAG without refs:',
+          doc.document_number,
+          '-',
+          doc.title?.substring(0, 50)
+        )
       }
     } else if (title.includes('förordning')) {
       llmForordningar++
@@ -42,4 +50,6 @@ async function main() {
   console.log('  Förordningar:', llmForordningar, '(no refs expected)')
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

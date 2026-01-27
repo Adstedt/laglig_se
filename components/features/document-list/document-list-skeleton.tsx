@@ -70,16 +70,17 @@ export function DocumentCardSkeleton() {
 }
 
 export function DocumentListSwitcherSkeleton() {
-  return (
-    <Skeleton className="h-10 w-48" />
-  )
+  return <Skeleton className="h-10 w-48" />
 }
 
 export function SearchResultsSkeleton({ count = 5 }: { count?: number }) {
   return (
     <div className="flex flex-col gap-2">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+        <div
+          key={i}
+          className="flex items-center justify-between p-3 rounded-lg border"
+        >
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-3/4" />
             <div className="flex items-center gap-2">

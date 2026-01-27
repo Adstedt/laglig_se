@@ -24,7 +24,10 @@ interface SectionCommentary {
 /**
  * Step 1: Get dok_id from Riksdag API
  */
-async function getPropMetadata(year: string, number: string): Promise<PropMetadata | null> {
+async function getPropMetadata(
+  year: string,
+  number: string
+): Promise<PropMetadata | null> {
   const url = `https://data.riksdagen.se/dokumentlista/?doktyp=prop&rm=${encodeURIComponent(year)}&nr=${number}&utformat=json`
 
   console.log(`Fetching: ${url}`)
@@ -78,7 +81,9 @@ function extractForfattningskommentar(html: string): string | null {
 
   // Find the Författningskommentar section
   // It typically starts with a numbered heading like "14 Författningskommentar"
-  const fkMatch = fullText.match(/(\d+)\s+Författningskommentar([\s\S]*?)(?=\d+\s+Bilaga|\d+\s+Sammanfattning av|$)/i)
+  const fkMatch = fullText.match(
+    /(\d+)\s+Författningskommentar([\s\S]*?)(?=\d+\s+Bilaga|\d+\s+Sammanfattning av|$)/i
+  )
 
   if (fkMatch) {
     return fkMatch[0].trim()
@@ -95,7 +100,8 @@ function parseSectionCommentaries(text: string): SectionCommentary[] {
 
   // Pattern: "35 kap. 1 §" or "1 §" followed by commentary
   // The commentary typically starts with "Paragrafen..." or "I paragrafen..."
-  const sectionPattern = /(?:(\d+)\s*kap\.\s*)?(\d+\s*[a-z]?)\s*§([^§]*?)(?=(?:\d+\s*kap\.\s*)?\d+\s*[a-z]?\s*§|$)/gi
+  const sectionPattern =
+    /(?:(\d+)\s*kap\.\s*)?(\d+\s*[a-z]?)\s*§([^§]*?)(?=(?:\d+\s*kap\.\s*)?\d+\s*[a-z]?\s*§|$)/gi
 
   let match
   while ((match = sectionPattern.exec(text)) !== null) {
@@ -105,12 +111,18 @@ function parseSectionCommentaries(text: string): SectionCommentary[] {
 
     // Clean up the commentary - take first meaningful paragraph
     const paragraphs = commentary.split(/\n\n+/)
-    const meaningfulPara = paragraphs.find((p) => p.includes('Paragrafen') || p.includes('paragrafen') || p.length > 100)
+    const meaningfulPara = paragraphs.find(
+      (p) =>
+        p.includes('Paragrafen') || p.includes('paragrafen') || p.length > 100
+    )
 
     if (meaningfulPara) {
-      commentary = meaningfulPara.substring(0, 500) + (meaningfulPara.length > 500 ? '...' : '')
+      commentary =
+        meaningfulPara.substring(0, 500) +
+        (meaningfulPara.length > 500 ? '...' : '')
     } else {
-      commentary = commentary.substring(0, 300) + (commentary.length > 300 ? '...' : '')
+      commentary =
+        commentary.substring(0, 300) + (commentary.length > 300 ? '...' : '')
     }
 
     if (commentary.length > 50) {
@@ -125,9 +137,9 @@ async function main() {
   const year = '2024/25'
   const number = '59'
 
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log(`FETCHING PROP. ${year}:${number}`)
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
 
   // Step 1: Get metadata
   const meta = await getPropMetadata(year, number)
@@ -155,9 +167,9 @@ async function main() {
   // Step 4: Parse section commentaries
   const commentaries = parseSectionCommentaries(fkText)
 
-  console.log('\n' + '=' .repeat(70))
+  console.log('\n' + '='.repeat(70))
   console.log(`EXTRACTED ${commentaries.length} SECTION COMMENTARIES`)
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
 
   // Show first 5 commentaries
   for (const c of commentaries.slice(0, 5)) {
@@ -168,13 +180,15 @@ async function main() {
   }
 
   if (commentaries.length > 5) {
-    console.log(`\n... and ${commentaries.length - 5} more section commentaries`)
+    console.log(
+      `\n... and ${commentaries.length - 5} more section commentaries`
+    )
   }
 
   // Show what we'd store
-  console.log('\n' + '=' .repeat(70))
+  console.log('\n' + '='.repeat(70))
   console.log('DATA STRUCTURE FOR STORAGE')
-  console.log('=' .repeat(70))
+  console.log('='.repeat(70))
   console.log(
     JSON.stringify(
       {

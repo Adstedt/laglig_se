@@ -17,42 +17,42 @@ const prisma = new PrismaClient()
 const indexes = [
   {
     name: 'idx_law_list_items_list_id',
-    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_list_id" ON "LawListItem"("law_list_id")'
+    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_list_id" ON "LawListItem"("law_list_id")',
   },
   {
     name: 'idx_law_list_items_position',
-    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_position" ON "LawListItem"("position")'
+    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_position" ON "LawListItem"("position")',
   },
   {
     name: 'idx_law_list_items_status',
-    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_status" ON "LawListItem"("compliance_status")'
+    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_status" ON "LawListItem"("compliance_status")',
   },
   {
     name: 'idx_law_list_items_responsible',
-    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_responsible" ON "LawListItem"("responsible_user_id")'
+    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_responsible" ON "LawListItem"("responsible_user_id")',
   },
   {
     name: 'idx_law_list_items_list_position',
-    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_list_position" ON "LawListItem"("law_list_id", "position")'
+    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_list_position" ON "LawListItem"("law_list_id", "position")',
   },
   {
     name: 'idx_law_list_items_due_date',
-    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_due_date" ON "LawListItem"("due_date") WHERE "due_date" IS NOT NULL'
+    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_due_date" ON "LawListItem"("due_date") WHERE "due_date" IS NOT NULL',
   },
   {
     name: 'idx_law_list_items_priority',
-    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_priority" ON "LawListItem"("priority")'
+    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_priority" ON "LawListItem"("priority")',
   },
   // Also add document_id index which is critical for the modal query
   {
     name: 'idx_law_list_items_document_id',
-    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_document_id" ON "LawListItem"("document_id")'
-  }
+    sql: 'CREATE INDEX CONCURRENTLY IF NOT EXISTS "idx_law_list_items_document_id" ON "LawListItem"("document_id")',
+  },
 ]
 
 async function applyIndexes() {
   console.log('🚀 Applying performance indexes...\n')
-  
+
   for (const index of indexes) {
     try {
       console.log(`Creating index: ${index.name}...`)
@@ -67,23 +67,23 @@ async function applyIndexes() {
       }
     }
   }
-  
+
   console.log('\n📊 Verifying indexes...')
-  
+
   // Check which indexes exist
-  const existingIndexes = await prisma.$queryRaw`
+  const existingIndexes = (await prisma.$queryRaw`
     SELECT indexname, tablename 
     FROM pg_indexes 
     WHERE tablename = 'LawListItem' 
     AND indexname LIKE 'idx_law_list_items_%'
     ORDER BY indexname
-  ` as Array<{indexname: string, tablename: string}>
-  
+  `) as Array<{ indexname: string; tablename: string }>
+
   console.log('\nExisting indexes on LawListItem:')
-  existingIndexes.forEach(idx => {
+  existingIndexes.forEach((idx) => {
     console.log(`  ✓ ${idx.indexname}`)
   })
-  
+
   console.log('\n✨ Index application complete!')
 }
 

@@ -15,17 +15,33 @@ import { Loader2 } from 'lucide-react'
 import type { LawListItemStatus } from '@prisma/client'
 import { cn } from '@/lib/utils'
 
-const STATUS_OPTIONS: { value: LawListItemStatus; label: string; color: string }[] = [
-  { value: 'NOT_STARTED', label: 'Ej påbörjad', color: 'bg-gray-100 text-gray-700' },
+const STATUS_OPTIONS: {
+  value: LawListItemStatus
+  label: string
+  color: string
+}[] = [
+  {
+    value: 'NOT_STARTED',
+    label: 'Ej påbörjad',
+    color: 'bg-gray-100 text-gray-700',
+  },
   { value: 'IN_PROGRESS', label: 'Pågår', color: 'bg-blue-100 text-blue-700' },
   { value: 'BLOCKED', label: 'Blockerad', color: 'bg-red-100 text-red-700' },
-  { value: 'REVIEW', label: 'Granskning', color: 'bg-yellow-100 text-yellow-700' },
-  { value: 'COMPLIANT', label: 'Uppfylld', color: 'bg-green-100 text-green-700' },
+  {
+    value: 'REVIEW',
+    label: 'Granskning',
+    color: 'bg-yellow-100 text-yellow-700',
+  },
+  {
+    value: 'COMPLIANT',
+    label: 'Uppfylld',
+    color: 'bg-green-100 text-green-700',
+  },
 ]
 
 interface StatusEditorProps {
   value: LawListItemStatus
-  onChange: (value: LawListItemStatus) => Promise<void>
+  onChange: (_value: LawListItemStatus) => Promise<void>
 }
 
 export function StatusEditor({ value, onChange }: StatusEditorProps) {

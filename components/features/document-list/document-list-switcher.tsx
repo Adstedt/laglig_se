@@ -20,7 +20,7 @@ import type { DocumentListSummary } from '@/app/actions/document-list'
 interface DocumentListSwitcherProps {
   lists: DocumentListSummary[]
   activeListId: string | null
-  onSelectList: (listId: string) => void
+  onSelectList: (_listId: string) => void
   onCreateList: () => void
   isLoading?: boolean
 }
@@ -50,9 +50,7 @@ export function DocumentListSwitcher({
             {activeList?.isDefault && (
               <Star className="h-4 w-4 text-amber-500 fill-amber-500 flex-shrink-0" />
             )}
-            <span className="truncate">
-              {activeList?.name ?? 'Välj lista'}
-            </span>
+            <span className="truncate">{activeList?.name ?? 'Välj lista'}</span>
             {activeList && (
               <span className="text-muted-foreground text-sm">
                 ({activeList.itemCount})

@@ -11,7 +11,7 @@ async function main() {
   for (const docNum of docNumbers) {
     const doc = await prisma.legalDocument.findFirst({
       where: { document_number: docNum },
-      select: { html_content: true, title: true }
+      select: { html_content: true, title: true },
     })
 
     console.log('=== ' + docNum + ' ===')
@@ -22,4 +22,6 @@ async function main() {
   }
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

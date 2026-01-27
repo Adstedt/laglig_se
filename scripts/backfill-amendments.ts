@@ -31,7 +31,10 @@ import { extractAllAmendments } from '../lib/sync/amendment-creator'
 // Parse command line arguments
 const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
-const LIMIT = parseInt(args.find(a => a.startsWith('--limit='))?.split('=')[1] || '0', 10)
+const LIMIT = parseInt(
+  args.find((a) => a.startsWith('--limit='))?.split('=')[1] || '0',
+  10
+)
 const SKIP_VERSIONS = args.includes('--skip-versions')
 const SKIP_AMENDMENTS = args.includes('--skip-amendments')
 
@@ -142,7 +145,10 @@ async function backfillAmendments() {
           }
         })
       } catch (error) {
-        console.error(`Error processing ${law.document_number}:`, error instanceof Error ? error.message : error)
+        console.error(
+          `Error processing ${law.document_number}:`,
+          error instanceof Error ? error.message : error
+        )
         stats.errors++
       }
     }
@@ -177,7 +183,6 @@ async function backfillAmendments() {
       console.log(`Total document_versions in DB: ${versionCount}`)
       console.log(`Total amendments in DB: ${amendmentCount}`)
     }
-
   } catch (error) {
     console.error('Backfill failed:', error)
     process.exit(1)

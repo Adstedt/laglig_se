@@ -1,0 +1,261 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.9.0",
+  "name": "2025-489",
+  "origin": {
+    "mimetype": "text/html",
+    "binary_hash": 5847824498221028142,
+    "filename": "2025-489.html"
+  },
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/texts/0"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [
+    {
+      "self_ref": "#/groups/0",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/3"
+        }
+      ],
+      "content_layer": "body",
+      "name": "header-2",
+      "label": "section"
+    },
+    {
+      "self_ref": "#/groups/1",
+      "parent": {
+        "$ref": "#/texts/3"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "name": "footer",
+      "label": "section"
+    },
+    {
+      "self_ref": "#/groups/2",
+      "parent": {
+        "$ref": "#/texts/6"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/7"
+        }
+      ],
+      "content_layer": "body",
+      "name": "group",
+      "label": "inline"
+    }
+  ],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/1"
+        },
+        {
+          "$ref": "#/texts/2"
+        },
+        {
+          "$ref": "#/groups/0"
+        },
+        {
+          "$ref": "#/texts/6"
+        }
+      ],
+      "content_layer": "body",
+      "label": "title",
+      "prov": [],
+      "orig": "SFS 2025:489 Förordning om ändring i studiestödsdataförordningen (2009:321)",
+      "text": "SFS 2025:489 Förordning om ändring i studiestödsdataförordningen (2009:321)"
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Utfärdad den 22 maj 2025",
+      "text": "Utfärdad den 22 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Regeringen föreskriver att 13 § studiestödsdataförordningen (2009:321) ska ha följande lydelse.",
+      "text": "Regeringen föreskriver att 13 § studiestödsdataförordningen (2009:321) ska ha följande lydelse."
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/4"
+        },
+        {
+          "$ref": "#/texts/5"
+        },
+        {
+          "$ref": "#/groups/1"
+        }
+      ],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [],
+      "orig": "13 §",
+      "text": "13 §",
+      "level": 2
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/texts/3"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "En socialnämnd får ha direktåtkomst till personuppgifter som behandlas i Centrala studiestödsnämndens studiestödsverksamhet i den utsträckning som anges i 2 § förordningen (2008:975) om uppgiftsskyldighet i vissa fall på socialtjänstens område.",
+      "text": "En socialnämnd får ha direktåtkomst till personuppgifter som behandlas i Centrala studiestödsnämndens studiestödsverksamhet i den utsträckning som anges i 2 § förordningen (2008:975) om uppgiftsskyldighet i vissa fall på socialtjänstens område."
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/texts/3"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "En socialnämnd får ha direktåtkomst enligt första stycket först sedan Centrala studiestödsnämnden har försäkrat sig om att handläggare hos socialnämnden bara kan ta del av uppgifter om personer som är aktuella i ärenden hos socialnämnden.",
+      "text": "En socialnämnd får ha direktåtkomst enligt första stycket först sedan Centrala studiestödsnämnden har försäkrat sig om att handläggare hos socialnämnden bara kan ta del av uppgifter om personer som är aktuella i ärenden hos socialnämnden."
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/texts/0"
+      },
+      "children": [
+        {
+          "$ref": "#/groups/2"
+        },
+        {
+          "$ref": "#/texts/8"
+        },
+        {
+          "$ref": "#/texts/9"
+        },
+        {
+          "$ref": "#/texts/10"
+        },
+        {
+          "$ref": "#/texts/11"
+        }
+      ],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [],
+      "orig": "Ikraftträdande- och övergångsbestämmelser",
+      "text": "Ikraftträdande- och övergångsbestämmelser",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/groups/2"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "SFS 2025:489",
+      "text": "SFS 2025:489",
+      "hyperlink": "\\rn\\goext.aspx?ref=2025489&lang=sv"
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/texts/6"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Denna förordning träder i kraft den 1 juli 2025.",
+      "text": "Denna förordning träder i kraft den 1 juli 2025."
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/texts/6"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "På regeringens vägnar",
+      "text": "På regeringens vägnar"
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/texts/6"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "JOHAN PEHRSON",
+      "text": "JOHAN PEHRSON"
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/texts/6"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [],
+      "orig": "Angela Öst (Utbildningsdepartementet)",
+      "text": "Angela Öst (Utbildningsdepartementet)"
+    }
+  ],
+  "pictures": [],
+  "tables": [],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {}
+}

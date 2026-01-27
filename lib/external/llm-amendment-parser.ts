@@ -175,7 +175,9 @@ export async function parseAmendmentWithLLM(
 
       // Remove markdown code blocks if present
       if (jsonText.startsWith('```')) {
-        jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+        jsonText = jsonText
+          .replace(/^```(?:json)?\n?/, '')
+          .replace(/\n?```$/, '')
       }
 
       const parsed = JSON.parse(jsonText) as ParsedAmendmentLLM

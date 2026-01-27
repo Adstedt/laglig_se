@@ -100,7 +100,9 @@ describe('StatusEditor', () => {
       const { container, unmount } = render(
         <StatusEditor value={value} onChange={vi.fn()} />
       )
-      const _badge = container.querySelector(`.${expectedClass.replace('bg-', 'bg-')}`)
+      const _badge = container.querySelector(
+        `.${expectedClass.replace('bg-', 'bg-')}`
+      )
       // Badge should exist with the expected color class
       expect(container.querySelector('span')).toBeInTheDocument()
       unmount()

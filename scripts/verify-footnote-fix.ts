@@ -12,19 +12,21 @@ async function main() {
   const docs = await prisma.legalDocument.findMany({
     where: {
       content_type: 'SFS_AMENDMENT',
-      html_content: { not: null }
+      html_content: { not: null },
     },
     select: {
       document_number: true,
       title: true,
       html_content: true,
-      json_content: true
+      json_content: true,
     },
     take: 10,
-    orderBy: { document_number: 'asc' }
+    orderBy: { document_number: 'asc' },
   })
 
-  console.log(`\nTesting footnote extraction fix on ${docs.length} amendments...\n`)
+  console.log(
+    `\nTesting footnote extraction fix on ${docs.length} amendments...\n`
+  )
 
   let totalFootnotes = 0
   let totalRefs = 0
@@ -34,20 +36,30 @@ async function main() {
     console.log('Document:', doc.document_number)
 
     // Re-parse HTML with updated parser
-    const freshJson = htmlToJson(doc.html_content || '', { documentType: 'amendment' })
+    const freshJson = htmlToJson(doc.html_content || '', {
+      documentType: 'amendment',
+    })
 
     console.log(`Footnotes found: ${freshJson.footnotes.length}`)
 
     for (const fn of freshJson.footnotes) {
-      console.log(`  [${fn.id}]: ${fn.content.substring(0, 80)}${fn.content.length > 80 ? '...' : ''}`)
+      console.log(
+        `  [${fn.id}]: ${fn.content.substring(0, 80)}${fn.content.length > 80 ? '...' : ''}`
+      )
       if (fn.legislativeRefs && fn.legislativeRefs.length > 0) {
-        console.log(`    → Legislative refs: ${fn.legislativeRefs.map(r => r.reference).join(', ')}`)
+        console.log(
+          `    → Legislative refs: ${fn.legislativeRefs.map((r) => r.reference).join(', ')}`
+        )
       }
     }
 
-    console.log(`Legislative references (aggregated): ${freshJson.legislativeReferences.length}`)
+    console.log(
+      `Legislative references (aggregated): ${freshJson.legislativeReferences.length}`
+    )
     for (const ref of freshJson.legislativeReferences) {
-      console.log(`  - ${ref.type}: ${ref.reference} (year: ${ref.year}, num: ${ref.number})`)
+      console.log(
+        `  - ${ref.type}: ${ref.reference} (year: ${ref.year}, num: ${ref.number})`
+      )
     }
 
     totalFootnotes += freshJson.footnotes.length
@@ -63,4 +75,6 @@ async function main() {
   console.log(`Total legislative references: ${totalRefs}`)
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

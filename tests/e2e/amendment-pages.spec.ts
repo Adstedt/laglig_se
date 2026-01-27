@@ -36,7 +36,9 @@ test.describe('Amendment Document Pages (Story 2.29)', () => {
         await amendmentFilter.click()
 
         // URL should contain the filter
-        await expect(page).toHaveURL(/types=.*SFS_AMENDMENT/, { timeout: 10000 })
+        await expect(page).toHaveURL(/types=.*SFS_AMENDMENT/, {
+          timeout: 10000,
+        })
       }
     })
   })
@@ -48,9 +50,9 @@ test.describe('Amendment Document Pages (Story 2.29)', () => {
       )
 
       // Wait for page to load
-      await expect(
-        page.locator('h1:has-text("Ändringshistorik")')
-      ).toBeVisible({ timeout: 10000 })
+      await expect(page.locator('h1:has-text("Ändringshistorik")')).toBeVisible(
+        { timeout: 10000 }
+      )
 
       // Should show timeline (CardTitle, not heading role)
       await expect(page.getByText('Ändringar över tid')).toBeVisible()

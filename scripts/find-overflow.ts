@@ -13,18 +13,25 @@ async function findOverflow() {
   ]
 
   for (const vp of viewports) {
-    const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } })
+    const context = await browser.newContext({
+      viewport: { width: vp.width, height: vp.height },
+    })
     const page = await context.newPage()
 
     // Login
     await page.goto('http://localhost:3000/login')
     await page.fill('input[name="email"]', process.env.TEST_USER_EMAIL || '')
-    await page.fill('input[name="password"]', process.env.TEST_USER_PASSWORD || '')
+    await page.fill(
+      'input[name="password"]',
+      process.env.TEST_USER_PASSWORD || ''
+    )
     await page.click('button[type="submit"]')
     await page.waitForURL(/\/(dashboard|laglistor)/, { timeout: 15000 })
 
     // Go to laglistor
-    await page.goto('http://localhost:3000/laglistor', { waitUntil: 'networkidle' })
+    await page.goto('http://localhost:3000/laglistor', {
+      waitUntil: 'networkidle',
+    })
     await page.waitForTimeout(2000)
 
     // Close AI chat if open
@@ -43,14 +50,20 @@ async function findOverflow() {
         viewportWidth,
         bodyScrollWidth,
         htmlScrollWidth,
-        hasOverflow: bodyScrollWidth > viewportWidth || htmlScrollWidth > viewportWidth,
-        overflowAmount: Math.max(bodyScrollWidth, htmlScrollWidth) - viewportWidth,
+        hasOverflow:
+          bodyScrollWidth > viewportWidth || htmlScrollWidth > viewportWidth,
+        overflowAmount:
+          Math.max(bodyScrollWidth, htmlScrollWidth) - viewportWidth,
       }
     })
 
     console.log(`\n${vp.name} (${vp.width}x${vp.height}):`)
-    console.log(`  Viewport: ${result.viewportWidth}, Body: ${result.bodyScrollWidth}, HTML: ${result.htmlScrollWidth}`)
-    console.log(`  Overflow: ${result.hasOverflow ? `YES (${result.overflowAmount}px)` : 'No'}`)
+    console.log(
+      `  Viewport: ${result.viewportWidth}, Body: ${result.bodyScrollWidth}, HTML: ${result.htmlScrollWidth}`
+    )
+    console.log(
+      `  Overflow: ${result.hasOverflow ? `YES (${result.overflowAmount}px)` : 'No'}`
+    )
 
     await context.close()
   }

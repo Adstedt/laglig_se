@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 async function main() {
   const doc = await prisma.amendmentDocument.findFirst({
     where: { sfs_number: '2025:1461' },
-    select: { full_text: true }
+    select: { full_text: true },
   })
 
   if (!doc?.full_text) {
@@ -25,17 +25,20 @@ async function main() {
   // Parse the document and find section 36
   const parsed = parseAmendmentStructure(doc.full_text)
   if (parsed) {
-    const section36 = parsed.sections.find(s => s.sectionNumber === '36 §')
+    const section36 = parsed.sections.find((s) => s.sectionNumber === '36 §')
     if (section36) {
       console.log('=== PARSED SECTION 36 ===')
       console.log('Lead text:', section36.leadText)
       console.log('Items:')
-      section36.items.forEach((item, i) => {
+      section36.items.forEach((item, _i) => {
         console.log(`  ${item.marker} ${item.text.substring(0, 80)}...`)
       })
     } else {
       console.log('Section 36 not found in parsed structure')
-      console.log('Available sections:', parsed.sections.map(s => s.sectionNumber).join(', '))
+      console.log(
+        'Available sections:',
+        parsed.sections.map((s) => s.sectionNumber).join(', ')
+      )
     }
   }
 

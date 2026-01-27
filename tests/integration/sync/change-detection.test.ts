@@ -14,15 +14,28 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
-import { PrismaClient, ContentType, ChangeType, DocumentStatus } from '@prisma/client'
+import {
+  PrismaClient,
+  ContentType,
+  ChangeType,
+  DocumentStatus,
+} from '@prisma/client'
 import {
   archiveDocumentVersion,
   createInitialVersion,
   getVersionHistory,
   countVersions,
 } from '@/lib/sync/version-archive'
-import { detectChanges, createNewLawEvent, hasSubstantiveChanges } from '@/lib/sync/change-detection'
-import { createAmendmentFromChange, extractAllAmendments, countAmendments } from '@/lib/sync/amendment-creator'
+import {
+  detectChanges,
+  createNewLawEvent,
+  hasSubstantiveChanges,
+} from '@/lib/sync/change-detection'
+import {
+  createAmendmentFromChange,
+  extractAllAmendments,
+  countAmendments,
+} from '@/lib/sync/amendment-creator'
 
 const prisma = new PrismaClient()
 

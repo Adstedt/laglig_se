@@ -5,7 +5,10 @@ config({ path: resolve(process.cwd(), '.env.local') })
 import { readFileSync } from 'fs'
 import { PrismaClient } from '@prisma/client'
 import { validateLlmOutput } from '../lib/sfs/llm-output-validator'
-import { htmlToMarkdown, htmlToPlainText } from '../lib/transforms/html-to-markdown'
+import {
+  htmlToMarkdown,
+  htmlToPlainText,
+} from '../lib/transforms/html-to-markdown'
 import { htmlToJson } from '../lib/transforms/html-to-json'
 
 const prisma = new PrismaClient()
@@ -16,7 +19,10 @@ async function main() {
   console.log('Restoring original batch output for SFS', sfsNumber)
 
   // Read original batch output
-  const rawHtml = readFileSync('test-results/SFS2025-57-llm-output.html', 'utf8')
+  const rawHtml = readFileSync(
+    'test-results/SFS2025-57-llm-output.html',
+    'utf8'
+  )
 
   // Validate and clean
   const validation = validateLlmOutput(rawHtml, sfsNumber)

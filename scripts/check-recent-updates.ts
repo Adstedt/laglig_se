@@ -10,12 +10,16 @@ async function main() {
     where: { content_type: 'SFS_AMENDMENT', html_content: { not: null } },
     orderBy: { updated_at: 'desc' },
     select: { document_number: true, updated_at: true, title: true },
-    take: 10
+    take: 10,
   })
   console.log('Most recently updated SFS_AMENDMENT:')
   for (const d of docs) {
-    console.log(`  ${d.document_number} - ${d.updated_at?.toISOString()} - ${d.title?.substring(0, 40)}`)
+    console.log(
+      `  ${d.document_number} - ${d.updated_at?.toISOString()} - ${d.title?.substring(0, 40)}`
+    )
   }
 }
 
-main().catch(console.error).finally(() => prisma.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())

@@ -44,12 +44,15 @@ async function fetchFromApi(apiId: string): Promise<ApiResponse | null> {
   await waitForRateLimit()
 
   try {
-    const response = await fetch(`${DOMSTOLSVERKET_API}/publiceringar/${apiId}`, {
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'Laglig.se/1.0 (https://laglig.se)',
-      },
-    })
+    const response = await fetch(
+      `${DOMSTOLSVERKET_API}/publiceringar/${apiId}`,
+      {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'Laglig.se/1.0 (https://laglig.se)',
+        },
+      }
+    )
 
     if (!response.ok) {
       console.warn(`  ⚠️ API returned ${response.status} for ${apiId}`)
@@ -180,7 +183,9 @@ async function main() {
 
     // Log sample updates
     if (updated <= 5 || updated % 100 === 0) {
-      console.log(`  ✅ ${doc.document_number}: typ=${apiData.typ}, benamning=${apiData.benamning || '(none)'}`)
+      console.log(
+        `  ✅ ${doc.document_number}: typ=${apiData.typ}, benamning=${apiData.benamning || '(none)'}`
+      )
     }
   }
 

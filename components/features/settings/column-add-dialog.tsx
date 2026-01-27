@@ -21,8 +21,8 @@ import { ColumnColorPicker } from './column-color-picker'
 
 interface ColumnAddDialogProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: (name: string, color: string) => void
+  onOpenChange: (_open: boolean) => void
+  onConfirm: (_name: string, _color: string) => void
   isCreating?: boolean
 }
 

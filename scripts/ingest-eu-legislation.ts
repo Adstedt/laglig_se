@@ -101,7 +101,11 @@ function formatDuration(ms: number): string {
   }
 }
 
-function calculateETA(processed: number, total: number, startTime: number): string {
+function calculateETA(
+  processed: number,
+  total: number,
+  startTime: number
+): string {
   if (processed === 0) return 'calculating...'
 
   const elapsed = Date.now() - startTime
@@ -298,7 +302,9 @@ async function ingestRegulations(stats: IngestionStats): Promise<void> {
 
   const totalCount = await getRegulationsCount()
   stats.regulationsTotal = totalCount
-  console.log(`Total regulations with Swedish content: ${totalCount.toLocaleString()}`)
+  console.log(
+    `Total regulations with Swedish content: ${totalCount.toLocaleString()}`
+  )
 
   // Create a concurrency limiter
   const limit = pLimit(CONFIG.parallelWorkers)
@@ -368,7 +374,9 @@ async function ingestDirectives(stats: IngestionStats): Promise<void> {
 
   const totalCount = await getDirectivesCount()
   stats.directivesTotal = totalCount
-  console.log(`Total directives with Swedish content: ${totalCount.toLocaleString()}`)
+  console.log(
+    `Total directives with Swedish content: ${totalCount.toLocaleString()}`
+  )
 
   let offset = 0
   let processed = 0
@@ -449,7 +457,9 @@ async function _fetchAndStoreNIM(stats: IngestionStats): Promise<void> {
     },
   })
 
-  console.log(`Directives to fetch NIM for: ${directives.length.toLocaleString()}`)
+  console.log(
+    `Directives to fetch NIM for: ${directives.length.toLocaleString()}`
+  )
 
   const phaseStartTime = Date.now()
   let processed = 0
@@ -463,7 +473,10 @@ async function _fetchAndStoreNIM(stats: IngestionStats): Promise<void> {
         await prisma.euDocument.update({
           where: { id: directive.id },
           data: {
-            national_implementation_measures: nimData as unknown as Record<string, unknown>,
+            national_implementation_measures: nimData as unknown as Record<
+              string,
+              unknown
+            >,
           },
         })
         stats.nimFetched++
@@ -518,14 +531,17 @@ async function _createCrossReferences(stats: IngestionStats): Promise<void> {
     },
   })
 
-  console.log(`Directives with NIM data: ${directivesWithNIM.length.toLocaleString()}`)
+  console.log(
+    `Directives with NIM data: ${directivesWithNIM.length.toLocaleString()}`
+  )
 
   const phaseStartTime = Date.now()
   let processed = 0
   let crossRefsCreated = 0
 
   for (const directive of directivesWithNIM) {
-    const nimData = directive.national_implementation_measures as unknown as NIMData
+    const nimData =
+      directive.national_implementation_measures as unknown as NIMData
 
     if (!nimData?.sweden?.measures) {
       processed++
@@ -653,9 +669,15 @@ async function main(): Promise<void> {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
   console.log('📊 FINAL SUMMARY')
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log(`Total EU documents processed: ${(stats.regulationsTotal + stats.directivesTotal).toLocaleString()}`)
-  console.log(`  - Regulations: ${stats.regulationsTotal.toLocaleString()} (inserted: ${stats.regulationsInserted.toLocaleString()})`)
-  console.log(`  - Directives: ${stats.directivesTotal.toLocaleString()} (inserted: ${stats.directivesInserted.toLocaleString()})`)
+  console.log(
+    `Total EU documents processed: ${(stats.regulationsTotal + stats.directivesTotal).toLocaleString()}`
+  )
+  console.log(
+    `  - Regulations: ${stats.regulationsTotal.toLocaleString()} (inserted: ${stats.regulationsInserted.toLocaleString()})`
+  )
+  console.log(
+    `  - Directives: ${stats.directivesTotal.toLocaleString()} (inserted: ${stats.directivesInserted.toLocaleString()})`
+  )
   console.log('')
   console.log(`Total inserted: ${totalInserted.toLocaleString()}`)
   console.log(`Total skipped (duplicates): ${totalSkipped.toLocaleString()}`)

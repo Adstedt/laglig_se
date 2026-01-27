@@ -4,17 +4,24 @@
 
 import { chromium } from 'playwright'
 
-const TEST_EMAIL = process.env.TEST_USER_EMAIL || 'alexander.adstedt+10@kontorab.se'
+const TEST_EMAIL =
+  process.env.TEST_USER_EMAIL || 'alexander.adstedt+10@kontorab.se'
 const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || 'KBty8611!!!!'
 
 async function testAddDocument() {
   const browser = await chromium.launch({ headless: false })
-  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 800 },
+  })
   const page = await context.newPage()
 
   // Listen to console messages
-  page.on('console', msg => {
-    if (msg.text().includes('[') || msg.text().includes('Add') || msg.text().includes('error')) {
+  page.on('console', (msg) => {
+    if (
+      msg.text().includes('[') ||
+      msg.text().includes('Add') ||
+      msg.text().includes('error')
+    ) {
       console.log('BROWSER LOG:', msg.text())
     }
   })
@@ -36,7 +43,9 @@ async function testAddDocument() {
     await page.waitForTimeout(1000)
 
     // Check if we have a list selected
-    const listSwitcher = page.locator('button[role="combobox"][aria-haspopup="menu"]')
+    const listSwitcher = page.locator(
+      'button[role="combobox"][aria-haspopup="menu"]'
+    )
     const listText = await listSwitcher.textContent()
     console.log('Current list:', listText)
 
@@ -53,12 +62,17 @@ async function testAddDocument() {
     await page.waitForTimeout(1500) // Wait for browse results to load
 
     // Take screenshot before adding
-    await page.screenshot({ path: 'test-results/screenshots/add-doc-1-before.png', fullPage: false })
+    await page.screenshot({
+      path: 'test-results/screenshots/add-doc-1-before.png',
+      fullPage: false,
+    })
     console.log('Screenshot: Before adding')
 
     // Click the first "Lägg till" button
     console.log('Clicking add button on first result...')
-    const addDocButton = page.getByRole('button', { name: /Lägg till/i }).first()
+    const addDocButton = page
+      .getByRole('button', { name: /Lägg till/i })
+      .first()
 
     // Get the document title before adding
     const firstResult = page.locator('.flex.flex-col.gap-2 > div').first()
@@ -69,7 +83,10 @@ async function testAddDocument() {
     await page.waitForTimeout(2000) // Wait for add action
 
     // Take screenshot after adding
-    await page.screenshot({ path: 'test-results/screenshots/add-doc-2-after.png', fullPage: false })
+    await page.screenshot({
+      path: 'test-results/screenshots/add-doc-2-after.png',
+      fullPage: false,
+    })
     console.log('Screenshot: After adding')
 
     // Check if button changed to "Tillagt"
@@ -82,7 +99,10 @@ async function testAddDocument() {
     await page.waitForTimeout(500)
 
     // Take screenshot of list
-    await page.screenshot({ path: 'test-results/screenshots/add-doc-3-list.png', fullPage: false })
+    await page.screenshot({
+      path: 'test-results/screenshots/add-doc-3-list.png',
+      fullPage: false,
+    })
     console.log('Screenshot: Final list view')
 
     // Check if document appears in list
@@ -96,10 +116,12 @@ async function testAddDocument() {
     // Keep browser open for inspection
     console.log('\nBrowser will close in 10 seconds...')
     await page.waitForTimeout(10000)
-
   } catch (error) {
     console.error('Error:', error)
-    await page.screenshot({ path: 'test-results/screenshots/add-doc-error.png', fullPage: false })
+    await page.screenshot({
+      path: 'test-results/screenshots/add-doc-error.png',
+      fullPage: false,
+    })
   } finally {
     await browser.close()
   }

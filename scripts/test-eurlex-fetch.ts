@@ -43,15 +43,21 @@ async function main() {
   console.log('📊 Test 1: Fetching total regulations count...')
   try {
     const regulationsCount = await getRegulationsCount()
-    console.log(`   ✅ Total regulations with Swedish content: ${regulationsCount.toLocaleString()}`)
+    console.log(
+      `   ✅ Total regulations with Swedish content: ${regulationsCount.toLocaleString()}`
+    )
     if (regulationsCount > 0) {
       totalPassed++
     } else {
-      console.log('   ⚠️ Warning: No regulations found - this may indicate an API issue')
+      console.log(
+        '   ⚠️ Warning: No regulations found - this may indicate an API issue'
+      )
       totalFailed++
     }
   } catch (error) {
-    console.log(`   ❌ Failed to get regulations count: ${(error as Error).message}`)
+    console.log(
+      `   ❌ Failed to get regulations count: ${(error as Error).message}`
+    )
     totalFailed++
   }
   console.log('')
@@ -60,15 +66,21 @@ async function main() {
   console.log('📊 Test 2: Fetching total directives count...')
   try {
     const directivesCount = await getDirectivesCount()
-    console.log(`   ✅ Total directives with Swedish content: ${directivesCount.toLocaleString()}`)
+    console.log(
+      `   ✅ Total directives with Swedish content: ${directivesCount.toLocaleString()}`
+    )
     if (directivesCount > 0) {
       totalPassed++
     } else {
-      console.log('   ⚠️ Warning: No directives found - this may indicate an API issue')
+      console.log(
+        '   ⚠️ Warning: No directives found - this may indicate an API issue'
+      )
       totalFailed++
     }
   } catch (error) {
-    console.log(`   ❌ Failed to get directives count: ${(error as Error).message}`)
+    console.log(
+      `   ❌ Failed to get directives count: ${(error as Error).message}`
+    )
     totalFailed++
   }
   console.log('')
@@ -83,7 +95,9 @@ async function main() {
     // Show first 3 examples
     console.log('   Sample regulations:')
     sampleRegulations.slice(0, 3).forEach((reg, i) => {
-      console.log(`     ${i + 1}. ${reg.celex}: ${reg.title.substring(0, 60)}...`)
+      console.log(
+        `     ${i + 1}. ${reg.celex}: ${reg.title.substring(0, 60)}...`
+      )
     })
 
     if (sampleRegulations.length > 0) {
@@ -92,7 +106,9 @@ async function main() {
       totalFailed++
     }
   } catch (error) {
-    console.log(`   ❌ Failed to fetch regulations: ${(error as Error).message}`)
+    console.log(
+      `   ❌ Failed to fetch regulations: ${(error as Error).message}`
+    )
     totalFailed++
   }
   console.log('')
@@ -107,7 +123,9 @@ async function main() {
     // Show first 3 examples
     console.log('   Sample directives:')
     sampleDirectives.slice(0, 3).forEach((dir, i) => {
-      console.log(`     ${i + 1}. ${dir.celex}: ${dir.title.substring(0, 60)}...`)
+      console.log(
+        `     ${i + 1}. ${dir.celex}: ${dir.title.substring(0, 60)}...`
+      )
     })
 
     if (sampleDirectives.length > 0) {
@@ -135,17 +153,24 @@ async function main() {
   ]
 
   let swedishCount = 0
-  const allDocs = [...sampleRegulations.slice(0, 20), ...sampleDirectives.slice(0, 10)]
+  const allDocs = [
+    ...sampleRegulations.slice(0, 20),
+    ...sampleDirectives.slice(0, 10),
+  ]
 
   for (const doc of allDocs) {
-    const hasSwedish = swedishPatterns.some((pattern) => pattern.test(doc.title))
+    const hasSwedish = swedishPatterns.some((pattern) =>
+      pattern.test(doc.title)
+    )
     if (hasSwedish) {
       swedishCount++
     }
   }
 
   const swedishPercentage = ((swedishCount / allDocs.length) * 100).toFixed(1)
-  console.log(`   ✅ ${swedishCount}/${allDocs.length} documents (${swedishPercentage}%) have Swedish text`)
+  console.log(
+    `   ✅ ${swedishCount}/${allDocs.length} documents (${swedishPercentage}%) have Swedish text`
+  )
 
   if (swedishCount / allDocs.length > 0.8) {
     totalPassed++
@@ -163,15 +188,22 @@ async function main() {
 
     if (content && content.html.length > 500) {
       console.log(`   ✅ Fetched HTML content for ${testCelex}`)
-      console.log(`      HTML length: ${content.html.length.toLocaleString()} chars`)
-      console.log(`      Plain text length: ${content.plainText.length.toLocaleString()} chars`)
+      console.log(
+        `      HTML length: ${content.html.length.toLocaleString()} chars`
+      )
+      console.log(
+        `      Plain text length: ${content.plainText.length.toLocaleString()} chars`
+      )
 
       // Verify HTML structure is preserved
       const hasHtmlTags = /<\w+[^>]*>/i.test(content.html)
-      const hasPlainText = content.plainText.length > 100 && !/<\w+>/i.test(content.plainText)
+      const hasPlainText =
+        content.plainText.length > 100 && !/<\w+>/i.test(content.plainText)
 
       if (hasHtmlTags && hasPlainText) {
-        console.log('   ✅ HTML structure preserved, plain text extracted correctly')
+        console.log(
+          '   ✅ HTML structure preserved, plain text extracted correctly'
+        )
         totalPassed++
       } else {
         console.log('   ⚠️ Warning: HTML/text extraction may have issues')
@@ -181,39 +213,61 @@ async function main() {
       // EUR-Lex WAF protection may block direct HTML fetch
       // This is a known limitation - metadata from SPARQL is the primary data source
       console.log(`   ⚠️ HTML content fetch blocked by EUR-Lex WAF protection`)
-      console.log('      This is expected behavior - CloudFront WAF requires browser JS')
-      console.log('      Primary data (metadata) comes from SPARQL which works correctly')
-      console.log('      HTML content can be fetched later via browser automation if needed')
+      console.log(
+        '      This is expected behavior - CloudFront WAF requires browser JS'
+      )
+      console.log(
+        '      Primary data (metadata) comes from SPARQL which works correctly'
+      )
+      console.log(
+        '      HTML content can be fetched later via browser automation if needed'
+      )
       totalPassed++ // Pass - we have all the metadata we need from SPARQL
     }
   } catch (error) {
     console.log(`   ⚠️ HTML fetch blocked: ${(error as Error).message}`)
-    console.log('      Primary SPARQL data is available - HTML is optional for MVP')
+    console.log(
+      '      Primary SPARQL data is available - HTML is optional for MVP'
+    )
     totalPassed++ // Still pass - metadata from SPARQL is sufficient
   }
   console.log('')
 
   // Test 6b: Fetch HTML Content via CELLAR REST API (NEW - bypasses WAF)
-  console.log('📄 Test 6b: Testing CELLAR REST API for HTML content (bypasses WAF)...')
+  console.log(
+    '📄 Test 6b: Testing CELLAR REST API for HTML content (bypasses WAF)...'
+  )
   const cellarTestCelex = '32016R0679' // GDPR - well-known document
   try {
     const cellarContent = await fetchDocumentContentViaCellar(cellarTestCelex)
 
     if (cellarContent && cellarContent.html.length > 500) {
-      console.log(`   ✅ CELLAR API SUCCESS! Fetched HTML content for ${cellarTestCelex}`)
-      console.log(`      HTML length: ${cellarContent.html.length.toLocaleString()} chars`)
-      console.log(`      Plain text length: ${cellarContent.plainText.length.toLocaleString()} chars`)
+      console.log(
+        `   ✅ CELLAR API SUCCESS! Fetched HTML content for ${cellarTestCelex}`
+      )
+      console.log(
+        `      HTML length: ${cellarContent.html.length.toLocaleString()} chars`
+      )
+      console.log(
+        `      Plain text length: ${cellarContent.plainText.length.toLocaleString()} chars`
+      )
 
       // Show a snippet of the plain text to verify Swedish content
-      const textSnippet = cellarContent.plainText.substring(0, 200).replace(/\s+/g, ' ')
+      const textSnippet = cellarContent.plainText
+        .substring(0, 200)
+        .replace(/\s+/g, ' ')
       console.log(`      Text preview: "${textSnippet}..."`)
 
       // Verify HTML structure is preserved
       const hasHtmlTags = /<\w+[^>]*>/i.test(cellarContent.html)
-      const hasPlainText = cellarContent.plainText.length > 100 && !/<\w+>/i.test(cellarContent.plainText)
+      const hasPlainText =
+        cellarContent.plainText.length > 100 &&
+        !/<\w+>/i.test(cellarContent.plainText)
 
       if (hasHtmlTags && hasPlainText) {
-        console.log('   ✅ HTML structure preserved, plain text extracted correctly')
+        console.log(
+          '   ✅ HTML structure preserved, plain text extracted correctly'
+        )
         totalPassed++
       } else {
         console.log('   ⚠️ Warning: HTML/text extraction may have issues')
@@ -243,21 +297,29 @@ async function main() {
     try {
       const content = await fetchDocumentContentViaCellar(doc.celex)
       if (content && content.plainText.length > 100) {
-        console.log(`   ✅ ${doc.name} (${doc.celex}): ${content.plainText.length.toLocaleString()} chars`)
+        console.log(
+          `   ✅ ${doc.name} (${doc.celex}): ${content.plainText.length.toLocaleString()} chars`
+        )
         cellarSuccessCount++
       } else {
         console.log(`   ⚠️ ${doc.name} (${doc.celex}): No content`)
       }
     } catch (error) {
-      console.log(`   ❌ ${doc.name} (${doc.celex}): ${(error as Error).message}`)
+      console.log(
+        `   ❌ ${doc.name} (${doc.celex}): ${(error as Error).message}`
+      )
     }
   }
 
   if (cellarSuccessCount >= 2) {
-    console.log(`   ✅ CELLAR API works for ${cellarSuccessCount}/${testDocs.length} documents`)
+    console.log(
+      `   ✅ CELLAR API works for ${cellarSuccessCount}/${testDocs.length} documents`
+    )
     totalPassed++
   } else {
-    console.log(`   ❌ CELLAR API only succeeded for ${cellarSuccessCount}/${testDocs.length} documents`)
+    console.log(
+      `   ❌ CELLAR API only succeeded for ${cellarSuccessCount}/${testDocs.length} documents`
+    )
     totalFailed++
   }
   console.log('')
@@ -269,7 +331,9 @@ async function main() {
     const nimData = await fetchNationalMeasures(testDirective)
 
     if (nimData?.sweden) {
-      console.log(`   ✅ Found Swedish implementation measures for ${testDirective}`)
+      console.log(
+        `   ✅ Found Swedish implementation measures for ${testDirective}`
+      )
       console.log(`      Measures: ${nimData.sweden.measures.length}`)
       console.log(`      Status: ${nimData.sweden.implementationStatus}`)
 
@@ -288,7 +352,9 @@ async function main() {
           console.log(`      Measures: ${ledNim.sweden.measures.length}`)
           totalPassed++
         } else {
-          console.log('   ⚠️ NIM parsing may need adjustment - some directives may not have Swedish measures')
+          console.log(
+            '   ⚠️ NIM parsing may need adjustment - some directives may not have Swedish measures'
+          )
           // This is not a critical failure, some directives genuinely don't have Swedish measures yet
           totalPassed++ // Still pass - API works, just no data
         }
@@ -310,23 +376,31 @@ async function main() {
   // Check CELEX format (including corrections like R(01), R(02), etc.)
   qualityTotal++
   // Base CELEX: 3YYYYTNNNN, corrections: 3YYYYTNNNNT(NN)
-  const validCelexCount = allDocs.filter((d) => /^3\d{4}[RLD]\d+(?:R\(\d+\))?$/.test(d.celex)).length
+  const validCelexCount = allDocs.filter((d) =>
+    /^3\d{4}[RLD]\d+(?:R\(\d+\))?$/.test(d.celex)
+  ).length
   if (validCelexCount === allDocs.length) {
     console.log(`   ✅ All ${allDocs.length} documents have valid CELEX format`)
     qualityPassed++
   } else {
-    console.log(`   ✅ ${validCelexCount}/${allDocs.length} have standard CELEX format (some have correction suffixes - this is expected)`)
+    console.log(
+      `   ✅ ${validCelexCount}/${allDocs.length} have standard CELEX format (some have correction suffixes - this is expected)`
+    )
     qualityPassed++ // Corrections are valid, so still pass
   }
 
   // Check for titles
   qualityTotal++
-  const hasTitleCount = allDocs.filter((d) => d.title && d.title.length > 10).length
+  const hasTitleCount = allDocs.filter(
+    (d) => d.title && d.title.length > 10
+  ).length
   if (hasTitleCount === allDocs.length) {
     console.log(`   ✅ All documents have titles`)
     qualityPassed++
   } else {
-    console.log(`   ⚠️ ${allDocs.length - hasTitleCount} documents missing titles`)
+    console.log(
+      `   ⚠️ ${allDocs.length - hasTitleCount} documents missing titles`
+    )
   }
 
   // Check for publication dates
@@ -334,7 +408,9 @@ async function main() {
   const hasDateCount = allDocs.filter((d) => d.publicationDate !== null).length
   const datePercentage = ((hasDateCount / allDocs.length) * 100).toFixed(1)
   if (hasDateCount / allDocs.length > 0.9) {
-    console.log(`   ✅ ${hasDateCount}/${allDocs.length} (${datePercentage}%) have publication dates`)
+    console.log(
+      `   ✅ ${hasDateCount}/${allDocs.length} (${datePercentage}%) have publication dates`
+    )
     qualityPassed++
   } else {
     console.log(`   ⚠️ Only ${datePercentage}% have publication dates`)
@@ -367,7 +443,9 @@ async function main() {
   } else {
     console.log('❌ SOME TESTS FAILED - Review errors before proceeding')
     console.log('')
-    console.log('⚠️  BLOCKER: Do NOT proceed to Tasks 2-7 until all tests pass!')
+    console.log(
+      '⚠️  BLOCKER: Do NOT proceed to Tasks 2-7 until all tests pass!'
+    )
     process.exit(1)
   }
 }

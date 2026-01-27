@@ -3,7 +3,7 @@
 /**
  * Story 5.9: Workspace Server Actions
  * Server actions for workspace creation and management.
- * 
+ *
  * Story P.2: Enhanced with cache invalidation
  * @see docs/stories/P.2.systematic-caching.story.md
  */
@@ -14,9 +14,9 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from '@/lib/auth/session'
 import { setActiveWorkspace } from '@/lib/auth/workspace-context'
-import { 
-  invalidateWorkspaceCache, 
-  invalidateUserCache 
+import {
+  invalidateWorkspaceCache,
+  invalidateUserCache,
 } from '@/lib/cache/workspace-cache'
 
 // ============================================================================
@@ -118,10 +118,10 @@ export async function createWorkspace(formData: FormData): Promise<{
 
     // Set as active workspace
     await setActiveWorkspace(workspace.id)
-    
+
     // Invalidate user cache to refresh workspace list
     await invalidateUserCache(user.id, ['context'])
-    
+
     revalidatePath('/')
 
     return { success: true, workspaceId: workspace.id }
@@ -169,14 +169,14 @@ export async function updateWorkspaceSettings(
     // Update workspace
     await prisma.workspace.update({
       where: { id: workspaceId },
-      data
+      data,
     })
 
     // Invalidate workspace cache
     await invalidateWorkspaceCache(workspaceId, ['context', 'settings'])
-    
+
     revalidatePath('/settings/workspace')
-    
+
     return { success: true }
   } catch (error) {
     console.error('Error updating workspace:', error)
@@ -201,7 +201,7 @@ export async function addWorkspaceMember(
 
     // Find or create user
     let user = await prisma.user.findUnique({
-      where: { email }
+      where: { email },
     })
 
     if (!user) {
@@ -210,7 +210,7 @@ export async function addWorkspaceMember(
         data: {
           email,
           name: email.split('@')[0] || null,
-        }
+        },
       })
     }
 
@@ -220,15 +220,15 @@ export async function addWorkspaceMember(
         workspace_id: workspaceId,
         user_id: user.id,
         role,
-        joined_at: new Date()
-      }
+        joined_at: new Date(),
+      },
     })
 
     // Invalidate workspace members cache
     await invalidateWorkspaceCache(workspaceId, ['members'])
-    
+
     revalidatePath('/settings/workspace')
-    
+
     return { success: true }
   } catch (error) {
     console.error('Error adding member:', error)
@@ -254,8 +254,8 @@ export async function removeWorkspaceMember(
     const member = await prisma.workspaceMember.findFirst({
       where: {
         workspace_id: workspaceId,
-        user_id: userId
-      }
+        user_id: userId,
+      },
     })
 
     if (!member) {
@@ -265,16 +265,16 @@ export async function removeWorkspaceMember(
     // Delete by id
     await prisma.workspaceMember.delete({
       where: {
-        id: member.id
-      }
+        id: member.id,
+      },
     })
 
     // Invalidate both workspace and user cache
     await invalidateWorkspaceCache(workspaceId, ['members'])
     await invalidateUserCache(userId, ['context'])
-    
+
     revalidatePath('/settings/workspace')
-    
+
     return { success: true }
   } catch (error) {
     console.error('Error removing member:', error)
@@ -297,9 +297,9 @@ export async function switchWorkspace(
 
     // Verify user has access to this workspace
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     })
-    
+
     if (!user) {
       return { success: false, error: 'User not found' }
     }
@@ -307,8 +307,8 @@ export async function switchWorkspace(
     const member = await prisma.workspaceMember.findFirst({
       where: {
         workspace_id: workspaceId,
-        user_id: user.id
-      }
+        user_id: user.id,
+      },
     })
 
     if (!member) {
@@ -317,12 +317,12 @@ export async function switchWorkspace(
 
     // Set as active workspace
     await setActiveWorkspace(workspaceId)
-    
+
     // Invalidate old workspace context
     await invalidateUserCache(user.id, ['context'])
-    
+
     revalidatePath('/')
-    
+
     return { success: true }
   } catch (error) {
     console.error('Error switching workspace:', error)

@@ -2,7 +2,7 @@ import { prisma } from '../lib/prisma'
 
 async function main() {
   const sfsCount = await prisma.legalDocument.count({
-    where: { content_type: 'SFS_LAW' }
+    where: { content_type: 'SFS_LAW' },
   })
   console.log('SFS_LAW count:', sfsCount)
 

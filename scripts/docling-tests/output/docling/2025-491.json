@@ -1,0 +1,636 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.9.0",
+  "name": "2025-491",
+  "origin": {
+    "mimetype": "application/pdf",
+    "binary_hash": 8545179781077429221,
+    "filename": "2025-491.pdf"
+  },
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/texts/0"
+      },
+      {
+        "$ref": "#/texts/1"
+      },
+      {
+        "$ref": "#/pictures/0"
+      },
+      {
+        "$ref": "#/texts/2"
+      },
+      {
+        "$ref": "#/texts/3"
+      },
+      {
+        "$ref": "#/texts/4"
+      },
+      {
+        "$ref": "#/texts/5"
+      },
+      {
+        "$ref": "#/texts/6"
+      },
+      {
+        "$ref": "#/texts/7"
+      },
+      {
+        "$ref": "#/texts/8"
+      },
+      {
+        "$ref": "#/groups/0"
+      },
+      {
+        "$ref": "#/texts/13"
+      },
+      {
+        "$ref": "#/texts/14"
+      },
+      {
+        "$ref": "#/texts/15"
+      },
+      {
+        "$ref": "#/texts/16"
+      },
+      {
+        "$ref": "#/texts/17"
+      },
+      {
+        "$ref": "#/texts/18"
+      },
+      {
+        "$ref": "#/texts/19"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [
+    {
+      "self_ref": "#/groups/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [
+        {
+          "$ref": "#/texts/9"
+        },
+        {
+          "$ref": "#/texts/10"
+        },
+        {
+          "$ref": "#/texts/11"
+        },
+        {
+          "$ref": "#/texts/12"
+        }
+      ],
+      "content_layer": "body",
+      "name": "list",
+      "label": "list"
+    }
+  ],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 15.166,
+            "t": 93.71000001406253,
+            "r": 23.391,
+            "b": 10.65000001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 23]
+        }
+      ],
+      "orig": "1 2 3 4 5 6 7 8 9 0 : ;",
+      "text": "1 2 3 4 5 6 7 8 9 0 : ;"
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 26.665,
+            "t": 93.71000001406253,
+            "r": 34.89,
+            "b": 10.65000001406247,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 23]
+        }
+      ],
+      "orig": "1 2 3 4 5 6 7 8 9 0 : ;",
+      "text": "1 2 3 4 5 6 7 8 9 0 : ;"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 734.0180000140625,
+            "r": 291.129,
+            "b": 718.3910000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 26]
+        }
+      ],
+      "orig": "Svensk författningssamling",
+      "text": "Svensk författningssamling",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 690.2680000140625,
+            "r": 407.43,
+            "b": 648.1630000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 124]
+        }
+      ],
+      "orig": "Förordning om ändring i förordningen (2009:955) om statsbidrag till vissa juridiska personer som tillhandahåller meningsfull",
+      "text": "Förordning om ändring i förordningen (2009:955) om statsbidrag till vissa juridiska personer som tillhandahåller meningsfull",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 644.3830000140625,
+            "r": 304.404,
+            "b": 617.5730000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 61]
+        }
+      ],
+      "orig": "sysselsättning till personer med psykisk funktionsnedsättning",
+      "text": "sysselsättning till personer med psykisk funktionsnedsättning"
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 603.8200000140625,
+            "r": 188.791,
+            "b": 594.3610000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 24]
+        }
+      ],
+      "orig": "Utfärdad den 22 maj 2025",
+      "text": "Utfärdad den 22 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 576.6020000140625,
+            "r": 415.329,
+            "b": 539.9250000140624,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 218]
+        }
+      ],
+      "orig": "Regeringen föreskriver att 1 § förordningen (2009:955) om statsbidrag till vissa juridiska personer som tillhandahåller meningsfull sysselsättning till personer med psykisk funktionsnedsättning ska ha följande lydelse.",
+      "text": "Regeringen föreskriver att 1 § förordningen (2009:955) om statsbidrag till vissa juridiska personer som tillhandahåller meningsfull sysselsättning till personer med psykisk funktionsnedsättning ska ha följande lydelse."
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 509.39300001406247,
+            "r": 415.33,
+            "b": 431.0530000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 407]
+        }
+      ],
+      "orig": "1 § 1     I  denna  förordning  finns  föreskrifter  om  statsbidrag  till  juridiska personer  som  i  sin  verksamhet  tillhandahåller  sådan  meningsfull  sysselsättning som avses i 8 kap. 10 § andra stycket socialtjänstlagen (2025:400) till  personer  som  på  grund  av  en  psykisk  funktionsnedsättning  möter betydande svårigheter i sin livsföring och som inte står till arbetsmarknadens förfogande.",
+      "text": "1 § 1     I  denna  förordning  finns  föreskrifter  om  statsbidrag  till  juridiska personer  som  i  sin  verksamhet  tillhandahåller  sådan  meningsfull  sysselsättning som avses i 8 kap. 10 § andra stycket socialtjänstlagen (2025:400) till  personer  som  på  grund  av  en  psykisk  funktionsnedsättning  möter betydande svårigheter i sin livsföring och som inte står till arbetsmarknadens förfogande."
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 426.9030000140625,
+            "r": 415.317,
+            "b": 390.2260000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 149]
+        }
+      ],
+      "orig": "Målen med statsbidraget är att förstärka och komplettera kommunernas och regionernas insatser för att ge personer med en psykisk funktionsnedsättning",
+      "text": "Målen med statsbidraget är att förstärka och komplettera kommunernas och regionernas insatser för att ge personer med en psykisk funktionsnedsättning"
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 76.55,
+            "t": 386.0760000140625,
+            "r": 307.78,
+            "b": 376.6170000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 52]
+        }
+      ],
+      "orig": "1. ett varierat utbud av meningsfull sysselsättning,",
+      "text": "ett varierat utbud av meningsfull sysselsättning,",
+      "enumerated": true,
+      "marker": "1."
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 372.4670000140625,
+            "r": 412.453,
+            "b": 349.3990000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 88]
+        }
+      ],
+      "orig": "2. ökad valfrihet genom att urvalet av sysselsättningsplatser lokalt utökas och breddas,",
+      "text": "ökad valfrihet genom att urvalet av sysselsättningsplatser lokalt utökas och breddas,",
+      "enumerated": true,
+      "marker": "2."
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 345.2490000140625,
+            "r": 412.442,
+            "b": 308.5720000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 171]
+        }
+      ],
+      "orig": "3. en  sysselsättning  som  är  särskilt  anpassad  till  den  enskildes  förutsättningar och som stärker hans eller hennes möjligheter att leva ett självständigt liv, och",
+      "text": "en  sysselsättning  som  är  särskilt  anpassad  till  den  enskildes  förutsättningar och som stärker hans eller hennes möjligheter att leva ett självständigt liv, och",
+      "enumerated": true,
+      "marker": "3."
+    },
+    {
+      "self_ref": "#/texts/12",
+      "parent": {
+        "$ref": "#/groups/0"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "list_item",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 304.4220000140625,
+            "r": 412.453,
+            "b": 281.3540000140624,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 114]
+        }
+      ],
+      "orig": "4. bättre möjligheter att övergå eller återgå till studier, praktik eller arbete på den reguljära arbetsmarknaden.",
+      "text": "bättre möjligheter att övergå eller återgå till studier, praktik eller arbete på den reguljära arbetsmarknaden.",
+      "enumerated": true,
+      "marker": "4."
+    },
+    {
+      "self_ref": "#/texts/13",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 76.55,
+            "t": 262.6040000140624,
+            "r": 296.902,
+            "b": 253.14500001406248,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 48]
+        }
+      ],
+      "orig": "Denna förordning träder i kraft den 1 juli 2025.",
+      "text": "Denna förordning träder i kraft den 1 juli 2025."
+    },
+    {
+      "self_ref": "#/texts/14",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 235.38600001406246,
+            "r": 170.253,
+            "b": 225.92700001406251,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 21]
+        }
+      ],
+      "orig": "På regeringens vägnar",
+      "text": "På regeringens vägnar"
+    },
+    {
+      "self_ref": "#/texts/15",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 208.1680000140625,
+            "r": 168.734,
+            "b": 198.70900001406244,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 14]
+        }
+      ],
+      "orig": "JAKOB FORSSMED",
+      "text": "JAKOB FORSSMED"
+    },
+    {
+      "self_ref": "#/texts/16",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "footnote",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 65.2,
+            "t": 79.79900001406247,
+            "r": 166.435,
+            "b": 71.65600001406256,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 28]
+        }
+      ],
+      "orig": "1  Senaste lydelse 2021:852.",
+      "text": "1  Senaste lydelse 2021:852."
+    },
+    {
+      "self_ref": "#/texts/17",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 256.548,
+            "t": 194.55900001406246,
+            "r": 360.957,
+            "b": 171.49100001406248,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 41]
+        }
+      ],
+      "orig": "Cecilia Torstensson (Socialdepartementet)",
+      "text": "Cecilia Torstensson (Socialdepartementet)"
+    },
+    {
+      "self_ref": "#/texts/18",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 432.7,
+            "t": 689.3690000140625,
+            "r": 508.178,
+            "b": 654.3910000140625,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 39]
+        }
+      ],
+      "orig": "SFS 2025:491 Publicerad den 28 maj 2025",
+      "text": "SFS 2025:491 Publicerad den 28 maj 2025"
+    },
+    {
+      "self_ref": "#/texts/19",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "furniture",
+      "label": "page_footer",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 529.244,
+            "t": 89.23600001406248,
+            "r": 534.994,
+            "b": 79.77700001406254,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 1]
+        }
+      ],
+      "orig": "1",
+      "text": "1"
+    }
+  ],
+  "pictures": [
+    {
+      "self_ref": "#/pictures/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "picture",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 63.23612976074219,
+            "t": 808.8981590270996,
+            "r": 95.20541381835938,
+            "b": 757.6135330200195,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [0, 0]
+        }
+      ],
+      "captions": [],
+      "references": [],
+      "footnotes": [],
+      "annotations": []
+    }
+  ],
+  "tables": [],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {
+    "1": {
+      "size": {
+        "width": 595.2999877929688,
+        "height": 841.9000244140625
+      },
+      "page_no": 1
+    }
+  }
+}

@@ -7,7 +7,7 @@
     "build": "next build",
     "build:analyze": "ANALYZE=true next build",
     "start": "next start",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 30",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",

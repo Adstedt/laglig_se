@@ -97,13 +97,19 @@ function cleanOcrArtifacts(text: string): string {
     const baseSfs = sfsMatch[1]
     // Remove repeated SFS numbers with concatenated page numbers (e.g., "SFS 2025:14612" -> "")
     // This pattern matches: SFS + base number + single digit + space + uppercase letter
-    const pageFooterPattern = new RegExp(`SFS\\s*${baseSfs.replace(':', ':')}(\\d)(?=\\s+[A-ZÅÄÖ])`, 'g')
+    const pageFooterPattern = new RegExp(
+      `SFS\\s*${baseSfs.replace(':', ':')}(\\d)(?=\\s+[A-ZÅÄÖ])`,
+      'g'
+    )
     cleaned = cleaned.replace(pageFooterPattern, '')
   }
 
   // Remove footnote blocks that got concatenated
   // Pattern: "N Senaste lydelse YYYY:NNNN" or references in footnotes
-  cleaned = cleaned.replace(/\d+\s+Senaste\s+lydelse\s+(?:av\s+)?\d+\s*kap\.\s*\d+\s*[a-z]?\s*§\s*\d{4}:\d+/gi, '')
+  cleaned = cleaned.replace(
+    /\d+\s+Senaste\s+lydelse\s+(?:av\s+)?\d+\s*kap\.\s*\d+\s*[a-z]?\s*§\s*\d{4}:\d+/gi,
+    ''
+  )
   cleaned = cleaned.replace(/\d+\s+Senaste\s+lydelse\s+\d{4}:\d+/gi, '')
 
   return cleaned.trim()
@@ -113,11 +119,15 @@ function cleanOcrArtifacts(text: string): string {
  * Parse nested sub-items from list item text
  * Handles patterns like: "a) text, b) text" or "– text, – text"
  */
-function parseSubItems(text: string): { mainText: string; subItems: ListItem[] } {
+function parseSubItems(text: string): {
+  mainText: string
+  subItems: ListItem[]
+} {
   const subItems: ListItem[] = []
 
   // Pattern for lettered sub-items: a), b), c) or a., b., c.
-  const subItemPattern = /(?:^|,\s*)([a-z])[)\.]\s+([^,]+?)(?=,\s*[a-z][)\.]|\s*$|,\s*och\s+[a-z][)\.]|,\s*eller\s+[a-z][)\.])/gi
+  const subItemPattern =
+    /(?:^|,\s*)([a-z])[)\.]\s+([^,]+?)(?=,\s*[a-z][)\.]|\s*$|,\s*och\s+[a-z][)\.]|,\s*eller\s+[a-z][)\.])/gi
 
   let mainText = text
   let match
@@ -140,8 +150,15 @@ function parseSubItems(text: string): { mainText: string; subItems: ListItem[] }
   // If we found sub-items, extract the main text (before the first sub-item)
   if (subItems.length >= 2) {
     const firstSubMatch = text.match(/[a-z][)\.]\s+/i)
-    if (firstSubMatch && firstSubMatch.index !== undefined && firstSubMatch.index > 0) {
-      mainText = text.substring(0, firstSubMatch.index).trim().replace(/[,;:]\s*$/, '')
+    if (
+      firstSubMatch &&
+      firstSubMatch.index !== undefined &&
+      firstSubMatch.index > 0
+    ) {
+      mainText = text
+        .substring(0, firstSubMatch.index)
+        .trim()
+        .replace(/[,;:]\s*$/, '')
     } else {
       mainText = ''
     }
@@ -154,7 +171,10 @@ function parseSubItems(text: string): { mainText: string; subItems: ListItem[] }
  * Parse numbered list items from section text
  * Handles patterns like: "1. text, 2. text" with nested a), b), c) sub-items
  */
-function parseListItems(text: string): { leadText: string | null; items: ListItem[] } {
+function parseListItems(text: string): {
+  leadText: string | null
+  items: ListItem[]
+} {
   const items: ListItem[] = []
   let leadText: string | null = null
 
@@ -191,11 +211,15 @@ function parseListItems(text: string): { leadText: string | null; items: ListIte
 
   // Split by numbered items pattern - only at clear boundaries
   // Pattern: comma/semicolon/period (optionally followed by "och"/"eller") then number and period
-  const parts = restText.split(/(?=[,;.]\s*(?:och|eller)?\s*\d+\.\s+|^\s*\d+\.\s+)/m)
+  const parts = restText.split(
+    /(?=[,;.]\s*(?:och|eller)?\s*\d+\.\s+|^\s*\d+\.\s+)/m
+  )
 
   for (const part of parts) {
     // Match numbered items, handling leading punctuation and connectors
-    const numMatch = part.match(/^[,;.]?\s*(?:och|eller)?\s*(\d+)\.\s+([\s\S]+)$/)
+    const numMatch = part.match(
+      /^[,;.]?\s*(?:och|eller)?\s*(\d+)\.\s+([\s\S]+)$/
+    )
     if (numMatch && numMatch[1] && numMatch[2]) {
       const marker = `${numMatch[1]}.`
       const itemText = numMatch[2].trim()
@@ -230,7 +254,9 @@ function parseListItems(text: string): { leadText: string | null; items: ListIte
  * Pattern B: "term: definition text" (italicized term style from Notisum)
  * Returns null if not a definition list
  */
-function parseDefinitionList(text: string): { leadText: string | null; definitions: DefinitionItem[] } | null {
+function parseDefinitionList(
+  text: string
+): { leadText: string | null; definitions: DefinitionItem[] } | null {
   // Check if this looks like a definition list
   const defListIndicators = [
     /finns i nedan angivna paragrafer/i,
@@ -241,7 +267,9 @@ function parseDefinitionList(text: string): { leadText: string | null; definitio
     /har följande betydelse/i,
   ]
 
-  const isDefinitionList = defListIndicators.some((pattern) => pattern.test(text))
+  const isDefinitionList = defListIndicators.some((pattern) =>
+    pattern.test(text)
+  )
 
   if (!isDefinitionList) {
     return null
@@ -271,7 +299,8 @@ function parseDefinitionList(text: string): { leadText: string | null; definitio
   // Pattern B: "term: definition" (less common, but used in some contexts)
   // Only use if we haven't found Pattern A definitions
   if (definitions.length < 3) {
-    const defPatternB = /([A-ZÅÄÖ][a-zåäö]+(?:\s+[a-zåäö]+)*)\s*:\s+([^,]+(?:,\s*[^,]+)*)/g
+    const defPatternB =
+      /([A-ZÅÄÖ][a-zåäö]+(?:\s+[a-zåäö]+)*)\s*:\s+([^,]+(?:,\s*[^,]+)*)/g
 
     while ((match = defPatternB.exec(text)) !== null) {
       const term = match[1]?.trim()
@@ -290,7 +319,8 @@ function parseDefinitionList(text: string): { leadText: string | null; definitio
     if (!firstDef) return null
 
     const firstIndex = text.toLowerCase().indexOf(firstDef.term.toLowerCase())
-    const leadText = firstIndex > 0 ? text.substring(0, firstIndex).trim() : null
+    const leadText =
+      firstIndex > 0 ? text.substring(0, firstIndex).trim() : null
 
     return { leadText, definitions }
   }
@@ -302,8 +332,14 @@ function parseDefinitionList(text: string): { leadText: string | null; definitio
  * Extract SFS references from text for linking
  * Returns the text with markers for SFS references
  */
-export function extractSfsReferences(text: string): Array<{ type: 'text' | 'sfs'; content: string; sfsNumber?: string }> {
-  const result: Array<{ type: 'text' | 'sfs'; content: string; sfsNumber?: string }> = []
+export function extractSfsReferences(
+  text: string
+): Array<{ type: 'text' | 'sfs'; content: string; sfsNumber?: string }> {
+  const result: Array<{
+    type: 'text' | 'sfs'
+    content: string
+    sfsNumber?: string
+  }> = []
 
   // Pattern for SFS references: (YYYY:NNN) or SFS YYYY:NNN
   const sfsPattern = /(?:\((\d{4}:\d+)\)|SFS\s+(\d{4}:\d+))/g
@@ -355,17 +391,19 @@ export function extractSfsReferences(text: string): Array<{ type: 'text' | 'sfs'
  */
 function isInlineReference(text: string, matchIndex: number): boolean {
   // Look at the 50 characters before the match
-  const before = text.substring(Math.max(0, matchIndex - 50), matchIndex).toLowerCase()
+  const before = text
+    .substring(Math.max(0, matchIndex - 50), matchIndex)
+    .toLowerCase()
 
   // Check for footnote patterns - these should NOT be treated as section headers
   const footnotePatterns = [
-    /senaste\s+lydelse\s+(?:av\s+)?$/i,  // "Senaste lydelse av X kap. Y §"
-    /senaste\s+lydelse\s+\d{4}:\d+\s*$/i,  // After an SFS reference
-    /prop\.\s+\d{4}\/\d+:\d+[^§]*$/i,  // After a proposition reference
-    /\d+\s+senaste\s+lydelse/i,  // Footnote number before "Senaste lydelse"
+    /senaste\s+lydelse\s+(?:av\s+)?$/i, // "Senaste lydelse av X kap. Y §"
+    /senaste\s+lydelse\s+\d{4}:\d+\s*$/i, // After an SFS reference
+    /prop\.\s+\d{4}\/\d+:\d+[^§]*$/i, // After a proposition reference
+    /\d+\s+senaste\s+lydelse/i, // Footnote number before "Senaste lydelse"
   ]
 
-  if (footnotePatterns.some(pattern => pattern.test(before))) {
+  if (footnotePatterns.some((pattern) => pattern.test(before))) {
     return true
   }
 
@@ -387,26 +425,36 @@ function isInlineReference(text: string, matchIndex: number): boolean {
     /för\s*$/,
     /som\s+avses\s+i\s*$/,
     /som\s+följer\s+av\s*$/,
-    /\d+\s*§\s*$/,  // Another section reference right before
-    /kap\.\s*$/,    // Chapter reference right before
-    /stycket\s*$/,  // "stycket" (paragraph) reference
-    /,\s*$/,        // Comma before (likely continuation)
-    /\d+[–\-−]\s*$/,  // Range pattern like "1–" (sections 1 through X) - en-dash, hyphen, minus
-    /\d+\s*[a-z][–\-−]\s*$/,  // Range pattern with letter suffix like "29 a–" (for "29 a–29 e §§")
-    /\d+\s*[a-z]?\s*§§\s*$/,  // Double section sign (§§)
-    /\d{4}:\d+\s*$/,  // After an SFS number (like "2024:1248 7 kap. 25 §")
-    /i\s+\d+\s*[a-z]?[–\-−]\s*$/,  // Definition reference range: "i 29 a–" before "29 e §§"
+    /\d+\s*§\s*$/, // Another section reference right before
+    /kap\.\s*$/, // Chapter reference right before
+    /stycket\s*$/, // "stycket" (paragraph) reference
+    /,\s*$/, // Comma before (likely continuation)
+    /\d+[–\-−]\s*$/, // Range pattern like "1–" (sections 1 through X) - en-dash, hyphen, minus
+    /\d+\s*[a-z][–\-−]\s*$/, // Range pattern with letter suffix like "29 a–" (for "29 a–29 e §§")
+    /\d+\s*[a-z]?\s*§§\s*$/, // Double section sign (§§)
+    /\d{4}:\d+\s*$/, // After an SFS number (like "2024:1248 7 kap. 25 §")
+    /i\s+\d+\s*[a-z]?[–\-−]\s*$/, // Definition reference range: "i 29 a–" before "29 e §§"
   ]
 
-  return referenceIndicators.some(pattern => pattern.test(before))
+  return referenceIndicators.some((pattern) => pattern.test(before))
 }
 
 /**
  * Find actual section headers in the text (not inline references)
  * Returns array of {index, chapter, section} for each real section header
  */
-function findSectionHeaders(text: string): Array<{index: number; chapter: string | null; section: string; endIndex: number}> {
-  const headers: Array<{index: number; chapter: string | null; section: string; endIndex: number}> = []
+function findSectionHeaders(text: string): Array<{
+  index: number
+  chapter: string | null
+  section: string
+  endIndex: number
+}> {
+  const headers: Array<{
+    index: number
+    chapter: string | null
+    section: string
+    endIndex: number
+  }> = []
 
   // Pattern to find potential section headers: "X kap. Y §" or just "Y §"
   const potentialHeaderPattern = /(\d+\s*kap\.\s*)?(\d+\s*[a-z]?\s*§)/gi
@@ -638,7 +686,9 @@ export function parseAmendmentStructure(
     if (i > 0) {
       const prevHeader = sectionHeaders[i - 1]
       if (prevHeader) {
-        const betweenText = text.substring(prevHeader.endIndex, header.index).trim()
+        const betweenText = text
+          .substring(prevHeader.endIndex, header.index)
+          .trim()
         // Group headers are typically Title Case or ALL CAPS, on their own line
         const groupMatch = betweenText.match(
           /\n([A-ZÅÄÖ][a-zåäö]+(?:\s+[a-zåäö]+)*(?:\s+[A-ZÅÄÖ][a-zåäö]+)*)\s*\n/
@@ -816,7 +866,9 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
     parts.push(`<p class="text title">${escapeHtml(structure.title)}</p>`)
   }
   if (structure.issuedDate) {
-    parts.push(`<p class="text issued">Utfärdad den ${escapeHtml(structure.issuedDate)}</p>`)
+    parts.push(
+      `<p class="text issued">Utfärdad den ${escapeHtml(structure.issuedDate)}</p>`
+    )
   }
   parts.push(`</h1>`)
   parts.push(`</div>`)
@@ -826,7 +878,9 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
 
   // Intro text
   if (structure.introText) {
-    parts.push(`<p class="intro-text">${linkifySfsReferences(escapeHtml(structure.introText))}</p>`)
+    parts.push(
+      `<p class="intro-text">${linkifySfsReferences(escapeHtml(structure.introText))}</p>`
+    )
   }
 
   // Group sections by chapter
@@ -842,10 +896,10 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
       }
       currentChapter = section.chapter
       const chapterNum = currentChapter.replace(/\s*kap\.?\s*/i, '')
+      parts.push(`<section class="kapitel" id="${sfsId}_K${chapterNum}">`)
       parts.push(
-        `<section class="kapitel" id="${sfsId}_K${chapterNum}">`
+        `<h2><span class="kapitel">${escapeHtml(currentChapter)}</span></h2>`
       )
-      parts.push(`<h2><span class="kapitel">${escapeHtml(currentChapter)}</span></h2>`)
     }
 
     // Group header
@@ -857,7 +911,9 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
 
     // Section wrapper
     const sectionNum = section.sectionNumber.replace(/\s*§\s*/, '')
-    const chapterPrefix = currentChapter ? `K${currentChapter.replace(/\s*kap\.?\s*/i, '')}_` : ''
+    const chapterPrefix = currentChapter
+      ? `K${currentChapter.replace(/\s*kap\.?\s*/i, '')}_`
+      : ''
     const sectionId = `${sfsId}_${chapterPrefix}P${sectionNum}`
 
     parts.push(`<section class="paragraf" id="${sectionId}">`)
@@ -880,7 +936,9 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
 
     // Lead text
     if (section.leadText) {
-      parts.push(`<p class="text">${linkifySfsReferences(escapeHtml(section.leadText))}</p>`)
+      parts.push(
+        `<p class="text">${linkifySfsReferences(escapeHtml(section.leadText))}</p>`
+      )
     }
 
     // Definition list
@@ -888,7 +946,9 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
       parts.push(`<ul class="list definition-list" style="list-style: none;">`)
       for (const def of section.definitions) {
         parts.push(`<li>`)
-        parts.push(`<p class="text"><em>${escapeHtml(def.term)}</em> i ${escapeHtml(def.reference)}</p>`)
+        parts.push(
+          `<p class="text"><em>${escapeHtml(def.term)}</em> i ${escapeHtml(def.reference)}</p>`
+        )
         parts.push(`</li>`)
       }
       parts.push(`</ul>`)
@@ -899,14 +959,18 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
       parts.push(`<ol class="list" type="1">`)
       for (const item of section.items) {
         parts.push(`<li>`)
-        parts.push(`<p class="text">${linkifySfsReferences(escapeHtml(item.text))}</p>`)
+        parts.push(
+          `<p class="text">${linkifySfsReferences(escapeHtml(item.text))}</p>`
+        )
 
         // Sub-items
         if (item.subItems && item.subItems.length > 0) {
           parts.push(`<ol class="list sub-list" type="a">`)
           for (const subItem of item.subItems) {
             parts.push(`<li>`)
-            parts.push(`<p class="text">${linkifySfsReferences(escapeHtml(subItem.text))}</p>`)
+            parts.push(
+              `<p class="text">${linkifySfsReferences(escapeHtml(subItem.text))}</p>`
+            )
             parts.push(`</li>`)
           }
           parts.push(`</ol>`)
@@ -918,8 +982,14 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
     }
 
     // Plain text (if no list items or definitions)
-    if (section.items.length === 0 && (!section.definitions || section.definitions.length === 0) && !section.leadText) {
-      parts.push(`<p class="text">${linkifySfsReferences(escapeHtml(section.text))}</p>`)
+    if (
+      section.items.length === 0 &&
+      (!section.definitions || section.definitions.length === 0) &&
+      !section.leadText
+    ) {
+      parts.push(
+        `<p class="text">${linkifySfsReferences(escapeHtml(section.text))}</p>`
+      )
     }
 
     parts.push(`</div>`)
@@ -927,7 +997,8 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
 
     // Close group section if next section has different group header
     if (currentGroupHeader) {
-      const nextSection = structure.sections[structure.sections.indexOf(section) + 1]
+      const nextSection =
+        structure.sections[structure.sections.indexOf(section) + 1]
       if (!nextSection || nextSection.groupHeader !== currentGroupHeader) {
         parts.push(`</section>`) // Close group
         currentGroupHeader = null
@@ -953,7 +1024,9 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
     parts.push(`<ol class="list" type="1">`)
     for (const provision of structure.transitionProvisions) {
       parts.push(`<li>`)
-      parts.push(`<p class="text">${linkifySfsReferences(escapeHtml(provision.text))}</p>`)
+      parts.push(
+        `<p class="text">${linkifySfsReferences(escapeHtml(provision.text))}</p>`
+      )
       parts.push(`</li>`)
     }
     parts.push(`</ol>`)

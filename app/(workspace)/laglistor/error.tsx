@@ -33,12 +33,10 @@ export default function DocumentListsError({
         </div>
 
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold">
-            Kunde inte ladda laglistor
-          </h2>
+          <h2 className="text-lg font-semibold">Kunde inte ladda laglistor</h2>
           <p className="text-sm text-muted-foreground max-w-md">
-            Ett fel uppstod när vi försökte hämta dina laglistor.
-            Försök igen eller gå till översikten.
+            Ett fel uppstod när vi försökte hämta dina laglistor. Försök igen
+            eller gå till översikten.
           </p>
         </div>
 

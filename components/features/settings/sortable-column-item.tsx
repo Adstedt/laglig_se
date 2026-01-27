@@ -25,8 +25,11 @@ import type { TaskColumnWithCount } from '@/app/actions/tasks'
 
 interface SortableColumnItemProps {
   column: TaskColumnWithCount
-  onUpdate: (columnId: string, updates: { name?: string; color?: string; is_done?: boolean }) => void
-  onDelete: (column: TaskColumnWithCount) => void
+  onUpdate: (
+    _columnId: string,
+    _updates: { name?: string; color?: string; is_done?: boolean }
+  ) => void
+  onDelete: (_column: TaskColumnWithCount) => void
   isPending?: boolean
   canToggleIsDone?: boolean
 }
