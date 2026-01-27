@@ -4,11 +4,13 @@ import { LeftSidebar } from '@/components/layout/left-sidebar'
 import { MobileSidebar } from '@/components/layout/mobile-sidebar'
 import { Header } from '@/components/layout/header'
 import { RightSidebar } from '@/components/layout/right-sidebar'
+import { ChatModal } from '@/components/features/ai-chat/chat-modal'
 import { Breadcrumbs } from '@/components/layout/breadcrumbs'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { WorkspaceProvider } from '@/hooks/use-workspace'
 import { Toaster } from '@/components/ui/sonner'
 import { useEffect, useState } from 'react'
+import { useMediaQuery } from '@/lib/hooks/use-media-query'
 
 interface WorkspaceShellProps {
   user: {
@@ -20,9 +22,13 @@ interface WorkspaceShellProps {
 }
 
 export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
-  const { rightSidebarFolded, toggleRightSidebar } = useLayoutStore()
+  const { rightSidebarFolded, toggleRightSidebar, setRightSidebarFolded } =
+    useLayoutStore()
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Detect mobile/tablet (below lg breakpoint where RightSidebar is hidden)
+  const isMobile = useMediaQuery('(max-width: 1023px)')
 
   // Keyboard shortcut for toggling right sidebar (Cmd/Ctrl + K or /)
   useEffect(() => {
@@ -78,6 +84,14 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
             onToggle={toggleRightSidebar}
           />
         </div>
+
+        {/* Chat Modal - mobile only */}
+        {isMobile && (
+          <ChatModal
+            isOpen={!rightSidebarFolded}
+            onClose={() => setRightSidebarFolded(true)}
+          />
+        )}
       </div>
     </WorkspaceProvider>
   )

@@ -8,6 +8,7 @@ import {
   Scale,
   BookOpen,
   CheckSquare,
+  FolderOpen,
   Users,
   Bell,
   Settings,
@@ -72,6 +73,11 @@ const workItems = [
     title: 'Uppgifter',
     icon: CheckSquare,
     href: '/tasks',
+  },
+  {
+    title: 'Mina filer',
+    icon: FolderOpen,
+    href: '/documents',
   },
   {
     title: 'HR',
