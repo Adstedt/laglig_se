@@ -481,7 +481,8 @@ export function GroupedDocumentListTable({
           </div>
 
           {/* Drag overlay - show dragged item info */}
-          <DragOverlay>
+          {/* dropAnimation={null} prevents the "return to origin" ghost effect on drop */}
+          <DragOverlay dropAnimation={null}>
             {activeItem && (
               <div className="bg-background border rounded-md p-3 shadow-lg opacity-90">
                 <span className="font-medium text-sm">
