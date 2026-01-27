@@ -2,22 +2,38 @@
 
 /**
  * Story 6.3: Left Panel
- * Scrollable panel with law header, lagtext, business context, and activity tabs
+ * Story 6.15: Added TasksAccordion for bidirectional task linking
+ * Scrollable panel with law header, lagtext, business context, tasks, and activity tabs
  */
 
 import { Accordion } from '@/components/ui/accordion'
 import { LawHeader } from './law-header'
 import { LagtextSection } from './lagtext-section'
 import { BusinessContext } from './business-context'
+import { TasksAccordion } from './tasks-accordion'
 import { ActivityTabs } from './activity-tabs'
-import type { ListItemDetails } from '@/app/actions/legal-document-modal'
+import type {
+  ListItemDetails,
+  TaskProgress,
+} from '@/app/actions/legal-document-modal'
 
 interface LeftPanelProps {
   listItem: ListItemDetails
   isLoadingContent?: boolean
+  taskProgress?: TaskProgress | null
+  onTasksUpdate?: () => Promise<void>
+  onOpenTask?: ((_taskId: string) => void) | undefined
+  currentUserId?: string | undefined
 }
 
-export function LeftPanel({ listItem, isLoadingContent }: LeftPanelProps) {
+export function LeftPanel({
+  listItem,
+  isLoadingContent,
+  taskProgress,
+  onTasksUpdate,
+  onOpenTask,
+  currentUserId,
+}: LeftPanelProps) {
   return (
     <div className="p-6 space-y-4">
       {/* Law Header */}
@@ -26,10 +42,10 @@ export function LeftPanel({ listItem, isLoadingContent }: LeftPanelProps) {
         aiCommentary={listItem.aiCommentary}
       />
 
-      {/* Lagtext and Business Context Accordions */}
+      {/* Lagtext, Business Context, and Tasks Accordions */}
       <Accordion
         type="multiple"
-        defaultValue={['business-context']}
+        defaultValue={['business-context', 'tasks']}
         className="space-y-2"
       >
         {/* Lagtext Section */}
@@ -47,6 +63,17 @@ export function LeftPanel({ listItem, isLoadingContent }: LeftPanelProps) {
           listItemId={listItem.id}
           initialContent={listItem.businessContext}
         />
+
+        {/* Story 6.15: Tasks Accordion */}
+        {onTasksUpdate && (
+          <TasksAccordion
+            taskProgress={taskProgress ?? null}
+            listItemId={listItem.id}
+            onTasksUpdate={onTasksUpdate}
+            onOpenTask={onOpenTask}
+            currentUserId={currentUserId}
+          />
+        )}
       </Accordion>
 
       {/* Activity Tabs */}

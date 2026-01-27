@@ -31,6 +31,8 @@ import { ExportDropdown } from './export-dropdown'
 import { ViewToggle } from './view-toggle'
 // Story 6.3: Legal Document Modal
 import { LegalDocumentModal } from './legal-document-modal'
+// Story 6.15: Task Modal for bidirectional linking
+import { TaskModal } from '@/components/features/tasks/task-modal'
 import type { InitialListItemData } from '@/lib/hooks/use-list-item-details'
 // Story 6.2: Compliance filters and search
 import {
@@ -79,6 +81,8 @@ export function DocumentListPageContent({
   const [selectedListItemId, setSelectedListItemId] = useState<string | null>(
     null
   )
+  // Story 6.15: Task modal for bidirectional linking
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
 
   // Story 6.2 Task 8 & 9: Compliance filters and search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -117,6 +121,16 @@ export function DocumentListPageContent({
       ? `?${params.toString()}`
       : window.location.pathname
     window.history.pushState(null, '', newUrl)
+  }, [])
+
+  // Story 6.15: Handle opening task modal from LegalDocumentModal
+  const handleOpenTask = useCallback((taskId: string) => {
+    setSelectedTaskId(taskId)
+  }, [])
+
+  // Story 6.15: Handle closing task modal
+  const handleCloseTaskModal = useCallback(() => {
+    setSelectedTaskId(null)
   }, [])
 
   // Story 6.2: Handle search from SearchInput component (already debounced)
@@ -788,6 +802,14 @@ export function DocumentListPageContent({
         listItemId={selectedListItemId}
         onClose={handleCloseModal}
         initialData={selectedItemInitialData}
+        workspaceMembers={workspaceMembers}
+        onOpenTask={handleOpenTask}
+      />
+
+      {/* Story 6.15: Task modal for bidirectional linking */}
+      <TaskModal
+        taskId={selectedTaskId}
+        onClose={handleCloseTaskModal}
         workspaceMembers={workspaceMembers}
       />
     </div>

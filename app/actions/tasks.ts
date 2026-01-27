@@ -1889,6 +1889,94 @@ export async function getLawListItemsForLinking(
   }
 }
 
+// ============================================================================
+// Story 6.15: Get Tasks for Linking (from Law List Item side)
+// ============================================================================
+
+export interface TaskForLinking {
+  id: string
+  title: string
+  priority: TaskPriority
+  column: {
+    name: string
+    color: string
+    is_done: boolean
+  }
+  assignee: {
+    id: string
+    name: string | null
+    avatar_url: string | null
+  } | null
+}
+
+/**
+ * Get workspace tasks for linking to law list items
+ * Story 6.15: Used by TasksSummaryBox link existing dialog
+ * @param excludeLinkedTo - Optional list item ID to exclude already-linked tasks
+ * @param query - Optional search query to filter tasks
+ */
+export async function getTasksForLinking(
+  excludeLinkedTo?: string,
+  query?: string
+): Promise<ActionResult<TaskForLinking[]>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      // Build where clause
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const whereClause: any = {
+        workspace_id: workspaceId,
+      }
+
+      // Exclude tasks already linked to this list item
+      if (excludeLinkedTo) {
+        whereClause.NOT = {
+          list_item_links: {
+            some: { law_list_item_id: excludeLinkedTo },
+          },
+        }
+      }
+
+      // Add search filter
+      if (query && query.length > 0) {
+        whereClause.title = { contains: query, mode: 'insensitive' }
+      }
+
+      const tasks = await prisma.task.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          title: true,
+          priority: true,
+          column: {
+            select: {
+              name: true,
+              color: true,
+              is_done: true,
+            },
+          },
+          assignee: {
+            select: {
+              id: true,
+              name: true,
+              avatar_url: true,
+            },
+          },
+        },
+        orderBy: { updated_at: 'desc' },
+        take: 50,
+      })
+
+      return { success: true, data: tasks }
+    })
+  } catch (error) {
+    console.error('getTasksForLinking error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
 /**
  * Search law list items for linking to tasks
  * Story 6.7: Used by the law-link-selector component (legacy flat search)
