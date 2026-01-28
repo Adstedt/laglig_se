@@ -7,7 +7,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Sparkles } from 'lucide-react'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 
 interface QuickLinksBoxProps {
   onAiChatToggle: () => void
@@ -27,8 +27,8 @@ export function QuickLinksBox({ onAiChatToggle }: QuickLinksBoxProps) {
           className="w-full justify-start gap-2"
           onClick={onAiChatToggle}
         >
-          <Sparkles className="h-4 w-4 text-primary" />
-          Fråga AI om uppgiften
+          <LexaIcon size={16} />
+          Fråga Lexa om uppgiften
         </Button>
       </CardContent>
     </Card>

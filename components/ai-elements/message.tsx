@@ -8,7 +8,8 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { User, Sparkles } from 'lucide-react'
+import { User } from 'lucide-react'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 
 interface MessageProps {
   from: 'user' | 'assistant' | 'system'
@@ -65,7 +66,7 @@ function MessageAvatar({ from }: { from: 'user' | 'assistant' | 'system' }) {
         {from === 'user' ? (
           <User className="h-4 w-4" />
         ) : (
-          <Sparkles className="h-4 w-4 text-primary" />
+          <LexaIcon size={16} />
         )}
       </AvatarFallback>
     </Avatar>

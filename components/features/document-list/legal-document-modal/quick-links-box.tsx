@@ -7,7 +7,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ExternalLink, MessageSquare } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 import Link from 'next/link'
 
 interface QuickLinksBoxProps {
@@ -67,8 +68,8 @@ export function QuickLinksBox({
             className="w-full justify-start"
             onClick={onAiChatToggle}
           >
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Fråga AI om lagen
+            <LexaIcon size={16} className="mr-2" />
+            Fråga Lexa om lagen
           </Button>
         ) : (
           <Button
@@ -80,8 +81,8 @@ export function QuickLinksBox({
             <Link
               href={`/ai-chat?context=${encodeURIComponent(documentNumber)}`}
             >
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Fråga AI om lagen
+              <LexaIcon size={16} className="mr-2" />
+              Fråga Lexa om lagen
             </Link>
           </Button>
         )}

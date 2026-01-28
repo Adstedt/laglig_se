@@ -5,6 +5,7 @@
  * Breadcrumb navigation, share/actions buttons, and close button
  */
 
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -21,8 +22,8 @@ import {
   ExternalLink,
   Copy,
   Printer,
-  Sparkles,
 } from 'lucide-react'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 import { toast } from 'sonner'
 
 interface ModalHeaderProps {
@@ -87,10 +88,10 @@ export function ModalHeader({
           variant={aiChatOpen ? 'secondary' : 'ghost'}
           size="sm"
           onClick={onAiChatToggle}
-          className="h-8 px-2 hidden lg:flex"
-          title={aiChatOpen ? 'Stäng AI Chat' : 'Öppna AI Chat'}
+          className={cn('h-8 px-2 hidden lg:flex', aiChatOpen && 'bg-muted/80')}
+          title={aiChatOpen ? 'Stäng Lexa' : 'Öppna Lexa'}
         >
-          <Sparkles className="h-4 w-4" />
+          <LexaIcon size={16} />
         </Button>
 
         {/* Share button */}

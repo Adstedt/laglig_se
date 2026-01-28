@@ -6,7 +6,8 @@
  */
 
 import { useEffect } from 'react'
-import { X, Sparkles } from 'lucide-react'
+import { X } from 'lucide-react'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -59,11 +60,9 @@ export function ChatModal({ isOpen, onClose }: ChatModalProps) {
         <DialogHeader className="flex flex-row items-center justify-between border-b px-4 py-3 space-y-0">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <LexaIcon size={16} />
             </div>
-            <DialogTitle className="text-sm font-medium">
-              AI Assistent
-            </DialogTitle>
+            <DialogTitle className="text-sm font-medium">Lexa</DialogTitle>
           </div>
           <Button
             variant="ghost"
@@ -113,7 +112,7 @@ function MobileEmptyState() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mb-4">
-        <Sparkles className="h-8 w-8 text-primary" />
+        <LexaIcon size={32} />
       </div>
       <h3 className="text-base font-medium mb-1">Hur kan jag hjälpa dig?</h3>
       <p className="text-sm text-muted-foreground max-w-[280px]">

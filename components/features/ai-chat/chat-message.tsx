@@ -7,6 +7,7 @@
 
 import type { UIMessage } from 'ai'
 import { User } from 'lucide-react'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 import { CitationTooltip } from './citation-tooltip'
 import { MessageActions } from './message-actions'
 import { parseCitations, type Citation } from '@/lib/ai/citations'
@@ -43,13 +44,7 @@ export function ChatMessage({
             : 'bg-muted border border-border'
         )}
       >
-        {isUser ? (
-          <User className="h-3.5 w-3.5" />
-        ) : (
-          <span className="text-[10px] font-semibold text-muted-foreground">
-            AI
-          </span>
-        )}
+        {isUser ? <User className="h-3.5 w-3.5" /> : <LexaIcon size={14} />}
       </div>
 
       {/* Message content */}

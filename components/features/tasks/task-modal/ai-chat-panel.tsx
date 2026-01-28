@@ -44,10 +44,11 @@ export function AiChatPanel({
         }}
         analyticsLocation="task_modal"
         onClose={onClose}
-        title="AI Assistent"
+        title="Lexa"
         subtitle="Fråga om uppgiften"
-        emptyStateTitle="Fråga AI om uppgiften"
-        emptyStateDescription={`AI:n kan hjälpa dig med "${taskTitle.length > 30 ? taskTitle.substring(0, 30) + '...' : taskTitle}"`}
+        showHeader={false}
+        emptyStateTitle="Fråga Lexa om uppgiften"
+        emptyStateDescription={`Lexa kan hjälpa dig med "${taskTitle.length > 30 ? taskTitle.substring(0, 30) + '...' : taskTitle}"`}
         suggestedQuestions={TASK_SUGGESTED_QUESTIONS}
         className="border-0"
       />
