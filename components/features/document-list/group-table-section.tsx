@@ -2,6 +2,7 @@
 
 /**
  * Story 6.14: GroupTableSection component
+ * Story 6.17: Added compliance and priority indicators to group headers
  * Collapsible accordion section containing a DocumentListTable for a single group.
  * Header is a drop target for cross-group drag-and-drop.
  */
@@ -13,8 +14,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { ChevronDown, ChevronRight, Folder, FolderX } from 'lucide-react'
 import { DocumentListTable } from './document-list-table'
+import { GroupComplianceIndicator } from './group-compliance-indicator'
 import type {
   DocumentListItem,
   ListGroupSummary,
@@ -204,6 +207,13 @@ export const GroupTableSection = memo(function GroupTableSection({
             <span className="font-medium flex-1 text-left text-sm sm:text-base">
               {name}
             </span>
+          )}
+
+          {/* Story 6.17: Compliance progress indicator */}
+          {items.length > 0 && (
+            <TooltipProvider delayDuration={300}>
+              <GroupComplianceIndicator items={items} />
+            </TooltipProvider>
           )}
 
           {/* Item count badge */}
