@@ -564,6 +564,7 @@ export async function getTasksForListItem(
       }
 
       // Try to fetch tasks - graceful fallback if Task model doesn't exist
+      // Story 6.15: Removed limits to show all linked tasks in accordion
       try {
         const tasks = await prisma.task.findMany({
           where: {
@@ -574,7 +575,6 @@ export async function getTasksForListItem(
             assignee: { select: { name: true, avatar_url: true } },
           },
           orderBy: { position: 'asc' },
-          take: 10,
         })
 
         const completed = tasks.filter((t) => t.column.is_done).length
@@ -584,7 +584,7 @@ export async function getTasksForListItem(
           data: {
             completed,
             total: tasks.length,
-            tasks: tasks.slice(0, 5).map((t) => ({
+            tasks: tasks.map((t) => ({
               id: t.id,
               title: t.title,
               columnName: t.column.name,
