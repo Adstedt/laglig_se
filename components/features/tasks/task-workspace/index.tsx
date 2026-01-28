@@ -143,8 +143,8 @@ export function TaskWorkspace({
         layout="standard"
         tabs={<TabNavigation currentTab={currentTab} />}
         primaryAction={
-          <Button size="sm" onClick={() => setCreateTaskModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
+          <Button onClick={() => setCreateTaskModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
             Ny uppgift
           </Button>
         }
