@@ -2,6 +2,7 @@
 
 /**
  * Story 4.13: Grouped Document List (Card View with Accordion)
+ * Story 6.17: Added compliance and priority indicators to group headers
  * Displays documents grouped into collapsible accordion sections.
  * Items can be dragged between groups.
  */
@@ -33,6 +34,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import {
   ChevronDown,
@@ -48,6 +50,7 @@ import {
 import { DocumentListCard } from './document-list-card'
 import { DocumentListGridSkeleton } from './document-list-skeleton'
 import { RemoveConfirmation } from './remove-confirmation'
+import { GroupComplianceIndicator } from './group-compliance-indicator'
 import type {
   DocumentListItem,
   ListGroupSummary,
@@ -567,6 +570,13 @@ const GroupAccordion = memo(function GroupAccordion({
             <span className="font-medium flex-1 text-left text-sm sm:text-base">
               {name}
             </span>
+          )}
+
+          {/* Story 6.17: Compliance progress indicator */}
+          {items.length > 0 && (
+            <TooltipProvider delayDuration={300}>
+              <GroupComplianceIndicator items={items} />
+            </TooltipProvider>
           )}
 
           {/* Item count badge - simplified on mobile */}
