@@ -11,6 +11,7 @@ import { Suspense, useState, useCallback, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { UnifiedToolbar } from '@/components/ui/unified-toolbar'
 import { TabNavigation, type TaskTab } from './tab-navigation'
 import { SummaryTab } from './summary-tab'
 import { KanbanTab } from './kanban-tab'
@@ -137,18 +138,17 @@ export function TaskWorkspace({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Story 6.7: Header with "Ny uppgift" button and Tab Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <TabNavigation currentTab={currentTab} />
-        <Button
-          size="sm"
-          onClick={() => setCreateTaskModalOpen(true)}
-          className="self-start sm:self-auto"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Ny uppgift
-        </Button>
-      </div>
+      {/* Story 6.7: Header with Tab Navigation and "Ny uppgift" button */}
+      <UnifiedToolbar
+        layout="standard"
+        tabs={<TabNavigation currentTab={currentTab} />}
+        primaryAction={
+          <Button size="sm" onClick={() => setCreateTaskModalOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            Ny uppgift
+          </Button>
+        }
+      />
 
       {/* Tab Content */}
       <Suspense fallback={<WorkspaceSkeleton tab={currentTab} />}>
