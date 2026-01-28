@@ -46,6 +46,10 @@ import { FilterEmptyState } from './filter-empty-state'
 import { SearchInput } from './search-input'
 import { ColumnSettings } from './column-settings'
 import { Button } from '@/components/ui/button'
+import {
+  UnifiedToolbar,
+  ToolbarItemCount,
+} from '@/components/ui/unified-toolbar'
 import { Plus, Settings, FolderPlus } from 'lucide-react'
 import type {
   DocumentListSummary,
@@ -637,19 +641,61 @@ export function DocumentListPageContent({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header row with list switcher and actions */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <DocumentListSwitcher
-          lists={lists}
-          activeListId={activeListId}
-          onSelectList={handleListChange}
-          onCreateList={handleCreateList}
-          isLoading={isLoadingLists}
-        />
-
-        <div className="flex items-center gap-2">
-          <ViewToggle value={viewMode} onChange={setViewMode} />
-
+      {/* Unified Toolbar - Complex layout with two rows */}
+      <UnifiedToolbar
+        layout="complex"
+        // Zone A: Context
+        contextSelector={
+          <DocumentListSwitcher
+            lists={lists}
+            activeListId={activeListId}
+            onSelectList={handleListChange}
+            onCreateList={handleCreateList}
+            isLoading={isLoadingLists}
+          />
+        }
+        // Zone B: Filters
+        filterChips={
+          <ContentTypeFilter
+            activeFilter={contentTypeFilter}
+            onFilterChange={setContentTypeGroupFilter}
+          />
+        }
+        activeFilters={
+          activeGroupFilterInfo && (
+            <GroupFilterChip
+              groupName={activeGroupFilterInfo.name}
+              onClear={handleClearGroupFilter}
+            />
+          )
+        }
+        search={
+          <SearchInput
+            initialValue={searchParams.get('q') ?? ''}
+            onSearch={handleSearch}
+            placeholder="Sök..."
+          />
+        }
+        filterDropdowns={
+          <ComplianceFilters
+            filters={complianceFilters}
+            onFiltersChange={setComplianceFilters}
+            workspaceMembers={workspaceMembers}
+            categories={categories}
+          />
+        }
+        // Zone C: View Controls
+        viewToggle={<ViewToggle value={viewMode} onChange={setViewMode} />}
+        columnSettings={
+          viewMode === 'table' && (
+            <ColumnSettings
+              columnVisibility={columnVisibility}
+              onColumnVisibilityChange={setColumnVisibility}
+            />
+          )
+        }
+        // Zone D: Actions
+        primaryAction={
           <Button
             onClick={() => setIsAddModalOpen(true)}
             disabled={!activeListId}
@@ -657,23 +703,26 @@ export function DocumentListPageContent({
             <Plus className="mr-2 h-4 w-4" />
             Lägg till dokument
           </Button>
-
-          <ExportDropdown
-            listId={activeListId}
-            listName={activeList?.name ?? 'lista'}
-            disabled={!activeListId || listItems.length === 0}
-          />
-
-          <Button
-            variant="outline"
-            onClick={() => setIsGroupManagerOpen(true)}
-            disabled={!activeListId}
-            title="Hantera grupper"
-          >
-            <FolderPlus className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Grupper</span>
-          </Button>
-
+        }
+        secondaryActions={
+          <>
+            <ExportDropdown
+              listId={activeListId}
+              listName={activeList?.name ?? 'lista'}
+              disabled={!activeListId || listItems.length === 0}
+            />
+            <Button
+              variant="outline"
+              onClick={() => setIsGroupManagerOpen(true)}
+              disabled={!activeListId}
+              title="Hantera grupper"
+            >
+              <FolderPlus className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Grupper</span>
+            </Button>
+          </>
+        }
+        settingsAction={
           <Button
             variant="outline"
             size="icon"
@@ -683,58 +732,25 @@ export function DocumentListPageContent({
           >
             <Settings className="h-4 w-4" />
           </Button>
-        </div>
-      </div>
-
-      {/* Filters row: Content type pills (left) + Search, filters, columns (right) */}
-      <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <ContentTypeFilter
-            activeFilter={contentTypeFilter}
-            onFilterChange={setContentTypeGroupFilter}
-          />
-          {activeGroupFilterInfo && (
-            <GroupFilterChip
-              groupName={activeGroupFilterInfo.name}
-              onClear={handleClearGroupFilter}
+        }
+        // Between rows: Document count for flat table view
+        betweenRows={
+          viewMode === 'table' &&
+          (groups.length === 0 || hasFiltersOrSearch || activeGroupFilter) && (
+            <ToolbarItemCount
+              showing={
+                hasFiltersOrSearch
+                  ? filteredAndSearchedItems.length
+                  : activeGroupFilter
+                    ? filteredItems.length
+                    : listItems.length
+              }
+              total={total}
+              label="dokument"
             />
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <SearchInput
-            initialValue={searchParams.get('q') ?? ''}
-            onSearch={handleSearch}
-            placeholder="Sök..."
-          />
-          <ComplianceFilters
-            filters={complianceFilters}
-            onFiltersChange={setComplianceFilters}
-            workspaceMembers={workspaceMembers}
-            categories={categories}
-          />
-          {viewMode === 'table' && (
-            <ColumnSettings
-              columnVisibility={columnVisibility}
-              onColumnVisibilityChange={setColumnVisibility}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Document count - only for flat table view (grouped views show their own) */}
-      {viewMode === 'table' &&
-        (groups.length === 0 || hasFiltersOrSearch || activeGroupFilter) && (
-          <p className="text-sm text-muted-foreground">
-            Visar{' '}
-            {hasFiltersOrSearch
-              ? filteredAndSearchedItems.length
-              : activeGroupFilter
-                ? filteredItems.length
-                : listItems.length}{' '}
-            av {total} dokument.
-          </p>
-        )}
+          )
+        }
+      />
 
       {/* Error message */}
       {error && (
