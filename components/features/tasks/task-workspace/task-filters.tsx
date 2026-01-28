@@ -135,15 +135,17 @@ export function TaskFilters({
                   checked={statusFilter.includes(col.name)}
                   onCheckedChange={() => handleStatusToggle(col.name)}
                 />
-                <span
-                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                <Badge
+                  variant="outline"
+                  className="font-medium"
                   style={{
-                    backgroundColor: `${col.color}20`,
+                    borderColor: col.color,
+                    backgroundColor: `${col.color}15`,
                     color: col.color,
                   }}
                 >
                   {col.name}
-                </span>
+                </Badge>
               </label>
             ))}
           </div>

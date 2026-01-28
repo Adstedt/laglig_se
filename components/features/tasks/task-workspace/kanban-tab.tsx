@@ -233,20 +233,25 @@ export function KanbanTab({
         onDragEnd={handleDragEnd}
       >
         <div className="flex gap-4 overflow-x-auto pb-4">
-          {columns.map((column) => (
-            <KanbanColumn
-              key={column.id}
-              column={column}
-              tasks={getColumnTasks(column.id)}
-              onTaskClick={onTaskClick}
-              onTaskCreated={(newTask) => {
-                // Update local state for immediate display
-                setTasks((prev) => [...prev, newTask])
-                // Also notify parent for cross-tab sync
-                onTaskCreated?.(newTask)
-              }}
-            />
-          ))}
+          {columns
+            .filter(
+              (column) =>
+                statusFilter.length === 0 || statusFilter.includes(column.name)
+            )
+            .map((column) => (
+              <KanbanColumn
+                key={column.id}
+                column={column}
+                tasks={getColumnTasks(column.id)}
+                onTaskClick={onTaskClick}
+                onTaskCreated={(newTask) => {
+                  // Update local state for immediate display
+                  setTasks((prev) => [...prev, newTask])
+                  // Also notify parent for cross-tab sync
+                  onTaskCreated?.(newTask)
+                }}
+              />
+            ))}
         </div>
 
         <DragOverlay>
