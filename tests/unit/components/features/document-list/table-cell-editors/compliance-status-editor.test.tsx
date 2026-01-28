@@ -1,11 +1,15 @@
 /**
  * Story 6.2: ComplianceStatusEditor Component Tests
+ * Story 6.16: Updated for "Delvis uppfylld" label and tooltip tests
  */
 
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ComplianceStatusEditor } from '@/components/features/document-list/table-cell-editors/compliance-status-editor'
+import {
+  ComplianceStatusEditor,
+  COMPLIANCE_STATUS_OPTIONS,
+} from '@/components/features/document-list/table-cell-editors/compliance-status-editor'
 
 describe('ComplianceStatusEditor', () => {
   it('renders current compliance status value', () => {
@@ -24,9 +28,9 @@ describe('ComplianceStatusEditor', () => {
     const trigger = screen.getByRole('combobox')
     await user.click(trigger)
 
-    // Check all options are present
+    // Check all options are present (Story 6.16: "Pågående" renamed to "Delvis uppfylld")
     await waitFor(() => {
-      expect(screen.getByText('Pågående')).toBeInTheDocument()
+      expect(screen.getByText('Delvis uppfylld')).toBeInTheDocument()
       expect(screen.getByText('Uppfylld')).toBeInTheDocument()
       expect(screen.getByText('Ej uppfylld')).toBeInTheDocument()
       expect(screen.getByText('Ej tillämplig')).toBeInTheDocument()
@@ -111,9 +115,10 @@ describe('ComplianceStatusEditor', () => {
   })
 
   it('displays correct color badge for compliance statuses', () => {
+    // Story 6.16: Updated PAGAENDE label from "Pågående" to "Delvis uppfylld"
     const statuses = [
       { value: 'EJ_PABORJAD', label: 'Ej påbörjad' },
-      { value: 'PAGAENDE', label: 'Pågående' },
+      { value: 'PAGAENDE', label: 'Delvis uppfylld' },
       { value: 'UPPFYLLD', label: 'Uppfylld' },
       { value: 'EJ_UPPFYLLD', label: 'Ej uppfylld' },
       { value: 'EJ_TILLAMPLIG', label: 'Ej tillämplig' },
@@ -133,5 +138,65 @@ describe('ComplianceStatusEditor', () => {
 
     const badge = screen.getByText('Ej tillämplig')
     expect(badge).toHaveClass('line-through')
+  })
+})
+
+// Story 6.16: Label Update Tests
+describe('ComplianceStatusEditor - Label Update (Story 6.16)', () => {
+  it('renders "Delvis uppfylld" for PAGAENDE value', () => {
+    render(<ComplianceStatusEditor value="PAGAENDE" onChange={vi.fn()} />)
+    expect(screen.getByText('Delvis uppfylld')).toBeInTheDocument()
+  })
+
+  it('does not render "Pågående" anywhere', async () => {
+    const user = userEvent.setup()
+    render(<ComplianceStatusEditor value="EJ_PABORJAD" onChange={vi.fn()} />)
+
+    // Check trigger doesn't have old label
+    expect(screen.queryByText('Pågående')).not.toBeInTheDocument()
+
+    // Open dropdown and check options
+    const trigger = screen.getByRole('combobox')
+    await user.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByText('Delvis uppfylld')).toBeInTheDocument()
+    })
+
+    // Old label should not be present
+    expect(screen.queryByText('Pågående')).not.toBeInTheDocument()
+  })
+})
+
+// Story 6.16: Tooltip Configuration Tests
+describe('ComplianceStatusEditor - Tooltips (Story 6.16)', () => {
+  it('COMPLIANCE_STATUS_OPTIONS has tooltip field for all statuses', () => {
+    expect(COMPLIANCE_STATUS_OPTIONS).toHaveLength(5)
+
+    for (const option of COMPLIANCE_STATUS_OPTIONS) {
+      expect(option).toHaveProperty('tooltip')
+      expect(typeof option.tooltip).toBe('string')
+      expect(option.tooltip.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('has correct Swedish tooltip texts', () => {
+    const expectedTooltips: Record<string, string> = {
+      EJ_PABORJAD: 'Inga rutiner eller dokumentation finns på plats',
+      PAGAENDE: 'Vissa krav är uppfyllda, men åtgärder eller underlag saknas',
+      UPPFYLLD: 'Kraven bedöms vara uppfyllda i nuläget',
+      EJ_UPPFYLLD: 'Kraven är kända men inte uppfyllda',
+      EJ_TILLAMPLIG: 'Kravet bedöms inte vara tillämpligt för verksamheten',
+    }
+
+    for (const option of COMPLIANCE_STATUS_OPTIONS) {
+      expect(option.tooltip).toBe(expectedTooltips[option.value])
+    }
+  })
+
+  it('COMPLIANCE_STATUS_OPTIONS is exported for reuse', () => {
+    // Verify the constant is exported and can be imported
+    expect(COMPLIANCE_STATUS_OPTIONS).toBeDefined()
+    expect(Array.isArray(COMPLIANCE_STATUS_OPTIONS)).toBe(true)
   })
 })

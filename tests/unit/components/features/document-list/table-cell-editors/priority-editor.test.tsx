@@ -1,11 +1,15 @@
 /**
  * Story 4.12: PriorityEditor Component Tests
+ * Story 6.16: Added tooltip tests
  */
 
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { PriorityEditor } from '@/components/features/document-list/table-cell-editors/priority-editor'
+import {
+  PriorityEditor,
+  PRIORITY_OPTIONS,
+} from '@/components/features/document-list/table-cell-editors/priority-editor'
 
 describe('PriorityEditor', () => {
   it('renders current priority value', () => {
@@ -125,6 +129,49 @@ describe('PriorityEditor', () => {
       // Badge should exist with expected styling
       expect(container.querySelector('span')).toBeInTheDocument()
       unmount()
+    }
+  })
+})
+
+// Story 6.16: Tooltip Configuration Tests
+describe('PriorityEditor - Tooltips (Story 6.16)', () => {
+  it('PRIORITY_OPTIONS has tooltip field for all priorities', () => {
+    expect(PRIORITY_OPTIONS).toHaveLength(3)
+
+    for (const option of PRIORITY_OPTIONS) {
+      expect(option).toHaveProperty('tooltip')
+      expect(typeof option.tooltip).toBe('string')
+      expect(option.tooltip.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('has correct Swedish tooltip texts', () => {
+    const expectedTooltips: Record<string, string> = {
+      LOW: 'Begränsad risk eller låg påverkan vid bristande efterlevnad',
+      MEDIUM: 'Måttlig risk som kan påverka verksamheten eller kräva åtgärder',
+      HIGH: 'Hög risk med allvarliga konsekvenser, till exempel sanktioner, vite eller personansvar',
+    }
+
+    for (const option of PRIORITY_OPTIONS) {
+      expect(option.tooltip).toBe(expectedTooltips[option.value])
+    }
+  })
+
+  it('PRIORITY_OPTIONS is exported for reuse', () => {
+    // Verify the constant is exported and can be imported
+    expect(PRIORITY_OPTIONS).toBeDefined()
+    expect(Array.isArray(PRIORITY_OPTIONS)).toBe(true)
+  })
+
+  it('has correct labels (Swedish)', () => {
+    const expectedLabels: Record<string, string> = {
+      LOW: 'Låg',
+      MEDIUM: 'Medel',
+      HIGH: 'Hög',
+    }
+
+    for (const option of PRIORITY_OPTIONS) {
+      expect(option.label).toBe(expectedLabels[option.value])
     }
   })
 })

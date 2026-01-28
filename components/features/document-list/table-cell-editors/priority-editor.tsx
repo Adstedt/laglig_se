@@ -2,6 +2,7 @@
 
 /**
  * Story 4.12: Inline Priority Editor for Table View
+ * Story 6.16: Added tooltips for each priority option
  */
 
 import { useState } from 'react'
@@ -11,18 +12,41 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Loader2 } from 'lucide-react'
 import type { LawListItemPriority } from '@prisma/client'
 import { cn } from '@/lib/utils'
 
-const PRIORITY_OPTIONS: {
+export const PRIORITY_OPTIONS: {
   value: LawListItemPriority
   label: string
   color: string
+  tooltip: string
 }[] = [
-  { value: 'LOW', label: 'Låg', color: 'bg-slate-100 text-slate-700' },
-  { value: 'MEDIUM', label: 'Medel', color: 'bg-amber-100 text-amber-700' },
-  { value: 'HIGH', label: 'Hög', color: 'bg-rose-100 text-rose-700' },
+  {
+    value: 'LOW',
+    label: 'Låg',
+    color: 'bg-slate-100 text-slate-700',
+    tooltip: 'Begränsad risk eller låg påverkan vid bristande efterlevnad',
+  },
+  {
+    value: 'MEDIUM',
+    label: 'Medel',
+    color: 'bg-amber-100 text-amber-700',
+    tooltip: 'Måttlig risk som kan påverka verksamheten eller kräva åtgärder',
+  },
+  {
+    value: 'HIGH',
+    label: 'Hög',
+    color: 'bg-rose-100 text-rose-700',
+    tooltip:
+      'Hög risk med allvarliga konsekvenser, till exempel sanktioner, vite eller personansvar',
+  },
 ]
 
 interface PriorityEditorProps {
@@ -66,18 +90,27 @@ export function PriorityEditor({ value, onChange }: PriorityEditorProps) {
         )}
       </SelectTrigger>
       <SelectContent>
-        {PRIORITY_OPTIONS.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            <span
-              className={cn(
-                'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                option.color
-              )}
-            >
-              {option.label}
-            </span>
-          </SelectItem>
-        ))}
+        <TooltipProvider delayDuration={300}>
+          {PRIORITY_OPTIONS.map((option) => (
+            <Tooltip key={option.value}>
+              <TooltipTrigger asChild>
+                <SelectItem value={option.value}>
+                  <span
+                    className={cn(
+                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                      option.color
+                    )}
+                  >
+                    {option.label}
+                  </span>
+                </SelectItem>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-[250px]">
+                <p>{option.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </TooltipProvider>
       </SelectContent>
     </Select>
   )

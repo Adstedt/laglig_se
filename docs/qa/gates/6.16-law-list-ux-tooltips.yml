@@ -1,0 +1,50 @@
+# Quality Gate: Story 6.16 - Law List UX Tooltips
+schema: 1
+story: '6.16'
+story_title: 'Law List UX Tooltips — Efterlevnad & Prioritet Clarity'
+gate: PASS
+status_reason: 'All 7 acceptance criteria fully implemented with correct Swedish localization, comprehensive test coverage (42 tests), and clean code following established patterns.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-01-28T21:35:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-02-11T21:35:00Z'
+
+evidence:
+  tests_reviewed: 42
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No security concerns - read-only UI enhancements with no data mutations or auth changes'
+  performance:
+    status: PASS
+    notes: 'Tooltips use delayDuration, scoped TooltipProviders, simple conditional logic for high-risk indicator'
+  reliability:
+    status: PASS
+    notes: 'Optimistic UI patterns with proper state sync, error boundaries in place for cell editors'
+  maintainability:
+    status: PASS
+    notes: 'Clean implementation following existing patterns, reusable ColumnHeaderWithTooltip component, well-structured tests'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Extract ColumnHeaderWithTooltip to separate file for broader reuse'
+      refs: ['components/features/document-list/document-list-table.tsx:986-1049']
+    - action: 'Consolidate tooltip content constants to shared file (minor DRY improvement)'
+      refs: ['document-list-table.tsx:103-120', 'details-box.tsx:122-139']
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 0 }
+  recommendations:
+    must_fix: []
+    monitor: []
