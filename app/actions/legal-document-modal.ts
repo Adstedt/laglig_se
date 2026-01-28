@@ -22,6 +22,7 @@ export interface ListItemDetails {
   id: string
   position: number
   complianceStatus: ComplianceStatus
+  priority: 'LOW' | 'MEDIUM' | 'HIGH'
   businessContext: string | null
   aiCommentary: string | null
   category: string | null
@@ -109,6 +110,11 @@ const UpdateResponsibleSchema = z.object({
   userId: z.string().uuid().nullable(),
 })
 
+const UpdatePrioritySchema = z.object({
+  listItemId: z.string().uuid(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH']),
+})
+
 // ============================================================================
 // Get List Item Details
 // ============================================================================
@@ -145,6 +151,7 @@ async function fetchListItemDetailsInternal(
           id: parsed.id,
           position: parsed.position,
           complianceStatus: parsed.compliance_status,
+          priority: parsed.priority || 'MEDIUM',
           businessContext: parsed.business_context,
           aiCommentary: parsed.ai_commentary,
           category: parsed.category,
@@ -257,6 +264,7 @@ async function fetchListItemDetailsInternal(
     id: item.id,
     position: item.position,
     complianceStatus: item.compliance_status,
+    priority: item.priority,
     businessContext: item.business_context,
     aiCommentary: item.ai_commentary,
     category: item.category,
@@ -431,6 +439,58 @@ export async function updateListItemComplianceStatus(
   } catch (error) {
     console.error('Error updating compliance status:', error)
     return { success: false, error: 'Kunde inte uppdatera status' }
+  }
+}
+
+// ============================================================================
+// Update Priority
+// ============================================================================
+
+/**
+ * Update the priority for a list item
+ */
+export async function updateListItemPriority(
+  listItemId: string,
+  priority: 'LOW' | 'MEDIUM' | 'HIGH'
+): Promise<ActionResult> {
+  try {
+    const parsed = UpdatePrioritySchema.safeParse({ listItemId, priority })
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
+    }
+
+    return await withWorkspace(async (ctx) => {
+      // Verify item belongs to workspace
+      const item = await prisma.lawListItem.findFirst({
+        where: { id: listItemId },
+        include: { law_list: { select: { workspace_id: true } } },
+      })
+
+      if (!item || item.law_list.workspace_id !== ctx.workspaceId) {
+        return { success: false, error: 'Laglistpost hittades inte' }
+      }
+
+      await prisma.lawListItem.update({
+        where: { id: listItemId },
+        data: { priority },
+      })
+
+      // Invalidate Redis cache for this list item
+      try {
+        await redis.del(`list-item-details:${listItemId}`)
+      } catch {
+        // Cache invalidation error - non-critical
+      }
+
+      revalidatePath('/laglistor')
+      return { success: true }
+    }, 'tasks:edit')
+  } catch (error) {
+    console.error('Error updating priority:', error)
+    return { success: false, error: 'Kunde inte uppdatera prioritet' }
   }
 }
 

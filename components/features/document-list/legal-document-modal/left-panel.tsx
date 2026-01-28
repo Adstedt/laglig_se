@@ -47,6 +47,8 @@ export function LeftPanel({
       <LawHeader
         title={listItem.legalDocument.title}
         aiCommentary={listItem.aiCommentary}
+        complianceStatus={listItem.complianceStatus}
+        priority={listItem.priority}
       />
 
       {/* Lagtext, Business Context, and Tasks Accordions */}
