@@ -213,7 +213,8 @@
       "WebFetch(domain:sdk.vercel.ai)",
       "WebFetch(domain:ai-sdk.dev)",
       "Bash(cmd //c \"taskkill /PID 16488 /F\")",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []

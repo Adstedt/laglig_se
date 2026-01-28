@@ -519,6 +519,80 @@ This supports organizations with multiple facilities, departments, or compliance
 
 ---
 
+## Story 6.14: Grouped Accordion Table View
+
+**As a** user with many laws in my list,
+**I want** to view documents grouped into collapsible accordion sections in table view,
+**so that** I can organize and navigate large lists more efficiently.
+
+**Implementation Note:** Extends Story 4.13 (card view grouping) to table view with GroupTableSection component.
+
+**Acceptance Criteria:**
+
+1. Table view supports grouped accordion display matching card view behavior
+2. Each group header shows group name and document count
+3. Groups are collapsible/expandable with chevron toggle
+4. Cross-group drag-and-drop for moving items between groups
+5. Expand all / Collapse all actions available
+6. Group name clickable to filter to that group
+7. Mobile responsive with 44px touch targets
+
+---
+
+## Story 6.15: Bidirectional Task Linking
+
+**As a** user managing compliance tasks,
+**I want** tasks linked to list items to be visible from both the task and the list item,
+**so that** I can navigate between related compliance work items easily.
+
+**Acceptance Criteria:**
+
+1. Tasks accordion in Legal Document Modal shows linked tasks
+2. Task progress indicator in modal header
+3. Redis caching for task progress queries
+4. Bidirectional navigation between tasks and list items
+
+---
+
+## Story 6.16: Law List UX Tooltips
+
+**As a** compliance user,
+**I want** clear explanations for Efterlevnad and Prioritet columns,
+**so that** I can correctly assess compliance status and risk priority.
+
+**Acceptance Criteria:**
+
+1. Column-level tooltips for Efterlevnad and Prioritet headers
+2. Dropdown option tooltips explaining each status/priority level
+3. "Pågående" label updated to "Delvis uppfylld"
+4. Warning indicator for high-priority non-compliant items
+5. Consistent tooltips in both table and modal views
+
+---
+
+## Story 6.17: Group Compliance Overview Indicators
+
+**As a** compliance user viewing grouped law lists,
+**I want** to see aggregated compliance status and priority risk indicators in each group header,
+**so that** I can quickly assess overall compliance health and risk level per group without expanding individual sections.
+
+**Extends:** Stories 6.14 (grouped view) and 6.16 (compliance/priority UX)
+
+**Acceptance Criteria:**
+
+1. Compliance progress indicator in group header (fraction + progress bar)
+2. Progress bar color coded: green (100%), blue (50-99%), amber (1-49%), red (0%)
+3. Calculations exclude `EJ_TILLAMPLIG` items
+4. Priority risk badges showing count per level (Hög/Medel/Låg)
+5. Only show badges for non-zero priority counts
+6. Tooltips showing full breakdown for both indicators
+7. Responsive: hide priority badges on mobile, show only compliance fraction
+8. Indicators positioned between group name and document count
+9. Performance: client-side calculations with useMemo, no additional API calls
+10. Consistent display in both table and card grouped views
+
+---
+
 ## Data Model Summary
 
 ### New Tables Required
@@ -623,6 +697,6 @@ notifications
 
 ---
 
-**Epic 6 Revised: 13 stories**
+**Epic 6 Revised: 17 stories**
 
 ---

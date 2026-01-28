@@ -165,7 +165,6 @@ test.describe('Performance Fixes - Story P.1', () => {
   })
 
   test('database indexes should improve query performance', async ({
-    _page,
     request,
   }) => {
     // This test would typically be done at the API level
