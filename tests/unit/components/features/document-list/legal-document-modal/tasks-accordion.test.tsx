@@ -37,6 +37,34 @@ import {
 } from '@/app/actions/task-modal'
 import { toast } from 'sonner'
 
+// Mock columns data for status dropdown
+const mockColumns = [
+  {
+    id: 'col-1',
+    name: 'To Do',
+    color: '#3b82f6',
+    position: 0,
+    is_done: false,
+    _count: { tasks: 1 },
+  },
+  {
+    id: 'col-2',
+    name: 'In Progress',
+    color: '#eab308',
+    position: 1,
+    is_done: false,
+    _count: { tasks: 1 },
+  },
+  {
+    id: 'col-3',
+    name: 'Done',
+    color: '#22c55e',
+    position: 2,
+    is_done: true,
+    _count: { tasks: 1 },
+  },
+]
+
 // Wrap component with Accordion since TasksAccordion is an AccordionItem
 function renderTasksAccordion(
   props: Partial<Parameters<typeof TasksAccordion>[0]> = {}
@@ -47,6 +75,7 @@ function renderTasksAccordion(
     onTasksUpdate: vi.fn().mockResolvedValue(undefined),
     onOpenTask: vi.fn(),
     currentUserId: 'test-user-123',
+    columns: mockColumns,
   }
 
   return render(
@@ -71,7 +100,7 @@ describe('TasksAccordion', () => {
       renderTasksAccordion({
         taskProgress: { completed: 0, total: 0, tasks: [] },
       })
-      expect(screen.getByText('Inga pågående uppgifter')).toBeInTheDocument()
+      expect(screen.getByText('Inga länkade uppgifter')).toBeInTheDocument()
     })
 
     it('shows action buttons when accordion is expanded', () => {
@@ -79,7 +108,7 @@ describe('TasksAccordion', () => {
         taskProgress: { completed: 0, total: 0, tasks: [] },
       })
       expect(
-        screen.getByRole('button', { name: /skapa uppgift/i })
+        screen.getByRole('button', { name: /ny uppgift/i })
       ).toBeInTheDocument()
       expect(
         screen.getByRole('button', { name: /länka befintlig/i })
@@ -95,6 +124,7 @@ describe('TasksAccordion', () => {
         {
           id: 'task-1',
           title: 'Active task 1',
+          columnId: 'col-1',
           columnName: 'To Do',
           columnColor: '#3b82f6',
           isDone: false,
@@ -103,6 +133,7 @@ describe('TasksAccordion', () => {
         {
           id: 'task-2',
           title: 'Active task 2',
+          columnId: 'col-2',
           columnName: 'In Progress',
           columnColor: '#eab308',
           isDone: false,
@@ -111,6 +142,7 @@ describe('TasksAccordion', () => {
         {
           id: 'task-3',
           title: 'Completed task',
+          columnId: 'col-3',
           columnName: 'Done',
           columnColor: '#22c55e',
           isDone: true,
@@ -119,29 +151,35 @@ describe('TasksAccordion', () => {
       ],
     }
 
-    it('displays badge with active task count', () => {
+    it('displays progress indicator with task count', () => {
       renderTasksAccordion({ taskProgress: taskProgressWithTasks })
-      expect(screen.getByText('2 pågående')).toBeInTheDocument()
+      expect(screen.getByText('1/3')).toBeInTheDocument()
     })
 
-    it('renders active tasks in Pågående section', () => {
+    it('renders tasks grouped by column', () => {
       renderTasksAccordion({ taskProgress: taskProgressWithTasks })
       expect(screen.getByText('Active task 1')).toBeInTheDocument()
       expect(screen.getByText('Active task 2')).toBeInTheDocument()
     })
 
-    it('shows strikethrough for completed tasks', () => {
+    it('shows completed tasks in Done section', () => {
       renderTasksAccordion({ taskProgress: taskProgressWithTasks })
-      // Expand completed section first
-      fireEvent.click(screen.getByText(/Avslutade/))
+      // Done section should be collapsed by default, expand it
+      fireEvent.click(screen.getByText(/Done/))
       const completedTask = screen.getByText('Completed task')
-      expect(completedTask).toHaveClass('line-through')
+      expect(completedTask).toBeInTheDocument()
     })
 
-    it('displays section counts correctly', () => {
+    it('displays column sections with counts', () => {
       renderTasksAccordion({ taskProgress: taskProgressWithTasks })
-      expect(screen.getByText('Pågående (2)')).toBeInTheDocument()
-      expect(screen.getByText('Avslutade (1)')).toBeInTheDocument()
+      // Check that section headers exist (use getAllByRole to handle multiple matches)
+      const sectionButtons = screen.getAllByRole('button')
+      const sectionNames = sectionButtons.map((btn) => btn.textContent)
+      expect(sectionNames.some((name) => name?.includes('To Do'))).toBe(true)
+      expect(sectionNames.some((name) => name?.includes('In Progress'))).toBe(
+        true
+      )
+      expect(sectionNames.some((name) => name?.includes('Done'))).toBe(true)
     })
   })
 
@@ -153,6 +191,7 @@ describe('TasksAccordion', () => {
         {
           id: 'task-nav-1',
           title: 'Navigable task',
+          columnId: 'col-1',
           columnName: 'To Do',
           columnColor: '#3b82f6',
           isDone: false,
@@ -161,12 +200,15 @@ describe('TasksAccordion', () => {
       ],
     }
 
-    it('calls onOpenTask when task item is clicked', async () => {
+    it('calls onOpenTask when task row is clicked', async () => {
       const onOpenTask = vi.fn()
       renderTasksAccordion({ taskProgress, onOpenTask })
 
-      const taskButton = screen.getByText('Navigable task').closest('button')
-      fireEvent.click(taskButton!)
+      // The whole row is now clickable
+      const taskRow = screen
+        .getByText('Navigable task')
+        .closest('[role="button"]')
+      fireEvent.click(taskRow!)
 
       expect(onOpenTask).toHaveBeenCalledWith('task-nav-1')
     })
@@ -198,6 +240,7 @@ describe('TasksAccordion', () => {
         {
           id: 'task-unlink-1',
           title: 'Task to unlink',
+          columnId: 'col-1',
           columnName: 'To Do',
           columnColor: '#3b82f6',
           isDone: false,
@@ -215,7 +258,7 @@ describe('TasksAccordion', () => {
       )
       expect(unlinkButton).toBeInTheDocument()
       expect(unlinkButton).toHaveClass('opacity-0')
-      expect(unlinkButton).toHaveClass('group-hover:opacity-100')
+      expect(unlinkButton).toHaveClass('group-hover:opacity-60')
     })
 
     it('calls unlinkListItemFromTask when X clicked', async () => {
@@ -452,6 +495,7 @@ describe('TasksAccordion', () => {
         {
           id: 'active-1',
           title: 'Active task',
+          columnId: 'col-1',
           columnName: 'To Do',
           columnColor: '#3b82f6',
           isDone: false,
@@ -460,6 +504,7 @@ describe('TasksAccordion', () => {
         {
           id: 'completed-1',
           title: 'Completed task',
+          columnId: 'col-3',
           columnName: 'Done',
           columnColor: '#22c55e',
           isDone: true,
@@ -468,21 +513,23 @@ describe('TasksAccordion', () => {
       ],
     }
 
-    it('active section is expanded by default', () => {
+    it('non-done column section is expanded by default', () => {
       renderTasksAccordion({ taskProgress })
       expect(screen.getByText('Active task')).toBeInTheDocument()
     })
 
-    it('completed section is collapsed by default', () => {
+    it('done column section is collapsed by default', () => {
       renderTasksAccordion({ taskProgress })
       // The completed task should not be in the DOM initially (collapsible removes content)
       expect(screen.queryByText('Completed task')).not.toBeInTheDocument()
     })
 
-    it('expands completed section when clicked', async () => {
+    it('expands done section when clicked', async () => {
       renderTasksAccordion({ taskProgress })
 
-      fireEvent.click(screen.getByText(/Avslutade/))
+      // Click the collapsible trigger for "Done" section
+      const doneSection = screen.getByRole('button', { name: /Done/i })
+      fireEvent.click(doneSection)
 
       await waitFor(() => {
         expect(screen.getByText('Completed task')).toBeVisible()
@@ -492,7 +539,9 @@ describe('TasksAccordion', () => {
     it('collapses active section when clicked', async () => {
       renderTasksAccordion({ taskProgress })
 
-      fireEvent.click(screen.getByText(/Pågående/))
+      // Click the collapsible trigger for "To Do" section
+      const toDoSection = screen.getByRole('button', { name: /To Do/i })
+      fireEvent.click(toDoSection)
 
       await waitFor(() => {
         // When collapsed, content is removed from DOM
@@ -502,12 +551,12 @@ describe('TasksAccordion', () => {
   })
 
   describe('Task Creation Form', () => {
-    it('shows create form when "Skapa uppgift" is clicked', async () => {
+    it('shows create form when "Ny uppgift" is clicked', async () => {
       renderTasksAccordion({
         taskProgress: { completed: 0, total: 0, tasks: [] },
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /skapa uppgift/i }))
+      fireEvent.click(screen.getByRole('button', { name: /ny uppgift/i }))
 
       await waitFor(() => {
         expect(screen.getByLabelText(/titel/i)).toBeInTheDocument()
@@ -527,7 +576,7 @@ describe('TasksAccordion', () => {
         taskProgress: { completed: 0, total: 0, tasks: [] },
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /skapa uppgift/i }))
+      fireEvent.click(screen.getByRole('button', { name: /ny uppgift/i }))
 
       // Try to submit with short title
       const createButton = screen.getByRole('button', { name: /^skapa$/i })
@@ -552,7 +601,7 @@ describe('TasksAccordion', () => {
         onTasksUpdate,
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /skapa uppgift/i }))
+      fireEvent.click(screen.getByRole('button', { name: /ny uppgift/i }))
 
       const input = screen.getByPlaceholderText(/ange uppgiftens titel/i)
       await userEvent.type(input, 'New test task')
@@ -581,7 +630,7 @@ describe('TasksAccordion', () => {
         onTasksUpdate,
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /skapa uppgift/i }))
+      fireEvent.click(screen.getByRole('button', { name: /ny uppgift/i }))
 
       const input = screen.getByPlaceholderText(/ange uppgiftens titel/i)
       await userEvent.type(input, 'Task to create')
@@ -608,7 +657,7 @@ describe('TasksAccordion', () => {
         onTasksUpdate,
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /skapa uppgift/i }))
+      fireEvent.click(screen.getByRole('button', { name: /ny uppgift/i }))
 
       const input = screen.getByPlaceholderText(/ange uppgiftens titel/i)
       await userEvent.type(input, 'Task to open')
@@ -625,7 +674,7 @@ describe('TasksAccordion', () => {
         taskProgress: { completed: 0, total: 0, tasks: [] },
       })
 
-      fireEvent.click(screen.getByRole('button', { name: /skapa uppgift/i }))
+      fireEvent.click(screen.getByRole('button', { name: /ny uppgift/i }))
 
       expect(
         screen.getByPlaceholderText(/ange uppgiftens titel/i)

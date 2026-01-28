@@ -6,7 +6,7 @@
  * Features: collapsible sections (active/completed), link/unlink, create, navigate
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   AccordionContent,
   AccordionItem,
@@ -60,7 +60,6 @@ import {
   Loader2,
   X,
   Link2,
-  ChevronDown,
   ChevronRight,
   Check,
 } from 'lucide-react'
@@ -71,7 +70,9 @@ import {
   createTask,
   getWorkspaceMembers,
   getTasksForLinking,
+  updateTaskStatus,
   type TaskForLinking,
+  type TaskColumnWithCount,
 } from '@/app/actions/tasks'
 import {
   linkListItemToTask,
@@ -95,6 +96,8 @@ interface TasksAccordionProps {
   onOpenTask?: ((_taskId: string) => void) | undefined
   currentUserId?: string | undefined
   onOptimisticUpdate?: ((_tasks: TaskProgress['tasks']) => void) | undefined
+  /** Task columns for status dropdown */
+  columns?: TaskColumnWithCount[]
 }
 
 export function TasksAccordion({
@@ -104,6 +107,7 @@ export function TasksAccordion({
   onOpenTask,
   currentUserId,
   onOptimisticUpdate,
+  columns = [],
 }: TasksAccordionProps) {
   // Form state
   const [isFormExpanded, setIsFormExpanded] = useState(false)
@@ -120,9 +124,33 @@ export function TasksAccordion({
   const [unlinkingId, setUnlinkingId] = useState<string | null>(null)
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
 
-  // Collapsible sections state
-  const [activeOpen, setActiveOpen] = useState(true)
-  const [completedOpen, setCompletedOpen] = useState(false)
+  // Collapsible sections state - track which columns are expanded
+  // Done columns start collapsed, others start expanded
+  const [expandedColumns, setExpandedColumns] = useState<Set<string>>(new Set())
+  const [hasInitialized, setHasInitialized] = useState(false)
+
+  // Initialize expanded state once when columns first load
+  useEffect(() => {
+    if (columns.length > 0 && !hasInitialized) {
+      const nonDoneColumnIds = columns
+        .filter((c) => !c.is_done)
+        .map((c) => c.id)
+      setExpandedColumns(new Set(nonDoneColumnIds))
+      setHasInitialized(true)
+    }
+  }, [columns, hasInitialized])
+
+  const toggleColumnExpanded = useCallback((columnId: string) => {
+    setExpandedColumns((prev) => {
+      const next = new Set(prev)
+      if (next.has(columnId)) {
+        next.delete(columnId)
+      } else {
+        next.add(columnId)
+      }
+      return next
+    })
+  }, [])
 
   // Load workspace members when form is expanded
   useEffect(() => {
@@ -225,114 +253,200 @@ export function TasksAccordion({
     [listItemId, onTasksUpdate]
   )
 
+  // Handle status change with optimistic update
+  const handleStatusChange = useCallback(
+    async (taskId: string, newColumnId: string) => {
+      const currentTasks = taskProgress?.tasks ?? []
+      const newColumn = columns.find((c) => c.id === newColumnId)
+      if (!newColumn) return
+
+      // Optimistic update - update task status immediately
+      const optimisticTasks = currentTasks.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              columnId: newColumnId,
+              columnName: newColumn.name,
+              columnColor: newColumn.color,
+              isDone: newColumn.is_done,
+            }
+          : t
+      )
+      onOptimisticUpdate?.(optimisticTasks)
+
+      // Call server action (position 0 to put at top of column)
+      const result = await updateTaskStatus(taskId, newColumnId, 0)
+
+      if (result.success) {
+        toast.success(`Status ändrad till ${newColumn.name}`)
+        await onTasksUpdate()
+      } else {
+        // Revert optimistic update on error
+        onOptimisticUpdate?.(currentTasks)
+        toast.error('Kunde inte ändra status', { description: result.error })
+      }
+    },
+    [taskProgress?.tasks, columns, onOptimisticUpdate, onTasksUpdate]
+  )
+
   const selectedAssignee = members.find((m) => m.id === assigneeId)
 
   // Normalize taskProgress
   const { tasks } = taskProgress ?? { tasks: [] }
 
-  // Split tasks into active and completed
-  const activeTasks = tasks.filter((t) => !t.isDone)
-  const completedTasks = tasks.filter((t) => t.isDone)
+  // Group tasks by columnId
+  const tasksByColumn = useMemo(() => {
+    const grouped = new Map<string, typeof tasks>()
+    for (const task of tasks) {
+      const existing = grouped.get(task.columnId) ?? []
+      grouped.set(task.columnId, [...existing, task])
+    }
+    return grouped
+  }, [tasks])
 
-  const activeCount = activeTasks.length
-  const completedCount = completedTasks.length
+  // Get columns that have tasks, sorted by position
+  const columnsWithTasks = useMemo(() => {
+    return columns
+      .filter((col) => tasksByColumn.has(col.id))
+      .sort((a, b) => a.position - b.position)
+  }, [columns, tasksByColumn])
+
+  // Count for badges
+  const activeCount = tasks.filter((t) => !t.isDone).length
+  const totalCount = tasks.length
+
+  // Calculate progress percentage
+  const progressPercent =
+    totalCount > 0
+      ? Math.round(((totalCount - activeCount) / totalCount) * 100)
+      : 0
 
   return (
     <AccordionItem value="tasks" className="border rounded-lg bg-background">
-      <AccordionTrigger className="px-4 py-3 hover:no-underline">
-        <div className="flex items-center gap-2">
+      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
+        <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
           <ListTodo className="h-4 w-4" />
           <span>Uppgifter</span>
-          {activeCount > 0 && (
-            <Badge variant="secondary" className="ml-1 text-xs">
-              {activeCount} pågående
-            </Badge>
+
+          {/* Progress indicator */}
+          {totalCount > 0 && (
+            <div className="flex items-center gap-2 ml-auto mr-2 font-normal">
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {totalCount - activeCount}/{totalCount}
+              </span>
+              <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-green-500 rounded-full transition-all duration-300"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
           )}
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
-        <div className="space-y-4">
-          {/* Active Tasks Section */}
-          <Collapsible open={activeOpen} onOpenChange={setActiveOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 w-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              {activeOpen ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-              Pågående ({activeCount})
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-2">
-              {activeCount > 0 ? (
-                <div className="space-y-1">
-                  {activeTasks.map((task) => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      isUnlinking={unlinkingId === task.id}
-                      onOpen={() => onOpenTask?.(task.id)}
-                      onUnlink={() => handleUnlink(task.id)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground py-2">
-                  Inga pågående uppgifter
-                </p>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+        <div className="space-y-3">
+          {/* Dynamic sections for each column with tasks */}
+          {columnsWithTasks.length > 0 ? (
+            columnsWithTasks.map((column, index) => {
+              const columnTasks = tasksByColumn.get(column.id) ?? []
+              const isExpanded = expandedColumns.has(column.id)
+              const isFirstDoneColumn =
+                column.is_done &&
+                !columnsWithTasks.slice(0, index).some((c) => c.is_done)
 
-          {/* Completed Tasks Section */}
-          <Collapsible open={completedOpen} onOpenChange={setCompletedOpen}>
-            <CollapsibleTrigger className="flex items-center gap-2 w-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              {completedOpen ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-              Avslutade ({completedCount})
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-2">
-              {completedCount > 0 ? (
-                <div className="space-y-1">
-                  {completedTasks.map((task) => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      isUnlinking={unlinkingId === task.id}
-                      onOpen={() => onOpenTask?.(task.id)}
-                      onUnlink={() => handleUnlink(task.id)}
-                    />
-                  ))}
+              return (
+                <div key={column.id}>
+                  {/* Divider before first done section */}
+                  {isFirstDoneColumn &&
+                    columnsWithTasks.some((c) => !c.is_done) && (
+                      <div className="border-t border-border/40 my-2 mx-1" />
+                    )}
+                  <Collapsible
+                    open={isExpanded}
+                    onOpenChange={() => toggleColumnExpanded(column.id)}
+                  >
+                    <CollapsibleTrigger
+                      className={cn(
+                        'flex items-center gap-2 w-full text-sm transition-colors py-1 rounded hover:bg-muted/30 -mx-1 px-1',
+                        column.is_done
+                          ? 'text-muted-foreground hover:text-foreground'
+                          : 'text-foreground hover:text-foreground'
+                      )}
+                    >
+                      <ChevronRight
+                        className={cn(
+                          'h-4 w-4 text-muted-foreground transition-transform duration-200',
+                          isExpanded && 'rotate-90'
+                        )}
+                      />
+                      <div
+                        className="h-2 w-2 rounded-full shrink-0"
+                        style={{ backgroundColor: column.color }}
+                      />
+                      <span className="font-medium">{column.name}</span>
+                      <span className="text-muted-foreground text-sm">
+                        ({columnTasks.length})
+                      </span>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div
+                        className={cn(
+                          'space-y-0.5 pt-1.5',
+                          column.is_done && 'opacity-70'
+                        )}
+                      >
+                        {columnTasks.map((task) => (
+                          <TaskItem
+                            key={task.id}
+                            task={task}
+                            columns={columns}
+                            isUnlinking={unlinkingId === task.id}
+                            onOpen={() => onOpenTask?.(task.id)}
+                            onUnlink={() => handleUnlink(task.id)}
+                            onStatusChange={handleStatusChange}
+                          />
+                        ))}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground py-2">
-                  Inga avslutade uppgifter
-                </p>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+              )
+            })
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 text-center">
+              <div className="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+                <ListTodo className="h-5 w-5 text-muted-foreground/50" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Inga länkade uppgifter
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-1">
+                Skapa eller länka en uppgift för att komma igång
+              </p>
+            </div>
+          )}
 
           {/* Action Buttons / Create Form */}
           {!isFormExpanded ? (
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2 pt-3 border-t border-border/50">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="flex-1"
+                className="flex-1 h-9 text-muted-foreground hover:text-foreground"
                 onClick={() => setIsFormExpanded(true)}
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Skapa uppgift
+                <Plus className="h-4 w-4 mr-1.5" />
+                Ny uppgift
               </Button>
+              <div className="w-px bg-border/50" />
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="flex-1"
+                className="flex-1 h-9 text-muted-foreground hover:text-foreground"
                 onClick={() => setLinkDialogOpen(true)}
               >
-                <Link2 className="h-4 w-4 mr-2" />
+                <Link2 className="h-4 w-4 mr-1.5" />
                 Länka befintlig
               </Button>
             </div>
@@ -380,50 +494,134 @@ interface TaskItemProps {
   task: {
     id: string
     title: string
+    columnId: string
+    columnName: string
     isDone: boolean
     columnColor: string | null
+    assignee: {
+      name: string | null
+      avatarUrl: string | null
+    } | null
   }
+  columns: TaskColumnWithCount[]
   isUnlinking: boolean
   onOpen: () => void
   onUnlink: () => void
+  onStatusChange: (_taskId: string, _columnId: string) => void
 }
 
-function TaskItem({ task, isUnlinking, onOpen, onUnlink }: TaskItemProps) {
+function TaskItem({
+  task,
+  columns,
+  isUnlinking,
+  onOpen,
+  onUnlink,
+  onStatusChange,
+}: TaskItemProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-2 w-full text-left p-2 rounded-md group',
-        'hover:bg-muted/50 transition-colors',
-        'text-sm',
-        isUnlinking && 'opacity-50'
+        'flex items-center gap-2.5 w-full rounded-md group cursor-pointer',
+        'transition-all duration-150',
+        task.isDone
+          ? 'py-1.5 px-2 hover:bg-muted/30'
+          : 'py-2 px-2.5 hover:bg-muted/50',
+        isUnlinking && 'opacity-50 pointer-events-none'
       )}
+      onClick={onOpen}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && onOpen()}
     >
-      <button
-        className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
-        onClick={onOpen}
-      >
+      {/* Status indicator - visual only, no toggle */}
+      <div className="shrink-0">
         {task.isDone ? (
-          <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
+          <CheckCircle className="h-4 w-4 text-green-600" />
         ) : (
           <Circle
-            className="h-4 w-4 shrink-0"
-            style={{ color: task.columnColor ?? undefined }}
+            className="h-4 w-4"
+            style={{ color: task.columnColor ?? '#9ca3af' }}
           />
         )}
-        <span
-          className={cn(
-            'truncate',
-            task.isDone && 'line-through text-muted-foreground'
-          )}
-        >
-          {task.title}
-        </span>
-      </button>
+      </div>
 
+      {/* Task title */}
+      <span
+        className={cn(
+          'flex-1 min-w-0 truncate text-sm',
+          task.isDone ? 'text-muted-foreground' : 'text-foreground'
+        )}
+      >
+        {task.title}
+      </span>
+
+      {/* Assignee avatar - show on hover for active tasks */}
+      {task.assignee && !task.isDone && (
+        <div
+          className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+          title={task.assignee.name ?? 'Tilldelad'}
+        >
+          <Avatar className="h-5 w-5 border border-border/30">
+            {task.assignee.avatarUrl && (
+              <AvatarImage src={task.assignee.avatarUrl} />
+            )}
+            <AvatarFallback className="text-[9px] bg-muted/50">
+              {(task.assignee.name ?? '?').slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      )}
+
+      {/* Status dropdown - only for non-done tasks, appears on hover */}
+      {columns.length > 0 && !task.isDone && (
+        <Select
+          value={task.columnId}
+          onValueChange={(value) => onStatusChange(task.id, value)}
+        >
+          <SelectTrigger
+            className={cn(
+              'h-6 w-auto min-w-[70px] max-w-[100px] text-xs shrink-0',
+              'bg-muted/50 border-none shadow-none px-2 rounded',
+              'text-muted-foreground hover:text-foreground hover:bg-muted',
+              'focus:ring-0 focus:ring-offset-0',
+              'opacity-0 group-hover:opacity-100 transition-all'
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <SelectValue>
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="h-1.5 w-1.5 rounded-full shrink-0"
+                  style={{ backgroundColor: task.columnColor ?? '#888' }}
+                />
+                <span className="truncate">{task.columnName}</span>
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent align="end">
+            {columns.map((col) => (
+              <SelectItem key={col.id} value={col.id}>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="h-2 w-2 rounded-full shrink-0"
+                    style={{ backgroundColor: col.color }}
+                  />
+                  <span>{col.name}</span>
+                  {col.is_done && (
+                    <CheckCircle className="h-3 w-3 text-green-500 ml-auto" />
+                  )}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {/* Unlink button - appears on hover */}
       <button
         className={cn(
-          'p-1 rounded hover:bg-muted transition-colors shrink-0',
-          'opacity-0 group-hover:opacity-100'
+          'p-1 rounded hover:bg-destructive/10 transition-all shrink-0',
+          'opacity-0 group-hover:opacity-60 hover:!opacity-100'
         )}
         onClick={(e) => {
           e.stopPropagation()

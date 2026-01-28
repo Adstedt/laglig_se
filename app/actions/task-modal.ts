@@ -10,6 +10,7 @@ import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { z } from 'zod'
 import type { TaskPriority } from '@prisma/client'
+import { invalidateListItemTasksCache } from './legal-document-modal'
 
 // ============================================================================
 // Action Result Type
@@ -1111,6 +1112,9 @@ export async function linkListItemToTask(
         { law_title: listItem.document.title }
       )
 
+      // Invalidate task cache for this list item
+      await invalidateListItemTasksCache(validated.listItemId)
+
       revalidatePath('/tasks')
       return { success: true }
     })
@@ -1168,6 +1172,9 @@ export async function unlinkListItemFromTask(
         { law_title: link.law_list_item.document.title },
         null
       )
+
+      // Invalidate task cache for this list item
+      await invalidateListItemTasksCache(validated.listItemId)
 
       revalidatePath('/tasks')
       return { success: true }

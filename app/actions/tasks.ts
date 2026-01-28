@@ -12,6 +12,10 @@ import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { z } from 'zod'
 import type { TaskPriority, TaskColumn } from '@prisma/client'
+import {
+  invalidateTaskLinkedListItemsCache,
+  invalidateListItemTasksCache,
+} from './legal-document-modal'
 
 // ============================================================================
 // Action Result Type
@@ -665,6 +669,9 @@ export async function updateTaskStatus(
         },
       })
 
+      // Invalidate cache for linked list items so document modal shows updated status
+      await invalidateTaskLinkedListItemsCache(taskId)
+
       revalidatePath('/tasks')
       return { success: true }
     })
@@ -746,6 +753,11 @@ export async function updateTasksBulk(
         where: { id: { in: taskIds } },
         data,
       })
+
+      // Invalidate cache for all linked list items
+      await Promise.all(
+        taskIds.map((id) => invalidateTaskLinkedListItemsCache(id))
+      )
 
       revalidatePath('/tasks')
       return { success: true }
@@ -1184,6 +1196,13 @@ export async function createTask(data: {
         return newTask
       })
 
+      // Invalidate cache for linked list items
+      if (data.linkedListItemIds && data.linkedListItemIds.length > 0) {
+        await Promise.all(
+          data.linkedListItemIds.map((id) => invalidateListItemTasksCache(id))
+        )
+      }
+
       // Fetch full task with relations
       const fullTask = await prisma.task.findUnique({
         where: { id: task.id },
@@ -1266,6 +1285,9 @@ export async function deleteTask(taskId: string): Promise<ActionResult> {
         return { success: false, error: 'Uppgiften hittades inte' }
       }
 
+      // Invalidate cache before deletion (while links still exist)
+      await invalidateTaskLinkedListItemsCache(taskId)
+
       await prisma.task.delete({
         where: { id: taskId },
       })
@@ -1312,6 +1334,11 @@ export async function deleteTasksBulk(
       if (tasks.length !== taskIds.length) {
         return { success: false, error: 'Vissa uppgifter hittades inte' }
       }
+
+      // Invalidate cache before deletion (while links still exist)
+      await Promise.all(
+        taskIds.map((id) => invalidateTaskLinkedListItemsCache(id))
+      )
 
       await prisma.task.deleteMany({
         where: { id: { in: taskIds } },
@@ -1641,14 +1668,23 @@ export async function reorderTaskColumns(
       }
 
       // Update positions based on array index
-      await prisma.$transaction(
-        columnIds.map((id, index) =>
+      // Use two-phase update to avoid unique constraint conflicts on (workspace_id, position)
+      // Phase 1: Set all positions to negative values (temporary)
+      // Phase 2: Set to final positive positions
+      await prisma.$transaction([
+        ...columnIds.map((id, index) =>
+          prisma.taskColumn.update({
+            where: { id },
+            data: { position: -(index + 1000) },
+          })
+        ),
+        ...columnIds.map((id, index) =>
           prisma.taskColumn.update({
             where: { id },
             data: { position: index },
           })
-        )
-      )
+        ),
+      ])
 
       // Fetch updated columns
       const updatedColumns = await prisma.taskColumn.findMany({
