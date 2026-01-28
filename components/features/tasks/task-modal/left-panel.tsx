@@ -38,21 +38,21 @@ export function LeftPanel({
 
   return (
     <div className="p-6 space-y-4 border-r border-border/50">
-      {/* Editable Title */}
-      <TaskTitleEditor
-        taskId={task.id}
-        initialTitle={task.title}
-        onUpdate={onUpdate}
-        onOptimisticChange={onOptimisticTitleChange}
-      />
-
-      {/* Status and Priority Badges */}
-      <StatusPriorityBadges
-        status={task.column.name}
-        statusColor={task.column.color}
-        priority={task.priority}
-        isDone={task.column.is_done}
-      />
+      {/* Title + Badges - tighter spacing aligned with law list modal */}
+      <div className="space-y-3">
+        <TaskTitleEditor
+          taskId={task.id}
+          initialTitle={task.title}
+          onUpdate={onUpdate}
+          onOptimisticChange={onOptimisticTitleChange}
+        />
+        <StatusPriorityBadges
+          status={task.column.name}
+          statusColor={task.column.color}
+          priority={task.priority}
+          isDone={task.column.is_done}
+        />
+      </div>
 
       {/* Description and Attachments Accordions */}
       <Accordion
