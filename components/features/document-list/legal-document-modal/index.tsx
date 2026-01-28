@@ -23,6 +23,7 @@ import {
   type InitialListItemData,
   type WorkspaceMember,
 } from '@/lib/hooks/use-list-item-details'
+import type { TaskColumnWithCount } from '@/app/actions/tasks'
 
 interface LegalDocumentModalProps {
   listItemId: string | null
@@ -35,6 +36,8 @@ interface LegalDocumentModalProps {
   onOpenTask?: ((_taskId: string) => void) | undefined
   /** Current user ID for "assign to me" functionality */
   currentUserId?: string
+  /** Task columns for inline status change in TasksAccordion */
+  taskColumns?: TaskColumnWithCount[]
 }
 
 export function LegalDocumentModal({
@@ -44,6 +47,7 @@ export function LegalDocumentModal({
   workspaceMembers: preloadedMembers,
   onOpenTask,
   currentUserId,
+  taskColumns = [],
 }: LegalDocumentModalProps) {
   const [aiChatOpen, setAiChatOpen] = useState(false)
 
@@ -166,6 +170,7 @@ export function LegalDocumentModal({
                       onOpenTask={onOpenTask}
                       currentUserId={currentUserId}
                       onOptimisticTaskUpdate={handleOptimisticTaskUpdate}
+                      taskColumns={taskColumns}
                     />
                   </ScrollArea>
 

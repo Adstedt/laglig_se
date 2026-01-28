@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState, useCallback, useMemo, useTransition } from 'react'
+import { useSWRConfig } from 'swr'
 import { usePrefetchDocuments } from '@/lib/hooks/use-prefetch-documents'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
@@ -51,6 +52,7 @@ import type {
   WorkspaceMemberOption,
 } from '@/app/actions/document-list'
 import { getWorkspaceMembers } from '@/app/actions/document-list'
+import { getTaskColumns, type TaskColumnWithCount } from '@/app/actions/tasks'
 import type {
   LawListItemStatus,
   LawListItemPriority,
@@ -74,6 +76,8 @@ export function DocumentListPageContent({
   const [workspaceMembers, setWorkspaceMembers] = useState<
     WorkspaceMemberOption[]
   >([])
+  // Story 6.15: Task columns for status dropdown in TaskModal
+  const [taskColumns, setTaskColumns] = useState<TaskColumnWithCount[]>([])
   // Story 4.13: Group management modal
   const [isGroupManagerOpen, setIsGroupManagerOpen] = useState(false)
   // Story 6.3: Legal document modal - Now with URL state management
@@ -83,6 +87,9 @@ export function DocumentListPageContent({
   )
   // Story 6.15: Task modal for bidirectional linking
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+
+  // Story 6.15: SWR config for invalidating task cache when task is updated
+  const { mutate: globalMutate } = useSWRConfig()
 
   // Story 6.2 Task 8 & 9: Compliance filters and search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -132,6 +139,17 @@ export function DocumentListPageContent({
   const handleCloseTaskModal = useCallback(() => {
     setSelectedTaskId(null)
   }, [])
+
+  // Story 6.15: Handle task update - refresh task list in Law List Item Modal
+  const handleTaskUpdate = useCallback(
+    (_taskId: string, _updates: Record<string, unknown>) => {
+      // Invalidate the task cache for the currently viewed list item
+      if (selectedListItemId) {
+        globalMutate(`list-item-tasks:${selectedListItemId}`)
+      }
+    },
+    [selectedListItemId, globalMutate]
+  )
 
   // Story 6.2: Handle search from SearchInput component (already debounced)
   const handleSearch = useCallback(
@@ -440,6 +458,7 @@ export function DocumentListPageContent({
   }, [clearError])
 
   // Fetch workspace members for assignee dropdown (Story 4.12)
+  // Story 6.15: Also fetch task columns for TaskModal status dropdown
   useEffect(() => {
     async function fetchMembers() {
       const result = await getWorkspaceMembers()
@@ -447,7 +466,14 @@ export function DocumentListPageContent({
         setWorkspaceMembers(result.data)
       }
     }
+    async function fetchColumns() {
+      const result = await getTaskColumns()
+      if (result.success && result.data) {
+        setTaskColumns(result.data)
+      }
+    }
     fetchMembers()
+    fetchColumns()
   }, [])
 
   // Story 4.13: Fetch groups when activeListId changes
@@ -804,6 +830,7 @@ export function DocumentListPageContent({
         initialData={selectedItemInitialData}
         workspaceMembers={workspaceMembers}
         onOpenTask={handleOpenTask}
+        taskColumns={taskColumns}
       />
 
       {/* Story 6.15: Task modal for bidirectional linking */}
@@ -811,6 +838,8 @@ export function DocumentListPageContent({
         taskId={selectedTaskId}
         onClose={handleCloseTaskModal}
         workspaceMembers={workspaceMembers}
+        columns={taskColumns}
+        onTaskUpdate={handleTaskUpdate}
       />
     </div>
   )

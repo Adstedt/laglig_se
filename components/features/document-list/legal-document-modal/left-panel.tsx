@@ -16,6 +16,7 @@ import type {
   ListItemDetails,
   TaskProgress,
 } from '@/app/actions/legal-document-modal'
+import type { TaskColumnWithCount } from '@/app/actions/tasks'
 
 interface LeftPanelProps {
   listItem: ListItemDetails
@@ -26,6 +27,8 @@ interface LeftPanelProps {
   currentUserId?: string | undefined
   /** Story 6.15: Optimistic update callback for task list */
   onOptimisticTaskUpdate?: ((_tasks: TaskProgress['tasks']) => void) | undefined
+  /** Task columns for inline status change in TasksAccordion */
+  taskColumns?: TaskColumnWithCount[]
 }
 
 export function LeftPanel({
@@ -36,6 +39,7 @@ export function LeftPanel({
   onOpenTask,
   currentUserId,
   onOptimisticTaskUpdate,
+  taskColumns = [],
 }: LeftPanelProps) {
   return (
     <div className="p-6 space-y-4">
@@ -76,6 +80,7 @@ export function LeftPanel({
             onOpenTask={onOpenTask}
             currentUserId={currentUserId}
             onOptimisticUpdate={onOptimisticTaskUpdate}
+            columns={taskColumns}
           />
         )}
       </Accordion>
