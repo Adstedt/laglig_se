@@ -176,7 +176,11 @@ export function ListTab({
     }
 
     if (assigneeFilter) {
-      result = result.filter((task) => task.assignee_id === assigneeFilter)
+      if (assigneeFilter === 'unassigned') {
+        result = result.filter((task) => task.assignee_id === null)
+      } else {
+        result = result.filter((task) => task.assignee_id === assigneeFilter)
+      }
     }
 
     return result
