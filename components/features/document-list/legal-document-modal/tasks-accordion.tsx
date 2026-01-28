@@ -94,6 +94,7 @@ interface TasksAccordionProps {
   onTasksUpdate: () => Promise<void>
   onOpenTask?: ((_taskId: string) => void) | undefined
   currentUserId?: string | undefined
+  onOptimisticUpdate?: ((_tasks: TaskProgress['tasks']) => void) | undefined
 }
 
 export function TasksAccordion({
@@ -102,6 +103,7 @@ export function TasksAccordion({
   onTasksUpdate,
   onOpenTask,
   currentUserId,
+  onOptimisticUpdate,
 }: TasksAccordionProps) {
   // Form state
   const [isFormExpanded, setIsFormExpanded] = useState(false)
@@ -187,18 +189,25 @@ export function TasksAccordion({
     async (taskId: string) => {
       setUnlinkingId(taskId)
 
+      // Story 6.15: Optimistic update - remove task immediately
+      const currentTasks = taskProgress?.tasks ?? []
+      const optimisticTasks = currentTasks.filter((t) => t.id !== taskId)
+      onOptimisticUpdate?.(optimisticTasks)
+
       const result = await unlinkListItemFromTask(taskId, listItemId)
 
       if (result.success) {
         toast.success('Länk borttagen')
         await onTasksUpdate()
       } else {
+        // Revert optimistic update on error
+        onOptimisticUpdate?.(currentTasks)
         toast.error('Kunde inte ta bort länk', { description: result.error })
       }
 
       setUnlinkingId(null)
     },
-    [listItemId, onTasksUpdate]
+    [listItemId, onTasksUpdate, taskProgress?.tasks, onOptimisticUpdate]
   )
 
   const handleLinkTask = useCallback(

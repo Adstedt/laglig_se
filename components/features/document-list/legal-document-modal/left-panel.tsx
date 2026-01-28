@@ -24,6 +24,8 @@ interface LeftPanelProps {
   onTasksUpdate?: () => Promise<void>
   onOpenTask?: ((_taskId: string) => void) | undefined
   currentUserId?: string | undefined
+  /** Story 6.15: Optimistic update callback for task list */
+  onOptimisticTaskUpdate?: ((_tasks: TaskProgress['tasks']) => void) | undefined
 }
 
 export function LeftPanel({
@@ -33,6 +35,7 @@ export function LeftPanel({
   onTasksUpdate,
   onOpenTask,
   currentUserId,
+  onOptimisticTaskUpdate,
 }: LeftPanelProps) {
   return (
     <div className="p-6 space-y-4">
@@ -72,6 +75,7 @@ export function LeftPanel({
             onTasksUpdate={onTasksUpdate}
             onOpenTask={onOpenTask}
             currentUserId={currentUserId}
+            onOptimisticUpdate={onOptimisticTaskUpdate}
           />
         )}
       </Accordion>

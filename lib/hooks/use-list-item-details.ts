@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import useSWR from 'swr'
 import {
   getListItemDetails,
@@ -69,6 +69,8 @@ interface UseListItemDetailsResult {
   error: string | null
   mutate: () => Promise<void>
   mutateTaskProgress: () => Promise<void>
+  /** Story 6.15: Optimistic update for task list (e.g., after unlink) */
+  optimisticTaskUpdate: (_tasks: TaskProgress['tasks']) => void
 }
 
 /**
@@ -251,6 +253,27 @@ export function useListItemDetails(
     await mutateTaskData()
   }
 
+  // Story 6.15: Optimistic update for task list
+  const handleOptimisticTaskUpdate = useCallback(
+    (tasks: TaskProgress['tasks']) => {
+      // Update SWR cache optimistically without revalidating
+      mutateTaskData(
+        (currentData) => {
+          if (!currentData) return currentData
+          const completed = tasks.filter((t) => t.isDone).length
+          return {
+            ...currentData,
+            completed,
+            total: tasks.length,
+            tasks,
+          }
+        },
+        { revalidate: false }
+      )
+    },
+    [mutateTaskData]
+  )
+
   // Loading state: only show loading if we have no data to display
   // With initialData, we can show content immediately
   const isLoading = !initialData && isLoadingFullData
@@ -265,5 +288,6 @@ export function useListItemDetails(
     error: fullDataError?.message ?? null,
     mutate: handleMutate,
     mutateTaskProgress: handleMutateTaskProgress,
+    optimisticTaskUpdate: handleOptimisticTaskUpdate,
   }
 }

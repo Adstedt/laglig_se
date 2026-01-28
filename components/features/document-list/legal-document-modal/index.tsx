@@ -58,6 +58,7 @@ export function LegalDocumentModal({
     error,
     mutate: handleDataUpdate,
     mutateTaskProgress: handleTasksUpdate,
+    optimisticTaskUpdate: handleOptimisticTaskUpdate,
   } = useListItemDetails(listItemId, initialData, preloadedMembers)
 
   // Scroll to evidence tab
@@ -164,6 +165,7 @@ export function LegalDocumentModal({
                       onTasksUpdate={handleTasksUpdate}
                       onOpenTask={onOpenTask}
                       currentUserId={currentUserId}
+                      onOptimisticTaskUpdate={handleOptimisticTaskUpdate}
                     />
                   </ScrollArea>
 
