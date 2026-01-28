@@ -6,7 +6,8 @@
  */
 
 import { useEffect } from 'react'
-import { X, Sparkles } from 'lucide-react'
+import { X } from 'lucide-react'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from './chat-message-list'
 import { ChatInput } from './chat-input'
@@ -73,12 +74,12 @@ export function ChatSidebar({ isOpen, onClose, className }: ChatSidebarProps) {
       <div className="flex items-center justify-between border-b px-4 py-3 shrink-0">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <LexaIcon size={16} />
           </div>
           <div>
-            <span className="text-sm font-medium">AI Assistent</span>
+            <span className="text-sm font-medium">Lexa</span>
             <p className="text-xs text-muted-foreground">
-              Fråga om svensk lagstiftning
+              Fråga om regler och efterlevnad
             </p>
           </div>
         </div>
@@ -126,7 +127,7 @@ function EmptyState() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 mb-4">
-        <Sparkles className="h-8 w-8 text-primary" />
+        <LexaIcon size={32} />
       </div>
       <h3 className="text-base font-medium mb-1">Hur kan jag hjälpa dig?</h3>
       <p className="text-sm text-muted-foreground max-w-[280px]">

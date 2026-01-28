@@ -63,6 +63,8 @@ interface LinkedLawsBoxProps {
   onUpdate: () => Promise<void>
   /** Optimistic update callback for immediate UI feedback */
   onOptimisticUpdate?: ((_links: LinkedLaw[]) => void) | undefined
+  /** Callback to open a list item in the Legal Document Modal */
+  onOpenListItem?: ((_listItemId: string) => void) | undefined
 }
 
 export function LinkedLawsBox({
@@ -70,6 +72,7 @@ export function LinkedLawsBox({
   links,
   onUpdate,
   onOptimisticUpdate,
+  onOpenListItem,
 }: LinkedLawsBoxProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [unlinkingId, setUnlinkingId] = useState<string | null>(null)
@@ -103,17 +106,18 @@ export function LinkedLawsBox({
     [taskId, links, onUpdate, onOptimisticUpdate]
   )
 
-  // Group links by law list
+  // Group links by law list (keyed by list ID to preserve ID for linking)
   const groupedLinks = links.reduce(
     (acc, link) => {
+      const listId = link.law_list_item.law_list?.id || 'unknown'
       const listName = link.law_list_item.law_list?.name || 'Okänd lista'
-      if (!acc[listName]) {
-        acc[listName] = []
+      if (!acc[listId]) {
+        acc[listId] = { name: listName, links: [] }
       }
-      acc[listName].push(link)
+      acc[listId].links.push(link)
       return acc
     },
-    {} as Record<string, LinkedLaw[]>
+    {} as Record<string, { name: string; links: LinkedLaw[] }>
   )
 
   return (
@@ -166,64 +170,90 @@ export function LinkedLawsBox({
           </div>
         ) : (
           <div className="space-y-3 overflow-hidden">
-            {Object.entries(groupedLinks).map(([listName, listLinks]) => (
-              <div key={listName} className="space-y-1.5 overflow-hidden">
-                {/* List header */}
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
-                  <FolderOpen className="h-3 w-3 shrink-0" />
-                  <span className="truncate">{listName}</span>
-                </div>
-                {/* Documents in list */}
-                <div className="space-y-1 pl-4 overflow-hidden">
-                  {listLinks.map((link) => {
-                    const isUnlinking = unlinkingId === link.law_list_item.id
-                    return (
-                      <div
-                        key={link.id}
-                        className={cn(
-                          'flex items-center gap-2 p-2 rounded-md overflow-hidden',
-                          'bg-muted/50 hover:bg-muted transition-colors group',
-                          isUnlinking && 'opacity-50'
-                        )}
-                      >
-                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <div className="w-0 flex-1">
-                          <p className="text-sm truncate">
-                            {link.law_list_item.document.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {link.law_list_item.document.document_number}
-                          </p>
+            {Object.entries(groupedLinks).map(
+              ([listId, { name: listName, links: listLinks }]) => (
+                <div key={listId} className="space-y-1.5 overflow-hidden">
+                  {/* List header */}
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
+                    <FolderOpen className="h-3 w-3 shrink-0" />
+                    <a
+                      href={`/laglistor?list=${listId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="truncate hover:underline"
+                    >
+                      {listName}
+                    </a>
+                  </div>
+                  {/* Documents in list */}
+                  <div className="space-y-1 pl-4 overflow-hidden">
+                    {listLinks.map((link) => {
+                      const isUnlinking = unlinkingId === link.law_list_item.id
+                      return (
+                        <div
+                          key={link.id}
+                          className={cn(
+                            'flex items-center gap-2 p-2 rounded-md overflow-hidden',
+                            'bg-muted/50 hover:bg-muted transition-colors group',
+                            onOpenListItem && !isUnlinking && 'cursor-pointer',
+                            isUnlinking && 'opacity-50'
+                          )}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => {
+                            if (!isUnlinking) {
+                              onOpenListItem?.(link.law_list_item.id)
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !isUnlinking) {
+                              onOpenListItem?.(link.law_list_item.id)
+                            }
+                          }}
+                        >
+                          <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <div className="w-0 flex-1">
+                            <p className="text-sm truncate">
+                              {link.law_list_item.document.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {link.law_list_item.document.document_number}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <a
+                              href={`/browse/lagar/${link.law_list_item.document.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1 rounded hover:bg-background"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                            </a>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleUnlink(link.law_list_item.id)
+                              }}
+                              disabled={isUnlinking}
+                            >
+                              {isUnlinking ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <X className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <a
-                            href={`/browse/lagar/${link.law_list_item.document.slug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1 rounded hover:bg-background"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                          </a>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={() => handleUnlink(link.law_list_item.id)}
-                            disabled={isUnlinking}
-                          >
-                            {isUnlinking ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <X className="h-3.5 w-3.5" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            )}
           </div>
         )}
       </CardContent>

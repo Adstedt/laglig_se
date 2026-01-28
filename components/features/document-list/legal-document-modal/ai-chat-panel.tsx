@@ -42,10 +42,11 @@ export function AiChatPanel({
         }}
         analyticsLocation="law_modal"
         onClose={onClose}
-        title="AI Assistent"
+        title="Lexa"
         subtitle={documentNumber}
-        emptyStateTitle="Ställ en fråga om lagen"
-        emptyStateDescription={`AI:n kan hjälpa dig förstå ${documentTitle.length > 40 ? documentTitle.substring(0, 40) + '...' : documentTitle}`}
+        showHeader={false}
+        emptyStateTitle="Fråga Lexa om lagen"
+        emptyStateDescription={`Lexa kan hjälpa dig förstå ${documentTitle.length > 40 ? documentTitle.substring(0, 40) + '...' : documentTitle}`}
         suggestedQuestions={LAW_SUGGESTED_QUESTIONS}
         className="border-0"
       />

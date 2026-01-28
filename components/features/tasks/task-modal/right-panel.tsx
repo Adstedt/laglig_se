@@ -32,6 +32,7 @@ interface RightPanelProps {
     | undefined
   onOptimisticDueDateChange?: ((_dueDate: Date | null) => void) | undefined
   onOptimisticLinksChange?: ((_links: LinkedLawItem[]) => void) | undefined
+  onOpenListItem?: ((_listItemId: string) => void) | undefined
 }
 
 export function RightPanel({
@@ -45,6 +46,7 @@ export function RightPanel({
   onOptimisticAssigneeChange,
   onOptimisticDueDateChange,
   onOptimisticLinksChange,
+  onOpenListItem,
 }: RightPanelProps) {
   return (
     <div className="flex flex-col h-full bg-muted/30 md:border-l min-w-0 overflow-hidden">
@@ -71,6 +73,7 @@ export function RightPanel({
             links={task.list_item_links}
             onUpdate={onUpdate}
             onOptimisticUpdate={onOptimisticLinksChange}
+            onOpenListItem={onOpenListItem}
           />
 
           {/* Labels Box */}

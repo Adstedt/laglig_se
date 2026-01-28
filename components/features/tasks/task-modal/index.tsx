@@ -44,6 +44,8 @@ interface TaskModalProps {
   columns?: TaskColumnWithCount[]
   /** Callback when task is updated - syncs changes back to parent workspace */
   onTaskUpdate?: (_taskId: string, _updates: Partial<TaskWithRelations>) => void
+  /** Callback to open a linked list item in the Legal Document Modal */
+  onOpenListItem?: ((_listItemId: string) => void) | undefined
 }
 
 export function TaskModal({
@@ -53,6 +55,7 @@ export function TaskModal({
   workspaceMembers: preloadedMembers = [],
   columns: preloadedColumns = [],
   onTaskUpdate,
+  onOpenListItem,
 }: TaskModalProps) {
   const [aiChatOpen, setAiChatOpen] = useState(false)
 
@@ -236,6 +239,7 @@ export function TaskModal({
                     onOptimisticLinksChange={(links) => {
                       optimisticUpdateLinks(links)
                     }}
+                    onOpenListItem={onOpenListItem}
                   />
                 </div>
               </div>

@@ -15,6 +15,7 @@ import type {
   EvidenceSummary,
 } from '@/app/actions/legal-document-modal'
 import type { WorkspaceMemberOption } from '@/app/actions/document-list'
+import type { ComplianceStatus } from '@prisma/client'
 
 interface RightPanelProps {
   listItem: ListItemDetails
@@ -23,6 +24,20 @@ interface RightPanelProps {
   onUpdate: () => Promise<void>
   onEvidenceClick: () => void
   onAiChatToggle?: (() => void) | undefined
+  onOptimisticChange?:
+    | ((_fields: {
+        complianceStatus?: ComplianceStatus
+        priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+      }) => void)
+    | undefined
+  /** Notify parent to update document list (modal → list optimistic update) */
+  onListItemChange?:
+    | ((_updates: {
+        complianceStatus?: ComplianceStatus
+        priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+        responsibleUserId?: string | null
+      }) => void)
+    | undefined
 }
 
 export function RightPanel({
@@ -32,6 +47,8 @@ export function RightPanel({
   onUpdate,
   onEvidenceClick,
   onAiChatToggle,
+  onOptimisticChange,
+  onListItemChange,
 }: RightPanelProps) {
   return (
     <div className="border-l bg-muted/30 max-md:border-t max-md:border-l-0">
@@ -42,6 +59,8 @@ export function RightPanel({
             listItem={listItem}
             workspaceMembers={workspaceMembers}
             onUpdate={onUpdate}
+            onOptimisticChange={onOptimisticChange}
+            onListItemChange={onListItemChange}
           />
 
           {/* Quick Links Box */}

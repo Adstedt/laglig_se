@@ -10,6 +10,7 @@ import type { UIMessage } from 'ai'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ChatMessage } from './chat-message'
 import { StreamingIndicator } from './streaming-indicator'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 import type { Citation } from '@/lib/ai/citations'
 import { cn } from '@/lib/utils'
 
@@ -47,8 +48,8 @@ export function ChatMessageList({
 
         {isStreaming && (
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <span className="text-xs font-medium text-primary">AI</span>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted border border-border">
+              <LexaIcon size={16} />
             </div>
             <div className="pt-1">
               <StreamingIndicator />

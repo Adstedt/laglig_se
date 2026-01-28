@@ -25,6 +25,7 @@ export interface InitialListItemData {
   id: string
   position: number
   complianceStatus: string
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH'
   category: string | null
   addedAt: Date
   dueDate: Date | null
@@ -86,6 +87,7 @@ function initialDataToListItem(
     position: initial.position,
     complianceStatus:
       initial.complianceStatus as ListItemDetails['complianceStatus'],
+    priority: initial.priority ?? 'MEDIUM',
     businessContext: extraData?.businessContext ?? null,
     aiCommentary: extraData?.aiCommentary ?? null,
     category: initial.category,

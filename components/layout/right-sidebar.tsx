@@ -6,7 +6,8 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
-import { X, Sparkles, MessageSquare, Maximize2, Minimize2 } from 'lucide-react'
+import { X, MessageSquare, Maximize2, Minimize2 } from 'lucide-react'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from '@/components/features/ai-chat/chat-message-list'
@@ -85,7 +86,7 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
           className="hidden lg:flex fixed right-0 top-1/2 z-40 h-14 w-8 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 bg-primary text-primary-foreground shadow-lg transition-all hover:w-10 hover:bg-primary/90"
           aria-label="Öppna AI Chat"
         >
-          <Sparkles className="h-4 w-4" />
+          <LexaIcon size={16} className="invert-0" />
         </button>
       )}
 
@@ -104,11 +105,13 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
         <div className="flex h-[60px] items-center justify-between border-b px-4 shrink-0 bg-card">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted border border-border">
-              <Sparkles className="h-4 w-4 text-muted-foreground" />
+              <LexaIcon size={16} />
             </div>
             <div>
-              <h2 className="text-sm font-semibold">AI Assistent</h2>
-              <p className="text-xs text-muted-foreground">Fråga om lagar</p>
+              <h2 className="text-sm font-semibold">Lexa</h2>
+              <p className="text-xs text-muted-foreground">
+                Fråga om regler och efterlevnad
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-1">

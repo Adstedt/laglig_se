@@ -6,7 +6,8 @@
  */
 
 import { useRef, useEffect, ReactNode } from 'react'
-import { Sparkles, X, MessageSquare } from 'lucide-react'
+import { X } from 'lucide-react'
+import { LexaIcon } from '@/components/ui/lexa-icon'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from './chat-message-list'
 import { ChatInputModern } from './chat-input-modern'
@@ -54,7 +55,7 @@ export function ChatPanel({
   initialContext,
   analyticsLocation,
   onClose,
-  title = 'AI Assistent',
+  title = 'Lexa',
   subtitle,
   emptyStateTitle = 'Hur kan jag hjälpa dig?',
   emptyStateDescription,
@@ -105,9 +106,6 @@ export function ChatPanel({
         (headerContent || (
           <div className="flex items-center justify-between border-b px-4 py-3 shrink-0 bg-background">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted border border-border shrink-0">
-                <Sparkles className="h-4 w-4 text-muted-foreground" />
-              </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-medium">{title}</span>
@@ -191,7 +189,7 @@ function EmptyState({
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted border border-border mb-4">
-        <MessageSquare className="h-5 w-5 text-muted-foreground" />
+        <LexaIcon size={20} />
       </div>
       <h3 className="text-base font-semibold mb-1">{title}</h3>
       {description && (

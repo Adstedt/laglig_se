@@ -20,6 +20,7 @@ import { AllWorkTab } from './all-work-tab'
 import { WorkspaceSkeleton } from './workspace-skeleton'
 import { TaskModal } from '../task-modal'
 import { CreateTaskModal } from '../create-task-modal'
+import { LegalDocumentModal } from '@/components/features/document-list/legal-document-modal'
 import type {
   TaskWithRelations,
   TaskColumnWithCount,
@@ -68,6 +69,19 @@ export function TaskWorkspace({
 
   // Story 6.7: Create task modal state
   const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false)
+
+  // Legal Document Modal state (opened from linked docs in task modal)
+  const [selectedListItemId, setSelectedListItemId] = useState<string | null>(
+    null
+  )
+
+  const handleOpenListItem = useCallback((listItemId: string) => {
+    setSelectedListItemId(listItemId)
+  }, [])
+
+  const handleCloseListItemModal = useCallback(() => {
+    setSelectedListItemId(null)
+  }, [])
 
   // Sync modal state with URL param on mount and changes
   const taskIdFromUrl = searchParams.get('task')
@@ -183,6 +197,15 @@ export function TaskWorkspace({
         workspaceMembers={workspaceMembers}
         columns={columns}
         onTaskUpdate={handleTaskUpdate}
+        onOpenListItem={handleOpenListItem}
+      />
+
+      {/* Legal Document Modal (opened from linked docs in task modal) */}
+      <LegalDocumentModal
+        listItemId={selectedListItemId}
+        onClose={handleCloseListItemModal}
+        workspaceMembers={workspaceMembers}
+        taskColumns={columns}
       />
 
       {/* Story 6.7: Create Task Modal */}

@@ -6,7 +6,13 @@
  * Polished design with better contrast and spacing
  */
 
-import { useState, forwardRef, useImperativeHandle, useRef } from 'react'
+import {
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useEffect,
+} from 'react'
 import {
   Send,
   Loader2,
@@ -109,7 +115,13 @@ export const ChatInputModern = forwardRef<
 ) {
   const [input, setInput] = useState('')
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
+  const [mounted, setMounted] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Prevent hydration mismatch with DropdownMenu
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Forward ref to textarea
   useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement)
@@ -275,8 +287,8 @@ export const ChatInputModern = forwardRef<
                 </TooltipProvider>
               )}
 
-              {/* Model selector */}
-              {showModelSelector && (
+              {/* Model selector - only render after mount to prevent hydration mismatch */}
+              {showModelSelector && mounted && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
