@@ -36,6 +36,13 @@ interface DetailsBoxProps {
   listItem: ListItemDetails
   workspaceMembers: WorkspaceMemberOption[]
   onUpdate: () => Promise<void>
+  /** Notify parent of optimistic status/priority changes for header badges */
+  onOptimisticChange?:
+    | ((_fields: {
+        complianceStatus?: ComplianceStatus
+        priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+      }) => void)
+    | undefined
 }
 
 // Status configuration - aligned with law list column dropdowns
@@ -91,6 +98,7 @@ export function DetailsBox({
   listItem,
   workspaceMembers,
   onUpdate,
+  onOptimisticChange,
 }: DetailsBoxProps) {
   // Local state for optimistic UI - persists user selection immediately
   const [localStatus, setLocalStatus] = useState(listItem.complianceStatus)
@@ -110,10 +118,10 @@ export function DetailsBox({
   const handleStatusChange = async (status: ComplianceStatus) => {
     if (status === localStatus) return
     setLocalStatus(status) // Optimistic update
+    onOptimisticChange?.({ complianceStatus: status }) // Update header badges
     setIsStatusLoading(true)
     try {
       await updateListItemComplianceStatus(listItem.id, status)
-      // Don't call onUpdate() - local state is already correct
     } finally {
       setIsStatusLoading(false)
     }
@@ -122,10 +130,10 @@ export function DetailsBox({
   const handlePriorityChange = async (priority: Priority) => {
     if (priority === localPriority) return
     setLocalPriority(priority) // Optimistic update
+    onOptimisticChange?.({ priority }) // Update header badges
     setIsPriorityLoading(true)
     try {
       await updateListItemPriority(listItem.id, priority)
-      // Don't call onUpdate() - local state is already correct
     } finally {
       setIsPriorityLoading(false)
     }

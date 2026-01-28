@@ -8,7 +8,7 @@
  * only fetches missing data (htmlContent, businessContext, aiCommentary)
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -24,6 +24,7 @@ import {
   type WorkspaceMember,
 } from '@/lib/hooks/use-list-item-details'
 import type { TaskColumnWithCount } from '@/app/actions/tasks'
+import type { ComplianceStatus } from '@prisma/client'
 
 interface LegalDocumentModalProps {
   listItemId: string | null
@@ -51,9 +52,20 @@ export function LegalDocumentModal({
 }: LegalDocumentModalProps) {
   const [aiChatOpen, setAiChatOpen] = useState(false)
 
+  // Optimistic overrides for status/priority (header badges + details box stay in sync)
+  const [overrides, setOverrides] = useState<{
+    complianceStatus?: ComplianceStatus
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+  }>({})
+
+  // Reset overrides when switching to a different list item
+  useEffect(() => {
+    setOverrides({})
+  }, [listItemId])
+
   // Use SWR hook - pass initialData for instant display, only fetch missing data
   const {
-    listItem,
+    listItem: rawListItem,
     taskProgress,
     evidence,
     workspaceMembers,
@@ -64,6 +76,28 @@ export function LegalDocumentModal({
     mutateTaskProgress: handleTasksUpdate,
     optimisticTaskUpdate: handleOptimisticTaskUpdate,
   } = useListItemDetails(listItemId, initialData, preloadedMembers)
+
+  // Merge optimistic overrides into listItem
+  const listItem = useMemo(() => {
+    if (!rawListItem) return null
+    if (!overrides.complianceStatus && !overrides.priority) return rawListItem
+    return {
+      ...rawListItem,
+      complianceStatus:
+        overrides.complianceStatus ?? rawListItem.complianceStatus,
+      priority: overrides.priority ?? rawListItem.priority,
+    }
+  }, [rawListItem, overrides])
+
+  const handleOptimisticChange = useCallback(
+    (fields: {
+      complianceStatus?: ComplianceStatus
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+    }) => {
+      setOverrides((prev) => ({ ...prev, ...fields }))
+    },
+    []
+  )
 
   // Scroll to evidence tab
   const scrollToEvidenceTab = useCallback(() => {
@@ -182,6 +216,7 @@ export function LegalDocumentModal({
                     onUpdate={handleDataUpdate}
                     onEvidenceClick={scrollToEvidenceTab}
                     onAiChatToggle={() => setAiChatOpen(!aiChatOpen)}
+                    onOptimisticChange={handleOptimisticChange}
                   />
                 </div>
               </div>
