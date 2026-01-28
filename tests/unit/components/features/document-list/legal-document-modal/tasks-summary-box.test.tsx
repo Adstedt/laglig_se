@@ -1,5 +1,9 @@
 /**
  * Story 6.3: Tasks Summary Box Unit Tests
+ *
+ * @deprecated Story 6.15: TasksSummaryBox has been replaced by TasksAccordion.
+ * See tasks-accordion.test.tsx for current tests.
+ * This file is retained for reference only.
  */
 
 import { describe, it, expect, vi } from 'vitest'

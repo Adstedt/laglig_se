@@ -55,6 +55,7 @@ export interface ListItemDetails {
 export interface TaskSummary {
   id: string
   title: string
+  columnId: string
   columnName: string
   columnColor: string | null
   isDone: boolean
@@ -547,6 +548,7 @@ export async function getDocumentContent(
 /**
  * Get tasks linked to a list item
  * Returns null if Task model doesn't exist (graceful fallback)
+ * Uses Redis caching with 60s TTL for performance
  */
 export async function getTasksForListItem(
   listItemId: string
@@ -563,7 +565,21 @@ export async function getTasksForListItem(
         return { success: false, error: 'Laglistpost hittades inte' }
       }
 
+      // Check Redis cache first
+      const cacheKey = `list-item-tasks:${listItemId}`
+      try {
+        const cached = await redis.get(cacheKey)
+        if (cached) {
+          const parsed =
+            typeof cached === 'string' ? JSON.parse(cached) : cached
+          return { success: true, data: parsed as TaskProgress }
+        }
+      } catch {
+        // Cache read error - continue to database
+      }
+
       // Try to fetch tasks - graceful fallback if Task model doesn't exist
+      // Story 6.15: Removed limits to show all linked tasks in accordion
       try {
         const tasks = await prisma.task.findMany({
           where: {
@@ -574,31 +590,37 @@ export async function getTasksForListItem(
             assignee: { select: { name: true, avatar_url: true } },
           },
           orderBy: { position: 'asc' },
-          take: 10,
         })
 
         const completed = tasks.filter((t) => t.column.is_done).length
 
-        return {
-          success: true,
-          data: {
-            completed,
-            total: tasks.length,
-            tasks: tasks.slice(0, 5).map((t) => ({
-              id: t.id,
-              title: t.title,
-              columnName: t.column.name,
-              columnColor: t.column.color,
-              isDone: t.column.is_done,
-              assignee: t.assignee
-                ? {
-                    name: t.assignee.name,
-                    avatarUrl: t.assignee.avatar_url,
-                  }
-                : null,
-            })),
-          },
+        const taskProgress: TaskProgress = {
+          completed,
+          total: tasks.length,
+          tasks: tasks.map((t) => ({
+            id: t.id,
+            title: t.title,
+            columnId: t.column_id,
+            columnName: t.column.name,
+            columnColor: t.column.color,
+            isDone: t.column.is_done,
+            assignee: t.assignee
+              ? {
+                  name: t.assignee.name,
+                  avatarUrl: t.assignee.avatar_url,
+                }
+              : null,
+          })),
         }
+
+        // Cache for 60 seconds
+        try {
+          await redis.set(cacheKey, JSON.stringify(taskProgress), { ex: 60 })
+        } catch {
+          // Cache write error - non-critical
+        }
+
+        return { success: true, data: taskProgress }
       } catch (taskError) {
         // Table doesn't exist - graceful fallback
         if (
@@ -613,6 +635,41 @@ export async function getTasksForListItem(
   } catch (error) {
     console.error('Error fetching tasks for list item:', error)
     return { success: true, data: null } // Graceful fallback
+  }
+}
+
+/**
+ * Invalidate task cache for a list item
+ * Call this when tasks are linked/unlinked or task status changes
+ */
+export async function invalidateListItemTasksCache(
+  listItemId: string
+): Promise<void> {
+  try {
+    await redis.del(`list-item-tasks:${listItemId}`)
+  } catch {
+    // Cache invalidation error - non-critical
+  }
+}
+
+/**
+ * Invalidate task cache for all list items linked to a task
+ * Call this when a task's status changes
+ */
+export async function invalidateTaskLinkedListItemsCache(
+  taskId: string
+): Promise<void> {
+  try {
+    const links = await prisma.taskListItemLink.findMany({
+      where: { task_id: taskId },
+      select: { law_list_item_id: true },
+    })
+
+    await Promise.all(
+      links.map((link) => redis.del(`list-item-tasks:${link.law_list_item_id}`))
+    )
+  } catch {
+    // Cache invalidation error - non-critical
   }
 }
 

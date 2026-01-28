@@ -12,6 +12,10 @@ import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { z } from 'zod'
 import type { TaskPriority, TaskColumn } from '@prisma/client'
+import {
+  invalidateTaskLinkedListItemsCache,
+  invalidateListItemTasksCache,
+} from './legal-document-modal'
 
 // ============================================================================
 // Action Result Type
@@ -665,6 +669,9 @@ export async function updateTaskStatus(
         },
       })
 
+      // Invalidate cache for linked list items so document modal shows updated status
+      await invalidateTaskLinkedListItemsCache(taskId)
+
       revalidatePath('/tasks')
       return { success: true }
     })
@@ -746,6 +753,11 @@ export async function updateTasksBulk(
         where: { id: { in: taskIds } },
         data,
       })
+
+      // Invalidate cache for all linked list items
+      await Promise.all(
+        taskIds.map((id) => invalidateTaskLinkedListItemsCache(id))
+      )
 
       revalidatePath('/tasks')
       return { success: true }
@@ -1184,6 +1196,13 @@ export async function createTask(data: {
         return newTask
       })
 
+      // Invalidate cache for linked list items
+      if (data.linkedListItemIds && data.linkedListItemIds.length > 0) {
+        await Promise.all(
+          data.linkedListItemIds.map((id) => invalidateListItemTasksCache(id))
+        )
+      }
+
       // Fetch full task with relations
       const fullTask = await prisma.task.findUnique({
         where: { id: task.id },
@@ -1266,6 +1285,9 @@ export async function deleteTask(taskId: string): Promise<ActionResult> {
         return { success: false, error: 'Uppgiften hittades inte' }
       }
 
+      // Invalidate cache before deletion (while links still exist)
+      await invalidateTaskLinkedListItemsCache(taskId)
+
       await prisma.task.delete({
         where: { id: taskId },
       })
@@ -1312,6 +1334,11 @@ export async function deleteTasksBulk(
       if (tasks.length !== taskIds.length) {
         return { success: false, error: 'Vissa uppgifter hittades inte' }
       }
+
+      // Invalidate cache before deletion (while links still exist)
+      await Promise.all(
+        taskIds.map((id) => invalidateTaskLinkedListItemsCache(id))
+      )
 
       await prisma.task.deleteMany({
         where: { id: { in: taskIds } },
@@ -1641,14 +1668,23 @@ export async function reorderTaskColumns(
       }
 
       // Update positions based on array index
-      await prisma.$transaction(
-        columnIds.map((id, index) =>
+      // Use two-phase update to avoid unique constraint conflicts on (workspace_id, position)
+      // Phase 1: Set all positions to negative values (temporary)
+      // Phase 2: Set to final positive positions
+      await prisma.$transaction([
+        ...columnIds.map((id, index) =>
+          prisma.taskColumn.update({
+            where: { id },
+            data: { position: -(index + 1000) },
+          })
+        ),
+        ...columnIds.map((id, index) =>
           prisma.taskColumn.update({
             where: { id },
             data: { position: index },
           })
-        )
-      )
+        ),
+      ])
 
       // Fetch updated columns
       const updatedColumns = await prisma.taskColumn.findMany({
@@ -1882,6 +1918,94 @@ export async function getLawListItemsForLinking(
     })
   } catch (error) {
     console.error('getLawListItemsForLinking error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+// ============================================================================
+// Story 6.15: Get Tasks for Linking (from Law List Item side)
+// ============================================================================
+
+export interface TaskForLinking {
+  id: string
+  title: string
+  priority: TaskPriority
+  column: {
+    name: string
+    color: string
+    is_done: boolean
+  }
+  assignee: {
+    id: string
+    name: string | null
+    avatar_url: string | null
+  } | null
+}
+
+/**
+ * Get workspace tasks for linking to law list items
+ * Story 6.15: Used by TasksSummaryBox link existing dialog
+ * @param excludeLinkedTo - Optional list item ID to exclude already-linked tasks
+ * @param query - Optional search query to filter tasks
+ */
+export async function getTasksForLinking(
+  excludeLinkedTo?: string,
+  query?: string
+): Promise<ActionResult<TaskForLinking[]>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      // Build where clause
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const whereClause: any = {
+        workspace_id: workspaceId,
+      }
+
+      // Exclude tasks already linked to this list item
+      if (excludeLinkedTo) {
+        whereClause.NOT = {
+          list_item_links: {
+            some: { law_list_item_id: excludeLinkedTo },
+          },
+        }
+      }
+
+      // Add search filter
+      if (query && query.length > 0) {
+        whereClause.title = { contains: query, mode: 'insensitive' }
+      }
+
+      const tasks = await prisma.task.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          title: true,
+          priority: true,
+          column: {
+            select: {
+              name: true,
+              color: true,
+              is_done: true,
+            },
+          },
+          assignee: {
+            select: {
+              id: true,
+              name: true,
+              avatar_url: true,
+            },
+          },
+        },
+        orderBy: { updated_at: 'desc' },
+        take: 50,
+      })
+
+      return { success: true, data: tasks }
+    })
+  } catch (error) {
+    console.error('getTasksForLinking error:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Ett fel uppstod',

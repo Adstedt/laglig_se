@@ -23,6 +23,7 @@ import {
   type InitialListItemData,
   type WorkspaceMember,
 } from '@/lib/hooks/use-list-item-details'
+import type { TaskColumnWithCount } from '@/app/actions/tasks'
 
 interface LegalDocumentModalProps {
   listItemId: string | null
@@ -31,6 +32,12 @@ interface LegalDocumentModalProps {
   initialData?: InitialListItemData | null
   /** Pre-loaded workspace members (fetch once at page level) */
   workspaceMembers?: WorkspaceMember[]
+  /** Callback to open a task modal */
+  onOpenTask?: ((_taskId: string) => void) | undefined
+  /** Current user ID for "assign to me" functionality */
+  currentUserId?: string
+  /** Task columns for inline status change in TasksAccordion */
+  taskColumns?: TaskColumnWithCount[]
 }
 
 export function LegalDocumentModal({
@@ -38,6 +45,9 @@ export function LegalDocumentModal({
   onClose,
   initialData,
   workspaceMembers: preloadedMembers,
+  onOpenTask,
+  currentUserId,
+  taskColumns = [],
 }: LegalDocumentModalProps) {
   const [aiChatOpen, setAiChatOpen] = useState(false)
 
@@ -52,6 +62,7 @@ export function LegalDocumentModal({
     error,
     mutate: handleDataUpdate,
     mutateTaskProgress: handleTasksUpdate,
+    optimisticTaskUpdate: handleOptimisticTaskUpdate,
   } = useListItemDetails(listItemId, initialData, preloadedMembers)
 
   // Scroll to evidence tab
@@ -149,22 +160,26 @@ export function LegalDocumentModal({
 
                 {/* Two-panel layout */}
                 <div className="grid flex-1 min-h-0 grid-cols-1 md:grid-cols-[3fr_2fr]">
-                  {/* Left panel - scrollable */}
+                  {/* Left panel - scrollable (Story 6.15: tasks moved here) */}
                   <ScrollArea className="h-full">
                     <LeftPanel
                       listItem={listItem}
                       isLoadingContent={isLoadingContent}
+                      taskProgress={taskProgress}
+                      onTasksUpdate={handleTasksUpdate}
+                      onOpenTask={onOpenTask}
+                      currentUserId={currentUserId}
+                      onOptimisticTaskUpdate={handleOptimisticTaskUpdate}
+                      taskColumns={taskColumns}
                     />
                   </ScrollArea>
 
                   {/* Right panel - sticky on desktop, below on mobile */}
                   <RightPanel
                     listItem={listItem}
-                    taskProgress={taskProgress}
                     evidence={evidence}
                     workspaceMembers={workspaceMembers}
                     onUpdate={handleDataUpdate}
-                    onTasksUpdate={handleTasksUpdate}
                     onEvidenceClick={scrollToEvidenceTab}
                     onAiChatToggle={() => setAiChatOpen(!aiChatOpen)}
                   />

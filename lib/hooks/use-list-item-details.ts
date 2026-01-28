@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import useSWR from 'swr'
 import {
   getListItemDetails,
   getDocumentContent,
+  getTasksForListItem,
   type ListItemDetails,
   type TaskProgress,
   type EvidenceSummary,
@@ -68,6 +69,8 @@ interface UseListItemDetailsResult {
   error: string | null
   mutate: () => Promise<void>
   mutateTaskProgress: () => Promise<void>
+  /** Story 6.15: Optimistic update for task list (e.g., after unlink) */
+  optimisticTaskUpdate: (_tasks: TaskProgress['tasks']) => void
 }
 
 /**
@@ -182,10 +185,25 @@ export function useListItemDetails(
     }
   )
 
-  // DISABLED: Tasks/Evidence queries cause slow load times in production
-  const taskData = null
+  // Story 6.15: Re-enabled task fetching for bidirectional linking
+  const { data: taskData, mutate: mutateTaskData } = useSWR(
+    listItemId ? `list-item-tasks:${listItemId}` : null,
+    async () => {
+      const result = await getTasksForListItem(listItemId!)
+      if (!result.success) {
+        return null
+      }
+      return result.data
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 10000, // 10 seconds
+    }
+  )
+
+  // Evidence still disabled for now
   const evidenceData = null
-  const mutateTaskProgress = async () => {}
 
   // Fetch workspace members only if not preloaded
   const { data: fetchedMembers } = useSWR(
@@ -232,8 +250,29 @@ export function useListItemDetails(
   }
 
   const handleMutateTaskProgress = async () => {
-    await mutateTaskProgress()
+    await mutateTaskData()
   }
+
+  // Story 6.15: Optimistic update for task list
+  const handleOptimisticTaskUpdate = useCallback(
+    (tasks: TaskProgress['tasks']) => {
+      // Update SWR cache optimistically without revalidating
+      mutateTaskData(
+        (currentData) => {
+          if (!currentData) return currentData
+          const completed = tasks.filter((t) => t.isDone).length
+          return {
+            ...currentData,
+            completed,
+            total: tasks.length,
+            tasks,
+          }
+        },
+        { revalidate: false }
+      )
+    },
+    [mutateTaskData]
+  )
 
   // Loading state: only show loading if we have no data to display
   // With initialData, we can show content immediately
@@ -249,5 +288,6 @@ export function useListItemDetails(
     error: fullDataError?.message ?? null,
     mutate: handleMutate,
     mutateTaskProgress: handleMutateTaskProgress,
+    optimisticTaskUpdate: handleOptimisticTaskUpdate,
   }
 }
