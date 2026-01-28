@@ -5,11 +5,11 @@
  * Right panel details: document info, efterlevnad (compliance), priority, responsible person, dates
  *
  * Design: Minimal inline style with hover states for interactivity
- * Aligned with TasksAccordion design patterns
+ * Aligned with law list column dropdowns and TasksAccordion design patterns
  * Uses optimistic UI patterns for immediate feedback
  */
 
-import { useOptimistic, useTransition } from 'react'
+import { useState, useEffect } from 'react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { User, Flag } from 'lucide-react'
+import { User, Flag, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   updateListItemComplianceStatus,
@@ -38,35 +38,31 @@ interface DetailsBoxProps {
   onUpdate: () => Promise<void>
 }
 
-// Status configuration
+// Status configuration - aligned with law list column dropdowns
 const STATUS_CONFIG: Record<
   ComplianceStatus,
-  { label: string; color: string; bgColor: string }
+  { label: string; className: string; strikethrough?: boolean }
 > = {
   EJ_PABORJAD: {
     label: 'Ej påbörjad',
-    color: 'text-gray-700',
-    bgColor: 'bg-gray-100',
+    className: 'bg-gray-100 text-gray-700',
   },
   PAGAENDE: {
     label: 'Pågående',
-    color: 'text-blue-700',
-    bgColor: 'bg-blue-50',
+    className: 'bg-blue-100 text-blue-700',
   },
   UPPFYLLD: {
     label: 'Uppfylld',
-    color: 'text-green-700',
-    bgColor: 'bg-green-50',
+    className: 'bg-green-100 text-green-700',
   },
   EJ_UPPFYLLD: {
     label: 'Ej uppfylld',
-    color: 'text-red-700',
-    bgColor: 'bg-red-50',
+    className: 'bg-red-100 text-red-700',
   },
   EJ_TILLAMPLIG: {
     label: 'Ej tillämplig',
-    color: 'text-gray-500',
-    bgColor: 'bg-gray-50',
+    className: 'bg-gray-100 text-gray-500',
+    strikethrough: true,
   },
 }
 
@@ -96,34 +92,43 @@ export function DetailsBox({
   workspaceMembers,
   onUpdate,
 }: DetailsBoxProps) {
-  const [isPending, startTransition] = useTransition()
+  // Local state for optimistic UI - persists user selection immediately
+  const [localStatus, setLocalStatus] = useState(listItem.complianceStatus)
+  const [localPriority, setLocalPriority] = useState(listItem.priority)
+  const [isStatusLoading, setIsStatusLoading] = useState(false)
+  const [isPriorityLoading, setIsPriorityLoading] = useState(false)
 
-  // Optimistic state for compliance status
-  const [optimisticStatus, setOptimisticStatus] = useOptimistic(
-    listItem.complianceStatus,
-    (_current, newStatus: ComplianceStatus) => newStatus
-  )
+  // Sync local state when props change (e.g., after navigation or external update)
+  useEffect(() => {
+    setLocalStatus(listItem.complianceStatus)
+  }, [listItem.complianceStatus])
 
-  // Optimistic state for priority
-  const [optimisticPriority, setOptimisticPriority] = useOptimistic(
-    listItem.priority,
-    (_current, newPriority: Priority) => newPriority
-  )
+  useEffect(() => {
+    setLocalPriority(listItem.priority)
+  }, [listItem.priority])
 
-  const handleStatusChange = (status: ComplianceStatus) => {
-    startTransition(async () => {
-      setOptimisticStatus(status)
+  const handleStatusChange = async (status: ComplianceStatus) => {
+    if (status === localStatus) return
+    setLocalStatus(status) // Optimistic update
+    setIsStatusLoading(true)
+    try {
       await updateListItemComplianceStatus(listItem.id, status)
-      await onUpdate()
-    })
+      // Don't call onUpdate() - local state is already correct
+    } finally {
+      setIsStatusLoading(false)
+    }
   }
 
-  const handlePriorityChange = (priority: Priority) => {
-    startTransition(async () => {
-      setOptimisticPriority(priority)
+  const handlePriorityChange = async (priority: Priority) => {
+    if (priority === localPriority) return
+    setLocalPriority(priority) // Optimistic update
+    setIsPriorityLoading(true)
+    try {
       await updateListItemPriority(listItem.id, priority)
-      await onUpdate()
-    })
+      // Don't call onUpdate() - local state is already correct
+    } finally {
+      setIsPriorityLoading(false)
+    }
   }
 
   const handleResponsibleChange = async (userId: string) => {
@@ -132,9 +137,9 @@ export function DetailsBox({
     await onUpdate()
   }
 
-  // Use optimistic values for display
-  const statusConfig = STATUS_CONFIG[optimisticStatus]
-  const priorityConfig = PRIORITY_CONFIG[optimisticPriority]
+  // Use local state values for display (optimistic)
+  const statusConfig = STATUS_CONFIG[localStatus]
+  const priorityConfig = PRIORITY_CONFIG[localPriority]
 
   return (
     <Card className="border-border/40 shadow-sm">
@@ -155,31 +160,40 @@ export function DetailsBox({
           {/* Efterlevnad (Compliance Status) - Editable with optimistic UI */}
           <DetailRow label="Efterlevnad" interactive>
             <Select
-              value={optimisticStatus}
+              value={localStatus}
               onValueChange={(v) => handleStatusChange(v as ComplianceStatus)}
-              disabled={isPending}
+              disabled={isStatusLoading}
             >
-              <SelectTrigger className="!h-auto !p-0 !border-0 !shadow-none !bg-transparent hover:!bg-transparent focus:!ring-0 !w-auto gap-1.5 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-70">
-                <SelectValue>
-                  <span
-                    className={cn(
-                      'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                      statusConfig.bgColor,
-                      statusConfig.color
-                    )}
-                  >
-                    {statusConfig.label}
-                  </span>
-                </SelectValue>
+              <SelectTrigger
+                className={cn(
+                  '!h-auto !p-0 !border-0 !shadow-none !bg-transparent hover:!bg-transparent focus:!ring-0 !w-auto gap-1.5 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-70',
+                  isStatusLoading && 'opacity-50'
+                )}
+              >
+                {isStatusLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <SelectValue>
+                    <span
+                      className={cn(
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                        statusConfig.className,
+                        statusConfig.strikethrough && 'line-through'
+                      )}
+                    >
+                      {statusConfig.label}
+                    </span>
+                  </SelectValue>
+                )}
               </SelectTrigger>
               <SelectContent align="end">
                 {Object.entries(STATUS_CONFIG).map(([value, config]) => (
                   <SelectItem key={value} value={value}>
                     <span
                       className={cn(
-                        'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                        config.bgColor,
-                        config.color
+                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                        config.className,
+                        config.strikethrough && 'line-through'
                       )}
                     >
                       {config.label}
@@ -193,24 +207,33 @@ export function DetailsBox({
           {/* Priority - Editable with optimistic UI */}
           <DetailRow label="Prioritet" interactive>
             <Select
-              value={optimisticPriority}
+              value={localPriority}
               onValueChange={(v) => handlePriorityChange(v as Priority)}
-              disabled={isPending}
+              disabled={isPriorityLoading}
             >
-              <SelectTrigger className="!h-auto !p-0 !border-0 !shadow-none !bg-transparent hover:!bg-transparent focus:!ring-0 !w-auto gap-1.5 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-70">
-                <SelectValue>
-                  <div className="flex items-center gap-1.5">
-                    <Flag
-                      className={cn(
-                        'h-3.5 w-3.5',
-                        priorityConfig.iconClassName
-                      )}
-                    />
-                    <span className="text-sm text-foreground">
-                      {priorityConfig.label}
-                    </span>
-                  </div>
-                </SelectValue>
+              <SelectTrigger
+                className={cn(
+                  '!h-auto !p-0 !border-0 !shadow-none !bg-transparent hover:!bg-transparent focus:!ring-0 !w-auto gap-1.5 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-70',
+                  isPriorityLoading && 'opacity-50'
+                )}
+              >
+                {isPriorityLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <SelectValue>
+                    <div className="flex items-center gap-1.5">
+                      <Flag
+                        className={cn(
+                          'h-3.5 w-3.5',
+                          priorityConfig.iconClassName
+                        )}
+                      />
+                      <span className="text-sm text-foreground">
+                        {priorityConfig.label}
+                      </span>
+                    </div>
+                  </SelectValue>
+                )}
               </SelectTrigger>
               <SelectContent align="end">
                 {Object.entries(PRIORITY_CONFIG).map(([value, config]) => (
