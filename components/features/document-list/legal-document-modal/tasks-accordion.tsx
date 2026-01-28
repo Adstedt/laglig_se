@@ -344,8 +344,8 @@ export function TasksAccordion({
           )}
         </div>
       </AccordionTrigger>
-      <AccordionContent className="px-4 pb-4">
-        <div className="space-y-3">
+      <AccordionContent className="px-4 pb-4 overflow-hidden">
+        <div className="space-y-3 min-w-0">
           {/* Dynamic sections for each column with tasks */}
           {columnsWithTasks.length > 0 ? (
             columnsWithTasks.map((column, index) => {
@@ -392,7 +392,7 @@ export function TasksAccordion({
                     <CollapsibleContent>
                       <div
                         className={cn(
-                          'space-y-0.5 pt-1.5',
+                          'space-y-0.5 pt-1.5 overflow-hidden',
                           column.is_done && 'opacity-70'
                         )}
                       >
@@ -521,7 +521,7 @@ function TaskItem({
   return (
     <div
       className={cn(
-        'flex items-center gap-2.5 w-full rounded-md group cursor-pointer',
+        'flex items-center gap-2.5 w-full min-w-0 overflow-hidden rounded-md group cursor-pointer',
         'transition-all duration-150',
         task.isDone
           ? 'py-1.5 px-2 hover:bg-muted/30'

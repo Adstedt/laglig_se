@@ -193,9 +193,9 @@ export function LegalDocumentModal({
                 />
 
                 {/* Two-panel layout */}
-                <div className="grid flex-1 min-h-0 grid-cols-1 md:grid-cols-[3fr_2fr]">
+                <div className="grid flex-1 min-h-0 grid-cols-1 md:grid-cols-[3fr_2fr] overflow-hidden">
                   {/* Left panel - scrollable (Story 6.15: tasks moved here) */}
-                  <ScrollArea className="h-full">
+                  <ScrollArea className="h-full min-w-0 [&>div>div]:!block [&>div>div]:!min-w-0">
                     <LeftPanel
                       listItem={listItem}
                       isLoadingContent={isLoadingContent}

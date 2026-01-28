@@ -42,7 +42,7 @@ export function LeftPanel({
   taskColumns = [],
 }: LeftPanelProps) {
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 overflow-hidden">
       {/* Law Header */}
       <LawHeader
         title={listItem.legalDocument.title}

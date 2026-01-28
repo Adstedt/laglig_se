@@ -140,6 +140,11 @@ export function DocumentListPageContent({
     setSelectedTaskId(null)
   }, [])
 
+  // Handle opening a list item from the task modal (opens Legal Document Modal on top)
+  const handleOpenListItemFromTask = useCallback((listItemId: string) => {
+    setSelectedListItemId(listItemId)
+  }, [])
+
   // Story 6.15: Handle task update - refresh task list in Law List Item Modal
   const handleTaskUpdate = useCallback(
     (_taskId: string, _updates: Record<string, unknown>) => {
@@ -450,7 +455,7 @@ export function DocumentListPageContent({
     if (documentIdFromUrl !== selectedListItemId) {
       setSelectedListItemId(documentIdFromUrl)
     }
-  }, [documentIdFromUrl]) // Remove selectedListItemId from deps to prevent loops
+  }, [documentIdFromUrl]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clear error on unmount
   useEffect(() => {
@@ -840,6 +845,7 @@ export function DocumentListPageContent({
         workspaceMembers={workspaceMembers}
         columns={taskColumns}
         onTaskUpdate={handleTaskUpdate}
+        onOpenListItem={handleOpenListItemFromTask}
       />
     </div>
   )
