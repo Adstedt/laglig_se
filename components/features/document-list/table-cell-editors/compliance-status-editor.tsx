@@ -2,6 +2,7 @@
 
 /**
  * Story 6.2: Inline Compliance Status Editor for Table View
+ * Story 6.16: Added tooltips for each status option
  * Swedish labels with color-coded badges
  */
 
@@ -12,6 +13,12 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Loader2 } from 'lucide-react'
 import type { ComplianceStatus } from '@prisma/client'
 import { cn } from '@/lib/utils'
@@ -20,28 +27,38 @@ export const COMPLIANCE_STATUS_OPTIONS: {
   value: ComplianceStatus
   label: string
   color: string
+  tooltip: string
   strikethrough?: boolean
 }[] = [
   {
     value: 'EJ_PABORJAD',
     label: 'Ej påbörjad',
     color: 'bg-gray-100 text-gray-700',
+    tooltip: 'Inga rutiner eller dokumentation finns på plats',
   },
-  { value: 'PAGAENDE', label: 'Pågående', color: 'bg-blue-100 text-blue-700' },
+  {
+    value: 'PAGAENDE',
+    label: 'Delvis uppfylld',
+    color: 'bg-blue-100 text-blue-700',
+    tooltip: 'Vissa krav är uppfyllda, men åtgärder eller underlag saknas',
+  },
   {
     value: 'UPPFYLLD',
     label: 'Uppfylld',
     color: 'bg-green-100 text-green-700',
+    tooltip: 'Kraven bedöms vara uppfyllda i nuläget',
   },
   {
     value: 'EJ_UPPFYLLD',
     label: 'Ej uppfylld',
     color: 'bg-red-100 text-red-700',
+    tooltip: 'Kraven är kända men inte uppfyllda',
   },
   {
     value: 'EJ_TILLAMPLIG',
     label: 'Ej tillämplig',
     color: 'bg-gray-100 text-gray-500',
+    tooltip: 'Kravet bedöms inte vara tillämpligt för verksamheten',
     strikethrough: true,
   },
 ]
@@ -96,19 +113,28 @@ export function ComplianceStatusEditor({
         )}
       </SelectTrigger>
       <SelectContent>
-        {COMPLIANCE_STATUS_OPTIONS.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            <span
-              className={cn(
-                'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                option.color,
-                option.strikethrough && 'line-through'
-              )}
-            >
-              {option.label}
-            </span>
-          </SelectItem>
-        ))}
+        <TooltipProvider delayDuration={300}>
+          {COMPLIANCE_STATUS_OPTIONS.map((option) => (
+            <Tooltip key={option.value}>
+              <TooltipTrigger asChild>
+                <SelectItem value={option.value}>
+                  <span
+                    className={cn(
+                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                      option.color,
+                      option.strikethrough && 'line-through'
+                    )}
+                  >
+                    {option.label}
+                  </span>
+                </SelectItem>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-[220px]">
+                <p>{option.tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </TooltipProvider>
       </SelectContent>
     </Select>
   )

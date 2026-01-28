@@ -57,7 +57,15 @@ import {
   Trash2,
   FileText,
   Loader2,
+  Info,
+  AlertTriangle,
 } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { RemoveConfirmation } from './remove-confirmation'
 import { BulkActionBar } from './bulk-action-bar'
 import { PriorityEditor } from './table-cell-editors/priority-editor'
@@ -86,6 +94,30 @@ import { LastActivityCell } from './table-cells/last-activity-cell'
 import { CellErrorBoundary } from './table-cells/cell-error-boundary'
 import type { ComplianceStatus } from '@prisma/client'
 import type { TaskProgress, LastActivity } from '@/lib/db/queries/list-items'
+
+// ============================================================================
+// Story 6.16: Column Header Tooltip Texts (Swedish)
+// ============================================================================
+
+/** Tooltip content for Efterlevnad (Compliance Status) column header */
+const EFTERLEVNAD_TOOLTIP_CONTENT = {
+  title: 'Efterlevnad',
+  lines: [
+    'Visar hur väl lagens krav är uppfyllda i nuläget.',
+    'Bedöms utifrån rutiner, dokumentation och faktisk tillämpning.',
+    'Uppdateras när åtgärder eller underlag läggs till.',
+  ],
+}
+
+/** Tooltip content for Prioritet (Priority) column header */
+const PRIORITET_TOOLTIP_CONTENT = {
+  title: 'Prioritet',
+  lines: [
+    'Visar hur allvarliga konsekvenserna är vid bristande efterlevnad.',
+    'Baserat på risk, sanktionsnivå och påverkan på verksamheten.',
+    'Påverkas inte av nuvarande efterlevnadsstatus.',
+  ],
+}
 
 // ============================================================================
 // Story P.4: Virtualization Configuration
@@ -353,13 +385,18 @@ export function DocumentListTable({
         size: 300,
       },
       // Story 6.2: Compliance Status (inline editable)
+      // Story 6.16: Added column header tooltip
       // Note: Legacy "status" field removed - it's now used for task workflow only
       // Efterlevnad (ComplianceStatus) is the overall compliance status for laws/documents
       {
         id: 'complianceStatus',
         accessorKey: 'complianceStatus',
         header: ({ column }) => (
-          <SortableHeader column={column} label="Efterlevnad" />
+          <ColumnHeaderWithTooltip
+            column={column}
+            label="Efterlevnad"
+            tooltipContent={EFTERLEVNAD_TOOLTIP_CONTENT}
+          />
         ),
         cell: ({ row }) => (
           <CellErrorBoundary>
@@ -376,11 +413,16 @@ export function DocumentListTable({
         size: 150,
       },
       // Priority (inline editable)
+      // Story 6.16: Added column header tooltip
       {
         id: 'priority',
         accessorKey: 'priority',
         header: ({ column }) => (
-          <SortableHeader column={column} label="Prioritet" />
+          <ColumnHeaderWithTooltip
+            column={column}
+            label="Prioritet"
+            tooltipContent={PRIORITET_TOOLTIP_CONTENT}
+          />
         ),
         cell: ({ row }) => (
           <PriorityEditor
@@ -556,6 +598,36 @@ export function DocumentListTable({
         ),
         enableSorting: false,
         size: 80,
+      },
+      // Story 6.16: High-Risk Warning Indicator (far right of row)
+      // Shows warning icon when HIGH priority + EJ_UPPFYLLD compliance status
+      {
+        id: 'highRiskWarning',
+        header: '',
+        cell: ({ row }) => {
+          const isHighRisk =
+            row.original.priority === 'HIGH' &&
+            row.original.complianceStatus === 'EJ_UPPFYLLD'
+
+          if (!isHighRisk) return null
+
+          return (
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center justify-center">
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="left">
+                  <p>Hög prioritet och ej uppfylld – kräver åtgärd</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )
+        },
+        enableSorting: false,
+        size: 40,
       },
     ],
     [
@@ -900,6 +972,79 @@ function SortableHeader({
         <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
       )}
     </Button>
+  )
+}
+
+// ============================================================================
+// Story 6.16: Column Header with Info Tooltip
+// ============================================================================
+
+/**
+ * Reusable column header component with sortable functionality and info tooltip
+ * Used for Efterlevnad and Prioritet columns to explain their meaning
+ */
+function ColumnHeaderWithTooltip({
+  column,
+  label,
+  tooltipContent,
+}: {
+  column: {
+    getIsSorted: () => false | 'asc' | 'desc'
+    toggleSorting: (_desc?: boolean) => void
+  }
+  label: string
+  tooltipContent: { title: string; lines: string[] }
+}) {
+  const sorted = column.getIsSorted()
+
+  return (
+    <div className="flex items-center gap-1">
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(sorted === 'asc')}
+        className="-ml-4 h-8"
+      >
+        {label}
+        {sorted === 'asc' ? (
+          <ArrowUp className="ml-2 h-4 w-4" />
+        ) : sorted === 'desc' ? (
+          <ArrowDown className="ml-2 h-4 w-4" />
+        ) : (
+          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+        )}
+      </Button>
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className="rounded p-0.5 hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring"
+              aria-label={`Information om ${label}`}
+            >
+              <Info className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-[280px] p-3">
+            <div className="space-y-2">
+              <p className="font-semibold text-sm text-foreground">
+                {tooltipContent.title}
+              </p>
+              <ul className="space-y-1.5">
+                {tooltipContent.lines.map((line, i) => (
+                  <li
+                    key={i}
+                    className="text-xs text-muted-foreground leading-relaxed flex gap-2"
+                  >
+                    <span className="text-muted-foreground/60">•</span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
   )
 }
 

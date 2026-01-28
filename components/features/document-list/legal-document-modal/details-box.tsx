@@ -21,7 +21,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { User, Flag, Loader2 } from 'lucide-react'
+import { User, Flag, Loader2, Info } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import {
   updateListItemComplianceStatus,
@@ -54,53 +60,83 @@ interface DetailsBoxProps {
 }
 
 // Status configuration - aligned with law list column dropdowns
+// Story 6.16: Added tooltips for each status option, renamed "Pågående" → "Delvis uppfylld"
 const STATUS_CONFIG: Record<
   ComplianceStatus,
-  { label: string; className: string; strikethrough?: boolean }
+  { label: string; className: string; tooltip: string; strikethrough?: boolean }
 > = {
   EJ_PABORJAD: {
     label: 'Ej påbörjad',
     className: 'bg-gray-100 text-gray-700',
+    tooltip: 'Inga rutiner eller dokumentation finns på plats',
   },
   PAGAENDE: {
-    label: 'Pågående',
+    label: 'Delvis uppfylld',
     className: 'bg-blue-100 text-blue-700',
+    tooltip: 'Vissa krav är uppfyllda, men åtgärder eller underlag saknas',
   },
   UPPFYLLD: {
     label: 'Uppfylld',
     className: 'bg-green-100 text-green-700',
+    tooltip: 'Kraven bedöms vara uppfyllda i nuläget',
   },
   EJ_UPPFYLLD: {
     label: 'Ej uppfylld',
     className: 'bg-red-100 text-red-700',
+    tooltip: 'Kraven är kända men inte uppfyllda',
   },
   EJ_TILLAMPLIG: {
     label: 'Ej tillämplig',
     className: 'bg-gray-100 text-gray-500',
+    tooltip: 'Kravet bedöms inte vara tillämpligt för verksamheten',
     strikethrough: true,
   },
 }
 
 // Priority configuration - aligned with list table
+// Story 6.16: Added tooltips for each priority option
 const PRIORITY_CONFIG = {
   LOW: {
     label: 'Låg',
     className: 'bg-slate-100 text-slate-700',
     iconClassName: 'text-slate-500',
+    tooltip: 'Begränsad risk eller låg påverkan vid bristande efterlevnad',
   },
   MEDIUM: {
     label: 'Medel',
     className: 'bg-amber-100 text-amber-700',
     iconClassName: 'text-amber-500',
+    tooltip: 'Måttlig risk som kan påverka verksamheten eller kräva åtgärder',
   },
   HIGH: {
     label: 'Hög',
     className: 'bg-rose-100 text-rose-700',
     iconClassName: 'text-rose-500',
+    tooltip:
+      'Hög risk med allvarliga konsekvenser, till exempel sanktioner, vite eller personansvar',
   },
 } as const
 
 type Priority = keyof typeof PRIORITY_CONFIG
+
+// Story 6.16: Column header tooltip content (same as in document-list-table.tsx)
+const EFTERLEVNAD_INFO_CONTENT = {
+  title: 'Efterlevnad',
+  lines: [
+    'Visar hur väl lagens krav är uppfyllda i nuläget.',
+    'Bedöms utifrån rutiner, dokumentation och faktisk tillämpning.',
+    'Uppdateras när åtgärder eller underlag läggs till.',
+  ],
+}
+
+const PRIORITET_INFO_CONTENT = {
+  title: 'Prioritet',
+  lines: [
+    'Visar hur allvarliga konsekvenserna är vid bristande efterlevnad.',
+    'Baserat på risk, sanktionsnivå och påverkan på verksamheten.',
+    'Påverkas inte av nuvarande efterlevnadsstatus.',
+  ],
+}
 
 export function DetailsBox({
   listItem,
@@ -178,7 +214,12 @@ export function DetailsBox({
           </DetailRow>
 
           {/* Efterlevnad (Compliance Status) - Editable with optimistic UI */}
-          <DetailRow label="Efterlevnad" interactive>
+          {/* Story 6.16: Added info tooltip for column context */}
+          <DetailRow
+            label="Efterlevnad"
+            interactive
+            infoTooltip={EFTERLEVNAD_INFO_CONTENT}
+          >
             <Select
               value={localStatus}
               onValueChange={(v) => handleStatusChange(v as ComplianceStatus)}
@@ -207,25 +248,39 @@ export function DetailsBox({
                 )}
               </SelectTrigger>
               <SelectContent align="end">
-                {Object.entries(STATUS_CONFIG).map(([value, config]) => (
-                  <SelectItem key={value} value={value}>
-                    <span
-                      className={cn(
-                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                        config.className,
-                        config.strikethrough && 'line-through'
-                      )}
-                    >
-                      {config.label}
-                    </span>
-                  </SelectItem>
-                ))}
+                <TooltipProvider delayDuration={300}>
+                  {Object.entries(STATUS_CONFIG).map(([value, config]) => (
+                    <Tooltip key={value}>
+                      <TooltipTrigger asChild>
+                        <SelectItem value={value}>
+                          <span
+                            className={cn(
+                              'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                              config.className,
+                              config.strikethrough && 'line-through'
+                            )}
+                          >
+                            {config.label}
+                          </span>
+                        </SelectItem>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="max-w-[220px]">
+                        <p>{config.tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
               </SelectContent>
             </Select>
           </DetailRow>
 
           {/* Priority - Editable with optimistic UI */}
-          <DetailRow label="Prioritet" interactive>
+          {/* Story 6.16: Added info tooltip for column context */}
+          <DetailRow
+            label="Prioritet"
+            interactive
+            infoTooltip={PRIORITET_INFO_CONTENT}
+          >
             <Select
               value={localPriority}
               onValueChange={(v) => handlePriorityChange(v as Priority)}
@@ -256,14 +311,25 @@ export function DetailsBox({
                 )}
               </SelectTrigger>
               <SelectContent align="end">
-                {Object.entries(PRIORITY_CONFIG).map(([value, config]) => (
-                  <SelectItem key={value} value={value}>
-                    <div className="flex items-center gap-2">
-                      <Flag className={cn('h-4 w-4', config.iconClassName)} />
-                      <span>{config.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
+                <TooltipProvider delayDuration={300}>
+                  {Object.entries(PRIORITY_CONFIG).map(([value, config]) => (
+                    <Tooltip key={value}>
+                      <TooltipTrigger asChild>
+                        <SelectItem value={value}>
+                          <div className="flex items-center gap-2">
+                            <Flag
+                              className={cn('h-4 w-4', config.iconClassName)}
+                            />
+                            <span>{config.label}</span>
+                          </div>
+                        </SelectItem>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="max-w-[250px]">
+                        <p>{config.tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
               </SelectContent>
             </Select>
           </DetailRow>
@@ -373,13 +439,21 @@ export function DetailsBox({
 }
 
 // Shared DetailRow component for consistent styling
+// Story 6.16: Added optional infoTooltip prop for column context tooltips
 interface DetailRowProps {
   label: string
   children: React.ReactNode
   interactive?: boolean
+  /** Optional tooltip content to show info icon with explanation */
+  infoTooltip?: { title: string; lines: string[] }
 }
 
-function DetailRow({ label, children, interactive = false }: DetailRowProps) {
+function DetailRow({
+  label,
+  children,
+  interactive = false,
+  infoTooltip,
+}: DetailRowProps) {
   return (
     <div
       className={cn(
@@ -387,7 +461,42 @@ function DetailRow({ label, children, interactive = false }: DetailRowProps) {
         interactive && 'hover:bg-muted/40 cursor-pointer'
       )}
     >
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-1">
+        <span className="text-sm text-muted-foreground">{label}</span>
+        {infoTooltip && (
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="rounded p-0.5 hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring"
+                  aria-label={`Information om ${label}`}
+                >
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[260px] p-3">
+                <div className="space-y-2">
+                  <p className="font-semibold text-sm text-foreground">
+                    {infoTooltip.title}
+                  </p>
+                  <ul className="space-y-1.5">
+                    {infoTooltip.lines.map((line, i) => (
+                      <li
+                        key={i}
+                        className="text-xs text-muted-foreground leading-relaxed flex gap-2"
+                      >
+                        <span className="text-muted-foreground/60">•</span>
+                        <span>{line}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
       <div className="flex items-center">{children}</div>
     </div>
   )
