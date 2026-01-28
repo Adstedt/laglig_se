@@ -2,12 +2,14 @@
 
 /**
  * Story 6.3: Details Box
- * Right panel details: document info, status, priority, responsible person, dates
+ * Right panel details: document info, efterlevnad (compliance), priority, responsible person, dates
  *
  * Design: Minimal inline style with hover states for interactivity
  * Aligned with TasksAccordion design patterns
+ * Uses optimistic UI patterns for immediate feedback
  */
 
+import { useOptimistic, useTransition } from 'react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -94,14 +96,34 @@ export function DetailsBox({
   workspaceMembers,
   onUpdate,
 }: DetailsBoxProps) {
-  const handleStatusChange = async (status: ComplianceStatus) => {
-    await updateListItemComplianceStatus(listItem.id, status)
-    await onUpdate()
+  const [isPending, startTransition] = useTransition()
+
+  // Optimistic state for compliance status
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic(
+    listItem.complianceStatus,
+    (_current, newStatus: ComplianceStatus) => newStatus
+  )
+
+  // Optimistic state for priority
+  const [optimisticPriority, setOptimisticPriority] = useOptimistic(
+    listItem.priority,
+    (_current, newPriority: Priority) => newPriority
+  )
+
+  const handleStatusChange = (status: ComplianceStatus) => {
+    startTransition(async () => {
+      setOptimisticStatus(status)
+      await updateListItemComplianceStatus(listItem.id, status)
+      await onUpdate()
+    })
   }
 
-  const handlePriorityChange = async (priority: Priority) => {
-    await updateListItemPriority(listItem.id, priority)
-    await onUpdate()
+  const handlePriorityChange = (priority: Priority) => {
+    startTransition(async () => {
+      setOptimisticPriority(priority)
+      await updateListItemPriority(listItem.id, priority)
+      await onUpdate()
+    })
   }
 
   const handleResponsibleChange = async (userId: string) => {
@@ -110,8 +132,9 @@ export function DetailsBox({
     await onUpdate()
   }
 
-  const statusConfig = STATUS_CONFIG[listItem.complianceStatus]
-  const priorityConfig = PRIORITY_CONFIG[listItem.priority]
+  // Use optimistic values for display
+  const statusConfig = STATUS_CONFIG[optimisticStatus]
+  const priorityConfig = PRIORITY_CONFIG[optimisticPriority]
 
   return (
     <Card className="border-border/40 shadow-sm">
@@ -129,11 +152,12 @@ export function DetailsBox({
             </span>
           </DetailRow>
 
-          {/* Status - Editable */}
-          <DetailRow label="Status" interactive>
+          {/* Efterlevnad (Compliance Status) - Editable with optimistic UI */}
+          <DetailRow label="Efterlevnad" interactive>
             <Select
-              value={listItem.complianceStatus}
+              value={optimisticStatus}
               onValueChange={(v) => handleStatusChange(v as ComplianceStatus)}
+              disabled={isPending}
             >
               <SelectTrigger className="!h-auto !p-0 !border-0 !shadow-none !bg-transparent hover:!bg-transparent focus:!ring-0 !w-auto gap-1.5 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-70">
                 <SelectValue>
@@ -166,11 +190,12 @@ export function DetailsBox({
             </Select>
           </DetailRow>
 
-          {/* Priority - Editable */}
+          {/* Priority - Editable with optimistic UI */}
           <DetailRow label="Prioritet" interactive>
             <Select
-              value={listItem.priority}
+              value={optimisticPriority}
               onValueChange={(v) => handlePriorityChange(v as Priority)}
+              disabled={isPending}
             >
               <SelectTrigger className="!h-auto !p-0 !border-0 !shadow-none !bg-transparent hover:!bg-transparent focus:!ring-0 !w-auto gap-1.5 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-70">
                 <SelectValue>
