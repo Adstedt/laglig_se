@@ -30,6 +30,14 @@ interface RightPanelProps {
         priority?: 'LOW' | 'MEDIUM' | 'HIGH'
       }) => void)
     | undefined
+  /** Notify parent to update document list (modal → list optimistic update) */
+  onListItemChange?:
+    | ((_updates: {
+        complianceStatus?: ComplianceStatus
+        priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+        responsibleUserId?: string | null
+      }) => void)
+    | undefined
 }
 
 export function RightPanel({
@@ -40,6 +48,7 @@ export function RightPanel({
   onEvidenceClick,
   onAiChatToggle,
   onOptimisticChange,
+  onListItemChange,
 }: RightPanelProps) {
   return (
     <div className="border-l bg-muted/30 max-md:border-t max-md:border-l-0">
@@ -51,6 +60,7 @@ export function RightPanel({
             workspaceMembers={workspaceMembers}
             onUpdate={onUpdate}
             onOptimisticChange={onOptimisticChange}
+            onListItemChange={onListItemChange}
           />
 
           {/* Quick Links Box */}

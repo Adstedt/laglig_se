@@ -55,22 +55,22 @@ const COMPLIANCE_CONFIG: Record<
   },
 }
 
-// Priority configuration
+// Priority configuration - aligned with list table and details-box
 const PRIORITY_CONFIG = {
   LOW: {
     label: 'Låg',
-    className: 'bg-gray-100 text-gray-700',
-    iconClassName: 'text-gray-500',
+    className: 'bg-slate-100 text-slate-700',
+    iconClassName: 'text-slate-500',
   },
   MEDIUM: {
-    label: 'Medium',
-    className: 'bg-blue-100 text-blue-700',
-    iconClassName: 'text-blue-500',
+    label: 'Medel',
+    className: 'bg-amber-100 text-amber-700',
+    iconClassName: 'text-amber-500',
   },
   HIGH: {
     label: 'Hög',
-    className: 'bg-orange-100 text-orange-700',
-    iconClassName: 'text-orange-500',
+    className: 'bg-rose-100 text-rose-700',
+    iconClassName: 'text-rose-500',
   },
 } as const
 

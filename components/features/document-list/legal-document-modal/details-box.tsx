@@ -43,6 +43,14 @@ interface DetailsBoxProps {
         priority?: 'LOW' | 'MEDIUM' | 'HIGH'
       }) => void)
     | undefined
+  /** Notify parent to update document list (modal → list optimistic update) */
+  onListItemChange?:
+    | ((_updates: {
+        complianceStatus?: ComplianceStatus
+        priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+        responsibleUserId?: string | null
+      }) => void)
+    | undefined
 }
 
 // Status configuration - aligned with law list column dropdowns
@@ -73,22 +81,22 @@ const STATUS_CONFIG: Record<
   },
 }
 
-// Priority configuration (aligned with Task Modal)
+// Priority configuration - aligned with list table
 const PRIORITY_CONFIG = {
   LOW: {
     label: 'Låg',
-    className: 'bg-gray-100 text-gray-700',
-    iconClassName: 'text-gray-500',
+    className: 'bg-slate-100 text-slate-700',
+    iconClassName: 'text-slate-500',
   },
   MEDIUM: {
-    label: 'Medium',
-    className: 'bg-blue-100 text-blue-700',
-    iconClassName: 'text-blue-500',
+    label: 'Medel',
+    className: 'bg-amber-100 text-amber-700',
+    iconClassName: 'text-amber-500',
   },
   HIGH: {
     label: 'Hög',
-    className: 'bg-orange-100 text-orange-700',
-    iconClassName: 'text-orange-500',
+    className: 'bg-rose-100 text-rose-700',
+    iconClassName: 'text-rose-500',
   },
 } as const
 
@@ -99,6 +107,7 @@ export function DetailsBox({
   workspaceMembers,
   onUpdate,
   onOptimisticChange,
+  onListItemChange,
 }: DetailsBoxProps) {
   // Local state for optimistic UI - persists user selection immediately
   const [localStatus, setLocalStatus] = useState(listItem.complianceStatus)
@@ -119,6 +128,7 @@ export function DetailsBox({
     if (status === localStatus) return
     setLocalStatus(status) // Optimistic update
     onOptimisticChange?.({ complianceStatus: status }) // Update header badges
+    onListItemChange?.({ complianceStatus: status }) // Update document list
     setIsStatusLoading(true)
     try {
       await updateListItemComplianceStatus(listItem.id, status)
@@ -131,6 +141,7 @@ export function DetailsBox({
     if (priority === localPriority) return
     setLocalPriority(priority) // Optimistic update
     onOptimisticChange?.({ priority }) // Update header badges
+    onListItemChange?.({ priority }) // Update document list
     setIsPriorityLoading(true)
     try {
       await updateListItemPriority(listItem.id, priority)
@@ -141,6 +152,7 @@ export function DetailsBox({
 
   const handleResponsibleChange = async (userId: string) => {
     const actualUserId = userId === 'unassigned' ? null : userId
+    onListItemChange?.({ responsibleUserId: actualUserId }) // Update document list
     await updateListItemResponsible(listItem.id, actualUserId)
     await onUpdate()
   }

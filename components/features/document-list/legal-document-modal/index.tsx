@@ -39,6 +39,17 @@ interface LegalDocumentModalProps {
   currentUserId?: string
   /** Task columns for inline status change in TasksAccordion */
   taskColumns?: TaskColumnWithCount[]
+  /** Callback to update document list when modal fields change (modal → list optimistic update) */
+  onListItemChange?:
+    | ((
+        _listItemId: string,
+        _updates: {
+          complianceStatus?: ComplianceStatus
+          priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+          responsibleUserId?: string | null
+        }
+      ) => void)
+    | undefined
 }
 
 export function LegalDocumentModal({
@@ -49,6 +60,7 @@ export function LegalDocumentModal({
   onOpenTask,
   currentUserId,
   taskColumns = [],
+  onListItemChange,
 }: LegalDocumentModalProps) {
   const [aiChatOpen, setAiChatOpen] = useState(false)
 
@@ -97,6 +109,20 @@ export function LegalDocumentModal({
       setOverrides((prev) => ({ ...prev, ...fields }))
     },
     []
+  )
+
+  // Handle list item changes (modal → list optimistic update)
+  const handleListItemChange = useCallback(
+    (updates: {
+      complianceStatus?: ComplianceStatus
+      priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+      responsibleUserId?: string | null
+    }) => {
+      if (listItemId && onListItemChange) {
+        onListItemChange(listItemId, updates)
+      }
+    },
+    [listItemId, onListItemChange]
   )
 
   // Scroll to evidence tab
@@ -217,6 +243,7 @@ export function LegalDocumentModal({
                     onEvidenceClick={scrollToEvidenceTab}
                     onAiChatToggle={() => setAiChatOpen(!aiChatOpen)}
                     onOptimisticChange={handleOptimisticChange}
+                    onListItemChange={handleListItemChange}
                   />
                 </div>
               </div>

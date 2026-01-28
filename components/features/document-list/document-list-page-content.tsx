@@ -53,6 +53,7 @@ import type {
 } from '@/app/actions/document-list'
 import { getWorkspaceMembers } from '@/app/actions/document-list'
 import { getTaskColumns, type TaskColumnWithCount } from '@/app/actions/tasks'
+import type { TaskProgress } from '@/app/actions/legal-document-modal'
 import type {
   LawListItemStatus,
   LawListItemPriority,
@@ -145,13 +146,63 @@ export function DocumentListPageContent({
     setSelectedListItemId(listItemId)
   }, [])
 
-  // Story 6.15: Handle task update - refresh task list in Law List Item Modal
+  // Story 6.15: Handle task update - optimistically update task list in Law List Item Modal
   const handleTaskUpdate = useCallback(
-    (_taskId: string, _updates: Record<string, unknown>) => {
-      // Invalidate the task cache for the currently viewed list item
-      if (selectedListItemId) {
-        globalMutate(`list-item-tasks:${selectedListItemId}`)
-      }
+    (taskId: string, updates: Record<string, unknown>) => {
+      if (!selectedListItemId) return
+
+      const cacheKey = `list-item-tasks:${selectedListItemId}`
+
+      // Optimistically update the task in the cache
+      globalMutate(
+        cacheKey,
+        (currentData: TaskProgress | undefined) => {
+          if (!currentData) return currentData
+
+          const updatedTasks = currentData.tasks.map((task) => {
+            if (task.id !== taskId) return task
+
+            // Map TaskModal updates to TaskSummary fields
+            const updatedTask = { ...task }
+
+            if ('title' in updates && typeof updates.title === 'string') {
+              updatedTask.title = updates.title
+            }
+
+            if ('column' in updates && updates.column) {
+              const col = updates.column as {
+                id: string
+                name: string
+                color: string | null
+                is_done: boolean
+              }
+              updatedTask.columnId = col.id
+              updatedTask.columnName = col.name
+              updatedTask.columnColor = col.color
+              updatedTask.isDone = col.is_done
+            }
+
+            if ('assignee' in updates) {
+              updatedTask.assignee = updates.assignee as {
+                name: string | null
+                avatarUrl: string | null
+              } | null
+            }
+
+            return updatedTask
+          })
+
+          // Recalculate completed count
+          const completed = updatedTasks.filter((t) => t.isDone).length
+
+          return {
+            ...currentData,
+            completed,
+            tasks: updatedTasks,
+          }
+        },
+        { revalidate: false }
+      )
     },
     [selectedListItemId, globalMutate]
   )
@@ -222,6 +273,22 @@ export function DocumentListPageContent({
     selectActiveGroupFilterInfo
   )
   const filteredItems = useDocumentListStore(selectFilteredByGroupItems)
+
+  // Handle list item change from modal - optimistically update document list table
+  const handleListItemChange = useCallback(
+    (
+      listItemId: string,
+      updates: {
+        complianceStatus?: ComplianceStatus
+        priority?: 'LOW' | 'MEDIUM' | 'HIGH'
+        responsibleUserId?: string | null
+      }
+    ) => {
+      // Use the store's updateItem for optimistic update (no await needed for UI)
+      updateItem(listItemId, updates)
+    },
+    [updateItem]
+  )
 
   // Story 6.2: Initialize filters and search from URL on mount
   useEffect(() => {
@@ -304,6 +371,7 @@ export function DocumentListPageContent({
       id: item.id,
       position: item.position,
       complianceStatus: item.complianceStatus,
+      priority: item.priority,
       category: item.category,
       addedAt: item.addedAt,
       dueDate: item.dueDate,
@@ -836,6 +904,7 @@ export function DocumentListPageContent({
         workspaceMembers={workspaceMembers}
         onOpenTask={handleOpenTask}
         taskColumns={taskColumns}
+        onListItemChange={handleListItemChange}
       />
 
       {/* Story 6.15: Task modal for bidirectional linking */}
