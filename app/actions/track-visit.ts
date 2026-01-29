@@ -15,17 +15,25 @@ import { prisma } from '@/lib/prisma'
  */
 export async function trackDocumentVisit(documentId: string): Promise<void> {
   try {
-    // Use upsert to increment counter or create new record
+    // Validate documentId before attempting insert
+    if (!documentId || typeof documentId !== 'string') {
+      return
+    }
+
+    // Use Prisma's type-safe upsert instead of raw SQL
     // This is intentionally fire-and-forget to not slow down page loads
-    await prisma.$executeRaw`
-      INSERT INTO document_visits (document_id, visit_count, last_visited)
-      VALUES (${documentId}, 1, NOW())
-      ON CONFLICT (document_id) 
-      DO UPDATE SET 
-        visit_count = document_visits.visit_count + 1,
-        last_visited = NOW(),
-        updated_at = NOW()
-    `
+    await prisma.documentVisit.upsert({
+      where: { document_id: documentId },
+      create: {
+        document_id: documentId,
+        visit_count: 1,
+        last_visited: new Date(),
+      },
+      update: {
+        visit_count: { increment: 1 },
+        last_visited: new Date(),
+      },
+    })
   } catch (error) {
     // Silently fail - tracking should never break the app
     console.warn('Failed to track visit:', error)

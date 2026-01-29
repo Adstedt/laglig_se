@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * Story 6.14: Grouped Accordion Tables for List View
- * Displays documents in table format with collapsible accordion sections per group.
- * Items can be dragged between group headers.
+ * Story 6.18: Grouped Compliance Table
+ * Displays compliance detail tables within collapsible accordion sections per group.
+ * Mirrors GroupedDocumentListTable but uses compliance-specific columns.
  */
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
@@ -24,7 +24,7 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { Button } from '@/components/ui/button'
 import { ExpandIcon, MinusIcon, FileText, Loader2 } from 'lucide-react'
-import { GroupTableSection } from './group-table-section'
+import { ComplianceGroupSection } from './compliance-group-section'
 import { DocumentListGridSkeleton } from './document-list-skeleton'
 import { BulkActionBar } from './bulk-action-bar'
 import type {
@@ -32,28 +32,23 @@ import type {
   ListGroupSummary,
   WorkspaceMemberOption,
 } from '@/app/actions/document-list'
-import type {
-  LawListItemStatus,
-  LawListItemPriority,
-  ComplianceStatus,
-} from '@prisma/client'
-import type { VisibilityState, ColumnSizingState } from '@tanstack/react-table'
-import type { TaskProgress, LastActivity } from '@/lib/db/queries/list-items'
+import type { ComplianceStatus, LawListItemPriority } from '@prisma/client'
+import type { ColumnSizingState } from '@tanstack/react-table'
 
 // Special ID for ungrouped items
 const UNGROUPED_ID = '__ungrouped__'
 
-interface GroupedDocumentListTableProps {
+interface GroupedComplianceTableProps {
   items: DocumentListItem[]
   groups: ListGroupSummary[]
   expandedGroups: Record<string, boolean>
   total: number
   hasMore: boolean
   isLoading: boolean
-  columnVisibility: VisibilityState
-  onColumnVisibilityChange: (_visibility: VisibilityState) => void
-  columnSizing?: ColumnSizingState | undefined
-  onColumnSizingChange?: ((_sizing: ColumnSizingState) => void) | undefined
+  columnVisibility?: Record<string, boolean>
+  onColumnVisibilityChange?: (_visibility: Record<string, boolean>) => void
+  columnSizing?: ColumnSizingState
+  onColumnSizingChange?: (_sizing: ColumnSizingState) => void
   onLoadMore: () => void
   onRemoveItem: (_itemId: string) => Promise<boolean>
   onReorderItems: (
@@ -62,20 +57,14 @@ interface GroupedDocumentListTableProps {
   onUpdateItem: (
     _itemId: string,
     _updates: {
-      status?: LawListItemStatus
-      priority?: LawListItemPriority
-      dueDate?: Date | null
-      assignedTo?: string | null
-      groupId?: string | null
       complianceStatus?: ComplianceStatus
+      priority?: LawListItemPriority
       responsibleUserId?: string | null
     }
   ) => Promise<boolean>
   onBulkUpdate: (
     _itemIds: string[],
     _updates: {
-      status?: LawListItemStatus
-      priority?: LawListItemPriority
       complianceStatus?: ComplianceStatus
       responsibleUserId?: string | null
     }
@@ -86,21 +75,23 @@ interface GroupedDocumentListTableProps {
   onCollapseAll: () => void
   onFilterByGroup?: ((_groupId: string) => void) | undefined
   onRowClick?: ((_itemId: string) => void) | undefined
+  onAddContent?: (
+    _listItemId: string,
+    _field: 'businessContext' | 'complianceActions'
+  ) => void
   workspaceMembers: WorkspaceMemberOption[]
-  taskProgress?: Map<string, TaskProgress>
-  lastActivity?: Map<string, LastActivity>
   emptyMessage?: string | undefined
 }
 
-export function GroupedDocumentListTable({
+export function GroupedComplianceTable({
   items,
   groups,
   expandedGroups,
   total,
   hasMore,
   isLoading,
-  columnVisibility,
-  onColumnVisibilityChange,
+  columnVisibility = {},
+  onColumnVisibilityChange: _onColumnVisibilityChange,
   columnSizing = {},
   onColumnSizingChange,
   onLoadMore,
@@ -114,11 +105,10 @@ export function GroupedDocumentListTable({
   onCollapseAll,
   onFilterByGroup,
   onRowClick,
+  onAddContent,
   workspaceMembers,
-  taskProgress,
-  lastActivity,
   emptyMessage = 'Inga dokument i listan.',
-}: GroupedDocumentListTableProps) {
+}: GroupedComplianceTableProps) {
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overGroupId, setOverGroupId] = useState<string | null>(null)
@@ -130,7 +120,7 @@ export function GroupedDocumentListTable({
     setLocalItems(items)
   }, [items])
 
-  // Group items by groupId (reuse pattern from grouped-document-list.tsx)
+  // Group items by groupId
   const { groupedItems, ungroupedItems, hasGroups } = useMemo(() => {
     const grouped: Record<string, DocumentListItem[]> = {}
     const ungrouped: DocumentListItem[] = []
@@ -261,7 +251,7 @@ export function GroupedDocumentListTable({
         return
       }
 
-      // Same group reordering - handle here since inner tables don't have DndContext
+      // Same group reordering
       if (
         overItem &&
         activeItem.groupId === overItem.groupId &&
@@ -290,28 +280,9 @@ export function GroupedDocumentListTable({
     [localItems, onMoveToGroup, onReorderItems]
   )
 
-  // Handle selection changes from individual sections
-  const handleSelectionChange = useCallback(
-    (_groupId: string, itemIds: string[], isSelected: boolean) => {
-      setSelectedItemIds((prev) => {
-        const next = new Set(prev)
-        itemIds.forEach((id) => {
-          if (isSelected) {
-            next.add(id)
-          } else {
-            next.delete(id)
-          }
-        })
-        return next
-      })
-    },
-    []
-  )
-
-  // Handle bulk update for selected items (returns void for BulkActionBar compatibility)
+  // Handle bulk update for selected items
   const handleBulkUpdate = useCallback(
     async (updates: {
-      priority?: LawListItemPriority
       complianceStatus?: ComplianceStatus
       responsibleUserId?: string | null
     }): Promise<void> => {
@@ -416,7 +387,7 @@ export function GroupedDocumentListTable({
               const isExpanded = expandedGroups[group.id] ?? true
 
               return (
-                <GroupTableSection
+                <ComplianceGroupSection
                   key={group.id}
                   groupId={group.id}
                   name={group.name}
@@ -430,22 +401,15 @@ export function GroupedDocumentListTable({
                   }
                   items={groupItems}
                   columnVisibility={columnVisibility}
-                  onColumnVisibilityChange={onColumnVisibilityChange}
                   columnSizing={columnSizing}
                   onColumnSizingChange={onColumnSizingChange}
                   onUpdateItem={onUpdateItem}
                   onRemoveItem={onRemoveItem}
                   onReorderItems={onReorderItems}
                   onRowClick={onRowClick}
-                  onSelectionChange={(itemIds, isSelected) =>
-                    handleSelectionChange(group.id, itemIds, isSelected)
-                  }
-                  selectedItemIds={selectedItemIds}
+                  onAddContent={onAddContent}
                   workspaceMembers={workspaceMembers}
                   groups={groups}
-                  onMoveToGroup={onMoveToGroup}
-                  taskProgress={taskProgress}
-                  lastActivity={lastActivity}
                   isDropTarget={overGroupId === group.id}
                 />
               )
@@ -453,7 +417,7 @@ export function GroupedDocumentListTable({
 
             {/* Ungrouped items section */}
             {(ungroupedItems.length > 0 || groups.length > 0) && (
-              <GroupTableSection
+              <ComplianceGroupSection
                 groupId={UNGROUPED_ID}
                 name="Ogrupperade"
                 itemCount={ungroupedItems.length}
@@ -466,22 +430,15 @@ export function GroupedDocumentListTable({
                 }
                 items={ungroupedItems}
                 columnVisibility={columnVisibility}
-                onColumnVisibilityChange={onColumnVisibilityChange}
                 columnSizing={columnSizing}
                 onColumnSizingChange={onColumnSizingChange}
                 onUpdateItem={onUpdateItem}
                 onRemoveItem={onRemoveItem}
                 onReorderItems={onReorderItems}
                 onRowClick={onRowClick}
-                onSelectionChange={(itemIds, isSelected) =>
-                  handleSelectionChange(UNGROUPED_ID, itemIds, isSelected)
-                }
-                selectedItemIds={selectedItemIds}
+                onAddContent={onAddContent}
                 workspaceMembers={workspaceMembers}
                 groups={groups}
-                onMoveToGroup={onMoveToGroup}
-                taskProgress={taskProgress}
-                lastActivity={lastActivity}
                 isUngrouped
                 isDropTarget={overGroupId === UNGROUPED_ID}
               />
@@ -489,7 +446,6 @@ export function GroupedDocumentListTable({
           </div>
 
           {/* Drag overlay - show dragged item info */}
-          {/* dropAnimation={null} prevents the "return to origin" ghost effect on drop */}
           <DragOverlay dropAnimation={null}>
             {activeItem && (
               <div className="bg-background border rounded-md p-3 shadow-lg opacity-90">

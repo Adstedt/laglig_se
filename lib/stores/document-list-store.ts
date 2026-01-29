@@ -11,7 +11,7 @@ import type {
   LawListItemPriority,
   ComplianceStatus,
 } from '@prisma/client'
-import type { VisibilityState } from '@tanstack/react-table'
+import type { VisibilityState, ColumnSizingState } from '@tanstack/react-table'
 import {
   getDocumentLists,
   getDocumentListItems,
@@ -30,9 +30,10 @@ import {
 } from '@/app/actions/document-list'
 import { getContentTypesForGroup } from '@/lib/utils/content-type'
 import { DEFAULT_COLUMN_VISIBILITY } from '@/components/features/document-list/column-settings'
+import { DEFAULT_COMPLIANCE_COLUMN_VISIBILITY } from '@/components/features/document-list/compliance-column-settings'
 
-// Story 4.12: View mode type
-export type ViewMode = 'card' | 'table'
+// Story 4.12 & 6.18: View mode type (added 'compliance' for Efterlevnad view)
+export type ViewMode = 'card' | 'table' | 'compliance'
 
 // Story 4.14: Cache entry type
 export interface ListCacheEntry {
@@ -76,6 +77,10 @@ export interface DocumentListState {
   // Story 4.12: Table view state
   viewMode: ViewMode
   columnVisibility: VisibilityState
+  columnSizing: ColumnSizingState
+  // Story 6.18: Compliance view column visibility (separate from table view)
+  complianceColumnVisibility: VisibilityState
+  complianceColumnSizing: ColumnSizingState
   selectedItemIds: string[]
 
   // Story 4.13: Group state
@@ -127,6 +132,10 @@ export interface DocumentListState {
   // Story 4.12: Table view actions
   setViewMode: (_mode: ViewMode) => void
   setColumnVisibility: (_visibility: VisibilityState) => void
+  setColumnSizing: (_sizing: ColumnSizingState) => void
+  // Story 6.18: Compliance view column visibility
+  setComplianceColumnVisibility: (_visibility: VisibilityState) => void
+  setComplianceColumnSizing: (_sizing: ColumnSizingState) => void
   setSelectedItemIds: (_ids: string[]) => void
   updateItem: (
     _itemId: string,
@@ -139,6 +148,9 @@ export interface DocumentListState {
       // Story 6.2: Compliance fields
       complianceStatus?: ComplianceStatus
       responsibleUserId?: string | null
+      // Story 6.18: Compliance content fields (optimistic update from modal)
+      businessContext?: string | null
+      complianceActions?: string | null
     }
   ) => Promise<boolean>
   bulkUpdateItems: (
@@ -204,6 +216,10 @@ const initialState = {
   // Story 4.12: Table view state
   viewMode: 'card' as ViewMode,
   columnVisibility: DEFAULT_COLUMN_VISIBILITY,
+  columnSizing: {} as ColumnSizingState,
+  // Story 6.18: Compliance view column visibility
+  complianceColumnVisibility: DEFAULT_COMPLIANCE_COLUMN_VISIBILITY,
+  complianceColumnSizing: {} as ColumnSizingState,
   selectedItemIds: [] as string[],
   // Story 4.13: Group state
   groups: [] as ListGroupSummary[],
@@ -467,6 +483,12 @@ export const useDocumentListStore = create<DocumentListState>()(
           complianceStatus: 'EJ_PABORJAD',
           responsibleUser: null,
           category: null,
+          // Story 6.18: Business context and compliance actions
+          businessContext: null,
+          complianceActions: null,
+          complianceActionsUpdatedAt: null,
+          complianceActionsUpdatedBy: null,
+          updatedAt: new Date(),
           document: {
             id: documentInfo.id,
             title: documentInfo.title,
@@ -664,6 +686,16 @@ export const useDocumentListStore = create<DocumentListState>()(
       setColumnVisibility: (visibility: VisibilityState) =>
         set({ columnVisibility: visibility }),
 
+      setColumnSizing: (sizing: ColumnSizingState) =>
+        set({ columnSizing: sizing }),
+
+      // Story 6.18: Compliance view column visibility
+      setComplianceColumnVisibility: (visibility: VisibilityState) =>
+        set({ complianceColumnVisibility: visibility }),
+
+      setComplianceColumnSizing: (sizing: ColumnSizingState) =>
+        set({ complianceColumnSizing: sizing }),
+
       setSelectedItemIds: (ids: string[]) => set({ selectedItemIds: ids }),
 
       // Story 4.14: Optimistic update without refetch
@@ -678,6 +710,9 @@ export const useDocumentListStore = create<DocumentListState>()(
           // Story 6.2: Compliance fields
           complianceStatus?: ComplianceStatus
           responsibleUserId?: string | null
+          // Story 6.18: Compliance content fields (optimistic update from modal)
+          businessContext?: string | null
+          complianceActions?: string | null
         }
       ) => {
         const { listItems, activeListId, groups } = get()
@@ -729,6 +764,24 @@ export const useDocumentListStore = create<DocumentListState>()(
                         ? null
                         : item.responsibleUser // Keep existing until server confirms
                       : item.responsibleUser,
+                  // Story 6.18: Compliance content fields (optimistic update from modal)
+                  businessContext:
+                    updates.businessContext !== undefined
+                      ? updates.businessContext
+                      : item.businessContext,
+                  complianceActions:
+                    updates.complianceActions !== undefined
+                      ? updates.complianceActions
+                      : item.complianceActions,
+                  // Update timestamp when content changes
+                  updatedAt:
+                    updates.businessContext !== undefined
+                      ? new Date()
+                      : item.updatedAt,
+                  complianceActionsUpdatedAt:
+                    updates.complianceActions !== undefined
+                      ? new Date()
+                      : item.complianceActionsUpdatedAt,
                 }
               : item
           ),
@@ -1123,6 +1176,10 @@ export const useDocumentListStore = create<DocumentListState>()(
         // Story 4.12: Persist view preferences
         viewMode: state.viewMode,
         columnVisibility: state.columnVisibility,
+        columnSizing: state.columnSizing,
+        // Story 6.18: Persist compliance view preferences
+        complianceColumnVisibility: state.complianceColumnVisibility,
+        complianceColumnSizing: state.complianceColumnSizing,
         // Story 4.13: Persist group expansion state
         expandedGroups: state.expandedGroups,
         // Don't persist lists/items/groups - always fetch fresh

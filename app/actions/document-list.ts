@@ -92,6 +92,12 @@ export interface DocumentListItem {
     avatarUrl: string | null
   } | null
   category: string | null
+  // Story 6.18: Business context and compliance actions for Efterlevnad view
+  businessContext: string | null
+  complianceActions: string | null
+  complianceActionsUpdatedAt: Date | null
+  complianceActionsUpdatedBy: string | null
+  updatedAt: Date
   document: {
     id: string
     title: string
@@ -470,6 +476,12 @@ export async function getDocumentListItems(
                 }
               : null,
             category: item.category,
+            // Story 6.18: Business context and compliance actions for Efterlevnad view
+            businessContext: item.business_context,
+            complianceActions: item.compliance_actions,
+            complianceActionsUpdatedAt: item.compliance_actions_updated_at,
+            complianceActionsUpdatedBy: item.compliance_actions_updated_by,
+            updatedAt: item.updated_at,
             document: {
               id: item.document.id,
               title: item.document.title,

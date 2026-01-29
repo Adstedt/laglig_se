@@ -93,7 +93,7 @@ export function ComplianceStatusEditor({
     <Select value={value} onValueChange={handleChange} disabled={isLoading}>
       <SelectTrigger
         className={cn(
-          'h-8 w-[140px] border-0 bg-transparent hover:bg-muted/50 focus:ring-0',
+          'h-8 w-auto border-0 bg-transparent hover:bg-muted/50 focus:ring-0',
           isLoading && 'opacity-50',
           className
         )}
@@ -103,7 +103,7 @@ export function ComplianceStatusEditor({
         ) : (
           <span
             className={cn(
-              'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+              'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap',
               currentOption?.color,
               currentOption?.strikethrough && 'line-through'
             )}

@@ -47,9 +47,14 @@ interface LegalDocumentModalProps {
           complianceStatus?: ComplianceStatus
           priority?: 'LOW' | 'MEDIUM' | 'HIGH'
           responsibleUserId?: string | null
+          // Story 6.18: Compliance content fields
+          businessContext?: string | null
+          complianceActions?: string | null
         }
       ) => void)
     | undefined
+  /** Story 6.18: Field to focus when modal opens (from "Lägg till" click) */
+  focusField?: 'businessContext' | 'complianceActions' | null | undefined
 }
 
 export function LegalDocumentModal({
@@ -61,6 +66,7 @@ export function LegalDocumentModal({
   currentUserId,
   taskColumns = [],
   onListItemChange,
+  focusField,
 }: LegalDocumentModalProps) {
   const [aiChatOpen, setAiChatOpen] = useState(false)
 
@@ -101,6 +107,17 @@ export function LegalDocumentModal({
     }
   }, [rawListItem, overrides])
 
+  // Story 6.18: Resolve compliance actions updated by user name
+  const complianceActionsUpdatedByName = useMemo(() => {
+    if (!rawListItem?.complianceActionsUpdatedBy || !workspaceMembers) {
+      return null
+    }
+    const user = workspaceMembers.find(
+      (m) => m.id === rawListItem.complianceActionsUpdatedBy
+    )
+    return user?.name ?? user?.email ?? null
+  }, [rawListItem?.complianceActionsUpdatedBy, workspaceMembers])
+
   const handleOptimisticChange = useCallback(
     (fields: {
       complianceStatus?: ComplianceStatus
@@ -120,6 +137,26 @@ export function LegalDocumentModal({
     }) => {
       if (listItemId && onListItemChange) {
         onListItemChange(listItemId, updates)
+      }
+    },
+    [listItemId, onListItemChange]
+  )
+
+  // Story 6.18: Handle business context change (modal → list optimistic update)
+  const handleBusinessContextChange = useCallback(
+    (content: string | null) => {
+      if (listItemId && onListItemChange) {
+        onListItemChange(listItemId, { businessContext: content })
+      }
+    },
+    [listItemId, onListItemChange]
+  )
+
+  // Story 6.18: Handle compliance actions change (modal → list optimistic update)
+  const handleComplianceActionsChange = useCallback(
+    (content: string | null) => {
+      if (listItemId && onListItemChange) {
+        onListItemChange(listItemId, { complianceActions: content })
       }
     },
     [listItemId, onListItemChange]
@@ -231,6 +268,12 @@ export function LegalDocumentModal({
                       currentUserId={currentUserId}
                       onOptimisticTaskUpdate={handleOptimisticTaskUpdate}
                       taskColumns={taskColumns}
+                      complianceActionsUpdatedByName={
+                        complianceActionsUpdatedByName
+                      }
+                      onBusinessContextChange={handleBusinessContextChange}
+                      onComplianceActionsChange={handleComplianceActionsChange}
+                      focusField={focusField}
                     />
                   </ScrollArea>
 

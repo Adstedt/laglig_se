@@ -1,13 +1,12 @@
 'use client'
 
 /**
- * Story 6.14: GroupTableSection component
- * Story 6.17: Added compliance and priority indicators to group headers
- * Collapsible accordion section containing a DocumentListTable for a single group.
- * Header is a drop target for cross-group drag-and-drop.
+ * Story 6.18: ComplianceGroupSection component
+ * Collapsible accordion section containing a ComplianceDetailTable for a single group.
+ * Mirrors GroupTableSection but uses compliance-specific columns.
  */
 
-import { memo, useCallback, useMemo, useState, useEffect } from 'react'
+import { memo, useCallback, useState, useEffect } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import {
   Collapsible,
@@ -16,23 +15,18 @@ import {
 } from '@/components/ui/collapsible'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ChevronDown, ChevronRight, Folder, FolderX } from 'lucide-react'
-import { DocumentListTable } from './document-list-table'
+import { ComplianceDetailTable } from './compliance-detail-table'
 import { GroupComplianceIndicator } from './group-compliance-indicator'
 import type {
   DocumentListItem,
   ListGroupSummary,
   WorkspaceMemberOption,
 } from '@/app/actions/document-list'
-import type {
-  LawListItemStatus,
-  LawListItemPriority,
-  ComplianceStatus,
-} from '@prisma/client'
-import type { VisibilityState, ColumnSizingState } from '@tanstack/react-table'
-import type { TaskProgress, LastActivity } from '@/lib/db/queries/list-items'
+import type { ComplianceStatus, LawListItemPriority } from '@prisma/client'
+import type { ColumnSizingState } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 
-interface GroupTableSectionProps {
+interface ComplianceGroupSectionProps {
   groupId: string
   name: string
   itemCount: number
@@ -40,19 +34,14 @@ interface GroupTableSectionProps {
   onToggle: () => void
   onFilter?: (() => void) | undefined
   items: DocumentListItem[]
-  columnVisibility: VisibilityState
-  onColumnVisibilityChange: (_visibility: VisibilityState) => void
-  columnSizing?: ColumnSizingState | undefined
+  columnVisibility?: Record<string, boolean>
+  columnSizing?: ColumnSizingState
   onColumnSizingChange?: ((_sizing: ColumnSizingState) => void) | undefined
   onUpdateItem: (
     _itemId: string,
     _updates: {
-      status?: LawListItemStatus
-      priority?: LawListItemPriority
-      dueDate?: Date | null
-      assignedTo?: string | null
-      groupId?: string | null
       complianceStatus?: ComplianceStatus
+      priority?: LawListItemPriority
       responsibleUserId?: string | null
     }
   ) => Promise<boolean>
@@ -61,20 +50,22 @@ interface GroupTableSectionProps {
     _items: Array<{ id: string; position: number }>
   ) => Promise<boolean>
   onRowClick?: ((_itemId: string) => void) | undefined
-  onSelectionChange: (_itemIds: string[], _isSelected: boolean) => void
-  selectedItemIds: Set<string>
+  onAddContent?:
+    | ((
+        _listItemId: string,
+        _field: 'businessContext' | 'complianceActions'
+      ) => void)
+    | undefined
   workspaceMembers: WorkspaceMemberOption[]
   groups: ListGroupSummary[]
   onMoveToGroup?:
     | ((_itemId: string, _groupId: string | null) => Promise<boolean>)
     | undefined
-  taskProgress?: Map<string, TaskProgress> | undefined
-  lastActivity?: Map<string, LastActivity> | undefined
   isUngrouped?: boolean | undefined
   isDropTarget?: boolean | undefined
 }
 
-export const GroupTableSection = memo(function GroupTableSection({
+export const ComplianceGroupSection = memo(function ComplianceGroupSection({
   groupId,
   name,
   itemCount,
@@ -82,24 +73,20 @@ export const GroupTableSection = memo(function GroupTableSection({
   onToggle,
   onFilter,
   items,
-  columnVisibility,
-  onColumnVisibilityChange,
-  columnSizing = {},
-  onColumnSizingChange,
   onUpdateItem,
   onRemoveItem,
   onReorderItems,
   onRowClick,
-  onSelectionChange: _onSelectionChange, // Tracked at parent level
-  selectedItemIds: _selectedItemIds, // Tracked at parent level
+  onAddContent,
   workspaceMembers,
   groups,
-  onMoveToGroup,
-  taskProgress,
-  lastActivity,
+  onMoveToGroup: _onMoveToGroup,
   isUngrouped = false,
   isDropTarget = false,
-}: GroupTableSectionProps) {
+  columnVisibility = {},
+  columnSizing = {},
+  onColumnSizingChange,
+}: ComplianceGroupSectionProps) {
   // Local state for instant toggle response, synced with prop
   const [localExpanded, setLocalExpanded] = useState(isExpanded)
 
@@ -119,22 +106,11 @@ export const GroupTableSection = memo(function GroupTableSection({
     id: `group-header-${groupId}`,
   })
 
-  // Hide the group column in grouped view (redundant info)
-  const effectiveColumnVisibility = useMemo(
-    () => ({
-      ...columnVisibility,
-      group: false, // Always hide group column in grouped table mode
-    }),
-    [columnVisibility]
-  )
-
-  // Handle bulk update passthrough (handled at GroupedDocumentListTable level)
+  // Handle bulk update passthrough (handled at parent level)
   const handleBulkUpdate = useCallback(
     async (
       _itemIds: string[],
       _updates: {
-        status?: LawListItemStatus
-        priority?: LawListItemPriority
         complianceStatus?: ComplianceStatus
         responsibleUserId?: string | null
       }
@@ -235,13 +211,13 @@ export const GroupTableSection = memo(function GroupTableSection({
                 Inga dokument i denna grupp.
               </p>
             ) : (
-              <DocumentListTable
+              <ComplianceDetailTable
                 items={items}
                 total={itemCount}
                 hasMore={false}
                 isLoading={false}
-                columnVisibility={effectiveColumnVisibility}
-                onColumnVisibilityChange={onColumnVisibilityChange}
+                workspaceMembers={workspaceMembers}
+                columnVisibility={columnVisibility}
                 columnSizing={columnSizing}
                 onColumnSizingChange={onColumnSizingChange}
                 onLoadMore={() => {}}
@@ -250,11 +226,8 @@ export const GroupTableSection = memo(function GroupTableSection({
                 onRemoveItem={onRemoveItem}
                 onReorderItems={onReorderItems}
                 onRowClick={onRowClick}
-                workspaceMembers={workspaceMembers}
+                onAddContent={onAddContent}
                 groups={groups}
-                onMoveToGroup={onMoveToGroup}
-                taskProgress={taskProgress}
-                lastActivity={lastActivity}
                 hideGroupColumn
                 disableDndContext
               />

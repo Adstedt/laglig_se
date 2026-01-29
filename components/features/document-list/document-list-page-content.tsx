@@ -23,6 +23,10 @@ import { DocumentListTable } from './document-list-table'
 import { GroupedDocumentList } from './grouped-document-list'
 // Story 6.14: Grouped accordion tables for table view
 import { GroupedDocumentListTable } from './grouped-document-list-table'
+// Story 6.18: Compliance detail table (Efterlevnad view)
+import { ComplianceDetailTable } from './compliance-detail-table'
+// Story 6.18: Grouped compliance table (same accordion structure as table view)
+import { GroupedComplianceTable } from './grouped-compliance-table'
 import { GroupManager } from './group-manager'
 import { GroupFilterChip } from './group-filter-chip'
 import { ContentTypeFilter } from './content-type-filter'
@@ -45,6 +49,7 @@ import {
 import { FilterEmptyState } from './filter-empty-state'
 import { SearchInput } from './search-input'
 import { ColumnSettings } from './column-settings'
+import { ComplianceColumnSettings } from './compliance-column-settings'
 import { Button } from '@/components/ui/button'
 import {
   UnifiedToolbar,
@@ -92,6 +97,10 @@ export function DocumentListPageContent({
   )
   // Story 6.15: Task modal for bidirectional linking
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  // Story 6.18: Field to focus when opening modal from "Lägg till" click
+  const [focusField, setFocusField] = useState<
+    'businessContext' | 'complianceActions' | null
+  >(null)
 
   // Story 6.15: SWR config for invalidating task cache when task is updated
   const { mutate: globalMutate } = useSWRConfig()
@@ -116,11 +125,24 @@ export function DocumentListPageContent({
   const handleOpenModal = useCallback((listItemId: string) => {
     // Update local state immediately for instant feedback
     setSelectedListItemId(listItemId)
+    setFocusField(null) // Clear focus field for normal modal open
     // Update URL instantly using History API (faster than router.push)
     const params = new URLSearchParams(window.location.search)
     params.set('document', listItemId)
     window.history.pushState(null, '', `?${params.toString()}`)
   }, [])
+
+  // Story 6.18: Handle opening modal with specific field focused (from "Lägg till" click)
+  const handleAddContent = useCallback(
+    (listItemId: string, field: 'businessContext' | 'complianceActions') => {
+      setSelectedListItemId(listItemId)
+      setFocusField(field) // Set focus field to trigger edit mode
+      const params = new URLSearchParams(window.location.search)
+      params.set('document', listItemId)
+      window.history.pushState(null, '', `?${params.toString()}`)
+    },
+    []
+  )
 
   // Handle closing the modal by removing from URL
   const handleCloseModal = useCallback(() => {
@@ -259,6 +281,13 @@ export function DocumentListPageContent({
     setViewMode,
     columnVisibility,
     setColumnVisibility,
+    columnSizing,
+    setColumnSizing,
+    // Story 6.18: Compliance view column visibility
+    complianceColumnVisibility,
+    setComplianceColumnVisibility,
+    complianceColumnSizing,
+    setComplianceColumnSizing,
     // Story 4.13: Group state
     groups,
     expandedGroups,
@@ -286,6 +315,9 @@ export function DocumentListPageContent({
         complianceStatus?: ComplianceStatus
         priority?: 'LOW' | 'MEDIUM' | 'HIGH'
         responsibleUserId?: string | null
+        // Story 6.18: Compliance content fields (optimistic update from modal)
+        businessContext?: string | null
+        complianceActions?: string | null
       }
     ) => {
       // Use the store's updateItem for optimistic update (no await needed for UI)
@@ -687,12 +719,17 @@ export function DocumentListPageContent({
         // Zone C: View Controls
         viewToggle={<ViewToggle value={viewMode} onChange={setViewMode} />}
         columnSettings={
-          viewMode === 'table' && (
+          viewMode === 'table' ? (
             <ColumnSettings
               columnVisibility={columnVisibility}
               onColumnVisibilityChange={setColumnVisibility}
             />
-          )
+          ) : viewMode === 'compliance' ? (
+            <ComplianceColumnSettings
+              columnVisibility={complianceColumnVisibility}
+              onColumnVisibilityChange={setComplianceColumnVisibility}
+            />
+          ) : null
         }
         // Zone D: Actions
         primaryAction={
@@ -768,6 +805,7 @@ export function DocumentListPageContent({
       {/* Document grid or table based on view mode */}
       {/* Story 4.13 & 6.2: Use filtered items and show empty state when filters return no results */}
       {/* Story 6.14: Add grouped table view when in table mode with groups and no filters */}
+      {/* Story 6.18: Add compliance detail view (Efterlevnad) */}
       {hasFiltersOrSearch &&
       filteredAndSearchedItems.length === 0 &&
       !isLoadingItems ? (
@@ -803,9 +841,82 @@ export function DocumentListPageContent({
           onToggleGroup={toggleGroupExpanded}
           onExpandAll={expandAllGroups}
           onCollapseAll={collapseAllGroups}
-          onManageGroups={() => setIsGroupManagerOpen(true)}
           onFilterByGroup={handleFilterByGroup}
           onRowClick={handleOpenModal}
+          emptyMessage={
+            activeListId
+              ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
+              : 'Välj eller skapa en lista för att komma igång.'
+          }
+        />
+      ) : viewMode === 'compliance' &&
+        groups.length > 0 &&
+        !hasFiltersOrSearch &&
+        !activeGroupFilter ? (
+        // Story 6.18: Grouped compliance view with accordion structure
+        <GroupedComplianceTable
+          items={listItems}
+          groups={groups}
+          expandedGroups={expandedGroups}
+          total={total}
+          hasMore={hasMore}
+          isLoading={isLoadingItems}
+          columnVisibility={complianceColumnVisibility}
+          onColumnVisibilityChange={setComplianceColumnVisibility}
+          columnSizing={complianceColumnSizing}
+          onColumnSizingChange={setComplianceColumnSizing}
+          onLoadMore={loadMoreItems}
+          onUpdateItem={handleUpdateItem}
+          onBulkUpdate={handleTableBulkUpdate}
+          onRemoveItem={removeItem}
+          onReorderItems={reorderItems}
+          onMoveToGroup={moveToGroup}
+          onToggleGroup={toggleGroupExpanded}
+          onExpandAll={expandAllGroups}
+          onCollapseAll={collapseAllGroups}
+          onFilterByGroup={handleFilterByGroup}
+          onRowClick={handleOpenModal}
+          onAddContent={handleAddContent}
+          workspaceMembers={workspaceMembers}
+          emptyMessage={
+            activeListId
+              ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
+              : 'Välj eller skapa en lista för att komma igång.'
+          }
+        />
+      ) : viewMode === 'compliance' ? (
+        // Story 6.18: Flat compliance view (when no groups, or filters/search active)
+        <ComplianceDetailTable
+          items={
+            hasFiltersOrSearch
+              ? filteredAndSearchedItems
+              : activeGroupFilter
+                ? filteredItems
+                : listItems
+          }
+          total={
+            hasFiltersOrSearch
+              ? filteredAndSearchedItems.length
+              : activeGroupFilter
+                ? filteredItems.length
+                : total
+          }
+          hasMore={hasFiltersOrSearch || activeGroupFilter ? false : hasMore}
+          isLoading={isLoadingItems}
+          columnVisibility={complianceColumnVisibility}
+          onColumnVisibilityChange={setComplianceColumnVisibility}
+          columnSizing={complianceColumnSizing}
+          onColumnSizingChange={setComplianceColumnSizing}
+          workspaceMembers={workspaceMembers}
+          onLoadMore={loadMoreItems}
+          onRemoveItem={removeItem}
+          onReorderItems={reorderItems}
+          onUpdateItem={handleUpdateItem}
+          onBulkUpdate={handleTableBulkUpdate}
+          groups={groups}
+          onMoveToGroup={moveToGroup}
+          onRowClick={handleOpenModal}
+          onAddContent={handleAddContent}
           emptyMessage={
             activeListId
               ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
@@ -826,6 +937,8 @@ export function DocumentListPageContent({
           isLoading={isLoadingItems}
           columnVisibility={columnVisibility}
           onColumnVisibilityChange={setColumnVisibility}
+          columnSizing={columnSizing}
+          onColumnSizingChange={setColumnSizing}
           onLoadMore={loadMoreItems}
           onUpdateItem={handleUpdateItem}
           onBulkUpdate={handleTableBulkUpdate}
@@ -865,6 +978,8 @@ export function DocumentListPageContent({
           isLoading={isLoadingItems}
           columnVisibility={columnVisibility}
           onColumnVisibilityChange={setColumnVisibility}
+          columnSizing={columnSizing}
+          onColumnSizingChange={setColumnSizing}
           onLoadMore={loadMoreItems}
           onUpdateItem={handleUpdateItem}
           onBulkUpdate={handleTableBulkUpdate}
@@ -921,6 +1036,7 @@ export function DocumentListPageContent({
         onOpenTask={handleOpenTask}
         taskColumns={taskColumns}
         onListItemChange={handleListItemChange}
+        focusField={focusField}
       />
 
       {/* Story 6.15: Task modal for bidirectional linking */}

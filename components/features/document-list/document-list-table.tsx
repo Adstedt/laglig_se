@@ -19,6 +19,7 @@ import {
   type SortingState,
   type RowSelectionState,
   type VisibilityState,
+  type ColumnSizingState,
 } from '@tanstack/react-table'
 import {
   DndContext,
@@ -147,6 +148,9 @@ interface DocumentListTableProps {
   workspaceMembers: WorkspaceMemberOption[]
   columnVisibility: VisibilityState
   onColumnVisibilityChange: (_visibility: VisibilityState) => void
+  // Column sizing for resizable columns
+  columnSizing?: ColumnSizingState | undefined
+  onColumnSizingChange?: ((_sizing: ColumnSizingState) => void) | undefined
   onLoadMore: () => void
   onRemoveItem: (_itemId: string) => Promise<boolean>
   onReorderItems: (
@@ -221,6 +225,8 @@ export function DocumentListTable({
   workspaceMembers,
   columnVisibility,
   onColumnVisibilityChange,
+  columnSizing: externalColumnSizing,
+  onColumnSizingChange,
   onLoadMore,
   onRemoveItem,
   onReorderItems,
@@ -244,6 +250,27 @@ export function DocumentListTable({
   const [removeConfirmItem, setRemoveConfirmItem] =
     useState<DocumentListItem | null>(null)
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
+  const [internalColumnSizing, setInternalColumnSizing] =
+    useState<ColumnSizingState>({})
+
+  // Use external sizing if provided, otherwise use internal
+  const columnSizing = externalColumnSizing ?? internalColumnSizing
+  const handleColumnSizingChange = useCallback(
+    (
+      updater:
+        | ColumnSizingState
+        | ((_old: ColumnSizingState) => ColumnSizingState)
+    ) => {
+      const newSizing =
+        typeof updater === 'function' ? updater(columnSizing) : updater
+      if (onColumnSizingChange) {
+        onColumnSizingChange(newSizing)
+      } else {
+        setInternalColumnSizing(newSizing)
+      }
+    },
+    [columnSizing, onColumnSizingChange]
+  )
 
   // Story P.4: Virtualization state
   const tableContainerRef = useRef<HTMLDivElement>(null)
@@ -320,6 +347,7 @@ export function DocumentListTable({
           />
         ),
         enableSorting: false,
+        enableResizing: false,
         size: 40,
       },
       // Drag handle
@@ -328,9 +356,10 @@ export function DocumentListTable({
         header: '',
         cell: () => null, // Rendered by SortableRow
         enableSorting: false,
+        enableResizing: false,
         size: 40,
       },
-      // Content type icon
+      // Content type icon - fixed size, consistent across views
       {
         id: 'type',
         accessorFn: (row) => row.document.contentType,
@@ -350,37 +379,29 @@ export function DocumentListTable({
             </div>
           )
         },
+        enableResizing: false,
         size: 60,
       },
-      // Document number
-      {
-        id: 'documentNumber',
-        accessorFn: (row) => row.document.documentNumber,
-        header: ({ column }) => (
-          <SortableHeader column={column} label="Dokument" />
-        ),
-        cell: ({ row }) => (
-          <span className="font-mono text-sm">
-            {row.original.document.documentNumber}
-          </span>
-        ),
-        size: 140,
-      },
-      // Title
+      // Document (combined title + document number) - fixed size, consistent across views
       {
         id: 'title',
         accessorFn: (row) => row.document.title,
         header: ({ column }) => (
-          <SortableHeader column={column} label="Titel" />
+          <SortableHeader column={column} label="Dokument" />
         ),
         cell: ({ row }) => (
-          <Link
-            href={getDocumentUrl(row.original)}
-            className="hover:underline line-clamp-1"
-            title={row.original.document.title}
-          >
-            {row.original.document.title}
-          </Link>
+          <div className="w-full overflow-hidden">
+            <Link
+              href={getDocumentUrl(row.original)}
+              className="text-sm font-medium text-foreground hover:underline block truncate"
+              title={row.original.document.title}
+            >
+              {row.original.document.title}
+            </Link>
+            <span className="text-xs text-muted-foreground block truncate">
+              {row.original.document.documentNumber}
+            </span>
+          </div>
         ),
         size: 300,
       },
@@ -411,6 +432,9 @@ export function DocumentListTable({
           </CellErrorBoundary>
         ),
         size: 150,
+        minSize: 200,
+        maxSize: 250,
+        enableResizing: true,
       },
       // Priority (inline editable)
       // Story 6.16: Added column header tooltip
@@ -433,6 +457,9 @@ export function DocumentListTable({
           />
         ),
         size: 120,
+        minSize: 170,
+        maxSize: 220,
+        enableResizing: true,
       },
       // Due date (inline editable)
       {
@@ -450,6 +477,9 @@ export function DocumentListTable({
           />
         ),
         size: 140,
+        minSize: 120,
+        maxSize: 200,
+        enableResizing: true,
       },
       // Assignee (inline editable) - avatar only
       {
@@ -466,7 +496,8 @@ export function DocumentListTable({
           />
         ),
         enableSorting: false,
-        size: 60,
+        enableResizing: false,
+        size: 110,
       },
       // Story 6.2: Responsible Person (inline editable) - avatar only
       {
@@ -488,7 +519,8 @@ export function DocumentListTable({
           </CellErrorBoundary>
         ),
         enableSorting: false,
-        size: 60,
+        enableResizing: false,
+        size: 110,
       },
       // Story 6.2: Task Progress
       {
@@ -506,7 +538,8 @@ export function DocumentListTable({
           )
         },
         enableSorting: false,
-        size: 140,
+        enableResizing: false,
+        size: 160,
       },
       // Story 6.2: Last Activity
       {
@@ -523,6 +556,9 @@ export function DocumentListTable({
           )
         },
         size: 120,
+        minSize: 145,
+        maxSize: 200,
+        enableResizing: true,
       },
       // Notes indicator
       {
@@ -536,6 +572,7 @@ export function DocumentListTable({
             </span>
           ) : null,
         enableSorting: false,
+        enableResizing: false,
         size: 50,
       },
       // Story 4.13: Group column (inline editable)
@@ -559,6 +596,9 @@ export function DocumentListTable({
           />
         ),
         size: 160,
+        minSize: 100,
+        maxSize: 250,
+        enableResizing: true,
       },
       // Added date
       {
@@ -573,6 +613,9 @@ export function DocumentListTable({
           </span>
         ),
         size: 100,
+        minSize: 80,
+        maxSize: 150,
+        enableResizing: true,
       },
       // Actions
       {
@@ -597,6 +640,7 @@ export function DocumentListTable({
           </div>
         ),
         enableSorting: false,
+        enableResizing: false,
         size: 80,
       },
       // Story 6.16: High-Risk Warning Indicator (far right of row)
@@ -627,6 +671,7 @@ export function DocumentListTable({
           )
         },
         enableSorting: false,
+        enableResizing: false,
         size: 40,
       },
     ],
@@ -656,6 +701,7 @@ export function DocumentListTable({
       sorting,
       rowSelection,
       columnVisibility: effectiveColumnVisibility,
+      columnSizing,
     },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
@@ -664,11 +710,31 @@ export function DocumentListTable({
         typeof updater === 'function' ? updater(columnVisibility) : updater
       onColumnVisibilityChange(newVisibility)
     },
+    onColumnSizingChange: handleColumnSizingChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowId: (row) => row.id,
     enableRowSelection: true,
+    enableColumnResizing: true,
+    columnResizeMode: 'onEnd',
   })
+
+  // Helper to get column width with live resize preview
+  // Uses columnSizingInfo to show resize feedback without state updates
+  // Respects minSize/maxSize constraints for visual feedback
+  const { columnSizingInfo } = table.getState()
+  const getColumnWidth = (headerId: string, defaultSize: number) => {
+    if (columnSizingInfo.isResizingColumn === headerId) {
+      const column = table.getColumn(headerId)
+      const minSize = column?.columnDef.minSize ?? 0
+      const maxSize = column?.columnDef.maxSize ?? Infinity
+      const newSize =
+        (columnSizingInfo.startSize ?? defaultSize) +
+        (columnSizingInfo.deltaOffset ?? 0)
+      return Math.max(minSize, Math.min(maxSize, newSize))
+    }
+    return defaultSize
+  }
 
   // Story P.4: Row virtualizer for large datasets
   const rows = table.getRowModel().rows
@@ -742,7 +808,7 @@ export function DocumentListTable({
       >
         {disableDndContext ? (
           // Story 6.14: When nested, skip DndContext wrapper (parent provides it)
-          <Table>
+          <Table className="table-fixed">
             <TableHeader
               className={
                 shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
@@ -753,8 +819,11 @@ export function DocumentListTable({
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      style={{ width: header.getSize() }}
+                      style={{
+                        width: getColumnWidth(header.id, header.getSize()),
+                      }}
                       className={cn(
+                        'relative',
                         header.id === 'title' &&
                           'sticky left-0 bg-background z-10'
                       )}
@@ -765,6 +834,28 @@ export function DocumentListTable({
                             header.column.columnDef.header,
                             header.getContext()
                           )}
+                      {/* Resize handle - only show for resizable columns */}
+                      {header.column.getCanResize() && (
+                        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                        <div
+                          role="separator"
+                          aria-orientation="vertical"
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          className={cn(
+                            'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
+                            'flex items-center justify-center'
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              'h-4 w-0.5 rounded-full bg-border transition-colors',
+                              'group-hover/resize:bg-primary group-hover/resize:h-6',
+                              header.column.getIsResizing() && 'bg-primary h-6'
+                            )}
+                          />
+                        </div>
+                      )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -828,7 +919,7 @@ export function DocumentListTable({
             onDragEnd={handleDragEnd}
             modifiers={[restrictToVerticalAxis]}
           >
-            <Table>
+            <Table className="table-fixed">
               <TableHeader
                 className={
                   shouldVirtualize
@@ -841,8 +932,11 @@ export function DocumentListTable({
                     {headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
-                        style={{ width: header.getSize() }}
+                        style={{
+                          width: getColumnWidth(header.id, header.getSize()),
+                        }}
                         className={cn(
+                          'relative',
                           header.id === 'title' &&
                             'sticky left-0 bg-background z-10'
                         )}
@@ -853,6 +947,21 @@ export function DocumentListTable({
                               header.column.columnDef.header,
                               header.getContext()
                             )}
+                        {/* Resize handle */}
+                        {header.column.getCanResize() && (
+                          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                          <div
+                            role="separator"
+                            aria-orientation="vertical"
+                            onMouseDown={header.getResizeHandler()}
+                            onTouchStart={header.getResizeHandler()}
+                            className={cn(
+                              'absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none',
+                              'hover:bg-primary/50 active:bg-primary',
+                              header.column.getIsResizing() && 'bg-primary'
+                            )}
+                          />
+                        )}
                       </TableHead>
                     ))}
                   </TableRow>
