@@ -62,6 +62,7 @@ import {
   FileText,
   Loader2,
   Plus,
+  Info,
 } from 'lucide-react'
 import { BulkActionBar } from './bulk-action-bar'
 import { ComplianceStatusEditor } from './table-cell-editors/compliance-status-editor'
@@ -101,6 +102,26 @@ const VIRTUAL_TABLE_MAX_HEIGHT = 600
 
 /** Tooltip delay in ms (AC specifies 200-300ms) */
 const TOOLTIP_DELAY = 250
+
+/** Tooltip content for "Hur påverkar denna lag oss?" column header */
+const HUR_PAVERKAR_TOOLTIP_CONTENT = {
+  title: 'Hur påverkar denna lag oss?',
+  lines: [
+    'Beskriver varför lagen är relevant för er verksamhet.',
+    'Förklarar vilka processer, avdelningar eller produkter som berörs.',
+    'Ger kontext vid revisioner och underlättar intern kommunikation.',
+  ],
+}
+
+/** Tooltip content for "Hur efterlever vi kraven?" column header */
+const HUR_EFTERLEVER_TOOLTIP_CONTENT = {
+  title: 'Hur efterlever vi kraven?',
+  lines: [
+    'Dokumenterar konkreta åtgärder och rutiner som säkerställer efterlevnad.',
+    'Hänvisar till policyer, instruktioner eller systemstöd som används.',
+    'Utgör underlag vid revisioner och internkontroller.',
+  ],
+}
 
 // ============================================================================
 // Props
@@ -545,7 +566,12 @@ export function ComplianceDetailTable({
       // Business Context (truncated)
       {
         id: 'businessContext',
-        header: 'Hur påverkar denna lag oss?',
+        header: () => (
+          <HeaderWithTooltip
+            label="Hur påverkar denna lag oss?"
+            tooltipContent={HUR_PAVERKAR_TOOLTIP_CONTENT}
+          />
+        ),
         cell: ({ row }) => (
           <CellErrorBoundary>
             <TruncatedTextCell
@@ -569,7 +595,12 @@ export function ComplianceDetailTable({
       // Compliance Actions (truncated)
       {
         id: 'complianceActions',
-        header: 'Hur efterlever vi kraven?',
+        header: () => (
+          <HeaderWithTooltip
+            label="Hur efterlever vi kraven?"
+            tooltipContent={HUR_EFTERLEVER_TOOLTIP_CONTENT}
+          />
+        ),
         cell: ({ row }) => (
           <CellErrorBoundary>
             <TruncatedTextCell
@@ -961,6 +992,55 @@ function SortableHeader({
         <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
       )}
     </Button>
+  )
+}
+
+// ============================================================================
+// Header with Tooltip Component (for non-sortable columns)
+// ============================================================================
+
+function HeaderWithTooltip({
+  label,
+  tooltipContent,
+}: {
+  label: string
+  tooltipContent: { title: string; lines: string[] }
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      <span className="font-medium">{label}</span>
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className="rounded p-0.5 hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring"
+              aria-label={`Information om ${label}`}
+            >
+              <Info className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="max-w-[280px] p-3">
+            <div className="space-y-2">
+              <p className="font-semibold text-sm text-foreground">
+                {tooltipContent.title}
+              </p>
+              <ul className="space-y-1.5">
+                {tooltipContent.lines.map((line, i) => (
+                  <li
+                    key={i}
+                    className="text-xs text-muted-foreground leading-relaxed flex gap-2"
+                  >
+                    <span className="text-muted-foreground/60">•</span>
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    </div>
   )
 }
 
