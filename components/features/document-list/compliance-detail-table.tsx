@@ -181,12 +181,21 @@ interface ComplianceDetailTableProps {
 }
 
 // ============================================================================
-// Helper: Strip HTML tags for display
+// Helpers
 // ============================================================================
 
 function stripHtml(html: string | null): string {
   if (!html) return ''
   return html.replace(/<[^>]*>/g, '').trim()
+}
+
+function formatSwedishDate(date: Date | null): string | null {
+  if (!date) return null
+  return new Date(date).toLocaleDateString('sv-SE', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 // ============================================================================
@@ -234,14 +243,6 @@ function TruncatedTextCell({
   }
 
   // Has content - show truncated with tooltip
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('sv-SE', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
   return (
     <TooltipProvider delayDuration={TOOLTIP_DELAY}>
       <Tooltip>
@@ -262,7 +263,7 @@ function TruncatedTextCell({
             </p>
             {updatedAt && (
               <p className="text-xs text-muted-foreground">
-                Senast uppdaterad {formatDate(updatedAt)}
+                Senast uppdaterad {formatSwedishDate(updatedAt)}
                 {updatedByName && ` av ${updatedByName}`}
               </p>
             )}
@@ -290,15 +291,6 @@ function ExpandedRowContent({
   const complianceActionsText = stripHtml(item.complianceActions)
   const isNotApplicable = item.complianceStatus === 'EJ_TILLAMPLIG'
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return null
-    return new Date(date).toLocaleDateString('sv-SE', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
   const getUserName = (userId: string | null) => {
     if (!userId) return null
     const user = workspaceMembers.find((m) => m.id === userId)
@@ -325,7 +317,7 @@ function ExpandedRowContent({
                 </p>
                 {item.updatedAt && (
                   <p className="text-xs text-muted-foreground">
-                    Senast uppdaterad {formatDate(item.updatedAt)}
+                    Senast uppdaterad {formatSwedishDate(item.updatedAt)}
                   </p>
                 )}
               </>
@@ -349,7 +341,7 @@ function ExpandedRowContent({
                 {item.complianceActionsUpdatedAt && (
                   <p className="text-xs text-muted-foreground">
                     Senast uppdaterad{' '}
-                    {formatDate(item.complianceActionsUpdatedAt)}
+                    {formatSwedishDate(item.complianceActionsUpdatedAt)}
                     {item.complianceActionsUpdatedBy &&
                       ` av ${getUserName(item.complianceActionsUpdatedBy)}`}
                   </p>
@@ -645,7 +637,7 @@ export function ComplianceDetailTable({
             />
           </CellErrorBoundary>
         ),
-        size: 140,
+        size: 200,
         minSize: 200,
         maxSize: 250,
         enableResizing: true,
@@ -663,7 +655,7 @@ export function ComplianceDetailTable({
             }}
           />
         ),
-        size: 110,
+        size: 170,
         minSize: 170,
         maxSize: 220,
         enableResizing: true,
@@ -878,6 +870,7 @@ export function ComplianceDetailTable({
                     row={row}
                     virtualItem={virtualItem}
                     expandedRowId={expandedRowId}
+                    workspaceMembers={workspaceMembers}
                     onRowClick={onRowClick}
                   />
                 )
@@ -1153,6 +1146,7 @@ const VirtualComplianceRow = memo(function VirtualComplianceRow({
   row,
   virtualItem,
   expandedRowId,
+  workspaceMembers,
   onRowClick,
 }: {
   row: ReturnType<
@@ -1160,6 +1154,7 @@ const VirtualComplianceRow = memo(function VirtualComplianceRow({
   >['rows'][number]
   virtualItem: VirtualItem
   expandedRowId: string | null
+  workspaceMembers: WorkspaceMemberOption[]
   onRowClick?: ((_listItemId: string) => void) | undefined
 }) {
   const {
@@ -1239,6 +1234,17 @@ const VirtualComplianceRow = memo(function VirtualComplianceRow({
           </TableCell>
         ))}
       </TableRow>
+      {/* Expanded content */}
+      {isExpanded && (
+        <TableRow>
+          <TableCell colSpan={row.getVisibleCells().length} className="p-0">
+            <ExpandedRowContent
+              item={row.original}
+              workspaceMembers={workspaceMembers}
+            />
+          </TableCell>
+        </TableRow>
+      )}
     </>
   )
 })
