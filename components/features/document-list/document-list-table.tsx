@@ -432,8 +432,8 @@ export function DocumentListTable({
           </CellErrorBoundary>
         ),
         size: 150,
-        minSize: 120,
-        maxSize: 200,
+        minSize: 200,
+        maxSize: 250,
         enableResizing: true,
       },
       // Priority (inline editable)
@@ -457,8 +457,8 @@ export function DocumentListTable({
           />
         ),
         size: 120,
-        minSize: 100,
-        maxSize: 180,
+        minSize: 170,
+        maxSize: 220,
         enableResizing: true,
       },
       // Due date (inline editable)
@@ -497,7 +497,7 @@ export function DocumentListTable({
         ),
         enableSorting: false,
         enableResizing: false,
-        size: 60,
+        size: 110,
       },
       // Story 6.2: Responsible Person (inline editable) - avatar only
       {
@@ -520,7 +520,7 @@ export function DocumentListTable({
         ),
         enableSorting: false,
         enableResizing: false,
-        size: 60,
+        size: 110,
       },
       // Story 6.2: Task Progress
       {
@@ -539,7 +539,7 @@ export function DocumentListTable({
         },
         enableSorting: false,
         enableResizing: false,
-        size: 140,
+        size: 160,
       },
       // Story 6.2: Last Activity
       {
@@ -556,8 +556,8 @@ export function DocumentListTable({
           )
         },
         size: 120,
-        minSize: 80,
-        maxSize: 180,
+        minSize: 145,
+        maxSize: 200,
         enableResizing: true,
       },
       // Notes indicator

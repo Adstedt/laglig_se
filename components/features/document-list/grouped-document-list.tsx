@@ -43,9 +43,6 @@ import {
   FolderX,
   FileText,
   Loader2,
-  FolderPlus,
-  ExpandIcon,
-  MinusIcon,
 } from 'lucide-react'
 import { DocumentListCard } from './document-list-card'
 import { DocumentListGridSkeleton } from './document-list-skeleton'
@@ -72,9 +69,6 @@ interface GroupedDocumentListProps {
   ) => Promise<boolean>
   onMoveToGroup: (_itemId: string, _groupId: string | null) => Promise<boolean>
   onToggleGroup: (_groupId: string) => void
-  onExpandAll: () => void
-  onCollapseAll: () => void
-  onManageGroups: () => void
   // Story 4.13 Task 11: Filter by group
   onFilterByGroup?: ((_groupId: string) => void) | undefined
   // Story 6.3: Open modal on document click
@@ -97,9 +91,6 @@ export function GroupedDocumentList({
   onReorderItems,
   onMoveToGroup,
   onToggleGroup,
-  onExpandAll,
-  onCollapseAll,
-  onManageGroups,
   onFilterByGroup,
   onRowClick,
   emptyMessage = 'Inga dokument i listan.',
@@ -302,53 +293,15 @@ export function GroupedDocumentList({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header with stats and actions - Story 4.13 Task 12: Mobile responsive */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Visar {items.length} av {total} dokument.
-          {hasGroups && (
-            <span className="hidden sm:inline ml-1">
-              Dra till grupprubriker för att flytta.
-            </span>
-          )}
-        </p>
-        <div className="flex items-center gap-1 sm:gap-2">
-          {hasGroups && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onExpandAll}
-                className="h-8 text-xs px-2 sm:px-3"
-                title="Visa alla grupper"
-              >
-                <ExpandIcon className="h-3.5 w-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">Visa alla</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onCollapseAll}
-                className="h-8 text-xs px-2 sm:px-3"
-                title="Dölj alla grupper"
-              >
-                <MinusIcon className="h-3.5 w-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">Dölj alla</span>
-              </Button>
-            </>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onManageGroups}
-            className="h-8 px-2 sm:px-3"
-            title="Hantera grupper"
-          >
-            <FolderPlus className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">Hantera grupper</span>
-          </Button>
-        </div>
-      </div>
+      {/* Header with stats */}
+      <p className="text-sm text-muted-foreground">
+        Visar {items.length} av {total} dokument.
+        {hasGroups && (
+          <span className="hidden sm:inline ml-1">
+            Dra till grupprubriker för att flytta.
+          </span>
+        )}
+      </p>
 
       {/* Drag-and-drop context - overflow-hidden prevents horizontal scroll when dragging */}
       <div className="overflow-hidden">

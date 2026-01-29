@@ -561,9 +561,9 @@ export function ComplianceDetailTable({
             />
           </CellErrorBoundary>
         ),
-        size: 200,
-        minSize: 120,
-        maxSize: 400,
+        size: 240,
+        minSize: 240,
+        maxSize: 500,
         enableResizing: true,
       },
       // Compliance Actions (truncated)
@@ -592,9 +592,9 @@ export function ComplianceDetailTable({
             />
           </CellErrorBoundary>
         ),
-        size: 200,
-        minSize: 120,
-        maxSize: 400,
+        size: 215,
+        minSize: 215,
+        maxSize: 500,
         enableResizing: true,
       },
       // Compliance Status (compact badge)
@@ -615,8 +615,8 @@ export function ComplianceDetailTable({
           </CellErrorBoundary>
         ),
         size: 140,
-        minSize: 120,
-        maxSize: 200,
+        minSize: 200,
+        maxSize: 250,
         enableResizing: true,
       },
       // Priority (compact badge)
@@ -633,8 +633,8 @@ export function ComplianceDetailTable({
           />
         ),
         size: 110,
-        minSize: 100,
-        maxSize: 180,
+        minSize: 170,
+        maxSize: 220,
         enableResizing: true,
       },
       // Responsible Person (avatar only)
@@ -656,7 +656,7 @@ export function ComplianceDetailTable({
         ),
         enableSorting: false,
         enableResizing: false,
-        size: 60,
+        size: 110,
       },
       // Expand chevron
       {

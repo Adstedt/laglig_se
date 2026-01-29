@@ -15,6 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 export type ViewMode = 'card' | 'table' | 'compliance'
 
@@ -24,6 +25,14 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ value, onChange }: ViewToggleProps) {
+  const getItemStyles = (itemValue: ViewMode) =>
+    cn(
+      'px-4 !transition-all duration-200 ease-out transform',
+      value === itemValue
+        ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground scale-[1.08] shadow-md ring-1 ring-primary/20'
+        : 'hover:scale-105 hover:shadow-sm'
+    )
+
   return (
     <TooltipProvider>
       <ToggleGroup
@@ -39,7 +48,11 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
       >
         <Tooltip>
           <TooltipTrigger asChild>
-            <ToggleGroupItem value="card" aria-label="Kortvy" className="px-3">
+            <ToggleGroupItem
+              value="card"
+              aria-label="Kortvy"
+              className={getItemStyles('card')}
+            >
               <LayoutGrid className="h-4 w-4" />
             </ToggleGroupItem>
           </TooltipTrigger>
@@ -53,7 +66,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
             <ToggleGroupItem
               value="table"
               aria-label="Tabellvy"
-              className="px-3"
+              className={getItemStyles('table')}
             >
               <Table className="h-4 w-4" />
             </ToggleGroupItem>
@@ -69,7 +82,7 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
             <ToggleGroupItem
               value="compliance"
               aria-label="Efterlevnad"
-              className="px-3"
+              className={getItemStyles('compliance')}
             >
               <ClipboardList className="h-4 w-4" />
             </ToggleGroupItem>
