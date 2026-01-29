@@ -204,6 +204,11 @@ model LawListItem {
   ai_commentary       String?          @db.Text // AI-generated analysis
   category            String? // Custom categorization
 
+  // Story 6.18: Compliance actions - how we comply with requirements
+  compliance_actions            String?   @db.Text // "Hur efterlever vi kraven?" content
+  compliance_actions_updated_at DateTime? // Last update timestamp
+  compliance_actions_updated_by String? // User ID who last updated
+
   // Metadata
   source     LawListItemSource @default(MANUAL)
   added_by   String?

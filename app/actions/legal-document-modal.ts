@@ -29,6 +29,10 @@ export interface ListItemDetails {
   addedAt: Date
   updatedAt: Date
   dueDate: Date | null
+  // Story 6.18: Compliance actions fields
+  complianceActions: string | null
+  complianceActionsUpdatedAt: Date | null
+  complianceActionsUpdatedBy: string | null
   legalDocument: {
     id: string
     title: string
@@ -90,6 +94,12 @@ interface ActionResult<T = void> {
 // ============================================================================
 
 const UpdateBusinessContextSchema = z.object({
+  listItemId: z.string().uuid(),
+  content: z.string().max(10000),
+})
+
+// Story 6.18: Schema for compliance actions
+const UpdateComplianceActionsSchema = z.object({
   listItemId: z.string().uuid(),
   content: z.string().max(10000),
 })
@@ -158,6 +168,13 @@ async function fetchListItemDetailsInternal(
           addedAt: new Date(parsed.added_at),
           updatedAt: new Date(parsed.updated_at),
           dueDate: parsed.due_date ? new Date(parsed.due_date) : null,
+          // Story 6.18: Compliance actions
+          complianceActions: parsed.compliance_actions ?? null,
+          complianceActionsUpdatedAt: parsed.compliance_actions_updated_at
+            ? new Date(parsed.compliance_actions_updated_at)
+            : null,
+          complianceActionsUpdatedBy:
+            parsed.compliance_actions_updated_by ?? null,
           legalDocument: {
             id: parsed.document.id,
             title: parsed.document.title,
@@ -271,6 +288,10 @@ async function fetchListItemDetailsInternal(
     addedAt: item.added_at,
     updatedAt: item.updated_at,
     dueDate: item.due_date,
+    // Story 6.18: Compliance actions
+    complianceActions: item.compliance_actions,
+    complianceActionsUpdatedAt: item.compliance_actions_updated_at,
+    complianceActionsUpdatedBy: item.compliance_actions_updated_by,
     legalDocument: {
       id: item.document.id,
       title: item.document.title,
@@ -383,6 +404,65 @@ export async function updateListItemBusinessContext(
     }, 'tasks:edit')
   } catch (error) {
     console.error('Error updating business context:', error)
+    return { success: false, error: 'Kunde inte spara' }
+  }
+}
+
+// ============================================================================
+// Story 6.18: Update Compliance Actions
+// ============================================================================
+
+/**
+ * Update the compliance actions ("Hur efterlever vi kraven?") for a list item
+ */
+export async function updateListItemComplianceActions(
+  listItemId: string,
+  content: string
+): Promise<ActionResult> {
+  try {
+    const parsed = UpdateComplianceActionsSchema.safeParse({
+      listItemId,
+      content,
+    })
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+      }
+    }
+
+    return await withWorkspace(async (ctx) => {
+      // Verify item belongs to workspace
+      const item = await prisma.lawListItem.findFirst({
+        where: { id: listItemId },
+        include: { law_list: { select: { workspace_id: true } } },
+      })
+
+      if (!item || item.law_list.workspace_id !== ctx.workspaceId) {
+        return { success: false, error: 'Laglistpost hittades inte' }
+      }
+
+      await prisma.lawListItem.update({
+        where: { id: listItemId },
+        data: {
+          compliance_actions: content || null,
+          compliance_actions_updated_at: new Date(),
+          compliance_actions_updated_by: ctx.userId,
+        },
+      })
+
+      // Invalidate Redis cache for this list item
+      try {
+        await redis.del(`list-item-details:${listItemId}`)
+      } catch {
+        // Cache invalidation error - non-critical
+      }
+
+      revalidatePath('/laglistor')
+      return { success: true }
+    }, 'tasks:edit')
+  } catch (error) {
+    console.error('Error updating compliance actions:', error)
     return { success: false, error: 'Kunde inte spara' }
   }
 }

@@ -1,9 +1,10 @@
 'use client'
 
 /**
- * Story 6.3: Business Context
- * Rich text editor accordion item for describing how a law affects the business
+ * Story 6.18: Compliance Actions
+ * Rich text editor accordion item for describing how we comply with the law
  * Uses Jira-style click-to-edit with Save/Cancel workflow
+ * Pattern copied from business-context.tsx
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -18,14 +19,16 @@ import {
   RichTextDisplay,
 } from '@/components/ui/rich-text-editor'
 import { Button } from '@/components/ui/button'
-import { Loader2, Check, HelpCircle, Pencil } from 'lucide-react'
+import { Loader2, Check, ClipboardCheck, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { updateListItemBusinessContext } from '@/app/actions/legal-document-modal'
+import { updateListItemComplianceActions } from '@/app/actions/legal-document-modal'
 import { toast } from 'sonner'
 
-interface BusinessContextProps {
+interface ComplianceActionsProps {
   listItemId: string
   initialContent: string | null
+  updatedAt?: Date | null | undefined
+  updatedByName?: string | null | undefined
   /** Story 6.18: Callback to optimistically update list view */
   onContentChange?: ((_content: string | null) => void) | undefined
   /** Story 6.18: Auto-start in edit mode (from "Lägg till" click) */
@@ -34,12 +37,14 @@ interface BusinessContextProps {
 
 type SaveStatus = 'idle' | 'saving' | 'saved'
 
-export function BusinessContext({
+export function ComplianceActions({
   listItemId,
   initialContent,
+  updatedAt,
+  updatedByName,
   onContentChange,
   autoEdit = false,
-}: BusinessContextProps) {
+}: ComplianceActionsProps) {
   const [content, setContent] = useState(initialContent ?? '')
   const [editedContent, setEditedContent] = useState(initialContent ?? '')
   const [isEditing, setIsEditing] = useState(autoEdit)
@@ -72,7 +77,7 @@ export function BusinessContext({
     }
 
     setSaveStatus('saving')
-    const result = await updateListItemBusinessContext(
+    const result = await updateListItemComplianceActions(
       listItemId,
       trimmed ?? ''
     )
@@ -93,11 +98,21 @@ export function BusinessContext({
         `list-item-extra:${listItemId}`,
         (
           current:
-            | { businessContext: string | null; aiCommentary: string | null }
+            | {
+                businessContext: string | null
+                aiCommentary: string | null
+                complianceActions: string | null
+                complianceActionsUpdatedAt: Date | null
+                complianceActionsUpdatedBy: string | null
+              }
             | undefined
         ) => ({
-          businessContext: trimmed,
+          businessContext: current?.businessContext ?? null,
           aiCommentary: current?.aiCommentary ?? null,
+          complianceActions: trimmed,
+          complianceActionsUpdatedAt: new Date(),
+          complianceActionsUpdatedBy:
+            current?.complianceActionsUpdatedBy ?? null,
         }),
         { revalidate: false }
       )
@@ -106,7 +121,13 @@ export function BusinessContext({
         `list-item:${listItemId}`,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (current: any) =>
-          current ? { ...current, businessContext: trimmed } : current,
+          current
+            ? {
+                ...current,
+                complianceActions: trimmed,
+                complianceActionsUpdatedAt: new Date(),
+              }
+            : current,
         { revalidate: false }
       )
     } else {
@@ -125,15 +146,29 @@ export function BusinessContext({
     setIsEditing(true)
   }
 
+  // Format metadata for display
+  const formatMetadata = () => {
+    if (!updatedAt) return null
+    const dateStr = new Date(updatedAt).toLocaleDateString('sv-SE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
+    if (updatedByName) {
+      return `Senast uppdaterad ${dateStr} av ${updatedByName}`
+    }
+    return `Senast uppdaterad ${dateStr}`
+  }
+
   return (
     <AccordionItem
-      value="business-context"
+      value="compliance-actions"
       className="border rounded-lg border-border/60"
     >
       <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
         <div className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <HelpCircle className="h-4 w-4" />
-          <span>Hur påverkar denna lag oss?</span>
+          <ClipboardCheck className="h-4 w-4" />
+          <span>Hur efterlever vi kraven?</span>
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
@@ -144,7 +179,7 @@ export function BusinessContext({
             <RichTextEditor
               content={editedContent}
               onChange={setEditedContent}
-              placeholder="Beskriv hur denna lag påverkar er verksamhet..."
+              placeholder="Beskriv hur ni efterlever lagens krav..."
             />
 
             {/* Save/Cancel buttons */}
@@ -205,6 +240,13 @@ export function BusinessContext({
                 </div>
               </div>
             </div>
+
+            {/* Metadata display */}
+            {formatMetadata() && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {formatMetadata()}
+              </p>
+            )}
           </div>
         )}
       </AccordionContent>

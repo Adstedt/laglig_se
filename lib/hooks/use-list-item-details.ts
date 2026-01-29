@@ -80,7 +80,14 @@ interface UseListItemDetailsResult {
 function initialDataToListItem(
   initial: InitialListItemData,
   htmlContent: string | null,
-  extraData?: { businessContext?: string | null; aiCommentary?: string | null }
+  extraData?: {
+    businessContext?: string | null
+    aiCommentary?: string | null
+    // Story 6.18: Compliance actions fields
+    complianceActions?: string | null
+    complianceActionsUpdatedAt?: Date | null
+    complianceActionsUpdatedBy?: string | null
+  }
 ): ListItemDetails {
   return {
     id: initial.id,
@@ -94,6 +101,10 @@ function initialDataToListItem(
     addedAt: initial.addedAt,
     updatedAt: initial.addedAt, // Use addedAt as fallback
     dueDate: initial.dueDate,
+    // Story 6.18: Compliance actions fields
+    complianceActions: extraData?.complianceActions ?? null,
+    complianceActionsUpdatedAt: extraData?.complianceActionsUpdatedAt ?? null,
+    complianceActionsUpdatedBy: extraData?.complianceActionsUpdatedBy ?? null,
     legalDocument: {
       id: initial.document.id,
       title: initial.document.title,
@@ -166,18 +177,28 @@ export function useListItemDetails(
     }
   )
 
-  // Fetch extra fields not in list (businessContext, aiCommentary)
+  // Fetch extra fields not in list (businessContext, aiCommentary, complianceActions)
   // Only if we have initialData (otherwise fullData has everything)
   const { data: extraFields } = useSWR(
     listItemId && initialData ? `list-item-extra:${listItemId}` : null,
     async () => {
       const result = await getListItemDetails(listItemId!)
       if (!result.success || !result.data) {
-        return { businessContext: null, aiCommentary: null }
+        return {
+          businessContext: null,
+          aiCommentary: null,
+          complianceActions: null,
+          complianceActionsUpdatedAt: null,
+          complianceActionsUpdatedBy: null,
+        }
       }
       return {
         businessContext: result.data.businessContext,
         aiCommentary: result.data.aiCommentary,
+        // Story 6.18: Compliance actions fields
+        complianceActions: result.data.complianceActions,
+        complianceActionsUpdatedAt: result.data.complianceActionsUpdatedAt,
+        complianceActionsUpdatedBy: result.data.complianceActionsUpdatedBy,
       }
     },
     {

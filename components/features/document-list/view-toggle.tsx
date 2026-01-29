@@ -2,10 +2,12 @@
 
 /**
  * Story 4.12: View Toggle Component
- * Toggle between Card View and Table View for document lists
+ * Toggle between Card View, Table View, and Compliance View for document lists
+ *
+ * Story 6.18: Added Compliance View (Efterlevnad) option
  */
 
-import { LayoutGrid, Table } from 'lucide-react'
+import { LayoutGrid, Table, ClipboardList } from 'lucide-react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import {
   Tooltip,
@@ -14,7 +16,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
-export type ViewMode = 'card' | 'table'
+export type ViewMode = 'card' | 'table' | 'compliance'
 
 interface ViewToggleProps {
   value: ViewMode
@@ -58,6 +60,22 @@ export function ViewToggle({ value, onChange }: ViewToggleProps) {
           </TooltipTrigger>
           <TooltipContent>
             <p>Tabellvy</p>
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Story 6.18: Compliance (Efterlevnad) view */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <ToggleGroupItem
+              value="compliance"
+              aria-label="Efterlevnad"
+              className="px-3"
+            >
+              <ClipboardList className="h-4 w-4" />
+            </ToggleGroupItem>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Efterlevnad</p>
           </TooltipContent>
         </Tooltip>
       </ToggleGroup>

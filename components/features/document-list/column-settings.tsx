@@ -20,13 +20,16 @@ import type { VisibilityState } from '@tanstack/react-table'
 const COLUMN_OPTIONS: { id: string; label: string; defaultVisible: boolean }[] =
   [
     { id: 'type', label: 'Typ', defaultVisible: true },
-    { id: 'documentNumber', label: 'Dokument', defaultVisible: true },
-    { id: 'title', label: 'Titel', defaultVisible: true },
-    { id: 'status', label: 'Status', defaultVisible: true },
+    { id: 'title', label: 'Dokument', defaultVisible: true },
+    { id: 'complianceStatus', label: 'Efterlevnad', defaultVisible: true },
     { id: 'priority', label: 'Prioritet', defaultVisible: true },
     { id: 'dueDate', label: 'Deadline', defaultVisible: true },
     { id: 'assignee', label: 'Tilldelad', defaultVisible: false },
+    { id: 'responsiblePerson', label: 'Ansvarig', defaultVisible: false },
+    { id: 'taskProgress', label: 'Uppgifter', defaultVisible: false },
+    { id: 'lastActivity', label: 'Aktivitet', defaultVisible: false },
     { id: 'notes', label: 'Anteckningar', defaultVisible: false },
+    { id: 'group', label: 'Grupp', defaultVisible: false },
     { id: 'addedAt', label: 'Tillagd', defaultVisible: false },
   ]
 
