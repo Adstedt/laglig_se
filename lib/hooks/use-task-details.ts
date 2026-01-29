@@ -253,8 +253,26 @@ export function useTaskDetails(
     }
   )
 
-  // Merge data: prefer fullData, fall back to initialData
+  // Merge data: prefer fullData for modal-specific fields (comments, evidence,
+  // labels, creator), but always use initialData for shared fields (title,
+  // description, status, priority, assignee, due date) since it reflects the
+  // latest parent workspace state (e.g. inline edits from the list view).
+  // Both directions stay in sync because modal optimistic updates also call
+  // onTaskUpdate to push changes back to the parent.
   const task = useMemo(() => {
+    if (fullData && initialData) {
+      return {
+        ...fullData,
+        title: initialData.title,
+        description: initialData.description,
+        priority: initialData.priority as TaskDetails['priority'],
+        due_date: initialData.due_date,
+        column_id: initialData.column_id,
+        column: initialData.column,
+        assignee_id: initialData.assignee?.id ?? null,
+        assignee: initialData.assignee,
+      }
+    }
     if (fullData) {
       return fullData
     }

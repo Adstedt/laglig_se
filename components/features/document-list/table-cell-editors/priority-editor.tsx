@@ -19,15 +19,16 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { Loader2 } from 'lucide-react'
-import type { LawListItemPriority } from '@prisma/client'
 import { cn } from '@/lib/utils'
 
-export const PRIORITY_OPTIONS: {
-  value: LawListItemPriority
+export interface PriorityOption {
+  value: string
   label: string
   color: string
-  tooltip: string
-}[] = [
+  tooltip?: string
+}
+
+export const PRIORITY_OPTIONS: PriorityOption[] = [
   {
     value: 'LOW',
     label: 'Låg',
@@ -50,15 +51,22 @@ export const PRIORITY_OPTIONS: {
 ]
 
 interface PriorityEditorProps {
-  value: LawListItemPriority
-  onChange: (_value: LawListItemPriority) => Promise<void>
+  value: string
+  onChange: (_value: string) => Promise<void>
+  /** Custom priority options (defaults to law list LOW/MEDIUM/HIGH) */
+  options?: PriorityOption[]
 }
 
-export function PriorityEditor({ value, onChange }: PriorityEditorProps) {
+export function PriorityEditor({
+  value,
+  onChange,
+  options,
+}: PriorityEditorProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const currentOption = PRIORITY_OPTIONS.find((opt) => opt.value === value)
+  const activeOptions = options ?? PRIORITY_OPTIONS
+  const currentOption = activeOptions.find((opt) => opt.value === value)
 
-  const handleChange = async (newValue: LawListItemPriority) => {
+  const handleChange = async (newValue: string) => {
     if (newValue === value) return
     setIsLoading(true)
     try {
@@ -91,7 +99,7 @@ export function PriorityEditor({ value, onChange }: PriorityEditorProps) {
       </SelectTrigger>
       <SelectContent>
         <TooltipProvider delayDuration={300}>
-          {PRIORITY_OPTIONS.map((option) => (
+          {activeOptions.map((option) => (
             <Tooltip key={option.value}>
               <TooltipTrigger asChild>
                 <SelectItem value={option.value}>

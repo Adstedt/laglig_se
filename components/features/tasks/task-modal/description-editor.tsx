@@ -21,6 +21,8 @@ interface DescriptionEditorProps {
   taskId: string
   initialDescription: string | null
   onUpdate: () => Promise<void>
+  /** Optimistic callback to sync description changes to parent (e.g. list view) */
+  onOptimisticChange?: ((_description: string | null) => void) | undefined
   /** Hide the label when embedded in an accordion */
   hideLabel?: boolean
   /** Workspace members for @mentions */
@@ -33,6 +35,7 @@ export function DescriptionEditor({
   taskId,
   initialDescription,
   onUpdate,
+  onOptimisticChange,
   hideLabel = false,
   workspaceMembers = [],
 }: DescriptionEditorProps) {
@@ -70,13 +73,14 @@ export function DescriptionEditor({
       setDescription(trimmed ?? '')
       setSaveStatus('saved')
       setIsEditing(false)
+      onOptimisticChange?.(trimmed ?? null)
       await onUpdate()
       setTimeout(() => setSaveStatus('idle'), 2000)
     } else {
       toast.error('Fel', { description: result.error })
       setSaveStatus('idle')
     }
-  }, [taskId, editedDescription, onUpdate])
+  }, [taskId, editedDescription, onUpdate, onOptimisticChange])
 
   const handleCancel = () => {
     setEditedDescription(description)

@@ -191,7 +191,7 @@ export function LinkedLawsBox({
                       const isUnlinking = unlinkingId === link.law_list_item.id
                       return (
                         <div
-                          key={link.id}
+                          key={link.id || link.law_list_item.id}
                           className={cn(
                             'flex items-center gap-2 p-2 rounded-md overflow-hidden',
                             'bg-muted/50 hover:bg-muted transition-colors group',
