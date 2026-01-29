@@ -26,6 +26,9 @@ interface LeftPanelProps {
   workspaceMembers: WorkspaceMember[]
   onUpdate: () => Promise<void>
   onOptimisticTitleChange?: ((_title: string) => void) | undefined
+  onOptimisticDescriptionChange?:
+    | ((_description: string | null) => void)
+    | undefined
 }
 
 export function LeftPanel({
@@ -33,6 +36,7 @@ export function LeftPanel({
   workspaceMembers,
   onUpdate,
   onOptimisticTitleChange,
+  onOptimisticDescriptionChange,
 }: LeftPanelProps) {
   const attachmentCount = task.evidence.length
 
@@ -76,6 +80,7 @@ export function LeftPanel({
               taskId={task.id}
               initialDescription={task.description}
               onUpdate={onUpdate}
+              onOptimisticChange={onOptimisticDescriptionChange}
               hideLabel
               workspaceMembers={workspaceMembers}
             />

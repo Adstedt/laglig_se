@@ -1710,7 +1710,7 @@ for (const job of jobs) {
 
 - `assignee_id`: UUID | null - FK to User
 - `due_date`: Date | null - Hard deadline
-- `priority`: enum - "LOW", "MEDIUM", "HIGH"
+- `priority`: enum - "LOW", "MEDIUM", "HIGH", "CRITICAL"
 
 **Metadata:**
 
@@ -1722,7 +1722,7 @@ for (const job of jobs) {
 **TypeScript Interface:**
 
 ```typescript
-type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH'
+type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
 interface Task {
   id: string

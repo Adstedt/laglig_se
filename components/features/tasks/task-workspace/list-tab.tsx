@@ -2,12 +2,16 @@
 
 /**
  * Story 6.4: Task List View Tab
- * Table-based view matching the document-list-table visual style
+ * Story 6.19: Refactored for UX parity with law list table
+ *   - Column resizing with persistence
+ *   - Inline cell editors (status, priority, due date, assignee)
+ *   - table-fixed layout with resize handles
+ *   - Filter state lifted to parent (receives filteredTasks)
  *
  * Story P.4: Added virtualization for large datasets (>100 items)
  */
 
-import { useState, useMemo, useCallback, useRef, memo, useEffect } from 'react'
+import { useState, useMemo, useCallback, useRef, memo } from 'react'
 import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import {
   useReactTable,
@@ -18,6 +22,7 @@ import {
   type SortingState,
   type RowSelectionState,
   type VisibilityState,
+  type ColumnSizingState,
 } from '@tanstack/react-table'
 import {
   Table,
@@ -29,8 +34,6 @@ import {
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,33 +42,44 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
   MoreHorizontal,
   MessageSquare,
-  Calendar,
-  AlertCircle,
-  CheckCircle2,
-  Circle,
-  Clock,
+  ListTodo,
   Trash2,
   UserPlus,
   Flag,
-  ListTodo,
+  GripVertical,
+  SquareCheckBig,
 } from 'lucide-react'
+import { SortableHeader } from '@/components/ui/sortable-header'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { formatDistanceToNow } from 'date-fns'
-import { sv } from 'date-fns/locale'
 import {
   updateTasksBulk,
   deleteTasksBulk,
   type TaskWithRelations,
   type TaskColumnWithCount,
 } from '@/app/actions/tasks'
+import {
+  updateTaskStatusColumn,
+  updateTaskAssignee,
+  updateTaskDueDate,
+  updateTaskPriority,
+} from '@/app/actions/task-modal'
 import type { TaskPriority } from '@prisma/client'
 import type { WorkspaceMember } from './index'
-import { TaskFilters } from './task-filters'
+import { TaskStatusEditor } from './task-status-editor'
+import {
+  PriorityEditor,
+  type PriorityOption,
+} from '@/components/features/document-list/table-cell-editors/priority-editor'
+import { DueDateEditor } from '@/components/features/document-list/table-cell-editors/due-date-editor'
+import { AssigneeEditor } from '@/components/features/document-list/table-cell-editors/assignee-editor'
 import { BulkActionBar } from './bulk-action-bar'
 import { toast } from 'sonner'
 
@@ -73,58 +87,49 @@ import { toast } from 'sonner'
 // Story P.4: Virtualization Configuration
 // ============================================================================
 
+function stripHtml(html: string | null): string {
+  if (!html) return ''
+  return html.replace(/<[^>]*>/g, '').trim()
+}
+
 const VIRTUALIZATION_THRESHOLD = 100
 const ESTIMATED_ROW_HEIGHT = 56
 const OVERSCAN_COUNT = 5
 const VIRTUAL_TABLE_MAX_HEIGHT = 600
 
 // ============================================================================
+// Task Priority Options (4 levels, matching task schema)
+// ============================================================================
+
+const TASK_PRIORITY_OPTIONS: PriorityOption[] = [
+  { value: 'LOW', label: 'Låg', color: 'bg-gray-100 text-gray-700' },
+  { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-700' },
+  { value: 'HIGH', label: 'Hög', color: 'bg-orange-100 text-orange-700' },
+  {
+    value: 'CRITICAL',
+    label: 'Kritisk',
+    color: 'bg-red-100 text-red-700',
+  },
+]
+
+// ============================================================================
 // Props
 // ============================================================================
 
 interface ListTabProps {
-  initialTasks: TaskWithRelations[]
-  initialColumns: TaskColumnWithCount[]
+  filteredTasks: TaskWithRelations[]
+  columns: TaskColumnWithCount[]
   workspaceMembers: WorkspaceMember[]
+  // Column state from Zustand store
+  columnSizing: ColumnSizingState
+  onColumnSizingChange: (_sizing: ColumnSizingState) => void
+  columnVisibility: VisibilityState
+  sorting: SortingState
+  onSortingChange: (_sorting: SortingState) => void
+  // Callbacks
   onTaskClick?: (_taskId: string) => void
-}
-
-// ============================================================================
-// Priority Helpers
-// ============================================================================
-
-const PRIORITY_CONFIG = {
-  LOW: { label: 'Låg', color: 'bg-gray-100 text-gray-700' },
-  MEDIUM: { label: 'Medium', color: 'bg-blue-100 text-blue-700' },
-  HIGH: { label: 'Hög', color: 'bg-orange-100 text-orange-700' },
-  CRITICAL: { label: 'Kritisk', color: 'bg-red-100 text-red-700' },
-} as const
-
-function getPriorityConfig(priority: string) {
-  return (
-    PRIORITY_CONFIG[priority as keyof typeof PRIORITY_CONFIG] ??
-    PRIORITY_CONFIG.MEDIUM
-  )
-}
-
-// ============================================================================
-// Status Icon Helper
-// ============================================================================
-
-function StatusIcon({
-  columnName,
-  isDone,
-}: {
-  columnName: string
-  isDone: boolean
-}) {
-  if (isDone) {
-    return <CheckCircle2 className="h-4 w-4 text-green-500" />
-  }
-  if (columnName.toLowerCase().includes('pågående')) {
-    return <Clock className="h-4 w-4 text-blue-500" />
-  }
-  return <Circle className="h-4 w-4 text-gray-400" />
+  onTaskUpdate: (_taskId: string, _updates: Partial<TaskWithRelations>) => void
+  onTasksDelete: (_taskIds: string[]) => void
 }
 
 // ============================================================================
@@ -132,59 +137,22 @@ function StatusIcon({
 // ============================================================================
 
 export function ListTab({
-  initialTasks,
-  initialColumns,
+  filteredTasks,
+  columns: taskColumns,
   workspaceMembers,
+  columnSizing,
+  onColumnSizingChange,
+  columnVisibility,
+  sorting,
+  onSortingChange,
   onTaskClick,
+  onTaskUpdate,
+  onTasksDelete,
 }: ListTabProps) {
-  const [tasks, setTasks] = useState(initialTasks)
-  const [sorting, setSorting] = useState<SortingState>([])
-
-  // Sync local state when parent's tasks change (e.g., from modal updates)
-  useEffect(() => {
-    setTasks(initialTasks)
-  }, [initialTasks])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string[]>([])
-  const [priorityFilter, setPriorityFilter] = useState<string[]>([])
-  const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
 
   // Story P.4: Virtualization state
   const tableContainerRef = useRef<HTMLDivElement>(null)
-
-  // Filter tasks
-  const filteredTasks = useMemo(() => {
-    let result = tasks
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(
-        (task) =>
-          task.title.toLowerCase().includes(query) ||
-          task.description?.toLowerCase().includes(query)
-      )
-    }
-
-    if (statusFilter.length > 0) {
-      result = result.filter((task) => statusFilter.includes(task.column.name))
-    }
-
-    if (priorityFilter.length > 0) {
-      result = result.filter((task) => priorityFilter.includes(task.priority))
-    }
-
-    if (assigneeFilter) {
-      if (assigneeFilter === 'unassigned') {
-        result = result.filter((task) => task.assignee_id === null)
-      } else {
-        result = result.filter((task) => task.assignee_id === assigneeFilter)
-      }
-    }
-
-    return result
-  }, [tasks, searchQuery, statusFilter, priorityFilter, assigneeFilter])
 
   // Check if task is overdue
   const isOverdue = useCallback((task: TaskWithRelations) => {
@@ -192,7 +160,139 @@ export function ListTab({
     return new Date(task.due_date) < new Date()
   }, [])
 
-  // Column definitions matching document-list-table style
+  // Map workspace members to WorkspaceMemberOption shape for AssigneeEditor
+  const memberOptions = useMemo(
+    () =>
+      workspaceMembers.map((m) => ({
+        id: m.id,
+        name: m.name,
+        email: m.email,
+        avatarUrl: m.avatarUrl,
+      })),
+    [workspaceMembers]
+  )
+
+  // ---- Inline edit handlers ----
+
+  const handleStatusChange = useCallback(
+    async (taskId: string, task: TaskWithRelations, newColumnId: string) => {
+      const previousColumn = task.column
+      const newColumn = taskColumns.find((c) => c.id === newColumnId)
+      if (!newColumn) return
+
+      // Optimistic update
+      onTaskUpdate(taskId, {
+        column_id: newColumnId,
+        column: {
+          id: newColumn.id,
+          name: newColumn.name,
+          color: newColumn.color,
+          is_done: newColumn.is_done,
+        },
+      })
+
+      const result = await updateTaskStatusColumn(taskId, newColumnId)
+      if (!result.success) {
+        // Rollback
+        onTaskUpdate(taskId, {
+          column_id: previousColumn.id,
+          column: previousColumn,
+        })
+        toast.error('Kunde inte uppdatera status', {
+          description: result.error,
+        })
+      }
+    },
+    [taskColumns, onTaskUpdate]
+  )
+
+  const handlePriorityChange = useCallback(
+    async (taskId: string, previousPriority: string, newPriority: string) => {
+      // Optimistic update
+      onTaskUpdate(taskId, { priority: newPriority as TaskPriority })
+
+      const result = await updateTaskPriority(
+        taskId,
+        newPriority as TaskPriority
+      )
+      if (!result.success) {
+        // Rollback
+        onTaskUpdate(taskId, { priority: previousPriority as TaskPriority })
+        toast.error('Kunde inte uppdatera prioritet', {
+          description: result.error,
+        })
+      }
+    },
+    [onTaskUpdate]
+  )
+
+  const handleDueDateChange = useCallback(
+    async (taskId: string, previousDate: Date | null, newDate: Date | null) => {
+      // Optimistic update
+      onTaskUpdate(taskId, { due_date: newDate })
+
+      const result = await updateTaskDueDate(taskId, newDate)
+      if (!result.success) {
+        // Rollback
+        onTaskUpdate(taskId, { due_date: previousDate })
+        toast.error('Kunde inte uppdatera datum', {
+          description: result.error,
+        })
+      }
+    },
+    [onTaskUpdate]
+  )
+
+  const handleAssigneeChange = useCallback(
+    async (
+      taskId: string,
+      previousAssigneeId: string | null,
+      newAssigneeId: string | null
+    ) => {
+      const newAssignee = newAssigneeId
+        ? workspaceMembers.find((m) => m.id === newAssigneeId)
+        : null
+
+      // Optimistic update
+      onTaskUpdate(taskId, {
+        assignee_id: newAssigneeId,
+        assignee: newAssignee
+          ? {
+              id: newAssignee.id,
+              name: newAssignee.name,
+              email: newAssignee.email,
+              avatar_url: newAssignee.avatarUrl,
+            }
+          : null,
+      })
+
+      const result = await updateTaskAssignee(taskId, newAssigneeId)
+      if (!result.success) {
+        // Rollback
+        const prevAssignee = previousAssigneeId
+          ? workspaceMembers.find((m) => m.id === previousAssigneeId)
+          : null
+        onTaskUpdate(taskId, {
+          assignee_id: previousAssigneeId,
+          assignee: prevAssignee
+            ? {
+                id: prevAssignee.id,
+                name: prevAssignee.name,
+                email: prevAssignee.email,
+                avatar_url: prevAssignee.avatarUrl,
+              }
+            : null,
+        })
+        toast.error('Kunde inte uppdatera ansvarig', {
+          description: result.error,
+        })
+      }
+    },
+    [workspaceMembers, onTaskUpdate]
+  )
+
+  // ---- Column definitions with inline editors ----
+
   const columns: ColumnDef<TaskWithRelations>[] = useMemo(
     () => [
       // Select checkbox
@@ -221,20 +321,43 @@ export function ListTab({
           />
         ),
         enableSorting: false,
+        enableResizing: false,
         size: 40,
+        minSize: 40,
+        maxSize: 40,
       },
-      // Status icon
+      // Drag handle (visual placeholder — reorder not yet implemented)
       {
-        id: 'status',
-        accessorFn: (row) => row.column.name,
+        id: 'dragHandle',
         header: '',
-        cell: ({ row }) => (
-          <StatusIcon
-            columnName={row.original.column.name}
-            isDone={row.original.column.is_done}
-          />
+        cell: () => (
+          <div className="p-1 text-muted-foreground">
+            <GripVertical className="h-4 w-4" />
+          </div>
         ),
+        enableSorting: false,
+        enableResizing: false,
         size: 40,
+        minSize: 40,
+        maxSize: 40,
+      },
+      // Type icon
+      {
+        id: 'type',
+        header: 'Typ',
+        cell: () => (
+          <div
+            className="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-50 text-blue-600"
+            title="Uppgift"
+          >
+            <SquareCheckBig className="h-4 w-4" />
+          </div>
+        ),
+        enableSorting: false,
+        enableResizing: false,
+        size: 60,
+        minSize: 60,
+        maxSize: 60,
       },
       // Title
       {
@@ -247,48 +370,95 @@ export function ListTab({
           const task = row.original
           const overdue = isOverdue(task)
           return (
-            <div className="flex flex-col gap-1">
+            <div className="w-full overflow-hidden">
               <span
                 className={cn(
-                  'font-medium line-clamp-1',
+                  'text-sm font-medium block truncate',
                   overdue && 'text-destructive'
                 )}
               >
                 {task.title}
               </span>
-              {task.list_item_links[0] && (
-                <Badge variant="secondary" className="w-fit text-xs">
-                  {
-                    task.list_item_links[0].law_list_item.document
-                      .document_number
-                  }
-                </Badge>
+              {task.list_item_links.length > 0 && (
+                <span className="text-xs text-muted-foreground block truncate">
+                  {[
+                    ...new Set(
+                      task.list_item_links.map(
+                        (link) => link.law_list_item.document.document_number
+                      )
+                    ),
+                  ].join(' · ')}
+                </span>
               )}
             </div>
           )
         },
         size: 300,
+        minSize: 150,
+        maxSize: 600,
       },
-      // Status column
+      // Description (truncated with tooltip)
+      {
+        id: 'description',
+        accessorKey: 'description',
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Beskrivning" />
+        ),
+        cell: ({ row }) => {
+          const text = stripHtml(row.original.description)
+          if (!text) {
+            return <span className="text-sm text-muted-foreground">—</span>
+          }
+          return (
+            <TooltipProvider delayDuration={250}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="line-clamp-2 text-sm text-foreground cursor-help">
+                    {text}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  align="start"
+                  className="max-w-[400px] max-h-[300px] overflow-y-auto p-4"
+                >
+                  <div className="space-y-2">
+                    <p className="font-semibold text-sm">Beskrivning</p>
+                    <p className="text-sm text-foreground whitespace-pre-wrap">
+                      {text}
+                    </p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )
+        },
+        size: 240,
+        minSize: 150,
+        maxSize: 500,
+      },
+      // Status column (inline editor)
       {
         id: 'columnName',
         accessorFn: (row) => row.column.name,
         header: ({ column }) => (
           <SortableHeader column={column} label="Status" />
         ),
-        cell: ({ row }) => (
-          <Badge
-            variant="outline"
-            className="whitespace-nowrap"
-            style={{
-              borderColor: row.original.column.color,
-              backgroundColor: `${row.original.column.color}20`,
-            }}
-          >
-            {row.original.column.name}
-          </Badge>
-        ),
+        cell: ({ row }) => {
+          const task = row.original
+          return (
+            <TaskStatusEditor
+              value={task.column_id}
+              columns={taskColumns}
+              onChange={async (columnId) => {
+                await handleStatusChange(task.id, task, columnId)
+              }}
+            />
+          )
+        },
         size: 120,
+        minSize: 80,
+        maxSize: 200,
       },
       // Comments count
       {
@@ -305,43 +475,38 @@ export function ListTab({
             </div>
           )
         },
+        enableResizing: false,
         size: 60,
+        minSize: 60,
+        maxSize: 60,
       },
-      // Assignee
+      // Assignee (inline editor)
       {
         id: 'assignee',
         accessorFn: (row) => row.assignee?.name ?? row.assignee?.email ?? '',
         header: 'Ansvarig',
         cell: ({ row }) => {
-          const assignee = row.original.assignee
-          if (!assignee) {
-            return (
-              <span className="text-muted-foreground text-sm">Otilldelad</span>
-            )
-          }
+          const task = row.original
           return (
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                {assignee.avatar_url && (
-                  <AvatarImage
-                    src={assignee.avatar_url}
-                    alt={assignee.name ?? ''}
-                  />
-                )}
-                <AvatarFallback className="text-xs">
-                  {(assignee.name ?? assignee.email).slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm truncate max-w-[100px]">
-                {assignee.name ?? assignee.email}
-              </span>
-            </div>
+            <AssigneeEditor
+              value={task.assignee_id}
+              members={memberOptions}
+              onChange={async (newAssigneeId) => {
+                await handleAssigneeChange(
+                  task.id,
+                  task.assignee_id,
+                  newAssigneeId
+                )
+              }}
+            />
           )
         },
         enableSorting: false,
         size: 150,
+        minSize: 105,
+        maxSize: 250,
       },
-      // Due date
+      // Due date (inline editor)
       {
         id: 'dueDate',
         accessorKey: 'due_date',
@@ -349,28 +514,21 @@ export function ListTab({
           <SortableHeader column={column} label="Förfallodatum" />
         ),
         cell: ({ row }) => {
-          const dueDate = row.original.due_date
-          if (!dueDate) return null
-          const date = new Date(dueDate)
-          const overdue = isOverdue(row.original)
+          const task = row.original
           return (
-            <div
-              className={cn(
-                'flex items-center gap-1.5 text-sm',
-                overdue && 'text-destructive'
-              )}
-            >
-              {overdue && <AlertCircle className="h-3.5 w-3.5" />}
-              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-              <span>
-                {formatDistanceToNow(date, { locale: sv, addSuffix: true })}
-              </span>
-            </div>
+            <DueDateEditor
+              value={task.due_date ? new Date(task.due_date) : null}
+              onChange={async (newDate) => {
+                await handleDueDateChange(task.id, task.due_date, newDate)
+              }}
+            />
           )
         },
         size: 140,
+        minSize: 160,
+        maxSize: 200,
       },
-      // Priority
+      // Priority (inline editor)
       {
         id: 'priority',
         accessorKey: 'priority',
@@ -378,14 +536,20 @@ export function ListTab({
           <SortableHeader column={column} label="Prioritet" />
         ),
         cell: ({ row }) => {
-          const config = getPriorityConfig(row.original.priority)
+          const task = row.original
           return (
-            <Badge variant="secondary" className={cn('text-xs', config.color)}>
-              {config.label}
-            </Badge>
+            <PriorityEditor
+              value={task.priority}
+              options={TASK_PRIORITY_OPTIONS}
+              onChange={async (newPriority) => {
+                await handlePriorityChange(task.id, task.priority, newPriority)
+              }}
+            />
           )
         },
         size: 100,
+        minSize: 130,
+        maxSize: 150,
       },
       // Created date
       {
@@ -400,6 +564,8 @@ export function ListTab({
           </span>
         ),
         size: 100,
+        minSize: 80,
+        maxSize: 150,
       },
       // Actions
       {
@@ -434,13 +600,40 @@ export function ListTab({
           </DropdownMenu>
         ),
         enableSorting: false,
+        enableResizing: false,
         size: 50,
+        minSize: 50,
+        maxSize: 50,
       },
     ],
-    [isOverdue]
+    [
+      isOverdue,
+      taskColumns,
+      memberOptions,
+      handleStatusChange,
+      handlePriorityChange,
+      handleDueDateChange,
+      handleAssigneeChange,
+    ]
   )
 
-  // Table instance
+  // ---- Column sizing change handler ----
+
+  const handleColumnSizingChange = useCallback(
+    (
+      updater:
+        | ColumnSizingState
+        | ((_old: ColumnSizingState) => ColumnSizingState)
+    ) => {
+      const newSizing =
+        typeof updater === 'function' ? updater(columnSizing) : updater
+      onColumnSizingChange(newSizing)
+    },
+    [columnSizing, onColumnSizingChange]
+  )
+
+  // ---- Table instance with column resizing ----
+
   const table = useReactTable({
     data: filteredTasks,
     columns,
@@ -448,15 +641,37 @@ export function ListTab({
       sorting,
       rowSelection,
       columnVisibility,
+      columnSizing,
     },
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => {
+      const newSorting =
+        typeof updater === 'function' ? updater(sorting) : updater
+      onSortingChange(newSorting)
+    },
     onRowSelectionChange: setRowSelection,
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnSizingChange: handleColumnSizingChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowId: (row) => row.id,
     enableRowSelection: true,
+    enableColumnResizing: true,
+    columnResizeMode: 'onEnd',
   })
+
+  // Helper to get column width with live resize preview
+  const { columnSizingInfo } = table.getState()
+  const getColumnWidth = (headerId: string, defaultSize: number) => {
+    if (columnSizingInfo.isResizingColumn === headerId) {
+      const column = table.getColumn(headerId)
+      const minSize = column?.columnDef.minSize ?? 0
+      const maxSize = column?.columnDef.maxSize ?? Infinity
+      const newSize =
+        (columnSizingInfo.startSize ?? defaultSize) +
+        (columnSizingInfo.deltaOffset ?? 0)
+      return Math.max(minSize, Math.min(maxSize, newSize))
+    }
+    return defaultSize
+  }
 
   // Story P.4: Row virtualizer for large datasets
   const rows = table.getRowModel().rows
@@ -477,7 +692,7 @@ export function ListTab({
   // Clear selection
   const handleClearSelection = () => setRowSelection({})
 
-  // Handle bulk update (optimistic)
+  // Handle bulk update (optimistic via parent callbacks)
   const handleBulkUpdate = async (updates: {
     columnId?: string
     assigneeId?: string | null
@@ -485,7 +700,6 @@ export function ListTab({
   }) => {
     if (selectedItemIds.length === 0) return
 
-    // Build updates object, only including defined values
     const bulkUpdates: {
       columnId?: string
       assigneeId?: string | null
@@ -502,66 +716,58 @@ export function ListTab({
       bulkUpdates.priority = updates.priority as TaskPriority
     }
 
-    // Store previous state for rollback
-    const previousTasks = tasks
-
-    // Optimistic update - update UI immediately
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (!selectedItemIds.includes(task.id)) return task
-        return {
-          ...task,
-          ...(updates.columnId && {
-            column_id: updates.columnId,
-            column:
-              initialColumns.find((c) => c.id === updates.columnId) ??
-              task.column,
-          }),
-          ...(updates.assigneeId !== undefined && {
-            assignee_id: updates.assigneeId,
-          }),
-          ...(updates.priority && {
-            priority: updates.priority as TaskPriority,
-          }),
+    // Optimistic updates via parent
+    for (const taskId of selectedItemIds) {
+      const task = filteredTasks.find((t) => t.id === taskId)
+      if (!task) continue
+      const taskUpdates: Partial<TaskWithRelations> = {}
+      if (updates.columnId) {
+        const col = taskColumns.find((c) => c.id === updates.columnId)
+        if (col) {
+          taskUpdates.column_id = updates.columnId
+          taskUpdates.column = {
+            id: col.id,
+            name: col.name,
+            color: col.color,
+            is_done: col.is_done,
+          }
         }
-      })
-    )
+      }
+      if (updates.assigneeId !== undefined) {
+        taskUpdates.assignee_id = updates.assigneeId
+      }
+      if (updates.priority) {
+        taskUpdates.priority = updates.priority as TaskPriority
+      }
+      onTaskUpdate(taskId, taskUpdates)
+    }
     setRowSelection({})
 
-    // Persist to server
     const result = await updateTasksBulk(selectedItemIds, bulkUpdates)
 
     if (result.success) {
       toast.success(`${selectedItemIds.length} uppgifter uppdaterade`)
     } else {
-      // Rollback on error
-      setTasks(previousTasks)
       toast.error('Kunde inte uppdatera uppgifter', {
         description: result.error,
       })
     }
   }
 
-  // Handle bulk delete (optimistic)
+  // Handle bulk delete (optimistic via parent callback)
   const handleBulkDelete = async () => {
     if (selectedItemIds.length === 0) return
-
-    // Store previous state for rollback
-    const previousTasks = tasks
     const deletedIds = [...selectedItemIds]
 
-    // Optimistic update - remove from UI immediately
-    setTasks((prev) => prev.filter((t) => !deletedIds.includes(t.id)))
+    // Optimistic delete via parent
+    onTasksDelete(deletedIds)
     setRowSelection({})
 
-    // Persist to server
     const result = await deleteTasksBulk(deletedIds)
 
     if (result.success) {
       toast.success(`${deletedIds.length} uppgifter raderade`)
     } else {
-      // Rollback on error
-      setTasks(previousTasks)
       toast.error('Kunde inte radera uppgifter', {
         description: result.error,
       })
@@ -569,44 +775,24 @@ export function ListTab({
   }
 
   // Empty state
-  if (tasks.length === 0) {
+  if (filteredTasks.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
         <div className="rounded-full bg-muted p-4">
           <ListTodo className="h-8 w-8 text-muted-foreground" />
         </div>
         <div>
-          <h3 className="font-medium">Inga uppgifter än</h3>
+          <h3 className="font-medium">Inga uppgifter matchar</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Skapa din första uppgift för att börja spåra efterlevnadsarbete
+            Justera dina filter eller skapa en ny uppgift
           </p>
         </div>
-        <Button>+ Skapa uppgift</Button>
       </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Filters */}
-      <TaskFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        priorityFilter={priorityFilter}
-        onPriorityFilterChange={setPriorityFilter}
-        assigneeFilter={assigneeFilter}
-        onAssigneeFilterChange={setAssigneeFilter}
-        columns={initialColumns}
-        workspaceMembers={workspaceMembers}
-      />
-
-      {/* Results count */}
-      <p className="text-sm text-muted-foreground">
-        Visar {filteredTasks.length} av {tasks.length} uppgifter
-      </p>
-
       {/* Bulk action bar */}
       {selectedItemIds.length > 0 && (
         <BulkActionBar
@@ -614,13 +800,12 @@ export function ListTab({
           onClearSelection={handleClearSelection}
           onBulkUpdate={handleBulkUpdate}
           onBulkDelete={handleBulkDelete}
-          columns={initialColumns}
+          columns={taskColumns}
           workspaceMembers={workspaceMembers}
         />
       )}
 
-      {/* Table - matching document-list-table styling */}
-      {/* Story P.4: Use ref for virtualization scroll element */}
+      {/* Table with column resizing */}
       <div
         ref={tableContainerRef}
         className={cn(
@@ -631,7 +816,7 @@ export function ListTab({
           shouldVirtualize ? { maxHeight: VIRTUAL_TABLE_MAX_HEIGHT } : undefined
         }
       >
-        <Table>
+        <Table className="table-fixed">
           <TableHeader
             className={
               shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
@@ -642,7 +827,13 @@ export function ListTab({
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    style={{ width: header.getSize() }}
+                    style={{
+                      width: getColumnWidth(header.id, header.getSize()),
+                    }}
+                    className={cn(
+                      'relative',
+                      header.id === 'title' && 'bg-background'
+                    )}
                   >
                     {header.isPlaceholder
                       ? null
@@ -650,6 +841,28 @@ export function ListTab({
                           header.column.columnDef.header,
                           header.getContext()
                         )}
+                    {/* Resize handle */}
+                    {header.column.getCanResize() && (
+                      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                      <div
+                        role="separator"
+                        aria-orientation="vertical"
+                        onMouseDown={header.getResizeHandler()}
+                        onTouchStart={header.getResizeHandler()}
+                        className={cn(
+                          'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
+                          'flex items-center justify-center'
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            'h-4 w-0.5 rounded-full bg-border transition-colors',
+                            'group-hover/resize:bg-primary group-hover/resize:h-6',
+                            header.column.getIsResizing() && 'bg-primary h-6'
+                          )}
+                        />
+                      </div>
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -667,7 +880,6 @@ export function ListTab({
           >
             {rows.length > 0 ? (
               shouldVirtualize ? (
-                // Story P.4: Virtualized rendering for large datasets
                 rowVirtualizer.getVirtualItems().map((virtualItem) => {
                   const row = rows[virtualItem.index]
                   if (!row) return null
@@ -682,7 +894,6 @@ export function ListTab({
                   )
                 })
               ) : (
-                // Standard rendering for small datasets
                 rows.map((row) => (
                   <TaskRow
                     key={row.id}
@@ -706,40 +917,6 @@ export function ListTab({
         </Table>
       </div>
     </div>
-  )
-}
-
-// ============================================================================
-// Sortable Header Component (matching document-list-table)
-// ============================================================================
-
-function SortableHeader({
-  column,
-  label,
-}: {
-  column: {
-    getIsSorted: () => false | 'asc' | 'desc'
-    toggleSorting: (_desc?: boolean) => void
-  }
-  label: string
-}) {
-  const sorted = column.getIsSorted()
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => column.toggleSorting(sorted === 'asc')}
-      className="-ml-4 h-8"
-    >
-      {label}
-      {sorted === 'asc' ? (
-        <ArrowUp className="ml-2 h-4 w-4" />
-      ) : sorted === 'desc' ? (
-        <ArrowDown className="ml-2 h-4 w-4" />
-      ) : (
-        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-      )}
-    </Button>
   )
 }
 
@@ -768,16 +945,21 @@ const TaskRow = memo(function TaskRow({
         isOverdue && 'bg-destructive/5'
       )}
       onClick={(e) => {
-        // Only trigger click if not clicking checkbox or button
+        // Only trigger click if not clicking interactive elements
         if (
-          !(e.target as HTMLElement).closest('button, input[type="checkbox"]')
+          !(e.target as HTMLElement).closest(
+            'button, input[type="checkbox"], [role="combobox"], [role="listbox"], [role="option"]'
+          )
         ) {
           onTaskClick?.(row.original.id)
         }
       }}
     >
       {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
+        <TableCell
+          key={cell.id}
+          className={cn(cell.column.id === 'title' && 'bg-background')}
+        >
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
       ))}
@@ -814,16 +996,20 @@ const VirtualTaskRow = memo(function VirtualTaskRow({
         isOverdue && 'bg-destructive/5'
       )}
       onClick={(e) => {
-        // Only trigger click if not clicking checkbox or button
         if (
-          !(e.target as HTMLElement).closest('button, input[type="checkbox"]')
+          !(e.target as HTMLElement).closest(
+            'button, input[type="checkbox"], [role="combobox"], [role="listbox"], [role="option"]'
+          )
         ) {
           onTaskClick?.(row.original.id)
         }
       }}
     >
       {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
+        <TableCell
+          key={cell.id}
+          className={cn(cell.column.id === 'title' && 'bg-background')}
+        >
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
       ))}

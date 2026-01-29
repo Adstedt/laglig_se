@@ -651,7 +651,9 @@ export function ComplianceDetailTable({
           <PriorityEditor
             value={row.original.priority}
             onChange={async (newPriority) => {
-              await onUpdateItem(row.original.id, { priority: newPriority })
+              await onUpdateItem(row.original.id, {
+                priority: newPriority as LawListItemPriority,
+              })
             }}
           />
         ),

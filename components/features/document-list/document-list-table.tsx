@@ -50,17 +50,18 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import {
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
   GripVertical,
   Eye,
   Trash2,
   FileText,
   Loader2,
   Info,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   AlertTriangle,
 } from 'lucide-react'
+import { SortableHeader } from '@/components/ui/sortable-header'
 import {
   Tooltip,
   TooltipContent,
@@ -452,7 +453,9 @@ export function DocumentListTable({
           <PriorityEditor
             value={row.original.priority}
             onChange={async (newPriority) => {
-              await onUpdateItem(row.original.id, { priority: newPriority })
+              await onUpdateItem(row.original.id, {
+                priority: newPriority as LawListItemPriority,
+              })
             }}
           />
         ),
@@ -1047,40 +1050,6 @@ export function DocumentListTable({
         onConfirm={handleRemoveConfirm}
       />
     </div>
-  )
-}
-
-// ============================================================================
-// Sortable Header Component
-// ============================================================================
-
-function SortableHeader({
-  column,
-  label,
-}: {
-  column: {
-    getIsSorted: () => false | 'asc' | 'desc'
-    toggleSorting: (_desc?: boolean) => void
-  }
-  label: string
-}) {
-  const sorted = column.getIsSorted()
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => column.toggleSorting(sorted === 'asc')}
-      className="-ml-4 h-8"
-    >
-      {label}
-      {sorted === 'asc' ? (
-        <ArrowUp className="ml-2 h-4 w-4" />
-      ) : sorted === 'desc' ? (
-        <ArrowDown className="ml-2 h-4 w-4" />
-      ) : (
-        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-      )}
-    </Button>
   )
 }
 

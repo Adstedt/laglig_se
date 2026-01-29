@@ -2,18 +2,12 @@
 
 /**
  * Story 6.2: Compliance Filters for Table View
- * Filters for status, category, and responsible person with URL persistence
+ * Story 6.19: Refactored status/category filters to use shared FilterPopover
  */
 
 import { useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -23,10 +17,14 @@ import {
 } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { ChevronDown, X, User } from 'lucide-react'
+import { X, User } from 'lucide-react'
 import type { ComplianceStatus } from '@prisma/client'
 import type { WorkspaceMemberOption } from '@/app/actions/document-list'
 import { COMPLIANCE_STATUS_OPTIONS } from './table-cell-editors/compliance-status-editor'
+import {
+  FilterPopover,
+  type FilterOption,
+} from '@/components/ui/filter-popover'
 import { cn } from '@/lib/utils'
 
 export interface ComplianceFiltersState {
@@ -53,6 +51,21 @@ function getInitials(name: string | null, email: string): string {
   }
   return email.substring(0, 2).toUpperCase()
 }
+
+// Map compliance status options to FilterOption format
+const STATUS_FILTER_OPTIONS: FilterOption[] = COMPLIANCE_STATUS_OPTIONS.map(
+  (opt) => {
+    const base: FilterOption = {
+      value: opt.value,
+      label: opt.label,
+      color: opt.color,
+    }
+    if (opt.strikethrough) {
+      base.strikethrough = opt.strikethrough
+    }
+    return base
+  }
+)
 
 export function ComplianceFilters({
   filters,
@@ -93,10 +106,11 @@ export function ComplianceFilters({
   )
 
   const handleStatusToggle = useCallback(
-    (status: ComplianceStatus) => {
-      const newStatuses = filters.complianceStatus.includes(status)
-        ? filters.complianceStatus.filter((s) => s !== status)
-        : [...filters.complianceStatus, status]
+    (status: string) => {
+      const typedStatus = status as ComplianceStatus
+      const newStatuses = filters.complianceStatus.includes(typedStatus)
+        ? filters.complianceStatus.filter((s) => s !== typedStatus)
+        : [...filters.complianceStatus, typedStatus]
 
       const newFilters = { ...filters, complianceStatus: newStatuses }
       onFiltersChange(newFilters)
@@ -153,78 +167,30 @@ export function ComplianceFilters({
     [filters]
   )
 
+  // Map categories to FilterOption format
+  const categoryFilterOptions: FilterOption[] = useMemo(
+    () => categories.map((c) => ({ value: c, label: c })),
+    [categories]
+  )
+
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>
-      {/* Status filter */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8">
-            Efterlevnadsstatus
-            {filters.complianceStatus.length > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-1.5">
-                {filters.complianceStatus.length}
-              </Badge>
-            )}
-            <ChevronDown className="ml-1 h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-56 p-2" align="start">
-          <div className="space-y-1">
-            {COMPLIANCE_STATUS_OPTIONS.map((option) => (
-              <label
-                key={option.value}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-muted cursor-pointer"
-              >
-                <Checkbox
-                  checked={filters.complianceStatus.includes(option.value)}
-                  onCheckedChange={() => handleStatusToggle(option.value)}
-                />
-                <span
-                  className={cn(
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                    option.color,
-                    option.strikethrough && 'line-through'
-                  )}
-                >
-                  {option.label}
-                </span>
-              </label>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
+      {/* Status filter — shared FilterPopover */}
+      <FilterPopover
+        label="Efterlevnadsstatus"
+        options={STATUS_FILTER_OPTIONS}
+        selected={filters.complianceStatus}
+        onToggle={handleStatusToggle}
+      />
 
-      {/* Category filter */}
+      {/* Category filter — shared FilterPopover */}
       {categories.length > 0 && (
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
-              Kategori
-              {filters.category.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 px-1.5">
-                  {filters.category.length}
-                </Badge>
-              )}
-              <ChevronDown className="ml-1 h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-56 p-2" align="start">
-            <div className="space-y-1 max-h-60 overflow-auto">
-              {categories.map((category) => (
-                <label
-                  key={category}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-sm hover:bg-muted cursor-pointer"
-                >
-                  <Checkbox
-                    checked={filters.category.includes(category)}
-                    onCheckedChange={() => handleCategoryToggle(category)}
-                  />
-                  <span className="text-sm">{category}</span>
-                </label>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
+        <FilterPopover
+          label="Kategori"
+          options={categoryFilterOptions}
+          selected={filters.category}
+          onToggle={handleCategoryToggle}
+        />
       )}
 
       {/* Responsible person filter - with label */}

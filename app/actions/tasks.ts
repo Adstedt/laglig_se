@@ -356,7 +356,7 @@ export async function getWorkspaceTasksPaginated(
           .map((link) => ({
             law_list_item: link.law_list_item,
           }))
-          .slice(0, 1), // Take only first link per task
+          .slice(0, 5), // Cap links shown in list view
       }))
 
       const totalPages = Math.ceil(totalCount / limit)
@@ -514,7 +514,7 @@ export async function getWorkspaceTasks(
             },
           },
           list_item_links: {
-            take: 1,
+            take: 5,
             include: {
               law_list_item: {
                 include: {
@@ -1231,7 +1231,7 @@ export async function createTask(data: {
             },
           },
           list_item_links: {
-            take: 1,
+            take: 5,
             include: {
               law_list_item: {
                 include: {

@@ -172,6 +172,10 @@ export function TaskModal({
                         // Sync back to parent workspace
                         if (taskId) onTaskUpdate?.(taskId, { title })
                       }}
+                      onOptimisticDescriptionChange={(description) => {
+                        // Sync back to parent workspace
+                        if (taskId) onTaskUpdate?.(taskId, { description })
+                      }}
                     />
                   </ScrollArea>
 
