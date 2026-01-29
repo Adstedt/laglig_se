@@ -839,6 +839,8 @@ export function DocumentListPageContent({
           onReorderItems={reorderItems}
           onMoveToGroup={moveToGroup}
           onToggleGroup={toggleGroupExpanded}
+          onExpandAll={expandAllGroups}
+          onCollapseAll={collapseAllGroups}
           onFilterByGroup={handleFilterByGroup}
           onRowClick={handleOpenModal}
           emptyMessage={
