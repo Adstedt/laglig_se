@@ -1,9 +1,12 @@
 import { getCurrentUser } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { WorkspaceShell } from '@/components/layout/workspace-shell'
 import {
   getWorkspaceContext,
+  getUserWorkspaces,
+  setActiveWorkspace,
+  ACTIVE_WORKSPACE_COOKIE,
   WorkspaceAccessError,
 } from '@/lib/auth/workspace-context'
 import { PausedWorkspaceBanner } from '@/components/features/workspace/paused-workspace-banner'
@@ -43,6 +46,25 @@ export default async function WorkspaceLayout({
 
   if (!user) {
     redirect('/login')
+  }
+
+  // Check if user has an active workspace selected
+  const cookieStore = await cookies()
+  const activeWorkspaceId = cookieStore.get(ACTIVE_WORKSPACE_COOKIE)?.value
+
+  if (!activeWorkspaceId) {
+    const workspaces = await getUserWorkspaces()
+
+    if (workspaces.length === 1 && workspaces[0]) {
+      // Auto-set the only workspace
+      await setActiveWorkspace(workspaces[0].id)
+    } else if (workspaces.length > 1) {
+      // Multiple workspaces — redirect to selector
+      const headersList = await headers()
+      const pathname = headersList.get('x-pathname') || '/dashboard'
+      redirect(`/select-workspace?redirect=${encodeURIComponent(pathname)}`)
+    }
+    // 0 workspaces falls through to getWorkspaceContextSafe() → NO_WORKSPACE → /onboarding
   }
 
   const workspaceContext = await getWorkspaceContextSafe()

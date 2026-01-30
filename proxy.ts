@@ -213,6 +213,7 @@ async function handleAuthAndRouting(
     pathname.startsWith('/tasks') ||
     pathname.startsWith('/hr') ||
     pathname.startsWith('/workspace') ||
+    pathname.startsWith('/select-workspace') ||
     pathname.startsWith('/w/') ||
     pathname.startsWith('/api/protected') ||
     pathname.startsWith('/api/workspace')
@@ -294,6 +295,7 @@ export const config = {
 
     // Workspace-scoped routes
     '/workspace/:path*',
+    '/select-workspace',
     '/w/:path*', // Story 5.1: Workspace-scoped routes
 
     // Protected API routes
