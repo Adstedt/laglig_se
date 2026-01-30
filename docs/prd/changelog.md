@@ -1,5 +1,39 @@
 # Changelog
 
+## Version 1.4 (2026-01-30)
+
+**Workspace Onboarding & Invitation Flow (Epic 10)**
+
+**Major Changes:**
+
+- **NEW Epic 10 - Workspace Onboarding:** Added brownfield epic to fix critical new-user blocker where signup leads to crash (no workspace exists). Three stories covering post-auth routing guard, workspace creation wizard, and invitation acceptance flow.
+
+- **Epic 10 Stories:**
+  - Story 10.1: Post-Auth Workspace Guard & Onboarding Routing - catches `NO_WORKSPACE` error, redirects to `/onboarding`
+  - Story 10.2: Workspace Creation Wizard - multi-step form (company info with Bolagsverket-aligned fields, review & confirm)
+  - Story 10.3: Invitation Model & Acceptance Flow - `WorkspaceInvitation` Prisma model, token-based acceptance during onboarding
+
+- **Epic 5 Impact:** Story 5.3 (Team Invite System) now depends on Epic 10's `WorkspaceInvitation` model for the invitation sending flow
+
+- **Architecture Impact:** Added P0 workflow for post-auth workspace onboarding routing (new user path through workspace creation)
+
+**Explicitly Deferred:**
+
+- Tier/plan selection during onboarding (moved to trial-expiry flow)
+- Bolagsverket API lookup (manual entry for now, fields aligned for future auto-fill)
+- Law list generator wizard step (slots in after company info step when backend ready)
+- Stripe billing integration (separate epic)
+- Invitation email sending (Story 5.3)
+
+**Rationale:**
+
+1. **Critical blocker:** New users currently cannot use the platform at all after signup - `getWorkspaceContext()` throws unhandled `NO_WORKSPACE` error
+2. **No tier selection during onboarding:** Users haven't seen product value yet and all trials are identical (14-day, Team-level access). Tier selection belongs at trial expiry.
+3. **Extensible wizard:** Architecture supports inserting future steps (law list generator) without rework
+4. **Both user paths:** Covers new users creating workspaces AND invited users joining existing ones
+
+---
+
 ## Version 1.3 (2025-11-03)
 
 **Dynamic Onboarding & Comprehensive Law Generation Update**

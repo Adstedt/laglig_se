@@ -110,6 +110,84 @@ sequenceDiagram
 
 ---
 
+## 8.3b Post-Auth Workspace Onboarding Routing (Epic 10, Story 10.1)
+
+**User Story:** Authenticated user without a workspace is routed to onboarding wizard instead of crashing
+
+**Note:** This workflow handles the direct signup path (email/password signup → verification → first login). The workflow in 8.3 above handles the widget/funnel path (anonymous session → lead capture → signup with pre-generated law list). Both paths result in a user with a workspace, but 8.3b covers the case where a user signs up directly without going through the marketing funnel.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Browser
+    participant Layout as Workspace Layout
+    participant WCtx as getWorkspaceContext()
+    participant DB as Database
+    participant Onboarding as /onboarding
+
+    User->>Browser: Navigate to /dashboard (or any workspace route)
+    Browser->>Layout: Render workspace layout
+
+    Layout->>Layout: getCurrentUser() → authenticated ✅
+
+    Layout->>WCtx: getWorkspaceContext()
+    WCtx->>DB: Find WorkspaceMember for user
+
+    alt User has workspace
+        DB-->>WCtx: WorkspaceMember found
+        WCtx-->>Layout: WorkspaceContext
+        Layout-->>User: Render dashboard
+    else User has NO workspace
+        DB-->>WCtx: No WorkspaceMember
+        WCtx-->>Layout: WorkspaceAccessError (NO_WORKSPACE)
+        Layout->>DB: Check pending WorkspaceInvitations by email
+
+        alt Has pending invitations
+            DB-->>Layout: Invitations found
+            Layout-->>Browser: Redirect to /onboarding
+            Browser->>Onboarding: Show pending invitations
+
+            alt User accepts invitation
+                User->>Onboarding: Accept invitation
+                Onboarding->>DB: Create WorkspaceMember, mark invite ACCEPTED
+                Onboarding->>Browser: Set active_workspace cookie
+                Browser-->>User: Redirect to /dashboard
+            else User declines all / creates own
+                User->>Onboarding: "Skapa eget workspace"
+                Note over Onboarding: Falls through to wizard
+            end
+        else No pending invitations
+            Layout-->>Browser: Redirect to /onboarding
+            Browser->>Onboarding: Show workspace creation wizard
+        end
+
+        Note over Onboarding: Wizard Step 1: Company Info
+        User->>Onboarding: Enter company name, org number, address, SNI
+        Note over Onboarding: Wizard Step 2: Review & Confirm
+        User->>Onboarding: Confirm and create
+
+        Onboarding->>DB: Begin transaction
+        activate DB
+        DB->>DB: Create Workspace (TRIAL tier, 14-day trial)
+        DB->>DB: Create CompanyProfile
+        DB->>DB: Create WorkspaceMember (OWNER)
+        deactivate DB
+
+        Onboarding->>Browser: Set active_workspace cookie
+        Browser-->>User: Redirect to /dashboard
+    else Workspace is DELETED
+        DB-->>WCtx: Workspace status = DELETED
+        WCtx-->>Layout: WorkspaceAccessError (WORKSPACE_DELETED)
+        Layout-->>User: Show "workspace deleted" message
+    else Workspace is PAUSED
+        DB-->>WCtx: Workspace status = PAUSED
+        WCtx-->>Layout: WorkspaceContext (paused)
+        Layout-->>User: Show "workspace paused" banner with reactivation option
+    end
+```
+
+---
+
 ## 8.4 Role-Based Access Control (Epic 5, Story 5.2)
 
 **User Story:** System enforces permissions based on user role

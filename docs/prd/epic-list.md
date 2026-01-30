@@ -108,7 +108,23 @@
 
 ---
 
-**Total Estimated Stories:** 75-93 across 9 epics
+## Epic 10: Workspace Onboarding & Invitation Flow
+
+**Goal:** Fix broken new-user experience (crash on first login due to missing workspace) by implementing a multi-step workspace creation wizard and invitation acceptance flow, ensuring every authenticated user has a clear path to a functional workspace.
+
+**Delivers:** Post-auth workspace guard with redirect to onboarding, multi-step workspace creation wizard (company info aligned to Bolagsverket data model, review & confirm), WorkspaceInvitation model with token-based acceptance flow for invited users
+
+**Requirements covered:** FR17 (workspace creation), FR18 (team invites - acceptance side), FR20 (onboarding)
+
+**Estimated stories:** 3
+
+**Note:** Brownfield enhancement. Tier selection, Stripe billing, Bolagsverket API lookup, and law list generator step explicitly deferred. All new workspaces start as TRIAL. Wizard architecture supports future step insertion (law list generator). Story 5.3 (Team Invite System) depends on the invitation model created here.
+
+**Priority:** Critical - blocks all new-user access to the platform.
+
+---
+
+**Total Estimated Stories:** 78-96 across 10 epics
 
 **Estimated Timeline:** 18 weeks (4.5 months) - aligns with 4-6 month MVP goal
 
