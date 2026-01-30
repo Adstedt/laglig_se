@@ -140,8 +140,17 @@ async function handleAuthAndRouting(
 ): Promise<NextResponse> {
   const { pathname } = request.nextUrl
 
+  // Story 10.1: Forward x-pathname as a request header for server components
+  // (e.g., workspace layout uses it for redirect URL preservation)
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', pathname)
+
   // Story P.2: Add geo headers for downstream use (AC: 26)
-  const response = NextResponse.next()
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  })
   const geo = (
     request as NextRequest & { geo?: { country?: string; region?: string } }
   ).geo

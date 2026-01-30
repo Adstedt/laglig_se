@@ -1,0 +1,42 @@
+schema: 1
+story: '10.1'
+story_title: 'Post-Auth Workspace Guard & Onboarding Routing'
+gate: PASS
+status_reason: 'All 13 ACs met. Two code quality issues found and fixed during review (middleware matcher, layout helper extraction). No security vulnerabilities. Auth routing is correct and safe.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-01-30T22:30:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 90
+
+evidence:
+  tests_reviewed: 0
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Auth checks present in all routes. Onboarding layout verifies session. Workspace guard catches errors correctly. No hardcoded secrets.'
+  performance:
+    status: PASS
+    notes: 'Middleware scoped with matcher after QA fix. Workspace context cached via React.cache(). Onboarding layout DB queries acceptable for low-traffic page.'
+  reliability:
+    status: PASS
+    notes: 'Typed WorkspaceAccessError with explicit codes. Proper error propagation for UNAUTHORIZED/ACCESS_DENIED. PAUSED state handled in-shell with banner.'
+  maintainability:
+    status: PASS
+    notes: 'Helper function extraction improves readability. PausedWorkspaceBanner properly separated as client component. Brand styling matches auth layout exactly.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add integration tests for workspace routing redirects when test infrastructure matures'
+      refs: ['tests/integration/workspace-routing/']
+    - action: 'Consider caching onboarding layout DB queries if traffic increases'
+      refs: ['app/onboarding/layout.tsx:27-40']
