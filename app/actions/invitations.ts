@@ -268,7 +268,7 @@ export async function declineInvitation(invitationId: string): Promise<{
  * 32 bytes, URL-safe base64 encoded.
  * For future use by Story 5.3 (sending invitations).
  */
-export function generateInvitationToken(): string {
+export async function generateInvitationToken(): Promise<string> {
   return randomBytes(32).toString('base64url')
 }
 

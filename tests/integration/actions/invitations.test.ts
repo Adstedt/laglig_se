@@ -451,23 +451,23 @@ describe('declineInvitation', () => {
 // ============================================================================
 
 describe('generateInvitationToken', () => {
-  it('generates a base64url-encoded token', () => {
-    const token = generateInvitationToken()
+  it('generates a base64url-encoded token', async () => {
+    const token = await generateInvitationToken()
 
     // base64url uses A-Z, a-z, 0-9, -, _
     expect(token).toMatch(/^[A-Za-z0-9_-]+$/)
   })
 
-  it('generates tokens of sufficient length (32 bytes = ~43 chars base64url)', () => {
-    const token = generateInvitationToken()
+  it('generates tokens of sufficient length (32 bytes = ~43 chars base64url)', async () => {
+    const token = await generateInvitationToken()
 
     // 32 bytes base64url encoded = 43 characters
     expect(token.length).toBe(43)
   })
 
-  it('generates unique tokens', () => {
-    const token1 = generateInvitationToken()
-    const token2 = generateInvitationToken()
+  it('generates unique tokens', async () => {
+    const token1 = await generateInvitationToken()
+    const token2 = await generateInvitationToken()
 
     expect(token1).not.toBe(token2)
   })
