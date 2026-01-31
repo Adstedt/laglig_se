@@ -11,6 +11,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from '@/lib/auth/session'
 import { setActiveWorkspace } from '@/lib/auth/workspace-context'
@@ -87,6 +88,56 @@ export async function createWorkspace(formData: FormData): Promise<{
     // Generate unique slug
     const slug = generateSlug(result.data.name)
 
+    // Read optional company fields (from onboarding wizard)
+    const rawOrgNumber = formData.get('orgNumber') as string | null
+    const streetAddress = formData.get('streetAddress') as string | null
+    const postalCode = formData.get('postalCode') as string | null
+    const city = formData.get('city') as string | null
+    const sniCode = formData.get('sniCode') as string | null
+    const legalForm = formData.get('legalForm') as string | null
+    const rawEmployeeCount = formData.get('employeeCount') as string | null
+
+    // Server-side validation of optional company fields
+    if (rawOrgNumber && !/^\d{6}-?\d{4}$/.test(rawOrgNumber)) {
+      return {
+        success: false,
+        error: 'Ogiltigt organisationsnummer. Ange XXXXXX-XXXX',
+      }
+    }
+
+    if (postalCode && !/^\d{3}\s?\d{2}$/.test(postalCode)) {
+      return { success: false, error: 'Ogiltigt postnummer. Ange XXX XX' }
+    }
+
+    if (
+      rawEmployeeCount &&
+      rawEmployeeCount !== '' &&
+      !/^\d+$/.test(rawEmployeeCount)
+    ) {
+      return {
+        success: false,
+        error: 'Antal anställda måste vara ett heltal',
+      }
+    }
+
+    // Normalize org number to XXXXXX-XXXX format
+    const orgNumber = rawOrgNumber
+      ? rawOrgNumber.replace(/^(\d{6})(\d{4})$/, '$1-$2')
+      : null
+
+    const employeeCount =
+      rawEmployeeCount && rawEmployeeCount !== ''
+        ? parseInt(rawEmployeeCount, 10)
+        : null
+
+    // Build address string from parts
+    const addressParts = [streetAddress, postalCode, city].filter(Boolean)
+    const address = addressParts.length > 0 ? addressParts.join(', ') : null
+
+    // Determine if company profile fields were provided
+    const hasCompanyFields =
+      orgNumber || sniCode || legalForm || employeeCount !== null || address
+
     // Calculate trial end date (14 days from now)
     const trialEndsAt = new Date()
     trialEndsAt.setDate(trialEndsAt.getDate() + 14)
@@ -101,6 +152,9 @@ export async function createWorkspace(formData: FormData): Promise<{
           subscription_tier: 'TRIAL',
           trial_ends_at: trialEndsAt,
           status: 'ACTIVE',
+          ...(orgNumber && { org_number: orgNumber }),
+          ...(orgNumber && { company_legal_name: result.data.name }),
+          ...(sniCode && { sni_code: sniCode }),
         },
       })
 
@@ -112,6 +166,20 @@ export async function createWorkspace(formData: FormData): Promise<{
           joined_at: new Date(),
         },
       })
+
+      // Create CompanyProfile if company-specific fields are provided
+      if (hasCompanyFields) {
+        await tx.companyProfile.create({
+          data: {
+            workspace_id: ws.id,
+            company_name: result.data.name,
+            ...(sniCode && { sni_code: sniCode }),
+            ...(legalForm && { legal_form: legalForm }),
+            ...(employeeCount !== null && { employee_count: employeeCount }),
+            ...(address && { address }),
+          },
+        })
+      }
 
       return ws
     })
@@ -126,6 +194,20 @@ export async function createWorkspace(formData: FormData): Promise<{
 
     return { success: true, workspaceId: workspace.id }
   } catch (error) {
+    // Handle unique constraint violation on org_number
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      const target = error.meta?.target as string[]
+      if (target?.includes('org_number')) {
+        return {
+          success: false,
+          error: 'Detta organisationsnummer är redan registrerat',
+        }
+      }
+    }
+
     console.error('Error creating workspace:', error)
     return { success: false, error: 'Något gick fel. Försök igen.' }
   }
