@@ -1,0 +1,61 @@
+schema: 1
+story: '10.1'
+story_title: 'Post-Auth Workspace Guard & Onboarding Routing'
+gate: PASS
+status_reason: 'All 13 original ACs met. Workspace selector addition is clean — one reliability bug (stuck spinner on API error) found and fixed during review. Open redirect prevention validated. Auth checks present at all entry points.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-01-31T12:00:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'REL-001'
+    severity: low
+    finding: 'Non-ok API response in workspace selector left spinner stuck indefinitely'
+    suggested_action: 'Fixed during review — added else branch to reset switching state'
+    suggested_owner: dev
+    status: resolved
+
+quality_score: 90
+expires: '2026-02-14T12:00:00Z'
+
+evidence:
+  tests_reviewed: 0
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Auth checks at all entry points (layout, proxy, API). Open redirect prevention via getSafeRedirectUrl(). Workspace switch validates membership server-side.'
+  performance:
+    status: PASS
+    notes: 'Dual getServerSession() calls when no cookie set — acceptable for low-traffic transitional pages. getUserWorkspaces() and getWorkspaceContext() execute in separate requests due to redirect.'
+  reliability:
+    status: PASS
+    notes: 'Fixed during review: non-ok API response handling in selector cards. Error propagation for UNAUTHORIZED/ACCESS_DENIED unchanged. PAUSED state handled in-shell with banner.'
+  maintainability:
+    status: CONCERNS
+    notes: 'WorkspaceItem interface and ROLE_LABELS duplicated between workspace-switcher.tsx and _workspace-selector-cards.tsx. Recommend extracting to shared module in future.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Extract shared WorkspaceItem interface and ROLE_LABELS to a shared module'
+      refs: ['components/layout/workspace-switcher.tsx', 'app/select-workspace/_workspace-selector-cards.tsx']
+    - action: 'Add user-visible error feedback (toast) when workspace switch fails'
+      refs: ['app/select-workspace/_workspace-selector-cards.tsx:53-56']
+    - action: 'Add integration tests for workspace routing and selector'
+      refs: ['tests/integration/workspace-routing/']
+    - action: 'Consider caching onboarding layout DB queries if traffic increases'
+      refs: ['app/onboarding/layout.tsx:27-40']
+
+history:
+  - at: '2026-01-30T22:30:00Z'
+    gate: PASS
+    note: 'Initial review — workspace guard and onboarding routing. Fixed middleware matcher and extracted layout helper.'
+  - at: '2026-01-31T12:00:00Z'
+    gate: PASS
+    note: 'Second review — workspace selector addition. Fixed stuck spinner on API error in selector cards.'

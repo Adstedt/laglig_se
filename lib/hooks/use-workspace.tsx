@@ -44,14 +44,14 @@ interface WorkspaceProviderProps {
   children: ReactNode
   /** Optional: redirect path on auth failure. Default: /login */
   loginRedirect?: string
-  /** Optional: redirect path when no workspace. Default: /select-workspace */
+  /** Optional: redirect path when no workspace. Default: /onboarding */
   noWorkspaceRedirect?: string
 }
 
 export function WorkspaceProvider({
   children,
   loginRedirect = '/login',
-  noWorkspaceRedirect = '/select-workspace',
+  noWorkspaceRedirect = '/onboarding',
 }: WorkspaceProviderProps) {
   const [state, setState] = useState<Omit<WorkspaceContextValue, 'refresh'>>({
     workspaceId: '',
