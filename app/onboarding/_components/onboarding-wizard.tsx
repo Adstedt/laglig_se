@@ -7,10 +7,12 @@ import { Info } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { createWorkspace } from '@/app/actions/workspace'
 import { getSafeRedirectUrl } from '@/lib/utils'
+import type { InvitationWithDetails } from '@/app/actions/invitations'
 import type { WorkspaceOnboardingData } from '@/lib/validation/workspace'
 import { WizardStepper } from './wizard-stepper'
 import { CompanyInfoStep } from './company-info-step'
 import { ConfirmStep } from './confirm-step'
+import { PendingInvitations } from './pending-invitations'
 
 const WIZARD_STEPS = [
   { id: 'company-info' },
@@ -21,10 +23,18 @@ const WIZARD_STEPS = [
 interface OnboardingWizardProps {
   redirect?: string | undefined
   state?: string | undefined
+  invitations?: InvitationWithDetails[] | undefined
 }
 
-export function OnboardingWizard({ redirect, state }: OnboardingWizardProps) {
+export function OnboardingWizard({
+  redirect,
+  state,
+  invitations,
+}: OnboardingWizardProps) {
   const router = useRouter()
+  const [showWizard, setShowWizard] = useState(
+    !invitations || invitations.length === 0
+  )
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState<Partial<WorkspaceOnboardingData>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -80,6 +90,18 @@ export function OnboardingWizard({ redirect, state }: OnboardingWizardProps) {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (!showWizard && invitations && invitations.length > 0) {
+    return (
+      <div>
+        <PendingInvitations
+          invitations={invitations}
+          onAllDeclined={() => setShowWizard(true)}
+          redirectUrl={redirect}
+        />
+      </div>
+    )
   }
 
   return (
