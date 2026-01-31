@@ -49,6 +49,9 @@ export function WorkspaceSelectorCards({
       if (res.ok) {
         const destination = getSafeRedirectUrl(redirectTo)
         router.push(destination)
+      } else {
+        console.error('Failed to switch workspace:', res.status)
+        setSwitching(null)
       }
     } catch (error) {
       console.error('Failed to switch workspace:', error)
