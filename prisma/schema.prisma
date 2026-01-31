@@ -130,9 +130,9 @@ model CompanyProfile {
   id                 String  @id @default(uuid())
   workspace_id       String  @unique
   company_name       String
-  sni_code           String
-  legal_form         String // AB, HB, EF, etc.
-  employee_count     Int
+  sni_code           String?
+  legal_form         String? // AB, HB, EF, etc.
+  employee_count     Int?
   address            String?
   contextual_answers Json? // From onboarding questions
 
