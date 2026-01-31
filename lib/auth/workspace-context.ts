@@ -93,7 +93,7 @@ async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
     )
   }
 
-  const member = await prisma.workspaceMember.findFirst({
+  let member = await prisma.workspaceMember.findFirst({
     where: activeWorkspaceId
       ? { workspace_id: activeWorkspaceId, user_id: user.id }
       : { user_id: user.id },
@@ -101,16 +101,41 @@ async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
     orderBy: { joined_at: 'asc' },
   })
 
+  // Fallback: if the active_workspace_id cookie points to a stale/invalid workspace,
+  // retry without the workspace filter to find any valid membership.
+  // This prevents a redirect loop between /dashboard and /onboarding when the cookie
+  // references a workspace the user is no longer a member of.
+  if (!member && activeWorkspaceId) {
+    member = await prisma.workspaceMember.findFirst({
+      where: { user_id: user.id },
+      include: { workspace: true },
+      orderBy: { joined_at: 'asc' },
+    })
+  }
+
   if (!member) {
     throw new WorkspaceAccessError('No workspace access', 'NO_WORKSPACE')
   }
 
-  // Check if workspace is deleted
+  // Check if workspace is deleted — also try to find a non-deleted workspace
   if (member.workspace.status === 'DELETED') {
-    throw new WorkspaceAccessError(
-      'Workspace has been deleted',
-      'WORKSPACE_DELETED'
-    )
+    const activeMember = await prisma.workspaceMember.findFirst({
+      where: {
+        user_id: user.id,
+        workspace: { status: { not: 'DELETED' } },
+      },
+      include: { workspace: true },
+      orderBy: { joined_at: 'asc' },
+    })
+
+    if (!activeMember) {
+      throw new WorkspaceAccessError(
+        'Workspace has been deleted',
+        'WORKSPACE_DELETED'
+      )
+    }
+
+    member = activeMember
   }
 
   const role = member.role

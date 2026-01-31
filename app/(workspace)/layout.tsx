@@ -56,8 +56,14 @@ export default async function WorkspaceLayout({
     const workspaces = await getUserWorkspaces()
 
     if (workspaces.length === 1 && workspaces[0]) {
-      // Auto-set the only workspace
-      await setActiveWorkspace(workspaces[0].id)
+      // Auto-set the only workspace — wrapped in try-catch because
+      // cookies().set() may not be supported in Server Component layouts
+      try {
+        await setActiveWorkspace(workspaces[0].id)
+      } catch {
+        // Cookie will be set on next Server Action; workspace context
+        // resolves via fallback query in getWorkspaceContextInternal
+      }
     } else if (workspaces.length > 1) {
       // Multiple workspaces — redirect to selector
       const headersList = await headers()
