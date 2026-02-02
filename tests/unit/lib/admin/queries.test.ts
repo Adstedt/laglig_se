@@ -6,6 +6,7 @@ vi.mock('@/lib/prisma', () => ({
       groupBy: vi.fn(),
       count: vi.fn(),
       findMany: vi.fn(),
+      findUnique: vi.fn(),
     },
     user: {
       count: vi.fn(),
@@ -20,6 +21,8 @@ import {
   getUserMetrics,
   getRecentWorkspaces,
   getRecentUsers,
+  getWorkspaceList,
+  getWorkspaceDetail,
 } from '@/lib/admin/queries'
 
 beforeEach(() => {
@@ -199,5 +202,204 @@ describe('getRecentUsers', () => {
         _count: { select: { workspace_members: true } },
       },
     })
+  })
+})
+
+// ============================================================================
+// getWorkspaceList (Story 11.3)
+// ============================================================================
+
+describe('getWorkspaceList', () => {
+  const mockListData = [
+    {
+      id: 'ws-1',
+      name: 'Workspace 1',
+      slug: 'workspace-1',
+      subscription_tier: 'TEAM',
+      status: 'ACTIVE',
+      created_at: new Date('2026-02-01'),
+      owner: { email: 'owner@test.com', name: 'Owner' },
+      _count: { members: 3 },
+    },
+  ]
+
+  it('returns paginated result shape with no filters', async () => {
+    vi.mocked(prisma.workspace.findMany).mockResolvedValue(
+      mockListData as never
+    )
+    vi.mocked(prisma.workspace.count).mockResolvedValue(1 as never)
+
+    const result = await getWorkspaceList({})
+
+    expect(result).toEqual({
+      data: mockListData,
+      total: 1,
+      page: 1,
+      pageSize: 25,
+    })
+
+    const findManyCall = vi.mocked(prisma.workspace.findMany).mock.calls[0]?.[0]
+    expect(findManyCall).toMatchObject({
+      skip: 0,
+      take: 25,
+      orderBy: { created_at: 'desc' },
+    })
+  })
+
+  it('builds correct where clause with search parameter', async () => {
+    vi.mocked(prisma.workspace.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.workspace.count).mockResolvedValue(0 as never)
+
+    await getWorkspaceList({ search: 'test' })
+
+    const findManyCall = vi.mocked(prisma.workspace.findMany).mock.calls[0]?.[0]
+    expect(findManyCall?.where).toEqual({
+      OR: [
+        { name: { contains: 'test', mode: 'insensitive' } },
+        { slug: { contains: 'test', mode: 'insensitive' } },
+        { owner: { email: { contains: 'test', mode: 'insensitive' } } },
+      ],
+    })
+
+    // Count query should use same where
+    const countCall = vi.mocked(prisma.workspace.count).mock.calls[0]?.[0]
+    expect(countCall?.where).toEqual(findManyCall?.where)
+  })
+
+  it('passes correct subscription_tier to where with tier filter', async () => {
+    vi.mocked(prisma.workspace.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.workspace.count).mockResolvedValue(0 as never)
+
+    await getWorkspaceList({ tier: 'ENTERPRISE' })
+
+    const findManyCall = vi.mocked(prisma.workspace.findMany).mock.calls[0]?.[0]
+    expect(findManyCall?.where).toMatchObject({
+      subscription_tier: 'ENTERPRISE',
+    })
+  })
+
+  it('passes correct status to where with status filter', async () => {
+    vi.mocked(prisma.workspace.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.workspace.count).mockResolvedValue(0 as never)
+
+    await getWorkspaceList({ status: 'PAUSED' })
+
+    const findManyCall = vi.mocked(prisma.workspace.findMany).mock.calls[0]?.[0]
+    expect(findManyCall?.where).toMatchObject({
+      status: 'PAUSED',
+    })
+  })
+
+  it('calculates correct skip and take for pagination', async () => {
+    vi.mocked(prisma.workspace.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.workspace.count).mockResolvedValue(100 as never)
+
+    const result = await getWorkspaceList({ page: 3, pageSize: 10 })
+
+    expect(result.page).toBe(3)
+    expect(result.pageSize).toBe(10)
+
+    const findManyCall = vi.mocked(prisma.workspace.findMany).mock.calls[0]?.[0]
+    expect(findManyCall).toMatchObject({
+      skip: 20,
+      take: 10,
+    })
+  })
+
+  it('combines search and tier filter in where clause', async () => {
+    vi.mocked(prisma.workspace.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.workspace.count).mockResolvedValue(0 as never)
+
+    await getWorkspaceList({ search: 'acme', tier: 'TEAM' })
+
+    const findManyCall = vi.mocked(prisma.workspace.findMany).mock.calls[0]?.[0]
+    expect(findManyCall?.where).toEqual({
+      OR: [
+        { name: { contains: 'acme', mode: 'insensitive' } },
+        { slug: { contains: 'acme', mode: 'insensitive' } },
+        { owner: { email: { contains: 'acme', mode: 'insensitive' } } },
+      ],
+      subscription_tier: 'TEAM',
+    })
+  })
+
+  it('falls back to created_at for invalid sort field', async () => {
+    vi.mocked(prisma.workspace.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.workspace.count).mockResolvedValue(0 as never)
+
+    await getWorkspaceList({ sortBy: 'invalid_field', sortDir: 'asc' })
+
+    const findManyCall = vi.mocked(prisma.workspace.findMany).mock.calls[0]?.[0]
+    expect(findManyCall?.orderBy).toEqual({ created_at: 'asc' })
+  })
+})
+
+// ============================================================================
+// getWorkspaceDetail (Story 11.3)
+// ============================================================================
+
+describe('getWorkspaceDetail', () => {
+  it('returns full workspace with relations', async () => {
+    const mockDetail = {
+      id: 'ws-1',
+      name: 'Test Workspace',
+      slug: 'test-workspace',
+      org_number: '5591234567',
+      status: 'ACTIVE',
+      subscription_tier: 'TEAM',
+      created_at: new Date('2026-01-01'),
+      paused_at: null,
+      deleted_at: null,
+      company_profile: {
+        company_name: 'Test AB',
+        sni_code: '62010',
+        legal_form: 'AB',
+        employee_count: 10,
+        address: 'Testgatan 1',
+      },
+      members: [
+        {
+          id: 'mem-1',
+          role: 'OWNER',
+          joined_at: new Date('2026-01-01'),
+          user: { name: 'Owner', email: 'owner@test.com' },
+        },
+      ],
+      _count: { law_lists: 2, tasks: 5, files: 3 },
+    }
+
+    vi.mocked(prisma.workspace.findUnique).mockResolvedValue(
+      mockDetail as never
+    )
+
+    const result = await getWorkspaceDetail('ws-1')
+
+    expect(result).toEqual(mockDetail)
+    expect(result?.company_profile?.company_name).toBe('Test AB')
+    expect(result?.members).toHaveLength(1)
+    expect(result?._count.files).toBe(3)
+
+    expect(prisma.workspace.findUnique).toHaveBeenCalledWith({
+      where: { id: 'ws-1' },
+      select: expect.objectContaining({
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            law_lists: true,
+            tasks: true,
+            files: { where: { is_folder: false } },
+          },
+        },
+      }),
+    })
+  })
+
+  it('returns null when workspace not found', async () => {
+    vi.mocked(prisma.workspace.findUnique).mockResolvedValue(null as never)
+
+    const result = await getWorkspaceDetail('nonexistent')
+
+    expect(result).toBeNull()
   })
 })
