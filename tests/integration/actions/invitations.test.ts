@@ -45,8 +45,8 @@ import {
   getPendingInvitations,
   acceptInvitation,
   declineInvitation,
-  generateInvitationToken,
 } from '@/app/actions/invitations'
+import { generateInvitationToken } from '@/lib/utils/crypto'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from '@/lib/auth/session'
 import { setActiveWorkspace } from '@/lib/auth/workspace-context'

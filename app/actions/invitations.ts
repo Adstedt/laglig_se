@@ -5,7 +5,6 @@
  * Server actions for workspace invitation acceptance flow.
  */
 
-import { randomBytes } from 'crypto'
 import { revalidatePath } from 'next/cache'
 import type { WorkspaceInvitation, WorkspaceStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
@@ -261,15 +260,6 @@ export async function declineInvitation(invitationId: string): Promise<{
     console.error('Error declining invitation:', error)
     return { success: false, error: 'Något gick fel. Försök igen.' }
   }
-}
-
-/**
- * Generate a cryptographically secure invitation token.
- * 32 bytes, URL-safe base64 encoded.
- * For future use by Story 5.3 (sending invitations).
- */
-export async function generateInvitationToken(): Promise<string> {
-  return randomBytes(32).toString('base64url')
 }
 
 // ============================================================================
