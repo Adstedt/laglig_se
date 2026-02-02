@@ -13,36 +13,19 @@ import {
 } from '@/components/ui/table'
 import { MetricCard } from '@/components/admin/metric-card'
 import {
+  STATUS_LABELS,
+  STATUS_VARIANT,
+  TIER_LABELS,
+} from '@/lib/admin/constants'
+import {
   getWorkspaceMetrics,
   getUserMetrics,
   getRecentWorkspaces,
   getRecentUsers,
 } from '@/lib/admin/queries'
-import type { SubscriptionTier, WorkspaceStatus } from '@prisma/client'
+import type { SubscriptionTier } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
-
-const STATUS_LABELS: Record<WorkspaceStatus, string> = {
-  ACTIVE: 'Aktiv',
-  PAUSED: 'Pausad',
-  DELETED: 'Borttagen',
-}
-
-const STATUS_VARIANT: Record<
-  WorkspaceStatus,
-  'default' | 'secondary' | 'destructive'
-> = {
-  ACTIVE: 'default',
-  PAUSED: 'secondary',
-  DELETED: 'destructive',
-}
-
-const TIER_LABELS: Record<SubscriptionTier, string> = {
-  TRIAL: 'Trial',
-  SOLO: 'Solo',
-  TEAM: 'Team',
-  ENTERPRISE: 'Enterprise',
-}
 
 export default async function AdminDashboardPage() {
   const [workspaceMetrics, userMetrics, recentWorkspaces, recentUsers] =
