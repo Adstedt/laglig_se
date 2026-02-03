@@ -460,3 +460,91 @@ export async function getRunningJobs(): Promise<CronJobRun[]> {
     where: { status: 'RUNNING' },
   })
 }
+
+// ============================================================================
+// Job Run History & Error Viewer (Story 11.7)
+// ============================================================================
+
+export interface JobRunHistoryParams {
+  page?: number | undefined
+  pageSize?: number | undefined
+}
+
+export interface JobRunHistoryResult {
+  data: CronJobRun[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+export async function getJobRunHistory(
+  jobName: string,
+  params: JobRunHistoryParams = {}
+): Promise<JobRunHistoryResult> {
+  const page = params.page ?? 1
+  const pageSize = params.pageSize ?? 25
+  const skip = (page - 1) * pageSize
+
+  const where: Prisma.CronJobRunWhereInput = { job_name: jobName }
+
+  const [data, total] = await Promise.all([
+    prisma.cronJobRun.findMany({
+      where,
+      skip,
+      take: pageSize,
+      orderBy: { started_at: 'desc' },
+    }),
+    prisma.cronJobRun.count({ where }),
+  ])
+
+  return { data, total, page, pageSize }
+}
+
+export async function getJobRunDetail(
+  runId: string
+): Promise<CronJobRun | null> {
+  return prisma.cronJobRun.findUnique({
+    where: { id: runId },
+  })
+}
+
+export interface FailedRunsParams {
+  jobName?: string | undefined
+  fromDate?: Date | undefined
+  toDate?: Date | undefined
+  page?: number | undefined
+  pageSize?: number | undefined
+}
+
+export async function getFailedRuns(
+  params: FailedRunsParams = {}
+): Promise<JobRunHistoryResult> {
+  const page = params.page ?? 1
+  const pageSize = params.pageSize ?? 25
+  const skip = (page - 1) * pageSize
+
+  const where: Prisma.CronJobRunWhereInput = {
+    status: 'FAILED',
+    ...(params.jobName ? { job_name: params.jobName } : {}),
+  }
+
+  if (params.fromDate && params.toDate) {
+    where.started_at = { gte: params.fromDate, lte: params.toDate }
+  } else if (params.fromDate) {
+    where.started_at = { gte: params.fromDate }
+  } else if (params.toDate) {
+    where.started_at = { lte: params.toDate }
+  }
+
+  const [data, total] = await Promise.all([
+    prisma.cronJobRun.findMany({
+      where,
+      skip,
+      take: pageSize,
+      orderBy: { started_at: 'desc' },
+    }),
+    prisma.cronJobRun.count({ where }),
+  ])
+
+  return { data, total, page, pageSize }
+}

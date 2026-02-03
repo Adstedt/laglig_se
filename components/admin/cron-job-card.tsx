@@ -264,6 +264,13 @@ export function CronJobCard({
 
         <RunHistoryDots statuses={recentRunStatuses} />
 
+        <Link
+          href={`/admin/cron-jobs/${job.name}`}
+          className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+        >
+          Visa historik
+        </Link>
+
         {!job.instrumented && (
           <div className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
             Denna jobbtyp loggar inte körhistorik ännu.

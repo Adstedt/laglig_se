@@ -15,6 +15,8 @@ vi.mock('@/lib/prisma', () => ({
     },
     cronJobRun: {
       findMany: vi.fn(),
+      findUnique: vi.fn(),
+      count: vi.fn(),
     },
   },
 }))
@@ -30,6 +32,9 @@ import {
   getUserList,
   getUserDetail,
   getRecentJobRuns,
+  getJobRunHistory,
+  getJobRunDetail,
+  getFailedRuns,
 } from '@/lib/admin/queries'
 
 beforeEach(() => {
@@ -621,5 +626,274 @@ describe('getRecentJobRuns', () => {
     const result = await getRecentJobRuns(['nonexistent-job'])
 
     expect(result['nonexistent-job']).toEqual([])
+  })
+})
+
+// ============================================================================
+// getJobRunHistory (Story 11.7)
+// ============================================================================
+
+describe('getJobRunHistory', () => {
+  const mockRuns = [
+    {
+      id: 'run-1',
+      job_name: 'warm-cache',
+      status: 'SUCCESS',
+      started_at: new Date('2026-02-03T10:00:00Z'),
+      completed_at: new Date('2026-02-03T10:00:12Z'),
+      duration_ms: 12300,
+      items_processed: 50,
+      items_failed: 0,
+      error_message: null,
+      error_stack: null,
+      log_output: null,
+      triggered_by: 'cron',
+      metadata: null,
+    },
+  ]
+
+  it('returns paginated runs for specific job', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue(mockRuns as never)
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(1 as never)
+
+    const result = await getJobRunHistory('warm-cache', {
+      page: 1,
+      pageSize: 25,
+    })
+
+    expect(result).toEqual({
+      data: mockRuns,
+      total: 1,
+      page: 1,
+      pageSize: 25,
+    })
+
+    expect(prisma.cronJobRun.findMany).toHaveBeenCalledWith({
+      where: { job_name: 'warm-cache' },
+      skip: 0,
+      take: 25,
+      orderBy: { started_at: 'desc' },
+    })
+
+    expect(prisma.cronJobRun.count).toHaveBeenCalledWith({
+      where: { job_name: 'warm-cache' },
+    })
+  })
+
+  it('uses default page=1, pageSize=25 when no params', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(0 as never)
+
+    const result = await getJobRunHistory('warm-cache')
+
+    expect(result.page).toBe(1)
+    expect(result.pageSize).toBe(25)
+
+    const findManyCall = vi.mocked(prisma.cronJobRun.findMany).mock
+      .calls[0]?.[0]
+    expect(findManyCall).toMatchObject({
+      skip: 0,
+      take: 25,
+    })
+  })
+
+  it('calculates correct skip for page 3', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(100 as never)
+
+    const result = await getJobRunHistory('warm-cache', {
+      page: 3,
+      pageSize: 10,
+    })
+
+    expect(result.page).toBe(3)
+    expect(result.pageSize).toBe(10)
+
+    const findManyCall = vi.mocked(prisma.cronJobRun.findMany).mock
+      .calls[0]?.[0]
+    expect(findManyCall).toMatchObject({
+      skip: 20,
+      take: 10,
+    })
+  })
+})
+
+// ============================================================================
+// getJobRunDetail (Story 11.7)
+// ============================================================================
+
+describe('getJobRunDetail', () => {
+  it('returns full run details when found', async () => {
+    const mockRun = {
+      id: 'run-1',
+      job_name: 'warm-cache',
+      status: 'SUCCESS',
+      started_at: new Date('2026-02-03T10:00:00Z'),
+      completed_at: new Date('2026-02-03T10:00:12Z'),
+      duration_ms: 12300,
+      items_processed: 50,
+      items_failed: 0,
+      error_message: null,
+      error_stack: null,
+      log_output: '[2026-02-03T10:00:00.000Z] Starting warm-cache\n',
+      triggered_by: 'cron',
+      metadata: null,
+    }
+
+    vi.mocked(prisma.cronJobRun.findUnique).mockResolvedValue(mockRun as never)
+
+    const result = await getJobRunDetail('run-1')
+
+    expect(result).toEqual(mockRun)
+    expect(prisma.cronJobRun.findUnique).toHaveBeenCalledWith({
+      where: { id: 'run-1' },
+    })
+  })
+
+  it('returns null for non-existent ID', async () => {
+    vi.mocked(prisma.cronJobRun.findUnique).mockResolvedValue(null as never)
+
+    const result = await getJobRunDetail('nonexistent')
+
+    expect(result).toBeNull()
+  })
+})
+
+// ============================================================================
+// getFailedRuns (Story 11.7)
+// ============================================================================
+
+describe('getFailedRuns', () => {
+  const mockFailedRuns = [
+    {
+      id: 'run-f1',
+      job_name: 'sync-sfs',
+      status: 'FAILED',
+      started_at: new Date('2026-02-03T04:00:00Z'),
+      completed_at: new Date('2026-02-03T04:05:00Z'),
+      duration_ms: 300000,
+      items_processed: 100,
+      items_failed: 5,
+      error_message: 'Connection timeout',
+      error_stack: 'Error: Connection timeout\n    at fetch...',
+      log_output: null,
+      triggered_by: 'cron',
+      metadata: null,
+    },
+  ]
+
+  it('filters by status FAILED', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue(
+      mockFailedRuns as never
+    )
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(1 as never)
+
+    const result = await getFailedRuns()
+
+    expect(result.data).toEqual(mockFailedRuns)
+
+    const findManyCall = vi.mocked(prisma.cronJobRun.findMany).mock
+      .calls[0]?.[0]
+    expect(findManyCall?.where).toMatchObject({
+      status: 'FAILED',
+    })
+  })
+
+  it('filters by job name when provided', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(0 as never)
+
+    await getFailedRuns({ jobName: 'sync-sfs' })
+
+    const findManyCall = vi.mocked(prisma.cronJobRun.findMany).mock
+      .calls[0]?.[0]
+    expect(findManyCall?.where).toMatchObject({
+      status: 'FAILED',
+      job_name: 'sync-sfs',
+    })
+  })
+
+  it('filters by date range when fromDate and toDate provided', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(0 as never)
+
+    const fromDate = new Date('2026-02-01T00:00:00Z')
+    const toDate = new Date('2026-02-03T23:59:59Z')
+
+    await getFailedRuns({ fromDate, toDate })
+
+    const findManyCall = vi.mocked(prisma.cronJobRun.findMany).mock
+      .calls[0]?.[0]
+    expect(findManyCall?.where).toMatchObject({
+      status: 'FAILED',
+      started_at: { gte: fromDate, lte: toDate },
+    })
+  })
+
+  it('filters by fromDate only when toDate not provided', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(0 as never)
+
+    const fromDate = new Date('2026-02-01T00:00:00Z')
+
+    await getFailedRuns({ fromDate })
+
+    const findManyCall = vi.mocked(prisma.cronJobRun.findMany).mock
+      .calls[0]?.[0]
+    expect(findManyCall?.where).toMatchObject({
+      status: 'FAILED',
+      started_at: { gte: fromDate },
+    })
+  })
+
+  it('filters by toDate only when fromDate not provided', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(0 as never)
+
+    const toDate = new Date('2026-02-03T23:59:59Z')
+
+    await getFailedRuns({ toDate })
+
+    const findManyCall = vi.mocked(prisma.cronJobRun.findMany).mock
+      .calls[0]?.[0]
+    expect(findManyCall?.where).toMatchObject({
+      status: 'FAILED',
+      started_at: { lte: toDate },
+    })
+  })
+
+  it('paginates correctly', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(50 as never)
+
+    const result = await getFailedRuns({ page: 2, pageSize: 25 })
+
+    expect(result.page).toBe(2)
+    expect(result.pageSize).toBe(25)
+    expect(result.total).toBe(50)
+
+    const findManyCall = vi.mocked(prisma.cronJobRun.findMany).mock
+      .calls[0]?.[0]
+    expect(findManyCall).toMatchObject({
+      skip: 25,
+      take: 25,
+    })
+  })
+
+  it('uses default pagination when no params', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.cronJobRun.count).mockResolvedValue(0 as never)
+
+    const result = await getFailedRuns()
+
+    expect(result.page).toBe(1)
+    expect(result.pageSize).toBe(25)
+
+    const findManyCall = vi.mocked(prisma.cronJobRun.findMany).mock
+      .calls[0]?.[0]
+    expect(findManyCall).toMatchObject({
+      skip: 0,
+      take: 25,
+    })
   })
 })

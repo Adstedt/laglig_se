@@ -3,7 +3,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Building2, Users, Clock } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  Clock,
+  AlertTriangle,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
@@ -11,6 +17,7 @@ const navItems = [
   { href: '/admin/workspaces', label: 'Workspaces', icon: Building2 },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/cron-jobs', label: 'Cron Jobs', icon: Clock },
+  { href: '/admin/cron-jobs/errors', label: 'Felloggar', icon: AlertTriangle },
 ] as const
 
 export function AdminSidebar() {
@@ -32,7 +39,10 @@ export function AdminSidebar() {
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href)
+          const isActive =
+            item.href === '/admin/cron-jobs'
+              ? pathname === '/admin/cron-jobs'
+              : pathname.startsWith(item.href)
           const Icon = item.icon
           return (
             <Link
