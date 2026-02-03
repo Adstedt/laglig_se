@@ -11,6 +11,7 @@ vi.mock('@/lib/prisma', () => ({
     user: {
       count: vi.fn(),
       findMany: vi.fn(),
+      findUnique: vi.fn(),
     },
   },
 }))
@@ -23,6 +24,8 @@ import {
   getRecentUsers,
   getWorkspaceList,
   getWorkspaceDetail,
+  getUserList,
+  getUserDetail,
 } from '@/lib/admin/queries'
 
 beforeEach(() => {
@@ -399,6 +402,162 @@ describe('getWorkspaceDetail', () => {
     vi.mocked(prisma.workspace.findUnique).mockResolvedValue(null as never)
 
     const result = await getWorkspaceDetail('nonexistent')
+
+    expect(result).toBeNull()
+  })
+})
+
+// ============================================================================
+// getUserList (Story 11.4)
+// ============================================================================
+
+describe('getUserList', () => {
+  const mockUserListData = [
+    {
+      id: 'user-1',
+      name: 'Test User',
+      email: 'test@test.com',
+      last_login_at: new Date('2026-02-01'),
+      created_at: new Date('2026-01-01'),
+      _count: { workspace_members: 2 },
+    },
+  ]
+
+  it('returns paginated result shape with no filters', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue(mockUserListData as never)
+    vi.mocked(prisma.user.count).mockResolvedValue(1 as never)
+
+    const result = await getUserList({})
+
+    expect(result).toEqual({
+      data: mockUserListData,
+      total: 1,
+      page: 1,
+      pageSize: 25,
+    })
+
+    const findManyCall = vi.mocked(prisma.user.findMany).mock.calls[0]?.[0]
+    expect(findManyCall).toMatchObject({
+      skip: 0,
+      take: 25,
+      orderBy: { created_at: 'desc' },
+    })
+  })
+
+  it('builds correct where clause with search parameter (OR on name/email)', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.user.count).mockResolvedValue(0 as never)
+
+    await getUserList({ search: 'test' })
+
+    const findManyCall = vi.mocked(prisma.user.findMany).mock.calls[0]?.[0]
+    expect(findManyCall?.where).toEqual({
+      OR: [
+        { name: { contains: 'test', mode: 'insensitive' } },
+        { email: { contains: 'test', mode: 'insensitive' } },
+      ],
+    })
+
+    // Count query should use same where
+    const countCall = vi.mocked(prisma.user.count).mock.calls[0]?.[0]
+    expect(countCall?.where).toEqual(findManyCall?.where)
+  })
+
+  it('calculates correct skip and take for pagination', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.user.count).mockResolvedValue(100 as never)
+
+    const result = await getUserList({ page: 3, pageSize: 10 })
+
+    expect(result.page).toBe(3)
+    expect(result.pageSize).toBe(10)
+
+    const findManyCall = vi.mocked(prisma.user.findMany).mock.calls[0]?.[0]
+    expect(findManyCall).toMatchObject({
+      skip: 20,
+      take: 10,
+    })
+  })
+
+  it('falls back to created_at for invalid sort field', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([] as never)
+    vi.mocked(prisma.user.count).mockResolvedValue(0 as never)
+
+    await getUserList({ sortBy: 'invalid_field', sortDir: 'asc' })
+
+    const findManyCall = vi.mocked(prisma.user.findMany).mock.calls[0]?.[0]
+    expect(findManyCall?.orderBy).toEqual({ created_at: 'asc' })
+  })
+})
+
+// ============================================================================
+// getUserDetail (Story 11.4)
+// ============================================================================
+
+describe('getUserDetail', () => {
+  it('returns user with workspace memberships', async () => {
+    const mockDetail = {
+      id: 'user-1',
+      name: 'Test User',
+      email: 'test@test.com',
+      avatar_url: 'https://example.com/avatar.png',
+      created_at: new Date('2026-01-01'),
+      last_login_at: new Date('2026-02-01'),
+      workspace_members: [
+        {
+          role: 'OWNER',
+          joined_at: new Date('2026-01-01'),
+          workspace: {
+            id: 'ws-1',
+            name: 'Test Workspace',
+            slug: 'test-workspace',
+            subscription_tier: 'TEAM',
+            status: 'ACTIVE',
+          },
+        },
+      ],
+    }
+
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockDetail as never)
+
+    const result = await getUserDetail('user-1')
+
+    expect(result).toEqual(mockDetail)
+    expect(result?.workspace_members).toHaveLength(1)
+    expect(result?.workspace_members[0]?.workspace.name).toBe('Test Workspace')
+
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { id: 'user-1' },
+      select: expect.objectContaining({
+        id: true,
+        name: true,
+        email: true,
+        avatar_url: true,
+        created_at: true,
+        last_login_at: true,
+        workspace_members: {
+          select: {
+            role: true,
+            joined_at: true,
+            workspace: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                subscription_tier: true,
+                status: true,
+              },
+            },
+          },
+        },
+      }),
+    })
+  })
+
+  it('returns null for non-existent user', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null as never)
+
+    const result = await getUserDetail('nonexistent')
 
     expect(result).toBeNull()
   })

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Building2, Users, Clock } from 'lucide-react'
@@ -17,8 +18,17 @@ export function AdminSidebar() {
 
   return (
     <aside className="flex h-full w-64 flex-col border-r bg-white">
-      <div className="border-b px-6 py-4">
-        <span className="text-lg font-semibold">Laglig Admin</span>
+      <div className="flex h-14 items-center border-b px-6">
+        <Link href="/admin/dashboard">
+          <Image
+            src="/images/logo-final.png"
+            alt="Laglig.se"
+            width={160}
+            height={62}
+            className="h-7 w-auto invert"
+            priority
+          />
+        </Link>
       </div>
       <nav className="flex-1 space-y-1 p-4">
         {navItems.map((item) => {

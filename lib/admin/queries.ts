@@ -292,3 +292,135 @@ export async function getWorkspaceDetail(
     },
   })
 }
+
+// ============================================================================
+// User List (Story 11.4)
+// ============================================================================
+
+export interface UserListItem {
+  id: string
+  name: string | null
+  email: string
+  last_login_at: Date | null
+  created_at: Date
+  _count: { workspace_members: number }
+}
+
+export interface UserListParams {
+  search?: string | undefined
+  sortBy?: string | undefined
+  sortDir?: 'asc' | 'desc' | undefined
+  page?: number | undefined
+  pageSize?: number | undefined
+}
+
+export interface UserListResult {
+  data: UserListItem[]
+  total: number
+  page: number
+  pageSize: number
+}
+
+const USER_SORTABLE_FIELDS = new Set([
+  'name',
+  'email',
+  'last_login_at',
+  'created_at',
+])
+
+export async function getUserList(
+  params: UserListParams
+): Promise<UserListResult> {
+  const page = params.page ?? 1
+  const pageSize = params.pageSize ?? 25
+  const skip = (page - 1) * pageSize
+
+  const where: Prisma.UserWhereInput = {}
+  if (params.search) {
+    where.OR = [
+      { name: { contains: params.search, mode: 'insensitive' } },
+      { email: { contains: params.search, mode: 'insensitive' } },
+    ]
+  }
+
+  const sortField = USER_SORTABLE_FIELDS.has(params.sortBy ?? '')
+    ? params.sortBy!
+    : 'created_at'
+  const sortDir = params.sortDir ?? 'desc'
+  const orderBy: Prisma.UserOrderByWithRelationInput = {
+    [sortField]: sortDir,
+  }
+
+  const [data, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      skip,
+      take: pageSize,
+      orderBy,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        last_login_at: true,
+        created_at: true,
+        _count: { select: { workspace_members: true } },
+      },
+    }),
+    prisma.user.count({ where }),
+  ])
+
+  return { data, total, page, pageSize }
+}
+
+// ============================================================================
+// User Detail (Story 11.4)
+// ============================================================================
+
+export interface UserDetail {
+  id: string
+  name: string | null
+  email: string
+  avatar_url: string | null
+  created_at: Date
+  last_login_at: Date | null
+  workspace_members: {
+    role: string
+    joined_at: Date
+    workspace: {
+      id: string
+      name: string
+      slug: string
+      subscription_tier: SubscriptionTier
+      status: WorkspaceStatus
+    }
+  }[]
+}
+
+export async function getUserDetail(id: string): Promise<UserDetail | null> {
+  return prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      avatar_url: true,
+      created_at: true,
+      last_login_at: true,
+      workspace_members: {
+        select: {
+          role: true,
+          joined_at: true,
+          workspace: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              subscription_tier: true,
+              status: true,
+            },
+          },
+        },
+      },
+    },
+  })
+}

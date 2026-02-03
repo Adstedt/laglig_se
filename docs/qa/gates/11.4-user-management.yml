@@ -1,0 +1,43 @@
+schema: 1
+story: '11.4'
+story_title: 'User Management'
+gate: PASS
+status_reason: 'All 8 ACs met, 20/20 tests passing, read-only scope with no security surface, clean implementation following established patterns from Story 11.3.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-03T19:43:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 90
+expires: '2026-02-17T19:43:00Z'
+
+evidence:
+  tests_reviewed: 6
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Read-only, no mutations. Sort allowlist prevents injection. Admin auth at layout level.'
+  performance:
+    status: PASS
+    notes: 'Promise.all parallel queries, Prisma select, server-side pagination.'
+  reliability:
+    status: PASS
+    notes: 'notFound() for missing user, null handling throughout, empty states.'
+  maintainability:
+    status: PASS
+    notes: 'Follows 11.3 patterns. Minor duplication of useUpdateSearchParams/SortableHeader acceptable for 2 tables.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Extract shared useUpdateSearchParams hook and SortableHeader component to table-utils.tsx when 3rd admin table is added'
+      refs: ['components/admin/user-table.tsx', 'components/admin/workspace-table.tsx']
+    - action: 'Add unit test for valid sort field (e.g., name ascending) to improve coverage symmetry'
+      refs: ['tests/unit/lib/admin/queries.test.ts']
