@@ -1,0 +1,47 @@
+schema: 1
+story: '11.6'
+story_title: 'Cron Job Dashboard & Manual Triggers'
+gate: PASS
+status_reason: 'All 10 ACs implemented correctly with 18 automated tests passing, zero regressions. Graceful degradation pattern properly isolates logging from cron job execution. Post-story UX enhancements (staleness, history, next run) are clean additions.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-03T22:30:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 90
+expires: '2026-02-17T22:30:00Z'
+
+evidence:
+  tests_reviewed: 18
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Admin session enforced on trigger action, CRON_SECRET server-side only, job name validated against registry'
+  performance:
+    status: PASS
+    notes: 'DB index on [job_name, started_at DESC], parallel queries, 5s health check timeouts'
+  reliability:
+    status: PASS
+    notes: 'All logging wrapped in try/catch — failures never crash cron jobs. Health checks use Promise.allSettled.'
+  maintainability:
+    status: CONCERNS
+    notes: 'getLatestJobRuns() is now dead code after getRecentJobRuns() was added. isStale/getNextRun helpers inline in page.tsx could be extracted for testability. Minor — does not block.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Remove dead getLatestJobRuns() or verify no other consumers'
+      refs: ['lib/admin/queries.ts:437-454']
+    - action: 'Add unit tests for getRecentJobRuns, isStale, getNextRun'
+      refs: ['lib/admin/queries.ts', 'app/admin/(dashboard)/cron-jobs/page.tsx']
+    - action: 'Simplify triggering useEffect (three identical branches)'
+      refs: ['components/admin/cron-job-card.tsx:147-157']
+    - action: 'Consider short-lived cache for health checks if page load becomes slow'
+      refs: ['app/admin/(dashboard)/cron-jobs/page.tsx:61-63']

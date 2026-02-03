@@ -13,6 +13,9 @@ vi.mock('@/lib/prisma', () => ({
       findMany: vi.fn(),
       findUnique: vi.fn(),
     },
+    cronJobRun: {
+      findMany: vi.fn(),
+    },
   },
 }))
 
@@ -26,6 +29,7 @@ import {
   getWorkspaceDetail,
   getUserList,
   getUserDetail,
+  getRecentJobRuns,
 } from '@/lib/admin/queries'
 
 beforeEach(() => {
@@ -560,5 +564,62 @@ describe('getUserDetail', () => {
     const result = await getUserDetail('nonexistent')
 
     expect(result).toBeNull()
+  })
+})
+
+// ============================================================================
+// getRecentJobRuns (Story 11.6)
+// ============================================================================
+
+describe('getRecentJobRuns', () => {
+  it('returns recent runs keyed by job name', async () => {
+    const mockRuns = [
+      {
+        id: 'run-1',
+        job_name: 'warm-cache',
+        status: 'SUCCESS',
+        started_at: new Date(),
+      },
+      {
+        id: 'run-2',
+        job_name: 'warm-cache',
+        status: 'FAILED',
+        started_at: new Date(),
+      },
+    ]
+
+    vi.mocked(prisma.cronJobRun.findMany)
+      .mockResolvedValueOnce(mockRuns as never) // warm-cache
+      .mockResolvedValueOnce([] as never) // prewarm-cache
+
+    const result = await getRecentJobRuns(['warm-cache', 'prewarm-cache'], 10)
+
+    expect(result['warm-cache']).toHaveLength(2)
+    expect(result['prewarm-cache']).toHaveLength(0)
+
+    expect(prisma.cronJobRun.findMany).toHaveBeenCalledTimes(2)
+    expect(prisma.cronJobRun.findMany).toHaveBeenCalledWith({
+      where: { job_name: 'warm-cache' },
+      orderBy: { started_at: 'desc' },
+      take: 10,
+    })
+  })
+
+  it('uses default count of 10', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+
+    await getRecentJobRuns(['warm-cache'])
+
+    expect(prisma.cronJobRun.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 10 })
+    )
+  })
+
+  it('returns empty arrays for jobs with no runs', async () => {
+    vi.mocked(prisma.cronJobRun.findMany).mockResolvedValue([] as never)
+
+    const result = await getRecentJobRuns(['nonexistent-job'])
+
+    expect(result['nonexistent-job']).toEqual([])
   })
 })

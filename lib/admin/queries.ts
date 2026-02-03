@@ -1,5 +1,10 @@
 import { prisma } from '@/lib/prisma'
-import type { Prisma, SubscriptionTier, WorkspaceStatus } from '@prisma/client'
+import type {
+  CronJobRun,
+  Prisma,
+  SubscriptionTier,
+  WorkspaceStatus,
+} from '@prisma/client'
 
 // ============================================================================
 // Types
@@ -422,5 +427,36 @@ export async function getUserDetail(id: string): Promise<UserDetail | null> {
         },
       },
     },
+  })
+}
+
+// ============================================================================
+// Cron Job Runs (Story 11.6)
+// ============================================================================
+
+export async function getRecentJobRuns(
+  jobNames: string[],
+  count: number = 10
+): Promise<Record<string, CronJobRun[]>> {
+  const allRuns = await Promise.all(
+    jobNames.map((jobName) =>
+      prisma.cronJobRun.findMany({
+        where: { job_name: jobName },
+        orderBy: { started_at: 'desc' },
+        take: count,
+      })
+    )
+  )
+
+  const result: Record<string, CronJobRun[]> = {}
+  for (let i = 0; i < jobNames.length; i++) {
+    result[jobNames[i]!] = allRuns[i] ?? []
+  }
+  return result
+}
+
+export async function getRunningJobs(): Promise<CronJobRun[]> {
+  return prisma.cronJobRun.findMany({
+    where: { status: 'RUNNING' },
   })
 }
