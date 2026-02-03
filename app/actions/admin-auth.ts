@@ -60,9 +60,9 @@ export async function adminLogin(
     cookieStore.set(ADMIN_SESSION_COOKIE, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24, // 24 hours
-      path: '/admin',
+      path: '/',
     })
   } catch {
     return {
@@ -79,9 +79,9 @@ export async function adminLogout(): Promise<void> {
   cookieStore.set(ADMIN_SESSION_COOKIE, '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: 0,
-    path: '/admin',
+    path: '/',
   })
 
   redirect('/admin/login')

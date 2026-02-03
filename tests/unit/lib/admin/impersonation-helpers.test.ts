@@ -42,9 +42,9 @@ describe('getNextAuthCookieName', () => {
 })
 
 describe('isImpersonating', () => {
-  it('returns true when both cookies present and admin session valid', async () => {
+  it('returns true when marker cookie and admin session present', async () => {
     mockCookieStore.get.mockImplementation((name: string) => {
-      if (name === 'next-auth.session-token') return { value: 'session-token' }
+      if (name === 'admin_impersonating') return { value: 'user-123' }
       if (name === 'admin_session') return { value: 'admin-token' }
       return undefined
     })
@@ -57,19 +57,9 @@ describe('isImpersonating', () => {
     expect(result).toBe(true)
   })
 
-  it('returns false when only admin cookie present (no NextAuth session)', async () => {
+  it('returns false when no marker cookie', async () => {
     mockCookieStore.get.mockImplementation((name: string) => {
       if (name === 'admin_session') return { value: 'admin-token' }
-      return undefined
-    })
-
-    const result = await isImpersonating()
-
-    expect(result).toBe(false)
-  })
-
-  it('returns false when no admin session cookie', async () => {
-    mockCookieStore.get.mockImplementation((name: string) => {
       if (name === 'next-auth.session-token') return { value: 'session-token' }
       return undefined
     })
@@ -79,21 +69,18 @@ describe('isImpersonating', () => {
     expect(result).toBe(false)
   })
 
-  it('returns false when both cookies present but NextAuth session belongs to admin (own session)', async () => {
+  it('returns false when marker cookie present but no admin session', async () => {
     mockCookieStore.get.mockImplementation((name: string) => {
-      if (name === 'next-auth.session-token') return { value: 'session-token' }
-      if (name === 'admin_session') return { value: 'admin-token' }
+      if (name === 'admin_impersonating') return { value: 'user-123' }
       return undefined
     })
-    vi.mocked(jwtVerify).mockResolvedValue({
-      payload: { email: 'admin@test.com' },
-    } as never)
-    // NextAuth session email matches admin email
-    vi.mocked(decode).mockResolvedValue({
-      id: 'admin-user-id',
-      email: 'admin@test.com',
-    } as never)
 
+    const result = await isImpersonating()
+
+    expect(result).toBe(false)
+  })
+
+  it('returns false when no cookies at all', async () => {
     const result = await isImpersonating()
 
     expect(result).toBe(false)
@@ -103,6 +90,7 @@ describe('isImpersonating', () => {
 describe('getImpersonationInfo', () => {
   it('returns decoded info when impersonating', async () => {
     mockCookieStore.get.mockImplementation((name: string) => {
+      if (name === 'admin_impersonating') return { value: 'user-123' }
       if (name === 'next-auth.session-token') return { value: 'session-token' }
       if (name === 'admin_session') return { value: 'admin-token' }
       return undefined
@@ -124,16 +112,32 @@ describe('getImpersonationInfo', () => {
     })
   })
 
-  it('returns null when not impersonating (no admin session)', async () => {
-    mockCookieStore.get.mockReturnValue(undefined)
+  it('returns null when no marker cookie', async () => {
+    mockCookieStore.get.mockImplementation((name: string) => {
+      if (name === 'next-auth.session-token') return { value: 'session-token' }
+      if (name === 'admin_session') return { value: 'admin-token' }
+      return undefined
+    })
 
     const result = await getImpersonationInfo()
 
     expect(result).toBeNull()
   })
 
-  it('returns null when admin session valid but no NextAuth cookie', async () => {
+  it('returns null when no admin session', async () => {
     mockCookieStore.get.mockImplementation((name: string) => {
+      if (name === 'admin_impersonating') return { value: 'user-123' }
+      return undefined
+    })
+
+    const result = await getImpersonationInfo()
+
+    expect(result).toBeNull()
+  })
+
+  it('returns null when no NextAuth cookie', async () => {
+    mockCookieStore.get.mockImplementation((name: string) => {
+      if (name === 'admin_impersonating') return { value: 'user-123' }
       if (name === 'admin_session') return { value: 'admin-token' }
       return undefined
     })
@@ -148,6 +152,7 @@ describe('getImpersonationInfo', () => {
 
   it('returns null when decode fails', async () => {
     mockCookieStore.get.mockImplementation((name: string) => {
+      if (name === 'admin_impersonating') return { value: 'user-123' }
       if (name === 'next-auth.session-token') return { value: 'bad-token' }
       if (name === 'admin_session') return { value: 'admin-token' }
       return undefined
@@ -162,8 +167,9 @@ describe('getImpersonationInfo', () => {
     expect(result).toBeNull()
   })
 
-  it('returns null when admin email matches decoded session email (own session)', async () => {
+  it('returns null when decoded token has no id or email', async () => {
     mockCookieStore.get.mockImplementation((name: string) => {
+      if (name === 'admin_impersonating') return { value: 'user-123' }
       if (name === 'next-auth.session-token') return { value: 'session-token' }
       if (name === 'admin_session') return { value: 'admin-token' }
       return undefined
@@ -171,11 +177,7 @@ describe('getImpersonationInfo', () => {
     vi.mocked(jwtVerify).mockResolvedValue({
       payload: { email: 'admin@test.com' },
     } as never)
-    // NextAuth session email matches admin email
-    vi.mocked(decode).mockResolvedValue({
-      id: 'admin-user-id',
-      email: 'admin@test.com',
-    } as never)
+    vi.mocked(decode).mockResolvedValue({} as never)
 
     const result = await getImpersonationInfo()
 

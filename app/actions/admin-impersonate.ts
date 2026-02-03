@@ -7,6 +7,7 @@ import {
   getAdminSession,
   getNextAuthCookieName,
   isImpersonating,
+  ADMIN_IMPERSONATING_COOKIE,
 } from '@/lib/admin/auth'
 import { ACTIVE_WORKSPACE_COOKIE } from '@/lib/auth/workspace-context'
 
@@ -80,6 +81,15 @@ export async function startImpersonation(
     maxAge: 3600,
   })
 
+  // Set impersonation marker cookie
+  cookieStore.set(ADMIN_IMPERSONATING_COOKIE, targetUser.id, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 3600,
+  })
+
   // Clear active workspace to force fresh resolution for impersonated user
   cookieStore.set(ACTIVE_WORKSPACE_COOKIE, '', {
     httpOnly: true,
@@ -121,6 +131,15 @@ export async function endImpersonation(): Promise<{
 
   // Clear the session cookie
   cookieStore.set(cookieName, '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  })
+
+  // Clear impersonation marker cookie
+  cookieStore.set(ADMIN_IMPERSONATING_COOKIE, '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',

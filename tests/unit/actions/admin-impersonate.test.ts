@@ -26,6 +26,7 @@ vi.mock('@/lib/admin/auth', () => ({
   getAdminSession: vi.fn(),
   getNextAuthCookieName: vi.fn(() => 'next-auth.session-token'),
   isImpersonating: vi.fn(),
+  ADMIN_IMPERSONATING_COOKIE: 'admin_impersonating',
 }))
 
 vi.mock('next-auth/jwt', () => ({
@@ -133,7 +134,7 @@ describe('startImpersonation', () => {
     })
   })
 
-  it('sets session cookie with correct name and options', async () => {
+  it('sets session cookie and marker cookie with correct options', async () => {
     vi.mocked(getAdminSession).mockResolvedValue(mockAdmin)
     vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as never)
     vi.mocked(isImpersonating).mockResolvedValue(false)
@@ -150,6 +151,16 @@ describe('startImpersonation', () => {
       expect.objectContaining({
         httpOnly: true,
         sameSite: 'lax',
+        path: '/',
+        maxAge: 3600,
+      })
+    )
+    // Marker cookie set with target user ID
+    expect(mockCookieStore.set).toHaveBeenCalledWith(
+      'admin_impersonating',
+      'user-123',
+      expect.objectContaining({
+        httpOnly: true,
         path: '/',
         maxAge: 3600,
       })
@@ -197,7 +208,7 @@ describe('endImpersonation', () => {
     })
   })
 
-  it('clears session cookie and active_workspace_id cookie', async () => {
+  it('clears session, marker, and workspace cookies', async () => {
     vi.mocked(getAdminSession).mockResolvedValue(mockAdmin)
     mockCookieStore.get.mockReturnValue({ value: 'some-token' })
     vi.mocked(decode).mockResolvedValue({
@@ -213,6 +224,12 @@ describe('endImpersonation', () => {
     // Session cookie cleared
     expect(mockCookieStore.set).toHaveBeenCalledWith(
       'next-auth.session-token',
+      '',
+      expect.objectContaining({ maxAge: 0 })
+    )
+    // Marker cookie cleared
+    expect(mockCookieStore.set).toHaveBeenCalledWith(
+      'admin_impersonating',
       '',
       expect.objectContaining({ maxAge: 0 })
     )

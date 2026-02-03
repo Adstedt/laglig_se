@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { decode } from 'next-auth/jwt'
 
 export const ADMIN_SESSION_COOKIE = 'admin_session'
+export const ADMIN_IMPERSONATING_COOKIE = 'admin_impersonating'
 
 /**
  * Get the correct NextAuth session cookie name for the current environment.
@@ -71,34 +72,15 @@ export async function getAdminSession(): Promise<{ email: string } | null> {
 
 /**
  * Check if an admin is currently impersonating a user.
- * Returns true when both admin_session and NextAuth session cookies exist,
- * the admin session is valid, and the NextAuth session belongs to a
- * different user (not the admin themselves).
+ * Uses a dedicated marker cookie set by startImpersonation().
  */
 export async function isImpersonating(): Promise<boolean> {
   const cookieStore = await cookies()
-  const nextAuthCookie = cookieStore.get(getNextAuthCookieName())?.value
-  if (!nextAuthCookie) return false
+  const marker = cookieStore.get(ADMIN_IMPERSONATING_COOKIE)?.value
+  if (!marker) return false
 
   const adminSession = await getAdminSession()
-  if (!adminSession) return false
-
-  try {
-    const decoded = await decode({
-      token: nextAuthCookie,
-      secret: process.env.NEXTAUTH_SECRET!,
-    })
-    // Admin's own session is NOT impersonation
-    if (
-      decoded?.email &&
-      decoded.email.toLowerCase() === adminSession.email.toLowerCase()
-    ) {
-      return false
-    }
-    return true
-  } catch {
-    return false
-  }
+  return adminSession !== null
 }
 
 /**
@@ -110,10 +92,13 @@ export async function getImpersonationInfo(): Promise<{
   impersonatedUserId: string
   impersonatedEmail: string
 } | null> {
+  const cookieStore = await cookies()
+  const marker = cookieStore.get(ADMIN_IMPERSONATING_COOKIE)?.value
+  if (!marker) return null
+
   const adminSession = await getAdminSession()
   if (!adminSession) return null
 
-  const cookieStore = await cookies()
   const sessionToken = cookieStore.get(getNextAuthCookieName())?.value
   if (!sessionToken) return null
 
@@ -124,14 +109,6 @@ export async function getImpersonationInfo(): Promise<{
     })
 
     if (!decoded?.id || !decoded?.email) return null
-
-    // Admin's own session is NOT impersonation
-    if (
-      (decoded.email as string).toLowerCase() ===
-      adminSession.email.toLowerCase()
-    ) {
-      return null
-    }
 
     return {
       adminEmail: adminSession.email,
