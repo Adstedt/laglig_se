@@ -10,6 +10,8 @@ import {
   WorkspaceAccessError,
 } from '@/lib/auth/workspace-context'
 import { PausedWorkspaceBanner } from '@/components/features/workspace/paused-workspace-banner'
+import { getImpersonationInfo } from '@/lib/admin/auth'
+import { ImpersonationBanner } from '@/components/admin/impersonation-banner'
 
 // Force dynamic rendering for all workspace pages since they require authentication
 export const dynamic = 'force-dynamic'
@@ -74,16 +76,35 @@ export default async function WorkspaceLayout({
   }
 
   const workspaceContext = await getWorkspaceContextSafe()
+  const impersonationInfo = await getImpersonationInfo()
 
   // Handle paused workspace: render shell with warning banner
   if (workspaceContext.workspaceStatus === 'PAUSED') {
     return (
       <>
+        {impersonationInfo && (
+          <ImpersonationBanner
+            userName={user.name ?? user.email}
+            userEmail={impersonationInfo.impersonatedEmail}
+            userId={user.id}
+          />
+        )}
         <PausedWorkspaceBanner isOwner={workspaceContext.role === 'OWNER'} />
         <WorkspaceShell user={user}>{children}</WorkspaceShell>
       </>
     )
   }
 
-  return <WorkspaceShell user={user}>{children}</WorkspaceShell>
+  return (
+    <>
+      {impersonationInfo && (
+        <ImpersonationBanner
+          userName={user.name ?? user.email}
+          userEmail={impersonationInfo.impersonatedEmail}
+          userId={user.id}
+        />
+      )}
+      <WorkspaceShell user={user}>{children}</WorkspaceShell>
+    </>
+  )
 }

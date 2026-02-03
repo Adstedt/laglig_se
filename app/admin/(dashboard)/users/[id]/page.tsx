@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -15,12 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { ImpersonateButton } from '@/components/admin/impersonate-button'
 import {
   ROLE_LABELS,
   STATUS_LABELS,
@@ -91,26 +85,17 @@ export default async function UserDetailPage({
           </CardContent>
         </Card>
 
-        {/* Impersonate Placeholder */}
+        {/* Impersonate */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Åtgärder</CardTitle>
           </CardHeader>
           <CardContent>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    <Button variant="outline" disabled>
-                      Logga in som användare
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Kommer i nästa story</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <ImpersonateButton
+              userId={id}
+              userName={user.name ?? user.email}
+              userEmail={user.email}
+            />
           </CardContent>
         </Card>
       </div>

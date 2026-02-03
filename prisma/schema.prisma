@@ -1118,3 +1118,18 @@ model ActivityLog {
   @@index([user_id])
   @@map("activity_logs")
 }
+
+// Admin audit trail for backoffice actions (impersonation, tier changes, etc.)
+model AdminAuditLog {
+  id          String   @id @default(uuid())
+  admin_email String
+  action      String // 'IMPERSONATION_START', 'IMPERSONATION_END', etc.
+  target_type String // 'USER', 'WORKSPACE', etc.
+  target_id   String
+  metadata    Json?
+  created_at  DateTime @default(now())
+
+  @@index([admin_email, created_at])
+  @@index([action])
+  @@map("admin_audit_logs")
+}
