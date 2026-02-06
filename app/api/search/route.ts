@@ -199,6 +199,8 @@ function getBasePath(contentType: ContentType): string {
       return '/eu/forordningar'
     case 'EU_DIRECTIVE':
       return '/eu/direktiv'
+    case 'AGENCY_REGULATION':
+      return '/foreskrifter'
     default:
       return '/dokument'
   }

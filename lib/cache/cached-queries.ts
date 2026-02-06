@@ -312,6 +312,7 @@ export const getAllTopCourtCasesForStaticGeneration = unstable_cache(
       SFS_AMENDMENT: '', // Not a court
       EU_REGULATION: '', // Not a court
       EU_DIRECTIVE: '', // Not a court
+      AGENCY_REGULATION: '', // Not a court
     }
 
     const courtTypes: ContentType[] = [

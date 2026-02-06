@@ -351,6 +351,7 @@ enum ContentType {
   COURT_CASE_MIG
   EU_REGULATION
   EU_DIRECTIVE
+  AGENCY_REGULATION // Story 12.1: Agency regulation stubs (AFS, BFS, NFS, etc.)
 }
 
 enum DocumentStatus {

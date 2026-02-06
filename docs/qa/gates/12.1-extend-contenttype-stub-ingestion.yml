@@ -1,0 +1,45 @@
+schema: 1
+story: '12.1'
+story_title: 'Extend ContentType & Create Stub Ingestion Script'
+gate: PASS
+status_reason: 'All critical issues resolved. DRY stub filter helpers now used across all 5 filter locations, getBasePath covers AGENCY_REGULATION, test checkboxes accurately reflect coverage. Migration concern accepted by team (db push is the standard approach for this project).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-06T14:55:00Z'
+
+top_issues:
+  - id: 'TEST-001'
+    severity: low
+    finding: 'Idempotency and page render tests deferred (require DB mock and component test setup respectively). Parsing, filter, and content-type utility tests provide good baseline coverage.'
+    suggested_action: 'Add these tests when component test infrastructure is available or during a testing-focused sprint.'
+    suggested_owner: dev
+
+waiver: { active: false }
+
+quality_score: 90  # 100 - (10 * 1 low) = 90
+expires: '2026-02-20T14:55:00Z'
+
+evidence:
+  tests_reviewed: 44
+  risks_identified: 1
+  trace:
+    ac_covered: [1, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: [2]  # AC2: Migration — accepted as db push per team decision
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No auth/payment code touched. dangerouslySetInnerHTML matches existing pattern. Stub pages show metadata only.'
+  performance:
+    status: PASS
+    notes: 'Sequential upserts acceptable for 51 records. Filters use indexed columns. No new heavy queries.'
+  reliability:
+    status: PASS
+    notes: 'Idempotent upsert pattern correct. force-dynamic prevents stale cache.'
+  maintainability:
+    status: PASS
+    notes: 'Stub filter logic now centralized in document-filters.ts helper and used by all consumers.'
+
+recommendations:
+  future:
+    - action: 'Add idempotency and page render tests when test infrastructure supports them'
+      refs: ['tests/unit/scripts/ingest-agency-stubs.test.ts']

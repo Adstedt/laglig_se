@@ -11,6 +11,7 @@ import {
   isCourtCase,
   isEuDocument,
   isSfsDocument,
+  isAgencyRegulation,
   groupContentTypes,
   getContentTypesForGroup,
   getGroupForContentType,
@@ -18,7 +19,7 @@ import {
   CONTENT_TYPE_GROUPS,
   ALL_CONTENT_TYPES,
 } from '@/lib/utils/content-type'
-import { Scale, Gavel, Globe } from 'lucide-react'
+import { Scale, Gavel, Globe, BookOpen } from 'lucide-react'
 
 describe('Content Type Utilities', () => {
   describe('getContentTypeLabel', () => {
@@ -28,6 +29,9 @@ describe('Content Type Utilities', () => {
       expect(getContentTypeLabel('COURT_CASE_HD')).toBe('HD')
       expect(getContentTypeLabel('EU_REGULATION')).toBe('EU-förordning')
       expect(getContentTypeLabel('EU_DIRECTIVE')).toBe('EU-direktiv')
+      expect(getContentTypeLabel('AGENCY_REGULATION')).toBe(
+        'Myndighetsföreskrift'
+      )
     })
   })
 
@@ -52,6 +56,9 @@ describe('Content Type Utilities', () => {
 
       const euColor = getContentTypeBadgeColor('EU_REGULATION')
       expect(euColor).toContain('bg-green')
+
+      const agencyColor = getContentTypeBadgeColor('AGENCY_REGULATION')
+      expect(agencyColor).toContain('bg-orange')
     })
   })
 
@@ -60,6 +67,7 @@ describe('Content Type Utilities', () => {
       expect(getContentTypeIcon('SFS_LAW')).toBe(Scale)
       expect(getContentTypeIcon('COURT_CASE_HD')).toBe(Gavel)
       expect(getContentTypeIcon('EU_REGULATION')).toBe(Globe)
+      expect(getContentTypeIcon('AGENCY_REGULATION')).toBe(BookOpen)
     })
   })
 
@@ -101,6 +109,19 @@ describe('Content Type Utilities', () => {
       it('returns false for non-SFS types', () => {
         expect(isSfsDocument('COURT_CASE_HD')).toBe(false)
         expect(isSfsDocument('EU_REGULATION')).toBe(false)
+        expect(isSfsDocument('AGENCY_REGULATION')).toBe(false)
+      })
+    })
+
+    describe('isAgencyRegulation', () => {
+      it('returns true for AGENCY_REGULATION', () => {
+        expect(isAgencyRegulation('AGENCY_REGULATION')).toBe(true)
+      })
+
+      it('returns false for non-agency types', () => {
+        expect(isAgencyRegulation('SFS_LAW')).toBe(false)
+        expect(isAgencyRegulation('COURT_CASE_HD')).toBe(false)
+        expect(isAgencyRegulation('EU_REGULATION')).toBe(false)
       })
     })
   })
@@ -108,12 +129,13 @@ describe('Content Type Utilities', () => {
   describe('Grouping', () => {
     describe('CONTENT_TYPE_GROUPS', () => {
       it('has all expected groups', () => {
-        expect(CONTENT_TYPE_GROUPS).toHaveLength(4)
+        expect(CONTENT_TYPE_GROUPS).toHaveLength(5)
         expect(CONTENT_TYPE_GROUPS.map((g) => g.id)).toEqual([
           'laws',
           'amendments',
           'courtCases',
           'euDocuments',
+          'agencyRegulations',
         ])
       })
     })
@@ -194,16 +216,26 @@ describe('Content Type Utilities', () => {
           '/browse/eu/direktiv/test-slug'
         )
       })
+
+      it('generates correct URL for agency regulations', () => {
+        expect(getDocumentUrl('AGENCY_REGULATION', 'afs-2023-1', false)).toBe(
+          '/foreskrifter/afs-2023-1'
+        )
+        expect(getDocumentUrl('AGENCY_REGULATION', 'afs-2023-1', true)).toBe(
+          '/browse/foreskrifter/afs-2023-1'
+        )
+      })
     })
   })
 
   describe('ALL_CONTENT_TYPES', () => {
     it('contains all content types', () => {
-      expect(ALL_CONTENT_TYPES).toHaveLength(10)
+      expect(ALL_CONTENT_TYPES).toHaveLength(11)
       expect(ALL_CONTENT_TYPES).toContain('SFS_LAW')
       expect(ALL_CONTENT_TYPES).toContain('SFS_AMENDMENT')
       expect(ALL_CONTENT_TYPES).toContain('COURT_CASE_HD')
       expect(ALL_CONTENT_TYPES).toContain('EU_REGULATION')
+      expect(ALL_CONTENT_TYPES).toContain('AGENCY_REGULATION')
     })
   })
 })

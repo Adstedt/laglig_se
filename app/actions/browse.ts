@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { safeTrack, trackAsync } from '@/lib/analytics'
 import { searchDocuments } from '@/lib/external/elasticsearch'
 import type { ContentType } from '@prisma/client'
+import { excludeStubDocuments } from '@/lib/db/queries/document-filters'
 
 // Content types aligned with Architecture 9.5.1 ContentType enum
 const ContentTypeEnum = z.enum([
@@ -20,6 +21,7 @@ const ContentTypeEnum = z.enum([
   'COURT_CASE_MIG',
   'EU_REGULATION',
   'EU_DIRECTIVE',
+  'AGENCY_REGULATION', // Story 12.1: Agency regulation stubs
 ])
 
 const DocumentStatusEnum = z.enum(['ACTIVE', 'REPEALED', 'DRAFT', 'ARCHIVED'])
@@ -378,7 +380,10 @@ async function executeBrowseQuery(
 }> {
   // Build Prisma where clause
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {}
+  const where: any = {
+    // Story 12.1: Exclude stub documents (AGENCY_REGULATION with null full_text)
+    ...excludeStubDocuments,
+  }
 
   if (contentTypes && contentTypes.length > 0) {
     where.content_type = { in: contentTypes }

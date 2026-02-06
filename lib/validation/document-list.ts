@@ -20,6 +20,7 @@ export const ContentTypeEnum = z.enum([
   'COURT_CASE_MIG',
   'EU_REGULATION',
   'EU_DIRECTIVE',
+  'AGENCY_REGULATION',
 ])
 
 export const LawListItemStatusEnum = z.enum([

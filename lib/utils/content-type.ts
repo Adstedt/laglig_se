@@ -4,7 +4,14 @@
  */
 
 import type { ContentType } from '@prisma/client'
-import { Scale, FileEdit, Gavel, Globe, type LucideIcon } from 'lucide-react'
+import {
+  Scale,
+  FileEdit,
+  Gavel,
+  Globe,
+  BookOpen,
+  type LucideIcon,
+} from 'lucide-react'
 
 // ============================================================================
 // LABELS - Swedish display names
@@ -21,6 +28,7 @@ const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
   COURT_CASE_MIG: 'MIG',
   EU_REGULATION: 'EU-förordning',
   EU_DIRECTIVE: 'EU-direktiv',
+  AGENCY_REGULATION: 'Myndighetsföreskrift',
 }
 
 const CONTENT_TYPE_FULL_LABELS: Record<ContentType, string> = {
@@ -34,6 +42,7 @@ const CONTENT_TYPE_FULL_LABELS: Record<ContentType, string> = {
   COURT_CASE_MIG: 'Migrationsöverdomstolen',
   EU_REGULATION: 'EU-förordning',
   EU_DIRECTIVE: 'EU-direktiv',
+  AGENCY_REGULATION: 'Myndighetsföreskrift',
 }
 
 export function getContentTypeLabel(type: ContentType): string {
@@ -68,6 +77,8 @@ const CONTENT_TYPE_COLORS: Record<ContentType, string> = {
     'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
   EU_DIRECTIVE:
     'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+  AGENCY_REGULATION:
+    'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
 }
 
 export function getContentTypeBadgeColor(type: ContentType): string {
@@ -92,6 +103,7 @@ const CONTENT_TYPE_ICONS: Record<ContentType, LucideIcon> = {
   COURT_CASE_MIG: Gavel,
   EU_REGULATION: Globe,
   EU_DIRECTIVE: Globe,
+  AGENCY_REGULATION: BookOpen,
 }
 
 export function getContentTypeIcon(type: ContentType): LucideIcon {
@@ -123,6 +135,10 @@ export function isEuDocument(type: ContentType): boolean {
 
 export function isSfsDocument(type: ContentType): boolean {
   return type === 'SFS_LAW' || type === 'SFS_AMENDMENT'
+}
+
+export function isAgencyRegulation(type: ContentType): boolean {
+  return type === 'AGENCY_REGULATION'
 }
 
 // ============================================================================
@@ -160,6 +176,12 @@ export const CONTENT_TYPE_GROUPS: ContentTypeGroup[] = [
     label: 'EU-dokument',
     labelPlural: 'EU-dokument',
     types: EU_DOCUMENT_TYPES,
+  },
+  {
+    id: 'agencyRegulations',
+    label: 'Myndighetsföreskrift',
+    labelPlural: 'Myndighetsföreskrifter',
+    types: ['AGENCY_REGULATION'],
   },
 ]
 
@@ -199,6 +221,7 @@ export const ALL_CONTENT_TYPES: ContentType[] = [
   'SFS_AMENDMENT',
   ...COURT_CASE_TYPES,
   ...EU_DOCUMENT_TYPES,
+  'AGENCY_REGULATION',
 ]
 
 // ============================================================================
@@ -229,6 +252,10 @@ export function getDocumentUrl(
   if (isEuDocument(type)) {
     const euType = type === 'EU_REGULATION' ? 'forordning' : 'direktiv'
     return `${prefix}/eu/${euType}/${slug}`
+  }
+
+  if (isAgencyRegulation(type)) {
+    return `${prefix}/foreskrifter/${slug}`
   }
 
   // Fallback
