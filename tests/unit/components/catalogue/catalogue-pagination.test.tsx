@@ -11,6 +11,11 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }))
 
+// Mock prefetchBrowse to prevent network calls during tests
+vi.mock('@/lib/hooks/use-catalogue-browse', () => ({
+  prefetchBrowse: vi.fn(),
+}))
+
 describe('CataloguePagination', () => {
   const defaultProps = {
     currentPage: 1,

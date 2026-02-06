@@ -20,7 +20,7 @@ describe('Signup Integration Tests', () => {
       const result = PasswordSchema.safeParse('Short1!')
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0]?.message).toContain('12 characters')
+        expect(result.error.issues[0]?.message).toContain('12 tecken')
       }
     })
 
@@ -28,7 +28,7 @@ describe('Signup Integration Tests', () => {
       const result = PasswordSchema.safeParse('lowercase123!')
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0]?.message).toContain('uppercase')
+        expect(result.error.issues[0]?.message).toContain('versal')
       }
     })
 
@@ -36,7 +36,7 @@ describe('Signup Integration Tests', () => {
       const result = PasswordSchema.safeParse('UPPERCASE123!')
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0]?.message).toContain('lowercase')
+        expect(result.error.issues[0]?.message).toContain('gemen')
       }
     })
 
@@ -44,7 +44,7 @@ describe('Signup Integration Tests', () => {
       const result = PasswordSchema.safeParse('NoNumbersHere!')
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0]?.message).toContain('number')
+        expect(result.error.issues[0]?.message).toContain('siffra')
       }
     })
 
@@ -52,7 +52,7 @@ describe('Signup Integration Tests', () => {
       const result = PasswordSchema.safeParse('NoSpecial123')
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0]?.message).toContain('special character')
+        expect(result.error.issues[0]?.message).toContain('specialtecken')
       }
     })
 
@@ -88,7 +88,7 @@ describe('Signup Integration Tests', () => {
         const error = result.error.issues.find((e) =>
           e.path.includes('confirmPassword')
         )
-        expect(error?.message).toContain("don't match")
+        expect(error?.message).toContain('matchar inte')
       }
     })
 

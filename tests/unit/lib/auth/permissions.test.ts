@@ -165,15 +165,18 @@ describe('hasPermission', () => {
 describe('getPermissions', () => {
   test('returns all permissions for OWNER', () => {
     const permissions = getPermissions('OWNER')
-    expect(permissions).toHaveLength(14)
+    expect(permissions).toHaveLength(17)
     expect(permissions).toContain('workspace:delete')
     expect(permissions).toContain('employees:manage')
+    expect(permissions).toContain('workspace:settings')
+    expect(permissions).toContain('activity:view')
+    expect(permissions).toContain('ai:chat')
   })
 
   test('returns limited permissions for AUDITOR', () => {
     const permissions = getPermissions('AUDITOR')
-    expect(permissions).toHaveLength(1)
-    expect(permissions).toEqual(['read'])
+    expect(permissions).toHaveLength(3)
+    expect(permissions).toEqual(['activity:view', 'ai:chat', 'read'])
   })
 })
 

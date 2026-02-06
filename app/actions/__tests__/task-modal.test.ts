@@ -127,6 +127,7 @@ describe('Task Modal Server Actions', () => {
         list_item_links: [],
         comments: [],
         evidence: [],
+        file_links: [],
         _count: { comments: 0, evidence: 0 },
       }
 
