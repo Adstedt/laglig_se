@@ -51,6 +51,10 @@ model User {
   // Epic 3: AI Chat
   chat_messages ChatMessage[]
 
+  // Epic 12: Template relations
+  created_templates LawListTemplate[] @relation("TemplateCreator")
+  reviewed_items    TemplateItem[]    @relation("TemplateItemReviewer")
+
   @@index([email])
   @@map("users")
 }
@@ -308,6 +312,7 @@ model LegalDocument {
   law_list_items      LawListItem[] // Story 5.1: Law list items referencing this document
   legislative_refs    LegislativeRef[] // Story 2.29: Extracted prop/bet/rskr references
   visits              DocumentVisit? // Story P.1: Visit tracking for cache optimization
+  template_items      TemplateItem[] // Story 12.2: Template items referencing this document
 
   @@index([document_number])
   @@index([slug])
@@ -503,6 +508,24 @@ enum NotificationType {
   MENTION // @mention in comment
   STATUS_CHANGED
   WEEKLY_DIGEST
+}
+
+// ============================================================================
+// EPIC 12: TEMPLATE ENUMS
+// ============================================================================
+
+enum TemplateStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum TemplateItemContentStatus {
+  STUB
+  AI_GENERATED
+  HUMAN_REVIEWED
+  APPROVED
 }
 
 // ============================================================================
@@ -1163,4 +1186,99 @@ enum JobRunStatus {
   RUNNING
   SUCCESS
   FAILED
+}
+
+// ============================================================================
+// EPIC 12: LAW LIST TEMPLATES - Story 12.2
+// System-level template catalog (not workspace-scoped)
+// ============================================================================
+
+model LawListTemplate {
+  id                        String         @id @default(uuid())
+  name                      String
+  slug                      String         @unique
+  description               String?        @db.Text
+  domain                    String         // "arbetsmiljo", "miljo", etc.
+  target_audience           String?        @db.Text
+  status                    TemplateStatus @default(DRAFT)
+  version                   Int            @default(1)
+  document_count            Int            @default(0)
+  section_count             Int            @default(0)
+  primary_regulatory_bodies String[]
+  parent_template_id        String?
+  is_variant                Boolean        @default(false)
+  variant_filter_field      String?
+  metadata                  Json?
+  created_by                String
+  published_at              DateTime?
+  created_at                DateTime       @default(now())
+  updated_at                DateTime       @updatedAt
+
+  // Relations
+  creator  User               @relation("TemplateCreator", fields: [created_by], references: [id])
+  parent   LawListTemplate?   @relation("TemplateVariant", fields: [parent_template_id], references: [id])
+  children LawListTemplate[]  @relation("TemplateVariant")
+  sections TemplateSection[]
+  items    TemplateItem[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([domain])
+  @@map("law_list_templates")
+}
+
+model TemplateSection {
+  id             String   @id @default(uuid())
+  template_id    String
+  section_number String   // "01", "02", ..., "09"
+  name           String
+  description    String?  @db.Text
+  position       Float    @default(0)
+  item_count     Int      @default(0)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  // Relations
+  template LawListTemplate @relation(fields: [template_id], references: [id], onDelete: Cascade)
+  items    TemplateItem[]
+
+  @@unique([template_id, section_number])
+  @@index([template_id, position])
+  @@map("template_sections")
+}
+
+model TemplateItem {
+  id                          String                    @id @default(uuid())
+  template_id                 String
+  section_id                  String
+  document_id                 String
+  index                       String                    // SSDD format: "0100", "0210"
+  position                    Float                     @default(0)
+  compliance_summary          String?                   @db.Text
+  expert_commentary           String?                   @db.Text
+  source_type                 String?                   // "lag", "forordning", "foreskrift", etc.
+  regulatory_body             String?                   // "Arbetsmiljöverket", "Boverket", etc.
+  last_amendment              String?                   // "SFS 2025:732"
+  replaces_old_reference      String?                   // "ersätter AFS 2001:1"
+  is_service_company_relevant Boolean                   @default(true)
+  variant_section_override    String?                   // Alternative section for variant views
+  cross_list_references       String[]                  // Template slugs where this doc also appears
+  content_status              TemplateItemContentStatus @default(STUB)
+  generated_by                String?                   // "gpt-4o", "human", etc.
+  reviewed_by                 String?
+  reviewed_at                 DateTime?
+  created_at                  DateTime                  @default(now())
+  updated_at                  DateTime                  @updatedAt
+
+  // Relations
+  template LawListTemplate @relation(fields: [template_id], references: [id], onDelete: Cascade)
+  section  TemplateSection @relation(fields: [section_id], references: [id], onDelete: Cascade)
+  document LegalDocument   @relation(fields: [document_id], references: [id])
+  reviewer User?           @relation("TemplateItemReviewer", fields: [reviewed_by], references: [id])
+
+  @@unique([template_id, document_id])
+  @@index([template_id, section_id, position])
+  @@index([document_id])
+  @@index([content_status])
+  @@map("template_items")
 }
