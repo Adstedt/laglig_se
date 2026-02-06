@@ -9,6 +9,7 @@
  */
 import { NextResponse } from 'next/server'
 import { prewarmBrowseCache } from '@/lib/cache/prewarm-browse'
+import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -22,6 +23,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const triggeredBy = request.headers.get('x-triggered-by') || 'cron'
+  let runId: string | undefined
+
+  try {
+    runId = await startJobRun('prewarm-cache', triggeredBy)
+  } catch {
+    console.error('Failed to start job run logging')
+  }
+
   console.log('[PREWARM] Starting cache prewarm job...')
 
   try {
@@ -31,6 +41,13 @@ export async function GET(request: Request) {
       `[PREWARM] Completed: ${result.warmed} warmed, ${result.failed} failed in ${result.durationMs}ms`
     )
 
+    if (runId) {
+      await completeJobRun(runId, {
+        itemsProcessed: result.warmed,
+        itemsFailed: result.failed,
+      })
+    }
+
     return NextResponse.json({
       success: true,
       warmed: result.warmed,
@@ -39,6 +56,12 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
+    if (runId) {
+      await failJobRun(
+        runId,
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
     console.error('[PREWARM] Job failed:', error)
     return NextResponse.json(
       {

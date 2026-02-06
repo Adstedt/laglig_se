@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCachedDocument } from '@/lib/services/document-cache'
 import { redis, isRedisConfigured } from '@/lib/cache/redis'
+import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 
 export const maxDuration = 300 // 5 minutes max for cron job
 
@@ -30,6 +31,15 @@ export async function GET(request: NextRequest) {
   // Check if Redis is configured
   if (!isRedisConfigured()) {
     return NextResponse.json({ error: 'Redis not configured' }, { status: 503 })
+  }
+
+  const triggeredBy = request.headers.get('x-triggered-by') || 'cron'
+  let runId: string | undefined
+
+  try {
+    runId = await startJobRun('warm-cache', triggeredBy)
+  } catch {
+    console.error('Failed to start job run logging')
   }
 
   const startTime = Date.now()
@@ -109,6 +119,13 @@ export async function GET(request: NextRequest) {
 
     const coveragePercent = Math.round((200 / uniqueDocuments.length) * 100)
 
+    if (runId) {
+      await completeJobRun(runId, {
+        itemsProcessed: newlyCached,
+        itemsFailed: failed,
+      })
+    }
+
     return NextResponse.json({
       success: true,
       stats: {
@@ -130,6 +147,12 @@ export async function GET(request: NextRequest) {
       message: `Warmed ${newlyCached} new documents, ${alreadyCached} already cached`,
     })
   } catch (error) {
+    if (runId) {
+      await failJobRun(
+        runId,
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
     console.error('Cache warming error:', error)
     return NextResponse.json(
       {

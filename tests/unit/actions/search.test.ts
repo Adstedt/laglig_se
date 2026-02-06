@@ -16,7 +16,7 @@ vi.mock('@/lib/cache/redis', () => ({
     get: vi.fn().mockResolvedValue(null),
     set: vi.fn().mockResolvedValue('OK'),
   },
-  isRedisConfigured: false,
+  isRedisConfigured: vi.fn().mockReturnValue(false),
 }))
 
 vi.mock('@upstash/ratelimit', () => ({
@@ -31,6 +31,10 @@ vi.mock('next/headers', () => ({
 
 vi.mock('@vercel/analytics/server', () => ({
   track: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('@/lib/analytics', () => ({
+  safeTrack: vi.fn().mockResolvedValue(undefined),
 }))
 
 // Import after mocking

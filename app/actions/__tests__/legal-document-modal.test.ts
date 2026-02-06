@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { getListItemDetails, getDocumentContent } from '../legal-document-modal'
 import { prisma } from '@/lib/prisma'
 import * as workspaceContext from '@/lib/auth/workspace-context'
-import * as cacheStrategies from '@/lib/cache/strategies'
+import * as documentCache from '@/lib/services/document-cache'
 
 // Mock dependencies
 vi.mock('@/lib/prisma', () => ({
@@ -25,8 +25,8 @@ vi.mock('@/lib/auth/workspace-context', () => ({
   withWorkspace: vi.fn(),
 }))
 
-vi.mock('@/lib/cache/strategies', () => ({
-  getCachedDocumentContent: vi.fn(),
+vi.mock('@/lib/services/document-cache', () => ({
+  getCachedDocument: vi.fn(),
 }))
 
 describe('legal-document-modal actions', () => {
@@ -202,14 +202,26 @@ describe('legal-document-modal actions', () => {
 
   describe('getDocumentContent', () => {
     it('should successfully fetch cached document content', async () => {
-      const mockContent = {
-        fullText: 'Full document text',
+      const mockCachedDoc = {
+        id: 'doc-123',
+        documentNumber: 'SFS 2020:100',
+        title: 'Test Law',
         htmlContent: '<p>HTML content</p>',
+        summary: null,
+        slug: 'test-law',
+        status: 'ACTIVE',
+        sourceUrl: null,
+        contentType: 'SFS_LAW',
+        effectiveDate: null,
+        inForceDate: null,
+        category: null,
+        courtName: null,
+        caseNumber: null,
       }
 
-      // Mock cache function to return content
-      vi.mocked(cacheStrategies.getCachedDocumentContent).mockResolvedValue(
-        mockContent
+      // Mock getCachedDocument to return a document
+      vi.mocked(documentCache.getCachedDocument).mockResolvedValue(
+        mockCachedDoc as any
       )
 
       // Call the function
@@ -217,30 +229,33 @@ describe('legal-document-modal actions', () => {
 
       // Assertions
       expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockContent)
+      expect(result.data).toEqual({ htmlContent: '<p>HTML content</p>' })
 
       // Verify cache function was called
-      expect(cacheStrategies.getCachedDocumentContent).toHaveBeenCalledWith(
-        'doc-123',
-        expect.any(Function)
-      )
+      expect(documentCache.getCachedDocument).toHaveBeenCalledWith('doc-123')
     })
 
     it('should handle cache misses and fetch from database', async () => {
-      const mockDocument = {
-        full_text: 'Database text',
-        html_content: '<p>Database HTML</p>',
+      const mockCachedDoc = {
+        id: 'doc-123',
+        documentNumber: 'SFS 2020:100',
+        title: 'Test Law',
+        htmlContent: '<p>Database HTML</p>',
+        summary: null,
+        slug: 'test-law',
+        status: 'ACTIVE',
+        sourceUrl: null,
+        contentType: 'SFS_LAW',
+        effectiveDate: null,
+        inForceDate: null,
+        category: null,
+        courtName: null,
+        caseNumber: null,
       }
 
-      // Mock cache to execute the fetcher function
-      vi.mocked(cacheStrategies.getCachedDocumentContent).mockImplementation(
-        async (_, fetcher) => {
-          // Mock Prisma for the fetcher
-          vi.mocked(prisma.legalDocument.findUnique).mockResolvedValue(
-            mockDocument as any
-          )
-          return fetcher()
-        }
+      // Mock getCachedDocument to return the document
+      vi.mocked(documentCache.getCachedDocument).mockResolvedValue(
+        mockCachedDoc as any
       )
 
       // Call the function
@@ -252,25 +267,20 @@ describe('legal-document-modal actions', () => {
     })
 
     it('should return error when document is not found', async () => {
-      // Mock cache to execute the fetcher which throws
-      vi.mocked(cacheStrategies.getCachedDocumentContent).mockImplementation(
-        async (_, fetcher) => {
-          vi.mocked(prisma.legalDocument.findUnique).mockResolvedValue(null)
-          return fetcher()
-        }
-      )
+      // Mock getCachedDocument to return null
+      vi.mocked(documentCache.getCachedDocument).mockResolvedValue(null)
 
       // Call the function
       const result = await getDocumentContent('non-existent')
 
       // Assertions
       expect(result.success).toBe(false)
-      expect(result.error).toBe('Kunde inte ladda dokumentinnehåll')
+      expect(result.error).toBe('Document not found')
     })
 
     it('should handle cache errors gracefully', async () => {
-      // Mock cache to throw an error
-      vi.mocked(cacheStrategies.getCachedDocumentContent).mockRejectedValue(
+      // Mock getCachedDocument to throw
+      vi.mocked(documentCache.getCachedDocument).mockRejectedValue(
         new Error('Cache connection failed')
       )
 

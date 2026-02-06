@@ -54,12 +54,15 @@ describe('ColumnSettings', () => {
     await waitFor(() => {
       expect(screen.getByText('Typ')).toBeInTheDocument()
       expect(screen.getByText('Dokument')).toBeInTheDocument()
-      expect(screen.getByText('Titel')).toBeInTheDocument()
-      expect(screen.getByText('Status')).toBeInTheDocument()
+      expect(screen.getByText('Efterlevnad')).toBeInTheDocument()
       expect(screen.getByText('Prioritet')).toBeInTheDocument()
       expect(screen.getByText('Deadline')).toBeInTheDocument()
       expect(screen.getByText('Tilldelad')).toBeInTheDocument()
+      expect(screen.getByText('Ansvarig')).toBeInTheDocument()
+      expect(screen.getByText('Uppgifter')).toBeInTheDocument()
+      expect(screen.getByText('Aktivitet')).toBeInTheDocument()
       expect(screen.getByText('Anteckningar')).toBeInTheDocument()
+      expect(screen.getByText('Grupp')).toBeInTheDocument()
       expect(screen.getByText('Tillagd')).toBeInTheDocument()
     })
   })
@@ -94,13 +97,16 @@ describe('ColumnSettings', () => {
     const onColumnVisibilityChange = vi.fn()
     const customVisibility = {
       type: false,
-      documentNumber: true,
       title: true,
-      status: false,
+      complianceStatus: false,
       priority: true,
       dueDate: true,
       assignee: true,
+      responsiblePerson: false,
+      taskProgress: false,
+      lastActivity: false,
       notes: true,
+      group: false,
       addedAt: true,
     }
     render(
@@ -157,14 +163,17 @@ describe('ColumnSettings', () => {
     // Verify default visibility matches story requirements
     expect(DEFAULT_COLUMN_VISIBILITY).toEqual({
       type: true,
-      documentNumber: true,
       title: true,
-      status: true,
+      complianceStatus: true,
       priority: true,
       dueDate: true,
-      assignee: false, // Hidden by default per story
-      notes: false, // Hidden by default per story
-      addedAt: false, // Hidden by default per story
+      assignee: false,
+      responsiblePerson: false,
+      taskProgress: false,
+      lastActivity: false,
+      notes: false,
+      group: false,
+      addedAt: false,
     })
   })
 })

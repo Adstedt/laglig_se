@@ -15,7 +15,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { 
+      use: {
         browserName: 'chromium',
         viewport: { width: 1920, height: 1080 },
       },

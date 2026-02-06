@@ -10,6 +10,7 @@ import { LeftSidebar } from '@/components/layout/left-sidebar'
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     push: vi.fn(),
     refresh: vi.fn(),
@@ -32,7 +33,7 @@ vi.mock('@/hooks/use-permissions', () => ({
 }))
 
 // Mock useWorkspace hook
-vi.mock('@/hooks/use-workspace', () => ({
+vi.mock('@/lib/hooks/use-workspace', () => ({
   useWorkspace: () => ({
     workspaceId: 'ws_1',
     workspaceName: 'Test Workspace',
@@ -45,11 +46,25 @@ vi.mock('@/hooks/use-workspace', () => ({
   }),
 }))
 
-// Mock fetch for workspace switcher
-global.fetch = vi.fn().mockResolvedValue({
-  ok: true,
-  json: () => Promise.resolve({ workspaces: [] }),
-})
+// Mock document list store
+vi.mock('@/lib/stores/document-list-store', () => ({
+  useDocumentListStore: () => ({
+    lists: [],
+    isLoadingLists: false,
+    fetchLists: vi.fn().mockResolvedValue([]),
+  }),
+}))
+
+// Mock child components to isolate sidebar tests
+vi.mock('@/components/layout/workspace-switcher', () => ({
+  WorkspaceSwitcher: () => (
+    <div data-testid="workspace-switcher">Workspace</div>
+  ),
+}))
+
+vi.mock('@/components/layout/trial-status-widget', () => ({
+  TrialStatusWidget: () => <div data-testid="trial-status">Trial</div>,
+}))
 
 describe('LeftSidebar', () => {
   beforeEach(() => {

@@ -243,18 +243,18 @@ Denna lag träder i kraft den 1 ${name} 2024.`
 
   describe('extractAllSfsReferences', () => {
     it('should extract all unique SFS references in Lag format', () => {
-      // Only extracts "Lag (YYYY:NNNN)" format
+      // Only extracts "Lag (YYYY:NNNN)" format, returns bare YYYY:NNNN without "SFS " prefix
       const text = `This law references Lag (2020:100) and also Lag (2021:200).
 Later it mentions Lag (2020:100) again and Lag (2022:300).`
 
       const result = extractAllSfsReferences(text)
 
-      expect(result).toContain('SFS 2020:100')
-      expect(result).toContain('SFS 2021:200')
-      expect(result).toContain('SFS 2022:300')
+      expect(result).toContain('2020:100')
+      expect(result).toContain('2021:200')
+      expect(result).toContain('2022:300')
 
       // Should be unique
-      expect(result.filter((s) => s === 'SFS 2020:100').length).toBe(1)
+      expect(result.filter((s) => s === '2020:100').length).toBe(1)
     })
 
     it('should only extract Lag format, not SFS format', () => {
@@ -263,9 +263,9 @@ Also see Lag (2020:200).`
 
       const result = extractAllSfsReferences(text)
 
-      // Should NOT include SFS format, only Lag format
-      expect(result).not.toContain('SFS 2020:100')
-      expect(result).toContain('SFS 2020:200')
+      // Should NOT include bare "SFS YYYY:NNNN" format references, only Lag (YYYY:NNNN)
+      expect(result).not.toContain('2020:100')
+      expect(result).toContain('2020:200')
       expect(result.length).toBe(1)
     })
 

@@ -124,8 +124,36 @@
 
 ---
 
-**Total Estimated Stories:** 78-96 across 10 epics
+## Epic 11: Admin Backoffice
 
-**Estimated Timeline:** 18 weeks (4.5 months) - aligns with 4-6 month MVP goal
+**Goal:** Provide an internal admin backoffice at `/admin` for the Laglig team to monitor the platform, manage customers and subscriptions, debug issues via user impersonation, and operate/monitor cron jobs with detailed execution logs.
+
+**Delivers:** Admin auth, admin shell layout, customer overview dashboard, workspace/user management, user impersonation with audit trail, cron job dashboard, job execution log persistence
+
+**Estimated stories:** 7
+
+**Note:** Brownfield enhancement. Internal tooling, not user-facing. Separate admin auth via `ADMIN_EMAILS` env var.
+
+---
+
+## Epic 12: Law List Templates & Standard Regulatory Packages
+
+**Goal:** Create a curated library of expert-quality law list templates that serve as both a browsable product catalog for users and the structured foundation for AI-assisted law list generation. Phase 1: 3 gold-standard domains (Arbetsmiljö, Arb. tjänsteföretag, Miljö) with 265 documents.
+
+**Delivers:** Template data model (LawListTemplate, TemplateSection, TemplateItem), ~130 agency regulation stub records, AI-generated compliance summaries and expert commentary, admin template management UI, public template catalog with browse/preview/adopt, refactored AI onboarding drawing from templates
+
+**Requirements covered:** FR2 (enhanced), FR3 (enhanced), FR4 (enhanced)
+
+**Estimated stories:** 12
+
+**Note:** Derived from Notisum competitive analysis (data/notisum-amnesfokus/analysis/). Stub records for agency regulations (AFS, BFS, NFS, etc.) unblock templates; full ingestion deferred to Epic 9. Tjänsteföretag variants modeled as filtered views. Depends on Epic 11 for admin shell.
+
+**Priority:** High - core product differentiator, enables conversion and content quality improvements.
+
+---
+
+**Total Estimated Stories:** 97-115 across 12 epics
+
+**Estimated Timeline:** 22-24 weeks - updated to include Epics 11 and 12
 
 ---

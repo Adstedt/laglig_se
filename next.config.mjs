@@ -60,7 +60,7 @@ const nextConfig = {
   serverActions: {
     bodySizeLimit: '25mb',
   },
-  
+
   // Story P.2: Image Optimization Configuration (AC: 19-21)
   images: {
     // Enable modern image formats
@@ -89,15 +89,18 @@ const nextConfig = {
     // Disable static imports for runtime optimization
     disableStaticImages: false,
   },
-  
+
   // Story P.2: Compiler optimizations (AC: 23)
   compiler: {
     // Remove console logs in production
-    removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'],
-    } : false,
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? {
+            exclude: ['error', 'warn'],
+          }
+        : false,
   },
-  
+
   // Story P.2: Bundle size optimizations
   webpack: (config, { isServer }) => {
     // Optimize bundle splitting
@@ -128,7 +131,7 @@ const nextConfig = {
     }
     return config
   },
-  
+
   experimental: {
     // Story P.2: Enable optimizeCss for smaller CSS bundles
     optimizeCss: true,

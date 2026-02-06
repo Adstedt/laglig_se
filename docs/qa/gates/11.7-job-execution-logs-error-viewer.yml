@@ -1,0 +1,44 @@
+schema: 1
+story: '11.7'
+story_title: 'Job Execution Logs & Error Viewer'
+gate: PASS
+status_reason: 'All 8 ACs implemented correctly with consistent patterns. 11 unit tests pass. Read-only views on existing data with no security concerns.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-03T23:26:00Z'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 90
+expires: '2026-02-17T23:26:00Z'
+
+evidence:
+  tests_reviewed: 11
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All pages protected by admin auth guard. Input validated against JOB_REGISTRY and Prisma. No raw SQL. No XSS vectors.'
+  performance:
+    status: PASS
+    notes: 'Parallel Promise.all queries. No N+1. Log viewer renders all lines (acceptable per story scope, virtualization available if needed).'
+  reliability:
+    status: PASS
+    notes: 'Graceful empty states for no data and non-instrumented jobs. notFound() for invalid params. Auto-refresh cleanup on unmount.'
+  maintainability:
+    status: CONCERNS
+    notes: 'StatusBadge and formatDuration duplicated across 3 files each. Consider extracting to shared utilities in future.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Extract StatusBadge to shared component (components/admin/status-badge.tsx)'
+      refs: ['components/admin/cron-job-card.tsx', 'app/admin/(dashboard)/cron-jobs/[jobName]/page.tsx', 'app/admin/(dashboard)/cron-jobs/[jobName]/[runId]/page.tsx']
+    - action: 'Extract formatDuration to shared utility (lib/admin/format-utils.ts)'
+      refs: ['app/admin/(dashboard)/cron-jobs/[jobName]/page.tsx', 'app/admin/(dashboard)/cron-jobs/[jobName]/[runId]/page.tsx', 'app/admin/(dashboard)/cron-jobs/errors/page.tsx']
+    - action: 'Add try/catch around navigator.clipboard.writeText() for non-HTTPS fallback'
+      refs: ['components/admin/log-viewer.tsx']

@@ -1118,3 +1118,48 @@ model ActivityLog {
   @@index([user_id])
   @@map("activity_logs")
 }
+
+// Admin audit trail for backoffice actions (impersonation, tier changes, etc.)
+model AdminAuditLog {
+  id          String   @id @default(uuid())
+  admin_email String
+  action      String // 'IMPERSONATION_START', 'IMPERSONATION_END', etc.
+  target_type String // 'USER', 'WORKSPACE', etc.
+  target_id   String
+  metadata    Json?
+  created_at  DateTime @default(now())
+
+  @@index([admin_email, created_at])
+  @@index([action])
+  @@map("admin_audit_logs")
+}
+
+// ============================================================================
+// CRON JOB TRACKING - Epic 11: Story 11.6
+// Persists execution history for cron jobs
+// ============================================================================
+
+model CronJobRun {
+  id              String       @id @default(uuid())
+  job_name        String
+  status          JobRunStatus @default(RUNNING)
+  started_at      DateTime     @default(now())
+  completed_at    DateTime?
+  duration_ms     Int?
+  items_processed Int          @default(0)
+  items_failed    Int          @default(0)
+  error_message   String?
+  error_stack     String?      @db.Text
+  log_output      String?      @db.Text
+  triggered_by    String?      // "cron" or admin email
+  metadata        Json?
+
+  @@index([job_name, started_at(sort: Desc)])
+  @@map("cron_job_runs")
+}
+
+enum JobRunStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
