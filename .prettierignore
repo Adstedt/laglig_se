@@ -16,6 +16,9 @@ docs/
 # generated
 prisma/migrations/
 
+# vendored/minified
+public/pdf.worker.min.mjs
+
 # misc
 *.lock
 pnpm-lock.yaml
