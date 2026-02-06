@@ -10,6 +10,9 @@ coverage/
 # data files (large JSON, HTML debug, CSV)
 data/
 
+# documentation (markdown, fonts, HTML)
+docs/
+
 # generated
 prisma/migrations/
 
