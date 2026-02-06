@@ -1,0 +1,53 @@
+schema: 1
+story: '12.epic'
+gate: PASS
+status_reason: 'All 9 concerns addressed in epic revision. Variant model clarified with explicit API contract, Story 12.7 split into 12.7a/12.7b/12.7c, stub visibility filtering added, state machine rules defined, metrics corrected, Miljö section restructuring specified, field mapping documented, and template update propagation added to Phase 2 roadmap.'
+reviewer: 'Quinn'
+updated: '2026-02-06T15:45:00Z'
+top_issues:
+  - id: 'ARCH-001'
+    severity: high
+    finding: 'Variant model ambiguity — resolved. Decision 2 rewritten with full API contract: variant is metadata-only LawListTemplate record that queries parent TemplateItem records at runtime with is_service_company_relevant=true filter. Catalog API returns variant with parent_template_id join.'
+    suggested_action: 'Resolved in epic revision — Decision 2 and Story 12.6 updated.'
+
+  - id: 'ARCH-002'
+    severity: medium
+    finding: 'Story 12.7 oversized — resolved. Split into 12.7a (Template list + detail CRUD, section management), 12.7b (Item content editor with review workflow, bulk actions, state machine), 12.7c (Cross-list overlap viewer).'
+    suggested_action: 'Resolved in epic revision — three separate stories created.'
+
+  - id: 'ARCH-003'
+    severity: medium
+    finding: 'Stub visibility in existing UI — resolved. AC #9 added to Story 12.1 requiring stub exclusion from public search/browse via content_type filter.'
+    suggested_action: 'Resolved in epic revision — Story 12.1 AC #9 added.'
+
+  - id: 'ARCH-004'
+    severity: medium
+    finding: 'Template vs item status state machine — resolved. Story 12.7b defines explicit transition rules: IN_REVIEW requires all items AI_GENERATED+, PUBLISHED requires all items AI_GENERATED+ (APPROVED aspirational, not blocking), regeneration after PUBLISHED reverts template to IN_REVIEW.'
+    suggested_action: 'Resolved in epic revision — Story 12.7b state machine defined.'
+
+  - id: 'REQ-001'
+    severity: medium
+    finding: 'Document coverage metric misleading — resolved. Changed to "265 template items across 3 templates (~188 unique documents)".'
+    suggested_action: 'Resolved in epic revision — Success Metrics updated.'
+
+  - id: 'REQ-002'
+    severity: medium
+    finding: 'Miljö section structure violations — resolved. Story 12.5 updated: Section 08 (Brandskydd, 2 docs) merged into Section 04 (Kemikalier och farliga ämnen). Section 09 (47 docs) split into 6 proposed sub-sections listed in AC.'
+    suggested_action: 'Resolved in epic revision — Story 12.5 ACs updated with specific restructuring.'
+
+  - id: 'REQ-003'
+    severity: low
+    finding: 'Field mapping semantic overload — resolved. Technical note added to Story 12.10 documenting that LawListItem.source=TEMPLATE distinguishes template-adopted items from ONBOARDING items, clarifying field semantics.'
+    suggested_action: 'Resolved in epic revision — Story 12.10 technical notes added.'
+
+  - id: 'DOC-001'
+    severity: low
+    finding: 'Story Block 6 reference — resolved. Corrected to "Story 12.11 (Story Block 5)".'
+    suggested_action: 'Resolved in epic revision — Related Epics section corrected.'
+
+  - id: 'REQ-004'
+    severity: low
+    finding: 'Template update propagation — resolved. Added "Deferred Feature: Template Update Propagation" to Phase 2 roadmap with prerequisite of template_id + template_version stored on adopted LawList metadata.'
+    suggested_action: 'Resolved in epic revision — Phase 2 roadmap updated.'
+
+waiver: { active: false }
