@@ -283,7 +283,10 @@ model LegalDocument {
   document_number  String                       @unique // "SFS 1977:1160", "NJA 2023 s. 45"
   title            String
   slug             String                       @unique
-  summary          String?                      @db.Text // AI-generated summary
+  summary          String?                      @db.Text // Summering — neutral description of what the law regulates
+  kommentar        String?                      @db.Text // Kommentar — actionable compliance commentary ("Vi ska..." voice)
+  summering_generated_by String?                       // Model identifier for summary generation (e.g., "claude-opus-4-6")
+  kommentar_generated_by String?                       // Model identifier for kommentar generation (e.g., "claude-opus-4-6")
   full_text        String?                      @db.Text // Plain text for RAG, search, embeddings
   html_content     String?                      @db.Text // SSOT - LLM-generated or API-sourced HTML for rendering
   markdown_content String?                      @db.Text // Derived from HTML - for Chat/RAG context

@@ -1,0 +1,56 @@
+schema: 1
+story: '12.3'
+story_title: 'Build Content Generation Pipeline (Summering + Kommentar)'
+gate: PASS
+status_reason: 'All 3 issues from initial CONCERNS review resolved. 55 passing tests, all 12 ACs met, tsc clean. Resume re-fetch fix (LOGIC-001), shared helper extraction (MAINT-002), and robust execution guard (MAINT-001) all verified.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-07T18:15:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-02-21T18:15:00Z'
+
+evidence:
+  tests_reviewed: 55
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No auth surface, CLI-only script, Prisma prevents injection, existing API key usage'
+  performance:
+    status: PASS
+    notes: 'Batch API 50% cost savings, default template-docs scope, --limit and --dry-run safety'
+  reliability:
+    status: PASS
+    notes: 'Per-document error handling, JSON parse fallbacks, transaction-wrapped DB updates, batch resumability with document re-fetch'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation of concerns, shared helpers, robust execution guard, exported functions for testability, follows existing patterns'
+
+resolved_issues:
+  - id: 'LOGIC-001'
+    severity: medium
+    finding: '--batch-id resume path skips hallucination validation silently because documentMap is empty when documents are not re-fetched'
+    resolution: 'Added document re-fetch block after Phase 1 when using --batch-id (lines 724-732)'
+    verified: true
+  - id: 'MAINT-001'
+    severity: low
+    finding: 'isDirectExecution guard relies on process.argv[1] string matching which is fragile'
+    resolution: 'Replaced with fileURLToPath(import.meta.url) === resolve(process.argv[1]) (lines 789-792)'
+    verified: true
+  - id: 'MAINT-002'
+    severity: low
+    finding: 'Hallucination validation JSON parsing duplicates markdown-stripping logic from parseGeneratedContent'
+    resolution: 'Extracted stripMarkdownCodeBlock() shared helper (lines 387-395), used in both parse paths, covered by 4 new tests'
+    verified: true
+
+recommendations:
+  immediate: []
+  future: []
