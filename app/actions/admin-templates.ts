@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 import { getAdminSession } from '@/lib/admin/auth'
+import { canTransitionTo } from '@/lib/admin/template-workflow'
 import { prisma } from '@/lib/prisma'
 
 // ============================================================================
@@ -25,6 +26,11 @@ const updateTemplateSchema = z.object({
   description: z.string().max(5000).optional(),
   target_audience: z.string().max(2000).optional(),
   primary_regulatory_bodies: z.array(z.string()).optional(),
+})
+
+const updateItemContentSchema = z.object({
+  compliance_summary: z.string().max(10000).optional(),
+  expert_commentary: z.string().max(20000).optional(),
 })
 
 const createSectionSchema = z.object({
@@ -360,6 +366,370 @@ export async function moveTemplateItem(
     })
 
     revalidatePath(`/admin/templates/${item.template_id}`)
+
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Update Template Item Content
+// ============================================================================
+
+export async function updateTemplateItemContent(
+  itemId: string,
+  data: { compliance_summary?: string; expert_commentary?: string }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getAdminSession()
+    if (!session) return { success: false, error: 'Ej autentiserad' }
+
+    const parsed = updateItemContentSchema.safeParse(data)
+    if (!parsed.success) return { success: false, error: 'Ogiltig indata' }
+
+    const item = await prisma.templateItem.findUnique({
+      where: { id: itemId },
+      select: { id: true, template_id: true },
+    })
+    if (!item) return { success: false, error: 'Objektet hittades inte' }
+
+    await prisma.templateItem.update({
+      where: { id: itemId },
+      data: {
+        ...(parsed.data.compliance_summary !== undefined
+          ? { compliance_summary: parsed.data.compliance_summary }
+          : {}),
+        ...(parsed.data.expert_commentary !== undefined
+          ? { expert_commentary: parsed.data.expert_commentary }
+          : {}),
+      },
+    })
+
+    revalidatePath(`/admin/templates/${item.template_id}/items/${itemId}`)
+    revalidatePath(`/admin/templates/${item.template_id}`)
+
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Review Template Item
+// ============================================================================
+
+export async function reviewTemplateItem(
+  itemId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getAdminSession()
+    if (!session) return { success: false, error: 'Ej autentiserad' }
+
+    const adminUser = await prisma.user.findFirst({
+      where: { email: session.email },
+      select: { id: true },
+    })
+    if (!adminUser)
+      return { success: false, error: 'Admin-användare hittades inte' }
+
+    const item = await prisma.templateItem.findUnique({
+      where: { id: itemId },
+      select: { id: true, template_id: true },
+    })
+    if (!item) return { success: false, error: 'Objektet hittades inte' }
+
+    await prisma.templateItem.update({
+      where: { id: itemId },
+      data: {
+        content_status: 'HUMAN_REVIEWED',
+        reviewed_by: adminUser.id,
+        reviewed_at: new Date(),
+      },
+    })
+
+    revalidatePath(`/admin/templates/${item.template_id}/items/${itemId}`)
+    revalidatePath(`/admin/templates/${item.template_id}`)
+
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Approve Template Item
+// ============================================================================
+
+export async function approveTemplateItem(
+  itemId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getAdminSession()
+    if (!session) return { success: false, error: 'Ej autentiserad' }
+
+    const item = await prisma.templateItem.findUnique({
+      where: { id: itemId },
+      select: { id: true, template_id: true },
+    })
+    if (!item) return { success: false, error: 'Objektet hittades inte' }
+
+    await prisma.templateItem.update({
+      where: { id: itemId },
+      data: {
+        content_status: 'APPROVED',
+      },
+    })
+
+    revalidatePath(`/admin/templates/${item.template_id}/items/${itemId}`)
+    revalidatePath(`/admin/templates/${item.template_id}`)
+
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Bulk Review Template Items
+// ============================================================================
+
+export async function bulkReviewTemplateItems(
+  templateId: string
+): Promise<{ success: boolean; error?: string; updatedCount?: number }> {
+  try {
+    const session = await getAdminSession()
+    if (!session) return { success: false, error: 'Ej autentiserad' }
+
+    const adminUser = await prisma.user.findFirst({
+      where: { email: session.email },
+      select: { id: true },
+    })
+    if (!adminUser)
+      return { success: false, error: 'Admin-användare hittades inte' }
+
+    const template = await prisma.lawListTemplate.findUnique({
+      where: { id: templateId },
+      select: { id: true },
+    })
+    if (!template) return { success: false, error: 'Mallen hittades inte' }
+
+    const itemsToReview = await prisma.templateItem.findMany({
+      where: { template_id: templateId, content_status: 'AI_GENERATED' },
+      select: { id: true },
+    })
+
+    if (itemsToReview.length === 0) {
+      return { success: true, updatedCount: 0 }
+    }
+
+    await prisma.$transaction(
+      itemsToReview.map((item) =>
+        prisma.templateItem.update({
+          where: { id: item.id },
+          data: {
+            content_status: 'HUMAN_REVIEWED',
+            reviewed_by: adminUser.id,
+            reviewed_at: new Date(),
+          },
+        })
+      )
+    )
+
+    revalidatePath(`/admin/templates/${templateId}`)
+
+    return { success: true, updatedCount: itemsToReview.length }
+  } catch {
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Bulk Regenerate Template Items
+// ============================================================================
+
+export async function bulkRegenerateTemplateItems(
+  templateId: string,
+  itemIds: string[]
+): Promise<{ success: boolean; error?: string; updatedCount?: number }> {
+  try {
+    const session = await getAdminSession()
+    if (!session) return { success: false, error: 'Ej autentiserad' }
+
+    const template = await prisma.lawListTemplate.findUnique({
+      where: { id: templateId },
+      select: { id: true },
+    })
+    if (!template) return { success: false, error: 'Mallen hittades inte' }
+
+    // Validate all items belong to this template
+    const items = await prisma.templateItem.findMany({
+      where: { id: { in: itemIds }, template_id: templateId },
+      select: { id: true },
+    })
+
+    if (items.length !== itemIds.length) {
+      return {
+        success: false,
+        error: 'Vissa objekt tillhör inte denna mall',
+      }
+    }
+
+    await prisma.templateItem.updateMany({
+      where: { id: { in: itemIds }, template_id: templateId },
+      data: {
+        content_status: 'STUB',
+        compliance_summary: null,
+        expert_commentary: null,
+        generated_by: null,
+        reviewed_by: null,
+        reviewed_at: null,
+      },
+    })
+
+    revalidatePath(`/admin/templates/${templateId}`)
+
+    return { success: true, updatedCount: items.length }
+  } catch {
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Submit Template for Review (DRAFT → IN_REVIEW)
+// ============================================================================
+
+export async function submitForReview(
+  templateId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getAdminSession()
+    if (!session) return { success: false, error: 'Ej autentiserad' }
+
+    const template = await prisma.lawListTemplate.findUnique({
+      where: { id: templateId },
+      select: { id: true, status: true },
+    })
+    if (!template) return { success: false, error: 'Mallen hittades inte' }
+
+    const itemStatuses = await prisma.templateItem.findMany({
+      where: { template_id: templateId },
+      select: { content_status: true },
+    })
+
+    const transition = canTransitionTo(
+      template.status,
+      'IN_REVIEW',
+      itemStatuses.map((i) => i.content_status)
+    )
+
+    if (!transition.allowed) {
+      return {
+        success: false,
+        error: transition.reason ?? 'Ogiltig statusövergång',
+      }
+    }
+
+    await prisma.lawListTemplate.update({
+      where: { id: templateId },
+      data: { status: 'IN_REVIEW' },
+    })
+
+    revalidatePath(`/admin/templates/${templateId}`)
+    revalidatePath('/admin/templates')
+
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Publish Template (IN_REVIEW → PUBLISHED)
+// ============================================================================
+
+export async function publishTemplate(
+  templateId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getAdminSession()
+    if (!session) return { success: false, error: 'Ej autentiserad' }
+
+    const template = await prisma.lawListTemplate.findUnique({
+      where: { id: templateId },
+      select: { id: true, status: true, version: true },
+    })
+    if (!template) return { success: false, error: 'Mallen hittades inte' }
+
+    const itemStatuses = await prisma.templateItem.findMany({
+      where: { template_id: templateId },
+      select: { content_status: true },
+    })
+
+    const transition = canTransitionTo(
+      template.status,
+      'PUBLISHED',
+      itemStatuses.map((i) => i.content_status)
+    )
+
+    if (!transition.allowed) {
+      return {
+        success: false,
+        error: transition.reason ?? 'Ogiltig statusövergång',
+      }
+    }
+
+    await prisma.lawListTemplate.update({
+      where: { id: templateId },
+      data: {
+        status: 'PUBLISHED',
+        version: template.version + 1,
+        published_at: new Date(),
+      },
+    })
+
+    revalidatePath(`/admin/templates/${templateId}`)
+    revalidatePath('/admin/templates')
+
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Archive Template (PUBLISHED → ARCHIVED)
+// ============================================================================
+
+export async function archiveTemplate(
+  templateId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await getAdminSession()
+    if (!session) return { success: false, error: 'Ej autentiserad' }
+
+    const template = await prisma.lawListTemplate.findUnique({
+      where: { id: templateId },
+      select: { id: true, status: true },
+    })
+    if (!template) return { success: false, error: 'Mallen hittades inte' }
+
+    const transition = canTransitionTo(template.status, 'ARCHIVED', [])
+
+    if (!transition.allowed) {
+      return {
+        success: false,
+        error: transition.reason ?? 'Ogiltig statusövergång',
+      }
+    }
+
+    await prisma.lawListTemplate.update({
+      where: { id: templateId },
+      data: { status: 'ARCHIVED' },
+    })
+
+    revalidatePath(`/admin/templates/${templateId}`)
+    revalidatePath('/admin/templates')
 
     return { success: true }
   } catch {

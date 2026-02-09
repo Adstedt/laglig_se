@@ -2,13 +2,31 @@
 
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import type { TemplateStatus } from '@prisma/client'
-import { useState } from 'react'
+import { AlertTriangle } from 'lucide-react'
+import type { TemplateItemContentStatus, TemplateStatus } from '@prisma/client'
+import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 
+import {
+  archiveTemplate,
+  bulkRegenerateTemplateItems,
+  bulkReviewTemplateItems,
+  publishTemplate,
+  submitForReview,
+} from '@/app/actions/admin-templates'
+import { TemplateContentStatus } from '@/components/admin/template-content-status'
 import { TemplateEditForm } from '@/components/admin/template-edit-form'
 import { TemplateSections } from '@/components/admin/template-sections'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { canTransitionTo } from '@/lib/admin/template-workflow'
 
 export interface TemplateDetailData {
   id: string
@@ -37,13 +55,148 @@ export interface TemplateDetailData {
 
 interface TemplateDetailClientProps {
   template: TemplateDetailData
+  contentStatusCounts: Record<string, number>
+  regeneratedSincePublishCount?: number | undefined
 }
 
-export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
+export function TemplateDetailClient({
+  template,
+  contentStatusCounts,
+  regeneratedSincePublishCount,
+}: TemplateDetailClientProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set())
+  const [isPending, startTransition] = useTransition()
+
+  const handleSelectionChange = (itemId: string, selected: boolean) => {
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev)
+      if (selected) next.add(itemId)
+      else next.delete(itemId)
+      return next
+    })
+  }
+
+  const handleBulkReview = () => {
+    startTransition(async () => {
+      const result = await bulkReviewTemplateItems(template.id)
+      if (result.success) {
+        toast.success(
+          `${result.updatedCount ?? 0} objekt markerade som granskade`
+        )
+      } else {
+        toast.error(result.error ?? 'Kunde inte markera objekt')
+      }
+    })
+  }
+
+  const handleBulkRegenerate = () => {
+    startTransition(async () => {
+      const result = await bulkRegenerateTemplateItems(template.id, [
+        ...selectedItemIds,
+      ])
+      if (result.success) {
+        toast.success(
+          `${result.updatedCount ?? 0} objekt markerade för regenerering`
+        )
+        setSelectedItemIds(new Set())
+      } else {
+        toast.error(result.error ?? 'Kunde inte regenerera objekt')
+      }
+    })
+  }
+
+  const handleSubmitForReview = () => {
+    startTransition(async () => {
+      const result = await submitForReview(template.id)
+      if (result.success) {
+        toast.success('Mall skickad till granskning')
+      } else {
+        toast.error(result.error ?? 'Kunde inte skicka till granskning')
+      }
+    })
+  }
+
+  const handlePublish = () => {
+    startTransition(async () => {
+      const result = await publishTemplate(template.id)
+      if (result.success) {
+        toast.success('Mall publicerad')
+      } else {
+        toast.error(result.error ?? 'Kunde inte publicera')
+      }
+    })
+  }
+
+  const handleArchive = () => {
+    startTransition(async () => {
+      const result = await archiveTemplate(template.id)
+      if (result.success) {
+        toast.success('Mall arkiverad')
+      } else {
+        toast.error(result.error ?? 'Kunde inte arkivera')
+      }
+    })
+  }
+
+  // Build item content_statuses array for transition validation
+  const itemContentStatuses: TemplateItemContentStatus[] = []
+  for (const [status, count] of Object.entries(contentStatusCounts)) {
+    for (let i = 0; i < count; i++) {
+      itemContentStatuses.push(status as TemplateItemContentStatus)
+    }
+  }
+
+  const aiGeneratedCount = contentStatusCounts['AI_GENERATED'] ?? 0
 
   return (
     <>
+      {/* Workflow Actions */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <WorkflowButtons
+          status={template.status}
+          itemContentStatuses={itemContentStatuses}
+          isPending={isPending}
+          onSubmitForReview={handleSubmitForReview}
+          onPublish={handlePublish}
+          onArchive={handleArchive}
+        />
+
+        {aiGeneratedCount > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBulkReview}
+            disabled={isPending}
+          >
+            Markera alla AI-genererade som granskade ({aiGeneratedCount})
+          </Button>
+        )}
+
+        {selectedItemIds.size > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBulkRegenerate}
+            disabled={isPending}
+          >
+            Regenerera valda ({selectedItemIds.size})
+          </Button>
+        )}
+
+        {regeneratedSincePublishCount != null &&
+          regeneratedSincePublishCount > 0 && (
+            <Badge
+              variant="outline"
+              className="border-yellow-400 text-yellow-700"
+            >
+              <AlertTriangle className="mr-1 h-3 w-3" />
+              {regeneratedSincePublishCount} objekt åter-genererade sedan
+              senaste publicering
+            </Badge>
+          )}
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Template Metadata */}
         <Card>
@@ -139,6 +292,13 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
               </CardContent>
             </Card>
           </div>
+
+          {/* Content Status Dashboard */}
+          <TemplateContentStatus
+            counts={
+              contentStatusCounts as Record<TemplateItemContentStatus, number>
+            }
+          />
         </div>
       </div>
 
@@ -147,9 +307,102 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
         templateId={template.id}
         sections={template.sections}
         totalDocs={template.document_count}
+        selectedItemIds={selectedItemIds}
+        onSelectionChange={handleSelectionChange}
       />
     </>
   )
+}
+
+function WorkflowButtons({
+  status,
+  itemContentStatuses,
+  isPending,
+  onSubmitForReview,
+  onPublish,
+  onArchive,
+}: {
+  status: TemplateStatus
+  itemContentStatuses: TemplateItemContentStatus[]
+  isPending: boolean
+  onSubmitForReview: () => void
+  onPublish: () => void
+  onArchive: () => void
+}) {
+  if (status === 'DRAFT') {
+    const transition = canTransitionTo(
+      'DRAFT',
+      'IN_REVIEW',
+      itemContentStatuses
+    )
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>
+              <Button
+                size="sm"
+                onClick={onSubmitForReview}
+                disabled={isPending || !transition.allowed}
+              >
+                Skicka till granskning
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {!transition.allowed && (
+            <TooltipContent>
+              <p>{transition.reason}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
+  if (status === 'IN_REVIEW') {
+    const transition = canTransitionTo(
+      'IN_REVIEW',
+      'PUBLISHED',
+      itemContentStatuses
+    )
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span>
+              <Button
+                size="sm"
+                onClick={onPublish}
+                disabled={isPending || !transition.allowed}
+              >
+                Publicera
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {!transition.allowed && (
+            <TooltipContent>
+              <p>{transition.reason}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
+    )
+  }
+
+  if (status === 'PUBLISHED') {
+    return (
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={onArchive}
+        disabled={isPending}
+      >
+        Arkivera
+      </Button>
+    )
+  }
+
+  return null
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {

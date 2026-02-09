@@ -1,10 +1,13 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 
 import { moveTemplateItem } from '@/app/actions/admin-templates'
+import { ContentStatusBadge } from '@/components/admin/content-status-badge'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -20,12 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  CONTENT_STATUS_LABELS,
-  CONTENT_STATUS_VARIANT,
-} from '@/lib/admin/constants'
 import type { TemplateSectionItem } from '@/lib/admin/template-queries'
-import type { TemplateItemContentStatus } from '@prisma/client'
 
 export interface SectionOption {
   id: string
@@ -36,11 +34,18 @@ interface TemplateSectionItemsProps {
   sectionId: string
   templateId: string
   availableSections?: SectionOption[]
+  selectedItemIds?: Set<string> | undefined
+  onSelectionChange?:
+    | ((_itemId: string, _selected: boolean) => void)
+    | undefined
 }
 
 export function TemplateSectionItems({
   sectionId,
+  templateId,
   availableSections = [],
+  selectedItemIds,
+  onSelectionChange,
 }: TemplateSectionItemsProps) {
   const [items, setItems] = useState<TemplateSectionItem[] | null>(null)
   const [loading, setLoading] = useState(true)
@@ -113,6 +118,7 @@ export function TemplateSectionItems({
     <Table>
       <TableHeader>
         <TableRow>
+          {onSelectionChange && <TableHead className="w-10" />}
           <TableHead>Dokument</TableHead>
           <TableHead>SFS/AFS</TableHead>
           <TableHead>Källa</TableHead>
@@ -124,8 +130,24 @@ export function TemplateSectionItems({
       <TableBody>
         {items.map((item) => (
           <TableRow key={item.id}>
+            {onSelectionChange && (
+              <TableCell>
+                <Checkbox
+                  checked={selectedItemIds?.has(item.id) ?? false}
+                  onCheckedChange={(checked) =>
+                    onSelectionChange(item.id, !!checked)
+                  }
+                  aria-label={`Välj ${item.document.title}`}
+                />
+              </TableCell>
+            )}
             <TableCell className="font-medium max-w-[200px] truncate">
-              {item.document.title}
+              <Link
+                href={`/admin/templates/${templateId}/items/${item.id}`}
+                className="hover:underline"
+              >
+                {item.document.title}
+              </Link>
             </TableCell>
             <TableCell className="text-sm text-muted-foreground">
               {item.document.document_number ?? '—'}
@@ -174,21 +196,5 @@ export function TemplateSectionItems({
         ))}
       </TableBody>
     </Table>
-  )
-}
-
-function ContentStatusBadge({ status }: { status: TemplateItemContentStatus }) {
-  const variant = CONTENT_STATUS_VARIANT[status]
-  const label = CONTENT_STATUS_LABELS[status]
-
-  return (
-    <Badge
-      variant={variant}
-      className={
-        status === 'APPROVED' ? 'bg-green-100 text-green-800' : undefined
-      }
-    >
-      {label}
-    </Badge>
   )
 }

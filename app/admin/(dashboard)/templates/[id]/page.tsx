@@ -8,7 +8,11 @@ import {
   TEMPLATE_STATUS_LABELS,
   TEMPLATE_STATUS_VARIANT,
 } from '@/lib/admin/constants'
-import { getTemplateDetail } from '@/lib/admin/template-queries'
+import {
+  getTemplateContentStatusCounts,
+  getTemplateDetail,
+} from '@/lib/admin/template-queries'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,9 +22,24 @@ export default async function TemplateDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const template = await getTemplateDetail(id)
+  const [template, contentStatusCounts] = await Promise.all([
+    getTemplateDetail(id),
+    getTemplateContentStatusCounts(id),
+  ])
 
   if (!template) notFound()
+
+  // Post-publish regeneration warning
+  let regeneratedSincePublishCount: number | undefined
+  if (template.status === 'PUBLISHED' && template.published_at) {
+    regeneratedSincePublishCount = await prisma.templateItem.count({
+      where: {
+        template_id: id,
+        content_status: 'AI_GENERATED',
+        updated_at: { gt: template.published_at },
+      },
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -80,6 +99,8 @@ export default async function TemplateDetailPage({
             item_count: s.item_count,
           })),
         }}
+        contentStatusCounts={contentStatusCounts}
+        regeneratedSincePublishCount={regeneratedSincePublishCount}
       />
     </div>
   )

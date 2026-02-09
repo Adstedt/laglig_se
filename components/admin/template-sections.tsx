@@ -77,6 +77,10 @@ interface TemplateSectionsProps {
   templateId: string
   sections: SectionData[]
   totalDocs: number
+  selectedItemIds?: Set<string> | undefined
+  onSelectionChange?:
+    | ((_itemId: string, _selected: boolean) => void)
+    | undefined
 }
 
 const MIN_DOCS_PER_SECTION = 3
@@ -105,6 +109,8 @@ export function TemplateSections({
   templateId,
   sections: initialSections,
   totalDocs,
+  selectedItemIds,
+  onSelectionChange,
 }: TemplateSectionsProps) {
   const router = useRouter()
   const dndId = useId()
@@ -231,6 +237,8 @@ export function TemplateSections({
                       id: s.id,
                       name: s.name,
                     }))}
+                    selectedItemIds={selectedItemIds}
+                    onSelectionChange={onSelectionChange}
                   />
                 ))}
               </div>
@@ -294,6 +302,8 @@ function SortableSectionItem({
   isPending,
   templateId,
   allSections,
+  selectedItemIds,
+  onSelectionChange,
 }: {
   section: SectionData
   totalDocs: number
@@ -303,6 +313,10 @@ function SortableSectionItem({
   isPending: boolean
   templateId: string
   allSections: { id: string; name: string }[]
+  selectedItemIds?: Set<string> | undefined
+  onSelectionChange?:
+    | ((_itemId: string, _selected: boolean) => void)
+    | undefined
 }) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [editedName, setEditedName] = useState(section.name)
@@ -453,6 +467,8 @@ function SortableSectionItem({
             sectionId={section.id}
             templateId={templateId}
             availableSections={allSections}
+            selectedItemIds={selectedItemIds}
+            onSelectionChange={onSelectionChange}
           />
         </div>
       )}

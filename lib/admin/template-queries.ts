@@ -82,6 +82,47 @@ export interface TemplateSectionItem {
   }
 }
 
+export interface TemplateItemDetail {
+  id: string
+  index: string
+  position: number
+  compliance_summary: string | null
+  expert_commentary: string | null
+  content_status: TemplateItemContentStatus
+  source_type: string | null
+  regulatory_body: string | null
+  last_amendment: string | null
+  replaces_old_reference: string | null
+  is_service_company_relevant: boolean
+  generated_by: string | null
+  reviewed_by: string | null
+  reviewer: { name: string | null } | null
+  reviewed_at: Date | null
+  created_at: Date
+  updated_at: Date
+  document: {
+    title: string
+    document_number: string | null
+    slug: string
+  }
+  section: {
+    id: string
+    name: string
+    section_number: string
+  }
+  template: {
+    id: string
+    name: string
+  }
+}
+
+export interface AdjacentItems {
+  previousId: string | null
+  previousTitle: string | null
+  nextId: string | null
+  nextTitle: string | null
+}
+
 // ============================================================================
 // Queries
 // ============================================================================
@@ -205,4 +246,99 @@ export async function getTemplateSectionItems(
       },
     },
   })
+}
+
+export async function getTemplateItemDetail(
+  itemId: string
+): Promise<TemplateItemDetail | null> {
+  return prisma.templateItem.findUnique({
+    where: { id: itemId },
+    select: {
+      id: true,
+      index: true,
+      position: true,
+      compliance_summary: true,
+      expert_commentary: true,
+      content_status: true,
+      source_type: true,
+      regulatory_body: true,
+      last_amendment: true,
+      replaces_old_reference: true,
+      is_service_company_relevant: true,
+      generated_by: true,
+      reviewed_by: true,
+      reviewer: { select: { name: true } },
+      reviewed_at: true,
+      created_at: true,
+      updated_at: true,
+      document: {
+        select: {
+          title: true,
+          document_number: true,
+          slug: true,
+        },
+      },
+      section: {
+        select: {
+          id: true,
+          name: true,
+          section_number: true,
+        },
+      },
+      template: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  })
+}
+
+export async function getAdjacentItems(
+  sectionId: string,
+  currentPosition: number
+): Promise<AdjacentItems> {
+  const [previous, next] = await Promise.all([
+    prisma.templateItem.findFirst({
+      where: { section_id: sectionId, position: { lt: currentPosition } },
+      orderBy: { position: 'desc' },
+      select: { id: true, document: { select: { title: true } } },
+    }),
+    prisma.templateItem.findFirst({
+      where: { section_id: sectionId, position: { gt: currentPosition } },
+      orderBy: { position: 'asc' },
+      select: { id: true, document: { select: { title: true } } },
+    }),
+  ])
+
+  return {
+    previousId: previous?.id ?? null,
+    previousTitle: previous?.document.title ?? null,
+    nextId: next?.id ?? null,
+    nextTitle: next?.document.title ?? null,
+  }
+}
+
+export async function getTemplateContentStatusCounts(
+  templateId: string
+): Promise<Record<TemplateItemContentStatus, number>> {
+  const groups = await prisma.templateItem.groupBy({
+    by: ['content_status'],
+    where: { template_id: templateId },
+    _count: true,
+  })
+
+  const counts: Record<TemplateItemContentStatus, number> = {
+    STUB: 0,
+    AI_GENERATED: 0,
+    HUMAN_REVIEWED: 0,
+    APPROVED: 0,
+  }
+
+  for (const group of groups) {
+    counts[group.content_status] = group._count
+  }
+
+  return counts
 }

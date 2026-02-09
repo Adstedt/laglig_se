@@ -24,7 +24,10 @@ vi.mock('@/lib/prisma', () => ({
     },
     templateItem: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
+      count: vi.fn(),
     },
     $transaction: vi.fn(),
   },
@@ -44,6 +47,14 @@ import {
   reorderTemplateSections,
   deleteTemplateSection,
   moveTemplateItem,
+  updateTemplateItemContent,
+  reviewTemplateItem,
+  approveTemplateItem,
+  bulkReviewTemplateItems,
+  bulkRegenerateTemplateItems,
+  submitForReview,
+  publishTemplate,
+  archiveTemplate,
 } from '@/app/actions/admin-templates'
 
 const mockGetAdminSession = vi.mocked(getAdminSession)
@@ -449,6 +460,283 @@ describe('admin-templates server actions', () => {
       expect(mockPrisma.templateItem.update).toHaveBeenCalledWith({
         where: { id: 'item-1' },
         data: { section_id: 'sec-2' },
+      })
+    })
+  })
+
+  // ==========================================================================
+  // New actions for Story 12.7b
+  // ==========================================================================
+
+  describe('updateTemplateItemContent', () => {
+    it('saves compliance_summary and expert_commentary', async () => {
+      mockPrisma.templateItem.findUnique.mockResolvedValue({
+        id: 'item-1',
+        template_id: 'tmpl-1',
+      } as never)
+      mockPrisma.templateItem.update.mockResolvedValue({} as never)
+
+      const result = await updateTemplateItemContent('item-1', {
+        compliance_summary: 'Updated summary',
+        expert_commentary: 'Updated commentary',
+      })
+
+      expect(result).toEqual({ success: true })
+      expect(mockPrisma.templateItem.update).toHaveBeenCalledWith({
+        where: { id: 'item-1' },
+        data: {
+          compliance_summary: 'Updated summary',
+          expert_commentary: 'Updated commentary',
+        },
+      })
+    })
+
+    it('returns error if item not found', async () => {
+      mockPrisma.templateItem.findUnique.mockResolvedValue(null as never)
+
+      const result = await updateTemplateItemContent('nonexistent', {
+        compliance_summary: 'Test',
+      })
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Objektet hittades inte',
+      })
+    })
+  })
+
+  describe('reviewTemplateItem', () => {
+    it('sets content_status, reviewed_by, and reviewed_at', async () => {
+      mockPrisma.templateItem.findUnique.mockResolvedValue({
+        id: 'item-1',
+        template_id: 'tmpl-1',
+      } as never)
+      mockPrisma.templateItem.update.mockResolvedValue({} as never)
+
+      const result = await reviewTemplateItem('item-1')
+
+      expect(result).toEqual({ success: true })
+      expect(mockPrisma.templateItem.update).toHaveBeenCalledWith({
+        where: { id: 'item-1' },
+        data: {
+          content_status: 'HUMAN_REVIEWED',
+          reviewed_by: 'admin-user-1',
+          reviewed_at: expect.any(Date),
+        },
+      })
+    })
+  })
+
+  describe('approveTemplateItem', () => {
+    it('sets content_status to APPROVED', async () => {
+      mockPrisma.templateItem.findUnique.mockResolvedValue({
+        id: 'item-1',
+        template_id: 'tmpl-1',
+      } as never)
+      mockPrisma.templateItem.update.mockResolvedValue({} as never)
+
+      const result = await approveTemplateItem('item-1')
+
+      expect(result).toEqual({ success: true })
+      expect(mockPrisma.templateItem.update).toHaveBeenCalledWith({
+        where: { id: 'item-1' },
+        data: { content_status: 'APPROVED' },
+      })
+    })
+  })
+
+  describe('bulkReviewTemplateItems', () => {
+    it('updates all AI_GENERATED items', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+      } as never)
+      mockPrisma.templateItem.findMany.mockResolvedValue([
+        { id: 'item-1' },
+        { id: 'item-2' },
+      ] as never)
+      mockPrisma.$transaction.mockResolvedValue([{}, {}] as never)
+
+      const result = await bulkReviewTemplateItems('tmpl-1')
+
+      expect(result).toEqual({ success: true, updatedCount: 2 })
+      expect(mockPrisma.templateItem.findMany).toHaveBeenCalledWith({
+        where: { template_id: 'tmpl-1', content_status: 'AI_GENERATED' },
+        select: { id: true },
+      })
+    })
+
+    it('returns 0 count when no items to review', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+      } as never)
+      mockPrisma.templateItem.findMany.mockResolvedValue([] as never)
+
+      const result = await bulkReviewTemplateItems('tmpl-1')
+
+      expect(result).toEqual({ success: true, updatedCount: 0 })
+    })
+  })
+
+  describe('bulkRegenerateTemplateItems', () => {
+    it('resets selected items to STUB', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+      } as never)
+      mockPrisma.templateItem.findMany.mockResolvedValue([
+        { id: 'item-1' },
+        { id: 'item-2' },
+      ] as never)
+      mockPrisma.templateItem.updateMany.mockResolvedValue({
+        count: 2,
+      } as never)
+
+      const result = await bulkRegenerateTemplateItems('tmpl-1', [
+        'item-1',
+        'item-2',
+      ])
+
+      expect(result).toEqual({ success: true, updatedCount: 2 })
+      expect(mockPrisma.templateItem.updateMany).toHaveBeenCalledWith({
+        where: { id: { in: ['item-1', 'item-2'] }, template_id: 'tmpl-1' },
+        data: {
+          content_status: 'STUB',
+          compliance_summary: null,
+          expert_commentary: null,
+          generated_by: null,
+          reviewed_by: null,
+          reviewed_at: null,
+        },
+      })
+    })
+
+    it('returns error when items do not belong to template', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+      } as never)
+      mockPrisma.templateItem.findMany.mockResolvedValue([
+        { id: 'item-1' },
+      ] as never) // only 1 found, 2 requested
+
+      const result = await bulkRegenerateTemplateItems('tmpl-1', [
+        'item-1',
+        'item-3',
+      ])
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Vissa objekt tillhör inte denna mall',
+      })
+    })
+  })
+
+  describe('submitForReview', () => {
+    it('transitions DRAFT → IN_REVIEW when no STUB items', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+        status: 'DRAFT',
+      } as never)
+      mockPrisma.templateItem.findMany.mockResolvedValue([
+        { content_status: 'AI_GENERATED' },
+      ] as never)
+      mockPrisma.lawListTemplate.update.mockResolvedValue({} as never)
+
+      const result = await submitForReview('tmpl-1')
+
+      expect(result).toEqual({ success: true })
+      expect(mockPrisma.lawListTemplate.update).toHaveBeenCalledWith({
+        where: { id: 'tmpl-1' },
+        data: { status: 'IN_REVIEW' },
+      })
+    })
+
+    it('returns error when STUB items exist', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+        status: 'DRAFT',
+      } as never)
+      mockPrisma.templateItem.findMany.mockResolvedValue([
+        { content_status: 'AI_GENERATED' },
+        { content_status: 'STUB' },
+      ] as never)
+
+      const result = await submitForReview('tmpl-1')
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Alla objekt måste ha minst AI-genererat innehåll',
+      })
+    })
+
+    it('returns error when template has 0 items', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+        status: 'DRAFT',
+      } as never)
+      mockPrisma.templateItem.findMany.mockResolvedValue([] as never)
+
+      const result = await submitForReview('tmpl-1')
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Mallen måste innehålla minst ett objekt',
+      })
+    })
+  })
+
+  describe('publishTemplate', () => {
+    it('increments version and sets published_at', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+        status: 'IN_REVIEW',
+        version: 1,
+      } as never)
+      mockPrisma.templateItem.findMany.mockResolvedValue([
+        { content_status: 'AI_GENERATED' },
+      ] as never)
+      mockPrisma.lawListTemplate.update.mockResolvedValue({} as never)
+
+      const result = await publishTemplate('tmpl-1')
+
+      expect(result).toEqual({ success: true })
+      expect(mockPrisma.lawListTemplate.update).toHaveBeenCalledWith({
+        where: { id: 'tmpl-1' },
+        data: {
+          status: 'PUBLISHED',
+          version: 2,
+          published_at: expect.any(Date),
+        },
+      })
+    })
+  })
+
+  describe('archiveTemplate', () => {
+    it('transitions PUBLISHED → ARCHIVED', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+        status: 'PUBLISHED',
+      } as never)
+      mockPrisma.lawListTemplate.update.mockResolvedValue({} as never)
+
+      const result = await archiveTemplate('tmpl-1')
+
+      expect(result).toEqual({ success: true })
+      expect(mockPrisma.lawListTemplate.update).toHaveBeenCalledWith({
+        where: { id: 'tmpl-1' },
+        data: { status: 'ARCHIVED' },
+      })
+    })
+
+    it('returns error for invalid transition', async () => {
+      mockPrisma.lawListTemplate.findUnique.mockResolvedValue({
+        id: 'tmpl-1',
+        status: 'DRAFT',
+      } as never)
+
+      const result = await archiveTemplate('tmpl-1')
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Ogiltig statusövergång',
       })
     })
   })
