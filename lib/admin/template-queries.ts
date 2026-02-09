@@ -123,6 +123,25 @@ export interface AdjacentItems {
   nextTitle: string | null
 }
 
+export interface TemplateOverlapEntry {
+  templateId: string
+  templateName: string
+  templateSlug: string
+  itemId: string
+  compliance_summary: string | null
+  expert_commentary: string | null
+  content_status: TemplateItemContentStatus
+}
+
+export interface TemplateOverlapItem {
+  documentId: string
+  documentTitle: string
+  documentNumber: string | null
+  templateCount: number
+  entries: TemplateOverlapEntry[]
+  isInconsistent: boolean
+}
+
 // ============================================================================
 // Queries
 // ============================================================================
@@ -341,4 +360,104 @@ export async function getTemplateContentStatusCounts(
   }
 
   return counts
+}
+
+export async function getTemplateOverlap(): Promise<TemplateOverlapItem[]> {
+  // Step 1: Find document_ids that appear in 2+ templates
+  const groups = await prisma.templateItem.groupBy({
+    by: ['document_id'],
+    _count: { template_id: true },
+    having: { template_id: { _count: { gte: 2 } } },
+  })
+
+  if (groups.length === 0) return []
+
+  const overlappingDocIds = groups.map((g) => g.document_id)
+
+  // Step 2: Fetch full item details for overlapping documents
+  const items = await prisma.templateItem.findMany({
+    where: { document_id: { in: overlappingDocIds } },
+    select: {
+      id: true,
+      document_id: true,
+      compliance_summary: true,
+      expert_commentary: true,
+      content_status: true,
+      template: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      document: {
+        select: {
+          id: true,
+          title: true,
+          document_number: true,
+        },
+      },
+    },
+  })
+
+  // Step 3: Group by document and compute inconsistency
+  const docMap = new Map<
+    string,
+    {
+      documentTitle: string
+      documentNumber: string | null
+      entries: TemplateOverlapEntry[]
+    }
+  >()
+
+  for (const item of items) {
+    let group = docMap.get(item.document_id)
+    if (!group) {
+      group = {
+        documentTitle: item.document.title,
+        documentNumber: item.document.document_number,
+        entries: [],
+      }
+      docMap.set(item.document_id, group)
+    }
+    group.entries.push({
+      templateId: item.template.id,
+      templateName: item.template.name,
+      templateSlug: item.template.slug,
+      itemId: item.id,
+      compliance_summary: item.compliance_summary,
+      expert_commentary: item.expert_commentary,
+      content_status: item.content_status,
+    })
+  }
+
+  // Step 4: Build result array
+  const result: TemplateOverlapItem[] = []
+
+  for (const [documentId, group] of docMap) {
+    // Only include documents that actually have 2+ distinct templates
+    const uniqueTemplates = new Set(group.entries.map((e) => e.templateId))
+    if (uniqueTemplates.size < 2) continue
+
+    const summaries = group.entries.map((e) => e.compliance_summary)
+    const isInconsistent = new Set(summaries).size > 1
+
+    result.push({
+      documentId,
+      documentTitle: group.documentTitle,
+      documentNumber: group.documentNumber,
+      templateCount: uniqueTemplates.size,
+      entries: group.entries,
+      isInconsistent,
+    })
+  }
+
+  // Sort by templateCount desc, then documentTitle asc
+  result.sort((a, b) => {
+    if (b.templateCount !== a.templateCount)
+      return b.templateCount - a.templateCount
+    return a.documentTitle.localeCompare(b.documentTitle, 'sv')
+  })
+
+  return result
 }

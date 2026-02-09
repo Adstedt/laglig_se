@@ -24,6 +24,7 @@ vi.mock('@/lib/prisma', () => ({
     },
     templateItem: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
       findMany: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
@@ -55,6 +56,7 @@ import {
   submitForReview,
   publishTemplate,
   archiveTemplate,
+  syncTemplateSummaries,
 } from '@/app/actions/admin-templates'
 
 const mockGetAdminSession = vi.mocked(getAdminSession)
@@ -738,6 +740,106 @@ describe('admin-templates server actions', () => {
         success: false,
         error: 'Ogiltig statusövergång',
       })
+    })
+  })
+
+  // ==========================================================================
+  // syncTemplateSummaries (Story 12.7c)
+  // ==========================================================================
+
+  describe('syncTemplateSummaries', () => {
+    const validInput = {
+      documentId: '550e8400-e29b-41d4-a716-446655440000',
+      sourceTemplateId: '550e8400-e29b-41d4-a716-446655440001',
+      targetTemplateIds: ['550e8400-e29b-41d4-a716-446655440002'],
+    }
+
+    it('returns error when not authenticated', async () => {
+      mockGetAdminSession.mockResolvedValue(null)
+
+      const result = await syncTemplateSummaries(validInput)
+
+      expect(result).toEqual({ success: false, error: 'Ej autentiserad' })
+    })
+
+    it('copies compliance_summary and expert_commentary from source to target', async () => {
+      mockPrisma.templateItem.findFirst.mockResolvedValue({
+        id: 'source-item',
+        compliance_summary: 'Source summary',
+        expert_commentary: 'Source commentary',
+        content_status: 'AI_GENERATED',
+      } as never)
+
+      mockPrisma.templateItem.findMany.mockResolvedValue([
+        { id: 'target-item', template_id: validInput.targetTemplateIds[0] },
+      ] as never)
+
+      mockPrisma.$transaction.mockResolvedValue([{}] as never)
+
+      const result = await syncTemplateSummaries(validInput)
+
+      expect(result).toEqual({ success: true, updatedCount: 1 })
+    })
+
+    it('updates content_status on target items', async () => {
+      mockPrisma.templateItem.findFirst.mockResolvedValue({
+        id: 'source-item',
+        compliance_summary: 'Summary',
+        expert_commentary: null,
+        content_status: 'HUMAN_REVIEWED',
+      } as never)
+
+      mockPrisma.templateItem.findMany.mockResolvedValue([
+        { id: 'target-item', template_id: validInput.targetTemplateIds[0] },
+      ] as never)
+
+      mockPrisma.$transaction.mockResolvedValue([{}] as never)
+
+      const result = await syncTemplateSummaries(validInput)
+
+      expect(result).toEqual({ success: true, updatedCount: 1 })
+      // Verify transaction was called with update containing content_status
+      expect(mockPrisma.$transaction).toHaveBeenCalled()
+    })
+
+    it('returns error if source item not found', async () => {
+      mockPrisma.templateItem.findFirst.mockResolvedValue(null as never)
+
+      const result = await syncTemplateSummaries(validInput)
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Källobjektet hittades inte',
+      })
+    })
+
+    it('returns error if target items do not exist', async () => {
+      mockPrisma.templateItem.findFirst.mockResolvedValue({
+        id: 'source-item',
+        compliance_summary: 'Summary',
+        expert_commentary: null,
+        content_status: 'AI_GENERATED',
+      } as never)
+
+      // Return empty array — no target items found
+      mockPrisma.templateItem.findMany.mockResolvedValue([] as never)
+
+      const result = await syncTemplateSummaries(validInput)
+
+      expect(result).toEqual({
+        success: false,
+        error: 'Vissa målobjekt hittades inte',
+      })
+    })
+
+    it('returns error for invalid input', async () => {
+      const result = await syncTemplateSummaries({
+        documentId: 'not-a-uuid',
+        sourceTemplateId: 'not-a-uuid',
+        targetTemplateIds: [],
+      })
+
+      expect(result).toEqual({ success: false, error: 'Ogiltig indata' })
     })
   })
 })

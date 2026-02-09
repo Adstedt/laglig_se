@@ -11,6 +11,12 @@ import { prisma } from '@/lib/prisma'
 // Schemas
 // ============================================================================
 
+const syncSummariesSchema = z.object({
+  documentId: z.string().uuid(),
+  sourceTemplateId: z.string().uuid(),
+  targetTemplateIds: z.array(z.string().uuid()).min(1),
+})
+
 const createTemplateSchema = z.object({
   name: z.string().min(1, 'Namn krävs').max(200),
   slug: z.string().min(1, 'Slug krävs').max(200),
@@ -732,6 +738,73 @@ export async function archiveTemplate(
     revalidatePath('/admin/templates')
 
     return { success: true }
+  } catch {
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Sync Template Summaries (Cross-List Overlap)
+// ============================================================================
+
+export async function syncTemplateSummaries(
+  data: z.infer<typeof syncSummariesSchema>
+): Promise<{ success: boolean; error?: string; updatedCount?: number }> {
+  try {
+    const session = await getAdminSession()
+    if (!session) return { success: false, error: 'Ej autentiserad' }
+
+    const parsed = syncSummariesSchema.safeParse(data)
+    if (!parsed.success) return { success: false, error: 'Ogiltig indata' }
+
+    const { documentId, sourceTemplateId, targetTemplateIds } = parsed.data
+
+    // Find source item
+    const sourceItem = await prisma.templateItem.findFirst({
+      where: { document_id: documentId, template_id: sourceTemplateId },
+      select: {
+        id: true,
+        compliance_summary: true,
+        expert_commentary: true,
+        content_status: true,
+      },
+    })
+    if (!sourceItem)
+      return { success: false, error: 'Källobjektet hittades inte' }
+
+    // Find target items
+    const targetItems = await prisma.templateItem.findMany({
+      where: {
+        document_id: documentId,
+        template_id: { in: targetTemplateIds },
+      },
+      select: { id: true, template_id: true },
+    })
+
+    if (targetItems.length !== targetTemplateIds.length) {
+      return { success: false, error: 'Vissa målobjekt hittades inte' }
+    }
+
+    // Update all targets in a transaction
+    await prisma.$transaction(
+      targetItems.map((target) =>
+        prisma.templateItem.update({
+          where: { id: target.id },
+          data: {
+            compliance_summary: sourceItem.compliance_summary,
+            expert_commentary: sourceItem.expert_commentary,
+            content_status: sourceItem.content_status,
+          },
+        })
+      )
+    )
+
+    revalidatePath('/admin/templates/overlap')
+    for (const target of targetItems) {
+      revalidatePath(`/admin/templates/${target.template_id}`)
+    }
+
+    return { success: true, updatedCount: targetItems.length }
   } catch {
     return { success: false, error: 'Ett oväntat fel uppstod' }
   }

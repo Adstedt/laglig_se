@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { TemplateTable } from '@/components/admin/template-table'
 import { getTemplateList } from '@/lib/admin/template-queries'
 import type { TemplateStatus } from '@prisma/client'
@@ -43,6 +45,14 @@ export default async function TemplatesPage({
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <Link
+          href="/admin/templates/overlap"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          Visa dokumentöverlapp &rarr;
+        </Link>
+      </div>
       <TemplateTable
         data={result.data}
         total={result.total}
