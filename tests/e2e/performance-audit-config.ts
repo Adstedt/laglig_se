@@ -69,7 +69,7 @@ export const PERFORMANCE_AUDIT_CONFIG = {
     sidebarToggle:
       'button:has([data-lucide="menu"]), .sidebar-toggle, [aria-label*="menu"]',
     myListsLink:
-      'a:has-text("Mina laglistor"), a:has-text("My Lists"), a[href*="laglistor"]',
+      'a:has-text("Mina listor"), a:has-text("My Lists"), a[href*="laglistor"]',
 
     // Law Lists
     lawListItems: '.law-list-item, .list-item, tr, .card',

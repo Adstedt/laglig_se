@@ -51,17 +51,17 @@ const platformItems: NavItem[] = [
     isToggle: true,
   },
   {
-    title: 'Laglistor',
+    title: 'Efterlevnad',
     icon: Scale,
     href: '#',
     isAccordion: true,
     subItems: [
-      { title: 'Mina laglistor', href: '/laglistor' },
+      { title: 'Mina listor', href: '/laglistor' },
       { title: 'Mallar', href: '/laglistor/mallar' },
     ],
   },
   {
-    title: 'Rättskällor',
+    title: 'Regelverk',
     icon: BookOpen,
     href: '#',
     isAccordion: true,
@@ -265,9 +265,6 @@ export function LeftSidebar({
       <nav className="flex-1 overflow-y-auto px-3">
         {/* Platform Section */}
         <div>
-          <h3 className="mb-1 px-3 text-xs font-medium text-muted-foreground">
-            Plattform
-          </h3>
           <div className="space-y-0.5">{platformItems.map(renderNavItem)}</div>
         </div>
 

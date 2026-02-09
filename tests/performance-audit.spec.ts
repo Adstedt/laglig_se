@@ -143,11 +143,11 @@ test.describe('Laglig.se Performance Audit', () => {
     // 3. LAW LISTS (LAGLISTOR) NAVIGATION
     console.log('\n📍 3. Law Lists Navigation & Performance')
 
-    // Expand Laglistor in sidebar
-    const laglistorButton = page.locator('button:has-text("Laglistor")')
+    // Expand Efterlevnad in sidebar
+    const laglistorButton = page.locator('button:has-text("Efterlevnad")')
     await tracker.measureNavigation(
       page,
-      '3.1 Expand Laglistor Sidebar',
+      '3.1 Expand Efterlevnad Sidebar',
       async () => {
         await laglistorButton.click()
         await page.waitForTimeout(500) // Wait for animation
@@ -156,12 +156,12 @@ test.describe('Laglig.se Performance Audit', () => {
 
     await page.screenshot({ path: 'screenshots/03-laglistor-expanded.png' })
 
-    // Navigate to Mina laglistor
+    // Navigate to Mina listor
     await tracker.measureNavigation(
       page,
-      '3.2 Navigate to Mina laglistor',
+      '3.2 Navigate to Mina listor',
       async () => {
-        await page.click('a:has-text("Mina laglistor")')
+        await page.click('a:has-text("Mina listor")')
         await page.waitForURL('**/laglistor')
       }
     )
@@ -227,8 +227,8 @@ test.describe('Laglig.se Performance Audit', () => {
     // 6. LEGAL SOURCES (RÄTTSKÄLLOR)
     console.log('\n📍 6. Legal Sources Browse Performance')
 
-    // Expand Rättskällor
-    await page.click('button:has-text("Rättskällor")')
+    // Expand Regelverk
+    await page.click('button:has-text("Regelverk")')
     await page.waitForTimeout(300)
 
     // Navigate to browse

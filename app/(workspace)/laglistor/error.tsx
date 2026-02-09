@@ -24,7 +24,7 @@ export default function DocumentListsError({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Mina laglistor</h1>
+        <h1 className="text-2xl font-semibold">Mina listor</h1>
       </div>
 
       <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">

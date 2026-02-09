@@ -16,9 +16,8 @@ import { DocumentListPageSkeleton } from '@/components/features/document-list/do
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Mina laglistor | Laglig',
-  description:
-    'Hantera dina personliga laglistor och håll koll på relevanta rättsliga krav.',
+  title: 'Mina listor | Laglig',
+  description: 'Hantera dina listor och håll koll på relevanta rättsliga krav.',
 }
 
 export default async function DocumentListsPage() {
@@ -36,9 +35,9 @@ export default async function DocumentListsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Mina laglistor</h1>
+        <h1 className="text-2xl font-semibold">Mina listor</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Hantera dina laglistor och håll koll på relevanta rättsliga krav.
+          Hantera dina listor och håll koll på relevanta rättsliga krav.
         </p>
       </div>
 

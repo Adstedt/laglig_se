@@ -76,7 +76,7 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/rattskallor">Rättskällor</BreadcrumbLink>
+              <BreadcrumbLink href="/rattskallor">Regelverk</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -104,7 +104,7 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/rattskallor">Rättskällor</BreadcrumbLink>
+            <BreadcrumbLink href="/rattskallor">Regelverk</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

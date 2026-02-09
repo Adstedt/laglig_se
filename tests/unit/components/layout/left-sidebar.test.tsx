@@ -1,5 +1,5 @@
 /**
- * Story 3.13: Tests for LeftSidebar component - Rättskällor accordion
+ * Story 3.13: Tests for LeftSidebar component - Regelverk accordion
  */
 
 import { render, screen } from '@testing-library/react'
@@ -47,19 +47,19 @@ describe('LeftSidebar', () => {
     vi.clearAllMocks()
   })
 
-  describe('Rättskällor accordion', () => {
-    it('renders Rättskällor as accordion item', () => {
+  describe('Regelverk accordion', () => {
+    it('renders Regelverk as accordion item', () => {
       render(<LeftSidebar />)
 
-      expect(screen.getByText('Rättskällor')).toBeInTheDocument()
+      expect(screen.getByText('Regelverk')).toBeInTheDocument()
     })
 
-    it('shows Rättskällor subItems when accordion is expanded', async () => {
+    it('shows Regelverk subItems when accordion is expanded', async () => {
       const user = userEvent.setup()
       render(<LeftSidebar />)
 
-      // Click to expand Rättskällor accordion
-      const rattskallor = screen.getByText('Rättskällor')
+      // Click to expand Regelverk accordion
+      const rattskallor = screen.getByText('Regelverk')
       await user.click(rattskallor)
 
       // Check all sub-items are visible
@@ -69,12 +69,12 @@ describe('LeftSidebar', () => {
       expect(screen.getByText('EU-rätt')).toBeInTheDocument()
     })
 
-    it('has correct hrefs for Rättskällor subItems', async () => {
+    it('has correct hrefs for Regelverk subItems', async () => {
       const user = userEvent.setup()
       render(<LeftSidebar />)
 
       // Expand accordion
-      await user.click(screen.getByText('Rättskällor'))
+      await user.click(screen.getByText('Regelverk'))
 
       // Check links
       expect(screen.getByText('Bläddra alla').closest('a')).toHaveAttribute(
@@ -100,35 +100,35 @@ describe('LeftSidebar', () => {
       render(<LeftSidebar />)
 
       // Expand accordion
-      await user.click(screen.getByText('Rättskällor'))
+      await user.click(screen.getByText('Regelverk'))
       expect(screen.getByText('Bläddra alla')).toBeInTheDocument()
 
       // Collapse accordion
-      await user.click(screen.getByText('Rättskällor'))
+      await user.click(screen.getByText('Regelverk'))
       expect(screen.queryByText('Bläddra alla')).not.toBeInTheDocument()
     })
   })
 
-  describe('Laglistor accordion', () => {
-    it('renders Laglistor with Mina laglistor and Mallar subItems', async () => {
+  describe('Efterlevnad accordion', () => {
+    it('renders Efterlevnad with Mina listor and Mallar subItems', async () => {
       const user = userEvent.setup()
       render(<LeftSidebar />)
 
-      // Expand Laglistor accordion
-      await user.click(screen.getByText('Laglistor'))
+      // Expand Efterlevnad accordion
+      await user.click(screen.getByText('Efterlevnad'))
 
       // Should have both sub-items
-      expect(screen.getByText('Mina laglistor')).toBeInTheDocument()
+      expect(screen.getByText('Mina listor')).toBeInTheDocument()
       expect(screen.getByText('Mallar')).toBeInTheDocument()
     })
 
-    it('has correct href for Mina laglistor', async () => {
+    it('has correct href for Mina listor', async () => {
       const user = userEvent.setup()
       render(<LeftSidebar />)
 
-      await user.click(screen.getByText('Laglistor'))
+      await user.click(screen.getByText('Efterlevnad'))
 
-      expect(screen.getByText('Mina laglistor').closest('a')).toHaveAttribute(
+      expect(screen.getByText('Mina listor').closest('a')).toHaveAttribute(
         'href',
         '/laglistor'
       )
@@ -140,7 +140,7 @@ describe('LeftSidebar', () => {
       const user = userEvent.setup()
       render(<LeftSidebar />)
 
-      const rattskallor = screen.getByText('Rättskällor')
+      const rattskallor = screen.getByText('Regelverk')
       const chevron = rattskallor.parentElement?.querySelector('svg:last-child')
 
       // Initially not rotated
@@ -158,11 +158,11 @@ describe('LeftSidebar', () => {
       render(<LeftSidebar />)
 
       // Expand both accordions
-      await user.click(screen.getByText('Laglistor'))
-      await user.click(screen.getByText('Rättskällor'))
+      await user.click(screen.getByText('Efterlevnad'))
+      await user.click(screen.getByText('Regelverk'))
 
       // Both should be open
-      expect(screen.getByText('Mina laglistor')).toBeInTheDocument()
+      expect(screen.getByText('Mina listor')).toBeInTheDocument()
       expect(screen.getByText('Bläddra alla')).toBeInTheDocument()
     })
   })

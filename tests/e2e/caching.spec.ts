@@ -17,7 +17,7 @@ test.describe('Catalogue Caching Behavior', () => {
 
   test('should load catalogue page successfully', async ({ page }) => {
     // Wait for results to load
-    await expect(page.locator('h1')).toContainText('Rättskällor')
+    await expect(page.locator('h1')).toContainText('Regelverk')
     await expect(
       page
         .locator('[data-testid="catalogue-results"]')
@@ -52,7 +52,7 @@ test.describe('Catalogue Caching Behavior', () => {
     expect(loadTime).toBeLessThan(2000)
 
     // Verify we're back on catalogue
-    await expect(page.locator('h1')).toContainText('Rättskällor')
+    await expect(page.locator('h1')).toContainText('Regelverk')
   })
 
   test('static pagination route should load quickly', async ({ page }) => {
@@ -67,7 +67,7 @@ test.describe('Catalogue Caching Behavior', () => {
     expect(loadTime).toBeLessThan(3000)
 
     // Verify page 2 content
-    await expect(page.locator('h1')).toContainText('Rättskällor')
+    await expect(page.locator('h1')).toContainText('Regelverk')
     await expect(page.getByText(/Sida 2/)).toBeVisible()
   })
 
@@ -173,7 +173,7 @@ test.describe('Cache Resilience', () => {
     await page.goto('/rattskallor')
 
     // Page should eventually render
-    await expect(page.locator('h1')).toContainText('Rättskällor', {
+    await expect(page.locator('h1')).toContainText('Regelverk', {
       timeout: 15000,
     })
 
