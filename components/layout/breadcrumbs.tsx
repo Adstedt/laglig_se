@@ -26,6 +26,7 @@ const routeLabels: Record<string, string> = {
   employees: 'Anställda',
   compliance: 'Efterlevnad',
   laglistor: 'Mina laglistor',
+  mallar: 'Mallbibliotek',
   browse: 'Rättskällor',
   lagar: 'Lagar',
   rattskallor: 'Bläddra',

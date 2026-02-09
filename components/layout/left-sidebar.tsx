@@ -62,7 +62,10 @@ const getBasePlatformItems = (): NavItem[] => [
     href: '#',
     isAccordion: true,
     isDynamicLists: true, // Story 4.13: Flag for dynamic list loading
-    subItems: [{ title: 'Mina laglistor', href: '/laglistor' }],
+    subItems: [
+      { title: 'Mina laglistor', href: '/laglistor' },
+      { title: 'Mallbibliotek', href: '/laglistor/mallar' },
+    ],
   },
   {
     title: 'Rättskällor',
@@ -169,6 +172,11 @@ export function LeftSidebar({
         href: '/laglistor',
         isDefault: false,
       }
+      const catalogItem = {
+        title: 'Mallbibliotek',
+        href: '/laglistor/mallar',
+        isDefault: false,
+      }
       const listItems = lawLists.map((list) => ({
         title: list.name,
         href: `/laglistor?list=${list.id}`,
@@ -176,7 +184,7 @@ export function LeftSidebar({
       }))
       return {
         ...item,
-        subItems: [baseItem, ...listItems],
+        subItems: [baseItem, catalogItem, ...listItems],
       }
     }
     return item
@@ -266,9 +274,17 @@ export function LeftSidebar({
                   subItem.href.includes(`list=${activeListIdFromUrl}`)
 
                 // "Mina laglistor" (no ?list=) should only highlight when no list param in URL
+                // Story 12.8: Static sub-pages like /laglistor/mallar use startsWith matching
+                const isStaticSubPage =
+                  item.isDynamicLists &&
+                  !isSpecificListLink &&
+                  subItem.href !== '/laglistor' &&
+                  pathname.startsWith(subItem.href)
+
                 const isBaseListActive =
                   item.isDynamicLists &&
                   !isSpecificListLink &&
+                  !isStaticSubPage &&
                   pathname === '/laglistor' &&
                   !activeListIdFromUrl
 
@@ -281,6 +297,7 @@ export function LeftSidebar({
                       'flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors',
                       isListActive ||
                         isBaseListActive ||
+                        isStaticSubPage ||
                         (!item.isDynamicLists && isActive(subItem.href))
                         ? 'text-foreground font-medium bg-accent/50'
                         : 'text-muted-foreground hover:text-foreground'

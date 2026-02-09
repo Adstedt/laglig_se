@@ -55,7 +55,8 @@ import {
   UnifiedToolbar,
   ToolbarItemCount,
 } from '@/components/ui/unified-toolbar'
-import { Plus, Settings, FolderPlus } from 'lucide-react'
+import Link from 'next/link'
+import { Plus, Settings, FolderPlus, Library } from 'lucide-react'
 import type {
   DocumentListSummary,
   WorkspaceMemberOption,
@@ -743,6 +744,12 @@ export function DocumentListPageContent({
         }
         secondaryActions={
           <>
+            <Button variant="outline" asChild>
+              <Link href="/laglistor/mallar">
+                <Library className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Utforska mallar</span>
+              </Link>
+            </Button>
             <ExportDropdown
               listId={activeListId}
               listName={activeList?.name ?? 'lista'}
