@@ -1,20 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Library } from 'lucide-react'
+import { Library, Users } from 'lucide-react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { TemplateCard } from '@/components/features/templates/template-card'
 import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
+import { DOMAIN_LABELS } from '@/lib/constants/template-domains'
+import { cn } from '@/lib/utils'
 
-/** Domain → display name mapping (same as card) */
-const DOMAIN_LABELS: Record<string, string> = {
-  arbetsmiljo: 'Arbetsmiljö',
-  miljo: 'Miljö',
-  gdpr: 'GDPR',
-  brandskydd: 'Brandskydd',
-  livsmedel: 'Livsmedel',
-}
+type TemplateSource = 'official' | 'community'
 
 interface TemplateCatalogClientProps {
   templates: PublishedTemplate[]
@@ -26,6 +21,7 @@ export function TemplateCatalogClient({
   domains,
 }: TemplateCatalogClientProps) {
   const [activeDomain, setActiveDomain] = useState<string | null>(null)
+  const [activeSource, setActiveSource] = useState<TemplateSource>('official')
 
   const filteredTemplates = activeDomain
     ? templates.filter((t) => t.domain === activeDomain)
@@ -54,41 +50,82 @@ export function TemplateCatalogClient({
 
   return (
     <div className="space-y-6">
-      {/* Domain filter */}
-      <div className="flex flex-wrap gap-2">
-        <button onClick={() => setActiveDomain(null)}>
-          <Badge
-            variant={activeDomain === null ? 'default' : 'outline'}
-            className="cursor-pointer text-xs py-0.5 px-2"
-          >
-            Alla
-          </Badge>
+      {/* Source toggle */}
+      <div className="inline-flex rounded-lg border bg-muted/30 p-0.5">
+        <button
+          onClick={() => setActiveSource('official')}
+          className={cn(
+            'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+            activeSource === 'official'
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          Laglig standardmallar
         </button>
-        {domains.map((domain) => (
-          <button key={domain} onClick={() => setActiveDomain(domain)}>
-            <Badge
-              variant={activeDomain === domain ? 'default' : 'outline'}
-              className="cursor-pointer text-xs py-0.5 px-2"
-            >
-              {DOMAIN_LABELS[domain] ?? domain}
-            </Badge>
-          </button>
-        ))}
+        <button
+          onClick={() => setActiveSource('community')}
+          className={cn(
+            'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+            activeSource === 'community'
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          Community
+        </button>
       </div>
 
-      {/* Card grid or per-domain empty state */}
-      {filteredTemplates.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <p className="text-sm text-muted-foreground">
-            Inga mallar för detta område ännu — kommer snart
+      {activeSource === 'community' ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
+          <h2 className="text-lg font-semibold">
+            Community-mallar kommer snart
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground max-w-md">
+            Här kommer du kunna hitta och dela laglistor skapade av andra
+            företag och compliance-experter.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTemplates.map((template) => (
-            <TemplateCard key={template.id} template={template} />
-          ))}
-        </div>
+        <>
+          {/* Domain filter */}
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setActiveDomain(null)}>
+              <Badge
+                variant={activeDomain === null ? 'default' : 'outline'}
+                className="cursor-pointer text-xs py-0.5 px-2"
+              >
+                Alla
+              </Badge>
+            </button>
+            {domains.map((domain) => (
+              <button key={domain} onClick={() => setActiveDomain(domain)}>
+                <Badge
+                  variant={activeDomain === domain ? 'default' : 'outline'}
+                  className="cursor-pointer text-xs py-0.5 px-2"
+                >
+                  {DOMAIN_LABELS[domain] ?? domain}
+                </Badge>
+              </button>
+            ))}
+          </div>
+
+          {/* Card grid or per-domain empty state */}
+          {filteredTemplates.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-sm text-muted-foreground">
+                Inga mallar för detta område ännu — kommer snart
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTemplates.map((template) => (
+                <TemplateCard key={template.id} template={template} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   )

@@ -63,6 +63,8 @@ const showAsLink = new Set([
   'direktiv',
   'historik',
   'version',
+  'laglistor',
+  'mallar',
 ])
 
 // Get a user-friendly label for a segment (truncate long slugs)

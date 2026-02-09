@@ -158,4 +158,55 @@ describe('TemplateCatalogClient', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Tillbaka till laglistor')).toBeInTheDocument()
   })
+
+  describe('source toggle', () => {
+    it('renders source toggle with "Laglig standardmallar" and "Community"', () => {
+      render(
+        <TemplateCatalogClient templates={allTemplates} domains={allDomains} />
+      )
+
+      expect(screen.getByText('Laglig standardmallar')).toBeInTheDocument()
+      expect(screen.getByText('Community')).toBeInTheDocument()
+    })
+
+    it('shows official templates by default', () => {
+      render(
+        <TemplateCatalogClient templates={allTemplates} domains={allDomains} />
+      )
+
+      // Domain filters visible (official view)
+      expect(screen.getByText('Alla')).toBeInTheDocument()
+      // Template cards visible
+      expect(screen.getByText(/Omfattande lagkrav/)).toBeInTheDocument()
+    })
+
+    it('shows community empty state when Community is selected', async () => {
+      const user = userEvent.setup()
+      render(
+        <TemplateCatalogClient templates={allTemplates} domains={allDomains} />
+      )
+
+      await user.click(screen.getByText('Community'))
+
+      expect(
+        screen.getByText('Community-mallar kommer snart')
+      ).toBeInTheDocument()
+      // Domain filters and template cards should be hidden
+      expect(screen.queryByText('Alla')).not.toBeInTheDocument()
+      expect(screen.queryByText(/Omfattande lagkrav/)).not.toBeInTheDocument()
+    })
+
+    it('switches back to official templates', async () => {
+      const user = userEvent.setup()
+      render(
+        <TemplateCatalogClient templates={allTemplates} domains={allDomains} />
+      )
+
+      await user.click(screen.getByText('Community'))
+      await user.click(screen.getByText('Laglig standardmallar'))
+
+      expect(screen.getByText('Alla')).toBeInTheDocument()
+      expect(screen.getByText(/Omfattande lagkrav/)).toBeInTheDocument()
+    })
+  })
 })

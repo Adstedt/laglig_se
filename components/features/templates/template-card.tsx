@@ -14,31 +14,11 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
-
-/** Domain → display name mapping */
-const DOMAIN_LABELS: Record<string, string> = {
-  arbetsmiljo: 'Arbetsmiljö',
-  miljo: 'Miljö',
-  gdpr: 'GDPR',
-  brandskydd: 'Brandskydd',
-  livsmedel: 'Livsmedel',
-}
-
-/** Domain → badge color classes (with dark mode) */
-const DOMAIN_COLORS: Record<string, string> = {
-  arbetsmiljo:
-    'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
-  miljo:
-    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
-  gdpr: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
-  brandskydd:
-    'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800',
-  livsmedel:
-    'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800',
-}
-
-const DEFAULT_DOMAIN_COLOR =
-  'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-800'
+import {
+  DOMAIN_LABELS,
+  DOMAIN_COLORS,
+  DEFAULT_DOMAIN_COLOR,
+} from '@/lib/constants/template-domains'
 
 function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
