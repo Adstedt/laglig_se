@@ -112,18 +112,16 @@ describe('MobileSidebar', () => {
   })
 
   describe('Laglistor accordion', () => {
-    it('renders Laglistor with only Mina laglistor subItem', async () => {
+    it('renders Laglistor with Mina laglistor and Mallar subItems', async () => {
       const user = userEvent.setup()
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
       // Expand Laglistor accordion
       await user.click(screen.getByText('Laglistor'))
 
-      // Should have Mina laglistor
+      // Should have both sub-items
       expect(screen.getByText('Mina laglistor')).toBeInTheDocument()
-
-      // Should NOT have Alla lagar (removed per AC 5)
-      expect(screen.queryByText('Alla lagar')).not.toBeInTheDocument()
+      expect(screen.getByText('Mallar')).toBeInTheDocument()
     })
   })
 

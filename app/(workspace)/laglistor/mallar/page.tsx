@@ -13,7 +13,7 @@ import { TemplateCatalogClient } from '@/components/features/templates/template-
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Mallbibliotek | Laglig',
+  title: 'Mallar | Laglig',
   description:
     'Utforska färdiga laglistor och hitta en relevant utgångspunkt för ditt efterlevnadsarbete.',
 }
@@ -25,10 +25,10 @@ export default async function TemplateCatalogPage() {
   ])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-semibold">Mallbibliotek</h1>
+        <h1 className="text-2xl font-semibold">Mallar</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Utforska färdiga laglistor och hitta en relevant utgångspunkt för ditt
           efterlevnadsarbete.

@@ -10,7 +10,6 @@ import { LeftSidebar } from '@/components/layout/left-sidebar'
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
-  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({
     push: vi.fn(),
     refresh: vi.fn(),
@@ -29,29 +28,6 @@ vi.mock('@/hooks/use-permissions', () => ({
   usePermissions: () => ({
     can: { viewEmployees: false },
     isLoading: false,
-  }),
-}))
-
-// Mock useWorkspace hook
-vi.mock('@/lib/hooks/use-workspace', () => ({
-  useWorkspace: () => ({
-    workspaceId: 'ws_1',
-    workspaceName: 'Test Workspace',
-    workspaceSlug: 'test-workspace',
-    workspaceStatus: 'ACTIVE',
-    role: 'OWNER',
-    isLoading: false,
-    error: null,
-    refresh: vi.fn(),
-  }),
-}))
-
-// Mock document list store
-vi.mock('@/lib/stores/document-list-store', () => ({
-  useDocumentListStore: () => ({
-    lists: [],
-    isLoadingLists: false,
-    fetchLists: vi.fn().mockResolvedValue([]),
   }),
 }))
 
@@ -134,18 +110,16 @@ describe('LeftSidebar', () => {
   })
 
   describe('Laglistor accordion', () => {
-    it('renders Laglistor with only Mina laglistor subItem', async () => {
+    it('renders Laglistor with Mina laglistor and Mallar subItems', async () => {
       const user = userEvent.setup()
       render(<LeftSidebar />)
 
       // Expand Laglistor accordion
       await user.click(screen.getByText('Laglistor'))
 
-      // Should have Mina laglistor
+      // Should have both sub-items
       expect(screen.getByText('Mina laglistor')).toBeInTheDocument()
-
-      // Should NOT have Alla lagar (removed per AC 5)
-      expect(screen.queryByText('Alla lagar')).not.toBeInTheDocument()
+      expect(screen.getByText('Mallar')).toBeInTheDocument()
     })
 
     it('has correct href for Mina laglistor', async () => {

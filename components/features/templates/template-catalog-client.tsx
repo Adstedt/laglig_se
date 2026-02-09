@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Library, Users } from 'lucide-react'
 import Link from 'next/link'
-import { Badge } from '@/components/ui/badge'
 import { TemplateCard } from '@/components/features/templates/template-card'
 import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
 import { DOMAIN_LABELS } from '@/lib/constants/template-domains'
@@ -32,9 +31,7 @@ export function TemplateCatalogClient({
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <Library className="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <h2 className="text-lg font-semibold">
-          Mallbiblioteket är tomt just nu
-        </h2>
+        <h2 className="text-lg font-semibold">Inga mallar just nu</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Mallar publiceras inom kort — kom tillbaka snart!
         </p>
@@ -49,7 +46,7 @@ export function TemplateCatalogClient({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Source toggle */}
       <div className="inline-flex rounded-lg border bg-muted/30 p-0.5">
         <button
@@ -91,22 +88,31 @@ export function TemplateCatalogClient({
         <>
           {/* Domain filter */}
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => setActiveDomain(null)}>
-              <Badge
-                variant={activeDomain === null ? 'default' : 'outline'}
-                className="cursor-pointer text-xs py-0.5 px-2"
-              >
-                Alla
-              </Badge>
+            <button
+              type="button"
+              onClick={() => setActiveDomain(null)}
+              className={cn(
+                'px-3 py-1.5 text-sm rounded-full border transition-colors',
+                activeDomain === null
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background hover:bg-muted border-border text-foreground'
+              )}
+            >
+              Alla
             </button>
             {domains.map((domain) => (
-              <button key={domain} onClick={() => setActiveDomain(domain)}>
-                <Badge
-                  variant={activeDomain === domain ? 'default' : 'outline'}
-                  className="cursor-pointer text-xs py-0.5 px-2"
-                >
-                  {DOMAIN_LABELS[domain] ?? domain}
-                </Badge>
+              <button
+                key={domain}
+                type="button"
+                onClick={() => setActiveDomain(domain)}
+                className={cn(
+                  'px-3 py-1.5 text-sm rounded-full border transition-colors',
+                  activeDomain === domain
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background hover:bg-muted border-border text-foreground'
+                )}
+              >
+                {DOMAIN_LABELS[domain] ?? domain}
               </button>
             ))}
           </div>

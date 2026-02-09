@@ -47,7 +47,10 @@ const platformItems = [
     icon: Scale,
     href: '#',
     isAccordion: true,
-    subItems: [{ title: 'Mina laglistor', href: '/laglistor' }],
+    subItems: [
+      { title: 'Mina laglistor', href: '/laglistor' },
+      { title: 'Mallar', href: '/laglistor/mallar' },
+    ],
   },
   {
     title: 'Rättskällor',

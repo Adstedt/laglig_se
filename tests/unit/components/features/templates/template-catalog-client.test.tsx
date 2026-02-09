@@ -150,9 +150,7 @@ describe('TemplateCatalogClient', () => {
   it('renders full empty state when templates array is empty', () => {
     render(<TemplateCatalogClient templates={[]} domains={[]} />)
 
-    expect(
-      screen.getByText('Mallbiblioteket är tomt just nu')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Inga mallar just nu')).toBeInTheDocument()
     expect(
       screen.getByText('Mallar publiceras inom kort — kom tillbaka snart!')
     ).toBeInTheDocument()
