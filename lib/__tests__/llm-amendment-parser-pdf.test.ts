@@ -71,7 +71,8 @@ describe('parseAmendmentPdf', () => {
     })
 
     expect(mockCreate).toHaveBeenCalledOnce()
-    const callArgs = mockCreate.mock.calls[0][0]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const callArgs = mockCreate.mock.calls[0]?.[0] as any
 
     // Verify model and max_tokens
     expect(callArgs.model).toBe('claude-sonnet-4-20250514')

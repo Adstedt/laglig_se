@@ -108,7 +108,7 @@ describe('Amendment PDF pipeline: HTML → content formats', () => {
     it('should reject empty output', () => {
       const result = validateLlmOutput('', '2025:100')
       expect(result.valid).toBe(false)
-      expect(result.errors[0].code).toBe('EMPTY_OUTPUT')
+      expect(result.errors[0]?.code).toBe('EMPTY_OUTPUT')
     })
 
     it('should reject output without article.sfs root', () => {
@@ -190,7 +190,7 @@ describe('Amendment PDF pipeline: HTML → content formats', () => {
 
       expect(json.transitionProvisions.length).toBeGreaterThan(0)
       const firstProvision = json.transitionProvisions[0]
-      expect(firstProvision.content).toContain('kraft')
+      expect(firstProvision?.content).toContain('kraft')
     })
 
     it('should detect amendment document type', () => {
