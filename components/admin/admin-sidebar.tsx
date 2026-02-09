@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Building2,
   Users,
+  FileText,
   Clock,
   AlertTriangle,
 } from 'lucide-react'
@@ -16,6 +17,7 @@ const navItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/workspaces', label: 'Workspaces', icon: Building2 },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/templates', label: 'Templates', icon: FileText },
   { href: '/admin/cron-jobs', label: 'Cron Jobs', icon: Clock },
   { href: '/admin/cron-jobs/errors', label: 'Felloggar', icon: AlertTriangle },
 ] as const

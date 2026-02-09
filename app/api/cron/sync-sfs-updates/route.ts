@@ -29,9 +29,13 @@ import {
   type PdfMetadata,
 } from '@/lib/sfs'
 import { createLegalDocumentFromAmendment } from '@/lib/sfs/amendment-to-legal-document'
-import { parsePdf } from '@/lib/external/pdf-parser'
-import { parseAmendmentWithLLM } from '@/lib/external/llm-amendment-parser'
+import { parseAmendmentPdf } from '@/lib/external/llm-amendment-parser'
 import { downloadPdf as downloadPdfFromStorage } from '@/lib/supabase/storage'
+import {
+  htmlToMarkdown,
+  htmlToPlainText,
+} from '@/lib/transforms/html-to-markdown'
+import { htmlToJson } from '@/lib/transforms/html-to-json'
 import { SectionChangeType } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
@@ -393,11 +397,23 @@ export async function GET(request: Request) {
       page++
     }
 
-    // Story 2.28 AC8: Process amendments with LLM parsing (outside main loop for timeout safety)
+    // Story 2.28 AC8: Process amendments with PDF-direct LLM pipeline (outside main loop for timeout safety)
+    const maxRuntime = maxDuration * 1000 - 30000 // 30s buffer before timeout
+
     for (const amendment of amendmentsToProcess) {
+      // Timeout protection: stop if approaching the maxDuration limit
+      const elapsed = Date.now() - startTime.getTime()
+      if (elapsed > maxRuntime) {
+        console.log(
+          `[SYNC-SFS-UPDATES] Approaching timeout (${Math.round(elapsed / 1000)}s elapsed), stopping LLM parsing. ` +
+            `${amendmentsToProcess.indexOf(amendment)}/${amendmentsToProcess.length} processed.`
+        )
+        break
+      }
+
       try {
         console.log(
-          `[SYNC-SFS-UPDATES] Parsing amendment with LLM: ${amendment.sfsNumber}`
+          `[SYNC-SFS-UPDATES] Parsing amendment PDF with LLM: ${amendment.sfsNumber}`
         )
 
         // Download PDF from Supabase Storage
@@ -413,24 +429,42 @@ export async function GET(request: Request) {
           continue
         }
 
-        // Extract text from PDF
-        const parsedPdf = await parsePdf(
+        // Fetch base law info for the prompt
+        const amendmentDoc = await prisma.amendmentDocument.findUnique({
+          where: { id: amendment.id },
+          select: { base_law_sfs: true, base_law_name: true, title: true },
+        })
+
+        // Send PDF directly to Claude → get semantic HTML back
+        const { html: htmlContent, validation } = await parseAmendmentPdf(
           pdfBuffer,
-          `SFS${amendment.sfsNumber}.pdf`
-        )
-        console.log(
-          `[SYNC-SFS-UPDATES]   PDF text extracted: ${parsedPdf.fullText.length} chars`
-        )
-
-        // Parse with LLM to extract section changes
-        const llmResult = await parseAmendmentWithLLM(parsedPdf.fullText)
-        console.log(
-          `[SYNC-SFS-UPDATES]   LLM parsed: ${llmResult.affectedSections.length} sections, confidence: ${llmResult.confidence}`
+          amendment.sfsNumber,
+          amendmentDoc?.base_law_sfs ?? undefined,
+          amendmentDoc?.title ?? undefined
         )
 
-        // Map LLM change types to database enum
+        console.log(
+          `[SYNC-SFS-UPDATES]   LLM returned HTML: ${htmlContent.length} chars, ` +
+            `sections: ${validation.metrics.sectionCount}, paragraphs: ${validation.metrics.paragraphCount}`
+        )
+
+        if (validation.warnings.length > 0) {
+          console.log(
+            `[SYNC-SFS-UPDATES]   Warnings: ${validation.warnings.map((w) => w.code).join(', ')}`
+          )
+        }
+
+        // Derive all content formats from HTML
+        const markdownContent = htmlToMarkdown(htmlContent)
+        const jsonContent = htmlToJson(htmlContent, {
+          sfsNumber: amendment.sfsNumber,
+          documentType: 'amendment',
+        })
+        const plainText = htmlToPlainText(htmlContent)
+
+        // Map JSON section changeType to database enum
         const mapChangeType = (
-          type: 'amended' | 'repealed' | 'new' | 'renumbered'
+          type: 'amended' | 'repealed' | 'new' | null
         ): SectionChangeType => {
           switch (type) {
             case 'amended':
@@ -439,46 +473,54 @@ export async function GET(request: Request) {
               return SectionChangeType.REPEALED
             case 'new':
               return SectionChangeType.NEW
-            case 'renumbered':
-              return SectionChangeType.RENUMBERED
+            default:
+              return SectionChangeType.AMENDED // default for sections without explicit changeType
           }
         }
 
-        // Create SectionChange records
+        // Create SectionChange records + update AmendmentDocument + create LegalDocument
         await prisma.$transaction(async (tx) => {
-          // Create SectionChange records for each affected section
+          // Create SectionChange records from JSON sections
           let sortOrder = 0
-          for (const section of llmResult.affectedSections) {
+          for (const section of jsonContent.sections) {
+            // Skip chapter-level entries (they don't have section numbers)
+            if (section.type === 'chapter' && !section.number) continue
+
             await tx.sectionChange.create({
               data: {
                 amendment_id: amendment.id,
                 chapter: section.chapter,
-                section: section.section,
+                section: section.number || 'unknown',
                 change_type: mapChangeType(section.changeType),
-                old_number: section.oldNumber ?? null,
-                description: section.description,
-                new_text: section.newText ?? null,
+                description: section.heading ?? null,
+                new_text: section.content || null,
                 sort_order: sortOrder++,
               },
             })
           }
 
+          // Extract title and effective_date from JSON metadata
+          const effectiveDateStr = jsonContent.transitionProvisions.find(
+            (tp) => tp.effectiveDate
+          )?.effectiveDate
+          const effectiveDate = effectiveDateStr
+            ? new Date(effectiveDateStr)
+            : null
+
           // Update AmendmentDocument with parsed data
           const updatedAmendment = await tx.amendmentDocument.update({
             where: { id: amendment.id },
             data: {
-              title: llmResult.title || `Ändring SFS ${amendment.sfsNumber}`,
-              effective_date: llmResult.effectiveDate
-                ? new Date(llmResult.effectiveDate)
-                : null,
-              full_text: parsedPdf.fullText,
+              title: jsonContent.title || `Ändring SFS ${amendment.sfsNumber}`,
+              effective_date: effectiveDate,
+              full_text: plainText,
+              markdown_content: markdownContent,
               parse_status: ParseStatus.COMPLETED,
               parsed_at: new Date(),
             },
           })
 
-          // Story 2.29: Create LegalDocument entry for this amendment
-          // This enables amendments to be browsable and searchable
+          // Create LegalDocument entry with all content formats
           const legalDocResult = await createLegalDocumentFromAmendment(tx, {
             id: updatedAmendment.id,
             sfs_number: updatedAmendment.sfs_number,
@@ -489,8 +531,10 @@ export async function GET(request: Request) {
             publication_date: updatedAmendment.publication_date,
             original_url: updatedAmendment.original_url,
             storage_path: updatedAmendment.storage_path,
-            full_text: parsedPdf.fullText,
-            markdown_content: updatedAmendment.markdown_content,
+            full_text: plainText,
+            html_content: htmlContent,
+            markdown_content: markdownContent,
+            json_content: jsonContent,
             confidence: updatedAmendment.confidence,
           })
 
@@ -504,11 +548,12 @@ export async function GET(request: Request) {
 
         stats.amendmentsParsed++
         console.log(
-          `[SYNC-SFS-UPDATES]   ✓ Amendment parsed successfully: ${amendment.sfsNumber}`
+          `[SYNC-SFS-UPDATES]   Amendment parsed successfully: ${amendment.sfsNumber} ` +
+            `(${jsonContent.sections.length} sections)`
         )
       } catch (err) {
         console.error(
-          `[SYNC-SFS-UPDATES]   ✗ LLM parsing failed for ${amendment.sfsNumber}:`,
+          `[SYNC-SFS-UPDATES]   LLM parsing failed for ${amendment.sfsNumber}:`,
           err
         )
         // Mark as failed but don't block the sync
