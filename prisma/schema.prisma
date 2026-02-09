@@ -179,6 +179,7 @@ model LawList {
   description  String?
   is_default   Boolean  @default(false)
   created_by   String?
+  metadata     Json?
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 
@@ -479,6 +480,7 @@ enum LawListItemSource {
   ONBOARDING
   MANUAL
   IMPORT
+  TEMPLATE
 }
 
 // ============================================================================

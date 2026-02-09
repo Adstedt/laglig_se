@@ -1,11 +1,16 @@
 /**
  * Story 12.9: Template Detail & Preview Page
+ * Story 12.10: Added workspace context for template adoption
  * Authenticated route: /laglistor/mallar/{slug}
  */
 
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getPublishedTemplateBySlug } from '@/lib/db/queries/template-catalog'
+import {
+  getUserWorkspaces,
+  getWorkspaceContext,
+} from '@/lib/auth/workspace-context'
 import { TemplateDetailClient } from '@/components/features/templates/template-detail-client'
 
 export const dynamic = 'force-dynamic'
@@ -30,7 +35,22 @@ export default async function TemplateDetailPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const template = await getPublishedTemplateBySlug(slug)
+  const [template, workspaces, wsContext] = await Promise.all([
+    getPublishedTemplateBySlug(slug),
+    getUserWorkspaces(),
+    getWorkspaceContext(),
+  ])
   if (!template) notFound()
-  return <TemplateDetailClient template={template} />
+
+  return (
+    <TemplateDetailClient
+      template={template}
+      workspaces={workspaces.map((ws) => ({
+        id: ws.id,
+        name: ws.name,
+        slug: ws.slug,
+      }))}
+      currentWorkspaceId={wsContext.workspaceId}
+    />
+  )
 }

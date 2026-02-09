@@ -9,12 +9,19 @@ import { TemplateDetailHeader } from '@/components/features/templates/template-d
 import { TemplateSectionsAccordion } from '@/components/features/templates/template-sections-accordion'
 import { TemplateAdoptCta } from '@/components/features/templates/template-adopt-cta'
 import type { TemplateDetail } from '@/lib/db/queries/template-catalog'
+import type { UserWorkspace } from './workspace-selector-dialog'
 
 interface TemplateDetailClientProps {
   template: TemplateDetail
+  workspaces: UserWorkspace[]
+  currentWorkspaceId: string
 }
 
-export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
+export function TemplateDetailClient({
+  template,
+  workspaces,
+  currentWorkspaceId,
+}: TemplateDetailClientProps) {
   const router = useRouter()
   const hasVariants = !template.is_variant && template.variants.length > 0
   const variant = hasVariants ? template.variants[0] : null
@@ -55,7 +62,12 @@ export function TemplateDetailClient({ template }: TemplateDetailClientProps) {
           <div />
         )}
 
-        <TemplateAdoptCta templateName={template.name} />
+        <TemplateAdoptCta
+          templateName={template.name}
+          templateSlug={template.slug}
+          workspaces={workspaces}
+          currentWorkspaceId={currentWorkspaceId}
+        />
       </div>
 
       <TemplateSectionsAccordion sections={template.sections} />

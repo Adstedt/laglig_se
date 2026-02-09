@@ -31,7 +31,16 @@ vi.mock('next/link', () => ({
   ),
 }))
 
+// Mock adoptTemplate to prevent server action resolution issues
+vi.mock('@/app/actions/template-adoption', () => ({
+  adoptTemplate: vi.fn(),
+}))
+
 import { TemplateDetailClient } from '@/components/features/templates/template-detail-client'
+
+const defaultWorkspaces = [
+  { id: 'ws_1', name: 'Test Workspace', slug: 'test-ws' },
+]
 
 const baseTemplate: TemplateDetail = {
   id: 'uuid-1',
@@ -82,14 +91,26 @@ describe('TemplateDetailClient', () => {
   })
 
   it('renders header component with template name', () => {
-    render(<TemplateDetailClient template={baseTemplate} />)
+    render(
+      <TemplateDetailClient
+        template={baseTemplate}
+        workspaces={defaultWorkspaces}
+        currentWorkspaceId="ws_1"
+      />
+    )
 
     const heading = screen.getByRole('heading', { name: 'Arbetsmiljö' })
     expect(heading.tagName).toBe('H1')
   })
 
   it('renders accordion/sections component', () => {
-    render(<TemplateDetailClient template={baseTemplate} />)
+    render(
+      <TemplateDetailClient
+        template={baseTemplate}
+        workspaces={defaultWorkspaces}
+        currentWorkspaceId="ws_1"
+      />
+    )
 
     // Single section renders as flat list
     expect(screen.getByText('Grundläggande regelverk')).toBeInTheDocument()
@@ -97,7 +118,13 @@ describe('TemplateDetailClient', () => {
   })
 
   it('renders CTA component', () => {
-    render(<TemplateDetailClient template={baseTemplate} />)
+    render(
+      <TemplateDetailClient
+        template={baseTemplate}
+        workspaces={defaultWorkspaces}
+        currentWorkspaceId="ws_1"
+      />
+    )
 
     expect(screen.getByText('Använd denna mall')).toBeInTheDocument()
   })
@@ -116,7 +143,13 @@ describe('TemplateDetailClient', () => {
         },
       ],
     }
-    render(<TemplateDetailClient template={withVariants} />)
+    render(
+      <TemplateDetailClient
+        template={withVariants}
+        workspaces={defaultWorkspaces}
+        currentWorkspaceId="ws_1"
+      />
+    )
 
     expect(
       screen.getByText('Visa version för tjänsteföretag')
@@ -124,7 +157,13 @@ describe('TemplateDetailClient', () => {
   })
 
   it('hides variant toggle for templates without variants', () => {
-    render(<TemplateDetailClient template={baseTemplate} />)
+    render(
+      <TemplateDetailClient
+        template={baseTemplate}
+        workspaces={defaultWorkspaces}
+        currentWorkspaceId="ws_1"
+      />
+    )
 
     expect(
       screen.queryByText('Visa version för tjänsteföretag')
@@ -138,7 +177,13 @@ describe('TemplateDetailClient', () => {
       parent_slug: 'arbetsmiljo',
       variants: [],
     }
-    render(<TemplateDetailClient template={variant} />)
+    render(
+      <TemplateDetailClient
+        template={variant}
+        workspaces={defaultWorkspaces}
+        currentWorkspaceId="ws_1"
+      />
+    )
 
     const link = screen.getByText('Visa fullständig version')
     expect(link.closest('a')).toHaveAttribute(
@@ -148,7 +193,13 @@ describe('TemplateDetailClient', () => {
   })
 
   it('does not show parent link for non-variant templates', () => {
-    render(<TemplateDetailClient template={baseTemplate} />)
+    render(
+      <TemplateDetailClient
+        template={baseTemplate}
+        workspaces={defaultWorkspaces}
+        currentWorkspaceId="ws_1"
+      />
+    )
 
     expect(
       screen.queryByText('Visa fullständig version')

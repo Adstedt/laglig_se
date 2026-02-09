@@ -161,10 +161,10 @@ const ITEM_SELECT = {
  * Wrapped with React cache() for request-level dedup (generateMetadata + page render).
  */
 export const getPublishedTemplateBySlug = cache(
-  getPublishedTemplateBySlugInternal
+  getPublishedTemplateBySlugUncached
 )
 
-async function getPublishedTemplateBySlugInternal(
+export async function getPublishedTemplateBySlugUncached(
   slug: string
 ): Promise<TemplateDetail | null> {
   const template = await prisma.lawListTemplate.findFirst({
