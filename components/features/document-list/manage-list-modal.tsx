@@ -6,7 +6,6 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import {
   Dialog,
   DialogContent,
@@ -72,7 +71,6 @@ export function ManageListModal({
   const [step, setStep] = useState<Step>(initialStep)
   const [selectedTemplate, setSelectedTemplate] =
     useState<PublishedTemplate | null>(null)
-  const [direction, setDirection] = useState(1) // 1 = forward, -1 = back
 
   // Blank form state
   const [name, setName] = useState('')
@@ -96,17 +94,14 @@ export function ManageListModal({
     }
     setError(null)
     setSelectedTemplate(null)
-    setDirection(1)
     setStep(mode === 'create' && hasTemplates ? 'choose' : 'blank')
   }, [mode, list, open, hasTemplates])
 
   const goForward = useCallback((nextStep: Step) => {
-    setDirection(1)
     setStep(nextStep)
   }, [])
 
   const goBack = useCallback(() => {
-    setDirection(-1)
     setStep('choose')
   }, [])
 
@@ -189,10 +184,6 @@ export function ManageListModal({
 
   const isValid = name.trim().length > 0
 
-  // Determine modal width based on step
-  const modalWidthClass =
-    mode === 'create' && step === 'choose' ? 'sm:max-w-lg' : 'sm:max-w-md'
-
   // Title and description per step
   const getTitle = () => {
     if (mode === 'edit') return 'Redigera lista'
@@ -206,22 +197,6 @@ export function ManageListModal({
     if (step === 'choose') return 'Välj hur du vill börja.'
     if (step === 'from-template') return undefined
     return 'Skapa en ny dokumentlista för att organisera relevanta lagar och rättsfall.'
-  }
-
-  // Animation variants
-  const slideVariants = {
-    enter: (dir: number) => ({
-      opacity: 0,
-      x: dir * 20,
-    }),
-    center: {
-      opacity: 1,
-      x: 0,
-    },
-    exit: (dir: number) => ({
-      opacity: 0,
-      x: dir * -20,
-    }),
   }
 
   // Render the blank form (shared between create-blank and edit)
@@ -315,59 +290,27 @@ export function ManageListModal({
     // Edit mode — always show the form directly (no step machine)
     if (mode === 'edit') return renderBlankForm()
 
-    return (
-      <AnimatePresence mode="wait" custom={direction}>
-        {step === 'choose' && templates && (
-          <motion.div
-            key="choose"
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-          >
-            <CreateListChooser
-              templates={templates}
-              onSelectTemplate={handleSelectTemplate}
-              onSelectBlank={handleSelectBlank}
-            />
-          </motion.div>
-        )}
+    if (step === 'choose' && templates) {
+      return (
+        <CreateListChooser
+          templates={templates}
+          onSelectTemplate={handleSelectTemplate}
+          onSelectBlank={handleSelectBlank}
+        />
+      )
+    }
 
-        {step === 'from-template' && selectedTemplate && (
-          <motion.div
-            key="from-template"
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-          >
-            <CreateListFromTemplate
-              template={selectedTemplate}
-              onBack={goBack}
-              onCreated={onCreated}
-            />
-          </motion.div>
-        )}
+    if (step === 'from-template' && selectedTemplate) {
+      return (
+        <CreateListFromTemplate
+          template={selectedTemplate}
+          onBack={goBack}
+          onCreated={onCreated}
+        />
+      )
+    }
 
-        {step === 'blank' && (
-          <motion.div
-            key="blank"
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-          >
-            {renderBlankForm()}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    )
+    return renderBlankForm()
   }
 
   const descriptionText = getDescription()
@@ -375,7 +318,7 @@ export function ManageListModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={modalWidthClass}>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{getTitle()}</DialogTitle>
             {descriptionText && (

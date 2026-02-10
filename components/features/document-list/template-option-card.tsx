@@ -1,10 +1,10 @@
 'use client'
 
 /**
- * Story 12.10b Task 4: Compact template card for the create-list chooser.
+ * Story 12.10b Task 4: Horizontal template card for the create-list chooser.
  */
 
-import { FileText } from 'lucide-react'
+import { FileText, ChevronRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import {
   DOMAIN_LABELS,
@@ -38,29 +38,38 @@ export function TemplateOptionCard({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={handleKeyDown}
-      className="flex flex-col gap-1.5 rounded-lg border bg-card p-3 hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 outline-none"
+      className="flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/50 hover:shadow-sm transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 outline-none"
     >
-      <Badge
-        variant="outline"
-        className={`w-fit text-[10px] px-1.5 py-0 ${domainColor}`}
-      >
-        {domainLabel}
-      </Badge>
-      <p className="font-medium text-sm leading-tight">{template.name}</p>
-      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-        <FileText className="h-3 w-3 shrink-0" />
-        <span>{template.document_count} lagar</span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <Badge
+            variant="outline"
+            className={`shrink-0 text-[10px] px-1.5 py-0 ${domainColor}`}
+          >
+            {domainLabel}
+          </Badge>
+          <p className="font-medium text-sm leading-tight truncate">
+            {template.name}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <FileText className="h-3 w-3 shrink-0" />
+            <span>{template.document_count} lagar</span>
+          </div>
+          {template.variants.length > 0 && (
+            <span className="text-xs italic text-muted-foreground">
+              +tjänsteföretagsversion
+            </span>
+          )}
+        </div>
+        {template.description && (
+          <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+            {template.description}
+          </p>
+        )}
       </div>
-      {template.description && (
-        <p className="text-xs text-muted-foreground line-clamp-2">
-          {template.description}
-        </p>
-      )}
-      {template.variants.length > 0 && (
-        <p className="text-xs italic text-muted-foreground">
-          Tjänsteföretagsversion tillgänglig
-        </p>
-      )}
+      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
     </div>
   )
 }

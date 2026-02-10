@@ -116,7 +116,7 @@ describe('CreateListChooser', () => {
     expect(onSelectBlank).toHaveBeenCalledOnce()
   })
 
-  it('renders domain badge with correct label from DOMAIN_LABELS', () => {
+  it('renders Laglig tab active by default', () => {
     render(
       <CreateListChooser
         templates={mockTemplates}
@@ -125,9 +125,29 @@ describe('CreateListChooser', () => {
       />
     )
 
-    // DOMAIN_LABELS['miljo'] = 'Miljö' — already the template name
-    // DOMAIN_LABELS['arbetsmiljo'] = 'Arbetsmiljö' — already the template name
-    expect(screen.getByText('Populära mallar')).toBeInTheDocument()
+    const lagligTab = screen.getByRole('tab', { name: 'Laglig' })
+    expect(lagligTab).toBeInTheDocument()
+    expect(lagligTab).toHaveAttribute('data-state', 'active')
+
+    const communityTab = screen.getByRole('tab', { name: 'Community' })
+    expect(communityTab).toBeInTheDocument()
+    expect(communityTab).toHaveAttribute('data-state', 'inactive')
+  })
+
+  it('shows "Kommer snart" when Community tab is clicked', async () => {
+    const user = userEvent.setup()
+    render(
+      <CreateListChooser
+        templates={mockTemplates}
+        onSelectTemplate={vi.fn()}
+        onSelectBlank={vi.fn()}
+      />
+    )
+
+    const communityTab = screen.getByRole('tab', { name: 'Community' })
+    await user.click(communityTab)
+
+    expect(screen.getByText('Kommer snart')).toBeInTheDocument()
   })
 
   it('option cards are keyboard accessible (Enter key triggers selection)', async () => {

@@ -70,9 +70,7 @@ describe('TemplateOptionCard', () => {
   it('shows variant availability text when variants exist', () => {
     render(<TemplateOptionCard template={mockTemplate} onClick={vi.fn()} />)
 
-    expect(
-      screen.getByText('Tjänsteföretagsversion tillgänglig')
-    ).toBeInTheDocument()
+    expect(screen.getByText('+tjänsteföretagsversion')).toBeInTheDocument()
   })
 
   it('does not show variant text when no variants', () => {
@@ -81,7 +79,7 @@ describe('TemplateOptionCard', () => {
     )
 
     expect(
-      screen.queryByText('Tjänsteföretagsversion tillgänglig')
+      screen.queryByText('+tjänsteföretagsversion')
     ).not.toBeInTheDocument()
   })
 

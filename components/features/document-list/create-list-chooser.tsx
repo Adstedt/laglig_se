@@ -1,11 +1,12 @@
 'use client'
 
 /**
- * Story 12.10b Task 3: Chooser step — two option cards + popular templates.
+ * Story 12.10b Task 3: Chooser step — two option cards + tabbed templates.
  */
 
 import { Library, Plus } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { TemplateOptionCard } from './template-option-card'
 import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
 
@@ -84,22 +85,37 @@ export function CreateListChooser({
         </div>
       </div>
 
-      {/* Popular templates section */}
+      {/* Template tabs section */}
       {displayTemplates.length > 0 && (
         <div id="popular-templates-section">
           <Separator className="mb-3" />
-          <p className="mb-3 text-sm font-medium text-muted-foreground">
-            Populära mallar
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {displayTemplates.map((template) => (
-              <TemplateOptionCard
-                key={template.id}
-                template={template}
-                onClick={() => onSelectTemplate(template)}
-              />
-            ))}
-          </div>
+          <Tabs defaultValue="laglig">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="laglig">Laglig</TabsTrigger>
+              <TabsTrigger value="community">Community</TabsTrigger>
+            </TabsList>
+            <TabsContent value="laglig">
+              <div className="flex flex-col gap-2">
+                {displayTemplates.map((template) => (
+                  <TemplateOptionCard
+                    key={template.id}
+                    template={template}
+                    onClick={() => onSelectTemplate(template)}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="community">
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Kommer snart
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Community-mallar kommer att vara tillgängliga här i framtiden.
+                </p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
     </div>
