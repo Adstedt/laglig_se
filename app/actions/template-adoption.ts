@@ -30,6 +30,9 @@ interface ActionResult<T = void> {
 
 const AdoptTemplateSchema = z.object({
   templateSlug: z.string().min(1),
+  name: z.string().min(1).optional(),
+  description: z.string().max(500).optional(),
+  isDefault: z.boolean().optional(),
   workspaceId: z.string().uuid().optional(),
 })
 
@@ -90,7 +93,7 @@ export async function adoptTemplate(
       select: { name: true },
     })
     const listName = generateUniqueName(
-      template.name,
+      parsed.data.name ?? template.name,
       existingLists.map((l) => l.name)
     )
 
@@ -100,6 +103,8 @@ export async function adoptTemplate(
       const lawList = await tx.lawList.create({
         data: {
           name: listName,
+          description: parsed.data.description ?? null,
+          is_default: parsed.data.isDefault ?? false,
           workspace_id: ctx.workspaceId,
           created_by: ctx.userId,
           metadata: {

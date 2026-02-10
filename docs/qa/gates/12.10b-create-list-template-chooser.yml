@@ -1,0 +1,47 @@
+schema: 1
+story: '12.10b'
+story_title: 'Refactor Create List Modal into Template-Aware Chooser'
+gate: PASS
+status_reason: 'All 3 previous issues (FORM-001, CODE-001, CODE-002) resolved. All 10 ACs fully implemented. 53 tests pass. TypeScript zero errors. No new issues found.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-10T14:00:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-02-24T14:00:00Z'
+
+evidence:
+  tests_reviewed: 53
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Auth gated via withWorkspace()/requireWorkspaceAccess(). Zod validates all input including new description (max 500) and isDefault (boolean) fields. No raw error leakage.'
+  performance:
+    status: PASS
+    notes: 'Server-side parallel fetch via Promise.all. Max 4 template cards rendered. Lightweight framer-motion animations (0.2s).'
+  reliability:
+    status: PASS
+    notes: 'Error handling with toast notifications. Transaction atomicity in adoptTemplate. Form validation prevents empty name submission.'
+  maintainability:
+    status: PASS
+    notes: 'Clean 4-component decomposition. Reuses shadcn/ui, lucide-react, DOMAIN_LABELS/COLORS. TypeScript strict mode with zero errors.'
+
+history:
+  - at: '2026-02-10T13:15:00Z'
+    gate: CONCERNS
+    note: 'Initial review — FORM-001 (description/isDefault silently discarded), CODE-001 (inline SVG), CODE-002 (double truncation)'
+  - at: '2026-02-10T14:00:00Z'
+    gate: PASS
+    note: 'Re-review — all 3 issues resolved. No new issues found.'
+
+recommendations:
+  immediate: []
+  future: []

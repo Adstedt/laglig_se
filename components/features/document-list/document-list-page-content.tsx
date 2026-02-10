@@ -69,15 +69,18 @@ import type {
   LawListItemPriority,
   ComplianceStatus,
 } from '@prisma/client'
+import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
 
 interface DocumentListPageContentProps {
   initialLists: DocumentListSummary[]
   defaultListId: string | null
+  publishedTemplates?: PublishedTemplate[] | undefined
 }
 
 export function DocumentListPageContent({
   initialLists,
   defaultListId,
+  publishedTemplates,
 }: DocumentListPageContentProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
@@ -1019,6 +1022,7 @@ export function DocumentListPageContent({
         onOpenChange={setIsManageModalOpen}
         mode={manageModalMode}
         list={manageModalMode === 'edit' ? activeList : undefined}
+        templates={publishedTemplates}
         onCreated={handleListCreated}
         onUpdated={handleListUpdated}
         onDeleted={handleListDeleted}

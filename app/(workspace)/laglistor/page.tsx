@@ -9,6 +9,7 @@ import {
   getDocumentLists,
   getOrCreateDefaultList,
 } from '@/app/actions/document-list'
+import { getPublishedTemplates } from '@/lib/db/queries/template-catalog'
 import { DocumentListPageContent } from '@/components/features/document-list/document-list-page-content'
 import { DocumentListPageSkeleton } from '@/components/features/document-list/document-list-skeleton'
 
@@ -22,10 +23,12 @@ export const metadata: Metadata = {
 
 export default async function DocumentListsPage() {
   // Fetch initial data server-side
-  const [listsResult, defaultListResult] = await Promise.all([
-    getDocumentLists(),
-    getOrCreateDefaultList(),
-  ])
+  const [listsResult, defaultListResult, publishedTemplates] =
+    await Promise.all([
+      getDocumentLists(),
+      getOrCreateDefaultList(),
+      getPublishedTemplates(),
+    ])
 
   const lists = listsResult.success ? (listsResult.data ?? []) : []
   const defaultListId = defaultListResult.success
@@ -45,6 +48,7 @@ export default async function DocumentListsPage() {
         <DocumentListPageContent
           initialLists={lists}
           defaultListId={defaultListId}
+          publishedTemplates={publishedTemplates}
         />
       </Suspense>
     </div>

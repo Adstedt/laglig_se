@@ -2,10 +2,11 @@
 
 /**
  * Story 4.11: Manage List Modal
- * Create new list or edit/delete existing list
+ * Story 12.10b: Refactored into multi-step template-aware creation flow.
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Dialog,
   DialogContent,
@@ -29,19 +30,25 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { Loader2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Trash2 } from 'lucide-react'
 import {
   createDocumentList,
   updateDocumentList,
   deleteDocumentList,
   type DocumentListSummary,
 } from '@/app/actions/document-list'
+import { CreateListChooser } from './create-list-chooser'
+import { CreateListFromTemplate } from './create-list-from-template'
+import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
+
+type Step = 'choose' | 'from-template' | 'blank'
 
 interface ManageListModalProps {
   open: boolean
   onOpenChange: (_open: boolean) => void
   mode: 'create' | 'edit'
   list?: DocumentListSummary | undefined
+  templates?: PublishedTemplate[] | undefined
   onCreated: (_listId: string) => void
   onUpdated: () => void
   onDeleted: () => void
@@ -52,10 +59,22 @@ export function ManageListModal({
   onOpenChange,
   mode,
   list,
+  templates,
   onCreated,
   onUpdated,
   onDeleted,
 }: ManageListModalProps) {
+  const hasTemplates = (templates?.length ?? 0) > 0
+
+  // Multi-step state (only for create mode)
+  const initialStep: Step =
+    mode === 'create' && hasTemplates ? 'choose' : 'blank'
+  const [step, setStep] = useState<Step>(initialStep)
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<PublishedTemplate | null>(null)
+  const [direction, setDirection] = useState(1) // 1 = forward, -1 = back
+
+  // Blank form state
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isDefault, setIsDefault] = useState(false)
@@ -64,7 +83,7 @@ export function ManageListModal({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Populate form when editing
+  // Reset state when modal opens/closes or mode changes
   useEffect(() => {
     if (mode === 'edit' && list) {
       setName(list.name)
@@ -76,7 +95,32 @@ export function ManageListModal({
       setIsDefault(false)
     }
     setError(null)
-  }, [mode, list, open])
+    setSelectedTemplate(null)
+    setDirection(1)
+    setStep(mode === 'create' && hasTemplates ? 'choose' : 'blank')
+  }, [mode, list, open, hasTemplates])
+
+  const goForward = useCallback((nextStep: Step) => {
+    setDirection(1)
+    setStep(nextStep)
+  }, [])
+
+  const goBack = useCallback(() => {
+    setDirection(-1)
+    setStep('choose')
+  }, [])
+
+  const handleSelectTemplate = useCallback(
+    (template: PublishedTemplate) => {
+      setSelectedTemplate(template)
+      goForward('from-template')
+    },
+    [goForward]
+  )
+
+  const handleSelectBlank = useCallback(() => {
+    goForward('blank')
+  }, [goForward])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,10 +129,8 @@ export function ManageListModal({
 
     try {
       if (mode === 'create') {
-        // For create, we need to get workspaceId from context
-        // This will be available through the workspace context in the real app
         const result = await createDocumentList({
-          workspaceId: '', // This will be overridden by server action context
+          workspaceId: '',
           name: name.trim(),
           description: description.trim() || undefined,
           isDefault,
@@ -147,91 +189,201 @@ export function ManageListModal({
 
   const isValid = name.trim().length > 0
 
+  // Determine modal width based on step
+  const modalWidthClass =
+    mode === 'create' && step === 'choose' ? 'sm:max-w-lg' : 'sm:max-w-md'
+
+  // Title and description per step
+  const getTitle = () => {
+    if (mode === 'edit') return 'Redigera lista'
+    if (step === 'choose') return 'Skapa ny laglista'
+    if (step === 'from-template') return 'Skapa från mall'
+    return 'Skapa ny lista'
+  }
+
+  const getDescription = () => {
+    if (mode === 'edit') return 'Uppdatera listans namn och inställningar.'
+    if (step === 'choose') return 'Välj hur du vill börja.'
+    if (step === 'from-template') return undefined
+    return 'Skapa en ny dokumentlista för att organisera relevanta lagar och rättsfall.'
+  }
+
+  // Animation variants
+  const slideVariants = {
+    enter: (dir: number) => ({
+      opacity: 0,
+      x: dir * 20,
+    }),
+    center: {
+      opacity: 1,
+      x: 0,
+    },
+    exit: (dir: number) => ({
+      opacity: 0,
+      x: dir * -20,
+    }),
+  }
+
+  // Render the blank form (shared between create-blank and edit)
+  const renderBlankForm = () => (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {/* Back button (only when templates exist and creating) */}
+      {mode === 'create' && hasTemplates && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={goBack}
+          className="w-fit -ml-2 gap-1.5"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Tillbaka
+        </Button>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="name">Namn</Label>
+        <Input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="T.ex. Huvudlista, GDPR-relaterat..."
+          maxLength={100}
+          required
+        />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="description">Beskrivning (valfritt)</Label>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Kort beskrivning av listans syfte..."
+          maxLength={500}
+          rows={3}
+        />
+      </div>
+
+      <div className="flex items-center justify-between py-2">
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="default">Standardlista</Label>
+          <p className="text-sm text-muted-foreground">
+            Standardlistan visas först när du öppnar sidan.
+          </p>
+        </div>
+        <Switch
+          id="default"
+          checked={isDefault}
+          onCheckedChange={setIsDefault}
+        />
+      </div>
+
+      {error && <p className="text-sm text-destructive">{error}</p>}
+
+      <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+        {mode === 'edit' && list && !list.isDefault && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="text-destructive hover:text-destructive mr-auto"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Ta bort lista
+          </Button>
+        )}
+        <div className="flex gap-2 ml-auto">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Avbryt
+          </Button>
+          <Button type="submit" disabled={!isValid || isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {mode === 'create' ? 'Skapa' : 'Spara'}
+          </Button>
+        </div>
+      </DialogFooter>
+    </form>
+  )
+
+  // Render step content (for create mode with templates)
+  const renderStepContent = () => {
+    // Edit mode — always show the form directly (no step machine)
+    if (mode === 'edit') return renderBlankForm()
+
+    return (
+      <AnimatePresence mode="wait" custom={direction}>
+        {step === 'choose' && templates && (
+          <motion.div
+            key="choose"
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
+            <CreateListChooser
+              templates={templates}
+              onSelectTemplate={handleSelectTemplate}
+              onSelectBlank={handleSelectBlank}
+            />
+          </motion.div>
+        )}
+
+        {step === 'from-template' && selectedTemplate && (
+          <motion.div
+            key="from-template"
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
+            <CreateListFromTemplate
+              template={selectedTemplate}
+              onBack={goBack}
+              onCreated={onCreated}
+            />
+          </motion.div>
+        )}
+
+        {step === 'blank' && (
+          <motion.div
+            key="blank"
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+          >
+            {renderBlankForm()}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    )
+  }
+
+  const descriptionText = getDescription()
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className={modalWidthClass}>
           <DialogHeader>
-            <DialogTitle>
-              {mode === 'create' ? 'Skapa ny lista' : 'Redigera lista'}
-            </DialogTitle>
-            <DialogDescription>
-              {mode === 'create'
-                ? 'Skapa en ny dokumentlista för att organisera relevanta lagar och rättsfall.'
-                : 'Uppdatera listans namn och inställningar.'}
-            </DialogDescription>
+            <DialogTitle>{getTitle()}</DialogTitle>
+            {descriptionText && (
+              <DialogDescription>{descriptionText}</DialogDescription>
+            )}
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="name">Namn</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="T.ex. Huvudlista, GDPR-relaterat..."
-                maxLength={100}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="description">Beskrivning (valfritt)</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Kort beskrivning av listans syfte..."
-                maxLength={500}
-                rows={3}
-              />
-            </div>
-
-            <div className="flex items-center justify-between py-2">
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="default">Standardlista</Label>
-                <p className="text-sm text-muted-foreground">
-                  Standardlistan visas först när du öppnar sidan.
-                </p>
-              </div>
-              <Switch
-                id="default"
-                checked={isDefault}
-                onCheckedChange={setIsDefault}
-              />
-            </div>
-
-            {error && <p className="text-sm text-destructive">{error}</p>}
-
-            <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
-              {mode === 'edit' && list && !list.isDefault && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="text-destructive hover:text-destructive mr-auto"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Ta bort lista
-                </Button>
-              )}
-              <div className="flex gap-2 ml-auto">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Avbryt
-                </Button>
-                <Button type="submit" disabled={!isValid || isSubmitting}>
-                  {isSubmitting && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  {mode === 'create' ? 'Skapa' : 'Spara'}
-                </Button>
-              </div>
-            </DialogFooter>
-          </form>
+          {renderStepContent()}
         </DialogContent>
       </Dialog>
 

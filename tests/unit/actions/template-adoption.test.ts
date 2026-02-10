@@ -308,6 +308,102 @@ describe('adoptTemplate', () => {
     expect(result.data?.listName).toBe('Arbetsmiljö (3)')
   })
 
+  // ---- Name override (Story 12.10b) ----
+
+  it('uses provided name override instead of template name', async () => {
+    const result = await adoptTemplate({
+      templateSlug: 'arbetsmiljo',
+      name: 'Min arbetsmiljölista',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data?.listName).toBe('Min arbetsmiljölista')
+  })
+
+  it('uses template name when name override is omitted', async () => {
+    const result = await adoptTemplate({ templateSlug: 'arbetsmiljo' })
+
+    expect(result.success).toBe(true)
+    expect(result.data?.listName).toBe('Arbetsmiljö')
+  })
+
+  it('deduplicates name override when it collides with existing list', async () => {
+    vi.mocked(prisma.lawList.findMany).mockResolvedValue([
+      { name: 'Mitt namn' },
+    ] as never)
+
+    const result = await adoptTemplate({
+      templateSlug: 'arbetsmiljo',
+      name: 'Mitt namn',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data?.listName).toBe('Mitt namn (2)')
+  })
+
+  // ---- Description and isDefault (Story 12.10b QA fix) ----
+
+  it('passes description and isDefault to LawList.create', async () => {
+    let capturedListData: Record<string, unknown> | undefined
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+      const tx = {
+        lawList: {
+          create: vi.fn().mockImplementation(async ({ data }) => {
+            capturedListData = data
+            return { id: 'list_123', name: 'Arbetsmiljö' }
+          }),
+        },
+        lawListGroup: {
+          create: vi
+            .fn()
+            .mockResolvedValue({ id: 'group_1', name: 'Test', position: 1 }),
+        },
+        lawListItem: {
+          createMany: vi.fn().mockResolvedValue({ count: 3 }),
+        },
+      }
+      return callback(tx as never)
+    })
+
+    await adoptTemplate({
+      templateSlug: 'arbetsmiljo',
+      name: 'Min lista',
+      description: 'Min beskrivning',
+      isDefault: true,
+    })
+
+    expect(capturedListData?.description).toBe('Min beskrivning')
+    expect(capturedListData?.is_default).toBe(true)
+  })
+
+  it('defaults description to null and isDefault to false when omitted', async () => {
+    let capturedListData: Record<string, unknown> | undefined
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+      const tx = {
+        lawList: {
+          create: vi.fn().mockImplementation(async ({ data }) => {
+            capturedListData = data
+            return { id: 'list_123', name: 'Arbetsmiljö' }
+          }),
+        },
+        lawListGroup: {
+          create: vi
+            .fn()
+            .mockResolvedValue({ id: 'group_1', name: 'Test', position: 1 }),
+        },
+        lawListItem: {
+          createMany: vi.fn().mockResolvedValue({ count: 3 }),
+        },
+      }
+      return callback(tx as never)
+    })
+
+    await adoptTemplate({ templateSlug: 'arbetsmiljo' })
+
+    expect(capturedListData?.description).toBeNull()
+    expect(capturedListData?.is_default).toBe(false)
+  })
+
   // ---- Error cases ----
 
   it('returns error for non-existent template slug', async () => {
