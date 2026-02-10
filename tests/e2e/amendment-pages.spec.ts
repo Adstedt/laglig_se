@@ -5,15 +5,13 @@
 
 import { test, expect } from '@playwright/test'
 
-const BASE_URL = 'http://localhost:3000'
-
 test.describe('Amendment Document Pages (Story 2.29)', () => {
   test.describe('Catalogue Integration', () => {
     test('should have Ändringsförfattningar filter option in catalogue', async ({
       page,
     }) => {
       await page.setViewportSize({ width: 1280, height: 800 })
-      await page.goto(`${BASE_URL}/rattskallor`)
+      await page.goto(`/rattskallor`)
 
       // Wait for page to load
       await expect(page.locator('h1')).toBeVisible()
@@ -25,7 +23,7 @@ test.describe('Amendment Document Pages (Story 2.29)', () => {
 
     test('should filter by amendments when selected', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 800 })
-      await page.goto(`${BASE_URL}/rattskallor`)
+      await page.goto(`/rattskallor`)
 
       // Wait for page to load
       await page.waitForTimeout(2000)
@@ -45,9 +43,7 @@ test.describe('Amendment Document Pages (Story 2.29)', () => {
 
   test.describe('History Page Integration', () => {
     test('should load history page for arbetsmiljölagen', async ({ page }) => {
-      await page.goto(
-        `${BASE_URL}/lagar/arbetsmiljolag-19771160-1977-1160/historik`
-      )
+      await page.goto(`/lagar/arbetsmiljolag-19771160-1977-1160/historik`)
 
       // Wait for page to load
       await expect(page.locator('h1:has-text("Ändringshistorik")')).toBeVisible(
@@ -65,9 +61,7 @@ test.describe('Amendment Document Pages (Story 2.29)', () => {
     })
 
     test('should have Detaljer link on amendments', async ({ page }) => {
-      await page.goto(
-        `${BASE_URL}/lagar/arbetsmiljolag-19771160-1977-1160/historik`
-      )
+      await page.goto(`/lagar/arbetsmiljolag-19771160-1977-1160/historik`)
 
       // Wait for timeline to load
       await page.waitForTimeout(3000)
@@ -101,9 +95,7 @@ test.describe('Amendment Document Pages (Story 2.29)', () => {
       page,
     }) => {
       // First, find an actual amendment page by checking the history
-      await page.goto(
-        `${BASE_URL}/lagar/arbetsmiljolag-19771160-1977-1160/historik`
-      )
+      await page.goto(`/lagar/arbetsmiljolag-19771160-1977-1160/historik`)
 
       await page.waitForTimeout(3000)
 
@@ -143,9 +135,7 @@ test.describe('Amendment Document Pages (Story 2.29)', () => {
     })
 
     test('should have link back to base law', async ({ page }) => {
-      await page.goto(
-        `${BASE_URL}/lagar/arbetsmiljolag-19771160-1977-1160/historik`
-      )
+      await page.goto(`/lagar/arbetsmiljolag-19771160-1977-1160/historik`)
 
       await page.waitForTimeout(3000)
 
@@ -172,9 +162,7 @@ test.describe('Amendment Document Pages (Story 2.29)', () => {
 
   test.describe('404 Handling', () => {
     test('should show 404 for invalid amendment slug', async ({ page }) => {
-      await page.goto(
-        `${BASE_URL}/lagar/andringar/invalid-slug-that-does-not-exist`
-      )
+      await page.goto(`/lagar/andringar/invalid-slug-that-does-not-exist`)
 
       // Next.js custom 404 pages return HTTP 200 with 404 content
       // Check for 404 text on page instead

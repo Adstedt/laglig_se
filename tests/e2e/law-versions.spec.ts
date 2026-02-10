@@ -5,14 +5,13 @@
 
 import { test, expect } from '@playwright/test'
 
-const BASE_URL = 'http://localhost:3000'
 const TEST_LAW_SLUG = 'arbetsmiljolag-19771160-1977-1160'
 const TEST_LAW_SFS = '1977:1160'
 
 test.describe('Law Historical Versions', () => {
   test.describe('Version Selector', () => {
     test('should display version selector on law page', async ({ page }) => {
-      await page.goto(`${BASE_URL}/lagar/${TEST_LAW_SLUG}`)
+      await page.goto(`/lagar/${TEST_LAW_SLUG}`)
 
       // Wait for the page to load
       await expect(page.locator('h1')).toBeVisible()
@@ -25,7 +24,7 @@ test.describe('Law Historical Versions', () => {
     })
 
     test('should show amendment history in dropdown', async ({ page }) => {
-      await page.goto(`${BASE_URL}/lagar/${TEST_LAW_SLUG}`)
+      await page.goto(`/lagar/${TEST_LAW_SLUG}`)
 
       // Wait for version selector to load
       await page.waitForTimeout(2000) // Give time for API fetch
@@ -45,7 +44,7 @@ test.describe('Law Historical Versions', () => {
     test('should navigate to historical version when selecting a date', async ({
       page,
     }) => {
-      await page.goto(`${BASE_URL}/lagar/${TEST_LAW_SLUG}`)
+      await page.goto(`/lagar/${TEST_LAW_SLUG}`)
 
       // Wait for version selector
       await page.waitForTimeout(2000)
@@ -69,7 +68,7 @@ test.describe('Law Historical Versions', () => {
 
   test.describe('History Page', () => {
     test('should load history page with amendments', async ({ page }) => {
-      await page.goto(`${BASE_URL}/lagar/${TEST_LAW_SLUG}/historik`)
+      await page.goto(`/lagar/${TEST_LAW_SLUG}/historik`)
 
       // Wait for page to load
       await expect(
@@ -87,7 +86,7 @@ test.describe('Law Historical Versions', () => {
     })
 
     test('should display available version dates', async ({ page }) => {
-      await page.goto(`${BASE_URL}/lagar/${TEST_LAW_SLUG}/historik`)
+      await page.goto(`/lagar/${TEST_LAW_SLUG}/historik`)
 
       // Wait for content to load
       await page.waitForTimeout(2000)
@@ -101,7 +100,7 @@ test.describe('Law Historical Versions', () => {
 
   test.describe('Version Comparison', () => {
     test('should have compare form with date inputs', async ({ page }) => {
-      await page.goto(`${BASE_URL}/lagar/${TEST_LAW_SLUG}/historik`)
+      await page.goto(`/lagar/${TEST_LAW_SLUG}/historik`)
 
       // Should have from and to date inputs
       await expect(page.locator('#from-date')).toBeVisible()
@@ -117,7 +116,7 @@ test.describe('Law Historical Versions', () => {
       const toDate = '2025-01-01'
 
       await page.goto(
-        `${BASE_URL}/lagar/${TEST_LAW_SLUG}/historik?from=${fromDate}&to=${toDate}`
+        `/lagar/${TEST_LAW_SLUG}/historik?from=${fromDate}&to=${toDate}`
       )
 
       // Wait for diff to load
@@ -139,7 +138,7 @@ test.describe('Law Historical Versions', () => {
       const toDate = '2025-01-01'
 
       await page.goto(
-        `${BASE_URL}/lagar/${TEST_LAW_SLUG}/historik?from=${fromDate}&to=${toDate}`
+        `/lagar/${TEST_LAW_SLUG}/historik?from=${fromDate}&to=${toDate}`
       )
 
       await page.waitForTimeout(3000)
@@ -166,7 +165,7 @@ test.describe('Law Historical Versions', () => {
       const toDate = '2025-01-01'
 
       await page.goto(
-        `${BASE_URL}/lagar/${TEST_LAW_SLUG}/historik?from=${fromDate}&to=${toDate}`
+        `/lagar/${TEST_LAW_SLUG}/historik?from=${fromDate}&to=${toDate}`
       )
 
       await page.waitForTimeout(3000)
@@ -199,7 +198,7 @@ test.describe('Law Historical Versions', () => {
       // Pick a date we know has data
       const testDate = '2024-01-01'
 
-      await page.goto(`${BASE_URL}/lagar/${TEST_LAW_SLUG}/version/${testDate}`)
+      await page.goto(`/lagar/${TEST_LAW_SLUG}/version/${testDate}`)
 
       // Wait for page to load
       await page.waitForTimeout(3000)
@@ -219,7 +218,7 @@ test.describe('Law Historical Versions', () => {
   test.describe('API Endpoints', () => {
     test('history API should return valid data', async ({ request }) => {
       const response = await request.get(
-        `${BASE_URL}/api/laws/${encodeURIComponent(TEST_LAW_SFS)}/history`
+        `/api/laws/${encodeURIComponent(TEST_LAW_SFS)}/history`
       )
 
       expect(response.ok()).toBe(true)
@@ -240,7 +239,7 @@ test.describe('Law Historical Versions', () => {
       const toDate = '2025-01-01'
 
       const response = await request.get(
-        `${BASE_URL}/api/laws/${encodeURIComponent(TEST_LAW_SFS)}/diff?from=${fromDate}&to=${toDate}`
+        `/api/laws/${encodeURIComponent(TEST_LAW_SFS)}/diff?from=${fromDate}&to=${toDate}`
       )
 
       expect(response.ok()).toBe(true)
@@ -276,7 +275,7 @@ test.describe('Law Historical Versions', () => {
       const testDate = '2024-01-01'
 
       const response = await request.get(
-        `${BASE_URL}/api/laws/${encodeURIComponent(TEST_LAW_SFS)}/version/${testDate}`
+        `/api/laws/${encodeURIComponent(TEST_LAW_SFS)}/version/${testDate}`
       )
 
       expect(response.ok()).toBe(true)

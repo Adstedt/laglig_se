@@ -1,7 +1,7 @@
 import { test } from '@playwright/test'
 
 test('inspect features section - bento layout', async ({ page }) => {
-  await page.goto('http://localhost:3000')
+  await page.goto('/')
   await page.waitForLoadState('networkidle')
 
   // Set a larger viewport to see the full section
