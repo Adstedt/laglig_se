@@ -31,7 +31,7 @@ vi.mock('next/cache', () => ({
 }))
 
 vi.mock('@/lib/db/queries/template-catalog', () => ({
-  getPublishedTemplateBySlug: vi.fn(),
+  getPublishedTemplateBySlugUncached: vi.fn(),
 }))
 
 import { adoptTemplate } from '@/app/actions/template-adoption'
@@ -41,7 +41,7 @@ import {
   requireWorkspaceAccess,
 } from '@/lib/auth/workspace-context'
 import { revalidatePath } from 'next/cache'
-import { getPublishedTemplateBySlug } from '@/lib/db/queries/template-catalog'
+import { getPublishedTemplateBySlugUncached } from '@/lib/db/queries/template-catalog'
 
 const mockCtx = {
   userId: 'user_123',
@@ -148,7 +148,7 @@ describe('adoptTemplate', () => {
     vi.mocked(requireWorkspaceAccess).mockResolvedValue(mockCtx as never)
 
     // Default: template found
-    vi.mocked(getPublishedTemplateBySlug).mockResolvedValue(
+    vi.mocked(getPublishedTemplateBySlugUncached).mockResolvedValue(
       mockTemplate as never
     )
 
@@ -311,7 +311,7 @@ describe('adoptTemplate', () => {
   // ---- Error cases ----
 
   it('returns error for non-existent template slug', async () => {
-    vi.mocked(getPublishedTemplateBySlug).mockResolvedValue(null)
+    vi.mocked(getPublishedTemplateBySlugUncached).mockResolvedValue(null)
 
     const result = await adoptTemplate({ templateSlug: 'nonexistent' })
 
@@ -320,7 +320,7 @@ describe('adoptTemplate', () => {
   })
 
   it('returns error for template with 0 resolved items (empty variant)', async () => {
-    vi.mocked(getPublishedTemplateBySlug).mockResolvedValue({
+    vi.mocked(getPublishedTemplateBySlugUncached).mockResolvedValue({
       ...mockTemplate,
       sections: [
         {

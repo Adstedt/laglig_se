@@ -167,8 +167,6 @@ export async function adoptTemplate(
     }
   } catch (error) {
     console.error('Error adopting template:', error)
-    const message =
-      error instanceof Error ? error.message : 'Kunde inte adoptera mall'
-    return { success: false, error: message }
+    return { success: false, error: 'Kunde inte adoptera mall' }
   }
 }

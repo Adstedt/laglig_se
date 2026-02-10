@@ -25,13 +25,13 @@ vi.mock('next/cache', () => ({
 }))
 
 vi.mock('@/lib/db/queries/template-catalog', () => ({
-  getPublishedTemplateBySlug: vi.fn(),
+  getPublishedTemplateBySlugUncached: vi.fn(),
 }))
 
 import { adoptTemplate } from '@/app/actions/template-adoption'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
-import { getPublishedTemplateBySlug } from '@/lib/db/queries/template-catalog'
+import { getPublishedTemplateBySlugUncached } from '@/lib/db/queries/template-catalog'
 
 const mockCtx = {
   userId: 'user_int_1',
@@ -137,7 +137,9 @@ describe('Template Adoption Integration', () => {
       ],
     }
 
-    vi.mocked(getPublishedTemplateBySlug).mockResolvedValue(template as never)
+    vi.mocked(getPublishedTemplateBySlugUncached).mockResolvedValue(
+      template as never
+    )
 
     // Capture all TX operations
     let capturedListCreate: Record<string, unknown> | undefined

@@ -1,0 +1,60 @@
+schema: 1
+story: '12.10'
+story_title: 'Adopt Template into Workspace'
+gate: FAIL
+status_reason: 'All server action tests (10/13) fail due to mock mismatch — tests mock getPublishedTemplateBySlug but server action imports getPublishedTemplateBySlugUncached. Error handling also exposes raw error messages to client.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-10T10:05:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'TEST-001'
+    severity: high
+    finding: 'Test mock mismatch: vi.mock exports getPublishedTemplateBySlug but server action imports getPublishedTemplateBySlugUncached — 10 of 13 tests fail'
+    suggested_action: 'Update mock factory in both test files to export getPublishedTemplateBySlugUncached'
+    suggested_owner: dev
+  - id: 'SEC-001'
+    severity: medium
+    finding: 'Error catch block exposes raw error.message to client, deviating from established fixed-message pattern in document-list.ts'
+    suggested_action: 'Replace error instanceof Error branch with fixed message: Kunde inte adoptera mall'
+    suggested_owner: dev
+  - id: 'TEST-002'
+    severity: low
+    finding: 'Integration test mocks all dependencies identically to unit tests — not a true integration test'
+    suggested_action: 'Rename or replace with real DB integration test in future'
+    suggested_owner: dev
+
+quality_score: 60
+expires: '2026-02-24T10:05:00Z'
+
+evidence:
+  tests_reviewed: 13
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: CONCERNS
+    notes: 'Error catch block at template-adoption.ts:170 exposes raw error.message to client instead of fixed Swedish message'
+  performance:
+    status: PASS
+    notes: 'Bulk createMany for items, Promise.all for groups, parallel data fetching in server page'
+  reliability:
+    status: PASS
+    notes: 'Atomic transaction for list+groups+items, proper error handling structure, Zod validation'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation of concerns, extracted generateUniqueName utility, proper server/client boundary'
+
+recommendations:
+  immediate:
+    - action: 'Fix mock mismatch: change getPublishedTemplateBySlug to getPublishedTemplateBySlugUncached in test mock factories'
+      refs: ['tests/unit/actions/template-adoption.test.ts:34', 'tests/integration/template-adoption.test.ts:28']
+    - action: 'Fix error handling: use fixed message instead of error.message'
+      refs: ['app/actions/template-adoption.ts:170-171']
+  future:
+    - action: 'Replace mocked integration test with real DB integration test'
+      refs: ['tests/integration/template-adoption.test.ts']
