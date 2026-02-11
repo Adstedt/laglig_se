@@ -1,0 +1,43 @@
+schema: 1
+story: '12.9'
+story_title: 'Template Detail & Preview Page'
+gate: PASS
+status_reason: 'All 9 ACs fully implemented with 45 passing unit tests. Clean architecture, shared constants extraction (addresses 12.8 QA finding), comprehensive variant mapping algorithm, dark mode support throughout. No security concerns, no blocking issues.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-09T14:15:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 92
+expires: '2026-02-23T14:15:00Z'
+
+evidence:
+  tests_reviewed: 45
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Read-only queries behind workspace auth. Slug passed as Prisma parameter — no injection risk.'
+  performance:
+    status: PASS
+    notes: 'Selective field fetching with select, position-indexed ordering, single DB round-trip. Low-traffic auth page.'
+  reliability:
+    status: PASS
+    notes: 'Null → notFound(), empty section states, single-section graceful degradation, variant mapping skips unmapped items.'
+  maintainability:
+    status: PASS
+    notes: 'Clean component separation, shared constants file, typed interfaces, 45 tests across 5 files. Addresses 12.8 DOMAIN_LABELS duplication finding.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Remove templateSlug prop from TemplateAdoptCta when Story 12.10 confirms the adoption route pattern — currently accepted but unused'
+      refs: ['components/features/templates/template-adopt-cta.tsx:8']
+    - action: 'Consider request-level caching or deduplication for getPublishedTemplateBySlug to avoid double query in generateMetadata + page render'
+      refs: ['app/(workspace)/laglistor/mallar/[slug]/page.tsx:19', 'app/(workspace)/laglistor/mallar/[slug]/page.tsx:33']

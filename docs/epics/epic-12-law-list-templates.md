@@ -87,6 +87,69 @@ For the 3 gold-standard templates, roughly 50-55% of referenced documents are ag
 
 ---
 
+## Strategic Decisions (2026-02-07)
+
+### Decision A: Single-Section Flat Seeding (IP Risk Mitigation)
+
+**Decision**: All templates will initially be seeded with a single placeholder section ("Alla bestämmelser") instead of the multi-section structures from the Notisum analysis. Section groupings are deferred to a future story.
+
+**Rationale**:
+- The section structures and section names in the analysis files are derived from Notisum's competitive data. Until legal review confirms we can use that structure (or we design our own original groupings), seeding without sections avoids potential IP concerns.
+- The documents themselves are public Swedish law — no copyright concern.
+- All per-item metadata (source_type, regulatory_body, is_service_company_relevant, cross_list_references) is fully populated regardless of section structure.
+- Section groupings can be added later as a pure data operation — no schema changes needed.
+
+**Impact**: Affects stories 12.4, 12.5, 12.6, 12.7a, 12.9, 12.10. See Story 12.4 (v3.0) for full downstream impact table.
+
+### Decision B: Resequenced Implementation — FE First with Mock Data
+
+**Decision**: Frontend stories (12.7a–12.10) are prioritized and built with mock/stub template data. Seeding stories (12.4, 12.5, 12.6) are deferred until ingestion pipelines for the relevant authorities are working correctly.
+
+**Rationale**:
+- No point seeding real data when the ingestion pipeline for agency regulations is still being built.
+- Building the UI first with mocks lets us validate the user experience independently of data readiness.
+- Once ingestion works, seeding becomes a data operation against a proven UI.
+
+**Revised implementation order**:
+```
+Phase A: Foundation (Stories 12.1, 12.2) ✅ DONE
+    ↓
+Phase B: Content Pipeline (Story 12.3) ✅ DONE
+    ↓
+Phase C: Frontend — Admin + Public (Stories 12.7a, 12.7b, 12.7c, 12.8, 12.9, 12.10, 12.10b)
+    → Use mock/stub template data; no dependency on seeding
+    → 12.10b (workspace create-list template chooser) after 12.10 + 12.8
+    ↓
+Phase D: Ingestion Fix (external — fix ingestion for all authorities)
+    → See "Ingestion Strategy" below for authority breakdown
+    ↓
+Phase E: Seeding (Stories 12.4, 12.5, 12.6) — Deferred until Phase D complete
+    ↓
+Phase F: AI Integration (Stories 12.11, 12.12) — needs real seeded data
+```
+
+**Ingestion Strategy (Phase D)**:
+
+The ~90 agency regulation stub documents need real content before seeding. Strategy: build automated pipelines for high-volume authorities, manually source the rest.
+
+| Approach | Authority | Prefix | Unique Docs | Templates | Note |
+|---|---|---|---|---|---|
+| **Automated pipeline** | Arbetsmiljöverket | AFS | ~50 | Arbetsmiljö | Highest priority. AFS 2023 consolidation series. |
+| **Automated pipeline** | Naturvårdsverket | NFS | ~13 | Miljö | Waste, reporting, pesticides. |
+| **Automated pipeline** | MSB | MSBFS | ~12 | Both | Fire/explosion safety, dangerous goods. |
+| _Manual_ | Elsäkerhetsverket | ELSAK-FS | 5 | Arbetsmiljö | Electrical safety. |
+| _Manual_ | Kemikalieinspektionen | KIFS | 2 | Both | Chemical products, pesticides. |
+| _Manual_ | Räddningsverket (MSB legacy) | SRVFS | 2 | Both | Fire safety, explosion zoning. |
+| _Manual_ | Boverket | BFS | 1 | Both | OVK ventilation only. |
+| _Manual_ | Skatteverket | SKVFS | 1 | Arbetsmiljö | Personnel registers only. |
+| _Manual_ | SCB | SCB-FS | 1 | Miljö | Environmental cost statistics. |
+| _Manual_ | Strålsäkerhetsmyndigheten | SSMFS | 1 | Miljö | Radiation notification. |
+| _Manual_ | Swedac | STAFS | 1 | Miljö | Accreditation rules. |
+
+**Coverage**: The top 3 automated pipelines cover **~75 of ~90 stub docs** (~83%). The remaining 8 authorities contribute ~15 docs total — manually sourced.
+
+---
+
 ## Key Architecture Decisions
 
 ### Decision 1: Templates are system-level entities, not workspace-scoped
@@ -583,6 +646,28 @@ Human review is supported via a draft → review → published workflow in the a
 
 ---
 
+#### Story 12.10b: Refactor Create List Modal into Template-Aware Chooser
+
+**As a** workspace member,
+**I want** the "Skapa ny lista" flow to surface available templates alongside the blank-list option,
+**so that** I can discover and adopt expert-curated templates without leaving my workspace context.
+
+**Acceptance Criteria:**
+
+1. "Skapa ny lista" modal opens with a chooser view: two option cards ("Börja från mall", "Tom lista") and inline template preview cards
+2. Selecting a template → quick preview with pre-filled name/description → triggers adoption (Story 12.10 server action)
+3. "Tom lista" → current blank form (no regression)
+4. If no published templates exist, skip chooser and show current form directly
+5. Edit mode unchanged
+
+**Technical Notes:**
+
+- Refactors `components/features/document-list/manage-list-modal.tsx` (Story 4.11) into a multi-step flow
+- Reuses `adoptTemplate()` server action from Story 12.10 and published template query from Story 12.8
+- This is the workspace-side entry point for template adoption, complementing the public catalog path (12.9 → 12.10)
+
+---
+
 ### Story Block 5: Onboarding & AI Integration
 
 ---
@@ -653,8 +738,10 @@ Human review is supported via a draft → review → published workflow in the a
 | 12.7a            | 12.2         | Admin UI needs schema                             |
 | 12.7b            | 12.7a        | Item editor builds on template detail page        |
 | 12.7c            | 12.7a        | Overlap viewer needs template list infrastructure |
-| 12.8, 12.9       | 12.4 or 12.5 | Catalog needs at least one published template     |
+| 12.8, 12.9       | 12.2         | Catalog/preview need schema (seeding dep removed per Decision B) |
 | 12.10            | 12.2         | Adoption needs schema                             |
+| 12.10b           | 12.10        | Create-list chooser reuses adoption server action |
+| 12.10b           | 12.8         | Reuses published template query                   |
 | 12.11            | 12.4 or 12.5 | AI assembly needs published templates             |
 
 ### External Dependencies
@@ -663,18 +750,27 @@ Human review is supported via a draft → review → published workflow in the a
 - **Epic 9 (Myndighetsföreskrifter)**: Backfills stub records with full content (non-blocking for Epic 12)
 - **Epic 4 (Onboarding)**: Story 12.11 refactors existing generation logic
 
-### Suggested Implementation Order
+### Suggested Implementation Order (Revised per Decision B)
 
 ```
-Phase A: Foundation (Stories 12.1, 12.2)
+Phase A: Foundation (Stories 12.1, 12.2) ✅ DONE
     ↓
-Phase B: Content (Stories 12.3, 12.4, 12.5, 12.6) — can run 12.4 + 12.5 in parallel
+Phase B: Content Pipeline (Story 12.3) ✅ DONE
     ↓
-Phase C: Admin (Stories 12.7a, 12.7b, 12.7c) — 12.7a can start during Phase B once schema exists
+Phase C: Frontend with Mock Data (Stories 12.7a, 12.7b, 12.7c, 12.8, 12.9, 12.10, 12.10b)
+    → Build admin + public UI using mock/stub template data
+    → 12.10b (create-list template chooser) comes after 12.10 + 12.8
+    → No dependency on seeding stories
     ↓
-Phase D: User-Facing (Stories 12.8, 12.9, 12.10) — needs at least one published template
+Phase D: Ingestion Fix (external to Epic 12)
+    → Fix ingestion pipelines for all authorities that provide documents for templates
+    → See authority list in Decision B notes
     ↓
-Phase E: AI Integration (Stories 12.11, 12.12) — highest value, but depends on D
+Phase E: Seeding (Stories 12.4, 12.5, 12.6) — DEFERRED until Phase D
+    → Single-section flat seeding per Decision A
+    → Run content generation pipeline (12.3) against seeded data
+    ↓
+Phase F: AI Integration (Stories 12.11, 12.12) — needs real seeded data
 ```
 
 ---
@@ -766,5 +862,5 @@ Gate: PASS (post-revision) → docs/qa/gates/12-epic-law-list-templates.yml
 ---
 
 _Epic created: 2026-02-06_
-_Last updated: 2026-02-06_
-_Status: Draft — QA PASS (revised). Ready for implementation planning._
+_Last updated: 2026-02-08_
+_Status: Draft — QA PASS (revised). Implementation resequenced: FE first with mocks, seeding deferred until ingestion fixed._

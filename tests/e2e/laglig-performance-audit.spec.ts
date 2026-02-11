@@ -6,10 +6,10 @@ import { PERFORMANCE_AUDIT_CONFIG } from './performance-audit-config'
  *
  * This test suite performs a systematic performance audit covering:
  * - Workspace selector performance
- * - Law lists (Laglistor) navigation
+ * - Law lists (Efterlevnad) navigation
  * - Law list item modal performance
  * - Settings page performance
- * - Legal sources (Rättskällor) performance
+ * - Legal sources (Regelverk) performance
  * - Tasks page performance and UI freeze detection
  *
  * Measures timing, takes screenshots, and validates performance targets.
@@ -227,7 +227,9 @@ test.describe('Laglig.se Performance Audit', () => {
     }
   })
 
-  test('2. Law Lists (Laglistor) Navigation Performance', async ({ page }) => {
+  test('2. Law Lists (Efterlevnad) Navigation Performance', async ({
+    page,
+  }) => {
     await page.goto(`${TEST_CONFIG.url}/laglistor`)
     await waitForStableUI(page)
 
@@ -257,10 +259,10 @@ test.describe('Laglig.se Performance Audit', () => {
       }
     }
 
-    // Navigate to "Mina laglistor" or similar
+    // Navigate to "Mina listor" or similar
     const myListsLink = page
       .locator(
-        'a:has-text("Mina laglistor"), a:has-text("My Lists"), a[href*="laglistor"]'
+        'a:has-text("Mina listor"), a:has-text("My Lists"), a[href*="laglistor"]'
       )
       .first()
 
@@ -508,7 +510,7 @@ test.describe('Laglig.se Performance Audit', () => {
     }
   })
 
-  test('5. Legal Sources (Rättskällor) Performance', async ({ page }) => {
+  test('5. Legal Sources (Regelverk) Performance', async ({ page }) => {
     // Navigate to legal sources
     perf.start('legal-sources-navigation')
     await page.goto(`${TEST_CONFIG.url}/rattskallor`)

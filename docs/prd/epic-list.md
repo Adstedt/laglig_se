@@ -140,7 +140,7 @@
 
 **Goal:** Create a curated library of expert-quality law list templates that serve as both a browsable product catalog for users and the structured foundation for AI-assisted law list generation. Phase 1: 3 gold-standard domains (Arbetsmiljö, Arb. tjänsteföretag, Miljö) with 265 documents.
 
-**Delivers:** Template data model (LawListTemplate, TemplateSection, TemplateItem), ~130 agency regulation stub records, AI-generated compliance summaries and expert commentary, admin template management UI, public template catalog with browse/preview/adopt, refactored AI onboarding drawing from templates
+**Delivers:** Template data model (LawListTemplate, TemplateSection, TemplateItem), ~130 agency regulation stub records, AI-generated compliance summaries and expert commentary, admin template management UI, authenticated template catalog with browse/preview/adopt, refactored AI onboarding drawing from templates
 
 **Requirements covered:** FR2 (enhanced), FR3 (enhanced), FR4 (enhanced)
 

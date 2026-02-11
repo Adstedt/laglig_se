@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Rättskällor Catalogue Page', () => {
+test.describe('Regelverk Catalogue Page', () => {
   test('displays catalogue page with results', async ({ page }) => {
     await page.goto('/rattskallor')
 
     // Check page title
-    await expect(page.locator('h1')).toContainText('Rättskällor')
+    await expect(page.locator('h1')).toContainText('Regelverk')
 
     // Check search bar is present
     await expect(

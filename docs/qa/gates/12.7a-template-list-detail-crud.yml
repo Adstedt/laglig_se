@@ -1,0 +1,72 @@
+schema: 1
+story: '12.7a'
+story_title: 'Template List & Detail CRUD in Admin'
+gate: PASS
+status_reason: 'All 6 issues from initial review resolved. Move-items UI wired (AC-001), DialogDescription added (A11Y-001), published_at column added (AC-002), generateSlug deduplicated (DUP-001), status typed as TemplateStatus (TYPE-001), 20 new tests added (TEST-001). 58 tests pass, 0 TypeScript errors, 0 lint errors.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-09T11:00:00Z'
+
+waiver: { active: false }
+
+resolved_issues:
+  - id: 'AC-001'
+    severity: medium
+    finding: 'AC 4 "move items between sections" had no UI — handleMoveItem was void-ed'
+    resolution: 'Added Select dropdown per row in template-section-items.tsx, filtered to other sections. allSections passed through template-sections.tsx.'
+    status: RESOLVED
+  - id: 'A11Y-001'
+    severity: medium
+    finding: 'TemplateCreateDialog and AddSectionDialog missing DialogDescription (WCAG 2.1 AA)'
+    resolution: 'Added DialogDescription to both dialogs with descriptive text for screen readers.'
+    status: RESOLVED
+  - id: 'AC-002'
+    severity: low
+    finding: 'AC 2 "published date" column missing from table'
+    resolution: 'Added published_at column with SortableHeader and null-safe "—" fallback.'
+    status: RESOLVED
+  - id: 'DUP-001'
+    severity: low
+    finding: 'generateSlug() duplicated in template-create-dialog.tsx and template-edit-form.tsx'
+    resolution: 'Extracted to lib/utils.ts. Both consumers import from shared utility.'
+    status: RESOLVED
+  - id: 'TYPE-001'
+    severity: low
+    finding: 'TemplateDetailData.status typed as string instead of TemplateStatus'
+    resolution: 'Imported TemplateStatus from @prisma/client, typed status field correctly.'
+    status: RESOLVED
+  - id: 'TEST-001'
+    severity: low
+    finding: 'Missing tests for section items component and server action success paths'
+    resolution: 'New template-section-items.test.tsx (8 tests). 12 new server action tests. Total 58 tests across 6 files.'
+    status: RESOLVED
+
+quality_score: 95
+
+expires: '2026-02-23T11:00:00Z'
+
+evidence:
+  tests_reviewed: 58
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All endpoints auth-gated, Zod validation, parameterized queries, cross-template move blocked'
+  performance:
+    status: PASS
+    notes: 'Parallel queries, lazy section items fetch, debounced search, memoized columns, useTransition for drag'
+  reliability:
+    status: PASS
+    notes: 'Move items UI wired and functional, all dialogs accessible with DialogDescription'
+  maintainability:
+    status: PASS
+    notes: 'generateSlug shared utility, TemplateStatus typed correctly, 58 tests for regression safety'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider adding E2E test for template CRUD flow once seed data exists'
+      refs: ['docs/stories/12.4.seed-arbetsmiljo-template.md']

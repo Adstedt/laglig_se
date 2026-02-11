@@ -8,6 +8,7 @@
 import { Client as ElasticsearchClient } from '@elastic/elasticsearch'
 import { prisma } from '@/lib/prisma'
 import type { ContentType } from '@prisma/client'
+import { excludeStubDocuments } from '@/lib/db/queries/document-filters'
 
 // ============================================================================
 // Configuration
@@ -422,6 +423,17 @@ async function elasticsearchSearch(
     filter.push({ terms: { content_type: contentTypes } })
   }
 
+  // Story 12.1: Exclude stub documents (AGENCY_REGULATION with null full_text)
+  filter.push({
+    bool: {
+      should: [
+        { bool: { must_not: { term: { content_type: 'AGENCY_REGULATION' } } } },
+        { exists: { field: 'full_text' } },
+      ],
+      minimum_should_match: 1,
+    },
+  })
+
   const response = await client.search({
     index: ES_DOCUMENTS_INDEX,
     from: offset,
@@ -501,6 +513,8 @@ async function postgresSearch(
     ],
     ...(contentTypes &&
       contentTypes.length > 0 && { content_type: { in: contentTypes } }),
+    // Story 12.1: Exclude stub documents (AGENCY_REGULATION with null full_text)
+    ...excludeStubDocuments,
   }
 
   // Get total count

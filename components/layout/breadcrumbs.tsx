@@ -25,8 +25,9 @@ const routeLabels: Record<string, string> = {
   hr: 'HR',
   employees: 'Anställda',
   compliance: 'Efterlevnad',
-  laglistor: 'Mina laglistor',
-  browse: 'Rättskällor',
+  laglistor: 'Mina listor',
+  mallar: 'Mallar',
+  browse: 'Regelverk',
   lagar: 'Lagar',
   rattskallor: 'Bläddra',
   rattsfall: 'Rättsfall',
@@ -62,6 +63,8 @@ const showAsLink = new Set([
   'direktiv',
   'historik',
   'version',
+  'laglistor',
+  'mallar',
 ])
 
 // Get a user-friendly label for a segment (truncate long slugs)

@@ -14,6 +14,7 @@
 import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import type { ContentType } from '@prisma/client'
+import { excludeStubDocuments } from '@/lib/db/queries/document-filters'
 
 // Types matching browse.ts
 export interface CachedBrowseInput {
@@ -87,7 +88,10 @@ async function browseDocumentsCore(
 
   // Build Prisma where clause
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {}
+  const where: any = {
+    // Story 12.1: Exclude stub documents (AGENCY_REGULATION with null full_text)
+    ...excludeStubDocuments,
+  }
 
   if (contentTypes && contentTypes.length > 0) {
     where.content_type = { in: contentTypes }
@@ -242,9 +246,13 @@ export async function getCatalogueResults(
  */
 export const getTotalDocumentCount = unstable_cache(
   async (contentTypes?: string[]): Promise<number> => {
+    // Story 12.1: Exclude stub documents from counts
     const where = contentTypes?.length
-      ? { content_type: { in: contentTypes as ContentType[] } }
-      : {}
+      ? {
+          content_type: { in: contentTypes as ContentType[] },
+          ...excludeStubDocuments,
+        }
+      : excludeStubDocuments
     return prisma.legalDocument.count({ where })
   },
   ['document-count'],

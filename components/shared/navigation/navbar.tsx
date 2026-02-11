@@ -167,7 +167,7 @@ export function Navbar() {
                   <ul className="grid w-[400px] gap-1 p-3">
                     <ListItem
                       href="/rattskallor"
-                      title="Rättskällor"
+                      title="Regelverk"
                       icon={<Library className="h-4 w-4" />}
                     >
                       Bläddra bland alla rättskällor
@@ -338,7 +338,7 @@ export function Navbar() {
                     href="/rattskallor"
                     className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
                   >
-                    Rättskällor
+                    Regelverk
                   </Link>
                   <Link
                     href="/lagar"

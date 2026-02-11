@@ -6,6 +6,10 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { z } from 'zod'
 import { headers } from 'next/headers'
 import { safeTrack } from '@/lib/analytics'
+import {
+  excludeStubDocuments,
+  EXCLUDE_STUBS_SQL,
+} from '@/lib/db/queries/document-filters'
 
 // Rate limiter: 10 requests per minute for anonymous users
 // Only initialize if Redis is configured
@@ -20,6 +24,7 @@ const ratelimit = isRedisConfigured()
 // Content types aligned with Architecture 9.5.1 ContentType enum
 const ContentTypeEnum = z.enum([
   'SFS_LAW',
+  'SFS_AMENDMENT',
   'COURT_CASE_AD',
   'COURT_CASE_HD',
   'COURT_CASE_HFD',
@@ -28,6 +33,7 @@ const ContentTypeEnum = z.enum([
   'COURT_CASE_MIG',
   'EU_REGULATION',
   'EU_DIRECTIVE',
+  'AGENCY_REGULATION', // Story 12.1: Agency regulation stubs
 ])
 
 const DocumentStatusEnum = z.enum(['ACTIVE', 'REPEALED', 'DRAFT', 'ARCHIVED'])
@@ -151,7 +157,10 @@ export async function searchDocumentsAction(
   const offset = (page - 1) * limit
 
   // Build dynamic WHERE clauses for filters
-  const whereConditions: string[] = []
+  const whereConditions: string[] = [
+    // Story 12.1: Exclude stub documents (AGENCY_REGULATION with null full_text)
+    EXCLUDE_STUBS_SQL,
+  ]
   const params: unknown[] = [query]
   let paramIndex = 2
 
@@ -326,8 +335,10 @@ async function getRecentDocuments(
   const offset = (page - 1) * limit
 
   try {
+    // Story 12.1: Exclude stub documents from recent documents
     const [results, count] = await Promise.all([
       prisma.legalDocument.findMany({
+        where: excludeStubDocuments,
         take: limit,
         skip: offset,
         orderBy: { created_at: 'desc' },
@@ -346,7 +357,7 @@ async function getRecentDocuments(
           },
         },
       }),
-      prisma.legalDocument.count(),
+      prisma.legalDocument.count({ where: excludeStubDocuments }),
     ])
 
     return {
@@ -403,6 +414,8 @@ export async function searchAutocompleteAction(query: string): Promise<{
           { title: { contains: query, mode: 'insensitive' } },
           { document_number: { contains: query, mode: 'insensitive' } },
         ],
+        // Story 12.1: Exclude stub documents from autocomplete
+        ...excludeStubDocuments,
       },
       select: {
         title: true,

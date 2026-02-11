@@ -24,7 +24,9 @@ interface AmendmentData {
   original_url: string | null
   storage_path: string
   full_text: string | null
+  html_content?: string | null
   markdown_content: string | null
+  json_content?: unknown | null
   confidence: number | null
 }
 
@@ -90,7 +92,9 @@ export async function createLegalDocumentFromAmendment(
     title,
     slug,
     full_text: amendment.full_text ?? amendment.markdown_content ?? null,
-    html_content: null, // Amendments don't have HTML content
+    html_content: amendment.html_content ?? null,
+    markdown_content: amendment.markdown_content ?? null,
+    json_content: (amendment.json_content as object) ?? undefined,
     effective_date: amendment.effective_date,
     publication_date: amendment.publication_date,
     status: DocumentStatus.ACTIVE,
@@ -106,6 +110,9 @@ export async function createLegalDocumentFromAmendment(
         title: data.title,
         slug: data.slug,
         full_text: data.full_text,
+        html_content: data.html_content,
+        markdown_content: data.markdown_content,
+        json_content: data.json_content,
         effective_date: data.effective_date,
         publication_date: data.publication_date,
         source_url: data.source_url,

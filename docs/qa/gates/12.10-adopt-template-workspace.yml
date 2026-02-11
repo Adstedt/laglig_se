@@ -1,0 +1,61 @@
+schema: 1
+story: '12.10'
+story_title: 'Adopt Template into Workspace'
+gate: PASS
+status_reason: 'All 9 acceptance criteria implemented and tested. 36/36 tests pass across 6 files. Previous FAIL findings (mock mismatch, error leakage) resolved. TypeScript compiles cleanly.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-10T12:20:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'TEST-001'
+    severity: low
+    finding: 'Integration test (tests/integration/template-adoption.test.ts) mocks all external deps identically to unit tests — not a true integration test'
+    suggested_action: 'Future: replace with a test using a real test database, or reclassify as unit test'
+    suggested_owner: dev
+  - id: 'AUTH-001'
+    severity: low
+    finding: 'requireWorkspaceAccess() only validates that workspaceId matches the active workspace cookie. True cross-workspace adoption requires extending this function.'
+    suggested_action: 'Acceptable for Phase 1 (single active workspace). Extend in a future multi-workspace story.'
+    suggested_owner: dev
+
+quality_score: 90
+expires: '2026-02-24T12:20:00Z'
+
+evidence:
+  tests_reviewed: 36
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Auth gated via withWorkspace()/requireWorkspaceAccess(). Zod input validation. No raw error leakage (fixed from prior review).'
+  performance:
+    status: PASS
+    notes: 'Bulk insert via createMany. Parallel group creation via Promise.all. Parallel server-side data fetching.'
+  reliability:
+    status: PASS
+    notes: 'Prisma $transaction for atomicity. Catch-all error handler with fixed Swedish messages.'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation: utility extracted to generate-unique-name.ts. Server/client boundary respected. Established patterns followed.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Reclassify or replace integration test with real DB test'
+      refs: ['tests/integration/template-adoption.test.ts']
+    - action: 'Extend requireWorkspaceAccess for true cross-workspace adoption'
+      refs: ['lib/auth/workspace-context.ts:230']
+
+history:
+  - at: '2026-02-10T10:05:00Z'
+    gate: FAIL
+    note: 'Initial review — 10/13 tests failing due to mock mismatch; error message leakage in catch block'
+  - at: '2026-02-10T12:20:00Z'
+    gate: PASS
+    note: 'Re-review after fixes — all 36 tests pass, error handling corrected, TypeScript clean'

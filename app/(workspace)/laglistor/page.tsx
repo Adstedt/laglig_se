@@ -9,6 +9,7 @@ import {
   getDocumentLists,
   getOrCreateDefaultList,
 } from '@/app/actions/document-list'
+import { getPublishedTemplates } from '@/lib/db/queries/template-catalog'
 import { DocumentListPageContent } from '@/components/features/document-list/document-list-page-content'
 import { DocumentListPageSkeleton } from '@/components/features/document-list/document-list-skeleton'
 
@@ -16,17 +17,18 @@ import { DocumentListPageSkeleton } from '@/components/features/document-list/do
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Mina laglistor | Laglig',
-  description:
-    'Hantera dina personliga laglistor och håll koll på relevanta rättsliga krav.',
+  title: 'Mina listor | Laglig',
+  description: 'Hantera dina listor och håll koll på relevanta rättsliga krav.',
 }
 
 export default async function DocumentListsPage() {
   // Fetch initial data server-side
-  const [listsResult, defaultListResult] = await Promise.all([
-    getDocumentLists(),
-    getOrCreateDefaultList(),
-  ])
+  const [listsResult, defaultListResult, publishedTemplates] =
+    await Promise.all([
+      getDocumentLists(),
+      getOrCreateDefaultList(),
+      getPublishedTemplates(),
+    ])
 
   const lists = listsResult.success ? (listsResult.data ?? []) : []
   const defaultListId = defaultListResult.success
@@ -36,9 +38,9 @@ export default async function DocumentListsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Mina laglistor</h1>
+        <h1 className="text-2xl font-semibold">Mina listor</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Hantera dina laglistor och håll koll på relevanta rättsliga krav.
+          Hantera dina listor och håll koll på relevanta rättsliga krav.
         </p>
       </div>
 
@@ -46,6 +48,7 @@ export default async function DocumentListsPage() {
         <DocumentListPageContent
           initialLists={lists}
           defaultListId={defaultListId}
+          publishedTemplates={publishedTemplates}
         />
       </Suspense>
     </div>

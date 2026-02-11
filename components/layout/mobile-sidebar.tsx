@@ -43,14 +43,17 @@ const platformItems = [
     isToggle: true,
   },
   {
-    title: 'Laglistor',
+    title: 'Efterlevnad',
     icon: Scale,
     href: '#',
     isAccordion: true,
-    subItems: [{ title: 'Mina laglistor', href: '/laglistor' }],
+    subItems: [
+      { title: 'Mina listor', href: '/laglistor' },
+      { title: 'Mallar', href: '/laglistor/mallar' },
+    ],
   },
   {
-    title: 'Rättskällor',
+    title: 'Regelverk',
     icon: BookOpen,
     href: '#',
     isAccordion: true,
@@ -258,9 +261,6 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
           <nav className="flex-1 overflow-y-auto p-3">
             {/* Platform Section */}
             <div>
-              <h3 className="mb-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Plattform
-              </h3>
               <div className="space-y-1">
                 {platformItems.map(renderNavItem)}
               </div>

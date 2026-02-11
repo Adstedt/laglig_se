@@ -43,6 +43,7 @@ const CONFIG = {
   MAX_PAGES: 10,
   EARLY_STOP_THRESHOLD: 5,
   DELAY_MS: 200,
+  TIMEOUT_BUFFER_MS: 30000, // Stop 30s before maxDuration
 }
 
 interface CourtStats {
@@ -225,7 +226,10 @@ async function processCourtCase(
   }
 }
 
-async function syncCourt(court: CourtType): Promise<CourtStats> {
+async function syncCourt(
+  court: CourtType,
+  startTime: Date
+): Promise<CourtStats> {
   const stats: CourtStats = {
     court,
     fetched: 0,
@@ -236,11 +240,22 @@ async function syncCourt(court: CourtType): Promise<CourtStats> {
     earlyTerminated: false,
   }
 
+  const maxRuntime = maxDuration * 1000 - CONFIG.TIMEOUT_BUFFER_MS
+
   try {
     let page = 0
     let consecutiveSkips = 0
 
     while (page < CONFIG.MAX_PAGES) {
+      const elapsed = Date.now() - startTime.getTime()
+      if (elapsed > maxRuntime) {
+        console.log(
+          `[SYNC-COURT-CASES] Approaching timeout (${Math.round(elapsed / 1000)}s), stopping ${court}`
+        )
+        stats.earlyTerminated = true
+        return stats
+      }
+
       const result = await fetchCourtCases(court, page, CONFIG.PAGE_SIZE)
       const cases = result.publiceringLista || []
 
@@ -282,10 +297,19 @@ export async function GET(request: Request) {
   }
 
   const allStats: CourtStats[] = []
+  const maxRuntime = maxDuration * 1000 - CONFIG.TIMEOUT_BUFFER_MS
 
   try {
     for (const court of COURT_PRIORITY) {
-      const stats = await syncCourt(court)
+      const elapsed = Date.now() - startTime.getTime()
+      if (elapsed > maxRuntime) {
+        console.log(
+          `[SYNC-COURT-CASES] Approaching timeout (${Math.round(elapsed / 1000)}s), skipping remaining courts`
+        )
+        break
+      }
+
+      const stats = await syncCourt(court, startTime)
       allStats.push(stats)
     }
 

@@ -28,6 +28,10 @@
     {
       "path": "/api/cron/retry-failed-pdfs",
       "schedule": "0 6 * * 0"
+    },
+    {
+      "path": "/api/cron/cleanup-workspaces",
+      "schedule": "0 6 * * *"
     }
   ]
 }

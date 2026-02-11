@@ -55,7 +55,8 @@ import {
   UnifiedToolbar,
   ToolbarItemCount,
 } from '@/components/ui/unified-toolbar'
-import { Plus, Settings, FolderPlus } from 'lucide-react'
+import Link from 'next/link'
+import { Plus, Settings, FolderPlus, Library } from 'lucide-react'
 import type {
   DocumentListSummary,
   WorkspaceMemberOption,
@@ -68,15 +69,18 @@ import type {
   LawListItemPriority,
   ComplianceStatus,
 } from '@prisma/client'
+import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
 
 interface DocumentListPageContentProps {
   initialLists: DocumentListSummary[]
   defaultListId: string | null
+  publishedTemplates?: PublishedTemplate[] | undefined
 }
 
 export function DocumentListPageContent({
   initialLists,
   defaultListId,
+  publishedTemplates,
 }: DocumentListPageContentProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
@@ -743,6 +747,12 @@ export function DocumentListPageContent({
         }
         secondaryActions={
           <>
+            <Button variant="outline" asChild>
+              <Link href="/laglistor/mallar">
+                <Library className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Utforska mallar</span>
+              </Link>
+            </Button>
             <ExportDropdown
               listId={activeListId}
               listName={activeList?.name ?? 'lista'}
@@ -1012,6 +1022,7 @@ export function DocumentListPageContent({
         onOpenChange={setIsManageModalOpen}
         mode={manageModalMode}
         list={manageModalMode === 'edit' ? activeList : undefined}
+        templates={publishedTemplates}
         onCreated={handleListCreated}
         onUpdated={handleListUpdated}
         onDeleted={handleListDeleted}

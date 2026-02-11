@@ -189,15 +189,15 @@ test.describe('Laglig.se Performance Audit - LIVE', () => {
     // 3. LAW LISTS (LAGLISTOR) NAVIGATION
     console.log('\n📍 3. Law Lists Navigation & Performance')
 
-    // Find and expand Laglistor in sidebar
+    // Find and expand Efterlevnad in sidebar
     const laglistorButton = page
-      .locator('button:has-text("Laglistor"), div:has-text("Laglistor")')
+      .locator('button:has-text("Efterlevnad"), div:has-text("Efterlevnad")')
       .first()
 
     if (await laglistorButton.isVisible()) {
       await tracker.measureNavigation(
         page,
-        '3.1 Expand Laglistor Sidebar',
+        '3.1 Expand Efterlevnad Sidebar',
         async () => {
           await laglistorButton.click()
           await page.waitForTimeout(500) // Wait for animation
@@ -207,14 +207,14 @@ test.describe('Laglig.se Performance Audit - LIVE', () => {
       await page.screenshot({ path: 'screenshots/03-laglistor-expanded.png' })
     }
 
-    // Navigate to Mina laglistor
-    const minaLaglistor = page.locator('a:has-text("Mina laglistor")').first()
-    if (await minaLaglistor.isVisible()) {
+    // Navigate to Mina listor
+    const minaEfterlevnad = page.locator('a:has-text("Mina listor")').first()
+    if (await minaEfterlevnad.isVisible()) {
       await tracker.measureNavigation(
         page,
-        '3.2 Navigate to Mina laglistor',
+        '3.2 Navigate to Mina listor',
         async () => {
-          await minaLaglistor.click()
+          await minaEfterlevnad.click()
           await page.waitForURL('**/laglistor', { timeout: 10000 })
         }
       )
@@ -316,8 +316,8 @@ test.describe('Laglig.se Performance Audit - LIVE', () => {
     // 6. LEGAL SOURCES (RÄTTSKÄLLOR)
     console.log('\n📍 6. Legal Sources Browse Performance')
 
-    // Try to expand Rättskällor
-    const rattskallor = page.locator('button:has-text("Rättskällor")').first()
+    // Try to expand Regelverk
+    const rattskallor = page.locator('button:has-text("Regelverk")').first()
     if (await rattskallor.isVisible()) {
       await rattskallor.click()
       await page.waitForTimeout(300)

@@ -1,5 +1,5 @@
 /**
- * Story 3.13: Tests for MobileSidebar component - Rättskällor accordion
+ * Story 3.13: Tests for MobileSidebar component - Regelverk accordion
  */
 
 import { render, screen } from '@testing-library/react'
@@ -50,19 +50,19 @@ describe('MobileSidebar', () => {
     vi.clearAllMocks()
   })
 
-  describe('Rättskällor accordion', () => {
-    it('renders Rättskällor as accordion item', () => {
+  describe('Regelverk accordion', () => {
+    it('renders Regelverk as accordion item', () => {
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
-      expect(screen.getByText('Rättskällor')).toBeInTheDocument()
+      expect(screen.getByText('Regelverk')).toBeInTheDocument()
     })
 
-    it('shows Rättskällor subItems when accordion is expanded', async () => {
+    it('shows Regelverk subItems when accordion is expanded', async () => {
       const user = userEvent.setup()
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
-      // Click to expand Rättskällor accordion
-      const rattskallor = screen.getByText('Rättskällor')
+      // Click to expand Regelverk accordion
+      const rattskallor = screen.getByText('Regelverk')
       await user.click(rattskallor)
 
       // Check all sub-items are visible
@@ -72,12 +72,12 @@ describe('MobileSidebar', () => {
       expect(screen.getByText('EU-rätt')).toBeInTheDocument()
     })
 
-    it('has correct hrefs for Rättskällor subItems', async () => {
+    it('has correct hrefs for Regelverk subItems', async () => {
       const user = userEvent.setup()
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
       // Expand accordion
-      await user.click(screen.getByText('Rättskällor'))
+      await user.click(screen.getByText('Regelverk'))
 
       // Check links
       expect(screen.getByText('Bläddra alla').closest('a')).toHaveAttribute(
@@ -103,7 +103,7 @@ describe('MobileSidebar', () => {
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
       // Expand accordion and click a link
-      await user.click(screen.getByText('Rättskällor'))
+      await user.click(screen.getByText('Regelverk'))
       await user.click(screen.getByText('Svenska lagar'))
 
       // Should call onOpenChange(false) to close sidebar
@@ -111,19 +111,17 @@ describe('MobileSidebar', () => {
     })
   })
 
-  describe('Laglistor accordion', () => {
-    it('renders Laglistor with only Mina laglistor subItem', async () => {
+  describe('Efterlevnad accordion', () => {
+    it('renders Efterlevnad with Mina listor and Mallar subItems', async () => {
       const user = userEvent.setup()
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
-      // Expand Laglistor accordion
-      await user.click(screen.getByText('Laglistor'))
+      // Expand Efterlevnad accordion
+      await user.click(screen.getByText('Efterlevnad'))
 
-      // Should have Mina laglistor
-      expect(screen.getByText('Mina laglistor')).toBeInTheDocument()
-
-      // Should NOT have Alla lagar (removed per AC 5)
-      expect(screen.queryByText('Alla lagar')).not.toBeInTheDocument()
+      // Should have both sub-items
+      expect(screen.getByText('Mina listor')).toBeInTheDocument()
+      expect(screen.getByText('Mallar')).toBeInTheDocument()
     })
   })
 
@@ -131,14 +129,14 @@ describe('MobileSidebar', () => {
     it('uses larger touch targets for mobile (py-2.5 class)', () => {
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
-      const rattskallor = screen.getByText('Rättskällor').closest('button')
+      const rattskallor = screen.getByText('Regelverk').closest('button')
       expect(rattskallor).toHaveClass('py-2.5')
     })
 
     it('uses larger icons for mobile (h-5 w-5)', () => {
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
-      const rattskallor = screen.getByText('Rättskällor').closest('button')
+      const rattskallor = screen.getByText('Regelverk').closest('button')
       const icon = rattskallor?.querySelector('svg')
       expect(icon).toHaveClass('h-5', 'w-5')
     })
@@ -149,7 +147,7 @@ describe('MobileSidebar', () => {
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
       expect(screen.getByText('Laglig.se')).toBeInTheDocument()
-      expect(screen.getByText('Plattform')).toBeInTheDocument()
+      expect(screen.getByText('Dashboard')).toBeInTheDocument()
     })
   })
 })

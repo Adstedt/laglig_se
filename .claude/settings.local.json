@@ -214,7 +214,12 @@
       "WebFetch(domain:ai-sdk.dev)",
       "Bash(cmd //c \"taskkill /PID 16488 /F\")",
       "Bash(npm test:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(python:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh pr view:*)",
+      "Bash(powershell -Command \"$data = Import-Csv ''C:\\\\Users\\\\audri\\\\Desktop\\\\dev\\\\laglig_se\\\\data\\\\notisum-amnesfokus\\\\laglistor-all-combined.csv''; $data | Where-Object { $_''SFS Number'' -match ''^\\(AFS|BFS|NFS|KIFS|MSBFS|ELSAK-FS|SRVFS|HSLF-FS|HVMFS|IMYFS|LIVSFS|LMFS|MIGRFS|PMFS|PTSFS|SCB-FS|SJVFS|SKVFS|SLVFS|SOSFS|SSMFS|STAFS|STEMFS|SvKFS|TSFS|FFFS|FKFS\\)'' } | Select-Object -Property ''SFS Number'', ''Document Name'', Laglista -Unique | Export-Csv ''C:\\\\Users\\\\audri\\\\.claude\\\\temp-agency-regs.csv'' -NoTypeInformation; Write-Host ''Extracted data to temp file''\")",
+      "WebFetch(domain:www.notisum.com)"
     ],
     "deny": [],
     "ask": []

@@ -96,7 +96,7 @@ export default async function StaticPaginationPage({
           className="mb-2 text-2xl font-bold tracking-tight md:text-3xl"
           style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
         >
-          Rättskällor
+          Regelverk
         </h1>
         <p className="mb-4 text-muted-foreground">
           Bläddra bland svenska lagar, rättsfall och EU-lagstiftning
