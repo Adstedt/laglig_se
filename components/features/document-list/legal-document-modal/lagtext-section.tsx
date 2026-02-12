@@ -40,30 +40,7 @@ interface LagtextSectionProps {
  * Clean HTML from Riksdagen - removes metadata block before the actual law content
  * Same logic as used in the law browse pages
  */
-function cleanLawHtml(html: string): string {
-  let cleaned = html
-  // Remove leading h2 title (redundant with our header)
-  cleaned = cleaned.replace(/^<h2>[^<]+<\/h2>\s*/i, '')
-  // Find the <hr> that separates metadata from content
-  const hrIndex = cleaned.indexOf('<hr')
-  if (hrIndex !== -1) {
-    const hrEndIndex = cleaned.indexOf('>', hrIndex)
-    if (hrEndIndex !== -1) {
-      // Skip everything before and including the <hr>
-      cleaned = cleaned.substring(hrEndIndex + 1)
-    }
-  }
-  // Clean up leading whitespace and br tags
-  cleaned = cleaned.replace(/^\s*<br\s*\/?>\s*/gi, '')
-  // Remove any remaining hr tags
-  cleaned = cleaned.replace(/<hr\s*\/?>/gi, '')
-  // Clean up trailing punctuation issues
-  cleaned = cleaned.replace(/<\/i>\s*\.\s*(?=<)/gi, '</i>')
-  cleaned = cleaned.replace(/<p>\s*\.\s*<\/p>/gi, '')
-  cleaned = cleaned.replace(/<p>\s*<\/p>/gi, '')
-  cleaned = cleaned.replace(/<p>\s*(<br\s*\/?>)+\s*<\/p>/gi, '')
-  return cleaned.trim()
-}
+import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 
 export function LagtextSection({
   documentId: _documentId,

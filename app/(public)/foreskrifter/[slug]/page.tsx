@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BookOpen, ExternalLink } from 'lucide-react'
+import { LegalDocumentCard } from '@/components/features/legal-document-card'
 
 export const dynamic = 'force-dynamic'
 
@@ -86,10 +87,7 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
         </Breadcrumb>
 
         <h1 className="mb-4 text-2xl font-bold">{doc.title}</h1>
-        <article
-          className="legal-document"
-          dangerouslySetInnerHTML={{ __html: doc.html_content }}
-        />
+        <LegalDocumentCard htmlContent={doc.html_content} />
       </div>
     )
   }

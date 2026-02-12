@@ -48,25 +48,7 @@ export async function generateMetadata({
   }
 }
 
-// Clean HTML from Riksdagen
-function cleanLawHtml(html: string): string {
-  let cleaned = html
-  cleaned = cleaned.replace(/^<h2>[^<]+<\/h2>\s*/i, '')
-  const hrIndex = cleaned.indexOf('<hr')
-  if (hrIndex !== -1) {
-    const hrEndIndex = cleaned.indexOf('>', hrIndex)
-    if (hrEndIndex !== -1) {
-      cleaned = cleaned.substring(hrEndIndex + 1)
-    }
-  }
-  cleaned = cleaned.replace(/^\s*<br\s*\/?>\s*/gi, '')
-  cleaned = cleaned.replace(/<hr\s*\/?>/gi, '')
-  cleaned = cleaned.replace(/<\/i>\s*\.\s*(?=<)/gi, '</i>')
-  cleaned = cleaned.replace(/<p>\s*\.\s*<\/p>/gi, '')
-  cleaned = cleaned.replace(/<p>\s*<\/p>/gi, '')
-  cleaned = cleaned.replace(/<p>\s*(<br\s*\/?>)+\s*<\/p>/gi, '')
-  return cleaned.trim()
-}
+import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 
 // Extract metadata from Riksdagen HTML
 interface LawMetadata {

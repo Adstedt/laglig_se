@@ -6,6 +6,7 @@ import { ExternalLink } from 'lucide-react'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
 import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
+import { LegalDocumentCard } from '@/components/features/legal-document-card'
 
 export const dynamic = 'force-dynamic'
 
@@ -131,14 +132,7 @@ export default async function WorkspaceForeskriftPage({ params }: PageProps) {
 
       {/* Full content */}
       {!isStub && doc.html_content && (
-        <Card>
-          <CardContent className="p-6">
-            <article
-              className="legal-document"
-              dangerouslySetInnerHTML={{ __html: doc.html_content }}
-            />
-          </CardContent>
-        </Card>
+        <LegalDocumentCard htmlContent={doc.html_content} />
       )}
 
       <BackToTopButton />
