@@ -12,7 +12,6 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -57,33 +56,29 @@ export function TaskStatusEditor({
         {isLoading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Badge
-            variant="outline"
-            className="font-medium whitespace-nowrap"
+          <span
+            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
             style={{
-              borderColor: currentColumn?.color,
-              backgroundColor: `${currentColumn?.color}15`,
+              backgroundColor: `${currentColumn?.color}1A`,
               color: currentColumn?.color,
             }}
           >
             {currentColumn?.name}
-          </Badge>
+          </span>
         )}
       </SelectTrigger>
       <SelectContent>
         {columns.map((col) => (
           <SelectItem key={col.id} value={col.id}>
-            <Badge
-              variant="outline"
-              className="font-medium"
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
               style={{
-                borderColor: col.color,
-                backgroundColor: `${col.color}15`,
+                backgroundColor: `${col.color}1A`,
                 color: col.color,
               }}
             >
               {col.name}
-            </Badge>
+            </span>
           </SelectItem>
         ))}
       </SelectContent>

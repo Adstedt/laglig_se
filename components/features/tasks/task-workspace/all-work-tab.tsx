@@ -208,15 +208,15 @@ export function AllWorkTab({
           <SortableHeader column={column} label="Status" />
         ),
         cell: ({ row }) => (
-          <Badge
-            variant="outline"
+          <span
+            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
             style={{
-              borderColor: row.original.column.color,
-              backgroundColor: `${row.original.column.color}20`,
+              backgroundColor: `${row.original.column.color}1A`,
+              color: row.original.column.color,
             }}
           >
             {row.original.column.name}
-          </Badge>
+          </span>
         ),
         size: 120,
       },
