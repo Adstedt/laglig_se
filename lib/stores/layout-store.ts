@@ -2,6 +2,11 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 interface LayoutState {
+  // Left sidebar collapsed state
+  leftSidebarCollapsed: boolean
+  toggleLeftSidebar: () => void
+  setLeftSidebarCollapsed: (_collapsed: boolean) => void
+
   // Right sidebar (AI Chat) state - not managed by shadcn/ui sidebar
   rightSidebarFolded: boolean
   toggleRightSidebar: () => void
@@ -16,6 +21,14 @@ interface LayoutState {
 export const useLayoutStore = create<LayoutState>()(
   persist(
     (set, get) => ({
+      leftSidebarCollapsed: false,
+      toggleLeftSidebar: () =>
+        set((state) => ({
+          leftSidebarCollapsed: !state.leftSidebarCollapsed,
+        })),
+      setLeftSidebarCollapsed: (collapsed: boolean) =>
+        set({ leftSidebarCollapsed: collapsed }),
+
       rightSidebarFolded: false,
       toggleRightSidebar: () =>
         set((state) => ({ rightSidebarFolded: !state.rightSidebarFolded })),

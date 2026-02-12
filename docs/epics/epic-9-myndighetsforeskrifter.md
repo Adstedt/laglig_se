@@ -30,7 +30,7 @@ The exact documents needed are tracked in `data/seed-template-documents.csv`. Be
 
 | Authority | Prefix | Docs Needed | Template | Source Website | Ingestion Complexity |
 |-----------|--------|-------------|----------|----------------|---------------------|
-| Arbetsmiljöverket | AFS | 12 numbers (~50 entries) | Arbetsmiljö | av.se | High — omnibus PDFs need chapter splitting |
+| Arbetsmiljöverket | AFS | 15 numbers (~81 entries) | Arbetsmiljö | av.se | High — omnibus PDFs need three-tier chapter splitting |
 | Naturvårdsverket | NFS | 13 | Miljö | naturvardsverket.se | Medium — individual PDFs |
 | MSB | MSBFS | 12 (6 shared) | Both | msb.se | Medium — individual PDFs |
 | Elsäkerhetsverket | ELSÄK-FS | 5 | Arbetsmiljö | elsakerhetsverket.se | Low — few docs |
@@ -43,26 +43,34 @@ The exact documents needed are tracked in `data/seed-template-documents.csv`. Be
 | Swedac | STAFS | 1 | Miljö | swedac.se | Low — single doc |
 | **Total** | | **~69 unique docs** | | **10 authorities** | |
 
-### AFS Documents (Highest Priority — 12 PDFs → ~50 legal_document entries)
+### AFS Documents (Highest Priority — 15 PDFs → ~81 legal_document entries)
 
-AFS documents are "omnibus" consolidated provisions from Arbetsmiljöverket's 2023 reform. Each AFS number is ONE PDF containing multiple chapters covering different topics. These need chapter-level splitting into separate `legal_document` entries.
+AFS documents are consolidated provisions from Arbetsmiljöverket's 2023 reform. Many use `kap.` (chapter) notation. These are classified into three tiers:
 
-| AFS Number | Chapter Split? | Chapters/Topics | Priority |
-|------------|---------------|-----------------|----------|
-| AFS 2023:1 | No (standalone) | SAM — Systematiskt arbetsmiljöarbete | P0 |
-| **AFS 2023:2** | **Yes — 8 chapters** | OSA, första hjälpen, arbetstidsanteckningar, gravida, ensamarbete, minderåriga, arbetsanpassning, våld och hot | P0 |
-| AFS 2023:3 | No (standalone) | Projektering och byggarbetsmiljösamordning | P0 |
-| AFS 2023:4 | No (standalone) | Maskiner | P1 |
-| AFS 2023:5 | No (standalone) | Tryckbärande anordningar (produkt) | P1 |
-| AFS 2023:9 | Yes — 2 chapters | Stegar/arbetsbockar (produkt), trycksatta anordningar (produkt) | P1 |
-| **AFS 2023:10** | **Yes — 17 chapters** | Fall, ras, ergonomi, buller, vibrationer, EMF, kemiska risker, blybatterier, smittrisker, gränsvärden luftväg, kvarts, optisk strålning, syntetiska fibrer, explosionsfarlig miljö, bekämpningsmedel, gaser, smältsvetsning | P0 |
-| **AFS 2023:11** | **Yes — 12 chapters** | PPE, arbetsutrustning, bildskärm, truckar, stegar (användning), trycksatta (användning), ställningar, motorsågar, personlyft, lyftanordningar, besiktning lyft, pressar | P0 |
-| AFS 2023:12 | Yes — 2 chapters | Arbetsplatsutformning, belysning vid bildskärm | P0 |
-| **AFS 2023:13** | **Yes — 2 chapters** | Byggnads- och anläggningsarbete, asbest | P1 |
-| AFS 2023:14 | No (standalone) | Gränsvärden för luftvägsexponering | P1 |
-| AFS 2023:15 | No (standalone) | Medicinska kontroller i arbetslivet | P0 |
+- **Standalone:** Flat `§` numbering, no chapters. Stored as one `legal_document` entry.
+- **Keep-whole:** Has `kap.` chapters, but chapters are organizational subdivisions of one regulatory area. Stored as one entry.
+- **Split:** Has `kap.` chapters covering genuinely distinct regulatory domains. Stored as parent entry + one entry per chapter (kap. 2+). `kap. 1` (Allmänna bestämmelser) is kept on the parent and prepended as a preamble to each chapter entry.
 
-**Bold** = omnibus documents with many chapters requiring special handling.
+| AFS Number | Tier | Entries | Topics | Priority |
+|------------|------|---------|--------|----------|
+| AFS 2023:1 | Standalone | 1 | SAM — Systematiskt arbetsmiljöarbete | P0 |
+| **AFS 2023:2** | **Split — 8 kap.** | **1 + 8** | OSA, arbetsanpassning, första hjälpen, våld/hot, ensamarbete, gravida, minderåriga, arbetstidsanteckningar | P0 |
+| AFS 2023:3 | Keep-whole | 1 | Projektering och byggarbetsmiljösamordning (11 kap, 3 avdelningar — roles/phases within construction coordination) | P0 |
+| AFS 2023:4 | Standalone | 1 | Produkter — maskiner | P1 |
+| AFS 2023:5 | Standalone | 1 | Produkter — tryckbärande anordningar | P1 |
+| AFS 2023:6 | Standalone | 1 | Produkter — enkla tryckkärl | P1 |
+| AFS 2023:7 | Keep-whole | 1 | Produkter — utrustning explosiva atmosfärer (4 kap, one product category ATEX) | P1 |
+| AFS 2023:8 | Standalone | 1 | Produkter — förbud ledade skärverktyg röjsågar | P1 |
+| **AFS 2023:9** | **Split — 5 kap.** | **1 + 5** | Arbetskorgar, fallskyddsnät, stegar, ställningar, trycksatta anordningar (produkt) | P1 |
+| **AFS 2023:10** | **Split — 12 kap.** | **1 + 12** | Buller, vibrationer, fall, ras, ergonomi, kemiska risker (4 kap), smittrisker, optisk strålning, EMF | P0 |
+| **AFS 2023:11** | **Split — 14 kap.** | **1 + 14** | Arbetsutrustning, bildskärm, truckar, motorsågar, traktorer, stegar, ställningar, trycksatta (2 kap), lyft (3 kap), pressar, PPE | P0 |
+| AFS 2023:12 | Keep-whole | 1 | Utformning av arbetsplatser (7 kap — layout, evacuation, climate, safety, signs) | P0 |
+| **AFS 2023:13** | **Split — 16 kap.** | **1 + 16** | Djur, asbest, berg/gruv, bygg, dykeri, frisör, hamn, GMO, kylda lokaler, mast/stolp, provning, fordon, rök/kemdykning, smältning, sprängning, vintervägshållning | P1 |
+| AFS 2023:14 | Standalone | 1 | Gränsvärden för luftvägsexponering | P1 |
+| **AFS 2023:15** | **Split — 11 kap.** | **1 + 11** | Medicinska kontroller: generella, vibrationer/natt, allergi (2 kap), fibros, metaller, fysisk ansträngning, övriga, flyg, hälsoundersökningar, läkaranmälan | P0 |
+| | | **81 total** | 6 standalone + 3 keep-whole + 6 parents + 66 chapters | |
+
+**Bold** = omnibus documents with many chapters requiring split handling.
 
 **Source:** All AFS 2023-series PDFs are available at [av.se/lag-och-ratt/foreskrifter/](https://www.av.se/lag-och-ratt/foreskrifter/)
 
@@ -163,14 +171,19 @@ Reuse the proven amendment PDF→LLM→HTML pipeline (Claude Opus/Sonnet, `type:
 - **Storage:** PostgreSQL `legal_documents` table with `content_type = 'AGENCY_REGULATION'`
 - **Content Generation:** Story 12.3 pipeline for summaries + compliance guidance (runs after ingestion)
 
-### AFS Chapter Splitting Strategy
+### AFS Three-Tier Classification & Chapter Splitting
 
-Omnibus AFS documents (2023:2, 2023:10, 2023:11, 2023:13) contain multiple chapters that cover entirely different regulatory domains. These should be stored as separate `legal_document` entries:
+AFS documents are classified into three tiers based on whether their `kap.` chapters represent distinct regulatory domains or organizational subdivisions:
 
+- **Tier 1 — Standalone** (6 docs: 2023:1, 2023:4, 2023:5, 2023:6, 2023:8, 2023:14): No chapters. Store as single entries.
+- **Tier 2 — Keep-whole** (3 docs: 2023:3, 2023:7, 2023:12): Has `kap.` chapters but chapters are subdivisions of one area. Store as single entries.
+- **Tier 3 — Split** (6 docs: 2023:2, 2023:9, 2023:10, 2023:11, 2023:13, 2023:15): Chapters cover distinct regulatory domains. Store as parent + chapter entries.
+
+Split document structure:
 - **document_number format:** `AFS 2023:10 kap. 3` (for chapter 3 of AFS 2023:10)
-- **Parent reference:** Metadata links back to the full AFS document
-- **LLM extraction:** Send full PDF to Claude, ask it to extract specific chapters as separate HTML documents
-- **Standalone AFS** (2023:1, 2023:3, 2023:4, 2023:5, 2023:14, 2023:15): Store as single documents
+- **Parent entry:** Contains overview/TOC + full `kap. 1` (Allmänna bestämmelser)
+- **Chapter entries:** Each gets `kap. 1` prepended as a definitions preamble
+- **LLM extraction:** Send full PDF to Claude per chapter, asking it to extract the specific chapter as standalone HTML
 
 ### Processing Pipeline
 
@@ -191,11 +204,11 @@ The epic's stories should be restructured to prioritize the seed template docume
 
 **Phase 1: AFS Ingestion (Highest Impact — unlocks Arbetsmiljö template)**
 
-- Download all 12 AFS 2023-series PDFs from av.se
+- Download all 15 AFS 2023-series PDFs from av.se
 - Process through Claude PDF→HTML pipeline
-- Split omnibus documents into chapter-level entries
+- Classify into three tiers (standalone, keep-whole, split) and split omnibus documents into chapter-level entries
 - Validate HTML output against `.legal-document` CSS
-- ~50 legal_document entries created
+- ~81 legal_document entries created (6 standalone + 3 keep-whole + 6 parents + 66 chapters)
 
 **Phase 2: MSBFS + NFS Ingestion (Unlocks both templates)**
 

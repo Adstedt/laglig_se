@@ -5,11 +5,8 @@
  */
 
 import { useState, useCallback } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Search, Bell, Menu, Plus } from 'lucide-react'
-import { UserMenu } from '@/components/layout/user-menu'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { CreateTaskModal } from '@/components/features/tasks/create-task-modal'
@@ -37,7 +34,6 @@ export function Header({ user, onMenuToggle }: HeaderProps) {
   }, [])
 
   // Story 6.7: Refresh page data when task is created from header
-  // This ensures the task workspace (if visible) gets the new task
   const handleTaskCreated = useCallback(() => {
     router.refresh()
   }, [router])
@@ -49,74 +45,54 @@ export function Header({ user, onMenuToggle }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-[60px] shrink-0 items-center border-b bg-background">
-        {/* Logo section - fixed width to align with sidebar, hidden on mobile */}
-        <div className="hidden md:flex h-full w-[240px] items-center px-4">
-          <Link href="/dashboard" className="ml-2">
-            <Image
-              src="/images/logo-final.png"
-              alt="Laglig.se"
-              width={160}
-              height={62}
-              className="my-2 h-7 w-auto invert dark:invert-0"
-              priority
-            />
-          </Link>
-        </div>
+      <header className="sticky top-0 z-50 flex h-[60px] shrink-0 items-center border-b bg-background px-4">
+        {/* Mobile menu toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          onClick={onMenuToggle}
+        >
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Meny</span>
+        </Button>
 
-        {/* Main header content */}
-        <div className="flex flex-1 items-center gap-4 px-4 h-full">
-          {/* Mobile menu toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={onMenuToggle}
-          >
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Meny</span>
-          </Button>
+        {/* Spacer */}
+        <div className="flex-1" />
 
-          {/* Spacer */}
-          <div className="flex-1" />
+        {/* Story 6.7: Global task creation button */}
+        <Button
+          size="sm"
+          className="h-9"
+          onClick={() => setCreateTaskModalOpen(true)}
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Skapa
+        </Button>
 
-          {/* Story 6.7: Global task creation button */}
-          <Button
-            size="sm"
-            className="h-9"
-            onClick={() => setCreateTaskModalOpen(true)}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Skapa
-          </Button>
-
-          {/* Global Search Placeholder */}
-          <div className="relative hidden w-72 lg:block">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Sök lagar, rättsfall..."
-              className="h-9 pl-9 bg-muted/50 border-0 focus-visible:bg-background focus-visible:ring-1"
-              disabled
-              title="Sökning kommer snart"
-            />
-          </div>
-
-          {/* Notification Bell Placeholder */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative h-9 w-9"
+        {/* Global Search Placeholder */}
+        <div className="relative hidden w-72 lg:block ml-4">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Sök lagar, rättsfall..."
+            className="h-9 pl-9 bg-muted/50 border-0 focus-visible:bg-background focus-visible:ring-1"
             disabled
-            title="Notifieringar kommer snart"
-          >
-            <Bell className="h-5 w-5 text-muted-foreground" />
-            <span className="sr-only">Notifieringar</span>
-          </Button>
-
-          {/* User Menu */}
-          <UserMenu user={user} />
+            title="Sökning kommer snart"
+          />
         </div>
+
+        {/* Notification Bell Placeholder */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9 ml-2"
+          disabled
+          title="Notifieringar kommer snart"
+        >
+          <Bell className="h-5 w-5 text-muted-foreground" />
+          <span className="sr-only">Notifieringar</span>
+        </Button>
       </header>
 
       {/* Story 6.7: Global Task Creation Modal */}

@@ -304,6 +304,9 @@ export function StickyDocNav({
           <div key={entry.id}>
             <button
               onClick={() => handleClick(entry.id)}
+              aria-current={
+                isDirectlyActive || isActiveParent ? 'true' : undefined
+              }
               className={cn(
                 'w-full text-left px-2 py-1 rounded-md transition-colors leading-tight',
                 'hover:bg-primary/10 hover:text-primary',
@@ -326,6 +329,7 @@ export function StickyDocNav({
                   <button
                     key={child.id}
                     onClick={() => handleClick(child.id)}
+                    aria-current={activeId === child.id ? 'true' : undefined}
                     className={cn(
                       'w-full text-left pl-4 pr-2 py-0.5 rounded-md transition-colors leading-tight text-[11px]',
                       'hover:bg-primary/10 hover:text-primary',

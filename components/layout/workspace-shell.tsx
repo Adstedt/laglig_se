@@ -22,23 +22,26 @@ interface WorkspaceShellProps {
 }
 
 export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
-  const { rightSidebarFolded, toggleRightSidebar, setRightSidebarFolded } =
-    useLayoutStore()
-  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false)
+  const {
+    rightSidebarFolded,
+    toggleRightSidebar,
+    setRightSidebarFolded,
+    toggleLeftSidebar,
+  } = useLayoutStore()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Detect mobile/tablet (below lg breakpoint where RightSidebar is hidden)
   const isMobile = useMediaQuery('(max-width: 1023px)')
 
-  // Keyboard shortcut for toggling right sidebar (Cmd/Ctrl + K or /)
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Cmd/Ctrl + K
+      // Cmd/Ctrl + K — toggle right sidebar (AI chat)
       if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault()
         toggleRightSidebar()
       }
-      // Forward slash (/) when not in an input
+      // Forward slash (/) when not in an input — toggle right sidebar
       if (
         event.key === '/' &&
         !['INPUT', 'TEXTAREA'].includes(
@@ -48,51 +51,61 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
         event.preventDefault()
         toggleRightSidebar()
       }
+      // Cmd/Ctrl + B — toggle left sidebar collapse
+      if (event.key === 'b' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault()
+        toggleLeftSidebar()
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [toggleRightSidebar])
+  }, [toggleRightSidebar, toggleLeftSidebar])
 
   return (
     <WorkspaceProvider>
       <Toaster position="top-right" richColors />
-      <div className="flex h-screen flex-col overflow-hidden">
-        {/* Full-width header at top */}
-        <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
+      {/* Row-first layout: sidebar | column(header + content) */}
+      <div className="flex h-screen overflow-hidden">
+        {/* Left Sidebar - full height, desktop only */}
+        <LeftSidebar user={user} />
 
-        {/* Mobile sidebar drawer */}
-        <MobileSidebar open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} />
+        {/* Right column: header + content */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Header - starts where sidebar ends */}
+          <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
 
-        {/* Content area below header */}
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left Sidebar - desktop only */}
-          <LeftSidebar
-            collapsed={leftSidebarCollapsed}
-            onToggle={() => setLeftSidebarCollapsed(!leftSidebarCollapsed)}
+          {/* Mobile sidebar drawer */}
+          <MobileSidebar
+            open={mobileMenuOpen}
+            onOpenChange={setMobileMenuOpen}
+            user={user}
           />
 
-          {/* Main content */}
-          <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
-            <Breadcrumbs />
-            {children}
-          </main>
+          {/* Content area below header */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Main content */}
+            <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
+              <Breadcrumbs />
+              {children}
+            </main>
 
-          {/* Right Sidebar - desktop only */}
-          <RightSidebar
-            isOpen={!rightSidebarFolded}
-            onToggle={toggleRightSidebar}
-          />
+            {/* Right Sidebar - desktop only */}
+            <RightSidebar
+              isOpen={!rightSidebarFolded}
+              onToggle={toggleRightSidebar}
+            />
+          </div>
         </div>
-
-        {/* Chat Modal - mobile only */}
-        {isMobile && (
-          <ChatModal
-            isOpen={!rightSidebarFolded}
-            onClose={() => setRightSidebarFolded(true)}
-          />
-        )}
       </div>
+
+      {/* Chat Modal - mobile only */}
+      {isMobile && (
+        <ChatModal
+          isOpen={!rightSidebarFolded}
+          onClose={() => setRightSidebarFolded(true)}
+        />
+      )}
     </WorkspaceProvider>
   )
 }
