@@ -15,15 +15,17 @@ import {
   type ColumnDef,
   type SortingState,
   type VisibilityState,
+  type ColumnOrderState,
 } from '@tanstack/react-table'
+import { arrayMove } from '@dnd-kit/sortable'
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -112,6 +114,7 @@ export function AllWorkTab({
     { id: 'created_at', desc: true },
   ])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isExporting, setIsExporting] = useState(false)
@@ -329,6 +332,23 @@ export function AllWorkTab({
     [isOverdue]
   )
 
+  // Column reorder handler
+  const handleColumnReorder = useCallback(
+    (activeId: string, overId: string) => {
+      const currentOrder =
+        columnOrder.length > 0
+          ? columnOrder
+          : columns.map((c) => c.id ?? '').filter(Boolean)
+
+      const oldIndex = currentOrder.indexOf(activeId)
+      const newIndex = currentOrder.indexOf(overId)
+      if (oldIndex === -1 || newIndex === -1) return
+
+      setColumnOrder(arrayMove(currentOrder, oldIndex, newIndex))
+    },
+    [columnOrder, columns]
+  )
+
   // Table instance
   const table = useReactTable({
     data: filteredTasks,
@@ -336,10 +356,12 @@ export function AllWorkTab({
     state: {
       sorting,
       columnVisibility,
+      columnOrder,
       globalFilter,
     },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
+    onColumnOrderChange: setColumnOrder,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -420,8 +442,10 @@ export function AllWorkTab({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead
+                  <DraggableColumnHeader
                     key={header.id}
+                    id={header.id}
+                    onReorder={handleColumnReorder}
                     style={{ width: header.getSize() }}
                   >
                     {header.isPlaceholder
@@ -430,7 +454,7 @@ export function AllWorkTab({
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                  </TableHead>
+                  </DraggableColumnHeader>
                 ))}
               </TableRow>
             ))}

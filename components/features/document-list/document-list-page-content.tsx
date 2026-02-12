@@ -292,6 +292,11 @@ export function DocumentListPageContent({
     setComplianceColumnVisibility,
     complianceColumnSizing,
     setComplianceColumnSizing,
+    // Story 6.21: Column order (drag-to-reorder)
+    columnOrder,
+    setColumnOrder,
+    complianceColumnOrder,
+    setComplianceColumnOrder,
     // Story 4.13: Group state
     groups,
     expandedGroups,
@@ -875,6 +880,8 @@ export function DocumentListPageContent({
           onColumnVisibilityChange={setComplianceColumnVisibility}
           columnSizing={complianceColumnSizing}
           onColumnSizingChange={setComplianceColumnSizing}
+          columnOrder={complianceColumnOrder}
+          onColumnOrderChange={setComplianceColumnOrder}
           onLoadMore={loadMoreItems}
           onUpdateItem={handleUpdateItem}
           onBulkUpdate={handleTableBulkUpdate}
@@ -917,6 +924,8 @@ export function DocumentListPageContent({
           onColumnVisibilityChange={setComplianceColumnVisibility}
           columnSizing={complianceColumnSizing}
           onColumnSizingChange={setComplianceColumnSizing}
+          columnOrder={complianceColumnOrder}
+          onColumnOrderChange={setComplianceColumnOrder}
           workspaceMembers={workspaceMembers}
           onLoadMore={loadMoreItems}
           onRemoveItem={removeItem}
@@ -949,6 +958,8 @@ export function DocumentListPageContent({
           onColumnVisibilityChange={setColumnVisibility}
           columnSizing={columnSizing}
           onColumnSizingChange={setColumnSizing}
+          columnOrder={columnOrder}
+          onColumnOrderChange={setColumnOrder}
           onLoadMore={loadMoreItems}
           onUpdateItem={handleUpdateItem}
           onBulkUpdate={handleTableBulkUpdate}
@@ -990,6 +1001,8 @@ export function DocumentListPageContent({
           onColumnVisibilityChange={setColumnVisibility}
           columnSizing={columnSizing}
           onColumnSizingChange={setColumnSizing}
+          columnOrder={columnOrder}
+          onColumnOrderChange={setColumnOrder}
           onLoadMore={loadMoreItems}
           onUpdateItem={handleUpdateItem}
           onBulkUpdate={handleTableBulkUpdate}

@@ -17,6 +17,7 @@ import {
   type SortingState,
   type RowSelectionState,
   type ColumnSizingState,
+  type ColumnOrderState,
 } from '@tanstack/react-table'
 import {
   DndContext,
@@ -77,6 +78,7 @@ import type {
 import type { ComplianceStatus, LawListItemPriority } from '@prisma/client'
 import type { VisibilityState } from '@tanstack/react-table'
 import { useDebouncedCallback } from 'use-debounce'
+import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
 import { cn } from '@/lib/utils'
 import {
   getContentTypeIcon,
@@ -127,6 +129,9 @@ const HUR_EFTERLEVER_TOOLTIP_CONTENT = {
 // Props
 // ============================================================================
 
+/** Column IDs that cannot be reordered (pinned to edges) */
+const PINNED_COLUMN_IDS = new Set(['select', 'dragHandle', 'expand'])
+
 interface ComplianceDetailTableProps {
   items: DocumentListItem[]
   total: number
@@ -165,6 +170,9 @@ interface ComplianceDetailTableProps {
   /** Column sizing for resizable columns */
   columnSizing?: ColumnSizingState | undefined
   onColumnSizingChange?: ((_sizing: ColumnSizingState) => void) | undefined
+  /** Column order for drag-to-reorder */
+  columnOrder?: ColumnOrderState | undefined
+  onColumnOrderChange?: ((_order: ColumnOrderState) => void) | undefined
   emptyMessage?: string | undefined
   /** Called when row is clicked (opens modal) */
   onRowClick?: ((_listItemId: string) => void) | undefined
@@ -380,6 +388,8 @@ export function ComplianceDetailTable({
   onColumnVisibilityChange: _onColumnVisibilityChange,
   columnSizing: externalColumnSizing,
   onColumnSizingChange,
+  columnOrder: externalColumnOrder,
+  onColumnOrderChange,
   emptyMessage = 'Inga dokument i listan.',
   onRowClick,
   onAddContent,
@@ -394,8 +404,23 @@ export function ComplianceDetailTable({
   const [internalColumnSizing, setInternalColumnSizing] =
     useState<ColumnSizingState>({})
 
-  // Use external sizing if provided, otherwise use internal
+  const [internalColumnOrder, setInternalColumnOrder] =
+    useState<ColumnOrderState>([])
+
+  // Use external sizing/order if provided, otherwise use internal
   const columnSizing = externalColumnSizing ?? internalColumnSizing
+  const columnOrder = externalColumnOrder ?? internalColumnOrder
+  const handleColumnOrderChange = useCallback(
+    (newOrder: ColumnOrderState) => {
+      if (onColumnOrderChange) {
+        onColumnOrderChange(newOrder)
+      } else {
+        setInternalColumnOrder(newOrder)
+      }
+    },
+    [onColumnOrderChange]
+  )
+
   const handleColumnSizingChange = useCallback(
     (
       updater:
@@ -422,7 +447,7 @@ export function ComplianceDetailTable({
     setLocalItems(items)
   }, [items])
 
-  // Sensors for drag-and-drop
+  // Row DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
@@ -722,6 +747,23 @@ export function ComplianceDetailTable({
     ]
   )
 
+  // Column reorder handler (native HTML5 DnD via DraggableColumnHeader)
+  const handleColumnReorder = useCallback(
+    (activeId: string, overId: string) => {
+      const currentOrder =
+        columnOrder.length > 0
+          ? columnOrder
+          : columns.map((c) => c.id ?? '').filter(Boolean)
+
+      const oldIndex = currentOrder.indexOf(activeId)
+      const newIndex = currentOrder.indexOf(overId)
+      if (oldIndex === -1 || newIndex === -1) return
+
+      handleColumnOrderChange(arrayMove(currentOrder, oldIndex, newIndex))
+    },
+    [columnOrder, columns, handleColumnOrderChange]
+  )
+
   // Table instance
   const table = useReactTable({
     data: localItems,
@@ -731,10 +773,16 @@ export function ComplianceDetailTable({
       rowSelection,
       columnVisibility,
       columnSizing,
+      columnOrder,
     },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
     onColumnSizingChange: handleColumnSizingChange,
+    onColumnOrderChange: (updater) => {
+      const newOrder =
+        typeof updater === 'function' ? updater(columnOrder) : updater
+      handleColumnOrderChange(newOrder)
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowId: (row) => row.id,
@@ -762,6 +810,7 @@ export function ComplianceDetailTable({
   }
 
   const rows = table.getRowModel().rows
+  const columnOrderKey = useMemo(() => columnOrder.join(','), [columnOrder])
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => tableContainerRef.current,
@@ -805,45 +854,77 @@ export function ComplianceDetailTable({
       >
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead
-                key={header.id}
-                style={{ width: getColumnWidth(header.id, header.getSize()) }}
-                className={cn(
-                  'relative',
-                  header.id === 'title' && 'sticky left-0 bg-background z-10'
-                )}
-              >
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                {/* Resize handle - only show for resizable columns */}
-                {header.column.getCanResize() && (
-                  // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                  <div
-                    role="separator"
-                    aria-orientation="vertical"
-                    onMouseDown={header.getResizeHandler()}
-                    onTouchStart={header.getResizeHandler()}
+            {headerGroup.headers.map((header) => {
+              const isPinned = PINNED_COLUMN_IDS.has(header.id)
+              const headerContent = (
+                <>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                  {/* Resize handle - only show for resizable columns */}
+                  {header.column.getCanResize() && (
+                    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                    <div
+                      role="separator"
+                      aria-orientation="vertical"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      className={cn(
+                        'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
+                        'flex items-center justify-center'
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          'h-4 w-0.5 rounded-full bg-border transition-colors',
+                          'group-hover/resize:bg-primary group-hover/resize:h-6',
+                          header.column.getIsResizing() && 'bg-primary h-6'
+                        )}
+                      />
+                    </div>
+                  )}
+                </>
+              )
+
+              if (isPinned) {
+                return (
+                  <TableHead
+                    key={header.id}
+                    style={{
+                      width: getColumnWidth(header.id, header.getSize()),
+                    }}
                     className={cn(
-                      'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
-                      'flex items-center justify-center'
+                      'relative',
+                      header.id === 'title' &&
+                        'sticky left-0 bg-background z-10'
                     )}
                   >
-                    <div
-                      className={cn(
-                        'h-4 w-0.5 rounded-full bg-border transition-colors',
-                        'group-hover/resize:bg-primary group-hover/resize:h-6',
-                        header.column.getIsResizing() && 'bg-primary h-6'
-                      )}
-                    />
-                  </div>
-                )}
-              </TableHead>
-            ))}
+                    {headerContent}
+                  </TableHead>
+                )
+              }
+
+              return (
+                <DraggableColumnHeader
+                  key={header.id}
+                  id={header.id}
+                  onReorder={handleColumnReorder}
+                  style={{
+                    width: getColumnWidth(header.id, header.getSize()),
+                  }}
+                  className={cn(
+                    'relative',
+                    header.id === 'title' && 'sticky left-0 bg-background z-10'
+                  )}
+                >
+                  {headerContent}
+                </DraggableColumnHeader>
+              )
+            })}
           </TableRow>
         ))}
       </TableHeader>
@@ -874,6 +955,7 @@ export function ComplianceDetailTable({
                     expandedRowId={expandedRowId}
                     workspaceMembers={workspaceMembers}
                     onRowClick={onRowClick}
+                    columnOrderKey={columnOrderKey}
                   />
                 )
               })
@@ -885,6 +967,7 @@ export function ComplianceDetailTable({
                   expandedRowId={expandedRowId}
                   workspaceMembers={workspaceMembers}
                   onRowClick={onRowClick}
+                  columnOrderKey={columnOrderKey}
                 />
               ))
             )
@@ -1048,6 +1131,7 @@ const ComplianceRow = memo(function ComplianceRow({
   expandedRowId,
   workspaceMembers,
   onRowClick,
+  columnOrderKey: _columnOrderKey,
 }: {
   row: ReturnType<
     ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
@@ -1055,6 +1139,7 @@ const ComplianceRow = memo(function ComplianceRow({
   expandedRowId: string | null
   workspaceMembers: WorkspaceMemberOption[]
   onRowClick?: ((_listItemId: string) => void) | undefined
+  columnOrderKey?: string
 }) {
   const {
     attributes,
@@ -1150,6 +1235,7 @@ const VirtualComplianceRow = memo(function VirtualComplianceRow({
   expandedRowId,
   workspaceMembers,
   onRowClick,
+  columnOrderKey: _columnOrderKey,
 }: {
   row: ReturnType<
     ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
@@ -1158,6 +1244,7 @@ const VirtualComplianceRow = memo(function VirtualComplianceRow({
   expandedRowId: string | null
   workspaceMembers: WorkspaceMemberOption[]
   onRowClick?: ((_listItemId: string) => void) | undefined
+  columnOrderKey?: string
 }) {
   const {
     attributes,

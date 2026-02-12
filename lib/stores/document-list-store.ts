@@ -11,7 +11,11 @@ import type {
   LawListItemPriority,
   ComplianceStatus,
 } from '@prisma/client'
-import type { VisibilityState, ColumnSizingState } from '@tanstack/react-table'
+import type {
+  VisibilityState,
+  ColumnSizingState,
+  ColumnOrderState,
+} from '@tanstack/react-table'
 import {
   getDocumentLists,
   getDocumentListItems,
@@ -78,9 +82,11 @@ export interface DocumentListState {
   viewMode: ViewMode
   columnVisibility: VisibilityState
   columnSizing: ColumnSizingState
+  columnOrder: ColumnOrderState
   // Story 6.18: Compliance view column visibility (separate from table view)
   complianceColumnVisibility: VisibilityState
   complianceColumnSizing: ColumnSizingState
+  complianceColumnOrder: ColumnOrderState
   selectedItemIds: string[]
 
   // Story 4.13: Group state
@@ -133,9 +139,11 @@ export interface DocumentListState {
   setViewMode: (_mode: ViewMode) => void
   setColumnVisibility: (_visibility: VisibilityState) => void
   setColumnSizing: (_sizing: ColumnSizingState) => void
+  setColumnOrder: (_order: ColumnOrderState) => void
   // Story 6.18: Compliance view column visibility
   setComplianceColumnVisibility: (_visibility: VisibilityState) => void
   setComplianceColumnSizing: (_sizing: ColumnSizingState) => void
+  setComplianceColumnOrder: (_order: ColumnOrderState) => void
   setSelectedItemIds: (_ids: string[]) => void
   updateItem: (
     _itemId: string,
@@ -217,9 +225,11 @@ const initialState = {
   viewMode: 'card' as ViewMode,
   columnVisibility: DEFAULT_COLUMN_VISIBILITY,
   columnSizing: {} as ColumnSizingState,
+  columnOrder: [] as ColumnOrderState,
   // Story 6.18: Compliance view column visibility
   complianceColumnVisibility: DEFAULT_COMPLIANCE_COLUMN_VISIBILITY,
   complianceColumnSizing: {} as ColumnSizingState,
+  complianceColumnOrder: [] as ColumnOrderState,
   selectedItemIds: [] as string[],
   // Story 4.13: Group state
   groups: [] as ListGroupSummary[],
@@ -689,12 +699,17 @@ export const useDocumentListStore = create<DocumentListState>()(
       setColumnSizing: (sizing: ColumnSizingState) =>
         set({ columnSizing: sizing }),
 
+      setColumnOrder: (order: ColumnOrderState) => set({ columnOrder: order }),
+
       // Story 6.18: Compliance view column visibility
       setComplianceColumnVisibility: (visibility: VisibilityState) =>
         set({ complianceColumnVisibility: visibility }),
 
       setComplianceColumnSizing: (sizing: ColumnSizingState) =>
         set({ complianceColumnSizing: sizing }),
+
+      setComplianceColumnOrder: (order: ColumnOrderState) =>
+        set({ complianceColumnOrder: order }),
 
       setSelectedItemIds: (ids: string[]) => set({ selectedItemIds: ids }),
 
@@ -1177,9 +1192,11 @@ export const useDocumentListStore = create<DocumentListState>()(
         viewMode: state.viewMode,
         columnVisibility: state.columnVisibility,
         columnSizing: state.columnSizing,
+        columnOrder: state.columnOrder,
         // Story 6.18: Persist compliance view preferences
         complianceColumnVisibility: state.complianceColumnVisibility,
         complianceColumnSizing: state.complianceColumnSizing,
+        complianceColumnOrder: state.complianceColumnOrder,
         // Story 4.13: Persist group expansion state
         expandedGroups: state.expandedGroups,
         // Don't persist lists/items/groups - always fetch fresh

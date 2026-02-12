@@ -28,7 +28,11 @@ import type {
   LawListItemPriority,
   ComplianceStatus,
 } from '@prisma/client'
-import type { VisibilityState, ColumnSizingState } from '@tanstack/react-table'
+import type {
+  VisibilityState,
+  ColumnSizingState,
+  ColumnOrderState,
+} from '@tanstack/react-table'
 import type { TaskProgress, LastActivity } from '@/lib/db/queries/list-items'
 import { cn } from '@/lib/utils'
 
@@ -44,6 +48,8 @@ interface GroupTableSectionProps {
   onColumnVisibilityChange: (_visibility: VisibilityState) => void
   columnSizing?: ColumnSizingState | undefined
   onColumnSizingChange?: ((_sizing: ColumnSizingState) => void) | undefined
+  columnOrder?: ColumnOrderState | undefined
+  onColumnOrderChange?: ((_order: ColumnOrderState) => void) | undefined
   onUpdateItem: (
     _itemId: string,
     _updates: {
@@ -86,6 +92,8 @@ export const GroupTableSection = memo(function GroupTableSection({
   onColumnVisibilityChange,
   columnSizing = {},
   onColumnSizingChange,
+  columnOrder,
+  onColumnOrderChange,
   onUpdateItem,
   onRemoveItem,
   onReorderItems,
@@ -244,6 +252,8 @@ export const GroupTableSection = memo(function GroupTableSection({
                 onColumnVisibilityChange={onColumnVisibilityChange}
                 columnSizing={columnSizing}
                 onColumnSizingChange={onColumnSizingChange}
+                columnOrder={columnOrder}
+                onColumnOrderChange={onColumnOrderChange}
                 onLoadMore={() => {}}
                 onUpdateItem={onUpdateItem}
                 onBulkUpdate={handleBulkUpdate}

@@ -33,7 +33,7 @@ import type {
   WorkspaceMemberOption,
 } from '@/app/actions/document-list'
 import type { ComplianceStatus, LawListItemPriority } from '@prisma/client'
-import type { ColumnSizingState } from '@tanstack/react-table'
+import type { ColumnSizingState, ColumnOrderState } from '@tanstack/react-table'
 
 // Special ID for ungrouped items
 const UNGROUPED_ID = '__ungrouped__'
@@ -49,6 +49,8 @@ interface GroupedComplianceTableProps {
   onColumnVisibilityChange?: (_visibility: Record<string, boolean>) => void
   columnSizing?: ColumnSizingState
   onColumnSizingChange?: (_sizing: ColumnSizingState) => void
+  columnOrder?: ColumnOrderState | undefined
+  onColumnOrderChange?: ((_order: ColumnOrderState) => void) | undefined
   onLoadMore: () => void
   onRemoveItem: (_itemId: string) => Promise<boolean>
   onReorderItems: (
@@ -94,6 +96,8 @@ export function GroupedComplianceTable({
   onColumnVisibilityChange: _onColumnVisibilityChange,
   columnSizing = {},
   onColumnSizingChange,
+  columnOrder,
+  onColumnOrderChange,
   onLoadMore,
   onRemoveItem,
   onReorderItems,
@@ -403,6 +407,8 @@ export function GroupedComplianceTable({
                   columnVisibility={columnVisibility}
                   columnSizing={columnSizing}
                   onColumnSizingChange={onColumnSizingChange}
+                  columnOrder={columnOrder}
+                  onColumnOrderChange={onColumnOrderChange}
                   onUpdateItem={onUpdateItem}
                   onRemoveItem={onRemoveItem}
                   onReorderItems={onReorderItems}
@@ -432,6 +438,8 @@ export function GroupedComplianceTable({
                 columnVisibility={columnVisibility}
                 columnSizing={columnSizing}
                 onColumnSizingChange={onColumnSizingChange}
+                columnOrder={columnOrder}
+                onColumnOrderChange={onColumnOrderChange}
                 onUpdateItem={onUpdateItem}
                 onRemoveItem={onRemoveItem}
                 onReorderItems={onReorderItems}

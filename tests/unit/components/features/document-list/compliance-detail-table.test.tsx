@@ -38,14 +38,19 @@ vi.mock('@dnd-kit/sortable', () => ({
     isDragging: false,
   }),
   verticalListSortingStrategy: vi.fn(),
+  horizontalListSortingStrategy: vi.fn(),
 }))
 
 vi.mock('@dnd-kit/utilities', () => ({
-  CSS: { Transform: { toString: () => undefined } },
+  CSS: {
+    Transform: { toString: () => undefined },
+    Translate: { toString: () => undefined },
+  },
 }))
 
 vi.mock('@dnd-kit/modifiers', () => ({
   restrictToVerticalAxis: vi.fn(),
+  restrictToHorizontalAxis: vi.fn(),
 }))
 
 // Mock use-debounce
