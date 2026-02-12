@@ -309,7 +309,7 @@ export function StickyDocNav({
   return (
     <nav
       aria-label="Dokumentnavigering"
-      className="flex flex-col gap-0.5 text-xs transition-opacity duration-200"
+      className="flex flex-col gap-0.5 font-sans text-xs transition-opacity duration-200"
       style={{
         position: 'fixed',
         top: topBound,
