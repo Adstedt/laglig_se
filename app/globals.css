@@ -316,11 +316,18 @@ html {
     padding-top: 0;
   }
 
-  /* Section heading directly after chapter heading — collapse spacing */
-  .legal-document h2 + h3,
-  .legal-document h3 + h4 {
+  /* Adjacent headings — collapse spacing & remove double borders */
+  .legal-document :is(h2, h3, h4) + :is(h2, h3, h4) {
     border-top: none;
     margin-top: 0.5rem;
+    padding-top: 0;
+  }
+
+  /* When a.paragraf is inside h3.paragraph, the parent h3 provides the
+     border/margin/padding — suppress the anchor's own to avoid double lines */
+  .legal-document h3 > a.paragraf {
+    border-top: none;
+    margin-top: 0;
     padding-top: 0;
   }
 
@@ -464,6 +471,15 @@ html {
     border-radius: 0.5rem;
     overflow: hidden;
     box-shadow: 0 1px 3px hsl(var(--foreground) / 0.05);
+  }
+
+  /* Horizontally scroll wide tables */
+  .legal-document .table-scroll-wrapper {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+  .legal-document .table-scroll-wrapper > table {
+    margin: 0;
   }
 
   .legal-document th,

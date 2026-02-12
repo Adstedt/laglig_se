@@ -160,7 +160,33 @@ export function StickyDocNav({
     if (!container) return
 
     const timer = setTimeout(() => {
-      // Strategy 1: Nested h3 + h4 hierarchy
+      // Strategy 0: Chapter-based hierarchy (h2 chapters with h3 sections nested)
+      const chapterSections = container.querySelectorAll('section.kapitel')
+      if (chapterSections.length >= 2) {
+        const tree: TocEntry[] = []
+        chapterSections.forEach((section) => {
+          const h2 = section.querySelector('h2')
+          const sectionId = section.getAttribute('id') || ''
+          const label = h2?.textContent?.trim() || ''
+          if (!sectionId || !label) return
+
+          const children: TocEntry[] = []
+          section.querySelectorAll('h3[id]').forEach((h3) => {
+            const id = h3.getAttribute('id') || ''
+            const text = h3.textContent?.trim() || ''
+            if (id && text) children.push({ id, label: text })
+          })
+
+          tree.push({ id: sectionId, label, children })
+        })
+
+        if (tree.length >= 2) {
+          setEntries(tree)
+          return
+        }
+      }
+
+      // Strategy 1: Nested h3 + h4 hierarchy (non-chapter documents)
       const h3s = container.querySelectorAll('h3[name], h3[id]')
       const h4s = container.querySelectorAll('h4[name], h4[id]')
 

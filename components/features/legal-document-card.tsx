@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { StickyDocNav } from '@/components/features/paragraf-toc'
 
@@ -18,6 +18,20 @@ export function LegalDocumentCard({
   className,
 }: LegalDocumentCardProps) {
   const articleRef = useRef<HTMLElement>(null)
+
+  // Wrap wide tables in a horizontally-scrollable container
+  useEffect(() => {
+    if (!articleRef.current) return
+    const tables = articleRef.current.querySelectorAll('table')
+    tables.forEach((table) => {
+      if (table.parentElement?.classList.contains('table-scroll-wrapper'))
+        return
+      const wrapper = document.createElement('div')
+      wrapper.className = 'table-scroll-wrapper'
+      table.parentNode?.insertBefore(wrapper, table)
+      wrapper.appendChild(table)
+    })
+  }, [htmlContent])
 
   return (
     <>
