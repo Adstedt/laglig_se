@@ -64,6 +64,11 @@ const ALL_CONTENT_TYPES = [
     color:
       'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
   },
+  {
+    value: 'AGENCY_REGULATION',
+    label: 'Myndighetsföreskrifter',
+    color: 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300',
+  },
 ]
 
 // Court case types only

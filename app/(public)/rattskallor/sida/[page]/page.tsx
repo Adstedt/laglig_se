@@ -99,7 +99,8 @@ export default async function StaticPaginationPage({
           Regelverk
         </h1>
         <p className="mb-4 text-muted-foreground">
-          Bläddra bland svenska lagar, rättsfall och EU-lagstiftning
+          Bläddra bland svenska lagar, föreskrifter, rättsfall och
+          EU-lagstiftning
         </p>
         <CatalogueSearchBar initialQuery="" basePath="/rattskallor" />
       </div>

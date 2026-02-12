@@ -94,6 +94,11 @@ const BROWSE_CATEGORIES = [
     label: 'EU-rätt',
     types: ['EU_REGULATION', 'EU_DIRECTIVE'] as ContentType[],
   },
+  {
+    id: 'agencyRegs',
+    label: 'Föreskrifter',
+    types: ['AGENCY_REGULATION'] as ContentType[],
+  },
 ]
 
 // Fixed heights for consistent modal sizing across tabs
@@ -286,7 +291,8 @@ export function AddDocumentModal({
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle>Lägg till dokument</DialogTitle>
           <DialogDescription>
-            Sök eller bläddra bland lagar, rättsfall och EU-dokument.
+            Sök eller bläddra bland lagar, föreskrifter, rättsfall och
+            EU-dokument.
           </DialogDescription>
         </DialogHeader>
 
@@ -357,7 +363,7 @@ export function AddDocumentModal({
                   <EmptyState
                     icon={FileText}
                     title="Sök efter dokument"
-                    description="Skriv ett sökord för att hitta lagar, rättsfall eller EU-dokument."
+                    description="Skriv ett sökord för att hitta lagar, föreskrifter, rättsfall eller EU-dokument."
                   />
                 )}
               </div>

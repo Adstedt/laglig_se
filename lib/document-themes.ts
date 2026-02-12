@@ -3,6 +3,7 @@ import {
   Scale,
   Landmark,
   FilePenLine,
+  BookOpen,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -117,6 +118,16 @@ export const DOCUMENT_THEMES: Record<string, DocumentTheme> = {
     accentLight: 'bg-purple-50 dark:bg-purple-950/30',
     border: 'border-purple-200 dark:border-purple-800',
     href: '/eu/direktiv',
+  },
+  // Agency Regulations - Teal
+  AGENCY_REGULATION: {
+    icon: BookOpen,
+    label: 'Myndighetsföreskrift',
+    badge: 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300',
+    accent: 'text-teal-700 dark:text-teal-400',
+    accentLight: 'bg-teal-50 dark:bg-teal-950/30',
+    border: 'border-teal-200 dark:border-teal-800',
+    href: '/foreskrifter',
   },
 }
 

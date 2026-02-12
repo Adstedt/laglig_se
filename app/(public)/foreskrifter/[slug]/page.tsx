@@ -86,8 +86,8 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
         </Breadcrumb>
 
         <h1 className="mb-4 text-2xl font-bold">{doc.title}</h1>
-        <div
-          className="prose dark:prose-invert max-w-none"
+        <article
+          className="legal-document"
           dangerouslySetInnerHTML={{ __html: doc.html_content }}
         />
       </div>
@@ -116,7 +116,7 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
       <Card className="mt-4">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <BookOpen className="h-6 w-6 text-orange-600" />
+            <BookOpen className="h-6 w-6 text-teal-600" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">
                 Myndighetsföreskrift
