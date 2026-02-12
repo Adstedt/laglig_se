@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, type RefObject } from 'react'
 import { cn } from '@/lib/utils'
+import { DocSearchBar } from './doc-search-bar'
 
 interface TocEntry {
   id: string
@@ -289,7 +290,7 @@ export function StickyDocNav({
     [containerRef]
   )
 
-  if (entries.length < 2 || !visible) return null
+  if (!visible) return null
 
   // Determine which parent chapter is active (for expanding children)
   const activeParentId = (() => {
@@ -303,6 +304,7 @@ export function StickyDocNav({
 
   const hasChildren = entries.some((e) => e.children && e.children.length > 0)
   const isParagrafPills = entries[0]?.label.includes('§')
+  const hasToc = entries.length >= 2
 
   return (
     <nav
@@ -318,61 +320,65 @@ export function StickyDocNav({
         zIndex: 10,
       }}
     >
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1 px-2">
-        Innehåll
-      </span>
-      {entries.map((entry) => {
-        const isActiveParent = activeParentId === entry.id
-        const isExpanded = isActiveParent && hasChildren
-        const isDirectlyActive = activeId === entry.id
+      <DocSearchBar containerRef={containerRef} />
+      {hasToc && (
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1 px-2">
+          Innehåll
+        </span>
+      )}
+      {hasToc &&
+        entries.map((entry) => {
+          const isActiveParent = activeParentId === entry.id
+          const isExpanded = isActiveParent && hasChildren
+          const isDirectlyActive = activeId === entry.id
 
-        return (
-          <div key={entry.id}>
-            <button
-              onClick={() => handleClick(entry.id)}
-              aria-current={
-                isDirectlyActive || isActiveParent ? 'true' : undefined
-              }
-              className={cn(
-                'w-full text-left px-2 py-1 rounded-md transition-colors leading-tight',
-                'hover:bg-primary/10 hover:text-primary',
-                isParagrafPills ? 'font-mono' : 'font-medium',
-                isDirectlyActive
-                  ? 'bg-primary/10 text-primary border-l-2 border-primary rounded-l-none'
-                  : isActiveParent
-                    ? 'text-primary border-l-2 border-primary rounded-l-none'
-                    : 'text-muted-foreground'
+          return (
+            <div key={entry.id}>
+              <button
+                onClick={() => handleClick(entry.id)}
+                aria-current={
+                  isDirectlyActive || isActiveParent ? 'true' : undefined
+                }
+                className={cn(
+                  'w-full text-left px-2 py-1 rounded-md transition-colors leading-tight',
+                  'hover:bg-primary/10 hover:text-primary',
+                  isParagrafPills ? 'font-mono' : 'font-medium',
+                  isDirectlyActive
+                    ? 'bg-primary/10 text-primary border-l-2 border-primary rounded-l-none'
+                    : isActiveParent
+                      ? 'text-primary border-l-2 border-primary rounded-l-none'
+                      : 'text-muted-foreground'
+                )}
+                title={entry.label}
+              >
+                <span className="line-clamp-2">{entry.label}</span>
+              </button>
+
+              {/* Nested children — only show when this chapter is active */}
+              {entry.children && entry.children.length > 0 && isExpanded && (
+                <div className="flex flex-col gap-0.5 mt-0.5">
+                  {entry.children.map((child) => (
+                    <button
+                      key={child.id}
+                      onClick={() => handleClick(child.id)}
+                      aria-current={activeId === child.id ? 'true' : undefined}
+                      className={cn(
+                        'w-full text-left pl-4 pr-2 py-0.5 rounded-md transition-colors leading-tight text-[11px]',
+                        'hover:bg-primary/10 hover:text-primary',
+                        activeId === child.id
+                          ? 'text-primary font-medium'
+                          : 'text-muted-foreground/70'
+                      )}
+                      title={child.label}
+                    >
+                      <span className="line-clamp-2">{child.label}</span>
+                    </button>
+                  ))}
+                </div>
               )}
-              title={entry.label}
-            >
-              <span className="line-clamp-2">{entry.label}</span>
-            </button>
-
-            {/* Nested children — only show when this chapter is active */}
-            {entry.children && entry.children.length > 0 && isExpanded && (
-              <div className="flex flex-col gap-0.5 mt-0.5">
-                {entry.children.map((child) => (
-                  <button
-                    key={child.id}
-                    onClick={() => handleClick(child.id)}
-                    aria-current={activeId === child.id ? 'true' : undefined}
-                    className={cn(
-                      'w-full text-left pl-4 pr-2 py-0.5 rounded-md transition-colors leading-tight text-[11px]',
-                      'hover:bg-primary/10 hover:text-primary',
-                      activeId === child.id
-                        ? 'text-primary font-medium'
-                        : 'text-muted-foreground/70'
-                    )}
-                    title={child.label}
-                  >
-                    <span className="line-clamp-2">{child.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )
-      })}
+            </div>
+          )
+        })}
     </nav>
   )
 }
