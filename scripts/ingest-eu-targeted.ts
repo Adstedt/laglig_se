@@ -5,7 +5,7 @@
  * Fetches specific EU/EG regulations by CELEX number from EUR-Lex SPARQL API
  * and creates LegalDocument + EuDocument records.
  *
- * Used to fill the 15 EU/EG regulation gaps needed by the Notisum baseline templates.
+ * Used to fill the 18 EU/EG regulation gaps needed by the Notisum baseline templates.
  *
  * Usage: pnpm tsx scripts/ingest-eu-targeted.ts
  *        pnpm tsx scripts/ingest-eu-targeted.ts --dry-run
@@ -28,7 +28,7 @@ import {
 } from '../lib/external/eurlex'
 
 // ============================================================================
-// Configuration — the 15 Notisum baseline EU/EG regulations
+// Configuration — the 18 Notisum baseline EU/EG regulations
 // ============================================================================
 
 const TARGET_CELEX = [
@@ -50,6 +50,9 @@ const TARGET_CELEX = [
   '32023R1230', // (EU) nr 1230/2023 — Machinery
   '32023R1542', // (EU) nr 1542/2023 — Battery
   '32023R2772', // (EU) nr 2772/2023 — ESRS
+  '32024R0573', // (EU) nr 573/2024 — AI Act
+  '32024R0590', // (EU) nr 590/2024 — Packaging & packaging waste
+  '32025R0040', // (EU) nr 40/2025 — Omnibus simplification
 ]
 
 const DRY_RUN = process.argv.includes('--dry-run')
@@ -160,7 +163,7 @@ async function main() {
     console.log()
 
     if (needed.length === 0) {
-      console.log('All 15 EU documents already exist. Nothing to do.')
+      console.log('All 18 EU documents already exist. Nothing to do.')
       return
     }
 

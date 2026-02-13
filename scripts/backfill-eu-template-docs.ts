@@ -33,6 +33,8 @@ import {
   htmlToMarkdown,
   htmlToPlainText,
 } from '../lib/transforms/html-to-markdown'
+import { buildSlugMap, linkifyHtmlContent } from '../lib/linkify'
+import { saveCrossReferences } from '../lib/linkify/save-cross-references'
 
 const prisma = new PrismaClient()
 
@@ -78,6 +80,20 @@ const FILTER_ARG = (() => {
 
 function isAlreadyTransformed(html: string): boolean {
   return html.includes('<article class="sfs"')
+}
+
+/**
+ * Fallback: fetch Swedish HTML directly from EUR-Lex website
+ * when CELLAR REST returns 404.
+ */
+async function fetchFromEurLexWebsite(celex: string): Promise<string | null> {
+  const url = `https://eur-lex.europa.eu/legal-content/SV/TXT/HTML/?uri=CELEX:${celex}`
+  const resp = await fetch(url, {
+    headers: { 'Accept-Language': 'sv' },
+    redirect: 'follow',
+  })
+  if (!resp.ok) return null
+  return resp.text()
 }
 
 /**
@@ -138,8 +154,15 @@ async function main(): Promise<void> {
   )
   console.log()
 
+  // Build slug map once for linkification across all documents
+  console.log('Building slug map for linkification...')
+  const slugMap = await buildSlugMap()
+  console.log(`  Slug map: ${slugMap.size} documents`)
+  console.log()
+
   let fetched = 0
   let transformed = 0
+  let linkified = 0
   let skipped = 0
   let failed = 0
 
@@ -192,14 +215,27 @@ async function main(): Promise<void> {
       if (needsFetch) {
         console.log(`  Fetching from CELLAR...`)
         const content = await fetchDocumentContentViaCellar(celex)
-        if (!content) {
-          console.log(`  [FAIL] Could not fetch content from CELLAR`)
-          failed++
-          continue
+        if (content) {
+          rawHtml = content.html
+          fetched++
+          console.log(`  Fetched: ${rawHtml.length.toLocaleString()} chars`)
+        } else {
+          // Fallback: try EUR-Lex website directly
+          console.log(`  CELLAR failed, trying EUR-Lex website...`)
+          const fallbackHtml = await fetchFromEurLexWebsite(celex)
+          if (!fallbackHtml) {
+            console.log(
+              `  [FAIL] Could not fetch content from CELLAR or EUR-Lex`
+            )
+            failed++
+            continue
+          }
+          rawHtml = fallbackHtml
+          fetched++
+          console.log(
+            `  Fetched (EUR-Lex fallback): ${rawHtml.length.toLocaleString()} chars`
+          )
         }
-        rawHtml = content.html
-        fetched++
-        console.log(`  Fetched: ${rawHtml.length.toLocaleString()} chars`)
       } else {
         rawHtml = currentHtml!
         console.log(
@@ -226,20 +262,38 @@ async function main(): Promise<void> {
         continue
       }
 
-      // Derive plain text and markdown from the transformed HTML
-      const fullText = htmlToPlainText(result.html)
-      const markdownContent = htmlToMarkdown(result.html)
+      // Linkify the transformed HTML
+      const linkifyResult = linkifyHtmlContent(result.html, slugMap, celex)
+      const linkedCount = linkifyResult.linkedReferences.length
+      if (linkedCount > 0) {
+        linkified++
+        console.log(`  Linkified: ${linkedCount} references linked`)
+      }
+
+      // Derive plain text and markdown from the linkified HTML
+      const fullText = htmlToPlainText(linkifyResult.html)
+      const markdownContent = htmlToMarkdown(linkifyResult.html)
 
       // Update the LegalDocument
       await prisma.legalDocument.update({
         where: { id: legalDoc.id },
         data: {
-          html_content: result.html,
+          html_content: linkifyResult.html,
           full_text: fullText,
           markdown_content: markdownContent,
           updated_at: new Date(),
         },
       })
+
+      // Save cross-references
+      if (linkedCount > 0) {
+        const crossRefCount = await saveCrossReferences(
+          legalDoc.id,
+          linkifyResult.linkedReferences,
+          fullText
+        )
+        console.log(`  CrossRefs: ${crossRefCount} saved`)
+      }
 
       transformed++
       console.log(`  [OK] Updated`)
@@ -264,6 +318,7 @@ async function main(): Promise<void> {
   console.log('='.repeat(60))
   console.log(`  Fetched from CELLAR: ${fetched}`)
   console.log(`  Transformed: ${transformed}`)
+  console.log(`  Linkified: ${linkified}`)
   console.log(`  Skipped: ${skipped}`)
   console.log(`  Failed: ${failed}`)
   console.log(`  Duration: ${elapsed}s`)
