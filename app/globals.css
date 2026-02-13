@@ -696,6 +696,169 @@ html {
   }
 
   /* ==========================================================================
+   * Amendment-specific elements (section.ann, h3.paragraph, footnotes, etc.)
+   * These classes appear in LLM-generated amendment HTML and share the
+   * .legal-document container with SFS laws and AFS regulations.
+   * ========================================================================== */
+
+  /* ---------- Amendment section wrappers (section.ann) ---------- */
+  .legal-document section.ann,
+  .legal-document section.paragraf {
+    @apply mt-6 first:mt-0;
+    border-top: 1px solid hsl(var(--border));
+    padding-top: 1.5rem;
+  }
+
+  .legal-document section.ann:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .legal-document section.group section.ann:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  /* ---------- Amendment paragraph headings (h3.paragraph) ---------- */
+  .legal-document h3.paragraph {
+    @apply font-semibold text-base mb-2;
+    color: hsl(var(--primary));
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .legal-document h3.paragraph .kapitel {
+    @apply font-normal mr-1;
+    color: hsl(var(--muted-foreground));
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ---------- Amendment group headers ---------- */
+  .legal-document h3.group,
+  .legal-document section.group > h3 {
+    @apply text-sm font-semibold uppercase tracking-wide mt-6 mb-3;
+    color: hsl(var(--muted-foreground));
+    border-top: none;
+    padding-top: 0;
+  }
+
+  /* ---------- Amendment chapter wrapper (section.kapitel) ---------- */
+  .legal-document section.kapitel {
+    @apply mt-8 pt-6;
+    border-top: 2px solid hsl(var(--border));
+  }
+
+  .legal-document section.kapitel:first-child {
+    @apply mt-0 pt-0;
+    border-top: none;
+  }
+
+  /* ---------- Intro text ---------- */
+  .legal-document p.intro-text {
+    @apply italic mb-6 pb-4;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  /* ---------- Amendment lists (ol.list / ul.list) ---------- */
+  .legal-document ol.list {
+    @apply my-3 ml-6 space-y-2 list-decimal;
+  }
+
+  .legal-document ol.list[type='a'] {
+    list-style-type: lower-alpha;
+  }
+
+  .legal-document ol.list li p.text {
+    @apply mb-0;
+  }
+
+  .legal-document ul.list {
+    @apply my-3 ml-6 space-y-1 list-disc;
+  }
+
+  .legal-document ul.list[style*='list-style: none'] {
+    @apply list-none ml-0;
+  }
+
+  /* ---------- Amendment element-body ---------- */
+  .legal-document .element-body p.text:last-child {
+    @apply mb-0;
+  }
+
+  /* ---------- Amendment footnotes ---------- */
+  .legal-document sup.footnote {
+    @apply text-xs ml-0.5;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .legal-document .footnote-link {
+    @apply no-underline cursor-help;
+    color: hsl(var(--primary));
+  }
+
+  .legal-document dl.footnote-content {
+    @apply text-xs rounded px-3 py-2 my-2;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  .legal-document dl.footnote-content dt {
+    @apply font-semibold inline;
+  }
+
+  .legal-document dl.footnote-content dd {
+    @apply inline;
+  }
+
+  .legal-document dl.footnote-content dd p.text {
+    @apply inline mb-0;
+  }
+
+  /* ---------- In-force provisions (Ikraftträdande) ---------- */
+  .legal-document .in-force-info h2 {
+    @apply text-sm font-semibold uppercase tracking-wide mb-4;
+    color: hsl(var(--muted-foreground));
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .legal-document dl.in-force {
+    @apply space-y-2;
+  }
+
+  .legal-document dl.in-force dt {
+    @apply font-semibold text-sm text-foreground;
+  }
+
+  .legal-document dl.in-force dd {
+    @apply ml-0;
+  }
+
+  .legal-document dl.in-force ol.list {
+    @apply my-2 space-y-1;
+  }
+
+  .legal-document dl.in-force ol.list li p.text {
+    @apply text-sm;
+    color: hsl(var(--foreground) / 0.8);
+  }
+
+  /* ---------- Amendment signature block ---------- */
+  .legal-document footer.back > p.text {
+    @apply text-sm mt-4;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .legal-document footer.back > p.text[style*='text-align: right'] {
+    @apply text-right;
+  }
+
+  /* ==========================================================================
    * Compact Modal Styles — Tighter spacing for legal document modals
    * ========================================================================== */
 
@@ -762,195 +925,6 @@ html {
   /* Smaller first paragraph marker in modal */
   .legal-document-modal .legal-document > div > p:first-child {
     @apply text-sm mb-4; /* Instead of text-base mb-6 */
-  }
-
-  /* ==========================================================================
-   * Amendment HTML Content Styling
-   * Styles for LLM-generated HTML from PDF parsing (Story 2.29)
-   * ========================================================================== */
-
-  .amendment-html-content {
-    @apply leading-relaxed text-foreground;
-    font-size: 1rem;
-    line-height: 1.7;
-  }
-
-  /* Hide the document header from LLM output - we render our own header */
-  .amendment-html-content .lovhead {
-    @apply hidden;
-  }
-
-  /* Main body wrapper */
-  .amendment-html-content .body {
-    @apply space-y-6;
-  }
-
-  /* Chapter sections */
-  .amendment-html-content .kapitel {
-    @apply mt-8 pt-6 border-t-2 border-border;
-  }
-
-  .amendment-html-content .kapitel:first-child {
-    @apply mt-0 pt-0 border-t-0;
-  }
-
-  .amendment-html-content .kapitel > h2 {
-    @apply text-lg font-bold text-foreground mb-4;
-  }
-
-  .amendment-html-content .kapitel > h2 .kapitel {
-    @apply border-none mt-0 pt-0;
-  }
-
-  /* Group headers (e.g., "Samhällsintroduktion") */
-  .amendment-html-content h3.group,
-  .amendment-html-content section.group > h3 {
-    @apply text-sm font-semibold text-muted-foreground uppercase tracking-wide mt-6 mb-3;
-  }
-
-  /* Section/paragraph wrappers */
-  .amendment-html-content section.ann,
-  .amendment-html-content section.paragraf {
-    @apply mt-6 first:mt-0;
-  }
-
-  /* Section headers (§) */
-  .amendment-html-content h3.paragraph {
-    @apply font-semibold text-base text-primary mb-2;
-  }
-
-  .amendment-html-content h3.paragraph .kapitel {
-    @apply text-muted-foreground font-normal mr-1;
-    border: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* Paragraph text */
-  .amendment-html-content p.text {
-    @apply mb-3 text-foreground;
-  }
-
-  .amendment-html-content .element-body p.text:last-child {
-    @apply mb-0;
-  }
-
-  /* Intro text */
-  .amendment-html-content p.intro-text {
-    @apply text-muted-foreground italic mb-6 pb-4 border-b border-border;
-  }
-
-  /* Ordered lists */
-  .amendment-html-content ol.list {
-    @apply my-3 ml-6 space-y-2 list-decimal;
-  }
-
-  .amendment-html-content ol.list[type='a'] {
-    list-style-type: lower-alpha;
-  }
-
-  .amendment-html-content ol.list li {
-    @apply pl-1;
-  }
-
-  .amendment-html-content ol.list li p.text {
-    @apply mb-0;
-  }
-
-  /* Sub-lists */
-  .amendment-html-content ol.sub-list {
-    @apply mt-2 ml-4;
-  }
-
-  /* Unordered lists */
-  .amendment-html-content ul.list {
-    @apply my-3 ml-6 space-y-1 list-disc;
-  }
-
-  .amendment-html-content ul.list[style*='list-style: none'] {
-    @apply list-none ml-0;
-  }
-
-  /* Definition lists (term → reference) */
-  .amendment-html-content ul.definition-list {
-    @apply space-y-1;
-  }
-
-  .amendment-html-content ul.definition-list li p.text em {
-    @apply text-foreground not-italic;
-  }
-
-  /* Links / references */
-  .amendment-html-content a.ref {
-    @apply text-primary underline decoration-primary/30 underline-offset-2 transition-all;
-  }
-
-  .amendment-html-content a.ref:hover {
-    @apply decoration-primary;
-  }
-
-  /* Footnotes - inline markers */
-  .amendment-html-content sup.footnote {
-    @apply text-xs text-muted-foreground ml-0.5;
-  }
-
-  .amendment-html-content .footnote-link {
-    @apply text-primary no-underline cursor-help;
-  }
-
-  /* Footnote content blocks */
-  .amendment-html-content dl.footnote-content {
-    @apply text-xs text-muted-foreground bg-muted/50 rounded px-3 py-2 my-2;
-  }
-
-  .amendment-html-content dl.footnote-content dt {
-    @apply font-semibold inline;
-  }
-
-  .amendment-html-content dl.footnote-content dd {
-    @apply inline;
-  }
-
-  .amendment-html-content dl.footnote-content dd p.text {
-    @apply inline mb-0;
-  }
-
-  /* Footer / transition provisions */
-  .amendment-html-content footer.back {
-    @apply mt-10 pt-6 border-t-2 border-border;
-  }
-
-  .amendment-html-content .in-force-info h2 {
-    @apply text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4;
-  }
-
-  .amendment-html-content dl.in-force {
-    @apply space-y-2;
-  }
-
-  .amendment-html-content dl.in-force dt {
-    @apply font-semibold text-sm text-foreground;
-  }
-
-  .amendment-html-content dl.in-force dd {
-    @apply ml-0;
-  }
-
-  .amendment-html-content dl.in-force ol.list {
-    @apply my-2 space-y-1;
-  }
-
-  .amendment-html-content dl.in-force ol.list li p.text {
-    @apply text-sm text-foreground/80;
-  }
-
-  /* Signature block */
-  .amendment-html-content footer.back > p.text {
-    @apply text-sm text-muted-foreground mt-4;
-  }
-
-  .amendment-html-content footer.back > p.text[style*='text-align: right'] {
-    @apply text-right;
   }
 }
 

@@ -232,7 +232,7 @@ function DefinitionListDisplay({
 function HtmlContentRenderer({ html }: { html: string }) {
   return (
     <div
-      className="amendment-html-content"
+      className="legal-document"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )
@@ -284,7 +284,7 @@ export function AmendmentPageContent({
   const formattedPublicationDate = formatDate(amendment.publication_date)
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="has-hero-header mx-auto max-w-4xl space-y-6">
       {/* Hero Header - matches law page style */}
       <header className="rounded-xl bg-card p-6 shadow-sm border">
         <div className="flex items-start gap-4">
@@ -412,10 +412,7 @@ export function AmendmentPageContent({
           <CardTitle className="text-lg">Ändringstext</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <article
-            ref={articleRef}
-            className="amendment-html-content p-6 md:p-8"
-          >
+          <article ref={articleRef} className="legal-document p-6 md:p-8">
             {/* PRIMARY: Render LLM-generated HTML content directly */}
             {hasHtmlContent && (
               <HtmlContentRenderer html={amendment.html_content!} />
