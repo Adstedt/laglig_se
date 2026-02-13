@@ -44,6 +44,7 @@ export function StickyDocNav({
   const [left, setLeft] = useState(0)
   const [topBound, setTopBound] = useState(0)
   const rafRef = useRef<number>(0)
+  const activatedRef = useRef(false)
 
   // Flat list of all IDs in DOM order, for scrollspy
   const allIds = useRef<string[]>([])
@@ -104,17 +105,30 @@ export function StickyDocNav({
         return
       }
 
-      // Only show once the article top has scrolled past the scroll area top
-      const articleScrolledIn = containerRect.top < scrollRect.top + 120
+      // Article completely scrolled out of view — hide and reset latch
       const articleStillVisible = containerRect.bottom > scrollRect.top + 200
-      if (!articleScrolledIn || !articleStillVisible) {
+      if (!articleStillVisible) {
+        setVisible(false)
+        activatedRef.current = false
+        return
+      }
+
+      // Activate once the article is visible in the scroll area.
+      // Once activated, stay visible even if user scrolls back to the header.
+      const articleScrolledIn =
+        containerRect.top < scrollRect.top + scrollRect.height * 0.6
+      if (articleScrolledIn) {
+        activatedRef.current = true
+      }
+      if (!activatedRef.current) {
         setVisible(false)
         return
       }
 
       setVisible(true)
       setLeft(containerRect.right + 24)
-      setTopBound(Math.max(scrollRect.top + 24, 96))
+      // Align with the container top, but stick to viewport top once scrolled past
+      setTopBound(Math.max(containerRect.top, scrollRect.top + 24, 96))
 
       // Scrollspy: find the last heading whose top is above the trigger line
       // Trigger line = 20% from top of the scroll area
@@ -290,8 +304,6 @@ export function StickyDocNav({
     [containerRef]
   )
 
-  if (!visible) return null
-
   // Determine which parent chapter is active (for expanding children)
   const activeParentId = (() => {
     if (!activeId) return null
@@ -309,7 +321,10 @@ export function StickyDocNav({
   return (
     <nav
       aria-label="Dokumentnavigering"
-      className="flex flex-col gap-0.5 font-sans text-xs transition-opacity duration-200"
+      className={cn(
+        'flex flex-col gap-0.5 font-sans text-xs transition-opacity duration-200',
+        visible ? 'opacity-100' : 'pointer-events-none opacity-0'
+      )}
       style={{
         position: 'fixed',
         top: topBound,
