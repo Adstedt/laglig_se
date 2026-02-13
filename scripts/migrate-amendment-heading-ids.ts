@@ -85,29 +85,67 @@ async function main() {
   let skipped = 0
   let errors = 0
 
+  // Pre-transform all docs in memory (cheerio is CPU-bound, no I/O)
+  const pending: {
+    id: string
+    document_number: string
+    html: string
+    changes: number
+  }[] = []
+
   for (const doc of docs) {
     try {
       const { transformed, changes } = transformHtml(doc.html_content!)
-
       if (changes === 0) {
         skipped++
         continue
       }
-
-      if (!DRY_RUN) {
-        await prisma.legalDocument.update({
-          where: { id: doc.id },
-          data: { html_content: transformed },
-        })
-      }
-
-      updated++
-      console.log(
-        `  ${DRY_RUN ? '[DRY]' : '[OK]'} ${doc.document_number}: ${changes} heading IDs moved`
-      )
+      pending.push({
+        id: doc.id,
+        document_number: doc.document_number!,
+        html: transformed,
+        changes,
+      })
     } catch (err) {
       errors++
       console.error(`  [ERR] ${doc.document_number}: ${err}`)
+    }
+  }
+
+  console.log(
+    `  ${pending.length} documents need updates, ${skipped} already correct`
+  )
+
+  if (!DRY_RUN) {
+    // Batch updates in chunks of 5 (Prisma default pool ≈ 10 connections)
+    const CHUNK_SIZE = 5
+    for (let i = 0; i < pending.length; i += CHUNK_SIZE) {
+      const chunk = pending.slice(i, i + CHUNK_SIZE)
+      await Promise.all(
+        chunk.map((doc) =>
+          prisma.legalDocument
+            .update({ where: { id: doc.id }, data: { html_content: doc.html } })
+            .then(() => {
+              updated++
+            })
+            .catch((err) => {
+              errors++
+              console.error(`  [ERR] ${doc.document_number}: ${err}`)
+            })
+        )
+      )
+      const progress = Math.min(i + CHUNK_SIZE, pending.length)
+      if (progress % 500 === 0 || progress === pending.length) {
+        process.stdout.write(`\r  Updated ${progress}/${pending.length}`)
+      }
+    }
+    console.log('') // newline after progress
+  } else {
+    updated = pending.length
+    for (const doc of pending) {
+      console.log(
+        `  [DRY] ${doc.document_number}: ${doc.changes} heading IDs moved`
+      )
     }
   }
 
