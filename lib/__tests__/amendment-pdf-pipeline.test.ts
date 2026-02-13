@@ -27,15 +27,15 @@ const AMENDMENT_HTML = `<article class="sfs" id="SFS2025-100">
   <div class="body" id="SFS2025-100_BODY0001">
     <section class="kapitel" id="SFS2025-100_K2">
       <div class="N2">
-        <section class="ann" id="SFS2025-100_K2_P3">
+        <section class="ann">
           <div class="element-body annzone">
-            <h3 class="paragraph"><span class="kapitel">2 kap.</span> 3 §</h3>
+            <h3 class="paragraph" id="SFS2025-100_K2_P3"><span class="kapitel">2 kap.</span> 3 §</h3>
             <p class="text" id="SFS2025-100_K2_P3_S1">Arbetsgivaren ska se till att arbetstagare som har arbetsuppgifter som innebär särskild fara för ohälsa eller olycksfall har den utbildning som behövs.</p>
           </div>
         </section>
-        <section class="ann" id="SFS2025-100_K2_P5a">
+        <section class="ann">
           <div class="element-body annzone">
-            <h3 class="paragraph"><span class="kapitel">2 kap.</span> 5 a §</h3>
+            <h3 class="paragraph" id="SFS2025-100_K2_P5a"><span class="kapitel">2 kap.</span> 5 a §</h3>
             <p class="text" id="SFS2025-100_K2_P5a_S1">En ny bestämmelse om systematiskt arbetsmiljöarbete.</p>
           </div>
         </section>
@@ -43,9 +43,9 @@ const AMENDMENT_HTML = `<article class="sfs" id="SFS2025-100">
     </section>
     <section class="kapitel" id="SFS2025-100_K7">
       <div class="N2">
-        <section class="ann" id="SFS2025-100_K7_P15">
+        <section class="ann">
           <div class="element-body annzone">
-            <h3 class="paragraph"><span class="kapitel">7 kap.</span> 15 §</h3>
+            <h3 class="paragraph" id="SFS2025-100_K7_P15"><span class="kapitel">7 kap.</span> 15 §</h3>
             <p class="text" id="SFS2025-100_K7_P15_S1">Bestämmelser om marknadskontroll finns i Europaparlamentets och rådets förordning (EU) 2019/1020.</p>
           </div>
         </section>

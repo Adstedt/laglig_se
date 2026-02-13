@@ -22,6 +22,7 @@ import {
   getCourtCasesCitingLaw,
   getImplementedEuDirectives,
 } from '@/app/actions/cross-references'
+import { rewriteLinksForWorkspace } from '@/lib/linkify/rewrite-links'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -202,7 +203,7 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
           'sup',
         ],
         allowedAttributes: {
-          a: ['href', 'name', 'class'],
+          a: ['href', 'name', 'class', 'title', 'target', 'rel'],
           '*': ['class', 'id', 'name'],
         },
       })
@@ -424,7 +425,9 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
 
       {/* Law Content */}
       <LawSectionWithBanner
-        htmlContent={sanitizedHtml || ''}
+        htmlContent={
+          sanitizedHtml ? rewriteLinksForWorkspace(sanitizedHtml) : ''
+        }
         fallbackText={law.full_text}
         sourceUrl={law.source_url}
         isLawNotYetInForce={lawMetadata.isNotYetInForce ?? false}

@@ -49,9 +49,9 @@ Use this exact structure for amendment documents:
 ## SECTION STRUCTURE (§)
 
 \`\`\`html
-<section class="ann" id="SFS{YEAR}-{NUMBER}_K{CHAPTER}_P{SECTION}">
+<section class="ann">
   <div class="element-body annzone">
-    <h3 class="paragraph"><span class="kapitel">{CHAPTER} kap.</span> {SECTION} §</h3>
+    <h3 class="paragraph" id="SFS{YEAR}-{NUMBER}_K{CHAPTER}_P{SECTION}"><span class="kapitel">{CHAPTER} kap.</span> {SECTION} §</h3>
     <p class="text" id="SFS{YEAR}-{NUMBER}_K{CHAPTER}_P{SECTION}_S1">
       {PARAGRAPH TEXT}
     </p>
@@ -61,7 +61,7 @@ Use this exact structure for amendment documents:
 
 For sections without chapters (laws without chapter structure):
 \`\`\`html
-<h3 class="paragraph">{SECTION} §</h3>
+<h3 class="paragraph" id="SFS{YEAR}-{NUMBER}_P{SECTION}">{SECTION} §</h3>
 \`\`\`
 
 ## FOOTNOTES
@@ -83,7 +83,7 @@ Place footnotes inline, right after the sentence they reference:
 ## GROUP HEADERS (Rubrik)
 
 \`\`\`html
-<section class="group ann N2" id="SFS{YEAR}-{NUMBER}_GRUPP-{N}">
+<section class="group ann N2">
   <h3 class="group" id="SFS{YEAR}-{NUMBER}_GEN{N}">{GROUP TITLE}</h3>
   <div class="N2">
     <!-- Sections under this group -->

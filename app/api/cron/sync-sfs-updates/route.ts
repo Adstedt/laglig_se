@@ -37,6 +37,7 @@ import {
 } from '@/lib/transforms/html-to-markdown'
 import { htmlToJson } from '@/lib/transforms/html-to-json'
 import { SectionChangeType } from '@prisma/client'
+import { linkifyHtmlContent, type SlugMap } from '@/lib/linkify'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -400,6 +401,10 @@ export async function GET(request: Request) {
     // Story 2.28 AC8: Process amendments with PDF-direct LLM pipeline (outside main loop for timeout safety)
     const maxRuntime = maxDuration * 1000 - 30000 // 30s buffer before timeout
 
+    // Story 2.29: Build slug map for linkification
+    const { buildSlugMap } = await import('@/lib/linkify')
+    const slugMap: SlugMap = await buildSlugMap()
+
     for (const amendment of amendmentsToProcess) {
       // Timeout protection: stop if approaching the maxDuration limit
       const elapsed = Date.now() - startTime.getTime()
@@ -454,13 +459,20 @@ export async function GET(request: Request) {
           )
         }
 
-        // Derive all content formats from HTML
+        // Derive all content formats from unlinkified HTML
         const markdownContent = htmlToMarkdown(htmlContent)
         const jsonContent = htmlToJson(htmlContent, {
           sfsNumber: amendment.sfsNumber,
           documentType: 'amendment',
         })
         const plainText = htmlToPlainText(htmlContent)
+
+        // Story 2.29: Linkify AFTER deriving fields, BEFORE DB write
+        const linkifiedHtml = linkifyHtmlContent(
+          htmlContent,
+          slugMap,
+          `SFS ${amendment.sfsNumber}`
+        ).html
 
         // Map JSON section changeType to database enum
         const mapChangeType = (
@@ -532,7 +544,7 @@ export async function GET(request: Request) {
             original_url: updatedAmendment.original_url,
             storage_path: updatedAmendment.storage_path,
             full_text: plainText,
-            html_content: htmlContent,
+            html_content: linkifiedHtml,
             markdown_content: markdownContent,
             json_content: jsonContent,
             confidence: updatedAmendment.confidence,

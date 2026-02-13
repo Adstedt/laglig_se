@@ -19,9 +19,9 @@ const VALID_HTML = `<article class="sfs" id="SFS2025-100">
     </h1>
   </div>
   <div class="body" id="SFS2025-100_BODY0001">
-    <section class="ann" id="SFS2025-100_P1">
+    <section class="ann">
       <div class="element-body annzone">
-        <h3 class="paragraph">1 §</h3>
+        <h3 class="paragraph" id="SFS2025-100_P1">1 §</h3>
         <p class="text" id="SFS2025-100_P1_S1">Första paragrafen.</p>
       </div>
     </section>

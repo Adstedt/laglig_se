@@ -49,6 +49,7 @@ import {
 } from '../lib/transforms/html-to-markdown'
 import type { Prisma } from '@prisma/client'
 import type { AfsMetadata } from '../lib/agency/afs-registry'
+import { linkifyHtmlContent, buildSlugMap, type SlugMap } from '../lib/linkify'
 
 const prisma = new PrismaClient()
 
@@ -108,7 +109,8 @@ function parseArgs(): PipelineConfig {
 async function processStandalone(
   doc: AfsDocument,
   scrapeResult: ScrapeOutcome,
-  cfg: PipelineConfig
+  cfg: PipelineConfig,
+  slugMap: SlugMap
 ): Promise<number> {
   if (!scrapeResult.success) return 0
   const urls = AFS_URL_REGISTRY[doc.documentNumber]!
@@ -118,8 +120,15 @@ async function processStandalone(
     `    Transform: ${stats.sectionSignCount} §, ${stats.allmanaRadCount} allmänna råd, ${stats.tableCount} tables, ${stats.footnoteCount} footnotes`
   )
 
+  // Derive from unlinkified HTML
   const markdownContent = htmlToMarkdown(html)
   const fullText = htmlToPlainText(html)
+  // Story 2.29: Linkify after derived fields
+  const linkifiedHtml = linkifyHtmlContent(
+    html,
+    slugMap,
+    doc.documentNumber
+  ).html
   const metadata = buildStandaloneMetadata(doc, urls.historikUrl)
 
   if (cfg.dryRun) {
@@ -133,7 +142,7 @@ async function processStandalone(
     update: {
       title: doc.title,
       slug: generateAfsSlug(doc.documentNumber),
-      html_content: html,
+      html_content: linkifiedHtml,
       markdown_content: markdownContent,
       full_text: fullText,
       source_url: urls.pageUrl,
@@ -146,7 +155,7 @@ async function processStandalone(
       title: doc.title,
       slug: generateAfsSlug(doc.documentNumber),
       content_type: ContentType.AGENCY_REGULATION,
-      html_content: html,
+      html_content: linkifiedHtml,
       markdown_content: markdownContent,
       full_text: fullText,
       source_url: urls.pageUrl,
@@ -163,7 +172,8 @@ async function processStandalone(
 async function processSplit(
   doc: AfsDocument,
   scrapeResult: ScrapeOutcome,
-  cfg: PipelineConfig
+  cfg: PipelineConfig,
+  slugMap: SlugMap
 ): Promise<number> {
   if (!scrapeResult.success) return 0
   const urls = AFS_URL_REGISTRY[doc.documentNumber]!
@@ -202,13 +212,18 @@ async function processSplit(
     const parentMetadata = buildParentMetadata(doc, urls.historikUrl)
     const parentMarkdown = htmlToMarkdown(parentHtml)
     const parentFullText = htmlToPlainText(parentHtml)
+    const linkifiedParentHtml = linkifyHtmlContent(
+      parentHtml,
+      slugMap,
+      doc.documentNumber
+    ).html
 
     await tx.legalDocument.upsert({
       where: { document_number: doc.documentNumber },
       update: {
         title: doc.title,
         slug: generateAfsSlug(doc.documentNumber),
-        html_content: parentHtml,
+        html_content: linkifiedParentHtml,
         markdown_content: parentMarkdown,
         full_text: parentFullText,
         source_url: urls.pageUrl,
@@ -221,7 +236,7 @@ async function processSplit(
         title: doc.title,
         slug: generateAfsSlug(doc.documentNumber),
         content_type: ContentType.AGENCY_REGULATION,
-        html_content: parentHtml,
+        html_content: linkifiedParentHtml,
         markdown_content: parentMarkdown,
         full_text: parentFullText,
         source_url: urls.pageUrl,
@@ -240,13 +255,18 @@ async function processSplit(
       const chMetadata = buildChapterMetadata(doc, chDoc)
       const chMarkdown = htmlToMarkdown(ch.html)
       const chFullText = htmlToPlainText(ch.html)
+      const linkifiedChHtml = linkifyHtmlContent(
+        ch.html,
+        slugMap,
+        ch.documentNumber
+      ).html
 
       await tx.legalDocument.upsert({
         where: { document_number: ch.documentNumber },
         update: {
           title: ch.title,
           slug: generateAfsSlug(ch.documentNumber),
-          html_content: ch.html,
+          html_content: linkifiedChHtml,
           markdown_content: chMarkdown,
           full_text: chFullText,
           source_url: urls.pageUrl,
@@ -259,7 +279,7 @@ async function processSplit(
           title: ch.title,
           slug: generateAfsSlug(ch.documentNumber),
           content_type: ContentType.AGENCY_REGULATION,
-          html_content: ch.html,
+          html_content: linkifiedChHtml,
           markdown_content: chMarkdown,
           full_text: chFullText,
           source_url: urls.pageUrl,
@@ -363,6 +383,9 @@ async function main(): Promise<void> {
   )
   console.log()
 
+  // Story 2.29: Build slug map for linkification
+  const slugMap = await buildSlugMap()
+
   let totalEntries = 0
   let processed = 0
   let failed = 0
@@ -416,9 +439,9 @@ async function main(): Promise<void> {
     try {
       let entries: number
       if (doc.tier === 'SPLIT') {
-        entries = await processSplit(doc, scrapeResult, cfg)
+        entries = await processSplit(doc, scrapeResult, cfg, slugMap)
       } else {
-        entries = await processStandalone(doc, scrapeResult, cfg)
+        entries = await processStandalone(doc, scrapeResult, cfg, slugMap)
       }
       totalEntries += entries
       processed++

@@ -235,7 +235,18 @@
       "Bash(git stash:*)",
       "Bash(iconv:*)",
       "WebFetch(domain:www.naturvardsverket.se)",
-      "WebFetch(domain:www.mcf.se)"
+      "WebFetch(domain:www.mcf.se)",
+      "WebFetch(domain:www.kemi.se)",
+      "WebFetch(domain:www.boverket.se)",
+      "WebFetch(domain:forfattningssamling.boverket.se)",
+      "WebFetch(domain:www4.skatteverket.se)",
+      "WebFetch(domain:rinfo.boverket.se)",
+      "WebFetch(domain:www.scb.se)",
+      "WebFetch(domain:www.stralsakerhetsmyndigheten.se)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:www.irishstatutebook.ie)",
+      "WebFetch(domain:www.elidata.es)",
+      "WebFetch(domain:www.sparna.fr)"
     ],
     "deny": [],
     "ask": []

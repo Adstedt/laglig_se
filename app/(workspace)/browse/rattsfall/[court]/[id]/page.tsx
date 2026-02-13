@@ -16,6 +16,7 @@ import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
 import { CitedLawsSummary } from '@/components/features/cross-references'
 import { FloatingCitedLawsWrapper } from '@/app/(public)/rattsfall/[court]/[id]/floating-cited-laws-wrapper'
 import { RelatedDocsPrefetcher } from '@/components/features/court-case'
+import { rewriteLinksForWorkspace } from '@/lib/linkify/rewrite-links'
 
 // Court URL mapping
 const COURT_URL_MAP: Record<
@@ -135,7 +136,7 @@ export default async function WorkspaceCourtCasePage({ params }: PageProps) {
           'sup',
         ],
         allowedAttributes: {
-          a: ['href', 'name', 'class'],
+          a: ['href', 'name', 'class', 'title', 'target', 'rel'],
           '*': ['class', 'id', 'name'],
         },
       })
@@ -296,7 +297,9 @@ export default async function WorkspaceCourtCasePage({ params }: PageProps) {
         <CardContent className="p-0">
           <article className="legal-document p-6 md:p-8">
             {sanitizedHtml ? (
-              <ContentWithStyledHeadings htmlContent={sanitizedHtml} />
+              <ContentWithStyledHeadings
+                htmlContent={rewriteLinksForWorkspace(sanitizedHtml)}
+              />
             ) : document.full_text ? (
               <div className="whitespace-pre-wrap font-serif">
                 {document.full_text}

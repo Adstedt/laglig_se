@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { ContentType } from '@prisma/client'
 import type { Metadata } from 'next'
-import sanitizeHtml from 'sanitize-html'
 import {
   getCachedEuLegislation,
   getCachedEuLegislationMetadata,
@@ -13,10 +12,11 @@ import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
 import { LinkedSwedishLaws } from '@/components/features/cross-references'
 import { lookupLawBySfsNumber } from '@/app/actions/cross-references'
-import { ContentWithStyledHeadings } from '@/components/features/content'
+import { LegalDocumentCard } from '@/components/features/legal-document-card'
 import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
 import { FloatingImplementationsButton } from '@/app/(public)/eu/[type]/[id]/floating-implementations-button'
 import { RelatedDocsPrefetcher } from '@/components/features/eu-legislation'
+import { rewriteLinksForWorkspace } from '@/lib/linkify/rewrite-links'
 
 // EU type URL mapping
 const EU_TYPE_MAP: Record<
@@ -118,49 +118,6 @@ export default async function WorkspaceEuDocumentPage({ params }: PageProps) {
     })
   )
 
-  // Sanitize HTML content
-  const sanitizedHtml = document.html_content
-    ? sanitizeHtml(document.html_content, {
-        allowedTags: [
-          'h1',
-          'h2',
-          'h3',
-          'h4',
-          'h5',
-          'h6',
-          'p',
-          'br',
-          'hr',
-          'ul',
-          'ol',
-          'li',
-          'table',
-          'thead',
-          'tbody',
-          'tr',
-          'th',
-          'td',
-          'a',
-          'strong',
-          'em',
-          'span',
-          'div',
-          'blockquote',
-          'pre',
-          'code',
-          'b',
-          'i',
-          'u',
-          'sub',
-          'sup',
-        ],
-        allowedAttributes: {
-          a: ['href', 'name', 'class'],
-          '*': ['class', 'id', 'name'],
-        },
-      })
-    : null
-
   const formattedPublicationDate = formatDateOrNull(document.publication_date, {
     year: 'numeric',
     month: 'long',
@@ -254,15 +211,14 @@ export default async function WorkspaceEuDocumentPage({ params }: PageProps) {
       )}
 
       {/* Document content */}
-      <Card>
-        <CardHeader className="border-b bg-muted/30">
-          <CardTitle className="text-lg">Dokumenttext</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <article className="legal-document p-6 md:p-8">
-            {sanitizedHtml ? (
-              <ContentWithStyledHeadings htmlContent={sanitizedHtml} />
-            ) : document.full_text ? (
+      {document.html_content ? (
+        <LegalDocumentCard
+          htmlContent={rewriteLinksForWorkspace(document.html_content)}
+        />
+      ) : (
+        <Card>
+          <CardContent className="p-6">
+            {document.full_text ? (
               <div className="whitespace-pre-wrap font-serif">
                 {document.full_text}
               </div>
@@ -279,9 +235,9 @@ export default async function WorkspaceEuDocumentPage({ params }: PageProps) {
                 </a>
               </p>
             )}
-          </article>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Footer */}
       <footer className="text-center text-sm text-muted-foreground py-4 border-t">

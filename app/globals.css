@@ -380,6 +380,49 @@ html {
     font-size: 0.9375rem;
   }
 
+  /* ---------- Preamble accordion (EU documents) ---------- */
+  .legal-document .preamble-accordion {
+    @apply mb-6 rounded-lg border border-border/60;
+  }
+
+  .legal-document .preamble-accordion summary {
+    @apply px-4 py-3 cursor-pointer select-none
+      text-base font-semibold text-foreground
+      list-none flex items-center justify-between
+      rounded-lg hover:bg-muted/50 transition-colors;
+  }
+
+  /* Replace default marker with chevron */
+  .legal-document .preamble-accordion summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .legal-document .preamble-accordion summary::after {
+    content: '';
+    @apply shrink-0 ml-2;
+    width: 1rem;
+    height: 1rem;
+    background: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    transition: transform 200ms ease;
+  }
+
+  .legal-document .preamble-accordion[open] summary {
+    @apply rounded-b-none border-b border-border/60;
+  }
+
+  .legal-document .preamble-accordion[open] summary::after {
+    transform: rotate(180deg);
+  }
+
+  .legal-document .preamble-accordion > .preamble {
+    @apply px-4 py-4 mb-0;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
   /* ---------- Allmänna råd (non-binding guidance) ----------
    * Must be instantly distinguishable from binding regulation text. */
   .legal-document .allmanna-rad {
@@ -434,6 +477,19 @@ html {
 
   .legal-document a:not(.paragraf):not(.footnote-ref):hover {
     @apply decoration-primary;
+  }
+
+  /* ---------- Legal reference links (auto-linkified) ---------- */
+  .legal-document a.legal-ref {
+    @apply text-primary no-underline;
+    text-decoration: underline dotted hsl(var(--primary) / 0.4);
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+    transition: all 0.15s ease;
+  }
+
+  .legal-document a.legal-ref:hover {
+    text-decoration: underline solid hsl(var(--primary));
   }
 
   /* ---------- Lists — compact for legal enumerations ---------- */

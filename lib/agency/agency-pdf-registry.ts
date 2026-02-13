@@ -10,7 +10,17 @@
 // Types
 // ============================================================================
 
-export type AgencyAuthority = 'msbfs' | 'nfs'
+export type AgencyAuthority =
+  | 'msbfs'
+  | 'nfs'
+  | 'elsak-fs'
+  | 'kifs'
+  | 'bfs'
+  | 'srvfs'
+  | 'skvfs'
+  | 'scb-fs'
+  | 'ssmfs'
+  | 'stafs'
 
 export interface AgencyPdfDocument {
   /** e.g. "MSBFS 2020:1" */
@@ -27,6 +37,8 @@ export interface AgencyPdfDocument {
   sourceDomain: string
   /** Whether this is a konsoliderad (consolidated) version */
   isConsolidated: boolean
+  /** If true, store as metadata-only stub with external PDF link (no LLM processing) */
+  stubOnly?: boolean
   /** Notes about the document (e.g. "200+ pages, may need chunking") */
   notes?: string
 }
@@ -152,8 +164,9 @@ export const MSBFS_REGISTRY: AgencyPdfDocument[] = [
     authority: 'msbfs',
     sourceDomain: 'mcf.se',
     isConsolidated: false,
+    stubOnly: true,
     notes:
-      'ADR-S: 500+ pages, may exceed Claude context window. Plan per-chapter extraction fallback.',
+      'ADR-S: 1400+ pages with complex graphs/tables. Stored as stub with external PDF link only — content too large and visual for LLM extraction.',
   },
   {
     documentNumber: 'MSBFS 2025:2',
@@ -327,6 +340,223 @@ export const NFS_REGISTRY: AgencyPdfDocument[] = [
 ]
 
 // ============================================================================
+// ELSÄK-FS Documents (5) — Elsäkerhetsverket
+// ============================================================================
+
+export const ELSAK_FS_REGISTRY: AgencyPdfDocument[] = [
+  {
+    documentNumber: 'ELSÄK-FS 2017:2',
+    title:
+      'Elsäkerhetsverkets föreskrifter och allmänna råd om elinstallationsarbete',
+    pdfUrl:
+      'https://www.elsakerhetsverket.se/globalassets/foreskrifter/elsak-fs-2017-2.pdf',
+    sourceUrl:
+      'https://www.elsakerhetsverket.se/om-oss/lag-och-ratt/foreskrifter/elsak-fs-2017-2/',
+    authority: 'elsak-fs',
+    sourceDomain: 'elsakerhetsverket.se',
+    isConsolidated: false,
+  },
+  {
+    documentNumber: 'ELSÄK-FS 2017:3',
+    title:
+      'Elsäkerhetsverkets föreskrifter om elinstallationsföretag och om utförande av elinstallationsarbete',
+    pdfUrl:
+      'https://www.elsakerhetsverket.se/globalassets/foreskrifter/elsak-fs-2017-3-konsoliderad.pdf',
+    sourceUrl:
+      'https://www.elsakerhetsverket.se/om-oss/lag-och-ratt/foreskrifter/elsak-fs-2017-3-konsoliderad-version/',
+    authority: 'elsak-fs',
+    sourceDomain: 'elsakerhetsverket.se',
+    isConsolidated: true,
+  },
+  {
+    documentNumber: 'ELSÄK-FS 2022:1',
+    title:
+      'Elsäkerhetsverkets föreskrifter och allmänna råd om hur starkströmsanläggningar ska vara utförda',
+    pdfUrl:
+      'https://www.elsakerhetsverket.se/globalassets/foreskrifter/elsak-fs-2022-1.pdf',
+    sourceUrl:
+      'https://www.elsakerhetsverket.se/om-oss/lag-och-ratt/foreskrifter/elsak-fs-2022-1/',
+    authority: 'elsak-fs',
+    sourceDomain: 'elsakerhetsverket.se',
+    isConsolidated: false,
+  },
+  {
+    documentNumber: 'ELSÄK-FS 2022:2',
+    title:
+      'Elsäkerhetsverkets föreskrifter och allmänna råd om skyltning av starkströmsanläggningar',
+    pdfUrl:
+      'https://www.elsakerhetsverket.se/globalassets/foreskrifter/elsak-fs-2022-2.pdf',
+    sourceUrl:
+      'https://www.elsakerhetsverket.se/om-oss/lag-och-ratt/foreskrifter/elsak-fs-2022-2/',
+    authority: 'elsak-fs',
+    sourceDomain: 'elsakerhetsverket.se',
+    isConsolidated: false,
+  },
+  {
+    documentNumber: 'ELSÄK-FS 2022:3',
+    title:
+      'Elsäkerhetsverkets föreskrifter och allmänna råd om innehavarens kontroll av starkströmsanläggningar och elektriska utrustningar',
+    pdfUrl:
+      'https://www.elsakerhetsverket.se/globalassets/foreskrifter/elsak-fs-2022-3.pdf',
+    sourceUrl:
+      'https://www.elsakerhetsverket.se/om-oss/lag-och-ratt/foreskrifter/elsak-fs-2022-3/',
+    authority: 'elsak-fs',
+    sourceDomain: 'elsakerhetsverket.se',
+    isConsolidated: false,
+  },
+]
+
+// ============================================================================
+// KIFS Documents (2) — Kemikalieinspektionen
+// ============================================================================
+
+export const KIFS_REGISTRY: AgencyPdfDocument[] = [
+  {
+    documentNumber: 'KIFS 2017:7',
+    title:
+      'Kemikalieinspektionens föreskrifter om kemiska produkter och biotekniska organismer',
+    pdfUrl:
+      'https://www.kemi.se/download/18.409a5d0a193955be16be5e6/1733838775330/KIFS-2017-7-konsoliderad.pdf',
+    sourceUrl:
+      'https://www.kemi.se/lagar-och-regler/lagstiftningar-inom-kemikalieomradet/kemikalieinspektionens-foreskrifter-kifs/kifs-20177',
+    authority: 'kifs',
+    sourceDomain: 'kemi.se',
+    isConsolidated: true,
+  },
+  {
+    documentNumber: 'KIFS 2022:3',
+    title: 'Kemikalieinspektionens föreskrifter om bekämpningsmedel',
+    pdfUrl:
+      'https://www.kemi.se/download/18.691651b517fd1cf3f271825/1649074954677/KIFS%202022_3.pdf',
+    sourceUrl:
+      'https://www.kemi.se/lagar-och-regler/lagstiftningar-inom-kemikalieomradet/kemikalieinspektionens-foreskrifter-kifs/kifs-20223',
+    authority: 'kifs',
+    sourceDomain: 'kemi.se',
+    isConsolidated: false,
+  },
+]
+
+// ============================================================================
+// BFS Documents (1) — Boverket
+// ============================================================================
+
+export const BFS_REGISTRY: AgencyPdfDocument[] = [
+  {
+    documentNumber: 'BFS 2011:16',
+    title:
+      'Boverkets föreskrifter och allmänna råd om funktionskontroll av ventilationssystem (OVK)',
+    pdfUrl:
+      'https://www.boverket.se/resources/constitutiontextstore/ovk/PDF/konsoliderad_ovk_bfs_2011-16.pdf',
+    sourceUrl: 'https://forfattningssamling.boverket.se/detaljer/BFS2011-16',
+    authority: 'bfs',
+    sourceDomain: 'boverket.se',
+    isConsolidated: true,
+  },
+]
+
+// ============================================================================
+// SRVFS Documents (2) — Legacy Räddningsverket (hosted by MCF)
+// ============================================================================
+
+export const SRVFS_REGISTRY: AgencyPdfDocument[] = [
+  {
+    documentNumber: 'SRVFS 2004:3',
+    title:
+      'Statens räddningsverks allmänna råd och kommentarer om systematiskt brandskyddsarbete',
+    pdfUrl:
+      'https://www.msb.se/siteassets/dokument/regler/rs/51dc9127-8bb3-4bee-8606-98f694a4a5b6.pdf',
+    sourceUrl: 'https://www.mcf.se/sv/regler/gallande-regler/srvfs-20043/',
+    authority: 'srvfs',
+    sourceDomain: 'mcf.se',
+    isConsolidated: false,
+  },
+  {
+    documentNumber: 'SRVFS 2004:7',
+    title:
+      'Statens räddningsverks föreskrifter om explosionsfarlig miljö vid hantering av brandfarliga gaser och vätskor',
+    pdfUrl:
+      'https://www.msb.se/siteassets/dokument/regler/rs/ecc1e5ce-c311-433d-b3e5-f4f63b008386.pdf',
+    sourceUrl: 'https://www.mcf.se/sv/regler/gallande-regler/srvfs-20047/',
+    authority: 'srvfs',
+    sourceDomain: 'mcf.se',
+    isConsolidated: false,
+  },
+]
+
+// ============================================================================
+// SKVFS Documents (1) — Skatteverket
+// ============================================================================
+
+export const SKVFS_REGISTRY: AgencyPdfDocument[] = [
+  {
+    documentNumber: 'SKVFS 2015:6',
+    title: 'Skatteverkets föreskrifter om personalliggare',
+    pdfUrl:
+      'https://web.archive.org/web/20240515232329/http://www4.skatteverket.se/download/18.190ee20e163797380b13eea/1698824249985/SKVFS%202015_06.pdf',
+    sourceUrl: 'https://www4.skatteverket.se/rattsligvagledning/341539.html',
+    authority: 'skvfs',
+    sourceDomain: 'skatteverket.se',
+    isConsolidated: false,
+  },
+]
+
+// ============================================================================
+// SCB-FS Documents (1) — Statistiska centralbyrån
+// ============================================================================
+
+export const SCB_FS_REGISTRY: AgencyPdfDocument[] = [
+  {
+    documentNumber: 'SCB-FS 2025:19',
+    title:
+      'Statistiska centralbyråns föreskrifter om uppgifter till statistik över företags miljöskyddskostnader',
+    pdfUrl:
+      'https://www.scb.se/contentassets/fc434ac2550548bcbab57886c357c81c/92030-scb-fs-2025-19-mkost_pdfkorr.pdf',
+    sourceUrl:
+      'https://www.scb.se/om-scb/scbs-verksamhet/regelverk-och-policyer/foreskrifter/uppgiftslamnande/scb-fs-202519/',
+    authority: 'scb-fs',
+    sourceDomain: 'scb.se',
+    isConsolidated: false,
+    notes: 'Replaces SCB-FS 2024:25 which was removed from SCB website.',
+  },
+]
+
+// ============================================================================
+// SSMFS Documents (1) — Strålsäkerhetsmyndigheten
+// ============================================================================
+
+export const SSMFS_REGISTRY: AgencyPdfDocument[] = [
+  {
+    documentNumber: 'SSMFS 2018:2',
+    title:
+      'Strålsäkerhetsmyndighetens föreskrifter om anmälningspliktiga verksamheter',
+    pdfUrl:
+      'https://www.stralsakerhetsmyndigheten.se/contentassets/e731676ddfcd43cbb9bdbc0c01cd5ab6/ssmfs-20182-stralsakerhetsmyndighetens-foreskrifter-om-anmalningspliktiga-verksamheter-konsoliderad-version.pdf',
+    sourceUrl:
+      'https://www.stralsakerhetsmyndigheten.se/publikationer/foreskrifter/ssmfs-2018/SSMFS-20182/',
+    authority: 'ssmfs',
+    sourceDomain: 'stralsakerhetsmyndigheten.se',
+    isConsolidated: true,
+  },
+]
+
+// ============================================================================
+// STAFS Documents (1) — Swedac
+// ============================================================================
+
+export const STAFS_REGISTRY: AgencyPdfDocument[] = [
+  {
+    documentNumber: 'STAFS 2020:1',
+    title: 'Swedacs föreskrifter och allmänna råd om ackreditering',
+    pdfUrl: 'https://www.swedac.se/wp-content/uploads/2020/04/stafs-2020_1.pdf',
+    sourceUrl:
+      'https://www.swedac.se/dokument/swedacs-foreskrifter-och-allmanna-rad-om-ackreditering-4/',
+    authority: 'stafs',
+    sourceDomain: 'swedac.se',
+    isConsolidated: false,
+  },
+]
+
+// ============================================================================
 // Registry Helpers
 // ============================================================================
 
@@ -339,22 +569,65 @@ export function getRegistryByAuthority(
       return MSBFS_REGISTRY
     case 'nfs':
       return NFS_REGISTRY
+    case 'elsak-fs':
+      return ELSAK_FS_REGISTRY
+    case 'kifs':
+      return KIFS_REGISTRY
+    case 'bfs':
+      return BFS_REGISTRY
+    case 'srvfs':
+      return SRVFS_REGISTRY
+    case 'skvfs':
+      return SKVFS_REGISTRY
+    case 'scb-fs':
+      return SCB_FS_REGISTRY
+    case 'ssmfs':
+      return SSMFS_REGISTRY
+    case 'stafs':
+      return STAFS_REGISTRY
     default:
       throw new Error(`Unknown authority: ${authority}`)
   }
 }
 
+/** All registry arrays for iteration */
+const ALL_REGISTRIES: AgencyPdfDocument[][] = [
+  MSBFS_REGISTRY,
+  NFS_REGISTRY,
+  ELSAK_FS_REGISTRY,
+  KIFS_REGISTRY,
+  BFS_REGISTRY,
+  SRVFS_REGISTRY,
+  SKVFS_REGISTRY,
+  SCB_FS_REGISTRY,
+  SSMFS_REGISTRY,
+  STAFS_REGISTRY,
+]
+
 /** Get a single document by document number */
 export function getDocumentByNumber(
   documentNumber: string
 ): AgencyPdfDocument | undefined {
-  return [...MSBFS_REGISTRY, ...NFS_REGISTRY].find(
-    (d) => d.documentNumber === documentNumber
-  )
+  for (const registry of ALL_REGISTRIES) {
+    const found = registry.find((d) => d.documentNumber === documentNumber)
+    if (found) return found
+  }
+  return undefined
 }
 
 /** All supported authority values */
-export const SUPPORTED_AUTHORITIES: AgencyAuthority[] = ['msbfs', 'nfs']
+export const SUPPORTED_AUTHORITIES: AgencyAuthority[] = [
+  'msbfs',
+  'nfs',
+  'elsak-fs',
+  'kifs',
+  'bfs',
+  'srvfs',
+  'skvfs',
+  'scb-fs',
+  'ssmfs',
+  'stafs',
+]
 
 /**
  * Generate a URL-friendly slug from a document number.

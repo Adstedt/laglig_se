@@ -1,0 +1,67 @@
+schema: 1
+story: '9.3'
+story_title: 'Remaining Agency Regulation Ingestion'
+gate: PASS
+status_reason: 'All 31 ACs met (with approved SCB-FS substitution), 118 unit tests passing, type check clean, $3.65 cost well under $10 budget. Three minor documentation discrepancies noted as future recommendations.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-13T11:40:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'DOC-001'
+    severity: low
+    finding: 'agency-website-guide.md Section 9 still references SCB-FS 2024:25 instead of the actual ingested SCB-FS 2025:19'
+    suggested_action: 'Update target document table in Section 9 to reflect SCB-FS 2025:19'
+    suggested_owner: dev
+  - id: 'DOC-002'
+    severity: low
+    finding: 'agency-website-guide.md Section 10 says SSMFS 2018:2 consolidated = No, but registry has isConsolidated: true and uses consolidated PDF URL'
+    suggested_action: 'Update Section 10 target document table to reflect consolidated version was used'
+    suggested_owner: dev
+  - id: 'DOC-003'
+    severity: low
+    finding: 'ingest-agency-pdfs.ts:120 error message still says "Required: --authority msbfs|nfs" from Story 9.2'
+    suggested_action: 'Update to list all supported authorities or reference SUPPORTED_AUTHORITIES'
+    suggested_owner: dev
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 3 }
+  recommendations:
+    must_fix: []
+    monitor:
+      - 'Two orphaned stubs from Story 12.1 remain in DB (SCB-FS 2024:25, BFS 2011:16 - OVK 1) — cleanup in future story'
+
+quality_score: 95
+expires: '2026-02-27T11:40:00Z'
+
+evidence:
+  tests_reviewed: 118
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No secrets in code, all URLs from official government domains or Wayback Machine archive. No user input handling.'
+  performance:
+    status: PASS
+    notes: 'Static registry data, no runtime cost. CLI pipeline has proper rate limiting and budget ceiling.'
+  reliability:
+    status: PASS
+    notes: 'Pipeline handles failures gracefully (try/catch + continue), budget ceiling prevents runaway costs, upsert ensures idempotency.'
+  maintainability:
+    status: PASS
+    notes: 'Clean patterns — adding a new authority requires only: registry array + PDFs + switch case. 118 tests provide strong regression safety. Comprehensive agency-website-guide documentation.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Update SCB-FS and SSMFS sections in agency-website-guide.md to match actual ingested data'
+      refs: ['docs/agency-website-guide.md:408', 'docs/agency-website-guide.md:439']
+    - action: 'Update CLI error message in parseArgs to list all 10 authorities'
+      refs: ['scripts/ingest-agency-pdfs.ts:120']
+    - action: 'Clean up 2 orphaned stubs from Story 12.1 (SCB-FS 2024:25, BFS 2011:16 - OVK 1)'
+      refs: ['Story 12.1']

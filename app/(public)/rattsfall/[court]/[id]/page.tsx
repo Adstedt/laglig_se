@@ -209,7 +209,7 @@ export default async function CourtCasePage({ params }: PageProps) {
           'sup',
         ],
         allowedAttributes: {
-          a: ['href', 'name', 'class'],
+          a: ['href', 'name', 'class', 'title', 'target', 'rel'],
           '*': ['class', 'id', 'name'],
         },
       })

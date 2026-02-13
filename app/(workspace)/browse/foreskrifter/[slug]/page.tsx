@@ -7,6 +7,7 @@ import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
 import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
 import { LegalDocumentCard } from '@/components/features/legal-document-card'
+import { rewriteLinksForWorkspace } from '@/lib/linkify/rewrite-links'
 
 export const dynamic = 'force-dynamic'
 
@@ -116,23 +117,48 @@ export default async function WorkspaceForeskriftPage({ params }: PageProps) {
         )}
       </header>
 
-      {/* Stub notice */}
-      {isStub && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
-                Dokumentet är registrerat men fullständigt innehåll läggs till
-                inom kort.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* External PDF stub — link directly to the source PDF */}
+      {isStub &&
+        metadata?.method === 'stub-external-pdf' &&
+        !!metadata?.pdfUrl && (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <a
+                href={String(metadata.pdfUrl)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  'inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-medium transition-colors hover:bg-accent',
+                  theme.accent
+                )}
+              >
+                <ExternalLink className="h-4 w-4" />
+                Öppna originaldokument (PDF)
+              </a>
+            </CardContent>
+          </Card>
+        )}
+
+      {/* Generic stub notice */}
+      {isStub &&
+        !(metadata?.method === 'stub-external-pdf' && metadata?.pdfUrl) && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  Dokumentet är registrerat men fullständigt innehåll läggs till
+                  inom kort.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
       {/* Full content */}
       {!isStub && doc.html_content && (
-        <LegalDocumentCard htmlContent={doc.html_content} />
+        <LegalDocumentCard
+          htmlContent={rewriteLinksForWorkspace(doc.html_content)}
+        />
       )}
 
       <BackToTopButton />

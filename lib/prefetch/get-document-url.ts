@@ -7,6 +7,7 @@
 
 export type ContentTypeKey =
   | 'SFS_LAW'
+  | 'SFS_AMENDMENT'
   | 'COURT_CASE_AD'
   | 'COURT_CASE_HD'
   | 'COURT_CASE_HFD'
@@ -15,6 +16,7 @@ export type ContentTypeKey =
   | 'COURT_CASE_MIG'
   | 'EU_REGULATION'
   | 'EU_DIRECTIVE'
+  | 'AGENCY_REGULATION'
 
 // Court URL segment mapping
 const COURT_URL_SEGMENT: Record<string, string> = {
@@ -59,6 +61,16 @@ export function getDocumentUrl(doc: DocumentUrlParams): string {
   // SFS Laws
   if (contentType === 'SFS_LAW') {
     return `/lagar/${slug}`
+  }
+
+  // SFS Amendments
+  if (contentType === 'SFS_AMENDMENT') {
+    return `/lagar/andringar/${slug}`
+  }
+
+  // Agency regulations (föreskrifter)
+  if (contentType === 'AGENCY_REGULATION') {
+    return `/foreskrifter/${slug}`
   }
 
   // Court cases

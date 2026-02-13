@@ -52,6 +52,7 @@ import {
   htmlToPlainText,
 } from '../lib/transforms/html-to-markdown'
 import { htmlToJson } from '../lib/transforms/html-to-json'
+import { linkifyHtmlContent, buildSlugMap, type SlugMap } from '../lib/linkify'
 import type { Prisma } from '@prisma/client'
 
 const prisma = new PrismaClient()
@@ -140,7 +141,8 @@ async function processDocument(
   anthropic: Anthropic,
   cfg: PipelineConfig,
   pdfDir: string,
-  reviewDir: string
+  reviewDir: string,
+  slugMap: SlugMap
 ): Promise<ProcessingResult> {
   const fileName = getPdfFileName(doc.documentNumber)
   const pdfPath = path.join(pdfDir, fileName)
@@ -289,10 +291,16 @@ async function processDocument(
 
   const html = validation.cleanedHtml
 
-  // Derive content formats
+  // Derive content formats from unlinkified HTML
   const markdownContent = htmlToMarkdown(html)
   const fullText = htmlToPlainText(html)
   const jsonContent = htmlToJson(html, { documentType: 'regulation' })
+  // Story 2.29: Linkify after derived fields
+  const linkifiedHtml = linkifyHtmlContent(
+    html,
+    slugMap,
+    doc.documentNumber
+  ).html
 
   // Write review HTML
   writeReviewFile(reviewDir, doc.documentNumber, html)
@@ -317,7 +325,7 @@ async function processDocument(
     update: {
       title: doc.title,
       slug: generateAgencySlug(doc.documentNumber),
-      html_content: html,
+      html_content: linkifiedHtml,
       markdown_content: markdownContent,
       full_text: fullText,
       json_content: jsonContentValue,
@@ -331,7 +339,7 @@ async function processDocument(
       title: doc.title,
       slug: generateAgencySlug(doc.documentNumber),
       content_type: ContentType.AGENCY_REGULATION,
-      html_content: html,
+      html_content: linkifiedHtml,
       markdown_content: markdownContent,
       full_text: fullText,
       json_content: jsonContentValue,
@@ -455,6 +463,9 @@ async function main(): Promise<void> {
   )
   console.log()
 
+  // Story 2.29: Build slug map for linkification
+  const slugMap = await buildSlugMap()
+
   let processed = 0
   let failed = 0
   let totalInputTokens = 0
@@ -468,6 +479,56 @@ async function main(): Promise<void> {
       `[${i + 1}/${documents.length}] ${doc.documentNumber}: ${doc.title}`
     )
     if (doc.notes) console.log(`  Note: ${doc.notes}`)
+
+    // Handle stub-only documents (e.g. ADR-S — too large for LLM processing)
+    if (doc.stubOnly) {
+      console.log(`  [STUB] External PDF only — skipping LLM processing`)
+      if (!cfg.dryRun) {
+        await prisma.legalDocument.upsert({
+          where: { document_number: doc.documentNumber },
+          update: {
+            title: doc.title,
+            slug: generateAgencySlug(doc.documentNumber),
+            source_url: doc.sourceUrl,
+            status: DocumentStatus.ACTIVE,
+            metadata: {
+              source: doc.sourceDomain,
+              method: 'stub-external-pdf' as const,
+              pdfUrl: doc.pdfUrl,
+              processedAt: new Date().toISOString(),
+              notes:
+                doc.notes ??
+                'Stub record — content available as external PDF only',
+              isConsolidated: doc.isConsolidated,
+            } as unknown as Prisma.InputJsonValue,
+            updated_at: new Date(),
+          },
+          create: {
+            document_number: doc.documentNumber,
+            title: doc.title,
+            slug: generateAgencySlug(doc.documentNumber),
+            content_type: ContentType.AGENCY_REGULATION,
+            source_url: doc.sourceUrl,
+            status: DocumentStatus.ACTIVE,
+            metadata: {
+              source: doc.sourceDomain,
+              method: 'stub-external-pdf' as const,
+              pdfUrl: doc.pdfUrl,
+              processedAt: new Date().toISOString(),
+              notes:
+                doc.notes ??
+                'Stub record — content available as external PDF only',
+              isConsolidated: doc.isConsolidated,
+            } as unknown as Prisma.InputJsonValue,
+          },
+        })
+        console.log(`  [OK] Upserted stub: ${doc.documentNumber}`)
+      } else {
+        console.log(`  [DRY RUN] Would upsert stub for ${doc.documentNumber}`)
+      }
+      processed++
+      continue
+    }
 
     // Budget check
     if (totalCost > BUDGET_CEILING_USD) {
@@ -483,7 +544,8 @@ async function main(): Promise<void> {
         anthropic,
         cfg,
         pdfDir,
-        reviewDir
+        reviewDir,
+        slugMap
       )
 
       if (result.success) {
