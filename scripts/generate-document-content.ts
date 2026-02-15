@@ -15,6 +15,9 @@
  *   npx tsx scripts/generate-document-content.ts --dry-run                # Log what would be submitted
  */
 
+import { config } from 'dotenv'
+config({ path: '.env.local' })
+
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import { PrismaClient } from '@prisma/client'
@@ -54,6 +57,7 @@ export interface Config {
   limit: number
   batchId: string | null
   dryRun: boolean
+  docNumbersFile: string | null
 }
 
 export function parseArgs(argv: string[] = process.argv.slice(2)): Config {
@@ -63,6 +67,7 @@ export function parseArgs(argv: string[] = process.argv.slice(2)): Config {
     limit: 0,
     batchId: null,
     dryRun: false,
+    docNumbersFile: null,
   }
 
   for (let i = 0; i < argv.length; i++) {
@@ -83,6 +88,9 @@ export function parseArgs(argv: string[] = process.argv.slice(2)): Config {
       i++
     } else if (arg === '--dry-run') {
       config.dryRun = true
+    } else if (arg === '--doc-numbers-file' && argv[i + 1]) {
+      config.docNumbersFile = argv[i + 1] ?? null
+      i++
     }
   }
 
@@ -270,7 +278,19 @@ type DocumentWithAmendments = Awaited<ReturnType<typeof fetchDocuments>>[number]
 async function fetchDocuments(config: Config) {
   const where: Record<string, unknown> = {}
 
-  if (config.scope === 'template-docs') {
+  // If a doc-numbers file is provided, filter by those specific document numbers
+  if (config.docNumbersFile) {
+    const { readFileSync } = await import('node:fs')
+    const content = readFileSync(config.docNumbersFile, 'utf-8')
+    const docNumbers = content
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith('#'))
+    console.log(
+      `Filtering by ${docNumbers.length} document numbers from ${config.docNumbersFile}`
+    )
+    where.document_number = { in: docNumbers }
+  } else if (config.scope === 'template-docs') {
     where.template_items = { some: {} }
   }
 

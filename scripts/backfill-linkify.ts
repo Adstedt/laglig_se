@@ -12,14 +12,12 @@
  */
 
 import { prisma } from '@/lib/prisma'
-import {
-  buildSlugMap,
-  linkifyHtmlContent,
-  saveCrossReferences,
-} from '@/lib/linkify'
+import { buildSlugMap, linkifyHtmlContent } from '@/lib/linkify'
+import type { LinkedReference } from '@/lib/linkify/linkify-html'
 import { htmlToPlainText } from '@/lib/transforms/html-to-markdown'
 
 const BATCH_SIZE = 100
+const WRITE_CONCURRENCY = 5 // parallel HTML updates (Prisma pool ≈ 10)
 
 interface Stats {
   totalDocuments: number
@@ -41,6 +39,21 @@ function parseDocArgs(args: string[]): string[] {
     }
   }
   return docs
+}
+
+/** Extract a context snippet (~100 chars) surrounding a reference in the source text. */
+function extractContext(fullText: string, ref: LinkedReference): string {
+  const { start, end } = ref.reference
+  const snippetPadding = 40
+  const contextStart = Math.max(0, start - snippetPadding)
+  const contextEnd = Math.min(fullText.length, end + snippetPadding)
+
+  let snippet = fullText.slice(contextStart, contextEnd).trim()
+
+  if (contextStart > 0) snippet = '...' + snippet
+  if (contextEnd < fullText.length) snippet = snippet + '...'
+
+  return snippet
 }
 
 async function main() {
@@ -112,9 +125,17 @@ async function main() {
 
     if (batch.length === 0) break
 
+    // ── Phase 1: CPU work — linkify all docs (synchronous, fast) ──
+    const toWrite: Array<{
+      id: string
+      document_number: string
+      linkifiedHtml: string
+      linkedReferences: LinkedReference[]
+      plainText: string
+    }> = []
+
     for (const doc of batch) {
       stats.processed++
-
       try {
         const htmlContent = doc.html_content!
         const { html: linkifiedHtml, linkedReferences } = linkifyHtmlContent(
@@ -139,32 +160,94 @@ async function main() {
           )
         }
 
-        if (!dryRun) {
-          // Update the html_content with linkified version
-          await prisma.legalDocument.update({
-            where: { id: doc.id },
-            data: { html_content: linkifiedHtml },
-          })
-
-          // Save cross-references
-          const plainText = doc.full_text ?? htmlToPlainText(htmlContent)
-          const crossRefCount = await saveCrossReferences(
-            doc.id,
-            linkedReferences,
-            plainText
-          )
-          stats.totalCrossRefsUpserted += crossRefCount
-        } else {
+        if (dryRun) {
           stats.totalCrossRefsUpserted += new Set(
             linkedReferences.map((r) => r.targetDocumentId)
           ).size
+          stats.updated++
+          continue
         }
 
-        stats.updated++
+        toWrite.push({
+          id: doc.id,
+          document_number: doc.document_number!,
+          linkifiedHtml,
+          linkedReferences,
+          plainText: doc.full_text ?? htmlToPlainText(htmlContent),
+        })
       } catch (err) {
         stats.errors++
         console.error(
           `  ERROR processing ${doc.document_number} (${doc.id}):`,
+          err instanceof Error ? err.message : err
+        )
+      }
+    }
+
+    if (toWrite.length > 0) {
+      // ── Phase 2: Parallel HTML updates (WRITE_CONCURRENCY at a time) ──
+      for (let i = 0; i < toWrite.length; i += WRITE_CONCURRENCY) {
+        const chunk = toWrite.slice(i, i + WRITE_CONCURRENCY)
+        await Promise.all(
+          chunk.map((doc) =>
+            prisma.legalDocument
+              .update({
+                where: { id: doc.id },
+                data: { html_content: doc.linkifiedHtml },
+              })
+              .catch((err) => {
+                stats.errors++
+                console.error(
+                  `  ERROR updating HTML ${doc.document_number}:`,
+                  err instanceof Error ? err.message : err
+                )
+              })
+          )
+        )
+      }
+
+      // ── Phase 3: Batch cross-ref write — one transaction for entire batch ──
+      // Collect all source IDs and all cross-ref rows
+      const sourceIds = toWrite.map((d) => d.id)
+      const allCrossRefRows: Array<{
+        source_document_id: string
+        target_document_id: string
+        reference_type: 'REFERENCES'
+        context: string
+      }> = []
+
+      for (const doc of toWrite) {
+        const seen = new Set<string>()
+        for (const ref of doc.linkedReferences) {
+          if (seen.has(ref.targetDocumentId)) continue
+          seen.add(ref.targetDocumentId)
+          allCrossRefRows.push({
+            source_document_id: doc.id,
+            target_document_id: ref.targetDocumentId,
+            reference_type: 'REFERENCES',
+            context: extractContext(doc.plainText, ref),
+          })
+        }
+      }
+
+      try {
+        await prisma.$transaction([
+          prisma.crossReference.deleteMany({
+            where: {
+              source_document_id: { in: sourceIds },
+              reference_type: 'REFERENCES',
+            },
+          }),
+          prisma.crossReference.createMany({
+            data: allCrossRefRows,
+          }),
+        ])
+        stats.totalCrossRefsUpserted += allCrossRefRows.length
+        stats.updated += toWrite.length
+      } catch (err) {
+        stats.errors += toWrite.length
+        console.error(
+          `  ERROR in batch cross-ref transaction:`,
           err instanceof Error ? err.message : err
         )
       }

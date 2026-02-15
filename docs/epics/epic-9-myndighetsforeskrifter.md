@@ -3,11 +3,13 @@
 ## Epic Overview
 
 **Epic ID:** Epic 9
-**Status:** Planning
+**Status:** Done
 **Priority:** High — Beta blocker
 **Business Owner:** Product Team
 **Technical Lead:** Development Team
-**Last Updated:** 2026-02-10
+**Last Updated:** 2026-02-15
+
+> **Completion Note (2026-02-15):** All non-EU template-referenced documents verified with content + AI summaries (187/187 PASS). EU docs verified for presence — 18/18 present, content generation deferred to future story. Stories 12.4 and 12.5 are unblocked.
 
 ## Executive Summary
 
@@ -71,6 +73,8 @@ AFS documents are consolidated provisions from Arbetsmiljöverket's 2023 reform.
 | | | **81 total** | 6 standalone + 3 keep-whole + 6 parents + 66 chapters | |
 
 **Bold** = omnibus documents with many chapters requiring split handling.
+
+> **Post-implementation note (Story 9.1 complete):** The chapter counts above reflect the **initial plan** based on document analysis. Actual implementation in Story 9.1 confirmed 81 total entries (6 standalone + 3 keep-whole + 6 parents + 66 chapters) but several chapter counts were revised during ingestion — e.g., AFS 2023:10 expanded from 12 to 17 chapters, AFS 2023:12 was reclassified from Keep-whole to Split (2 kap.), AFS 2023:15 was reclassified from Split to Standalone. See `data/seed-template-documents.csv` (column `chapter_count`) for the template-scoped chapter counts used by the audit script. Story 9.4's baseline audit will verify actual DB state.
 
 **Source:** All AFS 2023-series PDFs are available at [av.se/lag-och-ratt/foreskrifter/](https://www.av.se/lag-och-ratt/foreskrifter/)
 
@@ -259,5 +263,5 @@ Analysis files: `data/notisum-amnesfokus/analysis/01-arbetsmiljo.md`, `data/noti
 ---
 
 _Epic created: 2024-01-15_
-_Last updated: 2026-02-10_
-_Status: Planning — stories to be created_
+_Last updated: 2026-02-15_
+_Status: Done_
