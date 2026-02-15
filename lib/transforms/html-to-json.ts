@@ -319,8 +319,13 @@ function parseSection(
 ): Section | null {
   const $el = $(node as never)
 
-  // Extract section info
-  const id = $el.attr('id') || $el.attr('data-section') || `section-${index}`
+  // Extract section info — check element id, then child heading id (for amendment HTML
+  // where the id lives on h3.paragraph instead of the wrapper section)
+  const id =
+    $el.attr('id') ||
+    $el.find('h2[id], h3[id], h4[id]').first().attr('id') ||
+    $el.attr('data-section') ||
+    `section-${index}`
   const dataAttrs = node.attribs || {}
 
   // Determine section type and number

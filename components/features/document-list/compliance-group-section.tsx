@@ -23,7 +23,7 @@ import type {
   WorkspaceMemberOption,
 } from '@/app/actions/document-list'
 import type { ComplianceStatus, LawListItemPriority } from '@prisma/client'
-import type { ColumnSizingState } from '@tanstack/react-table'
+import type { ColumnSizingState, ColumnOrderState } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 
 interface ComplianceGroupSectionProps {
@@ -37,6 +37,8 @@ interface ComplianceGroupSectionProps {
   columnVisibility?: Record<string, boolean>
   columnSizing?: ColumnSizingState
   onColumnSizingChange?: ((_sizing: ColumnSizingState) => void) | undefined
+  columnOrder?: ColumnOrderState | undefined
+  onColumnOrderChange?: ((_order: ColumnOrderState) => void) | undefined
   onUpdateItem: (
     _itemId: string,
     _updates: {
@@ -86,6 +88,8 @@ export const ComplianceGroupSection = memo(function ComplianceGroupSection({
   columnVisibility = {},
   columnSizing = {},
   onColumnSizingChange,
+  columnOrder,
+  onColumnOrderChange,
 }: ComplianceGroupSectionProps) {
   // Local state for instant toggle response, synced with prop
   const [localExpanded, setLocalExpanded] = useState(isExpanded)
@@ -220,6 +224,8 @@ export const ComplianceGroupSection = memo(function ComplianceGroupSection({
                 columnVisibility={columnVisibility}
                 columnSizing={columnSizing}
                 onColumnSizingChange={onColumnSizingChange}
+                columnOrder={columnOrder}
+                onColumnOrderChange={onColumnOrderChange}
                 onLoadMore={() => {}}
                 onUpdateItem={onUpdateItem}
                 onBulkUpdate={handleBulkUpdate}

@@ -1,0 +1,280 @@
+[dotenv@17.2.3] injecting env (16) from .env.local -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Parsed 150 CSV rows
+Expanded to 150 lookup entries
+  Non-EU: 132
+  EU:     18
+
+======================================================================
+TEMPLATE DOCUMENT COVERAGE AUDIT
+======================================================================
+
+Total expanded entries: 205
+  Non-EU: 187
+  EU:     18
+
+----------------------------------------------------------------------
+NON-EU DOCUMENTS (PASS/FAIL GATE)
+----------------------------------------------------------------------
+  Found:      187/187
+  Content:    187/187
+  Summary:    187/187
+  Kommentar:  187/187
+
+  SFS (81 entries):
+    ✅ SFS 1974:358
+    ✅ SFS 1974:981
+    ✅ SFS 1976:580
+    ✅ SFS 1977:284
+    ✅ SFS 1977:480
+    ✅ SFS 1977:1160
+    ✅ SFS 1977:1166
+    ✅ SFS 1982:80
+    ✅ SFS 1982:673
+    ✅ SFS 1986:163
+    ✅ SFS 1988:1465
+    ✅ SFS 1991:1046
+    ✅ SFS 1991:1047
+    ✅ SFS 1994:1297
+    ✅ SFS 1995:584
+    ✅ SFS 1995:1554
+    ✅ SFS 1998:209
+    ✅ SFS 1998:808
+    ✅ SFS 1998:899
+    ✅ SFS 1998:901
+    ✅ SFS 1998:940
+    ✅ SFS 1998:944
+    ✅ SFS 1999:381
+    ✅ SFS 1999:678
+    ✅ SFS 2001:512
+    ✅ SFS 2002:293
+    ✅ SFS 2003:778
+    ✅ SFS 2003:789
+    ✅ SFS 2004:865
+    ✅ SFS 2005:395
+    ✅ SFS 2006:263
+    ✅ SFS 2006:311
+    ✅ SFS 2006:985
+    ✅ SFS 2006:1592
+    ✅ SFS 2007:19
+    ✅ SFS 2007:667
+    ✅ SFS 2008:112
+    ✅ SFS 2008:245
+    ✅ SFS 2008:486
+    ✅ SFS 2008:565
+    ✅ SFS 2008:567
+    ✅ SFS 2008:834
+    ✅ SFS 2010:900
+    ✅ SFS 2010:1011
+    ✅ SFS 2010:1075
+    ✅ SFS 2011:318
+    ✅ SFS 2011:338
+    ✅ SFS 2012:259
+    ✅ SFS 2012:854
+    ✅ SFS 2012:861
+    ✅ SFS 2013:250
+    ✅ SFS 2013:251
+    ✅ SFS 2013:254
+    ✅ SFS 2014:266
+    ✅ SFS 2014:347
+    ✅ SFS 2014:425
+    ✅ SFS 2015:236
+    ✅ SFS 2016:402
+    ✅ SFS 2016:732
+    ✅ SFS 2016:986
+    ✅ SFS 2016:1067
+    ✅ SFS 2016:1128
+    ✅ SFS 2016:1129
+    ✅ SFS 2017:214
+    ✅ SFS 2017:218
+    ✅ SFS 2017:319
+    ✅ SFS 2017:966
+    ✅ SFS 2018:218
+    ✅ SFS 2018:396
+    ✅ SFS 2018:471
+    ✅ SFS 2018:506
+    ✅ SFS 2018:2088
+    ✅ SFS 2020:614
+    ✅ SFS 2021:787
+    ✅ SFS 2021:789
+    ✅ SFS 2021:890
+    ✅ SFS 2021:996
+    ✅ SFS 2021:1002
+    ✅ SFS 2022:469
+    ✅ SFS 2022:1274
+    ✅ SFS 2022:1276
+
+  AFS (67 entries):
+    ✅ AFS 2023:1
+    ✅ AFS 2023:2
+    ✅ AFS 2023:2 kap. 2 [chapter]
+    ✅ AFS 2023:2 kap. 3 [chapter]
+    ✅ AFS 2023:2 kap. 4 [chapter]
+    ✅ AFS 2023:2 kap. 5 [chapter]
+    ✅ AFS 2023:2 kap. 6 [chapter]
+    ✅ AFS 2023:2 kap. 7 [chapter]
+    ✅ AFS 2023:2 kap. 8 [chapter]
+    ✅ AFS 2023:2 kap. 9 [chapter]
+    ✅ AFS 2023:3
+    ✅ AFS 2023:4
+    ✅ AFS 2023:5
+    ✅ AFS 2023:9
+    ✅ AFS 2023:9 kap. 2 [chapter]
+    ✅ AFS 2023:9 kap. 3 [chapter]
+    ✅ AFS 2023:9 kap. 4 [chapter]
+    ✅ AFS 2023:9 kap. 5 [chapter]
+    ✅ AFS 2023:9 kap. 6 [chapter]
+    ✅ AFS 2023:10
+    ✅ AFS 2023:10 kap. 10 [chapter]
+    ✅ AFS 2023:10 kap. 11 [chapter]
+    ✅ AFS 2023:10 kap. 12 [chapter]
+    ✅ AFS 2023:10 kap. 13 [chapter]
+    ✅ AFS 2023:10 kap. 2 [chapter]
+    ✅ AFS 2023:10 kap. 3 [chapter]
+    ✅ AFS 2023:10 kap. 4 [chapter]
+    ✅ AFS 2023:10 kap. 5 [chapter]
+    ✅ AFS 2023:10 kap. 6 [chapter]
+    ✅ AFS 2023:10 kap. 7 [chapter]
+    ✅ AFS 2023:10 kap. 8 [chapter]
+    ✅ AFS 2023:10 kap. 9 [chapter]
+    ✅ AFS 2023:11
+    ✅ AFS 2023:11 kap. 10 [chapter]
+    ✅ AFS 2023:11 kap. 11 [chapter]
+    ✅ AFS 2023:11 kap. 12 [chapter]
+    ✅ AFS 2023:11 kap. 13 [chapter]
+    ✅ AFS 2023:11 kap. 14 [chapter]
+    ✅ AFS 2023:11 kap. 15 [chapter]
+    ✅ AFS 2023:11 kap. 2 [chapter]
+    ✅ AFS 2023:11 kap. 3 [chapter]
+    ✅ AFS 2023:11 kap. 4 [chapter]
+    ✅ AFS 2023:11 kap. 5 [chapter]
+    ✅ AFS 2023:11 kap. 6 [chapter]
+    ✅ AFS 2023:11 kap. 7 [chapter]
+    ✅ AFS 2023:11 kap. 8 [chapter]
+    ✅ AFS 2023:11 kap. 9 [chapter]
+    ✅ AFS 2023:12
+    ✅ AFS 2023:13
+    ✅ AFS 2023:13 kap. 10 [chapter]
+    ✅ AFS 2023:13 kap. 11 [chapter]
+    ✅ AFS 2023:13 kap. 12 [chapter]
+    ✅ AFS 2023:13 kap. 13 [chapter]
+    ✅ AFS 2023:13 kap. 14 [chapter]
+    ✅ AFS 2023:13 kap. 15 [chapter]
+    ✅ AFS 2023:13 kap. 16 [chapter]
+    ✅ AFS 2023:13 kap. 17 [chapter]
+    ✅ AFS 2023:13 kap. 2 [chapter]
+    ✅ AFS 2023:13 kap. 3 [chapter]
+    ✅ AFS 2023:13 kap. 4 [chapter]
+    ✅ AFS 2023:13 kap. 5 [chapter]
+    ✅ AFS 2023:13 kap. 6 [chapter]
+    ✅ AFS 2023:13 kap. 7 [chapter]
+    ✅ AFS 2023:13 kap. 8 [chapter]
+    ✅ AFS 2023:13 kap. 9 [chapter]
+    ✅ AFS 2023:14
+    ✅ AFS 2023:15
+
+  MSBFS (12 entries):
+    ✅ MSBFS 2013:3
+    ✅ MSBFS 2015:9
+    ✅ MSBFS 2020:1
+    ✅ MSBFS 2023:2
+    ✅ MSBFS 2024:10
+    ✅ MSBFS 2025:2
+    ✅ MSBFS 2010:4
+    ✅ MSBFS 2011:3
+    ✅ MSBFS 2014:6
+    ✅ MSBFS 2015:8
+    ✅ MSBFS 2016:4
+    ✅ MSBFS 2018:3
+
+  NFS (13 entries):
+    ✅ NFS 2001:2
+    ✅ NFS 2004:10
+    ✅ NFS 2004:15
+    ✅ NFS 2015:2
+    ✅ NFS 2015:3
+    ✅ NFS 2016:8
+    ✅ NFS 2018:11
+    ✅ NFS 2020:5
+    ✅ NFS 2021:6
+    ✅ NFS 2021:10
+    ✅ NFS 2022:2
+    ✅ NFS 2023:2
+    ✅ NFS 2023:13
+
+  ELSAK-FS (5 entries):
+    ✅ ELSÄK-FS 2017:2
+    ✅ ELSÄK-FS 2017:3
+    ✅ ELSÄK-FS 2022:1
+    ✅ ELSÄK-FS 2022:2
+    ✅ ELSÄK-FS 2022:3
+
+  KIFS (2 entries):
+    ✅ KIFS 2017:7
+    ✅ KIFS 2022:3
+
+  BFS (1 entries):
+    ✅ BFS 2011:16
+
+  SRVFS (2 entries):
+    ✅ SRVFS 2004:3
+    ✅ SRVFS 2004:7
+
+  SKVFS (1 entries):
+    ✅ SKVFS 2015:6
+
+  SCB-FS (1 entries):
+    ✅ SCB-FS 2025:19
+
+  SSMFS (1 entries):
+    ✅ SSMFS 2018:2
+
+  STAFS (1 entries):
+    ✅ STAFS 2020:1
+
+----------------------------------------------------------------------
+EU DOCUMENTS (INFORMATIONAL — NOT IN PASS/FAIL GATE)
+----------------------------------------------------------------------
+  Present:      18/18
+  With content: 1/18
+  Link-only:    17/18
+
+  🔗 (EG) nr 1907/2006 [32006R1907] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EG) nr 1272/2008 [32008R1272] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 2019/1021 [32019R1021] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  ✅ (EU) nr 2016/679 [32016R0679] — content: 451659 chars
+     AI: summary ✗, kommentar ✗
+  🔗 (EG) nr 561/2006 [32006R0561] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 165/2014 [32014R0165] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 2023/1230 [32023R1230] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EG) nr 166/2006 [32006R0166] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EG) nr 440/2008 [32008R0440] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 649/2012 [32012R0649] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 852/2020 [32020R0852] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 573/2024 [32024R0573] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 590/2024 [32024R0590] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 956/2023 [32023R0956] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 1115/2023 [32023R1115] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 1542/2023 [32023R1542] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 2772/2023 [32023R2772] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+  🔗 (EU) nr 40/2025 [32025R0040] — link-only (no local content)
+     AI: summary ✗, kommentar ✗
+
+======================================================================
+RESULT: PASS ✅
+======================================================================

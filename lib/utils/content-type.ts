@@ -78,7 +78,7 @@ const CONTENT_TYPE_COLORS: Record<ContentType, string> = {
   EU_DIRECTIVE:
     'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
   AGENCY_REGULATION:
-    'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+    'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
 }
 
 export function getContentTypeBadgeColor(type: ContentType): string {

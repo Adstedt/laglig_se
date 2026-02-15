@@ -38,6 +38,7 @@ import {
   fetchAndStorePdf,
   type PdfMetadata,
 } from '@/lib/sfs'
+import { linkifyHtmlContent, type SlugMap } from '@/lib/linkify'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -139,6 +140,10 @@ export async function GET(request: Request) {
       `[SYNC-SFS] Max inserts per run: ${CONFIG.MAX_INSERTS_PER_RUN} (timeout protection)`
     )
     console.log(`[SYNC-SFS] ========================================`)
+
+    // Story 2.29: Build slug map for linkification
+    const { buildSlugMap } = await import('@/lib/linkify')
+    const slugMap: SlugMap = await buildSlugMap()
 
     let page = 0
     const maxRuntime = maxDuration * 1000 - CONFIG.TIMEOUT_BUFFER_MS // Stop 30s before timeout
@@ -333,6 +338,11 @@ export async function GET(request: Request) {
             } as PdfMetadata
           }
 
+          // Story 2.29: Linkify HTML content before DB write
+          const linkifiedHtml = htmlContent
+            ? linkifyHtmlContent(htmlContent, slugMap, sfsNumber).html
+            : htmlContent
+
           await prisma.$transaction(async (tx) => {
             const newDoc = await tx.legalDocument.create({
               data: {
@@ -341,7 +351,7 @@ export async function GET(request: Request) {
                 slug,
                 content_type: ContentType.SFS_LAW,
                 full_text: fullText,
-                html_content: htmlContent,
+                html_content: linkifiedHtml,
                 publication_date: doc.datum ? new Date(doc.datum) : null,
                 status: DocumentStatus.ACTIVE,
                 source_url: `https://data.riksdagen.se/dokument/${doc.dok_id}`,
@@ -367,7 +377,7 @@ export async function GET(request: Request) {
                 document_id: newDoc.id,
                 version_number: 1,
                 full_text: fullText || '',
-                html_content: htmlContent,
+                html_content: linkifiedHtml,
                 amendment_sfs: latestAmendment,
                 source_systemdatum: apiSystemdatum,
               },

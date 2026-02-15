@@ -23,7 +23,9 @@ import {
   type RowSelectionState,
   type VisibilityState,
   type ColumnSizingState,
+  type ColumnOrderState,
 } from '@tanstack/react-table'
+import { arrayMove } from '@dnd-kit/sortable'
 import {
   Table,
   TableBody,
@@ -32,6 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import {
@@ -116,6 +119,9 @@ const TASK_PRIORITY_OPTIONS: PriorityOption[] = [
 // Props
 // ============================================================================
 
+/** Column IDs that cannot be reordered (pinned to edges) */
+const PINNED_COLUMN_IDS = new Set(['select', 'dragHandle', 'actions'])
+
 interface ListTabProps {
   filteredTasks: TaskWithRelations[]
   columns: TaskColumnWithCount[]
@@ -124,6 +130,8 @@ interface ListTabProps {
   columnSizing: ColumnSizingState
   onColumnSizingChange: (_sizing: ColumnSizingState) => void
   columnVisibility: VisibilityState
+  columnOrder: ColumnOrderState
+  onColumnOrderChange: (_order: ColumnOrderState) => void
   sorting: SortingState
   onSortingChange: (_sorting: SortingState) => void
   // Callbacks
@@ -143,6 +151,8 @@ export function ListTab({
   columnSizing,
   onColumnSizingChange,
   columnVisibility,
+  columnOrder,
+  onColumnOrderChange,
   sorting,
   onSortingChange,
   onTaskClick,
@@ -632,6 +642,25 @@ export function ListTab({
     [columnSizing, onColumnSizingChange]
   )
 
+  // ---- Column reorder handler (native HTML5 DnD via DraggableColumnHeader) ----
+
+  const handleColumnReorder = useCallback(
+    (activeId: string, overId: string) => {
+      const currentOrder =
+        columnOrder.length > 0
+          ? columnOrder
+          : table.getAllLeafColumns().map((c) => c.id)
+
+      const oldIndex = currentOrder.indexOf(activeId)
+      const newIndex = currentOrder.indexOf(overId)
+      if (oldIndex === -1 || newIndex === -1) return
+
+      onColumnOrderChange(arrayMove(currentOrder, oldIndex, newIndex))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [columnOrder, onColumnOrderChange]
+  )
+
   // ---- Table instance with column resizing ----
 
   const table = useReactTable({
@@ -642,6 +671,7 @@ export function ListTab({
       rowSelection,
       columnVisibility,
       columnSizing,
+      columnOrder,
     },
     onSortingChange: (updater) => {
       const newSorting =
@@ -650,6 +680,11 @@ export function ListTab({
     },
     onRowSelectionChange: setRowSelection,
     onColumnSizingChange: handleColumnSizingChange,
+    onColumnOrderChange: (updater) => {
+      const newOrder =
+        typeof updater === 'function' ? updater(columnOrder) : updater
+      onColumnOrderChange(newOrder)
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowId: (row) => row.id,
@@ -672,6 +707,9 @@ export function ListTab({
     }
     return defaultSize
   }
+
+  // Stable key to bust memo when column order changes
+  const columnOrderKey = useMemo(() => columnOrder.join(','), [columnOrder])
 
   // Story P.4: Row virtualizer for large datasets
   const rows = table.getRowModel().rows
@@ -824,47 +862,76 @@ export function ListTab({
           >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    style={{
-                      width: getColumnWidth(header.id, header.getSize()),
-                    }}
-                    className={cn(
-                      'relative',
-                      header.id === 'title' && 'bg-background'
-                    )}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                    {/* Resize handle */}
-                    {header.column.getCanResize() && (
-                      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                      <div
-                        role="separator"
-                        aria-orientation="vertical"
-                        onMouseDown={header.getResizeHandler()}
-                        onTouchStart={header.getResizeHandler()}
+                {headerGroup.headers.map((header) => {
+                  const isPinned = PINNED_COLUMN_IDS.has(header.id)
+                  const headerContent = (
+                    <>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                      {/* Resize handle */}
+                      {header.column.getCanResize() && (
+                        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                        <div
+                          role="separator"
+                          aria-orientation="vertical"
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          className={cn(
+                            'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
+                            'flex items-center justify-center'
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              'h-4 w-0.5 rounded-full bg-border transition-colors',
+                              'group-hover/resize:bg-primary group-hover/resize:h-6',
+                              header.column.getIsResizing() && 'bg-primary h-6'
+                            )}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )
+
+                  if (isPinned) {
+                    return (
+                      <TableHead
+                        key={header.id}
+                        style={{
+                          width: getColumnWidth(header.id, header.getSize()),
+                        }}
                         className={cn(
-                          'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
-                          'flex items-center justify-center'
+                          'relative',
+                          header.id === 'title' && 'bg-background'
                         )}
                       >
-                        <div
-                          className={cn(
-                            'h-4 w-0.5 rounded-full bg-border transition-colors',
-                            'group-hover/resize:bg-primary group-hover/resize:h-6',
-                            header.column.getIsResizing() && 'bg-primary h-6'
-                          )}
-                        />
-                      </div>
-                    )}
-                  </TableHead>
-                ))}
+                        {headerContent}
+                      </TableHead>
+                    )
+                  }
+
+                  return (
+                    <DraggableColumnHeader
+                      key={header.id}
+                      id={header.id}
+                      onReorder={handleColumnReorder}
+                      style={{
+                        width: getColumnWidth(header.id, header.getSize()),
+                      }}
+                      className={cn(
+                        'relative',
+                        header.id === 'title' && 'bg-background'
+                      )}
+                    >
+                      {headerContent}
+                    </DraggableColumnHeader>
+                  )
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -890,6 +957,7 @@ export function ListTab({
                       virtualItem={virtualItem}
                       isOverdue={isOverdue(row.original)}
                       onTaskClick={onTaskClick}
+                      columnOrderKey={columnOrderKey}
                     />
                   )
                 })
@@ -900,6 +968,7 @@ export function ListTab({
                     row={row}
                     isOverdue={isOverdue(row.original)}
                     onTaskClick={onTaskClick}
+                    columnOrderKey={columnOrderKey}
                   />
                 ))
               )
@@ -932,10 +1001,12 @@ const TaskRow = memo(function TaskRow({
   row,
   isOverdue,
   onTaskClick,
+  columnOrderKey: _columnOrderKey,
 }: {
   row: TaskRowType
   isOverdue: boolean
   onTaskClick?: ((_taskId: string) => void) | undefined
+  columnOrderKey?: string
 }) {
   return (
     <TableRow
@@ -972,11 +1043,13 @@ const VirtualTaskRow = memo(function VirtualTaskRow({
   virtualItem,
   isOverdue,
   onTaskClick,
+  columnOrderKey: _columnOrderKey,
 }: {
   row: TaskRowType
   virtualItem: VirtualItem
   isOverdue: boolean
   onTaskClick?: ((_taskId: string) => void) | undefined
+  columnOrderKey?: string
 }) {
   const style: React.CSSProperties = {
     position: 'absolute',

@@ -18,6 +18,26 @@ describe('getDocumentUrl', () => {
     })
   })
 
+  describe('SFS Amendments', () => {
+    it('returns correct URL for SFS_AMENDMENT', () => {
+      const result = getDocumentUrl({
+        contentType: 'SFS_AMENDMENT',
+        slug: 'sfs-2025-732',
+      })
+      expect(result).toBe('/lagar/andringar/sfs-2025-732')
+    })
+  })
+
+  describe('Agency Regulations', () => {
+    it('returns correct URL for AGENCY_REGULATION', () => {
+      const result = getDocumentUrl({
+        contentType: 'AGENCY_REGULATION',
+        slug: 'afs-2001-1',
+      })
+      expect(result).toBe('/foreskrifter/afs-2001-1')
+    })
+  })
+
   describe('Court Cases', () => {
     it('returns correct URL for COURT_CASE_AD', () => {
       const result = getDocumentUrl({

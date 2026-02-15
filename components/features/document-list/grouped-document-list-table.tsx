@@ -37,7 +37,11 @@ import type {
   LawListItemPriority,
   ComplianceStatus,
 } from '@prisma/client'
-import type { VisibilityState, ColumnSizingState } from '@tanstack/react-table'
+import type {
+  VisibilityState,
+  ColumnSizingState,
+  ColumnOrderState,
+} from '@tanstack/react-table'
 import type { TaskProgress, LastActivity } from '@/lib/db/queries/list-items'
 
 // Special ID for ungrouped items
@@ -54,6 +58,8 @@ interface GroupedDocumentListTableProps {
   onColumnVisibilityChange: (_visibility: VisibilityState) => void
   columnSizing?: ColumnSizingState | undefined
   onColumnSizingChange?: ((_sizing: ColumnSizingState) => void) | undefined
+  columnOrder?: ColumnOrderState | undefined
+  onColumnOrderChange?: ((_order: ColumnOrderState) => void) | undefined
   onLoadMore: () => void
   onRemoveItem: (_itemId: string) => Promise<boolean>
   onReorderItems: (
@@ -103,6 +109,8 @@ export function GroupedDocumentListTable({
   onColumnVisibilityChange,
   columnSizing = {},
   onColumnSizingChange,
+  columnOrder,
+  onColumnOrderChange,
   onLoadMore,
   onRemoveItem,
   onReorderItems,
@@ -433,6 +441,8 @@ export function GroupedDocumentListTable({
                   onColumnVisibilityChange={onColumnVisibilityChange}
                   columnSizing={columnSizing}
                   onColumnSizingChange={onColumnSizingChange}
+                  columnOrder={columnOrder}
+                  onColumnOrderChange={onColumnOrderChange}
                   onUpdateItem={onUpdateItem}
                   onRemoveItem={onRemoveItem}
                   onReorderItems={onReorderItems}
@@ -469,6 +479,8 @@ export function GroupedDocumentListTable({
                 onColumnVisibilityChange={onColumnVisibilityChange}
                 columnSizing={columnSizing}
                 onColumnSizingChange={onColumnSizingChange}
+                columnOrder={columnOrder}
+                onColumnOrderChange={onColumnOrderChange}
                 onUpdateItem={onUpdateItem}
                 onRemoveItem={onRemoveItem}
                 onReorderItems={onReorderItems}

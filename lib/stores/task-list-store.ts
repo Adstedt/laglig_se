@@ -8,6 +8,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type {
   ColumnSizingState,
+  ColumnOrderState,
   VisibilityState,
   SortingState,
 } from '@tanstack/react-table'
@@ -37,6 +38,8 @@ export const DEFAULT_COLUMN_VISIBILITY: VisibilityState = {
 
 export const DEFAULT_SORTING: SortingState = []
 
+export const DEFAULT_COLUMN_ORDER: ColumnOrderState = []
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -44,12 +47,14 @@ export const DEFAULT_SORTING: SortingState = []
 export interface TaskListState {
   columnSizing: ColumnSizingState
   columnVisibility: VisibilityState
+  columnOrder: ColumnOrderState
   sorting: SortingState
 
   // Actions
   setColumnSizing: (_sizing: ColumnSizingState) => void
   setColumnVisibility: (_visibility: VisibilityState) => void
   resetColumnVisibility: () => void
+  setColumnOrder: (_order: ColumnOrderState) => void
   setSorting: (_sorting: SortingState) => void
 }
 
@@ -62,6 +67,7 @@ export const useTaskListStore = create<TaskListState>()(
     (set) => ({
       columnSizing: DEFAULT_COLUMN_SIZING,
       columnVisibility: DEFAULT_COLUMN_VISIBILITY,
+      columnOrder: DEFAULT_COLUMN_ORDER,
       sorting: DEFAULT_SORTING,
 
       setColumnSizing: (sizing: ColumnSizingState) =>
@@ -73,6 +79,8 @@ export const useTaskListStore = create<TaskListState>()(
       resetColumnVisibility: () =>
         set({ columnVisibility: DEFAULT_COLUMN_VISIBILITY }),
 
+      setColumnOrder: (order: ColumnOrderState) => set({ columnOrder: order }),
+
       setSorting: (sorting: SortingState) => set({ sorting }),
     }),
     {
@@ -80,6 +88,7 @@ export const useTaskListStore = create<TaskListState>()(
       partialize: (state) => ({
         columnSizing: state.columnSizing,
         columnVisibility: state.columnVisibility,
+        columnOrder: state.columnOrder,
         sorting: state.sorting,
       }),
     }

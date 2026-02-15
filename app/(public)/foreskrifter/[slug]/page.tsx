@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BookOpen, ExternalLink } from 'lucide-react'
+import { LegalDocumentCard } from '@/components/features/legal-document-card'
 
 export const dynamic = 'force-dynamic'
 
@@ -86,10 +87,7 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
         </Breadcrumb>
 
         <h1 className="mb-4 text-2xl font-bold">{doc.title}</h1>
-        <div
-          className="prose dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: doc.html_content }}
-        />
+        <LegalDocumentCard htmlContent={doc.html_content} />
       </div>
     )
   }
@@ -116,7 +114,7 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
       <Card className="mt-4">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <BookOpen className="h-6 w-6 text-orange-600" />
+            <BookOpen className="h-6 w-6 text-teal-600" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">
                 Myndighetsföreskrift
@@ -138,24 +136,39 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
             ) : null}
           </div>
 
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
-            <p className="text-sm text-amber-800 dark:text-amber-200">
-              Dokumentet är registrerat men fullständigt innehåll läggs till
-              inom kort.
-            </p>
-          </div>
-
-          {doc.source_url && doc.source_url !== '' && (
+          {metadata?.method === 'stub-external-pdf' && metadata?.pdfUrl ? (
             <Button variant="outline" asChild>
               <a
-                href={doc.source_url}
+                href={String(metadata.pdfUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
-                Besök myndighetens webbplats
+                Öppna originaldokument (PDF)
               </a>
             </Button>
+          ) : (
+            <>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/30">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  Dokumentet är registrerat men fullständigt innehåll läggs till
+                  inom kort.
+                </p>
+              </div>
+
+              {doc.source_url && doc.source_url !== '' && (
+                <Button variant="outline" asChild>
+                  <a
+                    href={doc.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Besök myndighetens webbplats
+                  </a>
+                </Button>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

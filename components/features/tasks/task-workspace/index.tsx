@@ -260,6 +260,8 @@ export function TaskWorkspace({
     setColumnSizing,
     columnVisibility,
     setColumnVisibility,
+    columnOrder,
+    setColumnOrder,
     sorting,
     setSorting,
   } = useTaskListStore()
@@ -344,6 +346,8 @@ export function TaskWorkspace({
             columnSizing={columnSizing}
             onColumnSizingChange={setColumnSizing}
             columnVisibility={columnVisibility}
+            columnOrder={columnOrder}
+            onColumnOrderChange={setColumnOrder}
             sorting={sorting}
             onSortingChange={setSorting}
             onTaskClick={handleTaskClick}

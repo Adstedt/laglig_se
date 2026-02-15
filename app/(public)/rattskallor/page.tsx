@@ -62,7 +62,8 @@ export default async function RattskallolPage({
           Regelverk
         </h1>
         <p className="mb-4 text-muted-foreground">
-          Bläddra bland svenska lagar, rättsfall och EU-lagstiftning
+          Bläddra bland svenska lagar, föreskrifter, rättsfall och
+          EU-lagstiftning
         </p>
         <CatalogueSearchBar initialQuery={query} basePath="/rattskallor" />
       </div>

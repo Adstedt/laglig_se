@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -24,6 +25,7 @@ import {
 import type { SectionChangeType } from '@prisma/client'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
+import { StickyDocNav } from '@/components/features/paragraf-toc'
 
 interface SectionChange {
   id: string
@@ -230,7 +232,7 @@ function DefinitionListDisplay({
 function HtmlContentRenderer({ html }: { html: string }) {
   return (
     <div
-      className="amendment-html-content"
+      className="legal-document"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   )
@@ -240,6 +242,7 @@ export function AmendmentPageContent({
   amendment,
   isWorkspace = false,
 }: AmendmentPageContentProps) {
+  const articleRef = useRef<HTMLElement>(null)
   const details = amendment.amendmentDetails
   const baseLaw = amendment.baseLaw
 
@@ -281,7 +284,7 @@ export function AmendmentPageContent({
   const formattedPublicationDate = formatDate(amendment.publication_date)
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="has-hero-header mx-auto max-w-4xl space-y-6">
       {/* Hero Header - matches law page style */}
       <header className="rounded-xl bg-card p-6 shadow-sm border">
         <div className="flex items-start gap-4">
@@ -409,7 +412,7 @@ export function AmendmentPageContent({
           <CardTitle className="text-lg">Ändringstext</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <article className="amendment-html-content p-6 md:p-8">
+          <article ref={articleRef} className="legal-document p-6 md:p-8">
             {/* PRIMARY: Render LLM-generated HTML content directly */}
             {hasHtmlContent && (
               <HtmlContentRenderer html={amendment.html_content!} />
@@ -566,6 +569,9 @@ export function AmendmentPageContent({
           </article>
         </CardContent>
       </Card>
+
+      {/* Sticky sidebar nav — TOC + in-document search */}
+      <StickyDocNav containerRef={articleRef} />
 
       {/* Change summary badges */}
       {sectionChanges.length > 0 && (

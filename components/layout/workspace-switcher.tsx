@@ -14,7 +14,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
@@ -35,6 +34,8 @@ interface WorkspaceItem {
 interface WorkspaceSwitcherProps {
   /** Callback fired after workspace switch completes (for mobile sheet close) */
   onSwitchComplete?: () => void
+  /** Show only the circular avatar (for collapsed sidebar) */
+  collapsed?: boolean
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -47,12 +48,12 @@ const ROLE_LABELS: Record<string, string> = {
 
 export function WorkspaceSwitcher({
   onSwitchComplete,
+  collapsed,
 }: WorkspaceSwitcherProps) {
   const router = useRouter()
   const {
     workspaceId,
     workspaceName,
-    role,
     isLoading: contextLoading,
     refresh,
   } = useWorkspace()
@@ -133,54 +134,140 @@ export function WorkspaceSwitcher({
     }
   }
 
-  const roleLabel = ROLE_LABELS[role] || role
-
   // Get workspace initial for avatar fallback
   const getWorkspaceInitial = (name: string) => {
     return name.charAt(0).toUpperCase()
   }
 
-  // Check if current role is auditor
-  const isAuditor = role === 'AUDITOR'
+  // Collapsed: just the avatar circle
+  if (collapsed) {
+    if (!mounted) {
+      return (
+        <button className="flex items-center justify-center rounded-full p-1 transition-colors hover:bg-accent">
+          <Avatar className="h-7 w-7 rounded-full">
+            <AvatarFallback className="rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+              {workspaceName ? getWorkspaceInitial(workspaceName) : 'A'}
+            </AvatarFallback>
+          </Avatar>
+        </button>
+      )
+    }
 
-  // Prevent hydration mismatch by not rendering popover until mounted
+    return (
+      <>
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <button
+              role="combobox"
+              aria-expanded={open}
+              aria-controls="workspace-switcher-collapsed"
+              aria-label="Byt arbetsplats"
+              className="flex items-center justify-center rounded-full p-1 transition-colors hover:bg-accent"
+            >
+              <Avatar className="h-7 w-7 rounded-full">
+                <AvatarFallback className="rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                  {workspaceName ? getWorkspaceInitial(workspaceName) : 'A'}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            id="workspace-switcher-collapsed"
+            className="w-[260px] p-1"
+            side="right"
+            align="end"
+          >
+            {loading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : workspaces.length === 0 ? (
+              <div className="py-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Inga arbetsplatser
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-0.5">
+                {workspaces.map((ws) => (
+                  <button
+                    key={ws.id}
+                    onClick={() => handleSwitch(ws)}
+                    disabled={switching !== null}
+                    className={cn(
+                      'flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors',
+                      'hover:bg-accent hover:text-accent-foreground',
+                      ws.id === workspaceId && 'bg-accent',
+                      switching === ws.id && 'opacity-50'
+                    )}
+                  >
+                    <Avatar className="h-7 w-7 rounded-full shrink-0">
+                      {ws.company_logo && (
+                        <AvatarImage src={ws.company_logo} alt={ws.name} />
+                      )}
+                      <AvatarFallback className="rounded-full bg-muted text-muted-foreground text-xs font-semibold">
+                        {getWorkspaceInitial(ws.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{ws.name}</p>
+                      <span className="text-xs text-muted-foreground">
+                        {ROLE_LABELS[ws.role] || ws.role}
+                      </span>
+                    </div>
+                    {switching === ws.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+                    ) : ws.id === workspaceId ? (
+                      <Check className="h-4 w-4 shrink-0" />
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            )}
+            <Separator className="my-1" />
+            <button
+              onClick={handleCreateWorkspace}
+              className={cn(
+                'flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors',
+                'hover:bg-accent hover:text-accent-foreground text-muted-foreground'
+              )}
+            >
+              <div className="flex h-7 w-7 items-center justify-center rounded-full border border-dashed border-muted-foreground/50 shrink-0">
+                <Plus className="h-3.5 w-3.5" />
+              </div>
+              <span className="font-medium">Skapa ny arbetsplats</span>
+            </button>
+          </PopoverContent>
+        </Popover>
+
+        <CreateWorkspaceModal
+          open={createModalOpen}
+          onOpenChange={handleCreateModalClose}
+        />
+      </>
+    )
+  }
+
+  // Expanded: clean borderless row
   if (!mounted) {
     return (
-      <Button
-        variant="outline"
-        className="w-full justify-start gap-3 h-auto p-3"
-      >
-        <Avatar className="h-8 w-8 rounded-lg">
-          <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-sm font-semibold">
+      <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent">
+        <Avatar className="h-7 w-7 rounded-full shrink-0">
+          <AvatarFallback className="rounded-full bg-primary text-primary-foreground text-xs font-semibold">
             {workspaceName ? getWorkspaceInitial(workspaceName) : 'A'}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0 text-left">
           {contextLoading ? (
-            <>
-              <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-              <div className="h-3 w-16 bg-muted animate-pulse rounded mt-1" />
-            </>
+            <div className="h-4 w-24 bg-muted animate-pulse rounded" />
           ) : (
-            <>
-              <p className="text-sm font-medium truncate">
-                {workspaceName || 'Arbetsplats'}
-              </p>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground truncate">
-                  {roleLabel}
-                </span>
-                {isAuditor && (
-                  <span className="inline-flex items-center rounded px-1 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                    Endast läsning
-                  </span>
-                )}
-              </div>
-            </>
+            <p className="font-medium truncate">
+              {workspaceName || 'Arbetsplats'}
+            </p>
           )}
         </div>
-        <ChevronsUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
-      </Button>
+        <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      </button>
     )
   }
 
@@ -188,46 +275,35 @@ export function WorkspaceSwitcher({
     <>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
+          <button
             role="combobox"
             aria-expanded={open}
+            aria-controls="workspace-switcher-expanded"
             aria-label="Byt arbetsplats"
-            className="w-full justify-start gap-3 h-auto p-3"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
           >
-            <Avatar className="h-8 w-8 rounded-lg">
-              <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-sm font-semibold">
+            <Avatar className="h-7 w-7 rounded-full shrink-0">
+              <AvatarFallback className="rounded-full bg-primary text-primary-foreground text-xs font-semibold">
                 {workspaceName ? getWorkspaceInitial(workspaceName) : 'A'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0 text-left">
               {contextLoading ? (
-                <>
-                  <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                  <div className="h-3 w-16 bg-muted animate-pulse rounded mt-1" />
-                </>
+                <div className="h-4 w-24 bg-muted animate-pulse rounded" />
               ) : (
-                <>
-                  <p className="text-sm font-medium truncate">
-                    {workspaceName || 'Arbetsplats'}
-                  </p>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-muted-foreground truncate">
-                      {roleLabel}
-                    </span>
-                    {isAuditor && (
-                      <span className="inline-flex items-center rounded px-1 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                        Endast läsning
-                      </span>
-                    )}
-                  </div>
-                </>
+                <p className="font-medium truncate">
+                  {workspaceName || 'Arbetsplats'}
+                </p>
               )}
             </div>
-            <ChevronsUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
-          </Button>
+            <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          </button>
         </PopoverTrigger>
-        <PopoverContent className="w-[260px] p-1" align="start">
+        <PopoverContent
+          id="workspace-switcher-expanded"
+          className="w-[260px] p-1"
+          align="start"
+        >
           {loading ? (
             <div className="flex items-center justify-center py-6">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -254,11 +330,11 @@ export function WorkspaceSwitcher({
                       switching === ws.id && 'opacity-50'
                     )}
                   >
-                    <Avatar className="h-7 w-7 rounded-lg shrink-0">
+                    <Avatar className="h-7 w-7 rounded-full shrink-0">
                       {ws.company_logo && (
                         <AvatarImage src={ws.company_logo} alt={ws.name} />
                       )}
-                      <AvatarFallback className="rounded-lg bg-muted text-muted-foreground text-xs font-semibold">
+                      <AvatarFallback className="rounded-full bg-muted text-muted-foreground text-xs font-semibold">
                         {getWorkspaceInitial(ws.name)}
                       </AvatarFallback>
                     </Avatar>
@@ -295,7 +371,7 @@ export function WorkspaceSwitcher({
               'hover:bg-accent hover:text-accent-foreground text-muted-foreground'
             )}
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-dashed border-muted-foreground/50 shrink-0">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-dashed border-muted-foreground/50 shrink-0">
               <Plus className="h-3.5 w-3.5" />
             </div>
             <span className="font-medium">Skapa ny arbetsplats</span>

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FutureAmendmentsBanner } from '@/components/features/law'
+import { StickyDocNav } from '@/components/features/paragraf-toc'
 import { LawContentWrapper } from './law-content-wrapper'
 
 interface LawSectionWithBannerProps {
@@ -18,13 +19,13 @@ export function LawSectionWithBanner({
   sourceUrl,
   isLawNotYetInForce,
 }: LawSectionWithBannerProps) {
+  const articleRef = useRef<HTMLElement>(null)
   const [futureAmendments, setFutureAmendments] = useState<
     { date: string; formattedDate: string }[]
   >([])
 
   const handleFutureAmendmentsFound = useCallback(
     (amendments: { date: string; formattedDate: string }[]) => {
-      // Only update if we found new amendments (prevent infinite loop)
       if (amendments.length > 0 && futureAmendments.length === 0) {
         setFutureAmendments(amendments)
       }
@@ -34,19 +35,16 @@ export function LawSectionWithBanner({
 
   return (
     <>
-      {/* Banner appears ABOVE the card when future amendments are found */}
-      {/* Don't show if the entire law hasn't entered into force yet - that's redundant */}
       {!isLawNotYetInForce && (
         <FutureAmendmentsBanner amendments={futureAmendments} />
       )}
 
-      {/* Law Content Card */}
       <Card className="mb-8">
         <CardHeader className="border-b bg-muted/30">
           <CardTitle className="text-lg">Lagtext</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <article className="legal-document p-6 md:p-8">
+          <article ref={articleRef} className="legal-document p-6 md:p-8">
             {htmlContent || fallbackText ? (
               <LawContentWrapper
                 htmlContent={htmlContent}
@@ -71,6 +69,9 @@ export function LawSectionWithBanner({
           </article>
         </CardContent>
       </Card>
+
+      {/* Fixed-position sidebar nav — self-positioning, auto-hides when no room */}
+      <StickyDocNav containerRef={articleRef} />
     </>
   )
 }

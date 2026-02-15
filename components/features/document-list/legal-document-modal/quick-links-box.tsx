@@ -27,7 +27,17 @@ function getDocumentUrl(contentType: string, slug: string): string {
   if (contentType === 'EU_REGULATION' || contentType === 'EU_DIRECTIVE') {
     return `/browse/eu/${slug}`
   }
+  if (contentType === 'AGENCY_REGULATION') {
+    return `/browse/foreskrifter/${slug}`
+  }
   return `/browse/lagar/${slug}`
+}
+
+function getDocumentLabel(contentType: string): string {
+  if (contentType === 'AGENCY_REGULATION') return 'Visa fullständig föreskrift'
+  if (contentType.startsWith('COURT_CASE_'))
+    return 'Visa fullständigt rättsfall'
+  return 'Visa fullständig lag'
 }
 
 export function QuickLinksBox({
@@ -37,7 +47,8 @@ export function QuickLinksBox({
   listItemId: _listItemId,
   onAiChatToggle,
 }: QuickLinksBoxProps) {
-  const lawUrl = getDocumentUrl(contentType, slug)
+  const docUrl = getDocumentUrl(contentType, slug)
+  const docLabel = getDocumentLabel(contentType)
 
   return (
     <Card className="border-border/60">
@@ -47,16 +58,16 @@ export function QuickLinksBox({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {/* View full law */}
+        {/* View full document */}
         <Button
           variant="outline"
           size="sm"
           className="w-full justify-start"
           asChild
         >
-          <Link href={lawUrl} target="_blank" rel="noopener noreferrer">
+          <Link href={docUrl} target="_blank" rel="noopener noreferrer">
             <ExternalLink className="h-4 w-4 mr-2" />
-            Visa fullständig lag
+            {docLabel}
           </Link>
         </Button>
 

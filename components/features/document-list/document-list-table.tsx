@@ -20,6 +20,7 @@ import {
   type RowSelectionState,
   type VisibilityState,
   type ColumnSizingState,
+  type ColumnOrderState,
 } from '@tanstack/react-table'
 import {
   DndContext,
@@ -85,6 +86,7 @@ import type {
 } from '@/app/actions/document-list'
 import type { LawListItemStatus, LawListItemPriority } from '@prisma/client'
 import { useDebouncedCallback } from 'use-debounce'
+import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { GroupEditor } from './table-cell-editors/group-editor'
@@ -141,6 +143,14 @@ const VIRTUAL_TABLE_MAX_HEIGHT = 600
 // Props
 // ============================================================================
 
+/** Column IDs that cannot be reordered (pinned to edges) */
+const PINNED_COLUMN_IDS = new Set([
+  'select',
+  'dragHandle',
+  'actions',
+  'highRiskWarning',
+])
+
 interface DocumentListTableProps {
   items: DocumentListItem[]
   total: number
@@ -152,6 +162,9 @@ interface DocumentListTableProps {
   // Column sizing for resizable columns
   columnSizing?: ColumnSizingState | undefined
   onColumnSizingChange?: ((_sizing: ColumnSizingState) => void) | undefined
+  // Column order for drag-to-reorder
+  columnOrder?: ColumnOrderState | undefined
+  onColumnOrderChange?: ((_order: ColumnOrderState) => void) | undefined
   onLoadMore: () => void
   onRemoveItem: (_itemId: string) => Promise<boolean>
   onReorderItems: (
@@ -228,6 +241,8 @@ export function DocumentListTable({
   onColumnVisibilityChange,
   columnSizing: externalColumnSizing,
   onColumnSizingChange,
+  columnOrder: externalColumnOrder,
+  onColumnOrderChange,
   onLoadMore,
   onRemoveItem,
   onReorderItems,
@@ -254,8 +269,12 @@ export function DocumentListTable({
   const [internalColumnSizing, setInternalColumnSizing] =
     useState<ColumnSizingState>({})
 
-  // Use external sizing if provided, otherwise use internal
+  const [internalColumnOrder, setInternalColumnOrder] =
+    useState<ColumnOrderState>([])
+
+  // Use external sizing/order if provided, otherwise use internal
   const columnSizing = externalColumnSizing ?? internalColumnSizing
+  const columnOrder = externalColumnOrder ?? internalColumnOrder
   const handleColumnSizingChange = useCallback(
     (
       updater:
@@ -271,6 +290,17 @@ export function DocumentListTable({
       }
     },
     [columnSizing, onColumnSizingChange]
+  )
+
+  const handleColumnOrderChange = useCallback(
+    (newOrder: ColumnOrderState) => {
+      if (onColumnOrderChange) {
+        onColumnOrderChange(newOrder)
+      } else {
+        setInternalColumnOrder(newOrder)
+      }
+    },
+    [onColumnOrderChange]
   )
 
   // Story P.4: Virtualization state
@@ -696,6 +726,23 @@ export function DocumentListTable({
     return columnVisibility
   }, [columnVisibility, hideGroupColumn])
 
+  // Column reorder handler (native HTML5 DnD via DraggableColumnHeader)
+  const handleColumnReorder = useCallback(
+    (activeId: string, overId: string) => {
+      const currentOrder =
+        columnOrder.length > 0
+          ? columnOrder
+          : columns.map((c) => c.id ?? '').filter(Boolean)
+
+      const oldIndex = currentOrder.indexOf(activeId)
+      const newIndex = currentOrder.indexOf(overId)
+      if (oldIndex === -1 || newIndex === -1) return
+
+      handleColumnOrderChange(arrayMove(currentOrder, oldIndex, newIndex))
+    },
+    [columnOrder, columns, handleColumnOrderChange]
+  )
+
   // Table instance
   const table = useReactTable({
     data: localItems,
@@ -705,6 +752,7 @@ export function DocumentListTable({
       rowSelection,
       columnVisibility: effectiveColumnVisibility,
       columnSizing,
+      columnOrder,
     },
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
@@ -714,6 +762,11 @@ export function DocumentListTable({
       onColumnVisibilityChange(newVisibility)
     },
     onColumnSizingChange: handleColumnSizingChange,
+    onColumnOrderChange: (updater) => {
+      const newOrder =
+        typeof updater === 'function' ? updater(columnOrder) : updater
+      handleColumnOrderChange(newOrder)
+    },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowId: (row) => row.id,
@@ -741,6 +794,7 @@ export function DocumentListTable({
 
   // Story P.4: Row virtualizer for large datasets
   const rows = table.getRowModel().rows
+  const columnOrderKey = useMemo(() => columnOrder.join(','), [columnOrder])
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => tableContainerRef.current,
@@ -771,6 +825,90 @@ export function DocumentListTable({
     await onRemoveItem(removeConfirmItem.id)
     setRemoveConfirmItem(null)
   }
+
+  // Render column-reorderable table header (shared between both DnD branches)
+  const renderTableHeader = () => (
+    <TableHeader
+      className={
+        shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
+      }
+    >
+      {table.getHeaderGroups().map((headerGroup) => (
+        <TableRow key={headerGroup.id}>
+          {headerGroup.headers.map((header) => {
+            const isPinned = PINNED_COLUMN_IDS.has(header.id)
+            const headerContent = (
+              <>
+                {header.isPlaceholder
+                  ? null
+                  : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                {/* Resize handle - only show for resizable columns */}
+                {header.column.getCanResize() && (
+                  // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                  <div
+                    role="separator"
+                    aria-orientation="vertical"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onMouseDown={header.getResizeHandler()}
+                    onTouchStart={header.getResizeHandler()}
+                    className={cn(
+                      'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
+                      'flex items-center justify-center'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'h-4 w-0.5 rounded-full bg-border transition-colors',
+                        'group-hover/resize:bg-primary group-hover/resize:h-6',
+                        header.column.getIsResizing() && 'bg-primary h-6'
+                      )}
+                    />
+                  </div>
+                )}
+              </>
+            )
+
+            if (isPinned) {
+              return (
+                <TableHead
+                  key={header.id}
+                  style={{
+                    width: getColumnWidth(header.id, header.getSize()),
+                  }}
+                  className={cn(
+                    'relative',
+                    header.id === 'title' && 'sticky left-0 bg-background z-10'
+                  )}
+                >
+                  {headerContent}
+                </TableHead>
+              )
+            }
+
+            return (
+              <DraggableColumnHeader
+                key={header.id}
+                id={header.id}
+                onReorder={handleColumnReorder}
+                style={{
+                  width: getColumnWidth(header.id, header.getSize()),
+                }}
+                className={cn(
+                  'relative',
+                  header.id === 'title' && 'sticky left-0 bg-background z-10'
+                )}
+              >
+                {headerContent}
+              </DraggableColumnHeader>
+            )
+          })}
+        </TableRow>
+      ))}
+    </TableHeader>
+  )
 
   // Empty state
   if (items.length === 0 && !isLoading) {
@@ -810,60 +948,9 @@ export function DocumentListTable({
         }
       >
         {disableDndContext ? (
-          // Story 6.14: When nested, skip DndContext wrapper (parent provides it)
+          // Story 6.14: When nested, skip DndContext wrapper for rows (parent provides it)
           <Table className="table-fixed">
-            <TableHeader
-              className={
-                shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
-              }
-            >
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      style={{
-                        width: getColumnWidth(header.id, header.getSize()),
-                      }}
-                      className={cn(
-                        'relative',
-                        header.id === 'title' &&
-                          'sticky left-0 bg-background z-10'
-                      )}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                      {/* Resize handle - only show for resizable columns */}
-                      {header.column.getCanResize() && (
-                        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                        <div
-                          role="separator"
-                          aria-orientation="vertical"
-                          onMouseDown={header.getResizeHandler()}
-                          onTouchStart={header.getResizeHandler()}
-                          className={cn(
-                            'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
-                            'flex items-center justify-center'
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              'h-4 w-0.5 rounded-full bg-border transition-colors',
-                              'group-hover/resize:bg-primary group-hover/resize:h-6',
-                              header.column.getIsResizing() && 'bg-primary h-6'
-                            )}
-                          />
-                        </div>
-                      )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
+            {renderTableHeader()}
             <TableBody
               style={
                 shouldVirtualize
@@ -888,6 +975,7 @@ export function DocumentListTable({
                           key={row.id}
                           row={row}
                           virtualItem={virtualItem}
+                          columnOrderKey={columnOrderKey}
                           {...(onRowClick ? { onRowClick } : {})}
                         />
                       )
@@ -897,6 +985,7 @@ export function DocumentListTable({
                       <SortableRow
                         key={row.id}
                         row={row}
+                        columnOrderKey={columnOrderKey}
                         {...(onRowClick ? { onRowClick } : {})}
                       />
                     ))
@@ -915,7 +1004,7 @@ export function DocumentListTable({
             </TableBody>
           </Table>
         ) : (
-          // Standard: wrap with DndContext for standalone usage
+          // Standard: wrap with DndContext for standalone usage (row reordering)
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -923,53 +1012,7 @@ export function DocumentListTable({
             modifiers={[restrictToVerticalAxis]}
           >
             <Table className="table-fixed">
-              <TableHeader
-                className={
-                  shouldVirtualize
-                    ? 'sticky top-0 z-20 bg-background'
-                    : undefined
-                }
-              >
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead
-                        key={header.id}
-                        style={{
-                          width: getColumnWidth(header.id, header.getSize()),
-                        }}
-                        className={cn(
-                          'relative',
-                          header.id === 'title' &&
-                            'sticky left-0 bg-background z-10'
-                        )}
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                        {/* Resize handle */}
-                        {header.column.getCanResize() && (
-                          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                          <div
-                            role="separator"
-                            aria-orientation="vertical"
-                            onMouseDown={header.getResizeHandler()}
-                            onTouchStart={header.getResizeHandler()}
-                            className={cn(
-                              'absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none',
-                              'hover:bg-primary/50 active:bg-primary',
-                              header.column.getIsResizing() && 'bg-primary'
-                            )}
-                          />
-                        )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
+              {renderTableHeader()}
               <TableBody
                 style={
                   shouldVirtualize
@@ -995,6 +1038,7 @@ export function DocumentListTable({
                             key={row.id}
                             row={row}
                             virtualItem={virtualItem}
+                            columnOrderKey={columnOrderKey}
                             {...(onRowClick ? { onRowClick } : {})}
                           />
                         )
@@ -1005,6 +1049,7 @@ export function DocumentListTable({
                         <SortableRow
                           key={row.id}
                           row={row}
+                          columnOrderKey={columnOrderKey}
                           {...(onRowClick ? { onRowClick } : {})}
                         />
                       ))
@@ -1133,11 +1178,13 @@ function ColumnHeaderWithTooltip({
 const SortableRow = memo(function SortableRow({
   row,
   onRowClick,
+  columnOrderKey: _columnOrderKey,
 }: {
   row: ReturnType<
     ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
   >['rows'][number]
   onRowClick?: (_listItemId: string) => void
+  columnOrderKey?: string
 }) {
   const {
     attributes,
@@ -1213,12 +1260,14 @@ const VirtualSortableRow = memo(function VirtualSortableRow({
   row,
   virtualItem,
   onRowClick,
+  columnOrderKey: _columnOrderKey,
 }: {
   row: ReturnType<
     ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
   >['rows'][number]
   virtualItem: VirtualItem
   onRowClick?: (_listItemId: string) => void
+  columnOrderKey?: string
 }) {
   const {
     attributes,

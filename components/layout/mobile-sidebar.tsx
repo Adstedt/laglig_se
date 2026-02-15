@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
+import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
   MessageSquare,
@@ -13,6 +15,7 @@ import {
   Bell,
   Settings,
   ChevronRight,
+  LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -24,12 +27,20 @@ import {
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { useState } from 'react'
 import { WorkspaceSwitcher } from './workspace-switcher'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
 
 interface MobileSidebarProps {
   open: boolean
   onOpenChange: (_open: boolean) => void
+  user?: {
+    name?: string | null
+    email?: string | null
+    image?: string | null
+  }
 }
 
+// Nav items without Inställningar (pinned to bottom)
 const platformItems = [
   {
     title: 'Dashboard',
@@ -64,11 +75,6 @@ const platformItems = [
       { title: 'EU-rätt', href: '/browse/eu' },
     ],
   },
-  {
-    title: 'Inställningar',
-    icon: Settings,
-    href: '/settings',
-  },
 ]
 
 const workItems = [
@@ -101,7 +107,11 @@ const workItems = [
   },
 ]
 
-export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
+export function MobileSidebar({
+  open,
+  onOpenChange,
+  user,
+}: MobileSidebarProps) {
   const pathname = usePathname()
   const { toggleRightSidebar } = useLayoutStore()
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
@@ -126,6 +136,16 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
     toggleRightSidebar()
     onOpenChange(false)
   }
+
+  // User initials for avatar
+  const userInitials = user?.name
+    ? user.name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : user?.email?.[0]?.toUpperCase() || 'U'
 
   const renderNavItem = (
     item: (typeof platformItems)[0] & {
@@ -242,21 +262,19 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
       <SheetContent side="left" className="w-[280px] p-0">
         <SheetHeader className="border-b p-4">
           <SheetTitle className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Scale className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}>
-              Laglig.se
-            </span>
+            <Link href="/dashboard" onClick={handleLinkClick}>
+              <Image
+                src="/images/logo-final.png"
+                alt="Laglig.se"
+                width={120}
+                height={46}
+                className="h-6 w-auto invert dark:invert-0"
+              />
+            </Link>
           </SheetTitle>
         </SheetHeader>
 
         <div className="flex flex-col h-[calc(100%-65px)]">
-          {/* Workspace Selector */}
-          <div className="p-3 border-b">
-            <WorkspaceSwitcher onSwitchComplete={() => onOpenChange(false)} />
-          </div>
-
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-3">
             {/* Platform Section */}
@@ -275,22 +293,49 @@ export function MobileSidebar({ open, onOpenChange }: MobileSidebarProps) {
             </div>
           </nav>
 
-          {/* Trial Status at bottom */}
-          <div className="border-t p-3">
-            <div className="rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Provperiod</span>
-                <span className="text-xs font-medium text-primary">
-                  14 dagar
-                </span>
-              </div>
-              <div className="mt-2 h-1.5 w-full rounded-full bg-primary/20 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: '100%' }}
+          {/* Bottom section */}
+          <div className="border-t p-3 space-y-2">
+            {/* Inställningar */}
+            <Link
+              href="/settings"
+              onClick={handleLinkClick}
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
+                pathname.startsWith('/settings')
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+              )}
+            >
+              <Settings className="h-5 w-5" />
+              <span>Inställningar</span>
+            </Link>
+
+            <Separator />
+
+            {/* Workspace Switcher */}
+            <WorkspaceSwitcher onSwitchComplete={() => onOpenChange(false)} />
+
+            {/* User row */}
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <Avatar className="h-7 w-7">
+                <AvatarImage
+                  src={user?.image || undefined}
+                  alt={user?.name || 'User'}
                 />
+                <AvatarFallback className="text-xs">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium truncate">
+                  {user?.name || 'Användare'}
+                </p>
               </div>
-            </div>
+              <LogOut className="h-4 w-4 shrink-0" />
+            </button>
           </div>
         </div>
       </SheetContent>

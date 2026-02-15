@@ -1,0 +1,51 @@
+schema: 1
+story: '9.2'
+story_title: 'MSBFS & NFS Regulation Ingestion'
+gate: PASS
+status_reason: >
+  Strong implementation with 76 tests, $5.94 cost (under $15 budget), all 25 documents ingested
+  and verified. Pipeline correctness validated by real execution. AC 36 updated to reflect MCF rebrand.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-12T22:35:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 90
+expires: '2026-02-26T22:35:00Z'
+
+evidence:
+  tests_reviewed: 76
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No auth surface. API keys from env. Static registry URLs (no injection risk).'
+  performance:
+    status: PASS
+    notes: 'Streaming API, rate limiting, sequential processing appropriate for script context.'
+  reliability:
+    status: PASS
+    notes: 'Error handling continues on failure. Budget ceiling halts before overspend. PDF validation catches corrupt downloads.'
+  maintainability:
+    status: PASS
+    notes: 'Clean modular architecture. Registry + prompt + pipeline separation. Extensible for Story 9.3. No any usage, explicit return types.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider adding retry logic for Claude API calls (currently single attempt per document)'
+      refs: ['scripts/ingest-agency-pdfs.ts:195-229']
+
+history:
+  - at: '2026-02-12T22:30:00Z'
+    gate: CONCERNS
+    note: 'Initial review — flagged missing mocked pipeline tests and AC 36 source naming'
+  - at: '2026-02-12T22:35:00Z'
+    gate: PASS
+    note: 'Team accepted pipeline validation via real execution. AC 36 updated for MCF rebrand.'

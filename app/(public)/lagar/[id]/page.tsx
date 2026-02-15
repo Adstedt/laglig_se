@@ -132,46 +132,7 @@ export async function generateMetadata({
 }
 
 // Clean HTML from Riksdagen - remove metadata block, keep only law text
-function cleanLawHtml(html: string): string {
-  // Remove the header/metadata section that duplicates our UI
-  // Pattern: Everything from start until after the <hr /> before actual content
-  let cleaned = html
-
-  // Remove the title h2 at the start (we show it in our header)
-  cleaned = cleaned.replace(/^<h2>[^<]+<\/h2>\s*/i, '')
-
-  // Remove metadata block (SFS nr, Departement, etc.) - everything before first <hr />
-  const hrIndex = cleaned.indexOf('<hr')
-  if (hrIndex !== -1) {
-    // Find the end of the hr tag
-    const hrEndIndex = cleaned.indexOf('>', hrIndex)
-    if (hrEndIndex !== -1) {
-      cleaned = cleaned.substring(hrEndIndex + 1)
-    }
-  }
-
-  // Clean up leading whitespace and empty divs
-  cleaned = cleaned.replace(/^\s*<br\s*\/?>\s*/gi, '')
-
-  // Remove all hr tags - we use CSS borders for visual separation instead
-  cleaned = cleaned.replace(/<hr\s*\/?>/gi, '')
-
-  // Remove lone dots after </i> tags (Riksdagen artifact: "</i>.<p>")
-  cleaned = cleaned.replace(/<\/i>\s*\.\s*(?=<)/gi, '</i>')
-
-  // Remove lone dots that appear as paragraphs (artifact from Riksdagen HTML)
-  cleaned = cleaned.replace(/<p>\s*\.\s*<\/p>/gi, '')
-
-  // Remove empty paragraphs
-  cleaned = cleaned.replace(/<p>\s*<\/p>/gi, '')
-
-  // Remove paragraphs that only contain <br> tags
-  cleaned = cleaned.replace(/<p>\s*(<br\s*\/?>)+\s*<\/p>/gi, '')
-
-  cleaned = cleaned.trim()
-
-  return cleaned
-}
+import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 
 // Extract metadata from Riksdagen HTML header
 interface LawMetadata {
@@ -348,7 +309,7 @@ export default async function LawPage({ params }: PageProps) {
           'sup',
         ],
         allowedAttributes: {
-          a: ['href', 'name', 'class'],
+          a: ['href', 'name', 'class', 'title', 'target', 'rel'],
           '*': ['class', 'id', 'name'],
         },
       })

@@ -51,29 +51,23 @@ export function StatusPriorityBadges({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Status Badge */}
-      <Badge
-        variant="outline"
+      <span
         className={cn(
-          'gap-1.5 font-medium',
-          isDone && 'bg-green-50 text-green-700 border-green-200'
+          'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium',
+          isDone && 'bg-green-100 text-green-700'
         )}
         style={
           !isDone
             ? {
-                backgroundColor: `${statusColor}15`,
-                borderColor: `${statusColor}40`,
+                backgroundColor: `${statusColor}1A`,
                 color: statusColor,
               }
             : undefined
         }
       >
         {isDone && <CheckCircle2 className="h-3 w-3" />}
-        <span
-          className={cn('w-2 h-2 rounded-full', !isDone && 'inline-block')}
-          style={!isDone ? { backgroundColor: statusColor } : undefined}
-        />
         {status}
-      </Badge>
+      </span>
 
       {/* Priority Badge */}
       <Badge

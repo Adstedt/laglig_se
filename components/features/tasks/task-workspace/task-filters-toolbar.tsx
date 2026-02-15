@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { X, User } from 'lucide-react'
 import {
   FilterPopover,
@@ -119,17 +118,15 @@ export function TaskFilterBar({
         selected={filters.statusFilter}
         onToggle={handleStatusToggle}
         renderOption={(option) => (
-          <Badge
-            variant="outline"
-            className="font-medium"
+          <span
+            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
             style={{
-              borderColor: option.color,
-              backgroundColor: `${option.color}15`,
+              backgroundColor: `${option.color}1A`,
               color: option.color,
             }}
           >
             {option.label}
-          </Badge>
+          </span>
         )}
       />
 

@@ -264,89 +264,238 @@ html {
   }
 }
 
-/* Legal document styling - optimized for readability */
+/* ==========================================================================
+ * Legal Document Styling — Unified base for all content types
+ * Uses app font (sans-serif) for brand consistency.
+ * Readability comes from spacing, weight, and color hierarchy.
+ * ========================================================================== */
 @layer components {
   .legal-document {
     @apply leading-relaxed text-foreground;
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 1.0625rem;
-    line-height: 1.8;
+    font-size: 1rem;
+    line-height: 1.7;
   }
 
-  /* Paragraph numbers (§) - prominent section markers */
+  /* ---------- Lovhead (document header) ----------
+   * Hidden when a hero card is present (the page already shows title/number).
+   * Visible as a subtle label when rendered standalone (e.g. review files). */
+  .legal-document .lovhead {
+    @apply mb-6 pb-4 border-b border-border;
+  }
+  .legal-document .lovhead h1 {
+    @apply text-base font-medium text-muted-foreground;
+  }
+  .legal-document .lovhead p.text {
+    @apply mb-0;
+  }
+  /* Hide lovhead when inside a page that already has a hero header card */
+  .has-hero-header .legal-document .lovhead {
+    @apply hidden;
+  }
+
+  /* ---------- Paragraph numbers (§) — primary scan anchors ---------- */
   .legal-document a.paragraf {
-    @apply font-bold;
-    display: block;
-    font-size: 1.125rem;
+    @apply font-bold block;
+    font-size: 0.9375rem;
     color: hsl(var(--primary));
-    margin-top: 2.5rem;
-    margin-bottom: 0.75rem;
-    padding-top: 1.25rem;
-    border-top: 2px solid hsl(var(--border));
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid hsl(var(--border));
   }
 
-  /* First paragraph shouldn't have top border */
-  .legal-document > div > a.paragraf:first-child,
-  .legal-document > div > p:first-child a.paragraf {
-    border-top: none;
-    margin-top: 0;
-    padding-top: 0;
-  }
-
-  /* Section headers (Inledande bestämmelser, etc.) */
-  .legal-document h2,
-  .legal-document h4 {
-    @apply text-xl font-bold text-foreground mb-3;
-    margin-top: 2.5rem;
-    padding-top: 1.25rem;
-    border-top: 2px solid hsl(var(--border));
-  }
-
-  /* First section header shouldn't have top border */
-  .legal-document > div > h4:first-of-type {
-    border-top: none;
-    margin-top: 0;
-    padding-top: 0;
-  }
-
-  /* Paragraph right after section header shouldn't have top border */
+  /* First § after a heading shouldn't double-border */
+  .legal-document h2 + a.paragraf,
+  .legal-document h3 + a.paragraf,
   .legal-document h4 + a.paragraf,
+  .legal-document h2 + p + a.paragraf,
+  .legal-document h3 + p + a.paragraf,
   .legal-document h4 + p + a.paragraf {
     border-top: none;
     margin-top: 0.5rem;
     padding-top: 0;
   }
 
-  .legal-document h3 {
-    @apply text-base font-semibold text-foreground mt-6 mb-2;
+  /* Adjacent headings — collapse spacing & remove double borders */
+  .legal-document :is(h2, h3, h4) + :is(h2, h3, h4) {
+    border-top: none;
+    margin-top: 0.5rem;
+    padding-top: 0;
   }
 
-  /* Remove empty anchor paragraphs that create extra spacing */
+  /* When a.paragraf is inside h3.paragraph, the parent h3 provides the
+     border/margin/padding — suppress the anchor's own to avoid double lines */
+  .legal-document h3 > a.paragraf {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  /* First § in a container shouldn't have top border */
+  .legal-document > div > a.paragraf:first-child,
+  .legal-document > div > p:first-child a.paragraf,
+  .legal-document .body > a.paragraf:first-child {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  /* ---------- Heading hierarchy ----------
+   * h2 = Chapter headings (both SFS and AFS)
+   * h3 = Section headings (SFS chapters / AFS sections like "Omfattning")
+   * h4 = Sub-section headings (SFS sections / AFS sub-sections like "Produkter") */
+  .legal-document h2 {
+    @apply text-xl font-bold text-foreground mb-2;
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 2px solid hsl(var(--border));
+  }
+
+  .legal-document h3 {
+    @apply text-lg font-bold text-foreground mb-2;
+    margin-top: 2.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .legal-document h4 {
+    @apply text-base font-semibold text-foreground mb-2;
+    margin-top: 1.75rem;
+    padding-top: 0.75rem;
+  }
+
+  /* First heading in a section shouldn't have top border */
+  .legal-document > div > h2:first-child,
+  .legal-document > div > h3:first-of-type,
+  .legal-document .body > h2:first-child,
+  .legal-document .body > h3:first-child {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  /* ---------- Preamble ---------- */
+  .legal-document .preamble {
+    @apply mb-6 text-muted-foreground;
+    font-size: 0.9375rem;
+  }
+
+  /* ---------- Preamble accordion (EU documents) ---------- */
+  .legal-document .preamble-accordion {
+    @apply mb-6 rounded-lg border border-border/60;
+  }
+
+  .legal-document .preamble-accordion summary {
+    @apply px-4 py-3 cursor-pointer select-none
+      text-base font-semibold text-foreground
+      list-none flex items-center justify-between
+      rounded-lg hover:bg-muted/50 transition-colors;
+  }
+
+  /* Replace default marker with chevron */
+  .legal-document .preamble-accordion summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .legal-document .preamble-accordion summary::after {
+    content: '';
+    @apply shrink-0 ml-2;
+    width: 1rem;
+    height: 1rem;
+    background: currentColor;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    transition: transform 200ms ease;
+  }
+
+  .legal-document .preamble-accordion[open] summary {
+    @apply rounded-b-none border-b border-border/60;
+  }
+
+  .legal-document .preamble-accordion[open] summary::after {
+    transform: rotate(180deg);
+  }
+
+  .legal-document .preamble-accordion > .preamble {
+    @apply px-4 py-4 mb-0;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  /* ---------- Allmänna råd (non-binding guidance) ----------
+   * Must be instantly distinguishable from binding regulation text. */
+  .legal-document .allmanna-rad {
+    @apply my-5 py-4 px-5 rounded-md;
+    border-left: 3px solid hsl(var(--primary) / 0.4);
+    background: hsl(var(--muted) / 0.35);
+  }
+
+  .legal-document .allmanna-rad-heading {
+    @apply text-sm font-semibold uppercase tracking-wide mb-2;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .legal-document .allmanna-rad p {
+    @apply mb-3 text-muted-foreground;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+  }
+
+  .legal-document .allmanna-rad p:last-child {
+    @apply mb-0;
+  }
+
+  /* ---------- Footnotes ---------- */
+  .legal-document sup.footnote-ref {
+    @apply text-xs font-semibold cursor-help;
+    color: hsl(var(--primary));
+    padding: 0 0.125rem;
+  }
+
+  .legal-document sup.footnote-ref:hover {
+    @apply underline;
+  }
+
+  /* ---------- Remove empty anchor paragraphs ---------- */
   .legal-document p:has(> a[name]:only-child) {
     display: none;
   }
 
-  /* Amendment references - Lag (2022:448) - small inline text */
+  /* ---------- Amendment references — Lag (2022:448) ---------- */
   .legal-document i {
     @apply inline text-xs;
     font-style: normal;
     color: hsl(var(--muted-foreground));
   }
 
-  /* Links within law text */
-  .legal-document a:not(.paragraf) {
+  /* ---------- Links within law text ---------- */
+  .legal-document a:not(.paragraf):not(.footnote-ref) {
     @apply text-primary underline decoration-primary/30 underline-offset-2;
     transition: all 0.15s ease;
   }
 
-  .legal-document a:not(.paragraf):hover {
+  .legal-document a:not(.paragraf):not(.footnote-ref):hover {
     @apply decoration-primary;
   }
 
-  /* Lists - numbered points in law */
+  /* ---------- Legal reference links (auto-linkified) ---------- */
+  .legal-document a.legal-ref {
+    @apply text-primary no-underline;
+    text-decoration: underline dotted hsl(var(--primary) / 0.4);
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+    transition: all 0.15s ease;
+  }
+
+  .legal-document a.legal-ref:hover {
+    text-decoration: underline solid hsl(var(--primary));
+  }
+
+  /* ---------- Lists — compact for legal enumerations ---------- */
   .legal-document ol,
   .legal-document ul {
-    @apply my-4 ml-6 space-y-2;
+    @apply my-2 ml-6 space-y-0;
   }
 
   .legal-document ol {
@@ -358,11 +507,20 @@ html {
   }
 
   .legal-document li {
-    @apply pl-2;
+    @apply pl-1 leading-snug;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
   }
 
-  /* Tables */
-  .legal-document table {
+  /* Nested lists — slightly tighter */
+  .legal-document li ol,
+  .legal-document li ul {
+    @apply my-0.5 ml-4;
+  }
+
+  /* ---------- Tables ---------- */
+  .legal-document table,
+  .legal-document table.legal-table {
     @apply w-full my-6 text-sm;
     border-collapse: separate;
     border-spacing: 0;
@@ -371,104 +529,382 @@ html {
     box-shadow: 0 1px 3px hsl(var(--foreground) / 0.05);
   }
 
+  /* Horizontally scroll wide tables */
+  .legal-document .table-scroll-wrapper {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+  .legal-document .table-scroll-wrapper > table {
+    margin: 0;
+  }
+
   .legal-document th,
   .legal-document td {
     @apply border border-border px-4 py-3 text-left;
   }
 
   .legal-document th {
-    @apply bg-muted font-semibold;
+    @apply bg-muted font-semibold text-xs uppercase tracking-wide;
   }
 
   .legal-document tr:hover td {
     @apply bg-muted/30;
   }
 
-  /* Bold text */
+  /* ---------- Bold text ---------- */
   .legal-document b {
     @apply font-semibold;
   }
 
-  /* Blockquotes */
+  /* ---------- Blockquotes ---------- */
   .legal-document blockquote {
     @apply border-l-4 border-primary/30 pl-6 my-6 italic text-muted-foreground;
   }
 
-  /* Consecutive line breaks - add spacing */
+  /* ---------- Line breaks ---------- */
   .legal-document br {
     display: block;
     content: '';
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
   }
 
-  /* Clean up empty paragraphs */
+  /* ---------- Empty paragraphs ---------- */
   .legal-document p:empty {
     display: none;
   }
 
-  /* Paragraph text blocks */
+  /* ---------- Paragraph text ---------- */
   .legal-document p {
-    @apply mb-4;
+    @apply mb-3;
   }
 
-  /* Indented subsections */
   .legal-document p + ol,
   .legal-document p + ul {
-    @apply mt-2;
+    @apply -mt-1;
   }
 
-  /* Content markers like "Innehåll:" - table of contents style */
+  /* ---------- Content markers (TOC-style first paragraph) ---------- */
   .legal-document > div > p:first-child {
-    @apply text-base font-medium text-muted-foreground mb-6;
+    @apply text-sm font-medium text-muted-foreground mb-6;
+  }
+
+  /* ---------- Riksdagen inline TOC (div.sfstoc) ---------- */
+  .legal-document .sfstoc {
+    @apply my-6 p-4 rounded-lg border border-border;
+    background: hsl(var(--muted) / 0.3);
+  }
+
+  .legal-document .sfstoc h3 {
+    @apply text-sm font-semibold text-muted-foreground mb-2;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .legal-document .sfstoc ul {
+    @apply ml-4 space-y-0.5;
+    list-style-type: disc;
+  }
+
+  .legal-document .sfstoc li {
+    @apply text-sm;
+  }
+
+  .legal-document .sfstoc a {
+    @apply text-primary no-underline hover:underline;
+  }
+
+  /* ---------- Övergångsbestämmelser (transitional provisions) ---------- */
+  .legal-document footer.back {
+    @apply mt-10 pt-6;
+    border-top: 2px solid hsl(var(--border));
+  }
+
+  .legal-document footer.back h2 {
+    @apply text-base font-semibold text-muted-foreground mb-3;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .legal-document footer.back p {
+    @apply text-muted-foreground;
+    font-size: 0.9375rem;
+  }
+
+  /* ---------- Appendices (Bilagor) ---------- */
+  .legal-document .appendices {
+    @apply mt-10 pt-6;
+    border-top: 2px dashed hsl(var(--border));
+  }
+
+  .legal-document .appendices > h2:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  /* ---------- Chapter TOC (split parent documents) ---------- */
+  .legal-document nav.chapter-toc {
+    @apply my-6 p-5 rounded-lg border border-border;
+    background: hsl(var(--muted) / 0.3);
+  }
+
+  .legal-document nav.chapter-toc h2 {
+    @apply text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .legal-document nav.chapter-toc ol {
+    @apply ml-5 space-y-1;
+    list-style-type: none;
+  }
+
+  .legal-document nav.chapter-toc li {
+    @apply text-sm text-foreground pl-0;
+  }
+
+  /* ---------- General provisions preamble (kap. 1 in split chapters) ---------- */
+  .legal-document section.general-provisions-preamble {
+    @apply my-6 py-4 px-5 rounded-md;
+    font-size: 0.875rem;
+    border-left: 3px solid hsl(var(--border));
+    background: hsl(var(--muted) / 0.2);
+  }
+
+  .legal-document section.general-provisions-preamble h2 {
+    @apply text-base font-bold text-muted-foreground mb-1;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .legal-document section.general-provisions-preamble h3 {
+    @apply text-sm font-semibold text-muted-foreground mb-1;
+    margin-top: 1rem;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .legal-document section.general-provisions-preamble a.paragraf {
+    @apply text-sm font-semibold;
+    color: hsl(var(--muted-foreground));
+    margin-top: 1rem;
+    border-top: 1px solid hsl(var(--border) / 0.5);
   }
 
   /* ==========================================================================
-   * Compact Modal Styles - Tighter spacing for legal document modals
+   * Amendment-specific elements (section.ann, h3.paragraph, footnotes, etc.)
+   * These classes appear in LLM-generated amendment HTML and share the
+   * .legal-document container with SFS laws and AFS regulations.
+   * ========================================================================== */
+
+  /* ---------- Amendment section wrappers (section.ann) ---------- */
+  .legal-document section.ann,
+  .legal-document section.paragraf {
+    @apply mt-6 first:mt-0;
+    border-top: 1px solid hsl(var(--border));
+    padding-top: 1.5rem;
+  }
+
+  .legal-document section.ann:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .legal-document section.group section.ann:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  /* ---------- Amendment paragraph headings (h3.paragraph) ---------- */
+  .legal-document h3.paragraph {
+    @apply font-semibold text-base mb-2;
+    color: hsl(var(--primary));
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .legal-document h3.paragraph .kapitel {
+    @apply font-normal mr-1;
+    color: hsl(var(--muted-foreground));
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* ---------- Amendment group headers ---------- */
+  .legal-document h3.group,
+  .legal-document section.group > h3 {
+    @apply text-sm font-semibold uppercase tracking-wide mt-6 mb-3;
+    color: hsl(var(--muted-foreground));
+    border-top: none;
+    padding-top: 0;
+  }
+
+  /* ---------- Amendment chapter wrapper (section.kapitel) ---------- */
+  .legal-document section.kapitel {
+    @apply mt-8 pt-6;
+    border-top: 2px solid hsl(var(--border));
+  }
+
+  .legal-document section.kapitel:first-child {
+    @apply mt-0 pt-0;
+    border-top: none;
+  }
+
+  /* ---------- Intro text ---------- */
+  .legal-document p.intro-text {
+    @apply italic mb-6 pb-4;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+  }
+
+  /* ---------- Amendment lists (ol.list / ul.list) ---------- */
+  .legal-document ol.list {
+    @apply my-3 ml-6 space-y-2 list-decimal;
+  }
+
+  .legal-document ol.list[type='a'] {
+    list-style-type: lower-alpha;
+  }
+
+  .legal-document ol.list li p.text {
+    @apply mb-0;
+  }
+
+  .legal-document ul.list {
+    @apply my-3 ml-6 space-y-1 list-disc;
+  }
+
+  .legal-document ul.list[style*='list-style: none'] {
+    @apply list-none ml-0;
+  }
+
+  /* ---------- Amendment element-body ---------- */
+  .legal-document .element-body p.text:last-child {
+    @apply mb-0;
+  }
+
+  /* ---------- Amendment footnotes ---------- */
+  .legal-document sup.footnote {
+    @apply text-xs ml-0.5;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .legal-document .footnote-link {
+    @apply no-underline cursor-help;
+    color: hsl(var(--primary));
+  }
+
+  .legal-document dl.footnote-content {
+    @apply text-xs rounded px-3 py-2 my-2;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--muted) / 0.5);
+  }
+
+  .legal-document dl.footnote-content dt {
+    @apply font-semibold inline;
+  }
+
+  .legal-document dl.footnote-content dd {
+    @apply inline;
+  }
+
+  .legal-document dl.footnote-content dd p.text {
+    @apply inline mb-0;
+  }
+
+  /* ---------- In-force provisions (Ikraftträdande) ---------- */
+  .legal-document .in-force-info h2 {
+    @apply text-sm font-semibold uppercase tracking-wide mb-4;
+    color: hsl(var(--muted-foreground));
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .legal-document dl.in-force {
+    @apply space-y-2;
+  }
+
+  .legal-document dl.in-force dt {
+    @apply font-semibold text-sm text-foreground;
+  }
+
+  .legal-document dl.in-force dd {
+    @apply ml-0;
+  }
+
+  .legal-document dl.in-force ol.list {
+    @apply my-2 space-y-1;
+  }
+
+  .legal-document dl.in-force ol.list li p.text {
+    @apply text-sm;
+    color: hsl(var(--foreground) / 0.8);
+  }
+
+  /* ---------- Amendment signature block ---------- */
+  .legal-document footer.back > p.text {
+    @apply text-sm mt-4;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .legal-document footer.back > p.text[style*='text-align: right'] {
+    @apply text-right;
+  }
+
+  /* ==========================================================================
+   * Compact Modal Styles — Tighter spacing for legal document modals
    * ========================================================================== */
 
   .legal-document-modal .legal-document {
-    font-size: 0.9375rem; /* 15px instead of 17px */
-    line-height: 1.65; /* Tighter than 1.8 */
+    font-size: 0.875rem;
+    line-height: 1.6;
   }
 
-  /* Smaller paragraph markers in modal */
   .legal-document-modal .legal-document a.paragraf {
-    font-size: 1rem; /* 16px instead of 18px */
-    margin-top: 1.75rem; /* Instead of 2.5rem */
-    margin-bottom: 0.5rem; /* Instead of 0.75rem */
-    padding-top: 0.75rem; /* Instead of 1.25rem */
+    font-size: 0.875rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.375rem;
+    padding-top: 0.625rem;
   }
 
-  /* Smaller section headers in modal */
-  .legal-document-modal .legal-document h2,
-  .legal-document-modal .legal-document h4 {
-    @apply text-lg mb-2; /* Instead of text-xl mb-3 */
-    margin-top: 1.75rem; /* Instead of 2.5rem */
-    padding-top: 0.75rem; /* Instead of 1.25rem */
+  .legal-document-modal .legal-document h2 {
+    @apply text-base font-bold mb-2;
+    margin-top: 1.5rem;
+    padding-top: 0.625rem;
   }
 
   .legal-document-modal .legal-document h3 {
-    @apply text-sm font-semibold mt-4 mb-1.5; /* Smaller than base */
+    @apply text-sm font-bold mt-4 mb-1.5;
   }
 
-  /* Tighter paragraph spacing in modal */
+  .legal-document-modal .legal-document h4 {
+    @apply text-sm font-semibold mt-3 mb-1;
+  }
+
   .legal-document-modal .legal-document p {
-    @apply mb-3; /* Instead of mb-4 */
+    @apply mb-2;
   }
 
-  /* Tighter list spacing in modal */
   .legal-document-modal .legal-document ol,
   .legal-document-modal .legal-document ul {
-    @apply my-3 ml-5 space-y-1.5; /* Instead of my-4 ml-6 space-y-2 */
+    @apply my-1 ml-5 space-y-0;
   }
 
   .legal-document-modal .legal-document li {
-    @apply pl-1.5; /* Instead of pl-2 */
+    @apply pl-1 leading-tight;
+    padding-top: 0.0625rem;
+    padding-bottom: 0.0625rem;
   }
 
-  /* Smaller table spacing in modal */
   .legal-document-modal .legal-document table {
-    @apply my-4 text-xs; /* Instead of my-6 text-sm */
+    @apply my-4 text-xs;
   }
 
   .legal-document-modal .legal-document th,
@@ -490,196 +926,6 @@ html {
   .legal-document-modal .legal-document > div > p:first-child {
     @apply text-sm mb-4; /* Instead of text-base mb-6 */
   }
-
-  /* ==========================================================================
-   * Amendment HTML Content Styling
-   * Styles for LLM-generated HTML from PDF parsing (Story 2.29)
-   * ========================================================================== */
-
-  .amendment-html-content {
-    @apply leading-relaxed text-foreground;
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 1rem;
-    line-height: 1.75;
-  }
-
-  /* Hide the document header from LLM output - we render our own header */
-  .amendment-html-content .lovhead {
-    @apply hidden;
-  }
-
-  /* Main body wrapper */
-  .amendment-html-content .body {
-    @apply space-y-6;
-  }
-
-  /* Chapter sections */
-  .amendment-html-content .kapitel {
-    @apply mt-8 pt-6 border-t-2 border-border;
-  }
-
-  .amendment-html-content .kapitel:first-child {
-    @apply mt-0 pt-0 border-t-0;
-  }
-
-  .amendment-html-content .kapitel > h2 {
-    @apply text-lg font-bold text-foreground mb-4;
-  }
-
-  .amendment-html-content .kapitel > h2 .kapitel {
-    @apply border-none mt-0 pt-0;
-  }
-
-  /* Group headers (e.g., "Samhällsintroduktion") */
-  .amendment-html-content h3.group,
-  .amendment-html-content section.group > h3 {
-    @apply text-sm font-semibold text-muted-foreground uppercase tracking-wide mt-6 mb-3;
-  }
-
-  /* Section/paragraph wrappers */
-  .amendment-html-content section.ann,
-  .amendment-html-content section.paragraf {
-    @apply mt-6 first:mt-0;
-  }
-
-  /* Section headers (§) */
-  .amendment-html-content h3.paragraph {
-    @apply font-semibold text-base text-primary mb-2;
-  }
-
-  .amendment-html-content h3.paragraph .kapitel {
-    @apply text-muted-foreground font-normal mr-1;
-    border: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* Paragraph text */
-  .amendment-html-content p.text {
-    @apply mb-3 text-foreground;
-  }
-
-  .amendment-html-content .element-body p.text:last-child {
-    @apply mb-0;
-  }
-
-  /* Intro text */
-  .amendment-html-content p.intro-text {
-    @apply text-muted-foreground italic mb-6 pb-4 border-b border-border;
-  }
-
-  /* Ordered lists */
-  .amendment-html-content ol.list {
-    @apply my-3 ml-6 space-y-2 list-decimal;
-  }
-
-  .amendment-html-content ol.list[type='a'] {
-    list-style-type: lower-alpha;
-  }
-
-  .amendment-html-content ol.list li {
-    @apply pl-1;
-  }
-
-  .amendment-html-content ol.list li p.text {
-    @apply mb-0;
-  }
-
-  /* Sub-lists */
-  .amendment-html-content ol.sub-list {
-    @apply mt-2 ml-4;
-  }
-
-  /* Unordered lists */
-  .amendment-html-content ul.list {
-    @apply my-3 ml-6 space-y-1 list-disc;
-  }
-
-  .amendment-html-content ul.list[style*='list-style: none'] {
-    @apply list-none ml-0;
-  }
-
-  /* Definition lists (term → reference) */
-  .amendment-html-content ul.definition-list {
-    @apply space-y-1;
-  }
-
-  .amendment-html-content ul.definition-list li p.text em {
-    @apply text-foreground not-italic;
-  }
-
-  /* Links / references */
-  .amendment-html-content a.ref {
-    @apply text-primary underline decoration-primary/30 underline-offset-2 transition-all;
-  }
-
-  .amendment-html-content a.ref:hover {
-    @apply decoration-primary;
-  }
-
-  /* Footnotes - inline markers */
-  .amendment-html-content sup.footnote {
-    @apply text-xs text-muted-foreground ml-0.5;
-  }
-
-  .amendment-html-content .footnote-link {
-    @apply text-primary no-underline cursor-help;
-  }
-
-  /* Footnote content blocks */
-  .amendment-html-content dl.footnote-content {
-    @apply text-xs text-muted-foreground bg-muted/50 rounded px-3 py-2 my-2;
-  }
-
-  .amendment-html-content dl.footnote-content dt {
-    @apply font-semibold inline;
-  }
-
-  .amendment-html-content dl.footnote-content dd {
-    @apply inline;
-  }
-
-  .amendment-html-content dl.footnote-content dd p.text {
-    @apply inline mb-0;
-  }
-
-  /* Footer / transition provisions */
-  .amendment-html-content footer.back {
-    @apply mt-10 pt-6 border-t-2 border-border;
-  }
-
-  .amendment-html-content .in-force-info h2 {
-    @apply text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4;
-  }
-
-  .amendment-html-content dl.in-force {
-    @apply space-y-2;
-  }
-
-  .amendment-html-content dl.in-force dt {
-    @apply font-semibold text-sm text-foreground;
-  }
-
-  .amendment-html-content dl.in-force dd {
-    @apply ml-0;
-  }
-
-  .amendment-html-content dl.in-force ol.list {
-    @apply my-2 space-y-1;
-  }
-
-  .amendment-html-content dl.in-force ol.list li p.text {
-    @apply text-sm text-foreground/80;
-  }
-
-  /* Signature block */
-  .amendment-html-content footer.back > p.text {
-    @apply text-sm text-muted-foreground mt-4;
-  }
-
-  .amendment-html-content footer.back > p.text[style*='text-align: right'] {
-    @apply text-right;
-  }
 }
 
 @layer base {
@@ -689,6 +935,25 @@ html {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ==========================================================================
+ * Tiptap Rich Text Editor Styles
+ * ========================================================================== */
+
+/* ==========================================================================
+ * In-Document Search Highlights
+ * ========================================================================== */
+
+.doc-search-highlight {
+  background: hsl(45 80% 65% / 0.35);
+  border-radius: 2px;
+}
+
+.doc-search-highlight-active {
+  background: hsl(45 80% 65% / 0.65);
+  outline: 2px solid hsl(45 80% 55%);
+  border-radius: 2px;
 }
 
 /* ==========================================================================

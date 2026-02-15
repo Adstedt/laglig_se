@@ -152,8 +152,20 @@
 
 ---
 
-**Total Estimated Stories:** 97-115 across 12 epics
+## Epic 13: ELI Structured Data & Legislation Interoperability
 
-**Estimated Timeline:** 22-24 weeks - updated to include Epics 11 and 12
+**Goal:** Adopt the European Legislation Identifier (ELI) standard across all public document pages to enhance SEO with rich structured data, provide machine-readable ELI URIs for European interoperability, and enable automated legislation discovery via sitemaps and Atom feeds.
+
+**Delivers:** Enhanced JSON-LD with ELI ontology properties on all 4 document page types, ELI-compliant URI routes with HTTP 303 redirects, legislation-specific sitemaps and Atom feeds (Pillar 4)
+
+**Estimated stories:** 3
+
+**Note:** Brownfield enhancement. Sweden has not officially implemented ELI — Laglig.se would be the first Swedish legal information source with ELI compliance. Three of four public page types already have basic schema.org JSON-LD; this epic enhances and extends it. No database schema changes required. See `docs/stories/backlog/epic-eli-structured-data.md` for full epic.
+
+---
+
+**Total Estimated Stories:** 100-118 across 13 epics
+
+**Estimated Timeline:** 22-24 weeks - updated to include Epics 11, 12, and 13
 
 ---

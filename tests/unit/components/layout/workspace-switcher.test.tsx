@@ -79,11 +79,10 @@ describe('WorkspaceSwitcher', () => {
   })
 
   describe('trigger button', () => {
-    it('renders current workspace name and role', () => {
+    it('renders current workspace name', () => {
       render(<WorkspaceSwitcher />)
 
       expect(screen.getByText('Test Workspace')).toBeInTheDocument()
-      expect(screen.getByText('Ägare')).toBeInTheDocument()
     })
 
     it('shows loading skeleton while context loads', () => {
@@ -106,15 +105,22 @@ describe('WorkspaceSwitcher', () => {
       expect(screen.getByText('T')).toBeInTheDocument()
     })
 
-    it('shows auditor badge when role is AUDITOR', () => {
+    it('shows auditor badge when role is AUDITOR in dropdown', async () => {
       vi.mocked(useWorkspace).mockReturnValue({
         ...mockWorkspaceContext,
         role: 'AUDITOR',
       } as ReturnType<typeof useWorkspace>)
 
+      const user = userEvent.setup()
       render(<WorkspaceSwitcher />)
 
-      expect(screen.getByText('Endast läsning')).toBeInTheDocument()
+      // Open dropdown to see workspace list with badges
+      await user.click(screen.getByRole('combobox'))
+
+      await waitFor(() => {
+        const badges = screen.getAllByText('Endast läsning')
+        expect(badges.length).toBeGreaterThanOrEqual(1)
+      })
     })
   })
 
