@@ -118,9 +118,9 @@ export function linkifyHtmlContent(
   // Step 2: Re-parse to merge adjacent text nodes left by link unwrapping.
   // Without this, compound names like "aktiebolags" + "lagen (2005:551)" remain
   // split across two text nodes and the compound prefix is missed.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- htmlparser2 option not in cheerio types
   const $2 = cheerio.load($('body').html() ?? '', {
     decodeEntities: false,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- htmlparser2 option not in cheerio types
   } as any)
 
   // Step 3: Walk all text nodes and linkify

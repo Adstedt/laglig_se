@@ -152,7 +152,7 @@ describe('ingest-afs-regulations', () => {
       const doc = getAfsDocument('AFS 2023:1')!
       const meta = buildStandaloneMetadata(doc, 'https://av.se/hist')
       expect(meta.source).toBe('av.se')
-      expect(meta.method).toBe('claude-pdf-ingestion')
+      expect(meta.method).toBe('html-scraping')
       expect(meta.tier).toBe('STANDALONE')
       expect(meta.forfattningshistorik_url).toBe('https://av.se/hist')
     })

@@ -251,7 +251,8 @@ describe('StickyDocNav', () => {
         vi.advanceTimersByTime(50)
       })
 
-      expect(getNav()).not.toBeInTheDocument()
+      const nav = getNav()!
+      expect(nav.className).toContain('opacity-0')
     })
 
     it('hides when article has not scrolled into view', async () => {
@@ -259,7 +260,8 @@ describe('StickyDocNav', () => {
       await waitForScan()
 
       const article = document.querySelector('article')!
-      mockBoundingRects(article, { containerTop: 200 })
+      // containerTop must be > 60% of viewport height (480px) to be "not scrolled in"
+      mockBoundingRects(article, { containerTop: 600 })
 
       await act(async () => {
         const main = document.querySelector('main')!
@@ -267,7 +269,8 @@ describe('StickyDocNav', () => {
         vi.advanceTimersByTime(50)
       })
 
-      expect(getNav()).not.toBeInTheDocument()
+      const nav = getNav()!
+      expect(nav.className).toContain('opacity-0')
     })
 
     it('hides when article has scrolled past viewport', async () => {
@@ -283,7 +286,8 @@ describe('StickyDocNav', () => {
         vi.advanceTimersByTime(50)
       })
 
-      expect(getNav()).not.toBeInTheDocument()
+      const nav = getNav()!
+      expect(nav.className).toContain('opacity-0')
     })
 
     it('shows when article is visible with sufficient margin', async () => {
@@ -391,13 +395,15 @@ describe('StickyDocNav', () => {
     it('renders nothing when fewer than 2 entries', async () => {
       render(<TestHarness html={`<h3 id="only">Only One</h3>`} />)
       await waitForScan()
-      expect(getNav()).not.toBeInTheDocument()
+      const nav = getNav()!
+      expect(nav.className).toContain('opacity-0')
     })
 
     it('renders nothing for empty container', async () => {
       render(<TestHarness html={`<p>No headings here</p>`} />)
       await waitForScan()
-      expect(getNav()).not.toBeInTheDocument()
+      const nav = getNav()!
+      expect(nav.className).toContain('opacity-0')
     })
 
     it('handles headings with name attribute instead of id', async () => {

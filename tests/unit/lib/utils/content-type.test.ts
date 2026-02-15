@@ -58,7 +58,7 @@ describe('Content Type Utilities', () => {
       expect(euColor).toContain('bg-green')
 
       const agencyColor = getContentTypeBadgeColor('AGENCY_REGULATION')
-      expect(agencyColor).toContain('bg-orange')
+      expect(agencyColor).toContain('bg-teal')
     })
   })
 

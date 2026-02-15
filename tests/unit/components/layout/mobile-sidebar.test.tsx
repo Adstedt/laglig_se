@@ -146,7 +146,7 @@ describe('MobileSidebar', () => {
     it('renders content when open is true', () => {
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
-      expect(screen.getByText('Laglig.se')).toBeInTheDocument()
+      expect(screen.getByAltText('Laglig.se')).toBeInTheDocument()
       expect(screen.getByText('Dashboard')).toBeInTheDocument()
     })
   })
