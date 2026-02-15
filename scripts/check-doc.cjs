@@ -31,4 +31,6 @@ async function main() {
   console.log(d.html_content?.substring(0, 3000) ?? 'NULL')
 }
 
-main().catch(console.error).finally(() => p.$disconnect())
+main()
+  .catch(console.error)
+  .finally(() => p.$disconnect())

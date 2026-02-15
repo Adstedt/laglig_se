@@ -1,19 +1,19 @@
 #!/usr/bin/env node
-const { PrismaClient } = require('@prisma/client');
-const fs = require('fs');
-const path = require('path');
+const { PrismaClient } = require('@prisma/client')
+const fs = require('fs')
+const path = require('path')
 
-const p = new PrismaClient();
+const p = new PrismaClient()
 
 async function run() {
   const doc = await p.legalDocument.findUnique({
     where: { document_number: 'AFS 2023:3' },
     select: { html_content: true, title: true },
-  });
+  })
 
   if (!doc || !doc.html_content) {
-    console.error('AFS 2023:3 not found or has no HTML content');
-    process.exit(1);
+    console.error('AFS 2023:3 not found or has no HTML content')
+    process.exit(1)
   }
 
   const html = `<!DOCTYPE html>
@@ -37,14 +37,17 @@ async function run() {
 <body>
 ${doc.html_content}
 </body>
-</html>`;
+</html>`
 
-  const outPath = path.resolve(__dirname, '../data/afs-2023-3-review.html');
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, html);
-  console.log(`Written to: ${outPath}`);
-  console.log(`HTML content length: ${doc.html_content.length} chars`);
-  await p.$disconnect();
+  const outPath = path.resolve(__dirname, '../data/afs-2023-3-review.html')
+  fs.mkdirSync(path.dirname(outPath), { recursive: true })
+  fs.writeFileSync(outPath, html)
+  console.log(`Written to: ${outPath}`)
+  console.log(`HTML content length: ${doc.html_content.length} chars`)
+  await p.$disconnect()
 }
 
-run().catch(e => { console.error(e); process.exit(1); });
+run().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})
