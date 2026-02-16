@@ -23,11 +23,15 @@ const noopRedis = {
   mget: async () => [],
   ttl: async () => -1,
   type: async () => 'none',
-  pipeline: () => ({
-    get: () => noopRedis,
-    set: () => noopRedis,
-    exec: async () => [],
-  }),
+  pipeline: () => {
+    const p = {
+      get: () => p,
+      set: () => p,
+      del: () => p,
+      exec: async () => [],
+    }
+    return p
+  },
 } as unknown as Redis
 
 // Lazy initialization to ensure env vars are loaded
@@ -271,5 +275,59 @@ export async function cacheExists(key: string): Promise<boolean> {
   } catch (error) {
     console.warn(`[CACHE ERROR] Failed to check ${key}:`, error)
     return false
+  }
+}
+
+/**
+ * Batch get multiple cache values in a single Redis round-trip (MGET).
+ * Returns a Map of key→parsed value for cache hits only.
+ */
+export async function batchGetCacheValues<T>(
+  keys: string[]
+): Promise<Map<string, T>> {
+  const results = new Map<string, T>()
+  if (keys.length === 0 || !isRedisConfigured()) {
+    return results
+  }
+
+  try {
+    const values = await redis.mget(...keys)
+    for (let i = 0; i < keys.length; i++) {
+      const raw = values[i]
+      if (raw !== null && raw !== undefined) {
+        cacheHits++
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
+        results.set(keys[i]!, parsed as T)
+      } else {
+        cacheMisses++
+      }
+    }
+  } catch (error) {
+    console.warn('[CACHE ERROR] batchGetCacheValues failed:', error)
+    cacheMisses += keys.length
+  }
+
+  return results
+}
+
+/**
+ * Batch set multiple cache values in a single Redis round-trip (pipeline).
+ */
+export async function batchSetCacheValues(
+  entries: { key: string; value: unknown }[],
+  ttl: number = 3600
+): Promise<void> {
+  if (entries.length === 0 || !isRedisConfigured()) {
+    return
+  }
+
+  try {
+    const pipeline = redis.pipeline()
+    for (const { key, value } of entries) {
+      pipeline.set(key, JSON.stringify(value), { ex: ttl })
+    }
+    await pipeline.exec()
+  } catch (error) {
+    console.warn('[CACHE ERROR] batchSetCacheValues failed:', error)
   }
 }

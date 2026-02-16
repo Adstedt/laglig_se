@@ -12,7 +12,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getCachedDocument } from '@/lib/services/document-cache'
+import {
+  getCachedDocument,
+  warmTemplateDocuments,
+} from '@/lib/services/document-cache'
+import { getAllPublishedTemplateDocumentIds } from '@/lib/db/queries/template-catalog'
 import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 
@@ -108,6 +112,21 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // --- Template document warming ---
+    let templateStats = { warmed: 0, alreadyCached: 0, failed: 0, total: 0 }
+    try {
+      const templateDocIds = await getAllPublishedTemplateDocumentIds()
+      templateStats.total = templateDocIds.length
+      console.log(`📋 Warming ${templateDocIds.length} template documents`)
+      const result = await warmTemplateDocuments(templateDocIds)
+      templateStats = { ...result, total: templateDocIds.length }
+      console.log(
+        `📋 Template warming: ${result.warmed} new, ${result.alreadyCached} cached, ${result.failed} failed`
+      )
+    } catch (error) {
+      console.warn('Template document warming failed (non-critical):', error)
+    }
+
     const duration = Date.now() - startTime
 
     // Also get some stats about cache effectiveness
@@ -142,9 +161,10 @@ export async function GET(request: NextRequest) {
           estimatedHitRate: '80-90%', // Based on your 80% overlap observation
         },
       },
+      templateStats,
       // Return first few warmed documents for verification
       warmedDocuments: documents.slice(0, 10),
-      message: `Warmed ${newlyCached} new documents, ${alreadyCached} already cached`,
+      message: `Warmed ${newlyCached} new documents, ${alreadyCached} already cached. Templates: ${templateStats.warmed} new, ${templateStats.alreadyCached} cached`,
     })
   } catch (error) {
     if (runId) {

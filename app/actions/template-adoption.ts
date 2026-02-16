@@ -13,6 +13,7 @@ import {
 } from '@/lib/auth/workspace-context'
 import { z } from 'zod'
 import { getPublishedTemplateBySlugUncached } from '@/lib/db/queries/template-catalog'
+import { warmTemplateDocuments } from '@/lib/services/document-cache'
 
 // ============================================================================
 // Types
@@ -83,7 +84,7 @@ export async function adoptTemplate(
     if (totalItems === 0) {
       return {
         success: false,
-        error: 'Mallen innehåller inga lagar att adoptera',
+        error: 'Mallen innehåller inga dokument att adoptera',
       }
     }
 
@@ -161,6 +162,14 @@ export async function adoptTemplate(
     })
 
     revalidatePath('/laglistor')
+
+    // Fire-and-forget: warm cache for all template documents
+    const documentIds = template.sections.flatMap((s) =>
+      s.items.map((i) => i.document.id)
+    )
+    warmTemplateDocuments(documentIds).catch((err) =>
+      console.warn('Template cache warming failed (non-critical):', err)
+    )
 
     return {
       success: true,

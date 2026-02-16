@@ -313,6 +313,19 @@ export async function getPublishedTemplateBySlugUncached(
   }
 }
 
+/**
+ * Get all unique document IDs across published templates.
+ * Used by the cron cache-warming job.
+ */
+export async function getAllPublishedTemplateDocumentIds(): Promise<string[]> {
+  const items = await prisma.templateItem.findMany({
+    where: { template: { status: 'PUBLISHED' } },
+    select: { document_id: true },
+    distinct: ['document_id'],
+  })
+  return items.map((i) => i.document_id)
+}
+
 function mapItem(item: {
   id: string
   index: string
