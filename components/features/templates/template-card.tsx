@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { FileText, Layers } from 'lucide-react'
+import { FileText, Layers, ArrowRight } from 'lucide-react'
 import {
   Card,
   CardHeader,
@@ -18,6 +18,8 @@ import {
   DOMAIN_LABELS,
   DOMAIN_COLORS,
   DEFAULT_DOMAIN_COLOR,
+  DOMAIN_ACCENT_COLORS,
+  DEFAULT_ACCENT_COLOR,
 } from '@/lib/constants/template-domains'
 
 function truncate(text: string, maxLength: number): string {
@@ -42,14 +44,19 @@ export function TemplateCard({ template }: TemplateCardProps) {
 
   const domainLabel = DOMAIN_LABELS[template.domain] ?? template.domain
   const domainColor = DOMAIN_COLORS[template.domain] ?? DEFAULT_DOMAIN_COLOR
+  const accentColor =
+    DOMAIN_ACCENT_COLORS[template.domain] ?? DEFAULT_ACCENT_COLOR
 
   return (
-    <Card className="flex h-full flex-col transition-shadow hover:shadow-md">
+    <Card className="group flex h-full flex-col overflow-hidden transition-shadow hover:shadow-md">
+      {/* Domain accent stripe */}
+      <div className={`h-1 ${accentColor}`} />
+
       <Link
         href={`/laglistor/mallar/${activeSlug}`}
         className="flex flex-1 flex-col"
       >
-        <CardHeader className="space-y-2">
+        <CardHeader className="space-y-1.5">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-lg leading-tight">
               {template.name}
@@ -62,9 +69,9 @@ export function TemplateCard({ template }: TemplateCardProps) {
             </Badge>
           </div>
           {template.target_audience && (
-            <Badge variant="outline" className="text-xs py-0 px-1.5 w-fit">
-              {template.target_audience}
-            </Badge>
+            <p className="text-sm text-muted-foreground">
+              F&ouml;r: {template.target_audience}
+            </p>
           )}
         </CardHeader>
 
@@ -78,28 +85,31 @@ export function TemplateCard({ template }: TemplateCardProps) {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <FileText className="h-4 w-4" />
-              <span data-testid="document-count">{activeDocCount}</span>
+              <span data-testid="document-count">
+                {activeDocCount} dokument
+              </span>
             </span>
             <span className="flex items-center gap-1.5">
               <Layers className="h-4 w-4" />
-              <span data-testid="section-count">{activeSectionCount}</span>
+              <span data-testid="section-count">
+                {activeSectionCount} avsnitt
+              </span>
             </span>
           </div>
 
           {template.primary_regulatory_bodies.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {template.primary_regulatory_bodies.map((body) => (
-                <Badge
-                  key={body}
-                  variant="secondary"
-                  className="text-xs py-0 px-1.5"
-                >
-                  {body}
-                </Badge>
-              ))}
-            </div>
+            <p className="text-xs text-muted-foreground">
+              {template.primary_regulatory_bodies.join(' \u00B7 ')}
+            </p>
           )}
         </CardContent>
+
+        <div className="px-6 pb-4">
+          <span className="inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+            Utforska
+            <ArrowRight className="h-4 w-4" />
+          </span>
+        </div>
       </Link>
 
       {hasVariants && variant && (

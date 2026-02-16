@@ -84,19 +84,19 @@ describe('TemplateCard', () => {
     expect(desc).toBeInTheDocument()
   })
 
-  it('renders target audience badge', () => {
+  it('renders target audience text', () => {
     render(<TemplateCard template={mockTemplate} />)
 
     expect(
-      screen.getByText('Alla svenska arbetsgivare oavsett bransch')
+      screen.getByText(/För:.*Alla svenska arbetsgivare oavsett bransch/)
     ).toBeInTheDocument()
   })
 
-  it('renders regulatory body badges', () => {
+  it('renders regulatory bodies as dot-separated text', () => {
     render(<TemplateCard template={mockTemplate} />)
 
-    expect(screen.getByText('Arbetsmiljöverket')).toBeInTheDocument()
-    expect(screen.getByText('Riksdagen')).toBeInTheDocument()
+    expect(screen.getByText(/Arbetsmiljöverket/)).toBeInTheDocument()
+    expect(screen.getByText(/Riksdagen/)).toBeInTheDocument()
   })
 
   it('links to correct detail page URL', () => {

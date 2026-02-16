@@ -26,6 +26,17 @@ export const DOMAIN_COLORS: Record<string, string> = {
 export const DEFAULT_DOMAIN_COLOR =
   'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-800'
 
+/** Domain → top-accent bar background color */
+export const DOMAIN_ACCENT_COLORS: Record<string, string> = {
+  arbetsmiljo: 'bg-amber-400 dark:bg-amber-500',
+  miljo: 'bg-emerald-400 dark:bg-emerald-500',
+  gdpr: 'bg-blue-400 dark:bg-blue-500',
+  brandskydd: 'bg-red-400 dark:bg-red-500',
+  livsmedel: 'bg-purple-400 dark:bg-purple-500',
+}
+
+export const DEFAULT_ACCENT_COLOR = 'bg-gray-400 dark:bg-gray-500'
+
 /** Source type → Swedish display label */
 export const SOURCE_TYPE_LABELS: Record<string, string> = {
   lag: 'Lag',
