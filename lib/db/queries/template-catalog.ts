@@ -150,6 +150,8 @@ const ITEM_SELECT = {
       document_number: true,
       title: true,
       slug: true,
+      summary: true,
+      kommentar: true,
     },
   },
 } as const
@@ -319,14 +321,21 @@ function mapItem(item: {
   expert_commentary: string | null
   source_type: string | null
   regulatory_body: string | null
-  document: { id: string; document_number: string; title: string; slug: string }
+  document: {
+    id: string
+    document_number: string
+    title: string
+    slug: string
+    summary: string | null
+    kommentar: string | null
+  }
 }): TemplateDetailItem {
   return {
     id: item.id,
     index: item.index,
     position: item.position,
-    compliance_summary: item.compliance_summary,
-    expert_commentary: item.expert_commentary,
+    compliance_summary: item.compliance_summary ?? item.document.kommentar,
+    expert_commentary: item.expert_commentary ?? item.document.summary,
     source_type: item.source_type,
     regulatory_body: item.regulatory_body,
     document: item.document,
