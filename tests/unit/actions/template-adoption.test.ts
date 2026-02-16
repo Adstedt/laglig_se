@@ -429,7 +429,7 @@ describe('adoptTemplate', () => {
     const result = await adoptTemplate({ templateSlug: 'empty-variant' })
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Mallen innehåller inga lagar att adoptera')
+    expect(result.error).toBe('Mallen innehåller inga dokument att adoptera')
   })
 
   it('returns error for invalid input', async () => {

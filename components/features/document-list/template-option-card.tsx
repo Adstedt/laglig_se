@@ -55,7 +55,7 @@ export function TemplateOptionCard({
         <div className="flex items-center gap-2 mt-1">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <FileText className="h-3 w-3 shrink-0" />
-            <span>{template.document_count} lagar</span>
+            <span>{template.document_count} dokument</span>
           </div>
           {template.variants.length > 0 && (
             <span className="text-xs italic text-muted-foreground">

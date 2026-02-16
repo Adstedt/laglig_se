@@ -95,7 +95,7 @@ test.describe('Template Adoption (Story 12.10)', () => {
 
     // Should show success toast with adoption message
     const toast = page.locator('[data-sonner-toast]').filter({
-      hasText: /har lagts till med \d+ lagar/,
+      hasText: /har lagts till med \d+ dokument/,
     })
     await expect(toast).toBeVisible({ timeout: 15000 })
 

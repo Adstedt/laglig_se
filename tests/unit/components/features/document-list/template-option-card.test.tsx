@@ -53,7 +53,7 @@ describe('TemplateOptionCard', () => {
     // Name and domain badge may share text — use getAllByText
     const arbetsmiljoElements = screen.getAllByText('Arbetsmiljö')
     expect(arbetsmiljoElements.length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText('112 lagar')).toBeInTheDocument()
+    expect(screen.getByText('112 dokument')).toBeInTheDocument()
   })
 
   it('renders domain badge with correct label', () => {

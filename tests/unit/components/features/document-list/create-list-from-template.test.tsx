@@ -56,7 +56,7 @@ describe('CreateListFromTemplate', () => {
     // Template name appears as heading and also pre-filled in input
     const nameElements = screen.getAllByText('Arbetsmiljö')
     expect(nameElements.length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText('112 lagar')).toBeInTheDocument()
+    expect(screen.getByText('112 dokument')).toBeInTheDocument()
     expect(screen.getByText('9 kategorier')).toBeInTheDocument()
     expect(screen.getByText('Arbetsmiljöverket')).toBeInTheDocument()
     expect(screen.getByText('Riksdagen')).toBeInTheDocument()
@@ -187,7 +187,7 @@ describe('CreateListFromTemplate', () => {
 
     await waitFor(() => {
       expect(toast.success).toHaveBeenCalledWith(
-        "Mallen 'Arbetsmiljö' har lagts till med 112 lagar"
+        "Mallen 'Arbetsmiljö' har lagts till med 112 dokument"
       )
     })
 

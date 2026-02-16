@@ -65,7 +65,6 @@ describe('TemplateAdoptCta', () => {
   it('renders "Använd denna mall" button', () => {
     render(
       <TemplateAdoptCta
-        templateName="Arbetsmiljö"
         templateSlug="arbetsmiljo"
         workspaces={singleWorkspace}
         currentWorkspaceId="ws_123"
@@ -75,23 +74,9 @@ describe('TemplateAdoptCta', () => {
     expect(screen.getByText('Använd denna mall')).toBeInTheDocument()
   })
 
-  it('renders template name', () => {
-    render(
-      <TemplateAdoptCta
-        templateName="Arbetsmiljö"
-        templateSlug="arbetsmiljo"
-        workspaces={singleWorkspace}
-        currentWorkspaceId="ws_123"
-      />
-    )
-
-    expect(screen.getByText('Arbetsmiljö')).toBeInTheDocument()
-  })
-
   it('button is enabled', () => {
     render(
       <TemplateAdoptCta
-        templateName="Arbetsmiljö"
         templateSlug="arbetsmiljo"
         workspaces={singleWorkspace}
         currentWorkspaceId="ws_123"
@@ -105,7 +90,6 @@ describe('TemplateAdoptCta', () => {
   it('calls adoptTemplate on click (single workspace)', async () => {
     render(
       <TemplateAdoptCta
-        templateName="Arbetsmiljö"
         templateSlug="arbetsmiljo"
         workspaces={singleWorkspace}
         currentWorkspaceId="ws_123"
@@ -125,7 +109,6 @@ describe('TemplateAdoptCta', () => {
   it('opens workspace dialog on click (multiple workspaces)', async () => {
     render(
       <TemplateAdoptCta
-        templateName="Arbetsmiljö"
         templateSlug="arbetsmiljo"
         workspaces={multipleWorkspaces}
         currentWorkspaceId="ws_123"
@@ -143,7 +126,6 @@ describe('TemplateAdoptCta', () => {
   it('shows success toast and redirects after successful adoption', async () => {
     render(
       <TemplateAdoptCta
-        templateName="Arbetsmiljö"
         templateSlug="arbetsmiljo"
         workspaces={singleWorkspace}
         currentWorkspaceId="ws_123"
@@ -155,7 +137,7 @@ describe('TemplateAdoptCta', () => {
     })
 
     expect(mockToastSuccess).toHaveBeenCalledWith(
-      "Mallen 'Arbetsmiljö' har lagts till med 112 lagar"
+      "Mallen 'Arbetsmiljö' har lagts till med 112 dokument"
     )
     expect(mockPush).toHaveBeenCalledWith('/laglistor')
   })
@@ -168,7 +150,6 @@ describe('TemplateAdoptCta', () => {
 
     render(
       <TemplateAdoptCta
-        templateName="Arbetsmiljö"
         templateSlug="arbetsmiljo"
         workspaces={singleWorkspace}
         currentWorkspaceId="ws_123"

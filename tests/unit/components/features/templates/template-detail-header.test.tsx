@@ -93,7 +93,7 @@ describe('TemplateDetailHeader', () => {
   it('shows stats bar with document count', () => {
     render(<TemplateDetailHeader template={mockTemplate} />)
 
-    expect(screen.getByText(/112 lagar/)).toBeInTheDocument()
+    expect(screen.getByText(/112 dokument/)).toBeInTheDocument()
   })
 
   it('shows stats bar with section count', () => {
