@@ -180,7 +180,7 @@ describe('ManageListModal', () => {
     // Click the Arbetsmiljö template card in the popular templates section
     const allButtons = screen.getAllByRole('button')
     const templateCard = allButtons.find((btn) =>
-      btn.textContent?.includes('112 lagar')
+      btn.textContent?.includes('112 dokument')
     )
     expect(templateCard).toBeDefined()
     await user.click(templateCard!)
@@ -200,7 +200,7 @@ describe('ManageListModal', () => {
     // Navigate to template preview
     const allButtons = screen.getAllByRole('button')
     const templateCard = allButtons.find((btn) =>
-      btn.textContent?.includes('112 lagar')
+      btn.textContent?.includes('112 dokument')
     )
     await user.click(templateCard!)
 
