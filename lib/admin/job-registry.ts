@@ -75,8 +75,8 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     displayName: 'Cache Warming',
     description:
       'Värmer cache för populära dokument baserat på laglistor och besök',
-    schedule: 'manual',
-    scheduleHuman: 'Manuell / GitHub Actions',
+    schedule: '45 5 * * *',
+    scheduleHuman: 'Dagligen kl. 05:45 UTC',
     endpoint: '/api/cron/warm-cache',
     authHeader: 'CRON_SECRET',
     instrumented: true,
