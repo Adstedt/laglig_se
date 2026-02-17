@@ -91,4 +91,15 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     authHeader: 'CRON_SECRET',
     instrumented: false,
   },
+  {
+    name: 'notify-amendment-changes',
+    displayName: 'Daglig ändringsavisering',
+    description:
+      'Skickar e-postdigest med lagändringar till berörda arbetsytor',
+    schedule: '0 7 * * *',
+    scheduleHuman: 'Dagligen kl. 07:00 UTC',
+    endpoint: '/api/cron/notify-amendment-changes',
+    authHeader: 'CRON_SECRET',
+    instrumented: false,
+  },
 ]

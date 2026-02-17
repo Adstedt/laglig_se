@@ -9,11 +9,16 @@
  * Story 2.11 - Task 12: Unit Tests
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import { ChangeType, ContentType } from '@prisma/client'
 import {
   computeDiff,
   generateUnifiedDiff,
   hasSubstantiveChanges,
+  detectChanges,
+  createNewLawEvent,
+  createRepealEvent,
+  createNewRulingEvent,
 } from '@/lib/sync/change-detection'
 
 describe('Change Detection', () => {
@@ -369,6 +374,159 @@ Lag (2020:100).
       expect(endTime - startTime).toBeLessThan(5000)
       expect(result.added).toBeGreaterThan(0)
       expect(result.removed).toBeGreaterThan(0)
+    })
+  })
+})
+
+// ============================================================================
+// Story 8.16: DB-writing function tests with mocked transaction client
+// ============================================================================
+
+describe('Change Event Creation (DB-writing functions)', () => {
+  const DOC_ID = 'doc-123'
+
+  function createMockTx() {
+    return {
+      changeEvent: {
+        create: vi.fn().mockResolvedValue({
+          id: 'ce-1',
+          document_id: DOC_ID,
+          change_type: ChangeType.AMENDMENT,
+        }),
+      },
+      legalDocument: {
+        update: vi.fn().mockResolvedValue({}),
+      },
+    }
+  }
+
+  describe('detectChanges', () => {
+    it('sets last_change_type = AMENDMENT on LegalDocument', async () => {
+      const tx = createMockTx()
+
+      await detectChanges(tx as never, {
+        documentId: DOC_ID,
+        contentType: ContentType.SFS_LAW,
+        oldFullText: 'Old text content',
+        newFullText: 'New text content that is different',
+        amendmentSfs: 'SFS 2026:145',
+      })
+
+      expect(tx.legalDocument.update).toHaveBeenCalledWith({
+        where: { id: DOC_ID },
+        data: {
+          last_change_type: ChangeType.AMENDMENT,
+          last_change_ref: 'SFS 2026:145',
+          last_change_at: expect.any(Date),
+        },
+      })
+    })
+
+    it('does NOT call legalDocument.update when no substantive changes', async () => {
+      const tx = createMockTx()
+
+      const result = await detectChanges(tx as never, {
+        documentId: DOC_ID,
+        contentType: ContentType.SFS_LAW,
+        oldFullText: 'Same text',
+        newFullText: 'Same text',
+        amendmentSfs: 'SFS 2026:145',
+      })
+
+      expect(result).toBeNull()
+      expect(tx.legalDocument.update).not.toHaveBeenCalled()
+    })
+
+    it('is idempotent — same params produce same field values', async () => {
+      const tx1 = createMockTx()
+      const tx2 = createMockTx()
+      const params = {
+        documentId: DOC_ID,
+        contentType: ContentType.SFS_LAW as ContentType,
+        oldFullText: 'Old text',
+        newFullText: 'New different text',
+        amendmentSfs: 'SFS 2026:145',
+      }
+
+      await detectChanges(tx1 as never, params)
+      await detectChanges(tx2 as never, params)
+
+      const call1 = tx1.legalDocument.update.mock.calls[0]![0]
+      const call2 = tx2.legalDocument.update.mock.calls[0]![0]
+
+      expect(call1.data.last_change_type).toBe(call2.data.last_change_type)
+      expect(call1.data.last_change_ref).toBe(call2.data.last_change_ref)
+    })
+  })
+
+  describe('createRepealEvent', () => {
+    it('sets last_change_type = REPEAL on LegalDocument', async () => {
+      const tx = createMockTx()
+      tx.changeEvent.create.mockResolvedValue({
+        id: 'ce-2',
+        document_id: DOC_ID,
+        change_type: ChangeType.REPEAL,
+      })
+
+      await createRepealEvent(
+        tx as never,
+        DOC_ID,
+        ContentType.SFS_LAW,
+        'SFS 2026:200'
+      )
+
+      expect(tx.legalDocument.update).toHaveBeenCalledWith({
+        where: { id: DOC_ID },
+        data: {
+          last_change_type: ChangeType.REPEAL,
+          last_change_ref: 'SFS 2026:200',
+          last_change_at: expect.any(Date),
+        },
+      })
+    })
+  })
+
+  describe('createNewLawEvent', () => {
+    it('sets last_change_type = NEW_LAW with null ref', async () => {
+      const tx = createMockTx()
+      tx.changeEvent.create.mockResolvedValue({
+        id: 'ce-3',
+        document_id: DOC_ID,
+        change_type: ChangeType.NEW_LAW,
+      })
+
+      await createNewLawEvent(tx as never, DOC_ID, ContentType.SFS_LAW)
+
+      expect(tx.legalDocument.update).toHaveBeenCalledWith({
+        where: { id: DOC_ID },
+        data: {
+          last_change_type: ChangeType.NEW_LAW,
+          last_change_ref: null,
+          last_change_at: expect.any(Date),
+        },
+      })
+    })
+  })
+
+  describe('createNewRulingEvent', () => {
+    it('sets last_change_type = NEW_RULING with null ref', async () => {
+      const tx = createMockTx()
+      tx.changeEvent.create.mockResolvedValue({
+        id: 'ce-4',
+        document_id: DOC_ID,
+        change_type: ChangeType.NEW_RULING,
+      })
+
+      await createNewRulingEvent(tx as never, DOC_ID, ContentType.COURT_CASE_AD)
+
+      expect(tx.legalDocument.update).toHaveBeenCalledWith({
+        where: { id: DOC_ID },
+        data: {
+          last_change_type: ChangeType.NEW_RULING,
+          last_change_ref: null,
+          last_change_at: expect.any(Date),
+        },
+      })
     })
   })
 })

@@ -5,11 +5,10 @@ import { NotificationType, type NotificationPreference } from '@prisma/client'
  * Maps NotificationType enum values to their corresponding
  * boolean field on the NotificationPreference model.
  *
- * Types NOT in this map (e.g., future amendment notifications,
- * email verification, workspace invitations) are treated as
- * transactional and always send.
+ * Types NOT in this map (e.g., email verification, workspace
+ * invitations) are treated as transactional and always send.
  */
-const NOTIFICATION_TYPE_TO_PREFERENCE: Partial<
+export const NOTIFICATION_TYPE_TO_PREFERENCE: Partial<
   Record<NotificationType, keyof NotificationPreference>
 > = {
   [NotificationType.TASK_ASSIGNED]: 'task_assigned_enabled',
@@ -19,6 +18,12 @@ const NOTIFICATION_TYPE_TO_PREFERENCE: Partial<
   [NotificationType.MENTION]: 'mention_enabled',
   [NotificationType.STATUS_CHANGED]: 'status_changed_enabled',
   [NotificationType.WEEKLY_DIGEST]: 'weekly_digest_enabled',
+
+  // Epic 8: Change monitoring notification types
+  [NotificationType.AMENDMENT_DETECTED]: 'amendment_detected_enabled',
+  [NotificationType.LAW_REPEALED]: 'law_repealed_enabled',
+  [NotificationType.RULING_CITED]: 'ruling_cited_enabled',
+  [NotificationType.AMENDMENT_REMINDER]: 'amendment_reminder_enabled',
 }
 
 /**

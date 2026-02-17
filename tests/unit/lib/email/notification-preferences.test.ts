@@ -15,6 +15,10 @@ const mockPreference = {
   mention_enabled: true,
   status_changed_enabled: true,
   weekly_digest_enabled: true,
+  amendment_detected_enabled: true,
+  law_repealed_enabled: true,
+  ruling_cited_enabled: true,
+  amendment_reminder_enabled: true,
   email_enabled: true,
   push_enabled: false,
   created_at: new Date(),
@@ -128,6 +132,10 @@ describe('shouldSendEmail', () => {
       NotificationType.MENTION,
       NotificationType.STATUS_CHANGED,
       NotificationType.WEEKLY_DIGEST,
+      NotificationType.AMENDMENT_DETECTED,
+      NotificationType.LAW_REPEALED,
+      NotificationType.RULING_CITED,
+      NotificationType.AMENDMENT_REMINDER,
     ]
 
     for (const type of types) {
@@ -138,6 +146,62 @@ describe('shouldSendEmail', () => {
       )
       expect(result).toBe(true)
     }
+  })
+
+  it('returns false for AMENDMENT_DETECTED when amendment_detected_enabled is false', async () => {
+    vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+      ...mockPreference,
+      amendment_detected_enabled: false,
+    })
+
+    const result = await shouldSendEmail(
+      TEST_USER_ID,
+      TEST_WORKSPACE_ID,
+      NotificationType.AMENDMENT_DETECTED
+    )
+    expect(result).toBe(false)
+  })
+
+  it('returns false for LAW_REPEALED when law_repealed_enabled is false', async () => {
+    vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+      ...mockPreference,
+      law_repealed_enabled: false,
+    })
+
+    const result = await shouldSendEmail(
+      TEST_USER_ID,
+      TEST_WORKSPACE_ID,
+      NotificationType.LAW_REPEALED
+    )
+    expect(result).toBe(false)
+  })
+
+  it('returns false for RULING_CITED when ruling_cited_enabled is false', async () => {
+    vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+      ...mockPreference,
+      ruling_cited_enabled: false,
+    })
+
+    const result = await shouldSendEmail(
+      TEST_USER_ID,
+      TEST_WORKSPACE_ID,
+      NotificationType.RULING_CITED
+    )
+    expect(result).toBe(false)
+  })
+
+  it('returns false for AMENDMENT_REMINDER when amendment_reminder_enabled is false', async () => {
+    vi.mocked(prisma.notificationPreference.findUnique).mockResolvedValue({
+      ...mockPreference,
+      amendment_reminder_enabled: false,
+    })
+
+    const result = await shouldSendEmail(
+      TEST_USER_ID,
+      TEST_WORKSPACE_ID,
+      NotificationType.AMENDMENT_REMINDER
+    )
+    expect(result).toBe(false)
   })
 
   it('creates default preference when none exists and returns true', async () => {

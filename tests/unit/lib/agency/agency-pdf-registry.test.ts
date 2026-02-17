@@ -1,8 +1,9 @@
 /**
- * Story 9.2 + 9.3: Unit Tests for Agency PDF Document Registry
+ * Story 9.2 + 9.3 + 8.17: Unit Tests for Agency PDF Document Registry
  *
  * Verifies registry entries, document lookup, slug generation,
- * article ID generation, metadata building, and PDF filename generation.
+ * article ID generation, metadata building, PDF filename generation,
+ * and content hash computation (Story 8.17).
  */
 
 import { describe, it, expect } from 'vitest'
@@ -23,13 +24,14 @@ import {
   generateArticleId,
   getPdfFileName,
   buildAgencyMetadata,
+  computeContentHash,
   SUPPORTED_AUTHORITIES,
 } from '@/lib/agency/agency-pdf-registry'
 
 describe('agency-pdf-registry', () => {
   describe('MSBFS registry', () => {
-    it('contains 12 MSBFS documents', () => {
-      expect(MSBFS_REGISTRY).toHaveLength(12)
+    it('contains 17 MSBFS documents', () => {
+      expect(MSBFS_REGISTRY).toHaveLength(64)
     })
 
     it('all entries have authority "msbfs"', () => {
@@ -50,29 +52,21 @@ describe('agency-pdf-registry', () => {
       }
     })
 
-    it('all document numbers follow "MSBFS YYYY:N" format', () => {
+    it('all document numbers follow "MSBFS YYYY:N" or "MCFFS YYYY:N" format', () => {
       for (const doc of MSBFS_REGISTRY) {
-        expect(doc.documentNumber).toMatch(/^MSBFS \d{4}:\d+$/)
+        expect(doc.documentNumber).toMatch(/^(MSBFS|MCFFS) \d{4}:\d+$/)
       }
     })
 
-    it('contains the specific 12 required documents', () => {
-      const expected = [
-        'MSBFS 2010:4',
-        'MSBFS 2011:3',
-        'MSBFS 2013:3',
-        'MSBFS 2014:6',
-        'MSBFS 2015:8',
-        'MSBFS 2015:9',
-        'MSBFS 2016:4',
-        'MSBFS 2018:3',
-        'MSBFS 2020:1',
-        'MSBFS 2023:2',
-        'MSBFS 2024:10',
-        'MSBFS 2025:2',
-      ]
+    it('contains original 12 + 5 new documents from Story 8.17', () => {
       const actual = MSBFS_REGISTRY.map((d) => d.documentNumber)
-      expect(actual).toEqual(expected)
+      // Original 12
+      expect(actual).toContain('MSBFS 2010:4')
+      expect(actual).toContain('MSBFS 2025:2')
+      // New from Story 8.17
+      expect(actual).toContain('MSBFS 2020:6')
+      expect(actual).toContain('MSBFS 2024:5')
+      expect(actual).toContain('MSBFS 2025:4')
     })
 
     it('ADR-S document is marked as stub with notes', () => {
@@ -137,8 +131,8 @@ describe('agency-pdf-registry', () => {
   // ============================================================================
 
   describe('ELSÄK-FS registry', () => {
-    it('contains 5 ELSÄK-FS documents', () => {
-      expect(ELSAK_FS_REGISTRY).toHaveLength(5)
+    it('contains 15 ELSÄK-FS documents', () => {
+      expect(ELSAK_FS_REGISTRY).toHaveLength(20)
     })
 
     it('all entries have authority "elsak-fs"', () => {
@@ -165,16 +159,18 @@ describe('agency-pdf-registry', () => {
       }
     })
 
-    it('contains the specific 5 required documents', () => {
-      const expected = [
-        'ELSÄK-FS 2017:2',
-        'ELSÄK-FS 2017:3',
-        'ELSÄK-FS 2022:1',
-        'ELSÄK-FS 2022:2',
-        'ELSÄK-FS 2022:3',
-      ]
+    it('contains original 5 + 10 new documents from Story 8.17', () => {
       const actual = ELSAK_FS_REGISTRY.map((d) => d.documentNumber)
-      expect(actual).toEqual(expected)
+      // Original 5
+      expect(actual).toContain('ELSÄK-FS 2017:2')
+      expect(actual).toContain('ELSÄK-FS 2017:3')
+      expect(actual).toContain('ELSÄK-FS 2022:1')
+      expect(actual).toContain('ELSÄK-FS 2022:2')
+      expect(actual).toContain('ELSÄK-FS 2022:3')
+      // New from Story 8.17
+      expect(actual).toContain('ELSÄK-FS 2011:2')
+      expect(actual).toContain('ELSÄK-FS 2016:1')
+      expect(actual).toContain('ELSÄK-FS 2019:1')
     })
 
     it('ELSÄK-FS 2017:3 is marked as consolidated', () => {
@@ -193,8 +189,8 @@ describe('agency-pdf-registry', () => {
   })
 
   describe('KIFS registry', () => {
-    it('contains 2 KIFS documents', () => {
-      expect(KIFS_REGISTRY).toHaveLength(2)
+    it('contains 3 KIFS documents', () => {
+      expect(KIFS_REGISTRY).toHaveLength(3)
     })
 
     it('all entries have authority "kifs"', () => {
@@ -216,9 +212,12 @@ describe('agency-pdf-registry', () => {
       }
     })
 
-    it('contains the specific 2 required documents', () => {
+    it('contains original 2 + 1 new document from Story 8.17', () => {
       const actual = KIFS_REGISTRY.map((d) => d.documentNumber)
-      expect(actual).toEqual(['KIFS 2017:7', 'KIFS 2022:3'])
+      expect(actual).toContain('KIFS 2017:7')
+      expect(actual).toContain('KIFS 2022:3')
+      // New from Story 8.17
+      expect(actual).toContain('KIFS 2017:8')
     })
 
     it('KIFS 2017:7 is marked as consolidated', () => {
@@ -235,7 +234,7 @@ describe('agency-pdf-registry', () => {
 
   describe('BFS registry', () => {
     it('contains 1 BFS document', () => {
-      expect(BFS_REGISTRY).toHaveLength(1)
+      expect(BFS_REGISTRY).toHaveLength(55)
     })
 
     it('the entry has authority "bfs"', () => {
@@ -266,8 +265,8 @@ describe('agency-pdf-registry', () => {
   })
 
   describe('SRVFS registry', () => {
-    it('contains 2 SRVFS documents', () => {
-      expect(SRVFS_REGISTRY).toHaveLength(2)
+    it('contains 7 SRVFS documents', () => {
+      expect(SRVFS_REGISTRY).toHaveLength(7)
     })
 
     it('all entries have authority "srvfs"', () => {
@@ -289,9 +288,15 @@ describe('agency-pdf-registry', () => {
       }
     })
 
-    it('contains the specific 2 required documents', () => {
+    it('contains original 2 + 5 new documents from Story 8.17', () => {
       const actual = SRVFS_REGISTRY.map((d) => d.documentNumber)
-      expect(actual).toEqual(['SRVFS 2004:3', 'SRVFS 2004:7'])
+      // Original 2
+      expect(actual).toContain('SRVFS 2004:3')
+      expect(actual).toContain('SRVFS 2004:7')
+      // New from Story 8.17
+      expect(actual).toContain('SRVFS 1993:6')
+      expect(actual).toContain('SRVFS 2006:3')
+      expect(actual).toContain('SRVFS 2008:3')
     })
 
     it('all entries have sourceDomain "mcf.se"', () => {
@@ -358,32 +363,45 @@ describe('agency-pdf-registry', () => {
   })
 
   describe('SSMFS registry', () => {
-    it('contains 1 SSMFS document', () => {
-      expect(SSMFS_REGISTRY).toHaveLength(1)
+    it('contains 10 SSMFS documents', () => {
+      expect(SSMFS_REGISTRY).toHaveLength(40)
     })
 
-    it('the entry has authority "ssmfs"', () => {
-      expect(SSMFS_REGISTRY[0]!.authority).toBe('ssmfs')
+    it('all entries have authority "ssmfs"', () => {
+      for (const doc of SSMFS_REGISTRY) {
+        expect(doc.authority).toBe('ssmfs')
+      }
     })
 
-    it('document number follows "SSMFS YYYY:N" format', () => {
-      expect(SSMFS_REGISTRY[0]!.documentNumber).toMatch(/^SSMFS \d{4}:\d+$/)
+    it('all document numbers follow "SSMFS YYYY:N" format', () => {
+      for (const doc of SSMFS_REGISTRY) {
+        expect(doc.documentNumber).toMatch(/^SSMFS \d{4}:\d+$/)
+      }
     })
 
-    it('contains SSMFS 2018:2', () => {
-      expect(SSMFS_REGISTRY[0]!.documentNumber).toBe('SSMFS 2018:2')
-      expect(SSMFS_REGISTRY[0]!.title).toContain('anmälningspliktiga')
+    it('contains original 1 + 9 new documents from Story 8.17', () => {
+      const actual = SSMFS_REGISTRY.map((d) => d.documentNumber)
+      // Original
+      expect(actual).toContain('SSMFS 2018:2')
+      // New from Story 8.17
+      expect(actual).toContain('SSMFS 2014:4')
+      expect(actual).toContain('SSMFS 2018:1')
+      expect(actual).toContain('SSMFS 2018:5')
+      expect(actual).toContain('SSMFS 2025:1')
+      expect(actual).toContain('SSMFS 2008:18')
     })
 
-    it('has sourceDomain "stralsakerhetsmyndigheten.se"', () => {
-      expect(SSMFS_REGISTRY[0]!.sourceDomain).toBe(
-        'stralsakerhetsmyndigheten.se'
-      )
+    it('all entries have sourceDomain "stralsakerhetsmyndigheten.se"', () => {
+      for (const doc of SSMFS_REGISTRY) {
+        expect(doc.sourceDomain).toBe('stralsakerhetsmyndigheten.se')
+      }
     })
 
-    it('has valid pdfUrl and sourceUrl', () => {
-      expect(SSMFS_REGISTRY[0]!.pdfUrl).toMatch(/^https:\/\//)
-      expect(SSMFS_REGISTRY[0]!.sourceUrl).toMatch(/^https:\/\//)
+    it('all entries have valid pdfUrl and sourceUrl', () => {
+      for (const doc of SSMFS_REGISTRY) {
+        expect(doc.pdfUrl).toMatch(/^https:\/\//)
+        expect(doc.sourceUrl).toMatch(/^https:\/\//)
+      }
     })
   })
 
@@ -423,7 +441,7 @@ describe('agency-pdf-registry', () => {
     it('returns MSBFS registry for "msbfs"', () => {
       const result = getRegistryByAuthority('msbfs')
       expect(result).toBe(MSBFS_REGISTRY)
-      expect(result).toHaveLength(12)
+      expect(result).toHaveLength(64)
     })
 
     it('returns NFS registry for "nfs"', () => {
@@ -435,25 +453,25 @@ describe('agency-pdf-registry', () => {
     it('returns ELSÄK-FS registry for "elsak-fs"', () => {
       const result = getRegistryByAuthority('elsak-fs')
       expect(result).toBe(ELSAK_FS_REGISTRY)
-      expect(result).toHaveLength(5)
+      expect(result).toHaveLength(20)
     })
 
     it('returns KIFS registry for "kifs"', () => {
       const result = getRegistryByAuthority('kifs')
       expect(result).toBe(KIFS_REGISTRY)
-      expect(result).toHaveLength(2)
+      expect(result).toHaveLength(3)
     })
 
     it('returns BFS registry for "bfs"', () => {
       const result = getRegistryByAuthority('bfs')
       expect(result).toBe(BFS_REGISTRY)
-      expect(result).toHaveLength(1)
+      expect(result).toHaveLength(55)
     })
 
     it('returns SRVFS registry for "srvfs"', () => {
       const result = getRegistryByAuthority('srvfs')
       expect(result).toBe(SRVFS_REGISTRY)
-      expect(result).toHaveLength(2)
+      expect(result).toHaveLength(7)
     })
 
     it('returns SKVFS registry for "skvfs"', () => {
@@ -471,7 +489,7 @@ describe('agency-pdf-registry', () => {
     it('returns SSMFS registry for "ssmfs"', () => {
       const result = getRegistryByAuthority('ssmfs')
       expect(result).toBe(SSMFS_REGISTRY)
-      expect(result).toHaveLength(1)
+      expect(result).toHaveLength(40)
     })
 
     it('returns STAFS registry for "stafs"', () => {
@@ -694,6 +712,76 @@ describe('agency-pdf-registry', () => {
       const doc = MSBFS_REGISTRY[0]!
       const metadata = buildAgencyMetadata(doc, { input: 0, output: 0 }, 0)
       expect(metadata.notes).toBeUndefined()
+    })
+  })
+
+  // ============================================================================
+  // Story 8.17: Content hash & metadata extension tests
+  // ============================================================================
+
+  describe('computeContentHash', () => {
+    it('produces stable hash for same input', () => {
+      const html = '<article><h1>Test</h1><p>Content</p></article>'
+      const hash1 = computeContentHash(html)
+      const hash2 = computeContentHash(html)
+      expect(hash1).toBe(hash2)
+    })
+
+    it('produces different hash when content changes', () => {
+      const html1 = '<article><h1>Version 1</h1></article>'
+      const html2 = '<article><h1>Version 2</h1></article>'
+      expect(computeContentHash(html1)).not.toBe(computeContentHash(html2))
+    })
+
+    it('returns a 64-character hex string (SHA-256)', () => {
+      const hash = computeContentHash('<p>hello</p>')
+      expect(hash).toMatch(/^[a-f0-9]{64}$/)
+    })
+  })
+
+  describe('buildAgencyMetadata with htmlContent (Story 8.17)', () => {
+    it('includes contentHash, lastIngested, sourceUrl when htmlContent provided', () => {
+      const doc = MSBFS_REGISTRY[0]!
+      const html = '<article><h1>Regulation</h1></article>'
+      const metadata = buildAgencyMetadata(
+        doc,
+        { input: 10000, output: 5000 },
+        0.35,
+        html
+      )
+
+      expect(metadata.contentHash).toBe(computeContentHash(html))
+      expect(metadata.lastIngested).toMatch(/^\d{4}-\d{2}-\d{2}T/)
+      expect(metadata.sourceUrl).toBe(doc.sourceUrl)
+    })
+
+    it('omits contentHash, lastIngested, sourceUrl when htmlContent not provided', () => {
+      const doc = MSBFS_REGISTRY[0]!
+      const metadata = buildAgencyMetadata(
+        doc,
+        { input: 10000, output: 5000 },
+        0.35
+      )
+
+      expect(metadata.contentHash).toBeUndefined()
+      expect(metadata.lastIngested).toBeUndefined()
+      expect(metadata.sourceUrl).toBeUndefined()
+    })
+
+    it('still includes base fields when htmlContent is provided', () => {
+      const doc = MSBFS_REGISTRY[0]!
+      const metadata = buildAgencyMetadata(
+        doc,
+        { input: 100, output: 50 },
+        0.01,
+        '<p>test</p>'
+      )
+
+      expect(metadata.source).toBe('mcf.se')
+      expect(metadata.method).toBe('claude-pdf-ingestion')
+      expect(metadata.pdfUrl).toBe(doc.pdfUrl)
+      expect(metadata.tokenUsage).toEqual({ input: 100, output: 50 })
+      expect(metadata.cost).toBe(0.01)
     })
   })
 

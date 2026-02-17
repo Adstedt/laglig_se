@@ -18,7 +18,12 @@ interface LagligEmailLayoutProps {
   unsubscribeUrl?: string
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://laglig.se'
+// For email images, use NEXT_PUBLIC_EMAIL_ASSET_URL if set (bypass deployment protection),
+// otherwise fall back to the app URL
+const baseUrl =
+  process.env.NEXT_PUBLIC_EMAIL_ASSET_URL ??
+  process.env.NEXT_PUBLIC_APP_URL ??
+  'https://laglig.se'
 
 export function LagligEmailLayout({
   preview,
@@ -34,16 +39,13 @@ export function LagligEmailLayout({
           {/* Header */}
           <Section style={header}>
             <Img
-              src={`${baseUrl}/images/logo.svg`}
-              width="32"
+              src={`${baseUrl}/images/logo-final.png`}
+              width="120"
               height="32"
               alt="Laglig.se"
               style={logo}
             />
-            <Text style={headerText}>Laglig.se</Text>
           </Section>
-
-          <Hr style={divider} />
 
           {/* Body Content */}
           <Section style={content}>{children}</Section>
@@ -61,7 +63,7 @@ export function LagligEmailLayout({
             {unsubscribeUrl && (
               <Text style={footerUnsubscribe}>
                 <Link href={unsubscribeUrl} style={unsubscribeLink}>
-                  Avregistrera dig fran e-postnotifieringar
+                  Avregistrera dig från e-postnotifieringar
                 </Link>
               </Text>
             )}
@@ -91,23 +93,14 @@ const container: React.CSSProperties = {
 
 const header: React.CSSProperties = {
   padding: '24px 32px',
-  display: 'flex',
-  alignItems: 'center',
+  backgroundColor: '#1a1a2e',
+  textAlign: 'center' as const,
 }
 
 const logo: React.CSSProperties = {
   display: 'inline-block',
   verticalAlign: 'middle',
   marginRight: '12px',
-}
-
-const headerText: React.CSSProperties = {
-  fontSize: '20px',
-  fontWeight: 600,
-  color: '#1a1a2e',
-  display: 'inline-block',
-  verticalAlign: 'middle',
-  margin: 0,
 }
 
 const divider: React.CSSProperties = {
