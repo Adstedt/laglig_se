@@ -113,8 +113,8 @@ describe('TemplateSectionsAccordion', () => {
     it('shows document count badges for each section', () => {
       render(<TemplateSectionsAccordion sections={mockSections} />)
 
-      expect(screen.getByText('2 lagar')).toBeInTheDocument()
-      expect(screen.getByText('1 lagar')).toBeInTheDocument()
+      expect(screen.getByText('2 dokument')).toBeInTheDocument()
+      expect(screen.getByText('1 dokument')).toBeInTheDocument()
     })
 
     it('shows section description', () => {

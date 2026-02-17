@@ -13,9 +13,13 @@ import type { TemplateDetail } from '@/lib/db/queries/template-catalog'
 
 interface TemplateDetailHeaderProps {
   template: TemplateDetail
+  children?: React.ReactNode
 }
 
-export function TemplateDetailHeader({ template }: TemplateDetailHeaderProps) {
+export function TemplateDetailHeader({
+  template,
+  children,
+}: TemplateDetailHeaderProps) {
   const domainLabel = DOMAIN_LABELS[template.domain] ?? template.domain
   const domainColor = DOMAIN_COLORS[template.domain] ?? DEFAULT_DOMAIN_COLOR
   const formattedDate = format(new Date(template.updated_at), 'd MMM yyyy', {
@@ -50,11 +54,11 @@ export function TemplateDetailHeader({ template }: TemplateDetailHeaderProps) {
         ))}
       </div>
 
-      {/* Stats bar */}
-      <div className="flex flex-wrap items-center gap-4 rounded-lg bg-muted/50 px-4 py-3">
+      {/* Stats bar + CTA */}
+      <div className="flex flex-wrap items-center gap-4 rounded-lg bg-muted/50 px-4 py-2.5">
         <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <FileText className="h-4 w-4" />
-          {template.document_count} lagar
+          {template.document_count} dokument
         </span>
         <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <Layers className="h-4 w-4" />
@@ -64,6 +68,9 @@ export function TemplateDetailHeader({ template }: TemplateDetailHeaderProps) {
           <Calendar className="h-4 w-4" />
           Uppdaterad {formattedDate}
         </span>
+        {children && (
+          <div className="ml-auto flex items-center gap-2">{children}</div>
+        )}
       </div>
     </div>
   )

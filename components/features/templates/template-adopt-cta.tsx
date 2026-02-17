@@ -17,14 +17,12 @@ import {
 } from './workspace-selector-dialog'
 
 interface TemplateAdoptCtaProps {
-  templateName: string
   templateSlug: string
   workspaces: UserWorkspace[]
   currentWorkspaceId: string
 }
 
 export function TemplateAdoptCta({
-  templateName,
   templateSlug,
   workspaces,
   currentWorkspaceId,
@@ -38,7 +36,7 @@ export function TemplateAdoptCta({
       const result = await adoptTemplate({ templateSlug, workspaceId })
       if (result.success && result.data) {
         toast.success(
-          `Mallen '${result.data.listName}' har lagts till med ${result.data.itemCount} lagar`
+          `Mallen '${result.data.listName}' har lagts till med ${result.data.itemCount} dokument`
         )
         router.push('/laglistor')
       } else {
@@ -56,10 +54,7 @@ export function TemplateAdoptCta({
   }
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-lg border bg-muted/30 px-4 py-2.5">
-      <p className="text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">{templateName}</span>
-      </p>
+    <>
       <Button
         size="sm"
         className="gap-1.5 shrink-0"
@@ -83,6 +78,6 @@ export function TemplateAdoptCta({
           handleAdopt(wsId)
         }}
       />
-    </div>
+    </>
   )
 }

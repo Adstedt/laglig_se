@@ -134,7 +134,7 @@ function SectionItemRow({ item }: { item: TemplateDetailItem }) {
     <>
       <tr
         className={cn(
-          'border-b transition-colors hover:bg-muted/50',
+          'border-b transition-colors bg-background hover:bg-muted/50',
           hasContent && 'cursor-pointer',
           expanded && 'border-b-0'
         )}
@@ -300,7 +300,7 @@ export function TemplateSectionsAccordion({
                       variant="secondary"
                       className="text-xs py-0 px-1.5 shrink-0"
                     >
-                      {section.item_count} lagar
+                      {section.item_count} dokument
                     </Badge>
                   </div>
                   {section.description && (

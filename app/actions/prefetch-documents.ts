@@ -1,16 +1,16 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { redis } from '@/lib/cache/redis'
-import { getCachedDocument } from '@/lib/services/document-cache'
+import { batchGetCacheValues, batchSetCacheValues } from '@/lib/cache/redis'
+import { getCachedDocumentsBatched } from '@/lib/services/document-cache'
+
+const LIST_ITEM_CACHE_TTL = 86400 // 24 hours
 
 /**
- * Pre-fetch and cache multiple documents in parallel
- * Called when a law list is loaded to warm up the cache
- * SIMPLIFIED: Using only Redis cache, no unstable_cache
+ * Pre-fetch and cache multiple documents in a batched operation.
+ * Uses 1 MGET + 1 findMany + 1 pipeline instead of N individual queries.
  */
 export async function prefetchDocuments(documentIds: string[]) {
-  // Filter out undefined/null values
   const validDocumentIds = documentIds.filter((id): id is string => !!id)
 
   if (validDocumentIds.length === 0) {
@@ -21,49 +21,36 @@ export async function prefetchDocuments(documentIds: string[]) {
   }
 
   try {
-    // Fetch all documents in parallel
-    const promises = validDocumentIds.map(async (documentId) => {
-      // Check if already cached in Redis
-      const cacheKey = `document:${documentId}`
-      const cached = await redis.get(cacheKey)
+    // Check what's already cached (1 MGET)
+    const cacheKeys = validDocumentIds.map((id) => `document:${id}`)
+    const alreadyCached = await batchGetCacheValues(cacheKeys)
+    const alreadyCachedCount = alreadyCached.size
 
-      if (cached) {
-        return { documentId, cached: true }
-      }
+    // Fetch all (batched handles dedup, cache check, DB query, and write-back)
+    const results = await getCachedDocumentsBatched(validDocumentIds)
 
-      // Fetch and cache using the centralized document cache service
-      try {
-        const doc = await getCachedDocument(documentId)
-        if (doc) {
-          return { documentId, cached: false, fetched: true }
-        } else {
-          return { documentId, error: true }
-        }
-      } catch {
-        return { documentId, error: true }
-      }
-    })
+    const fetchedCount = results.size - alreadyCachedCount
+    const failedCount = validDocumentIds.length - results.size
 
-    const results = await Promise.all(promises)
-
-    const stats = {
-      total: validDocumentIds.length,
-      alreadyCached: results.filter((r) => r.cached).length,
-      newlyFetched: results.filter((r) => r.fetched).length,
-      failed: results.filter((r) => r.error).length,
+    return {
+      success: true,
+      stats: {
+        total: validDocumentIds.length,
+        alreadyCached: alreadyCachedCount,
+        newlyFetched: Math.max(0, fetchedCount),
+        failed: Math.max(0, failedCount),
+      },
     }
-
-    return { success: true, stats }
   } catch {
     return { success: false, error: 'Failed to pre-fetch documents' }
   }
 }
 
 /**
- * Pre-fetch list item details for faster modal opening
+ * Pre-fetch list item details for faster modal opening.
+ * Uses 1 MGET + 1 findMany + 1 pipeline instead of N individual queries.
  */
 export async function prefetchListItemDetails(listItemIds: string[]) {
-  // Filter out undefined/null values
   const validListItemIds = listItemIds.filter((id): id is string => !!id)
 
   if (validListItemIds.length === 0) {
@@ -71,19 +58,24 @@ export async function prefetchListItemDetails(listItemIds: string[]) {
   }
 
   try {
-    const promises = validListItemIds.map(async (listItemId) => {
-      // Use the SAME cache key that the modal expects!
-      const cacheKey = `list-item-details:${listItemId}`
+    // 1. Batch check cache (1 MGET)
+    const cacheKeys = validListItemIds.map((id) => `list-item-details:${id}`)
+    const cached = await batchGetCacheValues(cacheKeys)
 
-      // Check cache first
-      const cached = await redis.get(cacheKey)
-      if (cached) {
-        return { listItemId, cached: true }
+    // Collect missed IDs
+    const missedIds: string[] = []
+    for (let i = 0; i < validListItemIds.length; i++) {
+      if (!cached.has(cacheKeys[i]!)) {
+        missedIds.push(validListItemIds[i]!)
       }
+    }
 
-      // Fetch and cache with ALL fields the modal needs
-      const item = await prisma.lawListItem.findUnique({
-        where: { id: listItemId },
+    let fetchedCount = 0
+
+    if (missedIds.length > 0) {
+      // 2. Single DB query for all misses
+      const items = await prisma.lawListItem.findMany({
+        where: { id: { in: missedIds } },
         include: {
           document: {
             select: {
@@ -102,7 +94,7 @@ export async function prefetchListItemDetails(listItemIds: string[]) {
             select: {
               id: true,
               name: true,
-              workspace_id: true, // IMPORTANT: Modal needs this for security check!
+              workspace_id: true,
             },
           },
           responsible_user: {
@@ -116,9 +108,10 @@ export async function prefetchListItemDetails(listItemIds: string[]) {
         },
       })
 
-      if (item) {
-        // Format the data exactly as the modal expects it
-        const cacheData = {
+      // 3. Batch write to cache (1 pipeline)
+      const toCache = items.map((item) => ({
+        key: `list-item-details:${item.id}`,
+        value: {
           id: item.id,
           position: item.position,
           compliance_status: item.compliance_status,
@@ -131,24 +124,19 @@ export async function prefetchListItemDetails(listItemIds: string[]) {
           document: item.document,
           law_list: item.law_list,
           responsible_user: item.responsible_user,
-        }
+        },
+      }))
 
-        // Cache for 24 hours (same as documents)
-        await redis.set(cacheKey, JSON.stringify(cacheData), { ex: 86400 })
-        return { listItemId, fetched: true }
-      }
-
-      return { listItemId, error: true }
-    })
-
-    const results = await Promise.all(promises)
+      batchSetCacheValues(toCache, LIST_ITEM_CACHE_TTL).catch(() => {})
+      fetchedCount = items.length
+    }
 
     return {
       success: true,
       stats: {
         total: validListItemIds.length,
-        cached: results.filter((r) => r.cached).length,
-        fetched: results.filter((r) => r.fetched).length,
+        cached: cached.size,
+        fetched: fetchedCount,
       },
     }
   } catch {

@@ -66,8 +66,8 @@ describe('CreateListChooser', () => {
     expect(arbetsmiljoElements.length).toBeGreaterThanOrEqual(1)
     const miljoElements = screen.getAllByText('Miljö')
     expect(miljoElements.length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText('112 lagar')).toBeInTheDocument()
-    expect(screen.getByText('98 lagar')).toBeInTheDocument()
+    expect(screen.getByText('112 dokument')).toBeInTheDocument()
+    expect(screen.getByText('98 dokument')).toBeInTheDocument()
   })
 
   it('calls onSelectTemplate when template card is clicked', async () => {
@@ -86,7 +86,7 @@ describe('CreateListChooser', () => {
     // The template cards are after the two option cards
     // Find the one that contains "Miljö" text
     const miljoCard = allButtons.find((btn) =>
-      btn.textContent?.includes('98 lagar')
+      btn.textContent?.includes('98 dokument')
     )
     expect(miljoCard).toBeDefined()
     await user.click(miljoCard!)

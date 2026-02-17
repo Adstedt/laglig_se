@@ -28,7 +28,7 @@ export function TemplateDetailClient({
   const isVariant = template.is_variant && !!template.parent_slug
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Parent link for variant templates */}
       {isVariant && (
         <Link
@@ -40,35 +40,29 @@ export function TemplateDetailClient({
         </Link>
       )}
 
-      <TemplateDetailHeader template={template} />
-
-      {/* Toolbar row: variant toggle + CTA */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        {/* Variant toggle for parent templates */}
-        {hasVariants && variant ? (
-          <div className="flex items-center gap-2">
-            <Switch
-              id="variant-toggle"
-              checked={false}
-              onCheckedChange={() => {
-                router.push(`/laglistor/mallar/${variant.slug}`)
-              }}
-            />
-            <Label htmlFor="variant-toggle" className="text-sm cursor-pointer">
-              Visa version för tjänsteföretag
-            </Label>
-          </div>
-        ) : (
-          <div />
-        )}
-
+      <TemplateDetailHeader template={template}>
         <TemplateAdoptCta
-          templateName={template.name}
           templateSlug={template.slug}
           workspaces={workspaces}
           currentWorkspaceId={currentWorkspaceId}
         />
-      </div>
+      </TemplateDetailHeader>
+
+      {/* Variant toggle for parent templates */}
+      {hasVariants && variant && (
+        <div className="flex items-center gap-2">
+          <Switch
+            id="variant-toggle"
+            checked={false}
+            onCheckedChange={() => {
+              router.push(`/laglistor/mallar/${variant.slug}`)
+            }}
+          />
+          <Label htmlFor="variant-toggle" className="text-sm cursor-pointer">
+            Visa version för tjänsteföretag
+          </Label>
+        </div>
+      )}
 
       <TemplateSectionsAccordion sections={template.sections} />
     </div>

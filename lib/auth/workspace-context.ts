@@ -232,11 +232,32 @@ export async function requireWorkspaceAccess(
 ): Promise<WorkspaceContext> {
   const context = await getWorkspaceContext()
 
-  if (context.workspaceId !== workspaceId) {
+  // Fast path: requested workspace matches the active cookie workspace
+  if (context.workspaceId === workspaceId) {
+    return context
+  }
+
+  // Slow path: user selected a different workspace (e.g. via workspace picker).
+  // Verify the user is actually a member of the target workspace.
+  const member = await prisma.workspaceMember.findFirst({
+    where: { user_id: context.userId, workspace_id: workspaceId },
+    include: { workspace: true },
+  })
+
+  if (!member || member.workspace.status === 'DELETED') {
     throw new WorkspaceAccessError('Workspace access denied', 'ACCESS_DENIED')
   }
 
-  return context
+  return {
+    userId: context.userId,
+    workspaceId: member.workspace_id,
+    workspaceName: member.workspace.name,
+    workspaceSlug: member.workspace.slug,
+    workspaceStatus: member.workspace.status,
+    role: member.role,
+    hasPermission: (permission: Permission) =>
+      hasPermission(member.role, permission),
+  }
 }
 
 /**

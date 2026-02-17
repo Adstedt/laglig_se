@@ -152,10 +152,22 @@ export interface DocumentListState {
       priority?: LawListItemPriority
       dueDate?: Date | null
       assignedTo?: string | null
+      _resolvedAssignee?: {
+        id: string
+        name: string | null
+        email: string
+        avatarUrl: string | null
+      } | null
       groupId?: string | null
       // Story 6.2: Compliance fields
       complianceStatus?: ComplianceStatus
       responsibleUserId?: string | null
+      _resolvedResponsibleUser?: {
+        id: string
+        name: string | null
+        email: string
+        avatarUrl: string | null
+      } | null
       // Story 6.18: Compliance content fields (optimistic update from modal)
       businessContext?: string | null
       complianceActions?: string | null
@@ -168,6 +180,12 @@ export interface DocumentListState {
       priority?: LawListItemPriority
       complianceStatus?: ComplianceStatus // Story 6.2
       responsibleUserId?: string | null // Story 6.2
+      _resolvedResponsibleUser?: {
+        id: string
+        name: string | null
+        email: string
+        avatarUrl: string | null
+      } | null
     }
   ) => Promise<boolean>
 
@@ -721,10 +739,22 @@ export const useDocumentListStore = create<DocumentListState>()(
           priority?: LawListItemPriority
           dueDate?: Date | null
           assignedTo?: string | null
+          _resolvedAssignee?: {
+            id: string
+            name: string | null
+            email: string
+            avatarUrl: string | null
+          } | null
           groupId?: string | null
           // Story 6.2: Compliance fields
           complianceStatus?: ComplianceStatus
           responsibleUserId?: string | null
+          _resolvedResponsibleUser?: {
+            id: string
+            name: string | null
+            email: string
+            avatarUrl: string | null
+          } | null
           // Story 6.18: Compliance content fields (optimistic update from modal)
           businessContext?: string | null
           complianceActions?: string | null
@@ -758,7 +788,7 @@ export const useDocumentListStore = create<DocumentListState>()(
                     updates.assignedTo !== undefined
                       ? updates.assignedTo === null
                         ? null
-                        : item.assignee // Keep current if assigning
+                        : (updates._resolvedAssignee ?? item.assignee)
                       : item.assignee,
                   groupId:
                     updates.groupId !== undefined
@@ -771,13 +801,13 @@ export const useDocumentListStore = create<DocumentListState>()(
                     updates.complianceStatus !== undefined
                       ? updates.complianceStatus
                       : item.complianceStatus,
-                  // For responsibleUser: clear if null, keep existing if assigning
-                  // (server will return full user data on next fetch)
+                  // For responsibleUser: clear if null, use resolved user if provided
                   responsibleUser:
                     updates.responsibleUserId !== undefined
                       ? updates.responsibleUserId === null
                         ? null
-                        : item.responsibleUser // Keep existing until server confirms
+                        : (updates._resolvedResponsibleUser ??
+                          item.responsibleUser)
                       : item.responsibleUser,
                   // Story 6.18: Compliance content fields (optimistic update from modal)
                   businessContext:
@@ -844,6 +874,12 @@ export const useDocumentListStore = create<DocumentListState>()(
           priority?: LawListItemPriority
           complianceStatus?: ComplianceStatus // Story 6.2
           responsibleUserId?: string | null // Story 6.2
+          _resolvedResponsibleUser?: {
+            id: string
+            name: string | null
+            email: string
+            avatarUrl: string | null
+          } | null
         }
       ) => {
         const { listItems, activeListId } = get()
@@ -869,7 +905,8 @@ export const useDocumentListStore = create<DocumentListState>()(
                     updates.responsibleUserId !== undefined
                       ? updates.responsibleUserId === null
                         ? null
-                        : item.responsibleUser // Keep existing until server confirms
+                        : (updates._resolvedResponsibleUser ??
+                          item.responsibleUser)
                       : item.responsibleUser,
                 }
               : item

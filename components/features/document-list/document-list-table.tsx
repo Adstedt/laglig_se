@@ -177,10 +177,22 @@ interface DocumentListTableProps {
       priority?: LawListItemPriority
       dueDate?: Date | null
       assignedTo?: string | null
+      _resolvedAssignee?: {
+        id: string
+        name: string | null
+        email: string
+        avatarUrl: string | null
+      } | null
       groupId?: string | null // Story 4.13
       // Story 6.2: Compliance fields
       complianceStatus?: ComplianceStatus
       responsibleUserId?: string | null
+      _resolvedResponsibleUser?: {
+        id: string
+        name: string | null
+        email: string
+        avatarUrl: string | null
+      } | null
     }
   ) => Promise<boolean>
   onBulkUpdate: (
@@ -524,7 +536,20 @@ export function DocumentListTable({
             value={row.original.assignee?.id ?? null}
             members={workspaceMembers}
             onChange={async (newAssigneeId) => {
-              await onUpdateItem(row.original.id, { assignedTo: newAssigneeId })
+              const member = newAssigneeId
+                ? workspaceMembers.find((m) => m.id === newAssigneeId)
+                : null
+              await onUpdateItem(row.original.id, {
+                assignedTo: newAssigneeId,
+                _resolvedAssignee: member
+                  ? {
+                      id: member.id,
+                      name: member.name,
+                      email: member.email,
+                      avatarUrl: member.avatarUrl,
+                    }
+                  : null,
+              })
             }}
           />
         ),
@@ -544,8 +569,19 @@ export function DocumentListTable({
               value={row.original.responsibleUser?.id ?? null}
               members={workspaceMembers}
               onChange={async (newUserId) => {
+                const member = newUserId
+                  ? workspaceMembers.find((m) => m.id === newUserId)
+                  : null
                 await onUpdateItem(row.original.id, {
                   responsibleUserId: newUserId,
+                  _resolvedResponsibleUser: member
+                    ? {
+                        id: member.id,
+                        name: member.name,
+                        email: member.email,
+                        avatarUrl: member.avatarUrl,
+                      }
+                    : null,
                 })
               }}
             />

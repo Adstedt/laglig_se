@@ -46,7 +46,7 @@ export function CreateListFromTemplate({
 
       if (result.success && result.data) {
         toast.success(
-          `Mallen '${result.data.listName}' har lagts till med ${result.data.itemCount} lagar`
+          `Mallen '${result.data.listName}' har lagts till med ${result.data.itemCount} dokument`
         )
         onCreated(result.data.listId)
       } else {
@@ -77,7 +77,7 @@ export function CreateListFromTemplate({
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <FileText className="h-3 w-3" />
-            {template.document_count} lagar
+            {template.document_count} dokument
           </span>
           <span className="flex items-center gap-1">
             <Layers className="h-3 w-3" />

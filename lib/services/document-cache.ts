@@ -13,7 +13,12 @@
  */
 
 import { prisma } from '@/lib/prisma'
-import { getCachedOrFetch, redis } from '@/lib/cache/redis'
+import {
+  getCachedOrFetch,
+  redis,
+  batchGetCacheValues,
+  batchSetCacheValues,
+} from '@/lib/cache/redis'
 
 const DOCUMENT_CACHE_TTL = 86400 // 24 hours
 
@@ -187,22 +192,144 @@ export async function getCachedDocumentByNumber(
 
 /**
  * Batch get multiple documents (efficient for lists)
+ * @deprecated Use getCachedDocumentsBatched for better performance
  */
 export async function getCachedDocuments(
   documentIds: string[]
 ): Promise<Map<string, CachedDocument>> {
-  const results = new Map<string, CachedDocument>()
+  return getCachedDocumentsBatched(documentIds)
+}
 
-  // Get all documents in parallel
-  const promises = documentIds.map(async (id) => {
-    const doc = await getCachedDocument(id)
-    if (doc) {
-      results.set(id, doc)
+/**
+ * Batch get multiple documents using MGET + findMany instead of N individual queries.
+ * 1 mget → 1 findMany (misses only) → 1 pipeline set
+ */
+export async function getCachedDocumentsBatched(
+  documentIds: string[]
+): Promise<Map<string, CachedDocument>> {
+  const uniqueIds = [...new Set(documentIds.filter(Boolean))]
+  const results = new Map<string, CachedDocument>()
+  if (uniqueIds.length === 0) return results
+
+  // 1. Batch check cache
+  const cacheKeys = uniqueIds.map((id) => `document:${id}`)
+  const cached = await batchGetCacheValues<CachedDocument>(cacheKeys)
+
+  // Collect hits
+  const missedIds: string[] = []
+  for (let i = 0; i < uniqueIds.length; i++) {
+    const hit = cached.get(cacheKeys[i]!)
+    if (hit) {
+      results.set(uniqueIds[i]!, hit)
+    } else {
+      missedIds.push(uniqueIds[i]!)
     }
+  }
+
+  if (missedIds.length === 0) return results
+
+  // 2. Single DB query for all misses
+  const docs = await prisma.legalDocument.findMany({
+    where: { id: { in: missedIds } },
+    select: {
+      id: true,
+      document_number: true,
+      title: true,
+      html_content: true,
+      summary: true,
+      slug: true,
+      status: true,
+      source_url: true,
+      content_type: true,
+      effective_date: true,
+      publication_date: true,
+      metadata: true,
+      court_case: {
+        select: {
+          court_name: true,
+          case_number: true,
+          lower_court: true,
+          decision_date: true,
+          parties: true,
+        },
+      },
+    },
   })
 
-  await Promise.all(promises)
+  // 3. Transform and collect for cache write
+  const toCache: { key: string; value: CachedDocument }[] = []
+  for (const doc of docs) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const metadata = (doc.metadata as any) || {}
+    const cached: CachedDocument = {
+      id: doc.id,
+      documentNumber: doc.document_number,
+      title: doc.title,
+      htmlContent: doc.html_content,
+      summary: doc.summary,
+      slug: doc.slug,
+      status: doc.status,
+      sourceUrl: doc.source_url,
+      contentType: doc.content_type,
+      effectiveDate: doc.effective_date,
+      inForceDate: metadata.in_force_date || doc.effective_date,
+      category: metadata.category || null,
+      courtName: doc.court_case?.court_name || null,
+      caseNumber: doc.court_case?.case_number || null,
+      caseName: metadata.case_name || null,
+      caseType: metadata.case_type || null,
+      isGuiding: metadata.is_guiding || false,
+      fullText: null,
+    }
+    results.set(doc.id, cached)
+    toCache.push({ key: `document:${doc.id}`, value: cached })
+  }
+
+  // 4. Fire-and-forget cache write
+  batchSetCacheValues(toCache, DOCUMENT_CACHE_TTL).catch(() => {})
+
   return results
+}
+
+/**
+ * Warm cache for template documents in batches of 20.
+ * Used fire-and-forget after adoption and by the cron job.
+ */
+export async function warmTemplateDocuments(
+  documentIds: string[]
+): Promise<{ warmed: number; alreadyCached: number; failed: number }> {
+  const uniqueIds = [...new Set(documentIds.filter(Boolean))]
+  let warmed = 0
+  let alreadyCached = 0
+  let failed = 0
+  const batchSize = 20
+
+  for (let i = 0; i < uniqueIds.length; i += batchSize) {
+    const batch = uniqueIds.slice(i, i + batchSize)
+    try {
+      const before = new Set(
+        (
+          await batchGetCacheValues<CachedDocument>(
+            batch.map((id) => `document:${id}`)
+          )
+        ).keys()
+      )
+      const results = await getCachedDocumentsBatched(batch)
+      for (const id of batch) {
+        if (before.has(`document:${id}`)) {
+          alreadyCached++
+        } else if (results.has(id)) {
+          warmed++
+        } else {
+          failed++
+        }
+      }
+    } catch {
+      failed += batch.length
+    }
+  }
+
+  return { warmed, alreadyCached, failed }
 }
 
 /**

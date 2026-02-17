@@ -246,7 +246,10 @@
       "WebFetch(domain:en.wikipedia.org)",
       "WebFetch(domain:www.irishstatutebook.ie)",
       "WebFetch(domain:www.elidata.es)",
-      "WebFetch(domain:www.sparna.fr)"
+      "WebFetch(domain:www.sparna.fr)",
+      "Bash(xargs basename:*)",
+      "WebFetch(domain:www.elastic.co)",
+      "WebFetch(domain:bonsai.io)"
     ],
     "deny": [],
     "ask": []
