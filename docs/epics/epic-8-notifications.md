@@ -77,10 +77,10 @@ All stories in this epic, with their status and file locations:
 ### Phase 2: SFS — Change Review UX
 | # | Story | File | Status |
 |---|-------|------|--------|
-| **8.1** | Changes Tab | `docs/stories/8.1.change-detection-ui-changes-tab.md` | Draft v2 |
-| **8.2** | GitHub-Style Diff View | `docs/stories/8.2.github-style-diff-view.md` | Draft v2 |
-| **8.3** | Mark as Reviewed Workflow | `docs/stories/8.3.mark-as-reviewed-workflow.md` | Draft v2 |
-| **8.10** | Effective Date Tracking | `docs/stories/8.10.effective-date-tracking.md` | Draft v2 |
+| **8.1** | Changes Tab & Law List Indicators | `docs/stories/completed/8.1.change-detection-ui-changes-tab.md` | Done |
+| ~~**8.2**~~ | ~~GitHub-Style Diff View~~ | Dropped — agent-guided assessment replaces diff view | Dropped |
+| ~~**8.3**~~ | ~~Agentic Change Assessment Flow~~ | Moved to **Epic 14, Story 14.10** | Moved |
+| ~~**8.10**~~ | ~~Effective Date Tracking~~ | Folded into **Epic 14, Story 14.10** (AC 20-24) | Moved |
 
 ### Phase 3: Agency Regulations — Build the Pipeline
 | # | Story | File | Status |
@@ -228,71 +228,46 @@ Story 8.5  (Notification Bell)        ← Depends on 8.15, can parallel with 8.4
 
 **Goal:** Give users a proper in-app experience for reviewing what changed, understanding the impact, and acknowledging they've seen it.
 
-### Story 8.1: Changes Tab (EXISTING — v2)
+### Story 8.1: Changes Tab & Law List Indicators (EXISTING — v4)
 
 **As a** workspace member,
-**I want** a "Changes" tab on my law list showing unacknowledged amendments,
-**so that** I can review updates and stay compliant.
+**I want** a "Ändringar" tab on my law lists page showing all unacknowledged changes, plus visual indicators on law list items that have pending changes,
+**so that** I can quickly see which laws need attention and navigate to the assessment flow to address them.
 
-- Changes tab with unacknowledged count badge
-- Change cards with priority, law title, amendment SFS, AI summering + kommentar
-- Filter by priority (High/Medium/Low)
-- "View Details" → diff view, "Mark as Reviewed" → acknowledge
-- **Status:** Draft (v2) — well-defined
+- Ändringar tab with unacknowledged count badge and priority filter
+- Minimal, scannable change rows (law title, change type badge, detected date, status indicator) — no summering/kommentar on the list
+- Visual change indicators on law list items across all views (card, table, compliance) + LegalDocumentModal banner
+- Each row/indicator clicks through to the agentic assessment flow (Story 8.3)
+- No "Markera som granskad" button — acknowledgement happens inside the assessment flow
+- **Status:** Draft (v4) — validated by PO
 - **Detailed story:** `docs/stories/8.1.change-detection-ui-changes-tab.md`
 
-### Story 8.2: GitHub-Style Diff View (EXISTING — v2)
+### ~~Story 8.2: GitHub-Style Diff View~~ (DROPPED)
 
-**As a** workspace member reviewing a change,
-**I want** a side-by-side diff showing exactly what changed,
-**so that** I understand the impact without reading raw legal text.
+Dropped — the agentic assessment flow (Epic 14, Story 14.10) walks users through changes via the compliance partner agent, replacing the need for a standalone diff view.
 
-- Section-level diffs from `SectionChange` records (AMENDED/NEW/REPEALED)
-- Red/green highlighting, line numbers
-- AI summering + kommentar at top
-- Links to full law and Riksdagen PDF
-- **Status:** Draft (v2) — well-defined
-- **Detailed story:** `docs/stories/8.2.github-style-diff-view.md`
+### ~~Story 8.3: Agentic Change Assessment Flow~~ (MOVED)
 
-### Story 8.3: Mark as Reviewed Workflow (EXISTING — v2)
+Moved to **Epic 14, Story 14.10**. The assessment flow IS the agent — it requires the RAG pipeline, tools, and company context from Epic 14.
 
-**As a** workspace member,
-**I want** to mark a change as reviewed so it disappears from my Changes tab,
-**so that** I can track which amendments I've handled.
+### ~~Story 8.10: Effective Date Tracking~~ (FOLDED)
 
-- Updates `LawListItem.last_change_acknowledged_at` + `last_change_acknowledged_by`
-- Bulk "Mark All as Reviewed" option
-- Activity logged to `ActivityLog`
-- **Status:** Draft (v2) — well-defined
-- **Detailed story:** `docs/stories/8.3.mark-as-reviewed-workflow.md`
-- **Depends on:** Story 8.1
-
-### Story 8.10: Effective Date Tracking (EXISTING — v2)
-
-**As a** workspace member,
-**I want** to see when each amendment takes effect,
-**so that** I can plan compliance timelines.
-
-- Effective date badges on change cards and diff view (future/today/past/unknown)
-- Resolution chain: AmendmentDocument → Amendment → LegalDocument → null
-- Sort changes by effective date as secondary option
-- **Status:** Draft (v2) — well-defined
-- **Detailed story:** `docs/stories/8.10.effective-date-tracking.md`
+Folded into **Epic 14, Story 14.10** (AC 20-24). Effective date resolution, badge utility, and Changes tab integration are now part of the assessment flow story.
 
 ### Phase 2 Sequencing
 
 ```
-Story 8.1  (Changes Tab)              ← Entry point for all change review
-Story 8.2  (Diff View)                ← Can parallel with 8.1
-Story 8.3  (Mark as Reviewed)         ← Depends on 8.1 (needs tab to place buttons)
-Story 8.10 (Effective Dates)          ← Enhances 8.1 + 8.2 (can be parallel or after)
+Story 8.1  (Changes Tab)              ← DONE — entry point for all change review
+Story 8.2  (Diff View)                ← DROPPED — replaced by agent-guided assessment
+Story 8.3  (Assessment Flow)          ← MOVED to Epic 14, Story 14.10
+Story 8.10 (Effective Dates)          ← FOLDED into Epic 14, Story 14.10
 ```
 
 **Phase 2 Definition of Done:**
-- [ ] Users see Changes tab with unacknowledged amendment list
-- [ ] Users can view section-level diffs with AI summaries
-- [ ] Users can mark changes as reviewed (single + bulk)
-- [ ] Effective dates displayed with visual countdown badges
+- [x] Users see Changes tab with unacknowledged amendment list + visual indicators on law list items (Story 8.1 — Done)
+- [ ] ~~Users can view section-level diffs with AI summaries~~ (Dropped — replaced by agent assessment)
+- [ ] Users can assess changes via guided AI flow, create tasks, and resolve with audit trail → **Epic 14, Story 14.10**
+- [ ] Effective dates displayed with visual countdown badges → **Epic 14, Story 14.10**
 
 ---
 
@@ -407,7 +382,7 @@ Story 8.19 (Sync Cron)                ← Depends on 8.17 + 8.18
 
 - Day 3: Nudge email to responsible person
 - Day 7: Escalation to responsible person + workspace admins
-- **Depends on:** Story 8.3 (acknowledge workflow) + Story 8.15 (notification service)
+- **Depends on:** Epic 14, Story 14.10 (assessment/acknowledge workflow) + Story 8.15 (notification service)
 
 ### Story 8.7: Weekly AI Editorial Digest (EXISTING)
 
@@ -442,11 +417,19 @@ Story 8.19 (Sync Cron)                ← Depends on 8.17 + 8.18
 
 ---
 
-## Superseded Stories
+## Superseded / Dropped / Moved Stories
 
 ### ~~Story 8.8: AI Change Summaries~~
-
 **Superseded by Story 12.3** (Content Generation Pipeline). The summering/kommentar pipeline replaces the OpenAI-based approach entirely.
+
+### ~~Story 8.2: GitHub-Style Diff View~~
+**Dropped.** The agentic assessment flow (Epic 14, Story 14.10) walks users through changes via the compliance partner agent, replacing the need for a standalone diff view.
+
+### ~~Story 8.3: Agentic Change Assessment Flow~~
+**Moved to Epic 14, Story 14.10.** The assessment flow requires the RAG pipeline, tools, and company context — it IS the agent.
+
+### ~~Story 8.10: Effective Date Tracking~~
+**Folded into Epic 14, Story 14.10** (AC 20-24). Effective date resolution, badge utility, and Changes tab enhancement are part of the assessment flow story.
 
 ---
 
@@ -463,10 +446,10 @@ PHASE 1: SFS — Complete the Notification Loop
   8.5  (Notification Bell)            ← Depends on 8.15 (reads Notification records)
 
 PHASE 2: SFS — Change Review UX
-  8.1  (Changes Tab)                  ← Phase 2 entry point
-  8.2  (Diff View)                    ← Parallel with 8.1
-  8.3  (Mark as Reviewed)             ← Depends on 8.1
-  8.10 (Effective Dates)              ← Enhances 8.1 + 8.2
+  8.1  (Changes Tab)                  ← DONE
+  8.2  (Diff View)                    ← DROPPED
+  8.3  (Assessment Flow)              ← MOVED to Epic 14, Story 14.10
+  8.10 (Effective Dates)              ← FOLDED into Epic 14, Story 14.10
 
 PHASE 3: Agency Regulations — Build the Pipeline
   8.17 (Expand Ingestion)             ← Phase 3 entry point
@@ -476,24 +459,24 @@ PHASE 3: Agency Regulations — Build the Pipeline
 PHASE 4: Collaboration & Polish (deferred — story files written when prioritized)
   8.13 (Collab Triggers)              ← Depends on 8.15 — no story file yet
   8.14 (Deadline Cron)                ← Depends on 8.15 — no story file yet
-  8.6  (Reminders)                    ← Depends on 8.3 + 8.15
+  8.6  (Reminders)                    ← Depends on Epic 14 Story 14.10 + 8.15
   8.7  (Weekly Digest)                ← Depends on 8.4
   8.11 (Preferences UI)               ← Depends on 8.15 + 8.5
   8.9  (Timeline)                     ← Independent
 ```
 
-**Recommended implementation order (Prerequisite + Phases 1-3):**
+**Recommended implementation order (Prerequisite + Phases 1 & 3):**
 1. **0.1** (Email Infrastructure) — prerequisite: React Email, EmailService, unsubscribe, preference helpers
 2. **8.15** (Notification Service) — establishes recipient resolution + Notification creation
 3. **8.16** (Template Sync) — quick win, can be done in parallel with 8.15
 4. **8.4** (Daily Email Digest) — highest immediate user value, depends on 0.1 + 8.15
 5. **8.5** (Notification Bell) — in-app awareness, parallel with 8.4
-6. **8.1** + **8.2** (Changes Tab + Diff View) — in-app review experience
-7. **8.3** (Mark as Reviewed) — completes the review workflow
-8. **8.10** (Effective Dates) — enhances change cards and diff view
-9. **8.17** (Expand Ingestion) — starts Phase 3 baseline
-10. **8.18** (Adapter Pattern) — parallel with 8.17
-11. **8.19** (Sync Cron) — completes Phase 3
+6. **8.1** (Changes Tab) — DONE
+7. **8.17** (Expand Ingestion) — starts Phase 3 baseline (deferred)
+8. **8.18** (Adapter Pattern) — parallel with 8.17 (deferred)
+9. **8.19** (Sync Cron) — completes Phase 3 (deferred)
+
+**Note:** Phase 2 assessment UX (formerly 8.2, 8.3, 8.10) is now handled by Epic 14 (Compliance Partner Agent).
 
 ---
 
@@ -649,10 +632,10 @@ The system has 4 layers:
 - [ ] TemplateItem.last_amendment auto-syncs when base document amended
 
 **Phase 2 (SFS UX):**
-- [ ] Changes tab shows unacknowledged amendments with AI summaries
-- [ ] Diff view shows section-level changes with highlighting
-- [ ] Mark as reviewed workflow completes the loop
-- [ ] Effective date badges on change cards
+- [x] Changes tab shows unacknowledged amendments + law list items show visual change indicators (Story 8.1 — Done)
+- [ ] ~~Diff view shows section-level changes with highlighting~~ (8.2 Dropped)
+- [ ] Agentic assessment flow enables guided review, task creation, and resolution with audit trail → **Epic 14, Story 14.10**
+- [ ] Effective date badges on change rows → **Epic 14, Story 14.10**
 
 **Phase 3 (Agency Regulations):**
 - [ ] All template-referenced agency documents have full content
@@ -673,3 +656,5 @@ The system has 4 layers:
 | 2026-02-09 | 2.0     | Major rewrite: align with actual data model, add notification framework, add Stories 8.13/8.14, supersede 8.8, restructure phases | Sarah (PO) |
 | 2026-02-17 | 3.0     | Strategic restructure: phased SFS-first/agency-second approach. Added Stories 8.15 (notification service), 8.16 (template sync), 8.17-8.19 (agency regulation monitoring). Moved collaboration stories to Phase 4. Aligned with template launch readiness. | Sarah (PO) |
 | 2026-02-17 | 3.1     | Added Story 0.1 (Email Infrastructure Foundation) as prerequisite. Added complete story inventory table with file locations and status. Clarified 8.13/8.14 are deferred (no story files until Phase 4 prioritized). Updated sequencing to start with 0.1. | Sarah (PO) |
+| 2026-02-18 | 3.2     | UX-driven updates from team discussion: Story 8.1 rewritten as "Changes Tab & Law List Indicators" (minimal list, visual cues on law list items, no mark-as-reviewed button). Story 8.3 rewritten as "Agentic Change Assessment Flow" (guided AI assessment replaces simple mark-as-reviewed). Updated Phase 2 DoD to match. | Sarah (PO) |
+| 2026-02-18 | 3.3     | Epic 14 alignment: Dropped Story 8.2 (diff view — replaced by agent assessment). Moved Story 8.10 (effective date tracking) into Epic 14, Story 14.10. Removed stale 8.3 story file. Phase 2 now fully handled by Epic 14 except 8.1 (Done). Updated sequencing, DoD, dependencies. | Sarah (PO) |
