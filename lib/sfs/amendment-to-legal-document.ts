@@ -121,7 +121,20 @@ export async function createLegalDocumentFromAmendment(
     })
     return { id: existing.id, slug: data.slug, isNew: false }
   } else {
-    // Create new LegalDocument
+    // Check for slug collision before creating (can't catch unique constraint inside tx)
+    const slugExists = await tx.legalDocument.findFirst({
+      where: { slug: data.slug },
+      select: { id: true },
+    })
+
+    if (slugExists) {
+      // Append normalized SFS number for uniqueness
+      const normalizedSfs = amendment.sfs_number
+        .replace(/^SFS\s*/i, '')
+        .replace(':', '-')
+      data.slug = `${data.slug}-${normalizedSfs}`
+    }
+
     const created = await tx.legalDocument.create({
       data,
       select: { id: true, slug: true },
