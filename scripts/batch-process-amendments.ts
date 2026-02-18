@@ -415,6 +415,9 @@ async function submit(args: string[]) {
     process.exit(1)
   }
 
+  // Max payload size per sub-batch (100MB to stay well under V8 string limit)
+  const MAX_PAYLOAD_BYTES = 100 * 1024 * 1024
+
   console.log(`Submitting batch file: ${batchFile}`)
 
   const anthropic = new Anthropic()
@@ -423,7 +426,31 @@ async function submit(args: string[]) {
   const { createReadStream } = await import('fs')
   const { createInterface } = await import('readline')
 
-  const requests: Array<{ custom_id: string; params: unknown }> = []
+  let currentBatch: Array<{ custom_id: string; params: unknown }> = []
+  let currentSize = 0
+  let totalRequests = 0
+  const batchIds: string[] = []
+
+  async function flushBatch() {
+    if (currentBatch.length === 0) return
+
+    const batchNum = batchIds.length + 1
+    console.log(
+      `\nSubmitting sub-batch ${batchNum} (${currentBatch.length} requests, ~${(currentSize / 1024 / 1024).toFixed(0)}MB)...`
+    )
+
+    const batch = await anthropic.messages.batches.create({
+      requests: currentBatch,
+    })
+
+    batchIds.push(batch.id)
+    console.log(`  Batch ID: ${batch.id}`)
+    console.log(`  Status: ${batch.processing_status}`)
+
+    currentBatch = []
+    currentSize = 0
+  }
+
   const rl = createInterface({
     input: createReadStream(batchFile, { encoding: 'utf-8' }),
     crlfDelay: Infinity,
@@ -432,30 +459,39 @@ async function submit(args: string[]) {
   for await (const line of rl) {
     if (!line.trim()) continue
     const parsed = JSON.parse(line)
-    requests.push({
+    const request = {
       custom_id: parsed.custom_id,
       params: parsed.params,
-    })
+    }
+    const lineSize = Buffer.byteLength(line, 'utf-8')
+
+    // If adding this request would exceed the limit, flush first
+    if (currentBatch.length > 0 && currentSize + lineSize > MAX_PAYLOAD_BYTES) {
+      await flushBatch()
+    }
+
+    currentBatch.push(request)
+    currentSize += lineSize
+    totalRequests++
   }
 
-  console.log(`Batch contains ${requests.length} requests`)
+  // Flush remaining
+  await flushBatch()
 
-  // Submit batch using messages.batches.create
-  console.log('Submitting batch to Anthropic API...')
-  const batch = await anthropic.messages.batches.create({
-    requests,
-  })
-
-  console.log(`\nBatch submitted!`)
-  console.log(`  Batch ID: ${batch.id}`)
-  console.log(`  Status: ${batch.processing_status}`)
-  console.log(`  Request counts:`)
-  console.log(
-    `    Total: ${batch.request_counts.processing + batch.request_counts.succeeded + batch.request_counts.errored + batch.request_counts.canceled + batch.request_counts.expired}`
-  )
-  console.log(
-    `\nTo check status: pnpm tsx scripts/batch-process-amendments.ts status --batch-id ${batch.id}`
-  )
+  console.log(`\n==============================`)
+  console.log(`All batches submitted!`)
+  console.log(`  Total requests: ${totalRequests}`)
+  console.log(`  Sub-batches created: ${batchIds.length}`)
+  console.log(`  Batch IDs:`)
+  for (const id of batchIds) {
+    console.log(`    ${id}`)
+  }
+  console.log(`\nTo check status:`)
+  for (const id of batchIds) {
+    console.log(
+      `  pnpm tsx scripts/batch-process-amendments.ts status --batch-id ${id}`
+    )
+  }
 }
 
 // ============================================================================
