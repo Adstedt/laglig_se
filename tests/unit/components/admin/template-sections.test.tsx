@@ -7,6 +7,7 @@ vi.mock('next/navigation', () => ({
     prefetch: vi.fn(),
     refresh: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 vi.mock('@/app/actions/admin-templates', () => ({

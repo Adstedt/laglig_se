@@ -13,6 +13,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({
     refresh: mockRefresh,
   }),
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 // Mock server action

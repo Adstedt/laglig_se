@@ -18,6 +18,7 @@ vi.mock('next/navigation', () => ({
     refresh: vi.fn(),
     prefetch: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 describe('ChangeIndicator (Story 8.1)', () => {

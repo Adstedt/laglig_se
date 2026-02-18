@@ -12,6 +12,7 @@ let mockPathname = '/dashboard'
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   usePathname: () => mockPathname,
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 // Mock useWorkspace hook
