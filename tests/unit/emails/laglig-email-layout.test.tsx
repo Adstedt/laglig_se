@@ -23,7 +23,7 @@ describe('LagligEmailLayout', () => {
     )
 
     expect(html).toContain('Laglig.se')
-    expect(html).toContain('logo.svg')
+    expect(html).toContain('logo-final.png')
   })
 
   it('renders children content in the body', async () => {

@@ -30,9 +30,9 @@ import {
 
 describe('ingest-agency-pdfs pipeline logic', () => {
   describe('--authority flag selects correct registry', () => {
-    it('msbfs returns 12 documents', () => {
+    it('msbfs returns 64 documents (including MCFFS)', () => {
       const docs = getRegistryByAuthority('msbfs')
-      expect(docs).toHaveLength(12)
+      expect(docs).toHaveLength(64)
       expect(docs[0]!.documentNumber).toBe('MSBFS 2010:4')
     })
 
@@ -167,10 +167,10 @@ describe('ingest-agency-pdfs pipeline logic', () => {
   })
 
   describe('PDF file naming', () => {
-    it('all MSBFS PDFs have expected filenames', () => {
+    it('all MSBFS/MCFFS PDFs have expected filenames', () => {
       for (const doc of MSBFS_REGISTRY) {
         const fileName = getPdfFileName(doc.documentNumber)
-        expect(fileName).toMatch(/^MSBFS-\d{4}-\d+\.pdf$/)
+        expect(fileName).toMatch(/^(MSBFS|MCFFS)-\d{4}-\d+\.pdf$/)
       }
     })
 
@@ -183,10 +183,10 @@ describe('ingest-agency-pdfs pipeline logic', () => {
   })
 
   describe('article ID generation', () => {
-    it('all MSBFS article IDs follow pattern', () => {
+    it('all MSBFS/MCFFS article IDs follow pattern', () => {
       for (const doc of MSBFS_REGISTRY) {
         const id = generateArticleId(doc.documentNumber)
-        expect(id).toMatch(/^MSBFS\d{4}-\d+$/)
+        expect(id).toMatch(/^(MSBFS|MCFFS)\d{4}-\d+$/)
       }
     })
 
