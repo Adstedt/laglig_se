@@ -421,6 +421,8 @@ export function DocumentListPageContent({
       addedAt: item.addedAt,
       dueDate: item.dueDate,
       responsibleUser: item.responsibleUser,
+      // Story 8.1: Pass pending change count for modal banner
+      pendingChangeCount: item.pendingChangeCount,
       document: {
         id: item.document.id,
         title: item.document.title,

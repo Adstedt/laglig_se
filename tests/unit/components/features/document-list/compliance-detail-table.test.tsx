@@ -13,6 +13,19 @@ import type {
   WorkspaceMemberOption,
 } from '@/app/actions/document-list'
 
+// Mock next/navigation (needed by ChangeIndicator rendered inside rows)
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+}))
+
 // Mock dnd-kit to avoid complex drag-drop setup
 vi.mock('@dnd-kit/core', () => ({
   DndContext: ({ children }: { children: React.ReactNode }) => <>{children}</>,

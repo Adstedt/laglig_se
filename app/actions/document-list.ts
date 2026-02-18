@@ -98,6 +98,8 @@ export interface DocumentListItem {
   complianceActionsUpdatedAt: Date | null
   complianceActionsUpdatedBy: string | null
   updatedAt: Date
+  // Story 8.1: Pending change count for visual indicators
+  pendingChangeCount: number
   document: {
     id: string
     title: string
@@ -441,6 +443,31 @@ export async function getDocumentListItems(
       const hasMore = items.length > limit
       const itemsToReturn = hasMore ? items.slice(0, limit) : items
 
+      // Story 8.1: Fetch pending change counts for documents in this page
+      const documentIds = itemsToReturn.map((item) => item.document_id)
+      const changeCounts =
+        documentIds.length > 0
+          ? await prisma.$queryRaw<
+              Array<{ document_id: string; count: bigint }>
+            >`
+              SELECT ce.document_id, COUNT(DISTINCT ce.id) as count
+              FROM change_events ce
+              JOIN law_list_items lli ON lli.document_id = ce.document_id
+                AND lli.law_list_id = ${listId}
+              WHERE ce.document_id = ANY(${documentIds}::text[])
+                AND (
+                  lli.last_change_acknowledged_at IS NULL
+                  OR ce.detected_at > lli.last_change_acknowledged_at
+                )
+              GROUP BY ce.document_id
+            `
+          : []
+
+      const changeCountMap = new Map<string, number>()
+      for (const row of changeCounts) {
+        changeCountMap.set(row.document_id, Number(row.count))
+      }
+
       return {
         success: true,
         data: {
@@ -482,6 +509,8 @@ export async function getDocumentListItems(
             complianceActionsUpdatedAt: item.compliance_actions_updated_at,
             complianceActionsUpdatedBy: item.compliance_actions_updated_by,
             updatedAt: item.updated_at,
+            // Story 8.1: Pending change count for visual indicators
+            pendingChangeCount: changeCountMap.get(item.document_id) ?? 0,
             document: {
               id: item.document.id,
               title: item.document.title,

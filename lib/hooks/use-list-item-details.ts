@@ -47,6 +47,8 @@ export interface InitialListItemData {
     sourceUrl?: string | null
     status?: string
   }
+  // Story 8.1: Pending change count for modal banner
+  pendingChangeCount?: number
   lawList: {
     id: string
     name: string
