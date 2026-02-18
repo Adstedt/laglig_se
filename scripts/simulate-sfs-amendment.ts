@@ -168,9 +168,7 @@ async function runStep(
  * Find a law that exists in at least one LawList (so notifications can resolve).
  * Prefers laws with known recent amendments.
  */
-async function pickBaseLaw(
-  sfsNumber: string | null
-): Promise<{
+async function pickBaseLaw(sfsNumber: string | null): Promise<{
   id: string
   document_number: string
   title: string
