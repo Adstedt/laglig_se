@@ -165,29 +165,27 @@ describe('parseCanonicalHtml', () => {
       expect(result.chapters[1]!.number).toBe('2')
     })
 
-    it('extracts sections within chapters', () => {
+    it('extracts paragrafer within chapters', () => {
       const ch1 = result.chapters[0]!
-      expect(ch1.sections).toHaveLength(2)
-      expect(ch1.sections[0]!.number).toBe('1')
-      expect(ch1.sections[1]!.number).toBe('2')
+      expect(ch1.paragrafer).toHaveLength(2)
+      expect(ch1.paragrafer[0]!.number).toBe('1')
+      expect(ch1.paragrafer[1]!.number).toBe('2')
     })
 
-    it('extracts paragraphs from sections', () => {
-      const sec1 = result.chapters[0]!.sections[0]!
-      expect(sec1.paragraphs).toHaveLength(2)
-      expect(sec1.paragraphs[0]!.text).toContain('förebygga ohälsa')
-      expect(sec1.paragraphs[0]!.role).toBe('PARAGRAPH')
-      expect(sec1.paragraphs[1]!.text).toContain('gäller även i övrigt')
+    it('extracts stycken from paragrafer', () => {
+      const par1 = result.chapters[0]!.paragrafer[0]!
+      expect(par1.stycken).toHaveLength(2)
+      expect(par1.stycken[0]!.text).toContain('förebygga ohälsa')
+      expect(par1.stycken[0]!.role).toBe('STYCKE')
+      expect(par1.stycken[1]!.text).toContain('gäller även i övrigt')
     })
 
     it('extracts allmänna råd with correct role', () => {
       const ch2 = result.chapters[1]!
-      const sec1 = ch2.sections[0]!
-      const arParagraphs = sec1.paragraphs.filter(
-        (p) => p.role === 'ALLMANT_RAD'
-      )
-      expect(arParagraphs.length).toBeGreaterThanOrEqual(1)
-      expect(arParagraphs[0]!.text).toContain('Allmänna råd')
+      const par1 = ch2.paragrafer[0]!
+      const arStycken = par1.stycken.filter((s) => s.role === 'ALLMANT_RAD')
+      expect(arStycken.length).toBeGreaterThanOrEqual(1)
+      expect(arStycken[0]!.text).toContain('Allmänna råd')
     })
 
     it('extracts transition provisions', () => {
@@ -210,11 +208,11 @@ describe('parseCanonicalHtml', () => {
       expect(result.chapters[0]!.title).toBeNull()
     })
 
-    it('extracts flat sections', () => {
-      const sections = result.chapters[0]!.sections
-      expect(sections).toHaveLength(2)
-      expect(sections[0]!.number).toBe('1')
-      expect(sections[1]!.number).toBe('2')
+    it('extracts flat paragrafer', () => {
+      const paragrafer = result.chapters[0]!.paragrafer
+      expect(paragrafer).toHaveLength(2)
+      expect(paragrafer[0]!.number).toBe('1')
+      expect(paragrafer[1]!.number).toBe('2')
     })
 
     it('infers AGENCY_REGULATION type from MSBFS prefix', () => {
@@ -243,10 +241,10 @@ describe('parseCanonicalHtml', () => {
       expect(avd1.chapters[0]!.title).toBe('Allmänna bestämmelser')
     })
 
-    it('extracts sections within division chapters', () => {
-      const sec = result.divisions![0]!.chapters[0]!.sections[0]!
-      expect(sec.number).toBe('1')
-      expect(sec.paragraphs[0]!.text).toContain('föreskrifter gäller')
+    it('extracts paragrafer within division chapters', () => {
+      const par = result.divisions![0]!.chapters[0]!.paragrafer[0]!
+      expect(par.number).toBe('1')
+      expect(par.stycken[0]!.text).toContain('föreskrifter gäller')
     })
   })
 
@@ -263,13 +261,13 @@ describe('parseCanonicalHtml', () => {
     })
 
     it('parses EU article numbers as artN', () => {
-      const sec = result.chapters[0]!.sections[0]!
-      expect(sec.number).toBe('art1')
+      const par = result.chapters[0]!.paragrafer[0]!
+      expect(par.number).toBe('art1')
     })
 
     it('extracts EU article subtitle as heading', () => {
-      const sec = result.chapters[0]!.sections[0]!
-      expect(sec.heading).toBe('Syfte')
+      const par = result.chapters[0]!.paragrafer[0]!
+      expect(par.heading).toBe('Syfte')
     })
   })
 
@@ -277,10 +275,10 @@ describe('parseCanonicalHtml', () => {
     const result = parseCanonicalHtml(TABLE_HTML)
 
     it('extracts table with TABLE role', () => {
-      const sec = result.chapters[0]!.sections[0]!
-      const tableParagraphs = sec.paragraphs.filter((p) => p.role === 'TABLE')
-      expect(tableParagraphs).toHaveLength(1)
-      expect(tableParagraphs[0]!.htmlContent).toContain('legal-table')
+      const par = result.chapters[0]!.paragrafer[0]!
+      const tableStycken = par.stycken.filter((s) => s.role === 'TABLE')
+      expect(tableStycken).toHaveLength(1)
+      expect(tableStycken[0]!.htmlContent).toContain('legal-table')
     })
   })
 

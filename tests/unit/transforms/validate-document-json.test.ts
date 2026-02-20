@@ -24,12 +24,14 @@ function validDoc(
       {
         number: '1',
         title: 'Inledning',
-        sections: [
+        paragrafer: [
           {
             number: '1',
             heading: null,
-            paragraphs: [
-              { number: null, text: 'Denna lag gäller.', role: 'PARAGRAPH' },
+            content: 'Denna lag gäller.',
+            amendedBy: null,
+            stycken: [
+              { number: null, text: 'Denna lag gäller.', role: 'STYCKE' },
             ],
           },
         ],
@@ -79,7 +81,7 @@ describe('validateCanonicalJson', () => {
   it('rejects invalid content role', () => {
     const doc = validDoc()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(doc.chapters[0]!.sections[0]!.paragraphs[0] as any).role = 'BAD_ROLE'
+    ;(doc.chapters[0]!.paragrafer[0]!.stycken[0] as any).role = 'BAD_ROLE'
     const result = validateCanonicalJson(doc)
     expect(result.valid).toBe(false)
   })
@@ -94,13 +96,13 @@ describe('validateCanonicalJson', () => {
             {
               number: '1',
               title: 'Kap 1',
-              sections: [],
+              paragrafer: [],
             },
           ],
         },
       ],
       // chapters should be empty when divisions is populated
-      chapters: [{ number: '1', title: 'Wrong', sections: [] }],
+      chapters: [{ number: '1', title: 'Wrong', paragrafer: [] }],
     })
     const result = validateCanonicalJson(doc)
     expect(result.valid).toBe(false)
@@ -117,7 +119,7 @@ describe('validateCanonicalJson', () => {
             {
               number: '1',
               title: 'Kap 1',
-              sections: [],
+              paragrafer: [],
             },
           ],
         },
@@ -130,7 +132,7 @@ describe('validateCanonicalJson', () => {
 
   it('provides path in error messages', () => {
     const doc = validDoc()
-    doc.chapters[0]!.sections[0]!.paragraphs[0]!.text = 123 as unknown as string
+    doc.chapters[0]!.paragrafer[0]!.stycken[0]!.text = 123 as unknown as string
     const result = validateCanonicalJson(doc)
     expect(result.valid).toBe(false)
     expect(result.errors[0]).toContain('chapters')
