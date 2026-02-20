@@ -57,7 +57,7 @@ const BATCH_DIR = 'batches'
 const RESULTS_DIR = 'results'
 const FAILURES_FILE = 'batch-failures.json'
 const MODEL = 'claude-sonnet-4-5-20250929'
-const MAX_TOKENS = 8192
+const MAX_TOKENS = 32768
 
 interface FailedDocument {
   sfs_number: string

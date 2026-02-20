@@ -26,7 +26,7 @@ Output ONLY valid HTML. No markdown fences, no explanations, no preamble.
 Use this exact structure:
 
 \`\`\`html
-<article class="sfs" id="{DOC_ID}">
+<article class="legal-document" id="{DOC_ID}">
   <div class="lovhead">
     <h1>
       <p class="text">{DOCUMENT_NUMBER}</p>
@@ -247,7 +247,7 @@ Document metadata:
 - Title: ${title}
 - Publisher: ${authorityName}
 
-Use "${articleId}" as the id attribute for the root <article class="sfs"> element.
+Use "${articleId}" as the id attribute for the root <article class="legal-document"> element.
 Use "${articleId}_P{N}" as the id pattern for paragraph anchors (or "${articleId}_K{CH}_P{N}" if the document has chapters).
 
 Output the complete HTML following the system prompt structure exactly.

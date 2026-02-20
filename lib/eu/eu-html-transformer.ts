@@ -34,7 +34,7 @@ export interface EuDocumentInfo {
 }
 
 export interface EuTransformResult {
-  /** Complete transformed HTML wrapped in <article class="sfs"> */
+  /** Complete transformed HTML wrapped in <article class="legal-document"> */
   html: string
   /** Detected structure type */
   structureType: 'chaptered' | 'flat' | 'minimal'
@@ -96,19 +96,23 @@ export function transformEuHtml(
   // Phase 6: Extract preamble
   const preambleHtml = extractPreamble($, stats)
 
+  // Compute docId early — needed by body transforms for semantic IDs
+  const docId = `eu-${doc.celex.toLowerCase()}`
+
   // Phase 7: Transform body
   let bodyHtml: string
   if (structureType === 'chaptered') {
-    bodyHtml = transformChapteredBody($, stats)
+    bodyHtml = transformChapteredBody($, stats, docId)
   } else if (structureType === 'flat') {
-    bodyHtml = transformFlatBody($, stats)
+    bodyHtml = transformFlatBody($, stats, docId)
   } else {
-    bodyHtml = transformMinimalBody($, stats)
+    bodyHtml = transformMinimalBody($, stats, docId)
   }
 
   // Phase 8: Clean up remaining ELI/OJ classes
   const bodyDoc = cheerio.load(bodyHtml, { xml: false })
   cleanupClasses(bodyDoc)
+  addTextClass(bodyDoc)
   bodyHtml = bodyDoc.html() || ''
 
   const preambleDoc = cheerio.load(preambleHtml, { xml: false })
@@ -116,7 +120,6 @@ export function transformEuHtml(
   const cleanedPreamble = preambleDoc.html() || ''
 
   // Phase 9: Assemble final document
-  const docId = `eu-${doc.celex.toLowerCase()}`
   const html = assembleDocument(docId, doc, cleanedPreamble, bodyHtml)
 
   return { html, structureType, stats }
@@ -401,7 +404,8 @@ function extractPreamble(
 
 function transformChapteredBody(
   $: cheerio.CheerioAPI,
-  stats: { chapterCount: number; articleCount: number }
+  stats: { chapterCount: number; articleCount: number },
+  docId: string
 ): string {
   const sections: string[] = []
 
@@ -414,14 +418,15 @@ function transformChapteredBody(
     const chapterHeading = extractChapterHeading($chapter)
 
     // Extract articles within this chapter
-    const articles = extractArticles($, $chapter, stats)
+    const articles = extractArticles($, $chapter, stats, docId)
 
-    // Build section ID: cpt_I → chp-i, cpt_II → chp-ii
-    const romanNum = chapterId.replace(/^(cpt|chp)_/, '').toLowerCase()
-    const sectionId = `chp-${romanNum}`
+    // Build section ID: cpt_I → {docId}_K1, cpt_II → {docId}_K2
+    const romanNum = chapterId.replace(/^(cpt|chp)_/, '')
+    const arabicNum = romanToArabic(romanNum)
+    const sectionId = `${docId}_K${arabicNum}`
 
     let sectionHtml = `<section class="kapitel" id="${escapeAttr(sectionId)}">\n`
-    sectionHtml += `  <h2>${chapterHeading}</h2>\n`
+    sectionHtml += `  <h2 class="kapitel-rubrik">${chapterHeading}</h2>\n`
     sectionHtml += articles
     sectionHtml += `</section>\n`
 
@@ -430,7 +435,7 @@ function transformChapteredBody(
   })
 
   // Any remaining articles outside chapters
-  const remainingArticles = extractArticlesFromRoot($, stats)
+  const remainingArticles = extractArticlesFromRoot($, stats, docId)
   if (remainingArticles) {
     sections.push(remainingArticles)
   }
@@ -472,7 +477,8 @@ function extractChapterHeading($chapter: cheerio.Cheerio<Element>): string {
 function extractArticles(
   $: cheerio.CheerioAPI,
   $parent: cheerio.Cheerio<Element>,
-  stats: { articleCount: number }
+  stats: { articleCount: number },
+  docId: string
 ): string {
   const parts: string[] = []
 
@@ -495,15 +501,19 @@ function extractArticles(
     artTitleEl.remove()
     artSubtitleEl.remove()
 
-    const numMatch = artId.match(/art_(\d+)/)
-    const anchorId = numMatch ? `art-${numMatch[1]}` : artId.replace('_', '-')
+    const numMatch = artId.match(/art_(\d+[a-z]?)/)
+    const anchorId = numMatch
+      ? `${docId}_art${numMatch[1]}`
+      : `${docId}_${artId.replace('_', '-')}`
 
-    let headingHtml = `  <h3 id="${escapeAttr(anchorId)}">${escapeHtml(artTitle)}`
+    let label = escapeHtml(artTitle)
     if (artSubtitle) {
-      headingHtml += ` — <em>${escapeHtml(artSubtitle)}</em>`
+      label += ` — <em>${escapeHtml(artSubtitle)}</em>`
     }
-    headingHtml += `</h3>\n`
-    parts.push(headingHtml)
+
+    parts.push(
+      `  <h3 class="paragraph" id="${escapeAttr(anchorId)}"><a class="paragraf" id="${escapeAttr(anchorId)}" name="${escapeAttr(anchorId)}">${label}</a></h3>\n`
+    )
 
     const bodyHtml = extractArticleBody($, $article)
     if (bodyHtml) {
@@ -516,7 +526,8 @@ function extractArticles(
 
 function extractArticlesFromRoot(
   $: cheerio.CheerioAPI,
-  stats: { articleCount: number }
+  stats: { articleCount: number },
+  docId: string
 ): string {
   const parts: string[] = []
 
@@ -547,15 +558,19 @@ function extractArticlesFromRoot(
     artTitleEl.remove()
     artSubtitleEl.remove()
 
-    const numMatch = artId.match(/art_(\d+)/)
-    const anchorId = numMatch ? `art-${numMatch[1]}` : artId.replace('_', '-')
+    const numMatch = artId.match(/art_(\d+[a-z]?)/)
+    const anchorId = numMatch
+      ? `${docId}_art${numMatch[1]}`
+      : `${docId}_${artId.replace('_', '-')}`
 
-    let headingHtml = `<h3 id="${escapeAttr(anchorId)}">${escapeHtml(artTitle)}`
+    let label = escapeHtml(artTitle)
     if (artSubtitle) {
-      headingHtml += ` — <em>${escapeHtml(artSubtitle)}</em>`
+      label += ` — <em>${escapeHtml(artSubtitle)}</em>`
     }
-    headingHtml += `</h3>\n`
-    parts.push(headingHtml)
+
+    parts.push(
+      `<h3 class="paragraph" id="${escapeAttr(anchorId)}"><a class="paragraf" id="${escapeAttr(anchorId)}" name="${escapeAttr(anchorId)}">${label}</a></h3>\n`
+    )
 
     const bodyHtml = extractArticleBody($, $article)
     if (bodyHtml) {
@@ -609,7 +624,8 @@ function extractArticleBody(
 
 function transformFlatBody(
   $: cheerio.CheerioAPI,
-  stats: { articleCount: number }
+  stats: { articleCount: number },
+  docId: string
 ): string {
   const parts: string[] = []
 
@@ -632,14 +648,16 @@ function transformFlatBody(
     artTitleEl.remove()
     artSubtitleEl.remove()
 
-    const numMatch = artId.match(/art_(\d+)/)
-    const anchorId = numMatch ? `art-${numMatch[1]}` : artId.replace('_', '-')
+    const numMatch = artId.match(/art_(\d+[a-z]?)/)
+    const anchorId = numMatch
+      ? `${docId}_art${numMatch[1]}`
+      : `${docId}_${artId.replace('_', '-')}`
 
-    let label = artTitle
-    if (artSubtitle) label += ` — ${artSubtitle}`
+    let label = escapeHtml(artTitle)
+    if (artSubtitle) label += ` — ${escapeHtml(artSubtitle)}`
 
     parts.push(
-      `<a class="paragraf" id="${escapeAttr(anchorId)}" name="${escapeAttr(anchorId)}">${escapeHtml(label)}</a>\n`
+      `<h3 class="paragraph" id="${escapeAttr(anchorId)}"><a class="paragraf" id="${escapeAttr(anchorId)}" name="${escapeAttr(anchorId)}">${label}</a></h3>\n`
     )
 
     const bodyHtml = extractArticleBody($, $article)
@@ -657,7 +675,8 @@ function transformFlatBody(
 
 function transformMinimalBody(
   $: cheerio.CheerioAPI,
-  stats: { articleCount: number }
+  stats: { articleCount: number },
+  docId: string
 ): string {
   // Check for article-like headings in p tags (p.oj-ti-art)
   const artHeadings = $('p.oj-ti-art')
@@ -671,9 +690,9 @@ function transformMinimalBody(
       artNum++
       stats.articleCount++
 
-      const anchorId = `art-${artNum}`
+      const anchorId = `${docId}_art${artNum}`
       parts.push(
-        `<a class="paragraf" id="${escapeAttr(anchorId)}" name="${escapeAttr(anchorId)}">${escapeHtml(artTitle)}</a>\n`
+        `<h3 class="paragraph" id="${escapeAttr(anchorId)}"><a class="paragraf" id="${escapeAttr(anchorId)}" name="${escapeAttr(anchorId)}">${escapeHtml(artTitle)}</a></h3>\n`
       )
 
       let $next = $heading.next()
@@ -742,7 +761,7 @@ function assembleDocument(
 ): string {
   const parts: string[] = []
 
-  parts.push(`<article class="sfs" id="${escapeAttr(docId)}">`)
+  parts.push(`<article class="legal-document" id="${escapeAttr(docId)}">`)
 
   parts.push(`  <div class="lovhead">`)
   parts.push(`    <h1>`)
@@ -774,6 +793,35 @@ function assembleDocument(
 // ============================================================================
 // Helpers
 // ============================================================================
+
+/** Add class="text" to bare <p> elements (no existing class) */
+function addTextClass($: cheerio.CheerioAPI): void {
+  $('p').each((_i, el) => {
+    const $p = $(el)
+    if (!$p.attr('class')) {
+      $p.addClass('text')
+    }
+  })
+}
+
+/** Convert Roman numeral string to Arabic number */
+function romanToArabic(roman: string): number {
+  const map: Record<string, number> = {
+    I: 1,
+    V: 5,
+    X: 10,
+    L: 50,
+    C: 100,
+  }
+  let result = 0
+  const upper = roman.toUpperCase()
+  for (let i = 0; i < upper.length; i++) {
+    const curr = map[upper[i]!] || 0
+    const next = map[upper[i + 1]!] || 0
+    result += curr < next ? -curr : curr
+  }
+  return result
+}
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

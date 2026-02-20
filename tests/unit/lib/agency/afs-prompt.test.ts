@@ -27,7 +27,9 @@ describe('afs-prompt', () => {
     })
 
     it('full document prompt includes key HTML structure rules', () => {
-      expect(AFS_FULL_DOCUMENT_SYSTEM_PROMPT).toContain('class="sfs"')
+      expect(AFS_FULL_DOCUMENT_SYSTEM_PROMPT).toContain(
+        'class="legal-document"'
+      )
       expect(AFS_FULL_DOCUMENT_SYSTEM_PROMPT).toContain('class="kapitel"')
       expect(AFS_FULL_DOCUMENT_SYSTEM_PROMPT).toContain('class="ann"')
       expect(AFS_FULL_DOCUMENT_SYSTEM_PROMPT).toContain('class="paragraph"')

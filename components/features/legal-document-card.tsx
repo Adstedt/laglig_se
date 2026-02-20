@@ -17,7 +17,7 @@ export function LegalDocumentCard({
   htmlContent,
   className,
 }: LegalDocumentCardProps) {
-  const articleRef = useRef<HTMLElement>(null)
+  const articleRef = useRef<HTMLDivElement>(null)
 
   // Wrap wide tables in a horizontally-scrollable container
   useEffect(() => {
@@ -37,7 +37,7 @@ export function LegalDocumentCard({
     <>
       <Card className={className}>
         <CardContent className="p-0">
-          <article
+          <div
             ref={articleRef}
             className="legal-document p-6"
             dangerouslySetInnerHTML={{ __html: htmlContent }}

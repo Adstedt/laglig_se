@@ -276,6 +276,12 @@ export default async function LawPage({ params }: PageProps) {
   const sanitizedHtml = cleanedHtml
     ? sanitizeHtml(cleanedHtml, {
         allowedTags: [
+          'article',
+          'section',
+          'details',
+          'summary',
+          'footer',
+          'nav',
           'h1',
           'h2',
           'h3',
@@ -288,6 +294,9 @@ export default async function LawPage({ params }: PageProps) {
           'ul',
           'ol',
           'li',
+          'dl',
+          'dt',
+          'dd',
           'table',
           'thead',
           'tbody',

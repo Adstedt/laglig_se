@@ -16,8 +16,9 @@ async function main() {
 
   for (const doc of docs) {
     const html = doc.html_content || ''
-    // LLM-generated HTML has <article class="sfs">
+    // LLM-generated HTML has <article class="legal-document"> (or legacy class="sfs")
     if (
+      html.includes('<article class="legal-document"') ||
       html.includes('<article class="sfs"') ||
       html.includes('class="lovhead"')
     ) {

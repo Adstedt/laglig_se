@@ -79,7 +79,10 @@ const FILTER_ARG = (() => {
 // ============================================================================
 
 function isAlreadyTransformed(html: string): boolean {
-  return html.includes('<article class="sfs"')
+  return (
+    html.includes('<article class="legal-document"') ||
+    html.includes('<article class="sfs"')
+  )
 }
 
 /**

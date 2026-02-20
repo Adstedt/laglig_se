@@ -17,7 +17,7 @@ import { validateLlmOutput } from '../sfs/llm-output-validator'
 import { SectionChangeType } from '@prisma/client'
 
 // ── Fixture: realistic amendment HTML (like what Claude returns) ─────────────
-const AMENDMENT_HTML = `<article class="sfs" id="SFS2025-100">
+const AMENDMENT_HTML = `<article class="legal-document" id="SFS2025-100">
   <div class="lovhead">
     <h1 id="SFS2025-100_GENH0000">
       <p class="text">SFS 2025:100</p>
@@ -111,7 +111,7 @@ describe('Amendment PDF pipeline: HTML → content formats', () => {
       expect(result.errors[0]?.code).toBe('EMPTY_OUTPUT')
     })
 
-    it('should reject output without article.sfs root', () => {
+    it('should reject output without article.legal-document root', () => {
       const result = validateLlmOutput('<div>Hello</div>', '2025:100')
       expect(result.valid).toBe(false)
     })

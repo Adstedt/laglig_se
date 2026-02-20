@@ -37,6 +37,8 @@ import {
 } from '@/lib/transforms/html-to-markdown'
 import { htmlToJson } from '@/lib/transforms/html-to-json'
 import { SectionChangeType } from '@prisma/client'
+import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
+import { normalizeSfsLaw } from '@/lib/transforms/normalizers/sfs-law-normalizer'
 import { linkifyHtmlContent, type SlugMap } from '@/lib/linkify'
 
 export const dynamic = 'force-dynamic'
@@ -360,11 +362,21 @@ export async function GET(request: Request) {
               })
             }
 
+            // Story 14.1: Clean + normalize HTML to canonical structure
+            let normalizedHtml = newHtml
+            if (normalizedHtml) {
+              normalizedHtml = cleanLawHtml(normalizedHtml)
+              normalizedHtml = normalizeSfsLaw(normalizedHtml, {
+                documentNumber: sfsNumber,
+                title: doc.titel,
+              })
+            }
+
             await tx.legalDocument.update({
               where: { id: existing.id },
               data: {
                 full_text: newFullText,
-                html_content: newHtml,
+                html_content: normalizedHtml,
                 updated_at: new Date(),
                 metadata: {
                   ...((existing.metadata as object) || {}),

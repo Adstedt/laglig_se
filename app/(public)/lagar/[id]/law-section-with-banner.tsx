@@ -19,7 +19,7 @@ export function LawSectionWithBanner({
   sourceUrl,
   isLawNotYetInForce,
 }: LawSectionWithBannerProps) {
-  const articleRef = useRef<HTMLElement>(null)
+  const articleRef = useRef<HTMLDivElement>(null)
   const [futureAmendments, setFutureAmendments] = useState<
     { date: string; formattedDate: string }[]
   >([])
@@ -44,7 +44,7 @@ export function LawSectionWithBanner({
           <CardTitle className="text-lg">Lagtext</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <article ref={articleRef} className="legal-document p-6 md:p-8">
+          <div ref={articleRef} className="legal-document p-6 md:p-8">
             {htmlContent || fallbackText ? (
               <LawContentWrapper
                 htmlContent={htmlContent}
@@ -66,7 +66,7 @@ export function LawSectionWithBanner({
                 )}
               </p>
             )}
-          </article>
+          </div>
         </CardContent>
       </Card>
 

@@ -242,6 +242,13 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
   )
   const [changeCount, setChangeCount] = useState(0)
 
+  // Prevent hydration mismatch: Zustand persist rehydrates from localStorage
+  // before first render, which can produce a different Radix component tree
+  // (collapsed renders Tooltip/Popover wrappers, expanded doesn't). Defer to
+  // the default (expanded) until after hydration completes.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   useEffect(() => {
     async function fetchCount() {
       const result = await getUnacknowledgedChangeCount()
@@ -252,7 +259,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
     fetchCount()
   }, [])
 
-  const collapsed = leftSidebarCollapsed
+  const collapsed = mounted ? leftSidebarCollapsed : false
 
   // Permission-gated work items
   const permissionGatedWorkItems: NavItem[] = workItems.map((item): NavItem => {

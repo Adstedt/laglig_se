@@ -115,6 +115,24 @@ export function splitByChapters(
       ).toLowerCase()
       const text = $node.text().trim()
 
+      // Handle <section class="kapitel"> wrappers from canonicalizeRulesStructure.
+      // The transformer wraps each chapter in a section; treat the whole section
+      // as a single chapter block by reading the chapter number from its first heading.
+      if (tagName === 'section' && $node.hasClass('kapitel')) {
+        const $heading = $node.children(chapterHeadingTag).first()
+        const headingText = $heading.text().trim()
+        const chapNum = getChapterNumber(headingText)
+        if (chapNum !== null) {
+          currentChapter = chapNum
+          if (!chapterHtmlMap.has(chapNum)) {
+            chapterHtmlMap.set(chapNum, [])
+          }
+          // Store the inner HTML of the section (heading + content), not the section wrapper
+          chapterHtmlMap.get(chapNum)!.push($node.html() || '')
+          continue
+        }
+      }
+
       // Track avdelning headers (h2 in avdelningar docs)
       if (doc.hasAvdelningar && tagName === 'h2') {
         currentAvdelningHtml = $.html(node)
@@ -226,7 +244,7 @@ export function splitByChapters(
     // Build chapter with preamble
     const parts: string[] = []
     parts.push(
-      `<article class="sfs" id="${doc.documentNumber.replace(/\s+/g, '').replace(/:/g, '-')}-K${regChapter.number}">`
+      `<article class="legal-document" id="${doc.documentNumber.replace(/\s+/g, '').replace(/:/g, '-')}-K${regChapter.number}">`
     )
     if (preambleSection) {
       parts.push(preambleSection)
@@ -271,7 +289,7 @@ export function splitByChapters(
 
   const parentParts: string[] = []
   parentParts.push(
-    `<article class="sfs" id="${doc.documentNumber.replace(/\s+/g, '').replace(/:/g, '-')}">`
+    `<article class="legal-document" id="${doc.documentNumber.replace(/\s+/g, '').replace(/:/g, '-')}">`
   )
   parentParts.push(lovheadHtml)
   if (preambleOuterHtml) parentParts.push(preambleOuterHtml)

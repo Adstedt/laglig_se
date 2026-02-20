@@ -36,7 +36,7 @@ function makeSplitDoc(overrides: Partial<AfsDocument> = {}): AfsDocument {
 // ============================================================================
 
 /** A simple SPLIT doc with chapters-only pattern (no avdelningar) */
-const CHAPTERS_ONLY_HTML = `<article class="sfs" id="AFS2023-2">
+const CHAPTERS_ONLY_HTML = `<article class="legal-document" id="AFS2023-2">
   <div class="lovhead">
     <h1>
       <p class="text">AFS 2023:2</p>
@@ -72,7 +72,7 @@ const CHAPTERS_ONLY_HTML = `<article class="sfs" id="AFS2023-2">
 </article>`
 
 /** A SPLIT doc with avdelningar + chapters (like AFS 2023:10) */
-const AVDELNINGAR_HTML = `<article class="sfs" id="AFS2023-10">
+const AVDELNINGAR_HTML = `<article class="legal-document" id="AFS2023-10">
   <div class="lovhead">
     <h1>
       <p class="text">AFS 2023:10</p>
@@ -175,9 +175,9 @@ describe('afs-chapter-splitter', () => {
       expect(result.parent.transitionalHtml).toContain('Träder i kraft')
     })
 
-    it('wraps each chapter in article.sfs', () => {
+    it('wraps each chapter in article.legal-document', () => {
       for (const ch of result.chapters) {
-        expect(ch.html).toContain('<article class="sfs"')
+        expect(ch.html).toContain('<article class="legal-document"')
         expect(ch.html).toContain('</article>')
       }
     })
@@ -235,7 +235,7 @@ describe('afs-chapter-splitter', () => {
     it('throws when no div.body found', () => {
       expect(() =>
         splitByChapters(
-          '<article class="sfs"><p>no body</p></article>',
+          '<article class="legal-document"><p>no body</p></article>',
           makeSplitDoc()
         )
       ).toThrow('No div.body found')

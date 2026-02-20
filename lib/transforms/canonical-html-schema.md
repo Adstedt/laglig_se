@@ -1,7 +1,7 @@
 # Canonical HTML Schema for Legal Documents
 
 > **Version:** 1.0
-> **Status:** Draft
+> **Status:** Active
 > **Last updated:** 2026-02-18
 
 This document defines the **canonical HTML structure** that all `html_content` in the `legal_documents` table must conform to. It is the single source of truth (SSOT) for all downstream derivations: `json_content`, `markdown_content`, `full_text`, content chunks, and embeddings.

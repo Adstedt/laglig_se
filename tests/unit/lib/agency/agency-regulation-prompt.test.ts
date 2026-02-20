@@ -26,8 +26,10 @@ describe('agency-regulation-prompt', () => {
       )
     })
 
-    it('specifies article.sfs root element', () => {
-      expect(AGENCY_REGULATION_SYSTEM_PROMPT).toContain('<article class="sfs"')
+    it('specifies article.legal-document root element', () => {
+      expect(AGENCY_REGULATION_SYSTEM_PROMPT).toContain(
+        '<article class="legal-document"'
+      )
     })
 
     it('specifies div.lovhead structure', () => {

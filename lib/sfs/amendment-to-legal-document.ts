@@ -39,7 +39,9 @@ export async function createLegalDocumentFromAmendment(
   tx: PrismaTransaction,
   amendment: AmendmentData
 ): Promise<{ id: string; slug: string; isNew: boolean }> {
-  const documentNumber = `SFS ${amendment.sfs_number}`
+  // Normalize sfs_number — strip any existing "SFS " prefix to avoid "SFS SFS ..."
+  const sfsNum = amendment.sfs_number.replace(/^SFS\s*/i, '')
+  const documentNumber = `SFS ${sfsNum}`
 
   // Check if LegalDocument already exists
   const existing = await tx.legalDocument.findUnique({

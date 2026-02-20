@@ -52,7 +52,9 @@ function analyzeResult(r: ResultItem): QualityResult {
 
   const textContent = extractText(html)
 
-  const hasArticle = html.includes('<article class="sfs"')
+  const hasArticle =
+    html.includes('<article class="legal-document"') ||
+    html.includes('<article class="sfs"')
   const hasBody = html.includes('<div class="body"')
   const hasSections = html.includes('class="ann"')
   const hasChapters = html.includes('class="kapitel"')

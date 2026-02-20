@@ -177,8 +177,8 @@ describe('afs-html-transformer', () => {
     const doc = makeDoc()
     const result = transformAfsHtml(FLAT_PROVISION, doc)
 
-    it('wraps output in article.sfs', () => {
-      expect(result.html).toContain('<article class="sfs"')
+    it('wraps output in article.legal-document', () => {
+      expect(result.html).toContain('<article class="legal-document"')
       expect(result.html).toContain('</article>')
     })
 
@@ -236,7 +236,9 @@ describe('afs-html-transformer', () => {
     })
 
     it('unwraps div.paragraph wrappers', () => {
-      expect(result.html).not.toContain('class="paragraph"')
+      // div.paragraph wrappers from av.se should be unwrapped
+      // but h3.paragraph (canonical paragraf wrapper) is expected
+      expect(result.html).not.toContain('<div class="paragraph"')
     })
 
     it('includes övergångsbestämmelser in footer.back', () => {
@@ -340,6 +342,156 @@ describe('afs-html-transformer', () => {
 
     it('preserves <sup> elements (non-footnote)', () => {
       expect(result.html).toContain('m<sup>3</sup>')
+    })
+  })
+
+  // ==========================================================================
+  // Story 14.1 — Canonical structure tests (AC: 7, 9, 21)
+  // ==========================================================================
+
+  describe('canonical structure — flat document', () => {
+    const doc = makeDoc({ documentNumber: 'AFS 2023:1', title: 'Test' })
+    const result = transformAfsHtml(FLAT_PROVISION, doc)
+
+    it('wraps paragraf in h3.paragraph', () => {
+      expect(result.html).toContain('<h3 class="paragraph">')
+      expect(result.html).toContain(
+        '<a class="paragraf" id="AFS2023-1_P1" name="AFS2023-1_P1">1 §</a>'
+      )
+    })
+
+    it('assigns flat semantic IDs (no chapter prefix)', () => {
+      expect(result.html).toContain('id="AFS2023-1_P1"')
+      expect(result.html).toContain('id="AFS2023-1_P2"')
+    })
+
+    it('adds class="text" to content paragraphs', () => {
+      expect(result.html).toContain(
+        '<p class="text">Syftet med dessa föreskrifter.</p>'
+      )
+    })
+
+    it('does not wrap in section.kapitel for flat docs', () => {
+      expect(result.html).not.toContain('class="kapitel"')
+    })
+  })
+
+  describe('canonical structure — chapters-only', () => {
+    const CHAPTERS_ONLY_HTML = `
+    <div class="document"><div class="root">
+      <div id="rules" class="rules">
+        <h2 id="kap1" data-menu="true">1 kap. Allmänna bestämmelser</h2>
+        <span id="kap1-1" class="section-sign">1&nbsp;§</span>
+        <div class="paragraph"><p>Dessa föreskrifter gäller.</p></div>
+        <span id="kap1-2" class="section-sign">2&nbsp;§</span>
+        <div class="paragraph"><p>Definitioner.</p></div>
+        <h2 id="kap2" data-menu="true">2 kap. Buller</h2>
+        <span id="kap2-1" class="section-sign">1&nbsp;§</span>
+        <div class="paragraph"><p>Arbetsgivaren ska undersöka.</p></div>
+      </div>
+    </div></div>`
+    const doc = makeDoc({
+      documentNumber: 'AFS 2024:5',
+      title: 'Bullertest',
+      chapterCount: 2,
+      hasAvdelningar: false,
+    })
+    const result = transformAfsHtml(CHAPTERS_ONLY_HTML, doc)
+
+    it('wraps chapters in section.kapitel', () => {
+      expect(result.html).toContain(
+        '<section class="kapitel" id="AFS2024-5_K1">'
+      )
+      expect(result.html).toContain(
+        '<section class="kapitel" id="AFS2024-5_K2">'
+      )
+    })
+
+    it('converts chapter headings to h2.kapitel-rubrik', () => {
+      expect(result.html).toContain(
+        '<h2 class="kapitel-rubrik">1 kap. Allmänna bestämmelser</h2>'
+      )
+    })
+
+    it('generates chapter-scoped semantic IDs', () => {
+      expect(result.html).toContain('id="AFS2024-5_K1_P1"')
+      expect(result.html).toContain('id="AFS2024-5_K1_P2"')
+      expect(result.html).toContain('id="AFS2024-5_K2_P1"')
+    })
+
+    it('wraps paragraf in h3.paragraph', () => {
+      expect(result.html).toContain(
+        '<h3 class="paragraph"><a class="paragraf" id="AFS2024-5_K1_P1"'
+      )
+    })
+
+    it('adds class="text" to content paragraphs', () => {
+      expect(result.html).toContain(
+        '<p class="text">Dessa föreskrifter gäller.</p>'
+      )
+    })
+
+    it('removes data-menu and old id from chapter headings', () => {
+      expect(result.html).not.toContain('data-menu')
+      expect(result.html).not.toContain('id="kap1"')
+    })
+  })
+
+  describe('canonical structure — avdelningar + chapters', () => {
+    const doc = makeDoc({
+      documentNumber: 'AFS 2023:10',
+      title: 'Risker i arbetsmiljön',
+      tier: 'SPLIT',
+      chapterCount: 13,
+      hasAvdelningar: true,
+    })
+    const result = transformAfsHtml(CHAPTER_PROVISION_WITH_TABLE, doc)
+
+    it('wraps avdelningar in section.avdelning', () => {
+      expect(result.html).toContain(
+        '<section class="avdelning" id="AFS2023-10_AVD1">'
+      )
+      expect(result.html).toContain(
+        '<section class="avdelning" id="AFS2023-10_AVD2">'
+      )
+    })
+
+    it('uses h2.avdelning-rubrik for avdelning headings', () => {
+      expect(result.html).toContain(
+        '<h2 class="avdelning-rubrik">Avdelning 1 Gemensamma bestämmelser</h2>'
+      )
+    })
+
+    it('nests section.kapitel inside section.avdelning', () => {
+      expect(result.html).toContain(
+        '<section class="kapitel" id="AFS2023-10_K1">'
+      )
+      expect(result.html).toContain(
+        '<section class="kapitel" id="AFS2023-10_K2">'
+      )
+    })
+
+    it('uses h3.kapitel-rubrik for chapter headings under avdelningar', () => {
+      expect(result.html).toContain(
+        '<h3 class="kapitel-rubrik">1 kap. Allmänna bestämmelser</h3>'
+      )
+    })
+
+    it('generates semantic IDs on paragraf', () => {
+      expect(result.html).toContain('id="AFS2023-10_K1_P1"')
+      expect(result.html).toContain('id="AFS2023-10_K2_P1"')
+    })
+
+    it('adds class="text" to content paragraphs', () => {
+      expect(result.html).toContain(
+        '<p class="text">Dessa föreskrifter gäller.</p>'
+      )
+    })
+
+    it('avdelning heading level is h2, chapter heading is h3', () => {
+      // Per canonical schema: when avdelningar present, avd=h2, kap=h3
+      expect(result.html).toMatch(/<h2 class="avdelning-rubrik">Avdelning \d+/)
+      expect(result.html).toMatch(/<h3 class="kapitel-rubrik">\d+ kap\./)
     })
   })
 })

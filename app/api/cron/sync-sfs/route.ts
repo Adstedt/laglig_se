@@ -38,6 +38,8 @@ import {
   fetchAndStorePdf,
   type PdfMetadata,
 } from '@/lib/sfs'
+import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
+import { normalizeSfsLaw } from '@/lib/transforms/normalizers/sfs-law-normalizer'
 import { linkifyHtmlContent, type SlugMap } from '@/lib/linkify'
 
 export const dynamic = 'force-dynamic'
@@ -338,10 +340,20 @@ export async function GET(request: Request) {
             } as PdfMetadata
           }
 
+          // Story 14.1: Clean + normalize HTML to canonical structure
+          let processedHtml = htmlContent
+          if (processedHtml) {
+            processedHtml = cleanLawHtml(processedHtml)
+            processedHtml = normalizeSfsLaw(processedHtml, {
+              documentNumber: sfsNumber,
+              title: doc.titel,
+            })
+          }
+
           // Story 2.29: Linkify HTML content before DB write
-          const linkifiedHtml = htmlContent
-            ? linkifyHtmlContent(htmlContent, slugMap, sfsNumber).html
-            : htmlContent
+          const linkifiedHtml = processedHtml
+            ? linkifyHtmlContent(processedHtml, slugMap, sfsNumber).html
+            : processedHtml
 
           await prisma.$transaction(async (tx) => {
             const newDoc = await tx.legalDocument.create({
