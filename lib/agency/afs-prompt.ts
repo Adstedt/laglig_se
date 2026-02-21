@@ -25,7 +25,7 @@ Output ONLY valid HTML. No markdown fences, no explanations, no preamble.
 Use this exact structure for AFS documents:
 
 \`\`\`html
-<article class="sfs" id="AFS{YEAR}-{NUMBER}">
+<article class="legal-document" id="AFS{YEAR}-{NUMBER}">
   <div class="lovhead">
     <h1 id="AFS{YEAR}-{NUMBER}_GENH0000">
       <p class="text">AFS {YEAR}:{NUMBER}</p>
@@ -225,7 +225,7 @@ Output ONLY valid HTML. No markdown fences, no explanations, no preamble.
 ## DOCUMENT STRUCTURE
 
 \`\`\`html
-<article class="sfs" id="AFS{YEAR}-{NUMBER}">
+<article class="legal-document" id="AFS{YEAR}-{NUMBER}">
   <div class="lovhead">
     <h1 id="AFS{YEAR}-{NUMBER}_GENH0000">
       <p class="text">AFS {YEAR}:{NUMBER}</p>
@@ -326,7 +326,7 @@ Output ONLY valid HTML. No markdown fences, no explanations, no preamble.
 Output only the chapter content as a standalone HTML fragment:
 
 \`\`\`html
-<article class="sfs" id="AFS{YEAR}-{NUMBER}_K{CHAPTER}">
+<article class="legal-document" id="AFS{YEAR}-{NUMBER}_K{CHAPTER}">
   <div class="lovhead">
     <h1>
       <p class="text">AFS {YEAR}:{NUMBER} kap. {CHAPTER}</p>

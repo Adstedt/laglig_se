@@ -2,26 +2,13 @@
 /**
  * Cron Job Email Notifications
  *
- * Sends summary emails after cron job completion via Resend.
+ * Sends summary emails after cron job completion via the shared EmailService.
+ * Preserves original function signatures for backward compatibility.
  */
 
-import { Resend } from 'resend'
-
-// Lazy initialization to avoid errors when API key is not configured
-let resend: Resend | null = null
-
-function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) {
-    return null
-  }
-  if (!resend) {
-    resend = new Resend(process.env.RESEND_API_KEY)
-  }
-  return resend
-}
+import { sendHtmlEmail } from './email-service'
 
 const ADMIN_EMAIL = process.env.CRON_NOTIFICATION_EMAIL || 'admin@laglig.se'
-const FROM_EMAIL = 'cron@laglig.se'
 
 export interface SfsSyncStats {
   apiCount: number
@@ -31,12 +18,6 @@ export interface SfsSyncStats {
   skipped: number
   failed: number
   dateRange: { from: string; to: string }
-  // Story 2.28: PDF and amendment stats
-  pdfsFetched?: number
-  pdfsStored?: number
-  pdfsFailed?: number
-  amendmentsCreated?: number
-  amendmentsParsed?: number // Story 2.28 AC8: LLM-parsed amendments
 }
 
 export interface CourtSyncStats {
@@ -74,12 +55,7 @@ export async function sendSfsSyncEmail(
   success: boolean,
   error?: string
 ): Promise<void> {
-  if (!process.env.RESEND_API_KEY) {
-    console.log('RESEND_API_KEY not configured, skipping email notification')
-    return
-  }
-
-  const statusEmoji = success ? '✅' : '❌'
+  const statusEmoji = success ? '\u2705' : '\u274C'
   const subject = `${statusEmoji} SFS Sync ${success ? 'Complete' : 'Failed'} - ${new Date().toLocaleDateString('sv-SE')}`
 
   const hasChanges = stats.inserted > 0 || (stats.updated ?? 0) > 0
@@ -126,51 +102,9 @@ export async function sendSfsSyncEmail(
       </tr>
     </table>
 
-    ${
-      stats.pdfsFetched !== undefined
-        ? `
-    <h3>PDF & Document Stats</h3>
-    <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
-      <tr style="background: ${stats.pdfsStored && stats.pdfsStored > 0 ? '#d4edda' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;"><strong>PDFs Stored</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pdfsStored || 0}</td>
-      </tr>
-      <tr>
-        <td style="padding: 8px; border: 1px solid #ddd;">PDFs Attempted</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pdfsFetched || 0}</td>
-      </tr>
-      <tr style="background: ${stats.pdfsFailed && stats.pdfsFailed > 0 ? '#f8d7da' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;">PDFs Failed</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pdfsFailed || 0}</td>
-      </tr>
-      ${
-        stats.amendmentsCreated !== undefined
-          ? `
-      <tr style="background: ${stats.amendmentsCreated > 0 ? '#fff3cd' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;">Amendments Created</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.amendmentsCreated}</td>
-      </tr>
-      `
-          : ''
-      }
-      ${
-        stats.amendmentsParsed !== undefined
-          ? `
-      <tr style="background: ${stats.amendmentsParsed > 0 ? '#d4edda' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;">Amendments Parsed (LLM)</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.amendmentsParsed}</td>
-      </tr>
-      `
-          : ''
-      }
-    </table>
-    `
-        : ''
-    }
-
     <p style="margin-top: 16px; color: #666;">
-      📅 Date range: ${stats.dateRange.from} to ${stats.dateRange.to}
-      ${!hasChanges ? '<br>📭 No new changes detected' : ''}
+      \uD83D\uDCC5 Date range: ${stats.dateRange.from} to ${stats.dateRange.to}
+      ${!hasChanges ? '<br>\uD83D\uDCED No new changes detected' : ''}
     </p>
 
     <hr style="margin-top: 24px;">
@@ -179,19 +113,16 @@ export async function sendSfsSyncEmail(
     </p>
   `
 
-  const client = getResend()
-  if (!client) return
-
-  try {
-    await client.emails.send({
-      from: FROM_EMAIL,
-      to: ADMIN_EMAIL,
-      subject,
-      html,
-    })
+  const result = await sendHtmlEmail({
+    to: ADMIN_EMAIL,
+    subject,
+    html,
+    from: 'cron',
+  })
+  if (result.success) {
     console.log('SFS sync notification email sent')
-  } catch (err) {
-    console.error('Failed to send SFS sync email:', err)
+  } else {
+    console.error('Failed to send SFS sync email:', result.error)
   }
 }
 
@@ -204,12 +135,7 @@ export async function sendCourtSyncEmail(
   success: boolean,
   error?: string
 ): Promise<void> {
-  if (!process.env.RESEND_API_KEY) {
-    console.log('RESEND_API_KEY not configured, skipping email notification')
-    return
-  }
-
-  const statusEmoji = success ? '✅' : '❌'
+  const statusEmoji = success ? '\u2705' : '\u274C'
   const subject = `${statusEmoji} Court Cases Sync ${success ? 'Complete' : 'Failed'} - ${new Date().toLocaleDateString('sv-SE')}`
 
   const hasChanges = stats.total.inserted > 0
@@ -222,7 +148,7 @@ export async function sendCourtSyncEmail(
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${c.inserted}</td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${c.skipped}</td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${c.errors}</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${c.earlyTerminated ? '⚡' : ''}</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${c.earlyTerminated ? '\u26A1' : ''}</td>
       </tr>
     `
     )
@@ -273,7 +199,7 @@ export async function sendCourtSyncEmail(
     </table>
 
     <p style="margin-top: 16px; color: #666;">
-      ${!hasChanges ? '📭 No new court cases today' : ''}
+      ${!hasChanges ? '\uD83D\uDCED No new court cases today' : ''}
     </p>
 
     <hr style="margin-top: 24px;">
@@ -282,19 +208,16 @@ export async function sendCourtSyncEmail(
     </p>
   `
 
-  const client = getResend()
-  if (!client) return
-
-  try {
-    await client.emails.send({
-      from: FROM_EMAIL,
-      to: ADMIN_EMAIL,
-      subject,
-      html,
-    })
+  const result = await sendHtmlEmail({
+    to: ADMIN_EMAIL,
+    subject,
+    html,
+    from: 'cron',
+  })
+  if (result.success) {
     console.log('Court sync notification email sent')
-  } catch (err) {
-    console.error('Failed to send court sync email:', err)
+  } else {
+    console.error('Failed to send court sync email:', result.error)
   }
 }
 
@@ -307,18 +230,13 @@ export async function sendSummaryGenEmail(
   success: boolean,
   error?: string
 ): Promise<void> {
-  if (!process.env.RESEND_API_KEY) {
-    console.log('RESEND_API_KEY not configured, skipping email notification')
-    return
-  }
-
   // Only send email if there was actual work done or errors
   if (stats.processed === 0 && success) {
     console.log('No summaries processed, skipping email')
     return
   }
 
-  const statusEmoji = success ? '✅' : '❌'
+  const statusEmoji = success ? '\u2705' : '\u274C'
   const subject = `${statusEmoji} AI Summaries ${success ? 'Generated' : 'Failed'} - ${new Date().toLocaleDateString('sv-SE')}`
 
   const html = `
@@ -365,18 +283,157 @@ export async function sendSummaryGenEmail(
     </p>
   `
 
-  const client = getResend()
-  if (!client) return
-
-  try {
-    await client.emails.send({
-      from: FROM_EMAIL,
-      to: ADMIN_EMAIL,
-      subject,
-      html,
-    })
+  const result = await sendHtmlEmail({
+    to: ADMIN_EMAIL,
+    subject,
+    html,
+    from: 'cron',
+  })
+  if (result.success) {
     console.log('Summary gen notification email sent')
-  } catch (err) {
-    console.error('Failed to send summary gen email:', err)
+  } else {
+    console.error('Failed to send summary gen email:', result.error)
+  }
+}
+
+// =============================================================================
+// Story 8.20: Amendment Discovery
+// =============================================================================
+
+export interface AmendmentDiscoveryStats {
+  discovered: number
+  alreadyExists: number
+  processed: number
+  failed: number
+  changeEventsCreated: number
+  pdfsFetched: number
+  pdfsStored: number
+  pdfsFailed: number
+  repealsProcessed: number
+  newLawsSkipped: number
+  retriesAttempted: number
+  retriesSucceeded: number
+  retriesFailed: number
+  duration: string
+}
+
+/**
+ * Send amendment discovery completion email
+ */
+export async function sendAmendmentDiscoveryEmail(
+  stats: AmendmentDiscoveryStats,
+  duration: string,
+  success: boolean,
+  error?: string
+): Promise<void> {
+  // Only send if there was actual work done or errors
+  if (stats.discovered === 0 && stats.retriesAttempted === 0 && success) {
+    console.log(
+      '[DISCOVER-SFS] No new amendments discovered and no retries, skipping email'
+    )
+    return
+  }
+
+  const statusEmoji = success ? '\u2705' : '\u274C'
+  const subject = `${statusEmoji} SFS Amendment Discovery ${success ? 'Complete' : 'Failed'} - ${new Date().toLocaleDateString('sv-SE')}`
+
+  const html = `
+    <h2>SFS Amendment Discovery Report</h2>
+    <p><strong>Status:</strong> ${success ? 'Completed' : 'Failed'}</p>
+    <p><strong>Duration:</strong> ${duration}</p>
+    <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+
+    ${error ? `<p style="color: red;"><strong>Error:</strong> ${error}</p>` : ''}
+
+    <h3>Discovery Statistics</h3>
+    <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">Discovered on site</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.discovered}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">Already in DB</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.alreadyExists}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">New laws skipped</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.newLawsSkipped}</td>
+      </tr>
+    </table>
+
+    <h3>Processing Results</h3>
+    <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
+      <tr style="background: ${stats.processed > 0 ? '#d4edda' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Amendments Processed</strong></td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.processed}</td>
+      </tr>
+      <tr style="background: ${stats.repealsProcessed > 0 ? '#fff3cd' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">Repeals Processed</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.repealsProcessed}</td>
+      </tr>
+      <tr style="background: ${stats.failed > 0 ? '#f8d7da' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">Failed</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.failed}</td>
+      </tr>
+      <tr style="background: ${stats.changeEventsCreated > 0 ? '#d4edda' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Change Events Created</strong></td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.changeEventsCreated}</td>
+      </tr>
+    </table>
+
+    ${
+      stats.retriesAttempted > 0
+        ? `
+    <h3>Retry Results</h3>
+    <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">Retries Attempted</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.retriesAttempted}</td>
+      </tr>
+      <tr style="background: ${stats.retriesSucceeded > 0 ? '#d4edda' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Retries Succeeded</strong></td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.retriesSucceeded}</td>
+      </tr>
+      <tr style="background: ${stats.retriesFailed > 0 ? '#f8d7da' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">Retries Failed</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.retriesFailed}</td>
+      </tr>
+    </table>
+    `
+        : ''
+    }
+
+    <h3>PDF Stats</h3>
+    <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">PDFs Fetched</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pdfsFetched}</td>
+      </tr>
+      <tr style="background: ${stats.pdfsStored > 0 ? '#d4edda' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">PDFs Stored</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pdfsStored}</td>
+      </tr>
+      <tr style="background: ${stats.pdfsFailed > 0 ? '#f8d7da' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">PDFs Failed</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pdfsFailed}</td>
+      </tr>
+    </table>
+
+    <hr style="margin-top: 24px;">
+    <p style="font-size: 12px; color: #999;">
+      This is an automated notification from Laglig.se cron jobs.
+    </p>
+  `
+
+  const result = await sendHtmlEmail({
+    to: ADMIN_EMAIL,
+    subject,
+    html,
+    from: 'cron',
+  })
+  if (result.success) {
+    console.log('Amendment discovery notification email sent')
+  } else {
+    console.error('Failed to send amendment discovery email:', result.error)
   }
 }

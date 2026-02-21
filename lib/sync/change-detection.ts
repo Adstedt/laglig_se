@@ -218,6 +218,16 @@ export async function detectChanges(
     data: createData,
   })
 
+  // Story 8.16: Set change tracking fields on the base document
+  await tx.legalDocument.update({
+    where: { id: documentId },
+    data: {
+      last_change_type: ChangeType.AMENDMENT,
+      last_change_ref: amendmentSfs,
+      last_change_at: new Date(),
+    },
+  })
+
   return changeEvent
 }
 
@@ -234,13 +244,25 @@ export async function createNewLawEvent(
   documentId: string,
   contentType: ContentType
 ): Promise<ChangeEvent> {
-  return tx.changeEvent.create({
+  const changeEvent = await tx.changeEvent.create({
     data: {
       document_id: documentId,
       content_type: contentType,
       change_type: ChangeType.NEW_LAW,
     },
   })
+
+  // Story 8.16: Set change tracking fields on the base document
+  await tx.legalDocument.update({
+    where: { id: documentId },
+    data: {
+      last_change_type: ChangeType.NEW_LAW,
+      last_change_ref: null,
+      last_change_at: new Date(),
+    },
+  })
+
+  return changeEvent
 }
 
 /**
@@ -258,7 +280,7 @@ export async function createRepealEvent(
   contentType: ContentType,
   repealedBySfs: string | null
 ): Promise<ChangeEvent> {
-  return tx.changeEvent.create({
+  const changeEvent = await tx.changeEvent.create({
     data: {
       document_id: documentId,
       content_type: contentType,
@@ -266,6 +288,18 @@ export async function createRepealEvent(
       amendment_sfs: repealedBySfs,
     },
   })
+
+  // Story 8.16: Set change tracking fields on the base document
+  await tx.legalDocument.update({
+    where: { id: documentId },
+    data: {
+      last_change_type: ChangeType.REPEAL,
+      last_change_ref: repealedBySfs,
+      last_change_at: new Date(),
+    },
+  })
+
+  return changeEvent
 }
 
 /**
@@ -281,13 +315,25 @@ export async function createNewRulingEvent(
   documentId: string,
   contentType: ContentType
 ): Promise<ChangeEvent> {
-  return tx.changeEvent.create({
+  const changeEvent = await tx.changeEvent.create({
     data: {
       document_id: documentId,
       content_type: contentType,
       change_type: ChangeType.NEW_RULING,
     },
   })
+
+  // Story 8.16: Set change tracking fields on the base document
+  await tx.legalDocument.update({
+    where: { id: documentId },
+    data: {
+      last_change_type: ChangeType.NEW_RULING,
+      last_change_ref: null,
+      last_change_at: new Date(),
+    },
+  })
+
+  return changeEvent
 }
 
 // ============================================================================

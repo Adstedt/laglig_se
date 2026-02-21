@@ -18,6 +18,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { ChevronDown, ChevronRight, Folder, FolderX } from 'lucide-react'
 import { DocumentListTable } from './document-list-table'
 import { GroupComplianceIndicator } from './group-compliance-indicator'
+import { GroupPriorityIndicator } from './group-priority-indicator'
 import type {
   DocumentListItem,
   ListGroupSummary,
@@ -226,6 +227,15 @@ export const GroupTableSection = memo(function GroupTableSection({
             <TooltipProvider delayDuration={300}>
               <GroupComplianceIndicator items={items} />
             </TooltipProvider>
+          )}
+
+          {/* Story 6.17: Priority risk badges - hidden on mobile (AC: 15) */}
+          {items.length > 0 && (
+            <div className="hidden sm:flex">
+              <TooltipProvider delayDuration={300}>
+                <GroupPriorityIndicator items={items} />
+              </TooltipProvider>
+            </div>
           )}
 
           {/* Item count badge */}

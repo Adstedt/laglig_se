@@ -201,6 +201,21 @@ export function StickyDocNav({
         }
       }
 
+      // Strategy 0b: Flat h2 headings (AFS regulations with h2 section headings, no section.kapitel)
+      const flatH2s = container.querySelectorAll('h2[id]')
+      if (flatH2s.length >= 2) {
+        const tree: TocEntry[] = []
+        flatH2s.forEach((h2) => {
+          const id = h2.getAttribute('id') || ''
+          const label = h2.textContent?.trim() || ''
+          if (id && label) tree.push({ id, label })
+        })
+        if (tree.length >= 2) {
+          setEntries(tree)
+          return
+        }
+      }
+
       // Strategy 1: Nested h3 + h4 hierarchy (non-chapter documents)
       const h3s = container.querySelectorAll('h3[name], h3[id]')
       const h4s = container.querySelectorAll('h4[name], h4[id]')

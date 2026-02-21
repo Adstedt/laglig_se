@@ -36,6 +36,7 @@ import {
   generateAgencySlug,
   getPdfFileName,
   buildAgencyMetadata,
+  computeContentHash,
 } from '../lib/agency/agency-pdf-registry'
 import {
   AGENCY_REGULATION_SYSTEM_PROMPT,
@@ -76,6 +77,7 @@ interface PipelineConfig {
   skipExisting: boolean
   limit: number
   filter: string | null
+  backfillHashes: boolean
 }
 
 function parseArgs(): PipelineConfig {
@@ -86,6 +88,7 @@ function parseArgs(): PipelineConfig {
     skipExisting: false,
     limit: 0,
     filter: null,
+    backfillHashes: false,
   }
 
   const argv = process.argv.slice(2)
@@ -107,6 +110,7 @@ function parseArgs(): PipelineConfig {
     } else if (arg === '--dry-run') cfg.dryRun = true
     else if (arg === '--force') cfg.force = true
     else if (arg === '--skip-existing') cfg.skipExisting = true
+    else if (arg === '--backfill-hashes') cfg.backfillHashes = true
     else if (arg === '--limit' && argv[i + 1]) {
       cfg.limit = parseInt(argv[i + 1]!, 10)
       i++
@@ -116,8 +120,8 @@ function parseArgs(): PipelineConfig {
     }
   }
 
-  if (!hasAuthority) {
-    console.error('Required: --authority msbfs|nfs')
+  if (!hasAuthority && !cfg.backfillHashes) {
+    console.error('Required: --authority msbfs|nfs (or --backfill-hashes)')
     process.exit(1)
   }
 
@@ -305,11 +309,12 @@ async function processDocument(
   // Write review HTML
   writeReviewFile(reviewDir, doc.documentNumber, html)
 
-  // Build metadata
+  // Build metadata (pass html for content hash computation — Story 8.17)
   const metadata = buildAgencyMetadata(
     doc,
     { input: inputTokens, output: outputTokens },
-    cost
+    cost,
+    html
   )
 
   // Upsert to database
@@ -397,11 +402,88 @@ ${html}
 }
 
 // ============================================================================
+// Backfill Content Hashes (Story 8.17)
+// ============================================================================
+
+async function backfillContentHashes(): Promise<void> {
+  console.log('='.repeat(60))
+  console.log('Backfill Content Hashes — All AGENCY_REGULATION Documents')
+  console.log('='.repeat(60))
+  console.log()
+
+  const records = await prisma.legalDocument.findMany({
+    where: { content_type: ContentType.AGENCY_REGULATION },
+    select: {
+      id: true,
+      document_number: true,
+      html_content: true,
+      source_url: true,
+      metadata: true,
+    },
+  })
+
+  console.log(`Found ${records.length} AGENCY_REGULATION documents`)
+
+  let updated = 0
+  let skipped = 0
+
+  for (const record of records) {
+    if (!record.html_content) {
+      console.log(
+        `  [SKIP] ${record.document_number} — null html_content (stub)`
+      )
+      skipped++
+      continue
+    }
+
+    const existing = (record.metadata as Record<string, unknown>) ?? {}
+    const contentHash = computeContentHash(record.html_content)
+
+    // Check if already has the same hash
+    if (existing.contentHash === contentHash) {
+      console.log(`  [SKIP] ${record.document_number} — hash unchanged`)
+      skipped++
+      continue
+    }
+
+    const updatedMetadata = {
+      ...existing,
+      contentHash,
+      lastIngested: new Date().toISOString(),
+      sourceUrl: record.source_url ?? existing.sourceUrl,
+    }
+
+    await prisma.legalDocument.update({
+      where: { id: record.id },
+      data: { metadata: updatedMetadata as Prisma.InputJsonValue },
+    })
+
+    console.log(
+      `  [OK] ${record.document_number} — hash: ${contentHash.slice(0, 12)}...`
+    )
+    updated++
+  }
+
+  console.log()
+  console.log('='.repeat(60))
+  console.log(
+    `Updated: ${updated}, Skipped: ${skipped}, Total: ${records.length}`
+  )
+  console.log('='.repeat(60))
+}
+
+// ============================================================================
 // Main
 // ============================================================================
 
 async function main(): Promise<void> {
   const cfg = parseArgs()
+
+  // Handle --backfill-hashes mode (Story 8.17)
+  if (cfg.backfillHashes) {
+    await backfillContentHashes()
+    return
+  }
   const startTime = Date.now()
 
   const registry = getRegistryByAuthority(cfg.authority)

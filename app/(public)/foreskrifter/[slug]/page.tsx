@@ -66,6 +66,8 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
   const isStub = doc.full_text === null
   const metadata = doc.metadata as Record<string, unknown> | null
 
+  const pdfUrl = metadata?.pdfUrl ? String(metadata.pdfUrl) : null
+
   // If full content exists (future - after Epic 9), render it
   if (!isStub && doc.html_content) {
     return (
@@ -87,6 +89,34 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
         </Breadcrumb>
 
         <h1 className="mb-4 text-2xl font-bold">{doc.title}</h1>
+
+        {(doc.source_url || pdfUrl) && (
+          <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
+            {doc.source_url && (
+              <a
+                href={doc.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 hover:underline text-teal-600"
+              >
+                <span>Källa</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+            {pdfUrl && (
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 hover:underline text-teal-600"
+              >
+                <span>Originaldokument (PDF)</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </div>
+        )}
+
         <LegalDocumentCard htmlContent={doc.html_content} />
       </div>
     )

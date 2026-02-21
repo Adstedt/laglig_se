@@ -39,7 +39,9 @@ export async function createLegalDocumentFromAmendment(
   tx: PrismaTransaction,
   amendment: AmendmentData
 ): Promise<{ id: string; slug: string; isNew: boolean }> {
-  const documentNumber = `SFS ${amendment.sfs_number}`
+  // Normalize sfs_number — strip any existing "SFS " prefix to avoid "SFS SFS ..."
+  const sfsNum = amendment.sfs_number.replace(/^SFS\s*/i, '')
+  const documentNumber = `SFS ${sfsNum}`
 
   // Check if LegalDocument already exists
   const existing = await tx.legalDocument.findUnique({
@@ -121,7 +123,20 @@ export async function createLegalDocumentFromAmendment(
     })
     return { id: existing.id, slug: data.slug, isNew: false }
   } else {
-    // Create new LegalDocument
+    // Check for slug collision before creating (can't catch unique constraint inside tx)
+    const slugExists = await tx.legalDocument.findFirst({
+      where: { slug: data.slug },
+      select: { id: true },
+    })
+
+    if (slugExists) {
+      // Append normalized SFS number for uniqueness
+      const normalizedSfs = amendment.sfs_number
+        .replace(/^SFS\s*/i, '')
+        .replace(':', '-')
+      data.slug = `${data.slug}-${normalizedSfs}`
+    }
+
     const created = await tx.legalDocument.create({
       data,
       select: { id: true, slug: true },

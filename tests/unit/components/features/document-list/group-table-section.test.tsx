@@ -14,6 +14,19 @@ import type {
   WorkspaceMemberOption,
 } from '@/app/actions/document-list'
 
+// Mock next/navigation (needed by ChangeIndicator rendered inside rows)
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
+}))
+
 // Helper to wrap component with DndContext
 function renderWithDnd(ui: React.ReactElement) {
   return render(<DndContext>{ui}</DndContext>)

@@ -257,7 +257,7 @@ function assembleDocument(chapterHtmls: Map<number, string>): string {
   const sortedChapters = [...chapterHtmls.entries()].sort(([a], [b]) => a - b)
   const body = sortedChapters.map(([, html]) => html).join('\n\n')
 
-  return `<article class="sfs" id="AFS2023-3">
+  return `<article class="legal-document" id="AFS2023-3">
   <div class="lovhead">
     <h1 id="AFS2023-3_GENH0000">
       <p class="text">AFS 2023:3</p>

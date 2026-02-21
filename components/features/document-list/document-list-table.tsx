@@ -87,6 +87,7 @@ import type {
 import type { LawListItemStatus, LawListItemPriority } from '@prisma/client'
 import { useDebouncedCallback } from 'use-debounce'
 import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
+import { ChangeIndicator } from '@/components/features/changes/change-indicator'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { GroupEditor } from './table-cell-editors/group-editor'
@@ -434,13 +435,20 @@ export function DocumentListTable({
         ),
         cell: ({ row }) => (
           <div className="w-full overflow-hidden">
-            <Link
-              href={getDocumentUrl(row.original)}
-              className="text-sm font-medium text-foreground hover:underline block truncate"
-              title={row.original.document.title}
-            >
-              {row.original.document.title}
-            </Link>
+            <div className="flex items-center gap-1.5">
+              <Link
+                href={getDocumentUrl(row.original)}
+                className="text-sm font-medium text-foreground hover:underline truncate"
+                title={row.original.document.title}
+              >
+                {row.original.document.title}
+              </Link>
+              {/* Story 8.1: Pending change indicator */}
+              <ChangeIndicator
+                count={row.original.pendingChangeCount}
+                documentId={row.original.document.id}
+              />
+            </div>
             <span className="text-xs text-muted-foreground block truncate">
               {row.original.document.documentNumber}
             </span>

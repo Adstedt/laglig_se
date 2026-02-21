@@ -1,0 +1,76 @@
+schema: 1
+story: '6.17'
+story_title: 'Group Compliance Overview Indicators'
+gate: FAIL
+status_reason: 'GroupPriorityIndicator component (AC 7-12, 19) is entirely missing — file never created despite task marked complete. 7 of 22 ACs unimplemented. Compliance indicator portion is high quality.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-18T14:30:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'IMPL-001'
+    severity: high
+    finding: 'GroupPriorityIndicator component does not exist — group-priority-indicator.tsx was never created'
+    suggested_action: 'Create component implementing AC 7-12 with priority distribution badges, color coding, and EJ_TILLAMPLIG exclusion'
+    suggested_owner: dev
+  - id: 'IMPL-002'
+    severity: high
+    finding: 'GroupPriorityIndicator test file does not exist — group-priority-indicator.test.tsx was never created'
+    suggested_action: 'Create test file with coverage for priority calculation, badge rendering, edge cases, and tooltip'
+    suggested_owner: dev
+  - id: 'IMPL-003'
+    severity: medium
+    finding: 'Priority indicator not integrated into GroupTableSection or GroupedDocumentList accordion headers'
+    suggested_action: 'Import and position GroupPriorityIndicator between compliance indicator and document count badge in both views'
+    suggested_owner: dev
+  - id: 'TRACK-001'
+    severity: medium
+    finding: 'Story tasks 2 and 5 (priority portion) marked [x] complete but corresponding files do not exist'
+    suggested_action: 'Uncheck tasks 2 and 5 priority items to accurately reflect implementation state'
+    suggested_owner: dev
+
+risk_summary:
+  totals: { critical: 0, high: 2, medium: 2, low: 0 }
+  recommendations:
+    must_fix:
+      - 'Create GroupPriorityIndicator component with tests'
+      - 'Integrate priority indicator into both view modes'
+    monitor:
+      - 'Verify task tracking accuracy before future gate reviews'
+
+quality_score: 40
+expires: '2026-03-04T14:30:00Z'
+
+evidence:
+  tests_reviewed: 12
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 16, 17, 18, 20, 21, 22]
+    ac_gaps: [7, 8, 9, 10, 11, 12, 19]
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Read-only UI component, no security surface'
+  performance:
+    status: PASS
+    notes: 'Proper useMemo, client-side only, efficient single-loop counting'
+  reliability:
+    status: PASS
+    notes: 'Edge cases handled (empty array, all EJ_TILLAMPLIG, single item)'
+  maintainability:
+    status: PASS
+    notes: 'Clean component structure, reuses established constants and patterns'
+
+recommendations:
+  immediate:
+    - action: 'Create group-priority-indicator.tsx implementing AC 7-12'
+      refs: ['components/features/document-list/group-priority-indicator.tsx']
+    - action: 'Create group-priority-indicator.test.tsx with edge case coverage'
+      refs: ['tests/unit/components/features/document-list/group-priority-indicator.test.tsx']
+    - action: 'Integrate priority indicator into group headers (AC 13-14) and add mobile hiding (AC 15)'
+      refs: ['components/features/document-list/group-table-section.tsx', 'components/features/document-list/grouped-document-list.tsx']
+    - action: 'Add priority tooltip with breakdown (AC 19)'
+      refs: ['components/features/document-list/group-priority-indicator.tsx']
+  future: []

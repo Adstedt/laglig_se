@@ -14,6 +14,7 @@
  */
 
 import * as cheerio from 'cheerio'
+import type { Element, AnyNode } from 'domhandler'
 import type { AfsDocument } from './afs-registry'
 
 // ============================================================================
@@ -21,7 +22,7 @@ import type { AfsDocument } from './afs-registry'
 // ============================================================================
 
 export interface TransformResult {
-  /** Complete transformed HTML wrapped in <article class="sfs"> */
+  /** Complete transformed HTML wrapped in <article class="legal-document"> */
   html: string
   /** Stats for verification */
   stats: {
@@ -61,7 +62,7 @@ export function detectHeadingPattern(doc: AfsDocument): HeadingPattern {
  *
  * @param provisionHtml - The inner HTML of div.provision from av.se
  * @param doc - The AFS document registry entry (for heading pattern detection)
- * @returns Transformed HTML wrapped in <article class="sfs">
+ * @returns Transformed HTML wrapped in <article class="legal-document">
  */
 export function transformAfsHtml(
   provisionHtml: string,
@@ -209,9 +210,15 @@ export function transformAfsHtml(
 
   // ---- Build document sections ----
   const docId = doc.documentNumber.replace(/\s+/g, '').replace(/:/g, '-')
+  const headingPattern = detectHeadingPattern(doc)
 
-  // Extract and transform the rules section
+  // ---- Canonicalize rules structure ----
   const $rules = $('div.rules')
+  if ($rules.length > 0) {
+    canonicalizeRulesStructure($, $rules, docId, headingPattern)
+  }
+
+  // Extract the rules section (now canonicalized)
   const rulesHtml = $rules.length > 0 ? $rules.html() || '' : ''
 
   // Extract and transform transitional regulations
@@ -238,7 +245,7 @@ export function transformAfsHtml(
   // ---- Assemble final document ----
   const parts: string[] = []
 
-  parts.push(`<article class="sfs" id="${docId}">`)
+  parts.push(`<article class="legal-document" id="${docId}">`)
   parts.push(`  <div class="lovhead">`)
   parts.push(`    <h1>`)
   parts.push(`      <p class="text">${doc.documentNumber}</p>`)
@@ -273,6 +280,256 @@ export function transformAfsHtml(
   return {
     html: parts.join('\n'),
     stats,
+  }
+}
+
+// ============================================================================
+// Canonicalization — restructure rules into canonical hierarchy
+// ============================================================================
+
+/**
+ * Restructure rules content into canonical HTML hierarchy:
+ * - Wrap a.paragraf in h3.paragraph
+ * - Add class="text" to bare <p> elements
+ * - Wrap chapters in section.kapitel with semantic IDs
+ * - Wrap avdelningar in section.avdelning (3-level hierarchy)
+ */
+function canonicalizeRulesStructure(
+  $: cheerio.CheerioAPI,
+  $rules: cheerio.Cheerio<Element>,
+  docId: string,
+  pattern: HeadingPattern
+): void {
+  // Step 1: Wrap bare a.paragraf in h3.paragraph
+  $rules.find('a.paragraf').each((_i, el) => {
+    const $a = $(el)
+    if (!$a.parent('h3').length) {
+      $a.wrap('<h3 class="paragraph"></h3>')
+    }
+  })
+
+  // Step 2: Add class="text" to <p> elements without a class
+  $rules.find('p').each((_i, el) => {
+    const $p = $(el)
+    if (!$p.attr('class')) {
+      $p.addClass('text')
+    }
+  })
+
+  // Step 3: Structure based on heading pattern
+  if (pattern === 'flat') {
+    assignFlatIds($, $rules, docId)
+  } else if (pattern === 'chapters-only') {
+    wrapInChapters($, $rules, docId)
+  } else {
+    wrapInAvdelningarAndChapters($, $rules, docId)
+  }
+}
+
+/** Extract section number from text like "1 §" or "2a §" */
+function extractSectionNumber(text: string): string | null {
+  const match = text
+    .trim()
+    .replace(/\u00a0/g, ' ')
+    .match(/^(\d+)\s*([a-z])?\s*§/)
+  if (!match) return null
+  return match[1] + (match[2] || '')
+}
+
+/** Extract chapter number from text like "1 kap. Allmänna bestämmelser" */
+function extractChapterNumber(text: string): string | null {
+  const match = text.trim().match(/^(\d+)\s*kap\./)
+  return match ? match[1]! : null
+}
+
+/** Extract avdelning number from text like "Avdelning 1 ..." */
+function extractAvdelningNumber(text: string): string | null {
+  const match = text.trim().match(/^Avdelning\s+(\d+)/i)
+  return match ? match[1]! : null
+}
+
+/** Assign flat semantic IDs (DOC_ID_P{S}) for non-chaptered docs */
+function assignFlatIds(
+  $: cheerio.CheerioAPI,
+  $rules: cheerio.Cheerio<Element>,
+  docId: string
+): void {
+  $rules.find('a.paragraf').each((_i, el) => {
+    const $a = $(el)
+    const num = extractSectionNumber($a.text())
+    if (num) {
+      const id = `${docId}_P${num}`
+      $a.attr('id', id)
+      $a.attr('name', id)
+    }
+  })
+}
+
+/** Update paragraf IDs within a chapter context */
+function updateParagrafIds(
+  $: cheerio.CheerioAPI,
+  elements: AnyNode[],
+  docId: string,
+  chapterNum: string
+): void {
+  for (const el of elements) {
+    $(el)
+      .find('a.paragraf')
+      .each((_i, a) => {
+        const $a = $(a)
+        const num = extractSectionNumber($a.text())
+        if (num) {
+          const id = `${docId}_K${chapterNum}_P${num}`
+          $a.attr('id', id)
+          $a.attr('name', id)
+        }
+      })
+  }
+}
+
+interface NodeGroup {
+  heading: AnyNode | null
+  num: string | null
+  elements: AnyNode[]
+}
+
+/** Group direct children of a container by heading boundaries */
+function groupByHeading(
+  $: cheerio.CheerioAPI,
+  $container: cheerio.Cheerio<Element>,
+  headingTag: string,
+  extractNum: (_text: string) => string | null
+): NodeGroup[] {
+  const children = $container.children().toArray()
+  const groups: NodeGroup[] = []
+  let current: NodeGroup = { heading: null, num: null, elements: [] }
+
+  for (const child of children) {
+    const tagName = child.type === 'tag' ? (child as Element).tagName : null
+    const text = $(child).text().trim()
+    const isTarget = tagName === headingTag && extractNum(text) !== null
+
+    if (isTarget) {
+      if (current.heading || current.elements.length) {
+        groups.push(current)
+      }
+      current = { heading: child, num: extractNum(text), elements: [] }
+    } else {
+      current.elements.push(child)
+    }
+  }
+  if (current.heading || current.elements.length) {
+    groups.push(current)
+  }
+  return groups
+}
+
+/** Wrap chapters in section.kapitel for chapters-only pattern */
+function wrapInChapters(
+  $: cheerio.CheerioAPI,
+  $rules: cheerio.Cheerio<Element>,
+  docId: string
+): void {
+  const groups = groupByHeading($, $rules, 'h2', extractChapterNumber)
+  $rules.empty()
+
+  for (const group of groups) {
+    if (group.heading && group.num) {
+      const sectionId = `${docId}_K${group.num}`
+      const $section = $(
+        `<section class="kapitel" id="${sectionId}"></section>`
+      )
+
+      // Convert heading to kapitel-rubrik
+      const $h = $(group.heading)
+      $h.addClass('kapitel-rubrik')
+      $h.removeAttr('data-menu').removeAttr('id')
+      $section.append(group.heading)
+
+      // Update paragraf IDs and append children
+      updateParagrafIds($, group.elements, docId, group.num)
+      for (const el of group.elements) {
+        $section.append(el)
+      }
+      $rules.append($section)
+    } else {
+      // Content before first chapter
+      for (const el of group.elements) {
+        $rules.append(el)
+      }
+    }
+  }
+}
+
+/** Wrap avdelningar and chapters for 3-level hierarchy */
+function wrapInAvdelningarAndChapters(
+  $: cheerio.CheerioAPI,
+  $rules: cheerio.Cheerio<Element>,
+  docId: string
+): void {
+  // First level: group by avdelning (h2)
+  const avdGroups = groupByHeading($, $rules, 'h2', extractAvdelningNumber)
+  $rules.empty()
+
+  for (const avdGroup of avdGroups) {
+    if (avdGroup.heading && avdGroup.num) {
+      const avdId = `${docId}_AVD${avdGroup.num}`
+      const $avdSection = $(
+        `<section class="avdelning" id="${avdId}"></section>`
+      )
+
+      // Convert heading to avdelning-rubrik
+      const $avdH = $(avdGroup.heading)
+      $avdH.addClass('avdelning-rubrik')
+      $avdH.removeAttr('data-menu').removeAttr('id')
+      $avdSection.append(avdGroup.heading)
+
+      // Second level: group children by chapter (h3)
+      // Build a temporary container for grouping
+      const $temp = $('<div></div>')
+      for (const el of avdGroup.elements) {
+        $temp.append($(el).clone())
+      }
+      const chapGroups = groupByHeading(
+        $,
+        $temp as cheerio.Cheerio<Element>,
+        'h3',
+        extractChapterNumber
+      )
+
+      for (const chapGroup of chapGroups) {
+        if (chapGroup.heading && chapGroup.num) {
+          const chapId = `${docId}_K${chapGroup.num}`
+          const $chapSection = $(
+            `<section class="kapitel" id="${chapId}"></section>`
+          )
+
+          // Convert heading to kapitel-rubrik (stays h3)
+          const $chapH = $(chapGroup.heading)
+          $chapH.addClass('kapitel-rubrik')
+          $chapH.removeAttr('data-menu').removeAttr('id')
+          $chapSection.append(chapGroup.heading)
+
+          updateParagrafIds($, chapGroup.elements, docId, chapGroup.num)
+          for (const el of chapGroup.elements) {
+            $chapSection.append(el)
+          }
+          $avdSection.append($chapSection)
+        } else {
+          // Pre-chapter content within avdelning
+          for (const el of chapGroup.elements) {
+            $avdSection.append(el)
+          }
+        }
+      }
+
+      $rules.append($avdSection)
+    } else {
+      // Content before first avdelning
+      for (const el of avdGroup.elements) {
+        $rules.append(el)
+      }
+    }
   }
 }
 

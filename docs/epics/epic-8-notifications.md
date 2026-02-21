@@ -1,53 +1,554 @@
-# Epic 8: Notifications & Change Tracking
+# Epic 8: Amendment Monitoring & Change Notifications
 
 ## Epic Overview
 
 **Epic ID:** Epic 8
-**Status:** Draft (v2 — rewritten 2026-02-09 to align with actual data model and product architecture)
-**Priority:** High (core compliance value prop)
+**Status:** Draft (v3 — restructured 2026-02-17 to align with phased SFS-first, agency-second strategy)
+**Priority:** Critical (launch blocker — users on templates need change awareness)
 **Business Owner:** Sarah (PO)
 **Technical Lead:** Development Team
 
 ## Epic Goal
 
-Provide a comprehensive notification system that keeps workspace members informed about legal changes affecting their tracked laws, collaboration activity within their workspace, and compliance deadlines — across in-app, email, and digest channels.
+Ensure that every document type tracked on the platform (SFS laws, myndighetsforeskrifter) has working amendment monitoring, and that detected changes propagate to users through templates, law lists, in-app notifications, and email digests.
+
+**Scope:** SFS documents and agency regulations (myndighetsforeskrifter). EU documents and court cases are deferred.
 
 ## Epic Description
 
 ### Why This Matters
 
-Laglig.se helps organizations stay legally compliant. The notification system is the **primary mechanism** for closing the loop between "a law changed" and "our users know about it and have taken action." Without notifications, compliance tracking is passive — users have to remember to check. With notifications, it becomes proactive.
+Users are about to adopt templates and start tracking laws. If a law in their template is amended and they don't know about it, the platform fails at its core promise. This epic closes the gap between "a law changed" and "the user knows and has taken action" — first for SFS laws (where detection already works), then for agency regulations (where nothing exists yet).
+
+### Strategic Phasing
+
+**Phase 1 (SFS Backend):** The SFS amendment detection pipeline is mature — `sync-sfs-updates` runs daily, detects amendments, parses PDFs via Claude, creates `ChangeEvent` records. But the chain breaks there. Phase 1 wires ChangeEvents to user-facing notifications + email and auto-syncs template metadata.
+
+**Phase 2 (SFS UX):** Gives users a proper in-app experience for reviewing changes — Changes tab, diff view, acknowledge workflow.
+
+**Phase 3 (Agency Regulations):** Builds amendment monitoring from scratch for myndighetsforeskrifter. This requires expanding document ingestion beyond template-referenced docs, building agency-specific change detection, and wiring into the notification pipeline from Phase 1.
+
+**Phase 4 (Collaboration & Polish):** Lower-priority notification features — collaboration triggers, reminders, weekly digests, preferences UI. Can be split to a separate epic if needed.
 
 ### Existing System Context
 
-**Data models already in place:**
-- `ChangeEvent` — records all legal document changes (AMENDMENT, NEW_LAW, REPEAL, NEW_RULING, METADATA_UPDATE) with `notification_sent` boolean flag
-- `Notification` — in-app notification records with `type`, `title`, `body`, `entity_type`/`entity_id`, `read_at`
-- `NotificationPreference` — per-user-per-workspace preference toggles for email/push and per-type controls
-- `ActivityLog` — comprehensive change tracking for all task/comment/list item mutations (already populated by server actions)
-- `LawListItem` — has `last_change_acknowledged_at`, `last_change_acknowledged_by`, `responsible_user_id`, `assigned_to`, `due_date`
-- `Comment` — supports `mentions[]` array for @mention tracking
-- `Task` — has `assignee_id`, `due_date`, `priority`, column-based status
-- `CrossReference` — links court rulings to cited SFS laws (`CITES` type)
-- `AmendmentDocument` / `SectionChange` — parsed amendment data with full content
-- `WorkspaceInvitation` — invitation lifecycle (PENDING → ACCEPTED/EXPIRED/REVOKED)
+**What works today:**
+- `sync-sfs-updates` cron (04:30 UTC) — detects SFS amendments, parses PDFs, creates `ChangeEvent` + `AmendmentDocument` + `LegalDocument`
+- `sync-sfs` cron (04:00 UTC) — detects newly published SFS laws
+- `sync-court-cases` cron (05:00 UTC) — syncs court cases, creates `CrossReference` links
+- `ChangeEvent` model — records all detected changes with `notification_sent` boolean (always `false` — never used)
+- `Notification` / `NotificationPreference` models — exist in schema but no code creates records
+- `LawListItem.last_change_acknowledged_at` / `last_change_acknowledged_by` — fields exist but unused
+- `TemplateItem.last_amendment` — exists but manually maintained
+- Resend email service — working for admin cron notifications
+- Story 12.3 content generation pipeline — proven summering/kommentar prompts
+- AFS HTML scraping pipeline (Story 9.1) — 81 entries ingested, one-time only
 
-**Infrastructure already in place:**
-- Resend email service (`lib/email/cron-notifications.ts`) — admin cron notification emails
-- Story 12.3 content generation pipeline (`lib/ai/prompts/document-content.ts`) — summering/kommentar prompts
-- `sync-sfs-updates` cron (04:30 UTC) — detects amendments, creates ChangeEvent + AmendmentDocument + LegalDocument
-- `sync-court-cases` cron (05:00 UTC) — syncs court cases, creates CrossReference links to cited laws
-
-**What does NOT exist yet:**
-- No code creates `Notification` records for user events (the model is a stub)
+**What does NOT exist:**
+- No shared email infrastructure for user-facing emails (only raw HTML admin cron emails)
+- No code creates `Notification` records from `ChangeEvent` (the wiring is missing)
 - No user-facing email notifications (only admin cron emails)
 - No in-app notification UI (bell, dropdown, badge)
-- No collaboration event triggers (task assigned, mentioned, comment)
-- No task deadline cron (due soon, overdue detection)
-- No amendment acknowledgment reminders
-- No preference UI for users to control their notifications
+- No auto-sync of `TemplateItem.last_amendment` when base documents change
+- No amendment monitoring for any agency regulation (zero — no cron, no detection, no adapter pattern)
+- No agency document ingestion beyond template-referenced docs and AFS scrape
+- No change review UX (Changes tab, diff view, acknowledge)
+- No notification preferences UI
 
-### Notification Framework
+---
+
+## Complete Story Inventory
+
+All stories in this epic, with their status and file locations:
+
+### Prerequisite
+| # | Story | File | Status |
+|---|-------|------|--------|
+| **0.1** | Email Infrastructure Foundation | `docs/stories/0.1.email-infrastructure-foundation.md` | Approved |
+
+### Phase 1: SFS — Complete the Notification Loop
+| # | Story | File | Status |
+|---|-------|------|--------|
+| **8.15** | Notification Service & Recipient Resolution | `docs/stories/8.15.notification-service-recipient-resolution.md` | Draft v1 |
+| **8.16** | Template & LawList Change Propagation | `docs/stories/8.16.template-lawlist-change-propagation.md` | Draft v1 |
+| **8.4** | Daily Amendment Email Digest | `docs/stories/8.4.email-notifications-law-changes.md` | Draft v2 |
+| **8.5** | In-App Notification Bell | `docs/stories/8.5.in-app-notification-bell.md` | Draft v2 |
+
+### Phase 2: SFS — Change Review UX
+| # | Story | File | Status |
+|---|-------|------|--------|
+| **8.1** | Changes Tab & Law List Indicators | `docs/stories/completed/8.1.change-detection-ui-changes-tab.md` | Done |
+| ~~**8.2**~~ | ~~GitHub-Style Diff View~~ | Dropped — agent-guided assessment replaces diff view | Dropped |
+| ~~**8.3**~~ | ~~Agentic Change Assessment Flow~~ | Moved to **Epic 14, Story 14.10** | Moved |
+| ~~**8.10**~~ | ~~Effective Date Tracking~~ | Folded into **Epic 14, Story 14.10** (AC 20-24) | Moved |
+
+### Phase 3: Agency Regulations — Build the Pipeline
+| # | Story | File | Status |
+|---|-------|------|--------|
+| **8.17** | Expand Agency Document Ingestion | `docs/stories/8.17.expand-agency-document-ingestion.md` | Draft v1 |
+| **8.18** | Agency Adapter Pattern & Change Detection | `docs/stories/8.18.agency-adapter-pattern-change-detection.md` | Draft v1 |
+| **8.19** | Agency Regulation Sync Cron | `docs/stories/8.19.agency-regulation-sync-cron.md` | Draft v1 |
+
+### Phase 4: Collaboration & Polish (deferred — can be separate epic)
+| # | Story | File | Status |
+|---|-------|------|--------|
+| **8.13** | Collaboration Notification Triggers | No story file — deferred | Inline in epic only |
+| **8.14** | Task Deadline Cron | No story file — deferred | Inline in epic only |
+| **8.6** | Amendment Acknowledgment Reminders | `docs/stories/8.6.reminder-emails-unacknowledged-changes.md` | Draft v1 |
+| **8.7** | Weekly AI Editorial Digest | `docs/stories/8.7.weekly-industry-digest-email.md` | Draft v1 |
+| **8.11** | Notification Preferences UI | `docs/stories/8.11.change-notification-preferences.md` | Draft v1 |
+| **8.9** | Amendment Timeline Visualization | `docs/stories/8.9.amendment-timeline-visualization.md` | Draft v1 |
+
+### Supporting
+| # | Story | File | Status |
+|---|-------|------|--------|
+| **8.12** | Change Detection Performance Optimization | `docs/stories/8.12.optimize-change-detection-performance.md` | Draft v1 |
+
+### Superseded
+| # | Story | Reason |
+|---|-------|--------|
+| ~~8.8~~ | ~~AI Change Summaries~~ | Superseded by Story 12.3 content generation pipeline |
+
+**Note on 8.13/8.14:** These stories cover workspace collaboration notifications (task assigned, mentions, deadlines) — a different concern from amendment monitoring. They were added in the v2 epic rewrite as they share the notification infrastructure built by 8.15. Detailed story files will be written when Phase 4 is prioritized. They are not needed for the amendment monitoring goal.
+
+---
+
+## Prerequisite: Email Infrastructure
+
+### Story 0.1: Email Infrastructure Foundation (APPROVED — implement first)
+
+**As a** developer working on any email-dependent feature,
+**I want** a shared, production-ready email infrastructure with branded templates, preference enforcement, and unsubscribe handling,
+**so that** every epic that needs transactional email can plug into a consistent, tested foundation.
+
+This is a **cross-cutting prerequisite** that blocks Story 8.4 (daily email digest) and all other email-sending stories. It provides:
+- React Email setup with branded `LagligEmailLayout` template
+- Shared `EmailService` wrapping Resend with preference checking and retry logic
+- Unsubscribe endpoint with HMAC-signed tokens (GDPR compliance)
+- `shouldSendEmail()` and `getEmailPreference()` helpers
+- **Status:** Approved — ready to implement
+- **Detailed story:** `docs/stories/0.1.email-infrastructure-foundation.md`
+
+---
+
+## Phase 1: SFS — Complete the Notification Loop
+
+**Goal:** When an SFS law tracked in a user's law list is amended, the user is notified via email and in-app notification. Template metadata auto-updates.
+
+**Why first:** Highest-impact, lowest-effort. The detection pipeline works end-to-end. We just need to connect ChangeEvent → user.
+
+### Story 8.15: Notification Service & Recipient Resolution (NEW)
+
+**As a** platform,
+**I need** a shared notification service that resolves who cares about a `ChangeEvent` and creates `Notification` records,
+**so that** all downstream delivery channels (email, bell, future push) have a consistent source of truth.
+
+**This is the foundational "wiring" story that all other notification stories depend on.**
+
+- Shared `createChangeNotifications(changeEventId)` function in `lib/notifications/`
+- Recipient resolution: `ChangeEvent.document_id` → `LawListItem.document_id` → `LawList.workspace_id` → `WorkspaceMember` → `User`
+- Creates `Notification` record per affected user per workspace:
+  - `type: AMENDMENT_DETECTED` (new enum value)
+  - `entity_type: 'change_event'`, `entity_id: changeEvent.id`
+  - `title`: base law title
+  - `message`: amendment SFS number + summering snippet
+- Respects `NotificationPreference` per user
+- Expand `NotificationType` enum: add `AMENDMENT_DETECTED`, `LAW_REPEALED`, `RULING_CITED`, `AMENDMENT_REMINDER`
+- Expand `NotificationPreference` model: add `amendment_detected_enabled`, `law_repealed_enabled` (default true)
+- Idempotent: calling twice for same ChangeEvent doesn't create duplicates
+- **Status:** New — needs story file
+
+### Story 8.16: Template & LawList Change Propagation (NEW)
+
+**As a** platform,
+**I need** template metadata to auto-update when tracked documents are amended,
+**so that** templates stay current and users see accurate "last amendment" information.
+
+- When `sync-sfs-updates` processes an amendment for a base law:
+  - Find all `TemplateItem` records where `document_id` matches the base law
+  - Update `TemplateItem.last_amendment` to the new amendment SFS number
+  - Update `TemplateItem.updated_at`
+- Can be implemented as a post-processing step in `sync-sfs-updates` or as a triggered function called after ChangeEvent creation
+- Log: "Updated N template items for SFS YYYY:NNN amendment"
+- No user notification here (that's 8.15's job) — this is purely metadata sync
+- **Status:** New — needs story file
+
+### Story 8.4: Daily Amendment Email Digest (EXISTING — v2)
+
+**As a** workspace member with laws in my law list,
+**I want** to receive a daily email digest when amendments affect laws I track,
+**so that** I'm alerted to compliance-relevant changes even when not using the app.
+
+- Cron at `/api/cron/notify-amendment-changes` runs 07:00 UTC daily
+- Finds un-notified `ChangeEvent` records via `notification_sent = false`
+- Calls Story 8.15's recipient resolution to find affected workspaces + users
+- Generates summering + kommentar via Story 12.3 pipeline (Sonnet inline) if missing
+- Groups by workspace, sends one digest email per workspace
+- Marks `ChangeEvent.notification_sent = true` after delivery
+- Respects `NotificationPreference.email_enabled`
+- **Status:** Draft (v2) — well-defined, ready to implement
+- **Detailed story:** `docs/stories/8.4.email-notifications-law-changes.md`
+- **Depends on:** Story 8.15 (notification service + recipient resolution)
+
+### Story 8.5: In-App Notification Bell (EXISTING — v2)
+
+**As a** workspace member,
+**I want** to see a notification bell with unread count in the app header,
+**so that** I'm aware of changes without checking email.
+
+- Bell icon in top navigation with unread badge count
+- Dropdown showing last 5 unread notifications
+- Click notification → navigate to relevant entity
+- Mark as read (individual + mark all read)
+- Polling every 5 minutes for count updates
+- Reads from `Notification` records created by Story 8.15
+- **Status:** Draft (v2) — needs story file update
+- **Depends on:** Story 8.15 (must have Notification records to display)
+
+### Phase 1 Sequencing
+
+```
+Story 0.1  (Email Infrastructure)     ← PREREQUISITE: must complete before 8.4
+Story 8.15 (Notification Service)     ← Foundation: createChangeNotifications()
+Story 8.16 (Template Sync)            ← Can be parallel with 8.15
+Story 8.4  (Daily Email Digest)       ← Depends on 0.1 (EmailService) + 8.15 (recipients)
+Story 8.5  (Notification Bell)        ← Depends on 8.15, can parallel with 8.4
+```
+
+**Phase 1 Definition of Done:**
+- [ ] Shared email infrastructure with branded templates, preference checking, unsubscribe (Story 0.1)
+- [ ] When SFS law is amended, all workspace members tracking it receive email digest next morning
+- [ ] In-app notification bell shows unread amendment count
+- [ ] `TemplateItem.last_amendment` auto-updates when base document is amended
+- [ ] `ChangeEvent.notification_sent` correctly marked after delivery
+
+---
+
+## Phase 2: SFS — Change Review UX
+
+**Goal:** Give users a proper in-app experience for reviewing what changed, understanding the impact, and acknowledging they've seen it.
+
+### Story 8.1: Changes Tab & Law List Indicators (EXISTING — v4)
+
+**As a** workspace member,
+**I want** a "Ändringar" tab on my law lists page showing all unacknowledged changes, plus visual indicators on law list items that have pending changes,
+**so that** I can quickly see which laws need attention and navigate to the assessment flow to address them.
+
+- Ändringar tab with unacknowledged count badge and priority filter
+- Minimal, scannable change rows (law title, change type badge, detected date, status indicator) — no summering/kommentar on the list
+- Visual change indicators on law list items across all views (card, table, compliance) + LegalDocumentModal banner
+- Each row/indicator clicks through to the agentic assessment flow (Story 8.3)
+- No "Markera som granskad" button — acknowledgement happens inside the assessment flow
+- **Status:** Draft (v4) — validated by PO
+- **Detailed story:** `docs/stories/8.1.change-detection-ui-changes-tab.md`
+
+### ~~Story 8.2: GitHub-Style Diff View~~ (DROPPED)
+
+Dropped — the agentic assessment flow (Epic 14, Story 14.10) walks users through changes via the compliance partner agent, replacing the need for a standalone diff view.
+
+### ~~Story 8.3: Agentic Change Assessment Flow~~ (MOVED)
+
+Moved to **Epic 14, Story 14.10**. The assessment flow IS the agent — it requires the RAG pipeline, tools, and company context from Epic 14.
+
+### ~~Story 8.10: Effective Date Tracking~~ (FOLDED)
+
+Folded into **Epic 14, Story 14.10** (AC 20-24). Effective date resolution, badge utility, and Changes tab integration are now part of the assessment flow story.
+
+### Phase 2 Sequencing
+
+```
+Story 8.1  (Changes Tab)              ← DONE — entry point for all change review
+Story 8.2  (Diff View)                ← DROPPED — replaced by agent-guided assessment
+Story 8.3  (Assessment Flow)          ← MOVED to Epic 14, Story 14.10
+Story 8.10 (Effective Dates)          ← FOLDED into Epic 14, Story 14.10
+```
+
+**Phase 2 Definition of Done:**
+- [x] Users see Changes tab with unacknowledged amendment list + visual indicators on law list items (Story 8.1 — Done)
+- [ ] ~~Users can view section-level diffs with AI summaries~~ (Dropped — replaced by agent assessment)
+- [ ] Users can assess changes via guided AI flow, create tasks, and resolve with audit trail → **Epic 14, Story 14.10**
+- [ ] Effective dates displayed with visual countdown badges → **Epic 14, Story 14.10**
+
+---
+
+## Phase 3: Agency Regulations — Build the Pipeline
+
+**Goal:** Ensure myndighetsforeskrifter (AFS, NFS, MSBFS, etc.) have amendment monitoring equivalent to SFS laws.
+
+**Context:** Currently there is ZERO monitoring for agency regulations. AFS has 81 entries from a one-time HTML scrape. Other agencies have stubs only. Each agency has a different website, publishing format, and no unified API.
+
+### Story 8.17: Expand Agency Document Ingestion (NEW)
+
+**As a** platform,
+**I need** to ingest the full set of agency regulation documents (not just template-referenced ones),
+**so that** we have a complete baseline to monitor for changes.
+
+- Audit current state: which agencies have full content vs. stubs vs. nothing
+- For agencies already in templates (AFS, NFS, MSBFS, ELSAK-FS, KIFS, BFS, SKVFS, SCB-FS, SSMFS, STAFS, SRVFS): ensure all published documents are ingested with content
+- Expand `agency-pdf-registry.ts` with complete document lists per agency
+- For HTML-scrapable agencies (AFS via av.se): use existing scraping pipeline
+- For PDF-only agencies: use PDF-direct LLM pipeline (adapt from SFS amendment pipeline)
+- Store content hash per document for future change detection (new metadata field)
+- **Status:** New — needs story file
+- **Scope decision needed:** How many agencies to cover in first pass vs. iterative expansion
+
+### Story 8.18: Agency Website Adapter Pattern & Change Detection (NEW)
+
+**As a** platform,
+**I need** a per-agency adapter pattern that can check for new or updated regulations,
+**so that** we detect changes to agency regulations automatically.
+
+- Create `lib/agency/adapters/` with base adapter interface:
+  ```
+  interface AgencyAdapter {
+    agencyCode: string
+    checkForUpdates(): Promise<AgencyUpdate[]>
+    fetchDocument(docNumber: string): Promise<DocumentContent>
+  }
+  ```
+- Implement adapters for priority agencies (start with agencies in published templates)
+- Change detection strategy per agency:
+  - **HTML-scrapable (AFS):** Re-scrape regulation pages, compare content hash
+  - **PDF-based (NFS, MSBFS, etc.):** Check agency listing pages for new/updated document links, compare against stored URLs/dates
+  - **RSS/feed where available:** Monitor for new publication announcements
+- Each adapter returns list of detected changes: `{ documentNumber, changeType, newUrl, detectedAt }`
+- **Status:** New — needs story file + research into each agency's publishing patterns
+
+### Story 8.19: Agency Regulation Sync Cron (NEW)
+
+**As a** platform,
+**I need** a scheduled cron job that runs the agency adapters and processes detected changes,
+**so that** agency regulation amendments are detected and recorded like SFS amendments.
+
+- New cron endpoint: `/api/cron/sync-agency-regulations`
+- Schedule: Weekly (agency regulations change less frequently than SFS laws)
+- Iterates registered agency adapters from Story 8.18
+- For each detected change:
+  - Fetch updated document content (HTML scrape or PDF download)
+  - Compare against stored version (content hash diff)
+  - If changed: archive previous version via `DocumentVersion`, create `ChangeEvent`
+  - If new: create `LegalDocument` record with full content
+  - Process content through appropriate pipeline (HTML transform or PDF→LLM→HTML)
+- Create `ChangeEvent` records with `content_type = AGENCY_REGULATION`
+- Feeds into Story 8.15's notification service (same recipient resolution, same email/bell delivery)
+- Stats tracking: per-agency checked/changed/failed counts
+- `maxDuration = 300` with 30s buffer (same pattern as SFS crons)
+- **Status:** New — needs story file
+- **Depends on:** Story 8.17 (baseline documents must exist), Story 8.18 (adapters must be built)
+
+### Phase 3 Sequencing
+
+```
+Story 8.17 (Expand Ingestion)         ← Must complete first: need baseline documents
+Story 8.18 (Adapter Pattern)          ← Can start in parallel with 8.17 (interface design)
+Story 8.19 (Sync Cron)                ← Depends on 8.17 + 8.18
+```
+
+**Phase 3 Definition of Done:**
+- [ ] All agency regulations in published templates have full content (not stubs)
+- [ ] Agency adapters implemented for agencies in published templates
+- [ ] Weekly cron detects changes to agency regulation documents
+- [ ] Agency regulation changes create ChangeEvents that flow through Phase 1 notification pipeline
+- [ ] Users tracking agency regulations in law lists get same email/bell notifications as SFS changes
+
+---
+
+## Phase 4: Collaboration & Polish (Can Be Separate Epic)
+
+**Goal:** Notification features beyond legal change monitoring — collaboration awareness, reminders, digests, and user preference controls.
+
+**Note:** These stories are a different concern from amendment monitoring. They can be developed independently or extracted to a separate "Epic 8B: Collaboration Notifications" if prioritization warrants it.
+
+### Story 8.13: Collaboration Notification Triggers (EXISTING)
+
+- Wire `createNotification()` into existing server actions:
+  - Task assigned → TASK_ASSIGNED
+  - @mention in comment → MENTION
+  - Comment on your task → COMMENT_ADDED
+  - Task status changed → STATUS_CHANGED
+  - Responsible person assigned → RESPONSIBLE_ASSIGNED
+  - Compliance status changed → COMPLIANCE_CHANGED
+- Tier 1 events also trigger transactional email
+- **Depends on:** Story 8.15 (notification service)
+
+### Story 8.14: Task Deadline Cron (EXISTING)
+
+- Cron at `/api/cron/check-task-deadlines` runs daily 07:30 UTC
+- Due in 3 days → TASK_DUE_SOON notification
+- Overdue → TASK_OVERDUE notification + email
+- **Depends on:** Story 8.15 (notification service)
+
+### Story 8.6: Amendment Acknowledgment Reminders (EXISTING)
+
+- Day 3: Nudge email to responsible person
+- Day 7: Escalation to responsible person + workspace admins
+- **Depends on:** Epic 14, Story 14.10 (assessment/acknowledge workflow) + Story 8.15 (notification service)
+
+### Story 8.7: Weekly AI Editorial Digest (EXISTING)
+
+- Sunday 18:00 CET
+- AI-generated workspace-specific legal landscape recap
+- Amendments this week, unacknowledged items, compliance snapshot
+- **Depends on:** Story 8.4 (shares recipient resolution + email infra)
+
+### Story 8.11: Notification Preferences UI (EXISTING)
+
+- Settings page with per-type toggles for all notification types
+- Channel controls: email master toggle, per-type email opt-in/out
+- Warning modal for critical toggles (disabling amendment notifications)
+- **Depends on:** Stories 8.15 + 8.5 (notification types must exist to configure)
+
+### Story 8.9: Amendment Timeline Visualization (EXISTING)
+
+- Historical timeline of all amendments to a law
+- Visual markers for acknowledged vs unacknowledged
+- Competitive parity with Notisum + AI summary differentiator
+- **Independent** — can be developed anytime
+
+---
+
+## Supporting Stories
+
+### Story 8.12: Change Detection Performance Optimization (EXISTING)
+
+- Parallel processing, incremental hashing, rate limiting
+- Operational concern — implement when scale demands it
+- **Independent**
+
+---
+
+## Superseded / Dropped / Moved Stories
+
+### ~~Story 8.8: AI Change Summaries~~
+**Superseded by Story 12.3** (Content Generation Pipeline). The summering/kommentar pipeline replaces the OpenAI-based approach entirely.
+
+### ~~Story 8.2: GitHub-Style Diff View~~
+**Dropped.** The agentic assessment flow (Epic 14, Story 14.10) walks users through changes via the compliance partner agent, replacing the need for a standalone diff view.
+
+### ~~Story 8.3: Agentic Change Assessment Flow~~
+**Moved to Epic 14, Story 14.10.** The assessment flow requires the RAG pipeline, tools, and company context — it IS the agent.
+
+### ~~Story 8.10: Effective Date Tracking~~
+**Folded into Epic 14, Story 14.10** (AC 20-24). Effective date resolution, badge utility, and Changes tab enhancement are part of the assessment flow story.
+
+---
+
+## Full Story Sequencing
+
+```
+PREREQUISITE: Email Infrastructure
+  0.1  (Email Infrastructure)         ← MUST be first: React Email, EmailService, unsubscribe, preferences
+
+PHASE 1: SFS — Complete the Notification Loop
+  8.15 (Notification Service)         ← FOUNDATION: createChangeNotifications(), recipient resolution
+  8.16 (Template Sync)                ← Parallel with 8.15 (no dependency between them)
+  8.4  (Daily Email Digest)           ← Depends on 0.1 (EmailService) + 8.15 (recipient resolution)
+  8.5  (Notification Bell)            ← Depends on 8.15 (reads Notification records)
+
+PHASE 2: SFS — Change Review UX
+  8.1  (Changes Tab)                  ← DONE
+  8.2  (Diff View)                    ← DROPPED
+  8.3  (Assessment Flow)              ← MOVED to Epic 14, Story 14.10
+  8.10 (Effective Dates)              ← FOLDED into Epic 14, Story 14.10
+
+PHASE 3: Agency Regulations — Build the Pipeline
+  8.17 (Expand Ingestion)             ← Phase 3 entry point
+  8.18 (Adapter Pattern)              ← Parallel with 8.17
+  8.19 (Sync Cron)                    ← Depends on 8.17 + 8.18
+
+PHASE 4: Collaboration & Polish (deferred — story files written when prioritized)
+  8.13 (Collab Triggers)              ← Depends on 8.15 — no story file yet
+  8.14 (Deadline Cron)                ← Depends on 8.15 — no story file yet
+  8.6  (Reminders)                    ← Depends on Epic 14 Story 14.10 + 8.15
+  8.7  (Weekly Digest)                ← Depends on 8.4
+  8.11 (Preferences UI)               ← Depends on 8.15 + 8.5
+  8.9  (Timeline)                     ← Independent
+```
+
+**Recommended implementation order (Prerequisite + Phases 1 & 3):**
+1. **0.1** (Email Infrastructure) — prerequisite: React Email, EmailService, unsubscribe, preference helpers
+2. **8.15** (Notification Service) — establishes recipient resolution + Notification creation
+3. **8.16** (Template Sync) — quick win, can be done in parallel with 8.15
+4. **8.4** (Daily Email Digest) — highest immediate user value, depends on 0.1 + 8.15
+5. **8.5** (Notification Bell) — in-app awareness, parallel with 8.4
+6. **8.1** (Changes Tab) — DONE
+7. **8.17** (Expand Ingestion) — starts Phase 3 baseline (deferred)
+8. **8.18** (Adapter Pattern) — parallel with 8.17 (deferred)
+9. **8.19** (Sync Cron) — completes Phase 3 (deferred)
+
+**Note:** Phase 2 assessment UX (formerly 8.2, 8.3, 8.10) is now handled by Epic 14 (Compliance Partner Agent).
+
+---
+
+## Schema Changes Required
+
+### NotificationType Enum Expansion
+
+```prisma
+enum NotificationType {
+  // Existing
+  TASK_ASSIGNED
+  TASK_DUE_SOON
+  TASK_OVERDUE
+  COMMENT_ADDED
+  MENTION
+  STATUS_CHANGED
+  WEEKLY_DIGEST
+
+  // New — Legal change events (Phase 1)
+  AMENDMENT_DETECTED
+  RULING_CITED
+  LAW_REPEALED
+  AMENDMENT_REMINDER
+
+  // New — Collaboration events (Phase 4)
+  RESPONSIBLE_ASSIGNED
+  COMPLIANCE_CHANGED
+
+  // New — Admin events (Phase 4)
+  WORKSPACE_INVITATION
+  MEMBER_JOINED
+}
+```
+
+### NotificationPreference Model Expansion
+
+```prisma
+// New legal event toggles (default true — compliance-critical)
+amendment_detected_enabled   Boolean @default(true)
+ruling_cited_enabled         Boolean @default(true)
+law_repealed_enabled         Boolean @default(true)
+amendment_reminder_enabled   Boolean @default(true)
+
+// New collaboration toggles (Phase 4)
+responsible_assigned_enabled Boolean @default(true)
+compliance_changed_enabled   Boolean @default(true)
+```
+
+### Vercel Cron Additions
+
+```json
+{
+  "path": "/api/cron/notify-amendment-changes",
+  "schedule": "0 7 * * *"
+},
+{
+  "path": "/api/cron/sync-agency-regulations",
+  "schedule": "0 6 * * 1"
+},
+{
+  "path": "/api/cron/check-task-deadlines",
+  "schedule": "30 7 * * *"
+},
+{
+  "path": "/api/cron/send-weekly-digest",
+  "schedule": "0 17 * * 0"
+}
+```
+
+---
+
+## Notification Framework
 
 The system has 4 layers:
 
@@ -62,15 +563,15 @@ The system has 4 layers:
 
 | Event | Trigger Source | Recipients | Channel Default |
 |-------|---------------|------------|-----------------|
-| Amendment detected | `sync-sfs-updates` → ChangeEvent | Workspace members tracking the base law | Daily digest email + in-app |
+| SFS amendment detected | `sync-sfs-updates` → ChangeEvent | Workspace members tracking the base law | Daily digest email + in-app |
+| Agency regulation changed | `sync-agency-regulations` → ChangeEvent | Workspace members tracking that regulation | Daily digest email + in-app |
 | Court ruling cites tracked law | `sync-court-cases` → CrossReference | Workspace members tracking the cited law | Daily digest email + in-app |
 | Law repealed | ChangeEvent (REPEAL) | Workspace members tracking that law | Daily digest email + in-app (urgent flag) |
 | Amendment unacknowledged (reminder) | Cron checks `last_change_acknowledged_at` | Responsible person / assignee on LawListItem | Email (Day 3 nudge, Day 7 escalate) |
 
-#### Workspace Collaboration Events (internal, user-triggered)
+#### Workspace Collaboration Events (internal, user-triggered — Phase 4)
 
 **Tier 1 — Email + in-app (default ON):**
-Direct, personal, actionable — the user specifically needs to do something.
 
 | Event | Trigger | Recipients |
 |-------|---------|------------|
@@ -82,379 +583,31 @@ Direct, personal, actionable — the user specifically needs to do something.
 | Workspace invitation | WorkspaceInvitation created | Invitee (email only) |
 
 **Tier 2 — In-app only (default ON, email opt-in):**
-Contextual, good to know, but not directly targeting you.
 
 | Event | Trigger | Recipients |
 |-------|---------|------------|
 | Comment on your task | createComment() | Task creator + assignee (not the commenter) |
 | Task status changed | updateTaskStatus() | Creator + assignee (not the mover) |
 | Compliance status changed | LawListItem compliance_status update | Responsible person + workspace admins |
-| Evidence/file attached | File linked to task or list item | Assignee / responsible person |
 | Member joined workspace | Invitation accepted | Workspace admins + owner |
-| Role changed | Admin changes member role | The affected member |
 
 **Tier 3 — Digest only (scheduled, aggregated):**
 
 | Event | Content | Channel | Timing |
 |-------|---------|---------|--------|
-| Daily digest | Amendments + court rulings + unacknowledged items count | Email | 07:00 UTC daily |
-| Weekly editorial | AI-generated legal landscape recap, customer-specific changes, compliance snapshot | Email | Sunday 18:00 CET |
-
-### NotificationType Enum (proposed expansion)
-
-Current enum covers only task/comment types. Needs these additions:
-
-```
-// Existing
-TASK_ASSIGNED, TASK_DUE_SOON, TASK_OVERDUE,
-COMMENT_ADDED, MENTION, STATUS_CHANGED, WEEKLY_DIGEST
-
-// New — Legal change events
-AMENDMENT_DETECTED        // Law you track was amended
-RULING_CITED              // Court ruling cites law you track
-LAW_REPEALED              // Law you track was repealed
-AMENDMENT_REMINDER        // Unacknowledged amendment reminder (Day 3, Day 7)
-
-// New — Collaboration events
-RESPONSIBLE_ASSIGNED      // You were assigned responsibility for a law item
-COMPLIANCE_CHANGED        // Compliance status changed on an item you own
-
-// New — Admin events
-WORKSPACE_INVITATION      // You were invited to a workspace
-MEMBER_JOINED             // Someone joined your workspace
-```
-
-### NotificationPreference Model (proposed expansion)
-
-Add per-type toggles for new notification types:
-- `amendment_detected_enabled` (default: true)
-- `ruling_cited_enabled` (default: true)
-- `law_repealed_enabled` (default: true)
-- `amendment_reminder_enabled` (default: true)
-- `responsible_assigned_enabled` (default: true)
-- `compliance_changed_enabled` (default: true)
+| Daily digest | SFS amendments + agency changes + court rulings + unacknowledged count | Email | 07:00 UTC daily |
+| Weekly editorial | AI-generated legal landscape recap, workspace-specific changes | Email | Sunday 18:00 CET |
 
 ---
 
-## Stories
-
-### Phase 1: In-App Change Tracking UI
-
-These stories provide the in-app experience for viewing and acting on legal changes. They are prerequisites for the acknowledgment workflow that drives reminders.
-
-#### Story 8.1: Changes Tab — Amendment Change List UI
-
-**As a** workspace member,
-**I want** to see a list of recent legal changes affecting laws in my lists,
-**so that** I can review what changed and take action.
-
-- Changes tab in workspace showing unacknowledged amendments and court rulings
-- Filter by law, change type, date range, priority
-- Links to diff view and amendment detail page
-- Shows summering/kommentar from Story 12.3 content
-- **Status:** Draft — needs data model alignment rewrite
-
-#### Story 8.2: GitHub-Style Diff View
-
-**As a** workspace member reviewing a legal change,
-**I want** to see a side-by-side diff of what changed in a law,
-**so that** I can understand the exact impact.
-
-- Side-by-side diff of old vs new section text
-- Syntax highlighting for additions/deletions
-- Section-level navigation within the diff
-- **Status:** Draft — needs data model alignment rewrite
-
-#### Story 8.3: Mark as Reviewed / Acknowledge Workflow
-
-**As a** workspace member,
-**I want** to mark a legal change as reviewed (acknowledged),
-**so that** my team knows it's been handled and I stop getting reminders.
-
-- "Mark as reviewed" button on change detail / diff view
-- Sets `LawListItem.last_change_acknowledged_at` + `last_change_acknowledged_by`
-- Bulk acknowledge for multiple changes
-- Acknowledgment status visible in changes tab
-- **Prerequisite for:** Story 8.6 (reminders)
-- **Status:** Draft — needs data model alignment rewrite
-
----
-
-### Phase 2: Notification Service & Delivery
-
-These stories build the notification infrastructure — the service that creates notifications and the channels that deliver them.
-
-#### Story 8.4: Daily Amendment & Ruling Email Digest
-
-**As a** workspace member with laws in my law list,
-**I want** to receive a daily email digest when amendments or relevant court rulings affect laws I track,
-**so that** I'm alerted to compliance-relevant changes even when not using the app.
-
-- Cron at `/api/cron/notify-amendment-changes` runs 07:00 UTC daily
-- Finds un-notified amendments via `ChangeEvent.notification_sent = false`
-- Finds court rulings citing tracked laws via `CrossReference` + `LawListItem`
-- Generates summering + kommentar using Story 12.3 prompts (Sonnet inline) if missing
-- Groups by workspace, sends one email per workspace
-- Marks `ChangeEvent.notification_sent = true` after delivery
-- Respects `NotificationPreference.email_enabled`
-- **Status:** Draft (v2) — rewritten, ready to implement
-- **Detailed story:** `docs/stories/8.4.email-notifications-law-changes.md`
-
-#### Story 8.5: In-App Notification Bell & Notification Service
-
-**As a** workspace member,
-**I want** to see a notification bell with unread count in the app header,
-**so that** I'm aware of changes and activity without checking email.
-
-- Notification bell icon in workspace header with unread badge count
-- Dropdown showing recent notifications (last 20) grouped by type
-- Click notification → navigate to relevant entity (amendment, task, comment)
-- Mark as read (individual + mark all read)
-- Notification creation service: shared function `createNotification()` called by server actions and cron jobs
-- Creates `Notification` records for all Tier 1 + Tier 2 events
-- Polling every 60s for new notifications (or SSE in future)
-- **Status:** Draft — needs full rewrite
-
-#### Story 8.13: Collaboration Notification Triggers (NEW)
-
-**As a** workspace member,
-**I want** to receive notifications when teammates assign me tasks, mention me, or update items I'm responsible for,
-**so that** I can respond promptly to collaboration activity.
-
-- Add `createNotification()` calls to existing server actions:
-  - `updateTaskAssignee()` → TASK_ASSIGNED notification
-  - `createComment()` with mentions → MENTION notification for each mentioned user
-  - `createComment()` → COMMENT_ADDED notification for task creator/assignee
-  - `updateTaskStatus()` → STATUS_CHANGED notification for creator/assignee
-  - LawListItem responsible person change → RESPONSIBLE_ASSIGNED notification
-  - LawListItem compliance status change → COMPLIANCE_CHANGED notification
-- Tier 1 events also trigger transactional email (via Resend)
-- Tier 2 events create in-app notification only (email opt-in via preferences)
-- Deduplicate: don't notify the user who performed the action
-- **Status:** New story
-- **Depends on:** Story 8.5 (notification service + bell)
-
-#### Story 8.14: Task Deadline Cron — Due Soon & Overdue (NEW)
-
-**As a** workspace member with tasks assigned to me,
-**I want** to be notified when tasks are approaching their due date or overdue,
-**so that** I can prioritize time-sensitive compliance work.
-
-- New cron at `/api/cron/check-task-deadlines` runs daily at 07:30 UTC
-- Queries tasks where `due_date` is within 3 days → TASK_DUE_SOON notification + email to assignee
-- Queries tasks where `due_date` is past and `completed_at` is null → TASK_OVERDUE notification + email to assignee + creator
-- Avoids duplicate notifications (check if notification already exists for this task + type + date)
-- `maxDuration = 60` (lightweight cron)
-- **Status:** New story
-
----
-
-### Phase 3: Reminders & Digests
-
-These stories add scheduled notification patterns beyond the daily digest.
-
-#### Story 8.6: Amendment Acknowledgment Reminders
-
-**As a** compliance manager,
-**I want** unacknowledged amendments to trigger escalating reminders,
-**so that** no legal change goes unreviewed.
-
-- Cron checks `LawListItem.last_change_acknowledged_at` vs `ChangeEvent.detected_at`
-- Day 3: Friendly nudge email to the responsible person
-- Day 7: Urgent escalation email to responsible person + workspace admins
-- Respects `NotificationPreference.amendment_reminder_enabled`
-- Creates in-app notification for each reminder
-- **Depends on:** Story 8.3 (acknowledge workflow must exist first)
-- **Status:** Draft — needs data model alignment rewrite
-
-#### Story 8.7: Weekly AI Editorial Digest
-
-**As a** workspace member,
-**I want** to receive a weekly email summarizing the legal landscape relevant to my organization,
-**so that** I stay informed even during quiet weeks.
-
-- Cron runs Sunday 18:00 CET
-- AI-generated editorial (Claude Sonnet) contextual to the workspace's tracked laws and industry:
-  - "This week in your legal landscape" overview
-  - Workspace-specific: amendments this week, court rulings citing your laws
-  - Unacknowledged items count + who owns them
-  - Compliance status snapshot (X% compliant across your lists)
-  - Written in kommentar voice ("Vi behöver...", "Vi ska...")
-- Only sent if workspace has active members with `weekly_digest_enabled = true`
-- **Status:** Draft — needs full rewrite (v1 mixed in AI recommendations / discovery features that belong elsewhere)
-
----
-
-### Phase 4: User Preferences
-
-#### Story 8.11: Notification Preferences UI
-
-**As a** workspace member,
-**I want** to control which notifications I receive and through which channels,
-**so that** I'm informed without being overwhelmed.
-
-- Settings page at workspace notification preferences route
-- Per-type toggles for all notification types:
-  - Legal: amendment detected, ruling cited, law repealed, amendment reminders
-  - Collaboration: task assigned, mentioned, comment added, status changed, due soon, overdue
-  - Workspace: responsible assigned, compliance changed, member joined
-  - Digest: daily digest, weekly digest
-- Channel controls:
-  - Email master toggle (kill switch)
-  - Per-type email opt-in/opt-out (Tier 1 events default ON, Tier 2 default OFF)
-  - In-app always on (no toggle — you need to see workspace activity)
-- Warning modal for critical toggles (disabling amendment notifications, daily digest, reminders)
-- **Status:** Draft — needs rewrite to cover expanded notification types
-
----
-
-### Supporting Stories (In-App UI, not notification delivery)
-
-These stories enhance the in-app experience for viewing and acting on legal changes. They support the notification ecosystem but are not about notification delivery.
-
-#### Story 8.9: Amendment Timeline Visualization
-
-- Historical timeline of all amendments to a law
-- Visual markers for acknowledged vs unacknowledged
-- Comment support on timeline entries
-- **Status:** Draft — needs data model alignment
-
-#### Story 8.10: Effective Date Tracking & Extraction
-
-- Extract effective dates from amendment transition provisions
-- Display countdown/badges for upcoming effective dates
-- Calendar view of upcoming changes
-- **Status:** Draft — needs data model alignment
-
-#### Story 8.12: Change Detection Performance Optimization
-
-- Parallel processing for change detection cron
-- Incremental hashing to skip unchanged laws
-- Rate limiting for external API calls
-- **Status:** Draft — operational concern, not user-facing
-
----
-
-### Superseded Stories
-
-#### ~~Story 8.8: AI Change Summaries~~
-
-**Superseded by Story 12.3** (Content Generation Pipeline). The summering/kommentar pipeline from Story 12.3 replaces the OpenAI-based approach entirely:
-- "Summering" = neutral 2-3 sentence summary (replaces "AI summary")
-- "Kommentar" = compliance-focused "Vi ska..." voice (replaces "business impact")
-- Uses Anthropic Claude (not OpenAI)
-- Includes hallucination checking via `validateLlmOutput`
-
-The `generate-summaries` cron job (currently using OpenAI `gpt-4o-mini` for `ChangeEvent.ai_summary`) should be deprecated in favor of Story 12.3's `buildSystemPrompt()` + `buildDocumentContext()` generating `LegalDocument.summary` + `LegalDocument.kommentar`.
-
----
-
-## Story Sequencing
-
-```
-Phase 1: In-App Change Tracking
-  Story 8.1 (Changes Tab)
-  Story 8.2 (Diff View)           ← Can be parallel with 8.1
-  Story 8.3 (Acknowledge)         ← Depends on 8.1 (needs changes tab to place the button)
-
-Phase 2: Notification Infrastructure
-  Story 8.5 (Bell + Service)      ← Foundation: createNotification(), Notification UI
-  Story 8.4 (Daily Digest Email)  ← Independent of 8.5, can be parallel
-  Story 8.13 (Collab Triggers)    ← Depends on 8.5 (uses createNotification())
-  Story 8.14 (Deadline Cron)      ← Depends on 8.5 (uses createNotification())
-
-Phase 3: Reminders & Digests
-  Story 8.6 (Amendment Reminders) ← Depends on 8.3 (acknowledge workflow) + 8.5 (notification service)
-  Story 8.7 (Weekly Editorial)    ← Depends on 8.4 (shares recipient resolution + email infra)
-
-Phase 4: User Control
-  Story 8.11 (Preferences UI)     ← Depends on 8.5 (notification types must exist to configure)
-                                     Can be developed alongside Phase 2-3 stories
-
-Supporting (can be developed anytime):
-  Story 8.9 (Timeline)            ← Independent
-  Story 8.10 (Effective Dates)    ← Independent
-  Story 8.12 (Performance)        ← Independent, operational
-```
-
-**Recommended implementation order:**
-1. 8.5 (Bell + Service) — establishes `createNotification()` used by everything else
-2. 8.4 (Daily Digest) — highest user value, can start in parallel with 8.5
-3. 8.13 (Collab Triggers) — wires up all server actions to create notifications
-4. 8.14 (Deadline Cron) — task due/overdue detection
-5. 8.1 + 8.3 (Changes Tab + Acknowledge) — in-app change review flow
-6. 8.6 (Reminders) — requires acknowledge workflow
-7. 8.11 (Preferences) — user control over notification volume
-8. 8.7 (Weekly Editorial) — polish, lower priority
-9. 8.2, 8.9, 8.10, 8.12 — supporting UI and performance
-
----
-
-## Schema Changes Required
-
-### NotificationType Enum Expansion
-
-Add to existing enum:
-```prisma
-enum NotificationType {
-  // Existing
-  TASK_ASSIGNED
-  TASK_DUE_SOON
-  TASK_OVERDUE
-  COMMENT_ADDED
-  MENTION
-  STATUS_CHANGED
-  WEEKLY_DIGEST
-
-  // New — Legal change events
-  AMENDMENT_DETECTED
-  RULING_CITED
-  LAW_REPEALED
-  AMENDMENT_REMINDER
-
-  // New — Collaboration events
-  RESPONSIBLE_ASSIGNED
-  COMPLIANCE_CHANGED
-
-  // New — Admin events
-  WORKSPACE_INVITATION
-  MEMBER_JOINED
-}
-```
-
-### NotificationPreference Model Expansion
-
-Add fields for new notification types:
-```prisma
-// New legal event toggles (default true — compliance-critical)
-amendment_detected_enabled   Boolean @default(true)
-ruling_cited_enabled         Boolean @default(true)
-law_repealed_enabled         Boolean @default(true)
-amendment_reminder_enabled   Boolean @default(true)
-
-// New collaboration toggles
-responsible_assigned_enabled Boolean @default(true)
-compliance_changed_enabled   Boolean @default(true)
-```
-
-### Vercel Cron Additions
-
-```json
-{
-  "path": "/api/cron/notify-amendment-changes",
-  "schedule": "0 7 * * *"
-},
-{
-  "path": "/api/cron/check-task-deadlines",
-  "schedule": "30 7 * * *"
-},
-{
-  "path": "/api/cron/send-weekly-digest",
-  "schedule": "0 17 * * 0"
-}
-```
-
----
+## Risk Mitigation
+
+- **Notification volume:** Users could be overwhelmed. Mitigated by tiered defaults (Tier 1 = email, Tier 2 = in-app only) and preferences UI (Story 8.11).
+- **LLM cost in daily digest:** Sonnet calls for summering/kommentar generation. Mitigated by storing results on LegalDocument for reuse, and falling back to section change list if LLM fails.
+- **Cron timing:** Daily digest (07:00) must run after sync-sfs-updates (04:30) and sync-court-cases (05:00). Sufficient buffer (2+ hours) exists. Agency sync (06:00 Monday) runs before daily digest.
+- **Email deliverability:** Transactional emails need to not hit spam. Mitigated by using Resend with proper SPF/DKIM/DMARC (already configured for admin emails).
+- **Agency website instability:** Agency websites may change structure, break scrapers, or go down. Mitigated by per-adapter error handling, content hash comparison (don't false-positive on HTML changes), and admin alerts on failures.
+- **Agency regulation change frequency:** Much lower than SFS. Weekly cron (Monday 06:00) is sufficient. Can increase frequency if needed.
 
 ## Compatibility Requirements
 
@@ -464,32 +617,36 @@ compliance_changed_enabled   Boolean @default(true)
 - [x] Email notifications use existing Resend infrastructure
 - [x] Content generation reuses proven Story 12.3 pipeline
 - [x] Cron jobs follow established patterns (maxDuration, timeout buffer, auth check, stats JSON)
-
-## Risk Mitigation
-
-- **Notification volume:** Users could be overwhelmed. Mitigated by tiered defaults (Tier 1 = email, Tier 2 = in-app only) and preferences UI (Story 8.11).
-- **LLM cost in daily digest:** Sonnet calls for summering/kommentar generation. Mitigated by storing results on LegalDocument for reuse, and falling back to section change list if LLM fails.
-- **Cron timing:** Daily digest (07:00) must run after sync-sfs-updates (04:30) and sync-court-cases (05:00). Sufficient buffer (2+ hours) exists.
-- **Email deliverability:** Transactional emails (task assigned, mentions) need to not hit spam. Mitigated by using Resend with proper SPF/DKIM/DMARC (already configured for admin emails).
-- **Amendment reminder escalation:** Day 7 emails to workspace admins could be noisy if many items are unacknowledged. Consider batching into a single "X items unreviewed" summary rather than individual emails.
+- [x] Agency regulation changes flow through same ChangeEvent → Notification pipeline as SFS
 
 ## Supersedes / Deprecates
 
 - **Story 8.8** (AI Change Summaries) — fully superseded by Story 12.3 content generation pipeline
-- **`generate-summaries` cron job** — uses OpenAI `gpt-4o-mini` for `ChangeEvent.ai_summary`. Should be deprecated once Story 8.4 is implemented (summering/kommentar on LegalDocument replaces ai_summary on ChangeEvent)
+- **`generate-summaries` cron job** — uses OpenAI `gpt-4o-mini` for `ChangeEvent.ai_summary`. Should be deprecated once Story 8.4 is implemented
 
 ## Definition of Done
 
-- [ ] Users receive daily email digests for amendments + court rulings affecting their tracked laws
-- [ ] In-app notification bell shows unread count and recent notifications
-- [ ] Task assignment, mentions, and comments trigger appropriate notifications
-- [ ] Task due soon and overdue are detected and notified
-- [ ] Unacknowledged amendments trigger escalating reminders (Day 3, Day 7)
-- [ ] Weekly AI editorial digest summarizes the legal landscape per workspace
+**Phase 1 (SFS Backend):**
+- [ ] SFS amendment → email notification to affected workspace members
+- [ ] SFS amendment → in-app notification via bell
+- [ ] TemplateItem.last_amendment auto-syncs when base document amended
+
+**Phase 2 (SFS UX):**
+- [x] Changes tab shows unacknowledged amendments + law list items show visual change indicators (Story 8.1 — Done)
+- [ ] ~~Diff view shows section-level changes with highlighting~~ (8.2 Dropped)
+- [ ] Agentic assessment flow enables guided review, task creation, and resolution with audit trail → **Epic 14, Story 14.10**
+- [ ] Effective date badges on change rows → **Epic 14, Story 14.10**
+
+**Phase 3 (Agency Regulations):**
+- [ ] All template-referenced agency documents have full content
+- [ ] Agency adapters detect changes to regulations
+- [ ] Agency changes flow through same notification pipeline as SFS
+- [ ] Users tracking agency regulations get same notifications as SFS users
+
+**Phase 4 (Collaboration):**
+- [ ] Collaboration events (task assigned, mentions) trigger notifications
+- [ ] Task deadlines trigger due soon / overdue notifications
 - [ ] Users can control notification preferences per type and channel
-- [ ] All notifications respect user preferences
-- [ ] No regression in existing functionality
-- [ ] Notification system handles failures gracefully (email failures don't block processing)
 
 ## Change Log
 
@@ -497,3 +654,7 @@ compliance_changed_enabled   Boolean @default(true)
 |------------|---------|-------------|--------|
 | 2025-11-12 | 1.0     | Initial epic (stories 8.1-8.12 drafted) | Sarah (PO) |
 | 2026-02-09 | 2.0     | Major rewrite: align with actual data model, add notification framework, add Stories 8.13/8.14, supersede 8.8, restructure phases | Sarah (PO) |
+| 2026-02-17 | 3.0     | Strategic restructure: phased SFS-first/agency-second approach. Added Stories 8.15 (notification service), 8.16 (template sync), 8.17-8.19 (agency regulation monitoring). Moved collaboration stories to Phase 4. Aligned with template launch readiness. | Sarah (PO) |
+| 2026-02-17 | 3.1     | Added Story 0.1 (Email Infrastructure Foundation) as prerequisite. Added complete story inventory table with file locations and status. Clarified 8.13/8.14 are deferred (no story files until Phase 4 prioritized). Updated sequencing to start with 0.1. | Sarah (PO) |
+| 2026-02-18 | 3.2     | UX-driven updates from team discussion: Story 8.1 rewritten as "Changes Tab & Law List Indicators" (minimal list, visual cues on law list items, no mark-as-reviewed button). Story 8.3 rewritten as "Agentic Change Assessment Flow" (guided AI assessment replaces simple mark-as-reviewed). Updated Phase 2 DoD to match. | Sarah (PO) |
+| 2026-02-18 | 3.3     | Epic 14 alignment: Dropped Story 8.2 (diff view — replaced by agent assessment). Moved Story 8.10 (effective date tracking) into Epic 14, Story 14.10. Removed stale 8.3 story file. Phase 2 now fully handled by Epic 14 except 8.1 (Done). Updated sequencing, DoD, dependencies. | Sarah (PO) |

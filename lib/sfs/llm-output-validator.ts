@@ -190,11 +190,11 @@ function validateStructure(
   const errors: ValidationError[] = []
 
   // Check for article element
-  const article = $('article.sfs')
+  const article = $('article.legal-document')
   if (article.length === 0) {
     errors.push({
       code: 'MISSING_ARTICLE',
-      message: 'Missing <article class="sfs"> root element',
+      message: 'Missing <article class="legal-document"> root element',
       severity: 'error',
     })
   }
@@ -240,8 +240,8 @@ function validateStructure(
 function checkRequiredElements($: cheerio.CheerioAPI): ValidationWarning[] {
   const warnings: ValidationWarning[] = []
 
-  // Check for at least one section
-  const sections = $('section.ann, section.kapitel')
+  // Check for at least one section (canonical or legacy format)
+  const sections = $('section.kapitel, section.ann, h3.paragraph')
   if (sections.length === 0) {
     warnings.push({
       code: 'NO_SECTIONS',
@@ -274,7 +274,7 @@ function calculateMetrics($: cheerio.CheerioAPI): QualityMetrics {
   const text = $.text()
   const charCount = text.length
 
-  const sectionCount = $('section.ann, section.kapitel').length
+  const sectionCount = $('section.kapitel, section.ann, h3.paragraph').length
   const paragraphCount = $('p.text').length
   const listItemCount = $('li').length
   const hasTransitionProvisions =

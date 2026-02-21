@@ -1,0 +1,43 @@
+schema: 1
+story: '8.16'
+story_title: 'LegalDocument Change Tracking & Notification Alignment'
+gate: PASS
+status_reason: 'All 19 ACs implemented with comprehensive test coverage (85 tests). Clean SSOT architecture, no security/performance concerns.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-17T11:00:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-03-03T11:00:00Z'
+
+evidence:
+  tests_reviewed: 85
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Backend-only pipeline change. No user input handling, no auth changes, no API surface.'
+  performance:
+    status: PASS
+    notes: 'Single indexed PK update per transaction. New index on last_change_type enables efficient queries.'
+  reliability:
+    status: PASS
+    notes: 'Transaction boundary preserved. Null guards correct. Idempotent operations. Error logging in batch processor.'
+  maintainability:
+    status: PASS
+    notes: 'Pure helper functions extracted. Exhaustive enum switches. Dynamic preference lookup via SSOT map. Barrel exports insulate consumers.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider renaming amendment-notifications.ts to change-notifications.ts to match function name'
+      refs: ['lib/notifications/amendment-notifications.ts']
+    - action: 'Backfill existing LegalDocument rows from ChangeEvent history (SQL in story Dev Notes)'
+      refs: ['prisma/schema.prisma']

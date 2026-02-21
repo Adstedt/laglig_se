@@ -517,6 +517,8 @@ export const useDocumentListStore = create<DocumentListState>()(
           complianceActionsUpdatedAt: null,
           complianceActionsUpdatedBy: null,
           updatedAt: new Date(),
+          // Story 8.1: New items have no pending changes
+          pendingChangeCount: 0,
           document: {
             id: documentInfo.id,
             title: documentInfo.title,

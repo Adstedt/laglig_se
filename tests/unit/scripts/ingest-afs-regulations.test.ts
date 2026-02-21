@@ -82,7 +82,7 @@ describe('ingest-afs-regulations', () => {
   describe('splitByChapterMarkers', () => {
     it('splits HTML with data-chapter attributes', () => {
       const html = `
-<article class="sfs">
+<article class="legal-document">
   <div class="body">
     <section data-chapter="1" class="kapitel">
       <h2>1 kap. Allmänna bestämmelser</h2>
@@ -115,7 +115,7 @@ describe('ingest-afs-regulations', () => {
     })
 
     it('returns empty map for HTML without chapter markers', () => {
-      const html = `<article class="sfs"><div class="body"><p>No chapters</p></div></article>`
+      const html = `<article class="legal-document"><div class="body"><p>No chapters</p></div></article>`
       const chapters = splitByChapterMarkers(html)
       expect(chapters.size).toBe(0)
     })

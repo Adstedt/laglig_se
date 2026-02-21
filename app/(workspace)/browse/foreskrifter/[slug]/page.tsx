@@ -45,6 +45,7 @@ export default async function WorkspaceForeskriftPage({ params }: PageProps) {
   const metadata = doc.metadata as Record<string, unknown> | null
   const theme = getDocumentTheme('AGENCY_REGULATION')
   const ThemeIcon = theme.icon
+  const pdfUrl = metadata?.pdfUrl ? String(metadata.pdfUrl) : null
 
   return (
     <div className="has-hero-header mx-auto max-w-4xl space-y-6">
@@ -96,22 +97,38 @@ export default async function WorkspaceForeskriftPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Source link */}
-        {doc.source_url && (
+        {/* Source & PDF links */}
+        {(doc.source_url || pdfUrl) && (
           <div className="mt-6 flex items-center gap-4 text-sm text-muted-foreground border-t pt-4">
-            <div className="ml-auto">
-              <a
-                href={doc.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  'flex items-center gap-1.5 hover:underline',
-                  theme.accent
-                )}
-              >
-                <span>Källa</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
+            <div className="ml-auto flex items-center gap-4">
+              {doc.source_url && (
+                <a
+                  href={doc.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    'flex items-center gap-1.5 hover:underline',
+                    theme.accent
+                  )}
+                >
+                  <span>Källa</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              {pdfUrl && (
+                <a
+                  href={pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    'flex items-center gap-1.5 hover:underline',
+                    theme.accent
+                  )}
+                >
+                  <span>Originaldokument (PDF)</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
             </div>
           </div>
         )}

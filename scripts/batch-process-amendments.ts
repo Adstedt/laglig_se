@@ -40,14 +40,14 @@ import {
   needsManualReview,
 } from '../lib/sfs/llm-output-validator'
 import {
-  generateAmendmentSlug,
-  generateAmendmentTitle,
-} from '../lib/sfs/amendment-slug'
-import {
   htmlToMarkdown,
   htmlToPlainText,
 } from '../lib/transforms/html-to-markdown'
 import { htmlToJson } from '../lib/transforms/html-to-json'
+import { buildSlugMap, type SlugMap } from '../lib/linkify'
+import { linkifyHtmlContent } from '../lib/linkify/linkify-html'
+import { createLegalDocumentFromAmendment } from '../lib/sfs/amendment-to-legal-document'
+import { ParseStatus, SectionChangeType } from '@prisma/client'
 
 // ============================================================================
 // Configuration
@@ -57,7 +57,7 @@ const BATCH_DIR = 'batches'
 const RESULTS_DIR = 'results'
 const FAILURES_FILE = 'batch-failures.json'
 const MODEL = 'claude-sonnet-4-5-20250929'
-const MAX_TOKENS = 8192
+const MAX_TOKENS = 32768
 
 interface FailedDocument {
   sfs_number: string
@@ -246,6 +246,12 @@ async function prepare(args: string[]) {
         parse_status: 'COMPLETED',
         sfs_number: { in: fullSfsNumbers },
       },
+      select: {
+        sfs_number: true,
+        storage_path: true,
+        base_law_sfs: true,
+        title: true,
+      },
       orderBy: { sfs_number: 'asc' },
     })
 
@@ -256,6 +262,12 @@ async function prepare(args: string[]) {
     const amendments = await prisma.amendmentDocument.findMany({
       where: {
         parse_status: 'COMPLETED',
+      },
+      select: {
+        sfs_number: true,
+        storage_path: true,
+        base_law_sfs: true,
+        title: true,
       },
       orderBy: { sfs_number: 'asc' },
       take: limit,
@@ -272,13 +284,16 @@ async function prepare(args: string[]) {
       select: { document_number: true },
     })
 
-    const existingSet = new Set(
-      existing.map((d) => d.document_number.replace('SFS ', ''))
-    )
+    // Compare directly — both use "SFS YYYY:NNN" format
+    const existingSet = new Set(existing.map((d) => d.document_number))
 
-    const allToProcess = amendments.filter(
-      (a) => !existingSet.has(a.sfs_number)
-    )
+    const allToProcess = amendments.filter((a) => {
+      // sfs_number may or may not have "SFS " prefix — check both
+      const withPrefix = a.sfs_number.startsWith('SFS ')
+        ? a.sfs_number
+        : `SFS ${a.sfs_number}`
+      return !existingSet.has(withPrefix)
+    })
     console.log(`${allToProcess.length} documents need processing total`)
 
     // Apply offset to skip already processed documents
@@ -400,40 +415,83 @@ async function submit(args: string[]) {
     process.exit(1)
   }
 
+  // Max payload size per sub-batch (100MB to stay well under V8 string limit)
+  const MAX_PAYLOAD_BYTES = 100 * 1024 * 1024
+
   console.log(`Submitting batch file: ${batchFile}`)
 
   const anthropic = new Anthropic()
 
-  // Read and parse requests from JSONL file
-  const content = readFileSync(batchFile, 'utf-8')
-  const lines = content.trim().split('\n')
-  console.log(`Batch contains ${lines.length} requests`)
+  // Read JSONL line-by-line using streaming to avoid string size limits
+  const { createReadStream } = await import('fs')
+  const { createInterface } = await import('readline')
 
-  // Parse each line into a batch request
-  const requests = lines.map((line) => {
+  let currentBatch: Array<{ custom_id: string; params: unknown }> = []
+  let currentSize = 0
+  let totalRequests = 0
+  const batchIds: string[] = []
+
+  async function flushBatch() {
+    if (currentBatch.length === 0) return
+
+    const batchNum = batchIds.length + 1
+    console.log(
+      `\nSubmitting sub-batch ${batchNum} (${currentBatch.length} requests, ~${(currentSize / 1024 / 1024).toFixed(0)}MB)...`
+    )
+
+    const batch = await anthropic.messages.batches.create({
+      requests: currentBatch,
+    })
+
+    batchIds.push(batch.id)
+    console.log(`  Batch ID: ${batch.id}`)
+    console.log(`  Status: ${batch.processing_status}`)
+
+    currentBatch = []
+    currentSize = 0
+  }
+
+  const rl = createInterface({
+    input: createReadStream(batchFile, { encoding: 'utf-8' }),
+    crlfDelay: Infinity,
+  })
+
+  for await (const line of rl) {
+    if (!line.trim()) continue
     const parsed = JSON.parse(line)
-    return {
+    const request = {
       custom_id: parsed.custom_id,
       params: parsed.params,
     }
-  })
+    const lineSize = Buffer.byteLength(line, 'utf-8')
 
-  // Submit batch using messages.batches.create
-  console.log('Submitting batch to Anthropic API...')
-  const batch = await anthropic.messages.batches.create({
-    requests,
-  })
+    // If adding this request would exceed the limit, flush first
+    if (currentBatch.length > 0 && currentSize + lineSize > MAX_PAYLOAD_BYTES) {
+      await flushBatch()
+    }
 
-  console.log(`\nBatch submitted!`)
-  console.log(`  Batch ID: ${batch.id}`)
-  console.log(`  Status: ${batch.processing_status}`)
-  console.log(`  Request counts:`)
-  console.log(
-    `    Total: ${batch.request_counts.processing + batch.request_counts.succeeded + batch.request_counts.errored + batch.request_counts.canceled + batch.request_counts.expired}`
-  )
-  console.log(
-    `\nTo check status: pnpm tsx scripts/batch-process-amendments.ts status --batch-id ${batch.id}`
-  )
+    currentBatch.push(request)
+    currentSize += lineSize
+    totalRequests++
+  }
+
+  // Flush remaining
+  await flushBatch()
+
+  console.log(`\n==============================`)
+  console.log(`All batches submitted!`)
+  console.log(`  Total requests: ${totalRequests}`)
+  console.log(`  Sub-batches created: ${batchIds.length}`)
+  console.log(`  Batch IDs:`)
+  for (const id of batchIds) {
+    console.log(`    ${id}`)
+  }
+  console.log(`\nTo check status:`)
+  for (const id of batchIds) {
+    console.log(
+      `  pnpm tsx scripts/batch-process-amendments.ts status --batch-id ${id}`
+    )
+  }
 }
 
 // ============================================================================
@@ -531,9 +589,17 @@ async function processResults(args: string[]) {
   const content = readFileSync(resultsFile, 'utf-8')
   const lines = content.trim().split('\n')
 
+  // Build slug map once for linkification
+  console.log('Building slug map for linkification...')
+  const slugMap: SlugMap = await buildSlugMap()
+  console.log(`Slug map built: ${slugMap.size} entries`)
+
   let succeeded = 0
   let failed = 0
   let needsReview = 0
+  let legalDocsCreated = 0
+  let legalDocsUpdated = 0
+  let sectionChangesCreated = 0
   const failures: FailedDocument[] = []
 
   for (const line of lines) {
@@ -557,8 +623,8 @@ async function processResults(args: string[]) {
       }
 
       // Extract HTML from response
-      const content = result.result?.message?.content || []
-      const textContent = content.find((c: any) => c.type === 'text')
+      const responseContent = result.result?.message?.content || []
+      const textContent = responseContent.find((c: any) => c.type === 'text')
       if (!textContent?.text) {
         console.warn(`No text content for ${sfsNumber}`)
         failed++
@@ -586,7 +652,7 @@ async function processResults(args: string[]) {
         needsReview++
       }
 
-      // Derive other formats
+      // Derive all content formats from unlinkified HTML (same as sync cron)
       const htmlContent = validation.cleanedHtml!
       const markdownContent = htmlToMarkdown(htmlContent)
       const jsonContent = htmlToJson(htmlContent, {
@@ -595,106 +661,189 @@ async function processResults(args: string[]) {
       })
       const plainText = htmlToPlainText(htmlContent)
 
+      // Linkify AFTER deriving fields, BEFORE DB write (same as sync cron)
+      const documentNumber = `SFS ${sfsNumber}`
+      const linkifiedHtml = linkifyHtmlContent(
+        htmlContent,
+        slugMap,
+        documentNumber
+      ).html
+
       if (!dryRun) {
-        // Get amendment metadata for upsert
+        // Find the AmendmentDocument (try both formats)
         const amendment = await prisma.amendmentDocument.findFirst({
           where: {
             OR: [{ sfs_number: sfsNumber }, { sfs_number: `SFS ${sfsNumber}` }],
           },
         })
 
-        const documentNumber = `SFS ${sfsNumber}`
-        const title =
-          amendment?.title ??
-          generateAmendmentTitle(
-            sfsNumber,
-            amendment?.base_law_sfs ?? null,
-            amendment?.base_law_name ?? null
-          )
-        const slug = generateAmendmentSlug(
-          sfsNumber,
-          title,
-          amendment?.base_law_name ?? null
-        )
+        if (!amendment) {
+          console.warn(`No AmendmentDocument found for ${sfsNumber}`)
+          failed++
+          continue
+        }
 
-        // Upsert LegalDocument - create if not exists, update if exists
-        const legalDoc = await prisma.legalDocument.upsert({
-          where: { document_number: documentNumber },
-          create: {
-            document_number: documentNumber,
-            content_type: 'SFS_AMENDMENT',
-            title,
-            slug,
-            html_content: htmlContent,
-            markdown_content: markdownContent,
-            json_content: jsonContent as any,
-            full_text: plainText,
-            effective_date: amendment?.effective_date,
-            publication_date: amendment?.publication_date,
-            source_url:
-              amendment?.original_url ??
-              `https://rkrattsbaser.gov.se/sfst?bet=${sfsNumber}`,
-            status: 'ACTIVE',
-          },
-          update: {
-            html_content: htmlContent,
-            markdown_content: markdownContent,
-            json_content: jsonContent as any,
-            full_text: plainText,
-            updated_at: new Date(),
-          },
-        })
+        // Map JSON section changeType to database enum (same as sync cron)
+        const mapChangeType = (
+          type: 'amended' | 'repealed' | 'new' | null
+        ): SectionChangeType => {
+          switch (type) {
+            case 'amended':
+              return SectionChangeType.AMENDED
+            case 'repealed':
+              return SectionChangeType.REPEALED
+            case 'new':
+              return SectionChangeType.NEW
+            default:
+              return SectionChangeType.AMENDED
+          }
+        }
 
-        // Insert legislative references into dedicated table
-        if (jsonContent.legislativeReferences?.length > 0) {
-          // Delete existing refs for this document (to handle re-processing)
-          await prisma.legislativeRef.deleteMany({
-            where: { legal_document_id: legalDoc.id },
+        // Transaction: SectionChanges + AmendmentDocument update + LegalDocument (same as sync cron)
+        await prisma.$transaction(async (tx) => {
+          // Delete existing SectionChange records (for re-processing)
+          await tx.sectionChange.deleteMany({
+            where: { amendment_id: amendment.id },
           })
 
-          // Map ref types to enum values
-          const refTypeMap: Record<
-            string,
-            'PROP' | 'BET' | 'RSKR' | 'SOU' | 'DS'
-          > = {
-            prop: 'PROP',
-            bet: 'BET',
-            rskr: 'RSKR',
-            sou: 'SOU',
-            ds: 'DS',
+          // Create SectionChange records from JSON sections
+          let sortOrder = 0
+          for (const section of jsonContent.sections) {
+            if (section.type === 'chapter' && !section.number) continue
+
+            await tx.sectionChange.create({
+              data: {
+                amendment_id: amendment.id,
+                chapter: section.chapter,
+                section: section.number || 'unknown',
+                change_type: mapChangeType(section.changeType),
+                description: section.heading ?? null,
+                new_text: section.content || null,
+                sort_order: sortOrder++,
+              },
+            })
+            sectionChangesCreated++
           }
 
-          // Insert new refs
-          await prisma.legislativeRef.createMany({
-            data: jsonContent.legislativeReferences.map((ref) => ({
-              legal_document_id: legalDoc.id,
-              ref_type: refTypeMap[ref.type] || 'PROP',
-              reference: ref.reference,
-              year: ref.year,
-              number: ref.number,
-            })),
-            skipDuplicates: true,
+          // Extract effective_date from transition provisions (validate date)
+          const effectiveDateStr = jsonContent.transitionProvisions.find(
+            (tp) => tp.effectiveDate
+          )?.effectiveDate
+          const parsedDate = effectiveDateStr
+            ? new Date(effectiveDateStr)
+            : null
+          const effectiveDate =
+            parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate : null
+
+          // Update AmendmentDocument with parsed data
+          const updatedAmendment = await tx.amendmentDocument.update({
+            where: { id: amendment.id },
+            data: {
+              title: (
+                jsonContent.title ||
+                amendment.title ||
+                `Ändring SFS ${sfsNumber}`
+              )
+                .replace(/\s+/g, ' ')
+                .trim(),
+              effective_date: effectiveDate ?? amendment.effective_date,
+              full_text: plainText,
+              markdown_content: markdownContent,
+              parse_status: ParseStatus.COMPLETED,
+              parsed_at: new Date(),
+              confidence: amendment.confidence,
+            },
           })
+
+          // Create/update LegalDocument via bridge function (same as sync cron)
+          const legalDocResult = await createLegalDocumentFromAmendment(tx, {
+            id: updatedAmendment.id,
+            sfs_number: updatedAmendment.sfs_number,
+            title: updatedAmendment.title,
+            base_law_sfs: updatedAmendment.base_law_sfs,
+            base_law_name: updatedAmendment.base_law_name,
+            effective_date: updatedAmendment.effective_date,
+            publication_date: updatedAmendment.publication_date,
+            original_url: updatedAmendment.original_url,
+            storage_path: updatedAmendment.storage_path,
+            full_text: plainText,
+            html_content: linkifiedHtml,
+            markdown_content: markdownContent,
+            json_content: jsonContent,
+            confidence: updatedAmendment.confidence,
+          })
+
+          if (legalDocResult.isNew) {
+            legalDocsCreated++
+          } else {
+            legalDocsUpdated++
+          }
+        })
+
+        // Insert legislative references (outside transaction for performance)
+        if (jsonContent.legislativeReferences?.length > 0) {
+          const legalDoc = await prisma.legalDocument.findUnique({
+            where: { document_number: documentNumber },
+            select: { id: true },
+          })
+
+          if (legalDoc) {
+            await prisma.legislativeRef.deleteMany({
+              where: { legal_document_id: legalDoc.id },
+            })
+
+            const refTypeMap: Record<
+              string,
+              'PROP' | 'BET' | 'RSKR' | 'SOU' | 'DS'
+            > = {
+              prop: 'PROP',
+              bet: 'BET',
+              rskr: 'RSKR',
+              sou: 'SOU',
+              ds: 'DS',
+            }
+
+            await prisma.legislativeRef.createMany({
+              data: jsonContent.legislativeReferences
+                .filter((ref) => refTypeMap[ref.type])
+                .map((ref) => ({
+                  legal_document_id: legalDoc.id,
+                  ref_type: refTypeMap[ref.type],
+                  reference: ref.reference,
+                  year: ref.year,
+                  number: ref.number,
+                })),
+              skipDuplicates: true,
+            })
+          }
         }
       }
 
       succeeded++
       if (succeeded % 100 === 0) {
-        console.log(`  Processed ${succeeded} documents...`)
+        console.log(
+          `  Processed ${succeeded}/${lines.length} (${legalDocsCreated} new, ${legalDocsUpdated} updated, ${sectionChangesCreated} section changes)`
+        )
       }
     } catch (error) {
-      console.warn(`Error processing line:`, error)
+      const msg = error instanceof Error ? error.message : String(error)
+      console.warn(`Error processing line: ${msg}`)
       failed++
     }
   }
 
-  console.log(`\nResults:`)
+  console.log(`\n${'='.repeat(70)}`)
+  console.log(`PROCESSING COMPLETE`)
+  console.log(`${'='.repeat(70)}`)
+  console.log(`  Total results: ${lines.length}`)
   console.log(`  Succeeded: ${succeeded}`)
   console.log(`  Failed: ${failed}`)
   console.log(`  Needs Review: ${needsReview}`)
+  console.log(`  LegalDocuments created: ${legalDocsCreated}`)
+  console.log(`  LegalDocuments updated: ${legalDocsUpdated}`)
+  console.log(`  SectionChanges created: ${sectionChangesCreated}`)
 
   if (failures.length > 0) {
-    // Append to failures file
     let allFailures: FailedDocument[] = []
     if (existsSync(FAILURES_FILE)) {
       allFailures = JSON.parse(readFileSync(FAILURES_FILE, 'utf-8'))

@@ -79,6 +79,7 @@ import type { ComplianceStatus, LawListItemPriority } from '@prisma/client'
 import type { VisibilityState } from '@tanstack/react-table'
 import { useDebouncedCallback } from 'use-debounce'
 import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
+import { ChangeIndicator } from '@/components/features/changes/change-indicator'
 import { cn } from '@/lib/utils'
 import {
   getContentTypeIcon,
@@ -563,16 +564,23 @@ export function ComplianceDetailTable({
         ),
         cell: ({ row }) => (
           <div className="w-full overflow-hidden">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onRowClick?.(row.original.id)
-              }}
-              className="text-sm font-medium text-foreground hover:underline text-left block truncate"
-              title={row.original.document.title}
-            >
-              {row.original.document.title}
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRowClick?.(row.original.id)
+                }}
+                className="text-sm font-medium text-foreground hover:underline text-left truncate"
+                title={row.original.document.title}
+              >
+                {row.original.document.title}
+              </button>
+              {/* Story 8.1: Pending change indicator */}
+              <ChangeIndicator
+                count={row.original.pendingChangeCount}
+                documentId={row.original.document.id}
+              />
+            </div>
             <span className="text-xs text-muted-foreground block truncate">
               {row.original.document.documentNumber}
             </span>

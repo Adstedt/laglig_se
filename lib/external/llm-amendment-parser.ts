@@ -266,7 +266,7 @@ export async function parseAmendmentPdf(
     try {
       const response = await client.messages.create({
         model,
-        max_tokens: 8192,
+        max_tokens: 16384,
         system: AMENDMENT_PDF_SYSTEM_PROMPT,
         messages: [
           {

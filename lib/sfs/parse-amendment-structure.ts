@@ -856,7 +856,7 @@ export function generateAmendmentHtml(structure: AmendmentStructure): string {
   const parts: string[] = []
 
   // Article wrapper
-  parts.push(`<article class="sfs amendment" id="${sfsId}">`)
+  parts.push(`<article class="legal-document amendment" id="${sfsId}">`)
 
   // Header section
   parts.push(`<div class="lovhead">`)
