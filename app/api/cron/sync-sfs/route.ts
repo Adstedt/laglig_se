@@ -539,7 +539,6 @@ export async function GET(request: Request) {
       )
     }
 
-    // Send email notification (with PDF stats from Story 2.28)
     await sendSfsSyncEmail(
       {
         apiCount: stats.apiCount,
@@ -548,9 +547,6 @@ export async function GET(request: Request) {
         skipped: stats.skipped,
         failed: stats.failed,
         dateRange: { from: 'catchup', to: 'latest' },
-        pdfsFetched: stats.pdfsFetched,
-        pdfsStored: stats.pdfsStored,
-        pdfsFailed: stats.pdfsFailed,
       },
       durationStr,
       true
@@ -575,7 +571,6 @@ export async function GET(request: Request) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error'
 
-    // Send failure notification email (with PDF stats from Story 2.28)
     await sendSfsSyncEmail(
       {
         apiCount: stats.apiCount,
@@ -584,9 +579,6 @@ export async function GET(request: Request) {
         skipped: stats.skipped,
         failed: stats.failed,
         dateRange: { from: 'catchup', to: 'latest' },
-        pdfsFetched: stats.pdfsFetched,
-        pdfsStored: stats.pdfsStored,
-        pdfsFailed: stats.pdfsFailed,
       },
       durationStr,
       false,
