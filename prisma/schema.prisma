@@ -1306,3 +1306,44 @@ model TemplateItem {
   @@index([content_status])
   @@map("template_items")
 }
+
+// ============================================================================
+// EPIC 14: RAG Pipeline — ContentChunk & Supporting Enums (Story 14.2)
+// ============================================================================
+
+enum SourceType {
+  LEGAL_DOCUMENT
+  USER_FILE
+  CONVERSATION
+  ASSESSMENT
+}
+
+enum ContentRole {
+  STYCKE
+  ALLMANT_RAD
+  TABLE
+  HEADING
+  TRANSITION_PROVISION
+  FOOTNOTE
+  MARKDOWN_CHUNK
+}
+
+model ContentChunk {
+  id               String                       @id @default(cuid())
+  source_type      SourceType
+  source_id        String
+  workspace_id     String?
+  path             String
+  contextual_header String
+  content          String                       @db.Text
+  content_role     ContentRole
+  embedding        Unsupported("vector(1536)")?
+  token_count      Int
+  metadata         Json?
+  created_at       DateTime                     @default(now())
+  updated_at       DateTime                     @updatedAt
+
+  @@index([source_type, source_id])
+  @@index([workspace_id])
+  @@map("content_chunks")
+}
