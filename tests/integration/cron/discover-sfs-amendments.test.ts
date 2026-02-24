@@ -26,7 +26,7 @@ function makeIndexPageHtml(year: number, sfsNumbers: number[]): string {
       (num) => `
     <tr>
       <td><span data-lable="SFS-nummer">${year}:${num}</span></td>
-      <td><span data-lable="Rubrik"><a href="doc/${year}${String(num).padStart(4, '0')}.html">Title ${num}</a></span></td>
+      <td><span data-lable="Rubrik"><a href="doc/${year}${num}.html">Title ${num}</a></span></td>
       <td><span data-lable="Publicerad">${year}-02-01</span></td>
     </tr>`
     )
@@ -95,15 +95,15 @@ describe('discover-sfs-amendments integration', () => {
 
       // Only add doc pages for 8, 9, 10 (above watermark of 7)
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0008.html`,
+        `https://svenskforfattningssamling.se/doc/${year}8.html`,
         makeDocPageHtml('Lag om ändring i lagen (2020:100)', year, 8)
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0009.html`,
+        `https://svenskforfattningssamling.se/doc/${year}9.html`,
         makeDocPageHtml('Lag om tilläggsskatt', year, 9)
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0010.html`,
+        `https://svenskforfattningssamling.se/doc/${year}10.html`,
         makeDocPageHtml('Lag om upphävande av lagen (2019:50)', year, 10)
       )
 
@@ -126,9 +126,8 @@ describe('discover-sfs-amendments integration', () => {
         .filter((u: string) => u.includes('/doc/'))
 
       for (let i = 1; i <= 7; i++) {
-        const paddedNum = String(i).padStart(4, '0')
         expect(docUrls).not.toContain(
-          `https://svenskforfattningssamling.se/doc/${year}${paddedNum}.html`
+          `https://svenskforfattningssamling.se/doc/${year}${i}.html`
         )
       }
     })
@@ -165,15 +164,15 @@ describe('discover-sfs-amendments integration', () => {
         makeIndexPageHtml(year, [3, 2, 1])
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0001.html`,
+        `https://svenskforfattningssamling.se/doc/${year}1.html`,
         makeDocPageHtml('Lag om ändring i lagen (2020:100)', year, 1)
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0002.html`,
+        `https://svenskforfattningssamling.se/doc/${year}2.html`,
         makeDocPageHtml('Lag om tilläggsskatt', year, 2)
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0003.html`,
+        `https://svenskforfattningssamling.se/doc/${year}3.html`,
         makeDocPageHtml('Lag om upphävande av lagen (2019:50)', year, 3)
       )
 
@@ -205,7 +204,7 @@ describe('discover-sfs-amendments integration', () => {
         makeIndexPageHtml(year, [3, 2, 1])
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0001.html`,
+        `https://svenskforfattningssamling.se/doc/${year}1.html`,
         makeDocPageHtml(
           'Lag om ändring i arbetsmiljölagen (1977:1160)',
           year,
@@ -213,11 +212,11 @@ describe('discover-sfs-amendments integration', () => {
         )
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0002.html`,
+        `https://svenskforfattningssamling.se/doc/${year}2.html`,
         makeDocPageHtml('Lag om tilläggsskatt', year, 2)
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0003.html`,
+        `https://svenskforfattningssamling.se/doc/${year}3.html`,
         makeDocPageHtml('Lag om upphävande av lagen (2019:50)', year, 3)
       )
 
@@ -315,9 +314,8 @@ describe('discover-sfs-amendments integration', () => {
 
       // Only add doc pages for 196-200
       for (let i = 196; i <= 200; i++) {
-        const paddedNum = String(i).padStart(4, '0')
         pages.set(
-          `https://svenskforfattningssamling.se/doc/${year}${paddedNum}.html`,
+          `https://svenskforfattningssamling.se/doc/${year}${i}.html`,
           makeDocPageHtml(`Lag om ändring i lagen (2020:${i})`, year, i)
         )
       }
@@ -379,15 +377,15 @@ describe('discover-sfs-amendments integration', () => {
 
       // Only add pages for 1, 3, 5 — 2 and 4 will 404
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0001.html`,
+        `https://svenskforfattningssamling.se/doc/${year}1.html`,
         makeDocPageHtml('Lag om ändring i lagen (2020:1)', year, 1)
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0003.html`,
+        `https://svenskforfattningssamling.se/doc/${year}3.html`,
         makeDocPageHtml('Lag om ändring i lagen (2020:3)', year, 3)
       )
       pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}0005.html`,
+        `https://svenskforfattningssamling.se/doc/${year}5.html`,
         makeDocPageHtml('Lag om ändring i lagen (2020:5)', year, 5)
       )
 

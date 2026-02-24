@@ -172,7 +172,6 @@ export function parseDocumentPage(
       : null
 
   const [sfsYear, sfsNum] = sfsNumber.split(':')
-  const paddedNum = sfsNum!.padStart(4, '0')
 
   return {
     title,
@@ -180,7 +179,7 @@ export function parseDocumentPage(
     documentType,
     baseLawSfs,
     pdfUrl,
-    htmlUrl: `${BASE_URL}/doc/${sfsYear}${paddedNum}.html`,
+    htmlUrl: `${BASE_URL}/doc/${sfsYear}${sfsNum}.html`,
   }
 }
 
@@ -252,8 +251,7 @@ export async function crawlCurrentYearIndex(
     }
 
     const sfsNumber = `${year}:${num}`
-    const paddedNum = String(num).padStart(4, '0')
-    const docUrl = `${BASE_URL}/doc/${year}${paddedNum}.html`
+    const docUrl = `${BASE_URL}/doc/${year}${num}.html`
 
     try {
       const docHtml = await fetchPage(docUrl, fetchFn)
@@ -289,8 +287,7 @@ export async function crawlDocumentPage(
   const [year, num] = sfsNumber.split(':')
   if (!year || !num) return null
 
-  const paddedNum = num.padStart(4, '0')
-  const docUrl = `${BASE_URL}/doc/${year}${paddedNum}.html`
+  const docUrl = `${BASE_URL}/doc/${year}${num}.html`
 
   const html = await fetchPage(docUrl, fetchFn)
   if (!html) return null

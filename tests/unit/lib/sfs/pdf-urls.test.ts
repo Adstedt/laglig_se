@@ -109,12 +109,12 @@ describe('constructPdfUrls', () => {
     expect(result.yearMonth).toBe('2025-12')
   })
 
-  it('pads SFS numbers correctly in HTML URL (123 → 0123)', () => {
+  it('does not pad short SFS numbers in HTML URL', () => {
     const result = constructPdfUrls('2025:123', '2025-01-15')
 
-    // HTML uses padded number
+    // HTML uses unpadded number
     expect(result.html).toBe(
-      'https://svenskforfattningssamling.se/doc/20250123.html'
+      'https://svenskforfattningssamling.se/doc/2025123.html'
     )
     // PDF uses original number
     expect(result.pdf).toBe(
@@ -151,7 +151,7 @@ describe('constructPdfUrls', () => {
     expect(result.year).toBe('2024')
     expect(result.number).toBe('789')
     expect(result.html).toBe(
-      'https://svenskforfattningssamling.se/doc/20240789.html'
+      'https://svenskforfattningssamling.se/doc/2024789.html'
     )
   })
 
@@ -159,11 +159,11 @@ describe('constructPdfUrls', () => {
     expect(() => constructPdfUrls('invalid')).toThrow('Invalid SFS number')
   })
 
-  it('handles single-digit SFS numbers', () => {
+  it('handles single-digit SFS numbers without padding', () => {
     const result = constructPdfUrls('2025:1', '2025-01-01')
 
     expect(result.html).toBe(
-      'https://svenskforfattningssamling.se/doc/20250001.html'
+      'https://svenskforfattningssamling.se/doc/20251.html'
     )
     expect(result.pdf).toContain('SFS2025-1.pdf')
   })

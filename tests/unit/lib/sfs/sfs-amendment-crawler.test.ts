@@ -145,12 +145,12 @@ describe('parseIndexPageSfsNumbers', () => {
     <table>
       <tr>
         <td><span data-lable="SFS-nummer">2026:70</span></td>
-        <td><span data-lable="Rubrik"><a href="doc/20260070.html">Lag om ändring</a></span></td>
+        <td><span data-lable="Rubrik"><a href="doc/202670.html">Lag om ändring</a></span></td>
         <td><span data-lable="Publicerad">2026-02-15</span></td>
       </tr>
       <tr>
         <td><span data-lable="SFS-nummer">2026:69</span></td>
-        <td><span data-lable="Rubrik"><a href="doc/20260069.html">Förordning</a></span></td>
+        <td><span data-lable="Rubrik"><a href="doc/202669.html">Förordning</a></span></td>
         <td><span data-lable="Publicerad">2026-02-14</span></td>
       </tr>
       <tr>
