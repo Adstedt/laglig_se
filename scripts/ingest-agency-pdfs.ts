@@ -52,7 +52,7 @@ import {
   htmlToMarkdown,
   htmlToPlainText,
 } from '../lib/transforms/html-to-markdown'
-import { htmlToJson } from '../lib/transforms/html-to-json'
+import { parseCanonicalHtml } from '../lib/transforms/canonical-html-parser'
 import { linkifyHtmlContent, buildSlugMap, type SlugMap } from '../lib/linkify'
 import type { Prisma } from '@prisma/client'
 
@@ -298,7 +298,9 @@ async function processDocument(
   // Derive content formats from unlinkified HTML
   const markdownContent = htmlToMarkdown(html)
   const fullText = htmlToPlainText(html)
-  const jsonContent = htmlToJson(html, { documentType: 'regulation' })
+  const jsonContent = parseCanonicalHtml(html, {
+    documentType: 'AGENCY_REGULATION',
+  })
   // Story 2.29: Linkify after derived fields
   const linkifiedHtml = linkifyHtmlContent(
     html,
