@@ -76,7 +76,7 @@ describe('parseAmendmentPdf', () => {
 
     // Verify model and max_tokens
     expect(callArgs.model).toBe('claude-sonnet-4-20250514')
-    expect(callArgs.max_tokens).toBe(8192)
+    expect(callArgs.max_tokens).toBe(16384)
 
     // Verify system prompt is set
     expect(callArgs.system).toBeTruthy()
