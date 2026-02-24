@@ -1,0 +1,69 @@
+schema: 1
+story: '8.1'
+story_title: 'Change Detection UI - Changes Tab & Law List Indicators'
+gate: PASS
+status_reason: >-
+  All 10 ACs fully implemented with solid architecture, security, and performance.
+  Initial CONCERNS (test coverage gaps) have been resolved: modal banner tests now render
+  the real component, ChangesTab has sort/filter/empty-state tests, ChangeRow keyboard
+  navigation is tested, File List is complete, and COUNT(*) intent is documented.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-18T12:00:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 90
+
+expires: '2026-03-04T12:00:00Z'
+
+evidence:
+  tests_reviewed: 47
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      All queries use withWorkspace auth. Raw SQL uses Prisma parameterized templates.
+      No injection risk. No sensitive data exposed.
+  performance:
+    status: PASS
+    notes: >-
+      Server-side prefetch via Promise.all eliminates client waterfall. Batch pending count
+      query uses ANY(ids::text[]). Sidebar COUNT is one lightweight query per page load.
+  reliability:
+    status: PASS
+    notes: >-
+      Graceful error handling in all server actions with Swedish error messages. Empty states
+      and loading states properly handled. Fallback to 0 for missing change counts.
+  maintainability:
+    status: PASS
+    notes: >-
+      Test coverage gaps resolved. Modal banner tests now exercise the real component.
+      ChangesTab has 7 tests covering sort order, filters, and empty states.
+      ChangeRow keyboard navigation covered. File List complete.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        Add dedicated test for LawListTabs badge count rendering (TEST-005 — low priority,
+        the badge is simple conditional rendering already covered by visual inspection).
+      refs: ['components/features/changes/law-list-tabs.tsx']
+
+history:
+  - at: '2026-02-18T11:50:00Z'
+    gate: CONCERNS
+    note: >-
+      Initial review: test coverage gaps (modal banner anti-pattern, thin ChangesTab tests,
+      untested keyboard nav, incomplete File List)
+  - at: '2026-02-18T12:00:00Z'
+    gate: PASS
+    note: >-
+      All CONCERNS resolved: rewrote modal banner tests to render real component,
+      added sort/filter/keyboard tests, updated File List, documented COUNT(*) intent

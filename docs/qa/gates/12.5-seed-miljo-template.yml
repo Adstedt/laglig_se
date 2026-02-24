@@ -1,0 +1,41 @@
+schema: 1
+story: '12.5'
+story_title: 'Seed Miljö Template'
+gate: PASS
+status_reason: 'All 7 ACs fully implemented and tested. 88 unit tests passing (exceeds 50+ target). Clean TypeScript strict-mode compilation. Faithful adaptation of the 12.4 reference pattern with appropriate Miljö-specific extensions (10 regulatory bodies, 14 EU CELEX conversions, no AFS complexity). Cross-list overlap data verified via CSV cross-referencing.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-18T14:00:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-03-04T14:00:00Z'
+
+evidence:
+  tests_reviewed: 88
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Data-seeding script with no external input surfaces. Prisma parameterized queries only.'
+  performance:
+    status: PASS
+    notes: 'One-time seed operation. 98 sequential upserts is appropriate. Test suite runs in 110ms.'
+  reliability:
+    status: PASS
+    notes: 'Graceful missing-document handling (skip + log). Idempotent via upsert. Denormalized count auto-correction. Dry-run mode for safe preview.'
+  maintainability:
+    status: PASS
+    notes: 'Follows 12.4 pattern exactly. Pure functions exported for testability. Self-contained script (Option A). Clear separation of parsing, classification, and DB operations.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider extracting shared seed utilities (parseArgs, findOrCreateSystemUser, csvEuToCelex, normalizeForMatching, etc.) into lib/seed-helpers.ts if a third seed script is created for Story 12.6'
+      refs: ['scripts/seed-miljo-template.ts', 'scripts/seed-arbetsmiljo-template.ts']

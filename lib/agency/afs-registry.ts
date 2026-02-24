@@ -70,10 +70,20 @@ export const AFS_AMENDMENTS: AfsAmendment[] = [
     modifies: 'AFS 2023:10',
     effectiveDate: '2025-08-01',
   },
+  {
+    number: 'AFS 2025:2',
+    modifies: 'AFS 2023:14',
+    effectiveDate: '2026-04-09',
+  },
   { number: 'AFS 2025:3', modifies: 'AFS 2023:15', effectiveDate: 'TBD' },
+  {
+    number: 'AFS 2025:4',
+    modifies: 'AFS 2023:15',
+    effectiveDate: '2029-01-01',
+  },
   { number: 'AFS 2025:5', modifies: 'AFS 2023:14', effectiveDate: 'TBD' },
   { number: 'AFS 2025:6', modifies: 'AFS 2023:13', effectiveDate: 'TBD' },
-  { number: 'AFS 2025:7', modifies: 'AFS 2023:13', effectiveDate: 'TBD' },
+  { number: 'AFS 2025:7', modifies: 'AFS 2023:15', effectiveDate: 'TBD' },
   { number: 'AFS 2025:8', modifies: 'AFS 2023:13', effectiveDate: 'TBD' },
 ]
 

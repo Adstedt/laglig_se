@@ -6,11 +6,12 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Bell, Menu, Plus } from 'lucide-react'
+import { Search, Menu, Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { CreateTaskModal } from '@/components/features/tasks/create-task-modal'
 import { useGlobalKeyboardShortcuts } from '@/lib/hooks/use-global-keyboard-shortcuts'
+import { NotificationBell } from '@/components/features/notifications/notification-bell'
 
 interface HeaderProps {
   user: {
@@ -82,17 +83,8 @@ export function Header({ user, onMenuToggle }: HeaderProps) {
           />
         </div>
 
-        {/* Notification Bell Placeholder */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-9 w-9 ml-2"
-          disabled
-          title="Notifieringar kommer snart"
-        >
-          <Bell className="h-5 w-5 text-muted-foreground" />
-          <span className="sr-only">Notifieringar</span>
-        </Button>
+        {/* Story 8.5: In-app notification bell */}
+        <NotificationBell userId={user.id} />
       </header>
 
       {/* Story 6.7: Global Task Creation Modal */}

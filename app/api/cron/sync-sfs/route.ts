@@ -38,6 +38,8 @@ import {
   fetchAndStorePdf,
   type PdfMetadata,
 } from '@/lib/sfs'
+import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
+import { normalizeSfsLaw } from '@/lib/transforms/normalizers/sfs-law-normalizer'
 import { linkifyHtmlContent, type SlugMap } from '@/lib/linkify'
 
 export const dynamic = 'force-dynamic'
@@ -338,10 +340,20 @@ export async function GET(request: Request) {
             } as PdfMetadata
           }
 
+          // Story 14.1: Clean + normalize HTML to canonical structure
+          let processedHtml = htmlContent
+          if (processedHtml) {
+            processedHtml = cleanLawHtml(processedHtml)
+            processedHtml = normalizeSfsLaw(processedHtml, {
+              documentNumber: sfsNumber,
+              title: doc.titel,
+            })
+          }
+
           // Story 2.29: Linkify HTML content before DB write
-          const linkifiedHtml = htmlContent
-            ? linkifyHtmlContent(htmlContent, slugMap, sfsNumber).html
-            : htmlContent
+          const linkifiedHtml = processedHtml
+            ? linkifyHtmlContent(processedHtml, slugMap, sfsNumber).html
+            : processedHtml
 
           await prisma.$transaction(async (tx) => {
             const newDoc = await tx.legalDocument.create({
@@ -527,7 +539,6 @@ export async function GET(request: Request) {
       )
     }
 
-    // Send email notification (with PDF stats from Story 2.28)
     await sendSfsSyncEmail(
       {
         apiCount: stats.apiCount,
@@ -536,9 +547,6 @@ export async function GET(request: Request) {
         skipped: stats.skipped,
         failed: stats.failed,
         dateRange: { from: 'catchup', to: 'latest' },
-        pdfsFetched: stats.pdfsFetched,
-        pdfsStored: stats.pdfsStored,
-        pdfsFailed: stats.pdfsFailed,
       },
       durationStr,
       true
@@ -563,7 +571,6 @@ export async function GET(request: Request) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error'
 
-    // Send failure notification email (with PDF stats from Story 2.28)
     await sendSfsSyncEmail(
       {
         apiCount: stats.apiCount,
@@ -572,9 +579,6 @@ export async function GET(request: Request) {
         skipped: stats.skipped,
         failed: stats.failed,
         dateRange: { from: 'catchup', to: 'latest' },
-        pdfsFetched: stats.pdfsFetched,
-        pdfsStored: stats.pdfsStored,
-        pdfsFailed: stats.pdfsFailed,
       },
       durationStr,
       false,

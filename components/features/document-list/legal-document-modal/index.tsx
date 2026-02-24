@@ -9,9 +9,11 @@
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
+import Link from 'next/link'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ModalHeader } from './modal-header'
 import { LeftPanel } from './left-panel'
@@ -254,6 +256,27 @@ export function LegalDocumentModal({
                   aiChatOpen={aiChatOpen}
                   onAiChatToggle={() => setAiChatOpen(!aiChatOpen)}
                 />
+
+                {/* Story 8.1: Pending changes banner */}
+                {initialData?.pendingChangeCount != null &&
+                  initialData.pendingChangeCount > 0 && (
+                    <div className="flex items-center gap-2 border-b bg-amber-50 px-4 py-2 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      <span>
+                        Denna lag har{' '}
+                        {initialData.pendingChangeCount === 1
+                          ? '1 oläst ändring'
+                          : `${initialData.pendingChangeCount} olästa ändringar`}
+                      </span>
+                      <Link
+                        href={`/laglistor?tab=changes&document=${initialData.document.id}`}
+                        className="ml-auto shrink-0 text-xs font-medium underline hover:no-underline"
+                        onClick={onClose}
+                      >
+                        Visa ändringar
+                      </Link>
+                    </div>
+                  )}
 
                 {/* Two-panel layout */}
                 <div className="grid flex-1 min-h-0 grid-cols-1 md:grid-cols-[3fr_2fr] overflow-hidden">

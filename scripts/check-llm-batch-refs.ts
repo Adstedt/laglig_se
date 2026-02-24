@@ -21,6 +21,7 @@ async function main() {
 
     // Only count LLM-processed docs
     if (
+      !html.includes('<article class="legal-document"') &&
       !html.includes('<article class="sfs"') &&
       !html.includes('class="lovhead"')
     ) {

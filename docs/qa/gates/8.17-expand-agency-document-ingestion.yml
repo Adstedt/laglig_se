@@ -1,0 +1,43 @@
+schema: 1
+story: '8.17'
+story_title: 'Expand Agency Document Ingestion'
+gate: PASS
+status_reason: 'All 19 ACs verified with 124 passing unit tests. Registry expanded from 43 to 179 non-AFS entries, content hashes backfilled for 288 records, DB verification 281/281 pass. Only advisory issues found (stale test description strings).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-17T20:25:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-03-03T20:25:00Z'
+
+evidence:
+  tests_reviewed: 124
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No auth/authorization changes. Read-only web fetching with proper User-Agent. SHA-256 hashing only. No secrets committed.'
+  performance:
+    status: PASS
+    notes: 'CLI scripts only, no production path impact. Budget ceiling ($15) enforced on LLM API calls.'
+  reliability:
+    status: PASS
+    notes: 'Idempotent operations throughout: hash-unchanged skip on backfill, upsert pattern for DB writes. Error handling on all fetch/API calls.'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation of concerns. Registry file is large (2580+ lines) but type-safe. Test descriptions have stale counts (advisory only — assertions are correct).'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Update stale test it() descriptions to match actual registry counts (17→64, 15→20, 10→40, 1→55)'
+      refs: ['tests/unit/lib/agency/agency-pdf-registry.test.ts']
+    - action: 'Consider moving large registry data arrays to JSON files if registry grows significantly further'
+      refs: ['lib/agency/agency-pdf-registry.ts']

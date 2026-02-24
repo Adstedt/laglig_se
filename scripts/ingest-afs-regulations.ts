@@ -485,7 +485,7 @@ function buildChapterArticle(
   const id = documentNumber.replace(/\s+/g, '').replace(/:/g, '-')
   const preamble = preambleHtml ? `\n${preambleHtml}\n` : ''
 
-  return `<article class="sfs" id="${id}_K${chapterNumber}">
+  return `<article class="legal-document" id="${id}_K${chapterNumber}">
   <div class="lovhead">
     <h1>
       <p class="text">${documentNumber} kap. ${chapterNumber}</p>
@@ -765,7 +765,7 @@ async function processSplitPerChapter(
         `<li>${formatChapterDocumentNumber(doc.documentNumber, ch.number)}: ${ch.title}</li>`
     )
     .join('\n')
-  const parentHtml = `<article class="sfs" id="${doc.documentNumber.replace(/\s+/g, '').replace(/:/g, '-')}">
+  const parentHtml = `<article class="legal-document" id="${doc.documentNumber.replace(/\s+/g, '').replace(/:/g, '-')}">
   <div class="lovhead">
     <h1>
       <p class="text">${doc.documentNumber}</p>

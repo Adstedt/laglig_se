@@ -1,0 +1,42 @@
+schema: 1
+story: '8.5'
+story_title: 'Implement In-App Notification Bell'
+gate: PASS
+status_reason: 'All 18 ACs fully implemented and tested. 34 unit tests passing across 6 files. Clean auth pattern, proper multi-tenant isolation, good accessibility. Two low-priority advisory items noted (NaN limit param, optimistic update without res.ok).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-17T15:48:00Z'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 90
+expires: '2026-03-03T15:48:00Z'
+
+evidence:
+  tests_reviewed: 34
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All routes auth via getWorkspaceContext(). Ownership check on mark-as-read. No raw SQL. No XSS vectors.'
+  performance:
+    status: PASS
+    notes: '5-min polling interval, max 5 notifications per request, queries use existing indexes. N+1 enrichment acceptable at N=5.'
+  reliability:
+    status: PASS
+    notes: 'Graceful error handling in all routes and client. Silent failure in client is appropriate for non-critical notification feature. Optimistic updates self-correct on next fetch.'
+  maintainability:
+    status: PASS
+    notes: 'Clean component separation (bell + item). Consistent API route pattern. Good TypeScript types. 34 tests provide confidence for future changes.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add isNaN() guard for limit query param in GET /api/notifications to default to 5 instead of 500'
+      refs: ['app/api/notifications/route.ts:14-16']
+    - action: 'Consider checking res.ok before optimistic UI updates in handleMarkRead/handleMarkAllRead'
+      refs: ['components/features/notifications/notification-bell.tsx:86-103']

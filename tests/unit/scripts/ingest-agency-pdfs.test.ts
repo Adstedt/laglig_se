@@ -30,9 +30,9 @@ import {
 
 describe('ingest-agency-pdfs pipeline logic', () => {
   describe('--authority flag selects correct registry', () => {
-    it('msbfs returns 12 documents', () => {
+    it('msbfs returns 64 documents (including MCFFS)', () => {
       const docs = getRegistryByAuthority('msbfs')
-      expect(docs).toHaveLength(12)
+      expect(docs).toHaveLength(64)
       expect(docs[0]!.documentNumber).toBe('MSBFS 2010:4')
     })
 
@@ -61,7 +61,7 @@ describe('ingest-agency-pdfs pipeline logic', () => {
   })
 
   describe('validateLlmOutput works for agency document numbers', () => {
-    const sampleHtml = `<article class="sfs" id="MSBFS2020-1">
+    const sampleHtml = `<article class="legal-document" id="MSBFS2020-1">
       <div class="lovhead"><h1><p class="text">MSBFS 2020:1</p></h1></div>
       <div class="body">
         <h3 class="paragraph"><a class="paragraf" id="MSBFS2020-1_P1" name="MSBFS2020-1_P1">1 §</a></h3>
@@ -92,7 +92,7 @@ describe('ingest-agency-pdfs pipeline logic', () => {
       expect(cleaned).not.toContain('```')
     })
 
-    it('detects missing article.sfs as error', () => {
+    it('detects missing article.legal-document as error', () => {
       const badHtml = '<div>No article element</div>'
       const result = validateLlmOutput(badHtml, 'MSBFS 2020:1')
       expect(result.valid).toBe(false)
@@ -112,7 +112,7 @@ describe('ingest-agency-pdfs pipeline logic', () => {
   describe('prompt construction', () => {
     it('system prompt references all required CSS classes', () => {
       const requiredClasses = [
-        'sfs',
+        'legal-document',
         'lovhead',
         'body',
         'kapitel',
@@ -167,10 +167,10 @@ describe('ingest-agency-pdfs pipeline logic', () => {
   })
 
   describe('PDF file naming', () => {
-    it('all MSBFS PDFs have expected filenames', () => {
+    it('all MSBFS/MCFFS PDFs have expected filenames', () => {
       for (const doc of MSBFS_REGISTRY) {
         const fileName = getPdfFileName(doc.documentNumber)
-        expect(fileName).toMatch(/^MSBFS-\d{4}-\d+\.pdf$/)
+        expect(fileName).toMatch(/^(MSBFS|MCFFS)-\d{4}-\d+\.pdf$/)
       }
     })
 
@@ -183,10 +183,10 @@ describe('ingest-agency-pdfs pipeline logic', () => {
   })
 
   describe('article ID generation', () => {
-    it('all MSBFS article IDs follow pattern', () => {
+    it('all MSBFS/MCFFS article IDs follow pattern', () => {
       for (const doc of MSBFS_REGISTRY) {
         const id = generateArticleId(doc.documentNumber)
-        expect(id).toMatch(/^MSBFS\d{4}-\d+$/)
+        expect(id).toMatch(/^(MSBFS|MCFFS)\d{4}-\d+$/)
       }
     })
 

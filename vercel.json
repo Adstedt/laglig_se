@@ -6,6 +6,10 @@
   "outputDirectory": ".next",
   "crons": [
     {
+      "path": "/api/cron/discover-sfs-amendments",
+      "schedule": "0 2 * * *"
+    },
+    {
       "path": "/api/cron/sync-sfs",
       "schedule": "0 4 * * *"
     },
@@ -36,6 +40,10 @@
     {
       "path": "/api/cron/cleanup-workspaces",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/notify-amendment-changes",
+      "schedule": "0 7 * * *"
     }
   ]
 }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { usePermissions } from '@/hooks/use-permissions'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Tooltip,
   TooltipContent,
@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/popover'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import { getUnacknowledgedChangeCount } from '@/app/actions/change-events'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -87,6 +88,7 @@ const platformItems: NavItem[] = [
     isAccordion: true,
     subItems: [
       { title: 'Mina listor', href: '/laglistor' },
+      { title: 'Ändringar', href: '/laglistor?tab=changes' },
       { title: 'Mallar', href: '/laglistor/mallar' },
     ],
   },
@@ -138,9 +140,11 @@ const workItems: NavItem[] = [
 function CollapsedAccordionItem({
   item,
   isActive,
+  changeCount = 0,
 }: {
   item: NavItem
   isActive: (_href: string) => boolean
+  changeCount?: number
 }) {
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [tooltipOpen, setTooltipOpen] = useState(false)
@@ -168,13 +172,16 @@ function CollapsedAccordionItem({
               <button
                 disabled={item.disabled}
                 className={cn(
-                  'flex w-full items-center justify-center rounded-lg p-2 text-sm transition-colors',
+                  'relative flex w-full items-center justify-center rounded-lg p-2 text-sm transition-colors',
                   'hover:bg-accent hover:text-accent-foreground',
                   item.disabled ? 'opacity-50 cursor-not-allowed' : '',
                   'text-foreground/60 hover:text-foreground'
                 )}
               >
                 <Icon className="h-5 w-5" />
+                {item.title === 'Efterlevnad' && changeCount > 0 && (
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
+                )}
               </button>
             </PopoverTrigger>
           </span>
@@ -212,6 +219,9 @@ function CollapsedAccordionItem({
                 )}
               >
                 {subItem.title}
+                {subItem.href.includes('tab=changes') && changeCount > 0 && (
+                  <span className="ml-auto h-2 w-2 rounded-full bg-destructive flex-shrink-0" />
+                )}
               </Link>
             ))}
           </div>
@@ -226,11 +236,30 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
   const { toggleRightSidebar, leftSidebarCollapsed, toggleLeftSidebar } =
     useLayoutStore()
   const { can, isLoading } = usePermissions()
+  const searchParams = useSearchParams()
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
     {}
   )
+  const [changeCount, setChangeCount] = useState(0)
 
-  const collapsed = leftSidebarCollapsed
+  // Prevent hydration mismatch: Zustand persist rehydrates from localStorage
+  // before first render, which can produce a different Radix component tree
+  // (collapsed renders Tooltip/Popover wrappers, expanded doesn't). Defer to
+  // the default (expanded) until after hydration completes.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
+  useEffect(() => {
+    async function fetchCount() {
+      const result = await getUnacknowledgedChangeCount()
+      if (result.success && result.data !== undefined) {
+        setChangeCount(result.data)
+      }
+    }
+    fetchCount()
+  }, [])
+
+  const collapsed = mounted ? leftSidebarCollapsed : false
 
   // Permission-gated work items
   const permissionGatedWorkItems: NavItem[] = workItems.map((item): NavItem => {
@@ -246,7 +275,21 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
 
   const isActive = (href: string) => {
     if (href === '#') return false
-    if (href === '/dashboard' || href === '/laglistor') return pathname === href
+    // Handle hrefs with query params (e.g., /laglistor?tab=changes)
+    if (href.includes('?')) {
+      const [path, query] = href.split('?')
+      if (pathname !== path) return false
+      const params = new URLSearchParams(query)
+      for (const [key, value] of params) {
+        if (searchParams.get(key) !== value) return false
+      }
+      return true
+    }
+    if (href === '/dashboard') return pathname === href
+    // /laglistor is only active when not on ?tab=changes
+    if (href === '/laglistor') {
+      return pathname === '/laglistor' && searchParams.get('tab') !== 'changes'
+    }
     return pathname.startsWith(href)
   }
 
@@ -316,6 +359,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
             key={item.title}
             item={item}
             isActive={isActive}
+            changeCount={changeCount}
           />
         )
       }
@@ -336,6 +380,9 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
           >
             <Icon className="h-4 w-4" />
             <span className="flex-1 text-left">{item.title}</span>
+            {item.title === 'Efterlevnad' && changeCount > 0 && !isOpen && (
+              <span className="h-2 w-2 rounded-full bg-destructive flex-shrink-0" />
+            )}
             <ChevronRight
               className={cn(
                 'h-4 w-4 transition-transform duration-200',
@@ -358,6 +405,9 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                   )}
                 >
                   <span className="truncate">{subItem.title}</span>
+                  {subItem.href.includes('tab=changes') && changeCount > 0 && (
+                    <span className="ml-auto h-2 w-2 rounded-full bg-destructive flex-shrink-0" />
+                  )}
                 </Link>
               ))}
             </div>

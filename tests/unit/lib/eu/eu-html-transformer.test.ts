@@ -195,25 +195,34 @@ describe('EU HTML Transformer', () => {
   })
 
   describe('Chapter transformation (chaptered docs)', () => {
-    it('wraps chapters in section.kapitel with correct IDs', () => {
-      const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
-      expect(result.html).toContain('<section class="kapitel" id="chp-i">')
-      expect(result.html).toContain('<section class="kapitel" id="chp-ii">')
-    })
-
-    it('creates h2 for chapter headings with title + subtitle', () => {
+    it('wraps chapters in section.kapitel with semantic IDs', () => {
       const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
       expect(result.html).toContain(
-        '<h2>KAPITEL I — Allmänna bestämmelser</h2>'
+        '<section class="kapitel" id="eu-32016r0679_K1">'
       )
-      expect(result.html).toContain('<h2>KAPITEL II — Principer</h2>')
+      expect(result.html).toContain(
+        '<section class="kapitel" id="eu-32016r0679_K2">'
+      )
     })
 
-    it('creates h3 with IDs for articles', () => {
+    it('creates h2.kapitel-rubrik for chapter headings', () => {
       const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
-      expect(result.html).toContain('<h3 id="art-1">')
-      expect(result.html).toContain('<h3 id="art-2">')
-      expect(result.html).toContain('<h3 id="art-5">')
+      expect(result.html).toContain(
+        '<h2 class="kapitel-rubrik">KAPITEL I — Allmänna bestämmelser</h2>'
+      )
+      expect(result.html).toContain(
+        '<h2 class="kapitel-rubrik">KAPITEL II — Principer</h2>'
+      )
+    })
+
+    it('wraps articles in h3.paragraph > a.paragraf with semantic IDs', () => {
+      const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
+      expect(result.html).toContain('id="eu-32016r0679_art1"')
+      expect(result.html).toContain('id="eu-32016r0679_art2"')
+      expect(result.html).toContain('id="eu-32016r0679_art5"')
+      expect(result.html).toContain(
+        '<h3 class="paragraph" id="eu-32016r0679_art1"><a class="paragraf"'
+      )
     })
 
     it('counts chapters and articles correctly', () => {
@@ -237,11 +246,20 @@ describe('EU HTML Transformer', () => {
   })
 
   describe('Flat document transformation', () => {
-    it('uses a.paragraf anchors for articles', () => {
+    it('wraps articles in h3.paragraph > a.paragraf with semantic IDs', () => {
       const result = transformEuHtml(FLAT_HTML, SIMPLE_DOC)
-      expect(result.html).toContain('<a class="paragraf" id="art-1"')
-      expect(result.html).toContain('<a class="paragraf" id="art-2"')
-      expect(result.html).toContain('<a class="paragraf" id="art-3"')
+      expect(result.html).toContain(
+        '<a class="paragraf" id="eu-32006r0166_art1"'
+      )
+      expect(result.html).toContain(
+        '<a class="paragraf" id="eu-32006r0166_art2"'
+      )
+      expect(result.html).toContain(
+        '<a class="paragraf" id="eu-32006r0166_art3"'
+      )
+      expect(result.html).toContain(
+        '<h3 class="paragraph" id="eu-32006r0166_art1">'
+      )
     })
 
     it('includes subtitle in anchor label', () => {
@@ -262,13 +280,14 @@ describe('EU HTML Transformer', () => {
   })
 
   describe('Preamble extraction', () => {
-    it('wraps preamble in details.preamble-accordion > div.preamble', () => {
+    it('wraps preamble in div.preamble (special zone)', () => {
       const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
       const $ = cheerio.load(result.html)
-      const accordion = $('details.preamble-accordion')
+      const accordion = $('article.legal-document > details.preamble-accordion')
       expect(accordion.length).toBe(1)
-      expect(accordion.find('> summary').text()).toBe('Inledning och skäl')
-      expect(accordion.find('> div.preamble').length).toBe(1)
+      expect(accordion.find('summary').text()).toBe('Inledning och skäl')
+      const preamble = accordion.find('div.preamble')
+      expect(preamble.length).toBe(1)
     })
 
     it('includes preamble text', () => {
@@ -321,9 +340,11 @@ describe('EU HTML Transformer', () => {
   })
 
   describe('Document assembly', () => {
-    it('wraps output in article.sfs with correct ID', () => {
+    it('wraps output in article.legal-document with correct ID', () => {
       const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
-      expect(result.html).toContain('<article class="sfs" id="eu-32016r0679">')
+      expect(result.html).toContain(
+        '<article class="legal-document" id="eu-32016r0679">'
+      )
       expect(result.html).toContain('</article>')
     })
 
@@ -339,11 +360,11 @@ describe('EU HTML Transformer', () => {
       expect(result.html).toContain('<div class="body">')
     })
 
-    it('has correct nesting: article > lovhead + preamble-accordion + body', () => {
+    it('has correct nesting: article > lovhead + preamble + body', () => {
       const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
       const $ = cheerio.load(result.html)
 
-      const article = $('article.sfs')
+      const article = $('article.legal-document')
       expect(article.length).toBe(1)
 
       const lovhead = article.find('> div.lovhead')
@@ -351,7 +372,6 @@ describe('EU HTML Transformer', () => {
 
       const accordion = article.find('> details.preamble-accordion')
       expect(accordion.length).toBe(1)
-      expect(accordion.find('> div.preamble').length).toBe(1)
 
       const body = article.find('> div.body')
       expect(body.length).toBe(1)
@@ -384,9 +404,9 @@ describe('EU HTML Transformer', () => {
       expect(result.structureType).toBe('minimal')
     })
 
-    it('still wraps in article.sfs', () => {
+    it('still wraps in article.legal-document', () => {
       const result = transformEuHtml(MINIMAL_HTML, SIMPLE_DOC)
-      expect(result.html).toContain('<article class="sfs"')
+      expect(result.html).toContain('<article class="legal-document"')
     })
 
     it('preserves body text', () => {
@@ -439,10 +459,10 @@ describe('EU HTML Transformer', () => {
       expect(result.stats.articleCount).toBe(2)
     })
 
-    it('creates section.kapitel with chp-* IDs from cpt_* source', () => {
+    it('creates section.kapitel with semantic IDs from cpt_* source', () => {
       const result = transformEuHtml(CELLAR_CHAPTERED_HTML, GDPR_DOC)
-      expect(result.html).toContain('id="chp-i"')
-      expect(result.html).toContain('id="chp-ii"')
+      expect(result.html).toContain('id="eu-32016r0679_K1"')
+      expect(result.html).toContain('id="eu-32016r0679_K2"')
     })
 
     it('extracts chapter headings from oj-ti-section-1 and oj-ti-section-2', () => {
@@ -506,6 +526,48 @@ describe('EU HTML Transformer', () => {
       expect(result.html).toContain(
         'Genom denna förordning inrättas ett europeiskt register'
       )
+    })
+  })
+
+  // ==========================================================================
+  // Story 14.1 — Canonical structure tests (AC: 8, 9, 22)
+  // ==========================================================================
+
+  describe('canonical structure — chaptered', () => {
+    it('adds class="text" to content paragraphs', () => {
+      const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
+      expect(result.html).toContain('<p class="text">1. I denna förordning')
+      expect(result.html).toContain('<p class="text">2. Denna förordning')
+    })
+
+    it('uses h3.paragraph > a.paragraf pattern for articles', () => {
+      const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
+      const $ = cheerio.load(result.html)
+      const anchors = $('h3.paragraph a.paragraf')
+      expect(anchors.length).toBe(3)
+      expect(anchors.eq(0).attr('id')).toBe('eu-32016r0679_art1')
+    })
+
+    it('preamble content is opaque (no h3.paragraph inside)', () => {
+      const result = transformEuHtml(CHAPTERED_HTML, GDPR_DOC)
+      const $ = cheerio.load(result.html)
+      const preamble = $('div.preamble')
+      expect(preamble.find('h3.paragraph').length).toBe(0)
+    })
+  })
+
+  describe('canonical structure — flat', () => {
+    it('adds class="text" to content paragraphs', () => {
+      const result = transformEuHtml(FLAT_HTML, SIMPLE_DOC)
+      expect(result.html).toContain('<p class="text">1. Genom denna förordning')
+    })
+
+    it('uses h3.paragraph > a.paragraf pattern for flat articles', () => {
+      const result = transformEuHtml(FLAT_HTML, SIMPLE_DOC)
+      const $ = cheerio.load(result.html)
+      const anchors = $('h3.paragraph a.paragraf')
+      expect(anchors.length).toBe(3)
+      expect(anchors.eq(0).attr('id')).toBe('eu-32006r0166_art1')
     })
   })
 })

@@ -11,7 +11,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // ── Fixture: minimal valid amendment HTML ────────────────────────────────────
-const VALID_HTML = `<article class="sfs" id="SFS2025-100">
+const VALID_HTML = `<article class="legal-document" id="SFS2025-100">
   <div class="lovhead">
     <h1 id="SFS2025-100_GENH0000">
       <p class="text">SFS 2025:100</p>
@@ -76,7 +76,7 @@ describe('parseAmendmentPdf', () => {
 
     // Verify model and max_tokens
     expect(callArgs.model).toBe('claude-sonnet-4-20250514')
-    expect(callArgs.max_tokens).toBe(8192)
+    expect(callArgs.max_tokens).toBe(16384)
 
     // Verify system prompt is set
     expect(callArgs.system).toBeTruthy()

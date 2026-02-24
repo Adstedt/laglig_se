@@ -11,13 +11,13 @@
  * Result of URL construction
  */
 export interface SfsPdfUrls {
-  /** HTML page URL (e.g., https://svenskforfattningssamling.se/doc/20251581.html) */
+  /** HTML page URL (e.g., https://svenskforfattningssamling.se/doc/20251581.html) — number is NOT zero-padded */
   html: string
   /** PDF download URL */
   pdf: string
   /** Year extracted from SFS number */
   year: string
-  /** Number portion of SFS (may be padded) */
+  /** Number portion of SFS (original, not padded) */
   number: string
   /** Year-month from publication date (YYYY-MM format) */
   yearMonth: string | null
@@ -78,11 +78,8 @@ export function extractYearMonth(
 }
 
 /**
- * Pad an SFS number to 4 digits
- * e.g., "123" -> "0123", "1" -> "0001"
- *
- * @param number - The number portion of an SFS number
- * @returns Padded number string
+ * @deprecated No longer used for URL construction. The site uses unpadded numbers.
+ * Kept for backwards compatibility.
  */
 export function padSfsNumber(number: string): string {
   return number.padStart(4, '0')
@@ -92,8 +89,8 @@ export function padSfsNumber(number: string): string {
  * Construct URLs for an SFS document's HTML page and PDF
  *
  * URL patterns:
- * - HTML: https://svenskforfattningssamling.se/doc/{YYYYNNNN}.html
- * - PDF: https://svenskforfattningssamling.se/sites/default/files/sfs/{YYYY-MM}/SFS{YYYY}-{NNNN}.pdf
+ * - HTML: https://svenskforfattningssamling.se/doc/{YYYY}{N}.html (number NOT padded)
+ * - PDF: https://svenskforfattningssamling.se/sites/default/files/sfs/{YYYY-MM}/SFS{YYYY}-{N}.pdf
  *
  * Note: PDF URLs require the publication date month to construct the path.
  * If no publication date is provided, the PDF URL will use a fallback pattern.
@@ -113,10 +110,10 @@ export function padSfsNumber(number: string): string {
  * // }
  *
  * @example
- * // With short number (padding applied)
+ * // Short numbers are NOT padded
  * constructPdfUrls("2025:123", "2025-01-15")
  * // => {
- * //   html: "https://svenskforfattningssamling.se/doc/20250123.html",
+ * //   html: "https://svenskforfattningssamling.se/doc/2025123.html",
  * //   pdf: "https://svenskforfattningssamling.se/sites/default/files/sfs/2025-01/SFS2025-123.pdf",
  * //   ...
  * // }
@@ -132,11 +129,10 @@ export function constructPdfUrls(
   }
 
   const { year, number } = parsed
-  const paddedNumber = padSfsNumber(number)
   const yearMonth = extractYearMonth(publicationDate)
 
-  // HTML URL uses the compact format: YYYYNNNN.html
-  const html = `https://svenskforfattningssamling.se/doc/${year}${paddedNumber}.html`
+  // HTML URL: YYYY{number}.html — number is NOT zero-padded
+  const html = `https://svenskforfattningssamling.se/doc/${year}${number}.html`
 
   // PDF URL pattern: /sites/default/files/sfs/{YYYY-MM}/SFS{YYYY}-{NNNN}.pdf
   // Note: The PDF uses the original number (not padded) in the filename

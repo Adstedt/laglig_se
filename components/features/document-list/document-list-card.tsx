@@ -18,6 +18,7 @@ import {
 import { GripVertical, Trash2 } from 'lucide-react'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { getDocumentUrl } from '@/lib/utils/content-type'
+import { ChangeIndicator } from '@/components/features/changes/change-indicator'
 import type { DocumentListItem } from '@/app/actions/document-list'
 import { cn } from '@/lib/utils'
 
@@ -177,6 +178,11 @@ export const DocumentListCard = forwardRef<
             {priorityConfig.label}
           </Badge>
         )}
+        {/* Story 8.1: Pending change indicator */}
+        <ChangeIndicator
+          count={item.pendingChangeCount}
+          documentId={item.document.id}
+        />
       </div>
 
       {/* Remove button - bottom right, aligned with drag handle */}

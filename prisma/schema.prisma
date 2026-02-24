@@ -302,6 +302,11 @@ model LegalDocument {
   created_at       DateTime                     @default(now())
   updated_at       DateTime                     @updatedAt
 
+  // Story 8.16: Change tracking fields — SSOT for latest legal change
+  last_change_type ChangeType? // What happened most recently (AMENDMENT, REPEAL, etc.)
+  last_change_ref  String? // Causing document ref (e.g., "SFS 2026:145")
+  last_change_at   DateTime? // When the change was detected (distinct from updated_at)
+
   // Relations
   court_case          CourtCase?
   eu_document         EuDocument?
@@ -327,6 +332,7 @@ model LegalDocument {
   @@index([content_type, status, effective_date(sort: Desc)], name: "idx_browse_composite")
   @@index([content_type, effective_date(sort: Desc)], name: "idx_browse_content_date")
   @@index([publication_date(sort: Desc)], name: "idx_publication_date")
+  @@index([last_change_type], name: "idx_last_change_type") // Story 8.16: Filter/sort by change type
   @@map("legal_documents")
 }
 
@@ -513,6 +519,12 @@ enum NotificationType {
   MENTION // @mention in comment
   STATUS_CHANGED
   WEEKLY_DIGEST
+
+  // Epic 8: Change monitoring notification types
+  AMENDMENT_DETECTED
+  LAW_REPEALED
+  RULING_CITED
+  AMENDMENT_REMINDER
 }
 
 // ============================================================================
@@ -1070,6 +1082,12 @@ model NotificationPreference {
   status_changed_enabled Boolean @default(true)
   weekly_digest_enabled  Boolean @default(true)
 
+  // Epic 8: Change monitoring preferences
+  amendment_detected_enabled  Boolean @default(true)
+  law_repealed_enabled        Boolean @default(true)
+  ruling_cited_enabled        Boolean @default(true)
+  amendment_reminder_enabled  Boolean @default(true)
+
   // Channel settings
   email_enabled Boolean @default(true)
   push_enabled  Boolean @default(false)
@@ -1263,6 +1281,7 @@ model TemplateItem {
   expert_commentary           String?                   @db.Text
   source_type                 String?                   // "lag", "forordning", "foreskrift", etc.
   regulatory_body             String?                   // "Arbetsmiljöverket", "Boverket", etc.
+  /// @deprecated Use LegalDocument.last_change_ref via document relation
   last_amendment              String?                   // "SFS 2025:732"
   replaces_old_reference      String?                   // "ersätter AFS 2001:1"
   is_service_company_relevant Boolean                   @default(true)

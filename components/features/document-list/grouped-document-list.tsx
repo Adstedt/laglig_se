@@ -50,6 +50,7 @@ import { DocumentListCard } from './document-list-card'
 import { DocumentListGridSkeleton } from './document-list-skeleton'
 import { RemoveConfirmation } from './remove-confirmation'
 import { GroupComplianceIndicator } from './group-compliance-indicator'
+import { GroupPriorityIndicator } from './group-priority-indicator'
 import type {
   DocumentListItem,
   ListGroupSummary,
@@ -562,6 +563,15 @@ const GroupAccordion = memo(function GroupAccordion({
             <TooltipProvider delayDuration={300}>
               <GroupComplianceIndicator items={items} />
             </TooltipProvider>
+          )}
+
+          {/* Story 6.17: Priority risk badges - hidden on mobile (AC: 15) */}
+          {items.length > 0 && (
+            <div className="hidden sm:flex">
+              <TooltipProvider delayDuration={300}>
+                <GroupPriorityIndicator items={items} />
+              </TooltipProvider>
+            </div>
           )}
 
           {/* Item count badge - simplified on mobile */}

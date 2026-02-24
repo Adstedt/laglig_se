@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
   LayoutDashboard,
@@ -25,10 +25,11 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { useLayoutStore } from '@/lib/stores/layout-store'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { WorkspaceSwitcher } from './workspace-switcher'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import { getUnacknowledgedChangeCount } from '@/app/actions/change-events'
 
 interface MobileSidebarProps {
   open: boolean
@@ -60,6 +61,7 @@ const platformItems = [
     isAccordion: true,
     subItems: [
       { title: 'Mina listor', href: '/laglistor' },
+      { title: 'Ändringar', href: '/laglistor?tab=changes' },
       { title: 'Mallar', href: '/laglistor/mallar' },
     ],
   },
@@ -113,14 +115,38 @@ export function MobileSidebar({
   user,
 }: MobileSidebarProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { toggleRightSidebar } = useLayoutStore()
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
     {}
   )
+  const [changeCount, setChangeCount] = useState(0)
+
+  useEffect(() => {
+    async function fetchCount() {
+      const result = await getUnacknowledgedChangeCount()
+      if (result.success && result.data !== undefined) {
+        setChangeCount(result.data)
+      }
+    }
+    fetchCount()
+  }, [])
 
   const isActive = (href: string) => {
     if (href === '#') return false
+    if (href.includes('?')) {
+      const [path, query] = href.split('?')
+      if (pathname !== path) return false
+      const params = new URLSearchParams(query)
+      for (const [key, value] of params) {
+        if (searchParams.get(key) !== value) return false
+      }
+      return true
+    }
     if (href === '/dashboard') return pathname === '/dashboard'
+    if (href === '/laglistor') {
+      return pathname === '/laglistor' && searchParams.get('tab') !== 'changes'
+    }
     return pathname.startsWith(href)
   }
 
@@ -193,6 +219,9 @@ export function MobileSidebar({
           >
             <Icon className="h-5 w-5" />
             <span className="flex-1 text-left">{item.title}</span>
+            {item.title === 'Efterlevnad' && changeCount > 0 && !isOpen && (
+              <span className="h-2 w-2 rounded-full bg-destructive flex-shrink-0" />
+            )}
             <ChevronRight
               className={cn(
                 'h-4 w-4 transition-transform duration-200',
@@ -208,13 +237,16 @@ export function MobileSidebar({
                   href={subItem.href}
                   onClick={handleLinkClick}
                   className={cn(
-                    'block rounded-lg px-3 py-2 text-sm transition-colors',
+                    'flex items-center rounded-lg px-3 py-2 text-sm transition-colors',
                     isActive(subItem.href)
                       ? 'text-foreground font-medium'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   {subItem.title}
+                  {subItem.href.includes('tab=changes') && changeCount > 0 && (
+                    <span className="ml-auto h-2 w-2 rounded-full bg-destructive flex-shrink-0" />
+                  )}
                 </Link>
               ))}
             </div>

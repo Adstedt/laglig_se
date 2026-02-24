@@ -91,7 +91,7 @@ describe('SFS Document Integration', () => {
 
       const urls = constructPdfUrls(sfsNumber, publicationDate)
       expect(urls.html).toBe(
-        'https://svenskforfattningssamling.se/doc/20240456.html'
+        'https://svenskforfattningssamling.se/doc/2024456.html'
       )
       expect(urls.pdf).toContain('/2024-05/')
     })
@@ -114,7 +114,7 @@ describe('SFS Document Integration', () => {
       // Also verify URL construction for repeal documents
       const urls = constructPdfUrls(sfsNumber, publicationDate)
       expect(urls.html).toBe(
-        'https://svenskforfattningssamling.se/doc/20240100.html'
+        'https://svenskforfattningssamling.se/doc/2024100.html'
       )
       expect(urls.pdf).toContain('/2024-02/')
     })
@@ -200,11 +200,11 @@ describe('SFS Document Integration', () => {
       expect(result.pdf).toContain('SFS2024-1234.pdf')
     })
 
-    it('handles short SFS numbers with padding', () => {
+    it('handles short SFS numbers without padding', () => {
       const result = constructPdfUrls('2024:1', '2024-01-01')
 
-      // HTML should be padded to 4 digits
-      expect(result.html).toContain('20240001.html')
+      // HTML uses unpadded number
+      expect(result.html).toContain('20241.html')
       // PDF keeps original number
       expect(result.pdf).toContain('SFS2024-1.pdf')
     })
