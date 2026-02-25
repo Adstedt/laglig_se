@@ -1172,14 +1172,15 @@ model NotificationPreference {
 // ============================================================================
 
 model ChatMessage {
-  id           String          @id @default(uuid())
-  workspace_id String
-  user_id      String
-  role         ChatMessageRole
-  content      String          @db.Text
-  context_type ChatContextType @default(GLOBAL)
-  context_id   String? // References task_id or law_list_item_id depending on context_type
-  created_at   DateTime        @default(now())
+  id              String          @id @default(uuid())
+  workspace_id    String
+  user_id         String
+  role            ChatMessageRole
+  content         String          @db.Text
+  context_type    ChatContextType @default(GLOBAL)
+  context_id      String? // References task_id or law_list_item_id depending on context_type
+  conversation_id String? // Groups messages into conversations; null = active conversation
+  created_at      DateTime        @default(now())
 
   // Relations
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
@@ -1188,6 +1189,7 @@ model ChatMessage {
   @@index([workspace_id, context_type, context_id])
   @@index([workspace_id, created_at])
   @@index([user_id])
+  @@index([conversation_id])
   @@map("chat_messages")
 }
 
@@ -1400,6 +1402,7 @@ model ContentChunk {
   contextual_header String
   content          String                       @db.Text
   content_role     ContentRole
+  context_prefix   String?                      @db.Text
   embedding        Unsupported("vector(1536)")?
   token_count      Int
   metadata         Json?

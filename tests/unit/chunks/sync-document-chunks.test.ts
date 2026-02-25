@@ -1,6 +1,7 @@
 /**
  * Tests for chunk lifecycle sync
  * Story 14.2, Task 8 (AC: 17)
+ * Story 14.3, Task 8 — updated to mock Anthropic + OpenAI for incremental embedding
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -14,13 +15,32 @@ vi.mock('@/lib/prisma', () => ({
     contentChunk: {
       deleteMany: vi.fn(),
       createMany: vi.fn(),
+      findMany: vi.fn(),
+      update: vi.fn(),
     },
     $transaction: vi.fn(),
+    $executeRaw: vi.fn(),
   },
+}))
+
+// Mock context prefix generation (Story 14.3)
+vi.mock('@/lib/chunks/generate-context-prefixes', () => ({
+  generateContextPrefixes: vi.fn().mockResolvedValue(new Map()),
+}))
+
+// Mock embedding generation (Story 14.3)
+vi.mock('@/lib/chunks/embed-chunks', () => ({
+  generateEmbeddingsBatch: vi.fn().mockResolvedValue({
+    embeddings: [],
+    totalTokensUsed: 0,
+  }),
+  vectorToString: vi.fn((v: number[]) => `[${v.join(',')}]`),
 }))
 
 import { prisma } from '@/lib/prisma'
 import { syncDocumentChunks } from '@/lib/chunks/sync-document-chunks'
+import { generateContextPrefixes } from '@/lib/chunks/generate-context-prefixes'
+import { generateEmbeddingsBatch } from '@/lib/chunks/embed-chunks'
 import type { CanonicalDocumentJson } from '@/lib/transforms/document-json-schema'
 
 const mockPrisma = prisma as unknown as {
@@ -28,9 +48,19 @@ const mockPrisma = prisma as unknown as {
   contentChunk: {
     deleteMany: ReturnType<typeof vi.fn>
     createMany: ReturnType<typeof vi.fn>
+    findMany: ReturnType<typeof vi.fn>
+    update: ReturnType<typeof vi.fn>
   }
   $transaction: ReturnType<typeof vi.fn>
+  $executeRaw: ReturnType<typeof vi.fn>
 }
+
+const mockGenerateContextPrefixes = generateContextPrefixes as ReturnType<
+  typeof vi.fn
+>
+const mockGenerateEmbeddingsBatch = generateEmbeddingsBatch as ReturnType<
+  typeof vi.fn
+>
 
 function makeDoc(overrides: Record<string, unknown> = {}) {
   const json: CanonicalDocumentJson = {
@@ -71,8 +101,9 @@ function makeDoc(overrides: Record<string, unknown> = {}) {
     title: 'Testlag',
     document_number: 'SFS 2025:1',
     content_type: 'SFS_LAW',
+    slug: 'sfs-2025-1',
     json_content: json,
-    markdown_content: null,
+    markdown_content: '# Testlag\n\nDenna lag gäller.',
     html_content: null,
     ...overrides,
   }
@@ -80,6 +111,8 @@ function makeDoc(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  // Default: no chunks found for embedding phase
+  mockPrisma.contentChunk.findMany.mockResolvedValue([])
 })
 
 describe('syncDocumentChunks', () => {
@@ -152,5 +185,70 @@ describe('syncDocumentChunks', () => {
     expect(mockPrisma.$transaction).not.toHaveBeenCalled()
     expect(result.chunksCreated).toBe(0)
     expect(result.documentId).toBe('nonexistent')
+  })
+
+  it('generates context prefixes and embeddings after chunk creation', async () => {
+    const doc = makeDoc()
+    mockPrisma.legalDocument.findUnique.mockResolvedValue(doc)
+    mockPrisma.$transaction.mockResolvedValue([{ count: 0 }, { count: 1 }])
+
+    // Simulate chunks found after creation
+    mockPrisma.contentChunk.findMany.mockResolvedValue([
+      {
+        id: 'chunk-1',
+        path: 'kap1.§1',
+        content: 'Denna lag gäller.',
+        contextual_header: 'Testlag > 1 §',
+      },
+    ])
+
+    mockGenerateContextPrefixes.mockResolvedValue(
+      new Map([['kap1.§1', 'Inledande bestämmelse.']])
+    )
+    mockGenerateEmbeddingsBatch.mockResolvedValue({
+      embeddings: [new Array(1536).fill(0.1)],
+      totalTokensUsed: 50,
+    })
+
+    const result = await syncDocumentChunks('doc-1')
+
+    expect(mockGenerateContextPrefixes).toHaveBeenCalledTimes(1)
+    expect(mockGenerateEmbeddingsBatch).toHaveBeenCalledTimes(1)
+    expect(mockPrisma.contentChunk.update).toHaveBeenCalledWith({
+      where: { id: 'chunk-1' },
+      data: { context_prefix: 'Inledande bestämmelse.' },
+    })
+    expect(mockPrisma.$executeRaw).toHaveBeenCalled()
+    expect(result.chunksEmbedded).toBe(1)
+  })
+
+  it('does not roll back chunks when embedding fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const doc = makeDoc()
+    mockPrisma.legalDocument.findUnique.mockResolvedValue(doc)
+    mockPrisma.$transaction.mockResolvedValue([{ count: 0 }, { count: 1 }])
+
+    mockPrisma.contentChunk.findMany.mockResolvedValue([
+      {
+        id: 'chunk-1',
+        path: 'kap1.§1',
+        content: 'Text',
+        contextual_header: 'H',
+      },
+    ])
+    mockGenerateContextPrefixes.mockRejectedValue(
+      new Error('Anthropic API down')
+    )
+
+    const result = await syncDocumentChunks('doc-1')
+
+    // Chunks were still created
+    expect(result.chunksCreated).toBe(1)
+    // Embedding failed gracefully
+    expect(result.chunksEmbedded).toBe(0)
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Embedding failed')
+    )
+    errorSpy.mockRestore()
   })
 })
