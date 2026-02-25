@@ -167,6 +167,27 @@ model CompanyProfile {
   address            String?
   contextual_answers Json? // From onboarding questions
 
+  // Story 14.4: Extended fields for compliance agent context
+  org_number             String?
+  organization_type      OrganizationType?
+  industry_label         String?
+  employee_count_range   EmployeeCountRange?
+  activity_flags         Json? // { chemicals, construction, food, personalData, publicSector, heavyMachinery, minorEmployees, internationalOperations }
+  certifications         String[]            @default([])
+  compliance_maturity    ComplianceMaturity?
+  has_compliance_officer Boolean             @default(false)
+  profile_completeness   Int                 @default(0)
+  last_onboarding_at     DateTime?
+
+  // Story 14.4 phase 2: Extended fields
+  municipality              String?
+  website_url               String?
+  founded_year              Int?
+  has_collective_agreement  Boolean              @default(false)
+  collective_agreement_name String?
+  workforce_composition     WorkforceComposition?
+  revenue_range             RevenueRange?
+
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
   @@map("company_profiles")
@@ -466,6 +487,48 @@ enum InvitationStatus {
   ACCEPTED
   EXPIRED
   REVOKED
+}
+
+// Story 14.4: Company profile enums for compliance agent context
+enum OrganizationType {
+  AB
+  HB
+  KOMMUN
+  REGION
+  STATLIG_MYNDIGHET
+  ENSKILD_FIRMA
+  EKONOMISK_FORENING
+  OTHER
+}
+
+enum EmployeeCountRange {
+  RANGE_1_9
+  RANGE_10_49
+  RANGE_50_249
+  RANGE_250_PLUS
+  UNKNOWN
+}
+
+enum ComplianceMaturity {
+  BASIC
+  DEVELOPING
+  ESTABLISHED
+  ADVANCED
+}
+
+enum WorkforceComposition {
+  MOSTLY_WORKERS   // Mestadels arbetare
+  MOSTLY_SALARIED  // Mestadels tjänstemän
+  MIXED            // Blandad
+  UNKNOWN
+}
+
+enum RevenueRange {
+  UNDER_3M          // < 3 MSEK
+  RANGE_3M_TO_40M   // 3–40 MSEK
+  RANGE_40M_TO_400M // 40–400 MSEK
+  OVER_400M         // > 400 MSEK
+  UNKNOWN
 }
 
 enum LawListItemStatus {

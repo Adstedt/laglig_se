@@ -10,7 +10,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useWorkspace } from '@/hooks/use-workspace'
 import { hasPermission } from '@/lib/auth/permissions'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Settings, Users, CreditCard, Bell, Plug, Columns } from 'lucide-react'
+import {
+  Settings,
+  Users,
+  CreditCard,
+  Bell,
+  Plug,
+  Columns,
+  Building2,
+} from 'lucide-react'
 import type { WorkspaceRole, SubscriptionTier } from '@prisma/client'
 import { GeneralTab } from './general-tab'
 import { TeamTab } from './team-tab'
@@ -18,7 +26,9 @@ import { BillingTab } from './billing-tab'
 import { NotificationsTab } from './notifications-tab'
 import { IntegrationsTab } from './integrations-tab'
 import { WorkflowTab } from './workflow-tab'
+import { CompanyProfileTab } from './company-profile-tab'
 import type { TaskColumnWithCount } from '@/app/actions/tasks'
+import type { CompanyProfile } from '@prisma/client'
 
 export interface WorkspaceData {
   id: string
@@ -45,12 +55,14 @@ interface SettingsTabsProps {
   workspace: WorkspaceData
   members: MemberData[]
   columns: TaskColumnWithCount[]
+  companyProfile: CompanyProfile
 }
 
 export function SettingsTabs({
   workspace,
   members,
   columns,
+  companyProfile,
 }: SettingsTabsProps) {
   const { role, isLoading } = useWorkspace()
 
@@ -66,6 +78,7 @@ export function SettingsTabs({
 
   const typedRole = role as WorkspaceRole
   const canAccessBilling = hasPermission(typedRole, 'workspace:billing')
+  const canAccessSettings = hasPermission(typedRole, 'workspace:settings')
 
   return (
     <Tabs defaultValue="general" className="space-y-6">
@@ -74,6 +87,12 @@ export function SettingsTabs({
           <Settings className="h-4 w-4" />
           <span className="hidden sm:inline">Allmänt</span>
         </TabsTrigger>
+        {canAccessSettings && (
+          <TabsTrigger value="company-profile" className="gap-2">
+            <Building2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Företagsprofil</span>
+          </TabsTrigger>
+        )}
         <TabsTrigger value="team" className="gap-2">
           <Users className="h-4 w-4" />
           <span className="hidden sm:inline">Team</span>
@@ -102,6 +121,12 @@ export function SettingsTabs({
       <TabsContent value="general">
         <GeneralTab workspace={workspace} />
       </TabsContent>
+
+      {canAccessSettings && (
+        <TabsContent value="company-profile">
+          <CompanyProfileTab companyProfile={companyProfile} />
+        </TabsContent>
+      )}
 
       <TabsContent value="team">
         <TeamTab members={members} />
