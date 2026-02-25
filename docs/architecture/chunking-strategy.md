@@ -108,7 +108,7 @@ Content that lives outside the `chapters → paragrafer` hierarchy in the `Canon
 
 ## Contextual Header Design
 
-The contextual header is prepended to chunk content before embedding (Story 14.3). This implements the [Anthropic contextual retrieval pattern](https://www.anthropic.com/news/contextual-retrieval) — the embedding captures both the content AND its position in the document hierarchy.
+The contextual header is a structural breadcrumb generated deterministically from the document's JSON structure (Story 14.2). It is prepended to chunk content before embedding.
 
 **Format:** `"{document title} ({document number}) > {chapter} > {paragraf}"`
 
@@ -121,6 +121,65 @@ The contextual header is prepended to chunk content before embedding (Story 14.3
 
 ---
 
+## LLM Context Prefix (Contextual Retrieval)
+
+**Owner:** Story 14.3 (Embedding Generation Pipeline)
+
+In addition to the structural `contextual_header`, each chunk receives an LLM-generated **context prefix** (50-100 tokens) before embedding. This implements [Anthropic's contextual retrieval pattern](https://www.anthropic.com/news/contextual-retrieval), which reduces retrieval failures by up to 67%.
+
+### How It Works
+
+1. For each document, send its full markdown text + all chunk paths/previews to Claude Haiku in **one API call**
+2. The LLM returns a short semantic context for each chunk — explaining what it's about within the document
+3. The context prefix is stored in `ContentChunk.context_prefix` and prepended before embedding
+
+### Why One Call Per Document (Not One Per Chunk)
+
+With ~295K chunks across ~11K documents, sending one call per chunk would mean 295K API calls each containing the full document text. Instead, we batch all chunks for a document in a single call:
+
+- **295K calls → ~11K calls** (one per document)
+- Same total input tokens (each document's markdown is sent once either way)
+- Simpler orchestration, fewer failure points
+
+### Embedding Input Assembly
+
+Each chunk's embedding input combines three layers:
+
+```
+{contextual_header}       ← structural breadcrumb (free, deterministic)
+{context_prefix}          ← LLM semantic summary (Haiku, 50-100 tokens)
+
+{content}                 ← raw chunk text
+```
+
+**Example:**
+```
+Arbetsmiljölag (SFS 1977:1160) > Kap 2: Arbetsmiljöns beskaffenhet > 3 §
+Denna paragraf specificerar arbetsgivarens ansvar för att arbetsplatsen
+utformas så att risker för ohälsa och olycksfall förebyggs.
+
+Arbetsförhållandena skall anpassas till människors olika förutsättningar
+i fysiskt och psykiskt avseende...
+```
+
+### Large Document Strategy
+
+Most documents fit within Claude's context window. For the few that don't:
+
+| Document size (markdown) | Count | Strategy |
+|---|---|---|
+| < 200K tokens | ~11,385 (99.9%) | Send full markdown |
+| > 200K tokens | ~13 | Split at division/avdelning level |
+
+The 13 largest laws (Inkomstskattelagen 316K tokens, Socialförsäkringsbalken 213K, etc.) all have division structure. Each division is sent as a separate API call with only its associated chunks. If a single division exceeds 200K tokens, fall back to chapter-level context.
+
+### Cost
+
+- **One-time:** ~$45-60 for all ~11K documents (Claude Haiku)
+- **Incremental:** Negligible per document update (one Haiku call for ~10-50 chunks)
+
+---
+
 ## Decision Log
 
 | Date | Decision | Rationale |
@@ -130,6 +189,9 @@ The contextual header is prepended to chunk content before embedding (Story 14.3
 | 2026-02-24 | Non-§ content as separate chunks | Transition provisions, preamble, and appendices exist outside the § hierarchy and must be chunked separately to avoid being invisible to search. |
 | 2026-02-24 | Markdown fallback is permanent | Not just for legacy data — future documents may also have structures the JSON parser can't derive § structure from (bilaga, atypical layouts). |
 | 2026-02-24 | Law-first: no amendment chunking | Consolidated SFS_LAW text already reflects amendments (Riksdagen updates within hours). 99.99% of amendments have `base_law_sfs` for reverse lookup. Amendment markdown (1-5K chars) fetched at query time when needed. Reduces corpus from ~340K to ~220K chunks and avoids duplicate content. |
+| 2026-02-25 | LLM context prefixes via Haiku | Anthropic's contextual retrieval reduces retrieval failures by up to 67%. One API call per document (not per chunk) keeps request count at ~11K instead of ~295K. Markdown sent as context (50% smaller than JSON). |
+| 2026-02-25 | One call per document for context | Sending all chunks in one call is cheaper and simpler than per-chunk calls with prompt caching. For 13 oversized laws, split at division/avdelning level. |
+| 2026-02-25 | Markdown as LLM context input | Markdown is ~50% the size of JSON (no schema overhead) and contains the same readable text. All but 13 laws fit within 200K token context window when using markdown. |
 
 ---
 
@@ -165,8 +227,8 @@ These are known areas that may need adjustment based on retrieval quality evalua
 
 3. **Chapter-level summary chunks**: Could generate an additional "chapter overview" chunk containing just the chapter title + list of §§. Would help broader queries like "what does chapter 6 cover?"
 
-4. **Overlapping chunks**: Some RAG systems use overlapping windows. Not implemented initially — the § boundary is clean and overlaps would duplicate content. Revisit if retrieval misses cross-§ concepts.
+4. **Overlapping chunks**: Not needed — the § boundary is a clean semantic unit. The LLM context prefix (Story 14.3) solves the "chunk lacks context" problem more effectively than mechanical overlap. Revisit only if retrieval evaluation shows cross-§ concept misses.
 
-5. **Heading-aware markdown splitting**: The merge algorithm could be enhanced to detect heading patterns (`#`, `##`, bold lines) and never merge across them. Listed as a potential improvement.
+5. **Heading-aware markdown splitting**: The merge algorithm already never merges across heading patterns. Listed as implemented in Story 14.2.
 
 6. **Appendix sub-structure**: Currently one chunk per appendix. Large appendices with internal structure (tables, numbered lists) may benefit from further splitting.

@@ -92,6 +92,8 @@ function makeInput(
     documentId: 'doc-123',
     title: 'Testlag',
     documentNumber: 'SFS 2025:1',
+    contentType: 'SFS_LAW',
+    slug: 'testlag-20251-2025-1',
     jsonContent: makeJson(),
     markdownContent: null,
     htmlContent: null,
@@ -240,8 +242,12 @@ describe('chunkDocument', () => {
 
     it('includes amendedBy in metadata', () => {
       const chunks = chunkDocument(makeInput())
-      // Second paragraf has amendedBy
+      // Second paragraf has amendedBy + base fields
       expect(chunks[1]!.metadata).toEqual({
+        documentNumber: 'SFS 2025:1',
+        contentType: 'SFS_LAW',
+        slug: 'testlag-20251-2025-1',
+        anchorId: 'SFS2025-1_K1_P2',
         amendedBy: 'SFS 2024:100',
         heading: 'Tillämpning',
       })
@@ -485,6 +491,201 @@ describe('chunkDocument', () => {
       expect(estimateTokenCount('a'.repeat(100))).toBe(25)
       // Ceiling
       expect(estimateTokenCount('abc')).toBe(1)
+    })
+  })
+
+  describe('Fix 1: Oversized non-§ content splitting', () => {
+    it('keeps small transition provisions as a single chunk', () => {
+      const json = makeJson({
+        transitionProvisions: [
+          {
+            number: 1,
+            text: '2025:1\nDenna lag träder i kraft den 1 januari 2025.',
+            role: 'TRANSITION_PROVISION',
+          },
+        ],
+      })
+      const chunks = chunkDocument(makeInput({ jsonContent: json }))
+      const tp = chunks.filter((c) => c.path.startsWith('overgangsbest'))
+      expect(tp).toHaveLength(1)
+      expect(tp[0]!.path).toBe('overgangsbest')
+    })
+
+    it('splits oversized transition provisions at SFS-number boundaries', () => {
+      // Generate many transition entries that exceed 1000 tokens total (need >4000 chars)
+      const entries: string[] = []
+      for (let year = 2000; year <= 2025; year++) {
+        entries.push(
+          `${year}:${100 + year - 2000}\nDenna lag träder i kraft den 1 januari ${year}. Äldre föreskrifter gäller fortfarande för förmåner som avser tid före ikraftträdandet av denna lagändring och alla tillhörande bestämmelser som har meddelats med stöd av den upphävda lagen. Den som har påbörjat en utbildning enligt äldre föreskrifter har rätt att slutföra utbildningen.`
+        )
+      }
+      const fullText = entries.join('\n')
+      // Verify test data exceeds cap
+      expect(estimateTokenCount(fullText)).toBeGreaterThan(1000)
+
+      const json = makeJson({
+        transitionProvisions: [
+          { number: 1, text: fullText, role: 'TRANSITION_PROVISION' },
+        ],
+      })
+      const chunks = chunkDocument(makeInput({ jsonContent: json }))
+      const tp = chunks.filter((c) => c.path.startsWith('overgangsbest'))
+
+      expect(tp.length).toBeGreaterThan(1)
+      // Each sub-chunk should be within cap
+      for (const chunk of tp) {
+        expect(chunk.token_count).toBeLessThanOrEqual(1100)
+        expect(chunk.content_role).toBe('TRANSITION_PROVISION')
+      }
+      // Paths should be numbered
+      expect(tp[0]!.path).toBe('overgangsbest.1')
+      expect(tp[1]!.path).toBe('overgangsbest.2')
+      // Headers should include SFS number
+      expect(tp[0]!.contextual_header).toContain('Övergångsbestämmelser')
+    })
+
+    it('splits oversized appendix into sub-chunks', () => {
+      // Generate a large appendix > 1000 tokens (need >4000 chars since token = chars/4)
+      const paragraphs = Array.from(
+        { length: 40 },
+        (_, i) =>
+          `Punkt ${i + 1}. Denna bestämmelse reglerar hantering av kemiska ämnen och farliga produkter i arbetsmiljön samt skydd för arbetstagare enligt gällande föreskrifter och riktlinjer för säkerhet på arbetsplatsen.`
+      )
+      const bigAppendix = paragraphs.join('\n\n')
+      expect(estimateTokenCount(bigAppendix)).toBeGreaterThan(1000)
+
+      const json = makeJson({
+        appendices: [{ title: 'Bilaga 1', htmlContent: '', text: bigAppendix }],
+      })
+      const chunks = chunkDocument(makeInput({ jsonContent: json }))
+      const bilagor = chunks.filter((c) => c.path.startsWith('bilaga.1'))
+
+      expect(bilagor.length).toBeGreaterThan(1)
+      // Sub-chunks should be numbered
+      expect(bilagor[0]!.path).toBe('bilaga.1.1')
+      expect(bilagor[1]!.path).toBe('bilaga.1.2')
+      for (const chunk of bilagor) {
+        expect(chunk.token_count).toBeLessThanOrEqual(1100)
+        expect(chunk.contextual_header).toContain('Bilaga 1')
+      }
+    })
+
+    it('splits oversized preamble into sub-chunks', () => {
+      const paragraphs = Array.from(
+        { length: 40 },
+        (_, i) =>
+          `Stycke ${i + 1} av inledningen till denna förordning som beskriver bakgrunden och syftet med lagstiftningen i detalj och som anger de principer som ska tillämpas vid genomförandet av bestämmelserna.`
+      )
+      const bigPreamble = paragraphs.join('\n\n')
+      expect(estimateTokenCount(bigPreamble)).toBeGreaterThan(1000)
+
+      const json = makeJson({
+        preamble: { htmlContent: '', text: bigPreamble },
+      })
+      const chunks = chunkDocument(makeInput({ jsonContent: json }))
+      const preambles = chunks.filter((c) => c.path.startsWith('preamble'))
+
+      expect(preambles.length).toBeGreaterThan(1)
+      expect(preambles[0]!.path).toBe('preamble.1')
+      expect(preambles[1]!.path).toBe('preamble.2')
+      for (const chunk of preambles) {
+        expect(chunk.token_count).toBeLessThanOrEqual(1100)
+        expect(chunk.contextual_header).toContain('Inledning')
+      }
+    })
+  })
+
+  describe('Fix 2: Duplicate path deduplication', () => {
+    it('appends .v2 for duplicate paragraf paths', () => {
+      // Simulate two paragrafer with the same number (current + future version)
+      const json = makeJson({
+        chapters: [
+          {
+            number: '6',
+            title: 'Samverkan',
+            paragrafer: [
+              {
+                number: '17',
+                heading: null,
+                content:
+                  '/Upphör att gälla U:2028-07-01/ Nuvarande version av paragraf 17.',
+                amendedBy: null,
+                stycken: [
+                  {
+                    number: 1,
+                    text: '/Upphör att gälla U:2028-07-01/ Nuvarande version.',
+                    role: 'STYCKE',
+                  },
+                ],
+              },
+              {
+                number: '17',
+                heading: null,
+                content:
+                  '/Träder i kraft I:2028-07-01/ Framtida version av paragraf 17.',
+                amendedBy: 'SFS 2025:732',
+                stycken: [
+                  {
+                    number: 1,
+                    text: '/Träder i kraft I:2028-07-01/ Framtida version.',
+                    role: 'STYCKE',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      })
+      const chunks = chunkDocument(makeInput({ jsonContent: json }))
+      const paths = chunks.map((c) => c.path)
+      expect(paths).toContain('kap6.§17')
+      expect(paths).toContain('kap6.§17.v2')
+      // No further duplicates
+      expect(new Set(paths).size).toBe(paths.length)
+    })
+
+    it('handles multiple duplicates (.v2, .v3)', () => {
+      const json = makeJson({
+        chapters: [
+          {
+            number: '1',
+            title: 'Test',
+            paragrafer: [
+              {
+                number: '1',
+                heading: null,
+                content: 'Version A.',
+                amendedBy: null,
+                stycken: [{ number: 1, text: 'Version A.', role: 'STYCKE' }],
+              },
+              {
+                number: '1',
+                heading: null,
+                content: 'Version B.',
+                amendedBy: null,
+                stycken: [{ number: 1, text: 'Version B.', role: 'STYCKE' }],
+              },
+              {
+                number: '1',
+                heading: null,
+                content: 'Version C.',
+                amendedBy: null,
+                stycken: [{ number: 1, text: 'Version C.', role: 'STYCKE' }],
+              },
+            ],
+          },
+        ],
+      })
+      const chunks = chunkDocument(makeInput({ jsonContent: json }))
+      const paths = chunks.map((c) => c.path)
+      expect(paths).toEqual(['kap1.§1', 'kap1.§1.v2', 'kap1.§1.v3'])
+    })
+
+    it('does not modify unique paths', () => {
+      const chunks = chunkDocument(makeInput())
+      const paths = chunks.map((c) => c.path)
+      // Default fixture has kap1.§1, kap1.§2, kap2.§1 — all unique
+      expect(paths).toEqual(['kap1.§1', 'kap1.§2', 'kap2.§1'])
     })
   })
 })

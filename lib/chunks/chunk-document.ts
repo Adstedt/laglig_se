@@ -46,6 +46,8 @@ export interface ChunkDocumentInput {
   documentId: string
   title: string | null
   documentNumber: string | null
+  contentType: string | null
+  slug: string | null
   jsonContent: CanonicalDocumentJson | null
   markdownContent: string | null
   htmlContent: string | null
@@ -56,6 +58,32 @@ const MERGE_TARGET_TOKENS = 400
 const CAP_THRESHOLD_TOKENS = 1000
 const MIN_CHUNK_CHARS = 20
 
+// Non-§ content tuning (higher merge target for structured legal content)
+const NON_PARA_MERGE_TARGET_TOKENS = 800
+const NON_PARA_CAP_TOKENS = 1000
+
+// SFS transition provision boundary pattern: "YYYY:NNN" at start of line
+const SFS_TRANSITION_BOUNDARY = /^(\d{4}:\d{1,4})\b/m
+
+/** Convert document number to the anchor ID prefix used by the reader UI */
+function toDocId(documentNumber: string): string {
+  return documentNumber.replace(/\s+/g, '').replace(/:/g, '-')
+}
+
+/** Build reader-compatible anchor ID for a paragraf chunk */
+function buildAnchorId(
+  documentNumber: string | null,
+  chapterNumber: string | null,
+  paragrafNumber: string
+): string | null {
+  if (!documentNumber) return null
+  const docId = toDocId(documentNumber)
+  if (chapterNumber && chapterNumber !== '0') {
+    return `${docId}_K${chapterNumber}_P${paragrafNumber}`
+  }
+  return `${docId}_P${paragrafNumber}`
+}
+
 /**
  * Derive chunks from a legal document.
  * Returns an array of ChunkInput ready for Prisma createMany.
@@ -65,11 +93,19 @@ export function chunkDocument(input: ChunkDocumentInput): ChunkInput[] {
     documentId,
     title,
     documentNumber,
+    contentType,
+    slug,
     jsonContent,
     markdownContent,
     htmlContent,
   } = input
   const docLabel = `${title ?? 'Untitled'} (${documentNumber ?? 'unknown'})`
+
+  // Base metadata present on every chunk for retrieval filtering
+  const baseMeta: Record<string, unknown> = {}
+  if (documentNumber) baseMeta.documentNumber = documentNumber
+  if (contentType) baseMeta.contentType = contentType
+  if (slug) baseMeta.slug = slug
 
   if (!jsonContent) {
     // No JSON at all — try markdown fallback
@@ -77,6 +113,8 @@ export function chunkDocument(input: ChunkDocumentInput): ChunkInput[] {
       documentId,
       title,
       documentNumber,
+      contentType,
+      slug,
       markdownContent,
       htmlContent
     )
@@ -110,6 +148,8 @@ export function chunkDocument(input: ChunkDocumentInput): ChunkInput[] {
       documentId,
       title,
       documentNumber,
+      contentType,
+      slug,
       markdownContent,
       htmlContent
     )
@@ -141,8 +181,14 @@ export function chunkDocument(input: ChunkDocumentInput): ChunkInput[] {
       // Determine dominant content role
       const contentRole = getDominantRole(paragraf)
 
-      // Build metadata
-      const metadata: Record<string, unknown> = {}
+      // Build metadata (base + paragraf-specific)
+      const metadata: Record<string, unknown> = { ...baseMeta }
+      // Only SFS_LAW uses our generated anchor format; agency docs have
+      // their own anchor schemes from the source HTML.
+      if (contentType === 'SFS_LAW') {
+        const anchorId = buildAnchorId(documentNumber, chapNum, paragraf.number)
+        if (anchorId) metadata.anchorId = anchorId
+      }
       if (paragraf.amendedBy) {
         metadata.amendedBy = paragraf.amendedBy
       }
@@ -163,71 +209,151 @@ export function chunkDocument(input: ChunkDocumentInput): ChunkInput[] {
         content: chunkContent,
         content_role: contentRole,
         token_count: estimateTokenCount(chunkContent),
-        metadata: Object.keys(metadata).length > 0 ? metadata : null,
+        metadata,
       })
     }
   }
 
-  // Tier 2: Non-§ content
-  // Transition provisions
+  // Tier 2: Non-§ content (with splitting for oversized chunks)
+  // Transition provisions — split at SFS-number boundaries when oversized
   if (
     jsonContent.transitionProvisions &&
     jsonContent.transitionProvisions.length > 0
   ) {
     const text = jsonContent.transitionProvisions.map((s) => s.text).join('\n')
     if (text.trim().length >= MIN_CHUNK_CHARS) {
-      chunks.push({
-        source_type: 'LEGAL_DOCUMENT',
-        source_id: documentId,
-        workspace_id: null,
-        path: 'overgangsbest',
-        contextual_header: `${title ?? ''} (${documentNumber ?? ''}) > Övergångsbestämmelser`,
-        content: text.trim(),
-        content_role: 'TRANSITION_PROVISION',
-        token_count: estimateTokenCount(text),
-        metadata: null,
-      })
+      const baseHeader = `${title ?? ''} (${documentNumber ?? ''}) > Övergångsbestämmelser`
+      const trimmed = text.trim()
+
+      if (estimateTokenCount(trimmed) <= NON_PARA_CAP_TOKENS) {
+        // Small enough — single chunk
+        chunks.push({
+          source_type: 'LEGAL_DOCUMENT',
+          source_id: documentId,
+          workspace_id: null,
+          path: 'overgangsbest',
+          contextual_header: baseHeader,
+          content: trimmed,
+          content_role: 'TRANSITION_PROVISION',
+          token_count: estimateTokenCount(trimmed),
+          metadata: { ...baseMeta },
+        })
+      } else {
+        // Oversized — split at SFS-number boundaries
+        const subChunks = splitTransitionProvisions(trimmed)
+        for (let i = 0; i < subChunks.length; i++) {
+          const sub = subChunks[i]!
+          if (sub.content.length < MIN_CHUNK_CHARS) continue
+          chunks.push({
+            source_type: 'LEGAL_DOCUMENT',
+            source_id: documentId,
+            workspace_id: null,
+            path:
+              subChunks.length === 1
+                ? 'overgangsbest'
+                : `overgangsbest.${i + 1}`,
+            contextual_header: sub.sfsNumber
+              ? `${baseHeader} > ${sub.sfsNumber}`
+              : baseHeader,
+            content: sub.content,
+            content_role: 'TRANSITION_PROVISION',
+            token_count: estimateTokenCount(sub.content),
+            metadata: sub.sfsNumber
+              ? { ...baseMeta, sfsNumber: sub.sfsNumber }
+              : { ...baseMeta },
+          })
+        }
+      }
     }
   }
 
-  // Preamble
+  // Preamble — split with paragraph-merge when oversized
   if (jsonContent.preamble && jsonContent.preamble.text?.trim()) {
     const text = jsonContent.preamble.text.trim()
     if (text.length >= MIN_CHUNK_CHARS) {
-      chunks.push({
-        source_type: 'LEGAL_DOCUMENT',
-        source_id: documentId,
-        workspace_id: null,
-        path: 'preamble',
-        contextual_header: `${title ?? ''} (${documentNumber ?? ''}) > Inledning`,
-        content: text,
-        content_role: 'STYCKE',
-        token_count: estimateTokenCount(text),
-        metadata: null,
-      })
+      const baseHeader = `${title ?? ''} (${documentNumber ?? ''}) > Inledning`
+
+      if (estimateTokenCount(text) <= NON_PARA_CAP_TOKENS) {
+        chunks.push({
+          source_type: 'LEGAL_DOCUMENT',
+          source_id: documentId,
+          workspace_id: null,
+          path: 'preamble',
+          contextual_header: baseHeader,
+          content: text,
+          content_role: 'STYCKE',
+          token_count: estimateTokenCount(text),
+          metadata: { ...baseMeta },
+        })
+      } else {
+        const subChunks = splitNonParaContent(text)
+        for (let i = 0; i < subChunks.length; i++) {
+          const sub = subChunks[i]!.trim()
+          if (sub.length < MIN_CHUNK_CHARS) continue
+          chunks.push({
+            source_type: 'LEGAL_DOCUMENT',
+            source_id: documentId,
+            workspace_id: null,
+            path: subChunks.length === 1 ? 'preamble' : `preamble.${i + 1}`,
+            contextual_header: baseHeader,
+            content: sub,
+            content_role: 'STYCKE',
+            token_count: estimateTokenCount(sub),
+            metadata: { ...baseMeta },
+          })
+        }
+      }
     }
   }
 
-  // Appendices
+  // Appendices — split with paragraph-merge when oversized
   if (jsonContent.appendices) {
     for (let i = 0; i < jsonContent.appendices.length; i++) {
       const appendix = jsonContent.appendices[i]!
       const text = appendix.text?.trim()
       if (!text || text.length < MIN_CHUNK_CHARS) continue
       const n = i + 1
-      chunks.push({
-        source_type: 'LEGAL_DOCUMENT',
-        source_id: documentId,
-        workspace_id: null,
-        path: `bilaga.${n}`,
-        contextual_header: `${title ?? ''} (${documentNumber ?? ''}) > Bilaga ${n}`,
-        content: text,
-        content_role: 'STYCKE',
-        token_count: estimateTokenCount(text),
-        metadata: appendix.title ? { appendixTitle: appendix.title } : null,
-      })
+      const baseHeader = `${title ?? ''} (${documentNumber ?? ''}) > Bilaga ${n}`
+      const appendixMeta = appendix.title
+        ? { ...baseMeta, appendixTitle: appendix.title }
+        : { ...baseMeta }
+
+      if (estimateTokenCount(text) <= NON_PARA_CAP_TOKENS) {
+        chunks.push({
+          source_type: 'LEGAL_DOCUMENT',
+          source_id: documentId,
+          workspace_id: null,
+          path: `bilaga.${n}`,
+          contextual_header: baseHeader,
+          content: text,
+          content_role: 'STYCKE',
+          token_count: estimateTokenCount(text),
+          metadata: appendixMeta,
+        })
+      } else {
+        const subChunks = splitNonParaContent(text)
+        for (let j = 0; j < subChunks.length; j++) {
+          const sub = subChunks[j]!.trim()
+          if (sub.length < MIN_CHUNK_CHARS) continue
+          chunks.push({
+            source_type: 'LEGAL_DOCUMENT',
+            source_id: documentId,
+            workspace_id: null,
+            path:
+              subChunks.length === 1 ? `bilaga.${n}` : `bilaga.${n}.${j + 1}`,
+            contextual_header: baseHeader,
+            content: sub,
+            content_role: 'STYCKE',
+            token_count: estimateTokenCount(sub),
+            metadata: appendixMeta,
+          })
+        }
+      }
     }
   }
+
+  // Fix 2: Deduplicate paths — append .v2, .v3 for duplicates
+  deduplicatePaths(chunks)
 
   return chunks
 }
@@ -239,9 +365,9 @@ export function chunkDocument(input: ChunkDocumentInput): ChunkInput[] {
 /** Flatten chapters from both top-level and division-nested chapters */
 function getAllChapters(json: CanonicalDocumentJson): CanonicalChapter[] {
   if (json.divisions && json.divisions.length > 0) {
-    return json.divisions.flatMap((d) => d.chapters)
+    return json.divisions.flatMap((d) => d.chapters ?? [])
   }
-  return json.chapters
+  return json.chapters ?? []
 }
 
 /** Build contextual header for a paragraf chunk */
@@ -299,6 +425,149 @@ function mapTSRoleToPrisma(role: TSContentRole): ChunkContentRole {
 }
 
 // ============================================================================
+// Non-§ content splitting
+// ============================================================================
+
+interface TransitionChunk {
+  sfsNumber: string | null
+  content: string
+}
+
+/**
+ * Split transition provisions at SFS-number boundaries (e.g. "2011:1082\n...").
+ * Each amendment's transition clause becomes its own chunk.
+ * Adjacent small entries are merged up to the cap threshold.
+ */
+function splitTransitionProvisions(text: string): TransitionChunk[] {
+  // Split at lines starting with "YYYY:NNN"
+  const entries: TransitionChunk[] = []
+  const lines = text.split('\n')
+  let currentSfs: string | null = null
+  let currentLines: string[] = []
+
+  for (const line of lines) {
+    const match = SFS_TRANSITION_BOUNDARY.exec(line)
+    if (match) {
+      // Flush previous entry
+      if (currentLines.length > 0) {
+        const content = currentLines.join('\n').trim()
+        if (content) entries.push({ sfsNumber: currentSfs, content })
+      }
+      currentSfs = match[1]!
+      currentLines = [line]
+    } else {
+      currentLines.push(line)
+    }
+  }
+  // Flush last entry
+  if (currentLines.length > 0) {
+    const content = currentLines.join('\n').trim()
+    if (content) entries.push({ sfsNumber: currentSfs, content })
+  }
+
+  // If no SFS boundaries found, fall back to paragraph-merge
+  if (entries.length <= 1) {
+    const subBlocks = splitNonParaContent(text)
+    return subBlocks.map((block) => ({
+      sfsNumber: null,
+      content: block.trim(),
+    }))
+  }
+
+  // Merge adjacent small entries up to the cap threshold
+  const merged: TransitionChunk[] = []
+  let buffer: TransitionChunk | null = null
+
+  for (const entry of entries) {
+    if (!buffer) {
+      buffer = { ...entry }
+    } else {
+      const combined = `${buffer.content}\n${entry.content}`
+      if (estimateTokenCount(combined) <= NON_PARA_CAP_TOKENS) {
+        buffer.content = combined
+        // Keep the first SFS number as the label
+      } else {
+        merged.push(buffer)
+        buffer = { ...entry }
+      }
+    }
+  }
+  if (buffer) merged.push(buffer)
+
+  return merged
+}
+
+/**
+ * Split oversized non-§ content (preamble/appendix) using paragraph-merge.
+ * Higher merge target than markdown fallback since legal content is denser.
+ */
+function splitNonParaContent(text: string): string[] {
+  const rawParagraphs = text.split(/\n\n+/)
+  const merged = mergeNonParaParagraphs(rawParagraphs)
+
+  const result: string[] = []
+  for (const block of merged) {
+    const trimmed = block.trim()
+    if (!trimmed) continue
+    if (estimateTokenCount(trimmed) > NON_PARA_CAP_TOKENS) {
+      // Further split oversized blocks at sentence boundaries
+      result.push(...splitOversized(trimmed))
+    } else {
+      result.push(trimmed)
+    }
+  }
+  return result
+}
+
+/** Merge paragraphs with non-§ merge target (~800 tokens) */
+function mergeNonParaParagraphs(paragraphs: string[]): string[] {
+  const result: string[] = []
+  let buffer = ''
+
+  for (const para of paragraphs) {
+    const trimmed = para.trim()
+    if (!trimmed) continue
+
+    const isHeading = /^#{1,6}\s/.test(trimmed)
+
+    if (isHeading && buffer) {
+      result.push(buffer)
+      buffer = ''
+    }
+
+    if (!buffer) {
+      buffer = trimmed
+    } else {
+      const combined = `${buffer}\n\n${trimmed}`
+      if (
+        estimateTokenCount(combined) <= NON_PARA_MERGE_TARGET_TOKENS &&
+        !isHeading
+      ) {
+        buffer = combined
+      } else {
+        result.push(buffer)
+        buffer = trimmed
+      }
+    }
+  }
+
+  if (buffer) result.push(buffer)
+  return result
+}
+
+/** Deduplicate paths within a chunk array — append .v2, .v3 for duplicates */
+function deduplicatePaths(chunks: ChunkInput[]): void {
+  const seen = new Map<string, number>()
+  for (const chunk of chunks) {
+    const count = seen.get(chunk.path) ?? 0
+    if (count > 0) {
+      chunk.path = `${chunk.path}.v${count + 1}`
+    }
+    seen.set(chunk.path.replace(/\.v\d+$/, ''), count + 1)
+  }
+}
+
+// ============================================================================
 // Tier 3: Markdown Fallback (Paragraph-Merge)
 // ============================================================================
 
@@ -310,6 +579,8 @@ function chunkFromMarkdown(
   documentId: string,
   title: string | null,
   documentNumber: string | null,
+  contentType: string | null,
+  slug: string | null,
   markdownContent: string | null,
   htmlContent: string | null
 ): ChunkInput[] {
@@ -321,6 +592,10 @@ function chunkFromMarkdown(
   if (!text) return []
 
   const header = `${title ?? ''} (${documentNumber ?? ''})`
+  const mdBaseMeta: Record<string, unknown> = {}
+  if (documentNumber) mdBaseMeta.documentNumber = documentNumber
+  if (contentType) mdBaseMeta.contentType = contentType
+  if (slug) mdBaseMeta.slug = slug
   const rawParagraphs = text.split(/\n\n+/)
   const merged = mergeParagraphs(rawParagraphs)
 
@@ -332,6 +607,8 @@ function chunkFromMarkdown(
     if (trimmed.length < MIN_CHUNK_CHARS) continue
 
     const tokens = estimateTokenCount(trimmed)
+    const chunkMeta =
+      Object.keys(mdBaseMeta).length > 0 ? { ...mdBaseMeta } : null
     if (tokens > CAP_THRESHOLD_TOKENS) {
       // Split oversized block
       const subBlocks = splitOversized(trimmed)
@@ -347,7 +624,7 @@ function chunkFromMarkdown(
           content: subTrimmed,
           content_role: 'MARKDOWN_CHUNK',
           token_count: estimateTokenCount(subTrimmed),
-          metadata: null,
+          metadata: chunkMeta,
         })
         chunkIndex++
       }
@@ -361,7 +638,7 @@ function chunkFromMarkdown(
         content: trimmed,
         content_role: 'MARKDOWN_CHUNK',
         token_count: estimateTokenCount(trimmed),
-        metadata: null,
+        metadata: chunkMeta,
       })
       chunkIndex++
     }
