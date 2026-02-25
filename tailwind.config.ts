@@ -107,12 +107,23 @@ const config: Config = {
             opacity: '0',
           },
         },
+        'border-pulse': {
+          '0%, 100%': {
+            borderColor: 'rgb(239 68 68 / 0.2)',
+            boxShadow: '0 0 0 0 rgb(239 68 68 / 0)',
+          },
+          '50%': {
+            borderColor: 'rgb(239 68 68 / 0.6)',
+            boxShadow: '0 0 8px 0 rgb(239 68 68 / 0.12)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'collapsible-down': 'collapsible-down 0.2s ease-out',
         'collapsible-up': 'collapsible-up 0.2s ease-out',
+        'border-pulse': 'border-pulse 3s ease-in-out infinite',
       },
     },
   },
