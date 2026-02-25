@@ -325,13 +325,18 @@ export function HemChat({
           ))}
         </div>
 
-        {/* History link */}
+        {/* History button */}
         <div className="flex justify-center">
           <button
             onClick={() => setViewState('history')}
-            className="flex items-center gap-1.5 text-sm text-foreground/50 transition-colors hover:text-foreground"
+            className={cn(
+              'flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm',
+              'text-foreground/70 transition-colors',
+              'hover:bg-accent hover:text-foreground',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+            )}
           >
-            <History className="h-3.5 w-3.5" />
+            <History className="h-4 w-4" />
             Tidigare konversationer
           </button>
         </div>
