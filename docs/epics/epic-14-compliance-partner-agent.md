@@ -112,7 +112,7 @@ This transforms Laglig from a passive law registry into an active compliance par
 | # | Story | Status |
 |---|-------|--------|
 | **14.10** | Agentic Change Assessment Flow (formerly Epic 8 Story 8.3) | Draft |
-| **14.11** | Compliance Partner Chat Interface | Draft |
+| **14.11** | Chat-First Dashboard ("Hem") | Draft |
 
 ---
 
@@ -349,24 +349,24 @@ This transforms Laglig from a passive law registry into an active compliance par
 - Compliance status history: log status transitions (add `ComplianceStatusLog` table or use `ChangeAssessment` as the audit trail)
 - **This is the company memory:** Every assessment becomes a data point the agent can reference in future interactions ("Senast den här lagen ändrades bedömde ni det som medel påverkan och skapade 3 uppgifter")
 
-### Story 14.11: Compliance Partner Chat Interface
+### Story 14.11: Chat-First Dashboard ("Hem")
 
 **As a** workspace member,
-**I want** to ask the compliance partner general questions about laws and my company's compliance posture,
-**so that** I have an always-available expert advisor beyond the change assessment flow.
+**I want** the dashboard to be a chat-first agent interface with contextual compliance cards,
+**so that** I can interact with my compliance partner naturally as my primary workspace experience.
 
 **Key deliverables:**
-- Chat interface accessible from workspace navigation (enhance or replace existing Story 3.3 chat UI)
-- Full tool access: all read + write tools from Story 14.7
-- Persistent conversation history per workspace (store in `WorkspaceConversation` with type `AD_HOC`)
-- Example interactions:
-  - "Vilka krav ställer AFS 2023:1 på oss som byggföretag?"
-  - "Visa en sammanfattning av alla ändringar senaste månaden"
-  - "Skapa en uppgift för att uppdatera vår arbetsmiljöpolicy"
-  - "Hur har vi hanterat liknande ändringar tidigare?"
-- Tool use visibility: show the user what tools the agent is using (collapsible "agent thinking" panel)
-- Onboarding nudge: if WorkspaceProfile is incomplete, suggest running the onboarding conversation
-- **Scope boundary:** This story builds the general chat surface. The assessment-specific UX is Story 14.10.
+- Transform the dashboard from a widget grid into a Cowork-inspired chat-first interface
+- Sidebar nav renamed from "Dashboard" to "Hem", route stays `/dashboard`
+- Branded greeting heading using Safiro font, centered chat input
+- Dynamic context cards above the chat: compliance %, pending amendments, overdue tasks — clickable to start conversations
+- Conversation persists within a work session, shared between Hem page and the right sidebar on other pages
+- "Ny konversation" saves the current chat; "Tidigare konversationer" list to revisit saved chats
+- Right sidebar AI chat toggle hidden on `/dashboard` (Hem IS the chat); sidebar on other pages shares the same global conversation
+- New login/session starts fresh with updated context cards
+- Schema change: `conversation_id` field on `ChatMessage` for grouping archived conversations
+- **Dependency change:** This story has NO dependencies — it is the foundational agent surface. Stories 14.5 (onboarding), 14.7 (tools), 14.9 (system prompt), and 14.10 (assessment flow) build ON TOP of this interface.
+- **Scope boundary:** UI shell + wiring existing chat capabilities. Full agent tools come with 14.7+.
 
 ---
 
@@ -386,8 +386,8 @@ Phase 3 (Agent Core)
   14.9                       (system prompt — needs 14.7 + 14.8 to reference tool behavior)
 
 Phase 4 (Agent UX)
-  14.10                      (assessment flow — needs 14.7 + 14.8 + 14.9)
-  14.11                      (general chat — needs 14.7 + 14.8 + 14.9)
+  14.11                      (chat-first dashboard "Hem" — NO dependencies, foundational surface)
+  14.10                      (assessment flow — needs 14.7 + 14.8 + 14.9 + 14.11)
 ```
 
 **Cross-epic dependencies:**

@@ -183,9 +183,13 @@ export function chunkDocument(input: ChunkDocumentInput): ChunkInput[] {
 
       // Build metadata (base + paragraf-specific)
       const metadata: Record<string, unknown> = { ...baseMeta }
-      // Only SFS_LAW uses our generated anchor format; agency docs have
-      // their own anchor schemes from the source HTML.
-      if (contentType === 'SFS_LAW') {
+      // Generate anchorId for docs that use our {DOCID}_K{n}_P{n} format.
+      // AFS docs are HTML-scraped from av.se with their own slugified IDs,
+      // so skip those. All other agency docs go through our normalizer.
+      const isAfsScraped =
+        contentType === 'AGENCY_REGULATION' &&
+        documentNumber?.startsWith('AFS ')
+      if (!isAfsScraped) {
         const anchorId = buildAnchorId(documentNumber, chapNum, paragraf.number)
         if (anchorId) metadata.anchorId = anchorId
       }
