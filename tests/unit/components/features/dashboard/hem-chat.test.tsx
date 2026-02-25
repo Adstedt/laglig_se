@@ -163,7 +163,7 @@ describe('HemChat', () => {
   })
 
   // --- Test 3: Context cards with mock data ---
-  it('renders context cards with dashboard data including pending amendments', () => {
+  it('renders context cards with sentence-based dashboard data', () => {
     const dashboardData = {
       complianceStats: { total: 100, compliant: 75 },
       taskCounts: { overdue: 2, thisWeek: 5, myTasks: 3 },
@@ -172,18 +172,16 @@ describe('HemChat', () => {
 
     render(<HemChat mode="full" dashboardData={dashboardData} />)
 
-    // Should show compliance percentage
-    expect(screen.getByText('75%')).toBeInTheDocument()
-    expect(screen.getByText('Efterlevnad')).toBeInTheDocument()
-    // Should show pending amendments as "X nya"
-    expect(screen.getByText('3 nya')).toBeInTheDocument()
-    expect(screen.getByText('Ändringar')).toBeInTheDocument()
-    // Should show overdue count
-    expect(screen.getByText('2')).toBeInTheDocument()
-    expect(screen.getByText('Förfallna')).toBeInTheDocument()
-    // Should show this week count
-    expect(screen.getByText('5')).toBeInTheDocument()
-    expect(screen.getByText('Denna vecka')).toBeInTheDocument()
+    // Each card is a self-contained sentence with the number in context
+    expect(screen.getByText('75 av 100 lagar uppfyllda')).toBeInTheDocument()
+    expect(screen.getByText('3 nya lagändringar')).toBeInTheDocument()
+    expect(screen.getByText('2 förfallna uppgifter')).toBeInTheDocument()
+    expect(screen.getByText('5 uppgifter denna vecka')).toBeInTheDocument()
+    // Subtitles provide context or call-to-action
+    expect(screen.getByText('Visa efterlevnadsöversikt')).toBeInTheDocument()
+    expect(screen.getByText('att granska')).toBeInTheDocument()
+    expect(screen.getByText('Kräver din åtgärd')).toBeInTheDocument()
+    expect(screen.getByText('Visa veckans plan')).toBeInTheDocument()
   })
 
   // --- Test 3b: Progress bar renders with correct color ---
@@ -201,6 +199,24 @@ describe('HemChat', () => {
     // Green bar for > 66%
     const fill = progressBar.firstChild as HTMLElement
     expect(fill.className).toContain('bg-emerald-500')
+  })
+
+  // --- Test 3b2: Singular grammar and positive states ---
+  it('uses singular grammar and positive messaging for zero/one values', () => {
+    const dashboardData = {
+      complianceStats: { total: 10, compliant: 10 },
+      taskCounts: { overdue: 0, thisWeek: 1, myTasks: 1 },
+      pendingAmendments: 1,
+    }
+
+    render(<HemChat mode="full" dashboardData={dashboardData} />)
+
+    expect(screen.getByText('Alla 10 lagar uppfyllda')).toBeInTheDocument()
+    expect(screen.getByText('Full efterlevnad')).toBeInTheDocument()
+    expect(screen.getByText('1 ny lagändring')).toBeInTheDocument()
+    expect(screen.getByText('Inga förfallna uppgifter')).toBeInTheDocument()
+    expect(screen.getByText('Allt i ordning')).toBeInTheDocument()
+    expect(screen.getByText('1 uppgift denna vecka')).toBeInTheDocument()
   })
 
   // --- Test 3c: Urgent indicator appears when overdue > 0 ---
@@ -237,8 +253,10 @@ describe('HemChat', () => {
 
     render(<HemChat mode="full" dashboardData={dashboardData} />)
 
-    // Click the Efterlevnad card
-    const complianceCard = screen.getByText('Efterlevnad').closest('button')
+    // Click the compliance card
+    const complianceCard = screen
+      .getByText('75 av 100 lagar uppfyllda')
+      .closest('button')
     expect(complianceCard).toBeInTheDocument()
     await user.click(complianceCard!)
 
@@ -247,12 +265,14 @@ describe('HemChat', () => {
     )
   })
 
-  // --- Test 5: Context cards show "–" on null data ---
-  it('shows dash values when dashboardData is null', () => {
+  // --- Test 5: Context cards show fallback titles on null data ---
+  it('shows fallback titles when dashboardData is null', () => {
     render(<HemChat mode="full" dashboardData={null} />)
 
-    const dashes = screen.getAllByText('–')
-    expect(dashes.length).toBeGreaterThanOrEqual(4)
+    expect(screen.getByText('Efterlevnad')).toBeInTheDocument()
+    expect(screen.getByText('Lagändringar')).toBeInTheDocument()
+    expect(screen.getByText('Förfallna uppgifter')).toBeInTheDocument()
+    expect(screen.getByText('Denna vecka')).toBeInTheDocument()
   })
 
   // --- Test 6: Context cards show skeleton on loading ---
