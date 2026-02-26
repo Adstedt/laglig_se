@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
-  LayoutDashboard,
+  Home,
   MessageSquare,
   Scale,
   BookOpen,
@@ -44,8 +44,8 @@ interface MobileSidebarProps {
 // Nav items without Inställningar (pinned to bottom)
 const platformItems = [
   {
-    title: 'Dashboard',
-    icon: LayoutDashboard,
+    title: 'Hem',
+    icon: Home,
     href: '/dashboard',
   },
   {
@@ -309,10 +309,14 @@ export function MobileSidebar({
         <div className="flex flex-col h-[calc(100%-65px)]">
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto p-3">
-            {/* Platform Section */}
+            {/* Platform Section — hide AI Chat toggle on /dashboard (Hem IS the chat) */}
             <div>
               <div className="space-y-1">
-                {platformItems.map(renderNavItem)}
+                {platformItems
+                  .filter(
+                    (item) => !(item.isToggle && pathname === '/dashboard')
+                  )
+                  .map(renderNavItem)}
               </div>
             </div>
 

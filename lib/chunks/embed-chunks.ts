@@ -10,8 +10,8 @@ import OpenAI from 'openai'
 
 const EMBEDDING_MODEL = 'text-embedding-3-small'
 const MAX_EMBEDDING_TOKENS = 8191
-// Conservative char limit: ~4 chars per token, leave room for tokenizer variance
-const MAX_EMBEDDING_CHARS = MAX_EMBEDDING_TOKENS * 3
+// Safe char limit: ~2 chars per token for Swedish legal text (long compound words)
+const MAX_EMBEDDING_CHARS = MAX_EMBEDDING_TOKENS * 2
 
 let openaiClient: OpenAI | null = null
 

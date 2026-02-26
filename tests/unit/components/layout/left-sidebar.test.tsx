@@ -169,11 +169,11 @@ describe('LeftSidebar', () => {
   })
 
   describe('navigation items', () => {
-    it('renders Dashboard link', () => {
+    it('renders Hem link', () => {
       render(<LeftSidebar />)
 
-      const dashboardLink = screen.getByText('Dashboard').closest('a')
-      expect(dashboardLink).toHaveAttribute('href', '/dashboard')
+      const hemLink = screen.getByText('Hem').closest('a')
+      expect(hemLink).toHaveAttribute('href', '/dashboard')
     })
 
     it('renders Settings link', () => {
@@ -183,11 +183,11 @@ describe('LeftSidebar', () => {
       expect(settingsLink).toHaveAttribute('href', '/settings')
     })
 
-    it('renders AI Chat as toggle button', () => {
+    it('hides AI Chat toggle on /dashboard (Hem is the chat)', () => {
+      // usePathname returns '/dashboard' in mock
       render(<LeftSidebar />)
 
-      const aiChatButton = screen.getByText('AI Chat')
-      expect(aiChatButton.closest('button')).toBeInTheDocument()
+      expect(screen.queryByText('AI Chat')).not.toBeInTheDocument()
     })
   })
 })

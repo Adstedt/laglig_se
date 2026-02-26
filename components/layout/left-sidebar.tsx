@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
-  LayoutDashboard,
+  Home,
   MessageSquare,
   Scale,
   BookOpen,
@@ -71,8 +71,8 @@ interface NavItem {
 // Main nav items (without Inställningar — that's pinned to bottom)
 const platformItems: NavItem[] = [
   {
-    title: 'Dashboard',
-    icon: LayoutDashboard,
+    title: 'Hem',
+    icon: Home,
     href: '/dashboard',
   },
   {
@@ -558,8 +558,12 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
             collapsed ? 'px-2 py-3' : 'px-3 py-3'
           )}
         >
-          {/* Platform Section */}
-          <div className="space-y-0.5">{platformItems.map(renderNavItem)}</div>
+          {/* Platform Section — hide AI Chat toggle on /dashboard (Hem IS the chat) */}
+          <div className="space-y-0.5">
+            {platformItems
+              .filter((item) => !(item.isToggle && pathname === '/dashboard'))
+              .map(renderNavItem)}
+          </div>
 
           {/* Work Section */}
           <div className="mt-6">

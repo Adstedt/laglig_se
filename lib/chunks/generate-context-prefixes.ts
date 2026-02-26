@@ -12,11 +12,29 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { estimateTokenCount } from './token-count'
 
-// 200K token threshold for splitting (~800K chars at 4 chars/token)
-const MAX_CONTEXT_TOKENS = 200_000
-const MAX_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * 4
+// Haiku's context is 200K tokens. We set a safe limit that leaves room for output tokens.
+const MAX_PROMPT_TOKENS = 190_000
+// For markdown-only checks (before we know chunk count), use a conservative limit
+const MAX_CONTEXT_TOKENS = 180_000
+const MAX_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * 3 // ~3 chars/token for Swedish text
+// Overhead per chunk in the prompt: <chunk id="path">\n{500 chars}\n</chunk> ≈ 200 tokens
+const TOKENS_PER_CHUNK = 200
+// Fixed overhead: system prompt template, instructions, example ≈ 1500 tokens
+const PROMPT_OVERHEAD_TOKENS = 1500
 
-const HAIKU_MODEL = 'claude-haiku-4-5-20251001'
+export const HAIKU_MODEL = 'claude-haiku-4-5-20251001'
+
+/**
+ * Estimate total prompt tokens for a given markdown + chunk set.
+ * Accounts for markdown, chunk list (each ~200 tokens), and prompt template overhead.
+ */
+function estimatePromptTokens(markdown: string, chunkCount: number): number {
+  return (
+    estimateTokenCount(markdown) +
+    chunkCount * TOKENS_PER_CHUNK +
+    PROMPT_OVERHEAD_TOKENS
+  )
+}
 
 export interface ChunkForContext {
   path: string
@@ -34,6 +52,12 @@ export interface DivisionInfo {
   title: string | null
   markdown: string
   chapterNumbers: string[]
+}
+
+export interface BatchPrefixRequest {
+  customId: string // document ID (or docId__split_N for large doc splits)
+  prompt: string // Full user message
+  chunkPaths: string[] // Paths of chunks included (for result mapping)
 }
 
 let anthropicClient: Anthropic | null = null
@@ -66,9 +90,9 @@ export async function generateContextPrefixes(
 ): Promise<Map<string, string>> {
   if (chunks.length === 0) return new Map()
 
-  const markdownTokens = estimateTokenCount(document.markdown)
+  const totalTokens = estimatePromptTokens(document.markdown, chunks.length)
 
-  if (markdownTokens <= MAX_CONTEXT_TOKENS) {
+  if (totalTokens <= MAX_PROMPT_TOKENS) {
     return callHaikuForPrefixes(document.markdown, document, chunks)
   }
 
@@ -77,22 +101,21 @@ export async function generateContextPrefixes(
 }
 
 /**
- * Build the prompt and call Haiku for a set of chunks within a context window.
+ * Build the prompt string for a set of chunks within a context window.
+ * Extracted so the batch orchestrator can build requests without calling the API.
  */
-async function callHaikuForPrefixes(
+export function buildPrefixPrompt(
   contextMarkdown: string,
   document: DocumentForContext,
   chunks: ChunkForContext[]
-): Promise<Map<string, string>> {
-  const client = getAnthropicClient()
-
+): string {
   const chunkList = chunks
     .map(
       (c) => `<chunk id="${c.path}">\n${c.content.substring(0, 500)}\n</chunk>`
     )
     .join('\n')
 
-  const prompt = `<document>
+  return `<document>
 ${contextMarkdown}
 </document>
 
@@ -117,7 +140,184 @@ GOOD — contextualizes: "Straffbestämmelse i 8 kap. Arbetsmiljölagen (1977:11
 </example>
 
 Respond ONLY with valid JSON: { "prefixes": { "<chunk id>": "<context>", ... } }`
+}
 
+/**
+ * Build batch API requests for a document's context prefixes.
+ * Returns 1 request for normal docs, multiple for large docs (split at division/chapter).
+ * Uses total prompt token estimation (markdown + chunk list + overhead) to decide splitting.
+ */
+export function buildBatchPrefixRequests(
+  docId: string,
+  document: DocumentForContext,
+  chunks: ChunkForContext[]
+): BatchPrefixRequest[] {
+  if (chunks.length === 0) return []
+
+  const totalTokens = estimatePromptTokens(document.markdown, chunks.length)
+
+  if (totalTokens <= MAX_PROMPT_TOKENS) {
+    return [
+      {
+        customId: docId,
+        prompt: buildPrefixPrompt(document.markdown, document, chunks),
+        chunkPaths: chunks.map((c) => c.path),
+      },
+    ]
+  }
+
+  // Large document — split at division/chapter level
+  return buildBatchRequestsForLargeDoc(docId, document, chunks)
+}
+
+/**
+ * Build batch requests for a large document by splitting at division/chapter boundaries.
+ */
+function buildBatchRequestsForLargeDoc(
+  docId: string,
+  document: DocumentForContext,
+  chunks: ChunkForContext[]
+): BatchPrefixRequest[] {
+  const requests: BatchPrefixRequest[] = []
+  let splitIndex = 0
+
+  const divisionSections = splitMarkdownByDivisions(document.markdown)
+
+  if (divisionSections.length > 1) {
+    for (const section of divisionSections) {
+      const sectionChunks = chunks.filter((c) => {
+        const chapMatch = c.path.match(/^kap(\d+)\./)
+        if (!chapMatch) return false
+        return section.chapterNumbers.includes(chapMatch[1]!)
+      })
+
+      if (section === divisionSections[0]) {
+        const nonChapterChunks = chunks.filter(
+          (c) => !c.path.match(/^kap\d+\./)
+        )
+        sectionChunks.push(
+          ...nonChapterChunks.filter((nc) => !sectionChunks.includes(nc))
+        )
+      }
+
+      if (sectionChunks.length === 0) continue
+
+      const sectionPromptTokens = estimatePromptTokens(
+        section.markdown,
+        sectionChunks.length
+      )
+
+      if (sectionPromptTokens <= MAX_PROMPT_TOKENS) {
+        requests.push({
+          customId: `${docId}__split_${splitIndex++}`,
+          prompt: buildPrefixPrompt(section.markdown, document, sectionChunks),
+          chunkPaths: sectionChunks.map((c) => c.path),
+        })
+      } else {
+        // Division too large — split by chapter
+        const chapterRequests = buildChapterBatchRequests(
+          docId,
+          section.markdown,
+          document,
+          sectionChunks,
+          splitIndex
+        )
+        splitIndex += chapterRequests.length
+        requests.push(...chapterRequests)
+      }
+    }
+  } else {
+    // No division structure — split by chapter
+    const chapterRequests = buildChapterBatchRequests(
+      docId,
+      document.markdown,
+      document,
+      chunks,
+      splitIndex
+    )
+    requests.push(...chapterRequests)
+  }
+
+  return requests
+}
+
+/**
+ * Build batch requests split at chapter level.
+ * If a single chapter still exceeds the token limit, splits its chunks into sub-batches.
+ */
+function buildChapterBatchRequests(
+  docId: string,
+  markdown: string,
+  document: DocumentForContext,
+  chunks: ChunkForContext[],
+  startIndex: number
+): BatchPrefixRequest[] {
+  const requests: BatchPrefixRequest[] = []
+  let splitIndex = startIndex
+
+  const chapterGroups = new Map<string, ChunkForContext[]>()
+  for (const chunk of chunks) {
+    const chapMatch = chunk.path.match(/^kap(\d+)\./)
+    const chapKey = chapMatch ? chapMatch[1]! : 'other'
+    const group = chapterGroups.get(chapKey) ?? []
+    group.push(chunk)
+    chapterGroups.set(chapKey, group)
+  }
+
+  const chapterSections = splitMarkdownByChapters(markdown)
+
+  for (const [chapKey, chapChunks] of chapterGroups) {
+    const chapterMarkdown =
+      chapterSections.get(chapKey) ?? markdown.substring(0, MAX_CONTEXT_CHARS)
+    const truncatedMarkdown = chapterMarkdown.substring(0, MAX_CONTEXT_CHARS)
+    const markdownTokens = estimateTokenCount(truncatedMarkdown)
+
+    const totalPromptTokens =
+      markdownTokens +
+      chapChunks.length * TOKENS_PER_CHUNK +
+      PROMPT_OVERHEAD_TOKENS
+
+    if (totalPromptTokens <= MAX_PROMPT_TOKENS) {
+      // Fits in one request
+      requests.push({
+        customId: `${docId}__split_${splitIndex++}`,
+        prompt: buildPrefixPrompt(truncatedMarkdown, document, chapChunks),
+        chunkPaths: chapChunks.map((c) => c.path),
+      })
+    } else {
+      // Split chunks into sub-batches that fit within token limit
+      // Calculate how many chunks we can fit given the markdown size
+      const availableForChunks =
+        MAX_PROMPT_TOKENS - markdownTokens - PROMPT_OVERHEAD_TOKENS
+      const chunksPerBatch = Math.max(
+        1,
+        Math.floor(availableForChunks / TOKENS_PER_CHUNK)
+      )
+
+      for (let i = 0; i < chapChunks.length; i += chunksPerBatch) {
+        const subChunks = chapChunks.slice(i, i + chunksPerBatch)
+        requests.push({
+          customId: `${docId}__split_${splitIndex++}`,
+          prompt: buildPrefixPrompt(truncatedMarkdown, document, subChunks),
+          chunkPaths: subChunks.map((c) => c.path),
+        })
+      }
+    }
+  }
+
+  return requests
+}
+
+/**
+ * Build the prompt and call Haiku for a set of chunks within a context window.
+ */
+async function callHaikuForPrefixes(
+  contextMarkdown: string,
+  document: DocumentForContext,
+  chunks: ChunkForContext[]
+): Promise<Map<string, string>> {
+  const client = getAnthropicClient()
+  const prompt = buildPrefixPrompt(contextMarkdown, document, chunks)
   const response = await callWithRetry(client, prompt)
   return parsePrefixResponse(response, chunks)
 }
@@ -156,9 +356,12 @@ async function generatePrefixesForLargeDocument(
 
       if (sectionChunks.length === 0) continue
 
-      const sectionTokens = estimateTokenCount(section.markdown)
+      const sectionPromptTokens = estimatePromptTokens(
+        section.markdown,
+        sectionChunks.length
+      )
 
-      if (sectionTokens <= MAX_CONTEXT_TOKENS) {
+      if (sectionPromptTokens <= MAX_PROMPT_TOKENS) {
         const prefixes = await callHaikuForPrefixes(
           section.markdown,
           document,
@@ -221,14 +424,41 @@ async function generatePrefixesByChapter(
     const chapterMarkdown =
       chapterSections.get(chapKey) ?? markdown.substring(0, MAX_CONTEXT_CHARS)
     const truncatedMarkdown = chapterMarkdown.substring(0, MAX_CONTEXT_CHARS)
+    const markdownTokens = estimateTokenCount(truncatedMarkdown)
+    const totalPromptTokens =
+      markdownTokens +
+      chapChunks.length * TOKENS_PER_CHUNK +
+      PROMPT_OVERHEAD_TOKENS
 
-    const prefixes = await callHaikuForPrefixes(
-      truncatedMarkdown,
-      document,
-      chapChunks
-    )
-    for (const [path, prefix] of prefixes) {
-      result.set(path, prefix)
+    if (totalPromptTokens <= MAX_PROMPT_TOKENS) {
+      const prefixes = await callHaikuForPrefixes(
+        truncatedMarkdown,
+        document,
+        chapChunks
+      )
+      for (const [path, prefix] of prefixes) {
+        result.set(path, prefix)
+      }
+    } else {
+      // Chapter too large — split chunks into sub-batches
+      const availableForChunks =
+        MAX_PROMPT_TOKENS - markdownTokens - PROMPT_OVERHEAD_TOKENS
+      const chunksPerBatch = Math.max(
+        1,
+        Math.floor(availableForChunks / TOKENS_PER_CHUNK)
+      )
+
+      for (let i = 0; i < chapChunks.length; i += chunksPerBatch) {
+        const subChunks = chapChunks.slice(i, i + chunksPerBatch)
+        const prefixes = await callHaikuForPrefixes(
+          truncatedMarkdown,
+          document,
+          subChunks
+        )
+        for (const [path, prefix] of prefixes) {
+          result.set(path, prefix)
+        }
+      }
     }
   }
 
@@ -352,8 +582,9 @@ async function callWithRetry(
 
 /**
  * Parse the JSON response from Haiku into a Map of path → prefix.
+ * Exported for use by batch result collector.
  */
-function parsePrefixResponse(
+export function parsePrefixResponse(
   responseText: string,
   chunks: ChunkForContext[]
 ): Map<string, string> {

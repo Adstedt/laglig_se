@@ -55,6 +55,8 @@ export interface UseChatInterfaceReturn {
   isLoading: boolean
   isLoadingHistory: boolean
   clearHistory: () => Promise<void>
+  /** Replace local message state (e.g. when loading an archived conversation) */
+  replaceMessages: (_messages: UIMessage[]) => void
 }
 
 // Map ChatContextType to Prisma enum format
@@ -299,6 +301,7 @@ export function useChatInterface(
     isLoading,
     isLoadingHistory,
     clearHistory,
+    replaceMessages: setMessages,
   }
 }
 

@@ -73,12 +73,11 @@ describe('Breadcrumbs', () => {
       expect(workspaceLink).toHaveAttribute('href', '/dashboard')
     })
 
-    it('does not show link when on dashboard', () => {
+    it('renders nothing on dashboard (Hem page)', () => {
       mockPathname = '/dashboard'
-      render(<Breadcrumbs />)
+      const { container } = render(<Breadcrumbs />)
 
-      const workspaceName = screen.getByText('Test Workspace')
-      expect(workspaceName.closest('a')).not.toBeInTheDocument()
+      expect(container.innerHTML).toBe('')
     })
   })
 })
