@@ -398,6 +398,10 @@ Phase 4 (Agent UX)
 
 **Story 8.3 migration:** Story 8.3 ("Mark as Reviewed Workflow" / "Agentic Change Assessment Flow") moves from Epic 8 to this epic as Story 14.10. The old 8.3 story file should be archived and replaced with a redirect note. Epic 8's story inventory should be updated accordingly.
 
+**Superseded stories (archived 2026-03-01):** The following earlier stories have been fully superseded by Epic 14 and moved to `docs/stories/archived/`:
+- **2.10a** (Design Chunking Experiments), **2.10b** (Execute Experiments), **2.10c** (Implement Chunking Strategy) → Superseded by 14.2 (ContentChunk + three-tier chunking) + 14.3 (228K embeddings + Cohere Rerank v4). The experimental approach was replaced by an informed architectural decision documented in `docs/architecture/chunking-strategy.md`.
+- **3.1** (Setup Vector Database for Chat), **3.2** (Implement RAG Query Pipeline) → Superseded by 14.2 (ContentChunk + HNSW index) + 14.3 (embeddings) + 14.7 (agent tools) + 14.8 (retrieval pipeline) + 14.9 (system prompt). The simple RAG pipeline was redesigned as an agentic architecture with tool-based retrieval.
+
 ---
 
 ## Data Model Summary
