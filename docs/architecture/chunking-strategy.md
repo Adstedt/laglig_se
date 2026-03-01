@@ -1,11 +1,11 @@
-# Chunking Strategy for Legal Document RAG
+# Chunking & Retrieval Strategy for Legal Document RAG
 
 ## Purpose
 
-This document defines how legal documents are broken into chunks for embedding and retrieval in the RAG pipeline. The strategy covers **SFS laws** and **agency regulations** only. Amendments are not chunked — see "Law-First Strategy" decision below.
+This document defines how legal documents are broken into chunks, embedded, and retrieved in the RAG pipeline. The strategy covers **SFS laws** and **agency regulations** only. Amendments are not chunked — see "Law-First Strategy" decision below.
 
-**Owner:** Story 14.2 (ContentChunk Model & Chunking Pipeline)
-**Consumed by:** Story 14.3 (Embedding Generation), Story 14.8 (RAG Retrieval Pipeline), all agent stories
+**Owner:** Story 14.2 (Chunking), Story 14.3 (Embedding + Rerank), Story 14.8 (RAG Retrieval Pipeline)
+**Consumed by:** All agent stories
 
 ---
 
@@ -180,6 +180,108 @@ The 13 largest laws (Inkomstskattelagen 316K tokens, Socialförsäkringsbalken 2
 
 ---
 
+## Retrieval Strategy
+
+**Owner:** Story 14.3 (Embedding + Rerank), Story 14.8 (RAG Retrieval Pipeline)
+
+This section describes how chunks are retrieved at query time — the path from user question to ranked results.
+
+### Two-Stage Pipeline: Vector Search → Cross-Encoder Rerank
+
+```
+User query
+    │
+    ▼
+┌─────────────────────────┐
+│  Stage 1: Vector Search │   pgvector HNSW index
+│  cosine similarity      │   ~50ms, top 20 candidates
+│  over-fetch 4× final K  │
+└───────────┬─────────────┘
+            │ 20 candidates
+            ▼
+┌─────────────────────────┐
+│  Stage 2: Cohere Rerank │   Rerank v4 cross-encoder
+│  model: rerank-v3.5     │   ~420ms avg latency
+│  return top 5           │
+└───────────┬─────────────┘
+            │ 5 results (reranked)
+            ▼
+      Agent context
+```
+
+**Why two stages:**
+- Vector search is fast but approximate — embeddings compress meaning into a fixed-length vector, losing nuance
+- Cross-encoder reranking reads query + document together, catching semantic matches that vector similarity misses
+- The 4× over-fetch ensures the reranker sees enough candidates to find the best matches
+
+### Vector Search (Stage 1)
+
+- **Index:** HNSW on `ContentChunk.embedding` (1536-dim, cosine distance)
+- **Query embedding:** Same model as indexing — OpenAI `text-embedding-3-small`
+- **Over-fetch:** When reranking is enabled, fetch `4 × top_k` candidates (e.g., 20 for top 5)
+- **Without reranking:** Fetch exactly `top_k` (fallback if Cohere API is unavailable)
+
+### Cross-Encoder Reranking (Stage 2)
+
+- **Provider:** Cohere Rerank API v2 (`https://api.cohere.com/v2/rerank`)
+- **Model:** `rerank-v3.5` (default, configurable)
+- **Implementation:** Plain `fetch` — no SDK dependency
+- **Input text:** Same composition as embedding: `contextual_header + context_prefix + content`
+- **Timeout:** 10s via `AbortController`
+
+**Graceful degradation:** The reranker is optional. If any of these conditions apply, the pipeline returns vector-search results unchanged:
+- `COHERE_API_KEY` not set
+- API returns an error or times out
+- Only 0-1 documents to rerank
+
+**Code:** `lib/search/rerank.ts`
+
+### Benchmark Results (2026-03-01)
+
+Evaluated on 55 queries across 5 personas (jurist, HR, skyddsombud, företagsledare, lärare), 11 queries each.
+
+| Metric | Vector Only | Vector + Rerank | Improvement |
+|---|---|---|---|
+| Avg relevance | 0.634 | 0.874 | +38% |
+| High relevance (≥0.7) | 55% | 85% | +30pp |
+| Low relevance (<0.4) | 15% | 2% | −13pp |
+| Avg latency | ~50ms | ~420ms | +370ms |
+
+**Per-persona rerank scores:**
+
+| Persona | Vector Only | With Rerank |
+|---|---|---|
+| Jurist | 0.695 | 0.913 |
+| HR-ansvarig | 0.656 | 0.880 |
+| Skyddsombud | 0.640 | 0.878 |
+| Företagsledare | 0.562 | 0.819 |
+| Lärare | 0.617 | 0.877 |
+
+Scenario queries (multi-hop, Swedish natural language) showed the largest improvement: +46%.
+
+### Hybrid Search (BM25) — Deferred
+
+PostgreSQL full-text search (BM25 via `tsvector` or ParadeDB `pg_search`) could complement vector search for keyword-heavy queries (specific SFS numbers, legal terms). However, building this before measuring real retrieval quality risks unnecessary infrastructure.
+
+**Decision:** Defer BM25 until Story 14.13 (Ground Truth Labeling) quantifies actual failure modes. If >30% of failures are keyword-gap type (exact terms present but missed by vectors), build hybrid search. Otherwise, invest elsewhere.
+
+### Confidence Thresholds — Future Story
+
+The pipeline currently returns all top-K results without filtering by confidence. A future story should define:
+- Minimum relevance score below which results are suppressed
+- User-facing signals when retrieval confidence is low
+- Fallback behavior (e.g., "I couldn't find a strong match")
+
+### Ground Truth Evaluation — Story 14.13
+
+Benchmark scores above are **LLM-judged** (Claude rates relevance 0-1). Story 14.13 adds human-labeled ground truth:
+- 55 queries with expected document matches (graded: relevant=2, partial=1, not-relevant=0)
+- Metrics: MRR, precision@k, nDCG@5
+- Failure categorization (keyword-gap, cross-domain, ambiguous, granularity)
+- Decision gate for BM25 go/no-go
+
+---
+
 ## Decision Log
 
 | Date | Decision | Rationale |
@@ -192,6 +294,9 @@ The 13 largest laws (Inkomstskattelagen 316K tokens, Socialförsäkringsbalken 2
 | 2026-02-25 | LLM context prefixes via Haiku | Anthropic's contextual retrieval reduces retrieval failures by up to 67%. One API call per document (not per chunk) keeps request count at ~11K instead of ~295K. Markdown sent as context (50% smaller than JSON). |
 | 2026-02-25 | One call per document for context | Sending all chunks in one call is cheaper and simpler than per-chunk calls with prompt caching. For 13 oversized laws, split at division/avdelning level. |
 | 2026-02-25 | Markdown as LLM context input | Markdown is ~50% the size of JSON (no schema overhead) and contains the same readable text. All but 13 laws fit within 200K token context window when using markdown. |
+| 2026-03-01 | Two-stage retrieval (vector + rerank) | Cross-encoder reranking via Cohere Rerank v3.5 improved avg relevance from 0.634 → 0.874 on 55-query benchmark. 4× over-fetch pattern (fetch 20, rerank to 5). Plain fetch, no SDK. |
+| 2026-03-01 | Defer BM25 hybrid search | Building BM25 before measuring real failure modes risks unnecessary infrastructure. Story 14.13 will quantify keyword-gap failures and decide. |
+| 2026-03-01 | Graceful degradation for reranker | Reranker is optional — falls back to vector-only if API key missing, API error, or ≤1 document. Zero impact on availability. |
 
 ---
 
