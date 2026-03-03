@@ -3,9 +3,11 @@
  *
  * Story 8.20: Continuous SFS Amendment Discovery
  *
- * Crawls svenskforfattningssamling.se daily to discover new amendments
- * and repeals, processes them through the LLM pipeline, and creates
- * ChangeEvent records for the notification system.
+ * Two-phase architecture:
+ * - Phase 1 (Discovery): Parse index page(s), create PENDING AmendmentDocument records.
+ *   Fast (~5s), no external API calls beyond the index page. Watermark advances immediately.
+ * - Phase 2 (Processing): Pick up all PENDING/FAILED records, run the full pipeline
+ *   (PDF→LLM→normalize→DB). Failures stay FAILED; retried next run.
  *
  * Runs daily at 02:00 UTC (before generate-summaries at 03:00).
  */
@@ -33,9 +35,10 @@ import { buildSlugMap } from '@/lib/linkify'
 import { constructStoragePath } from '@/lib/sfs/pdf-urls'
 import { sendAmendmentDiscoveryEmail } from '@/lib/email/cron-notifications'
 import {
-  crawlCurrentYearIndex,
+  discoverFromIndex,
   extractSfsNumericPart,
-  type CrawledDocument,
+  classifyDocument,
+  crawlDocumentPage,
 } from '@/lib/sfs/sfs-amendment-crawler'
 
 export const dynamic = 'force-dynamic'
@@ -44,19 +47,20 @@ export const maxDuration = 300 // 5 minutes max for cron
 const CRON_SECRET = process.env.CRON_SECRET
 
 const CONFIG = {
-  MAX_AMENDMENTS_PER_RUN: 15,
-  MAX_RETRIES_PER_RUN: 10,
+  MAX_AMENDMENTS_PER_RUN: 50,
   TIMEOUT_BUFFER_MS: 30_000, // 30s buffer before maxDuration
   REQUEST_DELAY_MS: 200,
 }
 
 // =============================================================================
-// Stats
+// Stats (matches AmendmentDiscoveryStats from cron-notifications)
 // =============================================================================
 
 interface DiscoveryStats {
   discovered: number
   alreadyExists: number
+  pendingCreated: number
+  pagesScanned: number
   processed: number
   failed: number
   changeEventsCreated: number
@@ -65,9 +69,6 @@ interface DiscoveryStats {
   pdfsFailed: number
   repealsProcessed: number
   newLawsSkipped: number
-  retriesAttempted: number
-  retriesSucceeded: number
-  retriesFailed: number
   duration: string
 }
 
@@ -88,6 +89,8 @@ export async function GET(request: Request) {
   const stats: DiscoveryStats = {
     discovered: 0,
     alreadyExists: 0,
+    pendingCreated: 0,
+    pagesScanned: 0,
     processed: 0,
     failed: 0,
     changeEventsCreated: 0,
@@ -96,13 +99,10 @@ export async function GET(request: Request) {
     pdfsFailed: 0,
     repealsProcessed: 0,
     newLawsSkipped: 0,
-    retriesAttempted: 0,
-    retriesSucceeded: 0,
-    retriesFailed: 0,
     duration: '0s',
   }
 
-  // Lazy-initialized slug map shared between retry and discovery phases
+  // Lazy-initialized slug map shared across processing
   let slugMap: SlugMap | null = null
   async function getSlugMap(): Promise<SlugMap> {
     if (!slugMap) {
@@ -115,78 +115,26 @@ export async function GET(request: Request) {
     const year = new Date().getFullYear()
 
     // ==========================================================================
-    // Phase 0: Retry FAILED/PENDING amendments (higher priority than discovery)
-    // ==========================================================================
-    const failedAmendments = await prisma.amendmentDocument.findMany({
-      where: {
-        sfs_number: { startsWith: `${year}:` },
-        parse_status: { in: [ParseStatus.FAILED, ParseStatus.PENDING] },
-      },
-      orderBy: { created_at: 'asc' },
-      take: CONFIG.MAX_RETRIES_PER_RUN,
-    })
-
-    if (failedAmendments.length > 0) {
-      console.log(
-        `[DISCOVER-SFS] Found ${failedAmendments.length} FAILED/PENDING amendments to retry`
-      )
-
-      const retrySlugMap = await getSlugMap()
-
-      for (const amendment of failedAmendments) {
-        // Timeout protection
-        const elapsed = Date.now() - startTime
-        if (elapsed > maxRuntime) {
-          console.log(
-            `[DISCOVER-SFS] Approaching timeout during retries (${Math.round(elapsed / 1000)}s elapsed), stopping.`
-          )
-          break
-        }
-
-        stats.retriesAttempted++
-        try {
-          await retryAmendment(amendment, retrySlugMap, stats)
-          stats.retriesSucceeded++
-        } catch (error) {
-          stats.retriesFailed++
-          console.error(
-            `[DISCOVER-SFS] Retry failed for ${amendment.sfs_number}:`,
-            error instanceof Error ? error.message : error
-          )
-        }
-      }
-
-      console.log(
-        `[DISCOVER-SFS] Retries complete: ${stats.retriesSucceeded}/${stats.retriesAttempted} succeeded`
-      )
-    }
-
-    // ==========================================================================
-    // Phase 1: Discover new amendments
+    // Phase 1: Discovery — parse index, create PENDING records
     // ==========================================================================
 
-    // Step 1: Compute watermark from existing AmendmentDocuments
-    console.log(`[DISCOVER-SFS] Starting discovery for year ${year}`)
+    console.log(`[DISCOVER-SFS] Phase 1: Discovery for year ${year}`)
     const watermark = await computeWatermark(year)
     console.log(`[DISCOVER-SFS] Watermark: ${watermark ?? 'none (full crawl)'}`)
 
-    // Step 2: Crawl index to discover new SFS numbers above watermark
-    const crawlOptions: Parameters<typeof crawlCurrentYearIndex>[1] = {
+    const discoverResult = await discoverFromIndex(year, {
+      ...(watermark !== null && { afterNumericPart: watermark }),
       requestDelayMs: CONFIG.REQUEST_DELAY_MS,
-    }
-    if (watermark !== null) {
-      crawlOptions.startFromSfsNumber = watermark
-    }
-    const crawlResult = await crawlCurrentYearIndex(year, crawlOptions)
+    })
 
+    stats.pagesScanned = discoverResult.pagesScanned
     console.log(
-      `[DISCOVER-SFS] Index crawl: highest=${crawlResult.highestSfsNum}, discovered=${crawlResult.documents.length}`
+      `[DISCOVER-SFS] Index scan: ${discoverResult.pagesScanned} page(s), ` +
+        `highest=${discoverResult.highestNumericPart}, found=${discoverResult.documents.length}`
     )
 
-    // Step 3: Filter to amendments + repeals, skip new laws
-    const toProcess: CrawledDocument[] = []
-
-    for (const doc of crawlResult.documents) {
+    // Create PENDING records for amendments/repeals, skip new laws
+    for (const doc of discoverResult.documents) {
       stats.discovered++
 
       if (doc.documentType === 'new_law') {
@@ -205,42 +153,84 @@ export async function GET(request: Request) {
 
       if (exists) {
         stats.alreadyExists++
-        console.log(`[DISCOVER-SFS] Already exists: ${doc.sfsNumber}`)
         continue
       }
 
-      toProcess.push(doc)
+      // Create PENDING record — discovery always succeeds
+      await prisma.amendmentDocument.create({
+        data: {
+          sfs_number: doc.sfsNumber,
+          storage_path: constructStoragePath(doc.sfsNumber),
+          original_url: doc.pdfUrl,
+          base_law_sfs: doc.baseLawSfs ?? 'unknown',
+          title: doc.title,
+          publication_date: new Date(doc.publishedDate),
+          parse_status: ParseStatus.PENDING,
+        },
+      })
+
+      stats.pendingCreated++
+      console.log(
+        `[DISCOVER-SFS] Created PENDING: ${doc.sfsNumber} - ${doc.title}`
+      )
     }
 
     console.log(
-      `[DISCOVER-SFS] To process: ${toProcess.length} (${stats.newLawsSkipped} new laws skipped, ${stats.alreadyExists} already exist)`
+      `[DISCOVER-SFS] Phase 1 complete: ${stats.pendingCreated} PENDING created, ` +
+        `${stats.newLawsSkipped} new laws skipped, ${stats.alreadyExists} already exist`
     )
 
-    // Step 4: Process amendments/repeals (up to MAX_AMENDMENTS_PER_RUN)
+    // ==========================================================================
+    // Phase 2: Processing — pick up PENDING/FAILED, run full pipeline
+    // ==========================================================================
+
+    console.log(`[DISCOVER-SFS] Phase 2: Processing PENDING/FAILED records`)
+
+    const toProcess = await prisma.amendmentDocument.findMany({
+      where: {
+        sfs_number: { startsWith: `${year}:` },
+        parse_status: { in: [ParseStatus.PENDING, ParseStatus.FAILED] },
+        base_law_sfs: { not: 'unknown' },
+      },
+      orderBy: { created_at: 'asc' },
+      take: CONFIG.MAX_AMENDMENTS_PER_RUN,
+    })
+
+    console.log(`[DISCOVER-SFS] Found ${toProcess.length} records to process`)
+
     if (toProcess.length > 0) {
-      const discoverSlugMap = await getSlugMap()
+      const processingSlugMap = await getSlugMap()
 
-      const batch = toProcess.slice(0, CONFIG.MAX_AMENDMENTS_PER_RUN)
-
-      for (const doc of batch) {
+      for (const record of toProcess) {
         // Timeout protection
         const elapsed = Date.now() - startTime
         if (elapsed > maxRuntime) {
           console.log(
             `[DISCOVER-SFS] Approaching timeout (${Math.round(elapsed / 1000)}s elapsed), stopping. ` +
-              `Processed ${stats.processed}/${batch.length}`
+              `Processed ${stats.processed}/${toProcess.length}`
           )
           break
         }
 
         try {
-          await processAmendment(doc, discoverSlugMap, stats)
+          await processAmendmentRecord(record, processingSlugMap, stats)
         } catch (error) {
           stats.failed++
-          console.error(
-            `[DISCOVER-SFS] Failed to process ${doc.sfsNumber}:`,
-            error instanceof Error ? error.message : error
-          )
+          const errMsg = error instanceof Error ? error.message : String(error)
+          console.error(`[DISCOVER-SFS] Failed ${record.sfs_number}: ${errMsg}`)
+
+          // Mark as FAILED so it's retried next run
+          try {
+            await prisma.amendmentDocument.update({
+              where: { id: record.id },
+              data: {
+                parse_status: ParseStatus.FAILED,
+                parse_error: errMsg.slice(0, 1000),
+              },
+            })
+          } catch {
+            // non-fatal — record stays PENDING/FAILED for next run
+          }
         }
       }
     }
@@ -248,7 +238,6 @@ export async function GET(request: Request) {
     const duration = `${Math.round((Date.now() - startTime) / 1000)}s`
     stats.duration = duration
 
-    // Step 5: Admin reporting
     logSummary(stats)
 
     try {
@@ -316,293 +305,96 @@ async function computeWatermark(year: number): Promise<number | null> {
 }
 
 // =============================================================================
-// Amendment Processing Pipeline
-// =============================================================================
-
-async function processAmendment(
-  doc: CrawledDocument,
-  slugMap: SlugMap,
-  stats: DiscoveryStats
-): Promise<void> {
-  const isRepeal = doc.documentType === 'repeal'
-  console.log(
-    `[DISCOVER-SFS] Processing ${isRepeal ? 'repeal' : 'amendment'}: ${doc.sfsNumber} - ${doc.title}`
-  )
-
-  // Step A: Fetch and store PDF
-  stats.pdfsFetched++
-  const pdfResult = await fetchAndStorePdf(doc.sfsNumber, doc.publishedDate)
-
-  if (!pdfResult.success) {
-    stats.pdfsFailed++
-    console.error(`[DISCOVER-SFS]   PDF fetch failed: ${pdfResult.error}`)
-
-    // Create AmendmentDocument with FAILED status
-    await prisma.amendmentDocument.create({
-      data: {
-        sfs_number: doc.sfsNumber,
-        storage_path: constructStoragePath(doc.sfsNumber),
-        original_url: doc.pdfUrl,
-        base_law_sfs: doc.baseLawSfs ?? 'unknown',
-        title: doc.title,
-        publication_date: new Date(doc.publishedDate),
-        parse_status: ParseStatus.FAILED,
-        parse_error: `PDF fetch failed: ${pdfResult.error}`,
-      },
-    })
-
-    stats.failed++
-    return
-  }
-
-  stats.pdfsStored++
-
-  // Step B: Download PDF buffer for LLM parsing
-  const pdfBuffer = await downloadPdfFromStorage(doc.sfsNumber)
-  if (!pdfBuffer) {
-    console.error(
-      `[DISCOVER-SFS]   Failed to download PDF from storage: ${doc.sfsNumber}`
-    )
-
-    await prisma.amendmentDocument.create({
-      data: {
-        sfs_number: doc.sfsNumber,
-        storage_path:
-          pdfResult.metadata?.storagePath ??
-          constructStoragePath(doc.sfsNumber),
-        original_url: doc.pdfUrl,
-        base_law_sfs: doc.baseLawSfs ?? 'unknown',
-        title: doc.title,
-        publication_date: new Date(doc.publishedDate),
-        parse_status: ParseStatus.FAILED,
-        parse_error: 'Failed to download PDF from storage for LLM parsing',
-      },
-    })
-
-    stats.failed++
-    return
-  }
-
-  // Step C: Parse PDF with LLM → semantic HTML
-  const { html: rawHtml, validation } = await parseAmendmentPdf(
-    pdfBuffer,
-    doc.sfsNumber,
-    doc.baseLawSfs ?? undefined,
-    doc.title
-  )
-
-  console.log(
-    `[DISCOVER-SFS]   LLM returned HTML: ${rawHtml.length} chars, ` +
-      `sections: ${validation.metrics.sectionCount}, paragraphs: ${validation.metrics.paragraphCount}`
-  )
-
-  if (validation.warnings.length > 0) {
-    console.log(
-      `[DISCOVER-SFS]   Warnings: ${validation.warnings.map((w) => w.code).join(', ')}`
-    )
-  }
-
-  // Step D: Normalize → derive content
-  const normalizedHtml = normalizeSfsAmendment(rawHtml, {
-    documentNumber: `SFS ${doc.sfsNumber}`,
-    title: doc.title,
-  })
-
-  const canonicalParserOpts: Parameters<typeof parseCanonicalHtml>[1] = {
-    sfsNumber: doc.sfsNumber,
-    documentType: 'SFS_AMENDMENT',
-  }
-  if (doc.baseLawSfs) {
-    canonicalParserOpts.baseLawSfs = doc.baseLawSfs
-  }
-  const canonicalJson = parseCanonicalHtml(normalizedHtml, canonicalParserOpts)
-
-  const markdownContent = htmlToMarkdown(normalizedHtml)
-  const plainText = htmlToPlainText(normalizedHtml)
-
-  // Linkify AFTER deriving fields, BEFORE DB write
-  const linkifiedHtml = linkifyHtmlContent(
-    normalizedHtml,
-    slugMap,
-    `SFS ${doc.sfsNumber}`
-  ).html
-
-  // Step E: Extract effective date from canonical JSON transition provisions
-  let effectiveDate: Date | null = null
-  if (canonicalJson.metadata.effectiveDate) {
-    effectiveDate = new Date(canonicalJson.metadata.effectiveDate)
-  }
-
-  // Step F: Create all records in a transaction
-  const defaultChangeType = isRepeal
-    ? SectionChangeType.REPEALED
-    : SectionChangeType.AMENDED
-
-  await prisma.$transaction(async (tx) => {
-    // Create AmendmentDocument
-    const amendment = await tx.amendmentDocument.create({
-      data: {
-        sfs_number: doc.sfsNumber,
-        storage_path:
-          pdfResult.metadata?.storagePath ??
-          constructStoragePath(doc.sfsNumber),
-        original_url: doc.pdfUrl,
-        file_size: pdfResult.metadata?.fileSize ?? null,
-        base_law_sfs: doc.baseLawSfs ?? 'unknown',
-        title: doc.title,
-        effective_date: effectiveDate,
-        publication_date: new Date(doc.publishedDate),
-        full_text: plainText,
-        markdown_content: markdownContent,
-        parse_status: ParseStatus.COMPLETED,
-        parsed_at: new Date(),
-        confidence: validation.metrics.paragraphCount > 0 ? 0.9 : 0.5,
-      },
-    })
-
-    // Create SectionChange records from canonical JSON
-    let sortOrder = 0
-    for (const chapter of canonicalJson.chapters) {
-      for (const paragraf of chapter.paragrafer) {
-        await tx.sectionChange.create({
-          data: {
-            amendment_id: amendment.id,
-            chapter: chapter.number,
-            section: paragraf.number,
-            change_type: defaultChangeType,
-            description: paragraf.heading ?? null,
-            new_text: paragraf.content || null,
-            sort_order: sortOrder++,
-          },
-        })
-      }
-    }
-
-    // Also walk divisions if present
-    if (canonicalJson.divisions) {
-      for (const division of canonicalJson.divisions) {
-        for (const chapter of division.chapters) {
-          for (const paragraf of chapter.paragrafer) {
-            await tx.sectionChange.create({
-              data: {
-                amendment_id: amendment.id,
-                chapter: chapter.number,
-                section: paragraf.number,
-                change_type: defaultChangeType,
-                description: paragraf.heading ?? null,
-                new_text: paragraf.content || null,
-                sort_order: sortOrder++,
-              },
-            })
-          }
-        }
-      }
-    }
-
-    // Create LegalDocument
-    const legalDocResult = await createLegalDocumentFromAmendment(tx, {
-      id: amendment.id,
-      sfs_number: amendment.sfs_number,
-      title: amendment.title,
-      base_law_sfs: amendment.base_law_sfs,
-      base_law_name: null,
-      effective_date: amendment.effective_date,
-      publication_date: amendment.publication_date,
-      original_url: amendment.original_url,
-      storage_path: amendment.storage_path,
-      full_text: plainText,
-      html_content: linkifiedHtml,
-      markdown_content: markdownContent,
-      json_content: canonicalJson,
-      confidence: amendment.confidence,
-    })
-
-    if (legalDocResult.isNew) {
-      console.log(
-        `[DISCOVER-SFS]   LegalDocument created: ${legalDocResult.slug}`
-      )
-    }
-
-    // Create ChangeEvent if base law exists in DB
-    if (doc.baseLawSfs) {
-      const baseLawDocNumber = `SFS ${doc.baseLawSfs}`
-      const baseLawDoc = await tx.legalDocument.findUnique({
-        where: { document_number: baseLawDocNumber },
-        select: { id: true },
-      })
-
-      if (baseLawDoc) {
-        await tx.changeEvent.create({
-          data: {
-            document_id: baseLawDoc.id,
-            content_type: ContentType.SFS_LAW,
-            change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
-            amendment_sfs: `SFS ${doc.sfsNumber}`,
-            notification_sent: false,
-          },
-        })
-        stats.changeEventsCreated++
-        console.log(
-          `[DISCOVER-SFS]   ChangeEvent created for base law ${doc.baseLawSfs}`
-        )
-      } else {
-        console.log(
-          `[DISCOVER-SFS]   Base law ${doc.baseLawSfs} not in DB — no ChangeEvent`
-        )
-      }
-    }
-  })
-
-  stats.processed++
-  if (isRepeal) stats.repealsProcessed++
-
-  console.log(
-    `[DISCOVER-SFS]   Processed successfully: ${doc.sfsNumber} (${sortOrderLabel(canonicalJson)})`
-  )
-}
-
-// =============================================================================
-// Retry Pipeline (for FAILED/PENDING amendments)
+// Unified Amendment Processing Pipeline
 // =============================================================================
 
 type AmendmentRecord = {
   id: string
   sfs_number: string
   storage_path: string
+  original_url: string | null
   base_law_sfs: string | null
   base_law_name: string | null
   title: string | null
+  publication_date: Date | null
 }
 
-async function retryAmendment(
-  amendment: AmendmentRecord,
+/**
+ * Process a single AmendmentDocument record through the full pipeline.
+ * Handles both first-time PENDING and retry FAILED records identically.
+ */
+async function processAmendmentRecord(
+  record: AmendmentRecord,
   slugMap: SlugMap,
   stats: DiscoveryStats
 ): Promise<void> {
-  console.log(`[DISCOVER-SFS] Retrying: ${amendment.sfs_number}`)
+  const isRepeal = record.title
+    ? classifyDocument(record.title) === 'repeal'
+    : false
 
-  // Step A: Download PDF from Supabase storage
-  const pdfBuffer = await downloadPdfFromStorage(amendment.sfs_number)
+  console.log(
+    `[DISCOVER-SFS] Processing ${isRepeal ? 'repeal' : 'amendment'}: ${record.sfs_number} - ${record.title ?? '(no title)'}`
+  )
+
+  // Step A: Ensure PDF is in Supabase storage
+  let pdfBuffer = await downloadPdfFromStorage(record.sfs_number)
+
   if (!pdfBuffer) {
-    console.error(
-      `[DISCOVER-SFS]   Failed to download PDF from storage: ${amendment.sfs_number}`
-    )
-    await prisma.amendmentDocument.update({
-      where: { id: amendment.id },
-      data: {
-        parse_status: ParseStatus.FAILED,
-        parse_error: 'Retry: failed to download PDF from storage',
-      },
-    })
-    throw new Error('Failed to download PDF from storage')
+    // PDF not in storage yet — fetch and store it
+    stats.pdfsFetched++
+    const pubDate = record.publication_date
+      ? record.publication_date.toISOString().slice(0, 10)
+      : undefined
+
+    let pdfResult = await fetchAndStorePdf(record.sfs_number, pubDate)
+
+    // Fallback: publication date month may not match the PDF folder on the site.
+    // Scrape the actual doc page to get the real PDF URL.
+    if (!pdfResult.success) {
+      console.log(
+        `[DISCOVER-SFS]   Date-based URL failed, scraping doc page for real PDF URL`
+      )
+      const docPage = await crawlDocumentPage(record.sfs_number)
+      if (docPage?.pdfUrl) {
+        // Extract the month from the real PDF URL (e.g. ".../sfs/2026-02/SFS...")
+        const monthMatch = docPage.pdfUrl.match(/\/sfs\/(\d{4}-\d{2})\//)
+        const realDate = monthMatch ? `${monthMatch[1]}-01` : undefined
+        pdfResult = await fetchAndStorePdf(record.sfs_number, realDate)
+      }
+    }
+
+    if (!pdfResult.success) {
+      stats.pdfsFailed++
+      throw new Error(`PDF fetch failed: ${pdfResult.error}`)
+    }
+
+    stats.pdfsStored++
+
+    // Update storage path and original_url if needed
+    if (pdfResult.metadata?.storagePath) {
+      await prisma.amendmentDocument.update({
+        where: { id: record.id },
+        data: {
+          storage_path: pdfResult.metadata.storagePath,
+          original_url: pdfResult.metadata.originalUrl,
+          file_size: pdfResult.metadata.fileSize ?? null,
+        },
+      })
+    }
+
+    // Download the newly stored PDF
+    pdfBuffer = await downloadPdfFromStorage(record.sfs_number)
+    if (!pdfBuffer) {
+      throw new Error('Failed to download PDF from storage after upload')
+    }
   }
 
   // Step B: Parse PDF with LLM → semantic HTML
   const { html: rawHtml, validation } = await parseAmendmentPdf(
     pdfBuffer,
-    amendment.sfs_number,
-    amendment.base_law_sfs ?? undefined,
-    amendment.title ?? undefined
+    record.sfs_number,
+    record.base_law_sfs ?? undefined,
+    record.title ?? undefined
   )
 
   console.log(
@@ -618,14 +410,14 @@ async function retryAmendment(
 
   // Step C: Normalize → derive content
   const normalizedHtml = normalizeSfsAmendment(rawHtml, {
-    documentNumber: `SFS ${amendment.sfs_number}`,
-    title: amendment.title ?? `SFS ${amendment.sfs_number}`,
+    documentNumber: `SFS ${record.sfs_number}`,
+    title: record.title ?? `SFS ${record.sfs_number}`,
   })
 
   const canonicalJson = parseCanonicalHtml(normalizedHtml, {
-    sfsNumber: amendment.sfs_number,
+    sfsNumber: record.sfs_number,
     documentType: 'SFS_AMENDMENT',
-    ...(amendment.base_law_sfs ? { baseLawSfs: amendment.base_law_sfs } : {}),
+    ...(record.base_law_sfs ? { baseLawSfs: record.base_law_sfs } : {}),
   })
 
   const markdownContent = htmlToMarkdown(normalizedHtml)
@@ -634,18 +426,22 @@ async function retryAmendment(
   const linkifiedHtml = linkifyHtmlContent(
     normalizedHtml,
     slugMap,
-    `SFS ${amendment.sfs_number}`
+    `SFS ${record.sfs_number}`
   ).html
 
   const effectiveDate = canonicalJson.metadata.effectiveDate
     ? new Date(canonicalJson.metadata.effectiveDate)
     : null
 
-  // Step D: Update records in a transaction
+  // Step D: Update all records in a transaction
+  const defaultChangeType = isRepeal
+    ? SectionChangeType.REPEALED
+    : SectionChangeType.AMENDED
+
   await prisma.$transaction(async (tx) => {
     // Clean up any partial SectionChanges from previous failed attempts
     await tx.sectionChange.deleteMany({
-      where: { amendment_id: amendment.id },
+      where: { amendment_id: record.id },
     })
 
     // Create SectionChange records from canonical JSON
@@ -654,10 +450,10 @@ async function retryAmendment(
       for (const paragraf of chapter.paragrafer) {
         await tx.sectionChange.create({
           data: {
-            amendment_id: amendment.id,
+            amendment_id: record.id,
             chapter: chapter.number,
             section: paragraf.number,
-            change_type: SectionChangeType.AMENDED,
+            change_type: defaultChangeType,
             description: paragraf.heading ?? null,
             new_text: paragraf.content || null,
             sort_order: sortOrder++,
@@ -672,10 +468,10 @@ async function retryAmendment(
           for (const paragraf of chapter.paragrafer) {
             await tx.sectionChange.create({
               data: {
-                amendment_id: amendment.id,
+                amendment_id: record.id,
                 chapter: chapter.number,
                 section: paragraf.number,
-                change_type: SectionChangeType.AMENDED,
+                change_type: defaultChangeType,
                 description: paragraf.heading ?? null,
                 new_text: paragraf.content || null,
                 sort_order: sortOrder++,
@@ -686,14 +482,12 @@ async function retryAmendment(
       }
     }
 
-    // Update AmendmentDocument with parsed data
+    // Update AmendmentDocument to COMPLETED
     const updatedAmendment = await tx.amendmentDocument.update({
-      where: { id: amendment.id },
+      where: { id: record.id },
       data: {
         title:
-          canonicalJson.title ||
-          amendment.title ||
-          `SFS ${amendment.sfs_number}`,
+          canonicalJson.title || record.title || `SFS ${record.sfs_number}`,
         effective_date: effectiveDate,
         full_text: plainText,
         markdown_content: markdownContent,
@@ -729,19 +523,18 @@ async function retryAmendment(
     }
 
     // Create ChangeEvent if base law exists in DB (dedup: check first)
-    if (amendment.base_law_sfs) {
-      const baseLawDocNumber = `SFS ${amendment.base_law_sfs}`
+    if (record.base_law_sfs) {
+      const baseLawDocNumber = `SFS ${record.base_law_sfs}`
       const baseLawDoc = await tx.legalDocument.findUnique({
         where: { document_number: baseLawDocNumber },
         select: { id: true },
       })
 
       if (baseLawDoc) {
-        // Dedup: only create if no matching ChangeEvent exists
         const existingEvent = await tx.changeEvent.findFirst({
           where: {
             document_id: baseLawDoc.id,
-            amendment_sfs: `SFS ${amendment.sfs_number}`,
+            amendment_sfs: `SFS ${record.sfs_number}`,
           },
           select: { id: true },
         })
@@ -751,22 +544,29 @@ async function retryAmendment(
             data: {
               document_id: baseLawDoc.id,
               content_type: ContentType.SFS_LAW,
-              change_type: ChangeType.AMENDMENT,
-              amendment_sfs: `SFS ${amendment.sfs_number}`,
+              change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
+              amendment_sfs: `SFS ${record.sfs_number}`,
               notification_sent: false,
             },
           })
           stats.changeEventsCreated++
           console.log(
-            `[DISCOVER-SFS]   ChangeEvent created for base law ${amendment.base_law_sfs}`
+            `[DISCOVER-SFS]   ChangeEvent created for base law ${record.base_law_sfs}`
           )
         }
+      } else {
+        console.log(
+          `[DISCOVER-SFS]   Base law ${record.base_law_sfs} not in DB — no ChangeEvent`
+        )
       }
     }
   })
 
+  stats.processed++
+  if (isRepeal) stats.repealsProcessed++
+
   console.log(
-    `[DISCOVER-SFS]   Retry succeeded: ${amendment.sfs_number} (${sortOrderLabel(canonicalJson)})`
+    `[DISCOVER-SFS]   Processed successfully: ${record.sfs_number} (${sortOrderLabel(canonicalJson)})`
   )
 }
 
@@ -783,15 +583,13 @@ function sortOrderLabel(json: {
 
 function logSummary(stats: DiscoveryStats): void {
   console.log(`[DISCOVER-SFS] ========== SUMMARY ==========`)
-  if (stats.retriesAttempted > 0) {
-    console.log(`[DISCOVER-SFS] ──── Retries ────`)
-    console.log(`[DISCOVER-SFS] Retries attempted: ${stats.retriesAttempted}`)
-    console.log(`[DISCOVER-SFS] Retries succeeded: ${stats.retriesSucceeded}`)
-    console.log(`[DISCOVER-SFS] Retries failed: ${stats.retriesFailed}`)
-  }
-  console.log(`[DISCOVER-SFS] ──── Discovery ────`)
+  console.log(`[DISCOVER-SFS] ──── Phase 1: Discovery ────`)
+  console.log(`[DISCOVER-SFS] Pages scanned: ${stats.pagesScanned}`)
   console.log(`[DISCOVER-SFS] Discovered: ${stats.discovered}`)
   console.log(`[DISCOVER-SFS] Already exists: ${stats.alreadyExists}`)
+  console.log(`[DISCOVER-SFS] PENDING created: ${stats.pendingCreated}`)
+  console.log(`[DISCOVER-SFS] New laws skipped: ${stats.newLawsSkipped}`)
+  console.log(`[DISCOVER-SFS] ──── Phase 2: Processing ────`)
   console.log(`[DISCOVER-SFS] Processed: ${stats.processed}`)
   console.log(`[DISCOVER-SFS] Failed: ${stats.failed}`)
   console.log(
@@ -801,7 +599,6 @@ function logSummary(stats: DiscoveryStats): void {
   console.log(`[DISCOVER-SFS] PDFs stored: ${stats.pdfsStored}`)
   console.log(`[DISCOVER-SFS] PDFs failed: ${stats.pdfsFailed}`)
   console.log(`[DISCOVER-SFS] Repeals processed: ${stats.repealsProcessed}`)
-  console.log(`[DISCOVER-SFS] New laws skipped: ${stats.newLawsSkipped}`)
   console.log(`[DISCOVER-SFS] Duration: ${stats.duration}`)
   console.log(`[DISCOVER-SFS] ======================================`)
 }

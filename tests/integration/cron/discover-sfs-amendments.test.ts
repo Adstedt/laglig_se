@@ -3,51 +3,43 @@
  *
  * Story 8.20: Continuous SFS Amendment Discovery
  *
- * Tests the discovery logic, watermark, dedup, document classification,
- * and ChangeEvent creation using mocked HTTP + Prisma.
+ * Tests the two-phase discovery logic: index parsing + pagination,
+ * watermark filtering, dedup, document classification, and enrichment.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
-  crawlCurrentYearIndex,
+  discoverFromIndex,
   classifyDocument,
   extractBaseLawSfs,
   extractSfsNumericPart,
-  type CrawlerOptions,
 } from '@/lib/sfs/sfs-amendment-crawler'
 
 // =============================================================================
 // Mock helpers
 // =============================================================================
 
-function makeIndexPageHtml(year: number, sfsNumbers: number[]): string {
-  const rows = sfsNumbers
+function makeIndexPageHtml(
+  year: number,
+  items: { num: number; title: string; date: string }[],
+  nextPage?: number
+): string {
+  const rows = items
     .map(
-      (num) => `
+      (item) => `
     <tr>
-      <td><span data-lable="SFS-nummer">${year}:${num}</span></td>
-      <td><span data-lable="Rubrik"><a href="doc/${year}${num}.html">Title ${num}</a></span></td>
-      <td><span data-lable="Publicerad">${year}-02-01</span></td>
+      <td><span data-lable="SFS-nummer">${year}:${item.num}</span></td>
+      <td><span data-lable="Rubrik"><a href="doc/${year}${item.num}.html">${item.title}</a></span></td>
+      <td><span data-lable="Publicerad">${item.date}</span></td>
     </tr>`
     )
     .join('\n')
 
-  return `<html><body><table>${rows}</table></body></html>`
-}
+  const pagination = nextPage
+    ? `<li class="next"><a href="regulations%3Fpage=${nextPage}.html">Next</a></li>`
+    : ''
 
-function makeDocPageHtml(
-  title: string,
-  sfsYear: number,
-  sfsNum: number
-): string {
-  return `
-    <html>
-      <title>${title} | svenskforfattningssamling.se</title>
-      <body>
-        <a href="../sites/default/files/sfs/${sfsYear}-02/SFS${sfsYear}-${sfsNum}.pdf">Download</a>
-      </body>
-    </html>
-  `
+  return `<html><body><table>${rows}</table>${pagination}</body></html>`
 }
 
 function createMockFetch(pages: Map<string, string>): typeof fetch {
@@ -79,57 +71,91 @@ describe('discover-sfs-amendments integration', () => {
   })
 
   // ---------------------------------------------------------------------------
-  // Watermark-based incremental discovery
+  // discoverFromIndex — basic discovery
   // ---------------------------------------------------------------------------
 
-  describe('watermark-based discovery', () => {
-    it('only crawls documents above the watermark', async () => {
+  describe('discoverFromIndex', () => {
+    it('discovers documents from the index page with correct enrichment', async () => {
       const year = 2026
       const pages = new Map<string, string>()
 
-      // Index page shows SFS numbers 1-10
       pages.set(
         `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
-        makeIndexPageHtml(year, [10, 9, 8, 7, 6, 5, 4, 3, 2, 1])
+        makeIndexPageHtml(year, [
+          {
+            num: 10,
+            title: 'Lag om ändring i lagen (2020:100)',
+            date: '2026-02-01',
+          },
+          { num: 9, title: 'Lag om tilläggsskatt', date: '2026-01-30' },
+          {
+            num: 8,
+            title: 'Lag om upphävande av lagen (2019:50)',
+            date: '2026-01-28',
+          },
+        ])
       )
 
-      // Only add doc pages for 8, 9, 10 (above watermark of 7)
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}8.html`,
-        makeDocPageHtml('Lag om ändring i lagen (2020:100)', year, 8)
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}9.html`,
-        makeDocPageHtml('Lag om tilläggsskatt', year, 9)
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}10.html`,
-        makeDocPageHtml('Lag om upphävande av lagen (2019:50)', year, 10)
-      )
-
-      const mockFetch = createMockFetch(pages)
-
-      const result = await crawlCurrentYearIndex(year, {
-        startFromSfsNumber: 7,
+      const result = await discoverFromIndex(year, {
         requestDelayMs: 0,
-        fetchFn: mockFetch,
+        fetchFn: createMockFetch(pages),
       })
 
-      // Should only have discovered 3 documents (8, 9, 10)
       expect(result.documents).toHaveLength(3)
-      expect(result.highestSfsNum).toBe(10)
+      expect(result.pagesScanned).toBe(1)
+      expect(result.highestNumericPart).toBe(10)
 
-      // Verify the fetch was NOT called for docs 1-7
-      const calls = (mockFetch as ReturnType<typeof vi.fn>).mock.calls
-      const docUrls = calls
-        .map((c: unknown[]) => c[0] as string)
-        .filter((u: string) => u.includes('/doc/'))
+      // Check enrichment
+      const amendment = result.documents.find((d) => d.sfsNumber === '2026:10')!
+      expect(amendment.documentType).toBe('amendment')
+      expect(amendment.baseLawSfs).toBe('2020:100')
+      expect(amendment.pdfUrl).toContain('SFS2026-10.pdf')
+      expect(amendment.htmlUrl).toContain('202610.html')
+      expect(amendment.publishedDate).toBe('2026-02-01')
 
-      for (let i = 1; i <= 7; i++) {
-        expect(docUrls).not.toContain(
-          `https://svenskforfattningssamling.se/doc/${year}${i}.html`
-        )
-      }
+      const newLaw = result.documents.find((d) => d.sfsNumber === '2026:9')!
+      expect(newLaw.documentType).toBe('new_law')
+      expect(newLaw.baseLawSfs).toBeNull()
+
+      const repeal = result.documents.find((d) => d.sfsNumber === '2026:8')!
+      expect(repeal.documentType).toBe('repeal')
+      expect(repeal.baseLawSfs).toBe('2019:50')
+    })
+
+    it('filters documents above watermark', async () => {
+      const year = 2026
+      const pages = new Map<string, string>()
+
+      pages.set(
+        `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
+        makeIndexPageHtml(year, [
+          {
+            num: 10,
+            title: 'Lag om ändring i lagen (2020:100)',
+            date: '2026-02-01',
+          },
+          { num: 9, title: 'Lag om tilläggsskatt', date: '2026-01-30' },
+          {
+            num: 8,
+            title: 'Lag om ändring i lagen (2019:50)',
+            date: '2026-01-28',
+          },
+        ])
+      )
+
+      const result = await discoverFromIndex(year, {
+        afterNumericPart: 8,
+        requestDelayMs: 0,
+        fetchFn: createMockFetch(pages),
+      })
+
+      // Only 9 and 10 should be above watermark of 8
+      expect(result.documents).toHaveLength(2)
+      expect(result.documents.map((d) => d.sfsNumber)).toEqual([
+        '2026:10',
+        '2026:9',
+      ])
+      expect(result.highestNumericPart).toBe(10)
     })
 
     it('returns empty documents when watermark equals highest', async () => {
@@ -137,57 +163,216 @@ describe('discover-sfs-amendments integration', () => {
       const pages = new Map<string, string>()
       pages.set(
         `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
-        makeIndexPageHtml(year, [50, 49, 48])
+        makeIndexPageHtml(year, [
+          {
+            num: 50,
+            title: 'Lag om ändring i lagen (2020:50)',
+            date: '2026-02-01',
+          },
+          {
+            num: 49,
+            title: 'Lag om ändring i lagen (2020:49)',
+            date: '2026-02-01',
+          },
+        ])
       )
 
-      const result = await crawlCurrentYearIndex(year, {
-        startFromSfsNumber: 50,
+      const result = await discoverFromIndex(year, {
+        afterNumericPart: 50,
         requestDelayMs: 0,
         fetchFn: createMockFetch(pages),
       })
 
       expect(result.documents).toHaveLength(0)
-      expect(result.highestSfsNum).toBe(50)
+      expect(result.highestNumericPart).toBe(50)
     })
   })
 
   // ---------------------------------------------------------------------------
-  // Idempotency (dedup)
+  // Pagination
   // ---------------------------------------------------------------------------
 
-  describe('idempotency', () => {
-    it('crawling the same range twice returns the same documents', async () => {
+  describe('pagination', () => {
+    it('follows pagination to discover more documents', async () => {
       const year = 2026
       const pages = new Map<string, string>()
+
+      // Page 1: SFS 30, 29 (with next page link)
       pages.set(
         `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
-        makeIndexPageHtml(year, [3, 2, 1])
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}1.html`,
-        makeDocPageHtml('Lag om ändring i lagen (2020:100)', year, 1)
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}2.html`,
-        makeDocPageHtml('Lag om tilläggsskatt', year, 2)
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}3.html`,
-        makeDocPageHtml('Lag om upphävande av lagen (2019:50)', year, 3)
+        makeIndexPageHtml(
+          year,
+          [
+            {
+              num: 30,
+              title: 'Lag om ändring i lagen (2020:30)',
+              date: '2026-02-15',
+            },
+            {
+              num: 29,
+              title: 'Lag om ändring i lagen (2020:29)',
+              date: '2026-02-14',
+            },
+          ],
+          2
+        )
       )
 
-      const opts: CrawlerOptions = {
+      // Page 2: SFS 28, 27
+      pages.set(
+        `https://svenskforfattningssamling.se/regulations/${year}/index.html%3Fpage=2.html`,
+        makeIndexPageHtml(year, [
+          {
+            num: 28,
+            title: 'Lag om ändring i lagen (2020:28)',
+            date: '2026-02-13',
+          },
+          {
+            num: 27,
+            title: 'Lag om ändring i lagen (2020:27)',
+            date: '2026-02-12',
+          },
+        ])
+      )
+
+      const result = await discoverFromIndex(year, {
         requestDelayMs: 0,
         fetchFn: createMockFetch(pages),
-      }
+      })
 
-      const run1 = await crawlCurrentYearIndex(year, opts)
-      const run2 = await crawlCurrentYearIndex(year, opts)
+      expect(result.pagesScanned).toBe(2)
+      expect(result.documents).toHaveLength(4)
+      expect(result.documents.map((d) => d.numericPart)).toEqual([
+        30, 29, 28, 27,
+      ])
+    })
 
-      expect(run1.documents).toHaveLength(run2.documents.length)
-      expect(run1.documents.map((d) => d.sfsNumber)).toEqual(
-        run2.documents.map((d) => d.sfsNumber)
+    it('stops paginating when all rows are below watermark', async () => {
+      const year = 2026
+      const pages = new Map<string, string>()
+
+      // Page 1: SFS 30, 29 (some above watermark=28, with next page link)
+      pages.set(
+        `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
+        makeIndexPageHtml(
+          year,
+          [
+            {
+              num: 30,
+              title: 'Lag om ändring i lagen (2020:30)',
+              date: '2026-02-15',
+            },
+            {
+              num: 29,
+              title: 'Lag om ändring i lagen (2020:29)',
+              date: '2026-02-14',
+            },
+          ],
+          2
+        )
       )
+
+      // Page 2: SFS 28, 27 — all at or below watermark of 28
+      pages.set(
+        `https://svenskforfattningssamling.se/regulations/${year}/index.html%3Fpage=2.html`,
+        makeIndexPageHtml(
+          year,
+          [
+            {
+              num: 28,
+              title: 'Lag om ändring i lagen (2020:28)',
+              date: '2026-02-13',
+            },
+            {
+              num: 27,
+              title: 'Lag om ändring i lagen (2020:27)',
+              date: '2026-02-12',
+            },
+          ],
+          3
+        )
+      )
+
+      // Page 3 should NOT be fetched
+      pages.set(
+        `https://svenskforfattningssamling.se/regulations/${year}/index.html%3Fpage=3.html`,
+        makeIndexPageHtml(year, [
+          {
+            num: 26,
+            title: 'Lag om ändring i lagen (2020:26)',
+            date: '2026-02-11',
+          },
+        ])
+      )
+
+      const mockFetch = createMockFetch(pages)
+      const result = await discoverFromIndex(year, {
+        afterNumericPart: 28,
+        requestDelayMs: 0,
+        fetchFn: mockFetch,
+      })
+
+      // Should have scanned 2 pages, stopped because page 2 was all <= watermark
+      expect(result.pagesScanned).toBe(2)
+      // Only SFS 29 and 30 are above watermark
+      expect(result.documents).toHaveLength(2)
+
+      // Verify page 3 was never fetched
+      const calls = (mockFetch as ReturnType<typeof vi.fn>).mock.calls
+      const fetchedUrls = calls.map((c: unknown[]) => c[0] as string)
+      expect(fetchedUrls).not.toContain(expect.stringContaining('page=3'))
+    })
+
+    it('deduplicates documents across pages', async () => {
+      const year = 2026
+      const pages = new Map<string, string>()
+
+      // Same document appears on both pages (edge case: overlapping pagination)
+      pages.set(
+        `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
+        makeIndexPageHtml(
+          year,
+          [
+            {
+              num: 10,
+              title: 'Lag om ändring i lagen (2020:10)',
+              date: '2026-02-01',
+            },
+            {
+              num: 9,
+              title: 'Lag om ändring i lagen (2020:9)',
+              date: '2026-01-30',
+            },
+          ],
+          2
+        )
+      )
+
+      pages.set(
+        `https://svenskforfattningssamling.se/regulations/${year}/index.html%3Fpage=2.html`,
+        makeIndexPageHtml(year, [
+          {
+            num: 9,
+            title: 'Lag om ändring i lagen (2020:9)',
+            date: '2026-01-30',
+          },
+          {
+            num: 8,
+            title: 'Lag om ändring i lagen (2020:8)',
+            date: '2026-01-28',
+          },
+        ])
+      )
+
+      const result = await discoverFromIndex(year, {
+        requestDelayMs: 0,
+        fetchFn: createMockFetch(pages),
+      })
+
+      // SFS 9 should appear only once despite being on both pages
+      expect(result.documents).toHaveLength(3)
+      const sfsNumbers = result.documents.map((d) => d.sfsNumber)
+      expect(sfsNumbers).toEqual(['2026:10', '2026:9', '2026:8'])
     })
   })
 
@@ -201,26 +386,22 @@ describe('discover-sfs-amendments integration', () => {
       const pages = new Map<string, string>()
       pages.set(
         `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
-        makeIndexPageHtml(year, [3, 2, 1])
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}1.html`,
-        makeDocPageHtml(
-          'Lag om ändring i arbetsmiljölagen (1977:1160)',
-          year,
-          1
-        )
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}2.html`,
-        makeDocPageHtml('Lag om tilläggsskatt', year, 2)
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}3.html`,
-        makeDocPageHtml('Lag om upphävande av lagen (2019:50)', year, 3)
+        makeIndexPageHtml(year, [
+          {
+            num: 3,
+            title: 'Lag om ändring i arbetsmiljölagen (1977:1160)',
+            date: '2026-02-01',
+          },
+          { num: 2, title: 'Lag om tilläggsskatt', date: '2026-01-30' },
+          {
+            num: 1,
+            title: 'Lag om upphävande av lagen (2019:50)',
+            date: '2026-01-28',
+          },
+        ])
       )
 
-      const result = await crawlCurrentYearIndex(year, {
+      const result = await discoverFromIndex(year, {
         requestDelayMs: 0,
         fetchFn: createMockFetch(pages),
       })
@@ -252,7 +433,6 @@ describe('discover-sfs-amendments integration', () => {
 
   describe('numeric watermark comparison', () => {
     it('correctly ranks SFS numbers numerically, not lexicographically', () => {
-      // The critical test: "2026:9" > "2026:80" as strings, but 9 < 80 as numbers
       const sfsNumbers = ['2026:9', '2026:80', '2026:42', '2026:3', '2026:100']
       const max = Math.max(...sfsNumbers.map((s) => extractSfsNumericPart(s)))
       expect(max).toBe(100)
@@ -298,42 +478,7 @@ describe('discover-sfs-amendments integration', () => {
   })
 
   // ---------------------------------------------------------------------------
-  // Timeout protection
-  // ---------------------------------------------------------------------------
-
-  describe('timeout protection', () => {
-    it('crawler stops gracefully at the batch limit', async () => {
-      // We simulate a large index page with many documents
-      // but limit how many we process via startFromSfsNumber
-      const year = 2026
-      const pages = new Map<string, string>()
-      pages.set(
-        `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
-        makeIndexPageHtml(year, [200, 199, 198, 197, 196])
-      )
-
-      // Only add doc pages for 196-200
-      for (let i = 196; i <= 200; i++) {
-        pages.set(
-          `https://svenskforfattningssamling.se/doc/${year}${i}.html`,
-          makeDocPageHtml(`Lag om ändring i lagen (2020:${i})`, year, i)
-        )
-      }
-
-      const result = await crawlCurrentYearIndex(year, {
-        startFromSfsNumber: 195,
-        requestDelayMs: 0,
-        fetchFn: createMockFetch(pages),
-      })
-
-      // Should discover exactly 5 documents (196-200)
-      expect(result.documents).toHaveLength(5)
-      expect(result.highestSfsNum).toBe(200)
-    })
-  })
-
-  // ---------------------------------------------------------------------------
-  // Empty index page
+  // Edge cases
   // ---------------------------------------------------------------------------
 
   describe('edge cases', () => {
@@ -345,62 +490,69 @@ describe('discover-sfs-amendments integration', () => {
         '<html><body><table></table></body></html>'
       )
 
-      const result = await crawlCurrentYearIndex(year, {
+      const result = await discoverFromIndex(year, {
         requestDelayMs: 0,
         fetchFn: createMockFetch(pages),
       })
 
       expect(result.documents).toHaveLength(0)
-      expect(result.highestSfsNum).toBe(0)
+      expect(result.highestNumericPart).toBe(0)
+      expect(result.pagesScanned).toBe(1)
     })
 
     it('handles 404 for index page gracefully', async () => {
       const year = 2026
       const pages = new Map<string, string>() // No pages registered
 
-      const result = await crawlCurrentYearIndex(year, {
+      const result = await discoverFromIndex(year, {
         requestDelayMs: 0,
         fetchFn: createMockFetch(pages),
       })
 
       expect(result.documents).toHaveLength(0)
-      expect(result.highestSfsNum).toBe(0)
+      expect(result.highestNumericPart).toBe(0)
+      expect(result.pagesScanned).toBe(1)
     })
 
-    it('handles gaps in SFS numbering', async () => {
+    it('no individual doc page fetches are made (fast discovery)', async () => {
       const year = 2026
       const pages = new Map<string, string>()
       pages.set(
         `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
-        makeIndexPageHtml(year, [5, 3, 1]) // gaps at 2 and 4
+        makeIndexPageHtml(year, [
+          {
+            num: 5,
+            title: 'Lag om ändring i lagen (2020:5)',
+            date: '2026-02-01',
+          },
+          {
+            num: 4,
+            title: 'Lag om ändring i lagen (2020:4)',
+            date: '2026-01-30',
+          },
+          {
+            num: 3,
+            title: 'Lag om ändring i lagen (2020:3)',
+            date: '2026-01-28',
+          },
+        ])
       )
 
-      // Only add pages for 1, 3, 5 — 2 and 4 will 404
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}1.html`,
-        makeDocPageHtml('Lag om ändring i lagen (2020:1)', year, 1)
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}3.html`,
-        makeDocPageHtml('Lag om ändring i lagen (2020:3)', year, 3)
-      )
-      pages.set(
-        `https://svenskforfattningssamling.se/doc/${year}5.html`,
-        makeDocPageHtml('Lag om ändring i lagen (2020:5)', year, 5)
-      )
-
-      const result = await crawlCurrentYearIndex(year, {
+      const mockFetch = createMockFetch(pages)
+      await discoverFromIndex(year, {
         requestDelayMs: 0,
-        fetchFn: createMockFetch(pages),
+        fetchFn: mockFetch,
       })
 
-      // Should find 3 documents, skipping the 404 gaps
-      expect(result.documents).toHaveLength(3)
-      expect(result.documents.map((d) => d.sfsNumber)).toEqual([
-        '2026:1',
-        '2026:3',
-        '2026:5',
-      ])
+      // Verify ONLY the index page was fetched, no /doc/ pages
+      const calls = (mockFetch as ReturnType<typeof vi.fn>).mock.calls
+      const fetchedUrls = calls.map((c: unknown[]) => c[0] as string)
+
+      expect(fetchedUrls).toHaveLength(1)
+      expect(fetchedUrls[0]).toContain('/regulations/')
+      expect(
+        fetchedUrls.filter((u: string) => u.includes('/doc/'))
+      ).toHaveLength(0)
     })
   })
 })

@@ -10,6 +10,7 @@ import {
   extractBaseLawSfs,
   extractSfsNumericPart,
   parseIndexPageSfsNumbers,
+  parseIndexPageRows,
   getNextPageNumber,
   parseDocumentPage,
 } from '@/lib/sfs/sfs-amendment-crawler'
@@ -174,6 +175,97 @@ describe('parseIndexPageSfsNumbers', () => {
   it('returns empty array when no matches', () => {
     const nums = parseIndexPageSfsNumbers('<html></html>', 2026)
     expect(nums).toEqual([])
+  })
+})
+
+// =============================================================================
+// parseIndexPageRows
+// =============================================================================
+
+describe('parseIndexPageRows', () => {
+  const sampleIndexHtml = `
+    <table>
+      <tr>
+        <td><span data-lable="SFS-nummer">2026:124</span></td>
+        <td><span data-lable="Rubrik"><a href="doc/2026124.html">Lag om ändring i lagen (2023:875) om tilläggsskatt</a></span></td>
+        <td><span data-lable="Publicerad">2026-03-03</span></td>
+      </tr>
+      <tr>
+        <td><span data-lable="SFS-nummer">2026:123</span></td>
+        <td><span data-lable="Rubrik"><a href="doc/2026123.html">Förordning om statsbidrag</a></span></td>
+        <td><span data-lable="Publicerad">2026-03-02</span></td>
+      </tr>
+      <tr>
+        <td><span data-lable="SFS-nummer">2025:1400</span></td>
+        <td><span data-lable="Rubrik"><a href="doc/20251400.html">Old law</a></span></td>
+        <td><span data-lable="Publicerad">2025-12-01</span></td>
+      </tr>
+    </table>
+  `
+
+  it('extracts rows with correct title, date, and numericPart', () => {
+    const rows = parseIndexPageRows(sampleIndexHtml, 2026)
+    expect(rows).toHaveLength(2)
+
+    expect(rows[0]).toEqual({
+      sfsNumber: '2026:124',
+      title: 'Lag om ändring i lagen (2023:875) om tilläggsskatt',
+      publishedDate: '2026-03-03',
+      numericPart: 124,
+    })
+
+    expect(rows[1]).toEqual({
+      sfsNumber: '2026:123',
+      title: 'Förordning om statsbidrag',
+      publishedDate: '2026-03-02',
+      numericPart: 123,
+    })
+  })
+
+  it('filters by year', () => {
+    const rows2025 = parseIndexPageRows(sampleIndexHtml, 2025)
+    expect(rows2025).toHaveLength(1)
+    expect(rows2025[0]!.sfsNumber).toBe('2025:1400')
+  })
+
+  it('returns empty array for non-matching year', () => {
+    const rows = parseIndexPageRows(sampleIndexHtml, 2024)
+    expect(rows).toEqual([])
+  })
+
+  it('returns empty array for empty HTML', () => {
+    const rows = parseIndexPageRows('<html></html>', 2026)
+    expect(rows).toEqual([])
+  })
+
+  it('handles rows with missing date gracefully', () => {
+    const html = `
+      <table>
+        <tr>
+          <td><span data-lable="SFS-nummer">2026:50</span></td>
+          <td><span data-lable="Rubrik"><a href="doc/202650.html">Some law</a></span></td>
+          <td><span data-lable="Publicerad"></span></td>
+        </tr>
+      </table>
+    `
+    const rows = parseIndexPageRows(html, 2026)
+    // Row should be skipped because date doesn't match YYYY-MM-DD pattern
+    expect(rows).toEqual([])
+  })
+
+  it('strips HTML tags from title', () => {
+    const html = `
+      <table>
+        <tr>
+          <td><span data-lable="SFS-nummer">2026:10</span></td>
+          <td><span data-lable="Rubrik"><a href="doc/202610.html"><strong>Bold title</strong></a></span></td>
+          <td><span data-lable="Publicerad">2026-01-15</span></td>
+        </tr>
+      </table>
+    `
+    const rows = parseIndexPageRows(html, 2026)
+    expect(rows).toHaveLength(1)
+    expect(rows[0]!.title).toBe('Bold title')
   })
 })
 

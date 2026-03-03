@@ -7,6 +7,8 @@
  * Extracted from scripts/crawl-sfs-index.ts with incremental watermark support.
  */
 
+import { constructPdfUrls } from './pdf-urls'
+
 // =============================================================================
 // Types
 // =============================================================================
@@ -376,4 +378,114 @@ export async function crawlDocumentPage(
   if (!parsed) return null
 
   return { sfsNumber, ...parsed }
+}
+
+// =============================================================================
+// Fast Index-Based Discovery (replaces crawlCurrentYearIndex for cron use)
+// =============================================================================
+
+/**
+ * Discover new SFS documents from the index page(s).
+ *
+ * Key improvements over crawlCurrentYearIndex:
+ * - Parses title + date directly from index rows (no individual doc page fetches)
+ * - Follows pagination via getNextPageNumber()
+ * - Stops paginating when all rows on a page are at or below the watermark
+ * - Enriches each row with documentType, baseLawSfs, pdfUrl
+ */
+export async function discoverFromIndex(
+  year: number,
+  options: DiscoverOptions = {}
+): Promise<DiscoverResult> {
+  const { afterNumericPart, fetchFn = fetch, requestDelayMs = 200 } = options
+
+  const allRows: IndexPageRow[] = []
+  let pagesScanned = 0
+  let currentPage: number | null = null // null = first page (no ?page= param)
+
+  // Paginate through index pages
+  while (true) {
+    // URL pattern: .../regulations/YYYY/index.html (page 0)
+    //              .../regulations/YYYY/index.html%3Fpage=N.html (page N)
+    const indexUrl =
+      currentPage !== null
+        ? `${BASE_URL}/regulations/${year}/index.html%3Fpage=${currentPage}.html`
+        : `${BASE_URL}/regulations/${year}/index.html`
+
+    if (pagesScanned > 0) {
+      await delay(requestDelayMs)
+    }
+
+    const html = await fetchPage(indexUrl, fetchFn)
+    pagesScanned++
+
+    if (!html) break
+
+    const rows = parseIndexPageRows(html, year)
+    if (rows.length === 0) break
+
+    allRows.push(...rows)
+
+    // If all rows on this page are at or below watermark, stop paginating
+    // (index is in descending order — once we're past the watermark, all
+    // subsequent pages are also below it)
+    if (
+      afterNumericPart !== undefined &&
+      rows.every((r) => r.numericPart <= afterNumericPart)
+    ) {
+      break
+    }
+
+    // Check for next page
+    const nextPage = getNextPageNumber(html)
+    if (nextPage === null) break
+
+    currentPage = nextPage
+  }
+
+  if (allRows.length === 0) {
+    return { documents: [], pagesScanned, highestNumericPart: 0 }
+  }
+
+  // Deduplicate rows (same SFS number can appear on overlapping pages)
+  const seen = new Set<string>()
+  const uniqueRows: IndexPageRow[] = []
+  for (const row of allRows) {
+    if (!seen.has(row.sfsNumber)) {
+      seen.add(row.sfsNumber)
+      uniqueRows.push(row)
+    }
+  }
+
+  const highestNumericPart = Math.max(...uniqueRows.map((r) => r.numericPart))
+
+  // Filter to rows above watermark
+  const filtered =
+    afterNumericPart !== undefined
+      ? uniqueRows.filter((r) => r.numericPart > afterNumericPart)
+      : uniqueRows
+
+  // Enrich each row with classification and URLs
+  const documents: DiscoveredDocument[] = filtered.map((row) => {
+    const documentType = classifyDocument(row.title)
+    const baseLawSfs =
+      documentType === 'amendment' || documentType === 'repeal'
+        ? extractBaseLawSfs(row.title)
+        : null
+
+    const urls = constructPdfUrls(row.sfsNumber, row.publishedDate)
+
+    return {
+      sfsNumber: row.sfsNumber,
+      title: row.title,
+      publishedDate: row.publishedDate,
+      numericPart: row.numericPart,
+      documentType,
+      baseLawSfs,
+      pdfUrl: urls.pdf,
+      htmlUrl: urls.html,
+    }
+  })
+
+  return { documents, pagesScanned, highestNumericPart }
 }
