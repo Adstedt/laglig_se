@@ -38,6 +38,39 @@ export interface CrawlerOptions {
   fetchFn?: typeof fetch
 }
 
+export interface IndexPageRow {
+  sfsNumber: string // "2026:124"
+  title: string // "Lag om ändring i lagen (2023:875) om tilläggsskatt"
+  publishedDate: string // "2026-03-03"
+  numericPart: number // 124
+}
+
+export interface DiscoverOptions {
+  /** Only discover SFS numbers above this numeric part (e.g. 91 means start from 92+) */
+  afterNumericPart?: number
+  /** Custom fetch function for testing */
+  fetchFn?: typeof fetch
+  /** Minimum delay between pagination requests in ms (default: 200) */
+  requestDelayMs?: number
+}
+
+export interface DiscoverResult {
+  documents: DiscoveredDocument[]
+  pagesScanned: number
+  highestNumericPart: number
+}
+
+export interface DiscoveredDocument {
+  sfsNumber: string
+  title: string
+  publishedDate: string
+  numericPart: number
+  documentType: DocumentType
+  baseLawSfs: string | null
+  pdfUrl: string
+  htmlUrl: string
+}
+
 const BASE_URL = 'https://svenskforfattningssamling.se'
 const USER_AGENT = 'Laglig.se/1.0 (Legal research; contact@laglig.se)'
 
@@ -137,6 +170,50 @@ export function getNextPageNumber(html: string): number | null {
 }
 
 /**
+ * Parse full rows from the SFS index page HTML.
+ * Each row contains SFS number, title, and publication date.
+ *
+ * Expected HTML structure:
+ * ```html
+ * <tr>
+ *   <td><span data-lable="SFS-nummer">2026:124</span></td>
+ *   <td><span data-lable="Rubrik"><a href="...">Lag om ändring i ...</a></span></td>
+ *   <td><span data-lable="Publicerad">2026-03-03</span></td>
+ * </tr>
+ * ```
+ */
+export function parseIndexPageRows(html: string, year: number): IndexPageRow[] {
+  const rows: IndexPageRow[] = []
+
+  // Match each table row that contains SFS data
+  const rowRegex =
+    /<tr[^>]*>[\s\S]*?data-lable="SFS-nummer"[^>]*>(\d{4}):(\d+)[\s\S]*?data-lable="Rubrik"[^>]*>([\s\S]*?)<\/span>[\s\S]*?data-lable="Publicerad"[^>]*>(\d{4}-\d{2}-\d{2})<\/span>[\s\S]*?<\/tr>/gi
+
+  let match
+  while ((match = rowRegex.exec(html)) !== null) {
+    const [, sfsYear, sfsNum, rubrikHtml, publishedDate] = match
+    if (sfsYear !== String(year)) continue
+    if (!sfsNum || !rubrikHtml || !publishedDate) continue
+
+    const numericPart = parseInt(sfsNum, 10)
+    if (isNaN(numericPart)) continue
+
+    // Extract title from the Rubrik cell (strip HTML tags)
+    const title = rubrikHtml.replace(/<[^>]+>/g, '').trim()
+    if (!title) continue
+
+    rows.push({
+      sfsNumber: `${sfsYear}:${sfsNum}`,
+      title,
+      publishedDate,
+      numericPart,
+    })
+  }
+
+  return rows
+}
+
+/**
  * Parse a document page HTML to extract metadata.
  */
 export function parseDocumentPage(
@@ -209,6 +286,9 @@ async function fetchPage(
 }
 
 /**
+ * @deprecated Use `discoverFromIndex()` instead — it parses titles/dates from the index
+ * page directly (no individual doc page fetches) and supports pagination.
+ *
  * Crawl the current year's index page to find the highest SFS number.
  * If no watermark is provided, traverses all pagination pages to build a full index.
  * With a watermark, only page 1 is needed (it shows the most recent documents).
