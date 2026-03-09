@@ -118,6 +118,8 @@ export function useChatInterface(
     setMessages,
   } = useChat({
     transport,
+    // Batch UI updates every 50ms to avoid per-token re-renders
+    experimental_throttle: 50,
     onFinish: ({ message }) => {
       // Track response completion
       const duration = Date.now() - startTimeRef.current

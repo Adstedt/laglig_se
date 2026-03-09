@@ -2,7 +2,7 @@
 
 /**
  * Chat Message List Component
- * Scrollable container for chat messages with modern styling
+ * Scrollable container for chat messages with streaming state management
  */
 
 import { useRef, useEffect } from 'react'
@@ -35,18 +35,35 @@ export function ChatMessageList({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isStreaming])
 
+  // Only mark the last assistant message as streaming, and only if it's
+  // actually the newest message (not a previous response before a new user message)
+  const lastAssistantIndex = messages.findLastIndex(
+    (m) => m.role === 'assistant'
+  )
+  const lastMessageIndex = messages.length - 1
+  const isLastAssistantTheNewest =
+    lastAssistantIndex === lastMessageIndex ||
+    // The assistant message might not exist yet — don't mark old ones
+    lastAssistantIndex === -1
+
   return (
     <ScrollArea className={cn('flex-1', className)} ref={scrollRef}>
       <div className="px-4 py-4 space-y-4">
-        {messages.map((message) => (
+        {messages.map((message, index) => (
           <ChatMessage
             key={message.id}
             message={message}
             citations={message.role === 'assistant' ? citations : []}
+            isStreaming={
+              isStreaming &&
+              index === lastAssistantIndex &&
+              isLastAssistantTheNewest
+            }
           />
         ))}
 
-        {isStreaming && (
+        {/* Show typing indicator when waiting for first token */}
+        {isStreaming && !isLastAssistantTheNewest && (
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted border border-border">
               <LexaIcon size={16} />
