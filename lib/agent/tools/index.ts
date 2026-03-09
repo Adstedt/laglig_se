@@ -7,6 +7,10 @@ import { createSearchLawsTool } from './search-laws'
 import { createGetDocumentDetailsTool } from './get-document-details'
 import { createGetChangeDetailsTool } from './get-change-details'
 import { createGetCompanyContextTool } from './get-company-context'
+import { createCreateTaskTool } from './create-task'
+import { createUpdateComplianceStatusTool } from './update-compliance-status'
+import { createSaveAssessmentTool } from './save-assessment'
+import { createAddContextNoteTool } from './add-context-note'
 
 // Re-export types for consumers
 export type {
@@ -38,5 +42,9 @@ export function createAgentTools(workspaceId: string) {
     get_document_details: createGetDocumentDetailsTool(),
     get_change_details: createGetChangeDetailsTool(),
     get_company_context: createGetCompanyContextTool(workspaceId),
+    create_task: createCreateTaskTool(workspaceId),
+    update_compliance_status: createUpdateComplianceStatusTool(workspaceId),
+    save_assessment: createSaveAssessmentTool(workspaceId),
+    add_context_note: createAddContextNoteTool(workspaceId),
   }
 }
