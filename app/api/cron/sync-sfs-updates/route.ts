@@ -129,7 +129,27 @@ export async function GET(request: Request) {
 
         stats.fetched++
         const sfsNumber = `SFS ${doc.beteckning}`
-        const latestAmendment = parseUndertitel(doc.undertitel || '')
+        let latestAmendment = parseUndertitel(doc.undertitel || '')
+
+        // Fallback: if Riksdagen API undertitel doesn't contain amendment info,
+        // check our own AmendmentDocument table for the latest known amendment
+        if (!latestAmendment) {
+          const latestKnown = await prisma.amendmentDocument.findFirst({
+            where: {
+              base_law_sfs: doc.beteckning,
+              parse_status: 'COMPLETED',
+            },
+            orderBy: { sfs_number: 'desc' },
+            select: { sfs_number: true },
+          })
+          if (latestKnown) {
+            latestAmendment = `SFS ${latestKnown.sfs_number}`
+            console.log(
+              `[SYNC-SFS-UPDATES] ${sfsNumber} undertitel empty, using own data: ${latestAmendment}`
+            )
+          }
+        }
+
         const amendmentInfo = latestAmendment
           ? ` (ändrad t.o.m. ${latestAmendment})`
           : ''

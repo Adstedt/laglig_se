@@ -37,6 +37,7 @@ import { sendAmendmentDiscoveryEmail } from '@/lib/email/cron-notifications'
 import {
   discoverFromIndex,
   extractSfsNumericPart,
+  extractBaseLawSfs,
   classifyDocument,
   crawlDocumentPage,
 } from '@/lib/sfs/sfs-amendment-crawler'
@@ -181,6 +182,36 @@ export async function GET(request: Request) {
     )
 
     // ==========================================================================
+    // Phase 1.5: Re-resolve "unknown" base_law_sfs records
+    // ==========================================================================
+
+    const unknownRecords = await prisma.amendmentDocument.findMany({
+      where: {
+        sfs_number: { startsWith: `${year}:` },
+        base_law_sfs: 'unknown',
+      },
+      select: { id: true, sfs_number: true, title: true },
+    })
+
+    if (unknownRecords.length > 0) {
+      console.log(
+        `[DISCOVER-SFS] Re-resolving ${unknownRecords.length} "unknown" base_law_sfs records`
+      )
+      for (const rec of unknownRecords) {
+        const resolved = rec.title ? extractBaseLawSfs(rec.title) : null
+        if (resolved) {
+          await prisma.amendmentDocument.update({
+            where: { id: rec.id },
+            data: { base_law_sfs: resolved },
+          })
+          console.log(
+            `[DISCOVER-SFS] Resolved ${rec.sfs_number}: unknown → ${resolved}`
+          )
+        }
+      }
+    }
+
+    // ==========================================================================
     // Phase 2: Processing — pick up PENDING/FAILED, run full pipeline
     // ==========================================================================
 
@@ -233,6 +264,60 @@ export async function GET(request: Request) {
           }
         }
       }
+    }
+
+    // ==========================================================================
+    // Phase 3: Backfill missing ChangeEvents for COMPLETED amendments
+    // ==========================================================================
+
+    const completedWithoutEvents = await prisma.amendmentDocument.findMany({
+      where: {
+        sfs_number: { startsWith: `${year}:` },
+        parse_status: ParseStatus.COMPLETED,
+        base_law_sfs: { not: 'unknown' },
+      },
+      select: { sfs_number: true, base_law_sfs: true, title: true },
+    })
+
+    let backfilled = 0
+    for (const record of completedWithoutEvents) {
+      const baseLawDocNumber = `SFS ${record.base_law_sfs}`
+      const baseLawDoc = await prisma.legalDocument.findUnique({
+        where: { document_number: baseLawDocNumber },
+        select: { id: true },
+      })
+      if (!baseLawDoc) continue
+
+      const existingEvent = await prisma.changeEvent.findFirst({
+        where: {
+          document_id: baseLawDoc.id,
+          amendment_sfs: `SFS ${record.sfs_number}`,
+        },
+        select: { id: true },
+      })
+      if (existingEvent) continue
+
+      const isRepeal = record.title
+        ? classifyDocument(record.title) === 'repeal'
+        : false
+
+      await prisma.changeEvent.create({
+        data: {
+          document_id: baseLawDoc.id,
+          content_type: ContentType.SFS_LAW,
+          change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
+          amendment_sfs: `SFS ${record.sfs_number}`,
+          notification_sent: false,
+        },
+      })
+      backfilled++
+      stats.changeEventsCreated++
+    }
+
+    if (backfilled > 0) {
+      console.log(
+        `[DISCOVER-SFS] Phase 3: Backfilled ${backfilled} missing ChangeEvents`
+      )
     }
 
     const duration = `${Math.round((Date.now() - startTime) / 1000)}s`

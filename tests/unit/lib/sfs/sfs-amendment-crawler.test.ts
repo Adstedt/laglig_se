@@ -97,6 +97,48 @@ describe('extractBaseLawSfs', () => {
       '2015:999'
     )
   })
+
+  it('resolves chained amendment to deepest base law', () => {
+    expect(
+      extractBaseLawSfs(
+        'Förordning om ändring i förordningen (2024:21) om ändring i förordningen (2020:750) om statligt stöd till vissa miljöfordon'
+      )
+    ).toBe('2020:750')
+  })
+
+  it('resolves triple-chained amendment to deepest base law', () => {
+    expect(
+      extractBaseLawSfs(
+        'Förordning om ändring i förordningen (2024:629) om ändring i förordningen (2024:21) om ändring i förordningen (2020:750) om statligt stöd till vissa miljöfordon'
+      )
+    ).toBe('2020:750')
+  })
+
+  it('extracts named law: brottsbalken', () => {
+    expect(extractBaseLawSfs('Lag om ändring i brottsbalken')).toBe('1962:700')
+  })
+
+  it('extracts named law: socialförsäkringsbalken', () => {
+    expect(extractBaseLawSfs('Lag om ändring i socialförsäkringsbalken')).toBe(
+      '2010:110'
+    )
+  })
+
+  it('extracts named law: miljöbalken', () => {
+    expect(extractBaseLawSfs('Lag om ändring i miljöbalken')).toBe('1998:808')
+  })
+
+  it('extracts named law: föräldrabalken', () => {
+    expect(extractBaseLawSfs('Lag om ändring i föräldrabalken')).toBe(
+      '1949:381'
+    )
+  })
+
+  it('extracts named law: rättegångsbalken', () => {
+    expect(extractBaseLawSfs('Lag om ändring i rättegångsbalken')).toBe(
+      '1942:740'
+    )
+  })
 })
 
 // =============================================================================

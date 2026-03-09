@@ -101,23 +101,59 @@ export function classifyDocument(title: string): DocumentType {
 }
 
 /**
+ * Well-known Swedish laws whose common titles omit the SFS number.
+ * Used as fallback when the regex can't extract an SFS number from the title.
+ */
+const NAMED_LAW_SFS: [string, string][] = [
+  ['brottsbalken', '1962:700'],
+  ['rättegångsbalken', '1942:740'],
+  ['jordabalken', '1970:994'],
+  ['ärvdabalken', '1958:637'],
+  ['handelsbalken', '1736:0123 2'],
+  ['giftermålsbalken', '1920:405'],
+  ['föräldrabalken', '1949:381'],
+  ['utsökningsbalken', '1981:774'],
+  ['sjölagen', '1994:1009'],
+  ['miljöbalken', '1998:808'],
+  ['socialförsäkringsbalken', '2010:110'],
+  ['försäkringskassebalken', '2010:111'],
+  ['skatteförfarandebalken', '2011:1244'],
+  ['offentlighets- och sekretesslagen', '2009:400'],
+]
+
+/**
  * Extract the base law SFS number from an amendment/repeal title.
- * Example: "Lag om ändring i lagen (2023:875) om tilläggsskatt" → "2023:875"
- * Example: "Lag om upphävande av lagen (2020:123)" → "2020:123"
+ *
+ * Handles three cases:
+ * 1. Standard: "Lag om ändring i lagen (2023:875) om tilläggsskatt" → "2023:875"
+ * 2. Chained: "Förordning om ändring i förordningen (2024:21) om ändring i
+ *    förordningen (2020:750) om ..." → "2020:750" (resolves to deepest base law)
+ * 3. Named: "Lag om ändring i brottsbalken" → "1962:700" (lookup table)
  */
 export function extractBaseLawSfs(title: string): string | null {
-  // Match after "ändring i" or "upphävande av"
-  const match = title.match(
-    /om (?:ändring i|ändring av|upphävande av)[^(]*\((\d{4}:\d+)\)/i
-  )
-  if (match?.[1]) {
-    return match[1]
+  // For chained amendments ("ändring i ... om ändring i ..."), the last SFS
+  // number in the chain is the true base law. Extract all SFS numbers after
+  // "ändring i/av" or "upphävande av" and take the last one.
+  const chainPattern =
+    /om (?:ändring i|ändring av|upphävande av)[^(]*\((\d{4}:\d+)\)/gi
+  const allMatches = [...title.matchAll(chainPattern)]
+  if (allMatches.length > 0) {
+    // Last match is the deepest base law in the chain
+    return allMatches[allMatches.length - 1]![1]!
   }
 
   // Fallback: first SFS number in parentheses
   const altMatch = title.match(/\((\d{4}:\d+)\)/)
   if (altMatch?.[1]) {
     return altMatch[1]
+  }
+
+  // Fallback: well-known named laws without SFS number in title
+  const lowerTitle = title.toLowerCase()
+  for (const [lawName, sfsNumber] of NAMED_LAW_SFS) {
+    if (lowerTitle.includes(lawName)) {
+      return sfsNumber
+    }
   }
 
   return null
