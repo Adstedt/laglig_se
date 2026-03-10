@@ -9,7 +9,7 @@
  * → LawListTabs → here), eliminating client-side waterfall.
  */
 
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
 import {
@@ -20,11 +20,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ChangeRow } from './change-row'
+import { ChangeAssessmentModal } from './change-assessment-modal'
 import { PriorityFilter } from './priority-filter'
 import type {
   UnacknowledgedChange,
   ChangePriority,
 } from '@/lib/changes/change-utils'
+import { getAssessmentStatusByChangeEventIds } from '@/app/actions/change-assessment'
+import type { AssessmentStatus } from '@prisma/client'
 
 interface ChangesTabProps {
   initialChanges?: UnacknowledgedChange[]
@@ -32,15 +35,42 @@ interface ChangesTabProps {
 
 export function ChangesTab({ initialChanges = [] }: ChangesTabProps) {
   const searchParams = useSearchParams()
+  const [statusMap, setStatusMap] = useState<Record<string, AssessmentStatus>>(
+    {}
+  )
+  const [selectedChange, setSelectedChange] =
+    useState<UnacknowledgedChange | null>(null)
+
+  const handleSelectChange = useCallback((change: UnacknowledgedChange) => {
+    setSelectedChange(change)
+  }, [])
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedChange(null)
+  }, [])
+
+  // Fetch assessment statuses for all change events
+  useEffect(() => {
+    if (initialChanges.length === 0) return
+    const ids = [...new Set(initialChanges.map((c) => c.id))]
+    getAssessmentStatusByChangeEventIds(ids).then((result) => {
+      if (result.success && result.data) {
+        setStatusMap(result.data)
+      }
+    })
+  }, [initialChanges])
 
   // URL-driven filters
   const priorityFilter =
     (searchParams.get('priority') as ChangePriority | null) ?? null
   const documentFilter = searchParams.get('document') ?? null
 
-  // Apply client-side filters
+  // Apply client-side filters and enrich with assessment status
   const filteredChanges = useMemo(() => {
-    let items = initialChanges
+    let items = initialChanges.map((c) => ({
+      ...c,
+      assessmentStatus: statusMap[c.id] ?? null,
+    }))
 
     // Filter by document (from indicator click or modal link)
     if (documentFilter) {
@@ -53,7 +83,7 @@ export function ChangesTab({ initialChanges = [] }: ChangesTabProps) {
     }
 
     return items
-  }, [initialChanges, priorityFilter, documentFilter])
+  }, [initialChanges, priorityFilter, documentFilter, statusMap])
 
   // Empty state
   if (initialChanges.length === 0) {
@@ -105,12 +135,19 @@ export function ChangesTab({ initialChanges = [] }: ChangesTabProps) {
                 <ChangeRow
                   key={`${change.id}-${change.listId}`}
                   change={change}
+                  onSelect={handleSelectChange}
                 />
               ))}
             </TableBody>
           </Table>
         </div>
       )}
+
+      {/* Change assessment modal */}
+      <ChangeAssessmentModal
+        change={selectedChange}
+        onClose={handleCloseModal}
+      />
     </div>
   )
 }

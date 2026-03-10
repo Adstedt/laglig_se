@@ -18,6 +18,7 @@ import {
   FileText,
   Building2,
   ClipboardList,
+  MessageCircleQuestion,
   Check,
   X,
   Loader2,
@@ -43,7 +44,7 @@ import { cn } from '@/lib/utils'
 
 const TOOL_CONFIG: Record<
   string,
-  { label: string; doneLabel: string; icon: typeof Search }
+  { label: string; doneLabel: string; icon: typeof Search; hidden?: boolean }
 > = {
   search_laws: {
     label: 'Söker i lagdatabasen',
@@ -84,6 +85,12 @@ const TOOL_CONFIG: Record<
     label: 'Lägger till anteckning',
     doneLabel: 'Lade till anteckning',
     icon: ClipboardList,
+  },
+  suggest_followups: {
+    label: 'Förbereder uppföljningsfrågor',
+    doneLabel: 'Förberedde uppföljningsfrågor',
+    icon: MessageCircleQuestion,
+    hidden: true,
   },
 }
 
@@ -185,6 +192,8 @@ export function ChatMessage({
                 'toolName' in part
                   ? (part as { toolName: string }).toolName
                   : part.type.replace('tool-', '')
+              const config = TOOL_CONFIG[toolName]
+              if (config?.hidden) return null
               const input =
                 'input' in part
                   ? (part as { input?: Record<string, unknown> }).input

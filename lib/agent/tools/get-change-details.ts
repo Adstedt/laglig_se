@@ -7,6 +7,7 @@ import { tool, zodSchema } from 'ai'
 import { z } from 'zod/v4'
 import { prisma } from '@/lib/prisma'
 import { wrapToolResponse, wrapToolError } from './utils'
+import { extractCompactDiff } from '@/lib/agent/system-prompt'
 
 const changeDetailsSchema = z.object({
   changeEventId: z.string().describe('The ID of the change event to look up'),
@@ -82,6 +83,12 @@ Requires a changeEventId (available from change notifications or dashboard).`,
           }
         }
 
+        // Include compact diff when no structured section changes are available
+        const diffSummary =
+          affectedSections.length === 0 && changeEvent.diff_summary
+            ? extractCompactDiff(changeEvent.diff_summary)
+            : null
+
         return wrapToolResponse(
           'get_change_details',
           {
@@ -92,6 +99,7 @@ Requires a changeEventId (available from change notifications or dashboard).`,
             detectedAt: changeEvent.detected_at,
             changedSections: changeEvent.changed_sections,
             affectedSections,
+            ...(diffSummary != null && { diffSummary }),
             baseLaw: {
               id: changeEvent.document.id,
               title: changeEvent.document.title,

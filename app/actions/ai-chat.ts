@@ -32,24 +32,27 @@ interface ActionResult<T = void> {
 // Validation Schemas
 // ============================================================================
 
-const chatContextTypeSchema = z.enum(['GLOBAL', 'TASK', 'LAW'])
+const chatContextTypeSchema = z.enum(['GLOBAL', 'TASK', 'LAW', 'CHANGE'])
+
+// Context IDs can be UUIDs (law list items, tasks) or CUIDs (change events)
+const contextIdSchema = z.string().min(1).max(128)
 
 const saveChatMessageSchema = z.object({
   role: z.enum(['USER', 'ASSISTANT']),
   content: z.string().min(1).max(50000), // Allow up to 50K chars for AI responses
   contextType: chatContextTypeSchema,
-  contextId: z.string().uuid().optional(),
+  contextId: contextIdSchema.optional(),
 })
 
 const getChatHistorySchema = z.object({
   contextType: chatContextTypeSchema,
-  contextId: z.string().uuid().optional(),
+  contextId: contextIdSchema.optional(),
   limit: z.number().min(1).max(100).optional().default(50),
 })
 
 const clearChatHistorySchema = z.object({
   contextType: chatContextTypeSchema,
-  contextId: z.string().uuid().optional(),
+  contextId: contextIdSchema.optional(),
 })
 
 // ============================================================================
@@ -111,7 +114,7 @@ export async function saveChatMessages(
   messages: Array<{
     role: 'USER' | 'ASSISTANT'
     content: string
-    contextType: 'GLOBAL' | 'TASK' | 'LAW'
+    contextType: 'GLOBAL' | 'TASK' | 'LAW' | 'CHANGE'
     contextId?: string | undefined
   }>
 ): Promise<ActionResult<{ count: number }>> {

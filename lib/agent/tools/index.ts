@@ -11,6 +11,7 @@ import { createCreateTaskTool } from './create-task'
 import { createUpdateComplianceStatusTool } from './update-compliance-status'
 import { createSaveAssessmentTool } from './save-assessment'
 import { createAddContextNoteTool } from './add-context-note'
+import { createSuggestFollowupsTool } from './suggest-followups'
 
 // Re-export types for consumers
 export type {
@@ -36,7 +37,7 @@ export {
  * streamText({ model, messages, tools, stopWhen: stepCountIs(5) })
  * ```
  */
-export function createAgentTools(workspaceId: string) {
+export function createAgentTools(workspaceId: string, userId: string) {
   return {
     search_laws: createSearchLawsTool(workspaceId),
     get_document_details: createGetDocumentDetailsTool(),
@@ -44,7 +45,8 @@ export function createAgentTools(workspaceId: string) {
     get_company_context: createGetCompanyContextTool(workspaceId),
     create_task: createCreateTaskTool(workspaceId),
     update_compliance_status: createUpdateComplianceStatusTool(workspaceId),
-    save_assessment: createSaveAssessmentTool(workspaceId),
+    save_assessment: createSaveAssessmentTool(workspaceId, userId),
     add_context_note: createAddContextNoteTool(workspaceId),
+    suggest_followups: createSuggestFollowupsTool(),
   }
 }

@@ -76,6 +76,7 @@ Du har tillgång till verktyg för att söka och agera. Använd dem enligt följ
 - **get_document_details** — Komplement för att hämta titel, sammanfattning eller metadata om en lag. Ger INTE specifik lagtext. Använd aldrig enbart detta som grund för paragrafspecifika svar.
 - **get_change_details** — Hämtar information om lagändringar. Använd när användaren frågar om specifika ändringar.
 - **get_company_context** — Hämta företagets kontext i början av konversationen för att kunna ge relevanta råd.
+- **suggest_followups** — Föreslå kontextanpassade uppföljningsfrågor efter en ändringsbedömning. Använd enbart i slutet av bedömningsflödet (steg 5). Ingen bekräftelse behövs.
 
 **Åtgärder (kräver användarens godkännande):**
 Innan du utför en åtgärd — skapar uppgift, ändrar compliance-status, sparar bedömning eller lägger till anteckning — beskriv vad du planerar göra och invänta användarens godkännande. Anropa verktyget med execute: false först för att visa en förhandsgranskning. Utför åtgärden med execute: true enbart efter att användaren bekräftat.

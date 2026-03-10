@@ -119,7 +119,7 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { messages, contextType, contextId, ...initialContext } = body as {
       messages: UIMessage[]
-      contextType?: 'global' | 'task' | 'law'
+      contextType?: 'global' | 'task' | 'law' | 'change'
       contextId?: string
       title?: string
       description?: string
@@ -142,15 +142,15 @@ export async function POST(req: Request) {
       where: { workspace_id: workspaceId },
     })
     const companyContext = formatCompanyContext(profile)
-    const systemPrompt = buildSystemPrompt({
+    const systemPrompt = await buildSystemPrompt({
       companyContext,
       contextType,
       contextId,
       ...initialContext,
     })
 
-    // Create agent tools with workspace scoping
-    const tools = createAgentTools(workspaceId)
+    // Create agent tools with workspace + user scoping
+    const tools = createAgentTools(workspaceId, userId)
 
     // Select model based on environment variable (TBD - pending testing)
     const modelProvider = process.env.AI_CHAT_MODEL ?? 'openai'

@@ -11,6 +11,12 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
       update: vi.fn(),
     },
+    workspaceMember: {
+      findFirst: vi.fn(),
+    },
+    changeAssessment: {
+      upsert: vi.fn(),
+    },
   },
 }))
 
@@ -261,14 +267,14 @@ describe('update_compliance_status tool', () => {
   })
 })
 
-describe('save_assessment tool (stub)', () => {
-  const tool = createSaveAssessmentTool('workspace-1')
+describe('save_assessment tool', () => {
+  const tool = createSaveAssessmentTool('workspace-1', 'user-1')
 
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('returns stub _note regardless of execute flag (false)', async () => {
+  it('returns confirmation_required=true with preview when execute=false', async () => {
     const result = await tool.execute(
       {
         changeEventId: 'ce-1',
@@ -281,14 +287,26 @@ describe('save_assessment tool (stub)', () => {
       toolOpts
     )
 
-    expect(result).toHaveProperty('confirmation_required', false)
-    expect((result as { _note: string })._note).toContain('Story 14.10')
+    expect(result).toHaveProperty('confirmation_required', true)
+    expect(result).toHaveProperty('preview')
+    expect(
+      (result as { preview: { impactLevel: string } }).preview.impactLevel
+    ).toBe('HIGH')
     expect((result as { _meta: { tool: string } })._meta.tool).toBe(
       'save_assessment'
     )
   })
 
-  it('returns stub _note regardless of execute flag (true)', async () => {
+  it('persists to DB with authenticated userId when execute=true', async () => {
+    const mockUpsert = vi.mocked(prisma.changeAssessment.upsert)
+
+    mockUpsert.mockResolvedValue({
+      id: 'ca-1',
+      status: 'REVIEWED',
+      impact_level: 'LOW',
+    } as never)
+    mockUpdate.mockResolvedValue({} as never)
+
     const result = await tool.execute(
       {
         changeEventId: 'ce-1',
@@ -302,8 +320,46 @@ describe('save_assessment tool (stub)', () => {
     )
 
     expect(result).toHaveProperty('confirmation_required', false)
-    expect((result as { _note: string })._note).toContain(
-      'Bedömningen har inte sparats'
+    expect(result).toHaveProperty('saved', true)
+    expect(result).toHaveProperty('assessmentId', 'ca-1')
+    expect(mockUpsert).toHaveBeenCalled()
+
+    // Verify the authenticated userId is used, not an arbitrary member
+    const upsertCall = mockUpsert.mock.calls[0]![0] as {
+      create: { assessed_by: string }
+    }
+    expect(upsertCall.create.assessed_by).toBe('user-1')
+  })
+
+  it('uses authenticated userId for acknowledgement timestamp', async () => {
+    const mockUpsert = vi.mocked(prisma.changeAssessment.upsert)
+
+    mockUpsert.mockResolvedValue({
+      id: 'ca-1',
+      status: 'REVIEWED',
+      impact_level: 'LOW',
+    } as never)
+    mockUpdate.mockResolvedValue({} as never)
+
+    await tool.execute(
+      {
+        changeEventId: 'ce-1',
+        lawListItemId: 'lli-1',
+        impactLevel: 'LOW',
+        analysis: 'Low impact',
+        recommendations: 'Monitor',
+        execute: true,
+      },
+      toolOpts
+    )
+
+    // Verify lawListItem update uses the authenticated userId
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          last_change_acknowledged_by: 'user-1',
+        }),
+      })
     )
   })
 })

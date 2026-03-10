@@ -17,12 +17,15 @@ interface ChatMessageListProps {
   messages: UIMessage[]
   isStreaming?: boolean
   className?: string
+  /** Optional inline content rendered after all messages (e.g. assessment UI) */
+  footer?: React.ReactNode
 }
 
 export function ChatMessageList({
   messages,
   isStreaming = false,
   className,
+  footer,
 }: ChatMessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -69,6 +72,9 @@ export function ChatMessageList({
             </div>
           </div>
         )}
+
+        {/* Inline footer (e.g. assessment resolution) */}
+        {footer}
 
         {/* Scroll anchor */}
         <div ref={bottomRef} />

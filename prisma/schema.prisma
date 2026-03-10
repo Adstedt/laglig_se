@@ -55,6 +55,10 @@ model User {
   created_templates LawListTemplate[] @relation("TemplateCreator")
   reviewed_items    TemplateItem[]    @relation("TemplateItemReviewer")
 
+  // Story 14.10: Change assessment relations
+  change_assessments      ChangeAssessment[]    @relation("ChangeAssessmentAssessor")
+  compliance_status_logs  ComplianceStatusLog[] @relation("ComplianceStatusLogChanger")
+
   @@index([email])
   @@map("users")
 }
@@ -99,6 +103,9 @@ model Workspace {
 
   // Epic 3: AI Chat
   chat_messages ChatMessage[]
+
+  // Story 14.10: Change assessments
+  change_assessments ChangeAssessment[]
 
   @@index([owner_id])
   @@index([org_number])
@@ -283,6 +290,10 @@ model LawListItem {
   task_links TaskListItemLink[]
   comments   Comment[]
   file_links FileListItemLink[]
+
+  // Story 14.10: Change assessments and compliance status logs
+  change_assessments  ChangeAssessment[]
+  compliance_status_logs ComplianceStatusLog[]
 
   @@unique([law_list_id, document_id])
   @@index([law_list_id])
@@ -885,7 +896,8 @@ model ChangeEvent {
   notification_sent       Boolean     @default(false)
 
   // Relations
-  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  document           LegalDocument    @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  change_assessments ChangeAssessment[]
 
   @@index([document_id])
   @@index([content_type])
@@ -1202,6 +1214,23 @@ enum ChatContextType {
   GLOBAL
   TASK
   LAW
+  CHANGE
+}
+
+// Story 14.10: Assessment status for change acknowledgement
+enum AssessmentStatus {
+  REVIEWED
+  ACTION_REQUIRED
+  NOT_APPLICABLE
+  DEFERRED
+}
+
+// Story 14.10: Impact level for change assessment
+enum ImpactLevel {
+  HIGH
+  MEDIUM
+  LOW
+  NONE
 }
 
 // Audit trail for compliance activities
@@ -1412,4 +1441,62 @@ model ContentChunk {
   @@index([source_type, source_id])
   @@index([workspace_id])
   @@map("content_chunks")
+}
+
+// ============================================================================
+// STORY 14.10: CHANGE ASSESSMENT MODELS
+// Structured acknowledgement and impact assessment of legal changes
+// ============================================================================
+
+model ChangeAssessment {
+  id                String           @id @default(cuid())
+  change_event_id   String
+  law_list_item_id  String
+  workspace_id      String
+  status            AssessmentStatus
+  impact_level      ImpactLevel
+  ai_analysis       String?          @db.Text
+  ai_recommendations Json?
+  user_notes        String?          @db.Text
+  assessed_by       String // userId
+  assessed_at       DateTime
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+
+  // Relations
+  change_event  ChangeEvent  @relation(fields: [change_event_id], references: [id], onDelete: Cascade)
+  law_list_item LawListItem  @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+  workspace     Workspace    @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  assessed_user User         @relation("ChangeAssessmentAssessor", fields: [assessed_by], references: [id])
+
+  // Story 14.10: Link from ComplianceStatusLog
+  compliance_status_logs ComplianceStatusLog[]
+
+  @@unique([change_event_id, law_list_item_id])
+  @@index([change_event_id])
+  @@index([law_list_item_id])
+  @@index([workspace_id])
+  @@index([assessed_by])
+  @@map("change_assessments")
+}
+
+model ComplianceStatusLog {
+  id                    String            @id @default(cuid())
+  law_list_item_id      String
+  previous_status       ComplianceStatus
+  new_status            ComplianceStatus
+  changed_by            String // userId
+  reason                String?
+  change_assessment_id  String?
+  changed_at            DateTime          @default(now())
+
+  // Relations
+  law_list_item    LawListItem       @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+  changed_by_user  User              @relation("ComplianceStatusLogChanger", fields: [changed_by], references: [id])
+  change_assessment ChangeAssessment? @relation(fields: [change_assessment_id], references: [id], onDelete: SetNull)
+
+  @@index([law_list_item_id])
+  @@index([changed_by])
+  @@index([change_assessment_id])
+  @@map("compliance_status_logs")
 }

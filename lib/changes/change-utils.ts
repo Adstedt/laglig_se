@@ -3,7 +3,7 @@
  * Extracted from server actions to avoid 'use server' constraints on sync exports.
  */
 
-import type { ChangeType, ContentType } from '@prisma/client'
+import type { ChangeType, ContentType, AssessmentStatus } from '@prisma/client'
 
 export type ChangePriority = 'HIGH' | 'MEDIUM' | 'LOW'
 
@@ -23,6 +23,35 @@ export interface UnacknowledgedChange {
   listName: string
   /** LawListItem ID — the entity that gets acknowledged in Story 8.3 */
   lawListItemId: string
+  /** Story 14.10: Assessment status (null = unassessed) */
+  assessmentStatus?: AssessmentStatus | null
+}
+
+// ---------------------------------------------------------------------------
+// Assessment status display helpers (Story 14.10)
+// ---------------------------------------------------------------------------
+
+export const ASSESSMENT_STATUS_LABELS: Record<AssessmentStatus, string> = {
+  REVIEWED: 'Granskad',
+  ACTION_REQUIRED: 'Åtgärd krävs',
+  NOT_APPLICABLE: 'Ej tillämplig',
+  DEFERRED: 'Uppskjuten',
+}
+
+export type AssessmentBadgeVariant =
+  | 'default'
+  | 'destructive'
+  | 'secondary'
+  | 'outline'
+
+export const ASSESSMENT_STATUS_VARIANT: Record<
+  AssessmentStatus,
+  AssessmentBadgeVariant
+> = {
+  REVIEWED: 'default',
+  ACTION_REQUIRED: 'destructive',
+  NOT_APPLICABLE: 'secondary',
+  DEFERRED: 'outline',
 }
 
 /**

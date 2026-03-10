@@ -17,7 +17,9 @@ import {
   ContextCards,
   type DashboardCardData,
 } from '@/components/features/dashboard/context-cards'
+import { ChangePicker } from '@/components/features/dashboard/change-picker'
 import { ConversationHistory } from '@/components/features/dashboard/conversation-history'
+import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
 import { archiveConversation, loadConversation } from '@/app/actions/ai-chat'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -41,6 +43,8 @@ interface HemChatProps {
   dashboardLoading?: boolean
   /** User's first name for greeting */
   userName?: string | undefined
+  /** Callback when a change is selected for assessment (Story 14.10) */
+  onSelectChange?: (_change: UnacknowledgedChange) => void
 }
 
 export function HemChat({
@@ -48,9 +52,11 @@ export function HemChat({
   dashboardData = null,
   dashboardLoading = false,
   userName,
+  onSelectChange,
 }: HemChatProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const [viewState, setViewState] = useState<ViewState>('chat')
+  const [showChangePicker, setShowChangePicker] = useState(false)
 
   const {
     messages,
@@ -282,6 +288,9 @@ export function HemChat({
             data={dashboardData}
             isLoading={dashboardLoading}
             onCardClick={handlePromptClick}
+            onChangeClick={
+              onSelectChange ? () => setShowChangePicker(true) : undefined
+            }
           />
         </div>
 
@@ -332,6 +341,15 @@ export function HemChat({
           </button>
         </div>
       </div>
+
+      {/* Change picker dialog (Story 14.10) */}
+      {onSelectChange && (
+        <ChangePicker
+          open={showChangePicker}
+          onOpenChange={setShowChangePicker}
+          onSelect={onSelectChange}
+        />
+      )}
     </div>
   )
 }

@@ -1,8 +1,27 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+
+// Mock prisma before imports (system-prompt.ts now imports it for change context)
+vi.mock('@/lib/prisma', () => ({
+  prisma: {
+    changeEvent: { findUnique: vi.fn() },
+    amendmentDocument: { findFirst: vi.fn() },
+    legalDocument: { findUnique: vi.fn() },
+  },
+}))
+
+// Mock effective-date to avoid DB calls in unit tests
+vi.mock('@/lib/utils/effective-date', () => ({
+  resolveEffectiveDate: vi.fn().mockResolvedValue(null),
+  getEffectiveDateBadge: vi
+    .fn()
+    .mockReturnValue({ text: 'Okänt', variant: 'gray' }),
+}))
+
 import {
   buildSystemPrompt,
   formatCompanyContext,
 } from '@/lib/agent/system-prompt'
+import { prisma } from '@/lib/prisma'
 import type { CompanyProfile } from '@prisma/client'
 
 // ---------------------------------------------------------------------------
@@ -47,8 +66,8 @@ function makeProfile(overrides: Partial<CompanyProfile> = {}): CompanyProfile {
 // ---------------------------------------------------------------------------
 
 describe('buildSystemPrompt', () => {
-  it('returns a Swedish prompt containing all required sections', () => {
-    const prompt = buildSystemPrompt()
+  it('returns a Swedish prompt containing all required sections', async () => {
+    const prompt = await buildSystemPrompt()
 
     // Role (AC 3)
     expect(prompt).toContain('<role>')
@@ -92,10 +111,13 @@ describe('buildSystemPrompt', () => {
 
     // Common pitfalls
     expect(prompt).toContain('<common_pitfalls>')
+
+    // suggest_followups tool guidance
+    expect(prompt).toContain('suggest_followups')
   })
 
-  it('includes company context section when companyContext is provided', () => {
-    const prompt = buildSystemPrompt({
+  it('includes company context section when companyContext is provided', async () => {
+    const prompt = await buildSystemPrompt({
       companyContext: '- Företag: Acme AB\n- Bransch: Bygg',
     })
 
@@ -105,13 +127,13 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('Bygg')
   })
 
-  it('omits company context section when companyContext is undefined', () => {
-    const prompt = buildSystemPrompt({})
+  it('omits company context section when companyContext is undefined', async () => {
+    const prompt = await buildSystemPrompt({})
     expect(prompt).not.toContain('<company_context>')
   })
 
-  it('includes task context for contextType=task', () => {
-    const prompt = buildSystemPrompt({
+  it('includes task context for contextType=task', async () => {
+    const prompt = await buildSystemPrompt({
       contextType: 'task',
       title: 'Granska arbetsmiljöpolicy',
       summary: 'Årlig granskning',
@@ -123,8 +145,8 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('Fokusera svaren på denna uppgift')
   })
 
-  it('includes law context for contextType=law', () => {
-    const prompt = buildSystemPrompt({
+  it('includes law context for contextType=law', async () => {
+    const prompt = await buildSystemPrompt({
       contextType: 'law',
       sfsNumber: 'SFS 1977:1160',
       title: 'Arbetsmiljölagen',
@@ -136,8 +158,63 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('Fokusera svaren på denna lag')
   })
 
-  it('stays within approximate token budget (~2000-4000 tokens)', () => {
-    const prompt = buildSystemPrompt()
+  it('includes suggest_followups in assessment workflow for change context', async () => {
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-2',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: null,
+      ai_summary: null,
+      changed_sections: null,
+      diff_summary: null,
+      document: {
+        title: 'Testlagen',
+        document_number: 'SFS 2020:1',
+        effective_date: null,
+      },
+    } as never)
+
+    const prompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-2',
+    })
+
+    expect(prompt).toContain('<assessment_workflow>')
+    expect(prompt).toContain('suggest_followups')
+  })
+
+  it('includes change context for contextType=change', async () => {
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-1',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: 'SFS 2026:100',
+      ai_summary: 'Ändring av 3 §',
+      changed_sections: ['3 §', '5 §'],
+      document: {
+        title: 'Arbetsmiljölagen',
+        document_number: 'SFS 1977:1160',
+        effective_date: null,
+      },
+    } as never)
+
+    const prompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-1',
+    })
+
+    expect(prompt).toContain('<change_context>')
+    expect(prompt).toContain('AMENDMENT')
+    expect(prompt).toContain('SFS 2026:100')
+    expect(prompt).toContain('Arbetsmiljölagen')
+    expect(prompt).toContain('Ändring av 3 §')
+    expect(prompt).toContain('3 §, 5 §')
+  })
+
+  it('stays within approximate token budget (~2000-4000 tokens)', async () => {
+    const prompt = await buildSystemPrompt()
     // Rough approximation: 1 token ≈ 4 characters for Swedish text
     const estimatedTokens = prompt.length / 4
     expect(estimatedTokens).toBeGreaterThan(1500)

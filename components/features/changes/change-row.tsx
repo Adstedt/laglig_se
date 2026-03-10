@@ -6,7 +6,6 @@
  * Uses shadcn Table components to match the existing document list table design.
  */
 
-import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { formatDistanceToNow } from 'date-fns'
@@ -15,6 +14,10 @@ import { cn } from '@/lib/utils'
 import type {
   UnacknowledgedChange,
   ChangePriority,
+} from '@/lib/changes/change-utils'
+import {
+  ASSESSMENT_STATUS_LABELS,
+  ASSESSMENT_STATUS_VARIANT,
 } from '@/lib/changes/change-utils'
 import type { ChangeType } from '@prisma/client'
 
@@ -63,15 +66,12 @@ const PRIORITY_COLORS: Record<ChangePriority, string> = {
 
 interface ChangeRowProps {
   change: UnacknowledgedChange
+  onSelect: (_change: UnacknowledgedChange) => void
 }
 
-export function ChangeRow({ change }: ChangeRowProps) {
-  const router = useRouter()
-
+export function ChangeRow({ change, onSelect }: ChangeRowProps) {
   const handleClick = () => {
-    router.push(
-      `/laglistor/andringar/${change.id}?item=${change.lawListItemId}`
-    )
+    onSelect(change)
   }
 
   return (
@@ -134,9 +134,20 @@ export function ChangeRow({ change }: ChangeRowProps) {
         })}
       </TableCell>
 
-      {/* Status indicator — hardcoded "Ny" until Story 8.3 */}
+      {/* Status indicator — Story 14.10: show assessment status or "Ny" */}
       <TableCell className="w-[100px]">
-        <Badge variant="outline">Ny</Badge>
+        {change.assessmentStatus ? (
+          <Badge variant={ASSESSMENT_STATUS_VARIANT[change.assessmentStatus]}>
+            {ASSESSMENT_STATUS_LABELS[change.assessmentStatus]}
+          </Badge>
+        ) : (
+          <Badge
+            variant="outline"
+            className="border-amber-500/50 text-amber-600"
+          >
+            Ny
+          </Badge>
+        )}
       </TableCell>
     </TableRow>
   )

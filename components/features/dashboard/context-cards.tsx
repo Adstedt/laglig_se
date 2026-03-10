@@ -26,6 +26,8 @@ interface ContextCardsProps {
   data: DashboardCardData | null
   isLoading: boolean
   onCardClick: (_prompt: string) => void
+  /** Open change picker to select a specific change (Story 14.10) */
+  onChangeClick?: (() => void) | undefined
 }
 
 interface CardConfig {
@@ -151,6 +153,7 @@ export function ContextCards({
   data,
   isLoading,
   onCardClick,
+  onChangeClick,
 }: ContextCardsProps) {
   if (isLoading) {
     return (
@@ -175,7 +178,18 @@ export function ContextCards({
         return (
           <button
             key={card.id}
-            onClick={() => onCardClick(card.prompt)}
+            onClick={() => {
+              if (
+                card.id === 'amendments' &&
+                onChangeClick &&
+                data?.pendingAmendments &&
+                data.pendingAmendments > 0
+              ) {
+                onChangeClick()
+              } else {
+                onCardClick(card.prompt)
+              }
+            }}
             className={cn(
               'flex items-start gap-3 rounded-xl border bg-card px-4 py-3.5 text-left',
               'transition-colors hover:bg-accent hover:border-border',

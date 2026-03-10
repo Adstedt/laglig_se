@@ -20,7 +20,7 @@ import {
   type ChatMessageData,
 } from '@/app/actions/ai-chat'
 
-export type ChatContextType = 'global' | 'task' | 'law'
+export type ChatContextType = 'global' | 'task' | 'law' | 'change'
 
 export interface ChatContextInitial {
   title?: string | undefined
@@ -39,6 +39,8 @@ export interface ChatContext {
 export interface UseChatInterfaceOptions extends ChatContext {
   onMessageSent?: () => void
   onResponseComplete?: () => void
+  /** Auto-send this message on first mount if no history exists */
+  initialMessage?: string | undefined
 }
 
 export interface UseChatInterfaceReturn {
@@ -59,8 +61,8 @@ export interface UseChatInterfaceReturn {
 // Map ChatContextType to Prisma enum format
 function toPrismaContextType(
   contextType: ChatContextType
-): 'GLOBAL' | 'TASK' | 'LAW' {
-  return contextType.toUpperCase() as 'GLOBAL' | 'TASK' | 'LAW'
+): 'GLOBAL' | 'TASK' | 'LAW' | 'CHANGE' {
+  return contextType.toUpperCase() as 'GLOBAL' | 'TASK' | 'LAW' | 'CHANGE'
 }
 
 // Convert persisted messages to UIMessage format
@@ -80,6 +82,7 @@ export function useChatInterface(
     contextType,
     contextId,
     initialContext,
+    initialMessage,
     onMessageSent,
     onResponseComplete,
   } = options
@@ -88,8 +91,12 @@ export function useChatInterface(
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
   const [historyLoaded, setHistoryLoaded] = useState(false)
   const lastMessageRef = useRef<string>('')
+  const initialMessageSentRef = useRef(false)
   const startTimeRef = useRef<number>(0)
   const pendingSaveRef = useRef<Set<string>>(new Set())
+
+  // Stable chat ID so AI SDK preserves messages in memory across unmount/remount
+  const chatId = contextId ? `${contextType}-${contextId}` : contextType
 
   // Create transport with body data for context
   const transport = useMemo(
@@ -113,6 +120,7 @@ export function useChatInterface(
     sendMessage: sendChatMessage,
     setMessages,
   } = useChat({
+    id: chatId,
     transport,
     // Batch UI updates every 50ms to avoid per-token re-renders
     experimental_throttle: 50,
@@ -164,9 +172,17 @@ export function useChatInterface(
     },
   })
 
-  // Load chat history on mount
+  // Load chat history on mount (skip if AI SDK already has messages in memory)
   useEffect(() => {
     if (historyLoaded) return
+
+    // AI SDK keeps messages in memory keyed by chatId — if we already have
+    // messages from a previous mount, skip the DB round-trip.
+    if (messages.length > 0) {
+      setIsLoadingHistory(false)
+      setHistoryLoaded(true)
+      return
+    }
 
     async function loadHistory() {
       setIsLoadingHistory(true)
@@ -192,7 +208,36 @@ export function useChatInterface(
     }
 
     loadHistory()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contextType, contextId, historyLoaded, setMessages])
+
+  // Auto-send initial message for fresh chats (no existing history)
+  useEffect(() => {
+    if (!initialMessage) return
+    if (!historyLoaded) return
+    if (initialMessageSentRef.current) return
+    if (messages.length > 0) return // Has history — don't auto-send
+
+    initialMessageSentRef.current = true
+
+    // Small delay to ensure transport is ready
+    const timer = setTimeout(() => {
+      sendChatMessage({ parts: [{ type: 'text', text: initialMessage }] })
+
+      // Persist the auto-sent message
+      saveChatMessage({
+        role: 'USER',
+        content: initialMessage,
+        contextType: toPrismaContextType(contextType),
+        contextId,
+      }).catch((err) => {
+        console.error('Failed to save initial message:', err)
+      })
+    }, 50)
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyLoaded, initialMessage, messages.length])
 
   const sendMessage = useCallback(
     (content: string) => {

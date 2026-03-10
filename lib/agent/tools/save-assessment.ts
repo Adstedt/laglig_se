@@ -1,10 +1,11 @@
 /**
- * save_assessment tool — persist a change assessment (stub until Story 14.10)
- * Story 14.7c, Task 3 (AC: 3)
+ * save_assessment tool — persist a change assessment
+ * Story 14.7c stub → Story 14.10 full implementation
  */
 
 import { tool, zodSchema } from 'ai'
 import { z } from 'zod/v4'
+import { prisma } from '@/lib/prisma'
 
 const saveAssessmentSchema = z.object({
   changeEventId: z.string().describe('ID of the ChangeEvent being assessed'),
@@ -29,32 +30,102 @@ const saveAssessmentSchema = z.object({
     ),
 })
 
-export function createSaveAssessmentTool(_workspaceId: string) {
+export function createSaveAssessmentTool(workspaceId: string, userId: string) {
   return tool({
     description: `Spara en bedömning av en lagändring (change assessment).
 
-Detta verktyg kommer att spara en strukturerad bedömning av hur en lagändring påverkar
+Detta verktyg sparar en strukturerad bedömning av hur en lagändring påverkar
 företaget. Det inkluderar konsekvensnivå, analys och rekommendationer.
 
-OBS: ChangeAssessment-modellen skapas i Story 14.10. Tills dess är detta verktyg en
-platshållare — bedömningen sparas INTE. Informera användaren om att bedömningspersistens
-kommer snart.
-
-Parametrarna definieras fullt ut nu så att gränssnittet är klart när modellen byggs.`,
+Sätt execute=false först för att visa förhandsgranskning, sedan execute=true för att spara.`,
     inputSchema: zodSchema(saveAssessmentSchema),
-    execute: async () => {
+    execute: async (input) => {
       const startTime = Date.now()
 
-      // Stub — ChangeAssessment model not yet created (Story 14.10)
-      return {
-        confirmation_required: false as const,
-        _note:
-          'ChangeAssessment-modellen skapas i Story 14.10. Bedömningen har inte sparats.',
-        _meta: {
-          tool: 'save_assessment',
-          executionTimeMs: Date.now() - startTime,
-          resultCount: 0,
-        },
+      // Preview mode — show what will be saved
+      if (!input.execute) {
+        return {
+          confirmation_required: true as const,
+          preview: {
+            changeEventId: input.changeEventId,
+            lawListItemId: input.lawListItemId,
+            impactLevel: input.impactLevel,
+            analysis: input.analysis,
+            recommendations: input.recommendations,
+          },
+          message:
+            'Jag har förberett bedömningen ovan. Vill du att jag sparar den?',
+          _meta: {
+            tool: 'save_assessment',
+            executionTimeMs: Date.now() - startTime,
+            resultCount: 0,
+          },
+        }
+      }
+
+      // Execute mode — persist to database
+      try {
+        const now = new Date()
+        const assessment = await prisma.changeAssessment.upsert({
+          where: {
+            change_event_id_law_list_item_id: {
+              change_event_id: input.changeEventId,
+              law_list_item_id: input.lawListItemId,
+            },
+          },
+          create: {
+            change_event_id: input.changeEventId,
+            law_list_item_id: input.lawListItemId,
+            workspace_id: workspaceId,
+            status: 'REVIEWED',
+            impact_level: input.impactLevel,
+            ai_analysis: input.analysis,
+            ai_recommendations: [input.recommendations],
+            assessed_by: userId,
+            assessed_at: now,
+          },
+          update: {
+            status: 'REVIEWED',
+            impact_level: input.impactLevel,
+            ai_analysis: input.analysis,
+            ai_recommendations: [input.recommendations],
+            assessed_by: userId,
+            assessed_at: now,
+          },
+        })
+
+        // Update acknowledgement timestamp
+        await prisma.lawListItem.update({
+          where: { id: input.lawListItemId },
+          data: {
+            last_change_acknowledged_at: now,
+            last_change_acknowledged_by: userId,
+          },
+        })
+
+        return {
+          confirmation_required: false as const,
+          saved: true,
+          assessmentId: assessment.id,
+          status: assessment.status,
+          message: 'Bedömningen har sparats.',
+          _meta: {
+            tool: 'save_assessment',
+            executionTimeMs: Date.now() - startTime,
+            resultCount: 1,
+          },
+        }
+      } catch (error) {
+        console.error('[save_assessment] Error:', error)
+        return {
+          confirmation_required: false as const,
+          error: 'Kunde inte spara bedömningen. Försök igen.',
+          _meta: {
+            tool: 'save_assessment',
+            executionTimeMs: Date.now() - startTime,
+            resultCount: 0,
+          },
+        }
       }
     },
   })
