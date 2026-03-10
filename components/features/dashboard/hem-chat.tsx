@@ -57,7 +57,6 @@ export function HemChat({
     sendMessage,
     status,
     error,
-    citations,
     retryAfter,
     handleRetry,
     isLoadingHistory,
@@ -162,11 +161,7 @@ export function HemChat({
                 />
               </div>
             ) : (
-              <ChatMessageList
-                messages={messages}
-                citations={citations}
-                isStreaming={isLoading}
-              />
+              <ChatMessageList messages={messages} isStreaming={isLoading} />
             )
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
@@ -234,11 +229,7 @@ export function HemChat({
           ) : (
             <div className="flex-1 overflow-y-auto">
               <div className="mx-auto max-w-3xl">
-                <ChatMessageList
-                  messages={messages}
-                  citations={citations}
-                  isStreaming={isLoading}
-                />
+                <ChatMessageList messages={messages} isStreaming={isLoading} />
               </div>
             </div>
           )}

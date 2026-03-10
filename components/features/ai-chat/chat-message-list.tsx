@@ -11,19 +11,16 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { ChatMessage } from './chat-message'
 import { StreamingIndicator } from './streaming-indicator'
 import { LexaIcon } from '@/components/ui/lexa-icon'
-import type { Citation } from '@/lib/ai/citations'
 import { cn } from '@/lib/utils'
 
 interface ChatMessageListProps {
   messages: UIMessage[]
-  citations?: Citation[]
   isStreaming?: boolean
   className?: string
 }
 
 export function ChatMessageList({
   messages,
-  citations = [],
   isStreaming = false,
   className,
 }: ChatMessageListProps) {
@@ -53,7 +50,6 @@ export function ChatMessageList({
           <ChatMessage
             key={message.id}
             message={message}
-            citations={message.role === 'assistant' ? citations : []}
             isStreaming={
               isStreaming &&
               index === lastAssistantIndex &&

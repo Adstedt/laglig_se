@@ -13,8 +13,6 @@ import { useCallback, useState, useRef, useMemo, useEffect } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport, type UIMessage } from 'ai'
 import { track } from '@vercel/analytics'
-import type { Citation } from '@/lib/ai/citations'
-import { createCitationsFromContext } from '@/lib/ai/citations'
 import {
   getChatHistory,
   saveChatMessage,
@@ -49,7 +47,6 @@ export interface UseChatInterfaceReturn {
   status: 'submitted' | 'streaming' | 'ready' | 'error'
   error: Error | null
   stop: () => void
-  citations: Citation[]
   retryAfter: number | undefined
   handleRetry: () => void
   isLoading: boolean
@@ -87,7 +84,6 @@ export function useChatInterface(
     onResponseComplete,
   } = options
 
-  const [citations, setCitations] = useState<Citation[]>([])
   const [retryAfter, setRetryAfter] = useState<number | undefined>(undefined)
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
   const [historyLoaded, setHistoryLoaded] = useState(false)
@@ -130,7 +126,6 @@ export function useChatInterface(
 
       track('ai_chat_response_complete', {
         responseLength: responseText.length,
-        citationCount: citations.length,
         durationMs: duration,
       })
 
@@ -198,35 +193,6 @@ export function useChatInterface(
 
     loadHistory()
   }, [contextType, contextId, historyLoaded, setMessages])
-
-  // Update citations when messages change (from response metadata)
-  const updateCitationsFromMessage = useCallback((msg: UIMessage) => {
-    const metadata = msg.metadata as
-      | {
-          citations?: Array<{
-            id: string
-            title: string
-            sfsNumber: string
-            content: string
-          }>
-        }
-      | undefined
-
-    if (metadata?.citations) {
-      const newCitations = createCitationsFromContext(metadata.citations)
-      setCitations(newCitations)
-    }
-  }, [])
-
-  // Check for citations in the latest assistant message
-  useEffect(() => {
-    const latestAssistantMessage = messages.findLast(
-      (m) => m.role === 'assistant'
-    )
-    if (latestAssistantMessage) {
-      updateCitationsFromMessage(latestAssistantMessage)
-    }
-  }, [messages, updateCitationsFromMessage])
 
   const sendMessage = useCallback(
     (content: string) => {
@@ -297,7 +263,6 @@ export function useChatInterface(
     status,
     error: error ?? null,
     stop,
-    citations,
     retryAfter,
     handleRetry,
     isLoading,

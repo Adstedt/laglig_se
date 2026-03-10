@@ -6,7 +6,7 @@
  * iterate message.parts in order, render each part type with its own component.
  */
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useStreamingText } from '@/lib/hooks/use-streaming-text'
 import type { UIMessage } from 'ai'
 import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
@@ -26,9 +26,15 @@ import {
 import { Streamdown } from 'streamdown'
 import { code } from '@streamdown/code'
 import { LexaIcon } from '@/components/ui/lexa-icon'
-import { CitationTooltip } from './citation-tooltip'
+import { CitationPillInline } from './citation-pill'
+import { CitationSourceProvider } from '@/lib/ai/citation-context'
+import { rehypeCitationPills } from '@/lib/ai/rehype-citation-pills'
 import { MessageActions } from './message-actions'
-import { parseCitations, type Citation } from '@/lib/ai/citations'
+import {
+  hasCitationMarkers,
+  sourcesToMap,
+  type ChatMessageMetadata,
+} from '@/lib/ai/citations'
 import { cn } from '@/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -83,6 +89,16 @@ const TOOL_CONFIG: Record<
 
 const streamdownPlugins = { code }
 
+// Rehype plugins array — stable reference to avoid Streamdown re-renders
+const citationRehypePlugins = [rehypeCitationPills]
+const emptyRehypePlugins: typeof citationRehypePlugins = []
+
+// Components mapping: <cite> → CitationPillInline
+const citationComponents = {
+  cite: CitationPillInline,
+}
+const emptyComponents = {}
+
 const PROSE_CLASSES =
   'text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-2 prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2 prose-ul:my-2 prose-li:my-0.5 prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-3 prose-blockquote:text-muted-foreground prose-blockquote:italic'
 
@@ -92,18 +108,23 @@ const PROSE_CLASSES =
 
 interface ChatMessageProps {
   message: UIMessage
-  citations?: Citation[]
   showActions?: boolean
   isStreaming?: boolean
 }
 
 export function ChatMessage({
   message,
-  citations = [],
   showActions = true,
   isStreaming = false,
 }: ChatMessageProps) {
   const isUser = message.role === 'user'
+
+  // Build source map from message metadata (hooks must be called unconditionally)
+  const metadata = message.metadata as ChatMessageMetadata | undefined
+  const sourceMap = useMemo(
+    () => sourcesToMap(metadata?.citationSources),
+    [metadata?.citationSources]
+  )
 
   if (isUser) {
     const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
@@ -139,58 +160,64 @@ export function ChatMessage({
     .join('\n')
 
   return (
-    <div className="flex items-start gap-3">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted border border-border">
-        <LexaIcon size={14} />
+    <CitationSourceProvider sourceMap={sourceMap}>
+      <div className="flex items-start gap-3">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted border border-border">
+          <LexaIcon size={14} />
+        </div>
+
+        <div className="flex-1 overflow-hidden text-left space-y-3">
+          {parts.map((part, index) => {
+            if (part.type === 'step-start') return null
+
+            if (isReasoningUIPart(part)) {
+              return (
+                <ReasoningBlock
+                  key={`reasoning-${index}`}
+                  text={part.text}
+                  state={part.state}
+                />
+              )
+            }
+
+            if (isToolUIPart(part)) {
+              const toolName =
+                'toolName' in part
+                  ? (part as { toolName: string }).toolName
+                  : part.type.replace('tool-', '')
+              const input =
+                'input' in part
+                  ? (part as { input?: Record<string, unknown> }).input
+                  : undefined
+              return (
+                <ToolCallRow
+                  key={`tool-${index}`}
+                  toolName={toolName}
+                  state={part.state}
+                  detail={getToolDetail(toolName, input)}
+                />
+              )
+            }
+
+            if (isTextUIPart(part)) {
+              return (
+                <TextBlock
+                  key={`text-${index}`}
+                  text={part.text}
+                  isStreaming={isActive && index === parts.length - 1}
+                />
+              )
+            }
+
+            return null
+          })}
+
+          {showActions && fullText.trim() && !isActive && (
+            <MessageActions messageId={message.id} content={fullText} />
+          )}
+        </div>
       </div>
-
-      <div className="flex-1 overflow-hidden text-left space-y-3">
-        {parts.map((part, index) => {
-          if (part.type === 'step-start') return null
-
-          if (isReasoningUIPart(part)) {
-            return (
-              <ReasoningBlock
-                key={`reasoning-${index}`}
-                text={part.text}
-                state={part.state}
-              />
-            )
-          }
-
-          if (isToolUIPart(part)) {
-            const toolName =
-              'toolName' in part
-                ? (part as { toolName: string }).toolName
-                : part.type.replace('tool-', '')
-            return (
-              <ToolCallRow
-                key={`tool-${index}`}
-                toolName={toolName}
-                state={part.state}
-              />
-            )
-          }
-
-          if (isTextUIPart(part)) {
-            return (
-              <TextBlock
-                key={`text-${index}`}
-                text={part.text}
-                citations={citations}
-                isStreaming={isActive && index === parts.length - 1}
-              />
-            )
-          }
-
-          return null
-        })}
-
-        {showActions && fullText.trim() && !isActive && (
-          <MessageActions messageId={message.id} content={fullText} />
-        )}
-      </div>
-    </div>
+    </CitationSourceProvider>
   )
 }
 
@@ -246,7 +273,47 @@ function ReasoningBlock({
 // ToolCallRow — inline tool call status
 // ---------------------------------------------------------------------------
 
-function ToolCallRow({ toolName, state }: { toolName: string; state: string }) {
+/**
+ * Extract a short detail string from tool input for display in the tool row.
+ */
+function getToolDetail(
+  toolName: string,
+  input: Record<string, unknown> | undefined
+): string | undefined {
+  if (!input) return undefined
+  switch (toolName) {
+    case 'search_laws':
+      return typeof input.query === 'string' ? `"${input.query}"` : undefined
+    case 'get_document_details':
+      return (input.documentNumber as string) ?? undefined
+    case 'get_change_details':
+      return (input.changeEventId as string) ?? undefined
+    case 'create_task':
+      return (input.title as string) ?? undefined
+    case 'update_compliance_status':
+      return (input.status as string) ?? undefined
+    case 'save_assessment':
+      return (input.title as string) ?? undefined
+    case 'add_context_note':
+      return typeof input.note === 'string'
+        ? input.note.length > 40
+          ? input.note.slice(0, 38) + '\u2026'
+          : input.note
+        : undefined
+    default:
+      return undefined
+  }
+}
+
+function ToolCallRow({
+  toolName,
+  state,
+  detail,
+}: {
+  toolName: string
+  state: string
+  detail?: string
+}) {
   const config = TOOL_CONFIG[toolName]
   const Icon = config?.icon ?? Search
 
@@ -261,7 +328,7 @@ function ToolCallRow({ toolName, state }: { toolName: string; state: string }) {
       : (config?.label ?? toolName)
 
   return (
-    <div className="flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30">
+    <div className="flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0">
       <div
         className={cn(
           'flex items-center justify-center h-5 w-5 rounded-full shrink-0',
@@ -292,41 +359,41 @@ function ToolCallRow({ toolName, state }: { toolName: string; state: string }) {
       >
         {label}
       </span>
+      {detail && (
+        <span className="text-xs text-muted-foreground/70 truncate">
+          — {detail}
+        </span>
+      )}
     </div>
   )
 }
 
 // ---------------------------------------------------------------------------
-// TextBlock — markdown text with optional citation support
+// TextBlock — markdown with rehype citation plugin
 // ---------------------------------------------------------------------------
 
 function TextBlock({
   text,
-  citations,
   isStreaming,
 }: {
   text: string
-  citations: Citation[]
   isStreaming: boolean
 }) {
-  const hasCitations =
-    citations.length > 0 &&
-    (text.includes('[Källa:') || text.includes('[1]') || text.includes('[2]'))
-
-  if (hasCitations && !isStreaming) {
-    return <MessageTextWithCitations text={text} citations={citations} />
-  }
-
-  // Separate component for streaming so the hook only mounts for the active stream
   if (isStreaming) {
     return <StreamingTextBlock text={text} />
   }
+
+  const hasCitations = hasCitationMarkers(text)
 
   return (
     <div className={PROSE_CLASSES}>
       <Streamdown
         mode="static"
         plugins={streamdownPlugins}
+        rehypePlugins={
+          hasCitations ? citationRehypePlugins : emptyRehypePlugins
+        }
+        components={hasCitations ? citationComponents : emptyComponents}
         className="streamdown"
       >
         {text}
@@ -335,9 +402,14 @@ function TextBlock({
   )
 }
 
-/** rAF typewriter decouples network chunks from rendering for smooth output */
+/**
+ * Streaming text block — citations are rendered inline via rehype plugin
+ * as they appear. The plugin handles partial markers gracefully (only
+ * complete [Källa: ...] brackets get transformed).
+ */
 function StreamingTextBlock({ text }: { text: string }) {
   const displayText = useStreamingText({ text, isStreaming: true, speed: 7 })
+  const hasCitations = hasCitationMarkers(displayText)
 
   return (
     <div className={PROSE_CLASSES}>
@@ -345,63 +417,14 @@ function StreamingTextBlock({ text }: { text: string }) {
         mode="streaming"
         isAnimating
         plugins={streamdownPlugins}
+        rehypePlugins={
+          hasCitations ? citationRehypePlugins : emptyRehypePlugins
+        }
+        components={hasCitations ? citationComponents : emptyComponents}
         className="streamdown"
       >
         {displayText}
       </Streamdown>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// MessageTextWithCitations — citation-aware renderer for completed messages
-// ---------------------------------------------------------------------------
-
-function MessageTextWithCitations({
-  text,
-  citations,
-}: {
-  text: string
-  citations: Citation[]
-}) {
-  const { segments } = parseCitations(text)
-
-  return (
-    <div className="text-sm">
-      {segments.map((segment, index) => {
-        if (segment.type === 'text') {
-          return (
-            <span key={index} className={PROSE_CLASSES}>
-              <Streamdown
-                mode="static"
-                plugins={streamdownPlugins}
-                className="streamdown"
-              >
-                {segment.content}
-              </Streamdown>
-            </span>
-          )
-        }
-
-        const citationIndex = parseInt(segment.content, 10) - 1
-        const citation = citations[citationIndex]
-
-        if (!citation) {
-          return (
-            <span key={index} className="text-primary font-medium">
-              [{segment.content}]
-            </span>
-          )
-        }
-
-        return (
-          <CitationTooltip key={index} citation={citation}>
-            <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 text-[10px] font-medium rounded-md bg-muted border border-border text-muted-foreground cursor-help hover:bg-muted/80 hover:text-foreground transition-colors">
-              {segment.content}
-            </span>
-          </CitationTooltip>
-        )
-      })}
     </div>
   )
 }

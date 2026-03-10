@@ -3,18 +3,31 @@
  * Handles chat messages with streaming responses, rate limiting, and agent tools
  */
 
-import { streamText, smoothStream, stepCountIs, type UIMessage } from 'ai'
+import {
+  streamText,
+  smoothStream,
+  stepCountIs,
+  type UIMessage,
+  type ToolSet,
+  type TextStreamPart,
+} from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { Ratelimit } from '@upstash/ratelimit'
 import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { getServerSession } from '@/lib/auth/session'
+import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { createAgentTools } from '@/lib/agent/tools'
 import {
   buildSystemPrompt,
   formatCompanyContext,
 } from '@/lib/agent/system-prompt'
 import { prisma } from '@/lib/prisma'
+import {
+  extractSourcesFromToolResult,
+  type SourceInfo,
+  type ChatMessageMetadata,
+} from '@/lib/ai/citations'
 
 // Rate limiting configuration
 // 10 requests per minute per user, 50 per workspace
@@ -41,15 +54,22 @@ export const maxDuration = 60
 
 export async function POST(req: Request) {
   try {
-    // Authenticate user
+    // Authenticate user and resolve workspace
     const session = await getServerSession()
     if (!session?.user?.id) {
       return new Response('Unauthorized', { status: 401 })
     }
 
     const userId = session.user.id
-    const workspaceId =
-      (session as { workspaceId?: string }).workspaceId ?? 'default'
+
+    let workspaceId: string
+    try {
+      const ctx = await getWorkspaceContext()
+      workspaceId = ctx.workspaceId
+    } catch {
+      // Fallback if workspace context unavailable
+      workspaceId = 'default'
+    }
 
     // Rate limit check - user level
     if (userRatelimit) {
@@ -136,7 +156,7 @@ export async function POST(req: Request) {
     const modelProvider = process.env.AI_CHAT_MODEL ?? 'openai'
     const model =
       modelProvider === 'anthropic'
-        ? anthropic('claude-sonnet-4-20250514')
+        ? anthropic('claude-sonnet-4-6')
         : openai('gpt-4-turbo')
 
     // Stream the response with tool use support
@@ -157,8 +177,36 @@ export async function POST(req: Request) {
       experimental_transform: smoothStream({ chunking: 'word' }),
     })
 
+    // Accumulate citation sources from tool results, send as message metadata.
+    // This makes sources available on the client via message.metadata.citationSources
+    // without fragile client-side tool-part state matching.
+    const citationSources: Record<string, SourceInfo> = {}
+
     return result.toUIMessageStreamResponse({
       sendReasoning: true,
+      messageMetadata: ({
+        part,
+      }: {
+        part: TextStreamPart<ToolSet>
+      }): ChatMessageMetadata | undefined => {
+        if (part.type === 'tool-result') {
+          const p = part as { toolName?: string; output?: unknown }
+          const toolName = p.toolName ?? ''
+          const extracted = extractSourcesFromToolResult(toolName, p.output)
+
+          if (Object.keys(extracted).length > 0) {
+            // Merge new sources (first-write-wins)
+            for (const [key, info] of Object.entries(extracted)) {
+              if (!(key in citationSources)) {
+                citationSources[key] = info
+              }
+            }
+            // Send updated source map to client
+            return { citationSources: { ...citationSources } }
+          }
+        }
+        return undefined
+      },
     })
   } catch (error) {
     console.error('[CHAT API ERROR]', error)

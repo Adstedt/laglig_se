@@ -66,19 +66,12 @@ export function ChatPanel({
 }: ChatPanelProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const {
-    messages,
-    sendMessage,
-    status,
-    error,
-    citations,
-    retryAfter,
-    handleRetry,
-  } = useChatInterface({
-    contextType,
-    contextId,
-    initialContext,
-  })
+  const { messages, sendMessage, status, error, retryAfter, handleRetry } =
+    useChatInterface({
+      contextType,
+      contextId,
+      initialContext,
+    })
 
   const isStreaming = status === 'streaming'
   const isSubmitted = status === 'submitted'
@@ -150,11 +143,7 @@ export function ChatPanel({
             />
           </div>
         ) : (
-          <ChatMessageList
-            messages={messages}
-            citations={citations}
-            isStreaming={isLoading}
-          />
+          <ChatMessageList messages={messages} isStreaming={isLoading} />
         )}
       </div>
 

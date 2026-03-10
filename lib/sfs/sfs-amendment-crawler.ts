@@ -103,22 +103,152 @@ export function classifyDocument(title: string): DocumentType {
 /**
  * Well-known Swedish laws whose common titles omit the SFS number.
  * Used as fallback when the regex can't extract an SFS number from the title.
+ * Base forms (without definite article) are used so that includes() matches
+ * both "brottsbalk" and "brottsbalken" in amendment titles.
+ * Source: https://lagen.nu/
  */
 const NAMED_LAW_SFS: [string, string][] = [
-  ['brottsbalken', '1962:700'],
-  ['rättegångsbalken', '1942:740'],
-  ['jordabalken', '1970:994'],
-  ['ärvdabalken', '1958:637'],
+  // -- Familjerätt --
+  ['föräldrabalk', '1949:381'],
+  ['ärvdabalk', '1958:637'],
+  ['äktenskapsbalk', '1987:230'],
+  ['lagen om personnamn', '2016:1013'],
+  ['sambolag', '2003:376'],
+
+  // -- Arbetsrätt --
+  ['medbestämmandelag', '1976:580'],
+  ['lag om anställningsskydd', '1982:80'],
+  ['lagen om rättegången i arbetstvister', '1974:371'],
+  ['semesterlag', '1977:480'],
+  ['arbetstidslag', '1982:673'],
+  ['lag om offentlig anställning', '1994:260'],
+  ['visselblåsarlagen', '2021:890'],
+
+  // -- Allmän avtalsrätt --
+  ['avtalslag', '1915:218'],
+  ['prokuralag', '1974:158'],
+  ['lag om avtalsvillkor mellan näringsidkare', '1984:292'],
+  ['lag om avtalsvillkor i konsumentförhållanden', '1994:1512'],
+  ['kommissionslag', '2009:865'],
+
+  // -- Speciell avtalsrätt --
+  ['köplag', '1990:931'],
+  ['konsumentköplag', '2022:260'],
+  ['gåvolag', '1936:83'],
+  ['konsumenttjänstlag', '1985:716'],
+  ['lag om internationella köp', '1987:822'],
+  ['distans- och hemförsäljningslag', '2005:59'],
+
+  // -- Fordringsrätt --
+  ['skuldebrevslag', '1936:81'],
+  ['räntelag', '1975:635'],
+  ['preskriptionslag', '1981:130'],
+
+  // -- Sakrätt --
+  ['lösöresköpslag', '1845:50_s.1'],
+  ['samäganderättslag', '1904:48_s.1'],
+  ['förmånsrättslag', '1970:979'],
+  ['lag om godtrosförvärv av lösöre', '1986:796'],
+
+  // -- Skadeståndsrätt --
+  ['skadeståndslag', '1972:207'],
+  ['trafikskadelag', '1975:1410'],
+  ['brottsskadelag', '2014:322'],
+  ['produktansvarslag', '1992:18'],
+  ['patientskadelag', '1996:799'],
+
+  // -- IT-rätt --
+  ['dataskyddslag', '2018:218'],
+  ['bbs-lag', '1998:112'],
+  ['e-handelslag', '2002:562'],
+  ['lag om elektronisk kommunikation', '2022:482'],
+  [
+    'lag om informationssäkerhet för samhällsviktiga och digitala tjänster',
+    '2018:1174',
+  ],
+
+  // -- Immaterialrätt --
+  ['varumärkeslag', '2010:1877'],
+  ['upphovsrättslag', '1960:729'],
+  ['patentlag', '2024:945'],
+  ['mönsterskyddslag', '1970:485'],
+  ['lag om företagsnamn', '2018:1653'],
+
+  // -- Fastighetsrätt --
+  ['jordabalk', '1970:994'],
+  ['fastighetsbildningslag', '1970:988'],
+  ['expropriationslag', '1972:719'],
+  ['plan- och bygglag', '2010:900'],
+  ['bostadsrättslag', '1991:614'],
+  ['miljöbalk', '1998:808'],
+
+  // -- Associationsrätt --
+  ['lag om handelsbolag och enkla bolag', '1980:1102'],
+  ['lag om ekonomiska föreningar', '2018:672'],
+  ['stiftelselag', '1994:1220'],
+  ['årsredovisningslag', '1995:1554'],
+  ['bokföringslag', '1999:1078'],
+  ['aktiebolagslag', '2005:551'],
+
+  // -- Straffrätt --
+  ['brottsbalk', '1962:700'],
+  ['trafikbrottslag', '1951:649'],
+  ['narkotikastrafflag', '1968:64'],
+  ['skattebrottslag', '1971:69'],
+  ['smugglingslag', '2000:1225'],
+
+  // -- Processrätt --
+  ['rättegångsbalk', '1942:740'],
+  ['utsökningsbalk', '1981:774'],
+  ['konkurslag', '1987:672'],
+  ['lag om domstolsärenden', '1996:242'],
+  ['lag om skiljeförfarande', '1999:116'],
+
+  // -- Statsrätt --
+  ['tryckfrihetsförordningen', '1949:105'],
+  ['successionsordningen', '1810:0926'],
+  ['regeringsformen', '1974:152'],
+  ['riksdagsordningen', '2014:801'],
+  ['yttrandefrihetsgrundlag', '1991:1469'],
+  ['europakonventionen', '1994:1219'],
+  ['utlänningslag', '2005:716'],
+
+  // -- Skatterätt --
+  ['inkomstskattelag', '1999:1229'],
+  ['skatteförfarandelag', '2011:1244'],
+  ['fastighetstaxeringslag', '1979:1152'],
+  ['lag om särskild inkomstskatt för utomlands bosatta', '1991:586'],
+  ['mervärdesskattelag', '2023:200'],
+  ['lag mot skatteflykt', '1995:575'],
+
+  // -- Allmän förvaltningsrätt --
+  ['förvaltningslag', '2017:900'],
+  ['offentlighets- och sekretesslag', '2009:400'],
+  ['förvaltningsprocesslag', '1971:291'],
+  ['avgiftsförordning', '1992:191'],
+  ['lag om offentlig upphandling', '2016:1145'],
+
+  // -- Speciell förvaltningsrätt --
+  ['socialförsäkringsbalk', '2010:110'],
+  ['fängelselag', '2010:610'],
+  ['hälso- och sjukvårdslag', '2017:30'],
+  ['polislag', '1984:387'],
+  ['ordningslag', '1993:1617'],
+  ['socialtjänstlag', '2001:453'],
+  ['lag om signalspaning i försvarsunderrättelseverksamhet', '2008:717'],
+
+  // -- Kommunalrätt --
+  ['kommunallag', '2017:725'],
+
+  // -- Marknadsrätt --
+  ['marknadsföringslag', '2008:486'],
+  ['konkurrenslag', '2008:579'],
+
+  // -- Previously hardcoded (not on lagen.nu but seen in amendment titles) --
   ['handelsbalken', '1736:0123 2'],
   ['giftermålsbalken', '1920:405'],
-  ['föräldrabalken', '1949:381'],
-  ['utsökningsbalken', '1981:774'],
   ['sjölagen', '1994:1009'],
-  ['miljöbalken', '1998:808'],
-  ['socialförsäkringsbalken', '2010:110'],
   ['försäkringskassebalken', '2010:111'],
-  ['skatteförfarandebalken', '2011:1244'],
-  ['offentlighets- och sekretesslagen', '2009:400'],
 ]
 
 /**
