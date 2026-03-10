@@ -312,7 +312,7 @@ function ToolCallRow({
 }: {
   toolName: string
   state: string
-  detail?: string
+  detail?: string | undefined
 }) {
   const config = TOOL_CONFIG[toolName]
   const Icon = config?.icon ?? Search
