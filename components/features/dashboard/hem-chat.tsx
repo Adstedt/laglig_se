@@ -123,6 +123,7 @@ export function HemChat({
             | 'assistant',
           parts: [{ type: 'text' as const, text: msg.content }],
           createdAt: msg.createdAt,
+          ...(msg.metadata ? { metadata: msg.metadata } : {}),
         }))
         replaceMessages(uiMessages)
       }

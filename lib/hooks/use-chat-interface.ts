@@ -72,6 +72,7 @@ function toUIMessages(messages: ChatMessageData[]): UIMessage[] {
     role: msg.role === 'USER' ? 'user' : 'assistant',
     parts: [{ type: 'text' as const, text: msg.content }],
     createdAt: msg.createdAt,
+    ...(msg.metadata ? { metadata: msg.metadata } : {}),
   }))
 }
 
@@ -137,12 +138,14 @@ export function useChatInterface(
         durationMs: duration,
       })
 
-      // Persist assistant message to database
+      // Persist assistant message to database (including citation metadata)
       if (responseText && !pendingSaveRef.current.has(message.id)) {
         pendingSaveRef.current.add(message.id)
+        const meta = message.metadata as Record<string, unknown> | undefined
         saveChatMessage({
           role: 'ASSISTANT',
           content: responseText,
+          ...(meta && Object.keys(meta).length > 0 ? { metadata: meta } : {}),
           contextType: toPrismaContextType(contextType),
           contextId,
         }).catch((err) => {

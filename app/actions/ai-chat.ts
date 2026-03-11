@@ -14,6 +14,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { z } from 'zod'
 import type { ChatMessageRole, ChatContextType } from '@prisma/client'
@@ -40,6 +41,7 @@ const contextIdSchema = z.string().min(1).max(128)
 const saveChatMessageSchema = z.object({
   role: z.enum(['USER', 'ASSISTANT']),
   content: z.string().min(1).max(50000), // Allow up to 50K chars for AI responses
+  metadata: z.record(z.string(), z.unknown()).optional(), // Citation sources, tool results, etc.
   contextType: chatContextTypeSchema,
   contextId: contextIdSchema.optional(),
 })
@@ -63,6 +65,7 @@ export interface ChatMessageData {
   id: string
   role: ChatMessageRole
   content: string
+  metadata: Record<string, unknown> | null
   contextType: ChatContextType
   contextId: string | null
   createdAt: Date
@@ -89,6 +92,9 @@ export async function saveChatMessage(
           user_id: ctx.userId,
           role: validated.role,
           content: validated.content,
+          metadata: validated.metadata
+            ? (validated.metadata as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
           context_type: validated.contextType,
           context_id: validated.contextId ?? null,
         },
@@ -172,6 +178,7 @@ export async function getChatHistory(
           id: true,
           role: true,
           content: true,
+          metadata: true,
           context_type: true,
           context_id: true,
           created_at: true,
@@ -182,6 +189,7 @@ export async function getChatHistory(
         id: msg.id,
         role: msg.role,
         content: msg.content,
+        metadata: msg.metadata as Record<string, unknown> | null,
         contextType: msg.context_type,
         contextId: msg.context_id,
         createdAt: msg.created_at,
@@ -357,6 +365,7 @@ export async function loadConversation(
           id: true,
           role: true,
           content: true,
+          metadata: true,
           context_type: true,
           context_id: true,
           created_at: true,
@@ -367,6 +376,7 @@ export async function loadConversation(
         id: msg.id,
         role: msg.role,
         content: msg.content,
+        metadata: msg.metadata as Record<string, unknown> | null,
         contextType: msg.context_type,
         contextId: msg.context_id,
         createdAt: msg.created_at,

@@ -1189,6 +1189,7 @@ model ChatMessage {
   user_id         String
   role            ChatMessageRole
   content         String          @db.Text
+  metadata        Json?           // Citation sources, tool results, etc.
   context_type    ChatContextType @default(GLOBAL)
   context_id      String? // References task_id or law_list_item_id depending on context_type
   conversation_id String? // Groups messages into conversations; null = active conversation
