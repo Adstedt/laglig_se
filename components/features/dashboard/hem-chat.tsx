@@ -71,7 +71,6 @@ export function HemChat({
     error,
     retryAfter,
     handleRetry,
-    isLoadingHistory,
     clearHistory,
     replaceMessages,
   } = useChatInterface({
@@ -84,7 +83,7 @@ export function HemChat({
   const isLoading = isStreaming || isSubmitted
 
   const hasMessages = messages.length > 0
-  const isHomeState = !hasMessages && !isLoadingHistory
+  const isHomeState = !hasMessages
 
   const handleSend = useCallback(
     (content: string) => {
@@ -137,6 +136,13 @@ export function HemChat({
     },
     [hasMessages, replaceMessages]
   )
+
+  // Listen for logo click to reset chat when already on /dashboard
+  useEffect(() => {
+    const handler = () => handleNewConversation()
+    window.addEventListener('laglig:new-chat', handler)
+    return () => window.removeEventListener('laglig:new-chat', handler)
+  }, [handleNewConversation])
 
   // Focus input on mount in full mode
   useEffect(() => {

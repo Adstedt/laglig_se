@@ -35,12 +35,15 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
   // Detect mobile/tablet (below lg breakpoint where RightSidebar is hidden)
   const isMobile = useMediaQuery('(max-width: 1023px)')
 
-  // Auto-close right sidebar on /dashboard — Hem page IS the chat
+  // On /dashboard the Hem page IS the chat — sidebar should never show
+  const isHemPage = pathname === '/dashboard'
+
+  // Sync store when navigating to /dashboard (so it stays closed after leaving)
   useEffect(() => {
-    if (pathname === '/dashboard' && !rightSidebarFolded) {
+    if (isHemPage && !rightSidebarFolded) {
       setRightSidebarFolded(true)
     }
-  }, [pathname, rightSidebarFolded, setRightSidebarFolded])
+  }, [isHemPage, rightSidebarFolded, setRightSidebarFolded])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -99,9 +102,9 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
               {children}
             </main>
 
-            {/* Right Sidebar - desktop only */}
+            {/* Right Sidebar - desktop only, hidden on Hem page */}
             <RightSidebar
-              isOpen={!rightSidebarFolded}
+              isOpen={!isHemPage && !rightSidebarFolded}
               onToggle={toggleRightSidebar}
             />
           </div>

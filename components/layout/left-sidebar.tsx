@@ -513,7 +513,15 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
             collapsed ? 'justify-center px-2' : 'justify-between px-4'
           )}
         >
-          <Link href="/dashboard" className={collapsed ? '' : 'ml-2'}>
+          <Link
+            href="/dashboard"
+            className={collapsed ? '' : 'ml-2'}
+            onClick={() => {
+              if (pathname === '/dashboard') {
+                window.dispatchEvent(new CustomEvent('laglig:new-chat'))
+              }
+            }}
+          >
             {collapsed ? (
               <Image
                 src="/images/logo-icon-white.png"
