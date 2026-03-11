@@ -8,7 +8,7 @@
 
 import { useRef, useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
-import { Plus, History } from 'lucide-react'
+import { SquarePen, History } from 'lucide-react'
 import { useChatInterface } from '@/lib/hooks/use-chat-interface'
 import { ChatMessageList } from '@/components/features/ai-chat/chat-message-list'
 import { ChatInputModern } from '@/components/features/ai-chat/chat-input-modern'
@@ -22,6 +22,12 @@ import { ConversationHistory } from '@/components/features/dashboard/conversatio
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
 import { archiveConversation, loadConversation } from '@/app/actions/ai-chat'
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -211,18 +217,37 @@ export function HemChat({
   if (!isHomeState) {
     return (
       <div className="flex h-full flex-col">
-        {/* Top bar with "Ny konversation" */}
-        <div className="mx-auto w-full max-w-3xl flex items-center justify-end px-4 py-2 shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNewConversation}
-            className="gap-1.5"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Ny konversation
-          </Button>
-        </div>
+        {/* Chat actions */}
+        <TooltipProvider delayDuration={300}>
+          <div className="mx-auto w-full max-w-3xl flex items-center justify-end gap-1 px-4 py-2 shrink-0">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-foreground/60 hover:text-foreground"
+                  onClick={() => setViewState('history')}
+                >
+                  <History className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Tidigare konversationer</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-foreground/60 hover:text-foreground"
+                  onClick={handleNewConversation}
+                >
+                  <SquarePen className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Ny konversation</TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
 
         <div className="flex-1 flex flex-col min-h-0">
           {hasError ? (
