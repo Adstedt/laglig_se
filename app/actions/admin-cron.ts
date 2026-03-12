@@ -15,17 +15,27 @@ export async function triggerJob(
     const job = JOB_REGISTRY.find((j) => j.name === jobName)
     if (!job) return { success: false, error: 'Okänt jobb' }
 
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    // On Vercel, VERCEL_URL points to the current deployment — use it to
+    // avoid hitting the production domain from preview deployments.
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.NEXTAUTH_URL || 'http://localhost:3000'
     const url = `${baseUrl}${job.endpoint}`
 
-    // Fire-and-forget — cron endpoints block until completion (up to 5 min)
-    fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${process.env[job.authHeader]}`,
-        'x-triggered-by': session.email,
-      },
-    }).catch((err) => {
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${process.env[job.authHeader]}`,
+      'x-triggered-by': session.email,
+    }
+
+    // Bypass Vercel Deployment Protection on preview deployments.
+    // https://vercel.com/docs/security/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation
+    if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
+      headers['x-vercel-protection-bypass'] =
+        process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+    }
+
+    // Fire-and-forget — cron endpoints can run for several minutes
+    fetch(url, { method: 'GET', headers }).catch((err) => {
       console.error(`Failed to trigger ${jobName}:`, err)
     })
 
