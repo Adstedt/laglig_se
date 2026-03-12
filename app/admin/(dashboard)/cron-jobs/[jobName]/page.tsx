@@ -15,6 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { AutoRefreshToggle } from '@/components/admin/auto-refresh-toggle'
+import { ClickableRow } from '@/components/admin/clickable-row'
 import { JOB_REGISTRY } from '@/lib/admin/job-registry'
 import { getJobRunHistory } from '@/lib/admin/queries'
 import type { JobRunStatus } from '@prisma/client'
@@ -123,42 +124,29 @@ export default async function JobHistoryPage({
             </TableHeader>
             <TableBody>
               {runs.map((run) => (
-                <TableRow key={run.id} className="cursor-pointer">
+                <ClickableRow
+                  key={run.id}
+                  href={`/admin/cron-jobs/${jobName}/${run.id}`}
+                >
                   <TableCell>
-                    <Link href={`/admin/cron-jobs/${jobName}/${run.id}`}>
-                      <StatusBadge status={run.status} />
-                    </Link>
+                    <StatusBadge status={run.status} />
                   </TableCell>
                   <TableCell>
-                    <Link href={`/admin/cron-jobs/${jobName}/${run.id}`}>
-                      {format(run.started_at, 'PPp', { locale: sv })}
-                    </Link>
+                    {format(run.started_at, 'PPp', { locale: sv })}
                   </TableCell>
-                  <TableCell>
-                    <Link href={`/admin/cron-jobs/${jobName}/${run.id}`}>
-                      {formatDuration(run.duration_ms)}
-                    </Link>
+                  <TableCell>{formatDuration(run.duration_ms)}</TableCell>
+                  <TableCell className="text-right">
+                    {run.items_processed}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/admin/cron-jobs/${jobName}/${run.id}`}>
-                      {run.items_processed}
-                    </Link>
+                    {run.items_failed > 0 ? (
+                      <span className="text-red-600">{run.items_failed}</span>
+                    ) : (
+                      run.items_failed
+                    )}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Link href={`/admin/cron-jobs/${jobName}/${run.id}`}>
-                      {run.items_failed > 0 ? (
-                        <span className="text-red-600">{run.items_failed}</span>
-                      ) : (
-                        run.items_failed
-                      )}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Link href={`/admin/cron-jobs/${jobName}/${run.id}`}>
-                      {run.triggered_by ?? '—'}
-                    </Link>
-                  </TableCell>
-                </TableRow>
+                  <TableCell>{run.triggered_by ?? '—'}</TableCell>
+                </ClickableRow>
               ))}
             </TableBody>
           </Table>
