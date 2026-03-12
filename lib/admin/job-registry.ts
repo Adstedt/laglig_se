@@ -11,6 +11,17 @@ export interface CronJobDefinition {
 
 export const JOB_REGISTRY: CronJobDefinition[] = [
   {
+    name: 'discover-sfs-amendments',
+    displayName: 'SFS-ändringsupptäckt',
+    description:
+      'Upptäcker nya SFS-ändringar från svenskforfattningssamling.se',
+    schedule: '0 2 * * *',
+    scheduleHuman: 'Dagligen kl. 02:00 UTC',
+    endpoint: '/api/cron/discover-sfs-amendments',
+    authHeader: 'CRON_SECRET',
+    instrumented: true,
+  },
+  {
     name: 'generate-summaries',
     displayName: 'AI-sammanfattningar',
     description: 'Genererar AI-sammanfattningar för lagdokument',
@@ -18,7 +29,7 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     scheduleHuman: 'Dagligen kl. 03:00 UTC',
     endpoint: '/api/cron/generate-summaries',
     authHeader: 'CRON_SECRET',
-    instrumented: false,
+    instrumented: true,
   },
   {
     name: 'sync-sfs',
@@ -28,7 +39,7 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     scheduleHuman: 'Dagligen kl. 04:00 UTC',
     endpoint: '/api/cron/sync-sfs',
     authHeader: 'CRON_SECRET',
-    instrumented: false,
+    instrumented: true,
   },
   {
     name: 'sync-sfs-updates',
@@ -38,7 +49,7 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     scheduleHuman: 'Dagligen kl. 04:30 UTC',
     endpoint: '/api/cron/sync-sfs-updates',
     authHeader: 'CRON_SECRET',
-    instrumented: false,
+    instrumented: true,
   },
   {
     name: 'sync-court-cases',
@@ -48,7 +59,7 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     scheduleHuman: 'Dagligen kl. 05:00 UTC',
     endpoint: '/api/cron/sync-court-cases',
     authHeader: 'CRON_SECRET',
-    instrumented: false,
+    instrumented: true,
   },
   {
     name: 'prewarm-cache',
@@ -68,7 +79,7 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     scheduleHuman: 'Söndagar kl. 06:00 UTC',
     endpoint: '/api/cron/retry-failed-pdfs',
     authHeader: 'CRON_SECRET',
-    instrumented: false,
+    instrumented: true,
   },
   {
     name: 'warm-cache',
@@ -89,7 +100,7 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     scheduleHuman: 'Dagligen kl. 06:00 UTC',
     endpoint: '/api/cron/cleanup-workspaces',
     authHeader: 'CRON_SECRET',
-    instrumented: false,
+    instrumented: true,
   },
   {
     name: 'notify-amendment-changes',
@@ -100,6 +111,16 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     scheduleHuman: 'Dagligen kl. 07:00 UTC',
     endpoint: '/api/cron/notify-amendment-changes',
     authHeader: 'CRON_SECRET',
-    instrumented: false,
+    instrumented: true,
+  },
+  {
+    name: 'daily-ops-digest',
+    displayName: 'Daglig driftöversikt',
+    description: 'Sammanfattar pipeline-hälsa, gap-detektion och jobbstatus',
+    schedule: '0 8 * * *',
+    scheduleHuman: 'Dagligen kl. 08:00 UTC',
+    endpoint: '/api/cron/daily-ops-digest',
+    authHeader: 'CRON_SECRET',
+    instrumented: true,
   },
 ]

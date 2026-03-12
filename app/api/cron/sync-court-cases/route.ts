@@ -15,6 +15,7 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 import { ContentType, ReferenceType } from '@prisma/client'
 import { createNewRulingEvent } from '@/lib/sync/change-detection'
 import {
@@ -296,6 +297,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const triggeredBy = request.headers.get('x-triggered-by') || 'cron'
+  let runId: string | undefined
+
+  try {
+    runId = await startJobRun('sync-court-cases', triggeredBy)
+  } catch {
+    console.error('Failed to start job run logging')
+  }
+
   const allStats: CourtStats[] = []
   const maxRuntime = maxDuration * 1000 - CONFIG.TIMEOUT_BUFFER_MS
 
@@ -355,6 +365,13 @@ export async function GET(request: Request) {
     // Send email notification
     await sendCourtSyncEmail(emailStats, durationStr, true)
 
+    if (runId) {
+      await completeJobRun(runId, {
+        itemsProcessed: totalInserted,
+        itemsFailed: totalErrors,
+      })
+    }
+
     return NextResponse.json({
       success: true,
       stats: emailStats,
@@ -364,6 +381,13 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('Court case sync failed:', error)
+
+    if (runId) {
+      await failJobRun(
+        runId,
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
 
     const duration = Date.now() - startTime.getTime()
     const durationStr = `${Math.round(duration / 1000)}s`

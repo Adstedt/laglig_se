@@ -11,6 +11,7 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 import { ContentType } from '@prisma/client'
 import { fetchLawFullText, fetchLawHTML } from '@/lib/external/riksdagen'
 import { archiveDocumentVersion } from '@/lib/sync/version-archive'
@@ -69,6 +70,15 @@ export async function GET(request: Request) {
   const now = new Date()
   const cutoffTime = new Date(now)
   cutoffTime.setHours(cutoffTime.getHours() - CONFIG.LOOKBACK_HOURS)
+
+  const triggeredBy = request.headers.get('x-triggered-by') || 'cron'
+  let runId: string | undefined
+
+  try {
+    runId = await startJobRun('sync-sfs-updates', triggeredBy)
+  } catch {
+    console.error('Failed to start job run logging')
+  }
 
   const stats: SyncStats = {
     apiCount: 0,
@@ -327,6 +337,13 @@ export async function GET(request: Request) {
       true
     )
 
+    if (runId) {
+      await completeJobRun(runId, {
+        itemsProcessed: stats.updated,
+        itemsFailed: stats.failed,
+      })
+    }
+
     return NextResponse.json({
       success: true,
       stats,
@@ -336,6 +353,13 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('SFS updates sync failed:', error)
+
+    if (runId) {
+      await failJobRun(
+        runId,
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
 
     const duration = Date.now() - startTime.getTime()
     const durationStr = `${Math.round(duration / 1000)}s`

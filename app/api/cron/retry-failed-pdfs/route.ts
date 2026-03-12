@@ -12,6 +12,7 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 import { ContentType } from '@prisma/client'
 import { fetchAndStorePdf, type PdfMetadata } from '@/lib/sfs'
 
@@ -41,6 +42,15 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const triggeredBy = request.headers.get('x-triggered-by') || 'cron'
+  let runId: string | undefined
+
+  try {
+    runId = await startJobRun('retry-failed-pdfs', triggeredBy)
+  } catch {
+    console.error('Failed to start job run logging')
   }
 
   const stats: RetryStats = {
@@ -190,6 +200,13 @@ export async function GET(request: Request) {
     console.log(`[RETRY-FAILED-PDFS] Duration:      ${durationStr}`)
     console.log(`[RETRY-FAILED-PDFS] =====================================`)
 
+    if (runId) {
+      await completeJobRun(runId, {
+        itemsProcessed: stats.succeeded,
+        itemsFailed: stats.stillFailed,
+      })
+    }
+
     return NextResponse.json({
       success: true,
       stats,
@@ -198,6 +215,13 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('[RETRY-FAILED-PDFS] Job failed:', error)
+
+    if (runId) {
+      await failJobRun(
+        runId,
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
 
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error'

@@ -14,6 +14,7 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 import {
   ContentType,
   ChangeType,
@@ -85,6 +86,15 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const triggeredBy = request.headers.get('x-triggered-by') || 'cron'
+  let runId: string | undefined
+
+  try {
+    runId = await startJobRun('discover-sfs-amendments', triggeredBy)
+  } catch {
+    console.error('Failed to start job run logging')
   }
 
   const stats: DiscoveryStats = {
@@ -334,6 +344,13 @@ export async function GET(request: Request) {
       )
     }
 
+    if (runId) {
+      await completeJobRun(runId, {
+        itemsProcessed: stats.processed,
+        itemsFailed: stats.failed,
+      })
+    }
+
     return NextResponse.json({
       success: true,
       ...stats,
@@ -343,6 +360,13 @@ export async function GET(request: Request) {
     stats.duration = duration
 
     console.error('[DISCOVER-SFS] Cron failed:', error)
+
+    if (runId) {
+      await failJobRun(
+        runId,
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
 
     try {
       await sendAmendmentDiscoveryEmail(

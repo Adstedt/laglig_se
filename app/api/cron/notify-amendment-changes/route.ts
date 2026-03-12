@@ -8,6 +8,7 @@
 
 /* eslint-disable no-console */
 import { NextResponse } from 'next/server'
+import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 import {
   ChangeType,
   NotificationType,
@@ -273,6 +274,15 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const triggeredBy = request.headers.get('x-triggered-by') || 'cron'
+  let runId: string | undefined
+
+  try {
+    runId = await startJobRun('notify-amendment-changes', triggeredBy)
+  } catch {
+    console.error('Failed to start job run logging')
   }
 
   const stats: CronStats = {
@@ -595,6 +605,13 @@ export async function GET(request: Request) {
     stats.duration = `${Math.round((Date.now() - startTime) / 1000)}s`
     await sendAdminSummary(stats, true)
 
+    if (runId) {
+      await completeJobRun(runId, {
+        itemsProcessed: stats.emailsSent,
+        itemsFailed: stats.emailsFailed,
+      })
+    }
+
     logInfo('Cron completed', { stats })
 
     return NextResponse.json({
@@ -608,6 +625,14 @@ export async function GET(request: Request) {
       error instanceof Error ? error.message : 'Unknown error'
 
     logError('Cron failed', error)
+
+    if (runId) {
+      await failJobRun(
+        runId,
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
+
     await sendAdminSummary(stats, false, errorMessage)
 
     return NextResponse.json(
