@@ -2,8 +2,8 @@
  * Daily Amendment Email Digest Cron Job (Story 8.4)
  *
  * Runs daily at 07:00 UTC (08:00 CET / 09:00 CEST).
- * Finds un-notified ChangeEvents, generates summering/kommentar if missing,
- * sends digest emails per workspace, creates in-app notifications.
+ * Finds un-notified ChangeEvents, sends lightweight digest emails per workspace
+ * with deep-links to the Hem assessment flow, and creates in-app notifications.
  */
 
 /* eslint-disable no-console */
@@ -23,13 +23,6 @@ import { resolveAffectedRecipients } from '@/lib/notifications/recipient-resolut
 import { shouldSendEmail } from '@/lib/email/notification-preferences'
 import { sendEmail, sendHtmlEmail } from '@/lib/email/email-service'
 import { generateUnsubscribeUrl } from '@/lib/email/unsubscribe-token'
-import {
-  buildSystemPrompt,
-  buildDocumentContext,
-  getSourceText,
-  type DocumentContext,
-} from '@/lib/ai/prompts/document-content'
-import Anthropic from '@anthropic-ai/sdk'
 import {
   AmendmentDigestEmail,
   type DigestChange,
@@ -51,8 +44,6 @@ interface CronStats {
   emailsSent: number
   emailsFailed: number
   amendmentsProcessed: number
-  contentGenerated: number
-  contentFailed: number
   notificationsCreated: number
   duration: string
 }
@@ -71,8 +62,7 @@ interface ChangeEventWithData {
   amendmentSfs: string | null
   lawTitle: string
   lawSlug: string
-  summering: string | null
-  kommentar: string | null
+  aiSummary: string | null
   effectiveDate: string | null
   pdfUrl: string | null
   sectionChanges: Array<{ label: string; type: string }>
@@ -141,72 +131,6 @@ function formatSectionChange(sc: {
 }
 
 // ---------------------------------------------------------------------------
-// Content generation (Sonnet inline)
-// ---------------------------------------------------------------------------
-
-async function generateContent(
-  doc: {
-    document_number: string
-    title: string
-    content_type: string
-    effective_date: Date | null
-    publication_date: Date | null
-    status: string
-    html_content: string | null
-    markdown_content: string | null
-    full_text: string | null
-    metadata: unknown
-  },
-  startTime: number
-): Promise<{ summering: string; kommentar: string } | null> {
-  // Don't attempt if we're running low on time
-  const elapsed = Date.now() - startTime
-  if (elapsed > (maxDuration - 60) * 1000) return null
-
-  const sourceText = getSourceText(doc)
-  if (!sourceText) return null
-
-  try {
-    const client = new Anthropic()
-
-    const context: DocumentContext = {
-      document_number: doc.document_number,
-      title: doc.title,
-      content_type: doc.content_type,
-      effective_date: doc.effective_date?.toISOString() ?? null,
-      publication_date: doc.publication_date?.toISOString() ?? null,
-      status: doc.status,
-      source_text: sourceText,
-      metadata: (doc.metadata as Record<string, unknown>) ?? null,
-      amendments: [],
-    }
-
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 2048,
-      system: buildSystemPrompt(),
-      messages: [{ role: 'user', content: buildDocumentContext(context) }],
-    })
-
-    const textBlock = response.content.find((b) => b.type === 'text')
-    if (!textBlock || textBlock.type !== 'text') return null
-
-    const parsed = JSON.parse(textBlock.text) as {
-      summering?: string
-      kommentar?: string
-    }
-    if (!parsed.summering || !parsed.kommentar) return null
-
-    return { summering: parsed.summering, kommentar: parsed.kommentar }
-  } catch (error) {
-    logError('LLM content generation failed', error, {
-      documentNumber: doc.document_number,
-    })
-    return null
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Admin summary email
 // ---------------------------------------------------------------------------
 
@@ -239,14 +163,6 @@ async function sendAdminSummary(
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;">Amendments Processed</td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.amendmentsProcessed}</td>
-      </tr>
-      <tr style="background: ${stats.contentGenerated > 0 ? '#d4edda' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;">Content Generated (LLM)</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.contentGenerated}</td>
-      </tr>
-      <tr style="background: ${stats.contentFailed > 0 ? '#f8d7da' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;">Content Failed</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.contentFailed}</td>
       </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;">In-App Notifications</td>
@@ -289,8 +205,6 @@ export async function GET(request: Request) {
     emailsSent: 0,
     emailsFailed: 0,
     amendmentsProcessed: 0,
-    contentGenerated: 0,
-    contentFailed: 0,
     notificationsCreated: 0,
     duration: '0s',
   }
@@ -349,76 +263,22 @@ export async function GET(request: Request) {
     }
 
     // -----------------------------------------------------------------------
-    // Task 3: Content generation + data enrichment per ChangeEvent
+    // Task 3: Data enrichment per ChangeEvent (no LLM calls)
     // -----------------------------------------------------------------------
     const enrichedEvents: ChangeEventWithData[] = []
 
     for (const ce of changeEvents) {
       // Timeout check
       if (Date.now() - startTime > (maxDuration - 30) * 1000) {
-        logInfo('Approaching timeout, stopping content generation')
+        logInfo('Approaching timeout, stopping enrichment')
         break
       }
 
-      // Find the amendment LegalDocument
-      let summering: string | null = null
-      let kommentar: string | null = null
       let effectiveDate: string | null = null
       let pdfUrl: string | null = null
       const sectionChanges: Array<{ label: string; type: string }> = []
 
       if (ce.amendment_sfs) {
-        // Look up amendment LegalDocument by document_number
-        const amendmentLegalDoc = await prisma.legalDocument.findUnique({
-          where: { document_number: ce.amendment_sfs },
-          select: {
-            id: true,
-            document_number: true,
-            title: true,
-            content_type: true,
-            effective_date: true,
-            publication_date: true,
-            status: true,
-            summary: true,
-            kommentar: true,
-            html_content: true,
-            markdown_content: true,
-            full_text: true,
-            metadata: true,
-          },
-        })
-
-        if (amendmentLegalDoc) {
-          summering = amendmentLegalDoc.summary
-          kommentar = amendmentLegalDoc.kommentar
-
-          // Generate content if missing
-          if (!summering || !kommentar) {
-            const generated = await generateContent(
-              amendmentLegalDoc,
-              startTime
-            )
-            if (generated) {
-              summering = generated.summering
-              kommentar = generated.kommentar
-
-              // Store on LegalDocument for reuse
-              await prisma.legalDocument.update({
-                where: { id: amendmentLegalDoc.id },
-                data: {
-                  summary: summering,
-                  kommentar: kommentar,
-                  summering_generated_by: 'claude-sonnet-4-5-20250929',
-                  kommentar_generated_by: 'claude-sonnet-4-5-20250929',
-                },
-              })
-              stats.contentGenerated++
-            } else {
-              stats.contentFailed++
-            }
-          }
-        }
-
         // Look up AmendmentDocument for effective_date, PDF URL, section changes
         const sfsNumber = ce.amendment_sfs.replace('SFS ', '')
         const amendmentDoc = await prisma.amendmentDocument.findUnique({
@@ -455,8 +315,7 @@ export async function GET(request: Request) {
         amendmentSfs: ce.amendment_sfs,
         lawTitle: ce.document.title,
         lawSlug: ce.document.slug,
-        summering,
-        kommentar,
+        aiSummary: ce.ai_summary,
         effectiveDate,
         pdfUrl,
         sectionChanges,
@@ -529,11 +388,11 @@ export async function GET(request: Request) {
           changeType: CHANGE_TYPE_LABEL[ev.changeType] ?? ev.changeType,
           changeRef: ev.amendmentSfs,
           effectiveDate: ev.effectiveDate,
-          summering: ev.summering,
-          kommentar: ev.kommentar,
+          aiSummary: ev.aiSummary,
           sectionChanges: ev.sectionChanges,
           lawUrl: `${APP_URL}/lagar/${ev.lawSlug}`,
           pdfUrl: ev.pdfUrl,
+          assessUrl: `${APP_URL}/dashboard?changeId=${ev.id}`,
         }))
 
         // Determine notification type from the primary change

@@ -1,4 +1,4 @@
-import { Hr, Link, Section, Text } from '@react-email/components'
+import { Button, Hr, Link, Section, Text } from '@react-email/components'
 import * as React from 'react'
 import { LagligEmailLayout } from './components/laglig-email-layout'
 
@@ -11,11 +11,12 @@ export interface DigestChange {
   changeType: string // "Ändrad" | "Upphävd" | "Nytt avgörande"
   changeRef: string | null // "SFS 2026:145"
   effectiveDate: string | null
-  summering: string | null
-  kommentar: string | null
+  aiSummary: string | null
   sectionChanges: Array<{ label: string; type: string }>
   lawUrl: string
   pdfUrl: string | null
+  /** Deep-link to the Hem assessment flow for this change */
+  assessUrl: string
 }
 
 export interface AmendmentDigestEmailProps {
@@ -70,21 +71,10 @@ export function AmendmentDigestEmail({
               </Text>
             )}
 
-            {/* Summering */}
-            {change.summering && (
-              <Section style={contentBlock}>
-                <Text style={contentLabel}>Summering</Text>
-                <Text style={contentText}>{change.summering}</Text>
-              </Section>
-            )}
-
-            {/* Kommentar */}
-            {change.kommentar && (
-              <Section style={contentBlock}>
-                <Text style={contentLabel}>Kommentar</Text>
-                <Text style={contentText}>{change.kommentar}</Text>
-              </Section>
-            )}
+            {/* AI summary preview */}
+            <Text style={summaryText}>
+              {change.aiSummary ?? 'En ändring har upptäckts i denna lag.'}
+            </Text>
 
             {/* Section changes */}
             {change.sectionChanges.length > 0 && (
@@ -98,16 +88,23 @@ export function AmendmentDigestEmail({
               </Section>
             )}
 
-            {/* Links */}
+            {/* Primary CTA */}
+            <Section style={ctaRow}>
+              <Button href={change.assessUrl} style={ctaButton}>
+                Granska ändringen
+              </Button>
+            </Section>
+
+            {/* Secondary links */}
             <Section style={linksRow}>
               <Link href={change.lawUrl} style={linkStyle}>
-                Visa på Laglig.se
+                Visa lag
               </Link>
               {change.pdfUrl && (
                 <>
                   {' · '}
                   <Link href={change.pdfUrl} style={linkStyle}>
-                    Riksdagen PDF
+                    PDF
                   </Link>
                 </>
               )}
@@ -176,7 +173,10 @@ const cardDate: React.CSSProperties = {
   margin: '0 0 8px',
 }
 
-const contentBlock: React.CSSProperties = {
+const summaryText: React.CSSProperties = {
+  fontSize: '14px',
+  lineHeight: '20px',
+  color: '#525f7f',
   margin: '8px 0 0',
 }
 
@@ -189,13 +189,6 @@ const contentLabel: React.CSSProperties = {
   margin: '0 0 4px',
 }
 
-const contentText: React.CSSProperties = {
-  fontSize: '14px',
-  lineHeight: '20px',
-  color: '#525f7f',
-  margin: '0',
-}
-
 const sectionChangesBlock: React.CSSProperties = {
   margin: '8px 0 0',
 }
@@ -205,6 +198,20 @@ const sectionChangeItem: React.CSSProperties = {
   color: '#525f7f',
   margin: '0',
   paddingLeft: '8px',
+}
+
+const ctaRow: React.CSSProperties = {
+  margin: '16px 0 0',
+}
+
+const ctaButton: React.CSSProperties = {
+  backgroundColor: '#2563eb',
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: 600,
+  padding: '10px 20px',
+  borderRadius: '6px',
+  textDecoration: 'none',
 }
 
 const linksRow: React.CSSProperties = {

@@ -144,6 +144,82 @@ export async function getUnacknowledgedChangeCount(): Promise<
 }
 
 /**
+ * Get a single unacknowledged ChangeEvent by ID, scoped to the current workspace.
+ * Used for deep-linking from email notifications into the Hem assessment flow.
+ */
+export async function getUnacknowledgedChangeById(
+  changeEventId: string
+): Promise<ActionResult<UnacknowledgedChange | null>> {
+  try {
+    return await withWorkspace(async (ctx) => {
+      const changes = await prisma.$queryRaw<
+        Array<{
+          id: string
+          document_id: string
+          title: string
+          document_number: string
+          content_type: ContentType
+          change_type: ChangeType
+          amendment_sfs: string | null
+          ai_summary: string | null
+          detected_at: Date
+          list_id: string
+          list_name: string
+          law_list_item_id: string
+        }>
+      >`
+        SELECT
+          ce.id,
+          ce.document_id,
+          ld.title,
+          ld.document_number,
+          ld.content_type,
+          ce.change_type,
+          ce.amendment_sfs,
+          ce.ai_summary,
+          ce.detected_at,
+          ll.id as list_id,
+          ll.name as list_name,
+          lli.id as law_list_item_id
+        FROM change_events ce
+        JOIN legal_documents ld ON ld.id = ce.document_id
+        JOIN law_list_items lli ON lli.document_id = ce.document_id
+        JOIN law_lists ll ON ll.id = lli.law_list_id
+        WHERE ce.id = ${changeEventId}
+          AND ll.workspace_id = ${ctx.workspaceId}
+        LIMIT 1
+      `
+
+      if (changes.length === 0) {
+        return { success: true, data: null }
+      }
+
+      const ce = changes[0]!
+      const result: UnacknowledgedChange = {
+        id: ce.id,
+        documentId: ce.document_id,
+        documentTitle: ce.title,
+        documentNumber: ce.document_number,
+        contentType: ce.content_type,
+        changeType: ce.change_type,
+        amendmentSfs: ce.amendment_sfs,
+        aiSummary: ce.ai_summary,
+        detectedAt: ce.detected_at,
+        priority: derivePriority(ce.change_type),
+        listId: ce.list_id,
+        listName: ce.list_name,
+        lawListItemId: ce.law_list_item_id,
+      }
+
+      return { success: true, data: result }
+    }, 'read')
+  } catch (error) {
+    console.error('Error fetching change event by ID:', error)
+    return { success: false, error: 'Kunde inte hämta ändringen' }
+  }
+}
+
+/**
  * Get unacknowledged ChangeEvent counts per document_id (for law list item indicators).
  * Returns a map of document_id → count.
  */
