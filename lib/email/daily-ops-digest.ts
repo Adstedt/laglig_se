@@ -185,7 +185,7 @@ export async function gatherGapDetection(
 export async function gatherJobHealth(): Promise<JobHealthEntry[]> {
   const entries: JobHealthEntry[] = []
 
-  for (const job of JOB_REGISTRY) {
+  for (const job of JOB_REGISTRY.filter((j) => !j.disabled)) {
     const latestRun = await prisma.cronJobRun.findFirst({
       where: { job_name: job.name },
       orderBy: { started_at: 'desc' },
