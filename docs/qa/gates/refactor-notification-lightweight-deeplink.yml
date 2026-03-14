@@ -1,0 +1,40 @@
+schema: 1
+story: 'plan-mode (no formal story)'
+story_title: 'Refactor Notification Job — Lightweight Email + Hem Deep-Link'
+gate: PASS
+status_reason: 'Clean removal of inline LLM dependency, correct deep-link plumbing through all layers, all 16 tests pass, TypeScript compiles, workspace security enforced on new endpoint.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-13T11:15:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'ARCH-001'
+    severity: low
+    finding: 'getUnacknowledgedChangeById LIMIT 1 returns arbitrary list context when a document appears in multiple law lists within the same workspace'
+    suggested_action: 'Acceptable for deep-link entry point (any valid context works). Document or add ORDER BY if determinism matters later.'
+  - id: 'MNT-001'
+    severity: low
+    finding: 'useEffect in HemPage fires on every render due to initialChange object identity, though the guard prevents side effects'
+    suggested_action: 'Could use a ref-based "consumed" flag if this becomes noisy, but functionally harmless as-is.'
+
+evidence:
+  tests_reviewed: 16
+  risks_identified: 2
+  files_modified: 5
+  files_test: 2
+  trace:
+    cron_llm_removal: PASS
+    email_template_deep_link: PASS
+    server_action_workspace_scoping: PASS
+    dashboard_searchparam_handling: PASS
+    hem_page_initial_change: PASS
+    test_coverage_cron: PASS
+    test_coverage_action: PASS
+    typescript_compilation: PASS
+
+nfr_validation:
+  security: { status: PASS, notes: 'Workspace-scoped query prevents cross-tenant access; changeId is an opaque UUID — no enumeration risk' }
+  performance: { status: PASS, notes: 'Removed 278+ Sonnet API calls per run; cron now does DB reads + email sends only' }
+  reliability: { status: PASS, notes: 'Eliminated primary failure mode (LLM timeouts); graceful fallback on missing ai_summary' }
+  maintainability: { status: PASS, notes: 'Clean separation — ai_summary generated upstream by generate-summaries cron, consumed here read-only' }

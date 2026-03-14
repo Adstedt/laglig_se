@@ -60,7 +60,8 @@ export default async function CronJobsPage() {
           const runs = recentRuns[job.name] ?? []
           const lastRun = runs[0] ?? null
           const nextRunText = getNextRun(job.schedule)
-          const stale = isStale(job.schedule, lastRun?.started_at ?? null)
+          const stale =
+            !job.disabled && isStale(job.schedule, lastRun?.started_at ?? null)
 
           const lastRunSerialized = lastRun
             ? {

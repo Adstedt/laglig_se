@@ -1,64 +1,71 @@
 /**
- * Story 6.1: Dashboard Page
- * Server component that renders the compliance dashboard with widgets
+ * Story 14.11: Hem — Chat-first dashboard page
+ * Server component that fetches dashboard data and renders the HemChat client component.
+ * Route remains /dashboard (no URL breaking change).
+ *
+ * Supports ?changeId= deep-link from email notifications to auto-enter assessment view.
  */
 
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
+import { getCurrentUser } from '@/lib/auth/session'
 import { getDashboardData } from '@/lib/db/queries/dashboard'
 import {
-  ComplianceProgressRing,
-  TaskSummaryCards,
-  RecentActivityFeed,
-  QuickActions,
-  ListOverview,
-  WidgetErrorBoundary,
-} from '@/components/features/dashboard'
+  getUnacknowledgedChangeCount,
+  getUnacknowledgedChangeById,
+} from '@/app/actions/change-events'
+import { HemPage } from '@/components/features/dashboard/hem-page'
+import type { DashboardCardData } from '@/components/features/dashboard/context-cards'
 
-export default async function DashboardPage() {
-  const context = await getWorkspaceContext()
+interface DashboardPageProps {
+  searchParams: Promise<{ changeId?: string }>
+}
 
-  const { complianceStats, taskCounts, recentActivity, topLists } =
-    await getDashboardData(context.workspaceId, context.userId)
+export default async function DashboardPage({
+  searchParams,
+}: DashboardPageProps) {
+  const [context, user, params] = await Promise.all([
+    getWorkspaceContext(),
+    getCurrentUser(),
+    searchParams,
+  ])
+
+  let dashboardData: DashboardCardData | null = null
+  try {
+    const [data, changeCountResult] = await Promise.all([
+      getDashboardData(context.workspaceId, context.userId),
+      getUnacknowledgedChangeCount(),
+    ])
+    dashboardData = {
+      complianceStats: data.complianceStats,
+      taskCounts: data.taskCounts,
+      ...(changeCountResult.success && changeCountResult.data !== undefined
+        ? { pendingAmendments: changeCountResult.data }
+        : {}),
+    }
+  } catch {
+    // Data fetch failed — context cards will show "–" values
+  }
+
+  // Deep-link: fetch initial change if changeId is provided
+  let initialChange = null
+  if (params.changeId) {
+    try {
+      const result = await getUnacknowledgedChangeById(params.changeId)
+      if (result.success && result.data) {
+        initialChange = result.data
+      }
+    } catch {
+      // Invalid or expired changeId — fall through to normal dashboard
+    }
+  }
+
+  const firstName = user?.name?.split(' ')[0] ?? undefined
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Välkommen tillbaka! Här är en översikt av din efterlevnadsstatus.
-        </p>
-      </div>
-
-      {/* Top row: Compliance Ring + Quick Actions */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <WidgetErrorBoundary widgetName="Efterlevnad">
-          <ComplianceProgressRing
-            compliant={complianceStats.compliant}
-            total={complianceStats.total}
-          />
-        </WidgetErrorBoundary>
-
-        <WidgetErrorBoundary widgetName="Snabbåtgärder">
-          <QuickActions />
-        </WidgetErrorBoundary>
-      </div>
-
-      {/* Task Summary Cards */}
-      <WidgetErrorBoundary widgetName="Uppgiftsöversikt">
-        <TaskSummaryCards counts={taskCounts} />
-      </WidgetErrorBoundary>
-
-      {/* Bottom row: Activity Feed + List Overview */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <WidgetErrorBoundary widgetName="Senaste aktivitet">
-          <RecentActivityFeed activities={recentActivity} />
-        </WidgetErrorBoundary>
-
-        <WidgetErrorBoundary widgetName="Mina listor">
-          <ListOverview lists={topLists} />
-        </WidgetErrorBoundary>
-      </div>
-    </div>
+    <HemPage
+      dashboardData={dashboardData}
+      userName={firstName}
+      initialChange={initialChange}
+    />
   )
 }

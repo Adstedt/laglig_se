@@ -148,7 +148,7 @@ describe('MobileSidebar', () => {
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
       expect(screen.getByAltText('Laglig.se')).toBeInTheDocument()
-      expect(screen.getByText('Dashboard')).toBeInTheDocument()
+      expect(screen.getByText('Hem')).toBeInTheDocument()
     })
   })
 })

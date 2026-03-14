@@ -389,13 +389,28 @@ This supports organizations with multiple facilities, departments, or compliance
 
 ---
 
-## Story 6.9: Implement Threaded Comments
+## Story 6.9: Enable Threaded Comments on Law List Item Modal
 
-**As a** user,
-**I want** to have threaded discussions on tasks,
-**so that** I can collaborate with my team on compliance work.
+> **Note:** The original 6.9 scope (task modal threaded comments — AC 1-10 below) was implemented as part of **Story 6.6**. Story 6.9 has been rescoped to enable the same commenting capability on **law list item modals**, replacing the placeholder "Kommentarer" tab from Story 6.3. See `docs/stories/6.9.threaded-comments.md` (v2.2) for the current scope.
 
-**Acceptance Criteria:**
+**As a** compliance team member,
+**I want** to add threaded comments on law list items,
+**so that** I can discuss compliance status, interpretations, and action items directly in context with my colleagues.
+
+**Acceptance Criteria (rescoped):**
+
+1. Comments tab in law list item modal displays threaded comments (same UX as task modal)
+2. Users can create root comments on a law list item (content: 1–5000 characters)
+3. Users can reply to comments (max 3 levels: root → reply → reply-to-reply)
+4. Users can edit their own comments ("Redigerad" indicator shown)
+5. Users can delete their own comments (with confirmation, cascades to replies)
+6. Comments appear in the "Alla" activity feed alongside existing activity types
+7. Comments are scoped to workspace — users only see comments from their workspace
+8. Empty state shows "Inga kommentarer ännu" with prompt to add one
+9. @mentions: typing @ searches workspace members, mentioned users stored in `mentions` array
+
+<details>
+<summary>Original AC 1-10 (satisfied by Story 6.6 — task modal comments)</summary>
 
 1. Comments section in Task Modal
 2. Root comments displayed chronologically
@@ -414,6 +429,8 @@ This supports organizations with multiple facilities, departments, or compliance
 8. @mentions: Type @ to search team members, sends notification
 9. Edit history: "Redigerad" indicator, click to see original
 10. Real-time updates: New comments appear without refresh (WebSocket or polling)
+
+</details>
 
 ---
 

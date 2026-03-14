@@ -10,6 +10,7 @@ import { useLayoutStore } from '@/lib/stores/layout-store'
 import { WorkspaceProvider } from '@/hooks/use-workspace'
 import { Toaster } from '@/components/ui/sonner'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
 
 interface WorkspaceShellProps {
@@ -29,9 +30,20 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
     toggleLeftSidebar,
   } = useLayoutStore()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const pathname = usePathname()
 
   // Detect mobile/tablet (below lg breakpoint where RightSidebar is hidden)
   const isMobile = useMediaQuery('(max-width: 1023px)')
+
+  // On /dashboard the Hem page IS the chat — sidebar should never show
+  const isHemPage = pathname === '/dashboard'
+
+  // Sync store when navigating to /dashboard (so it stays closed after leaving)
+  useEffect(() => {
+    if (isHemPage && !rightSidebarFolded) {
+      setRightSidebarFolded(true)
+    }
+  }, [isHemPage, rightSidebarFolded, setRightSidebarFolded])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -90,9 +102,9 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
               {children}
             </main>
 
-            {/* Right Sidebar - desktop only */}
+            {/* Right Sidebar - desktop only, hidden on Hem page */}
             <RightSidebar
-              isOpen={!rightSidebarFolded}
+              isOpen={!isHemPage && !rightSidebarFolded}
               onToggle={toggleRightSidebar}
             />
           </div>

@@ -172,6 +172,7 @@ describe('AI Chat Server Actions', () => {
           id: 'msg-1',
           role: 'USER' as const,
           content: 'First message',
+          metadata: null,
           context_type: 'GLOBAL' as const,
           context_id: null,
           created_at: new Date('2026-01-27T10:00:00'),
@@ -180,6 +181,7 @@ describe('AI Chat Server Actions', () => {
           id: 'msg-2',
           role: 'ASSISTANT' as const,
           content: 'Second message',
+          metadata: null,
           context_type: 'GLOBAL' as const,
           context_id: null,
           created_at: new Date('2026-01-27T10:01:00'),
@@ -201,6 +203,7 @@ describe('AI Chat Server Actions', () => {
           workspace_id: TEST_WORKSPACE_ID,
           context_type: 'GLOBAL',
           context_id: null,
+          conversation_id: null,
         },
         orderBy: { created_at: 'asc' },
         take: 50,
@@ -262,6 +265,7 @@ describe('AI Chat Server Actions', () => {
           workspace_id: TEST_WORKSPACE_ID,
           context_type: 'GLOBAL',
           context_id: null,
+          conversation_id: null,
         },
       })
     })

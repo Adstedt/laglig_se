@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Story 8.1 Task 6: Change Indicator
+ * Story 8.1 Task 6 + Story 14.10 Task 6: Change Indicator
  * Small dot/badge showing pending change count on law list items.
  * Clickable — navigates to Changes tab filtered for that document.
  */

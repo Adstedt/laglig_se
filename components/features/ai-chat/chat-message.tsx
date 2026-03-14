@@ -2,214 +2,438 @@
 
 /**
  * Chat Message Component
- * Renders individual chat messages with modern styling, markdown support, and actions
+ * Renders individual chat messages following AI SDK best practices:
+ * iterate message.parts in order, render each part type with its own component.
  */
 
+import { useState, useMemo } from 'react'
+import { useStreamingText } from '@/lib/hooks/use-streaming-text'
 import type { UIMessage } from 'ai'
-import { User } from 'lucide-react'
+import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
+import {
+  User,
+  ChevronDown,
+  ChevronRight,
+  Search,
+  FileText,
+  Building2,
+  ClipboardList,
+  MessageCircleQuestion,
+  Check,
+  X,
+  Loader2,
+  Brain,
+} from 'lucide-react'
+import { Streamdown } from 'streamdown'
+import { code } from '@streamdown/code'
 import { LexaIcon } from '@/components/ui/lexa-icon'
-import { CitationTooltip } from './citation-tooltip'
+import { CitationPillInline } from './citation-pill'
+import { CitationSourceProvider } from '@/lib/ai/citation-context'
+import { rehypeCitationPills } from '@/lib/ai/rehype-citation-pills'
 import { MessageActions } from './message-actions'
-import { parseCitations, type Citation } from '@/lib/ai/citations'
+import {
+  hasCitationMarkers,
+  sourcesToMap,
+  type ChatMessageMetadata,
+} from '@/lib/ai/citations'
 import { cn } from '@/lib/utils'
-import ReactMarkdown from 'react-markdown'
+
+// ---------------------------------------------------------------------------
+// Tool display configuration
+// ---------------------------------------------------------------------------
+
+const TOOL_CONFIG: Record<
+  string,
+  { label: string; doneLabel: string; icon: typeof Search; hidden?: boolean }
+> = {
+  search_laws: {
+    label: 'Söker i lagdatabasen',
+    doneLabel: 'Sökte i lagdatabasen',
+    icon: Search,
+  },
+  get_document_details: {
+    label: 'Hämtar dokument',
+    doneLabel: 'Hämtade dokument',
+    icon: FileText,
+  },
+  get_change_details: {
+    label: 'Hämtar ändringsdetaljer',
+    doneLabel: 'Hämtade ändringsdetaljer',
+    icon: FileText,
+  },
+  get_company_context: {
+    label: 'Hämtar företagskontext',
+    doneLabel: 'Hämtade företagskontext',
+    icon: Building2,
+  },
+  create_task: {
+    label: 'Skapar uppgift',
+    doneLabel: 'Skapade uppgift',
+    icon: ClipboardList,
+  },
+  update_compliance_status: {
+    label: 'Uppdaterar status',
+    doneLabel: 'Uppdaterade status',
+    icon: ClipboardList,
+  },
+  save_assessment: {
+    label: 'Sparar bedömning',
+    doneLabel: 'Sparade bedömning',
+    icon: ClipboardList,
+  },
+  add_context_note: {
+    label: 'Lägger till anteckning',
+    doneLabel: 'Lade till anteckning',
+    icon: ClipboardList,
+  },
+  suggest_followups: {
+    label: 'Förbereder uppföljningsfrågor',
+    doneLabel: 'Förberedde uppföljningsfrågor',
+    icon: MessageCircleQuestion,
+    hidden: true,
+  },
+}
+
+const streamdownPlugins = { code }
+
+// Rehype plugins array — stable reference to avoid Streamdown re-renders
+const citationRehypePlugins = [rehypeCitationPills]
+const emptyRehypePlugins: typeof citationRehypePlugins = []
+
+// Components mapping: <cite> → CitationPillInline
+const citationComponents = {
+  cite: CitationPillInline,
+}
+const emptyComponents = {}
+
+const PROSE_CLASSES =
+  'text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-2 prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2 prose-ul:my-2 prose-li:my-0.5 prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-3 prose-blockquote:text-muted-foreground prose-blockquote:italic'
+
+// ---------------------------------------------------------------------------
+// ChatMessage
+// ---------------------------------------------------------------------------
 
 interface ChatMessageProps {
   message: UIMessage
-  citations?: Citation[]
   showActions?: boolean
+  isStreaming?: boolean
 }
 
 export function ChatMessage({
   message,
-  citations = [],
   showActions = true,
+  isStreaming = false,
 }: ChatMessageProps) {
   const isUser = message.role === 'user'
-  const textParts = message.parts?.filter((part) => part.type === 'text') ?? []
 
-  // Get full text content for copy functionality
-  const fullTextContent = textParts
-    .map((part) => ('text' in part ? part.text : ''))
+  // Build source map from message metadata (hooks must be called unconditionally)
+  const metadata = message.metadata as ChatMessageMetadata | undefined
+  const sourceMap = useMemo(
+    () => sourcesToMap(metadata?.citationSources),
+    [metadata?.citationSources]
+  )
+
+  if (isUser) {
+    const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
+    return (
+      <div className="flex items-start gap-3 flex-row-reverse">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <User className="h-3.5 w-3.5" />
+        </div>
+        <div className="flex-1 overflow-hidden text-right">
+          {textParts.map((part, index) => (
+            <div
+              key={`${message.id}-${index}`}
+              className="inline-block rounded-xl bg-primary px-4 py-2.5 text-sm text-primary-foreground"
+            >
+              <p className="whitespace-pre-wrap">
+                {'text' in part ? part.text : ''}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Assistant message — render parts in order per SDK best practice
+  const parts = message.parts ?? []
+  const isActive = isStreaming
+
+  // Collect all text for copy action
+  const fullText = parts
+    .filter(isTextUIPart)
+    .map((p) => p.text)
     .join('\n')
 
   return (
-    <div className={cn('flex items-start gap-3', isUser && 'flex-row-reverse')}>
-      {/* Avatar */}
-      <div
-        className={cn(
-          'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg',
-          isUser
-            ? 'bg-primary text-primary-foreground'
-            : 'bg-muted border border-border'
-        )}
-      >
-        {isUser ? <User className="h-3.5 w-3.5" /> : <LexaIcon size={14} />}
-      </div>
+    <CitationSourceProvider sourceMap={sourceMap}>
+      <div className="flex items-start gap-3">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted border border-border">
+          <LexaIcon size={14} />
+        </div>
 
-      {/* Message content */}
-      <div
-        className={cn(
-          'flex-1 overflow-hidden',
-          isUser ? 'text-right' : 'text-left'
-        )}
-      >
-        <div className="space-y-2">
-          {textParts.map((part, index) => {
-            if (part.type !== 'text') return null
+        <div className="flex-1 overflow-hidden text-left space-y-3">
+          {parts.map((part, index) => {
+            if (part.type === 'step-start') return null
 
-            if (isUser) {
+            if (isReasoningUIPart(part)) {
               return (
-                <div
-                  key={`${message.id}-${index}`}
-                  className="inline-block rounded-xl bg-primary px-4 py-2.5 text-sm text-primary-foreground"
-                >
-                  <p className="whitespace-pre-wrap">{part.text}</p>
-                </div>
+                <ReasoningBlock
+                  key={`reasoning-${index}`}
+                  text={part.text}
+                  state={part.state}
+                />
               )
             }
 
-            return (
-              <MessageTextWithCitations
-                key={`${message.id}-${index}`}
-                text={part.text}
-                citations={citations}
-              />
-            )
-          })}
-        </div>
+            if (isToolUIPart(part)) {
+              const toolName =
+                'toolName' in part
+                  ? (part as { toolName: string }).toolName
+                  : part.type.replace('tool-', '')
+              const config = TOOL_CONFIG[toolName]
+              if (config?.hidden) return null
+              const input =
+                'input' in part
+                  ? (part as { input?: Record<string, unknown> }).input
+                  : undefined
+              return (
+                <ToolCallRow
+                  key={`tool-${index}`}
+                  toolName={toolName}
+                  state={part.state}
+                  detail={getToolDetail(toolName, input)}
+                />
+              )
+            }
 
-        {/* Actions for AI messages */}
-        {!isUser && showActions && fullTextContent && (
-          <MessageActions messageId={message.id} content={fullTextContent} />
-        )}
+            if (isTextUIPart(part)) {
+              return (
+                <TextBlock
+                  key={`text-${index}`}
+                  text={part.text}
+                  isStreaming={isActive && index === parts.length - 1}
+                />
+              )
+            }
+
+            return null
+          })}
+
+          {showActions && fullText.trim() && !isActive && (
+            <MessageActions messageId={message.id} content={fullText} />
+          )}
+        </div>
       </div>
+    </CitationSourceProvider>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// ReasoningBlock — collapsible thinking section
+// ---------------------------------------------------------------------------
+
+function ReasoningBlock({
+  text,
+  state,
+}: {
+  text: string
+  state?: 'streaming' | 'done' | undefined
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const isThinking = state === 'streaming'
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-muted/30 overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 w-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {isOpen ? (
+          <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+        ) : (
+          <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+        )}
+
+        {isThinking ? (
+          <Brain className="h-3.5 w-3.5 shrink-0 text-amber-500 animate-pulse" />
+        ) : (
+          <Brain className="h-3.5 w-3.5 shrink-0" />
+        )}
+
+        <span className="font-medium">
+          {isThinking ? 'Resonerar...' : 'Resonerade'}
+        </span>
+      </button>
+
+      {isOpen && (
+        <div className="px-3 pb-2.5">
+          <p className="text-xs text-muted-foreground leading-relaxed pl-1 whitespace-pre-wrap">
+            {text}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
 
-interface MessageTextWithCitationsProps {
-  text: string
-  citations: Citation[]
+// ---------------------------------------------------------------------------
+// ToolCallRow — inline tool call status
+// ---------------------------------------------------------------------------
+
+/**
+ * Extract a short detail string from tool input for display in the tool row.
+ */
+function getToolDetail(
+  toolName: string,
+  input: Record<string, unknown> | undefined
+): string | undefined {
+  if (!input) return undefined
+  switch (toolName) {
+    case 'search_laws':
+      return typeof input.query === 'string' ? `"${input.query}"` : undefined
+    case 'get_document_details':
+      return (input.documentNumber as string) ?? undefined
+    case 'get_change_details':
+      return (input.changeEventId as string) ?? undefined
+    case 'create_task':
+      return (input.title as string) ?? undefined
+    case 'update_compliance_status':
+      return (input.status as string) ?? undefined
+    case 'save_assessment':
+      return (input.title as string) ?? undefined
+    case 'add_context_note':
+      return typeof input.note === 'string'
+        ? input.note.length > 40
+          ? input.note.slice(0, 38) + '\u2026'
+          : input.note
+        : undefined
+    default:
+      return undefined
+  }
 }
 
-function MessageTextWithCitations({
-  text,
-  citations,
-}: MessageTextWithCitationsProps) {
-  const { segments } = parseCitations(text)
+function ToolCallRow({
+  toolName,
+  state,
+  detail,
+}: {
+  toolName: string
+  state: string
+  detail?: string | undefined
+}) {
+  const config = TOOL_CONFIG[toolName]
+  const Icon = config?.icon ?? Search
+
+  const isDone = state === 'output-available'
+  const isError = state === 'output-error'
+  const isRunning = !isDone && !isError
+
+  const label = isDone
+    ? (config?.doneLabel ?? toolName)
+    : isError
+      ? `${config?.label ?? toolName} misslyckades`
+      : (config?.label ?? toolName)
 
   return (
-    <div className="text-sm">
-      {segments.map((segment, index) => {
-        if (segment.type === 'text') {
-          return (
-            <span
-              key={index}
-              className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-2 prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2 prose-ul:my-2 prose-li:my-0.5 prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-code:before:content-none prose-code:after:content-none"
-            >
-              <ReactMarkdown
-                components={{
-                  // Ensure links open in new tab
-                  a: ({ children, href, ...props }) => (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                      {...props}
-                    >
-                      {children}
-                    </a>
-                  ),
-                  // Style code blocks
-                  code: ({ children, className, ...props }) => {
-                    const isBlock = className?.includes('language-')
-                    if (isBlock) {
-                      return (
-                        <code
-                          className="block bg-muted p-3 rounded-lg text-xs overflow-x-auto"
-                          {...props}
-                        >
-                          {children}
-                        </code>
-                      )
-                    }
-                    return (
-                      <code
-                        className="bg-muted px-1 py-0.5 rounded text-xs"
-                        {...props}
-                      >
-                        {children}
-                      </code>
-                    )
-                  },
-                  // Properly style lists
-                  ul: ({ children }) => (
-                    <ul className="list-disc pl-4 my-2 space-y-1">
-                      {children}
-                    </ul>
-                  ),
-                  ol: ({ children }) => (
-                    <ol className="list-decimal pl-4 my-2 space-y-1">
-                      {children}
-                    </ol>
-                  ),
-                  li: ({ children }) => <li className="text-sm">{children}</li>,
-                  // Style paragraphs
-                  p: ({ children }) => (
-                    <p className="my-2 leading-relaxed">{children}</p>
-                  ),
-                  // Style headings
-                  h1: ({ children }) => (
-                    <h1 className="text-lg font-semibold mt-4 mb-2">
-                      {children}
-                    </h1>
-                  ),
-                  h2: ({ children }) => (
-                    <h2 className="text-base font-semibold mt-4 mb-2">
-                      {children}
-                    </h2>
-                  ),
-                  h3: ({ children }) => (
-                    <h3 className="text-sm font-semibold mt-3 mb-1">
-                      {children}
-                    </h3>
-                  ),
-                  // Style blockquotes
-                  blockquote: ({ children }) => (
-                    <blockquote className="border-l-2 border-primary/30 pl-3 my-2 text-muted-foreground italic">
-                      {children}
-                    </blockquote>
-                  ),
-                }}
-              >
-                {segment.content}
-              </ReactMarkdown>
-            </span>
-          )
+    <div className="flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0">
+      <div
+        className={cn(
+          'flex items-center justify-center h-5 w-5 rounded-full shrink-0',
+          isDone && 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+          isError && 'bg-destructive/10 text-destructive',
+          isRunning && 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+        )}
+      >
+        {isRunning ? (
+          <Loader2 className="h-3 w-3 animate-spin" />
+        ) : isDone ? (
+          <Check className="h-3 w-3" />
+        ) : (
+          <X className="h-3 w-3" />
+        )}
+      </div>
+
+      <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
+      <span
+        className={cn(
+          'text-xs',
+          isDone
+            ? 'text-muted-foreground'
+            : isRunning
+              ? 'text-foreground'
+              : 'text-destructive'
+        )}
+      >
+        {label}
+      </span>
+      {detail && (
+        <span className="text-xs text-muted-foreground/70 truncate">
+          — {detail}
+        </span>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// TextBlock — markdown with rehype citation plugin
+// ---------------------------------------------------------------------------
+
+function TextBlock({
+  text,
+  isStreaming,
+}: {
+  text: string
+  isStreaming: boolean
+}) {
+  if (isStreaming) {
+    return <StreamingTextBlock text={text} />
+  }
+
+  const hasCitations = hasCitationMarkers(text)
+
+  return (
+    <div className={PROSE_CLASSES}>
+      <Streamdown
+        mode="static"
+        plugins={streamdownPlugins}
+        rehypePlugins={
+          hasCitations ? citationRehypePlugins : emptyRehypePlugins
         }
+        components={hasCitations ? citationComponents : emptyComponents}
+        className="streamdown"
+      >
+        {text}
+      </Streamdown>
+    </div>
+  )
+}
 
-        // Citation marker
-        const citationIndex = parseInt(segment.content, 10) - 1
-        const citation = citations[citationIndex]
+/**
+ * Streaming text block — citations are rendered inline via rehype plugin
+ * as they appear. The plugin handles partial markers gracefully (only
+ * complete [Källa: ...] brackets get transformed).
+ */
+function StreamingTextBlock({ text }: { text: string }) {
+  const displayText = useStreamingText({ text, isStreaming: true, speed: 7 })
+  const hasCitations = hasCitationMarkers(displayText)
 
-        if (!citation) {
-          return (
-            <span key={index} className="text-primary font-medium">
-              [{segment.content}]
-            </span>
-          )
+  return (
+    <div className={PROSE_CLASSES}>
+      <Streamdown
+        mode="streaming"
+        isAnimating
+        plugins={streamdownPlugins}
+        rehypePlugins={
+          hasCitations ? citationRehypePlugins : emptyRehypePlugins
         }
-
-        return (
-          <CitationTooltip key={index} citation={citation}>
-            <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 text-[10px] font-medium rounded-md bg-muted border border-border text-muted-foreground cursor-help hover:bg-muted/80 hover:text-foreground transition-colors">
-              {segment.content}
-            </span>
-          </CitationTooltip>
-        )
-      })}
+        components={hasCitations ? citationComponents : emptyComponents}
+        className="streamdown"
+      >
+        {displayText}
+      </Streamdown>
     </div>
   )
 }

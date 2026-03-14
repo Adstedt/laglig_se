@@ -213,6 +213,43 @@ export async function detectChanges(
     createData.changed_sections = changedSections
   }
 
+  // Dedup: if crawler already created a ChangeEvent for this amendment, enrich it
+  if (amendmentSfs) {
+    const existing = await tx.changeEvent.findFirst({
+      where: { document_id: documentId, amendment_sfs: amendmentSfs },
+      select: { id: true },
+    })
+    if (existing) {
+      // Enrich with diff data the crawler didn't have
+      const updateData: Record<string, unknown> = {}
+      if (truncatedDiff) updateData.diff_summary = truncatedDiff
+      if (changedSections.length > 0)
+        updateData.changed_sections = changedSections
+      if (previousVersionId !== undefined)
+        updateData.previous_version_id = previousVersionId
+      if (newVersionId !== undefined) updateData.new_version_id = newVersionId
+
+      if (Object.keys(updateData).length > 0) {
+        await tx.changeEvent.update({
+          where: { id: existing.id },
+          data: updateData,
+        })
+      }
+
+      // Still update base document tracking fields
+      await tx.legalDocument.update({
+        where: { id: documentId },
+        data: {
+          last_change_type: ChangeType.AMENDMENT,
+          last_change_ref: amendmentSfs,
+          last_change_at: new Date(),
+        },
+      })
+
+      return tx.changeEvent.findUniqueOrThrow({ where: { id: existing.id } })
+    }
+  }
+
   // Create ChangeEvent
   const changeEvent = await tx.changeEvent.create({
     data: createData,

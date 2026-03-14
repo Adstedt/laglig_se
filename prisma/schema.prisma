@@ -55,6 +55,10 @@ model User {
   created_templates LawListTemplate[] @relation("TemplateCreator")
   reviewed_items    TemplateItem[]    @relation("TemplateItemReviewer")
 
+  // Story 14.10: Change assessment relations
+  change_assessments      ChangeAssessment[]    @relation("ChangeAssessmentAssessor")
+  compliance_status_logs  ComplianceStatusLog[] @relation("ComplianceStatusLogChanger")
+
   @@index([email])
   @@map("users")
 }
@@ -99,6 +103,9 @@ model Workspace {
 
   // Epic 3: AI Chat
   chat_messages ChatMessage[]
+
+  // Story 14.10: Change assessments
+  change_assessments ChangeAssessment[]
 
   @@index([owner_id])
   @@index([org_number])
@@ -166,6 +173,27 @@ model CompanyProfile {
   employee_count     Int?
   address            String?
   contextual_answers Json? // From onboarding questions
+
+  // Story 14.4: Extended fields for compliance agent context
+  org_number             String?
+  organization_type      OrganizationType?
+  industry_label         String?
+  employee_count_range   EmployeeCountRange?
+  activity_flags         Json? // { chemicals, construction, food, personalData, publicSector, heavyMachinery, minorEmployees, internationalOperations }
+  certifications         String[]            @default([])
+  compliance_maturity    ComplianceMaturity?
+  has_compliance_officer Boolean             @default(false)
+  profile_completeness   Int                 @default(0)
+  last_onboarding_at     DateTime?
+
+  // Story 14.4 phase 2: Extended fields
+  municipality              String?
+  website_url               String?
+  founded_year              Int?
+  has_collective_agreement  Boolean              @default(false)
+  collective_agreement_name String?
+  workforce_composition     WorkforceComposition?
+  revenue_range             RevenueRange?
 
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
@@ -262,6 +290,10 @@ model LawListItem {
   task_links TaskListItemLink[]
   comments   Comment[]
   file_links FileListItemLink[]
+
+  // Story 14.10: Change assessments and compliance status logs
+  change_assessments  ChangeAssessment[]
+  compliance_status_logs ComplianceStatusLog[]
 
   @@unique([law_list_id, document_id])
   @@index([law_list_id])
@@ -466,6 +498,48 @@ enum InvitationStatus {
   ACCEPTED
   EXPIRED
   REVOKED
+}
+
+// Story 14.4: Company profile enums for compliance agent context
+enum OrganizationType {
+  AB
+  HB
+  KOMMUN
+  REGION
+  STATLIG_MYNDIGHET
+  ENSKILD_FIRMA
+  EKONOMISK_FORENING
+  OTHER
+}
+
+enum EmployeeCountRange {
+  RANGE_1_9
+  RANGE_10_49
+  RANGE_50_249
+  RANGE_250_PLUS
+  UNKNOWN
+}
+
+enum ComplianceMaturity {
+  BASIC
+  DEVELOPING
+  ESTABLISHED
+  ADVANCED
+}
+
+enum WorkforceComposition {
+  MOSTLY_WORKERS   // Mestadels arbetare
+  MOSTLY_SALARIED  // Mestadels tjänstemän
+  MIXED            // Blandad
+  UNKNOWN
+}
+
+enum RevenueRange {
+  UNDER_3M          // < 3 MSEK
+  RANGE_3M_TO_40M   // 3–40 MSEK
+  RANGE_40M_TO_400M // 40–400 MSEK
+  OVER_400M         // > 400 MSEK
+  UNKNOWN
 }
 
 enum LawListItemStatus {
@@ -822,7 +896,8 @@ model ChangeEvent {
   notification_sent       Boolean     @default(false)
 
   // Relations
-  document LegalDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  document           LegalDocument    @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  change_assessments ChangeAssessment[]
 
   @@index([document_id])
   @@index([content_type])
@@ -1109,14 +1184,16 @@ model NotificationPreference {
 // ============================================================================
 
 model ChatMessage {
-  id           String          @id @default(uuid())
-  workspace_id String
-  user_id      String
-  role         ChatMessageRole
-  content      String          @db.Text
-  context_type ChatContextType @default(GLOBAL)
-  context_id   String? // References task_id or law_list_item_id depending on context_type
-  created_at   DateTime        @default(now())
+  id              String          @id @default(uuid())
+  workspace_id    String
+  user_id         String
+  role            ChatMessageRole
+  content         String          @db.Text
+  metadata        Json?           // Citation sources, tool results, etc.
+  context_type    ChatContextType @default(GLOBAL)
+  context_id      String? // References task_id or law_list_item_id depending on context_type
+  conversation_id String? // Groups messages into conversations; null = active conversation
+  created_at      DateTime        @default(now())
 
   // Relations
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
@@ -1125,6 +1202,7 @@ model ChatMessage {
   @@index([workspace_id, context_type, context_id])
   @@index([workspace_id, created_at])
   @@index([user_id])
+  @@index([conversation_id])
   @@map("chat_messages")
 }
 
@@ -1137,6 +1215,23 @@ enum ChatContextType {
   GLOBAL
   TASK
   LAW
+  CHANGE
+}
+
+// Story 14.10: Assessment status for change acknowledgement
+enum AssessmentStatus {
+  REVIEWED
+  ACTION_REQUIRED
+  NOT_APPLICABLE
+  DEFERRED
+}
+
+// Story 14.10: Impact level for change assessment
+enum ImpactLevel {
+  HIGH
+  MEDIUM
+  LOW
+  NONE
 }
 
 // Audit trail for compliance activities
@@ -1305,4 +1400,104 @@ model TemplateItem {
   @@index([document_id])
   @@index([content_status])
   @@map("template_items")
+}
+
+// ============================================================================
+// EPIC 14: RAG Pipeline — ContentChunk & Supporting Enums (Story 14.2)
+// ============================================================================
+
+enum SourceType {
+  LEGAL_DOCUMENT
+  USER_FILE
+  CONVERSATION
+  ASSESSMENT
+}
+
+enum ContentRole {
+  STYCKE
+  ALLMANT_RAD
+  TABLE
+  HEADING
+  TRANSITION_PROVISION
+  FOOTNOTE
+  MARKDOWN_CHUNK
+}
+
+model ContentChunk {
+  id               String                       @id @default(cuid())
+  source_type      SourceType
+  source_id        String
+  workspace_id     String?
+  path             String
+  contextual_header String
+  content          String                       @db.Text
+  content_role     ContentRole
+  context_prefix   String?                      @db.Text
+  embedding        Unsupported("vector(1536)")?
+  token_count      Int
+  metadata         Json?
+  created_at       DateTime                     @default(now())
+  updated_at       DateTime                     @updatedAt
+
+  @@index([source_type, source_id])
+  @@index([workspace_id])
+  @@map("content_chunks")
+}
+
+// ============================================================================
+// STORY 14.10: CHANGE ASSESSMENT MODELS
+// Structured acknowledgement and impact assessment of legal changes
+// ============================================================================
+
+model ChangeAssessment {
+  id                String           @id @default(cuid())
+  change_event_id   String
+  law_list_item_id  String
+  workspace_id      String
+  status            AssessmentStatus
+  impact_level      ImpactLevel
+  ai_analysis       String?          @db.Text
+  ai_recommendations Json?
+  user_notes        String?          @db.Text
+  assessed_by       String // userId
+  assessed_at       DateTime
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+
+  // Relations
+  change_event  ChangeEvent  @relation(fields: [change_event_id], references: [id], onDelete: Cascade)
+  law_list_item LawListItem  @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+  workspace     Workspace    @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  assessed_user User         @relation("ChangeAssessmentAssessor", fields: [assessed_by], references: [id])
+
+  // Story 14.10: Link from ComplianceStatusLog
+  compliance_status_logs ComplianceStatusLog[]
+
+  @@unique([change_event_id, law_list_item_id])
+  @@index([change_event_id])
+  @@index([law_list_item_id])
+  @@index([workspace_id])
+  @@index([assessed_by])
+  @@map("change_assessments")
+}
+
+model ComplianceStatusLog {
+  id                    String            @id @default(cuid())
+  law_list_item_id      String
+  previous_status       ComplianceStatus
+  new_status            ComplianceStatus
+  changed_by            String // userId
+  reason                String?
+  change_assessment_id  String?
+  changed_at            DateTime          @default(now())
+
+  // Relations
+  law_list_item    LawListItem       @relation(fields: [law_list_item_id], references: [id], onDelete: Cascade)
+  changed_by_user  User              @relation("ComplianceStatusLogChanger", fields: [changed_by], references: [id])
+  change_assessment ChangeAssessment? @relation(fields: [change_assessment_id], references: [id], onDelete: SetNull)
+
+  @@index([law_list_item_id])
+  @@index([changed_by])
+  @@index([change_assessment_id])
+  @@map("compliance_status_logs")
 }

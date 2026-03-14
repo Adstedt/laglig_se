@@ -2,18 +2,17 @@
 
 /**
  * AI Chat Sidebar - Main app chat panel
- * 480px width (960px expanded), integrates with layout store for toggle state
+ * 480px width (960px expanded), integrates with layout store for toggle state.
+ * Story 14.11: Uses HemChat in panel mode for shared conversation state with Hem page.
  */
 
-import { useState, useEffect, useRef } from 'react'
-import { X, MessageSquare, Maximize2, Minimize2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+import { X, Maximize2, Minimize2 } from 'lucide-react'
 import { LexaIcon } from '@/components/ui/lexa-icon'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { ChatMessageList } from '@/components/features/ai-chat/chat-message-list'
-import { ChatInputModern } from '@/components/features/ai-chat/chat-input-modern'
-import { ChatError } from '@/components/features/ai-chat/chat-error'
-import { useChatInterface } from '@/lib/hooks/use-chat-interface'
+import { HemChat } from '@/components/features/dashboard/hem-chat'
 import { track } from '@vercel/analytics'
 import {
   Tooltip,
@@ -27,50 +26,17 @@ interface RightSidebarProps {
   onToggle: () => void
 }
 
-const SUGGESTED_QUESTIONS = [
-  'Vad säger arbetsmiljölagen om arbetsgivarens ansvar?',
-  'Vilka regler gäller för uppsägning av anställda?',
-  'Hur fungerar GDPR i Sverige?',
-  'Vad är skillnaden mellan semesterlagen och arbetstidslagen?',
-]
-
 export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
+  const pathname = usePathname()
+  const isHemPage = pathname === '/dashboard'
   const [isExpanded, setIsExpanded] = useState(false)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-
-  const {
-    messages,
-    sendMessage,
-    status,
-    error,
-    citations,
-    retryAfter,
-    handleRetry,
-  } = useChatInterface({
-    contextType: 'global',
-  })
-
-  const isStreaming = status === 'streaming'
-  const isSubmitted = status === 'submitted'
-  const hasError = status === 'error' && error !== null
-  const isLoading = isStreaming || isSubmitted
 
   // Track sidebar open
   useEffect(() => {
     if (isOpen) {
       track('ai_chat_opened', { location: 'sidebar', expanded: isExpanded })
-      // Focus input when opened
-      setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [isOpen, isExpanded])
-
-  const handleSuggestedQuestion = (question: string) => {
-    sendMessage(question)
-  }
-
-  const handleAttach = () => {
-    // TODO: Implement file attachment
-  }
 
   const toggleExpanded = () => {
     setIsExpanded((prev) => !prev)
@@ -79,8 +45,8 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
 
   return (
     <>
-      {/* Toggle button when sidebar is folded - hidden on mobile */}
-      {!isOpen && (
+      {/* Toggle button when sidebar is folded - hidden on mobile and on Hem page */}
+      {!isOpen && !isHemPage && (
         <button
           onClick={onToggle}
           className="hidden lg:flex fixed right-0 top-1/2 z-40 h-14 w-8 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 bg-primary text-primary-foreground shadow-lg transition-all hover:w-10 hover:bg-primary/90"
@@ -156,88 +122,11 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
           </div>
         </div>
 
-        {/* Messages area */}
+        {/* Chat content — shared state with Hem via useChatInterface({ contextType: 'global' }) */}
         <div className="flex-1 flex flex-col min-h-0 bg-background/50">
-          {messages.length === 0 && !hasError ? (
-            <EmptyState
-              onSelectQuestion={handleSuggestedQuestion}
-              suggestedQuestions={SUGGESTED_QUESTIONS}
-              isExpanded={isExpanded}
-            />
-          ) : hasError ? (
-            <div className="flex-1 flex items-center justify-center p-4">
-              <ChatError
-                error={error}
-                onRetry={handleRetry}
-                retryAfter={retryAfter}
-              />
-            </div>
-          ) : (
-            <ChatMessageList
-              messages={messages}
-              citations={citations}
-              isStreaming={isLoading}
-            />
-          )}
+          <HemChat mode="panel" />
         </div>
-
-        {/* Input area */}
-        <ChatInputModern
-          ref={inputRef}
-          onSend={sendMessage}
-          onAttach={handleAttach}
-          disabled={hasError}
-          isLoading={isLoading}
-          isExpanded={isExpanded}
-        />
       </aside>
     </>
-  )
-}
-
-interface EmptyStateProps {
-  onSelectQuestion: (_question: string) => void
-  suggestedQuestions: string[]
-  isExpanded?: boolean
-}
-
-function EmptyState({
-  onSelectQuestion,
-  suggestedQuestions,
-  isExpanded,
-}: EmptyStateProps) {
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-muted border border-border mb-4">
-        <MessageSquare className="h-6 w-6 text-muted-foreground" />
-      </div>
-      <h3 className="text-lg font-semibold mb-2">Hur kan jag hjälpa dig?</h3>
-      <p className="text-sm text-muted-foreground max-w-[320px] mb-6">
-        Ställ frågor om svensk lagstiftning så hjälper jag dig hitta relevanta
-        lagar och förklaringar.
-      </p>
-
-      {/* Suggested questions - wider grid when expanded */}
-      <div
-        className={cn(
-          'w-full space-y-2',
-          isExpanded
-            ? 'max-w-[600px] grid grid-cols-2 gap-2 space-y-0'
-            : 'max-w-[400px]'
-        )}
-      >
-        {suggestedQuestions.map((question, index) => (
-          <button
-            key={index}
-            onClick={() => onSelectQuestion(question)}
-            className="w-full text-left text-sm px-4 py-3 rounded-lg border border-border bg-background hover:bg-muted hover:border-border transition-colors group"
-          >
-            <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-              {question}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
   )
 }

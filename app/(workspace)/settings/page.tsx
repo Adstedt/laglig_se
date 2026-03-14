@@ -11,6 +11,7 @@ import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { prisma } from '@/lib/prisma'
 import { SettingsTabs } from '@/components/features/settings/settings-tabs'
 import { getTaskColumns } from '@/app/actions/tasks'
+import { getCompanyProfile } from '@/app/actions/company-profile'
 
 async function getWorkspaceDataInternal(workspaceId: string) {
   const workspace = await prisma.workspace.findUnique({
@@ -79,11 +80,14 @@ const getWorkspaceMembers = (workspaceId: string) =>
 export default async function SettingsPage() {
   const context = await getWorkspaceContext()
 
-  const [workspace, members, columnsResult] = await Promise.all([
-    getWorkspaceData(context.workspaceId),
-    getWorkspaceMembers(context.workspaceId),
-    getTaskColumns(),
-  ])
+  const [workspace, members, columnsResult, companyProfile] = await Promise.all(
+    [
+      getWorkspaceData(context.workspaceId),
+      getWorkspaceMembers(context.workspaceId),
+      getTaskColumns(),
+      getCompanyProfile(),
+    ]
+  )
 
   const columns = columnsResult.success ? (columnsResult.data ?? []) : []
 
@@ -107,7 +111,12 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <SettingsTabs workspace={workspace} members={members} columns={columns} />
+      <SettingsTabs
+        workspace={workspace}
+        members={members}
+        columns={columns}
+        companyProfile={companyProfile}
+      />
     </div>
   )
 }

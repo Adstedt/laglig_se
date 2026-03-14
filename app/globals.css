@@ -302,6 +302,7 @@ html {
     margin-bottom: 0.5rem;
     padding-top: 1rem;
     border-top: 1px solid hsl(var(--border));
+    scroll-margin-top: 5rem;
   }
 
   /* First § after a heading shouldn't double-border */
@@ -783,6 +784,7 @@ html {
   .legal-document section.kapitel {
     @apply mt-8 pt-6;
     border-top: 2px solid hsl(var(--border));
+    scroll-margin-top: 5rem;
   }
 
   .legal-document section.kapitel:first-child {
@@ -811,6 +813,11 @@ html {
     @apply text-sm;
     color: hsl(var(--muted-foreground));
     line-height: 1.6;
+  }
+
+  .legal-document .body > p.text i {
+    font-size: inherit;
+    line-height: inherit;
   }
 
   /* ---------- Amendment lists (ol.list / ul.list) ---------- */

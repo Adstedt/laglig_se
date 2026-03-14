@@ -23,17 +23,10 @@ interface ChatSidebarProps {
 }
 
 export function ChatSidebar({ isOpen, onClose, className }: ChatSidebarProps) {
-  const {
-    messages,
-    sendMessage,
-    status,
-    error,
-    citations,
-    retryAfter,
-    handleRetry,
-  } = useChatInterface({
-    contextType: 'global',
-  })
+  const { messages, sendMessage, status, error, retryAfter, handleRetry } =
+    useChatInterface({
+      contextType: 'global',
+    })
 
   const isStreaming = status === 'streaming'
   const isSubmitted = status === 'submitted'
@@ -108,7 +101,6 @@ export function ChatSidebar({ isOpen, onClose, className }: ChatSidebarProps) {
       ) : (
         <ChatMessageList
           messages={messages}
-          citations={citations}
           isStreaming={isStreaming || isSubmitted}
         />
       )}
