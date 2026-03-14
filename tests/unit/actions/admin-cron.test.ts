@@ -16,6 +16,8 @@ import { triggerJob } from '@/app/actions/admin-cron'
 
 beforeEach(() => {
   vi.clearAllMocks()
+  delete process.env.VERCEL_URL
+  delete process.env.VERCEL_AUTOMATION_BYPASS_SECRET
   process.env.NEXTAUTH_URL = 'http://localhost:3000'
   process.env.CRON_SECRET = 'test-secret'
 })

@@ -9,20 +9,6 @@ import userEvent from '@testing-library/user-event'
 import { ChangeRow } from '@/components/features/changes/change-row'
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
 
-// Mock next/navigation
-const mockPush = vi.fn()
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    push: mockPush,
-    replace: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-    refresh: vi.fn(),
-    prefetch: vi.fn(),
-  }),
-  useSearchParams: () => new URLSearchParams(),
-}))
-
 // Mock date-fns for deterministic output
 vi.mock('date-fns', () => ({
   formatDistanceToNow: () => '2 dagar sedan',
@@ -49,12 +35,20 @@ function makeChange(
   }
 }
 
+const mockOnSelect = vi.fn()
+
 // Helper: ChangeRow renders <tr> which needs a <table> wrapper
-function renderRow(props: { change: UnacknowledgedChange }) {
+function renderRow(props: {
+  change: UnacknowledgedChange
+  onSelect?: (_change: UnacknowledgedChange) => void
+}) {
   return render(
     <table>
       <tbody>
-        <ChangeRow {...props} />
+        <ChangeRow
+          change={props.change}
+          onSelect={props.onSelect ?? mockOnSelect}
+        />
       </tbody>
     </table>
   )
@@ -62,7 +56,7 @@ function renderRow(props: { change: UnacknowledgedChange }) {
 
 describe('ChangeRow (Story 8.1)', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    mockOnSelect.mockClear()
   })
 
   it('renders change type badge with Swedish label for AMENDMENT', () => {
@@ -127,16 +121,13 @@ describe('ChangeRow (Story 8.1)', () => {
 
   it('navigates to assessment flow with list context on click', async () => {
     const user = userEvent.setup()
-    renderRow({
-      change: makeChange({ id: 'ce-42', lawListItemId: 'lli-99' }),
-    })
+    const change = makeChange({ id: 'ce-42', lawListItemId: 'lli-99' })
+    renderRow({ change })
 
     const row = screen.getByRole('button')
     await user.click(row)
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/laglistor/andringar/ce-42?item=lli-99'
-    )
+    expect(mockOnSelect).toHaveBeenCalledWith(change)
   })
 
   it('has accessible aria-label', () => {
@@ -155,31 +146,25 @@ describe('ChangeRow (Story 8.1)', () => {
 
   it('navigates on Enter key press', async () => {
     const user = userEvent.setup()
-    renderRow({
-      change: makeChange({ id: 'ce-kb', lawListItemId: 'lli-kb' }),
-    })
+    const change = makeChange({ id: 'ce-kb', lawListItemId: 'lli-kb' })
+    renderRow({ change })
 
     const row = screen.getByRole('button')
     row.focus()
     await user.keyboard('{Enter}')
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/laglistor/andringar/ce-kb?item=lli-kb'
-    )
+    expect(mockOnSelect).toHaveBeenCalledWith(change)
   })
 
   it('navigates on Space key press', async () => {
     const user = userEvent.setup()
-    renderRow({
-      change: makeChange({ id: 'ce-sp', lawListItemId: 'lli-sp' }),
-    })
+    const change = makeChange({ id: 'ce-sp', lawListItemId: 'lli-sp' })
+    renderRow({ change })
 
     const row = screen.getByRole('button')
     row.focus()
     await user.keyboard(' ')
 
-    expect(mockPush).toHaveBeenCalledWith(
-      '/laglistor/andringar/ce-sp?item=lli-sp'
-    )
+    expect(mockOnSelect).toHaveBeenCalledWith(change)
   })
 })

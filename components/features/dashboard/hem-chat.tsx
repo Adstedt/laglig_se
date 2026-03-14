@@ -246,6 +246,7 @@ export function HemChat({
                   size="icon"
                   className="h-8 w-8 text-foreground/60 hover:text-foreground"
                   onClick={handleNewConversation}
+                  aria-label="Ny konversation"
                 >
                   <SquarePen className="h-4 w-4" />
                 </Button>

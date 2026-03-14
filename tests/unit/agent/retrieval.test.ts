@@ -4,19 +4,26 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // Hoisted mocks (vi.mock factories are hoisted above imports)
 // ---------------------------------------------------------------------------
 
-const { mockQueryRaw, mockExecuteRaw, mockTransaction, mockRerank } =
-  vi.hoisted(() => ({
-    mockQueryRaw: vi.fn(),
-    mockExecuteRaw: vi.fn(),
-    mockTransaction: vi.fn(),
-    mockRerank: vi.fn(),
-  }))
+const {
+  mockQueryRaw,
+  mockExecuteRaw,
+  mockExecuteRawUnsafe,
+  mockTransaction,
+  mockRerank,
+} = vi.hoisted(() => ({
+  mockQueryRaw: vi.fn(),
+  mockExecuteRaw: vi.fn(),
+  mockExecuteRawUnsafe: vi.fn(),
+  mockTransaction: vi.fn(),
+  mockRerank: vi.fn(),
+}))
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     $transaction: (...args: unknown[]) => mockTransaction(...args),
     $queryRaw: mockQueryRaw,
     $executeRaw: mockExecuteRaw,
+    $executeRawUnsafe: mockExecuteRawUnsafe,
   },
 }))
 
@@ -53,6 +60,7 @@ function makeRow(overrides: Record<string, unknown> = {}) {
     token_count: 80,
     metadata: null,
     document_number: 'SFS 1977:1160',
+    slug: null,
     similarity: 0.85,
     ...overrides,
   }
@@ -71,6 +79,7 @@ describe('retrieveContext', () => {
       async (fn: (..._args: unknown[]) => unknown) => {
         const tx = {
           $executeRaw: mockExecuteRaw,
+          $executeRawUnsafe: mockExecuteRawUnsafe,
           $queryRaw: mockQueryRaw,
         }
         return fn(tx)

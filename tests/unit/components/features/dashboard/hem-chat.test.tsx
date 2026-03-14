@@ -33,6 +33,7 @@ vi.mock('@/lib/hooks/use-chat-interface', () => ({
     isLoading: mockStatus === 'streaming' || mockStatus === 'submitted',
     isLoadingHistory: mockIsLoadingHistory,
     clearHistory: mockClearHistory,
+    replaceMessages: vi.fn(),
     stop: vi.fn(),
   }),
 }))
@@ -361,7 +362,9 @@ describe('HemChat', () => {
 
     render(<HemChat mode="full" />)
 
-    expect(screen.getByText('Ny konversation')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Ny konversation' })
+    ).toBeInTheDocument()
   })
 
   // --- Test 12: "Ny konversation" archives and resets ---
@@ -379,7 +382,7 @@ describe('HemChat', () => {
 
     render(<HemChat mode="full" />)
 
-    await user.click(screen.getByText('Ny konversation'))
+    await user.click(screen.getByRole('button', { name: 'Ny konversation' }))
 
     expect(mockArchiveConversation).toHaveBeenCalled()
     expect(mockClearHistory).toHaveBeenCalled()
@@ -402,7 +405,7 @@ describe('HemChat', () => {
 
     render(<HemChat mode="full" />)
 
-    await user.click(screen.getByText('Ny konversation'))
+    await user.click(screen.getByRole('button', { name: 'Ny konversation' }))
 
     expect(toast.error).toHaveBeenCalledWith(
       'Kunde inte spara konversationen. Försök igen.'
