@@ -89,9 +89,40 @@ interface ActionResult<T = void> {
   error?: string
 }
 
+// Story 6.9: Comment types
+export interface ListItemComment {
+  id: string
+  content: string
+  author_id: string
+  parent_id: string | null
+  depth: number
+  mentions: string[]
+  created_at: Date
+  edited_at: Date | null
+  author: {
+    id: string
+    name: string | null
+    email: string
+    avatar_url: string | null
+  }
+  replies?: ListItemComment[]
+}
+
 // ============================================================================
 // Schemas
 // ============================================================================
+
+// Story 6.9: Comment schemas
+const CreateListItemCommentSchema = z.object({
+  listItemId: z.string().uuid(),
+  content: z.string().min(1).max(5000),
+  parentCommentId: z.string().uuid().optional(),
+})
+
+const UpdateListItemCommentSchema = z.object({
+  commentId: z.string().uuid(),
+  content: z.string().min(1).max(5000),
+})
 
 const UpdateBusinessContextSchema = z.object({
   listItemId: z.string().uuid(),
@@ -866,5 +897,261 @@ export async function getEvidenceForListItem(
   } catch (error) {
     console.error('Error fetching evidence for list item:', error)
     return { success: true, data: null } // Graceful fallback
+  }
+}
+
+// ============================================================================
+// Story 6.9: List Item Comment Actions
+// ============================================================================
+
+/**
+ * Get all comments for a law list item, structured as nested threads.
+ */
+export async function getListItemComments(
+  listItemId: string
+): Promise<ActionResult<ListItemComment[]>> {
+  try {
+    return await withWorkspace(async (ctx) => {
+      const item = await prisma.lawListItem.findFirst({
+        where: { id: listItemId },
+        include: { law_list: { select: { workspace_id: true } } },
+      })
+
+      if (!item || item.law_list.workspace_id !== ctx.workspaceId) {
+        return { success: false, error: 'Laglistpost hittades inte' }
+      }
+
+      const comments = await prisma.comment.findMany({
+        where: {
+          law_list_item_id: listItemId,
+          workspace_id: ctx.workspaceId,
+          parent_id: null, // Root comments only
+        },
+        include: {
+          author: {
+            select: { id: true, name: true, email: true, avatar_url: true },
+          },
+          replies: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  avatar_url: true,
+                },
+              },
+              replies: {
+                include: {
+                  author: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                      avatar_url: true,
+                    },
+                  },
+                },
+                orderBy: { created_at: 'asc' as const },
+              },
+            },
+            orderBy: { created_at: 'asc' as const },
+          },
+        },
+        orderBy: { created_at: 'desc' },
+      })
+
+      return {
+        success: true,
+        data: comments as unknown as ListItemComment[],
+      }
+    }, 'read')
+  } catch (error) {
+    console.error('getListItemComments error:', error)
+    return { success: false, error: 'Kunde inte hämta kommentarer' }
+  }
+}
+
+/**
+ * Create a comment on a law list item.
+ */
+export async function createListItemComment(
+  listItemId: string,
+  content: string,
+  parentCommentId?: string
+): Promise<ActionResult<ListItemComment>> {
+  try {
+    const validated = CreateListItemCommentSchema.parse({
+      listItemId,
+      content,
+      parentCommentId,
+    })
+
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      const item = await prisma.lawListItem.findFirst({
+        where: { id: validated.listItemId },
+        include: { law_list: { select: { workspace_id: true } } },
+      })
+
+      if (!item || item.law_list.workspace_id !== workspaceId) {
+        return { success: false, error: 'Laglistpost hittades inte' }
+      }
+
+      // Calculate depth for threading
+      let depth = 0
+      if (validated.parentCommentId) {
+        const parent = await prisma.comment.findUnique({
+          where: { id: validated.parentCommentId },
+          select: { depth: true },
+        })
+        if (!parent) {
+          return {
+            success: false,
+            error: 'Överordnad kommentar hittades inte',
+          }
+        }
+        if (parent.depth >= 2) {
+          return { success: false, error: 'Max 3 nivåer av svar tillåtna' }
+        }
+        depth = parent.depth + 1
+      }
+
+      // Extract @mentions from content
+      const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g
+      const mentions: string[] = []
+      let match
+      while ((match = mentionRegex.exec(content)) !== null) {
+        if (match[2]) {
+          mentions.push(match[2])
+        }
+      }
+
+      const comment = await prisma.comment.create({
+        data: {
+          workspace_id: workspaceId,
+          law_list_item_id: validated.listItemId,
+          author_id: userId,
+          content: validated.content,
+          parent_id: validated.parentCommentId ?? null,
+          depth,
+          mentions,
+        },
+        include: {
+          author: {
+            select: { id: true, name: true, email: true, avatar_url: true },
+          },
+        },
+      })
+
+      // Log activity for the list item
+      await prisma.activityLog.create({
+        data: {
+          workspace_id: workspaceId,
+          user_id: userId,
+          entity_type: 'law_list_item',
+          entity_id: validated.listItemId,
+          action: 'comment_added',
+          new_value: JSON.parse(JSON.stringify({ comment_id: comment.id })),
+        },
+      })
+
+      revalidatePath('/laglistor')
+      return { success: true, data: comment as unknown as ListItemComment }
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: error.issues[0]?.message ?? 'Ogiltig kommentar',
+      }
+    }
+    console.error('createListItemComment error:', error)
+    return { success: false, error: 'Kunde inte skapa kommentar' }
+  }
+}
+
+/**
+ * Update a comment (author-only).
+ */
+export async function updateListItemComment(
+  commentId: string,
+  content: string
+): Promise<ActionResult> {
+  try {
+    const validated = UpdateListItemCommentSchema.parse({ commentId, content })
+
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      const comment = await prisma.comment.findFirst({
+        where: {
+          id: validated.commentId,
+          workspace_id: workspaceId,
+          author_id: userId,
+        },
+      })
+
+      if (!comment) {
+        return {
+          success: false,
+          error: 'Kommentaren hittades inte eller du har inte behörighet',
+        }
+      }
+
+      await prisma.comment.update({
+        where: { id: validated.commentId },
+        data: {
+          content: validated.content,
+          edited_at: new Date(),
+        },
+      })
+
+      revalidatePath('/laglistor')
+      return { success: true }
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        error: error.issues[0]?.message ?? 'Ogiltig kommentar',
+      }
+    }
+    console.error('updateListItemComment error:', error)
+    return { success: false, error: 'Kunde inte uppdatera kommentar' }
+  }
+}
+
+/**
+ * Delete a comment and its replies (author-only, cascade via Prisma).
+ */
+export async function deleteListItemComment(
+  commentId: string
+): Promise<ActionResult> {
+  try {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      const comment = await prisma.comment.findFirst({
+        where: {
+          id: commentId,
+          workspace_id: workspaceId,
+          author_id: userId,
+        },
+      })
+
+      if (!comment) {
+        return {
+          success: false,
+          error: 'Kommentaren hittades inte eller du har inte behörighet',
+        }
+      }
+
+      // Delete cascades to replies via Prisma onDelete: Cascade
+      await prisma.comment.delete({
+        where: { id: commentId },
+      })
+
+      revalidatePath('/laglistor')
+      return { success: true }
+    })
+  } catch (error) {
+    console.error('deleteListItemComment error:', error)
+    return { success: false, error: 'Kunde inte radera kommentar' }
   }
 }

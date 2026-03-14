@@ -14,9 +14,10 @@ import { HistoryTab } from './history-tab'
 
 interface ActivityTabsProps {
   listItemId: string
+  currentUserId?: string | undefined
 }
 
-export function ActivityTabs({ listItemId }: ActivityTabsProps) {
+export function ActivityTabs({ listItemId, currentUserId }: ActivityTabsProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-base font-semibold text-foreground">Aktivitet</h3>
@@ -71,7 +72,7 @@ export function ActivityTabs({ listItemId }: ActivityTabsProps) {
           value="kommentarer"
           className="mt-4 max-h-[400px] overflow-y-auto"
         >
-          <CommentsTab listItemId={listItemId} />
+          <CommentsTab listItemId={listItemId} currentUserId={currentUserId} />
         </TabsContent>
 
         <TabsContent

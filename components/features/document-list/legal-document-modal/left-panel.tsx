@@ -113,7 +113,7 @@ export function LeftPanel({
       </Accordion>
 
       {/* Activity Tabs */}
-      <ActivityTabs listItemId={listItem.id} />
+      <ActivityTabs listItemId={listItem.id} currentUserId={currentUserId} />
     </div>
   )
 }
