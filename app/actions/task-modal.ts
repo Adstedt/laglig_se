@@ -11,6 +11,7 @@ import { withWorkspace } from '@/lib/auth/workspace-context'
 import { z } from 'zod'
 import type { TaskPriority } from '@prisma/client'
 import { invalidateListItemTasksCache } from './legal-document-modal'
+import { logActivity } from '@/lib/services/activity-logger'
 
 // ============================================================================
 // Action Result Type
@@ -199,32 +200,6 @@ const LinkListItemSchema = z.object({
   taskId: z.string().uuid(),
   listItemId: z.string().uuid(),
 })
-
-// ============================================================================
-// Helper: Log Activity
-// ============================================================================
-
-async function logActivity(
-  workspaceId: string,
-  userId: string,
-  entityType: string,
-  entityId: string,
-  action: string,
-  oldValue?: unknown,
-  newValue?: unknown
-) {
-  await prisma.activityLog.create({
-    data: {
-      workspace_id: workspaceId,
-      user_id: userId,
-      entity_type: entityType,
-      entity_id: entityId,
-      action,
-      old_value: oldValue ? JSON.parse(JSON.stringify(oldValue)) : null,
-      new_value: newValue ? JSON.parse(JSON.stringify(newValue)) : null,
-    },
-  })
-}
 
 // ============================================================================
 // Get Task Details
