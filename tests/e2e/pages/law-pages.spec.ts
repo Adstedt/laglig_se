@@ -120,50 +120,6 @@ test.describe('SFS Law Pages', () => {
   })
 })
 
-test.describe('Court Case Pages', () => {
-  test('should render court cases index page', async ({ page }) => {
-    await page.goto('/rattsfall')
-
-    await expect(page).toHaveTitle(/Svenska rättsfall/)
-    await expect(
-      page.getByRole('heading', { name: 'Svenska rättsfall', level: 1 })
-    ).toBeVisible()
-
-    // Should show court options
-    await expect(page.getByText('Högsta domstolen')).toBeVisible()
-  })
-
-  test('should render court-specific listing page', async ({ page }) => {
-    await page.goto('/rattsfall/hd')
-
-    await expect(page).toHaveTitle(/Högsta domstolen/)
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(
-      'Högsta domstolen'
-    )
-  })
-
-  test('should render individual court case page', async ({ page }) => {
-    await page.goto('/rattsfall/hd')
-
-    // Click on first case
-    const firstCaseLink = page.locator('a[href^="/rattsfall/hd/"]').first()
-
-    // Skip if no cases exist
-    if ((await firstCaseLink.count()) === 0) {
-      test.skip()
-      return
-    }
-
-    await firstCaseLink.click()
-
-    // Verify breadcrumbs and heading
-    await expect(
-      page.getByRole('navigation', { name: 'Breadcrumb' })
-    ).toBeVisible()
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  })
-})
-
 test.describe('EU Legislation Pages', () => {
   test('should render EU legislation index page', async ({ page }) => {
     await page.goto('/eu')

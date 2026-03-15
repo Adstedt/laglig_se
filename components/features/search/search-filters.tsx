@@ -15,26 +15,6 @@ const CONTENT_TYPES = [
       'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
   },
   {
-    value: 'COURT_CASE_AD',
-    label: 'Arbetsdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_HD',
-    label: 'Högsta domstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_HFD',
-    label: 'Högsta förvaltningsdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_HOVR',
-    label: 'Hovrätterna',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
     value: 'EU_REGULATION',
     label: 'EU-förordningar',
     color:

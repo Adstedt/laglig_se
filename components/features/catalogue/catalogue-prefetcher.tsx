@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 
-const CATALOGUE_ROUTES = ['/rattskallor', '/lagar', '/rattsfall', '/eu']
+const CATALOGUE_ROUTES = ['/rattskallor', '/lagar', '/eu']
 
 interface CataloguePrefetcherProps {
   /** Current page number for prefetching adjacent pages */

@@ -183,18 +183,6 @@ function getBasePath(contentType: ContentType): string {
       return '/lagar'
     case 'SFS_AMENDMENT':
       return '/lagar/andringar'
-    case 'COURT_CASE_HD':
-      return '/rattsfall/hd'
-    case 'COURT_CASE_HOVR':
-      return '/rattsfall/hovr'
-    case 'COURT_CASE_HFD':
-      return '/rattsfall/hfd'
-    case 'COURT_CASE_AD':
-      return '/rattsfall/ad'
-    case 'COURT_CASE_MOD':
-      return '/rattsfall/mod'
-    case 'COURT_CASE_MIG':
-      return '/rattsfall/mig'
     case 'EU_REGULATION':
       return '/eu/forordningar'
     case 'EU_DIRECTIVE':

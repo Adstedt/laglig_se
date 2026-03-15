@@ -27,10 +27,7 @@ test.describe('Prefetch for Instant Navigation', () => {
 
       // Verify prefetch requests were made for detail pages
       const detailPrefetches = prefetchRequests.filter(
-        (url) =>
-          url.includes('/lagar/') ||
-          url.includes('/rattsfall/') ||
-          url.includes('/eu/')
+        (url) => url.includes('/lagar/') || url.includes('/eu/')
       )
 
       expect(detailPrefetches.length).toBeGreaterThan(0)
@@ -114,27 +111,6 @@ test.describe('Prefetch for Instant Navigation', () => {
         url.includes('/lagar/')
       )
       expect(lagarPrefetches.length).toBeGreaterThan(0)
-    })
-
-    test('prefetches on rattsfall sub-route', async ({ page }) => {
-      const prefetchRequests: string[] = []
-      page.on('request', (request) => {
-        if (
-          request.resourceType() === 'fetch' &&
-          request.headers()['rsc'] === '1'
-        ) {
-          prefetchRequests.push(request.url())
-        }
-      })
-
-      await page.goto('/rattskallor/rattsfall')
-      await page.waitForSelector('[data-position]', { timeout: 10000 })
-      await page.waitForTimeout(1000)
-
-      const rattsfallPrefetches = prefetchRequests.filter((url) =>
-        url.includes('/rattsfall/')
-      )
-      expect(rattsfallPrefetches.length).toBeGreaterThan(0)
     })
   })
 

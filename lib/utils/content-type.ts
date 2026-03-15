@@ -4,42 +4,23 @@
  */
 
 import type { ContentType } from '@prisma/client'
-import {
-  Scale,
-  FileEdit,
-  Gavel,
-  Globe,
-  BookOpen,
-  type LucideIcon,
-} from 'lucide-react'
+import { Scale, FileEdit, Globe, BookOpen, type LucideIcon } from 'lucide-react'
 
 // ============================================================================
 // LABELS - Swedish display names
 // ============================================================================
 
-const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
+const CONTENT_TYPE_LABELS: Partial<Record<ContentType, string>> = {
   SFS_LAW: 'Lag',
   SFS_AMENDMENT: 'Ändring',
-  COURT_CASE_AD: 'AD',
-  COURT_CASE_HD: 'HD',
-  COURT_CASE_HOVR: 'HovR',
-  COURT_CASE_HFD: 'HFD',
-  COURT_CASE_MOD: 'MÖD',
-  COURT_CASE_MIG: 'MIG',
   EU_REGULATION: 'EU-förordning',
   EU_DIRECTIVE: 'EU-direktiv',
   AGENCY_REGULATION: 'Myndighetsföreskrift',
 }
 
-const CONTENT_TYPE_FULL_LABELS: Record<ContentType, string> = {
+const CONTENT_TYPE_FULL_LABELS: Partial<Record<ContentType, string>> = {
   SFS_LAW: 'Lag',
   SFS_AMENDMENT: 'Ändringsförfattning',
-  COURT_CASE_AD: 'Arbetsdomstolen',
-  COURT_CASE_HD: 'Högsta domstolen',
-  COURT_CASE_HOVR: 'Hovrätt',
-  COURT_CASE_HFD: 'Högsta förvaltningsdomstolen',
-  COURT_CASE_MOD: 'Mark- och miljööverdomstolen',
-  COURT_CASE_MIG: 'Migrationsöverdomstolen',
   EU_REGULATION: 'EU-förordning',
   EU_DIRECTIVE: 'EU-direktiv',
   AGENCY_REGULATION: 'Myndighetsföreskrift',
@@ -57,22 +38,10 @@ export function getContentTypeFullLabel(type: ContentType): string {
 // BADGE COLORS - Tailwind classes
 // ============================================================================
 
-const CONTENT_TYPE_COLORS: Record<ContentType, string> = {
+const CONTENT_TYPE_COLORS: Partial<Record<ContentType, string>> = {
   SFS_LAW: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
   SFS_AMENDMENT:
     'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  COURT_CASE_AD:
-    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_HD:
-    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_HOVR:
-    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_HFD:
-    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_MOD:
-    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  COURT_CASE_MIG:
-    'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
   EU_REGULATION:
     'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
   EU_DIRECTIVE:
@@ -92,15 +61,9 @@ export function getContentTypeBadgeColor(type: ContentType): string {
 // ICONS - Lucide icon components
 // ============================================================================
 
-const CONTENT_TYPE_ICONS: Record<ContentType, LucideIcon> = {
+const CONTENT_TYPE_ICONS: Partial<Record<ContentType, LucideIcon>> = {
   SFS_LAW: Scale,
   SFS_AMENDMENT: FileEdit,
-  COURT_CASE_AD: Gavel,
-  COURT_CASE_HD: Gavel,
-  COURT_CASE_HOVR: Gavel,
-  COURT_CASE_HFD: Gavel,
-  COURT_CASE_MOD: Gavel,
-  COURT_CASE_MIG: Gavel,
   EU_REGULATION: Globe,
   EU_DIRECTIVE: Globe,
   AGENCY_REGULATION: BookOpen,
@@ -114,20 +77,7 @@ export function getContentTypeIcon(type: ContentType): LucideIcon {
 // TYPE CHECKS
 // ============================================================================
 
-const COURT_CASE_TYPES: ContentType[] = [
-  'COURT_CASE_AD',
-  'COURT_CASE_HD',
-  'COURT_CASE_HOVR',
-  'COURT_CASE_HFD',
-  'COURT_CASE_MOD',
-  'COURT_CASE_MIG',
-]
-
 const EU_DOCUMENT_TYPES: ContentType[] = ['EU_REGULATION', 'EU_DIRECTIVE']
-
-export function isCourtCase(type: ContentType): boolean {
-  return COURT_CASE_TYPES.includes(type)
-}
 
 export function isEuDocument(type: ContentType): boolean {
   return EU_DOCUMENT_TYPES.includes(type)
@@ -164,12 +114,6 @@ export const CONTENT_TYPE_GROUPS: ContentTypeGroup[] = [
     label: 'Ändring',
     labelPlural: 'Ändringar',
     types: ['SFS_AMENDMENT'],
-  },
-  {
-    id: 'courtCases',
-    label: 'Rättsfall',
-    labelPlural: 'Rättsfall',
-    types: COURT_CASE_TYPES,
   },
   {
     id: 'euDocuments',
@@ -219,7 +163,6 @@ export function getGroupForContentType(
 export const ALL_CONTENT_TYPES: ContentType[] = [
   'SFS_LAW',
   'SFS_AMENDMENT',
-  ...COURT_CASE_TYPES,
   ...EU_DOCUMENT_TYPES,
   'AGENCY_REGULATION',
 ]
@@ -241,12 +184,6 @@ export function getDocumentUrl(
 
   if (type === 'SFS_AMENDMENT') {
     return `${prefix}/lagar/andringar/${slug}`
-  }
-
-  if (isCourtCase(type)) {
-    // Extract court code from content type (e.g., COURT_CASE_HD -> hd)
-    const courtCode = type.replace('COURT_CASE_', '').toLowerCase()
-    return `${prefix}/rattsfall/${courtCode}/${slug}`
   }
 
   if (isEuDocument(type)) {

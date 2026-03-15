@@ -18,10 +18,7 @@ import { VersionSelector } from '@/components/features/law-versions'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
 import { RelatedDocumentsSummary } from '@/components/features/cross-references'
-import {
-  getCourtCasesCitingLaw,
-  getImplementedEuDirectives,
-} from '@/app/actions/cross-references'
+import { getImplementedEuDirectives } from '@/app/actions/cross-references'
 import { rewriteLinksForWorkspace } from '@/lib/linkify/rewrite-links'
 
 interface PageProps {
@@ -161,10 +158,7 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
     notFound()
   }
 
-  const [citingCases, implementedDirectives] = await Promise.all([
-    getCourtCasesCitingLaw(law.id, 10),
-    getImplementedEuDirectives(law.id),
-  ])
+  const implementedDirectives = await getImplementedEuDirectives(law.id)
 
   const cleanedHtml = law.html_content ? cleanLawHtml(law.html_content) : null
   const sanitizedHtml = cleanedHtml
@@ -386,7 +380,6 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
 
       {/* Related Documents Summary */}
       <RelatedDocumentsSummary
-        citingCases={citingCases}
         implementedDirectives={implementedDirectives}
         amendments={law.base_amendments.map((a) => ({
           id: a.id,
@@ -462,16 +455,11 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
 
       {/* Floating references button */}
       <FloatingReferencesWrapper
-        courtCaseCount={citingCases.totalCount}
         directiveCount={implementedDirectives.length}
       />
 
       {/* Prefetchers */}
       <RelatedDocsPrefetcher
-        citingCases={citingCases.cases.map((c) => ({
-          slug: c.slug,
-          contentType: c.contentType,
-        }))}
         implementedDirectives={implementedDirectives.map((d) => ({
           slug: d.slug,
         }))}

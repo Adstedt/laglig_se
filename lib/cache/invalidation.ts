@@ -6,7 +6,6 @@
  *
  * Usage:
  * - Call invalidateLawCaches() after sync-sfs completes
- * - Call invalidateCourtCaseCaches() after sync-court-cases completes
  * - Call invalidateAllCaches() for full cache clear (rare, emergency use)
  */
 
@@ -44,40 +43,6 @@ export async function invalidateLawCaches(): Promise<{
 
   console.log(
     `[CACHE INVALIDATION] Law caches cleared. Redis keys: ${redisKeysCleared}, Tags: ${tags.join(', ')}`
-  )
-
-  return { redisKeysCleared, tagsRevalidated: tags }
-}
-
-/**
- * Invalidate court case-related caches
- * Call after sync-court-cases job completes successfully
- */
-export async function invalidateCourtCaseCaches(): Promise<{
-  redisKeysCleared: number
-  tagsRevalidated: string[]
-}> {
-  console.log('[CACHE INVALIDATION] Starting court case cache invalidation...')
-
-  // Clear Redis browse cache keys for court cases
-  const redisKeysCleared = await invalidateCachePattern('browse:*')
-
-  // Revalidate Next.js cache tags
-  const tags = ['court-cases', 'browse', 'catalogue', 'documents']
-  for (const tag of tags) {
-    try {
-      revalidateTag(tag)
-      console.log(`[CACHE INVALIDATION] Revalidated tag: ${tag}`)
-    } catch (error) {
-      console.warn(
-        `[CACHE INVALIDATION] Failed to revalidate tag ${tag}:`,
-        error
-      )
-    }
-  }
-
-  console.log(
-    `[CACHE INVALIDATION] Court case caches cleared. Redis keys: ${redisKeysCleared}, Tags: ${tags.join(', ')}`
   )
 
   return { redisKeysCleared, tagsRevalidated: tags }
@@ -135,7 +100,6 @@ export async function invalidateAllCaches(): Promise<{
   // Revalidate all cache tags
   const tags = [
     'laws',
-    'court-cases',
     'eu-legislation',
     'browse',
     'catalogue',

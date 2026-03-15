@@ -15,16 +15,6 @@ import type { BrowseInput, BrowseResponse } from '@/app/actions/browse'
 // Common filter combinations to prefetch on page load
 const PREFETCH_FILTERS: Partial<BrowseInput>[] = [
   { contentTypes: ['SFS_LAW'] }, // /lagar
-  {
-    contentTypes: [
-      'COURT_CASE_AD',
-      'COURT_CASE_HD',
-      'COURT_CASE_HFD',
-      'COURT_CASE_HOVR',
-      'COURT_CASE_MOD',
-      'COURT_CASE_MIG',
-    ],
-  }, // /rattsfall
   { contentTypes: ['EU_REGULATION', 'EU_DIRECTIVE'] }, // /eu
   { status: ['ACTIVE'] }, // Common status filter
 ]

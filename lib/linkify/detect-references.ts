@@ -12,9 +12,7 @@ export interface DetectedReference {
   /** Normalized document number (e.g., "SFS 2012:295") */
   documentNumber: string
   /** Content type category for routing */
-  contentType: 'SFS_LAW' | 'AGENCY_REGULATION' | 'COURT_CASE'
-  /** Court identifier for court cases (e.g., "hd", "ad") */
-  courtId?: string
+  contentType: 'SFS_LAW' | 'AGENCY_REGULATION'
   /** Chapter number for section deep-links (e.g., "2" from "2 kap. 31 §") */
   chapter?: string
   /** Section number for section deep-links (e.g., "31" from "2 kap. 31 §") */
@@ -43,65 +41,6 @@ const SFS_LAW_PATTERN = new RegExp(
 // Also hyphenated: "ELSÄK-FS 2022:1", "SCB-FS 2025:19"
 // Generic pattern for any {PREFIX}[-]FS YYYY:N
 const AGENCY_REG_PATTERN = /[A-ZÅÄÖ]+-?FS\s+\d{4}:\d+/g
-
-// --- Court Case Patterns ---
-// NJA (HD - Högsta domstolen): "NJA 2020 s. 45"
-const NJA_PATTERN = /NJA\s+\d{4}\s+s\.\s*\d+/g
-
-// HFD (Högsta förvaltningsdomstolen): "HFD 2020 ref. 5"
-const HFD_PATTERN = /HFD\s+\d{4}\s+ref\.\s*\d+/g
-
-// RÅ (old HFD name): "RÅ 2010 ref. 1"
-const RA_PATTERN = /RÅ\s+\d{4}\s+ref\.\s*\d+/g
-
-// AD (Arbetsdomstolen): "AD 2019 nr 45"
-const AD_PATTERN = /AD\s+\d{4}\s+nr\s+\d+/g
-
-// MÖD (Mark- och miljööverdomstolen): "MÖD 2018:3"
-const MOD_PATTERN = /MÖD\s+\d{4}:\d+/g
-
-// MIG (Migrationsöverdomstolen): "MIG 2017:1"
-const MIG_PATTERN = /MIG\s+\d{4}:\d+/g
-
-interface CourtPattern {
-  pattern: RegExp
-  courtId: string
-  /** Function to normalize matched text into a document_number */
-  normalize: (_match: string) => string
-}
-
-const COURT_PATTERNS: CourtPattern[] = [
-  {
-    pattern: NJA_PATTERN,
-    courtId: 'hd',
-    normalize: (m) => m.replace(/\s+/g, ' '),
-  },
-  {
-    pattern: HFD_PATTERN,
-    courtId: 'hfd',
-    normalize: (m) => m.replace(/\s+/g, ' '),
-  },
-  {
-    pattern: RA_PATTERN,
-    courtId: 'hfd', // RÅ is the old name for HFD
-    normalize: (m) => m.replace(/\s+/g, ' '),
-  },
-  {
-    pattern: AD_PATTERN,
-    courtId: 'ad',
-    normalize: (m) => m.replace(/\s+/g, ' '),
-  },
-  {
-    pattern: MOD_PATTERN,
-    courtId: 'mod',
-    normalize: (m) => m.replace(/\s+/g, ' '),
-  },
-  {
-    pattern: MIG_PATTERN,
-    courtId: 'mig',
-    normalize: (m) => m.replace(/\s+/g, ' '),
-  },
-]
 
 /**
  * Detect all legal references in a plain text string.
@@ -138,20 +77,6 @@ export function detectReferences(text: string): DetectedReference[] {
       start: match.index!,
       end: match.index! + match[0].length,
     })
-  }
-
-  // Court cases
-  for (const court of COURT_PATTERNS) {
-    for (const match of text.matchAll(new RegExp(court.pattern.source, 'g'))) {
-      candidates.push({
-        matchedText: match[0],
-        documentNumber: court.normalize(match[0]),
-        contentType: 'COURT_CASE',
-        courtId: court.courtId,
-        start: match.index!,
-        end: match.index! + match[0].length,
-      })
-    }
   }
 
   return resolveOverlaps(candidates)

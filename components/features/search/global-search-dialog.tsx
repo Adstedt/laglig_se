@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Command } from 'cmdk'
-import { Search, Clock, FileText, Scale, Landmark, X } from 'lucide-react'
+import { Search, Clock, FileText, Landmark, X } from 'lucide-react'
 import { searchAutocompleteAction } from '@/app/actions/search'
 import { useDebouncedCallback } from 'use-debounce'
 import { cn } from '@/lib/utils'
@@ -17,36 +17,6 @@ const CONTENT_TYPE_CONFIG: Record<
     label: 'Lag',
     color:
       'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
-  },
-  COURT_CASE_AD: {
-    icon: <Scale className="h-4 w-4" />,
-    label: 'AD',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  COURT_CASE_HD: {
-    icon: <Scale className="h-4 w-4" />,
-    label: 'HD',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  COURT_CASE_HFD: {
-    icon: <Scale className="h-4 w-4" />,
-    label: 'HFD',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  COURT_CASE_HOVR: {
-    icon: <Scale className="h-4 w-4" />,
-    label: 'HovR',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  COURT_CASE_MOD: {
-    icon: <Scale className="h-4 w-4" />,
-    label: 'MOD',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  COURT_CASE_MIG: {
-    icon: <Scale className="h-4 w-4" />,
-    label: 'MIG',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
   },
   EU_REGULATION: {
     icon: <Landmark className="h-4 w-4" />,
@@ -65,12 +35,6 @@ const CONTENT_TYPE_CONFIG: Record<
 // Content type to URL path mapping
 const CONTENT_TYPE_HREF: Record<string, string> = {
   SFS_LAW: '/lagar',
-  COURT_CASE_AD: '/rattsfall/ad',
-  COURT_CASE_HD: '/rattsfall/hd',
-  COURT_CASE_HFD: '/rattsfall/hfd',
-  COURT_CASE_HOVR: '/rattsfall/hovr',
-  COURT_CASE_MOD: '/rattsfall/mod',
-  COURT_CASE_MIG: '/rattsfall/mig',
   EU_REGULATION: '/eu/forordningar',
   EU_DIRECTIVE: '/eu/direktiv',
 }

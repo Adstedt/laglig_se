@@ -22,17 +22,7 @@ async function main() {
     take: 50,
   })
 
-  const sampleCourt = await prisma.legalDocument.findMany({
-    where: {
-      content_type: {
-        in: ['COURT_CASE_HD', 'COURT_CASE_AD', 'COURT_CASE_HFD'],
-      },
-    },
-    select: { full_text: true, html_content: true },
-    take: 50,
-  })
-
-  const samples = [...sampleSFS, ...sampleCourt]
+  const samples = [...sampleSFS]
 
   // Estimate tokens (rough: 1 token ≈ 4 chars for Swedish)
   let totalChars = 0

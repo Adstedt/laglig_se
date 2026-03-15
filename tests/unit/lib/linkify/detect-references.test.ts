@@ -207,70 +207,22 @@ describe('detectReferences', () => {
     })
   })
 
-  // --- Court Case Patterns ---
-  describe('Court cases', () => {
-    it('detects "NJA 2020 s. 45" (HD)', () => {
-      const refs = detectReferences('Jfr NJA 2020 s. 45.')
-      expect(refs).toHaveLength(1)
-      expect(refs[0]!.documentNumber).toBe('NJA 2020 s. 45')
-      expect(refs[0]!.contentType).toBe('COURT_CASE')
-      expect(refs[0]!.courtId).toBe('hd')
-    })
-
-    it('detects "HFD 2020 ref. 5" (HFD)', () => {
-      const refs = detectReferences('Se HFD 2020 ref. 5.')
-      expect(refs).toHaveLength(1)
-      expect(refs[0]!.documentNumber).toBe('HFD 2020 ref. 5')
-      expect(refs[0]!.courtId).toBe('hfd')
-    })
-
-    it('detects "RÅ 2010 ref. 1" (old HFD)', () => {
-      const refs = detectReferences('Jfr RÅ 2010 ref. 1.')
-      expect(refs).toHaveLength(1)
-      expect(refs[0]!.documentNumber).toBe('RÅ 2010 ref. 1')
-      expect(refs[0]!.courtId).toBe('hfd')
-    })
-
-    it('detects "AD 2019 nr 45" (Labour)', () => {
-      const refs = detectReferences('Se AD 2019 nr 45.')
-      expect(refs).toHaveLength(1)
-      expect(refs[0]!.documentNumber).toBe('AD 2019 nr 45')
-      expect(refs[0]!.courtId).toBe('ad')
-    })
-
-    it('detects "MÖD 2018:3" (Environment)', () => {
-      const refs = detectReferences('Jfr MÖD 2018:3.')
-      expect(refs).toHaveLength(1)
-      expect(refs[0]!.documentNumber).toBe('MÖD 2018:3')
-      expect(refs[0]!.courtId).toBe('mod')
-    })
-
-    it('detects "MIG 2017:1" (Migration)', () => {
-      const refs = detectReferences('Se MIG 2017:1.')
-      expect(refs).toHaveLength(1)
-      expect(refs[0]!.documentNumber).toBe('MIG 2017:1')
-      expect(refs[0]!.courtId).toBe('mig')
-    })
-  })
-
   // --- Mixed References ---
   describe('mixed references', () => {
-    it('detects SFS, agency reg, and court case in same text', () => {
-      const text = 'Enligt lagen (1982:673) och AFS 2001:1 samt AD 2019 nr 45.'
+    it('detects SFS and agency reg in same text', () => {
+      const text = 'Enligt lagen (1982:673) och AFS 2001:1.'
       const refs = detectReferences(text)
-      expect(refs).toHaveLength(3)
+      expect(refs).toHaveLength(2)
       expect(refs[0]!.contentType).toBe('SFS_LAW')
       expect(refs[1]!.contentType).toBe('AGENCY_REGULATION')
-      expect(refs[2]!.contentType).toBe('COURT_CASE')
     })
 
     it('returns results sorted by position', () => {
-      const text = 'AD 2019 nr 45 och lagen (2012:295) och AFS 2001:1.'
+      const text = 'AFS 2001:1 och lagen (2012:295).'
       const refs = detectReferences(text)
-      expect(refs).toHaveLength(3)
+      expect(refs).toHaveLength(2)
       // Should be sorted by start position
       expect(refs[0]!.start).toBeLessThan(refs[1]!.start)
-      expect(refs[1]!.start).toBeLessThan(refs[2]!.start)
     })
   })
 
@@ -321,11 +273,11 @@ describe('detectReferences', () => {
       expect(text.substring(ref.start, ref.end)).toBe(ref.matchedText)
     })
 
-    it('handles multiple spaces in reference', () => {
-      const refs = detectReferences('NJA  2020  s.  45')
+    it('handles multiple spaces in SFS reference', () => {
+      const refs = detectReferences('lagen  (2012:295)')
       // Extra spaces may or may not match depending on pattern strictness
-      // Our patterns use \s+ which matches multiple spaces
       expect(refs).toHaveLength(1)
+      expect(refs[0]!.documentNumber).toBe('SFS 2012:295')
     })
 
     it('is case-insensitive for SFS law keywords', () => {

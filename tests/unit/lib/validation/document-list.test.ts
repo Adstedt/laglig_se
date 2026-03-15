@@ -266,7 +266,7 @@ describe('Document List Validation Schemas', () => {
     it('validates with content types', () => {
       const result = SearchDocumentsSchema.safeParse({
         query: 'test',
-        contentTypes: ['SFS_LAW', 'COURT_CASE_HD'],
+        contentTypes: ['SFS_LAW', 'EU_REGULATION'],
       })
       expect(result.success).toBe(true)
     })
@@ -383,14 +383,9 @@ describe('Document List Validation Schemas', () => {
         const types = [
           'SFS_LAW',
           'SFS_AMENDMENT',
-          'COURT_CASE_AD',
-          'COURT_CASE_HD',
-          'COURT_CASE_HOVR',
-          'COURT_CASE_HFD',
-          'COURT_CASE_MOD',
-          'COURT_CASE_MIG',
           'EU_REGULATION',
           'EU_DIRECTIVE',
+          'AGENCY_REGULATION',
         ]
         types.forEach((type) => {
           expect(ContentTypeEnum.safeParse(type).success).toBe(true)

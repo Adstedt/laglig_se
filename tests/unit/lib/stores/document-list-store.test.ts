@@ -26,7 +26,6 @@ vi.mock('@/lib/utils/content-type', () => ({
     const groups: Record<string, string[]> = {
       laws: ['SFS_LAW'],
       amendments: ['SFS_AMENDMENT'],
-      courtCases: ['COURT_CASE_HD', 'COURT_CASE_AD'],
       euDocuments: ['EU_REGULATION', 'EU_DIRECTIVE'],
     }
     return groups[groupId] || []
@@ -110,11 +109,11 @@ describe('Document List Store', () => {
       groupName: null,
       document: {
         id: 'doc-2',
-        title: 'HD 2023 ref 45',
-        documentNumber: 'HD 2023:45',
-        contentType: 'COURT_CASE_HD',
-        slug: 'hd-2023-45',
-        summary: 'Court case summary',
+        title: 'EU-förordning 2016/679',
+        documentNumber: 'EU 2016/679',
+        contentType: 'EU_REGULATION',
+        slug: 'eu-2016-679',
+        summary: 'EU regulation summary',
         effectiveDate: null,
       },
     },

@@ -51,14 +51,10 @@ export async function CatalogueResults({
       contentTypes.length > 0
         ? (contentTypes as (
             | 'SFS_LAW'
-            | 'COURT_CASE_AD'
-            | 'COURT_CASE_HD'
-            | 'COURT_CASE_HFD'
-            | 'COURT_CASE_HOVR'
-            | 'COURT_CASE_MOD'
-            | 'COURT_CASE_MIG'
+            | 'SFS_AMENDMENT'
             | 'EU_REGULATION'
             | 'EU_DIRECTIVE'
+            | 'AGENCY_REGULATION'
           )[])
         : undefined,
     status:

@@ -250,7 +250,8 @@
       "Bash(xargs basename:*)",
       "WebFetch(domain:www.elastic.co)",
       "WebFetch(domain:bonsai.io)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(diff:*)"
     ],
     "deny": [],
     "ask": []

@@ -25,7 +25,6 @@ export {
   detectChanges,
   createNewLawEvent,
   createRepealEvent,
-  createNewRulingEvent,
   getPendingAiSummaries,
   getDocumentChanges,
   getChangesByDateRange,

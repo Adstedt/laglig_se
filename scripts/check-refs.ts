@@ -6,9 +6,6 @@ async function main() {
   console.log('Total cross_references:', totalRefs)
 
   const refs = await prisma.crossReference.findMany({
-    where: {
-      source_document: { content_type: 'COURT_CASE_AD' },
-    },
     include: {
       source_document: { select: { document_number: true } },
       target_document: { select: { document_number: true } },
@@ -17,7 +14,7 @@ async function main() {
   })
 
   console.log('')
-  console.log('Sample cross-references (Court Case -> SFS Law):')
+  console.log('Sample cross-references:')
   for (const ref of refs) {
     console.log(
       ' ',

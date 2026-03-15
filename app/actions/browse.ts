@@ -13,12 +13,6 @@ import { excludeStubDocuments } from '@/lib/db/queries/document-filters'
 const ContentTypeEnum = z.enum([
   'SFS_LAW',
   'SFS_AMENDMENT', // Story 2.29: Amendment documents
-  'COURT_CASE_AD',
-  'COURT_CASE_HD',
-  'COURT_CASE_HFD',
-  'COURT_CASE_HOVR',
-  'COURT_CASE_MOD',
-  'COURT_CASE_MIG',
   'EU_REGULATION',
   'EU_DIRECTIVE',
   'AGENCY_REGULATION', // Story 12.1: Agency regulation stubs
@@ -57,12 +51,12 @@ export interface BrowseResult {
   status: string
   slug: string
   snippet: string
-  // Court case specific fields (null for non-court-cases)
+  // Court case fields removed (Story 2.31)
   courtName: string | null
   caseNumber: string | null
-  caseName: string | null // benamning (e.g., "Andnöden")
-  caseType: string | null // DOM_ELLER_BESLUT, PROVNINGSTILLSTAND, REFERAT
-  isGuiding: boolean | null // true = Prejudikat
+  caseName: string | null
+  caseType: string | null
+  isGuiding: boolean | null
 }
 
 export interface BrowseResponse {
@@ -216,7 +210,7 @@ async function searchWithQuery(
       }
     }
 
-    // Fetch full document details from database (for court case info, etc.)
+    // Fetch full document details from database
     const docs = await prisma.legalDocument.findMany({
       where: { id: { in: docIds } },
       select: {
@@ -229,16 +223,9 @@ async function searchWithQuery(
         effective_date: true,
         status: true,
         slug: true,
-        metadata: true,
         subjects: {
           select: { subject_name: true },
           take: 1,
-        },
-        court_case: {
-          select: {
-            court_name: true,
-            case_number: true,
-          },
         },
       },
     })
@@ -251,9 +238,6 @@ async function searchWithQuery(
     for (const esDoc of esResult.results) {
       const dbDoc = docMap.get(esDoc.id)
       if (!dbDoc) continue
-
-      const isCourtCase = dbDoc.content_type.startsWith('COURT_CASE_')
-      const metadata = dbDoc.metadata as Record<string, unknown> | null
 
       // Build snippet from ES highlights or fallback to summary
       const snippet =
@@ -275,18 +259,11 @@ async function searchWithQuery(
         status: dbDoc.status,
         slug: dbDoc.slug,
         snippet,
-        // Court case specific fields
-        courtName: dbDoc.court_case?.court_name ?? null,
-        caseNumber: dbDoc.court_case?.case_number ?? null,
-        caseName: isCourtCase
-          ? ((metadata?.case_name as string) ?? null)
-          : null,
-        caseType: isCourtCase
-          ? ((metadata?.case_type as string) ?? null)
-          : null,
-        isGuiding: isCourtCase
-          ? ((metadata?.is_guiding as boolean) ?? null)
-          : null,
+        courtName: null,
+        caseNumber: null,
+        caseName: null,
+        caseType: null,
+        isGuiding: null,
       })
     }
 
@@ -459,16 +436,9 @@ async function executeBrowseQuery(
         effective_date: true,
         status: true,
         slug: true,
-        metadata: true, // For court case: is_guiding, case_type, case_name
         subjects: {
           select: { subject_name: true },
           take: 1,
-        },
-        court_case: {
-          select: {
-            court_name: true,
-            case_number: true,
-          },
         },
       },
     }),
@@ -478,37 +448,24 @@ async function executeBrowseQuery(
   const totalPages = Math.ceil(count / limit)
 
   return {
-    results: results.map((r) => {
-      // Extract court case metadata if available
-      const metadata = r.metadata as Record<string, unknown> | null
-      const isCourtCase = r.content_type.startsWith('COURT_CASE_')
-
-      return {
-        id: r.id,
-        title: r.title,
-        documentNumber: r.document_number,
-        contentType: r.content_type,
-        category: r.subjects[0]?.subject_name ?? null,
-        summary: r.summary,
-        effectiveDate: r.publication_date?.toISOString() ?? null,
-        inForceDate: r.effective_date?.toISOString() ?? null,
-        status: r.status,
-        slug: r.slug,
-        snippet: r.summary || '',
-        // Court case specific fields
-        courtName: r.court_case?.court_name ?? null,
-        caseNumber: r.court_case?.case_number ?? null,
-        caseName: isCourtCase
-          ? ((metadata?.case_name as string) ?? null)
-          : null,
-        caseType: isCourtCase
-          ? ((metadata?.case_type as string) ?? null)
-          : null,
-        isGuiding: isCourtCase
-          ? ((metadata?.is_guiding as boolean) ?? null)
-          : null,
-      }
-    }),
+    results: results.map((r) => ({
+      id: r.id,
+      title: r.title,
+      documentNumber: r.document_number,
+      contentType: r.content_type,
+      category: r.subjects[0]?.subject_name ?? null,
+      summary: r.summary,
+      effectiveDate: r.publication_date?.toISOString() ?? null,
+      inForceDate: r.effective_date?.toISOString() ?? null,
+      status: r.status,
+      slug: r.slug,
+      snippet: r.summary || '',
+      courtName: null,
+      caseNumber: null,
+      caseName: null,
+      caseType: null,
+      isGuiding: null,
+    })),
     total: count,
     page,
     totalPages,

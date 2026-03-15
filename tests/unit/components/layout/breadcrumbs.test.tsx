@@ -42,13 +42,6 @@ describe('Breadcrumbs', () => {
       expect(screen.getByText('Lagar')).toBeInTheDocument()
     })
 
-    it('displays correct label for /browse/rattsfall', () => {
-      mockPathname = '/browse/rattsfall'
-      render(<Breadcrumbs />)
-
-      expect(screen.getByText('Rättsfall')).toBeInTheDocument()
-    })
-
     it('displays correct label for /browse/eu', () => {
       mockPathname = '/browse/eu'
       render(<Breadcrumbs />)

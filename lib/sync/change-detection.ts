@@ -339,40 +339,6 @@ export async function createRepealEvent(
   return changeEvent
 }
 
-/**
- * Create a ChangeEvent for a new court ruling
- *
- * @param tx Prisma transaction client
- * @param documentId The new ruling's document ID
- * @param contentType The court type (COURT_CASE_AD, COURT_CASE_HD, etc.)
- * @returns The created ChangeEvent
- */
-export async function createNewRulingEvent(
-  tx: TransactionClient,
-  documentId: string,
-  contentType: ContentType
-): Promise<ChangeEvent> {
-  const changeEvent = await tx.changeEvent.create({
-    data: {
-      document_id: documentId,
-      content_type: contentType,
-      change_type: ChangeType.NEW_RULING,
-    },
-  })
-
-  // Story 8.16: Set change tracking fields on the base document
-  await tx.legalDocument.update({
-    where: { id: documentId },
-    data: {
-      last_change_type: ChangeType.NEW_RULING,
-      last_change_ref: null,
-      last_change_at: new Date(),
-    },
-  })
-
-  return changeEvent
-}
-
 // ============================================================================
 // Change Query Functions
 // ============================================================================

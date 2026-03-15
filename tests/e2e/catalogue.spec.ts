@@ -48,16 +48,6 @@ test.describe('Regelverk Catalogue Page', () => {
     expect(page.url()).toContain('/rattskallor/lagar')
   })
 
-  test('navigates to rattsfall sub-route', async ({ page }) => {
-    await page.goto('/rattskallor/rattsfall')
-
-    // Check page title
-    await expect(page.locator('h1')).toContainText('Svenska rättsfall')
-
-    // Check URL
-    expect(page.url()).toContain('/rattskallor/rattsfall')
-  })
-
   test('navigates to eu-ratt sub-route', async ({ page }) => {
     await page.goto('/rattskallor/eu-ratt')
 

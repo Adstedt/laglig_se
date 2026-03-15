@@ -25,12 +25,6 @@ const ratelimit = isRedisConfigured()
 const ContentTypeEnum = z.enum([
   'SFS_LAW',
   'SFS_AMENDMENT',
-  'COURT_CASE_AD',
-  'COURT_CASE_HD',
-  'COURT_CASE_HFD',
-  'COURT_CASE_HOVR',
-  'COURT_CASE_MOD',
-  'COURT_CASE_MIG',
   'EU_REGULATION',
   'EU_DIRECTIVE',
   'AGENCY_REGULATION', // Story 12.1: Agency regulation stubs

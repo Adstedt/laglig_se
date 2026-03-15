@@ -1,0 +1,42 @@
+schema: 1
+story: '2.31'
+story_title: 'Remove Court Cases from Beta'
+gate: PASS
+status_reason: 'Complete removal of court case functionality — zero remaining references in application code, all 3201 tests passing, schema preserved, cleanup script ready with safety guards'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-15T21:30:00Z'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-03-29T21:30:00Z'
+
+evidence:
+  tests_reviewed: 3201
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16]
+    ac_gaps: [10, 17]  # Pending database execution (Tasks 6.3-6.5)
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Cleanup script uses type-safe Prisma enums (no raw SQL injection risk), explicit content type matching, safety assertion before deletion'
+  performance:
+    status: PASS
+    notes: 'Positive impact — eliminates ~210 pre-rendered pages from build, removes court case cache prewarm queries'
+  reliability:
+    status: PASS
+    notes: 'Cleanup script uses $transaction with 2-minute timeout, includes post-deletion verification queries'
+  maintainability:
+    status: PASS
+    notes: 'Clean removal — zero dead code remaining. Schema preserved for future re-enablement. All court case code restorable from git history'
+
+recommendations:
+  immediate:
+    - action: 'Run cleanup script (dry-run then --execute) against production database'
+      refs: ['scripts/cleanup-court-case-data.ts']
+  future:
+    - action: 'Consider removing CourtCase model from Prisma schema post-beta if court cases are definitively out of scope'
+      refs: ['prisma/schema.prisma']

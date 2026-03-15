@@ -123,18 +123,6 @@ describe('CatalogueResultCard', () => {
     expect(link).toHaveAttribute('href', '/lagar/arbetsmiljolag-1977-1160')
   })
 
-  it('renders court case with correct theme', () => {
-    const courtCase: BrowseResult = {
-      ...mockDocument,
-      contentType: 'COURT_CASE_AD',
-      title: 'AD 2023 nr 45',
-      documentNumber: 'AD 2023 nr 45',
-      slug: 'ad-2023-nr-45',
-    }
-    render(<CatalogueResultCard document={courtCase} query="" position={1} />)
-    expect(screen.getByText('Arbetsdomstolen')).toBeInTheDocument()
-  })
-
   it('renders EU document with correct theme', () => {
     const euDoc: BrowseResult = {
       ...mockDocument,

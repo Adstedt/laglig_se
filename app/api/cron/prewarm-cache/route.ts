@@ -2,8 +2,8 @@
  * Cache Prewarm Cron Job
  *
  * Warms browse caches after sync jobs complete.
- * Scheduled to run at 5:30 AM, after sync-sfs (4:00), sync-sfs-updates (4:30),
- * and sync-court-cases (5:00) have completed.
+ * Scheduled to run at 5:30 AM, after sync-sfs (4:00) and sync-sfs-updates (4:30)
+ * have completed.
  *
  * This ensures the first visitor each day hits warm caches.
  */

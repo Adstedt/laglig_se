@@ -6,7 +6,6 @@ import Image from 'next/image'
 import {
   Menu,
   BookOpen,
-  Gavel,
   Globe,
   FileText,
   Sparkles,
@@ -180,13 +179,6 @@ export function Navbar() {
                       Utforska alla svenska lagar och förordningar
                     </ListItem>
                     <ListItem
-                      href="/rattsfall"
-                      title="Rättsfall"
-                      icon={<Gavel className="h-4 w-4" />}
-                    >
-                      Sök i domar från svenska domstolar
-                    </ListItem>
-                    <ListItem
                       href="/eu"
                       title="EU-lagstiftning"
                       icon={<Globe className="h-4 w-4" />}
@@ -345,12 +337,6 @@ export function Navbar() {
                     className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
                   >
                     Svenska lagar
-                  </Link>
-                  <Link
-                    href="/rattsfall"
-                    className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    Rättsfall
                   </Link>
                   <Link
                     href="/eu"

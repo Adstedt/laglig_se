@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation'
  * Pre-fetches:
  * - /lagar (Swedish laws)
  * - /rattskallor (Legal sources)
- * - /rattsfall (Court cases)
  * - /eu (EU legislation)
  */
 export function BrowsePagesPrefetcher() {
@@ -20,7 +19,7 @@ export function BrowsePagesPrefetcher() {
     // Wait for main content to render before prefetching
     const timer = setTimeout(() => {
       // Prefetch main browse routes (Next.js handles RSC prefetch)
-      const routes = ['/lagar', '/rattskallor', '/rattsfall', '/eu']
+      const routes = ['/lagar', '/rattskallor', '/eu']
 
       routes.forEach((route, index) => {
         // Stagger prefetches to avoid overwhelming the network
@@ -30,11 +29,7 @@ export function BrowsePagesPrefetcher() {
       })
 
       // Also warm the API cache for browse pages (low priority)
-      // These endpoints power the browse pages
-      const apiEndpoints = [
-        '/api/browse/laws?page=1&pageSize=20',
-        '/api/browse/court-cases?page=1&pageSize=20',
-      ]
+      const apiEndpoints = ['/api/browse/laws?page=1&pageSize=20']
 
       apiEndpoints.forEach((endpoint, index) => {
         setTimeout(
