@@ -99,8 +99,6 @@ async function testCachedQueryFunctions() {
     const requiredFunctions = [
       'getCachedLaw',
       'getCachedLawMetadata',
-      'getCachedCourtCase',
-      'getCachedCourtCaseMetadata',
       'getCachedEuLegislation',
       'getCachedEuLegislationMetadata',
       'getTopLawsForStaticGeneration',
@@ -137,7 +135,6 @@ async function testCacheInvalidation() {
 
     const requiredFunctions = [
       'invalidateLawCaches',
-      'invalidateCourtCaseCaches',
       'invalidateEuCaches',
       'invalidateAllCaches',
     ]

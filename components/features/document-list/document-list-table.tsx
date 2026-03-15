@@ -228,10 +228,6 @@ function getDocumentUrl(item: DocumentListItem): string {
   const contentType = item.document.contentType
   const slug = item.document.slug
 
-  if (contentType.startsWith('COURT_CASE_')) {
-    const courtCode = contentType.replace('COURT_CASE_', '').toLowerCase()
-    return `/browse/rattsfall/${courtCode}/${slug}`
-  }
   if (contentType === 'EU_REGULATION' || contentType === 'EU_DIRECTIVE') {
     return `/browse/eu/${slug}`
   }

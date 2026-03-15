@@ -17,12 +17,7 @@ async function main() {
   const allCases = await prisma.legalDocument.findMany({
     where: {
       content_type: {
-        in: [
-          'COURT_CASE_AD',
-          'COURT_CASE_HFD',
-          'COURT_CASE_HD',
-          'COURT_CASE_HOVR',
-        ],
+        in: [],
       },
     },
     select: {

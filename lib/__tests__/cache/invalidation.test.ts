@@ -3,7 +3,6 @@
  *
  * Tests for the cache invalidation module including:
  * - Law cache invalidation
- * - Court case cache invalidation
  * - EU legislation cache invalidation
  * - Full cache invalidation
  */
@@ -11,7 +10,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   invalidateLawCaches,
-  invalidateCourtCaseCaches,
   invalidateEuCaches,
   invalidateAllCaches,
 } from '../../cache/invalidation'
@@ -39,23 +37,6 @@ describe('Cache Invalidation Module', () => {
       expect(result.tagsRevalidated).toContain('browse')
       expect(result.tagsRevalidated).toContain('catalogue')
       expect(result.tagsRevalidated).toContain('documents')
-    })
-  })
-
-  describe('invalidateCourtCaseCaches', () => {
-    it('should return invalidation results', async () => {
-      const result = await invalidateCourtCaseCaches()
-
-      expect(result).toHaveProperty('redisKeysCleared')
-      expect(result).toHaveProperty('tagsRevalidated')
-    })
-
-    it('should include court-case-related cache tags', async () => {
-      const result = await invalidateCourtCaseCaches()
-
-      expect(result.tagsRevalidated).toContain('court-cases')
-      expect(result.tagsRevalidated).toContain('browse')
-      expect(result.tagsRevalidated).toContain('catalogue')
     })
   })
 
@@ -88,7 +69,6 @@ describe('Cache Invalidation Module', () => {
       const result = await invalidateAllCaches()
 
       expect(result.tagsRevalidated).toContain('laws')
-      expect(result.tagsRevalidated).toContain('court-cases')
       expect(result.tagsRevalidated).toContain('eu-legislation')
       expect(result.tagsRevalidated).toContain('browse')
       expect(result.tagsRevalidated).toContain('catalogue')

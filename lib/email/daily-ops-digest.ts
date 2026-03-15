@@ -18,7 +18,6 @@ import { JOB_REGISTRY } from '@/lib/admin/job-registry'
 export interface IngestionSummary {
   amendments: number
   newLaws: number
-  courtCases: number
   changeEvents: number
   summariesGenerated: number
   sfsRange: { min: string | null; max: string | null }
@@ -69,7 +68,7 @@ export interface DigestData {
 export async function gatherIngestionSummary(
   cutoff: Date
 ): Promise<IngestionSummary> {
-  const [amendments, newLaws, courtCases, changeEvents, summaries, sfsRange] =
+  const [amendments, newLaws, changeEvents, summaries, sfsRange] =
     await Promise.all([
       prisma.amendmentDocument.count({
         where: { created_at: { gte: cutoff } },
@@ -77,19 +76,6 @@ export async function gatherIngestionSummary(
       prisma.legalDocument.count({
         where: {
           content_type: ContentType.SFS_LAW,
-          created_at: { gte: cutoff },
-        },
-      }),
-      prisma.legalDocument.count({
-        where: {
-          content_type: {
-            in: [
-              ContentType.COURT_CASE_HD,
-              ContentType.COURT_CASE_HFD,
-              ContentType.COURT_CASE_AD,
-              ContentType.COURT_CASE_HOVR,
-            ],
-          },
           created_at: { gte: cutoff },
         },
       }),
@@ -112,7 +98,6 @@ export async function gatherIngestionSummary(
   return {
     amendments,
     newLaws,
-    courtCases,
     changeEvents,
     summariesGenerated: summaries,
     sfsRange: {
@@ -392,10 +377,6 @@ function buildIngestionSection(
         <tr>
           <td style="${STYLES.td}">Nya lagar (Riksdagen API)</td>
           <td style="${STYLES.tdRight}"><strong>${ingestion.newLaws}</strong></td>
-        </tr>
-        <tr>
-          <td style="${STYLES.td}">Nya rättsfall</td>
-          <td style="${STYLES.tdRight}"><strong>${ingestion.courtCases}</strong></td>
         </tr>
         <tr>
           <td style="${STYLES.td}">Ändringsnotiser skapade</td>

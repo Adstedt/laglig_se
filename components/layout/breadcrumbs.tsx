@@ -30,18 +30,10 @@ const routeLabels: Record<string, string> = {
   browse: 'Regelverk',
   lagar: 'Lagar',
   rattskallor: 'Bläddra',
-  rattsfall: 'Rättsfall',
   eu: 'EU-rätt',
   // Law sub-routes
   historik: 'Ändringshistorik',
   version: 'Version',
-  // Court codes
-  hd: 'Högsta domstolen',
-  hovr: 'Hovrätten',
-  hfd: 'Högsta förvaltningsdomstolen',
-  ad: 'Arbetsdomstolen',
-  mod: 'Mark- och miljööverdomstolen',
-  mig: 'Migrationsöverdomstolen',
   // EU types
   forordningar: 'Förordningar',
   direktiv: 'Direktiv',
@@ -51,14 +43,7 @@ const routeLabels: Record<string, string> = {
 const showAsLink = new Set([
   'browse',
   'lagar',
-  'rattsfall',
   'eu',
-  'hd',
-  'hovr',
-  'hfd',
-  'ad',
-  'mod',
-  'mig',
   'forordningar',
   'direktiv',
   'historik',

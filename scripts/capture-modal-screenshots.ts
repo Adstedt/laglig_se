@@ -83,16 +83,6 @@ async function captureModalScreenshots() {
     })
     console.log('Screenshot 5: Browse tab captured')
 
-    // Click different category
-    const courtCasesButton = page.getByRole('button', { name: 'Rättsfall' })
-    await courtCasesButton.click()
-    await page.waitForTimeout(1500)
-    await page.screenshot({
-      path: 'test-results/screenshots/modal-6-browse-court-cases.png',
-      fullPage: false,
-    })
-    console.log('Screenshot 6: Court cases browse captured')
-
     console.log('\nAll screenshots saved to test-results/screenshots/')
     console.log('Review them to assess modal UX')
 

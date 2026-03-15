@@ -69,29 +69,6 @@ describe('SearchResultCard', () => {
     expect(link).toHaveAttribute('href', `/browse/lagar/${mockDocument.slug}`)
   })
 
-  it('uses correct court case URL for workspace', () => {
-    const courtCaseDocument: SearchResult = {
-      ...mockDocument,
-      id: '456',
-      contentType: 'COURT_CASE_HD',
-      slug: 'nja-2020-s-123',
-    }
-
-    render(
-      <SearchResultCard
-        document={courtCaseDocument}
-        query="test"
-        position={1}
-        isWorkspace={true}
-      />
-    )
-    const link = screen.getByRole('link')
-    expect(link).toHaveAttribute(
-      'href',
-      `/browse/rattsfall/hd/${courtCaseDocument.slug}`
-    )
-  })
-
   it('uses correct EU directive URL for workspace', () => {
     const euDocument: SearchResult = {
       ...mockDocument,

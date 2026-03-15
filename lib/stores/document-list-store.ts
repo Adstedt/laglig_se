@@ -401,7 +401,15 @@ export const useDocumentListStore = create<DocumentListState>()(
             listId: listIdBeingFetched,
             page: currentPage,
             limit,
-            contentTypeFilter: contentTypeFilter ?? undefined,
+            contentTypeFilter: (contentTypeFilter ?? undefined) as
+              | (
+                  | 'SFS_LAW'
+                  | 'SFS_AMENDMENT'
+                  | 'EU_REGULATION'
+                  | 'EU_DIRECTIVE'
+                  | 'AGENCY_REGULATION'
+                )[]
+              | undefined,
           })
 
           // Story 4.14: Check for stale response (user switched lists during fetch)

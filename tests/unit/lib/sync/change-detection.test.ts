@@ -18,7 +18,6 @@ import {
   detectChanges,
   createNewLawEvent,
   createRepealEvent,
-  createNewRulingEvent,
 } from '@/lib/sync/change-detection'
 
 describe('Change Detection', () => {
@@ -578,28 +577,6 @@ describe('Change Event Creation (DB-writing functions)', () => {
         where: { id: DOC_ID },
         data: {
           last_change_type: ChangeType.NEW_LAW,
-          last_change_ref: null,
-          last_change_at: expect.any(Date),
-        },
-      })
-    })
-  })
-
-  describe('createNewRulingEvent', () => {
-    it('sets last_change_type = NEW_RULING with null ref', async () => {
-      const tx = createMockTx()
-      tx.changeEvent.create.mockResolvedValue({
-        id: 'ce-4',
-        document_id: DOC_ID,
-        change_type: ChangeType.NEW_RULING,
-      })
-
-      await createNewRulingEvent(tx as never, DOC_ID, ContentType.COURT_CASE_AD)
-
-      expect(tx.legalDocument.update).toHaveBeenCalledWith({
-        where: { id: DOC_ID },
-        data: {
-          last_change_type: ChangeType.NEW_RULING,
           last_change_ref: null,
           last_change_at: expect.any(Date),
         },

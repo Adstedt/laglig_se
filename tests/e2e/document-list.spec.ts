@@ -59,9 +59,6 @@ test.describe('Document List Management', () => {
       await expect(page.getByRole('button', { name: 'Alla' })).toBeVisible()
       await expect(page.getByRole('button', { name: 'Lagar' })).toBeVisible()
       await expect(
-        page.getByRole('button', { name: 'Rättsfall' })
-      ).toBeVisible()
-      await expect(
         page.getByRole('button', { name: 'EU-dokument' })
       ).toBeVisible()
     })
@@ -198,17 +195,6 @@ test.describe('Document List Management', () => {
       // Verify the filter is active
       const lagarButton = page.getByRole('button', { name: 'Lagar' })
       await expect(lagarButton).toHaveClass(/bg-primary/)
-    })
-
-    test('should filter by court cases', async ({ page }) => {
-      await page.goto('/laglistor')
-
-      // Click the court cases filter
-      await page.getByRole('button', { name: 'Rättsfall' }).click()
-
-      // Verify the filter is active
-      const rattsfall = page.getByRole('button', { name: 'Rättsfall' })
-      await expect(rattsfall).toHaveClass(/bg-primary/)
     })
 
     test('should reset to all when clicking Alla', async ({ page }) => {

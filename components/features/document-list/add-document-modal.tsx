@@ -32,7 +32,6 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Scale,
 } from 'lucide-react'
 import {
   searchLegalDocuments,
@@ -76,18 +75,6 @@ const BROWSE_CATEGORIES = [
     id: 'amendments',
     label: 'Ändringar',
     types: ['SFS_AMENDMENT'] as ContentType[],
-  },
-  {
-    id: 'courtCases',
-    label: 'Rättsfall',
-    types: [
-      'COURT_CASE_HD',
-      'COURT_CASE_HFD',
-      'COURT_CASE_AD',
-      'COURT_CASE_HOVR',
-      'COURT_CASE_MOD',
-      'COURT_CASE_MIG',
-    ] as ContentType[],
   },
   {
     id: 'euDocs',
@@ -204,7 +191,13 @@ export function AddDocumentModal({
 
     try {
       const result = await browseDocumentsAction({
-        contentTypes: category.types,
+        contentTypes: category.types as (
+          | 'SFS_LAW'
+          | 'SFS_AMENDMENT'
+          | 'EU_REGULATION'
+          | 'EU_DIRECTIVE'
+          | 'AGENCY_REGULATION'
+        )[],
         page: browsePage,
         limit: browseLimit,
         sortBy: 'title',
@@ -308,7 +301,7 @@ export function AddDocumentModal({
                 Sök
               </TabsTrigger>
               <TabsTrigger value="browse" className="gap-2">
-                <Scale className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
                 Bläddra
               </TabsTrigger>
             </TabsList>

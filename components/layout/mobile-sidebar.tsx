@@ -73,7 +73,6 @@ const platformItems = [
     subItems: [
       { title: 'Bläddra alla', href: '/browse/rattskallor' },
       { title: 'Svenska lagar', href: '/browse/lagar' },
-      { title: 'Rättsfall', href: '/browse/rattsfall' },
       { title: 'EU-rätt', href: '/browse/eu' },
     ],
   },

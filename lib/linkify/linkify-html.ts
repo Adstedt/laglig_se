@@ -69,18 +69,6 @@ function isContentTypeMatch(
   if (ref.contentType === 'AGENCY_REGULATION') {
     return entryContentType === 'AGENCY_REGULATION'
   }
-  if (ref.contentType === 'COURT_CASE') {
-    const courtMap: Record<string, string> = {
-      hd: 'COURT_CASE_HD',
-      hfd: 'COURT_CASE_HFD',
-      ad: 'COURT_CASE_AD',
-      hovr: 'COURT_CASE_HOVR',
-      mod: 'COURT_CASE_MOD',
-      mig: 'COURT_CASE_MIG',
-    }
-    const expectedType = ref.courtId ? courtMap[ref.courtId] : undefined
-    return expectedType ? entryContentType === expectedType : true
-  }
   return true
 }
 

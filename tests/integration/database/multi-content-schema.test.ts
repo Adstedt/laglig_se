@@ -7,7 +7,7 @@ import { PrismaClient, ContentType, DocumentStatus } from '@prisma/client'
  * These tests verify:
  * - Schema validation (tables, indexes, relations)
  * - CRUD operations for all content types
- * - Type-specific relations (CourtCase, EuDocument)
+ * - Type-specific relations (EuDocument)
  * - Amendment tracking with 7 competitive fields
  * - Cross-references and document subjects
  * - Constraint enforcement (unique, foreign keys)
@@ -19,14 +19,12 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
   // Test data IDs for cleanup
   const testIds: {
     documents: string[]
-    courtCases: string[]
     euDocuments: string[]
     amendments: string[]
     crossReferences: string[]
     documentSubjects: string[]
   } = {
     documents: [],
-    courtCases: [],
     euDocuments: [],
     amendments: [],
     crossReferences: [],
@@ -44,8 +42,6 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
           { document_number: { startsWith: 'SFS 2000' } },
           { document_number: { startsWith: 'SFS 2024' } },
           { document_number: { startsWith: 'SFS 1980' } },
-          { document_number: { startsWith: 'AD 2023' } },
-          { document_number: { startsWith: 'HD 2024' } },
           { document_number: { startsWith: 'EU 2016' } },
           { document_number: { startsWith: 'SFS 2021:1112' } },
           { slug: { startsWith: 'test-' } },
@@ -66,9 +62,6 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
     await prisma.amendment.deleteMany({
       where: { id: { in: testIds.amendments } },
     })
-    await prisma.courtCase.deleteMany({
-      where: { id: { in: testIds.courtCases } },
-    })
     await prisma.euDocument.deleteMany({
       where: { id: { in: testIds.euDocuments } },
     })
@@ -80,21 +73,11 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
   })
 
   describe('AC1: ContentType Enum', () => {
-    it('should have all 9 content type values', () => {
-      const expectedTypes = [
-        'SFS_LAW',
-        'COURT_CASE_AD',
-        'COURT_CASE_HD',
-        'COURT_CASE_HOVR',
-        'COURT_CASE_HFD',
-        'COURT_CASE_MOD',
-        'COURT_CASE_MIG',
-        'EU_REGULATION',
-        'EU_DIRECTIVE',
-      ]
-
+    it('should have expected content type values', () => {
       const actualTypes = Object.keys(ContentType)
-      expect(actualTypes).toEqual(expectedTypes)
+      expect(actualTypes).toContain('SFS_LAW')
+      expect(actualTypes).toContain('EU_REGULATION')
+      expect(actualTypes).toContain('EU_DIRECTIVE')
     })
   })
 
@@ -191,51 +174,7 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
     })
   })
 
-  describe('AC3: Type-Specific Tables (CourtCase, EuDocument)', () => {
-    it('should create court case with relation to legal_documents', async () => {
-      const courtCaseDoc = await prisma.legalDocument.create({
-        data: {
-          document_number: 'AD 2023 nr 45',
-          title: 'AD 2023 nr 45 - Uppsägning p.g.a. arbetsbrist',
-          slug: 'test-ad-2023-nr-45',
-          content_type: ContentType.COURT_CASE_AD,
-          summary: 'Arbetsdomstolens dom om uppsägning',
-          status: DocumentStatus.ACTIVE,
-          source_url: 'https://arbetsdomstolen.se/domar/2023-45',
-          court_case: {
-            create: {
-              court_name: 'Arbetsdomstolen',
-              case_number: '2023-45',
-              decision_date: new Date('2023-05-15'),
-              lower_court: null,
-              parties: {
-                plaintiff: 'LO',
-                defendant: 'Företag AB',
-              },
-            },
-          },
-        },
-        include: {
-          court_case: true,
-        },
-      })
-
-      testIds.documents.push(courtCaseDoc.id)
-      if (courtCaseDoc.court_case) {
-        testIds.courtCases.push(courtCaseDoc.court_case.id)
-      }
-
-      expect(courtCaseDoc.id).toBeTruthy()
-      expect(courtCaseDoc.content_type).toBe(ContentType.COURT_CASE_AD)
-      expect(courtCaseDoc.court_case).toBeTruthy()
-      expect(courtCaseDoc.court_case?.court_name).toBe('Arbetsdomstolen')
-      expect(courtCaseDoc.court_case?.case_number).toBe('2023-45')
-      expect(courtCaseDoc.court_case?.parties).toEqual({
-        plaintiff: 'LO',
-        defendant: 'Företag AB',
-      })
-    })
-
+  describe('AC3: Type-Specific Tables (EuDocument)', () => {
     it('should create EU document with relation to legal_documents', async () => {
       const euDoc = await prisma.legalDocument.create({
         data: {
@@ -274,44 +213,6 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
       expect(euDoc.eu_document?.national_implementation_measures).toEqual({
         sweden: ['SFS 2018:218'],
       })
-    })
-
-    it('should enforce CASCADE delete on type-specific tables', async () => {
-      // Create court case with document
-      const doc = await prisma.legalDocument.create({
-        data: {
-          document_number: 'HD 2024 nr 1',
-          title: 'Test Case',
-          slug: 'test-case-hd-2024-1',
-          content_type: ContentType.COURT_CASE_HD,
-          status: DocumentStatus.ACTIVE,
-          source_url: 'https://example.com',
-          court_case: {
-            create: {
-              court_name: 'Högsta domstolen',
-              case_number: '2024-1',
-              decision_date: new Date('2024-01-15'),
-            },
-          },
-        },
-        include: { court_case: true },
-      })
-
-      const courtCaseId = doc.court_case?.id
-
-      expect(courtCaseId).toBeDefined()
-
-      // Delete document
-      await prisma.legalDocument.delete({
-        where: { id: doc.id },
-      })
-
-      // Verify court case was also deleted (CASCADE)
-      const deletedCourtCase = await prisma.courtCase.findUnique({
-        where: { id: courtCaseId! },
-      })
-
-      expect(deletedCourtCase).toBeNull()
     })
   })
 
@@ -693,11 +594,10 @@ describe('Multi-Content-Type Schema Integration Tests', () => {
     it('should provide type-safe ContentType enum', () => {
       const types: ContentType[] = [
         ContentType.SFS_LAW,
-        ContentType.COURT_CASE_AD,
         ContentType.EU_REGULATION,
       ]
 
-      expect(types).toHaveLength(3)
+      expect(types).toHaveLength(2)
       expect(ContentType.SFS_LAW).toBe('SFS_LAW')
     })
 

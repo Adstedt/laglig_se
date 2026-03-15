@@ -23,19 +23,6 @@ const PREWARM_QUERIES: BrowseInput[] = [
     page: 1,
     limit: 25,
     sortBy: 'date_desc',
-    contentTypes: [
-      'COURT_CASE_AD',
-      'COURT_CASE_HD',
-      'COURT_CASE_HFD',
-      'COURT_CASE_HOVR',
-      'COURT_CASE_MOD',
-      'COURT_CASE_MIG',
-    ],
-  }, // /rattsfall
-  {
-    page: 1,
-    limit: 25,
-    sortBy: 'date_desc',
     contentTypes: ['EU_REGULATION', 'EU_DIRECTIVE'],
   }, // /eu
 

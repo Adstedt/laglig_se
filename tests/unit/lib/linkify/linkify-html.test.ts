@@ -43,18 +43,6 @@ const defaultMap = createSlugMap([
     contentType: 'AGENCY_REGULATION',
     title: 'Systematiskt arbetsmiljöarbete',
   },
-  {
-    docNumber: 'AD 2019 nr 45',
-    slug: 'ad-2019-nr-45',
-    contentType: 'COURT_CASE_AD',
-    title: 'AD 2019 nr 45',
-  },
-  {
-    docNumber: 'NJA 2020 s. 45',
-    slug: 'nja-2020-s-45',
-    contentType: 'COURT_CASE_HD',
-    title: 'NJA 2020 s. 45',
-  },
 ])
 
 describe('linkifyHtmlContent', () => {
@@ -80,22 +68,13 @@ describe('linkifyHtmlContent', () => {
       expect(html).toContain('Systematiskt arbetsmilj')
     })
 
-    it('linkifies a court case reference', () => {
-      const { html } = linkifyHtmlContent(
-        '<p>Se AD 2019 nr 45.</p>',
-        defaultMap
-      )
-      expect(html).toContain('href="/rattsfall/ad/ad-2019-nr-45"')
-    })
-
     it('linkifies multiple references in one paragraph', () => {
       const { html } = linkifyHtmlContent(
-        '<p>Se lagen (1982:673) och AFS 2001:1 samt AD 2019 nr 45.</p>',
+        '<p>Se lagen (1982:673) och AFS 2001:1.</p>',
         defaultMap
       )
       expect(html).toContain('href="/lagar/arbetstidslag-1982-673"')
       expect(html).toContain('href="/foreskrifter/afs-2001-1"')
-      expect(html).toContain('href="/rattsfall/ad/ad-2019-nr-45"')
     })
 
     it('linkifies references across multiple elements', () => {

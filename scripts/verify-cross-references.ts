@@ -140,47 +140,8 @@ async function verifyAC8SampleVerification() {
 
   console.log('')
 
-  // Sample 2: HD case with cited laws
-  console.log('Sample 2: HD case with cited laws')
-  const hdCase = await prisma.legalDocument.findFirst({
-    where: {
-      content_type: 'COURT_CASE_HD',
-    },
-    include: {
-      source_references: {
-        take: 5,
-        include: {
-          target_document: {
-            select: { title: true, slug: true, document_number: true },
-          },
-        },
-      },
-    },
-  })
-
-  if (hdCase) {
-    console.log('  ✓ Found HD case:', hdCase.title)
-    console.log('  Slug:', hdCase.slug)
-    if (hdCase.source_references.length > 0) {
-      console.log('  Cited laws:')
-      hdCase.source_references.forEach((ref) => {
-        console.log(
-          '    -',
-          ref.target_document.title,
-          '(' + ref.target_document.document_number + ')'
-        )
-      })
-    } else {
-      console.log('  ⚠ No cited laws found for this case')
-    }
-  } else {
-    console.log('  ⚠ No HD cases found in database')
-  }
-
-  console.log('')
-
-  // Sample 3: GDPR directive with Swedish implementation
-  console.log('Sample 3: GDPR directive with Swedish implementation')
+  // Sample 2: GDPR directive with Swedish implementation
+  console.log('Sample 2: GDPR directive with Swedish implementation')
   const gdprDirective = await prisma.legalDocument.findFirst({
     where: {
       content_type: { in: ['EU_DIRECTIVE', 'EU_REGULATION'] },

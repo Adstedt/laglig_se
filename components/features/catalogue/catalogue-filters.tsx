@@ -23,36 +23,6 @@ const ALL_CONTENT_TYPES = [
       'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300',
   },
   {
-    value: 'COURT_CASE_AD',
-    label: 'Arbetsdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_HD',
-    label: 'Högsta domstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_HFD',
-    label: 'Högsta förvaltningsdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_HOVR',
-    label: 'Hovrätterna',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_MOD',
-    label: 'Mark- och miljööverdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_MIG',
-    label: 'Migrationsöverdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
     value: 'EU_REGULATION',
     label: 'EU-förordningar',
     color:
@@ -68,40 +38,6 @@ const ALL_CONTENT_TYPES = [
     value: 'AGENCY_REGULATION',
     label: 'Myndighetsföreskrifter',
     color: 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300',
-  },
-]
-
-// Court case types only
-const COURT_CASE_TYPES = [
-  {
-    value: 'COURT_CASE_AD',
-    label: 'Arbetsdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_HD',
-    label: 'Högsta domstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_HFD',
-    label: 'Högsta förvaltningsdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_HOVR',
-    label: 'Hovrätterna',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_MOD',
-    label: 'Mark- och miljööverdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  },
-  {
-    value: 'COURT_CASE_MIG',
-    label: 'Migrationsöverdomstolen',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
   },
 ]
 
@@ -156,7 +92,7 @@ interface CatalogueFiltersProps {
   dateTo: string | undefined
   basePath: string
   showContentTypeFilter: boolean
-  contentTypeOptions?: 'all' | 'court_cases' | 'eu'
+  contentTypeOptions?: 'all' | 'eu'
   hideHeader?: boolean
 }
 
@@ -178,8 +114,6 @@ export function CatalogueFilters({
 
   const getContentTypes = () => {
     switch (contentTypeOptions) {
-      case 'court_cases':
-        return COURT_CASE_TYPES
       case 'eu':
         return EU_TYPES
       default:

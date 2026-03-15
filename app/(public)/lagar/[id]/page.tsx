@@ -26,10 +26,7 @@ import { VersionSelector } from '@/components/features/law-versions'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
 import { RelatedDocumentsSummary } from '@/components/features/cross-references'
-import {
-  getCourtCasesCitingLaw,
-  getImplementedEuDirectives,
-} from '@/app/actions/cross-references'
+import { getImplementedEuDirectives } from '@/app/actions/cross-references'
 
 // ISR: Revalidate every hour
 // Static generation for top 500 laws (Story 2.19)
@@ -265,11 +262,8 @@ export default async function LawPage({ params }: PageProps) {
     })
   }
 
-  // Fetch cross-references in parallel
-  const [citingCases, implementedDirectives] = await Promise.all([
-    getCourtCasesCitingLaw(law.id, 10),
-    getImplementedEuDirectives(law.id),
-  ])
+  // Fetch cross-references
+  const implementedDirectives = await getImplementedEuDirectives(law.id)
 
   // Clean and sanitize HTML content
   const cleanedHtml = law.html_content ? cleanLawHtml(law.html_content) : null
@@ -552,7 +546,6 @@ export default async function LawPage({ params }: PageProps) {
 
           {/* Related Documents Summary - Collapsible preview near top */}
           <RelatedDocumentsSummary
-            citingCases={citingCases}
             implementedDirectives={implementedDirectives}
             amendments={law.base_amendments.map((a) => ({
               id: a.id,
@@ -626,16 +619,11 @@ export default async function LawPage({ params }: PageProps) {
 
         {/* Floating references button - appears when scrolling */}
         <FloatingReferencesWrapper
-          courtCaseCount={citingCases.totalCount}
           directiveCount={implementedDirectives.length}
         />
 
         {/* Prefetch related documents for instant navigation */}
         <RelatedDocsPrefetcher
-          citingCases={citingCases.cases.map((c) => ({
-            slug: c.slug,
-            contentType: c.contentType,
-          }))}
           implementedDirectives={implementedDirectives.map((d) => ({
             slug: d.slug,
           }))}

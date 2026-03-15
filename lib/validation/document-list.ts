@@ -12,12 +12,6 @@ import { z } from 'zod'
 export const ContentTypeEnum = z.enum([
   'SFS_LAW',
   'SFS_AMENDMENT',
-  'COURT_CASE_AD',
-  'COURT_CASE_HD',
-  'COURT_CASE_HOVR',
-  'COURT_CASE_HFD',
-  'COURT_CASE_MOD',
-  'COURT_CASE_MIG',
   'EU_REGULATION',
   'EU_DIRECTIVE',
   'AGENCY_REGULATION',
@@ -273,7 +267,6 @@ export const ContentTypeGroupEnum = z.enum([
   'all',
   'laws',
   'amendments',
-  'courtCases',
   'euDocuments',
 ])
 

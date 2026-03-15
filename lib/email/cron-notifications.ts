@@ -20,24 +20,6 @@ export interface SfsSyncStats {
   dateRange: { from: string; to: string }
 }
 
-export interface CourtSyncStats {
-  total: {
-    fetched: number
-    inserted: number
-    skipped: number
-    errors: number
-    crossRefsCreated: number
-  }
-  byCourt: Array<{
-    court: string
-    courtName: string
-    inserted: number
-    skipped: number
-    errors: number
-    earlyTerminated: boolean
-  }>
-}
-
 export interface SummaryStats {
   processed: number
   succeeded: number
@@ -123,101 +105,6 @@ export async function sendSfsSyncEmail(
     console.log('SFS sync notification email sent')
   } else {
     console.error('Failed to send SFS sync email:', result.error)
-  }
-}
-
-/**
- * Send Court Cases sync completion email
- */
-export async function sendCourtSyncEmail(
-  stats: CourtSyncStats,
-  duration: string,
-  success: boolean,
-  error?: string
-): Promise<void> {
-  const statusEmoji = success ? '\u2705' : '\u274C'
-  const subject = `${statusEmoji} Court Cases Sync ${success ? 'Complete' : 'Failed'} - ${new Date().toLocaleDateString('sv-SE')}`
-
-  const hasChanges = stats.total.inserted > 0
-
-  const courtRows = stats.byCourt
-    .map(
-      (c) => `
-      <tr style="background: ${c.inserted > 0 ? '#d4edda' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;">${c.courtName}</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${c.inserted}</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${c.skipped}</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${c.errors}</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${c.earlyTerminated ? '\u26A1' : ''}</td>
-      </tr>
-    `
-    )
-    .join('')
-
-  const html = `
-    <h2>Court Cases Daily Sync Report</h2>
-    <p><strong>Status:</strong> ${success ? 'Completed' : 'Failed'}</p>
-    <p><strong>Duration:</strong> ${duration}</p>
-    <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-
-    ${error ? `<p style="color: red;"><strong>Error:</strong> ${error}</p>` : ''}
-
-    <h3>Summary</h3>
-    <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
-      <tr style="background: ${stats.total.inserted > 0 ? '#d4edda' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;"><strong>New Cases Inserted</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.total.inserted}</td>
-      </tr>
-      <tr>
-        <td style="padding: 8px; border: 1px solid #ddd;">Total Fetched</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.total.fetched}</td>
-      </tr>
-      <tr>
-        <td style="padding: 8px; border: 1px solid #ddd;">Cross-refs Created</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.total.crossRefsCreated}</td>
-      </tr>
-      <tr style="background: ${stats.total.errors > 0 ? '#f8d7da' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;">Errors</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.total.errors}</td>
-      </tr>
-    </table>
-
-    <h3>By Court</h3>
-    <table style="border-collapse: collapse; width: 100%;">
-      <thead>
-        <tr style="background: #e9ecef;">
-          <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Court</th>
-          <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Inserted</th>
-          <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Skipped</th>
-          <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Errors</th>
-          <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">Done</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${courtRows}
-      </tbody>
-    </table>
-
-    <p style="margin-top: 16px; color: #666;">
-      ${!hasChanges ? '\uD83D\uDCED No new court cases today' : ''}
-    </p>
-
-    <hr style="margin-top: 24px;">
-    <p style="font-size: 12px; color: #999;">
-      This is an automated notification from Laglig.se cron jobs.
-    </p>
-  `
-
-  const result = await sendHtmlEmail({
-    to: ADMIN_EMAIL,
-    subject,
-    html,
-    from: 'cron',
-  })
-  if (result.success) {
-    console.log('Court sync notification email sent')
-  } else {
-    console.error('Failed to send court sync email:', result.error)
   }
 }
 

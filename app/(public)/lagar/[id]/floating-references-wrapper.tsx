@@ -3,12 +3,10 @@
 import { FloatingReferencesButton } from '@/components/features/cross-references'
 
 interface FloatingReferencesWrapperProps {
-  courtCaseCount: number
   directiveCount: number
 }
 
 export function FloatingReferencesWrapper({
-  courtCaseCount,
   directiveCount,
 }: FloatingReferencesWrapperProps) {
   const handleScrollToReferences = () => {
@@ -24,7 +22,6 @@ export function FloatingReferencesWrapper({
 
   return (
     <FloatingReferencesButton
-      courtCaseCount={courtCaseCount}
       directiveCount={directiveCount}
       onScrollToReferences={handleScrollToReferences}
     />

@@ -107,17 +107,6 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
   },
   // --- Disabled jobs (need rework) ---
   {
-    name: 'sync-court-cases',
-    displayName: 'Rättsfallssynkronisering',
-    description: 'Synkroniserar rättsfall från Domstolsverket',
-    schedule: '0 5 * * *',
-    scheduleHuman: 'Inaktiverad',
-    endpoint: '/api/cron/sync-court-cases',
-    authHeader: 'CRON_SECRET',
-    instrumented: true,
-    disabled: true,
-  },
-  {
     name: 'generate-summaries',
     displayName: 'AI-sammanfattningar',
     description: 'Genererar AI-sammanfattningar för lagdokument',

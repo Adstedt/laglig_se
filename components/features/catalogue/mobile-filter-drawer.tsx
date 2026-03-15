@@ -22,7 +22,7 @@ interface MobileFilterDrawerProps {
   dateTo: string | undefined
   basePath: string
   showContentTypeFilter: boolean
-  contentTypeOptions?: 'all' | 'court_cases' | 'eu'
+  contentTypeOptions?: 'all' | 'eu'
 }
 
 export function MobileFilterDrawer(props: MobileFilterDrawerProps) {

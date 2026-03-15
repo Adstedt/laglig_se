@@ -1,25 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Scale, Landmark, ChevronUp } from 'lucide-react'
+import { Landmark, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface FloatingReferencesButtonProps {
-  courtCaseCount: number
   directiveCount: number
   onScrollToReferences: () => void
 }
 
 export function FloatingReferencesButton({
-  courtCaseCount,
   directiveCount,
   onScrollToReferences,
 }: FloatingReferencesButtonProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const totalCount = courtCaseCount + directiveCount
+  const totalCount = directiveCount
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,15 +60,6 @@ export function FloatingReferencesButton({
             Relaterade dokument
           </p>
           <div className="flex flex-col gap-1.5">
-            {courtCaseCount > 0 && (
-              <button
-                onClick={onScrollToReferences}
-                className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 hover:underline"
-              >
-                <Scale className="h-4 w-4" />
-                {courtCaseCount} rättsfall
-              </button>
-            )}
             {directiveCount > 0 && (
               <button
                 onClick={onScrollToReferences}
@@ -107,7 +96,7 @@ export function FloatingReferencesButton({
             </>
           ) : (
             <>
-              <Scale className="h-5 w-5" />
+              <Landmark className="h-5 w-5" />
               <span className="font-semibold">{totalCount}</span>
               <span className="sr-only sm:not-sr-only text-sm">relaterade</span>
             </>
