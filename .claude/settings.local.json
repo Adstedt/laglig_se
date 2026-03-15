@@ -249,7 +249,8 @@
       "WebFetch(domain:www.sparna.fr)",
       "Bash(xargs basename:*)",
       "WebFetch(domain:www.elastic.co)",
-      "WebFetch(domain:bonsai.io)"
+      "WebFetch(domain:bonsai.io)",
+      "Bash(git:*)"
     ],
     "deny": [],
     "ask": []

@@ -13,6 +13,7 @@
 
 import { NextResponse } from 'next/server'
 import { hardDeleteExpiredWorkspaces } from '@/lib/workspace/workspace-operations'
+import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60 // 1 minute max
@@ -29,8 +30,24 @@ export async function GET(request: Request) {
     }
   }
 
+  const triggeredBy = request.headers.get('x-triggered-by') || 'cron'
+  let runId: string | undefined
+
+  try {
+    runId = await startJobRun('cleanup-workspaces', triggeredBy)
+  } catch {
+    console.error('Failed to start job run logging')
+  }
+
   try {
     const deletedCount = await hardDeleteExpiredWorkspaces()
+
+    if (runId) {
+      await completeJobRun(runId, {
+        itemsProcessed: deletedCount,
+        itemsFailed: 0,
+      })
+    }
 
     return NextResponse.json({
       success: true,
@@ -40,6 +57,14 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('[Cron] cleanup-workspaces error:', error)
+
+    if (runId) {
+      await failJobRun(
+        runId,
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
+
     return NextResponse.json(
       {
         success: false,

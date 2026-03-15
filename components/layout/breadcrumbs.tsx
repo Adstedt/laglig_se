@@ -91,6 +91,9 @@ export function Breadcrumbs() {
     segments.length === 0 ||
     (segments.length === 1 && segments[0] === 'dashboard')
 
+  // Hide breadcrumbs on Hem page — chat-first layout needs full height
+  if (isDashboard) return null
+
   // Build breadcrumb items with proper hierarchy
   const breadcrumbItems: Array<{ label: string; href?: string }> = []
 

@@ -376,16 +376,16 @@ export const ChatInputModern = forwardRef<
         {/* Keyboard hint */}
         <p
           className={cn(
-            'text-muted-foreground/40 mt-2.5 px-1 text-center',
+            'text-muted-foreground/60 mt-2.5 px-1 text-center',
             isExpanded ? 'text-xs' : 'text-[10px]'
           )}
         >
-          <kbd className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/70 font-mono text-[9px]">
+          <kbd className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-mono text-[9px]">
             Enter
           </kbd>
           <span className="mx-1.5">för att skicka</span>
-          <span className="text-muted-foreground/30">·</span>
-          <kbd className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground/70 font-mono text-[9px] ml-1.5">
+          <span className="text-muted-foreground/50">·</span>
+          <kbd className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground font-mono text-[9px] ml-1.5">
             Shift+Enter
           </kbd>
           <span className="ml-1.5">för ny rad</span>

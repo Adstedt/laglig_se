@@ -23,6 +23,7 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 import { ContentType, DocumentStatus, ChangeType } from '@prisma/client'
 import {
   fetchLawFullText,
@@ -105,6 +106,15 @@ export async function GET(request: Request) {
 
   if (!isDevelopment && CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const triggeredBy = request.headers.get('x-triggered-by') || 'cron'
+  let runId: string | undefined
+
+  try {
+    runId = await startJobRun('sync-sfs', triggeredBy)
+  } catch {
+    console.error('Failed to start job run logging')
   }
 
   const stats: SyncStats = {
@@ -552,6 +562,13 @@ export async function GET(request: Request) {
       true
     )
 
+    if (runId) {
+      await completeJobRun(runId, {
+        itemsProcessed: stats.inserted,
+        itemsFailed: stats.failed,
+      })
+    }
+
     return NextResponse.json({
       success: true,
       syncStatus,
@@ -565,6 +582,13 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error('[SYNC-SFS] Sync failed:', error)
+
+    if (runId) {
+      await failJobRun(
+        runId,
+        error instanceof Error ? error : new Error(String(error))
+      )
+    }
 
     const duration = Date.now() - startTime.getTime()
     const durationStr = `${Math.round(duration / 1000)}s`

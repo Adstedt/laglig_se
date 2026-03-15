@@ -303,6 +303,8 @@ export async function sendSummaryGenEmail(
 export interface AmendmentDiscoveryStats {
   discovered: number
   alreadyExists: number
+  pendingCreated: number
+  pagesScanned: number
   processed: number
   failed: number
   changeEventsCreated: number
@@ -311,9 +313,6 @@ export interface AmendmentDiscoveryStats {
   pdfsFailed: number
   repealsProcessed: number
   newLawsSkipped: number
-  retriesAttempted: number
-  retriesSucceeded: number
-  retriesFailed: number
   duration: string
 }
 
@@ -327,9 +326,9 @@ export async function sendAmendmentDiscoveryEmail(
   error?: string
 ): Promise<void> {
   // Only send if there was actual work done or errors
-  if (stats.discovered === 0 && stats.retriesAttempted === 0 && success) {
+  if (stats.discovered === 0 && stats.processed === 0 && success) {
     console.log(
-      '[DISCOVER-SFS] No new amendments discovered and no retries, skipping email'
+      '[DISCOVER-SFS] No new amendments discovered and nothing processed, skipping email'
     )
     return
   }
@@ -345,8 +344,12 @@ export async function sendAmendmentDiscoveryEmail(
 
     ${error ? `<p style="color: red;"><strong>Error:</strong> ${error}</p>` : ''}
 
-    <h3>Discovery Statistics</h3>
+    <h3>Phase 1: Discovery</h3>
     <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">Pages scanned</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pagesScanned}</td>
+      </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;">Discovered on site</td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.discovered}</td>
@@ -355,13 +358,17 @@ export async function sendAmendmentDiscoveryEmail(
         <td style="padding: 8px; border: 1px solid #ddd;">Already in DB</td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.alreadyExists}</td>
       </tr>
+      <tr style="background: ${stats.pendingCreated > 0 ? '#d4edda' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;"><strong>PENDING records created</strong></td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.pendingCreated}</td>
+      </tr>
       <tr>
         <td style="padding: 8px; border: 1px solid #ddd;">New laws skipped</td>
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.newLawsSkipped}</td>
       </tr>
     </table>
 
-    <h3>Processing Results</h3>
+    <h3>Phase 2: Processing</h3>
     <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
       <tr style="background: ${stats.processed > 0 ? '#d4edda' : '#f8f9fa'};">
         <td style="padding: 8px; border: 1px solid #ddd;"><strong>Amendments Processed</strong></td>
@@ -380,28 +387,6 @@ export async function sendAmendmentDiscoveryEmail(
         <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.changeEventsCreated}</td>
       </tr>
     </table>
-
-    ${
-      stats.retriesAttempted > 0
-        ? `
-    <h3>Retry Results</h3>
-    <table style="border-collapse: collapse; width: 100%; max-width: 400px;">
-      <tr>
-        <td style="padding: 8px; border: 1px solid #ddd;">Retries Attempted</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.retriesAttempted}</td>
-      </tr>
-      <tr style="background: ${stats.retriesSucceeded > 0 ? '#d4edda' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Retries Succeeded</strong></td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.retriesSucceeded}</td>
-      </tr>
-      <tr style="background: ${stats.retriesFailed > 0 ? '#f8d7da' : '#f8f9fa'};">
-        <td style="padding: 8px; border: 1px solid #ddd;">Retries Failed</td>
-        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${stats.retriesFailed}</td>
-      </tr>
-    </table>
-    `
-        : ''
-    }
 
     <h3>PDF Stats</h3>
     <table style="border-collapse: collapse; width: 100%; max-width: 400px;">

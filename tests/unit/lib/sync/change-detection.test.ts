@@ -393,6 +393,13 @@ describe('Change Event Creation (DB-writing functions)', () => {
           document_id: DOC_ID,
           change_type: ChangeType.AMENDMENT,
         }),
+        findFirst: vi.fn().mockResolvedValue(null),
+        findUniqueOrThrow: vi.fn().mockResolvedValue({
+          id: 'ce-1',
+          document_id: DOC_ID,
+          change_type: ChangeType.AMENDMENT,
+        }),
+        update: vi.fn().mockResolvedValue({}),
       },
       legalDocument: {
         update: vi.fn().mockResolvedValue({}),
@@ -435,6 +442,76 @@ describe('Change Event Creation (DB-writing functions)', () => {
 
       expect(result).toBeNull()
       expect(tx.legalDocument.update).not.toHaveBeenCalled()
+    })
+
+    it('dedup: updates existing ChangeEvent instead of creating duplicate', async () => {
+      const tx = createMockTx()
+      tx.changeEvent.findFirst.mockResolvedValue({ id: 'existing-ce' })
+      tx.changeEvent.findUniqueOrThrow.mockResolvedValue({
+        id: 'existing-ce',
+        document_id: DOC_ID,
+        change_type: ChangeType.AMENDMENT,
+        amendment_sfs: 'SFS 2026:145',
+      })
+
+      const result = await detectChanges(tx as never, {
+        documentId: DOC_ID,
+        contentType: ContentType.SFS_LAW,
+        oldFullText: 'Old text content',
+        newFullText: 'New text content that is different',
+        amendmentSfs: 'SFS 2026:145',
+      })
+
+      expect(tx.changeEvent.create).not.toHaveBeenCalled()
+      expect(tx.changeEvent.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'existing-ce' },
+          data: expect.objectContaining({
+            diff_summary: expect.any(String),
+          }),
+        })
+      )
+      expect(result).toEqual(expect.objectContaining({ id: 'existing-ce' }))
+    })
+
+    it('dedup: enriches existing event with diff_summary and changed_sections', async () => {
+      const tx = createMockTx()
+      tx.changeEvent.findFirst.mockResolvedValue({ id: 'existing-ce' })
+      tx.changeEvent.findUniqueOrThrow.mockResolvedValue({
+        id: 'existing-ce',
+        document_id: DOC_ID,
+        change_type: ChangeType.AMENDMENT,
+      })
+
+      await detectChanges(tx as never, {
+        documentId: DOC_ID,
+        contentType: ContentType.SFS_LAW,
+        oldFullText: '1 § Old text.\nLag (2020:100).',
+        newFullText: '1 § New text.\nLag (2026:145).',
+        amendmentSfs: 'SFS 2026:145',
+        previousVersionId: 'prev-ver',
+        newVersionId: 'new-ver',
+      })
+
+      const updateCall = tx.changeEvent.update.mock.calls[0]![0]
+      expect(updateCall.data.diff_summary).toBeDefined()
+      expect(updateCall.data.previous_version_id).toBe('prev-ver')
+      expect(updateCall.data.new_version_id).toBe('new-ver')
+    })
+
+    it('dedup: skips dedup check when amendmentSfs is null', async () => {
+      const tx = createMockTx()
+
+      await detectChanges(tx as never, {
+        documentId: DOC_ID,
+        contentType: ContentType.SFS_LAW,
+        oldFullText: 'Old text content',
+        newFullText: 'New text content that is different',
+        amendmentSfs: null,
+      })
+
+      expect(tx.changeEvent.findFirst).not.toHaveBeenCalled()
+      expect(tx.changeEvent.create).toHaveBeenCalled()
     })
 
     it('is idempotent — same params produce same field values', async () => {

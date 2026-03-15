@@ -21,16 +21,15 @@ const BASE_PROPS: AmendmentDigestEmailProps = {
       changeType: 'Ändrad',
       changeRef: 'SFS 2026:145',
       effectiveDate: '2026-07-01',
-      summering:
+      aiSummary:
         'Lagen har uppdaterats med nya krav på riskbedömningar för arbetsgivare.',
-      kommentar:
-        'Vi ska genomföra riskbedömningar kvartalsvis istället för årligen.',
       sectionChanges: [
         { label: '7 kap. 15 § — ändrad', type: 'AMENDED' },
         { label: '2a § — ny', type: 'NEW' },
       ],
       lawUrl: 'https://laglig.se/lagar/sfs-1977-1160',
       pdfUrl: 'https://riksdagen.se/sv/dokument/sfs-2026-145.pdf',
+      assessUrl: 'https://laglig.se/dashboard?changeId=ce-1',
     },
   ],
   unsubscribeUrl: 'https://laglig.se/unsubscribe?token=test',
@@ -58,12 +57,23 @@ describe('AmendmentDigestEmail', () => {
     expect(html).toContain('2026-07-01')
   })
 
-  it('contains summering and kommentar', () => {
+  it('contains aiSummary preview text', () => {
     const html = renderEmail(BASE_PROPS)
-    expect(html).toContain('Summering')
     expect(html).toContain('riskbedömningar')
-    expect(html).toContain('Kommentar')
-    expect(html).toContain('kvartalsvis')
+  })
+
+  it('shows fallback text when aiSummary is null', () => {
+    const props: AmendmentDigestEmailProps = {
+      ...BASE_PROPS,
+      changes: [
+        {
+          ...BASE_PROPS.changes[0]!,
+          aiSummary: null,
+        },
+      ],
+    }
+    const html = renderEmail(props)
+    expect(html).toContain('En ändring har upptäckts i denna lag.')
   })
 
   it('contains section changes', () => {
@@ -74,11 +84,17 @@ describe('AmendmentDigestEmail', () => {
     expect(html).toContain('ny')
   })
 
-  it('contains links to Laglig.se and Riksdagen PDF', () => {
+  it('contains deep-link CTA button', () => {
+    const html = renderEmail(BASE_PROPS)
+    expect(html).toContain('Granska ändringen')
+    expect(html).toContain('dashboard?changeId=ce-1')
+  })
+
+  it('contains law link and PDF link', () => {
     const html = renderEmail(BASE_PROPS)
     expect(html).toContain('https://laglig.se/lagar/sfs-1977-1160')
-    expect(html).toContain('Visa på Laglig.se')
-    expect(html).toContain('Riksdagen PDF')
+    expect(html).toContain('Visa lag')
+    expect(html).toContain('PDF')
   })
 
   it('contains unsubscribe link', () => {
@@ -87,25 +103,7 @@ describe('AmendmentDigestEmail', () => {
     expect(html).toContain('Avregistrera')
   })
 
-  it('renders correctly with no summering/kommentar (only section changes)', () => {
-    const props: AmendmentDigestEmailProps = {
-      ...BASE_PROPS,
-      changes: [
-        {
-          ...BASE_PROPS.changes[0]!,
-          summering: null,
-          kommentar: null,
-        },
-      ],
-    }
-    const html = renderEmail(props)
-    expect(html).toBeTruthy()
-    expect(html).toContain('7 kap. 15 §')
-    expect(html).not.toContain('Summering')
-    expect(html).not.toContain('Kommentar')
-  })
-
-  it('renders correctly with 0 section changes (only summering/kommentar)', () => {
+  it('renders correctly with no section changes', () => {
     const props: AmendmentDigestEmailProps = {
       ...BASE_PROPS,
       changes: [
@@ -117,8 +115,7 @@ describe('AmendmentDigestEmail', () => {
     }
     const html = renderEmail(props)
     expect(html).toBeTruthy()
-    expect(html).toContain('Summering')
-    expect(html).toContain('Kommentar')
+    expect(html).toContain('riskbedömningar')
     expect(html).not.toContain('Berörda paragrafer')
   })
 
@@ -132,11 +129,11 @@ describe('AmendmentDigestEmail', () => {
           changeType: 'Upphävd',
           changeRef: 'SFS 2026:200',
           effectiveDate: null,
-          summering: null,
-          kommentar: null,
+          aiSummary: null,
           sectionChanges: [],
           lawUrl: 'https://laglig.se/lagar/sfs-1998-808',
           pdfUrl: null,
+          assessUrl: 'https://laglig.se/dashboard?changeId=ce-2',
         },
       ],
     }

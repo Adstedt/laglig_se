@@ -5,13 +5,16 @@
  * Unified chat UI used by main sidebar, task modal, and law document modal
  */
 
-import { useRef, useEffect, ReactNode } from 'react'
+import { useRef, useEffect, useMemo, useCallback, ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { LexaIcon } from '@/components/ui/lexa-icon'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from './chat-message-list'
 import { ChatInputModern } from './chat-input-modern'
 import { ChatError } from './chat-error'
+import { AssessmentResolution } from '@/components/features/changes/assessment-resolution'
+import { FollowupChips } from './followup-chips'
+import { useFollowupChips } from '@/lib/hooks/use-followup-chips'
 import {
   useChatInterface,
   type ChatContextType,
@@ -47,6 +50,10 @@ interface ChatPanelProps {
   showHeader?: boolean
   /** Custom header content */
   headerContent?: ReactNode
+  /** LawListItem ID for change assessment resolution (only when contextType='change') */
+  lawListItemId?: string | undefined
+  /** Auto-send this message on first mount if no history exists */
+  initialMessage?: string | undefined
 }
 
 export function ChatPanel({
@@ -63,22 +70,18 @@ export function ChatPanel({
   className,
   showHeader = true,
   headerContent,
+  lawListItemId,
+  initialMessage,
 }: ChatPanelProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const {
-    messages,
-    sendMessage,
-    status,
-    error,
-    citations,
-    retryAfter,
-    handleRetry,
-  } = useChatInterface({
-    contextType,
-    contextId,
-    initialContext,
-  })
+  const { messages, sendMessage, status, error, retryAfter, handleRetry } =
+    useChatInterface({
+      contextType,
+      contextId,
+      initialContext,
+      initialMessage,
+    })
 
   const isStreaming = status === 'streaming'
   const isSubmitted = status === 'submitted'
@@ -92,9 +95,44 @@ export function ChatPanel({
     setTimeout(() => inputRef.current?.focus(), 100)
   }, [analyticsLocation])
 
+  // Inline assessment rendered after the first completed assistant reply
+  const hasCompletedReply =
+    !isLoading && messages.some((m) => m.role === 'assistant')
+
+  const { questions: followupQuestions, dismiss: dismissFollowups } =
+    useFollowupChips(messages, hasCompletedReply)
+
+  const handleSendMessage = useCallback(
+    (content: string) => {
+      dismissFollowups()
+      sendMessage(content)
+    },
+    [sendMessage, dismissFollowups]
+  )
+
+  const handleFollowupClick = useCallback(
+    (question: string) => {
+      dismissFollowups()
+      sendMessage(question)
+    },
+    [sendMessage, dismissFollowups]
+  )
+
   const handleSuggestedQuestion = (question: string) => {
     sendMessage(question)
   }
+
+  const inlineAssessment = useMemo(() => {
+    if (!hasCompletedReply) return undefined
+    if (contextType !== 'change' || !contextId || !lawListItemId)
+      return undefined
+    return (
+      <AssessmentResolution
+        changeEventId={contextId}
+        lawListItemId={lawListItemId}
+      />
+    )
+  }, [hasCompletedReply, contextType, contextId, lawListItemId])
 
   return (
     <div
@@ -152,8 +190,18 @@ export function ChatPanel({
         ) : (
           <ChatMessageList
             messages={messages}
-            citations={citations}
             isStreaming={isLoading}
+            footer={
+              <>
+                {inlineAssessment}
+                {followupQuestions && (
+                  <FollowupChips
+                    questions={followupQuestions}
+                    onSelect={handleFollowupClick}
+                  />
+                )}
+              </>
+            }
           />
         )}
       </div>
@@ -161,7 +209,7 @@ export function ChatPanel({
       {/* Input area - simplified for modal context */}
       <ChatInputModern
         ref={inputRef}
-        onSend={sendMessage}
+        onSend={handleSendMessage}
         disabled={hasError}
         isLoading={isLoading}
         placeholder="Skriv din fråga..."

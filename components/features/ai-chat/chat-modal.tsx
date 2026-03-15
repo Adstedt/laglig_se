@@ -27,17 +27,10 @@ interface ChatModalProps {
 }
 
 export function ChatModal({ isOpen, onClose }: ChatModalProps) {
-  const {
-    messages,
-    sendMessage,
-    status,
-    error,
-    citations,
-    retryAfter,
-    handleRetry,
-  } = useChatInterface({
-    contextType: 'global',
-  })
+  const { messages, sendMessage, status, error, retryAfter, handleRetry } =
+    useChatInterface({
+      contextType: 'global',
+    })
 
   const isStreaming = status === 'streaming'
   const isSubmitted = status === 'submitted'
@@ -90,7 +83,6 @@ export function ChatModal({ isOpen, onClose }: ChatModalProps) {
           ) : (
             <ChatMessageList
               messages={messages}
-              citations={citations}
               isStreaming={isStreaming || isSubmitted}
               className="flex-1 min-h-0"
             />

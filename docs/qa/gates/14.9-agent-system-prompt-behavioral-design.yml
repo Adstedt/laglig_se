@@ -1,0 +1,41 @@
+schema: 1
+story: '14.9'
+story_title: 'Agent System Prompt & Behavioral Design'
+gate: PASS
+status_reason: 'All 21 ACs met. Clean implementation follows Anthropic prompt engineering best practices. 20 pure-function tests pass. No security, performance, or reliability concerns. Prompt is well-calibrated for Claude 4.6 (neutral tool triggering, motivation-driven guardrails).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-09T14:20:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-03-23T14:20:00Z'
+
+evidence:
+  tests_reviewed: 20
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'CompanyProfile queried via Prisma (SQL injection safe). No user input injected directly into system prompt. No secrets exposed.'
+  performance:
+    status: PASS
+    notes: 'Single lightweight findFirst query added to chat route. Pure string-building functions with O(n) complexity. Prompt within 800-1200 token budget.'
+  reliability:
+    status: PASS
+    notes: 'All functions handle null/undefined gracefully. No throws from pure formatting functions. formatCompanyContext returns undefined for empty profiles (safe prompt injection).'
+  maintainability:
+    status: PASS
+    notes: 'XML-tagged prompt structure enables section-level editing. Enum label maps easy to extend. Clean separation: system-prompt.ts (prompt building), transparency.ts (formatting utilities), route.ts (orchestration).'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider adding backslash path splitting to extractFilename for robustness if USER_FILE paths ever use Windows conventions'
+      refs: ['lib/agent/transparency.ts:160']

@@ -132,6 +132,11 @@ const nextConfig = {
     return config
   },
 
+  // Story 14.9: Include system prompt .md file in serverless function bundles
+  outputFileTracingIncludes: {
+    '/api/chat': ['./lib/agent/system-prompt.md'],
+  },
+
   experimental: {
     // Story P.2: Enable optimizeCss for smaller CSS bundles
     optimizeCss: true,

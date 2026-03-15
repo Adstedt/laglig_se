@@ -160,8 +160,14 @@ export function CronJobCard({
     })
   }
 
+  const isDisabled = job.disabled === true
+
   return (
-    <Card className={isStale ? 'border-yellow-300' : undefined}>
+    <Card
+      className={
+        isDisabled ? 'opacity-60' : isStale ? 'border-yellow-300' : undefined
+      }
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -174,7 +180,15 @@ export function CronJobCard({
                 {job.displayName}
               </Link>
             </CardTitle>
-            {isStale && (
+            {isDisabled && (
+              <Badge
+                variant="outline"
+                className="border-gray-300 text-gray-500"
+              >
+                Inaktiverad
+              </Badge>
+            )}
+            {!isDisabled && isStale && (
               <Badge
                 variant="outline"
                 className="border-yellow-300 bg-yellow-50 text-yellow-700"

@@ -1,0 +1,53 @@
+schema: 1
+story: '14.4'
+story_title: 'WorkspaceProfile Data Model & Settings UI'
+gate: PASS
+status_reason: 'Phase 2 review: All original 18 ACs still met. Phase 2 adds 7 columns, 2 enums, 2 activity flags — all non-breaking. 18/18 tests pass. tsc clean. Build succeeds. Three LOW items noted.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-25T12:00:00Z'
+
+top_issues: []
+
+waiver: { active: false }
+
+quality_score: 90 # 100 - (3 × ~3 for LOW items)
+expires: '2026-03-11T12:00:00Z'
+
+evidence:
+  tests_reviewed: 18
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All 7 new fields validated via Zod (url, int bounds, max-length, enum satisfies). No new attack surface. Authorization unchanged.'
+  performance:
+    status: PASS
+    notes: 'No additional queries. New fields part of same update() call. Completeness adds 5 trivial if-checks.'
+  reliability:
+    status: PASS
+    notes: 'Transaction wrapping from Phase 1 QA fix still intact. New fields added atomically within same $transaction block.'
+  maintainability:
+    status: PASS
+    notes: 'Clean additive changes following established patterns. ActivityFlags interface duplicated in 2 files (low debt). Dev notes comprehensive.'
+
+history:
+  - at: '2026-02-25T11:00:00Z'
+    gate: PASS
+    note: 'Phase 1 review — 13/13 tests, all 18 ACs met. Two issues noted (transaction, completeness return).'
+  - at: '2026-02-25T12:00:00Z'
+    gate: PASS
+    note: 'Phase 2 review — 18/18 tests, 7 new columns + 2 enums + 2 activity flags. Previous issues resolved. Three LOW items noted.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Create migration file before merging to main (currently using db push)'
+      refs: ['prisma/schema.prisma']
+    - action: 'Consider extracting shared ActivityFlags interface to reduce duplication'
+      refs: ['lib/profile-completeness.ts:8-17', 'components/features/settings/company-profile-tab.tsx:141-150']
+    - action: 'Consider tri-state for has_collective_agreement if completeness accuracy matters (boolean cannot distinguish not-answered from answered-no)'
+      refs: ['lib/profile-completeness.ts:73']

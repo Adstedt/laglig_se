@@ -32,6 +32,11 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
+vi.mock('@/lib/cache/workspace-cache', () => ({
+  invalidateWorkspaceCache: vi.fn().mockResolvedValue(undefined),
+  invalidateUserCache: vi.fn().mockResolvedValue(undefined),
+}))
+
 import { createWorkspace } from '@/app/actions/workspace'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from '@/lib/auth/session'

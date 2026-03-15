@@ -1,0 +1,52 @@
+schema: 1
+story: '14.11'
+story_title: 'Chat-First Dashboard ("Hem")'
+gate: PASS
+status_reason: 'All 19 ACs met, 78 tests pass, MNT-001 resolved with try/catch + error toast. Remaining low-severity items are future enhancements.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-02-25T14:45:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+
+evidence:
+  tests_reviewed: 78
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All actions use withWorkspace, Zod validation, parameterized SQL. No XSS vectors.'
+  performance:
+    status: PASS
+    notes: 'SSR dashboard data, capped query limits (20 conversations, 50 messages). No N+1 queries.'
+  reliability:
+    status: PASS
+    notes: 'handleNewConversation now wrapped in try/catch with user-facing error toast. Test 12b validates error path.'
+  maintainability:
+    status: PASS
+    notes: 'Clean component decomposition, proper TypeScript types, consistent patterns.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Make loaded archived conversations persistent across navigation'
+      refs: ['components/features/dashboard/hem-chat.tsx:98-118']
+    - action: 'Route Cmd/Ctrl+K to focus chat input on /dashboard'
+      refs: ['components/layout/workspace-shell.tsx:46-62']
+    - action: 'Add direct unit tests for ConversationHistory and ContextCards'
+      refs: ['tests/unit/components/features/dashboard/']
+
+history:
+  - at: '2026-02-25T14:30:00Z'
+    gate: CONCERNS
+    note: 'Initial review — MNT-001 handleNewConversation missing error handling'
+  - at: '2026-02-25T14:45:00Z'
+    gate: PASS
+    note: 'Re-review — MNT-001 fixed with try/catch + toast, test 12b added'

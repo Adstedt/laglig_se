@@ -12,7 +12,7 @@ const CHANGE_EVENT_1 = {
   change_type: ChangeType.AMENDMENT,
   amendment_sfs: 'SFS 2026:145',
   diff_summary: null,
-  ai_summary: null,
+  ai_summary: 'En ändring i arbetsmiljölagen.',
   detected_at: new Date('2026-02-17T04:30:00Z'),
   notification_sent: false,
   document: {
@@ -58,22 +58,6 @@ const RECIPIENTS_DOC1 = [
   },
 ]
 
-const AMENDMENT_LEGAL_DOC = {
-  id: 'ld-amend-1',
-  document_number: 'SFS 2026:145',
-  title: 'Lag om ändring i arbetsmiljölagen (1977:1160)',
-  content_type: 'SFS_LAW',
-  effective_date: new Date('2026-07-01'),
-  publication_date: new Date('2026-02-10'),
-  status: 'ACTIVE',
-  summary: 'Existing summering',
-  kommentar: 'Existing kommentar',
-  html_content: '<p>Test</p>',
-  markdown_content: null,
-  full_text: 'Test',
-  metadata: null,
-}
-
 const AMENDMENT_DOC = {
   effective_date: new Date('2026-07-01'),
   original_url: 'https://riksdagen.se/sv/dokument/sfs-2026-145.pdf',
@@ -91,10 +75,6 @@ const mockPrisma = {
   changeEvent: {
     findMany: vi.fn(),
     updateMany: vi.fn(),
-  },
-  legalDocument: {
-    findUnique: vi.fn(),
-    update: vi.fn(),
   },
   amendmentDocument: {
     findUnique: vi.fn(),
@@ -156,30 +136,6 @@ vi.mock('@/lib/email/unsubscribe-token', () => ({
   ),
 }))
 
-const mockAnthropicCreate = vi.fn().mockResolvedValue({
-  content: [
-    {
-      type: 'text',
-      text: JSON.stringify({
-        summering: 'Generated summering',
-        kommentar: 'Generated kommentar',
-      }),
-    },
-  ],
-})
-
-vi.mock('@anthropic-ai/sdk', () => ({
-  default: class MockAnthropic {
-    messages = { create: mockAnthropicCreate }
-  },
-}))
-
-vi.mock('@/lib/ai/prompts/document-content', () => ({
-  buildSystemPrompt: vi.fn().mockReturnValue('system prompt'),
-  buildDocumentContext: vi.fn().mockReturnValue('document context'),
-  getSourceText: vi.fn().mockReturnValue('source text'),
-}))
-
 // ---------------------------------------------------------------------------
 // Helper
 // ---------------------------------------------------------------------------
@@ -205,7 +161,6 @@ describe('notify-amendment-changes cron', () => {
     vi.stubEnv('CRON_SECRET', 'test-secret')
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://laglig.se')
     mockPrisma.changeEvent.updateMany.mockResolvedValue({ count: 1 })
-    mockPrisma.legalDocument.update.mockResolvedValue({})
   })
 
   it('returns 401 when CRON_SECRET header is missing', async () => {
@@ -249,7 +204,6 @@ describe('notify-amendment-changes cron', () => {
       '@/app/api/cron/notify-amendment-changes/route'
     )
     mockPrisma.changeEvent.findMany.mockResolvedValue([CHANGE_EVENT_1])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(AMENDMENT_LEGAL_DOC)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
     mockResolveAffectedRecipients.mockResolvedValue(RECIPIENTS_DOC1)
 
@@ -296,7 +250,6 @@ describe('notify-amendment-changes cron', () => {
       CHANGE_EVENT_1,
       CHANGE_EVENT_2,
     ])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(AMENDMENT_LEGAL_DOC)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
     mockResolveAffectedRecipients.mockResolvedValue(recipients)
 
@@ -310,66 +263,44 @@ describe('notify-amendment-changes cron', () => {
     expect(mockSendEmail.mock.calls[0]![0].subject).toContain('2')
   })
 
-  it('generates content when LegalDocument.summary is null', async () => {
+  it('passes ai_summary from ChangeEvent to email template', async () => {
     const { GET } = await import(
       '@/app/api/cron/notify-amendment-changes/route'
     )
-    const docWithoutSummary = {
-      ...AMENDMENT_LEGAL_DOC,
-      summary: null,
-      kommentar: null,
-    }
-
     mockPrisma.changeEvent.findMany.mockResolvedValue([CHANGE_EVENT_1])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(docWithoutSummary)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
-    mockResolveAffectedRecipients.mockResolvedValue(RECIPIENTS_DOC1)
+    mockResolveAffectedRecipients.mockResolvedValue([RECIPIENTS_DOC1[0]])
 
-    const res = await GET(makeRequest('Bearer test-secret'))
-    const data = await res.json()
+    await GET(makeRequest('Bearer test-secret'))
 
-    expect(data.success).toBe(true)
-    expect(data.stats.contentGenerated).toBe(1)
-
-    // Verify LegalDocument was updated with generated content
-    expect(mockPrisma.legalDocument.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          summary: 'Generated summering',
-          kommentar: 'Generated kommentar',
-          summering_generated_by: 'claude-sonnet-4-5-20250929',
-          kommentar_generated_by: 'claude-sonnet-4-5-20250929',
-        }),
-      })
-    )
+    // The react element props should contain the ai_summary from ChangeEvent
+    const emailCall = mockSendEmail.mock.calls[0]![0]
+    const reactElement = emailCall.react
+    const changes = reactElement.props.changes as Array<{
+      aiSummary: string | null
+      assessUrl: string
+    }>
+    expect(changes[0]!.aiSummary).toBe('En ändring i arbetsmiljölagen.')
   })
 
-  it('falls back gracefully when LLM call throws', async () => {
+  it('includes assessUrl deep-link in email data', async () => {
     const { GET } = await import(
       '@/app/api/cron/notify-amendment-changes/route'
     )
-
-    // Override the Anthropic create mock to throw
-    mockAnthropicCreate.mockRejectedValue(new Error('LLM timeout'))
-
-    const docWithoutSummary = {
-      ...AMENDMENT_LEGAL_DOC,
-      summary: null,
-      kommentar: null,
-    }
-
     mockPrisma.changeEvent.findMany.mockResolvedValue([CHANGE_EVENT_1])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(docWithoutSummary)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
-    mockResolveAffectedRecipients.mockResolvedValue(RECIPIENTS_DOC1)
+    mockResolveAffectedRecipients.mockResolvedValue([RECIPIENTS_DOC1[0]])
 
-    const res = await GET(makeRequest('Bearer test-secret'))
-    const data = await res.json()
+    await GET(makeRequest('Bearer test-secret'))
 
-    expect(data.success).toBe(true)
-    expect(data.stats.contentFailed).toBe(1)
-    // Emails still sent (without summering/kommentar)
-    expect(mockSendEmail).toHaveBeenCalledTimes(2)
+    const emailCall = mockSendEmail.mock.calls[0]![0]
+    const reactElement = emailCall.react
+    const changes = reactElement.props.changes as Array<{
+      assessUrl: string
+    }>
+    expect(changes[0]!.assessUrl).toBe(
+      'https://laglig.se/dashboard?changeId=ce-1'
+    )
   })
 
   it('skips user with email preferences disabled', async () => {
@@ -377,7 +308,6 @@ describe('notify-amendment-changes cron', () => {
       '@/app/api/cron/notify-amendment-changes/route'
     )
     mockPrisma.changeEvent.findMany.mockResolvedValue([CHANGE_EVENT_1])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(AMENDMENT_LEGAL_DOC)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
     mockResolveAffectedRecipients.mockResolvedValue(RECIPIENTS_DOC1)
 
@@ -401,7 +331,6 @@ describe('notify-amendment-changes cron', () => {
       CHANGE_EVENT_1,
       CHANGE_EVENT_2,
     ])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(AMENDMENT_LEGAL_DOC)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
     mockResolveAffectedRecipients.mockResolvedValue(RECIPIENTS_DOC1)
 
@@ -420,7 +349,7 @@ describe('notify-amendment-changes cron', () => {
     expect(data.stats.amendmentsProcessed).toBe(2)
     expect(data.stats.emailsSent).toBe(0)
     // Amendment lookup should not have been reached
-    expect(mockPrisma.legalDocument.findUnique).not.toHaveBeenCalled()
+    expect(mockPrisma.amendmentDocument.findUnique).not.toHaveBeenCalled()
 
     spy.mockRestore()
   })
@@ -433,7 +362,6 @@ describe('notify-amendment-changes cron', () => {
       CHANGE_EVENT_1,
       CHANGE_EVENT_2,
     ])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(AMENDMENT_LEGAL_DOC)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
 
     // doc-1 → workspace A, doc-2 → workspace B
@@ -478,7 +406,6 @@ describe('notify-amendment-changes cron', () => {
       '@/app/api/cron/notify-amendment-changes/route'
     )
     mockPrisma.changeEvent.findMany.mockResolvedValue([CHANGE_EVENT_1])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(AMENDMENT_LEGAL_DOC)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
     mockResolveAffectedRecipients.mockResolvedValue(RECIPIENTS_DOC1)
 
@@ -488,12 +415,11 @@ describe('notify-amendment-changes cron', () => {
     expect(mockProcessChangeEventNotifications).toHaveBeenCalledWith(['ce-1'])
   })
 
-  it('tracks correct stats', async () => {
+  it('tracks correct stats (no content generation fields)', async () => {
     const { GET } = await import(
       '@/app/api/cron/notify-amendment-changes/route'
     )
     mockPrisma.changeEvent.findMany.mockResolvedValue([CHANGE_EVENT_1])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(AMENDMENT_LEGAL_DOC)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
     mockResolveAffectedRecipients.mockResolvedValue(RECIPIENTS_DOC1)
 
@@ -511,10 +437,11 @@ describe('notify-amendment-changes cron', () => {
       emailsSent: 2,
       emailsFailed: 0,
       amendmentsProcessed: 1,
-      contentGenerated: 0, // Already had summering/kommentar
-      contentFailed: 0,
       notificationsCreated: 2,
     })
+    // Content generation fields should not exist
+    expect(data.stats.contentGenerated).toBeUndefined()
+    expect(data.stats.contentFailed).toBeUndefined()
   })
 
   it('sends admin summary email after processing', async () => {
@@ -522,7 +449,6 @@ describe('notify-amendment-changes cron', () => {
       '@/app/api/cron/notify-amendment-changes/route'
     )
     mockPrisma.changeEvent.findMany.mockResolvedValue([CHANGE_EVENT_1])
-    mockPrisma.legalDocument.findUnique.mockResolvedValue(AMENDMENT_LEGAL_DOC)
     mockPrisma.amendmentDocument.findUnique.mockResolvedValue(AMENDMENT_DOC)
     mockResolveAffectedRecipients.mockResolvedValue(RECIPIENTS_DOC1)
 
