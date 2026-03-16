@@ -5,7 +5,13 @@
  * Drag-and-drop Kanban board for task management
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  type MouseEvent,
+} from 'react'
 import {
   DndContext,
   closestCorners,
@@ -17,6 +23,7 @@ import {
   type DragStartEvent,
   type DragOverEvent,
   DragOverlay,
+  useDroppable,
 } from '@dnd-kit/core'
 import {
   SortableContext,
@@ -30,11 +37,18 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
   MessageSquare,
   Calendar,
   AlertCircle,
   Plus,
   MoreHorizontal,
+  Trash2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
@@ -42,12 +56,14 @@ import { sv } from 'date-fns/locale'
 import {
   updateTaskStatus,
   createTask,
+  deleteTask,
   type TaskWithRelations,
   type TaskColumnWithCount,
 } from '@/app/actions/tasks'
 import { Input } from '@/components/ui/input'
 import type { WorkspaceMember } from './index'
 import { TaskFilters } from './task-filters'
+import { TaskDeleteDialog } from '../task-delete-dialog'
 import { toast } from 'sonner'
 
 // ============================================================================
@@ -60,6 +76,7 @@ interface KanbanTabProps {
   workspaceMembers: WorkspaceMember[]
   onTaskClick?: (_taskId: string) => void
   onTaskCreated?: (_task: TaskWithRelations) => void
+  onTaskDelete?: (_taskId: string) => void
 }
 
 // ============================================================================
@@ -83,6 +100,7 @@ export function KanbanTab({
   workspaceMembers,
   onTaskClick,
   onTaskCreated,
+  onTaskDelete,
 }: KanbanTabProps) {
   const [tasks, setTasks] = useState(initialTasks)
   const [columns] = useState(initialColumns)
@@ -254,6 +272,12 @@ export function KanbanTab({
                   // Also notify parent for cross-tab sync
                   onTaskCreated?.(newTask)
                 }}
+                onTaskDelete={(taskId) => {
+                  // Remove from local state
+                  setTasks((prev) => prev.filter((t) => t.id !== taskId))
+                  // Notify parent for cross-tab sync
+                  onTaskDelete?.(taskId)
+                }}
               />
             ))}
         </div>
@@ -275,6 +299,7 @@ interface KanbanColumnProps {
   tasks: TaskWithRelations[]
   onTaskClick?: ((_taskId: string) => void) | undefined
   onTaskCreated?: ((_task: TaskWithRelations) => void) | undefined
+  onTaskDelete?: ((_taskId: string) => void) | undefined
 }
 
 function KanbanColumn({
@@ -282,7 +307,9 @@ function KanbanColumn({
   tasks,
   onTaskClick,
   onTaskCreated,
+  onTaskDelete,
 }: KanbanColumnProps) {
+  const { setNodeRef: setDroppableRef } = useDroppable({ id: column.id })
   const [isAddingTask, setIsAddingTask] = useState(false)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [isCreating, setIsCreating] = useState(false)
@@ -398,12 +425,13 @@ function KanbanColumn({
             strategy={verticalListSortingStrategy}
             id={column.id}
           >
-            <div className="space-y-2 min-h-[100px]">
+            <div ref={setDroppableRef} className="space-y-2 min-h-[100px]">
               {tasks.map((task) => (
                 <SortableTaskCard
                   key={task.id}
                   task={task}
                   onTaskClick={onTaskClick}
+                  onTaskDelete={onTaskDelete}
                 />
               ))}
             </div>
@@ -421,9 +449,11 @@ function KanbanColumn({
 function SortableTaskCard({
   task,
   onTaskClick,
+  onTaskDelete,
 }: {
   task: TaskWithRelations
   onTaskClick?: ((_taskId: string) => void) | undefined
+  onTaskDelete?: ((_taskId: string) => void) | undefined
 }) {
   const {
     attributes,
@@ -445,6 +475,7 @@ function SortableTaskCard({
         task={task}
         isDragging={isDragging}
         onClick={() => onTaskClick?.(task.id)}
+        onTaskDelete={onTaskDelete}
       />
     </div>
   )
@@ -458,105 +489,161 @@ interface TaskCardProps {
   task: TaskWithRelations
   isDragging?: boolean | undefined
   onClick?: (() => void) | undefined
+  onTaskDelete?: ((_taskId: string) => void) | undefined
 }
 
-function TaskCard({ task, isDragging, onClick }: TaskCardProps) {
+function TaskCard({ task, isDragging, onClick, onTaskDelete }: TaskCardProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    const result = await deleteTask(task.id)
+    if (result.success) {
+      toast.success('Uppgift raderad')
+      onTaskDelete?.(task.id)
+    } else {
+      toast.error('Kunde inte radera uppgift', {
+        description: result.error,
+      })
+    }
+    setIsDeleting(false)
+    setDeleteDialogOpen(false)
+  }
+
   const isOverdue =
     task.due_date &&
     !task.column.is_done &&
     new Date(task.due_date) < new Date()
 
   return (
-    <Card
-      className={cn(
-        'cursor-grab border-l-4 transition-shadow',
-        PRIORITY_COLORS[task.priority as keyof typeof PRIORITY_COLORS],
-        isDragging && 'opacity-50 shadow-lg',
-        isOverdue && 'border-l-red-500',
-        onClick && 'cursor-pointer hover:shadow-md'
-      )}
-      onClick={(e) => {
-        // Only trigger click if not dragging and not clicking a button
-        if (!isDragging && !(e.target as HTMLElement).closest('button')) {
-          onClick?.()
-        }
-      }}
-    >
-      <CardContent className="p-3 space-y-2">
-        {/* Title */}
-        <div className="flex items-start justify-between gap-2">
-          <p
-            className={cn(
-              'text-sm font-medium',
-              isOverdue && 'text-destructive'
-            )}
-          >
-            {task.title}
-          </p>
-          <Button variant="ghost" size="icon" className="h-6 w-6 -mr-1 -mt-1">
-            <MoreHorizontal className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-
-        {/* Linked law */}
-        {task.list_item_links[0] && (
-          <Badge variant="secondary" className="text-xs">
-            {task.list_item_links[0].law_list_item.document.document_number}
-          </Badge>
+    <>
+      <Card
+        className={cn(
+          'cursor-grab border-l-4 transition-shadow',
+          PRIORITY_COLORS[task.priority as keyof typeof PRIORITY_COLORS],
+          isDragging && 'opacity-50 shadow-lg',
+          isOverdue && 'border-l-red-500',
+          onClick && 'cursor-pointer hover:shadow-md'
         )}
-
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-1">
-          {/* Assignee */}
-          <div className="flex items-center gap-1.5">
-            {task.assignee ? (
-              <Avatar className="h-5 w-5">
-                {task.assignee.avatar_url && (
-                  <AvatarImage
-                    src={task.assignee.avatar_url}
-                    alt={task.assignee.name ?? ''}
-                  />
-                )}
-                <AvatarFallback className="text-[10px]">
-                  {(task.assignee.name ?? task.assignee.email)
-                    .slice(0, 2)
-                    .toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <span className="text-xs text-muted-foreground">Otilldelad</span>
-            )}
+        onClick={(e) => {
+          // Only trigger click if not dragging and not clicking a button/menu
+          if (
+            !isDragging &&
+            !(e.target as HTMLElement).closest(
+              'button, [role="menu"], [role="menuitem"]'
+            )
+          ) {
+            onClick?.()
+          }
+        }}
+      >
+        <CardContent className="p-3 space-y-2">
+          {/* Title */}
+          <div className="flex items-start justify-between gap-2">
+            <p
+              className={cn(
+                'text-sm font-medium',
+                isOverdue && 'text-destructive'
+              )}
+            >
+              {task.title}
+            </p>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 -mr-1 -mt-1"
+                  onClick={(e: MouseEvent) => e.stopPropagation()}
+                >
+                  <MoreHorizontal className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={(e: MouseEvent) => {
+                    e.stopPropagation()
+                    setDeleteDialogOpen(true)
+                  }}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Ta bort
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          {/* Metadata */}
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {task._count.comments > 0 && (
-              <div className="flex items-center gap-0.5">
-                <MessageSquare className="h-3 w-3" />
-                {task._count.comments}
-              </div>
-            )}
-            {task.due_date && (
-              <div
-                className={cn(
-                  'flex items-center gap-0.5',
-                  isOverdue && 'text-destructive'
-                )}
-              >
-                {isOverdue ? (
-                  <AlertCircle className="h-3 w-3" />
-                ) : (
-                  <Calendar className="h-3 w-3" />
-                )}
-                {formatDistanceToNow(new Date(task.due_date), {
-                  locale: sv,
-                  addSuffix: false,
-                })}
-              </div>
-            )}
+          {/* Linked law */}
+          {task.list_item_links[0] && (
+            <Badge variant="secondary" className="text-xs">
+              {task.list_item_links[0].law_list_item.document.document_number}
+            </Badge>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-1">
+            {/* Assignee */}
+            <div className="flex items-center gap-1.5">
+              {task.assignee ? (
+                <Avatar className="h-5 w-5">
+                  {task.assignee.avatar_url && (
+                    <AvatarImage
+                      src={task.assignee.avatar_url}
+                      alt={task.assignee.name ?? ''}
+                    />
+                  )}
+                  <AvatarFallback className="text-[10px]">
+                    {(task.assignee.name ?? task.assignee.email)
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  Otilldelad
+                </span>
+              )}
+            </div>
+
+            {/* Metadata */}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              {task._count.comments > 0 && (
+                <div className="flex items-center gap-0.5">
+                  <MessageSquare className="h-3 w-3" />
+                  {task._count.comments}
+                </div>
+              )}
+              {task.due_date && (
+                <div
+                  className={cn(
+                    'flex items-center gap-0.5',
+                    isOverdue && 'text-destructive'
+                  )}
+                >
+                  {isOverdue ? (
+                    <AlertCircle className="h-3 w-3" />
+                  ) : (
+                    <Calendar className="h-3 w-3" />
+                  )}
+                  {formatDistanceToNow(new Date(task.due_date), {
+                    locale: sv,
+                    addSuffix: false,
+                  })}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      <TaskDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        taskTitle={task.title}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
+    </>
   )
 }
