@@ -46,6 +46,7 @@ export function calculateProfileCompleteness(
     | 'website_url'
     | 'collective_agreement_name'
     | 'business_description'
+    | 'tax_status'
   >
 ): number {
   let score = 0
@@ -75,6 +76,12 @@ export function calculateProfileCompleteness(
   if (profile.website_url) score += 5
   if (profile.collective_agreement_name) score += 5
   if (profile.business_description) score += 5
+
+  if (profile.tax_status) {
+    const ts = profile.tax_status as Record<string, boolean>
+    const hasAnyValue = Object.keys(ts).length > 0
+    if (hasAnyValue) score += 5
+  }
 
   return Math.min(score, 100)
 }

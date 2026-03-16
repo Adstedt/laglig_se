@@ -72,6 +72,17 @@ describe('get_company_context tool', () => {
       collective_agreement_name: null,
       workforce_composition: null,
       revenue_range: null,
+      business_description: null,
+      tax_status: null,
+      foreign_owned: false,
+      parent_company_name: null,
+      parent_company_orgnr: null,
+      fi_regulated: false,
+      active_status: null,
+      ongoing_procedures: null,
+      registered_date: null,
+      data_source: null,
+      last_enriched_at: null,
       created_at: new Date(),
       updated_at: new Date(),
     } as never)
@@ -151,6 +162,17 @@ describe('get_company_context tool', () => {
       collective_agreement_name: null,
       workforce_composition: null,
       revenue_range: null,
+      business_description: null,
+      tax_status: null,
+      foreign_owned: false,
+      parent_company_name: null,
+      parent_company_orgnr: null,
+      fi_regulated: false,
+      active_status: null,
+      ongoing_procedures: null,
+      registered_date: null,
+      data_source: null,
+      last_enriched_at: null,
       created_at: new Date(),
       updated_at: new Date(),
     } as never)
@@ -204,6 +226,17 @@ describe('get_company_context tool', () => {
       collective_agreement_name: null,
       workforce_composition: null,
       revenue_range: null,
+      business_description: null,
+      tax_status: null,
+      foreign_owned: false,
+      parent_company_name: null,
+      parent_company_orgnr: null,
+      fi_regulated: false,
+      active_status: null,
+      ongoing_procedures: null,
+      registered_date: null,
+      data_source: null,
+      last_enriched_at: null,
       created_at: new Date(),
       updated_at: new Date(),
     } as never)
@@ -224,6 +257,138 @@ describe('get_company_context tool', () => {
     const data = (result as { data: Record<string, unknown> }).data
     expect(data.companyName).toBe('Auto Workspace')
     expect(data.profileComplete).toBe(false)
+  })
+
+  it('returns enrichment fields when populated', async () => {
+    const regDate = new Date('2018-06-15')
+    const enrichedAt = new Date('2026-03-10')
+    mockProfileFindUnique.mockResolvedValue({
+      id: 'profile-enriched',
+      workspace_id: WORKSPACE_ID,
+      company_name: 'Enriched AB',
+      org_number: '556999-1234',
+      sni_code: '62010',
+      industry_label: 'Dataprogrammering',
+      employee_count_range: 'RANGE_10_49',
+      organization_type: 'AB',
+      compliance_maturity: 'DEVELOPING',
+      has_compliance_officer: false,
+      certifications: [],
+      profile_completeness: 90,
+      legal_form: null,
+      employee_count: null,
+      address: null,
+      activity_flags: null,
+      last_onboarding_at: null,
+      municipality: null,
+      website_url: null,
+      founded_year: null,
+      has_collective_agreement: false,
+      collective_agreement_name: null,
+      workforce_composition: null,
+      revenue_range: null,
+      business_description: 'IT-konsultföretag med fokus på compliance',
+      tax_status: { f_tax: true, vat: true, employer: true },
+      foreign_owned: true,
+      parent_company_name: 'Global Corp Ltd',
+      parent_company_orgnr: null,
+      fi_regulated: true,
+      active_status: 'active',
+      ongoing_procedures: {
+        liquidation: false,
+        restructuring: false,
+        bankruptcy: false,
+      },
+      registered_date: regDate,
+      data_source: 'bolagsapi',
+      last_enriched_at: enrichedAt,
+      created_at: new Date(),
+      updated_at: new Date(),
+    } as never)
+
+    mockLawListFindMany.mockResolvedValue([] as never)
+    mockLawListItemGroupBy.mockResolvedValue([] as never)
+    mockQueryRaw.mockResolvedValue([{ count: BigInt(0) }] as never)
+
+    const result = await tool.execute({}, makeExecuteArgs())
+    const data = (result as { data: Record<string, unknown> }).data
+
+    expect(data.businessDescription).toBe(
+      'IT-konsultföretag med fokus på compliance'
+    )
+    expect(data.taxStatus).toEqual({ f_tax: true, vat: true, employer: true })
+    expect(data.foreignOwned).toBe(true)
+    expect(data.parentCompanyName).toBe('Global Corp Ltd')
+    expect(data.fiRegulated).toBe(true)
+    expect(data.activeStatus).toBe('active')
+    expect(data.ongoingProcedures).toEqual({
+      liquidation: false,
+      restructuring: false,
+      bankruptcy: false,
+    })
+    expect(data.registeredDate).toBe(regDate.toISOString())
+    expect(data.dataSource).toBe('bolagsapi')
+    expect(data.lastEnrichedAt).toBe(enrichedAt.toISOString())
+  })
+
+  it('returns null enrichment fields for unenriched profile', async () => {
+    mockProfileFindUnique.mockResolvedValue({
+      id: 'profile-2',
+      workspace_id: WORKSPACE_ID,
+      company_name: 'Nytt Företag',
+      org_number: null,
+      sni_code: null,
+      industry_label: null,
+      employee_count_range: null,
+      organization_type: null,
+      compliance_maturity: null,
+      has_compliance_officer: false,
+      certifications: [],
+      profile_completeness: 10,
+      legal_form: null,
+      employee_count: null,
+      address: null,
+      activity_flags: null,
+      last_onboarding_at: null,
+      municipality: null,
+      website_url: null,
+      founded_year: null,
+      has_collective_agreement: false,
+      collective_agreement_name: null,
+      workforce_composition: null,
+      revenue_range: null,
+      business_description: null,
+      tax_status: null,
+      foreign_owned: false,
+      parent_company_name: null,
+      parent_company_orgnr: null,
+      fi_regulated: false,
+      active_status: null,
+      ongoing_procedures: null,
+      registered_date: null,
+      data_source: null,
+      last_enriched_at: null,
+      created_at: new Date(),
+      updated_at: new Date(),
+    } as never)
+
+    mockLawListFindMany.mockResolvedValue([] as never)
+    mockLawListItemGroupBy.mockResolvedValue([] as never)
+    mockQueryRaw.mockResolvedValue([{ count: BigInt(0) }] as never)
+
+    const result = await tool.execute({}, makeExecuteArgs())
+    const data = (result as { data: Record<string, unknown> }).data
+
+    expect(data.businessDescription).toBeNull()
+    expect(data.taxStatus).toBeNull()
+    expect(data.foreignOwned).toBe(false)
+    expect(data.parentCompanyName).toBeNull()
+    expect(data.fiRegulated).toBe(false)
+    expect(data.activeStatus).toBeNull()
+    expect(data.ongoingProcedures).toBeNull()
+    expect(data.registeredDate).toBeNull()
+    expect(data.dataSource).toBeNull()
+    expect(data.lastEnrichedAt).toBeNull()
   })
 
   it('returns error with Swedish guidance on failure', async () => {

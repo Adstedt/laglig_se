@@ -79,6 +79,9 @@ export function formatCompanyContext(
   if (profile.company_name) {
     lines.push(`- Företag: ${profile.company_name}`)
   }
+  if (profile.business_description) {
+    lines.push(`- Verksamhet: ${profile.business_description}`)
+  }
   if (profile.org_number) {
     lines.push(`- Organisationsnummer: ${profile.org_number}`)
   }
@@ -94,6 +97,13 @@ export function formatCompanyContext(
       EMPLOYEE_RANGE_LABELS[profile.employee_count_range] ??
       profile.employee_count_range
     lines.push(`- Antal anställda: ${label}`)
+  }
+  if (profile.registered_date) {
+    lines.push(
+      `- Registrerad: ${new Date(profile.registered_date).getFullYear()}`
+    )
+  } else if (profile.founded_year) {
+    lines.push(`- Registrerad: ${profile.founded_year}`)
   }
   if (profile.certifications && profile.certifications.length > 0) {
     lines.push(`- Certifieringar: ${profile.certifications.join(', ')}`)
@@ -123,6 +133,54 @@ export function formatCompanyContext(
     if (activeFlags.length > 0) {
       lines.push(`- Verksamhetsområden: ${activeFlags.join(', ')}`)
     }
+  }
+
+  const taxStatus = profile.tax_status as Record<string, boolean | null> | null
+  if (taxStatus && typeof taxStatus === 'object') {
+    if (taxStatus.f_tax != null) {
+      lines.push(`- F-skatt: ${taxStatus.f_tax ? 'Ja' : 'Nej'}`)
+    }
+    if (taxStatus.vat != null) {
+      lines.push(`- Momsregistrerad: ${taxStatus.vat ? 'Ja' : 'Nej'}`)
+    }
+    if (taxStatus.employer != null) {
+      lines.push(
+        `- Registrerad arbetsgivare: ${taxStatus.employer ? 'Ja' : 'Nej'}`
+      )
+    }
+  }
+
+  if (profile.foreign_owned) {
+    const parentInfo = profile.parent_company_name
+      ? ` (moderbolag: ${profile.parent_company_name})`
+      : ''
+    lines.push(`- Utlandsägt: Ja${parentInfo}`)
+  }
+
+  if (profile.fi_regulated) {
+    lines.push('- Finansinspektionen-reglerad: Ja')
+  }
+
+  const procedures = profile.ongoing_procedures as Record<
+    string,
+    boolean
+  > | null
+  if (procedures && typeof procedures === 'object') {
+    const procedureLabels: Record<string, string> = {
+      liquidation: 'Likvidation',
+      restructuring: 'Rekonstruktion',
+      bankruptcy: 'Konkurs',
+    }
+    const activeProcedures = Object.entries(procedures)
+      .filter(([, v]) => v === true)
+      .map(([k]) => procedureLabels[k] ?? k)
+    if (activeProcedures.length > 0) {
+      lines.push(`- Pågående förfaranden: ${activeProcedures.join(', ')}`)
+    }
+  }
+
+  if (profile.active_status === 'deregistered') {
+    lines.push('- Status: Avregistrerad')
   }
 
   if (lines.length === 0) return undefined
