@@ -1,0 +1,49 @@
+schema: 1
+story: '15.1'
+story_title: 'Schema Migration & BolagsAPI Client'
+gate: PASS
+status_reason: 'All 17 ACs met, 22 tests passing, no new type errors, clean additive migration, solid error handling with graceful degradation.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-16T12:30:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-03-30T00:00:00Z'
+
+evidence:
+  tests_reviewed: 22
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Bearer token from env, optional key with graceful null returns, auth errors surfaced via exceptions'
+  performance:
+    status: PASS
+    notes: '5s timeout via AbortController with proper cleanup, no database queries in this module'
+  reliability:
+    status: PASS
+    notes: 'Graceful degradation on timeout/rate-limit/server-errors, only throws on auth misconfiguration'
+  maintainability:
+    status: PASS
+    notes: 'Clean type/client/mapper/barrel separation, JSDoc comments, consistent with project patterns'
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 0 }
+  recommendations:
+    must_fix: []
+    monitor: []
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add timeout test for validateOrgNumber (AbortError path only tested in fetchCompany)'
+      refs: ['tests/unit/lib/bolagsapi/client.test.ts']
+    - action: 'Consider using validated env import from lib/env.ts instead of raw process.env in getApiKey()'
+      refs: ['lib/bolagsapi/client.ts:26-28']

@@ -195,6 +195,19 @@ model CompanyProfile {
   workforce_composition     WorkforceComposition?
   revenue_range             RevenueRange?
 
+  // Story 15.1: BolagsAPI enrichment fields
+  business_description String?
+  tax_status           Json?
+  foreign_owned        Boolean   @default(false)
+  parent_company_name  String?
+  parent_company_orgnr String?
+  fi_regulated         Boolean   @default(false)
+  active_status        String?
+  ongoing_procedures   Json?
+  registered_date      DateTime?
+  data_source          String?
+  last_enriched_at     DateTime?
+
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
   @@map("company_profiles")

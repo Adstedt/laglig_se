@@ -17,6 +17,7 @@ export const env = createEnv({
       .default('development'),
     ADMIN_EMAILS: z.string().min(1).optional(),
     ADMIN_JWT_SECRET: z.string().min(32).optional(),
+    BOLAGSAPI_API_KEY: z.string().min(1).optional(),
   },
 
   /**
@@ -44,6 +45,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     ADMIN_EMAILS: process.env.ADMIN_EMAILS,
     ADMIN_JWT_SECRET: process.env.ADMIN_JWT_SECRET,
+    BOLAGSAPI_API_KEY: process.env.BOLAGSAPI_API_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
