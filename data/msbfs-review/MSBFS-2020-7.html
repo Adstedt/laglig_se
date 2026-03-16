@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>MSBFS 2020:7</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="MSBFS2020-7">
+  <div class="lovhead">
+    <h1>
+      <p class="text">MSBFS 2020:7</p>
+      <p class="text">Myndigheten för samhällsskydd och beredskaps föreskrifter om säkerhetsåtgärder i informationssystem för statliga myndigheter</p>
+    </h1>
+  </div>
+  <div class="body">
+    <p class="text">beslutade den 1 september 2020.</p>
+    <p class="text">Myndigheten för samhällsskydd och beredskap föreskriver följande med stöd av 21 § förordningen (2015:1052) om krisberedskap och bevakningsansvariga myndigheters åtgärder vid höjd beredskap och beslutar följande allmänna råd.</p>
+
+    <section class="kapitel" id="MSBFS2020-7_K1">
+      <h2 class="kapitel-rubrik">1 kap. Inledande bestämmelser</h2>
+
+      <h3 id="MSBFS2020-7_tillampningsomrade">Tillämpningsområde</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K1_P1" name="MSBFS2020-7_K1_P1">1 §</a>
+      </h3>
+      <p class="text">Dessa föreskrifter innehåller bestämmelser om sådana säkerhetskrav som avses i 19 § förordningen (2015:1052) om krisberedskap och bevakningsansvariga myndigheters åtgärder vid höjd beredskap.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K1_P2" name="MSBFS2020-7_K1_P2">2 §</a>
+      </h3>
+      <p class="text">Om en annan författning innehåller en bestämmelse som ställer högre krav än kraven i dessa föreskrifter tillämpas den bestämmelsen.</p>
+
+      <h3 id="MSBFS2020-7_begreppsforklaring">Begreppsförklaring</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K1_P3" name="MSBFS2020-7_K1_P3">3 §</a>
+      </h3>
+      <p class="text">I dessa föreskrifter avses med</p>
+      <dl>
+        <dt><strong>extern aktör</strong></dt>
+        <dd>Leverantör som inte omfattas av dessa föreskrifter, inhyrd personal eller motsvarande.</dd>
+        <dt><strong>informationssystem</strong></dt>
+        <dd>Applikationer, tjänster eller andra komponenter som hanterar information. I begreppet ingår också nätverk och infrastruktur.</dd>
+        <dt><strong>it-miljö</strong></dt>
+        <dd>Den samlade mängden informationssystem som används för att behandla information som myndigheten ansvarar för.</dd>
+        <dt><strong>produktionsmiljö</strong></dt>
+        <dd>Den del av it-miljön som myndigheten använder för att utföra sitt uppdrag.</dd>
+        <dt><strong>redundant funktion</strong></dt>
+        <dd>Två eller flera, identiska eller olika, funktioner som oberoende av varandra uppfyller samma syfte.</dd>
+        <dt><strong>systemadministrativ behörighet</strong></dt>
+        <dd>Behörighet med priviligierade rättigheter som ger möjlighet att förändra grundläggande funktioner och säkerhetsfunktioner i ett informationssystem.</dd>
+        <dt><strong>säkerhetsfunktion</strong></dt>
+        <dd>Funktion som svarar för viss del av säkerheten såsom behörighetskontrollsystem, säkerhetsloggning, intrångsdetektering, intrångsskydd eller skydd mot skadlig kod.</dd>
+        <dt><strong>säkerhetsloggning</strong></dt>
+        <dd>Elektronisk registrering av säkerhetsrelaterade händelser.</dd>
+      </dl>
+    </section>
+
+    <section class="kapitel" id="MSBFS2020-7_K2">
+      <h2 class="kapitel-rubrik">2 kap. Grundläggande bestämmelser</h2>
+
+      <h3 id="MSBFS2020-7_ansvar">Ansvar</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K2_P1" name="MSBFS2020-7_K2_P1">1 §</a>
+      </h3>
+      <p class="text">Myndigheten ska, för varje informationssystem, tydliggöra vilken befattning som ansvarar för att införa, förvalta, följa upp och utvärdera säkerhetsåtgärder (systemägare).</p>
+
+      <h3 id="MSBFS2020-7_omvarldsbevakning-och-riskbedomning">Omvärldsbevakning och riskbedömning</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K2_P2" name="MSBFS2020-7_K2_P2">2 §</a>
+      </h3>
+      <p class="text">Myndigheten ska bedriva omvärldsbevakning för att underlätta identifiering och hantering av hot mot och sårbarheter i myndighetens informationssystem.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K2_P3" name="MSBFS2020-7_K2_P3">3 §</a>
+      </h3>
+      <p class="text">Myndigheten ska genomföra riskbedömning för enskilda informationssystem och myndighetens produktionsmiljö i sin helhet.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Riskbedömningar bör även genomföras för myndighetens utvecklings-, test- respektive utbildningsmiljö.</p>
+        <p class="text">Myndigheten bör överväga att ge systemägaren för berört informationssystem i uppgift att säkerställa att riskbedömning genomförs.</p>
+      </div>
+
+      <h3 id="MSBFS2020-7_dokumentation-av-it-miljon">Dokumentation av it-miljön</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K2_P4" name="MSBFS2020-7_K2_P4">4 §</a>
+      </h3>
+      <p class="text">Myndigheten ska upprätthålla uppdaterad dokumentation över</p>
+      <ol type="1">
+        <li>hård- och mjukvara som används i varje enskilt informationssystem,</li>
+        <li>beroenden mellan olika interna informationssystem respektive beroenden av informationssystem hos externa aktörer,</li>
+        <li>vilka informationssystem som behandlar information som har behov av utökat skydd, och</li>
+        <li>vilka informationssystem som är centrala för myndighetens förmåga att utföra sitt uppdrag.</li>
+      </ol>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Tekniskt stöd bör användas för att upprätthålla uppdaterad dokumentation.</p>
+        <p class="text">Beroenden bör tydliggöras i en systemkarta eller motsvarande.</p>
+        <p class="text">Information som är i behov av utökat skydd bör identifieras med stöd av informationsklassning enligt 6 § MSBFS 2020:6.</p>
+      </div>
+    </section>
+
+    <section class="kapitel" id="MSBFS2020-7_K3">
+      <h2 class="kapitel-rubrik">3 kap. Utveckling, anskaffning och utkontraktering</h2>
+
+      <h3 id="MSBFS2020-7_kravstallning-och-kontroll">Kravställning och kontroll</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K3_P1" name="MSBFS2020-7_K3_P1">1 §</a>
+      </h3>
+      <p class="text">Myndigheten ska, vid utveckling, anskaffning eller utkontraktering av informationssystem, identifiera krav på säkerhet avseende</p>
+      <ol type="1">
+        <li>uppdelning i nätverkssegment,</li>
+        <li>filtrering av nätverkstrafik,</li>
+        <li>behörigheter, digitala identiteter och autentisering,</li>
+        <li>kryptering,</li>
+        <li>säkerhetskonfigurering,</li>
+        <li>säkerhetstester och granskningar,</li>
+        <li>ändringshantering, uppgradering och uppdatering,</li>
+        <li>robust och korrekt tid,</li>
+        <li>säkerhetskopiering,</li>
+        <li>säkerhetsloggning och tillhörande analys,</li>
+        <li>övervakning av nätverkstrafik,</li>
+        <li>övervakning av informationssystem inklusive säkerhetsfunktioner,</li>
+        <li>skydd mot skadlig kod,</li>
+        <li>skydd av utrustning,</li>
+        <li>redundans och återställning,</li>
+        <li>kontinuitet under fredstida krissituation samt inför och vid höjd beredskap,</li>
+        <li>arkivering, och</li>
+        <li>avveckling.</li>
+      </ol>
+      <p class="text">Myndigheten ska dokumentera vilka säkerhetsåtgärder som valts för att möta respektive krav.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Vid anskaffning av informationssystem bör myndigheten överväga att välja produkter som är certifierade genom tredjepartsgranskning mot etablerad standard.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K3_P2" name="MSBFS2020-7_K3_P2">2 §</a>
+      </h3>
+      <p class="text">Myndigheten ska, innan driftsättning och inför förändring som kan påverka säkerheten i informationssystemen,</p>
+      <ol type="1">
+        <li>genom säkerhetstester och granskning kontrollera att valda säkerhetsåtgärder är tillräckliga för att möta identifierade krav på säkerhet, och</li>
+        <li>verifiera att det finns nödvändig dokumentation för drift och förvaltning.</li>
+      </ol>
+      <p class="text">I de fall brister identifieras ska myndigheten riskbedöma och hantera dessa brister innan driftsättning eller inför förändring som kan påverka säkerheten i informationssystemen.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Nödvändig dokumentation för drift och förvaltning bör omfatta arkitektur, ingående komponenter, konfiguration, dataflöden och övrig relevant systeminformation. Av dokumentationen bör även framgå vem som är systemägare samt om och till vilken extern aktör informationssystemet är utkontrakterat.</p>
+      </div>
+
+      <h3 id="MSBFS2020-7_utvecklings-test-och-utbildningsmiljoer">Utvecklings-, test- och utbildningsmiljöer</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K3_P3" name="MSBFS2020-7_K3_P3">3 §</a>
+      </h3>
+      <p class="text">Myndighetens arbete med utveckling och tester som kan påverka informationssäkerheten i produktionsmiljön ska ske i en från produktionsmiljön avskild del av it-miljön.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K3_P4" name="MSBFS2020-7_K3_P4">4 §</a>
+      </h3>
+      <p class="text">Myndigheten ska identifiera och hantera behovet av en utbildningsmiljö som är avskild från produktionsmiljön.</p>
+    </section>
+
+    <section class="kapitel" id="MSBFS2020-7_K4">
+      <h2 class="kapitel-rubrik">4 kap. Drift och förvaltning</h2>
+
+      <h3 id="MSBFS2020-7_uppdelning-i-natverkssegment-och-filtrering-av-natverkstrafik">Uppdelning i nätverkssegment och filtrering av nätverkstrafik</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P1" name="MSBFS2020-7_K4_P1">1 §</a>
+      </h3>
+      <p class="text">Myndigheten ska förhindra spridning av incidenter och minska konsekvenser av angrepp genom att placera informationssystem med olika funktioner i separata nätverkssegment i sin produktionsmiljö.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Följande funktioner i produktionsmiljön bör placeras i separata nätverkssegment:</p>
+        <ol type="1">
+          <li>Klienter för användare.</li>
+          <li>Klienter för administration.</li>
+          <li>Servrar.</li>
+          <li>Centrala systemsäkerhetsfunktioner i form av behörighetskontrollsystem, säkerhetsloggning, filtrering och liknande.</li>
+          <li>Centrala stödfunktioner i form av skrivare, scanner och liknande.</li>
+          <li>Trådlösa nätverk.</li>
+          <li>Gästnätverk.</li>
+          <li>Externt åtkomliga tjänster.</li>
+          <li>Informationssystem som sammankopplas med informationssystem hos extern aktör.</li>
+          <li>Industriella informations- och styrsystem.</li>
+          <li>System som innehåller sårbarheter som inte kan hanteras.</li>
+        </ol>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P2" name="MSBFS2020-7_K4_P2">2 §</a>
+      </h3>
+      <p class="text">Myndigheten ska filtrera nätverkstrafiken så att endast nödvändiga dataflöden förekommer mellan olika nätverkssegment.</p>
+
+      <h3 id="MSBFS2020-7_behorigheter-digitala-identiteter-och-autentisering">Behörigheter, digitala identiteter och autentisering</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P3" name="MSBFS2020-7_K4_P3">3 §</a>
+      </h3>
+      <p class="text">Myndigheten ska säkerställa att endast behöriga användare och informationssystem har åtkomst till it-miljön och utforma sin behörighetshantering på ett sådant sätt att varje digital identitet inte har mer åtkomst till information och informationssystem än vad den behöver.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Behörighetshanteringen bör säkerställa att</p>
+        <ol type="1">
+          <li>digitala identiteter i produktionsmiljön är unika,</li>
+          <li>digitala identiteter och behörigheter är godkända innan de kopplas till en användare eller ett informationssystem,</li>
+          <li>tilldelade behörigheter är tidsbegränsade och kontrolleras en gång per år,</li>
+          <li>behovet av att använda olika kataloger för digitala identiteter och behörigheter är identifierat och hanterat, och</li>
+          <li>olika digitala identiteter används vid åtkomst till utvecklings- och testmiljö respektive produktionsmiljö.</li>
+        </ol>
+        <p class="text">En digital identitet bör endast användas av en individ.</p>
+        <p class="text">Digitala identiteter och behörigheter som ger tillgång till externt åtkomliga informationssystem samt utvecklings-, test- och utbildningsmiljö bör hanteras i olika kataloger skilda från kataloger för produktionsmiljön.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P4" name="MSBFS2020-7_K4_P4">4 §</a>
+      </h3>
+      <p class="text">Digitala identiteter som ger systemadministrativ behörighet ska endast användas för systemadministration och tilldelas restriktivt.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">En digital identitet med systemadministrativ behörighet bör endast ges åtkomst till en begränsad del av produktionsmiljön.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P5" name="MSBFS2020-7_K4_P5">5 §</a>
+      </h3>
+      <p class="text">Flerfaktorsautentisering ska användas vid</p>
+      <ol type="1">
+        <li>egen och inhyrd personals åtkomst till produktionsmiljön via externt nätverk,</li>
+        <li>systemadministrativ åtkomst till informationssystem, och</li>
+        <li>åtkomst till informationssystem som behandlar information som bedömts ha behov av utökat skydd.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P6" name="MSBFS2020-7_K4_P6">6 §</a>
+      </h3>
+      <p class="text">Myndigheten ska ha interna regler för hantering av autentiseringsuppgifter med krav på</p>
+      <ol type="1">
+        <li>längd och komplexitet,</li>
+        <li>när byte ska ske,</li>
+        <li>hur distribution ska ske, och</li>
+        <li>hur autentiseringsuppgifterna ska skyddas.</li>
+      </ol>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Tekniska system bör användas för att stödja efterlevnaden av reglerna avseende längd, komplexitet och byte.</p>
+      </div>
+
+      <h3 id="MSBFS2020-7_kryptering">Kryptering</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P7" name="MSBFS2020-7_K4_P7">7 §</a>
+      </h3>
+      <p class="text">Myndigheten ska identifiera och hantera behovet av kryptering för att skydda information mot obehörig åtkomst och obehörig förändring vid överföring och lagring.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Kryptering bör användas för att skydda</p>
+        <ol type="1">
+          <li>säkerhetsloggar mot obehörig åtkomst och obehörig förändring,</li>
+          <li>autentiseringsuppgifter mot obehörig åtkomst och obehörig förändring, och</li>
+          <li>information i behov av utökat skydd mot obehörig åtkomst och obehörig förändring vid överföring till informationssystem utanför myndighetens kontroll.</li>
+        </ol>
+        <p class="text">Myndigheten bör identifiera behovet av att kryptera e-post på transportlagret i enlighet med OSI-modellen (Information technology - Open Systems Interconnection - Basic Reference Model: The Basic Model, ISO/IEC 7498-1) eller motsvarande. Myndigheten bör också införa möjlighet att använda sådan kryptering vid överföring av e-post till och från andra statliga myndigheter.</p>
+        <p class="text">Myndigheten bör införa möjlighet att verifiera myndigheten som avsändare respektive mottagare av e-post.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P8" name="MSBFS2020-7_K4_P8">8 §</a>
+      </h3>
+      <p class="text">Myndigheten ska använda Domain Name System Security Extensions (DNSSEC) avseende samtliga domännamn som myndigheten registrerat i domännamnssystemet (DNS).</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P9" name="MSBFS2020-7_K4_P9">9 §</a>
+      </h3>
+      <p class="text">Myndigheten ska ha interna regler för kryptering med krav på</p>
+      <ol type="1">
+        <li>hantering av krypteringsnycklar,</li>
+        <li>godkännande och förvaltning av krypteringslösningar, och</li>
+        <li>hur krypteringsalgoritmer, krypteringsprotokoll och nyckellängder ska väljas.</li>
+      </ol>
+
+      <h3 id="MSBFS2020-7_sakerhetskonfigurering">Säkerhetskonfigurering</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P10" name="MSBFS2020-7_K4_P10">10 §</a>
+      </h3>
+      <p class="text">Myndigheten ska, för att skydda informationssystem mot obehörig åtkomst,</p>
+      <ol type="1">
+        <li>byta ut förinställda autentiseringsuppgifter,</li>
+        <li>stänga av, ta bort eller blockera systemfunktioner som inte behövs, och</li>
+        <li>i övrigt anpassa konfigurationer för att uppnå avsedd säkerhet.</li>
+      </ol>
+
+      <h3 id="MSBFS2020-7_sakerhetstester-och-granskningar">Säkerhetstester och granskningar</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P11" name="MSBFS2020-7_K4_P11">11 §</a>
+      </h3>
+      <p class="text">Myndigheten ska säkerställa att säkerhetstester och granskningar möjliggör identifiering av sårbarheter. Myndigheten ska ha interna regler för hur kontroll görs av att</p>
+      <ol type="1">
+        <li>informationssystemen är uppdaterade,</li>
+        <li>valda säkerhetsåtgärder är införda på korrekt sätt, och</li>
+        <li>genomförda säkerhetskonfigurationer är tillräckliga.</li>
+      </ol>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Automatiserade säkerhetstester och manuella granskningar bör kombineras vid kontroll av säkerheten i informationssystemen.</p>
+      </div>
+
+      <h3 id="MSBFS2020-7_andringshantering-uppgradering-och-uppdatering">Ändringshantering, uppgradering och uppdatering</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P12" name="MSBFS2020-7_K4_P12">12 §</a>
+      </h3>
+      <p class="text">Myndigheten ska säkerställa att förändringar i informationssystem genomförs på ett strukturerat och spårbart sätt. Myndigheten ska ha interna regler för ändringshantering med krav på</p>
+      <ol type="1">
+        <li>vilka kriterier som ska användas för att godkänna hård- och mjukvara innan installation eller användning,</li>
+        <li>hur risker för incidenter och avvikelser i samband med förändring i produktionsmiljön ska identifieras och hanteras,</li>
+        <li>hur mjukvara, utan onödigt dröjsmål, ska uppdateras till senaste version,</li>
+        <li>hur utbyte eller uppgradering av hård- och mjukvara som inte längre uppdateras eller stöds av leverantören ska säkerställas utan onödigt dröjsmål, och</li>
+        <li>hur risker ska hanteras när uppdatering eller uppgradering enligt punkt 3 och 4 inte kan genomföras.</li>
+      </ol>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Säkerhetsuppdateringar bör införas skyndsamt och behovet av att automatisera uppdateringar bör övervägas.</p>
+        <p class="text">För att undvika störning vid förändring bör myndigheten genomföra tester och ta fram en plan för återställning innan förändringen genomförs.</p>
+        <p class="text">De interna reglerna bör tydliggöra hur risker för incidenter och avvikelser i samband med förändringar i utvecklings-, test- och utbildningsmiljö identifieras och hanteras.</p>
+      </div>
+
+      <h3 id="MSBFS2020-7_korrekt-och-sparbar-tid">Korrekt och spårbar tid</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P13" name="MSBFS2020-7_K4_P13">13 §</a>
+      </h3>
+      <p class="text">Myndigheten ska använda robust och korrekt tid spårbar till den svenska tillämpningen av koordinerad universell tid, UTC(SP), i sin produktionsmiljö.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Myndigheten bör använda tidstjänsten Swedish Distributed Time Service på www.ntp.se.</p>
+        <p class="text">Behovet av att använda robust och korrekt tid spårbar till den svenska tillämpningen av koordinerad universell tid, UTC (SP) i utvecklings-, test- och utbildningsmiljö bör identifieras och hanteras.</p>
+      </div>
+
+      <h3 id="MSBFS2020-7_sakerhetskopiering">Säkerhetskopiering</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P14" name="MSBFS2020-7_K4_P14">14 §</a>
+      </h3>
+      <p class="text">Myndigheten ska, för att kunna återställa information som förlorats eller förvanskats, regelbundet säkerhetskopiera sin information.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Myndigheten bör</p>
+        <ol type="1">
+          <li>en gång per dygn säkerhetskopiera information som behövs för myndighetens förmåga att utföra sitt uppdrag, och</li>
+          <li>en gång per år, eller vid större förändringar av produktionsmiljön, verifiera förmågan att, inom för myndigheten godtagbar tidsperiod, återställa information från säkerhetskopior.</li>
+        </ol>
+        <p class="text">Vid bedömning av säkerhetskopieringens omfattning och intervall, bör programvara, konfiguration respektive information hanteras separat.</p>
+        <p class="text">Behovet av säkerhetskopiering och förmåga till återställning av information i utvecklings-, test- och utbildningsmiljö bör identifieras och hanteras.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P15" name="MSBFS2020-7_K4_P15">15 §</a>
+      </h3>
+      <p class="text">Säkerhetskopior ska förvaras skilda från produktionsmiljön och skyddas mot skada, obehörig åtkomst och obehörig förändring.</p>
+
+      <h3 id="MSBFS2020-7_sakerhetsloggning-och-overvakning">Säkerhetsloggning och övervakning</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P16" name="MSBFS2020-7_K4_P16">16 §</a>
+      </h3>
+      <p class="text">Myndigheten ska, för att säkerställa spårbarhet i informationssystem, logga följande säkerhetsrelaterade händelser:</p>
+      <ol type="1">
+        <li>Obehörig åtkomst och försök till obehörig åtkomst till it-miljö och enskilda informationssystem.</li>
+        <li>Förändringar av konfigurationer och säkerhetsfunktioner som förutsätter priviligierade rättigheter.</li>
+        <li>Förändringar av behörighet för användare och informationssystem.</li>
+        <li>Åtkomst till information som bedömts ha behov av utökat skydd.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P17" name="MSBFS2020-7_K4_P17">17 §</a>
+      </h3>
+      <p class="text">Myndigheten ska analysera innehållet i säkerhetsloggarna för att upptäcka och hantera incidenter och avvikelser. Säkerhetsloggarna ska</p>
+      <ol type="1">
+        <li>möjliggöra utredning av intrång, tekniska fel och brister i säkerheten,</li>
+        <li>utformas på ett sätt som möjliggör jämförbarhet mellan olika loggar, och</li>
+        <li>vara tillgängliga för analys under fastställd bevarandetid.</li>
+      </ol>
+      <p class="text">Myndigheten ska dokumentera hur säkerhetsloggarna ska användas samt var loggningsuppgifter hämtas och lagras, hur de skyddas och hur länge de ska bevaras.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">En säkerhetslogg bör innehålla uppgift om vem eller vad som agerat, vad som har skett och vid vilken tidpunkt.</p>
+        <p class="text">För att skapa jämförbarhet bör myndigheten använda myndighetens tidstjänst för samtliga säkerhetsloggar.</p>
+        <p class="text">Säkerhetsloggar bör samlas i ett för ändamålet avsett informationssystem.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P18" name="MSBFS2020-7_K4_P18">18 §</a>
+      </h3>
+      <p class="text">Myndigheten ska identifiera och hantera behovet av intrångsdetektering och intrångsskydd.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Behovet av intrångsdetektering och intrångsskydd bör bedömas för enskilda informationssystem och för myndighetens produktionsmiljö i sin helhet. Behovet bör även bedömas för myndighetens utvecklings- test- och utbildningsmiljö.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P19" name="MSBFS2020-7_K4_P19">19 §</a>
+      </h3>
+      <p class="text">Myndigheten ska identifiera och hantera behovet av realtidsövervakning av informationssystem.</p>
+
+      <h3 id="MSBFS2020-7_skydd-mot-skadlig-kod">Skydd mot skadlig kod</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P20" name="MSBFS2020-7_K4_P20">20 §</a>
+      </h3>
+      <p class="text">Myndigheten ska använda mjukvara som ger skydd mot skadlig kod. För informationssystem där sådan mjukvara inte finns tillgänglig ska andra åtgärder vidtas som ger motsvarande skydd.</p>
+
+      <h3 id="MSBFS2020-7_skydd-av-utrustning">Skydd av utrustning</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P21" name="MSBFS2020-7_K4_P21">21 §</a>
+      </h3>
+      <p class="text">Myndigheten ska skydda den utrustning som informationssystem består av mot skador och obehörig åtkomst, genom att</p>
+      <ol type="1">
+        <li>placera centrala servrar och central nätverksutrustning i särskilda it-utrymmen,</li>
+        <li>tilldela behörighet till särskilda it-utrymmen restriktivt,</li>
+        <li>identifiera och hantera behovet av övervakning och larm i särskilda it-utrymmen,</li>
+        <li>registrera tillträde till särskilda it-utrymmen på individnivå och spara dokumentationen under fastställd bevarandetid, och</li>
+        <li>ha interna regler för hur mobil utrustning ska skyddas.</li>
+      </ol>
+
+      <h3 id="MSBFS2020-7_redundans-och-aterstallning">Redundans och återställning</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K4_P22" name="MSBFS2020-7_K4_P22">22 §</a>
+      </h3>
+      <p class="text">Myndigheten ska, för att säkerställa tillgänglighet till information och informationssystem vid incidenter och avvikelser,</p>
+      <ol type="1">
+        <li>ha interna regler för återställning av produktionsmiljön i sin helhet och för enskilda informationssystem,</li>
+        <li>öva återställning av informationssystem som är centrala för myndighetens förmåga att utföra sitt uppdrag, och</li>
+        <li>placera centrala servrar och central nätverksutrustning som skapar redundant funktion i olika särskilda it-utrymmen.</li>
+      </ol>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Övning av återställning bör ske regelbundet och utifrån identifierat behov av tillgänglighet.</p>
+      </div>
+    </section>
+
+    <section class="kapitel" id="MSBFS2020-7_K5">
+      <h2 class="kapitel-rubrik">5 kap. För myndigheter med ett särskilt ansvar för krisberedskapen</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K5_P1" name="MSBFS2020-7_K5_P1">1 §</a>
+      </h3>
+      <p class="text">De myndigheter som har ett särskilt ansvar för krisberedskapen enligt 10 § förordning (2015:1052) om krisberedskap och bevakningsansvariga myndigheters åtgärder vid höjd beredskap ska, utöver vad som framgår av kapitel 2 – 4 i dessa föreskrifter,</p>
+      <ol type="1">
+        <li>använda flerfaktorsautentisering och realtidsövervakning för informationssystem som är centrala för myndighetens förmåga att utföra sitt uppdrag, och</li>
+        <li>en gång per kvartal verifiera förmågan till återställning av dessa system.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K5_P2" name="MSBFS2020-7_K5_P2">2 §</a>
+      </h3>
+      <p class="text">Myndigheten ska, en gång per kvartal, kontrollera funktionen hos informationssystem som ska användas för informationsdelning under fredstida krissituationer.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p>
+        <p class="text">Myndigheten bör använda Swedish Government Secure Intranet (SGSI) och Radiokommunikation för effektiv ledning (RAKEL) som stöd för informationsdelning under fredstida krissituationer.</p>
+      </div>
+    </section>
+
+    <section class="kapitel" id="MSBFS2020-7_K6">
+      <h2 class="kapitel-rubrik">6 kap. Undantag</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="MSBFS2020-7_K6_P1" name="MSBFS2020-7_K6_P1">1 §</a>
+      </h3>
+      <p class="text">Myndigheten för samhällsskydd och beredskap får i enskilda fall och om det finns särskilda skäl medge undantag från tillämpningen av dessa föreskrifter.</p>
+    </section>
+  </div>
+
+  <footer class="back">
+    <h2>Ikraftträdande och övergångsbestämmelser</h2>
+    <p class="text">Dessa föreskrifter träder i kraft den 1 oktober 2020.</p>
+    <p class="text">Åtgärder i 4 kap 1 § (nätverkssegmentering), 5 § (flerfaktorsautenticering), 19 § (realtidsövervakning), 21 § (skydd av utrustning), och 5 kapitlet 1 § ska vara införda senast den 1 oktober 2021.</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

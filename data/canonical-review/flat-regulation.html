@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>MSBFS 2009:1 — Canonical Review</title>
+  <style>
+    :root { --bg: #f8f9fa; --card: #fff; --border: #dee2e6; --accent: #0d6efd; --pass: #198754; --fail: #dc3545; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: #212529; padding: 2rem; line-height: 1.6; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .meta span { display: inline-block; margin-right: 1.5rem; }
+    .badge { display: inline-block; padding: 0.15em 0.5em; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: #fff; }
+    .badge-pass { background: var(--pass); }
+    .badge-fail { background: var(--fail); }
+    .badge-type { background: var(--accent); }
+    .badge-norm { background: #6f42c1; }
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0; }
+    .tab { padding: 0.6rem 1.2rem; cursor: pointer; border: 2px solid transparent; border-bottom: none; background: none; font-size: 0.95rem; font-weight: 500; color: #6c757d; border-radius: 6px 6px 0 0; }
+    .tab:hover { color: #212529; background: #e9ecef; }
+    .tab.active { color: var(--accent); border-color: var(--border); border-bottom-color: var(--card); background: var(--card); margin-bottom: -2px; }
+    .panel { display: none; background: var(--card); border: 2px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; padding: 1.5rem; overflow: auto; }
+    .panel.active { display: block; }
+    pre { white-space: pre-wrap; word-wrap: break-word; font-size: 0.85rem; font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace; line-height: 1.5; }
+    .rendered { padding: 1rem; }
+    .rendered h1, .rendered h2, .rendered h3 { margin-top: 1em; margin-bottom: 0.3em; }
+    .rendered p { margin: 0.4em 0; }
+    .rendered table { border-collapse: collapse; margin: 1em 0; }
+    .rendered th, .rendered td { border: 1px solid var(--border); padding: 0.4em 0.8em; text-align: left; }
+    .rendered th { background: #f1f3f5; font-weight: 600; }
+    .diff-label { font-size: 0.8rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .side-by-side > div { overflow: auto; max-height: 600px; border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
+    .errors { background: #fff5f5; border: 1px solid var(--fail); border-radius: 6px; padding: 1rem; margin-top: 1rem; }
+    .errors li { color: var(--fail); margin-left: 1.5rem; }
+    @media (max-width: 900px) { .side-by-side { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>MSBFS 2009:1 — Föreskrifter om ändring i vissa författningar som beslutats av Statens räddningsverk, Krisberedskapsmyndigheten eller Sprängämnesinspektionen</h1>
+  <div class="meta">
+    <span class="badge badge-type">AGENCY_REGULATION</span>
+    <span class="badge badge-pass">VALID</span>
+    <span class="badge" style="background:#6c757d">ALREADY CANONICAL</span>
+    <span>HTML: 1 038 chars</span>
+    <span>JSON: 307 chars</span>
+    <span>MD: 717 chars</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(event, 'rendered')">Rendered HTML</button>
+    <button class="tab" onclick="showTab(event, 'html-source')">HTML Source</button>
+    <button class="tab" onclick="showTab(event, 'json')">Derived JSON</button>
+    <button class="tab" onclick="showTab(event, 'markdown')">Derived Markdown</button>
+    
+  </div>
+
+  <div id="rendered" class="panel active">
+    <div class="rendered">
+      <article class="sfs" id="MSBFS2009-1">
+  <div class="lovhead">
+    <h1>
+      <p class="text">MSBFS 2009:1</p>
+      <p class="text">Myndigheten för samhällsskydd och beredskaps föreskrifter om ändring i vissa författningar som beslutats av Statens räddningsverk, Krisberedskapsmyndigheten eller Sprängämnesinspektionen</p>
+    </h1>
+  </div>
+  <div class="body">
+    <p class="text">Myndigheten för samhällsskydd och beredskap föreskriver följande med stöd av de bemyndiganden som åberopas i var och en av de nedan avsedda författningarna.</p>
+    <p class="text">Vad Statens räddningsverk, Krisberedskapsmyndigheten eller Sprängämnesinspektionen i författningar som gällde vid utgången av 2008 föreskrivit om någon av dessa myndigheter ska i stället avse Myndigheten för samhällsskydd och beredskap.</p>
+    <p class="text">______________</p>
+    <p class="text">På Myndigheten för samhällsskydd och beredskaps vägnar</p>
+    <p class="text">HELENA LINDBERG</p>
+    <p class="text">Key Hedström<br>(Rättsenheten)</p>
+  </div>
+</article>
+    </div>
+  </div>
+
+  <div id="html-source" class="panel">
+    <pre>&lt;article class="sfs" id="MSBFS2009-1"&gt;
+  &lt;div class="lovhead"&gt;
+    &lt;h1&gt;
+      &lt;p class="text"&gt;MSBFS 2009:1&lt;/p&gt;
+      &lt;p class="text"&gt;Myndigheten för samhällsskydd och beredskaps föreskrifter om ändring i vissa författningar som beslutats av Statens räddningsverk, Krisberedskapsmyndigheten eller Sprängämnesinspektionen&lt;/p&gt;
+    &lt;/h1&gt;
+  &lt;/div&gt;
+  &lt;div class="body"&gt;
+    &lt;p class="text"&gt;Myndigheten för samhällsskydd och beredskap föreskriver följande med stöd av de bemyndiganden som åberopas i var och en av de nedan avsedda författningarna.&lt;/p&gt;
+    &lt;p class="text"&gt;Vad Statens räddningsverk, Krisberedskapsmyndigheten eller Sprängämnesinspektionen i författningar som gällde vid utgången av 2008 föreskrivit om någon av dessa myndigheter ska i stället avse Myndigheten för samhällsskydd och beredskap.&lt;/p&gt;
+    &lt;p class="text"&gt;______________&lt;/p&gt;
+    &lt;p class="text"&gt;På Myndigheten för samhällsskydd och beredskaps vägnar&lt;/p&gt;
+    &lt;p class="text"&gt;HELENA LINDBERG&lt;/p&gt;
+    &lt;p class="text"&gt;Key Hedström&lt;br&gt;(Rättsenheten)&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/article&gt;</pre>
+  </div>
+
+  <div id="json" class="panel">
+    <pre>{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": null,
+  "documentNumber": null,
+  "divisions": null,
+  "chapters": [],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": null,
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}</pre>
+    
+  </div>
+
+  <div id="markdown" class="panel">
+    <pre># MSBFS 2009:1
+
+Myndigheten för samhällsskydd och beredskaps föreskrifter om ändring i vissa författningar som beslutats av Statens räddningsverk, Krisberedskapsmyndigheten eller Sprängämnesinspektionen
+
+Myndigheten för samhällsskydd och beredskap föreskriver följande med stöd av de bemyndiganden som åberopas i var och en av de nedan avsedda författningarna.
+
+Vad Statens räddningsverk, Krisberedskapsmyndigheten eller Sprängämnesinspektionen i författningar som gällde vid utgången av 2008 föreskrivit om någon av dessa myndigheter ska i stället avse Myndigheten för samhällsskydd och beredskap.
+
+______________
+
+På Myndigheten för samhällsskydd och beredskaps vägnar
+
+HELENA LINDBERG
+
+Key Hedström (Rättsenheten)
+</pre>
+  </div>
+
+  
+
+  <script>
+    function showTab(e, id) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      e.target.classList.add('active');
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
+</body>
+</html>

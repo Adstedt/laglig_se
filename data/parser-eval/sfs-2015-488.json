@@ -1,0 +1,721 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Förordning (2015:488) om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen",
+  "documentNumber": "SFS 2015:488",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Allmänna bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna förordning innehåller bestämmelser om tillämpningen av\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna förordning innehåller bestämmelser om tillämpningen av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "De termer och uttryck som används i denna förordning har samma betydelse som i\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "De termer och uttryck som används i denna förordning har samma betydelse som i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "All kommunikation och allt samråd om erkännande och uppföljning av ett svenskt eller utländskt beslut om övervakningsåtgärder ska ske mellan åklagare och den behöriga myndigheten i den andra staten.\nKommunikationen och samrådet får ske på det sätt som är lämpligast i det enskilda fallet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "All kommunikation och allt samråd om erkännande och uppföljning av ett svenskt eller utländskt beslut om övervakningsåtgärder ska ske mellan åklagare och den behöriga myndigheten i den andra staten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Kommunikationen och samrådet får ske på det sätt som är lämpligast i det enskilda fallet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Åklagarmyndigheten får, efter samråd med Ekobrottsmyndigheten, meddela ytterligare föreskrifter om verkställigheten av\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen och denna förordning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagarmyndigheten får, efter samråd med Ekobrottsmyndigheten, meddela ytterligare föreskrifter om verkställigheten av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen och denna förordning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Riksåklagaren bestämmer dels vilka åklagare inom åklagarväsendet som är behöriga att meddela ett svenskt beslut om övervakningsåtgärder, dels vilka åklagare inom åklagarväsendet som är behöriga att erkänna och följa upp ett utländskt beslut om övervakningsåtgärder.",
+          "amendedBy": "Förordning (2024:638)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Riksåklagaren bestämmer dels vilka åklagare inom åklagarväsendet som är behöriga att meddela ett svenskt beslut om övervakningsåtgärder, dels vilka åklagare inom åklagarväsendet som är behöriga att erkänna och följa upp ett utländskt beslut om övervakningsåtgärder.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Ett svenskt beslut om övervakningsåtgärder som ska erkännas och följas upp i en annan medlemsstat",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Samtycke som avses i\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen ska lämnas till åklagaren eller rätten.\nSamtycket ska antecknas på ett formulär som fastställs av riksåklagaren. Formuläret för samtycke ska om möjligt vara skrivet på det språk som normalt används av den misstänkte.\nOm ett annat språk används, ska det antecknas på handlingen vilka åtgärder som har vidtagits för att kontrollera att den misstänkte har förstått innebörden av samtycket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Samtycke som avses i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen ska lämnas till åklagaren eller rätten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Samtycket ska antecknas på ett formulär som fastställs av riksåklagaren. Formuläret för samtycke ska om möjligt vara skrivet på det språk som normalt används av den misstänkte.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Om ett annat språk används, ska det antecknas på handlingen vilka åtgärder som har vidtagits för att kontrollera att den misstänkte har förstått innebörden av samtycket.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Översändande av ett beslut om övervakningsåtgärder",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Ett beslut om övervakningsåtgärder som åklagaren sänder över till en annan medlemsstat för erkännande och uppföljning i den staten ska åtföljas av ett intyg som är upprättat i enlighet med bilaga 1 till rådets rambeslut 2009/829/RIF om tillämpning mellan Europeiska unionens medlemsstater av principen om ömsesidigt erkännande på beslut om övervakningsåtgärder som ett alternativ till tillfälligt frihetsberövande.\nÅklagaren ska upprätta intyget. Intyget ska skrivas på eller översättas till den andra medlemsstatens officiella språk eller ett annat språk som den staten godtar.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett beslut om övervakningsåtgärder som åklagaren sänder över till en annan medlemsstat för erkännande och uppföljning i den staten ska åtföljas av ett intyg som är upprättat i enlighet med bilaga 1 till rådets rambeslut 2009/829/RIF om tillämpning mellan Europeiska unionens medlemsstater av principen om ömsesidigt erkännande på beslut om övervakningsåtgärder som ett alternativ till tillfälligt frihetsberövande.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Åklagaren ska upprätta intyget. Intyget ska skrivas på eller översättas till den andra medlemsstatens officiella språk eller ett annat språk som den staten godtar.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Beslutet om övervakningsåtgärder och intyget ska sändas över genom post eller bud.\nÅklagaren får dock efter överenskommelse med den behöriga myndigheten i den andra medlemsstaten sända över beslutet och intyget genom telefax, elektronisk post eller på annat sätt.\nSamråd med den behöriga myndigheten i den andra medlemsstaten",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Beslutet om övervakningsåtgärder och intyget ska sändas över genom post eller bud.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Åklagaren får dock efter överenskommelse med den behöriga myndigheten i den andra medlemsstaten sända över beslutet och intyget genom telefax, elektronisk post eller på annat sätt.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Samråd med den behöriga myndigheten i den andra medlemsstaten",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Åklagaren ska vid behov samråda med den behöriga myndigheten i den andra medlemsstaten inför översändandet av beslut om övervakningsåtgärder och i övriga frågor som rör erkännande och uppföljning av beslutet om övervakningsåtgärder i den andra staten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagaren ska vid behov samråda med den behöriga myndigheten i den andra medlemsstaten inför översändandet av beslut om övervakningsåtgärder och i övriga frågor som rör erkännande och uppföljning av beslutet om övervakningsåtgärder i den andra staten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Underrättelser till den andra medlemsstaten",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Åklagaren ska, när tidsfristen enligt\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen har börjat löpa, omedelbart underrätta den behöriga myndigheten i den andra medlemsstaten om sista dag för att väcka åtal.\nÅklagaren ska även underrätta den behöriga myndigheten i den andra staten om\n1. att tidsfristen för att väcka åtal har förlängts,\n2. att åtal har väckts,\n3. att rätten enligt 2 kap. 11 § lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen beslutat att beslutet om övervakningsåtgärder ska gälla till dess domen i målet fått laga kraft,\n4. att den misstänkte, efter det att uppföljningen har påbörjats i den andra medlemsstaten, har begärt rättens prövning av beslutet om övervakningsåtgärder, eller\n5. beslut enligt 2 kap. 7-10 §§ lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagaren ska, när tidsfristen enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen har börjat löpa, omedelbart underrätta den behöriga myndigheten i den andra medlemsstaten om sista dag för att väcka åtal.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Åklagaren ska även underrätta den behöriga myndigheten i den andra staten om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. att tidsfristen för att väcka åtal har förlängts,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. att åtal har väckts,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. att rätten enligt 2 kap. 11 § lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen beslutat att beslutet om övervakningsåtgärder ska gälla till dess domen i målet fått laga kraft,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. att den misstänkte, efter det att uppföljningen har påbörjats i den andra medlemsstaten, har begärt rättens prövning av beslutet om övervakningsåtgärder, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. beslut enligt 2 kap. 7-10 §§ lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "Underrättelser och anmälan till svensk domstol",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Om rätten har fastställt eller meddelat ett beslut om övervakningsåtgärder eller om åtal har väckts, ska åklagaren utan dröjsmål underrätta domstolen om\n1. att den misstänkte har delgetts underrättelse enligt\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen, och\n2. beslut enligt 2 kap. 7-9 §§ lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om rätten har fastställt eller meddelat ett beslut om övervakningsåtgärder eller om åtal har väckts, ska åklagaren utan dröjsmål underrätta domstolen om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. att den misstänkte har delgetts underrättelse enligt",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen, och",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "2. beslut enligt 2 kap. 7-9 §§ lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "När det uppkommer en fråga om att meddela beslut enligt 2 kap. 7-\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen och endast rätten är behörig att meddela sådana beslut, ska åklagaren utan dröjsmål anmäla detta till rätten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När det uppkommer en fråga om att meddela beslut enligt 2 kap. 7-",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen och endast rätten är behörig att meddela sådana beslut, ska åklagaren utan dröjsmål anmäla detta till rätten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Underrättelser till Polismyndigheten",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "När en åklagare eller en domstol meddelar beslut om övervakningsåtgärder enligt\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen eller meddelar tillfälliga undantag från, ändrar, förlänger eller upphäver ett sådant beslut, ska en kopia av beslutet genast skickas till Polismyndigheten.\nMyndigheten ska också genast underrättas när beslutet om övervakningsåtgärder upphör med anledning av anhållande eller häktning.\nHar en domstol i samband med dom meddelat beslut om övervakningsåtgärder enligt 2 kap. 1 § lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen eller beslutat att en sådan åtgärd ska bestå, ska domstolen även lämna uppgift till Polismyndigheten när domen fått laga kraft.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När en åklagare eller en domstol meddelar beslut om övervakningsåtgärder enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen eller meddelar tillfälliga undantag från, ändrar, förlänger eller upphäver ett sådant beslut, ska en kopia av beslutet genast skickas till Polismyndigheten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Myndigheten ska också genast underrättas när beslutet om övervakningsåtgärder upphör med anledning av anhållande eller häktning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Har en domstol i samband med dom meddelat beslut om övervakningsåtgärder enligt 2 kap. 1 § lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen eller beslutat att en sådan åtgärd ska bestå, ska domstolen även lämna uppgift till Polismyndigheten när domen fått laga kraft.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Begäran om förlängning av tiden för uppföljning",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Om den andra medlemsstaten har fastställt en längsta tid som beslutet om övervakningsåtgärder får följas upp, ska åklagaren innan den tiden har löpt ut vid behov begära förlängning av uppföljningen och ange den ytterligare tid för uppföljning som bedöms vara nödvändig.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om den andra medlemsstaten har fastställt en längsta tid som beslutet om övervakningsåtgärder får följas upp, ska åklagaren innan den tiden har löpt ut vid behov begära förlängning av uppföljningen och ange den ytterligare tid för uppföljning som bedöms vara nödvändig.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Erkännande och uppföljning i Sverige av ett utländskt beslut om övervakningsåtgärder",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Om ett beslut om övervakningsåtgärder eller andra handlingar i ett ärende om erkännande och uppföljning av ett sådant beslut har sänts till en annan myndighet än Åklagarmyndigheten, ska den myndigheten genast vidarebefordra handlingarna till Åklagarmyndigheten.\nÅklagaren ska underrätta den behöriga myndigheten i den andra medlemsstaten om att Åklagarmyndigheten har fått handlingarna.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ett beslut om övervakningsåtgärder eller andra handlingar i ett ärende om erkännande och uppföljning av ett sådant beslut har sänts till en annan myndighet än Åklagarmyndigheten, ska den myndigheten genast vidarebefordra handlingarna till Åklagarmyndigheten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Åklagaren ska underrätta den behöriga myndigheten i den andra medlemsstaten om att Åklagarmyndigheten har fått handlingarna.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Uppföljning av beslutet om övervakningsåtgärder",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Åklagaren ska följa upp ett beslut om övervakningsåtgärder genom att hålla sig underrättad om\n1. eventuella överträdelser av beslutet,\n2. omständigheter som gör att det i praktiken är omöjligt att fortsätta följa upp beslutet, och\n3. ändringar av den misstänktes bosättning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagaren ska följa upp ett beslut om övervakningsåtgärder genom att hålla sig underrättad om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. eventuella överträdelser av beslutet,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. omständigheter som gör att det i praktiken är omöjligt att fortsätta följa upp beslutet, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. ändringar av den misstänktes bosättning.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "Uppmaning att fatta beslut eller vidta en annan åtgärd",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Om den behöriga myndigheten i den andra medlemsstaten inte meddelar något beslut eller vidtar någon annan åtgärd trots att åklagaren vid flera tillfällen har sänt över en underrättelse enligt 9 § första stycket 7, ska åklagaren uppmana myndigheten i den andra medlemsstaten att fatta ett beslut eller vidta någon annan åtgärd. Åklagaren ska samtidigt upplysa om att uppföljningsförklaringen annars kan komma att upphävas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om den behöriga myndigheten i den andra medlemsstaten inte meddelar något beslut eller vidtar någon annan åtgärd trots att åklagaren vid flera tillfällen har sänt över en underrättelse enligt 9 § första stycket 7, ska åklagaren uppmana myndigheten i den andra medlemsstaten att fatta ett beslut eller vidta någon annan åtgärd. Åklagaren ska samtidigt upplysa om att uppföljningsförklaringen annars kan komma att upphävas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Förfrågan om behovet av fortsatt uppföljning",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Åklagaren ska vid behov begära besked från den behöriga myndigheten i den andra medlemsstaten om huruvida uppföljningen av beslutet om övervakningsåtgärder fortfarande bedöms vara nödvändig.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagaren ska vid behov begära besked från den behöriga myndigheten i den andra medlemsstaten om huruvida uppföljningen av beslutet om övervakningsåtgärder fortfarande bedöms vara nödvändig.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Om den behöriga myndigheten i den andra medlemsstaten inte lämnar besked enligt\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen, ska åklagaren påminna myndigheten om att komma in med ett sådant besked inom en viss tid.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om den behöriga myndigheten i den andra medlemsstaten inte lämnar besked enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen, ska åklagaren påminna myndigheten om att komma in med ett sådant besked inom en viss tid.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Samråd med Justitiekanslern",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Om ett beslut om övervakningsåtgärder som har sänts över till Sverige för erkännande och uppföljning rör en gärning på tryckfrihetsförordningens eller yttrandefrihetsgrundlagens områden, ska åklagaren samråda med och vid behov inhämta yttrande från Justitiekanslern.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ett beslut om övervakningsåtgärder som har sänts över till Sverige för erkännande och uppföljning rör en gärning på tryckfrihetsförordningens eller yttrandefrihetsgrundlagens områden, ska åklagaren samråda med och vid behov inhämta yttrande från Justitiekanslern.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Samråd med den behöriga myndigheten i den andra medlemsstaten",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Åklagaren ska samråda med den behöriga myndigheten i den andra medlemsstaten\n1. om intyget till form eller innehåll är bristfälligt,\n2. innan ett beslut att inte erkänna ett beslut om övervakningsåtgärder meddelas,\n3. innan ett beslut att upphäva en uppföljningsförklaring meddelas enligt 3 kap. 18 § första stycket 1, 3, eller 5\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen, och\n4. om åklagaren fått tillfälle att yttra sig enligt 3 kap. 15 § andra stycket lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen och samråd inte är uppenbart obehövligt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagaren ska samråda med den behöriga myndigheten i den andra medlemsstaten",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. om intyget till form eller innehåll är bristfälligt,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. innan ett beslut att inte erkänna ett beslut om övervakningsåtgärder meddelas,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. innan ett beslut att upphäva en uppföljningsförklaring meddelas enligt 3 kap. 18 § första stycket 1, 3, eller 5",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen, och",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "4. om åklagaren fått tillfälle att yttra sig enligt 3 kap. 15 § andra stycket lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen och samråd inte är uppenbart obehövligt.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Åklagaren ska i övrigt vid behov samråda med den behöriga myndigheten i den andra medlemsstaten i frågor som rör erkännande och uppföljning av beslutet om övervakningsåtgärder.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagaren ska i övrigt vid behov samråda med den behöriga myndigheten i den andra medlemsstaten i frågor som rör erkännande och uppföljning av beslutet om övervakningsåtgärder.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Underrättelser till den andra medlemsstaten",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Åklagaren ska omedelbart underrätta den behöriga myndigheten i den andra medlemsstaten om\n1. att ett beslut i fråga om erkännande och uppföljning inte kan meddelas inom fyra veckor efter det att åklagaren har tagit emot beslutet,\n2. att det kan finnas hinder mot överlämnande enligt\nom överlämnande från Sverige enligt en europeisk arresteringsorder eller\nom överlämnande från Sverige enligt en nordisk arresteringsorder,\n3. att uppföljning inte kan ske genom elektronisk övervakning, om en sådan övervakning har begärts,\n4. ett beslut i fråga om erkännande och uppföljning av ett utländskt beslut om övervakningsåtgärder,\n5. att ett beslut i fråga om erkännande och uppföljning har överklagats,\n6. beslut enligt 3 kap. 16-\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen,\n7. överträdelser av beslutet om övervakningsåtgärder och andra iakttagelser som skulle kunna leda till ett beslut enligt artikel 18 i rådets rambeslut 2009/829/RIF i den andra medlemsstaten, och\n8. varje ändring av den misstänktes bosättning.\nVid en underrättelse enligt första stycket 1 ska åklagaren även ange orsaken till förseningen och den tid som uppskattningsvis behövs för ett beslut.\nVid en underrättelse enligt första stycket 7 ska det standardformulär som återges i bilaga 2 till rambeslutet användas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagaren ska omedelbart underrätta den behöriga myndigheten i den andra medlemsstaten om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. att ett beslut i fråga om erkännande och uppföljning inte kan meddelas inom fyra veckor efter det att åklagaren har tagit emot beslutet,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. att det kan finnas hinder mot överlämnande enligt",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "om överlämnande från Sverige enligt en europeisk arresteringsorder eller",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "om överlämnande från Sverige enligt en nordisk arresteringsorder,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "3. att uppföljning inte kan ske genom elektronisk övervakning, om en sådan övervakning har begärts,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. ett beslut i fråga om erkännande och uppföljning av ett utländskt beslut om övervakningsåtgärder,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. att ett beslut i fråga om erkännande och uppföljning har överklagats,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 6,
+              "text": "6. beslut enligt 3 kap. 16-",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 7,
+              "text": "7. överträdelser av beslutet om övervakningsåtgärder och andra iakttagelser som skulle kunna leda till ett beslut enligt artikel 18 i rådets rambeslut 2009/829/RIF i den andra medlemsstaten, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 8,
+              "text": "8. varje ändring av den misstänktes bosättning.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "Vid en underrättelse enligt första stycket 1 ska åklagaren även ange orsaken till förseningen och den tid som uppskattningsvis behövs för ett beslut.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 6,
+              "text": "Vid en underrättelse enligt första stycket 7 ska det standardformulär som återges i bilaga 2 till rambeslutet användas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Underrättelser till svensk domstol",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Om ett beslut enligt 3 kap. 11 eller 17 § eller\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen är föremål för prövning i domstol, ska åklagaren utan dröjsmål underrätta domstolen om\n1. beslut eller annan information angående förlängning eller ändring av det utländska beslutet om övervakningsåtgärder, som åklagaren fått från den andra medlemsstaten, och\n2. beslut som meddelats av åklagaren enligt 3 kap. 16-18 §§ lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ett beslut enligt 3 kap. 11 eller 17 § eller",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen är föremål för prövning i domstol, ska åklagaren utan dröjsmål underrätta domstolen om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. beslut eller annan information angående förlängning eller ändring av det utländska beslutet om övervakningsåtgärder, som åklagaren fått från den andra medlemsstaten, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. beslut som meddelats av åklagaren enligt 3 kap. 16-18 §§ lagen om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "Underrättelser till Polismyndigheten",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "När en åklagare eller en domstol meddelar beslut om uppföljningsförklaring enligt\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen eller ändrar, förlänger eller upphäver en sådan förklaring, ska en kopia av beslutet genast skickas till Polismyndigheten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När en åklagare eller en domstol meddelar beslut om uppföljningsförklaring enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen eller ändrar, förlänger eller upphäver en sådan förklaring, ska en kopia av beslutet genast skickas till Polismyndigheten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Polismyndighetens uppgifter",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "Polismyndigheten ska biträda åklagaren vid uppföljningen av ett utländskt beslut om övervakningsåtgärder som enligt\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen har erkänts i Sverige.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Polismyndigheten ska biträda åklagaren vid uppföljningen av ett utländskt beslut om övervakningsåtgärder som enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen har erkänts i Sverige.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "Polismyndigheten ska föra en förteckning över de personer som är föremål för en uppföljningsförklaring som avser en övervakningsåtgärd enligt 3 kap. 3 § 1, 2 eller 6\nom erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen. I 13 a § efterlysningskungörelsen (1969:293) finns bestämmelser om registrering av andra beslut enligt samma lag.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Polismyndigheten ska föra en förteckning över de personer som är föremål för en uppföljningsförklaring som avser en övervakningsåtgärd enligt 3 kap. 3 § 1, 2 eller 6",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om erkännande och uppföljning av beslut om övervakningsåtgärder inom Europeiska unionen. I 13 a § efterlysningskungörelsen (1969:293) finns bestämmelser om registrering av andra beslut enligt samma lag.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 2015:488",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

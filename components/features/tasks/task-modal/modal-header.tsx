@@ -21,23 +21,48 @@ import {
   MoreHorizontal,
   Copy,
   Printer,
+  Trash2,
 } from 'lucide-react'
 import { LexaIcon } from '@/components/ui/lexa-icon'
+import { TaskDeleteDialog } from '../task-delete-dialog'
+import { deleteTaskModal } from '@/app/actions/task-modal'
 import { toast } from 'sonner'
+import { useState } from 'react'
 
 interface ModalHeaderProps {
   taskTitle: string
+  taskId: string
   onClose: () => void
+  onDelete?: () => void
   aiChatOpen: boolean
   onAiChatToggle: () => void
 }
 
 export function ModalHeader({
   taskTitle,
+  taskId,
   onClose,
+  onDelete,
   aiChatOpen,
   onAiChatToggle,
 }: ModalHeaderProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    const result = await deleteTaskModal(taskId)
+    if (result.success) {
+      toast.success('Uppgift raderad')
+      setDeleteDialogOpen(false)
+      onDelete?.()
+    } else {
+      toast.error('Kunde inte radera uppgift', {
+        description: result.error,
+      })
+    }
+    setIsDeleting(false)
+  }
   const handleShare = async () => {
     const url = window.location.href
     try {
@@ -62,75 +87,98 @@ export function ModalHeader({
   }
 
   return (
-    <div className="flex items-center justify-between border-b px-6 py-3 bg-background shrink-0">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1 text-sm min-w-0">
-        <span className="text-muted-foreground">Uppgifter</span>
-        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-        <span className="font-medium truncate max-w-[300px]">{taskTitle}</span>
-      </nav>
+    <>
+      <div className="flex items-center justify-between border-b px-6 py-3 bg-background shrink-0">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-1 text-sm min-w-0">
+          <span className="text-muted-foreground">Uppgifter</span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span className="font-medium truncate max-w-[300px]">
+            {taskTitle}
+          </span>
+        </nav>
 
-      {/* Action buttons */}
-      <div className="flex items-center gap-1 shrink-0 ml-4">
-        {/* AI Chat toggle - hidden on mobile */}
-        <Button
-          variant={aiChatOpen ? 'secondary' : 'ghost'}
-          size="sm"
-          onClick={onAiChatToggle}
-          className={cn('h-8 px-2 hidden lg:flex', aiChatOpen && 'bg-muted/80')}
-          title={aiChatOpen ? 'Stäng Lexa' : 'Öppna Lexa'}
-          data-testid="ai-chat-toggle"
-        >
-          <LexaIcon size={16} />
-        </Button>
+        {/* Action buttons */}
+        <div className="flex items-center gap-1 shrink-0 ml-4">
+          {/* AI Chat toggle - hidden on mobile */}
+          <Button
+            variant={aiChatOpen ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={onAiChatToggle}
+            className={cn(
+              'h-8 px-2 hidden lg:flex',
+              aiChatOpen && 'bg-muted/80'
+            )}
+            title={aiChatOpen ? 'Stäng Lexa' : 'Öppna Lexa'}
+            data-testid="ai-chat-toggle"
+          >
+            <LexaIcon size={16} />
+          </Button>
 
-        {/* Share button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleShare}
-          className="h-8 px-2"
-          title="Dela"
-        >
-          <Share2 className="h-4 w-4" />
-        </Button>
+          {/* Share button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShare}
+            className="h-8 px-2"
+            title="Dela"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
 
-        {/* Actions dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2"
-              title="Fler åtgärder"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={handleCopyTitle}>
-              <Copy className="h-4 w-4 mr-2" />
-              Kopiera titel
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handlePrint}>
-              <Printer className="h-4 w-4 mr-2" />
-              Skriv ut
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          {/* Actions dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2"
+                title="Fler åtgärder"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={handleCopyTitle}>
+                <Copy className="h-4 w-4 mr-2" />
+                Kopiera titel
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handlePrint}>
+                <Printer className="h-4 w-4 mr-2" />
+                Skriv ut
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Radera uppgift
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        {/* Close button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          className="h-8 px-2"
-          aria-label="Stäng"
-        >
-          <X className="h-4 w-4" />
-        </Button>
+          {/* Close button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-8 px-2"
+            aria-label="Stäng"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
-    </div>
+
+      <TaskDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        taskTitle={taskTitle}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
+    </>
   )
 }

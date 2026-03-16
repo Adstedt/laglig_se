@@ -1,0 +1,707 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Konkurrensskadelag (2016:964)",
+  "documentNumber": "SFS 2016:964",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Inledande bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna lag innehåller bestämmelser om ersättning till följd av en överträdelse av konkurrensrätten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag innehåller bestämmelser om ersättning till följd av en överträdelse av konkurrensrätten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "I denna lag betyder\n1. överträdelse: en överträdelse av artikel 101 eller 102 i fördraget om Europeiska unionens funktionssätt (EUF-fördraget), 2 kap. 1 eller\neller bestämmelser i annan nationell rätt som tillämpas parallellt med unionens konkurrensrätt enligt artikel 3.1 i rådets förordning (EG) nr 1/2003 av den 16 december 2002 om tillämpning av konkurrensreglerna i artiklarna 81 och 82 i fördraget,\n2. överträdare: det företag eller den sammanslutning av företag som begått en överträdelse,\n3. skadelidande: den som lidit en skada som orsakats av en överträdelse,\n4. konkurrensmyndighet: Europeiska kommissionen eller en myndighet som utsetts enligt artikel 35 i rådets förordning (EG) nr 1/2003 att ansvara för tillämpningen av artiklarna 101 och 102 i EUF-fördraget,\n5. nationell domstol: en domstol i en medlemsstat i den mening som avses i artikel 267 i EUF-fördraget,\n6. slutligt överträdelseavgörande: ett avgörande som har meddelats av en konkurrensmyndighet eller en nationell domstol där det har fastställts att en överträdelse har skett och som inte kan bli föremål för förnyad prövning genom ordinära rättsmedel,\n7. bevis: alla former av bevismaterial som får läggas fram i domstol, oberoende av lagringsmedium,\n8. kartell: ett avtal eller ett samordnat förfarande mellan två eller flera konkurrenter som syftar till att samordna deras konkurrensbeteende på marknaden eller påverka de relevanta konkurrensparametrarna,\n9. eftergiftsprogram: ett program för tillämpningen av artikel 101 i EUF-fördraget eller motsvarande bestämmelse i nationell rätt på grundval av vilket ett företag som deltagit i en hemlig kartell, oberoende av övriga företag som är inblandade i kartellen, samarbetar med konkurrensmyndigheten i dennas utredning genom att frivilligt ge information om vad företaget vet om kartellen och företagets roll i denna, och i utbyte beviljas befrielse från eller nedsättning av sanktionsavgift för sin inblandning i kartellen,\n10. förklaring inom ramen för ett eftergiftsprogram: en redogörelse som lämnas av ett företag med information, utom redan befintlig information, om vad företaget vet om en kartell och företagets roll i denna, och som utarbetats särskilt för att lämnas in till en konkurrensmyndighet för att denna ska bevilja befrielse från eller nedsättning av sanktionsavgift inom ramen för ett eftergiftsprogram,\n11. redan befintlig information: bevis som finns oberoende av en konkurrensmyndighets förfaranden, oberoende av om denna information finns i en konkurrensmyndighets ärendeakt eller inte,\n12. förlikningsinlaga: en frivillig redogörelse från ett företag till en konkurrensmyndighet, där företaget medger eller avstår från att bestrida sitt deltagande i och ansvar för en överträdelse och som utarbetats särskilt för att göra det möjligt för konkurrensmyndigheten att tillämpa ett förenklat eller påskyndat förfarande,\n13. företag som beviljats sanktionsavgiftsbefrielse: ett företag som har befriats från sanktionsavgift av en konkurrensmyndighet inom ramen för ett eftergiftsprogram,\n14. överpris och underpris: skillnaden mellan det pris som faktiskt har betalats och det pris som skulle ha gällt om en överträdelse inte hade skett,\n15. tvistlösning i godo: samtliga mekanismer som gör det möjligt för parterna att nå en lösning utanför domstol av en tvist som gäller ett skadeståndsanspråk,\n16. uppgörelse i godo: en överenskommelse som uppnås genom tvistlösning i godo,\n17. direkt köpare: den som av en överträdare direkt förvärvat varor eller tjänster som varit föremål för en överträdelse,\n18. indirekt köpare: den som av en direkt köpare eller efterföljande köpare förvärvat varor eller tjänster som varit föremål för en överträdelse, eller varor eller tjänster som omfattar eller härrör från sådana varor eller tjänster,\n19. direkt leverantör: den som direkt tillhandahållit en överträdare varor eller tjänster som varit föremål för en överträdelse, och\n20. indirekt leverantör: den som till en direkt eller tidigare leverantör tillhandahållit varor eller tjänster som varit föremål för en överträdelse, eller varor eller tjänster som ingår i eller använts vid framställningen av sådana varor eller tjänster.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I denna lag betyder",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. överträdelse: en överträdelse av artikel 101 eller 102 i fördraget om Europeiska unionens funktionssätt (EUF-fördraget), 2 kap. 1 eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "eller bestämmelser i annan nationell rätt som tillämpas parallellt med unionens konkurrensrätt enligt artikel 3.1 i rådets förordning (EG) nr 1/2003 av den 16 december 2002 om tillämpning av konkurrensreglerna i artiklarna 81 och 82 i fördraget,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "2. överträdare: det företag eller den sammanslutning av företag som begått en överträdelse,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. skadelidande: den som lidit en skada som orsakats av en överträdelse,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. konkurrensmyndighet: Europeiska kommissionen eller en myndighet som utsetts enligt artikel 35 i rådets förordning (EG) nr 1/2003 att ansvara för tillämpningen av artiklarna 101 och 102 i EUF-fördraget,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. nationell domstol: en domstol i en medlemsstat i den mening som avses i artikel 267 i EUF-fördraget,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 6,
+              "text": "6. slutligt överträdelseavgörande: ett avgörande som har meddelats av en konkurrensmyndighet eller en nationell domstol där det har fastställts att en överträdelse har skett och som inte kan bli föremål för förnyad prövning genom ordinära rättsmedel,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 7,
+              "text": "7. bevis: alla former av bevismaterial som får läggas fram i domstol, oberoende av lagringsmedium,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 8,
+              "text": "8. kartell: ett avtal eller ett samordnat förfarande mellan två eller flera konkurrenter som syftar till att samordna deras konkurrensbeteende på marknaden eller påverka de relevanta konkurrensparametrarna,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 9,
+              "text": "9. eftergiftsprogram: ett program för tillämpningen av artikel 101 i EUF-fördraget eller motsvarande bestämmelse i nationell rätt på grundval av vilket ett företag som deltagit i en hemlig kartell, oberoende av övriga företag som är inblandade i kartellen, samarbetar med konkurrensmyndigheten i dennas utredning genom att frivilligt ge information om vad företaget vet om kartellen och företagets roll i denna, och i utbyte beviljas befrielse från eller nedsättning av sanktionsavgift för sin inblandning i kartellen,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 10,
+              "text": "10. förklaring inom ramen för ett eftergiftsprogram: en redogörelse som lämnas av ett företag med information, utom redan befintlig information, om vad företaget vet om en kartell och företagets roll i denna, och som utarbetats särskilt för att lämnas in till en konkurrensmyndighet för att denna ska bevilja befrielse från eller nedsättning av sanktionsavgift inom ramen för ett eftergiftsprogram,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 11,
+              "text": "11. redan befintlig information: bevis som finns oberoende av en konkurrensmyndighets förfaranden, oberoende av om denna information finns i en konkurrensmyndighets ärendeakt eller inte,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 12,
+              "text": "12. förlikningsinlaga: en frivillig redogörelse från ett företag till en konkurrensmyndighet, där företaget medger eller avstår från att bestrida sitt deltagande i och ansvar för en överträdelse och som utarbetats särskilt för att göra det möjligt för konkurrensmyndigheten att tillämpa ett förenklat eller påskyndat förfarande,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 13,
+              "text": "13. företag som beviljats sanktionsavgiftsbefrielse: ett företag som har befriats från sanktionsavgift av en konkurrensmyndighet inom ramen för ett eftergiftsprogram,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 14,
+              "text": "14. överpris och underpris: skillnaden mellan det pris som faktiskt har betalats och det pris som skulle ha gällt om en överträdelse inte hade skett,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 15,
+              "text": "15. tvistlösning i godo: samtliga mekanismer som gör det möjligt för parterna att nå en lösning utanför domstol av en tvist som gäller ett skadeståndsanspråk,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 16,
+              "text": "16. uppgörelse i godo: en överenskommelse som uppnås genom tvistlösning i godo,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 17,
+              "text": "17. direkt köpare: den som av en överträdare direkt förvärvat varor eller tjänster som varit föremål för en överträdelse,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 18,
+              "text": "18. indirekt köpare: den som av en direkt köpare eller efterföljande köpare förvärvat varor eller tjänster som varit föremål för en överträdelse, eller varor eller tjänster som omfattar eller härrör från sådana varor eller tjänster,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 19,
+              "text": "19. direkt leverantör: den som direkt tillhandahållit en överträdare varor eller tjänster som varit föremål för en överträdelse, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 20,
+              "text": "20. indirekt leverantör: den som till en direkt eller tidigare leverantör tillhandahållit varor eller tjänster som varit föremål för en överträdelse, eller varor eller tjänster som ingår i eller använts vid framställningen av sådana varor eller tjänster.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Ersättningsansvar",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Den som uppsåtligen eller av oaktsamhet gör sig skyldig till en överträdelse, ska ersätta den skada som uppkommer genom överträdelsen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som uppsåtligen eller av oaktsamhet gör sig skyldig till en överträdelse, ska ersätta den skada som uppkommer genom överträdelsen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Solidariskt ansvar",
+          "content": "Om två eller flera är ersättningsskyldiga för en skada, svarar de solidariskt för skadan om inte ansvaret är begränsat enligt någon av 3-5 §§.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om två eller flera är ersättningsskyldiga för en skada, svarar de solidariskt för skadan om inte ansvaret är begränsat enligt någon av 3-5 §§.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "För ett litet eller medelstort företag enligt kommissionens rekommendation 2003/361/EG av den 6 maj 2003 om definitionen av mikroföretag samt små och medelstora företag, omfattar det solidariska ansvaret endast skador som uppkommit hos företagets direkta eller indirekta köpare eller leverantörer om\n1. företagets marknadsandel har understigit fem procent vid någon tidpunkt under överträdelsen, och\n2. en tillämpning av 2 § oåterkalleligen skulle äventyra företagets ekonomiska bärkraft och medföra att dess tillgångar förlorade allt värde.\nFörsta stycket gäller inte om\n1. företaget har förmått ett annat företag att medverka i överträdelsen,\n2. företaget har haft en ledande roll i överträdelsen,\n3. företaget tidigare har gjort sig skyldigt till en överträdelse enligt ett slutligt överträdelseavgörande, eller\n4. den skadelidande inte kan få full ersättning från någon annan överträdare.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För ett litet eller medelstort företag enligt kommissionens rekommendation 2003/361/EG av den 6 maj 2003 om definitionen av mikroföretag samt små och medelstora företag, omfattar det solidariska ansvaret endast skador som uppkommit hos företagets direkta eller indirekta köpare eller leverantörer om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. företagets marknadsandel har understigit fem procent vid någon tidpunkt under överträdelsen, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. en tillämpning av 2 § oåterkalleligen skulle äventyra företagets ekonomiska bärkraft och medföra att dess tillgångar förlorade allt värde.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket gäller inte om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. företaget har förmått ett annat företag att medverka i överträdelsen,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. företaget har haft en ledande roll i överträdelsen,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. företaget tidigare har gjort sig skyldigt till en överträdelse enligt ett slutligt överträdelseavgörande, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. den skadelidande inte kan få full ersättning från någon annan överträdare.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "För ett företag som har beviljats sanktionsavgiftsbefrielse omfattar det solidariska ansvaret endast skador som uppkommit hos\n1. företagets direkta eller indirekta köpare eller leverantörer, och\n2. andra skadelidande, om skadan inte kan ersättas av någon annan överträdare.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För ett företag som har beviljats sanktionsavgiftsbefrielse omfattar det solidariska ansvaret endast skador som uppkommit hos",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. företagets direkta eller indirekta köpare eller leverantörer, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. andra skadelidande, om skadan inte kan ersättas av någon annan överträdare.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Ett företag som har träffat en uppgörelse i godo med en skadelidande är solidariskt ansvarigt gentemot denne endast om\n1. skadan inte kan ersättas av någon annan överträdare, och\n2. något annat inte avtalats.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett företag som har träffat en uppgörelse i godo med en skadelidande är solidariskt ansvarigt gentemot denne endast om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. skadan inte kan ersättas av någon annan överträdare, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. något annat inte avtalats.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Preskription",
+          "content": "Rätten till ersättning faller bort, om talan inte väcks inom fem år från det att överträdelsen upphört och den skadelidande fått kännedom om eller skäligen kan antas ha fått kännedom om\n1. beteendet och att det utgjorde en överträdelse,\n2. att överträdelsen orsakat denne skada, och\n3. överträdarens identitet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Rätten till ersättning faller bort, om talan inte väcks inom fem år från det att överträdelsen upphört och den skadelidande fått kännedom om eller skäligen kan antas ha fått kännedom om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. beteendet och att det utgjorde en överträdelse,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. att överträdelsen orsakat denne skada, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. överträdarens identitet.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Fristen enligt 6 § avbryts om en konkurrensmyndighet vidtar åtgärder i fråga om den överträdelse som anspråket avser. En ny frist löper från den dag det finns ett slutligt överträdelseavgörande eller när myndigheten avslutat sitt förfarande på något annat sätt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fristen enligt 6 § avbryts om en konkurrensmyndighet vidtar åtgärder i fråga om den överträdelse som anspråket avser. En ny frist löper från den dag det finns ett slutligt överträdelseavgörande eller när myndigheten avslutat sitt förfarande på något annat sätt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "För parter som deltar i en tvistlösning i godo upphör fristen enligt 6 § att löpa under den tid tvistlösningen pågår.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För parter som deltar i en tvistlösning i godo upphör fristen enligt 6 § att löpa under den tid tvistlösningen pågår.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Bestämmande av ersättning",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Ersättning för skada enligt 2 kap. 1 § omfattar faktisk skada och utebliven vinst.\nRänta på ersättningen tas ut från den dag skadan uppkom till den dag betalning sker. Räntan beräknas enligt\n. Om ansökan om betalningsföreläggande eller stämning i mål om utgivande av betalning delges, beräknas räntan enligt 6 § räntelagen från dagen för delgivningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ersättning för skada enligt 2 kap. 1 § omfattar faktisk skada och utebliven vinst.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ränta på ersättningen tas ut från den dag skadan uppkom till den dag betalning sker. Räntan beräknas enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": ". Om ansökan om betalningsföreläggande eller stämning i mål om utgivande av betalning delges, beräknas räntan enligt 6 § räntelagen från dagen för delgivningen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "När ett anspråk på ersättning för faktisk skada omfattar ett överpris ska, om svaranden visar det, ersättningen minskas med ett belopp som motsvarar det överpris som den skadelidande övervältrat på sina köpare. Motsvarande gäller i fråga om ett underpris som den skadelidande övervältrat på sina leverantörer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När ett anspråk på ersättning för faktisk skada omfattar ett överpris ska, om svaranden visar det, ersättningen minskas med ett belopp som motsvarar det överpris som den skadelidande övervältrat på sina köpare. Motsvarande gäller i fråga om ett underpris som den skadelidande övervältrat på sina leverantörer.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "När ersättningen bestäms ska en uppgörelse i godo med en annan överträdare beaktas. Ersättningen ska minskas med den överträdarens andel av den skada som uppgörelsen avser. Andelen ska bestämmas med hänsyn till överträdarnas relativa ansvar för den skada som överträdelsen orsakat.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När ersättningen bestäms ska en uppgörelse i godo med en annan överträdare beaktas. Ersättningen ska minskas med den överträdarens andel av den skada som uppgörelsen avser. Andelen ska bestämmas med hänsyn till överträdarnas relativa ansvar för den skada som överträdelsen orsakat.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Presumtion för skada",
+          "content": "Vid en överträdelse som utgörs av en kartell ska en skada anses ha inträffat, om inte något annat visas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid en överträdelse som utgörs av en kartell ska en skada anses ha inträffat, om inte något annat visas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Överpris som övervältrats på en indirekt köpare",
+          "content": "När ersättningen till en indirekt köpare bestäms ska, om inte något annat visas, ett överpris anses ha övervältrats på den indirekta köparen om överträdelsen har lett till ett överpris för den direkta köparen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När ersättningen till en indirekt köpare bestäms ska, om inte något annat visas, ett överpris anses ha övervältrats på den indirekta köparen om överträdelsen har lett till ett överpris för den direkta köparen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Underpris som övervältrats på en indirekt leverantör",
+          "content": "När ersättningen till en indirekt leverantör bestäms ska, om inte något annat visas, ett underpris anses ha övervältrats på den indirekta leverantören om överträdelsen har lett till ett underpris för den direkta leverantören.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När ersättningen till en indirekt leverantör bestäms ska, om inte något annat visas, ett underpris anses ha övervältrats på den indirekta leverantören om överträdelsen har lett till ett underpris för den direkta leverantören.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Regressrätt",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Den som enligt 2 kap. 2 § har betalat mer än sin andel av skadan har rätt att få ersättning av en annan överträdare med ett belopp som högst får uppgå till den överträdarens andel av skadan, med de begränsningar som föreskrivs i 2 och 3 §§.\nEn överträdares andel av skadan ska bestämmas med hänsyn till överträdarnas relativa ansvar för den skada som överträdelsen orsakat.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som enligt 2 kap. 2 § har betalat mer än sin andel av skadan har rätt att få ersättning av en annan överträdare med ett belopp som högst får uppgå till den överträdarens andel av skadan, med de begränsningar som föreskrivs i 2 och 3 §§.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "En överträdares andel av skadan ska bestämmas med hänsyn till överträdarnas relativa ansvar för den skada som överträdelsen orsakat.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Begränsningar i regressrätten",
+          "content": "Rätten till ersättning från ett företag som beviljats sanktionsavgiftsbefrielse är begränsad till ett belopp som högst får uppgå till den skada företaget orsakat sina direkta eller indirekta köpare eller leverantörer.\nFörsta stycket tillämpas inte i fråga om ersättning för en skada som har orsakats andra skadelidande än överträdarnas direkta eller indirekta köpare eller leverantörer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Rätten till ersättning från ett företag som beviljats sanktionsavgiftsbefrielse är begränsad till ett belopp som högst får uppgå till den skada företaget orsakat sina direkta eller indirekta köpare eller leverantörer.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket tillämpas inte i fråga om ersättning för en skada som har orsakats andra skadelidande än överträdarnas direkta eller indirekta köpare eller leverantörer.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Rätten till ersättning från en överträdare som träffat en uppgörelse i godo med en skadelidande är begränsad till att omfatta ersättning som lämnats till någon annan skadelidande.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Rätten till ersättning från en överträdare som träffat en uppgörelse i godo med en skadelidande är begränsad till att omfatta ersättning som lämnats till någon annan skadelidande.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "5",
+      "title": "Rättegångsbestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Patent- och marknadsdomstolen är rätt domstol i mål enligt denna lag.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Patent- och marknadsdomstolen är rätt domstol i mål enligt denna lag.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Grupptalan",
+          "content": "En talan om skadestånd enligt denna lag får föras som grupptalan enligt\nom grupprättegång. Vid en grupptalan tillämpas inte 3 § lagen om grupprättegång.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En talan om skadestånd enligt denna lag får föras som grupptalan enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om grupprättegång. Vid en grupptalan tillämpas inte 3 § lagen om grupprättegång.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Särskilda bestämmelser för mål om skadestånd",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Vilandeförklaring",
+          "content": "Rätten får förklara ett mål vilande om två eller flera parter inlett en tvistlösning i godo av ett anspråk som omfattas av talan i målet. Målet ska återupptas senast inom två år från beslutet om vilandeförklaring.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Rätten får förklara ett mål vilande om två eller flera parter inlett en tvistlösning i godo av ett anspråk som omfattas av talan i målet. Målet ska återupptas senast inom två år från beslutet om vilandeförklaring.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Skriftligt bevis",
+          "content": "I 38 kap. rättegångsbalken finns bestämmelser om skriftligt bevis. Ett föreläggande om att förete eller tillhandahålla exemplar av handlingar som finns hos en konkurrensmyndighet får riktas till myndigheten endast om det kan antas att handlingen inte utan olägenhet kan företes av någon annan.\nOm det kan antas att ett beslut om att förete eller tillhandahålla ett exemplar av en skriftlig handling som finns hos en konkurrensmyndighet allvarligt skulle försvåra myndighetens möjlighet att fullgöra sina uppgifter, får ett sådant beslut inte meddelas.\nEn konkurrensmyndighet får på eget initiativ yttra sig över om en begäran om företeende eller tillhandahållande av en handling som finns i en konkurrensmyndighets ärendeakt är proportionell.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I 38 kap. rättegångsbalken finns bestämmelser om skriftligt bevis. Ett föreläggande om att förete eller tillhandahålla exemplar av handlingar som finns hos en konkurrensmyndighet får riktas till myndigheten endast om det kan antas att handlingen inte utan olägenhet kan företes av någon annan.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om det kan antas att ett beslut om att förete eller tillhandahålla ett exemplar av en skriftlig handling som finns hos en konkurrensmyndighet allvarligt skulle försvåra myndighetens möjlighet att fullgöra sina uppgifter, får ett sådant beslut inte meddelas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "En konkurrensmyndighet får på eget initiativ yttra sig över om en begäran om företeende eller tillhandahållande av en handling som finns i en konkurrensmyndighets ärendeakt är proportionell.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Skyldigheten enligt 38 kap. 2 och 8 §§ rättegångsbalken att förete eller tillhandahålla skriftlig handling omfattar inte exemplar av sådana handlingar som finns hos en konkurrensmyndighet och som utgörs av\n1. förklaringar inom ramen för ett eftergiftsprogram,\n2. förlikningsinlagor,\n3. information som en fysisk eller juridisk person tagit fram särskilt för en konkurrensmyndighets handläggning av ett ärende, eller\n4. information som konkurrensmyndigheten tagit fram och överlämnat till parterna under handläggningen av ett ärende.\nEfter att konkurrensmyndigheten genom att anta ett beslut eller på något annat sätt avslutat sitt förfarande, omfattas dock återkallade förlikningsinlagor och handlingar som avses i första stycket 3 och 4 av skyldigheten att förete eller tillhandahålla skriftlig handling.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skyldigheten enligt 38 kap. 2 och 8 §§ rättegångsbalken att förete eller tillhandahålla skriftlig handling omfattar inte exemplar av sådana handlingar som finns hos en konkurrensmyndighet och som utgörs av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. förklaringar inom ramen för ett eftergiftsprogram,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. förlikningsinlagor,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. information som en fysisk eller juridisk person tagit fram särskilt för en konkurrensmyndighets handläggning av ett ärende, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. information som konkurrensmyndigheten tagit fram och överlämnat till parterna under handläggningen av ett ärende.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Efter att konkurrensmyndigheten genom att anta ett beslut eller på något annat sätt avslutat sitt förfarande, omfattas dock återkallade förlikningsinlagor och handlingar som avses i första stycket 3 och 4 av skyldigheten att förete eller tillhandahålla skriftlig handling.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Om det vid prövningen av om en handling ska företes eller tillhandahållas görs gällande att handlingen är en sådan som avses i 5 § första stycket 1 eller 2, är den som yrkandet riktas mot, efter begäran av den som framställt yrkandet, skyldig att överlämna handlingen till rätten för prövning av frågan. Vid denna prövning får rätten inte ge någon annan tillfälle att yttra sig än konkurrensmyndigheten eller den som upprättat handlingen. En part har rätt att ta del av handlingen endast i den utsträckning rätten finner att den ska företes eller tillhandahållas.\nFinner rätten att handlingen är undantagen från skyldigheten att förete eller tillhandahålla skriftlig handling ska handlingen omedelbart återlämnas. Innehåller handlingen även uppgifter som inte omfattas av undantaget ska rätten behålla ett utdrag ur handlingen med dessa uppgifter.\nVid prövningen av skyldigheten enligt första stycket att överlämna handlingen till rätten är 38 kap. 4, 5 och 7 §§ rättegångsbalken tillämpliga.",
+          "amendedBy": "Lag (2018:85)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det vid prövningen av om en handling ska företes eller tillhandahållas görs gällande att handlingen är en sådan som avses i 5 § första stycket 1 eller 2, är den som yrkandet riktas mot, efter begäran av den som framställt yrkandet, skyldig att överlämna handlingen till rätten för prövning av frågan. Vid denna prövning får rätten inte ge någon annan tillfälle att yttra sig än konkurrensmyndigheten eller den som upprättat handlingen. En part har rätt att ta del av handlingen endast i den utsträckning rätten finner att den ska företes eller tillhandahållas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Finner rätten att handlingen är undantagen från skyldigheten att förete eller tillhandahålla skriftlig handling ska handlingen omedelbart återlämnas. Innehåller handlingen även uppgifter som inte omfattas av undantaget ska rätten behålla ett utdrag ur handlingen med dessa uppgifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Vid prövningen av skyldigheten enligt första stycket att överlämna handlingen till rätten är 38 kap. 4, 5 och 7 §§ rättegångsbalken tillämpliga.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Det som föreskrivs i 4-6 §§ gäller även i fråga om bevisning till framtida säkerhet enligt 41 kap. rättegångsbalken.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det som föreskrivs i 4-6 §§ gäller även i fråga om bevisning till framtida säkerhet enligt 41 kap. rättegångsbalken.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": "Förbud mot att åberopa visst skriftligt bevis",
+          "content": "En handling som avses i 5 § första stycket får inte åberopas som bevis i ett mål om skadestånd enligt denna lag. Efter att konkurrensmyndigheten genom att anta ett beslut eller på något annat sätt avslutat sitt förfarande får dock återkallade förlikningsinlagor och handlingar som avses i 5 § första stycket 3 och 4 åberopas som bevis.\nExemplar av andra handlingar än de som avses i första stycket och som någon fått del av enbart genom tillgång till en konkurrensmyndighets ärendeakt får i mål om skadestånd enligt denna lag åberopas som bevis endast av den personen eller någon som övertagit dennes rättigheter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En handling som avses i 5 § första stycket får inte åberopas som bevis i ett mål om skadestånd enligt denna lag. Efter att konkurrensmyndigheten genom att anta ett beslut eller på något annat sätt avslutat sitt förfarande får dock återkallade förlikningsinlagor och handlingar som avses i 5 § första stycket 3 och 4 åberopas som bevis.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Exemplar av andra handlingar än de som avses i första stycket och som någon fått del av enbart genom tillgång till en konkurrensmyndighets ärendeakt får i mål om skadestånd enligt denna lag åberopas som bevis endast av den personen eller någon som övertagit dennes rättigheter.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": "Rättskraft",
+          "content": "Om det genom ett avgörande enligt 3 kap. 1, 1 a eller 2 § eller\nsom fått laga kraft har slagits fast att en överträdelse av konkurrensrätten har skett, får den frågan inte på nytt tas upp till prövning i ett mål om skadestånd enligt denna lag.",
+          "amendedBy": "Lag (2021:84)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det genom ett avgörande enligt 3 kap. 1, 1 a eller 2 § eller",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "som fått laga kraft har slagits fast att en överträdelse av konkurrensrätten har skett, får den frågan inte på nytt tas upp till prövning i ett mål om skadestånd enligt denna lag.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "2016:964",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 27 december 2016.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Bestämmelserna i 5 kap. 3-9 §§ tillämpas på talan som  väckts efter den 25 december 2014.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2021:84",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 mars 2021.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. För avgöranden enligt",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "som fått laga kraft före ikraftträdandet tillämpas  äldre bestämmelser.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 2016:964",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

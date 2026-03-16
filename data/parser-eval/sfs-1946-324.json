@@ -1,0 +1,169 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (1946:324)\nom skogsvårdsavgift",
+  "documentNumber": "SFS 1946:324",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Skogsvårdsavgift skall betalas för jordbruksfastighet som vid fastighetstaxeringen åsatts delvärdet skogsbruksvärde.\nAvgiftsskyldig är ägaren till fastigheten eller den som enligt\nskall anses som ägare. Den som innehar fastighet med åborätt eller eljest med ständig eller ärftlig besittningsrätt och på grund av denna sin rätt inte får utöver husbehovet tillgodogöra sig avkastning av skog på fastigheten påförs dock inte någon avgift.\nI fråga om handelsbolag och dödsbon som vid inkomsttaxeringen behandlas som handelsbolag är delägarna avgiftsskyldiga.",
+          "amendedBy": "Lag (1986:491)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skogsvårdsavgift skall betalas för jordbruksfastighet som vid fastighetstaxeringen åsatts delvärdet skogsbruksvärde.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Avgiftsskyldig är ägaren till fastigheten eller den som enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "skall anses som ägare. Den som innehar fastighet med åborätt eller eljest med ständig eller ärftlig besittningsrätt och på grund av denna sin rätt inte får utöver husbehovet tillgodogöra sig avkastning av skog på fastigheten påförs dock inte någon avgift.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "I fråga om handelsbolag och dödsbon som vid inkomsttaxeringen behandlas som handelsbolag är delägarna avgiftsskyldiga.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Skogsvårdsavgiften är för varje beskattningsår 8 promille av skogsbruksvärdet. Omfattar beskattningsåret kortare eller längre tid än tolv månader eller har fastigheten förvärvats eller avyttrats under beskattningsåret, skall underlaget för avgiften jämkas med hänsyn härtill.",
+          "amendedBy": "Lag (1990:338)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skogsvårdsavgiften är för varje beskattningsår 8 promille av skogsbruksvärdet. Omfattar beskattningsåret kortare eller längre tid än tolv månader eller har fastigheten förvärvats eller avyttrats under beskattningsåret, skall underlaget för avgiften jämkas med hänsyn härtill.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "I fråga om förfarandet för att bestämma underlaget för skogsvårdsavgift gäller bestämmelserna i",
+          "amendedBy": "Lag (1990:338)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I fråga om förfarandet för att bestämma underlaget för skogsvårdsavgift gäller bestämmelserna i",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "I fråga om debitering och uppbörd av skogsvårdsavgift gäller bestämmelserna i",
+          "amendedBy": "Lag (1986:491)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I fråga om debitering och uppbörd av skogsvårdsavgift gäller bestämmelserna i",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Skogsvårdsavgift tillfaller staten.",
+          "amendedBy": "Lag (1986:491)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skogsvårdsavgift tillfaller staten.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "1983:1125",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 juli 1984. Äldre bestämmelser gäller fortfarande i fråga om avgift på grund av 1984 och tidigare års taxering. I fråga om 1985 års taxering utgör promilletalet 6,5. Till den del beskattningsåret omfattar tid före den 1 januari 1984 beräknas avgiften enligt äldre bestämmelser.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1984:1079",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 januari 1985 och tillämpas första gången vid 1986 års taxering. Äldre bestämmelser skall dock fortfarande tillämpas vid nämnda taxering i fråga om skattskyldiga som då taxeras för beskattningsår som har påbörjats före den 1 januari 1985.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1990:338",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 30 juni 1990 och tillämpas första gången vid 1991 års taxering.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1991:1849",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Enligt riksdagens beslut föreskrivs att lagen (1946:324) om skogsvårdsavgift skall upphöra att gälla vid utgången av juni 1992.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Lagen tillämpas dock alltjämt i fråga om avgift som belöper på tiden före dess upphävande i den mån annat inte anges nedan i fråga om beräkning av skogsvårdsavgiften.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "För beskattningsår som avslutas efter den 31 december 1991 gäller följande. Skogsvårdsavgiften beräknas på grundval av 1991 års skogsbruksvärde och är för helt år räknat",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "a) 8 promille till den del beskattningsåret omfattar tid före den 1 januari 1992 och",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "b) 4 promille för tiden därefter. Beskattningsår som avslutas efter den 30 juni 1992 anses ha gått ut denna dag.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Har skogsbruksvärdet inte bestämts för år 1991 uppskattas skogsbruksvärdet enligt de grunder som då gällde för bestämmande av skogsbruksvärdet. Om den skattskyldige så yrkar beräknas skogsvårdsavgiften på grundval av det för år 1992 gällande skogsbruksvärdet.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1946:324",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

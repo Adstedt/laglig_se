@@ -1,0 +1,1414 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Personuppgiftslag (1998:204)",
+  "documentNumber": "SFS 1998:204",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "sections": [
+        {
+          "number": "1",
+          "heading": "Syftet med lagen",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Syftet med denna lag är att skydda människor mot att deras personliga integritet kränks genom behandling av personuppgifter.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Avvikande bestämmelser i annan författning",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om det i en annan lag eller i en förordning finns bestämmelser som avviker från denna lag, skall de bestämmelserna gälla.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Definitioner",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "I denna lag används följande beteckningar med nedan angiven betydelse.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Tillämpningsområde",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Det territoriella tillämpningsområdet",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Denna lag gäller för sådana personuppgiftsansvariga som är etablerade i Sverige.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Lagen tillämpas också när den personuppgiftsansvarige är etablerad i tredje land men för behandlingen av personuppgifter använder sig av utrustning som finns i Sverige. Vad som nu sagts gäller dock inte om utrustningen bara används för att överföra uppgifter mellan ett tredje land och ett annat sådant land.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "I det fall som avses i andra stycket första meningen skall den personuppgiftsansvarige utse en företrädare för sig som är etablerad i Sverige. Vad som anges i denna lag om den personuppgiftsansvarige skall också gälla för företrädaren.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Behandling av personuppgifter som omfattas av lagen",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Denna lag gäller för sådan behandling av personuppgifter som helt eller delvis är automatiserad.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Lagen gäller även för annan behandling av personuppgifter, om uppgifterna ingår i eller är avsedda att ingå i en strukturerad samling av personuppgifter som är tillgängliga för sökning eller sammanställning enligt särskilda kriterier.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "5a",
+          "heading": "Undantag för behandling av personuppgifter i ostrukturerat material",
+          "lastAmendment": "2006:398",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i 9, 10, 13-19, 21-26, 28, 33, 34 och 42 §§ behöver inte tillämpas på behandling av personuppgifter som inte ingår i eller är avsedda att ingå i en samling av personuppgifter som har strukturerats för att påtagligt underlätta sökning efter eller sammanställning av personuppgifter.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Sådan behandling som avses i första stycket får inte utföras, om den innebär en kränkning av den registrerades personliga integritet.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Undantag för privat behandling av personuppgifter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Denna lag gäller inte för sådan behandling av personuppgifter som en fysisk person utför som ett led i en verksamhet av rent privat natur.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": "Förhållandet till tryck- och yttrandefriheten",
+          "lastAmendment": "2006:398",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i denna lag tillämpas inte i den utsträckning det skulle strida mot bestämmelserna om tryck- och yttrandefrihet i tryckfrihetsförordningen eller yttrandefrihetsgrundlagen.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Bestämmelserna i 5 a, 9-29 och 33-44 §§ samt 45 § första stycket och 47-49 §§ skall inte tillämpas på sådan behandling av personuppgifter som sker uteslutande för journalistiska ändamål eller konstnärligt eller litterärt skapande.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": "Förhållandet till offentlighetsprincipen",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i denna lag tillämpas inte i den utsträckning det skulle inskränka en myndighets skyldighet enligt 2 kap. tryckfrihetsförordningen att lämna ut personuppgifter.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Bestämmelserna hindrar inte heller att en myndighet arkiverar och bevarar allmänna handlingar eller att arkivmaterial tas om hand av en arkivmyndighet. Bestämmelsen i 9 § fjärde stycket gäller inte för en myndighets användning av personuppgifter i allmänna handlingar.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "8a",
+          "heading": "Föreskrifter om undantag från vissa bestämmelser",
+          "lastAmendment": "2006:398",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen får meddela föreskrifter om undantag från 9, 23-26 och 28 §§ samt 29 § andra stycket och 42 §, om det är nödvändigt med hänsyn till",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) rikets säkerhet,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) försvaret,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) allmän säkerhet,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "d) förebyggande, undersökning eller avslöjande av brott eller av överträdelse av etiska regler som gäller för lagreglerade yrken,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "e) åtal för brott,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 7,
+              "text": "f) ett viktigt ekonomiskt eller finansiellt intresse hos Europeiska unionen eller en stat som ingår i unionen,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 8,
+              "text": "g) myndighetsutövning som avser tillsyn, inspektion eller reglering i fråga om sådant som nämns i c-f, eller",
+              "role": "CONTENT"
+            },
+            {
+              "number": 9,
+              "text": "h) skyddet av fri- och rättigheter.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": "Grundläggande krav på behandlingen av personuppgifter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Den personuppgiftsansvarige skall se till att",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) personuppgifter behandlas bara om det är lagligt,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) personuppgifter alltid behandlas på ett korrekt sätt och i enlighet med god sed,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) personuppgifter samlas in bara för särskilda, uttryckligt angivna och berättigade ändamål,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "d) personuppgifter inte behandlas för något ändamål som är oförenligt med det för vilket uppgifterna samlades in,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "e) de personuppgifter som behandlas är adekvata och relevanta i förhållande till ändamålen med behandlingen,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 7,
+              "text": "f) inte fler personuppgifter behandlas än som är nödvändigt med hänsyn till ändamålen med behandlingen,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 8,
+              "text": "g) de personuppgifter som behandlas är riktiga och, om det är nödvändigt, aktuella,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 9,
+              "text": "h) alla rimliga åtgärder vidtas för att rätta, blockera eller utplåna sådana personuppgifter som är felaktiga eller ofullständiga med hänsyn till ändamålen med behandlingen, och",
+              "role": "CONTENT"
+            },
+            {
+              "number": 10,
+              "text": "i) personuppgifter inte bevaras under en längre tid än vad som är nödvändigt med hänsyn till ändamålen med behandlingen.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 11,
+              "text": "I fråga om första stycket d gäller dock att en behandling av personuppgifter för historiska, statistiska eller vetenskapliga ändamål inte skall anses som oförenlig med de ändamål för vilka uppgifterna samlades in.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 12,
+              "text": "Personuppgifter får bevaras för historiska, statistiska eller vetenskapliga ändamål under längre tid än som sagts i första stycket i. Personuppgifterna får dock i sådana fall inte bevaras under en längre tid än vad som behövs för dessa ändamål.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 13,
+              "text": "Personuppgifter som behandlas för historiska, statistiska eller vetenskapliga ändamål får användas för att vidta åtgärder i fråga om den registrerade bara om den registrerade har lämnat sitt samtycke eller det finns synnerliga skäl med hänsyn till den registrerades vitala intressen.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": "När behandling av personuppgifter är tillåten",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgifter får behandlas bara om den registrerade har lämnat sitt samtycke till behandlingen eller om behandlingen är nödvändig för att",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) ett avtal med den registrerade skall kunna fullgöras eller åtgärder som den registrerade begärt skall kunna vidtas innan ett avtal träffas,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) den personuppgiftsansvarige skall kunna fullgöra en rättslig skyldighet,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) vitala intressen för den registrerade skall kunna skyddas,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "d) en arbetsuppgift av allmänt intresse skall kunna utföras,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "e) den personuppgiftsansvarige eller en tredje man till vilken personuppgifter lämnas ut skall kunna utföra en arbetsuppgift i samband med myndighetsutövning, eller",
+              "role": "CONTENT"
+            },
+            {
+              "number": 7,
+              "text": "f) ett ändamål som rör ett berättigat intresse hos den personuppgiftsansvarige eller hos en sådan tredje man till vilken personuppgifterna lämnas ut skall kunna tillgodoses, om detta intresse väger tyngre än den registrerades intresse av skydd mot kränkning av den personliga integriteten.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": "Direkt marknadsföring",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgifter får inte behandlas för ändamål som rör direkt marknadsföring, om den registrerade hos den personuppgiftsansvarige skriftligen har anmält att han eller hon motsätter sig sådan behandling.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": "Samtycke återkallas",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "I de fall då behandling av personuppgifter bara är tillåten när den registrerade har lämnat sitt samtycke enligt 10, 15 eller 34 § har den registrerade rätt att när som helst återkalla ett lämnat samtycke. Ytterligare personuppgifter om den registrerade får därefter inte behandlas.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "En registrerad har utöver vad som följer av första stycket och 11 § inte rätt att motsätta sig sådan behandling av personuppgifter som är tillåten enligt denna lag.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": "Förbud mot behandling av känsliga personuppgifter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Det är förbjudet att behandla personuppgifter som avslöjar",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) ras eller etniskt ursprung,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) politiska åsikter,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) religiös eller filosofisk övertygelse, eller",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "d) medlemskap i fackförening.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "Det är också förbjudet att behandla sådana personuppgifter som rör hälsa eller sexualliv.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 7,
+              "text": "Uppgifter av den art som anges i första och andra styckena betecknas i denna lag som känsliga personuppgifter.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": "Undantag från förbudet mot behandling av känsliga personuppgifter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Det är trots förbudet i 13 § tillåtet att behandla känsliga personuppgifter i de fall som anges i 15-19 §§.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "I 10 § finns det bestämmelser om i vilka fall behandling av personuppgifter över huvud taget är tillåten.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": "Samtycke eller offentliggörande",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Känsliga personuppgifter får behandlas, om den registrerade har lämnat sitt uttryckliga samtycke till behandlingen eller på ett tydligt sätt offentliggjort uppgifterna.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": "Nödvändig behandling",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Känsliga personuppgifter får behandlas om behandlingen är nödvändig för att",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) den personuppgiftsansvarige skall kunna fullgöra sina skyldigheter eller utöva sina rättigheter inom arbetsrätten,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) den registrerades eller någon annans vitala intressen skall kunna skyddas och den registrerade inte kan lämna sitt samtycke, eller",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) rättsliga anspråk skall kunna fastställas, göras gällande eller försvaras.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "Uppgifter som behandlas med stöd av första stycket a får lämnas ut till tredje man bara om det inom arbetsrätten finns en skyldighet för den personuppgiftsansvarige att göra det eller den registrerade uttryckligen har samtyckt till utlämnandet.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": "Ideella organisationer",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Ideella organisationer med politiskt, filosofiskt, religiöst eller fackligt syfte får inom ramen för sin verksamhet behandla känsliga personuppgifter om organisationens medlemmar och sådana andra personer som på grund av organisationens syfte har regelbunden kontakt med den. Känsliga personuppgifter får dock lämnas ut till tredje man bara om den registrerade uttryckligen har samtyckt till det.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": "Hälso- och sjukvård",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Känsliga personuppgifter får behandlas för hälso- och sjukvårdsändamål, om behandlingen är nödvändig för",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) förebyggande hälso- och sjukvård,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) medicinska diagnoser,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) vård eller behandling, eller",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "d) administration av hälso- och sjukvård.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "Den som är yrkesmässigt verksam inom hälso- och sjukvårdsområdet och har tystnadsplikt får även behandla känsliga personuppgifter som omfattas av tystnadsplikten.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 7,
+              "text": "Detsamma gäller den som är underkastad en liknande tystnadsplikt och som har fått känsliga personuppgifter från verksamhet inom hälso- och sjukvårdsområdet.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "19",
+          "heading": "Forskning och statistik",
+          "lastAmendment": "2003:466",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Känsliga personuppgifter får behandlas för forskningsändamål om behandlingen godkänts enligt om etikprövning av forskning som avser människor.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Känsliga personuppgifter får behandlas för statistikändamål, om behandlingen är nödvändig på sätt som sägs i 10 § och om samhällsintresset av det statistikprojekt där behandlingen ingår klart väger över den risk för otillbörligt intrång i enskildas personliga integritet som behandlingen kan innebära.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Har behandlingen godkänts av en forskningsetisk kommitté, skall förutsättningarna enligt andra stycket anses uppfyllda. Med forskningsetisk kommitté avses ett sådant särskilt organ för prövning av forskningsetiska frågor som har företrädare för såväl det allmänna som forskningen och som är knutet till ett universitet eller en högskola eller till någon annan instans som i mera betydande omfattning finansierar forskning.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "Personuppgifter får lämnas ut för att användas i sådana projekt som avses i andra stycket, om inte något annat följer av regler om sekretess och tystnadsplikt.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "20",
+          "heading": "Bemyndigande att föreskriva ytterligare undantag",
+          "lastAmendment": "1998:1436",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om ytterligare undantag från förbudet i 13 §, om det behövs med hänsyn till ett viktigt allmänt intresse.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "21",
+          "heading": "Uppgifter om lagöverträdelser m.m.",
+          "lastAmendment": "2008:187",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Det är förbjudet för andra än myndigheter att behandla personuppgifter om lagöverträdelser som innefattar brott, domar i brottmål, straffprocessuella tvångsmedel eller administrativa frihetsberövanden.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Personuppgifter som avses i första stycket får dock behandlas för forskningsändamål av andra än myndigheter, om behandlingen har godkänts enligt om etikprövning av forskning som avser människor.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om undantag från förbudet i första stycket.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "Regeringen får i enskilda fall besluta om undantag från förbudet i första stycket. Regeringen får överlåta åt tillsynsmyndigheten att fatta sådana beslut.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "22",
+          "heading": "Behandling av personnummer",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Uppgifter om personnummer eller samordningsnummer får utan samtycke behandlas bara när det är klart motiverat med hänsyn till",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) ändamålet med behandlingen,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) vikten av en säker identifiering, eller",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) något annat beaktansvärt skäl.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "23",
+          "heading": "Information skall lämnas självmant",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om uppgifter om en person samlas in från personen själv, skall den personuppgiftsansvarige i samband därmed självmant lämna den registrerade information om behandlingen av uppgifterna.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "24",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om personuppgifterna har samlats in från någon annan källa än den registrerade, skall den personuppgiftsansvarige självmant lämna den registrerade information om behandlingen av uppgifterna när de registreras. Är uppgifterna avsedda att lämnas ut till tredje man, behöver informationen dock inte ges förrän uppgifterna lämnas ut för första gången.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Information enligt första stycket behöver inte lämnas, om det finns bestämmelser om registrerandet eller utlämnandet av personuppgifterna i en lag eller någon annan författning.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Information behöver inte heller lämnas enligt första stycket, om detta visar sig vara omöjligt eller skulle innebära en oproportionerligt stor arbetsinsats. Om uppgifterna används för att vidta åtgärder som rör den registrerade, skall dock information lämnas senast i samband med att så sker.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "25",
+          "heading": "Den information som skall lämnas självmant",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Information enligt 23 eller 24 § skall omfatta",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) uppgift om den personuppgiftsansvariges identitet,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) uppgift om ändamålen med behandlingen, och",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) all övrig information som behövs för att den registrerade skall kunna ta till vara sina rättigheter i samband med behandlingen, såsom information om mottagarna av uppgifterna, skyldighet att lämna uppgifter och rätten att ansöka om information och få rättelse.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "Information behöver dock inte lämnas om sådant som den registrerade redan känner till.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "26",
+          "heading": "Information skall lämnas efter ansökan",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Den personuppgiftsansvarige är skyldig att till var och en som ansöker om det en gång per kalenderår gratis lämna besked om personuppgifter som rör den sökande behandlas eller ej.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Behandlas sådana uppgifter skall skriftlig information lämnas också om",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "a) vilka uppgifter om den sökande som behandlas,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "b) varifrån dessa uppgifter har hämtats,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "c) ändamålen med behandlingen, och",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "d) till vilka mottagare eller kategorier av mottagare som uppgifterna läm-nas ut.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 7,
+              "text": "En ansökan enligt första stycket skall göras skriftligen hos den personuppgiftsansvarige och vara undertecknad av den sökande själv. Information enligt första stycket skall lämnas inom en månad från det att ansökan gjordes. Om det finns särskilda skäl för det, får information dock lämnas senast fyra månader efter det att ansökan gjordes.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 8,
+              "text": "Information enligt första stycket behöver inte lämnas om personuppgifter i löpande text som inte fått sin slutliga utformning när ansökan gjordes eller som utgör minnesanteckning eller liknande. Vad som nu sagts gäller dock inte om uppgifterna har lämnats ut till tredje man eller om uppgifterna behandlas enbart för historiska, statistiska eller vetenskapliga ändamål eller, när det gäller löpande text som inte fått sin slutliga utformning, om uppgifterna har behandlats under längre tid än ett år.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "27",
+          "heading": "Undantag från informationsskyldigheten vid sekretess och tystnadsplikt",
+          "lastAmendment": "2009:468",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "I den utsträckning det är särskilt föreskrivet i lag eller annan författning eller annars framgår av beslut som har meddelats med stöd av författning att uppgifter inte får lämnas ut till den registrerade gäller inte bestämmelserna i 23-26 §§. En personuppgiftsansvarig som inte är en myndighet får därvid i motsvarande fall som avses i offentlighets- och vägra att lämna ut uppgifter till den registrerade.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "28",
+          "heading": "Rättelse",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Den personuppgiftsansvarige är skyldig att på begäran av den registrerade snarast rätta, blockera eller utplåna sådana personuppgifter som inte har behandlats i enlighet med denna lag eller föreskrifter som har utfärdats med stöd av lagen. Den personuppgiftsansvarige skall också underrätta tredje man till vilken uppgifterna har lämnats ut om åtgärden, om den registrerade begär det eller om mera betydande skada eller olägenhet för den registrerade skulle kunna undvikas genom en underrättelse. Någon sådan underrättelse behöver dock inte lämnas, om detta visar sig vara omöjligt eller skulle innebära en oproportionerligt stor arbetsinsats.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "29",
+          "heading": "Automatiserade beslut",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om ett beslut som har rättsliga följder för en fysisk person eller annars har märkbara verkningar för den fysiska personen, grundas enbart på automatiserad behandling av sådana personuppgifter som är avsedda att bedöma egenskaper hos personen, skall den som berörs av beslutet ha möjlighet att på begäran få beslutet omprövat av någon person.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Var och en som varit föremål för ett sådant beslut som avses i första stycket har rätt att på ansökan få information från den personuppgiftsansvarige om vad som har styrt den automatiserade behandling som lett fram till beslutet. I fråga om ansökan och lämnandet av information gäller i tillämpliga delar bestämmelserna i 26 §.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "30",
+          "heading": "Personer som behandlar personuppgifter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Ett personuppgiftsbiträde och den eller de personer som arbetar under biträdets eller den personuppgiftsansvariges ledning får behandla personuppgifter bara i enlighet med instruktioner från den personuppgiftsansvarige.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Det skall finnas ett skriftligt avtal om personuppgiftsbiträdets behandling av personuppgifter för den personuppgiftsansvariges räkning. I det avtalet skall det särskilt föreskrivas att personuppgiftsbiträdet får behandla personuppgifterna bara i enlighet med instruktioner från den personuppgiftsansvarige och att personuppgiftsbiträdet är skyldigt att vidta de åtgärder som avses i 31 § första stycket.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Om det i lag eller annan författning finns särskilda bestämmelser om behandlingen av personuppgifter i det allmännas verksamhet i frågor som avses i första stycket, skall dessa gälla i stället för vad som sägs i första stycket.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "31",
+          "heading": "Säkerhetsåtgärder",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Den personuppgiftsansvarige skall vidta lämpliga tekniska och organisatoriska åtgärder för att skydda de personuppgifter som behandlas. Åtgärderna skall åstadkomma en säkerhetsnivå som är lämplig med beaktande av",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) de tekniska möjligheter som finns,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) vad det skulle kosta att genomföra åtgärderna,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) de särskilda risker som finns med behandlingen av personuppgifterna, och",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "d) hur pass känsliga de behandlade personuppgifterna är.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "När den personuppgiftsansvarige anlitar ett personuppgiftsbiträde, skall den personuppgiftsansvarige förvissa sig om att personuppgiftsbiträdet kan genomföra de säkerhetsåtgärder som måste vidtas och se till att personuppgiftsbiträdet verkligen vidtar åtgärderna.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "32",
+          "heading": "Tillsynsmyndigheten får besluta om säkerhetsåtgärder",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndigheten får i enskilda fall besluta om vilka säkerhetsåtgärder som den personuppgiftsansvarige skall vidta enligt 31 §.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "I 45 § finns det bestämmelser om tillsynsmyndighetens möjligheter att förena beslutet med vite.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "33",
+          "heading": "Förbud mot överföring av personuppgifter till tredje land",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Det är förbjudet att till tredje land föra över personuppgifter som är under behandling om landet inte har en adekvat nivå för skyddet av personuppgifterna. Förbudet gäller också överföring av personuppgifter för behandling i tredje land.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Frågan om en skyddsnivå är adekvat skall bedömas med hänsyn till samtliga omständigheter som har samband med överföringen.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Särskild vikt skall läggas vid uppgifternas art, ändamålet med behandlingen, hur länge behandlingen skall pågå, ursprungslandet, det slutliga bestämmelselandet och de regler som finns för behandlingen i det tredje landet.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "34",
+          "heading": "Undantag från förbudet mot överföring av personuppgifter till tredje land",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Det är trots förbudet i 33 § tillåtet att föra över personuppgifter till tredje land, om den registrerade har lämnat sitt samtycke till överföringen eller om överföringen är nödvändig för att",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) ett avtal mellan den registrerade och den personuppgiftsansvarige skall kunna fullgöras eller åtgärder som den registrerade begärt skall kunna vidtas innan ett avtal träffas,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) ett sådant avtal mellan den personuppgiftsansvarige och tredje man som är i den registrerades intresse skall kunna ingås eller fullgöras,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) rättsliga anspråk skall kunna fastställas, göras gällande eller försvaras, eller",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "d) vitala intressen för den registrerade skall kunna skyddas.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "Det är också tillåtet att föra över personuppgifter för användning enbart i en stat som har anslutit sig till Europarådets konvention om skydd för en-skilda vid automatisk databehandling av personuppgifter.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "35",
+          "heading": null,
+          "lastAmendment": "1998:1436",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen får meddela föreskrifter om undantag från förbudet i 33 § för överföring av personuppgifter till vissa stater. Regeringen får också meddela föreskrifter om att överföring av personuppgifter till tredje land är tilllåten, om överföringen regleras av ett avtal som ger tillräckliga garantier till skydd för de registrerades rättigheter.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får vidare meddela föreskrifter om undantag från förbudet i 33 §, om det behövs med hänsyn till ett viktigt allmänt intresse eller om det finns tillräckliga garantier till skydd för de registrerades rättigheter.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Regeringen får under de förutsättningar som nämns i andra stycket i enskilda fall besluta om undantag från förbudet i 33 §.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "Regeringen får överlåta åt tillsynsmyndigheten att fatta sådana beslut.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "36",
+          "heading": "Anmälningsskyldighet",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Behandling av personuppgifter som är helt eller delvis automatiserad omfattas av anmälningsskyldighet. Den personuppgiftsansvarige skall göra en skriftlig anmälan till tillsynsmyndigheten innan en sådan behandling eller en serie av sådana behandlingar med samma eller liknande ändamål genomförs.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Om den personuppgiftsansvarige utser ett personuppgiftsombud skall detta anmälas till tillsynsmyndigheten. Även ett entledigande av ett personuppgiftsombud skall anmälas till tillsynsmyndigheten.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om undantag från anmälningsskyldigheten enligt första stycket för sådana typer av behandlingar som sannolikt inte kommer att leda till otillbörligt intrång i den personliga integriteten.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "37",
+          "heading": "Anmälan behöver inte göras om det finns ett personuppgiftsombud",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om den personuppgiftsansvarige har anmält till tillsynsmyndigheten att ett personuppgiftsombud utsetts och vem det är, behöver anmälan enligt 36 § första stycket inte göras.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "38",
+          "heading": "Personuppgiftsombudets uppgifter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgiftsombudet skall ha till uppgift att självständigt se till att den personuppgiftsansvarige behandlar personuppgifter på ett lagligt och korrekt sätt och i enlighet med god sed samt påpeka eventuella brister för honom eller henne.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Har personuppgiftsombudet anledning att misstänka att den personuppgiftsansvarige bryter mot de bestämmelser som gäller för behandlingen av personuppgifter och vidtas inte rättelse så snart det kan ske efter påpekande, skall personuppgiftsombudet anmäla förhållandet till tillsynsmyndigheten.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Personuppgiftsombudet skall även i övrigt samråda med tillsynsmyndigheten vid tveksamhet om hur de bestämmelser som gäller för behandlingen av personuppgifter skall tillämpas.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "39",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgiftsombudet skall föra en förteckning över de behandlingar som den personuppgiftsansvarige genomför och som skulle ha omfattats av anmälningsskyldighet om ombudet inte hade funnits. Förteckningen skall omfatta åtminstone de uppgifter som en anmälan enligt 36 § skulle ha innehållit.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "40",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgiftsombudet skall hjälpa registrerade att få rättelse när det finns anledning att misstänka att behandlade personuppgifter är felaktiga eller ofullständiga.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "41",
+          "heading": "Obligatorisk anmälan av särskilt integritetskänsliga behandlingar",
+          "lastAmendment": "1998:1436",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen får meddela föreskrifter om att sådana behandlingar av personuppgifter som innebär särskilda risker för otillbörligt intrång i den personliga integriteten skall för förhandskontroll anmälas till tillsynsmyndigheten enligt 36 § tre veckor i förväg. Om regeringen har meddelat sådana föreskrifter, gäller inte undantaget från anmälningsskyldigheten enligt 37 §.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "42",
+          "heading": "Upplysningar till allmänheten om behandlingar som inte anmälts",
+          "lastAmendment": "2009:468",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Den personuppgiftsansvarige ska till var och en som begär det skyndsamt och på lämpligt sätt lämna upplysningar om sådana automatiserade eller andra behandlingar av personuppgifter som inte har anmälts till tillsynsmyndigheten.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Upplysningarna ska omfatta det som en anmälan enligt 36 § första stycket skulle ha omfattat. Den personuppgiftsansvarige är dock inte skyldig att lämna ut sekretessbelagda uppgifter eller uppgifter om vilka säkerhetsåtgärder som har vidtagits.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "En personuppgiftsansvarig som inte är en myndighet får därvid i motsvarande fall som avses i offentlighets- och vägra att lämna ut uppgifter.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "43",
+          "heading": "Tillsynsmyndighetens befogenheter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndigheten har rätt att för sin tillsyn på begäran få",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) tillgång till de personuppgifter som behandlas,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) upplysningar om och dokumentation av behandlingen av personuppgifter och säkerheten vid denna, och",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) tillträde till sådana lokaler som har anknytning till behandlingen av personuppgifter.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "44",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om tillsynsmyndigheten inte efter begäran enligt 43 § kan få tillräckligt underlag för att konstatera att behandlingen av personuppgifter är laglig, får myndigheten vid vite förbjuda den personuppgiftsansvarige att behandla personuppgifter på något annat sätt än genom att lagra dem.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "45",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om tillsynsmyndigheten konstaterar att personuppgifter behandlas eller kan komma att behandlas på ett olagligt sätt, skall myndigheten genom påpekanden eller liknande förfaranden försöka åstadkomma rättelse. Går det inte att få rättelse på något annat sätt eller är saken brådskande, får myndigheten vid vite förbjuda den personuppgiftsansvarige att fortsätta att behandla personuppgifterna på något annat sätt än genom att lagra dem.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Om den personuppgiftsansvarige inte frivilligt följer ett beslut om säkerhetsåtgärder enligt 32 § som vunnit laga kraft, får tillsynsmyndigheten föreskriva vite.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "46",
+          "heading": null,
+          "lastAmendment": "2010:1969",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Innan tillsynsmyndigheten beslutar om vite enligt 44 eller 45 §, ska den personuppgiftsansvarige ha fått tillfälle att yttra sig. Om saken är brådskande, får myndigheten dock i avvaktan på yttrandet meddela ett tillfälligt beslut om vite.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Det tillfälliga beslutet ska omprövas, när yttrandetiden har gått ut.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Ett vitesföreläggande ska delges den personuppgiftsansvarige.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "Delgivning enligt 34- får användas bara om det med beaktande av vad som har framkommit i det aktuella delgivningsärendet eller vid andra delgivningsförsök med den personuppgiftsansvarige finns anledning att anta att han eller hon har avvikit eller på annat sätt håller sig undan.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "47",
+          "heading": null,
+          "lastAmendment": "2009:827",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndigheten får hos förvaltningsrätten inom vars domkrets tillsynsmyndigheten är belägen ansöka om att sådana personuppgifter som har behandlats på ett olagligt sätt ska utplånas.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Beslut om utplånande får inte meddelas om det är oskäligt.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "48",
+          "heading": "Skadestånd",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Den personuppgiftsansvarige skall ersätta den registrerade för skada och kränkning av den personliga integriteten som en behandling av personuppgifter i strid med denna lag har orsakat.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Ersättningsskyldigheten kan i den utsträckning det är skäligt jämkas, om den personuppgiftsansvarige visar att felet inte berodde på honom eller henne.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "49",
+          "heading": "Straff",
+          "lastAmendment": "2006:398",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Till böter eller fängelse i högst sex månader eller, om brottet är grovt, till fängelse i högst två år döms den som uppsåtligen eller av grov oaktsamhet",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) lämnar osann uppgift i sådan information till registrerade som föreskrivs i denna lag, i anmälan till tillsynsmyndigheten enligt 36 § eller till tillsynsmyndigheten när myndigheten begär information enligt 43 §,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) behandlar personuppgifter i strid med 13-21 §§,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) för över personuppgifter till tredje land i strid med 33-35 §§,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "d) låter bli att göra anmälan enligt 36 § första stycket eller enligt föreskrifter meddelade med stöd av 41 §,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "e) behandlar sådana personuppgifter som avses i 13 och 21 §§ i strid med 5 a § andra stycket, eller",
+              "role": "CONTENT"
+            },
+            {
+              "number": 7,
+              "text": "f) i strid med 5 a § andra stycket för över personuppgifter till tredje land som inte har en sådan adekvat nivå för skyddet av personuppgifterna som avses i 33 §.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 8,
+              "text": "I ringa fall döms inte till ansvar.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 9,
+              "text": "Den som överträtt ett vitesföreläggande enligt 44 § eller 45 § första stycket döms inte till ansvar för en gärning som omfattas av vitesföreläggandet.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "50",
+          "heading": "Närmare föreskrifter",
+          "lastAmendment": "1998:1436",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela närmare föreskrifter om",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "a) i vilka fall behandling av personuppgifter är tillåten,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "b) vilka krav som ställs på den personuppgiftsansvarige vid behandling av personuppgifter,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "c) i vilka fall användning av personnummer är tillåten,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 5,
+              "text": "d) vad en anmälan eller ansökan till en personuppgiftsansvarig skall innehålla,",
+              "role": "CONTENT"
+            },
+            {
+              "number": 6,
+              "text": "e) vilken information som skall lämnas till registrerade och hur informationen skall lämnas, och",
+              "role": "CONTENT"
+            },
+            {
+              "number": 7,
+              "text": "f) anmälan till tillsynsmyndigheten och förfarandet när anmälda uppgifter har ändrats.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "51",
+          "heading": "Överklagande",
+          "lastAmendment": "2006:398",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndighetens beslut enligt denna lag om annat än föreskrifter får överklagas hos allmän förvaltningsdomstol.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Tillsynsmyndigheten får bestämma att dess beslut skall gälla även om det överklagas.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "52",
+          "heading": null,
+          "lastAmendment": "2006:398",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En myndighets beslut om information enligt 26 §, om rättelse och underrättelse till tredje man enligt 28 §, om information enligt 29 § andra stycket och om upplysningar enligt 42 § får överklagas hos allmän förvaltningsdomstol.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket gäller inte för beslut av riksdagen, regeringen eller riksdagens ombudsmän.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "53",
+          "heading": null,
+          "lastAmendment": "2006:398",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Andra beslut enligt denna lag än sådana som avses i 47, 51 och 52 §§ får inte överklagas.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "CONTENT"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "1998:204 1. Denna lag träder i kraft den 24 oktober 1998, då skall upphöra att gälla. Den äldre lagen gäller dock fortfarande i fråga om överklagande av beslut som har meddelats före den 24 oktober 1998.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1998:204 2. I fråga om behandling av personuppgifter som påbörjats före ikraftträdandet eller behandling som utförs för ett visst bestämt ändamål om behandling för ändamålet påbörjats före ikraftträdandet skall till och med den 30 september 2001 den äldre lagen tillämpas i stället för den nya. Detta gäller även bestämmelserna i den äldre lagen om överklagande.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1998:204 3. Bestämmelserna i 9, 10, 13 och 21 §§ i den nya lagen skall inte börja tillämpas förrän den 1 oktober 2007 i fråga om sådan manuell behandling av personuppgifter som påbörjats före ikraftträdandet eller manuell behandling som utförs för ett visst bestämt ändamål om manuell behandling för ändamålet påbörjats före ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1998:204 4. I fråga om personuppgifter som vid ikraftträdandet lagras för historisk forskning skall bestämmelserna i 9, 10, 13 och 21 §§ i den nya lagen börja tillämpas först när uppgifterna behandlas på något annat sätt. Innan dess skall motsvarande bestämmelser i den äldre lagen tillämpas. De angivna bestämmelserna i den nya lagen skall dock inte till följd av vad som nu sagts börja tillämpas tidigare än vad som följer av 2 eller 3.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1998:204 5. Anmälan enligt 36 § i den nya lagen får göras innan den nya lagen har trätt i kraft för den aktuella behandlingen.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1998:204 6. Ett samtycke som har lämnats innan den nya lagen har trätt i kraft för den aktuella behandlingen skall gälla även efter ikraftträdandet om samtycket uppfyller kraven i den nya lagen.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1998:204 7. Har en begäran om registerutdrag enligt 10 § i den äldre lagen kommit in innan den nya lagen trätt i kraft för den aktuella behandlingen men har utdraget inte expedierats före ikraftträdandet skall framställningen anses som en ansökan enligt 26 § i den nya lagen.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1998:204 8. Den nya lagens bestämmelser om skadestånd skall bara tillämpas om den omständighet som yrkandet hänför sig till har inträffat efter det att den nya lagen har trätt i kraft för den aktuella behandlingen. I annat fall tillämpas de äldre bestämmelserna.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2006:398 Denna lag träder i kraft den 1 januari 2007. Föreskrifterna i 52 § skall dock inte tillämpas i fråga om överklagande av beslut som har meddelats före ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2010:1969 1. Denna lag träder i kraft den 1 april 2011.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2010:1969 2. Äldre bestämmelser gäller om ett beslut om delgivning enligt 15- har fattats före den 1 april 2011 eller om en handling har skickats eller lämnats före denna tidpunkt.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "1998:204",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

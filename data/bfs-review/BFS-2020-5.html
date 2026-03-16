@@ -1,0 +1,3620 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2020:5</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2020-5">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2020:5</p>
+      <p class="text">Boverkets föreskrifter om detaljplan</p>
+    </h1>
+  </div>
+  <div class="body">
+    <p class="text">beslutade den 9 september 2020.</p>
+    <p class="text">Informationsförfarande enligt förordningen (1994:2029) om tekniska regler har genomförts.<sup class="footnote-ref" data-note="1" title="Se Europaparlamentets och rådets direktiv (EU) 2015/1535 av den 9 september 2015 om ett informationsförfarande beträffande tekniska föreskrifter och beträffande föreskrifter för informationssamhällets tjänster.">1</sup></p>
+    <p class="text">Boverket föreskriver följande med stöd av 10 kap. 29 § plan- och byggförordningen (2011:338).</p>
+
+    <section class="kapitel" id="BFS2020-5_K1">
+      <h2 class="kapitel-rubrik">1 kap. Inledning, innehåll och definitioner</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K1_P1" name="BFS2020-5_K1_P1">1 §</a>
+      </h3>
+      <p class="text">Denna författning innehåller föreskrifter till plan- och bygglagen (2010:900) och plan- och byggförordningen (2011:338).</p>
+      <p class="text">Författningen innehåller föreskrifter om detaljplanens reglering och om detaljplanens digitala information.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K1_P2" name="BFS2020-5_K1_P2">2 §</a>
+      </h3>
+      <p class="text">Dessa föreskrifter innehåller följande kapitel:</p>
+      <ol type="1">
+        <li>Inledning, innehåll och definitioner.</li>
+        <li>Digital information.</li>
+        <li>Avgränsningar och planområde.</li>
+        <li>Användningsbestämmelser för allmän plats.</li>
+        <li>Användningsbestämmelser för kvartersmark.</li>
+        <li>Användningsbestämmelser för vattenområde.</li>
+        <li>Egenskapsbestämmelser.</li>
+      </ol>
+
+      <h3 id="BFS2020-5_definitioner">Definitioner</h3>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K1_P3" name="BFS2020-5_K1_P3">3 §</a>
+      </h3>
+      <p class="text">I dessa föreskrifter avses med</p>
+      <dl>
+        <dt><strong>avgränsning horisontellt:</strong></dt>
+        <dd>avgränsning av horisontalplanet,</dd>
+        <dt><strong>avgränsning vertikalt:</strong></dt>
+        <dd>avgränsning i höjdled,</dd>
+        <dt><strong>digital information:</strong></dt>
+        <dd>uppgifter i detaljplan i digitalt format,</dd>
+        <dt><strong>nockhöjd:</strong></dt>
+        <dd>avstånd från den medelnivå som marken har invid byggnaden, eller i planbestämmelsen angivet plan, till yttertakets högsta del,</dd>
+        <dt><strong>nollplan:</strong></dt>
+        <dd>geoiden i det höjdssystem som detaljplanen är upprättad enligt,</dd>
+        <dt><strong>takvinkel:</strong></dt>
+        <dd>lutningen mellan yttertaket och horisontalplanet, och</dd>
+        <dt><strong>totalhöjd:</strong></dt>
+        <dd>avstånd från den medelnivå som marken har invid byggnadsverket, eller i planbestämmelsen angivet plan, till högsta punkten på byggnadsverket.</dd>
+      </dl>
+    </section>
+
+    <section class="kapitel" id="BFS2020-5_K2">
+      <h2 class="kapitel-rubrik">2 kap. Digital information</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K2_P1" name="BFS2020-5_K2_P1">1 §</a>
+      </h3>
+      <p class="text">Digital information som avses i 2–8 §§ ska kunna ingå i en överföring av digital information samt vara möjlig att återge i detaljplanens beslutade form.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K2_P2" name="BFS2020-5_K2_P2">2 §</a>
+      </h3>
+      <p class="text">Reglering i en detaljplan som bestämts enligt 4–7 kap. i dessa föreskrifter ska vara identifierbar, lägesbestämd samt punkt-, linje-, yt- eller volymbaserad.</p>
+
+      <h4 id="BFS2020-5_digital-koppling-av-information">Digital koppling av information</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K2_P3" name="BFS2020-5_K2_P3">3 §</a>
+      </h3>
+      <p class="text">Följande information ska digitalt kopplas till planområdet</p>
+      <ol type="1">
+        <li>kommunens namn,</li>
+        <li>detaljplanens namn,</li>
+        <li>kommunens diarienummer för detaljplanen,</li>
+        <li>hänvisning till beslutsprotokollet,</li>
+        <li>vilket datum detaljplanen är påbörjad, och</li>
+        <li>vilket datum detaljplanen fick laga kraft.</li>
+      </ol>
+      <p class="text">Vid ändring av en detaljplan som inte upprättats enligt denna föreskrift gäller inte denna bestämmelse.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K2_P4" name="BFS2020-5_K2_P4">4 §</a>
+      </h3>
+      <p class="text">Vid ändring av en detaljplan som är upprättad enligt denna föreskrift ska förutom den information som anges i 3 § följande information digitalt kopplas till planområdet</p>
+      <ol type="1">
+        <li>kommunens diarienummer för ändringen av detaljplanen,</li>
+        <li>hänvisning till beslutsprotokollet,</li>
+        <li>när ändringen påbörjades, och</li>
+        <li>när ändringen fick laga kraft.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K2_P5" name="BFS2020-5_K2_P5">5 §</a>
+      </h3>
+      <p class="text">Om någon del av en detaljplan omfattas av sådant förordnande som avses i 13 kap. 17 § tredje stycket plan- och bygglagen (2010:900), ska information om det datum när detaljplanen får genomföras enligt förordnandet digitalt kopplas till det område som förordnandet omfattar.</p>
+      <p class="text">Vid ändring av en detaljplan som inte upprättats enligt denna föreskrift gäller inte första stycket.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K2_P6" name="BFS2020-5_K2_P6">6 §</a>
+      </h3>
+      <p class="text">Information om genomförandetid ska digitalt kopplas till planområdet.</p>
+      <p class="text">Om detaljplanen har olika genomförandetider ska information om genomförandetiderna digitalt kopplas till de användningsbestämmelser de gäller för.</p>
+      <p class="text">Vid ändring av en detaljplan som är upprättad enligt denna föreskrift ska genomförandetiden digitalt kopplas till de planbestämmelser ändringen avser.</p>
+      <p class="text">Vid ändring av en detaljplan som inte upprättats enligt denna föreskrift gäller inte första och andra stycket.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K2_P7" name="BFS2020-5_K2_P7">7 §</a>
+      </h3>
+      <p class="text">Egenskapsbestämmelser enligt 7 kap. 2–25 §§ ska digitalt kopplas till den eller de användningsbestämmelser som de gäller för.</p>
+      <p class="text">Vid ändring av en detaljplan som inte upprättats enligt denna föreskrift gäller inte första stycket.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K2_P8" name="BFS2020-5_K2_P8">8 §</a>
+      </h3>
+      <p class="text">För en användningsbestämmelse som är tillfällig enligt 4 kap. 26 § plan- och bygglagen (2010:900) ska information om den tid som den tillfälliga användningen får pågå digitalt kopplas till användningsbestämmelsen.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2020-5_K3">
+      <h2 class="kapitel-rubrik">3 kap. Avgränsningar och planbestämmelser</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K3_P1" name="BFS2020-5_K3_P1">1 §</a>
+      </h3>
+      <p class="text">Ett planområde ska avgränsas horisontellt och får även helt eller delvis avgränsas vertikalt.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K3_P2" name="BFS2020-5_K3_P2">2 §</a>
+      </h3>
+      <p class="text">Området som en planbestämmelse gäller inom ska avgränsas horisontellt och får även avgränsas vertikalt.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K3_P3" name="BFS2020-5_K3_P3">3 §</a>
+      </h3>
+      <p class="text">En precisering av en planbestämmelse innebär att endast det som anges i preciseringen är tillåtet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K3_P4" name="BFS2020-5_K3_P4">4 §</a>
+      </h3>
+      <p class="text">Planbestämmelser får inte formuleras så att de innehåller hänvisningar till planbeskrivningen, andra handlingar eller författningar.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2020-5_K4">
+      <h2 class="kapitel-rubrik">4 kap. Användningsbestämmelser för allmän plats</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P1" name="BFS2020-5_K4_P1">1 §</a>
+      </h3>
+      <p class="text">Endast de användningar som är reglerade i 2–10 §§ får användas vid reglering med användningsbestämmelser på allmän plats i detaljplan.</p>
+      <p class="text">Formuleringar av bestämmelser, formuleringar av preciseringar och bestämmelsekoder ska följa det som anges i tabellerna nedan. Annan precisering får endast användas när tillämpbar formulering saknas. Hakparentesen [Annan precisering] ska då ersättas med en egen formulering av preciseringen.</p>
+
+      <h4 id="BFS2020-5_torg">Torg</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P2" name="BFS2020-5_K4_P2">2 §</a>
+      </h3>
+      <p class="text">Användningen torg ska tillämpas för områden för alla typer av torg med tillhörande verksamheter. I användningen ingår även komplement som behövs för torgets funktion.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 4.1 Torg</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Torg</td>
+            <td>DP_AP_Torg</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 4.2 Precisering av bestämmelsen torg</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Salutorg</td>
+            <td>DP_AP_Torg_Salu</td>
+          </tr>
+          <tr>
+            <td>Restaurangtorg</td>
+            <td>DP_AP_Torg_Restaurang</td>
+          </tr>
+          <tr>
+            <td>Kollektivtrafiktorg</td>
+            <td>DP_AP_Torg_Kollektivtrafik</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_AP_Torg_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_vag">Väg</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P3" name="BFS2020-5_K4_P3">3 §</a>
+      </h3>
+      <p class="text">Användningen väg ska tillämpas för områden avsedda främst för trafik till, från och genom en ort samt mellan olika områden inom en ort. I användningen ingår även komplement som behövs för vägens funktion.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 4.3 Väg</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Väg</td>
+            <td>DP_AP_Vag</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 4.4 Precisering av bestämmelsen väg</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Genomfartsväg</td>
+            <td>DP_AP_Vag_Genomfart</td>
+          </tr>
+          <tr>
+            <td>Infartsväg</td>
+            <td>DP_AP_Vag_Infart</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_AP_Vag_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_gata">Gata</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P4" name="BFS2020-5_K4_P4">4 §</a>
+      </h3>
+      <p class="text">Användningen gata ska tillämpas för områden avsedda främst för trafik inom en ort eller för trafik som har sitt mål vid gatan. I användningen ingår även komplement som behövs för gatans funktion.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 4.5 Gata</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gata</td>
+            <td>DP_AP_Gata</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 4.6 Precisering av bestämmelsen gata</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Kollektivtrafikgata</td>
+            <td>DP_AP_Gata_Kollektiv</td>
+          </tr>
+          <tr>
+            <td>Industrigata</td>
+            <td>DP_AP_Gata_Industri</td>
+          </tr>
+          <tr>
+            <td>Huvudgata</td>
+            <td>DP_AP_Gata_Huvud</td>
+          </tr>
+          <tr>
+            <td>Lokalgata</td>
+            <td>DP_AP_Gata_Lokal</td>
+          </tr>
+          <tr>
+            <td>Gågata</td>
+            <td>DP_AP_Gata_Ga</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_AP_Gata_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_gang-och-cykelvag">Gång- och cykelväg</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P5" name="BFS2020-5_K4_P5">5 §</a>
+      </h3>
+      <p class="text">Användningen gång- och cykelväg ska tillämpas för områden avsedda för gång-, cykel- och mopedtrafik. I användningen ingår även komplement som behövs för gång- och cykelvägens funktion.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 4.7 Gång- och cykelväg</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gång- och cykelväg</td>
+            <td>DP_AP_GC</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 4.8 Precisering av bestämmelsen gång- och cykelväg</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gångväg</td>
+            <td>DP_AP_GC_Gang</td>
+          </tr>
+          <tr>
+            <td>Cykelväg</td>
+            <td>DP_AP_GC_CykelMoped</td>
+          </tr>
+          <tr>
+            <td>Enbart cykeltrafik</td>
+            <td>DP_AP_GC_EnbartCykel</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_AP_GC_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_parkering">Parkering</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P6" name="BFS2020-5_K4_P6">6 §</a>
+      </h3>
+      <p class="text">Användningen parkering ska tillämpas för områden för parkering. I användningen ingår även komplement som behövs för parkeringens funktion.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 4.9 Parkering</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Parkering</td>
+            <td>DP_AP_Parkering</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 4.10 Precisering av bestämmelsen parkering</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bilparkering</td>
+            <td>DP_AP_Parkering_Bil</td>
+          </tr>
+          <tr>
+            <td>Cykelparkering</td>
+            <td>DP_AP_Parkering_Cykel</td>
+          </tr>
+          <tr>
+            <td>Bussparkering</td>
+            <td>DP_AP_Parkering_Buss</td>
+          </tr>
+          <tr>
+            <td>Husbilsparkering</td>
+            <td>DP_AP_Parkering_Husbil</td>
+          </tr>
+          <tr>
+            <td>Lastbilsparkering</td>
+            <td>DP_AP_Parkering_Lastbil</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_AP_Parkering_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_park">Park</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P7" name="BFS2020-5_K4_P7">7 §</a>
+      </h3>
+      <p class="text">Användningen park ska tillämpas för områden för grönområden som kräver skötsel och som helt eller till viss del är anlagda. I användningen ingår även komplement till parkens användning.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 4.11 Park</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Park</td>
+            <td>DP_AP_Park</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 4.12 Precisering av bestämmelsen park</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lek</td>
+            <td>DP_AP_Park_Lek</td>
+          </tr>
+          <tr>
+            <td>Spontanidrott</td>
+            <td>DP_AP_Park_Spontan</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_AP_Park_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_natur">Natur</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P8" name="BFS2020-5_K4_P8">8 §</a>
+      </h3>
+      <p class="text">Användningen natur ska tillämpas för områden för friväxande grönområden som inte sköts mer än enligt skötselplan eller genom visst begränsat underhåll. Även mindre park-, vatten- och friluftsanläggningar och andra komplement till naturområdets användning ingår.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 4.13 Natur</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Natur</td>
+            <td>DP_AP_Natur</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 4.14 Precisering av bestämmelsen natur</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Skog</td>
+            <td>DP_AP_Natur_Skog</td>
+          </tr>
+          <tr>
+            <td>Våtmark</td>
+            <td>DP_AP_Natur_Vatmark</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_AP_Natur_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_skydd">Skydd</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P9" name="BFS2020-5_K4_P9">9 §</a>
+      </h3>
+      <p class="text">Användningen skydd ska tillämpas för områden för åtgärder som skyddar mot störning, markförorening, olyckor, översvämning och erosion. I användningen ingår även komplement som behövs för skyddets funktion.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 4.15 Skydd</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Skydd</td>
+            <td>DP_AP_Skydd</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 4.16 Precisering av bestämmelsen skydd</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Översvämningsyta</td>
+            <td>DP_AP_Skydd_Oversvamning</td>
+          </tr>
+          <tr>
+            <td>Översvämningsskydd</td>
+            <td>DP_AP_Skydd_Oversvamningsskydd</td>
+          </tr>
+          <tr>
+            <td>Bullerskydd</td>
+            <td>DP_AP_Skydd_Bullerskydd</td>
+          </tr>
+          <tr>
+            <td>Erosionsskydd</td>
+            <td>DP_AP_Skydd_Erosion</td>
+          </tr>
+          <tr>
+            <td>Vibrationsskydd</td>
+            <td>DP_AP_Skydd_Vibrationsskydd</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_AP_Skydd_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_annan-allman-plats">Annan allmän plats</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K4_P10" name="BFS2020-5_K4_P10">10 §</a>
+      </h3>
+      <p class="text">Användningen annan allmän plats ska tillämpas i de fall någon av användningarna i 2–9 §§ inte är tillämpliga. Användningen ska alltid preciseras.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 4.17 Precisering av användningen annan allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_AP_AnnanAP_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="kapitel" id="BFS2020-5_K5">
+      <h2 class="kapitel-rubrik">5 kap. Användningsbestämmelser för kvartersmark</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P1" name="BFS2020-5_K5_P1">1 §</a>
+      </h3>
+      <p class="text">Endast de användningar som är reglerade i 2–22 §§ får användas vid reglering med användningsbestämmelser på kvartersmark i detaljplan.</p>
+      <p class="text">Formuleringar av bestämmelser, formuleringar av preciseringar och bestämmelsekoder ska följa det som anges i tabellerna nedan. Annan precisering får endast användas när tillämpbar formulering saknas. Hakparentesen [Annan precisering] ska då ersättas med en egen formulering av preciseringen.</p>
+
+      <h4 id="BFS2020-5_bostader">Bostäder</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P2" name="BFS2020-5_K5_P2">2 §</a>
+      </h3>
+      <p class="text">Användningen bostäder ska tillämpas för områden för olika former av boende av varaktig karaktär. Även bostadskomplement ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.1 Bostäder</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bostäder</td>
+            <td>DP_KM_B2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.2 Precisering av bestämmelsen bostäder</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_B2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_centrum">Centrum</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P3" name="BFS2020-5_K5_P3">3 §</a>
+      </h3>
+      <p class="text">Användningen centrum ska tillämpas för områden för kombinationer av handel, service, tillfällig vistelse, samlingslokaler, kontor och annan jämförlig verksamhet som ligger centralt eller på annat sätt ska vara lätta att nå. Även komplement till verksamheten centrum ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.3 Centrum</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Centrum</td>
+            <td>DP_KM_C2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.4 Precisering av bestämmelsen centrum</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bibliotek</td>
+            <td>DP_KM_C2_Bibliotek</td>
+          </tr>
+          <tr>
+            <td>Bio</td>
+            <td>DP_KM_C2_Bio</td>
+          </tr>
+          <tr>
+            <td>Restaurang</td>
+            <td>DP_KM_C2_Restaurang</td>
+          </tr>
+          <tr>
+            <td>Café</td>
+            <td>DP_KM_C2_Cafe</td>
+          </tr>
+          <tr>
+            <td>Träningslokal</td>
+            <td>DP_KM_C2_Traning</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_C2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_vard">Vård</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P4" name="BFS2020-5_K5_P4">4 §</a>
+      </h3>
+      <p class="text">Användningen vård ska tillämpas för områden för vårdverksamhet som avser människor. Även komplement till verksamheten vård ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.5 Vård</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vård</td>
+            <td>DP_KM_D2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.6 Precisering av bestämmelsen vård</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vårdcentral</td>
+            <td>DP_KM_D2_Vardcentral</td>
+          </tr>
+          <tr>
+            <td>Tandvård</td>
+            <td>DP_KM_D2_Tand</td>
+          </tr>
+          <tr>
+            <td>Sjukhus</td>
+            <td>DP_KM_D2_Sjukhus</td>
+          </tr>
+          <tr>
+            <td>Kriminalvård</td>
+            <td>DP_KM_D2_Kriminal</td>
+          </tr>
+          <tr>
+            <td>Rättspsykiatrisk vård</td>
+            <td>DP_KM_D2_Rattspsyk</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_D2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_tekniska-anlaggningar">Tekniska anläggningar</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P5" name="BFS2020-5_K5_P5">5 §</a>
+      </h3>
+      <p class="text">Användningen tekniska anläggningar ska tillämpas för områden för tekniskt ändamål. Även komplement till verksamheten tekniska anläggningar ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.7 Tekniska anläggningar</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tekniska anläggningar</td>
+            <td>DP_KM_E2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.8 Precisering av bestämmelsen tekniska anläggningar</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Avfallsanläggning</td>
+            <td>DP_KM_E2_Avfall</td>
+          </tr>
+          <tr>
+            <td>Avloppsanläggning</td>
+            <td>DP_KM_E2_Avlopp</td>
+          </tr>
+          <tr>
+            <td>Avloppsreningsverk</td>
+            <td>DP_KM_E2_Reningsverk</td>
+          </tr>
+          <tr>
+            <td>Dagvattenanläggning</td>
+            <td>DP_KM_E2_Dagvattenanlaggning</td>
+          </tr>
+          <tr>
+            <td>Dagvattendamm</td>
+            <td>DP_KM_E2_Dagvattendamm</td>
+          </tr>
+          <tr>
+            <td>Fjärrkylanläggning</td>
+            <td>DP_KM_E2_Fjarrkyl</td>
+          </tr>
+          <tr>
+            <td>Fjärrvärmeverk</td>
+            <td>DP_KM_E2_Fjarrvarmeverk</td>
+          </tr>
+          <tr>
+            <td>Fördröjningsmagasin</td>
+            <td>DP_KM_E2_Fordrojning</td>
+          </tr>
+          <tr>
+            <td>Kraftvärmeverk</td>
+            <td>DP_KM_E2_Kraftvarmeverk</td>
+          </tr>
+          <tr>
+            <td>Pumpstation</td>
+            <td>DP_KM_E2_Pump</td>
+          </tr>
+          <tr>
+            <td>Solenergianläggning</td>
+            <td>DP_KM_E2_Sol</td>
+          </tr>
+          <tr>
+            <td>Ställverk</td>
+            <td>DP_KM_E2_Stallverk</td>
+          </tr>
+          <tr>
+            <td>Transformatorstation</td>
+            <td>DP_KM_E2_Transformator</td>
+          </tr>
+          <tr>
+            <td>Vattenkraftverk</td>
+            <td>DP_KM_E2_Vattenkraftverk</td>
+          </tr>
+          <tr>
+            <td>Vattenreservoar</td>
+            <td>DP_KM_E2_Vattenreservoar</td>
+          </tr>
+          <tr>
+            <td>Vattenverk</td>
+            <td>DP_KM_E2_Vattenverk</td>
+          </tr>
+          <tr>
+            <td>Vindkraftverk</td>
+            <td>DP_KM_E2_Vindkraftverk</td>
+          </tr>
+          <tr>
+            <td>Värmeverk</td>
+            <td>DP_KM_E2_Varmeverk</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_E2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_flygtrafik">Flygtrafik</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P6" name="BFS2020-5_K5_P6">6 §</a>
+      </h3>
+      <p class="text">Användningen flygtrafik ska tillämpas för områden för flygverksamhet och kompletterande handel och service till resenärer. Även komplement till verksamheten flygtrafik ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.9 Flygtrafik</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Flygtrafik</td>
+            <td>DP_KM_F2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.10 Precisering av bestämmelsen flygtrafik</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Helikoptertrafik</td>
+            <td>DP_KM_F2_Helikopter</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_F2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_drivmedel">Drivmedel</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P7" name="BFS2020-5_K5_P7">7 §</a>
+      </h3>
+      <p class="text">Användningen drivmedel ska tillämpas för områden för hantering och försäljning av drivmedel och kompletterande handel och service i mindre omfattning. Även komplement till verksamheten drivmedel ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.11 Drivmedel</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Drivmedel</td>
+            <td>DP_KM_G2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.12 Precisering av bestämmelsen drivmedel</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Drivmedel utan kompletterande försäljning</td>
+            <td>DP_KM_G2_DrivUtanForsalj</td>
+          </tr>
+          <tr>
+            <td>Laddning av elfordon</td>
+            <td>DP_KM_G2_Laddning</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_G2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_detaljhandel">Detaljhandel</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P8" name="BFS2020-5_K5_P8">8 §</a>
+      </h3>
+      <p class="text">Användningen detaljhandel ska tillämpas för områden för handel med varor och tjänster. Även komplement till verksamheten detaljhandel ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.13 Detaljhandel</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Detaljhandel</td>
+            <td>DP_KM_H2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.14 Precisering av bestämmelsen detaljhandel</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Detaljhandel med livsmedel</td>
+            <td>DP_KM_H2_Livs</td>
+          </tr>
+          <tr>
+            <td>Detaljhandel med skrymmande varor</td>
+            <td>DP_KM_H2_Skrym</td>
+          </tr>
+          <tr>
+            <td>Detaljhandel utom handel med livsmedel</td>
+            <td>DP_KM_H2_EjLivs</td>
+          </tr>
+          <tr>
+            <td>Detaljhandel utom handel med livsmedel och skrymmande varor</td>
+            <td>DP_KM_H2_EjLivsEjSkrym</td>
+          </tr>
+          <tr>
+            <td>Detaljhandel utom handel med skrymmande varor</td>
+            <td>DP_KM_H2_EjSkrym</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_industri">Industri</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P9" name="BFS2020-5_K5_P9">9 §</a>
+      </h3>
+      <p class="text">Användningen industri ska tillämpas för områden för produktion, lager, partihandel och annan jämförlig verksamhet. Även komplement till verksamheten industri ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.15 Industri</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Industri</td>
+            <td>DP_KM_J2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.16 Precisering av bestämmelsen industri</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lager</td>
+            <td>DP_KM_J2_Lager</td>
+          </tr>
+          <tr>
+            <td>Logistik</td>
+            <td>DP_KM_J2_Logistik</td>
+          </tr>
+          <tr>
+            <td>Upplag</td>
+            <td>DP_KM_J2_Upplag</td>
+          </tr>
+          <tr>
+            <td>Processindustri</td>
+            <td>DP_KM_J2_Process</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_J2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_kontor">Kontor</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P10" name="BFS2020-5_K5_P10">10 §</a>
+      </h3>
+      <p class="text">Användningen kontor ska tillämpas för områden för kontor, tjänsteverksamhet och annan jämförlig verksamhet med liten eller ingen varuhantering. Även komplement till verksamheten kontor ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.17 Kontor</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Kontor</td>
+            <td>DP_KM_K2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.18 Precisering av bestämmelsen kontor</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_K2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_odling-och-djurhallning">Odling och djurhållning</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P11" name="BFS2020-5_K5_P11">11 §</a>
+      </h3>
+      <p class="text">Användningen odling och djurhållning ska tillämpas för områden för olika typer av odling, djurhållning samt djurvård. Här ingår verksamhetsanknuten försäljning. Även komplement till verksamheten odling och djurhållning ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.19 Odling och djurhållning</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Odling och djurhållning</td>
+            <td>DP_KM_L2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.20 Precisering av bestämmelsen odling och djurhållning</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Koloniområde</td>
+            <td>DP_KM_L2_Koloni</td>
+          </tr>
+          <tr>
+            <td>Handelsträdgård</td>
+            <td>DP_KM_L2_Handelstradgard</td>
+          </tr>
+          <tr>
+            <td>Ridanläggning</td>
+            <td>DP_KM_L2_Rid</td>
+          </tr>
+          <tr>
+            <td>Djursjukhus</td>
+            <td>DP_KM_L2_Djursjukhus</td>
+          </tr>
+          <tr>
+            <td>Veterinärstation</td>
+            <td>DP_KM_L2_Veterinar</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_L2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_begravningsplats">Begravningsplats</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P12" name="BFS2020-5_K5_P12">12 §</a>
+      </h3>
+      <p class="text">Användningen begravningsplats ska tillämpas för områden för begravningsändamål. Även komplement till verksamheten begravningsplats ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.21 Begravningsplats</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Begravningsplats</td>
+            <td>DP_KM_M2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.22 Precisering av bestämmelsen begravningsplats</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Minneslund</td>
+            <td>DP_KM_M2_Minneslund</td>
+          </tr>
+          <tr>
+            <td>Begravningsplats för djur</td>
+            <td>DP_KM_M2_Djur</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_M2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_friluftsliv-och-camping">Friluftsliv och camping</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P13" name="BFS2020-5_K5_P13">13 §</a>
+      </h3>
+      <p class="text">Användningen friluftsliv och camping ska tillämpas för områden för det rörliga friluftslivet och campingplatser. Campingplatser är endast avsedda för tillfällig uthyrning och för enkelt flyttbara enheter. Även komplement till verksamheten friluftsliv och camping ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.23 Friluftsliv och camping</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Friluftsliv och camping</td>
+            <td>DP_KM_N2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.24 Precisering av bestämmelsen friluftsliv och camping</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Camping</td>
+            <td>DP_KM_N2_Camping</td>
+          </tr>
+          <tr>
+            <td>Friluftsbad</td>
+            <td>DP_KM_N2_Bad</td>
+          </tr>
+          <tr>
+            <td>Friluftsområde</td>
+            <td>DP_KM_N2_Friluftsomrade</td>
+          </tr>
+          <tr>
+            <td>Skidbacke</td>
+            <td>DP_KM_N2_Skidbacke</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_N2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_tillfallig-vistelse">Tillfällig vistelse</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P14" name="BFS2020-5_K5_P14">14 §</a>
+      </h3>
+      <p class="text">Användningen tillfällig vistelse ska tillämpas för områden för olika typer av tillfällig övernattning och konferensanläggningar. Även komplement till verksamheten tillfällig vistelse ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.25 Tillfällig vistelse</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tillfällig vistelse</td>
+            <td>DP_KM_O2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.26 Precisering av bestämmelsen tillfällig vistelse</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hotell</td>
+            <td>DP_KM_O2_Hotell</td>
+          </tr>
+          <tr>
+            <td>Vandrarhem</td>
+            <td>DP_KM_O2_Vandrarhem</td>
+          </tr>
+          <tr>
+            <td>Stugby</td>
+            <td>DP_KM_O2_Stugby</td>
+          </tr>
+          <tr>
+            <td>Konferensanläggning</td>
+            <td>DP_KM_O2_Konferens</td>
+          </tr>
+          <tr>
+            <td>Förläggningsboende</td>
+            <td>DP_KM_O2_Forlaggning</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_O2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_parkering-kvartersmark">Parkering</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P15" name="BFS2020-5_K5_P15">15 §</a>
+      </h3>
+      <p class="text">Användningen parkering ska tillämpas för områden för parkeringsanläggningar. Även komplement till verksamheten parkering ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.27 Parkering</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Parkering</td>
+            <td>DP_KM_P2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.28 Precisering av bestämmelsen parkering</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Parkeringshus</td>
+            <td>DP_KM_P2_Hus</td>
+          </tr>
+          <tr>
+            <td>Cykelparkering</td>
+            <td>DP_KM_P2_Cykel</td>
+          </tr>
+          <tr>
+            <td>Bussparkering</td>
+            <td>DP_KM_P2_Buss</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_P2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_besoksanlaggningar">Besöksanläggningar</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P16" name="BFS2020-5_K5_P16">16 §</a>
+      </h3>
+      <p class="text">Användningen besöksanläggningar ska tillämpas för områden för verksamheter som riktar sig till besökare. Här ingår kulturella och religiösa verksamheter, sport- och idrottsverksamheter samt övriga besöksverksamheter. Även komplement till verksamheten besöksanläggningar ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.29 Besöksanläggningar</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Besöksanläggningar</td>
+            <td>DP_KM_R2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.30 Precisering av bestämmelsen besöksanläggningar</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Golfbana</td>
+            <td>DP_KM_R2_Golf</td>
+          </tr>
+          <tr>
+            <td>Badanläggning</td>
+            <td>DP_KM_R2_Bad</td>
+          </tr>
+          <tr>
+            <td>Ishall</td>
+            <td>DP_KM_R2_Is</td>
+          </tr>
+          <tr>
+            <td>Hästsport</td>
+            <td>DP_KM_R2_Hastsport</td>
+          </tr>
+          <tr>
+            <td>Idrottsplats</td>
+            <td>DP_KM_R2_Idrott</td>
+          </tr>
+          <tr>
+            <td>Idrottshall</td>
+            <td>DP_KM_R2_Idrottshall</td>
+          </tr>
+          <tr>
+            <td>Skjutbana</td>
+            <td>DP_KM_R2_Skjutbana</td>
+          </tr>
+          <tr>
+            <td>Nöjespark</td>
+            <td>DP_KM_R2_Nojespark</td>
+          </tr>
+          <tr>
+            <td>Djurpark</td>
+            <td>DP_KM_R2_Djur</td>
+          </tr>
+          <tr>
+            <td>Skidanläggning</td>
+            <td>DP_KM_R2_Skid</td>
+          </tr>
+          <tr>
+            <td>Motorsportbana</td>
+            <td>DP_KM_R2_Motorsport</td>
+          </tr>
+          <tr>
+            <td>Mässhall</td>
+            <td>DP_KM_R2_Masshall</td>
+          </tr>
+          <tr>
+            <td>Arena</td>
+            <td>DP_KM_R2_Arena</td>
+          </tr>
+          <tr>
+            <td>Museum</td>
+            <td>DP_KM_R2_Museum</td>
+          </tr>
+          <tr>
+            <td>Kulturhus</td>
+            <td>DP_KM_R2_Kultur</td>
+          </tr>
+          <tr>
+            <td>Teater</td>
+            <td>DP_KM_R2_Teater</td>
+          </tr>
+          <tr>
+            <td>Konserthus</td>
+            <td>DP_KM_R2_Konsert</td>
+          </tr>
+          <tr>
+            <td>Bygdegård</td>
+            <td>DP_KM_R2_Bygdegard</td>
+          </tr>
+          <tr>
+            <td>Lokal för religiösa ändamål</td>
+            <td>DP_KM_R2_LokalForReligiosa</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_R2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_skola">Skola</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P17" name="BFS2020-5_K5_P17">17 §</a>
+      </h3>
+      <p class="text">Användningen skola ska tillämpas för områden för förskola, fritidshem, skola eller annan jämförlig verksamhet. Även komplement till verksamheten skola ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.31 Skola</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Skola</td>
+            <td>DP_KM_S2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.32 Precisering av bestämmelsen skola</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Förskola</td>
+            <td>DP_KM_S2_Forskola</td>
+          </tr>
+          <tr>
+            <td>Grundskola</td>
+            <td>DP_KM_S2_Grundskola</td>
+          </tr>
+          <tr>
+            <td>Gymnasium</td>
+            <td>DP_KM_S2_Gymnasium</td>
+          </tr>
+          <tr>
+            <td>Högskola och universitet</td>
+            <td>DP_KM_S2_HogskolaUniversitet</td>
+          </tr>
+          <tr>
+            <td>Vuxenutbildning</td>
+            <td>DP_KM_S2_Vuxen</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_S2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_trafik">Trafik</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P18" name="BFS2020-5_K5_P18">18 §</a>
+      </h3>
+      <p class="text">Användningen trafik ska tillämpas för områden för väg- och spårtrafik med tillhörande anläggningar samt vägreservat. Här ingår spårområden och liknande anläggningar samt stations- och servicebyggnader. Även komplement till verksamheten trafik ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.33 Trafik</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Trafik</td>
+            <td>DP_KM_T2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.34 Precisering av bestämmelsen trafik</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Resecentrum</td>
+            <td>DP_KM_T2_Resecentrum</td>
+          </tr>
+          <tr>
+            <td>Busstation</td>
+            <td>DP_KM_T2_Busstation</td>
+          </tr>
+          <tr>
+            <td>Järnvägsstation</td>
+            <td>DP_KM_T2_Jarnvagsstation</td>
+          </tr>
+          <tr>
+            <td>Taxistation</td>
+            <td>DP_KM_T2_Taxistation</td>
+          </tr>
+          <tr>
+            <td>Järnväg</td>
+            <td>DP_KM_T2_Jarnvag</td>
+          </tr>
+          <tr>
+            <td>Spårväg</td>
+            <td>DP_KM_T2_Sparvag</td>
+          </tr>
+          <tr>
+            <td>Tunnelbana</td>
+            <td>DP_KM_T2_Tunnelbana</td>
+          </tr>
+          <tr>
+            <td>Linbana</td>
+            <td>DP_KM_T2_Linbana</td>
+          </tr>
+          <tr>
+            <td>Spårreservat</td>
+            <td>DP_KM_T2_Sparreservat</td>
+          </tr>
+          <tr>
+            <td>Vägreservat</td>
+            <td>DP_KM_T2_Vagreservat</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_T2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_raddningstjanst-och-annat-samhallsviktigt-andamal">Räddningstjänst och annat samhällsviktigt ändamål</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P19" name="BFS2020-5_K5_P19">19 §</a>
+      </h3>
+      <p class="text">Användningen räddningstjänst och annat samhällsviktigt ändamål ska tillämpas för områden för räddningstjänst och annat liknande samhällsviktigt ändamål. Även komplement till verksamheten räddningstjänst och annat samhällsviktigt ändamål ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.35 Räddningstjänst och annat samhällsviktigt ändamål</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Räddningstjänst och annat samhällsviktigt ändamål</td>
+            <td>DP_KM_U2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.36 Precisering av bestämmelsen räddningstjänst och annat samhällsviktigt ändamål</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Räddningstjänst</td>
+            <td>DP_KM_U2_Raddningstjanst</td>
+          </tr>
+          <tr>
+            <td>Brandstation</td>
+            <td>DP_KM_U2_Brandstation</td>
+          </tr>
+          <tr>
+            <td>Utryckningsstation</td>
+            <td>DP_KM_U2_Utryckning</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_U2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_hamn">Hamn</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P20" name="BFS2020-5_K5_P20">20 §</a>
+      </h3>
+      <p class="text">Användningen hamn ska tillämpas för områden för hamnverksamhet och sjötrafik med kompletterande handel och service. Även komplement till verksamheten hamn ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.37 Hamn</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hamn</td>
+            <td>DP_KM_V2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.38 Precisering av bestämmelsen hamn</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Småbåtshamn</td>
+            <td>DP_KM_V2_Smabat</td>
+          </tr>
+          <tr>
+            <td>Kemikalie- och oljehamn</td>
+            <td>DP_KM_V2_Olja</td>
+          </tr>
+          <tr>
+            <td>Färjeterminal</td>
+            <td>DP_KM_V2_Farje</td>
+          </tr>
+          <tr>
+            <td>Varv</td>
+            <td>DP_KM_V2_Varv</td>
+          </tr>
+          <tr>
+            <td>Sjösäkerhetsanordning</td>
+            <td>DP_KM_V2_Sjosakerhet</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_V2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_verksamheter">Verksamheter</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P21" name="BFS2020-5_K5_P21">21 §</a>
+      </h3>
+      <p class="text">Användningen verksamheter ska tillämpas för områden för service, lager, tillverkning med tillhörande försäljning, partihandel och annan jämförlig verksamhet med begränsad omgivningspåverkan. Även komplement till verksamheten ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.39 Verksamheter</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Verksamheter</td>
+            <td>DP_KM_Z2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5.40 Precisering av bestämmelsen verksamheter</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Verkstad</td>
+            <td>DP_KM_Z2_Verkstad</td>
+          </tr>
+          <tr>
+            <td>Bilprovning</td>
+            <td>DP_KM_Z2_Bilprovning</td>
+          </tr>
+          <tr>
+            <td>Partihandel</td>
+            <td>DP_KM_Z2_Partihandel</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_Z2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_annan-kvartersmark">Annan kvartersmark</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K5_P22" name="BFS2020-5_K5_P22">22 §</a>
+      </h3>
+      <p class="text">Användningen annan kvartersmark ska tillämpas i de fall någon av användningarna i 2–21 §§ inte är tillämpliga. Användningen ska alltid preciseras. Även komplement till verksamheten annan kvartersmark ingår i användningen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 5.41 Precisering av bestämmelsen annan kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_KM_Y2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="kapitel" id="BFS2020-5_K6">
+      <h2 class="kapitel-rubrik">6 kap. Användningsbestämmelser för vattenområde</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K6_P1" name="BFS2020-5_K6_P1">1 §</a>
+      </h3>
+      <p class="text">Endast den användning som är reglerad i 2 § får användas vid reglering med användningsbestämmelser på vattenområde i detaljplan.</p>
+      <p class="text">Formuleringar av bestämmelser, formuleringar av preciseringar och bestämmelsekoder ska följa det som anges i tabellerna nedan. Annan precisering får endast användas när tillämpbar formulering saknas. Hakparentesen [Annan precisering] ska då ersättas med en egen formulering av preciseringen.</p>
+
+      <h4 id="BFS2020-5_vattenomrade">Vattenområde</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K6_P2" name="BFS2020-5_K6_P2">2 §</a>
+      </h3>
+      <p class="text">Vattenområde ska endast tillämpas för öppet vatten och vatten med mindre anläggningar där karaktären av öppet vatten avses bibehållas.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 6.1 Vattenområde</caption>
+        <thead>
+          <tr>
+            <th>Formulering av bestämmelse</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vattenområde</td>
+            <td>DP_VO_W2</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 6.2 Precisering av bestämmelsen vattenområde</caption>
+        <thead>
+          <tr>
+            <th>Formulering av precisering</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hamn</td>
+            <td>DP_VO_W2_Hamn</td>
+          </tr>
+          <tr>
+            <td>Småbåtshamn</td>
+            <td>DP_VO_W2_Smabatshamn</td>
+          </tr>
+          <tr>
+            <td>Bryggor</td>
+            <td>DP_VO_W2_Bryggor</td>
+          </tr>
+          <tr>
+            <td>Förtöjningsplats</td>
+            <td>DP_VO_W2_Fortojning</td>
+          </tr>
+          <tr>
+            <td>Farled</td>
+            <td>DP_VO_W2_Farled</td>
+          </tr>
+          <tr>
+            <td>Testbana</td>
+            <td>DP_VO_W2_Testbana</td>
+          </tr>
+          <tr>
+            <td>Skoterled</td>
+            <td>DP_VO_W2_Skoter</td>
+          </tr>
+          <tr>
+            <td>Landningsbana</td>
+            <td>DP_VO_W2_Landning</td>
+          </tr>
+          <tr>
+            <td>Väg på is</td>
+            <td>DP_VO_W2_VagPaIs</td>
+          </tr>
+          <tr>
+            <td>[Annan precisering]</td>
+            <td>DP_VO_W2_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="kapitel" id="BFS2020-5_K7">
+      <h2 class="kapitel-rubrik">7 kap. Egenskapsbestämmelser</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P1" name="BFS2020-5_K7_P1">1 §</a>
+      </h3>
+      <p class="text">Endast de egenskapsbestämmelser som är reglerade i 2–26 §§ får användas vid reglering med egenskapsbestämmelser i detaljplan.</p>
+      <p class="text">Formuleringar av bestämmelser och bestämmelsekoder ska följa det som anges i tabellerna nedan. Formuleringen [fritext] får endast användas när tillämpbar formulering saknas.</p>
+      <p class="text">Hakparentesen [text vid behov] ska antingen ersättas med text eller tas bort.</p>
+      <p class="text">Övriga hakparenteser ska ersättas med siffra eller text.</p>
+      <p class="text">Där tabellen inte anger formulering av bestämmelser ska i stället egen formulering användas och sorteras under rätt underkategori med tillhörande underkategorikod enligt tabellerna nedan.</p>
+
+      <h4 id="BFS2020-5_utformning-av-allman-plats">Utformning av allmän plats</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P2" name="BFS2020-5_K7_P2">2 §</a>
+      </h3>
+      <p class="text">Bestämmelser om utformning av allmän plats ska tillämpas för att reglera utformning på allmän plats.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.1 Utformning av allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Utformning av områden för fordonstrafik</td>
+            <td>DP_AP_Eg_UtformAP_Fordon</td>
+          </tr>
+          <tr>
+            <td>Utformning av områden för gång och cykel</td>
+            <td>DP_AP_Eg_UtformAP_GC</td>
+          </tr>
+          <tr>
+            <td>Utformning av områden för dagvatten</td>
+            <td>DP_AP_Eg_UtformAP_Dagv</td>
+          </tr>
+          <tr>
+            <td>Utformning av områden för lek och aktivitet</td>
+            <td>DP_AP_Eg_UtformAP_LekAktivitet</td>
+          </tr>
+          <tr>
+            <td>Utformning av vegetation</td>
+            <td>DP_AP_Eg_UtformAP_Veg</td>
+          </tr>
+          <tr>
+            <td>Användning av byggnader</td>
+            <td>DP_AP_Eg_UtformAP_AnvAvByggn</td>
+          </tr>
+          <tr>
+            <td>Placering</td>
+            <td>DP_AP_Eg_UtformAP_Plac</td>
+          </tr>
+          <tr>
+            <td>Markens utformning</td>
+            <td>DP_AP_Eg_UtformAP_Mark</td>
+          </tr>
+          <tr>
+            <td>Utformning av byggnadsverk</td>
+            <td>DP_AP_Eg_UtformAP_UtfByggnadsverk</td>
+          </tr>
+          <tr>
+            <td>Skydd mot störningar</td>
+            <td>DP_AP_Eg_UtformAP_SkyddStorning</td>
+          </tr>
+          <tr>
+            <td>Storlek på byggnadsverk</td>
+            <td>DP_AP_Eg_UtformAP_Storlek</td>
+          </tr>
+          <tr>
+            <td>Annan utformning av allmän plats</td>
+            <td>DP_AP_Eg_UtformAP_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_utnyttjandegrad">Utnyttjandegrad</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P3" name="BFS2020-5_K7_P3">3 §</a>
+      </h3>
+      <p class="text">Bestämmelser om utnyttjandegrad tillämpas på kvartersmark för att reglera bebyggandets största eller minsta omfattning.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.2 Utnyttjandegrad</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Formulering av bestämmelser</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Största area i kvm</td>
+            <td>Största bruttoarea är [siffra] m² per fastighet</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaKvm_BruttoFastigh</td>
+          </tr>
+          <tr>
+            <td>Största area i kvm</td>
+            <td>Största bruttoarea är [siffra] m²</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaKvm_Brutto</td>
+          </tr>
+          <tr>
+            <td>Största area i kvm</td>
+            <td>Största bruttoarea är [siffra] m² inom användningsområdet</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaKvm_BruttoAnv</td>
+          </tr>
+          <tr>
+            <td>Största area i kvm</td>
+            <td>Största byggnadsarea är [siffra] m² per fastighet</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaKvm_ByggnadsareaFastigh</td>
+          </tr>
+          <tr>
+            <td>Största area i kvm</td>
+            <td>Största byggnadsarea är [siffra] m²</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaKvm_Byggnadsarea</td>
+          </tr>
+          <tr>
+            <td>Största area i kvm</td>
+            <td>Största byggnadsarea är [siffra] m² inom användningsområdet</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaKvm_ByggnadsareaAnv</td>
+          </tr>
+          <tr>
+            <td>Största area i kvm</td>
+            <td>[Fritext]</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaKvm_Annan</td>
+          </tr>
+          <tr>
+            <td>Största area i procent</td>
+            <td>Största bruttoarea är [siffra] % av fastighetsarean inom egenskapsområdet</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaProc_BruttoEgen</td>
+          </tr>
+          <tr>
+            <td>Största area i procent</td>
+            <td>Största bruttoarea är [siffra] % av fastighetsarean inom användningsområdet</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaProc_BruttoAnv</td>
+          </tr>
+          <tr>
+            <td>Största area i procent</td>
+            <td>Största byggnadsarea är [siffra] % av fastighetsarean inom egenskapsområdet</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaProc_ByggnadsEgen</td>
+          </tr>
+          <tr>
+            <td>Största area i procent</td>
+            <td>Största byggnadsarea är [siffra] % av fastighetsarean inom användningsområdet</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaProc_ByggnadsAnv</td>
+          </tr>
+          <tr>
+            <td>Största area i procent</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Utnytt_StorstaAreaProc_Annan</td>
+          </tr>
+          <tr>
+            <td>Minsta area i kvm</td>
+            <td>Minsta bruttoarea är [siffra] m² per fastighet</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaKvm_BruttoFastigh</td>
+          </tr>
+          <tr>
+            <td>Minsta area i kvm</td>
+            <td>Minsta bruttoarea är [siffra] m²</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaKvm_BruttoKvm</td>
+          </tr>
+          <tr>
+            <td>Minsta area i kvm</td>
+            <td>Minsta bruttoarea är [siffra] m² inom användningsområdet</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaKvm_BruttoAnv</td>
+          </tr>
+          <tr>
+            <td>Minsta area i kvm</td>
+            <td>Minsta byggnadsarea är [siffra] m² per fastighet</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaKvm_ByggnadsFastigh</td>
+          </tr>
+          <tr>
+            <td>Minsta area i kvm</td>
+            <td>Minsta byggnadsarea är [siffra] m²</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaKvm_Byggnads</td>
+          </tr>
+          <tr>
+            <td>Minsta area i kvm</td>
+            <td>Minsta byggnadsarea är [siffra] m² inom användningsområdet</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaKvm_ByggnadsAnv</td>
+          </tr>
+          <tr>
+            <td>Minsta area i kvm</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaKvm_Annan</td>
+          </tr>
+          <tr>
+            <td>Minsta area i procent</td>
+            <td>Minsta bruttoarea är [siffra] % av fastighetsarean inom egenskapsområdet</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaProc_BruttoEgen</td>
+          </tr>
+          <tr>
+            <td>Minsta area i procent</td>
+            <td>Minsta bruttoarea är [siffra] % av fastighetsarean inom användningsområdet</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaProc_BruttoAnv</td>
+          </tr>
+          <tr>
+            <td>Minsta area i procent</td>
+            <td>Minsta byggnadsarea är [siffra] % av fastighetsarean inom egenskapsområdet</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaProc_ByggnadsEgen</td>
+          </tr>
+          <tr>
+            <td>Minsta area i procent</td>
+            <td>Minsta byggnadsarea är [siffra] % av fastighetsarean inom användningsområdet</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaProc_ByggnadsAnv</td>
+          </tr>
+          <tr>
+            <td>Minsta area i procent</td>
+            <td>[Fritext]</td>
+            <td>DP_KM_Eg_Utnytt_MinstaAreaProc_Annan</td>
+          </tr>
+          <tr>
+            <td>Area under mark</td>
+            <td>Största bruttoarea under mark är [siffra] m² [text vid behov]</td>
+            <td>DP_KM_Eg_Utnytt_AreaUnderMark_StorstaKvm</td>
+          </tr>
+          <tr>
+            <td>Area under mark</td>
+            <td>Minsta bruttoarea under mark är [siffra] m² [text vid behov]</td>
+            <td>DP_KM_Eg_Utnytt_AreaUnderMark_MinstaKvm</td>
+          </tr>
+          <tr>
+            <td>Area under mark</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Utnytt_AreaUnderMark_Annan</td>
+          </tr>
+          <tr>
+            <td>Area per byggnad</td>
+            <td>Största bruttoarea är [siffra] m² per [text]</td>
+            <td>DP_KM_Eg_Utnytt_AreaPerByggnad_StorstaBruttoKvm</td>
+          </tr>
+          <tr>
+            <td>Area per byggnad</td>
+            <td>Minsta bruttoarea är [siffra] m² per [text]</td>
+            <td>DP_KM_Eg_Utnytt_AreaPerByggnad_MinstaBruttoKvm</td>
+          </tr>
+          <tr>
+            <td>Area per byggnad</td>
+            <td>Största byggnadsarea är [siffra] m² per [text]</td>
+            <td>DP_KM_Eg_Utnytt_AreaPerByggnad_StorstaByggnadsKvm</td>
+          </tr>
+          <tr>
+            <td>Area per byggnad</td>
+            <td>Minsta byggnadsarea är [siffra] m² per [text]</td>
+            <td>DP_KM_Eg_Utnytt_AreaPerByggnad_MinstaByggnadsKvm</td>
+          </tr>
+          <tr>
+            <td>Area per byggnad</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Utnytt_AreaPerBygg_Annan</td>
+          </tr>
+          <tr>
+            <td>Annan utnyttjandegrad</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Utnytt_AnnanUtnytt_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_hojd-pa-byggnadsverk">Höjd på byggnadsverk</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P4" name="BFS2020-5_K7_P4">4 §</a>
+      </h3>
+      <p class="text">Bestämmelser om höjd på byggnadsverk ska tillämpas på kvartersmark för att reglera höjd på byggnadsverk.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.3 Höjd på byggnadsverk</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Formulering av bestämmelser</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Högsta höjd på byggnadsverk</td>
+            <td>Högsta nockhöjd på [text] är [siffra] meter [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_HogstaHojd_ByggnadsverkNockhojd</td>
+          </tr>
+          <tr>
+            <td>Högsta höjd på byggnadsverk</td>
+            <td>Högsta nockhöjd är [siffra] meter</td>
+            <td>DP_KM_Eg_Hojd_HogstaHojd_Nockhojd</td>
+          </tr>
+          <tr>
+            <td>Högsta höjd på byggnadsverk</td>
+            <td>Högsta nockhöjd på [text] är [siffra] meter över angivet nollplan [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_HogstaHojd_ByggnadsverkNockhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Högsta höjd på byggnadsverk</td>
+            <td>Högsta nockhöjd är [siffra] meter över angivet nollplan</td>
+            <td>DP_KM_Eg_Hojd_HogstaHojd_NockhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Högsta höjd på byggnadsverk</td>
+            <td>Högsta totalhöjd på [text] är [siffra] meter [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_HogstaHojd_ByggnadsverkTotalhojd</td>
+          </tr>
+          <tr>
+            <td>Högsta höjd på byggnadsverk</td>
+            <td>Högsta totalhöjd är [siffra] meter</td>
+            <td>DP_KM_Eg_Hojd_HogstaHojd_Totalhojd</td>
+          </tr>
+          <tr>
+            <td>Högsta höjd på byggnadsverk</td>
+            <td>Högsta totalhöjd på [text] är [siffra] meter över angivet nollplan [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_HogstaHojd_ByggnadsverkTotalhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Högsta höjd på byggnadsverk</td>
+            <td>Högsta totalhöjd är [siffra] meter över angivet nollplan</td>
+            <td>DP_KM_Eg_Hojd_HogstaHojd_TotalhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Högsta höjd på byggnadsverk</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Hojd_HogstaHojd_Annan</td>
+          </tr>
+          <tr>
+            <td>Lägsta höjd på byggnadsverk</td>
+            <td>Lägsta nockhöjd på [text] är [siffra] meter [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_LagstaHojd_ByggnadsverkNockhojd</td>
+          </tr>
+          <tr>
+            <td>Lägsta höjd på byggnadsverk</td>
+            <td>Lägsta nockhöjd är [siffra] meter</td>
+            <td>DP_KM_Eg_Hojd_LagstaHojd_Nockhojd</td>
+          </tr>
+          <tr>
+            <td>Lägsta höjd på byggnadsverk</td>
+            <td>Lägsta nockhöjd på [text] är [siffra] meter över angivet nollplan [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_LagstaHojd_ByggnadsverkNockhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Lägsta höjd på byggnadsverk</td>
+            <td>Lägsta nockhöjd är [siffra] meter över angivet nollplan</td>
+            <td>DP_KM_Eg_Hojd_LagstaHojd_NockhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Lägsta höjd på byggnadsverk</td>
+            <td>Lägsta totalhöjd på [text] är [siffra] meter [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_LagstaHojd_ByggnadsverkTotalhojd</td>
+          </tr>
+          <tr>
+            <td>Lägsta höjd på byggnadsverk</td>
+            <td>Lägsta totalhöjd är [siffra] meter</td>
+            <td>DP_KM_Eg_Hojd_LagstaHojd_Totalhojd</td>
+          </tr>
+          <tr>
+            <td>Lägsta höjd på byggnadsverk</td>
+            <td>Lägsta totalhöjd på [text] är [siffra] meter över angivet nollplan [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_LagstaHojd_ByggnadsverkTotalhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Lägsta höjd på byggnadsverk</td>
+            <td>Lägsta totalhöjd är [siffra] meter över angivet nollplan</td>
+            <td>DP_KM_Eg_Hojd_LagstaHojd_TotalhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Lägsta höjd på byggnadsverk</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Hojd_LagstaHojd_Annan</td>
+          </tr>
+          <tr>
+            <td>Exakt höjd på byggnadsverk</td>
+            <td>Nockhöjden på [text] ska vara [siffra] meter [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_ExaktHojd_ByggnadsverkNockhojd</td>
+          </tr>
+          <tr>
+            <td>Exakt höjd på byggnadsverk</td>
+            <td>Nockhöjden ska vara [siffra] meter</td>
+            <td>DP_KM_Eg_Hojd_ExaktHojd_Nockhojd</td>
+          </tr>
+          <tr>
+            <td>Exakt höjd på byggnadsverk</td>
+            <td>Nockhöjden på [text] ska vara [siffra] meter över angivet nollplan [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_ExaktHojd_ByggnadsverkNockhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Exakt höjd på byggnadsverk</td>
+            <td>Nockhöjden ska vara [siffra] meter över angivet nollplan</td>
+            <td>DP_KM_Eg_Hojd_ExaktHojd_NockhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Exakt höjd på byggnadsverk</td>
+            <td>Totalhöjden på [text] ska vara [siffra] meter [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_ExaktHojd_ByggnadsverkTotalhojd</td>
+          </tr>
+          <tr>
+            <td>Exakt höjd på byggnadsverk</td>
+            <td>Totalhöjden ska vara [siffra] meter</td>
+            <td>DP_KM_Eg_Hojd_ExaktHojd_Totalhojd</td>
+          </tr>
+          <tr>
+            <td>Exakt höjd på byggnadsverk</td>
+            <td>Totalhöjden på [text] ska vara [siffra] meter över angivet nollplan [text vid behov]</td>
+            <td>DP_KM_Eg_Hojd_ExaktHojd_ByggnadsverkTotalhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Exakt höjd på byggnadsverk</td>
+            <td>Totalhöjden ska vara [siffra] meter över angivet nollplan</td>
+            <td>DP_KM_Eg_Hojd_ExaktHojd_TotalhojdNollplan</td>
+          </tr>
+          <tr>
+            <td>Exakt höjd på byggnadsverk</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Hojd_ExaktHojd_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_begransning-av-markens-utnyttjande">Begränsning av markens utnyttjande</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P5" name="BFS2020-5_K7_P5">5 §</a>
+      </h3>
+      <p class="text">Bestämmelser om begränsning av markens utnyttjande ska tillämpas på kvartersmark för att reglera att marken inte får förses med byggnadsverk eller viss typ av byggnadsverk, att marken endast får endast förses med viss typ av byggnadsverk eller att marken endast får förses med byggnadsverk under mark.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.4 Begränsning av markens utnyttjande</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Marken får inte förses med byggnadsverk</td>
+            <td>DP_KM_Eg_BegransningAvMarkensUtnyttjande_EjByggnadsverk</td>
+          </tr>
+          <tr>
+            <td>Marken får endast förses med viss typ av byggnadsverk</td>
+            <td>DP_KM_Eg_BegransningAvMarkensUtnyttjande_TypByggnadsverk</td>
+          </tr>
+          <tr>
+            <td>Endast byggnadsverk under mark</td>
+            <td>DP_KM_Eg_BegransningAvMarkensUtnyttjande_ByggnadsverkUnderMark</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_takvinkel">Takvinkel</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P6" name="BFS2020-5_K7_P6">6 §</a>
+      </h3>
+      <p class="text">Bestämmelser om takvinkel ska tillämpas på kvartersmark för att reglera lutning i grader på tak.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.5 Takvinkel</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Formulering av bestämmelser</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Största takvinkel</td>
+            <td>Största takvinkel är [siffra] grader</td>
+            <td>DP_KM_Eg_Takvinkel_Storsta_Storsta</td>
+          </tr>
+          <tr>
+            <td>Största takvinkel</td>
+            <td>Största takvinkel för [text] är [siffra] grader</td>
+            <td>DP_KM_Eg_Takvinkel_Storsta_Byggnad</td>
+          </tr>
+          <tr>
+            <td>Största takvinkel</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Takvinkel_Storsta_Annan</td>
+          </tr>
+          <tr>
+            <td>Minsta takvinkel</td>
+            <td>Minsta takvinkel är [siffra] grader</td>
+            <td>DP_KM_Eg_Takvinkel_Minsta_Minsta</td>
+          </tr>
+          <tr>
+            <td>Minsta takvinkel</td>
+            <td>Minsta takvinkel för [text] är [siffra] grader</td>
+            <td>DP_KM_Eg_Takvinkel_Minsta_Byggnad</td>
+          </tr>
+          <tr>
+            <td>Minsta takvinkel</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Takvinkel_Minsta_Annan</td>
+          </tr>
+          <tr>
+            <td>Exakt takvinkel</td>
+            <td>Takvinkeln ska vara [siffra] grader</td>
+            <td>DP_KM_Eg_Takvinkel_Exakt_Exakt</td>
+          </tr>
+          <tr>
+            <td>Exakt takvinkel</td>
+            <td>Takvinkeln för [text] ska vara [siffra] grader</td>
+            <td>DP_KM_Eg_Takvinkel_Exakt_Byggnad</td>
+          </tr>
+          <tr>
+            <td>Exakt takvinkel</td>
+            <td>[fritext]</td>
+            <td>DP_KM_Eg_Takvinkel_Exakt_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_fastighetsstorlek">Fastighetsstorlek</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P7" name="BFS2020-5_K7_P7">7 §</a>
+      </h3>
+      <p class="text">Bestämmelser om fastighetsstorlek ska tillämpas på kvartersmark för att reglera största eller minsta fastighetsstorlek.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.6 Fastighetsstorlek</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Formulering av bestämmelser</th>
+            <th>Bestämmelsekod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Största fastighetsstorlek</td>
+            <td>Största fastighetsstorlek är [siffra] m²</td>
+            <td>DP_KM_Eg_Fastighetsstorlek_Storsta_Storsta</td>
+          </tr>
+          <tr>
+            <td>Minsta fastighetsstorlek</td>
+            <td>Minsta fastighetsstorlek är [siffra] m²</td>
+            <td>DP_KM_Eg_Fastighetsstorlek_Minsta_Minsta</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_placering">Placering</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P8" name="BFS2020-5_K7_P8">8 §</a>
+      </h3>
+      <p class="text">Bestämmelser om placering ska tillämpas på kvartersmark för att reglera byggnadsverks och tomters placering.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.7 Placering</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Placering av byggnadsverk</td>
+            <td>DP_KM_Eg_Plac_Byggnadsverk</td>
+          </tr>
+          <tr>
+            <td>Annan placering</td>
+            <td>DP_KM_Eg_Plac_AnnanPlac</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_utformning">Utformning</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P9" name="BFS2020-5_K7_P9">9 §</a>
+      </h3>
+      <p class="text">Bestämmelser om utformning ska tillämpas på kvartersmark för att reglera byggnadsverks form, färg och material, fasadutsmyckningar, typer av byggnadsverk samt utformning av tomt.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.8 Utformning</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>En- och tvåbostadshus</td>
+            <td>DP_KM_Eg_Utform_EnOchTva</td>
+          </tr>
+          <tr>
+            <td>Flerbostadshus</td>
+            <td>DP_KM_Eg_Utform_Flerbostad</td>
+          </tr>
+          <tr>
+            <td>Annan typ av byggnadsverk</td>
+            <td>DP_KM_Eg_Utform_AnnanTypAvByggnadsverk</td>
+          </tr>
+          <tr>
+            <td>Byggnadsverks form, färg och material</td>
+            <td>DP_KM_Eg_Utform_Form</td>
+          </tr>
+          <tr>
+            <td>Annan utformning</td>
+            <td>DP_KM_Eg_Utform_AnnanUtform</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_utforande">Utförande</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P10" name="BFS2020-5_K7_P10">10 §</a>
+      </h3>
+      <p class="text">Bestämmelser om utförande ska tillämpas på kvartersmark för att reglera byggnadsteknik och markens genomsläpplighet.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.9 Utförande</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Grundläggning</td>
+            <td>DP_KM_Eg_Utforande_Grundlagg</td>
+          </tr>
+          <tr>
+            <td>Entréer</td>
+            <td>DP_KM_Eg_Utforande_Entre</td>
+          </tr>
+          <tr>
+            <td>Fasader</td>
+            <td>DP_KM_Eg_Utforande_Fasader</td>
+          </tr>
+          <tr>
+            <td>Ventilation</td>
+            <td>DP_KM_Eg_Utforande_Ventilation</td>
+          </tr>
+          <tr>
+            <td>Markens genomsläpplighet</td>
+            <td>DP_KM_Eg_Utforande_Genomslapp</td>
+          </tr>
+          <tr>
+            <td>Schaktningsnivå</td>
+            <td>DP_KM_Eg_Utforande_Schaktningsniva</td>
+          </tr>
+          <tr>
+            <td>Annat utförande</td>
+            <td>DP_KM_Eg_Utforande_AnnatUtforande</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_byggnaders-anvandning">Byggnaders användning</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P11" name="BFS2020-5_K7_P11">11 §</a>
+      </h3>
+      <p class="text">Bestämmelser om byggnaders användning ska tillämpas på kvartersmark för att reglera hur byggnaders användning avgränsas eller fördelas.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.10 Byggnaders användning</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Byggnaders användning</td>
+            <td>DP_KM_Eg_ByggnadersAnvandning_ByggnAnv</td>
+          </tr>
+          <tr>
+            <td>Lägenhetsutformning</td>
+            <td>DP_KM_Eg_ByggnadersAnvandning_Lagenhetsutform</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_lagenhetsfordelning-och-storlek-pa-lagenheter">Lägenhetsfördelning och storlek på lägenheter</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P12" name="BFS2020-5_K7_P12">12 §</a>
+      </h3>
+      <p class="text">Bestämmelser om lägenhetsfördelning och storlek på lägenheter ska tillämpas på kvartersmark för att reglera andelen lägenheter av olika slag i bostadsbyggnader och lägenheternas storlek.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.11 Lägenhetsfördelning och storlek på lägenheter</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lägenhetsfördelning</td>
+            <td>DP_KM_Eg_LghFordelningOchStorlek_LghFordelning</td>
+          </tr>
+          <tr>
+            <td>Storlek på lägenheter</td>
+            <td>DP_KM_Eg_LghFordelningOchStorlek_LghStorlek</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_markens-anordnande-och-vegetation">Markens anordnande och vegetation</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P13" name="BFS2020-5_K7_P13">13 §</a>
+      </h3>
+      <p class="text">Bestämmelser om markens anordnande och vegetation ska tillämpas på kvartersmark för att reglera markförhållanden, vegetation och parkering.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.12 Markens anordnande och vegetation</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Markförhållanden</td>
+            <td>DP_KM_Eg_MarkensAnordOchVeg_Markforhallanden</td>
+          </tr>
+          <tr>
+            <td>Vegetation</td>
+            <td>DP_KM_Eg_MarkensAnordOchVeg_Vegetation</td>
+          </tr>
+          <tr>
+            <td>Parkering och lastning</td>
+            <td>DP_KM_Eg_MarkensAnordOchVeg_ParkeringLastning</td>
+          </tr>
+          <tr>
+            <td>Annan mark</td>
+            <td>DP_KM_Eg_MarkensAnordOchVeg_AnnanMark</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_stangsel-utfart-och-annan-utgang">Stängsel, utfart och annan utgång</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P14" name="BFS2020-5_K7_P14">14 §</a>
+      </h3>
+      <p class="text">Bestämmelser om stängsel, utfart och annan utgång ska tillämpas på allmän plats och kvartersmark för att reglera var stängsel ska finnas samt var utfart och annan utgång får respektive inte får anordnas mot allmän plats.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.13 Stängsel, utfart och annan utgång, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Utfart</td>
+            <td>DP_AP_Eg_StangselUtfart_Utfart</td>
+          </tr>
+          <tr>
+            <td>Stängsel</td>
+            <td>DP_AP_Eg_StangselUtfart_Stangsel</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.14 Stängsel, utfart och annan utgång, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Utfart</td>
+            <td>DP_KM_Eg_StangselUtfart_Utfart</td>
+          </tr>
+          <tr>
+            <td>Stängsel</td>
+            <td>DP_KM_Eg_StangselUtfart_Stangsel</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_skydd-av-kulturvarden">Skydd av kulturvärden</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P15" name="BFS2020-5_K7_P15">15 §</a>
+      </h3>
+      <p class="text">Bestämmelser om skydd av kulturvärden ska på allmän plats tillämpas för att reglera hur befintliga miljöer som är särskilt värdefulla ur historisk, kulturhistorisk, miljömässig eller konstnärlig synpunkt ska skyddas.</p>
+      <p class="text">Bestämmelser om skydd av kulturvärden ska på kvartersmark tillämpas för att reglera hur befintliga byggnader, bygglovspliktiga anläggningar, bebyggelseområden och tomter som är särskilt värdefulla ur historisk, kulturhistorisk, miljömässig eller konstnärlig synpunkt ska skyddas.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.15 Skydd av kulturvärden, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Byggnad</td>
+            <td>DP_AP_Eg_SkyddKultur_Byggnad</td>
+          </tr>
+          <tr>
+            <td>Bygglovspliktig anläggning</td>
+            <td>DP_AP_Eg_SkyddKultur_ByggAnlagg</td>
+          </tr>
+          <tr>
+            <td>Byggnadsdel</td>
+            <td>DP_AP_Eg_SkyddKultur_Byggnadsdel</td>
+          </tr>
+          <tr>
+            <td>Bebyggelseområde</td>
+            <td>DP_AP_Eg_SkyddKultur_Bebyggelseomr</td>
+          </tr>
+          <tr>
+            <td>Annat skydd av kulturvärden</td>
+            <td>DP_AP_Eg_SkyddKultur_AnnatSkyddKultur</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.16 Skydd av kulturvärden, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Byggnad</td>
+            <td>DP_KM_Eg_SkyddKultur_Byggnad</td>
+          </tr>
+          <tr>
+            <td>Bygglovspliktig anläggning</td>
+            <td>DP_KM_Eg_SkyddKultur_ByggAnlagg</td>
+          </tr>
+          <tr>
+            <td>Byggnadsdel</td>
+            <td>DP_KM_Eg_SkyddKultur_Byggnadsdel</td>
+          </tr>
+          <tr>
+            <td>Bebyggelseområde</td>
+            <td>DP_KM_Eg_SkyddKultur_Bebyggelseomr</td>
+          </tr>
+          <tr>
+            <td>Tomt</td>
+            <td>DP_KM_Eg_SkyddKultur_Tomt</td>
+          </tr>
+          <tr>
+            <td>Annat skydd av kulturvärden</td>
+            <td>DP_KM_Eg_SkyddKultur_AnnatSkyddKultur</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_rivningsforbud">Rivningsförbud</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P16" name="BFS2020-5_K7_P16">16 §</a>
+      </h3>
+      <p class="text">Bestämmelser om rivningsförbud ska tillämpas på allmän plats och kvartersmark för att reglera att befintliga byggnader som är särskilt värdefulla från historisk, kulturhistorisk, miljömässig eller konstnärlig synpunkt inte får rivas.</p>
+      <p class="text">Första stycket gäller även byggnader som i sig inte är särskilt värdefulla men som ingår i ett bebyggelseområde som är särskilt värdefullt från historisk, kulturhistorisk, miljömässig eller konstnärlig synpunkt.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.17 Rivningsförbud, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rivningsförbud</td>
+            <td>DP_AP_Eg_Rivningsforbud_Rivningsforbud</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.18 Rivningsförbud, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rivningsförbud</td>
+            <td>DP_KM_Eg_Rivningsforbud_Rivningsforbud</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_varsamhet">Varsamhet</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P17" name="BFS2020-5_K7_P17">17 §</a>
+      </h3>
+      <p class="text">Bestämmelser om varsamhet ska tillämpas på allmän plats och kvartersmark för att reglera vilka karaktärsdrag och värden hos befintliga byggnader och bygglovspliktiga anläggningar som varsamheten speciellt ska inriktas på.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.19 Varsamhet, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Varsamhet</td>
+            <td>DP_AP_Eg_Varsam_Varsam</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.20 Varsamhet, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Varsamhet</td>
+            <td>DP_KM_Eg_Varsam_Varsam</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_skydd-mot-storningar">Skydd mot störningar</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P18" name="BFS2020-5_K7_P18">18 §</a>
+      </h3>
+      <p class="text">Bestämmelser om skydd mot störningar ska tillämpas på kvartersmark för att reglera skyddsåtgärder för att motverka markföroreningar, olyckor, översvämning och erosion, skyddsåtgärder för att motverka störningar från omgivningen samt högsta tillåtna nivåer på störning.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.21 Skydd mot störningar</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Buller</td>
+            <td>DP_KM_Eg_Skydd_Buller</td>
+          </tr>
+          <tr>
+            <td>Vibration</td>
+            <td>DP_KM_Eg_Skydd_Vibration</td>
+          </tr>
+          <tr>
+            <td>Ljus</td>
+            <td>DP_KM_Eg_Skydd_Ljus</td>
+          </tr>
+          <tr>
+            <td>Markföroreningar</td>
+            <td>DP_KM_Eg_Skydd_Markfororening</td>
+          </tr>
+          <tr>
+            <td>Olyckor</td>
+            <td>DP_KM_Eg_Skydd_Olyckor</td>
+          </tr>
+          <tr>
+            <td>Översvämning</td>
+            <td>DP_KM_Eg_Skydd_Oversvamning</td>
+          </tr>
+          <tr>
+            <td>Erosion</td>
+            <td>DP_KM_Eg_Skydd_Erosion</td>
+          </tr>
+          <tr>
+            <td>Högsta tillåtna värden</td>
+            <td>DP_KM_Eg_Skydd_HogstaTillatnaVarden</td>
+          </tr>
+          <tr>
+            <td>Annat skydd mot störningar</td>
+            <td>DP_KM_Eg_Skydd_AnnatSkyddMotStorning</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_markreservat-for-allmannyttiga-andamal">Markreservat för allmännyttiga ändamål</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P19" name="BFS2020-5_K7_P19">19 §</a>
+      </h3>
+      <p class="text">Bestämmelser om markreservat för allmännyttiga ändamål ska tillämpas på allmän plats, kvartersmark och vattenområde för att reglera att ett område reserveras för att ge utrymme för ett visst allmännyttigt ändamål.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.22 Markreservat för allmännyttiga ändamål, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Elektronisk kommunikation</td>
+            <td>DP_AP_Eg_Markreservat_ElektroniskKom</td>
+          </tr>
+          <tr>
+            <td>Energianläggningar</td>
+            <td>DP_AP_Eg_Markreservat_Energi</td>
+          </tr>
+          <tr>
+            <td>Underjordiska ledningar</td>
+            <td>DP_AP_Eg_Markreservat_UnderjordiskLedning</td>
+          </tr>
+          <tr>
+            <td>Luftledningar</td>
+            <td>DP_AP_Eg_Markreservat_Luftledning</td>
+          </tr>
+          <tr>
+            <td>Gång- och cykeltrafik</td>
+            <td>DP_AP_Eg_Markreservat_GC</td>
+          </tr>
+          <tr>
+            <td>Körtrafik</td>
+            <td>DP_AP_Eg_Markreservat_Kortrafik</td>
+          </tr>
+          <tr>
+            <td>Spårtrafik</td>
+            <td>DP_AP_Eg_Markreservat_Spartrafik</td>
+          </tr>
+          <tr>
+            <td>Bro</td>
+            <td>DP_AP_Eg_Markreservat_Bro</td>
+          </tr>
+          <tr>
+            <td>Brygga</td>
+            <td>DP_AP_Eg_Markreservat_Brygga</td>
+          </tr>
+          <tr>
+            <td>Tunnel</td>
+            <td>DP_AP_Eg_Markreservat_Tunnel</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.23 Markreservat för allmännyttiga ändamål, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Elektronisk kommunikation</td>
+            <td>DP_KM_Eg_Markreservat_ElektroniskKom</td>
+          </tr>
+          <tr>
+            <td>Energianläggningar</td>
+            <td>DP_KM_Eg_Markreservat_Energi</td>
+          </tr>
+          <tr>
+            <td>Underjordiska ledningar</td>
+            <td>DP_KM_Eg_Markreservat_UnderjordiskLedning</td>
+          </tr>
+          <tr>
+            <td>Luftledningar</td>
+            <td>DP_KM_Eg_Markreservat_Luftledning</td>
+          </tr>
+          <tr>
+            <td>Gång- och cykeltrafik</td>
+            <td>DP_KM_Eg_Markreservat_GC</td>
+          </tr>
+          <tr>
+            <td>Körtrafik</td>
+            <td>DP_KM_Eg_Markreservat_Kortrafik</td>
+          </tr>
+          <tr>
+            <td>Spårtrafik</td>
+            <td>DP_KM_Eg_Markreservat_Spartrafik</td>
+          </tr>
+          <tr>
+            <td>Bro</td>
+            <td>DP_KM_Eg_Markreservat_Bro</td>
+          </tr>
+          <tr>
+            <td>Brygga</td>
+            <td>DP_KM_Eg_Markreservat_Brygga</td>
+          </tr>
+          <tr>
+            <td>Tunnel</td>
+            <td>DP_KM_Eg_Markreservat_Tunnel</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.24 Markreservat för allmännyttiga ändamål, vattenområde</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Elektronisk kommunikation</td>
+            <td>DP_VO_Eg_Markreservat_ElektroniskKom</td>
+          </tr>
+          <tr>
+            <td>Energianläggningar</td>
+            <td>DP_VO_Eg_Markreservat_Energi</td>
+          </tr>
+          <tr>
+            <td>Underjordiska ledningar</td>
+            <td>DP_VO_Eg_Markreservat_UnderjordiskLedning</td>
+          </tr>
+          <tr>
+            <td>Luftledningar</td>
+            <td>DP_VO_Eg_Markreservat_Luftledning</td>
+          </tr>
+          <tr>
+            <td>Gång- och cykeltrafik</td>
+            <td>DP_VO_Eg_Markreservat_GC</td>
+          </tr>
+          <tr>
+            <td>Körtrafik</td>
+            <td>DP_VO_Eg_Markreservat_Kortrafik</td>
+          </tr>
+          <tr>
+            <td>Spårtrafik</td>
+            <td>DP_VO_Eg_Markreservat_Spartrafik</td>
+          </tr>
+          <tr>
+            <td>Bro</td>
+            <td>DP_VO_Eg_Markreservat_Bro</td>
+          </tr>
+          <tr>
+            <td>Brygga</td>
+            <td>DP_VO_Eg_Markreservat_Brygga</td>
+          </tr>
+          <tr>
+            <td>Tunnel</td>
+            <td>DP_VO_Eg_Markreservat_Tunnel</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_markreservat-for-gemensamhetsanlaggningar">Markreservat för gemensamhetsanläggningar</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P20" name="BFS2020-5_K7_P20">20 §</a>
+      </h3>
+      <p class="text">Bestämmelser om markreservat för gemensamhetsanläggningar ska tillämpas på allmän plats, kvartersmark och vattenområde för att reglera att ett område reserveras för att ge utrymme för en gemensamhetsanläggning.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.25 Markreservat för gemensamhetsanläggningar, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gemensamhetsanläggning</td>
+            <td>DP_AP_Eg_MarkreservatGemensam_Gemensam</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.26 Markreservat för gemensamhetsanläggningar, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gemensamhetsanläggning</td>
+            <td>DP_KM_Eg_MarkreservatGemensam_Gemensam</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.27 Markreservat för gemensamhetsanläggningar, vattenområde</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gemensamhetsanläggning</td>
+            <td>DP_VO_Eg_MarkreservatGemensam_Gemensam</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_villkor-for-lov">Villkor för lov</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P21" name="BFS2020-5_K7_P21">21 §</a>
+      </h3>
+      <p class="text">Bestämmelser om villkor för lov ska tillämpas på allmän plats och kvartersmark för att reglera att lov för en åtgärd som innebär en väsentlig ändring av markens användning inte får ges förrän en viss annan åtgärd först har genomförts.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.28 Villkor för lov, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Trafikanläggning</td>
+            <td>DP_AP_Eg_VillkorLov_Trafikanl</td>
+          </tr>
+          <tr>
+            <td>Energianläggning</td>
+            <td>DP_AP_Eg_VillkorLov_Energianl</td>
+          </tr>
+          <tr>
+            <td>Anläggning för vattenförsörjning</td>
+            <td>DP_AP_Eg_VillkorLov_Vattenanl</td>
+          </tr>
+          <tr>
+            <td>Avloppsanläggning</td>
+            <td>DP_AP_Eg_VillkorLov_Avloppsanl</td>
+          </tr>
+          <tr>
+            <td>Ändring av utfart eller annan utgång</td>
+            <td>DP_AP_Eg_VillkorLov_Utfart</td>
+          </tr>
+          <tr>
+            <td>Skydds- eller säkerhetsåtgärd</td>
+            <td>DP_AP_Eg_VillkorLov_SkyddSakerhet</td>
+          </tr>
+          <tr>
+            <td>Bulleråtgärd</td>
+            <td>DP_AP_Eg_VillkorLov_Buller</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.29 Villkor för lov, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Trafikanläggning</td>
+            <td>DP_KM_Eg_VillkorLov_Trafikanl</td>
+          </tr>
+          <tr>
+            <td>Energianläggning</td>
+            <td>DP_KM_Eg_VillkorLov_Energianl</td>
+          </tr>
+          <tr>
+            <td>Anläggning för vattenförsörjning</td>
+            <td>DP_KM_Eg_VillkorLov_Vattenanl</td>
+          </tr>
+          <tr>
+            <td>Avloppsanläggning</td>
+            <td>DP_KM_Eg_VillkorLov_Avloppsanl</td>
+          </tr>
+          <tr>
+            <td>Ändring av utfart eller annan utgång</td>
+            <td>DP_KM_Eg_VillkorLov_Utfart</td>
+          </tr>
+          <tr>
+            <td>Skydds- eller säkerhetsåtgärd</td>
+            <td>DP_KM_Eg_VillkorLov_SkyddSakerhet</td>
+          </tr>
+          <tr>
+            <td>Bulleråtgärd</td>
+            <td>DP_KM_Eg_VillkorLov_Buller</td>
+          </tr>
+          <tr>
+            <td>Rivning av byggnadsverk</td>
+            <td>DP_KM_Eg_VillkorLov_Rivning</td>
+          </tr>
+          <tr>
+            <td>Ombyggnad av byggnadsverk</td>
+            <td>DP_KM_Eg_VillkorLov_Ombyggnad</td>
+          </tr>
+          <tr>
+            <td>Flytt av byggnadsverk</td>
+            <td>DP_KM_Eg_VillkorLov_Flytt</td>
+          </tr>
+          <tr>
+            <td>Ändrad användning av byggnadsverk</td>
+            <td>DP_KM_Eg_VillkorLov_AndradAnv</td>
+          </tr>
+          <tr>
+            <td>Avhjälpande av markförorening</td>
+            <td>DP_KM_Eg_VillkorLov_Markfororening</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_villkor-for-startbesked">Villkor för startbesked</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P22" name="BFS2020-5_K7_P22">22 §</a>
+      </h3>
+      <p class="text">Bestämmelser om villkor för startbesked ska tillämpas på allmän plats och kvartersmark för att reglera att startbesked för en åtgärd som innebär en väsentlig ändring av markens användning inte får ges förrän en viss annan åtgärd först har genomförts.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.30 Villkor för startbesked, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Trafikanläggning</td>
+            <td>DP_AP_Eg_VillkorStart_Trafikanl</td>
+          </tr>
+          <tr>
+            <td>Energianläggning</td>
+            <td>DP_AP_Eg_VillkorStart_Energianl</td>
+          </tr>
+          <tr>
+            <td>Anläggning för vattenförsörjning</td>
+            <td>DP_AP_Eg_VillkorStart_Vattenanl</td>
+          </tr>
+          <tr>
+            <td>Avloppsanläggning</td>
+            <td>DP_AP_Eg_VillkorStart_Avloppsanl</td>
+          </tr>
+          <tr>
+            <td>Ändring av utfart eller annan utgång</td>
+            <td>DP_AP_Eg_VillkorStart_Utfart</td>
+          </tr>
+          <tr>
+            <td>Skydds- eller säkerhetsåtgärd</td>
+            <td>DP_AP_Eg_VillkorStart_SkyddSakerhet</td>
+          </tr>
+          <tr>
+            <td>Bulleråtgärd</td>
+            <td>DP_AP_Eg_VillkorStart_Buller</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.31 Villkor för startbesked, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Trafikanläggning</td>
+            <td>DP_KM_Eg_VillkorStart_Trafikanl</td>
+          </tr>
+          <tr>
+            <td>Energianläggning</td>
+            <td>DP_KM_Eg_VillkorStart_Energianl</td>
+          </tr>
+          <tr>
+            <td>Anläggning för vattenförsörjning</td>
+            <td>DP_KM_Eg_VillkorStart_Vattenanl</td>
+          </tr>
+          <tr>
+            <td>Avloppsanläggning</td>
+            <td>DP_KM_Eg_VillkorStart_Avloppsanl</td>
+          </tr>
+          <tr>
+            <td>Ändrad användning av byggnadsverk</td>
+            <td>DP_KM_Eg_VillkorStart_AndradAnv</td>
+          </tr>
+          <tr>
+            <td>Skydds- eller säkerhetsåtgärd</td>
+            <td>DP_KM_Eg_VillkorStart_SkyddSakerhet</td>
+          </tr>
+          <tr>
+            <td>Bulleråtgärd</td>
+            <td>DP_KM_Eg_VillkorStart_Buller</td>
+          </tr>
+          <tr>
+            <td>Rivning av byggnadsverk</td>
+            <td>DP_KM_Eg_VillkorStart_Rivning</td>
+          </tr>
+          <tr>
+            <td>Ombyggnad av byggnadsverk</td>
+            <td>DP_KM_Eg_VillkorStart_Ombyggnad</td>
+          </tr>
+          <tr>
+            <td>Flytt av byggnadsverk</td>
+            <td>DP_KM_Eg_VillkorStart_Flytt</td>
+          </tr>
+          <tr>
+            <td>Ändring av utfart eller annan utgång</td>
+            <td>DP_KM_Eg_VillkorStart_Utfart</td>
+          </tr>
+          <tr>
+            <td>Avhjälpande av markförorening</td>
+            <td>DP_KM_Eg_VillkorStart_Markfororening</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_andrad-lovplikt">Ändrad lovplikt</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P23" name="BFS2020-5_K7_P23">23 §</a>
+      </h3>
+      <p class="text">Bestämmelser om ändrad lovplikt ska tillämpas på allmän plats och kvartersmark för att minska eller öka omfattningen av kraven på bygg-, rivnings- eller marklov. Bestämmelser om ändrad lovplikt ska alltid preciseras med vad som avses.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.32 Ändrad lovplikt, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Omfattning av kraven på bygglov</td>
+            <td>DP_AP_Eg_AndradLovplikt_Bygglov</td>
+          </tr>
+          <tr>
+            <td>Omfattning av kraven på rivningslov</td>
+            <td>DP_AP_Eg_AndradLovplikt_Rivningslov</td>
+          </tr>
+          <tr>
+            <td>Omfattning av kraven på marklov</td>
+            <td>DP_AP_Eg_AndradLovplikt_Marklov</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.33 Ändrad lovplikt, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Omfattning av kraven på bygglov</td>
+            <td>DP_KM_Eg_AndradLovplikt_Bygglov</td>
+          </tr>
+          <tr>
+            <td>Omfattning av kraven på rivningslov</td>
+            <td>DP_KM_Eg_AndradLovplikt_Rivningslov</td>
+          </tr>
+          <tr>
+            <td>Omfattning av kraven på marklov</td>
+            <td>DP_KM_Eg_AndradLovplikt_Marklov</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_fastighetsindelningsbestammelser">Fastighetsindelningsbestämmelser</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P24" name="BFS2020-5_K7_P24">24 §</a>
+      </h3>
+      <p class="text">Fastighetsindelningsbestämmelser ska tillämpas på allmän plats, kvartersmark och vattenområde för att reglera hur en fastighet eller samfällighet ska utformas. Fastighetsindelningsbestämmelser ska även tillämpas för att reglera att servitut, ledningsrätter och liknande särskilda rättigheter samt gemensamhetsanläggningar ska skapas, ändras eller upphävas.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.34 Fastighetsindelningsbestämmelser, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Indelning i fastigheter</td>
+            <td>DP_AP_Eg_Fastighetsindel_IndelningFastigh</td>
+          </tr>
+          <tr>
+            <td>Servitut</td>
+            <td>DP_AP_Eg_Fastighetsindel_Servitut</td>
+          </tr>
+          <tr>
+            <td>Ledningsrätt</td>
+            <td>DP_AP_Eg_Fastighetsindel_Ledningsratt</td>
+          </tr>
+          <tr>
+            <td>Gemensamhetsanläggning</td>
+            <td>DP_AP_Eg_Fastighetsindel_Gemensamanl</td>
+          </tr>
+          <tr>
+            <td>Annan rättighet</td>
+            <td>DP_AP_Eg_Fastighetsindel_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.35 Fastighetsindelningsbestämmelser, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Indelning i fastigheter</td>
+            <td>DP_KM_Eg_Fastighetsindel_IndelningFastigh</td>
+          </tr>
+          <tr>
+            <td>Servitut</td>
+            <td>DP_KM_Eg_Fastighetsindel_Servitut</td>
+          </tr>
+          <tr>
+            <td>Ledningsrätt</td>
+            <td>DP_KM_Eg_Fastighetsindel_Ledningsratt</td>
+          </tr>
+          <tr>
+            <td>Gemensamhetsanläggning</td>
+            <td>DP_KM_Eg_Fastighetsindel_Gemensamanl</td>
+          </tr>
+          <tr>
+            <td>Annan rättighet</td>
+            <td>DP_KM_Eg_Fastighetsindel_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.36 Fastighetsindelningsbestämmelser, vattenområde</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Indelning i fastigheter</td>
+            <td>DP_VO_Eg_Fastighetsindel_IndelningFastigh</td>
+          </tr>
+          <tr>
+            <td>Servitut</td>
+            <td>DP_VO_Eg_Fastighetsindel_Servitut</td>
+          </tr>
+          <tr>
+            <td>Ledningsrätt</td>
+            <td>DP_VO_Eg_Fastighetsindel_Ledningsratt</td>
+          </tr>
+          <tr>
+            <td>Gemensamhetsanläggning</td>
+            <td>DP_VO_Eg_Fastighetsindel_Gemensamanl</td>
+          </tr>
+          <tr>
+            <td>Annan rättighet</td>
+            <td>DP_VO_Eg_Fastighetsindel_Annan</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_upphavande-av-strandskydd">Upphävande av strandskydd</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P25" name="BFS2020-5_K7_P25">25 §</a>
+      </h3>
+      <p class="text">Bestämmelser om upphävande av strandskydd ska tillämpas på allmän plats, kvartersmark och vattenområde för att reglera var strandskyddet upphävs genom detaljplanen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.37 Upphävande av strandskydd, allmän plats</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Upphävande av strandskydd</td>
+            <td>DP_AP_Eg_Strandskydd_Strandskydd</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.38 Upphävande av strandskydd, kvartersmark</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Upphävande av strandskydd</td>
+            <td>DP_KM_Eg_Strandskydd_Strandskydd</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7.39 Upphävande av strandskydd, vattenområde</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Upphävande av strandskydd</td>
+            <td>DP_VO_Eg_Strandskydd_Strandskydd</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="BFS2020-5_huvudmannaskap">Huvudmannaskap</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2020-5_K7_P26" name="BFS2020-5_K7_P26">26 §</a>
+      </h3>
+      <p class="text">Bestämmelser om huvudmannaskap ska tillämpas på allmän plats för att reglera då den allmänna platsen ska ha enskilt huvudmannaskap.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 7.40 Huvudmannaskap</caption>
+        <thead>
+          <tr>
+            <th>Underkategori</th>
+            <th>Underkategorikod</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Enskilt huvudmannaskap</td>
+            <td>DP_AP_Eg_Huvudman_EnskiltHuvudm</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <ol type="1">
+      <li>Denna författning träder i kraft den 1 oktober 2020.</li>
+      <li>Författningen ska tillämpas på detaljplaner som påbörjas efter den 31 december 2021.</li>
+    </ol>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">YVONNE SVENSSON</p>
+    <p class="text">Klara Falk</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

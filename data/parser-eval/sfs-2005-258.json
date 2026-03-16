@@ -1,0 +1,469 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (2005:258) om läkemedelsförteckning",
+  "documentNumber": "SFS 2005:258",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "E-hälsomyndigheten ska för de ändamål som anges i 3 § utföra automatiserad behandling av personuppgifter i ett särskilt register över köp av förskrivna läkemedel (läkemedelsförteckning). Med köp avses i denna lag även förvärv av läkemedel med fullständig kostnadsreducering.\nE-hälsomyndigheten är personuppgiftsansvarig för den behandling som avses i första stycket.",
+          "amendedBy": "Lag (2013:1023)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "E-hälsomyndigheten ska för de ändamål som anges i 3 § utföra automatiserad behandling av personuppgifter i ett särskilt register över köp av förskrivna läkemedel (läkemedelsförteckning). Med köp avses i denna lag även förvärv av läkemedel med fullständig kostnadsreducering.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "E-hälsomyndigheten är personuppgiftsansvarig för den behandling som avses i första stycket.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Förhållandet till annan reglering",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Denna lag innehåller bestämmelser som kompletterar Europaparlamentets och rådets förordning (EU) 2016/679 av den 27 april 2016 om skydd för fysiska personer med avseende på behandling av personuppgifter och om det fria flödet av sådana uppgifter och om upphävande av direktiv 95/46/EG (allmän dataskyddsförordning), här benämnd EU:s dataskyddsförordning.\nVid behandling av personuppgifter enligt denna lag gäller\nmed kompletterande bestämmelser till EU:s dataskyddsförordning och föreskrifter som har meddelats i anslutning till den lagen, om inte annat följer av denna lag eller föreskrifter som har meddelats i anslutning till lagen.\nEn registrerad har inte, utom i de fall som avses i 3 § andra stycket, rätt att motsätta sig sådan behandling av personuppgifter som är tillåten enligt denna lag.",
+          "amendedBy": "Lag (2018:442)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag innehåller bestämmelser som kompletterar Europaparlamentets och rådets förordning (EU) 2016/679 av den 27 april 2016 om skydd för fysiska personer med avseende på behandling av personuppgifter och om det fria flödet av sådana uppgifter och om upphävande av direktiv 95/46/EG (allmän dataskyddsförordning), här benämnd EU:s dataskyddsförordning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vid behandling av personuppgifter enligt denna lag gäller",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "med kompletterande bestämmelser till EU:s dataskyddsförordning och föreskrifter som har meddelats i anslutning till den lagen, om inte annat följer av denna lag eller föreskrifter som har meddelats i anslutning till lagen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "En registrerad har inte, utom i de fall som avses i 3 § andra stycket, rätt att motsätta sig sådan behandling av personuppgifter som är tillåten enligt denna lag.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Registerändamål",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Läkemedelsförteckningens dokumentation av köp av förskrivna läkemedel får endast användas för att\n1. åstadkomma en säker framtida förskrivning av läkemedel för den registrerade,\n2. bereda den registrerade vård eller behandling,\n3. komplettera den registrerades patientjournal,\n4. underlätta den kontroll som ska genomföras innan ett läkemedel lämnas ut till den registrerade från apotek, samt\n5. underlätta den registrerades läkemedelsanvändning.\nTillgång till uppgifterna i läkemedelsförteckningen får endast med uttryckligt samtycke från den registrerade ges till\n1. förskrivare av läkemedel för ändamål som anges i första stycket 1-3,\n2. legitimerad sjuksköterska utan behörighet att förskriva läkemedel för ändamål som anges i första stycket 2 och 3, om det är nödvändigt för att den registrerade ska kunna få den vård eller behandling som han eller hon oundgängligen behöver, och\n3. farmaceut på apotek för ändamål som anges i första stycket 4 vid färdigställande av läkemedel som ska lämnas ut till den registrerade.\nOm den registrerade inte kan lämna sitt samtycke, får uppgifterna i förteckningen lämnas ut till förskrivare och till legitimerad sjuksköterska utan behörighet att förskriva läkemedel om det är nödvändigt för att den registrerade ska kunna få den vård eller behandling som han eller hon oundgängligen behöver.",
+          "amendedBy": "Lag (2009:393)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Läkemedelsförteckningens dokumentation av köp av förskrivna läkemedel får endast användas för att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. åstadkomma en säker framtida förskrivning av läkemedel för den registrerade,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. bereda den registrerade vård eller behandling,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. komplettera den registrerades patientjournal,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. underlätta den kontroll som ska genomföras innan ett läkemedel lämnas ut till den registrerade från apotek, samt",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. underlätta den registrerades läkemedelsanvändning.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Tillgång till uppgifterna i läkemedelsförteckningen får endast med uttryckligt samtycke från den registrerade ges till",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. förskrivare av läkemedel för ändamål som anges i första stycket 1-3,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. legitimerad sjuksköterska utan behörighet att förskriva läkemedel för ändamål som anges i första stycket 2 och 3, om det är nödvändigt för att den registrerade ska kunna få den vård eller behandling som han eller hon oundgängligen behöver, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. farmaceut på apotek för ändamål som anges i första stycket 4 vid färdigställande av läkemedel som ska lämnas ut till den registrerade.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "Om den registrerade inte kan lämna sitt samtycke, får uppgifterna i förteckningen lämnas ut till förskrivare och till legitimerad sjuksköterska utan behörighet att förskriva läkemedel om det är nödvändigt för att den registrerade ska kunna få den vård eller behandling som han eller hon oundgängligen behöver.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Registerinnehåll",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Läkemedelsförteckningen får endast innehålla följande uppgifter:\n1. inköpsdag, vara, mängd, dosering,\n2. den registrerades namn och personnummer, samt\n3. förskrivarens namn, yrke, specialitet och arbetsplats.",
+          "amendedBy": "Lag (2010:412)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Läkemedelsförteckningen får endast innehålla följande uppgifter:",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. inköpsdag, vara, mängd, dosering,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. den registrerades namn och personnummer, samt",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. förskrivarens namn, yrke, specialitet och arbetsplats.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "Behandling av känsliga personuppgifter",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4a",
+          "heading": null,
+          "content": "Personuppgifter som avses i artikel 9.1 i EU:s dataskyddsförordning (känsliga personuppgifter) får behandlas med stöd av artikel 9.2 h i förordningen under förutsättning att kravet på tystnadsplikt i artikel 9.3 i förordningen är uppfyllt.",
+          "amendedBy": "Lag (2018:442)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som avses i artikel 9.1 i EU:s dataskyddsförordning (känsliga personuppgifter) får behandlas med stöd av artikel 9.2 h i förordningen under förutsättning att kravet på tystnadsplikt i artikel 9.3 i förordningen är uppfyllt.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Sökbegrepp",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Som sökbegrepp får endast den registrerades namn eller personnummer användas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Som sökbegrepp får endast den registrerades namn eller personnummer användas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Utlämnande på medium för automatiserad behandling",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "När uppgifter i läkemedelsförteckningen under de förutsättningar som anges i 3 § andra och tredje styckena lämnas ut till förskrivare eller farmaceut får detta ske på medium för automatiserad behandling. Uppgifter får även lämnas till den registrerade på medium för automatiserad behandling.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När uppgifter i läkemedelsförteckningen under de förutsättningar som anges i 3 § andra och tredje styckena lämnas ut till förskrivare eller farmaceut får detta ske på medium för automatiserad behandling. Uppgifter får även lämnas till den registrerade på medium för automatiserad behandling.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Direktåtkomst",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Förskrivare, legitimerad sjuksköterska utan behörighet att förskriva läkemedel och farmaceut får under de förutsättningar som anges i 3 § andra och tredje styckena ha direktåtkomst till uppgifter i läkemedelsförteckningen. Den registrerade får ha direktåtkomst till uppgifter om sig själv.",
+          "amendedBy": "Lag (2009:393)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Förskrivare, legitimerad sjuksköterska utan behörighet att förskriva läkemedel och farmaceut får under de förutsättningar som anges i 3 § andra och tredje styckena ha direktåtkomst till uppgifter i läkemedelsförteckningen. Den registrerade får ha direktåtkomst till uppgifter om sig själv.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Har upphävts genom\nlag (2018:442)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "lag (2018:442)",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Bevarande och gallring",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Uppgifter skall tas bort ur förteckningen under den femtonde månaden efter den månad de registrerades.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Uppgifter skall tas bort ur förteckningen under den femtonde månaden efter den månad de registrerades.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Information till den registrerade",
+              "role": "HEADING"
+            },
+            {
+              "number": null,
+              "text": "Information som ska lämnas självmant",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Utöver vad som framgår av artiklarna 13 och 14 i EU:s dataskyddsförordning ska den som är personuppgiftsansvarig enligt denna lag lämna information till den registrerade om\n1. vilken typ av uppgifter som ingår i förteckningen,\n2. de tystnadsplikts- och säkerhetsbestämmelser som gäller för förteckningen,\n3. rätten att ta del av uppgifter enligt 11 §,\n4. rätten enligt artikel 82 i EU:s dataskyddsförordning och\nmed kompletterande bestämmelser till EU:s dataskyddsförordning till skadestånd vid behandling av personuppgifter i strid med denna lag,\n5. vad som gäller i fråga om sökbegrepp, direktåtkomst och utlämnande av uppgifter på medium för automatiserad behandling, och\n6. att registreringen inte är frivillig.",
+          "amendedBy": "Lag (2018:442)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utöver vad som framgår av artiklarna 13 och 14 i EU:s dataskyddsförordning ska den som är personuppgiftsansvarig enligt denna lag lämna information till den registrerade om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. vilken typ av uppgifter som ingår i förteckningen,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. de tystnadsplikts- och säkerhetsbestämmelser som gäller för förteckningen,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. rätten att ta del av uppgifter enligt 11 §,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. rätten enligt artikel 82 i EU:s dataskyddsförordning och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "med kompletterande bestämmelser till EU:s dataskyddsförordning till skadestånd vid behandling av personuppgifter i strid med denna lag,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "5. vad som gäller i fråga om sökbegrepp, direktåtkomst och utlämnande av uppgifter på medium för automatiserad behandling, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 6,
+              "text": "6. att registreringen inte är frivillig.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "Information som ska lämnas efter ansökan",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Den registrerade har rätt att när som helst och så fort som möjligt få sådan information som avses i artikel 15 i EU:s dataskyddsförordning.",
+          "amendedBy": "Lag (2018:442)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den registrerade har rätt att när som helst och så fort som möjligt få sådan information som avses i artikel 15 i EU:s dataskyddsförordning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Sekretess",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "I offentlighets- och\nfinns bestämmelser om begränsningar i rätten att lämna ut uppgifter.",
+          "amendedBy": "Lag (2013:621)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I offentlighets- och",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "finns bestämmelser om begränsningar i rätten att lämna ut uppgifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Behörighetstilldelning",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "12a",
+          "heading": null,
+          "content": "E-hälsomyndigheten ska bestämma villkor för tilldelning av behörighet för åtkomst till helt eller delvis automatiskt behandlade uppgifter om kunder. Behörigheten ska begränsas till vad som behövs för att den som arbetar hos myndigheten ska kunna fullgöra sina arbetsuppgifter där.\nRegeringen, eller den myndighet som regeringen bestämmer, får meddela föreskrifter om tilldelning av behörighet för åtkomst till helt eller delvis automatiskt behandlade uppgifter.",
+          "amendedBy": "Lag (2013:1023)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "E-hälsomyndigheten ska bestämma villkor för tilldelning av behörighet för åtkomst till helt eller delvis automatiskt behandlade uppgifter om kunder. Behörigheten ska begränsas till vad som behövs för att den som arbetar hos myndigheten ska kunna fullgöra sina arbetsuppgifter där.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen, eller den myndighet som regeringen bestämmer, får meddela föreskrifter om tilldelning av behörighet för åtkomst till helt eller delvis automatiskt behandlade uppgifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Åtkomstkontroll",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "12b",
+          "heading": null,
+          "content": "E-hälsomyndigheten ska se till att åtkomst till helt eller delvis automatiskt behandlade uppgifter om kunder, dokumenteras så att de kan kontrolleras. Myndigheten ska systematiskt och återkommande kontrollera om någon obehörigen kommer åt sådana uppgifter.\nRegeringen, eller den myndighet som regeringen bestämmer, får meddela föreskrifter om dokumentation och kontroll.",
+          "amendedBy": "Lag (2013:1023)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "E-hälsomyndigheten ska se till att åtkomst till helt eller delvis automatiskt behandlade uppgifter om kunder, dokumenteras så att de kan kontrolleras. Myndigheten ska systematiskt och återkommande kontrollera om någon obehörigen kommer åt sådana uppgifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen, eller den myndighet som regeringen bestämmer, får meddela föreskrifter om dokumentation och kontroll.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "Har upphävts genom\nlag (2018:442)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "lag (2018:442)",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Avgifter",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": null,
+          "content": "E-hälsomyndigheten får ta ut avgifter av öppenvårdsapoteken för att täcka kostnaderna för att föra läkemedelsförteckningen.\nRegeringen, eller den myndighet som regeringen bestämmer, får meddela ytterligare föreskrifter om avgifterna.",
+          "amendedBy": "Lag (2013:1023)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "E-hälsomyndigheten får ta ut avgifter av öppenvårdsapoteken för att täcka kostnaderna för att föra läkemedelsförteckningen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen, eller den myndighet som regeringen bestämmer, får meddela ytterligare föreskrifter om avgifterna.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 2005:258",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2013:11</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2013-11">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2013:11</p>
+      <p class="text">Boverkets allmänna råd (2013:11) om brandbelastning</p>
+    </h1>
+  </div>
+  <div class="body">
+    <h3 id="BFS2013-11_inledning">1 Inledning</h3>
+    
+    <h4 id="BFS2013-11_allmant">1.1 Allmänt</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Detta är allmänna råd till</p>
+      <ul>
+        <li>3 kap. 8 §, plan- och byggförordningen (2011:338), PBF,</li>
+        <li>avsnitt 5 i Boverkets byggregler (2011:6) – föreskrifter och allmänna råd, BBR, och</li>
+        <li>avdelning C, kap. 1.1.2 i Boverkets föreskrifter och allmänna råd (2011:10) om tillämpning av europeiska konstruktionsstandarder (eurokoder), EKS.</li>
+      </ul>
+      <p class="text">De allmänna råden innehåller generella rekommendationer om tillämpningen av föreskrifterna i ovan nämnda författningar och anger hur någon lämpligen kan eller bör handla för att uppfylla föreskrifterna.</p>
+      <p class="text">De allmänna råden kan även innehålla vissa förklarande eller redaktionella upplysningar.</p>
+      <p class="text">De allmänna råden föregås av texten Allmänt råd och är tryckta med mindre och indragen text.</p>
+    </div>
+    
+    <h4 id="BFS2013-11_tillampningsomrade">1.2 Tillämpningsområde</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">De allmänna råden i denna författning kan användas för att bestämma dimensionerande brandbelastning.</p>
+      <p class="text">Brandbelastning kan bestämmas genom</p>
+      <ul>
+        <li>förenklad dimensionering, eller</li>
+        <li>analytisk dimensionering.</li>
+      </ul>
+      <p class="text">Förenklad dimensionering enligt BBR avsnitt 5:111 innebär att tabelldata i kapitel 2 används. Vid analytisk dimensionering enligt BBR avsnitt 5:112 bör beräkningsmetoden i kapitel 3 användas.</p>
+    </div>
+    
+    <h4 id="BFS2013-11_terminologi">1.3 Terminologi</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <table class="legal-table">
+        <caption>Tabell 1 Definitioner av brandtekniska begrepp</caption>
+        <thead>
+          <tr>
+            <th>Brandtekniska begrepp</th>
+            <th>Definition</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Brandbelastning [MJ/(m<sup>2</sup> golvarea)]</td>
+            <td>Med brandbelastning avses brandenergi per golvarea inom ett visst utrymme. Brandbelastning bestäms för den totala mängd energi som kan förbrännas vid ett fullständigt brandförlopp i förhållande till golvarean för aktuellt utrymme. Utrymmet motsvaras normalt av en brandcell.</td>
+          </tr>
+          <tr>
+            <td>Dimensionerande brandbelastning [MJ/(m<sup>2</sup> golvarea)]</td>
+            <td>Den brandbelastning som väljs som dimensionerande värde för att bedöma strukturpåverkan vid brandteknisk dimensionering. Värdet bör ge utrymme för osäkerheter i modellen. Dimensionerande brandbelastning ska motsvara 80 procent percentilen ur ett representativt statistisk material.</td>
+          </tr>
+          <tr>
+            <td>Permanent brandbelastning [MJ/(m<sup>2</sup> golvarea)]</td>
+            <td>Brännbara byggnadsdelar som inte visar någon, eller endast försumbar variation av mängden material och dess förbränningsbeteende under byggnadens ekonomiskt rimliga livslängd.</td>
+          </tr>
+          <tr>
+            <td>Variabel brandbelastning [MJ/(m<sup>2</sup> golvarea)]</td>
+            <td>Brännbart material, som till mängd och förbränningsbeteende, kan variera under byggnadens ekonomiskt rimliga livslängd.</td>
+          </tr>
+          <tr>
+            <td>Brandcell</td>
+            <td>Med brandcell avses en avskild del av en byggnad inom vilken en brand under hela eller delar av ett brandförlopp kan utvecklas utan att sprida sig till andra delar av byggnaden eller andra byggnader.</td>
+          </tr>
+          <tr>
+            <td>Brandenergi [MJ]</td>
+            <td>Potentiell utvecklad värmeenergi under ett fullständigt brandförlopp inom ett definierat område.</td>
+          </tr>
+          <tr>
+            <td>Oskyddad brandenergi [MJ]</td>
+            <td>Oskyddad brandenergi betecknas som brännbara material som inte är skyddade av obrännbara beklädnader, ytskikt, inneslutningar eller genom särskilda lagringsförhållanden (låg temperatur eller hög luftfuktighet).</td>
+          </tr>
+          <tr>
+            <td>Skyddad brandenergi [MJ]</td>
+            <td>Brännbara material som är skyddade mot brandexponering, dvs. att sannolikheten för involvering i ett fullständigt brandförlopp är låg.</td>
+          </tr>
+          <tr>
+            <td>Fullt utvecklad brand</td>
+            <td>Tillstånd i ett brandförlopp efter att övertändning har inträffat.</td>
+          </tr>
+          <tr>
+            <td>Övertändning</td>
+            <td>Stadium av ett brandförlopp i ett slutet utrymme då branden från att ha varit lokalt begränsad inom utrymmet snabbt övergår till att omfatta hela eller största delen av utrymmet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <h3 id="BFS2013-11_bestamning-av-brandbelastning-med-forenklad-dimensionering">2 Bestämning av brandbelastning med förenklad dimensionering</h3>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Vid bestämning av brandbelastning genom förenklad dimensionering bör tabellvärdena i tabell 2 användas. Tabell 2 kan även användas för liknande verksamheter med jämnförbar brandbelastning.</p>
+      
+      <table class="legal-table">
+        <caption>Tabell 2 Brandbelastning för olika verksamheter</caption>
+        <thead>
+          <tr>
+            <th>Brandbelastning f [MJ/m<sup>2</sup>]</th>
+            <th>Verksamhet</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>f ≤ 250</td>
+            <td>Betongvaruindustri och bryggeri i verksamhetsklass 1</td>
+          </tr>
+          <tr>
+            <td>f ≤ 800</td>
+            <td>Biograf, restaurang och teater i verksamhetsklass 2<br>
+            Kontor i verksamhetsklass 1<br>
+            Lokaler i verksamhetsklass 5<br>
+            Personbilsgarage*<br>
+            Skolor och livsmedelsbutiker i verksamhetsklass 2A och 2B<br>
+            Utrymmen i verksamhetsklass 3, 4 och 5B</td>
+          </tr>
+          <tr>
+            <td>f ≤ 1 600</td>
+            <td>Galleria och shoppingcenter i verksamhetsklass 2A och 2B</td>
+          </tr>
+          <tr>
+            <td>f &gt; 1 600</td>
+            <td>Arkiv*<br>
+            Bibliotek*<br>
+            Lager*<br>
+            Utrymmen i verksamhetsklass 6</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text">* oberoende av verksamhetsklass.</p>
+    </div>
+    
+    <h3 id="BFS2013-11_bestamning-av-brandbelastning-med-analytisk-dimensionering">3 Bestämning av brandbelastning med analytisk dimensionering</h3>
+    
+    <h4 id="BFS2013-11_allmant-3">3.1 Allmänt</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Brandbelastningen q kan härledas ur</p>
+      <p class="text">q = 1/A ∑ M<sub>i</sub>H<sub>ui</sub>(m<sub>i</sub>) = ∑ q<sub>i</sub> [MJ/m<sup>2</sup>]</p>
+      <p class="text">där samtliga typer av brandenergi som kan bidra till brandförloppet ingår, där</p>
+      <dl>
+        <dt><strong>M<sub>i</sub></strong></dt>
+        <dd>Mängd brännbart material [kg]</dd>
+        <dt><strong>H<sub>ui</sub></strong></dt>
+        <dd>effektivt förbränningsvärme [MJ/kg], se kapitel 4</dd>
+        <dt><strong>A</strong></dt>
+        <dd>golvarea i det definierade utrymmet [m<sup>2</sup>]</dd>
+        <dt><strong>m<sub>i</sub></strong></dt>
+        <dd>koefficient för förbränningsbeteende [-], se kapitel 3.6</dd>
+      </dl>
+      <p class="text">Brandenergi bör kategoriseras som permanent eller variabel brandenergi samt som skyddad eller oskyddad brandenergi. Kategoriseringen bör ske med hänsyn till den sannolika mängd material som är tillgänglig i händelse av brand och sannolikheten för dess deltagande i brandförloppet eller eventuellt dess fördröjda deltagande i brandförloppet.</p>
+      <p class="text">Dimensionerande brandbelastning kan därmed räknas fram enligt följande ekvation:</p>
+      <p class="text">q<sub>d</sub> = ∑ q<sub>ki</sub> ψ<sub>qi</sub> ψ<sub>pi</sub> [MJ/m<sup>2</sup>]</p>
+      <p class="text">där</p>
+      <dl>
+        <dt><strong>q<sub>d</sub></strong></dt>
+        <dd>dimensionerande brandbelastning</dd>
+        <dt><strong>q<sub>ki</sub></strong></dt>
+        <dd>karakteristiskt värde för brandbelastning för de typer av brandenergi som har beaktats</dd>
+        <dt><strong>ψ<sub>qi</sub></strong></dt>
+        <dd>kombinationskoefficient för variabel och permanent brandenergi</dd>
+        <dt><strong>ψ<sub>pi</sub></strong></dt>
+        <dd>kombinationskoefficient för skyddad och oskyddad brandenergi</dd>
+      </dl>
+    </div>
+    
+    <h4 id="BFS2013-11_permanent-brandbelastning">3.2 Permanent brandbelastning</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Respektive materials permanenta brandbelastning införs i beräkningen genom dess förväntade (nominella) värde q<sub>ni</sub>:</p>
+      <p class="text">q<sub>ki</sub> = q<sub>ni</sub></p>
+      <p class="text">Exempel på permanent brandenergi kan vara fast eller inbyggd brandenergi, såsom brännbart byggnadsmaterial inklusive den bärande konstruktionen, isolering, ytskikt, beklädnad och permanent installerad teknisk utrustning.</p>
+      <p class="text">Om permanent brandbelastning inte är känd kan ett värde på 200 MJ/m<sup>2</sup> användas.</p>
+      <p class="text">Följande värde bör användas</p>
+      <p class="text">ψ<sub>qi</sub> = 1,0.</p>
+    </div>
+    
+    <h4 id="BFS2013-11_variabel-brandbelastning">3.3 Variabel brandbelastning</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Variabel brandenergi införs generellt sett i beräkningen genom materialens karakteristiska värde q<sub>ki</sub> (som motsvarar en specifik fraktil ur ett representativt statistiskt material).</p>
+      <p class="text">Dimensionerande brandbelastning för variabel brandenergi bör med hänsyn till variationer under byggnadens livscykel inte understiga 50 MJ/m<sup>2</sup>.</p>
+      <p class="text">Karakteristiska värden kan specificeras som</p>
+      <p class="text">q<sub>ki</sub> = q<sub>ni</sub> (1 + kV<sub>qi</sub>)</p>
+      <p class="text">för data som representeras av en normalfördelning</p>
+      <p class="text">q<sub>ki</sub> = q<sub>ni</sub> exp(k√(ln(V<sub>qi</sub><sup>2</sup> + 1)))</p>
+      <p class="text">för data som representeras av en lognormalfördelning.</p>
+      <dl>
+        <dt><strong>V<sub>qi</sub></strong></dt>
+        <dd>Variationskoefficent</dd>
+        <dt><strong>k</strong></dt>
+        <dd>Fraktilfaktor</dd>
+        <dt><strong>q<sub>ni</sub></strong></dt>
+        <dd>Förväntade värdet</dd>
+      </dl>
+      <p class="text">Fraktilvärden på minst 80 procent bör användas för att ta hänsyn till osäkerheterna i materialens karakteriska värden.</p>
+      <p class="text">När flera typer av variabel brandenergi förekommer, som kan anses vara oberoende av varandra, kan det osannolika i flera simultant höga värden beaktas genom kombinationskoefficienten ψ<sub>qi</sub>. Då representeras den variabla brandenergins individuella bidrag till den totala brandbelastningen med ψ<sub>qi</sub> och q<sub>ki</sub>. Kombinationskoefficienten ψ<sub>qi</sub> kan härledas i likhet med hur variabla mekaniska laster beaktas.</p>
+      <p class="text">ψ<sub>qi</sub> = 0,8 bör användas vid tillfällen där flera typer av brandenergi förekommer. Formeln nedan kan då anses vara tillräckligt.</p>
+      <p class="text">ψ<sub>qi</sub> q<sub>ki</sub> ≈ q<sub>ni</sub></p>
+      <p class="text">För dominerande brandenergi med stor varians, som kan förekomma i exempelvis industrier, rekommenderas ψ<sub>qi</sub> = 1,0 för den mest ogynnsamma brandenergin.</p>
+      <p class="text">Exempel på variabel brandenergi är lagervaror, flyttbar utrustning, möbler och annan lös inredning.</p>
+      <p class="text">Variabel brandbelastning kan även bestämmas genom tabelldata som bygger på statistisk mätdata, se kapitel 5.</p>
+    </div>
+    
+    <h4 id="BFS2013-11_skyddad-brandenergi">3.4 Skyddad brandenergi</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bedömning av skyddseffekten kräver en uppskattning av sannolikheten för involvering i ett fullständigt brandförlopp, t.ex. som felfrekvens för skyddet i händelse av brand.</p>
+      <p class="text">Brandenergi bör inte betraktas som skyddad utan att detta kan visas genom stöd i relevant litteratur eller genomförda försök.</p>
+    </div>
+    
+    <h4 id="BFS2013-11_oskyddad-brandenergi">3.5 Oskyddad brandenergi</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Följande värde bör användas</p>
+      <p class="text">ψ<sub>pi</sub>=1,0.</p>
+    </div>
+    
+    <h4 id="BFS2013-11_forbrannningsbeteende">3.6 Förbränningsbeteende</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Om förbränningsbeteende ej är känt bör följande värde användas</p>
+      <p class="text">m<sub>i</sub> = 1.</p>
+      <p class="text">Om förbränningsbeteendet är känt kan annat värde på m<sub>i</sub> användas. Förbränningsbeteendet påverkas främst av bränslets förbränningsegenskaper, geometriska egenskaper och position i brandrummet. Även ventilationsförhållandena kan påverka förbränningsbeteendet.</p>
+    </div>
+    
+    <h3 id="BFS2013-11_underlag-till-bestamning-av-brandbelastning">4 Underlag till bestämning av brandbelastning</h3>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Effektivt förbränningsvärme, H<sub>u</sub>, kan bestämmas enligt standarder, t.ex. ISO 1716:2002. Exempel på data presenteras i tabellen nedan. Data i tabell 4 gäller för välventilerade förhållanden och torra fasta material, vätskor och gaser.</p>
+      
+      <table class="legal-table">
+        <caption>Tabell 4 Effektivt förbränningsvärme, H<sub>u</sub>, för brännbara material</caption>
+        <thead>
+          <tr>
+            <th>Fasta material</th>
+            <th>MJ/kg</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cellulosamaterial annat än trä (kläder, bomull, papper, kartong, silke, halm, ull)</td>
+            <td>20</td>
+          </tr>
+          <tr>
+            <td>Kol (antracit, träkol)</td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>Trä</td>
+            <td>18</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <table class="legal-table">
+        <thead>
+          <tr>
+            <th>Kemikalier</th>
+            <th>MJ/kg</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Alkener (etylen, propylen, buten)</td>
+            <td>45</td>
+          </tr>
+          <tr>
+            <td>Alkoholer (metanol, etanol, etylalkohol)</td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>Aromater (benzen, toluen)</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>Bränslen (bensin, diesel)</td>
+            <td>45</td>
+          </tr>
+          <tr>
+            <td>Paraffiner (metan, etan, propan, butan)</td>
+            <td>50</td>
+          </tr>
+          <tr>
+            <td>Ren kolväteplast (polyetylen, polystyren, polypropylen)</td>
+            <td>40</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <table class="legal-table">
+        <thead>
+          <tr>
+            <th>Annat</th>
+            <th>MJ/kg</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ABS (plast)</td>
+            <td>35</td>
+          </tr>
+          <tr>
+            <td>Bitumen, asfalt</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>Gummidäck</td>
+            <td>32</td>
+          </tr>
+          <tr>
+            <td>Läder</td>
+            <td>20</td>
+          </tr>
+          <tr>
+            <td>Linoleum</td>
+            <td>20</td>
+          </tr>
+          <tr>
+            <td>Polyester (plast)</td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>Polyisocyanat, polyisocyanerat och polyuretan (plast)</td>
+            <td>25</td>
+          </tr>
+          <tr>
+            <td>Polyvinylklorid, PVC (plast)</td>
+            <td>20</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <h3 id="BFS2013-11_statistisk-matdata-variabel-brandbelastning">5 Statistisk mätdata, variabel brandbelastning</h3>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Dimensionerande brandbelastning för variabel brandenergi bör med hänsyn till variationer under byggnadens livscykel inte understiga 50 MJ/m<sup>2</sup>.</p>
+      
+      <table class="legal-table">
+        <caption>Tabell 5 Variabel brandbelastning [MJ/m<sup>2</sup>] för olika verksamheter</caption>
+        <thead>
+          <tr>
+            <th>Verksamhet</th>
+            <th>80 % fraktil</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Arkiv</td>
+            <td>1 900</td>
+          </tr>
+          <tr>
+            <td>Bibliotek</td>
+            <td>1 800</td>
+          </tr>
+          <tr>
+            <td>Biltillverkning</td>
+            <td>220</td>
+          </tr>
+          <tr>
+            <td>Biograf</td>
+            <td>370</td>
+          </tr>
+          <tr>
+            <td>Bostad</td>
+            <td>750</td>
+          </tr>
+          <tr>
+            <td>Hotellrum</td>
+            <td>400</td>
+          </tr>
+          <tr>
+            <td>Keramik och glasindustri</td>
+            <td>470</td>
+          </tr>
+          <tr>
+            <td>Kontor</td>
+            <td>520</td>
+          </tr>
+          <tr>
+            <td>Lager av icke brännbart material</td>
+            <td>200</td>
+          </tr>
+          <tr>
+            <td>Metallförädling</td>
+            <td>210</td>
+          </tr>
+          <tr>
+            <td>Metallindustri</td>
+            <td>420</td>
+          </tr>
+          <tr>
+            <td>Parkeringshus</td>
+            <td>400</td>
+          </tr>
+          <tr>
+            <td>Restaurang</td>
+            <td>600</td>
+          </tr>
+          <tr>
+            <td>Shoppingcentrum, exkl. lagerutrymmen</td>
+            <td>750</td>
+          </tr>
+          <tr>
+            <td>Sjukhus (rum)</td>
+            <td>360</td>
+          </tr>
+          <tr>
+            <td>Skola</td>
+            <td>450</td>
+          </tr>
+          <tr>
+            <td>Teater</td>
+            <td>370</td>
+          </tr>
+          <tr>
+            <td>Tillverkning av elektroniska komponenter</td>
+            <td>330</td>
+          </tr>
+          <tr>
+            <td>Trä- och plastförädling</td>
+            <td>420</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p class="text">För lagerutrymmen bör hela lagringshöjden tas med i bestämningen av brandbelastningen.</p>
+    </div>
+  </div>
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <p class="text">Dessa allmänna råd gäller från och med den 1 juli 2013.</p>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">JANNA VALIK</p>
+    <p class="text">Caroline Bernelius Cronsioe</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

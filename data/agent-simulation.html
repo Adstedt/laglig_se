@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Simulation — Laglig.se</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #f8f9fa;
+      color: #1a1a2e;
+      line-height: 1.6;
+      padding: 2rem;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { font-size: 1.25rem; color: #64748b; margin-bottom: 1.5rem; font-weight: 500; }
+    .stats {
+      display: flex; gap: 1.5rem; margin-bottom: 1.5rem; font-size: 0.8rem; color: #94a3b8;
+    }
+    .stats span { background: #e2e8f0; padding: 0.25rem 0.75rem; border-radius: 999px; }
+    .bubble {
+      padding: 1rem 1.25rem;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+      max-width: 90%;
+    }
+    .user-bubble {
+      background: #2563eb;
+      color: white;
+      margin-left: auto;
+      border-bottom-right-radius: 0.25rem;
+    }
+    .tool-trace {
+      background: #1e293b;
+      color: #94e2d5;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.78rem;
+      padding: 1rem 1.25rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+    .tool-trace .label { color: #f59e0b; font-weight: 600; }
+    .agent-bubble {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-bottom-left-radius: 0.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .agent-bubble h2 { font-size: 1.15rem; margin: 1.25rem 0 0.5rem; color: #1e293b; }
+    .agent-bubble h3 { font-size: 1rem; margin: 1rem 0 0.4rem; color: #334155; }
+    .agent-bubble ul, .agent-bubble ol { padding-left: 1.5rem; margin: 0.4rem 0; }
+    .agent-bubble li { margin: 0.2rem 0; }
+    .agent-bubble strong { color: #0f172a; }
+    .agent-bubble p { margin: 0.5rem 0; }
+    .role-label {
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; margin-bottom: 0.35rem; color: #94a3b8;
+    }
+    .user-label { text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Agent Simulation — Laglig.se</h1>
+
+    <div class="stats">
+      <span>claude-sonnet-4</span>
+      <span>3 steg</span>
+      <span>28.0s</span>
+      <span>2 tool calls</span>
+    </div>
+
+    <div class="role-label user-label">Användare</div>
+    <div class="bubble user-bubble">Vilka krav ställs på arbetsgivaren kring kemikaliehantering?</div>
+
+    <div class="role-label">Verktygsanrop</div>
+    <div class="tool-trace"><span class="label">→</span> search_laws(undefined)
+<span class="label">→</span> search_laws(undefined)</div>
+
+    <div class="role-label">Laglig AI-assistent</div>
+    <div class="bubble agent-bubble" id="agent-response"></div>
+  </div>
+
+  <script>
+    const md = "Baserat på informationen från Arbetsmiljöverkets föreskrifter och allmänna råd om risker i arbetsmiljön (AFS 2023:10) kan jag sammanfatta de huvudsakliga kraven på arbetsgivaren kring kemikaliehantering:\n\n## Grundläggande skyldigheter för arbetsgivaren vid kemikaliehantering\n\n### 1. Undersökning och identifiering\nEnligt **AFS 2023:10 kap. 7 § 5** ska arbetsgivaren:\n- Undersöka om det hanteras eller bildas kemiska riskkällor i verksamheten\n- Se till att **inget arbete påbörjas innan** en riskbedömning är gjord och nödvändiga åtgärder vidtagits\n- Genomföra ny undersökning och riskbedömning om ny information om risker kommer fram\n\n### 2. Förteckning över kemiska riskkällor\nEnligt **§ 6** ska arbetsgivaren förteckna alla kemiska riskkällor och ange:\n- Namn (samma som vid märkning)\n- Farliga egenskaper\n- Var de förvaras, används eller bildas\n- Om det finns hygieniska gränsvärden\n- Vilka specifika arbetsmiljöbestämmelser som gäller\n\n### 3. Riskbedömning\nEnligt **§§ 7-9** ska arbetsgivaren vid riskbedömningen:\n- Använda säkerhetsdatablad och annan information från leverantörer\n- Ta hänsyn till ämnets farliga egenskaper, mängder, exponeringsnivåer och varaktighet\n- Bedöma konsekvenser, reaktioner med andra ämnen och samverkande effekter\n- Omfatta risker för inandning, hud-/ögonkontakt, brand, explosion och syrefattig miljö\n\n### 4. Åtgärdspriortering\nEnligt **§ 13** ska åtgärder väljas i följande prioritetsordning:\n1. **Eliminera** risken\n2. **Byta** till mindre farlig kemikalie eller metod  \n3. **Minimera** exponeringen genom slutna system\n4. **Begränsa** risken genom val av arbetsmetoder och teknik\n5. **Processventilation** och tekniska skyddsåtgärder\n6. **Organisera** arbetet så få som möjligt exponeras\n7. **Personlig skyddsutrustning** (sista utvägen)\n\n### 5. Dokumentation\nEnligt **§ 12** ska arbetsgivaren skriftligt dokumentera:\n- Resultatet av riskbedömningen\n- Valda åtgärder och deras förväntade effekter\n- Vilka delar av verksamheten som ingått\n- Skyddsåtgärder för olika situationer\n- Beredskap för olycksfall\n- Ansvariga personer och tidplan\n\n### 6. Information och instruktioner\nEnligt **§§ 22-23** ska arbetsgivaren:\n- Ta fram skriftliga hanterings- och skyddsinstruktioner (utom vid enkel hantering)\n- Informera berörda arbetstagare om hälso- och olycksfallsrisker\n- Se till att instruktioner och relevant dokumentation är tillgänglig\n- Försäkra sig om att arbetstagarna förstått instruktionerna\n\n### 7. Praktiska skyddsåtgärder\nEnligt **§ 17** ska arbetsgivaren vidta åtgärder för att förhindra skador genom:\n- Hålla behållare och utrustning rena utvändigt\n- Använda ögonskydd vid risk för stänk eller ångor\n- Byta kontaminerade arbets- och skyddskläder\n- Säkerställa att mat/dryck inte tillagas där kemiska riskkällor kan orsaka ohälsa\n\nDessa krav baseras på **Arbetsmiljöverkets föreskrifter AFS 2023:10** som är bindande för alla arbetsgivare som hanterar kemiska riskkällor i Sverige.";
+    document.getElementById('agent-response').innerHTML = marked.parse(md);
+  </script>
+</body>
+</html>

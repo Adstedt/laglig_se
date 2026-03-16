@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2017:2</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2017-2">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2017:2</p>
+      <p class="text">Boverkets föreskrifter om statsbidrag till allmänna samlingslokaler</p>
+    </h1>
+  </div>
+  <div class="body">
+    <h3 id="BFS2017-2_inledning">Inledning</h3>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P1" name="BFS2017-2_P1">1 §</a>
+    </h3>
+    <p class="text">Denna författning innehåller föreskrifter till förordningen (2016:1367) om statsbidrag till allmänna samlingslokaler.</p>
+    <p class="text">Termer och begrepp som inte särskilt definieras i denna författning används i samma betydelse som i förordningen.</p>
+
+    <h3 id="BFS2017-2_ansokan-om-bidrag">Ansökan om bidrag</h3>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P2" name="BFS2017-2_P2">2 §</a>
+    </h3>
+    <p class="text">Ansökan om bidrag ska vara skriftlig och göras på blankett som Boverket har fastställt. Sökanden, eller behörig företrädare för denne, ska underteckna blanketten och lämna de uppgifter som anges.</p>
+
+    <h3 id="BFS2017-2_bidragsunderlag">Bidragsunderlag</h3>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P3" name="BFS2017-2_P3">3 §</a>
+    </h3>
+    <p class="text">Bidragsunderlaget beräknas på samlingslokalens hela yta efter det att byggnadsprojekt genomförts.</p>
+    <p class="text">Utrymmen för samlingslokalens skötsel är expedition samt städ- och personalutrymmen.</p>
+    <p class="text">Om en befintlig samlingslokal består av utrymmen som inte längre är användbara som samlingslokal kan hänsyn tas till detta när bidragsunderlaget beräknas.</p>
+
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P4" name="BFS2017-2_P4">4 §</a>
+    </h3>
+    <p class="text">Om lokalens yta vid sådant köp, ny- eller tillbyggnad som avses i 8 § första stycket 1 och 2 förordningen överstiger 1 000 m<sup>2</sup> utgör bidragsunderlaget kostnaden per m<sup>2</sup> för hela ytan multiplicerat med 1 000.</p>
+
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P5" name="BFS2017-2_P5">5 §</a>
+    </h3>
+    <p class="text">I bidragsunderlaget för sådana åtgärder som avses i 8 § första stycket 1, 2 och 3 förordningen får, utöver skäliga faktiska kostnader för byggnadsåtgärder, inräknas skäligt värde av eget arbete, dock högst 20 procent av underlaget.</p>
+    <p class="text">Boverket fastställer genom särskilt beslut skäligt värde av eget arbete.</p>
+
+    <h3 id="BFS2017-2_besiktningsman">Besiktningsman</h3>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P6" name="BFS2017-2_P6">6 §</a>
+    </h3>
+    <p class="text">Besiktning får genomföras av certifierad kontrollansvarig enligt 10 kap. 9 §, sakkunnig funktionskontrollant enligt 8 kap. 25 §, certifierad sakkunnig enligt 10 kap. 8 § 2 plan- och bygglagen (2010:900) eller ackrediterat besiktningsorgan enligt 5 kap. 10 § plan- och byggförordningen (2011:338).</p>
+    <p class="text">Besiktningsmannen ska ha en självständig ställning i förhållande sökanden och till den som utför den åtgärd som ska kontrolleras.</p>
+
+    <h3 id="BFS2017-2_bestammelser-om-investeringsbidrag">Bestämmelser om investeringsbidrag</h3>
+    
+    <h4 id="BFS2017-2_projektets-paborjande">Projektets påbörjande</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P7" name="BFS2017-2_P7">7 §</a>
+    </h3>
+    <p class="text">Med tidpunkten för påbörjande för sådana åtgärder som avses i 8 § förordningen avses i fråga om nybyggnad och tillbyggnad den tidpunkt då gjutning av källarlösa hus, källarmurar eller grundplattor under dessa påbörjas. Däremot räknas inte schaktning, sprängning, pålning, utfyllning, formsättning för plintar och grundplattor, gjutning av plintar och dylikt som påbörjande i detta avseende.</p>
+    <p class="text">Med tidpunkten för påbörjande avses i fråga om ombyggnad den tidpunkt där rivnings- eller röjningsarbete påbörjas. Byggnadsarbetena ska dock inte anses påbörjade, om endast mindre rivningsarbeten utförts för att undersöka byggnadens skick inför ombyggnaden.</p>
+
+    <h4 id="BFS2017-2_provning-av-en-ansokan-om-bidrag">Prövning av en ansökan om bidrag</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P8" name="BFS2017-2_P8">8 §</a>
+    </h3>
+    <p class="text">Ansökningar om investeringsbidrag som har kommit in till Boverket senast den 1 december prövas vid ett tillfälle före utgången av maj månad följande år.</p>
+
+    <h4 id="BFS2017-2_underlag-for-provning-av-en-ansokan-om-bidrag">Underlag för prövning av en ansökan om bidrag</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P9" name="BFS2017-2_P9">9 §</a>
+    </h3>
+    <p class="text">Följande handlingar ska bifogas ansökan om investeringsbidrag</p>
+    <ul>
+      <li>Nödvändiga behörighetshandlingar.</li>
+      <li>Redovisning av övriga allmänna samlingslokaler i upptagningsområdet.</li>
+      <li>Karta där allmänna samlingslokaler är markerade inklusive sökandens.</li>
+      <li>Antal invånare i upptagningsområdet ska anges.</li>
+      <li>Sökandens stadgar, bolagsordning eller motsvarande handling.</li>
+      <li>Handlingar som visar byggnadens utformning, företrädesvis skalenliga eller mätbara plan-, sektion- och fasadritningar och situationsplan.</li>
+      <li>Nyttjanderättsavtal, om sökanden inte själv äger lokalen eller marken.</li>
+      <li>Kommunens protokollsutdrag eller annan handling där det framgår att kommunen har åtagit sig att medverka i finansieringen av projektet med minst 30 procent av det bidragsunderlag som fastställs i ärendet.</li>
+    </ul>
+    <p class="text">För det fall sökanden är bokföringsskyldig ska det senast upprättade förenklade årsbokslutet, årsbokslutet eller årsredovisningen bifogas ansökan. Är sökanden inte bokföringsskyldig ska den senast upprättade räkenskapssammanställningen bifogas ansökan.</p>
+    <p class="text">För det fall sökanden upprättar verksamhetsberättelse ska den senast upprättade verksamhetsberättelsen bifogas ansökan.</p>
+
+    <h4 id="BFS2017-2_besiktningsprotokoll-och-kostnadsredovisning">Besiktningsprotokoll och kostnadsredovisning</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P10" name="BFS2017-2_P10">10 §</a>
+    </h3>
+    <p class="text">Besiktningsprotokollet ska visa att nödvändiga kontroller genomförts och att byggnadsprojektet uppfyller kraven i gällande bygglagstiftning.</p>
+    <p class="text">Kostnadsredovisningen ska visa summan av de i projektet nedlagda kostnaderna. I de fall både bidragsberättigade åtgärder och inte bidragsberättigade åtgärder har genomförts, ska kostnaderna delas upp.</p>
+
+    <h4 id="BFS2017-2_slutredovisning">Slutredovisning</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P11" name="BFS2017-2_P11">11 §</a>
+    </h3>
+    <p class="text">Den som har tagit emot investeringsbidrag ska lämna en slutredovisning av projektet vid den tidpunkt som fastställs i bidragsbeslutet. Slutredovisningen ska vara skriftlig och göras på blankett som Boverket har fastställt. Sökanden, eller behörig företrädare för denne, ska underteckna blanketten och lämna de uppgifter som anges. Slutredovisningen ska innehålla en skriftlig redogörelse av de insatser som genomförts och hur uppsatta mål för projektet har uppnåtts.</p>
+    <p class="text">Till slutredovisningen ska fogas besiktningsprotokoll och kostnadsredovisning enligt 10 §.</p>
+
+    <h3 id="BFS2017-2_bestammelser-om-verksamhetsutvecklingsbidrag">Bestämmelser om verksamhetsutvecklingsbidrag</h3>
+    
+    <h4 id="BFS2017-2_provning-av-en-ansokan-om-bidrag-2">Prövning av en ansökan om bidrag</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P12" name="BFS2017-2_P12">12 §</a>
+    </h3>
+    <p class="text">Ansökningar om verksamhetsutvecklingsbidrag som har kommit in till Boverket senast den 31 augusti prövas vid ett tillfälle före utgången av december månad samma år.</p>
+
+    <h4 id="BFS2017-2_underlag-for-provning-av-en-ansokan-om-bidrag-2">Underlag för prövning av en ansökan om bidrag</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P13" name="BFS2017-2_P13">13 §</a>
+    </h3>
+    <p class="text">Följande handlingar ska bifogas ansökan om verksamhetsutvecklingsbidrag.</p>
+    <ul>
+      <li>Nödvändiga behörighetshandlingar.</li>
+      <li>Redovisning av övriga allmänna samlingslokaler i upptagningsområdet.</li>
+      <li>Karta där allmänna samlingslokaler är markerade inklusive sökandens.</li>
+      <li>Antal invånare i upptagningsområdet.</li>
+      <li>Handlingar som visar byggnadens eller utomhusmiljöns utformning, företrädesvis skalenliga eller mätbara plan-, sektion- och fasadritningar och situationsplan.</li>
+      <li>Sökandens stadgar, bolagsordning eller motsvarande handling.</li>
+      <li>Nyttjanderättsavtal, om sökanden inte själv äger lokalen eller marken.</li>
+    </ul>
+    <p class="text">För det fall sökanden är bokföringsskyldig ska det senast upprättade förenklade årsbokslutet, årsbokslutet eller årsredovisningen bifogas ansökan. Är sökanden inte bokföringsskyldig ska den senast upprättade räkenskapssammanställningen bifogas ansökan.</p>
+    <p class="text">För det fall sökanden upprättar verksamhetsberättelse ska den senast upprättade verksamhetsberättelsen bifogas ansökan.</p>
+
+    <h4 id="BFS2017-2_besiktningsprotokoll-2">Besiktningsprotokoll</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P14" name="BFS2017-2_P14">14 §</a>
+    </h3>
+    <p class="text">Om Boverket beslutat att ett byggnadsprojekt enligt 13 § första stycket 1 förordningen ska besiktas ska besiktningsprotokollet visa att nödvändiga kontroller genomförts och att byggnadsprojektet uppfyller kraven i gällande bygglagstiftning.</p>
+
+    <h4 id="BFS2017-2_kostnadsredovisning">Kostnadsredovisning</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P15" name="BFS2017-2_P15">15 §</a>
+    </h3>
+    <p class="text">Kostnadsredovisningen ska visa summan av de i projektet nedlagda kostnaderna. I de fall både bidragsberättigade åtgärder och inte bidragsberättigade åtgärder har genomförts, ska kostnaderna delas upp.</p>
+
+    <h4 id="BFS2017-2_slutredovisning-2">Slutredovisning</h4>
+    
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2017-2_P16" name="BFS2017-2_P16">16 §</a>
+    </h3>
+    <p class="text">Den som ha tagit emot verksamhetsutvecklingsbidrag ska lämna en slutredovisning av projektet vid den tidpunkt som fastställs i bidragsbeslutet. Slutredovisningen ska vara skriftlig och göras på blankett som Boverket har fastställt. Sökanden, eller behörig företrädare för denne, ska underteckna blanketten och lämna de uppgifter som anges. Slutredovisningen ska innehålla en skriftlig redogörelse av de insatser som genomförts och hur uppsatta mål för projektet har uppnåtts.</p>
+    <p class="text">För sådana åtgärder som avses i 13 § första stycket 1 förordningen ska till slutredovisningen fogas kostnadsredovisning enligt 15 §.</p>
+    <p class="text">I förekommande fall ska till slutredovisningen fogas besiktningsprotokoll enligt 14 §.</p>
+  </div>
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <ol type="1">
+      <li>Denna författning träder i kraft den 1 maj 2017.</li>
+      <li>Genom föreskrifterna upphävs Boverkets föreskrifter och allmänna råd (1997:25) om bidrag till allmänna samlingslokaler.</li>
+      <li>Äldre föreskrifter gäller fortfarande för ansökningar som kommit in till Boverket före den 1 februari 2017.</li>
+    </ol>
+  </footer>
+</article></body></html>
+</body>
+</html>

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2025:1</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2025-1">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2025:1</p>
+      <p class="text">Boverkets föreskrifter om regionplan</p>
+    </h1>
+    <p class="text">Utkom från trycket den 4 april 2025</p>
+    <p class="text">beslutade den 4 april 2025.</p>
+  </div>
+  <div class="body">
+    <p class="text">Boverket föreskriver<sup class="footnote-ref" data-note="1" title="Se Europaparlamentets och rådets direktiv (EU) 2015/1535 av den 9 september 2015 om ett informationsförfarande beträffande tekniska föreskrifter och beträffande föreskrifter för informationssamhällets tjänster (kodifiering). EUT L 241, 17.9.2015, s. 1–15. Celex 32015L1535.">1</sup> följande med stöd av 10 kap. 31 § plan- och byggförordningen (2011:338).</p>
+
+    <section class="kapitel" id="BFS2025-1_K1">
+      <h2 class="kapitel-rubrik">1 kap. Innehåll och definitioner</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K1_P1" name="BFS2025-1_K1_P1">1 §</a>
+      </h3>
+      <p class="text">Författningen innehåller föreskrifter om digital identifikation av regionplanens information.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K1_P2" name="BFS2025-1_K1_P2">2 §</a>
+      </h3>
+      <p class="text">Författningen gäller för regionplan och ändring av en sådan plan.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K1_P3" name="BFS2025-1_K1_P3">3 §</a>
+      </h3>
+      <p class="text">I denna författning avses med</p>
+      <p class="text"><em>digital information:</em> regionplanens uppgifter i digitalt format, och</p>
+      <p class="text"><em>lägesbestämd:</em> koordinatsatt geometri som punkt, linje, yta eller volym.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2025-1_K2">
+      <h2 class="kapitel-rubrik">2 kap. Övergripande bestämmelser</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K2_P1" name="BFS2025-1_K2_P1">1 §</a>
+      </h3>
+      <p class="text">Regionplanen ska vara lägesbestämd.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K2_P2" name="BFS2025-1_K2_P2">2 §</a>
+      </h3>
+      <p class="text">För regionplanen ska följande information redovisas</p>
+      <ol type="1">
+        <li>regionens namn,</li>
+        <li>antagandebeslutets diarienummer, och</li>
+        <li>datum när antagandebeslutet fick laga kraft.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K2_P3" name="BFS2025-1_K2_P3">3 §</a>
+      </h3>
+      <p class="text">Skyldigheterna enligt 2 kap. 5 c § plan- och byggförordningen (2011:338) gäller inte för sådan lägesbestämd digital information i regionplanen som aggregerad kan äventyrar rikets säkerhet.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2025-1_K3">
+      <h2 class="kapitel-rubrik">3 kap. Identifikation av regionplanens innehåll</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K3_P1" name="BFS2025-1_K3_P1">1 §</a>
+      </h3>
+      <p class="text">Information som ska framgå av en regionplan ska identifieras enligt tabellerna i 2–8 §§.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K3_P2" name="BFS2025-1_K3_P2">2 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabell 1 kolumn 2 ska identifieras enligt kolumn 1.</p>
+      <p class="text">Information om grunddrag för användningen av mark- och vattenområden ska vara lägesbestämd till den del av länet som användningen berör.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 1 Grunddrag för användningen av mark- och vattenområden</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Grunddrag för användningen</td>
+            <td>Grunddrag för mark- och vattenanvändningen som har betydelse för länet.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K3_P3" name="BFS2025-1_K3_P3">3 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabell 2 kolumn 2 ska identifieras enligt kolumn 1.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2 Riktlinjer för lokalisering av bebyggelse och byggnadsverk</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Riktlinjer för lokalisering</td>
+            <td>Riktlinjer för lokaliseringen av bebyggelse och byggnadsverk som har betydelse för länet.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K3_P4" name="BFS2025-1_K3_P4">4 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabellerna 3–5 kolumn 2 ska identifieras enligt kolumn 1.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 3 Allmänna intressen</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Allmänna intressen</td>
+            <td>Hur regionen har tagit hänsyn till allmänna intressen enligt 2 kap. plan- och bygglagen (2010:900).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 4 Riksintressen enligt 3 kap. 5–9 §§ och 4 kap. 2–8 §§ miljöbalken</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rennäring</td>
+            <td>Mark- och vattenområde som är av riksintresse för rennäringen enligt 3 kap. 5 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Yrkesfiske</td>
+            <td>Mark- och vattenområde som är av riksintresse för yrkesfisket enligt 3 kap. 5 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Naturvård</td>
+            <td>Mark- och vattenområde samt fysisk miljö i övrigt som är av riksintresse för naturvården enligt 3 kap. 6 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Kulturmiljövård</td>
+            <td>Mark- och vattenområde samt fysisk miljö i övrigt som är av riksintresse för kulturmiljövården enligt 3 kap. 6 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Friluftsliv</td>
+            <td>Mark- och vattenområde samt fysisk miljö i övrigt som är av riksintresse för friluftslivet enligt 3 kap. 6 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Fyndigheter av ämnen eller material</td>
+            <td>Område som innehåller fyndigheter av ämnen eller material som är av riksintresse enligt 3 kap. 7 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för industriell produktion</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för industriell produktion enligt 3 kap. 8 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för energiproduktion</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för energiproduktion enligt 3 kap. 8 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för energidistribution</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för energidistribution enligt 3 kap. 8 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för kommunikation, elektronisk</td>
+            <td>Mark- och vattenområde som är särskilt lämplig för anläggning för elektronisk kommunikation enligt 3 kap. 8 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för kommunikation, trafikslagen</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för kommunikation gällande trafikslagen enligt 3 kap. 8 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för vattenförsörjning</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för vattenförsörjning enligt 3 kap. 8 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för avfallshantering</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för avfallshantering enligt 3 kap. 8 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för slutlig förvaring av använt kärnbränsle och kärnavfall</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för slutlig förvaring av använt kärnbränsle och kärnavfall enligt 3 kap. 8 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggningar för totalförsvaret</td>
+            <td>Mark- och vattenområde som är av riksintresse för totalförsvarets anläggningar enligt 3 kap. 9 § miljöbalken och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Turism och rörligt friluftsliv</td>
+            <td>Område enligt 4 kap. 2 § miljöbalken, där turismens och det rörliga friluftslivets intressen särskilt ska beaktas vid bedömningen av tillåtligheten av exploateringsföretag och andra ingrepp i miljön, och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Obruten kust</td>
+            <td>Kustområde och skärgård enligt 4 kap. 3 § miljöbalken, där vissa anläggningar inte får komma till stånd, och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Högexploaterad kust</td>
+            <td>Kustområde och skärgård enligt 4 kap. 4 § miljöbalken, där fritidsbebyggelse endast får komma till stånd i form av kompletteringar till befintlig bebyggelse, och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Obrutet fjäll</td>
+            <td>Fjällområde enligt 4 kap. 5 § miljöbalken, där bebyggelse och anläggningar får komma till stånd endast om det behövs för rennäringen, den bofasta befolkningen, den vetenskapliga forskningen eller det rörliga friluftslivet, och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Skyddat vattendrag</td>
+            <td>Vattendrag enligt 4 kap. 6 § miljöbalken, där vattenkraftverk samt vattenreglering eller vattenöverledning för kraftändamål inte får utföras, och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Nationalstadspark</td>
+            <td>Område enligt 4 kap. 7 § miljöbalken, där ny bebyggelse och nya anläggningar endast får komma till stånd och andra åtgärder vidtas om det kan ske utan intrång i parklandskap eller naturmiljö och utan att det historiska landskapets natur- och kulturvärden i övrigt skadas, och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Natura 2000, vilda fåglar</td>
+            <td>Område enligt 4 kap. 8 § miljöbalken, som har förtecknats som särskilt skyddsområde för bevarande av vilda fåglar och kräver tillstånd för verksamheter eller åtgärder, och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Natura 2000, livsmiljöer, vilda djur och växter</td>
+            <td>Område enligt 4 kap. 8 § miljöbalken, som har förtecknats som särskilt bevarandeområde för bevarande av livsmiljöer samt vilda djur och växter och kräver tillstånd för verksamheter eller åtgärder, och hur regionen har tillgodosett riksintresset.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 5 Miljökvalitetsnormer enligt 5 kap. miljöbalken</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fisk- och musselvatten</td>
+            <td>Hur regionen har följt miljökvalitetsnorm enligt förordningen (2001:554) om miljökvalitetsnormer för fisk- och musselvatten.</td>
+          </tr>
+          <tr>
+            <td>Havsmiljö</td>
+            <td>Hur regionen har följt miljökvalitetsnorm enligt havsmiljöförordningen (2010:1341).</td>
+          </tr>
+          <tr>
+            <td>Omgivningsbuller</td>
+            <td>Hur regionen har följt miljökvalitetsnorm enligt förordningen (2004:675) om omgivningsbuller.</td>
+          </tr>
+          <tr>
+            <td>Utomhusluft</td>
+            <td>Hur regionen har följt miljökvalitetsnorm enligt luftkvalitetsförordningen (2010:477).</td>
+          </tr>
+          <tr>
+            <td>Vattenkvalitet</td>
+            <td>Hur regionen har följt miljökvalitetsnorm enligt vattenförvaltningsförordningen (2004:660).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K3_P5" name="BFS2025-1_K3_P5">5 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabellerna 6–10 kolumn 2 ska identifieras enligt kolumn 1.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 6 Regional utvecklingsstrategi</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Regional utvecklingsstrategi</td>
+            <td>Hur regionen har tagit hänsyn till och samordnat regionplanen med den regionala utvecklingsstrategin.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 7 Länsplan för regional transportinfrastruktur</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Länsplan för regional transportinfrastruktur</td>
+            <td>Hur regionen har tagit hänsyn till och samordnat regionplanen med länsplanen för regional transportinfrastruktur.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 8 Trafikförsörjningsprogram</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Trafikförsörjningsprogram</td>
+            <td>Hur regionen har tagit hänsyn till och samordnat regionplanen med trafikförsörjningsprogram.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 9 Kommunala handlingsplaner för bostadsförsörjningen</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Handlingsplaner för bostadsförsörjningen</td>
+            <td>Hur regionen har tagit hänsyn till och samordnat regionplanen med kommunala handlingsplaner för bostadsförsörjningen.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 10 Mål, planer och program</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nationella mål, planer och program</td>
+            <td>Hur regionen har tagit hänsyn till och samordnat regionplanen med nationella mål, planer och program av betydelse för en hållbar utveckling i länet.</td>
+          </tr>
+          <tr>
+            <td>Regionala mål, planer och program</td>
+            <td>Hur regionen har tagit hänsyn till och samordnat regionplanen med andra regionala mål, planer och program av betydelse för en hållbar utveckling i länet.</td>
+          </tr>
+          <tr>
+            <td>Kommunala mål, planer och program</td>
+            <td>Hur regionen har tagit hänsyn till och samordnat regionplanen med kommunala mål, planer och program av betydelse för en hållbar utveckling i länet.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K3_P6" name="BFS2025-1_K3_P6">6 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabell 11 kolumn 2 ska identifieras enligt kolumn 1.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 11 Genomförande av regionplan</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Genomförande</td>
+            <td>Hur regionplanen är avsedd att genomföras.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K3_P7" name="BFS2025-1_K3_P7">7 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabell 12 kolumn 2 ska identifieras enligt kolumn 1.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 12 Konsekvenser</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Miljökonsekvenser</td>
+            <td>Redovisning av miljökonsekvenser enligt 3 kap. 6 b § plan- och bygglagen (2010:900).</td>
+          </tr>
+          <tr>
+            <td>Planens konsekvenser</td>
+            <td>Regionplanens konsekvenser enligt 7 kap. 4 § plan- och bygglagen (2010:900).</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2025-1_K3_P8" name="BFS2025-1_K3_P8">8 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabell 13 kolumn 2 ska identifieras enligt kolumn 1.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 13 Invändningar i länsstyrelsens granskningsyttrande</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Invändning riksintresse</td>
+            <td>Förslaget tillgodoser inte ett riksintresse enligt 3 eller 4 kap. miljöbalken.</td>
+          </tr>
+          <tr>
+            <td>Invändning miljökvalitetsnorm</td>
+            <td>Förslaget kan medverka till att en miljökvalitetsnorm enligt 5 kap. miljöbalken inte följs.</td>
+          </tr>
+          <tr>
+            <td>Invändning mellankommunala frågor</td>
+            <td>Frågor om användningen av mark- och vattenområden som angår två eller flera kommuner samordnas inte på ett lämpligt sätt.</td>
+          </tr>
+          <tr>
+            <td>Invändning hälsa och säkerhet</td>
+            <td>En bebyggelse blir olämplig eller ett byggnadsverk olämpligt med hänsyn till människors hälsa eller säkerhet eller till risken för olyckor, översvämning eller erosion.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <ol type="1">
+      <li>Denna författning träder i kraft den 1 maj 2025.</li>
+      <li>Författningen ska tillämpas på regionplaner som påbörjas efter den 31 december 2026.</li>
+    </ol>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">ANDERS SJELVGREN</p>
+    <p class="text">Anna Ekman</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

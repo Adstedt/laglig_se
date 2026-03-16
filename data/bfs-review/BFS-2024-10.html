@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2024:10</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2024-10">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2024:10</p>
+      <p class="text">Boverkets föreskrifter om skydd mot buller i byggnader</p>
+    </h1>
+  </div>
+  <div class="body">
+    <p class="text">Utkom från trycket den 20 november 2024</p>
+    <p class="text">beslutade den 19 november 2024.</p>
+    <p class="text">Boverket föreskriver<sup class="footnote-ref" data-note="1" title="Se Europaparlamentets och rådets direktiv (EU) 2015/1535 av den 9 september 2015 om ett informationsförfarande beträffande tekniska föreskrifter och beträffande föreskrifter för informationssamhällets tjänster.">1</sup> följande med stöd av 10 kap. 3 § 6, 8 § och 24 § 1 plan-och byggförordningen (2011:338).</p>
+
+    <section class="kapitel" id="BFS2024-10_K1">
+      <h2 class="kapitel-rubrik">1 kap. Övergripande bestämmelser</h2>
+
+      <h3 id="BFS2024-10_forfattningens-innehall">Författningens innehåll</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P1" name="BFS2024-10_K1_P1">1 kap. 1 §</a>
+      </h3>
+      <p class="text">Denna författning innehåller föreskrifter till tekniska egenskapskrav avseende skydd mot buller enligt 3 kap. 13 § plan- och byggförordningen (2011:338).</p>
+      <p class="text">Författningen innehåller också föreskrifter om anpassning av de tekniska egenskapskraven vid ändring av byggnader enligt 8 kap. 7 § plan- och bygglagen (2010:900) och om kontroll enligt 10 kap. 5 § samma lag.</p>
+
+      <h3 id="BFS2024-10_foreskrifternas-tillampningsomrade">Föreskrifternas tillämpningsområde</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P2" name="BFS2024-10_K1_P2">1 kap. 2 §</a>
+      </h3>
+      <p class="text">Föreskrifterna i 1 kap. gäller vid uppförande av nya byggnader och vid ändring av byggnader för den ändrade delen.</p>
+      <p class="text">Föreskrifterna i 2 kap. gäller vid uppförande av nya byggnader.</p>
+      <p class="text">Föreskrifterna i 3 kap. gäller vid ändring av byggnader.</p>
+
+      <h3 id="BFS2024-10_mindre-avvikelse-fran-foreskrifterna-i-denna-forfattning">Mindre avvikelse från föreskrifterna i denna författning</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P3" name="BFS2024-10_K1_P3">1 kap. 3 §</a>
+      </h3>
+      <p class="text">Mindre avvikelse får göras från föreskrifterna i denna författning i enskilda fall om</p>
+      <ol type="1">
+        <li>det finns särskilda skäl,</li>
+        <li>byggnaden ändå kan antas bli tekniskt tillfredsställande, och</li>
+        <li>det inte finns någon avsevärd olägenhet från annan synpunkt.</li>
+      </ol>
+      <p class="text">Om mindre avvikelse enligt första stycket tillämpas ska skälen för detta dokumenteras i samband med den projektering som regleras i 8 §.</p>
+
+      <h3 id="BFS2024-10_definitioner">Definitioner</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P4" name="BFS2024-10_K1_P4">1 kap. 4 §</a>
+      </h3>
+      <p class="text">Termer och uttryck i denna författning har samma betydelse som i plan- och bygglagen (2010:900) och plan- och byggförordningen (2011:338).</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P5" name="BFS2024-10_K1_P5">1 kap. 5 §</a>
+      </h3>
+      <p class="text">I denna författning avses med</p>
+      <dl>
+        <dt><strong>boendeenhet:</strong></dt>
+        <dd>del av en bostad som är upplåten för enskilt bruk i bostäder där vissa bostadsfunktioner delas,</dd>
+        <dt><strong>D<sub>nT,w,100</sub>:</strong></dt>
+        <dd>vägd ljudnivåskillnad med spektrumanpassningsterm i tersbanden 100 Hz till 3 150 Hz, ett förkortat skrivsätt för D<sub>nT,w</sub> + C<sub>100-3150</sub> vid efterklangstid T<sub>ref</sub>,</dd>
+        <dt><strong>D<sub>nT,w,50</sub>:</strong></dt>
+        <dd>vägd ljudnivåskillnad med spektrumanpassningsterm i tersbanden 50 Hz till 3 150 Hz, ett förkortat skrivsätt för D<sub>nT,w</sub> + C<sub>50–3150</sub> vid efterklangstid T<sub>ref</sub>,</dd>
+        <dt><strong>Driftutrymme:</strong></dt>
+        <dd>utrymme som huvudsakligen används för byggnaders drift och skötsel,</dd>
+        <dt><strong>L´<sub>nT,w</sub>:</strong></dt>
+        <dd>vägd stegljudsnivå i tersbanden 100 Hz till 3 150 Hz vid efterklangstid T<sub>ref</sub>,</dd>
+        <dt><strong>L<sub>nT,w,50</sub>:</strong></dt>
+        <dd>vägd stegljudsnivå med spektrumanpassningsterm L´<sub>nT,w</sub>+ C<sub>I,50–2500</sub> i tersbanden 50 Hz till 2 500 Hz vid efterklangstid T<sub>ref</sub>, där negativa värden för C<sub>I,50–2500</sub> sätts lika med noll så att termen motsvarar L´<sub>nT,w</sub>,</dd>
+        <dt><strong>L<sub>Aeq</sub>:</strong></dt>
+        <dd>ekvivalent ljudnivå med frekvensvägning A i tersbanden 50 Hz till 5 000 Hz vid efterklangstid T<sub>ref</sub> i utrymmet,</dd>
+        <dt><strong>L<sub>AFmax</sub>:</strong></dt>
+        <dd>maximal ljudnivå med frekvensvägning A och tidsvägning F i tersbanden 50 Hz till 5 000 Hz, vid efterklangstid T<sub>ref</sub> i utrymmet,</dd>
+        <dt><strong>L<sub>eq</sub>:</strong></dt>
+        <dd>ekvivalent ljudnivå i tersbanden 50 Hz till 200 Hz. vid efterklangstid T<sub>ref</sub> i utrymmet,</dd>
+        <dt><strong>T<sub>ref</sub>:</strong></dt>
+        <dd>referensefterklangstid för möblerade rum, 0,5 sekunder,</dd>
+        <dt><strong>trafikårsmedeldygn:</strong></dt>
+        <dd>trafiken under ett år delat med 365 dagar, och</dd>
+        <dt><strong>trafikårsmedelnatt:</strong></dt>
+        <dd>trafiken nattetid kl. 22.00–06.00 under ett år delat med 365 nätter.</dd>
+      </dl>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P6" name="BFS2024-10_K1_P6">1 kap. 6 §</a>
+      </h3>
+      <p class="text">Med byggprodukter med förhandsbedömda egenskaper avses i denna författning produkter som tillverkats för att permanent ingå i byggnadsverk och som antingen</p>
+      <ol type="1">
+        <li>är CE-märkta,</li>
+        <li>är typgodkända eller tillverkningskontrollerade enligt bestämmelserna i 8 kap. 22–23 §§ plan- och bygglagen (2010:900),</li>
+        <li>har certifierats av ett certifieringsorgan som ackrediterats för uppgiften och för produkten i fråga enligt Europaparlamentets och rådets förordning (EG) nr 765/2008 av den 9 juli 2008 om krav för ackreditering och upphävande av förordning (EEG) nr 339/93, eller</li>
+        <li>har tillverkats i en fabrik vars tillverkning och produktionskontroll och utfallet därav för byggprodukten fortlöpande övervakas, bedöms och godkänns av ett certifieringsorgan som ackrediterats för uppgiften och för produkten i fråga enligt förordning (EG) nr 765/2008.</li>
+      </ol>
+      <p class="text">Såsom bedömning i enlighet med alternativ 3 eller 4 godtas även en bedömning utfärdad av ett organ inom Europeiska ekonomiska samarbetsområdet eller i Turkiet om organet på annat sätt än genom ackreditering för uppgiften enligt förordning (EG) nr 765/2008, erbjuder motsvarande garantier i fråga om teknisk och yrkesmässig kompetens samt garantier om oberoende.</p>
+
+      <h3 id="BFS2024-10_byggprodukter-och-material">Byggprodukter och material</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P7" name="BFS2024-10_K1_P7">1 kap. 7 §</a>
+      </h3>
+      <p class="text">Byggprodukter och material ska ha kända och dokumenterade egenskaper i de avseenden som har betydelse för byggnadens förmåga att uppfylla kraven i denna författning.</p>
+      <p class="text">Byggprodukter med förhandsbedömda egenskaper ska anses ha kända och dokumenterade egenskaper i de avseenden som de är förhandsbedömda.</p>
+      <p class="text">Egenskaper hos andra byggprodukter än byggprodukter med förhandsbedömda egenskaper ska provas eller bedömas genom annan vedertagen metod. Inom Europeiska unionen vedertagen metod ska användas där sådan finns.</p>
+
+      <h3 id="BFS2024-10_projektering-och-utforande">Projektering och utförande</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P8" name="BFS2024-10_K1_P8">1 kap. 8 §</a>
+      </h3>
+      <p class="text">Byggnader ska projekteras</p>
+      <ol type="1">
+        <li>på ett fackmässigt sätt,</li>
+        <li>så att arbetet kan utföras på ett sådant sätt att kraven i denna författning uppfylls, och</li>
+        <li>så att förutsatt underhåll kan ske.</li>
+      </ol>
+      <p class="text">Projekteringen ska dokumenteras.</p>
+      <p class="text">Första och andra styckena gäller inte om det är obehövligt.</p>
+      <p class="text">Vid ändring av en byggnad får erfarenheter från den befintliga byggnaden användas.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P9" name="BFS2024-10_K1_P9">1 kap. 9 §</a>
+      </h3>
+      <p class="text">Byggnader ska utföras</p>
+      <ol type="1">
+        <li>på ett fackmässigt sätt, och</li>
+        <li>enligt gällande handlingar.</li>
+      </ol>
+
+      <h3 id="BFS2024-10_sarskilt-om-andring-av-byggnader">Särskilt om ändring av byggnader</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P10" name="BFS2024-10_K1_P10">1 kap. 10 §</a>
+      </h3>
+      <p class="text">Vid ändring av en byggnad ska det klarläggas om</p>
+      <ol type="1">
+        <li>byggnaden har sådana brister avseende kraven på skydd mot buller som kan åtgärdas inom ramen för den planerade åtgärden,</li>
+        <li>den planerade åtgärden kan medföra en försämring av egenskaperna i fråga om skydd mot buller i den befintliga byggnaden, och</li>
+        <li>ändringen kommer att medföra en negativ påverkan på byggnadens kulturvärden och hur en sådan negativ påverkan kan undvikas.</li>
+      </ol>
+
+      <h3 id="BFS2024-10_kontroll">Kontroll</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P11" name="BFS2024-10_K1_P11">1 kap. 11 §</a>
+      </h3>
+      <p class="text">Kontroll av att kraven på skydd mot buller uppfylls ska göras</p>
+      <ol type="1">
+        <li>under projektering och utförande enligt 12–14 §§,</li>
+        <li>i den färdiga byggnaden enligt 15 §, eller</li>
+        <li>med en kombination av punkt 1 och 2.</li>
+      </ol>
+      <p class="text">Kontroll ska utföras fackmässigt.</p>
+      <p class="text">Resultatet av kontrollen ska dokumenteras.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P12" name="BFS2024-10_K1_P12">1 kap. 12 §</a>
+      </h3>
+      <p class="text">Vid kontroll under projektering ska det kontrolleras att dimensionerande förutsättningar, projekteringsmetoder, provningsmetoder och beräkningar är relevanta och redovisade i handlingarna.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P13" name="BFS2024-10_K1_P13">1 kap. 13 §</a>
+      </h3>
+      <p class="text">Vid kontroll under utförande ska det kontrolleras att arbetet utförs enligt gällande handlingar.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P14" name="BFS2024-10_K1_P14">1 kap. 14 §</a>
+      </h3>
+      <p class="text">Byggprodukter och material ska kontrolleras när de tas emot på byggarbetsplatsen. Kontroll ska göras av att byggprodukter och material har förutsatta egenskaper.</p>
+      <p class="text">För byggprodukter med förhandsbedömda egenskaper kan kontrollen inskränkas till identifiering, kontroll av märkning och granskning av dokumentationen av de bedömda egenskaperna.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P15" name="BFS2024-10_K1_P15">1 kap. 15 §</a>
+      </h3>
+      <p class="text">Vid kontroll i den färdiga byggnaden ska kontroll göras genom provning, mätning eller besiktning.</p>
+
+      <h3 id="BFS2024-10_bullerskyddsdokumentation">Bullerskyddsdokumentation</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K1_P16" name="BFS2024-10_K1_P16">1 kap. 16 §</a>
+      </h3>
+      <p class="text">Det ska upprättas en bullerskyddsdokumentation som beskriver förutsättningarna för och utformningen av skyddet mot buller för byggnaden.</p>
+      <p class="text">Första stycket gäller om åtgärden kräver lov eller anmälan och det inte är obehövligt.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-10_K2">
+      <h2 class="kapitel-rubrik">2 kap. Uppförande av nya byggnader</h2>
+
+      <h3 id="BFS2024-10_tillampningsomrade">Tillämpningsområde</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K2_P1" name="BFS2024-10_K2_P1">2 kap. 1 §</a>
+      </h3>
+      <p class="text">För bostäder gäller 2–8 §§. För lokaler gäller 9 §.</p>
+
+      <h3 id="BFS2024-10_bostader">Bostäder</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K2_P2" name="BFS2024-10_K2_P2">2 kap. 2 §</a>
+      </h3>
+      <p class="text">Bostäder ska uppfylla de krav på lägsta tillåtna ljudnivåskillnad som framgår av tabell 2:1.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:1 Lägsta tillåtna ljudnivåskillnad i bostäder</caption>
+        <thead>
+          <tr>
+            <th>Utrymmen</th>
+            <th>Ljudnivåskillnad D<sub>nT,w,50</sub> mellan utrymmen [dB]</th>
+            <th>Ljudnivåskillnad D<sub>nT,w,100</sub> mellan utrymmen [dB]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Från trapphus, korridorer eller loftgångar, till bostäder</td>
+            <td>–</td>
+            <td>44</td>
+          </tr>
+          <tr>
+            <td>Från lokaler, gemensamma serviceutrymmen och gemensamma garage, till bostäder</td>
+            <td>56</td>
+            <td>–</td>
+          </tr>
+          <tr>
+            <td>Från övriga utrymmen utanför bostäder, till bostäder</td>
+            <td>52</td>
+            <td>–</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K2_P3" name="BFS2024-10_K2_P3">2 kap. 3 §</a>
+      </h3>
+      <p class="text">Trots 2 § ska bostäder inom särskilda boendeformer för äldre uppfylla de krav på lägsta tillåtna ljudnivåskillnad som framgår av tabell 2:2.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:2 Lägsta tillåtna ljudnivåskillnad i bostäder inom särskilda boendeformer för äldre</caption>
+        <thead>
+          <tr>
+            <th>Utrymmen</th>
+            <th>Ljudnivåskillnad D<sub>nT,w,50</sub> mellan utrymmen [dB]</th>
+            <th>Ljudnivåskillnad D<sub>nT,w,100</sub> mellan utrymmen [dB]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Från trapphus, korridorer eller loftgångar inom särskilda boendeformer för äldre, till boendeenheter</td>
+            <td>—</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>Från övriga utrymmen inom särskilda boendeformer för äldre, till boendeenheter</td>
+            <td>—</td>
+            <td>52</td>
+          </tr>
+          <tr>
+            <td>Från trapphus, korridorer eller loftgångar utanför särskilda boendeformer för äldre, till bostäder inom särskilda boendeformer för äldre</td>
+            <td>—</td>
+            <td>44</td>
+          </tr>
+          <tr>
+            <td>Från lokaler, gemensamma serviceutrymmen och gemensamma garage utanför särskilda boendeformer för äldre, till bostäder inom särskilda boendeformer för äldre</td>
+            <td>56</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Från övriga utrymmen utanför särskilda boendeformer för äldre, till bostäder inom särskilda boendeformer för äldre</td>
+            <td>52</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K2_P4" name="BFS2024-10_K2_P4">2 kap. 4 §</a>
+      </h3>
+      <p class="text">Trots 2 § ska studentbostäder med boendeenheter uppfylla de krav på lägsta ljudnivåskillnad som framgår av tabell 2:3</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:3 Lägsta tillåtna ljudnivåskillnad i studentbostäder med boendeenheter</caption>
+        <thead>
+          <tr>
+            <th>Utrymmen</th>
+            <th>Ljudnivåskillnad D<sub>nT,w,50</sub> mellan utrymmen [dB]</th>
+            <th>Ljudnivåskillnad D<sub>nT,w,100</sub> mellan utrymmen [dB]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Från korridor inom studentbostäder med boendeenheter, till boendeenheter</td>
+            <td>—</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>Från gemensamma utrymmen inom studentbostäder med boendeenheter, till boendeenheter</td>
+            <td>—</td>
+            <td>44</td>
+          </tr>
+          <tr>
+            <td>Mellan boendeenheter inom studentbostäder med boendeenheter</td>
+            <td>—</td>
+            <td>48</td>
+          </tr>
+          <tr>
+            <td>Från trapphus, korridorer eller loftgångar utanför studentbostäder med boendeenheter, till studentbostäder med boendeenheter</td>
+            <td>—</td>
+            <td>44</td>
+          </tr>
+          <tr>
+            <td>Från lokaler, gemensamma serviceutrymmen och gemensamma garage utanför studentbostäder med boendeenheter, till studentbostäder med boendeenheter</td>
+            <td>56</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Från övriga utrymmen utanför studentbostäder med boendeenheter, till studentbostäder med boendeenheter</td>
+            <td>52</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K2_P5" name="BFS2024-10_K2_P5">2 kap. 5 §</a>
+      </h3>
+      <p class="text">Bostäder ska uppfylla de krav på högsta tillåtna stegljudsnivå som framgår av tabell 2:4.</p>
+      <p class="text">Kraven gäller inte stegljud från rum för personhygien i bostäder, från utrymmen för förvaring eller från driftutrymmen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:4 Högsta tillåtna stegljudsnivå i bostäder</caption>
+        <thead>
+          <tr>
+            <th>Utrymmen</th>
+            <th>Stegljudsnivå i utrymme L<sub>nT,w,50</sub> [dB]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Från trapphus, korridorer, loftgångar, gemensamma uteplatser eller en golvarea innanför en annan bostads entrédörr, till bostäder</td>
+            <td>62</td>
+          </tr>
+          <tr>
+            <td>Från lokaler, gemensamma serviceutrymmen och gemensamma garage, till bostäder</td>
+            <td>52</td>
+          </tr>
+          <tr>
+            <td>Från övriga utrymmen, till bostäder</td>
+            <td>56</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K2_P6" name="BFS2024-10_K2_P6">2 kap. 6 §</a>
+      </h3>
+      <p class="text">Trots 5 § ska bostäder inom särskilda boendeformer för äldre uppfylla de krav på högsta tillåtna stegljudsnivå som framgår av tabell 2:5.</p>
+      <p class="text">Kraven gäller inte stegljud från rum för personhygien i bostäder, från utrymmen för förvaring eller från driftutrymmen.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:5 Högsta tillåtna stegljudsnivå i särskilda boendeformer för äldre</caption>
+        <thead>
+          <tr>
+            <th>Utrymmen</th>
+            <th>Stegljudsnivå i utrymme L<sub>nT,w,50</sub> [dB]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Från utrymmen inom särskilda boendeformer för äldre, till boendeenheter</td>
+            <td>62</td>
+          </tr>
+          <tr>
+            <td>Från trapphus, korridorer, loftgångar eller gemensamma uteplatser utanför särskilda boendeformer för äldre, till bostäder inom särskilda boendeformer för äldre</td>
+            <td>62</td>
+          </tr>
+          <tr>
+            <td>Från lokaler, gemensamma serviceutrymmen och gemensamma garage utanför särskilda boendeformer för äldre, till bostäder inom särskilda boendeformer för äldre</td>
+            <td>52</td>
+          </tr>
+          <tr>
+            <td>Från övriga utrymmen utanför särskilda boendeformer för äldre, till bostäder inom särskilda boendeformer för äldre</td>
+            <td>56</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K2_P7" name="BFS2024-10_K2_P7">2 kap. 7 §</a>
+      </h3>
+      <p class="text">Ljud i bostäder som orsakas av byggnadens installationer och motordrivna anordningar ska uppfylla de krav på högsta sammantagna ljudnivåer som framgår av tabell 2:6 och tabell 2:7.</p>
+      <p class="text">Kraven ska uppfyllas vid representativa förhållanden för de aktuella ljudkällorna.</p>
+      <p class="text">Kraven gäller inte för ljud från sådana installationer eller motordrivna anordningar som brukaren själv råder över och som inte medför att ljudnivåerna i någon annan bostad överskrids.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:6 Högsta tillåtna sammantagna ljudnivåer i bostäder från byggnadens installationer eller motordrivna anordningar</caption>
+        <thead>
+          <tr>
+            <th>Utrymmen</th>
+            <th>Ekvivalent ljudnivå för kontinuerliga bredbandiga ljud, L<sub>Aeq</sub> [dB]</th>
+            <th>Ekvivalent ljudnivå, för ljud som innehåller tydligt hörbara variationer eller toner L<sub>Aeq</sub> [dB]</th>
+            <th>Maximal ljudnivå L<sub>AFmax</sub> [dB]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>I utrymmen för sömn och vila eller daglig samvaro</td>
+            <td>30</td>
+            <td>25</td>
+            <td>35</td>
+          </tr>
+          <tr>
+            <td>I utrymmen för måltider</td>
+            <td>35</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 2:7 Högsta tillåtna sammantagna ljudtrycksnivåer i tersband i utrymmen för sömn och vila eller daglig samvaro i bostäder från byggnadens installationer eller motordrivna anordningar</caption>
+        <thead>
+          <tr>
+            <th>Tersband [Hz]</th>
+            <th>Ekvivalent ljudtrycksnivå i utrymmen L<sub>eq</sub> [dB]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>50</td>
+            <td>43</td>
+          </tr>
+          <tr>
+            <td>63</td>
+            <td>42</td>
+          </tr>
+          <tr>
+            <td>80</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>100</td>
+            <td>38</td>
+          </tr>
+          <tr>
+            <td>125</td>
+            <td>36</td>
+          </tr>
+          <tr>
+            <td>160</td>
+            <td>34</td>
+          </tr>
+          <tr>
+            <td>200</td>
+            <td>32</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K2_P8" name="BFS2024-10_K2_P8">2 kap. 8 §</a>
+      </h3>
+      <p class="text">Ljudnivåskillnaden mellan byggnadens utsida och insida bestäms utifrån fastställda ljudnivåer utomhus från trafik och andra yttre ljudkällor, så att de sammantagna A-vägda ljudnivåer inomhus som framgår av tabell 2:8 inte överskrids. Högsta sammantagna ljudtrycksnivåer från andra yttre ljudkällor än trafik ska även uppfylla krav enligt tabell 2:9.</p>
+      <p class="text">För trafik avses dygnsekvivalent ljudnivå vid de trafikförhållanden som råder under ett trafikårsmedeldygn. För andra yttre ljudkällor än trafik avses ekvivalent ljudnivå under de tidsperioder då representativa förhållanden råder för de aktuella ljudkällorna.</p>
+      <p class="text">Maximal ljudnivå från trafik klockan 22:00–06:00 får överskridas med högst 10 dB högst fem gånger under de förhållanden som råder under en trafikårsmedelnatt.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:8 Högsta tillåtna sammantagna ljudnivåer i bostäder från trafik och andra yttre ljudkällor vid representativa förhållanden</caption>
+        <thead>
+          <tr>
+            <th>Utrymmen</th>
+            <th>Ekvivalent ljudnivå, L<sub>Aeq</sub>, [dB]</th>
+            <th>Maximal ljudnivå, kl. 22:00–06:00 L<sub>AFmax</sub> [dB]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>I utrymmen för sömn och vila eller daglig samvaro</td>
+            <td>30</td>
+            <td>45</td>
+          </tr>
+          <tr>
+            <td>I utrymmen för måltider</td>
+            <td>35</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="legal-table">
+        <caption>Tabell 2:9 Högsta tillåtna sammantagna ljudtrycksnivåer i tersband i utrymmen för sömn och vila eller daglig samvaro i bostäder från andra yttre ljudkällor än trafik</caption>
+        <thead>
+          <tr>
+            <th>Tersband [Hz]</th>
+            <th>Ekvivalent ljudtrycksnivå i utrymmen L<sub>eq</sub> [dB]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>50</td>
+            <td>43</td>
+          </tr>
+          <tr>
+            <td>63</td>
+            <td>42</td>
+          </tr>
+          <tr>
+            <td>80</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>100</td>
+            <td>38</td>
+          </tr>
+          <tr>
+            <td>125</td>
+            <td>36</td>
+          </tr>
+          <tr>
+            <td>160</td>
+            <td>34</td>
+          </tr>
+          <tr>
+            <td>200</td>
+            <td>32</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="BFS2024-10_lokaler">Lokaler</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K2_P9" name="BFS2024-10_K2_P9">2 kap. 9 §</a>
+      </h3>
+      <p class="text">Utrymmen i lokaler ska utformas så att buller dämpas i den omfattning som den avsedda användningen kräver.</p>
+      <p class="text">De ljudegenskaper som ska beaktas är</p>
+      <ol type="1">
+        <li>ljudnivåskillnad,</li>
+        <li>stegljudsnivå,</li>
+        <li>ljudnivå från installationer och motordrivna anordningar,</li>
+        <li>ljudnivå från trafik och andra yttre ljudkällor, och</li>
+        <li>efterklangstid.</li>
+      </ol>
+    </section>
+
+    <section class="kapitel" id="BFS2024-10_K3">
+      <h2 class="kapitel-rubrik">3 kap. Ändring av byggnader</h2>
+
+      <h3 id="BFS2024-10_anpassning-vid-andring-av-byggnader">Anpassning vid ändring av byggnader</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K3_P1" name="BFS2024-10_K3_P1">3 kap. 1 §</a>
+      </h3>
+      <p class="text">Vid ändring av byggnad ska den ändrade delen uppfylla kraven i 2 kap. Kraven får dock anpassas om</p>
+      <ol type="1">
+        <li>det krävs för att uppfylla kravet på varsamhet,</li>
+        <li>det krävs för att följa förbudet mot förvanskning,</li>
+        <li>det är oskäligt med hänsyn till ändringens omfattning,</li>
+        <li>byggnadens skydd mot buller bara blir försumbart bättre om kravet uppfylls,</li>
+        <li>kostnaden är oskäligt hög i förhållande till den förväntade nyttan,</li>
+        <li>det finns tekniska skäl, eller</li>
+        <li>om det krävs för att ett annat utformnings- eller tekniskt egenskapskrav ska kunna tillgodoses på en godtagbar nivå eller för att tillvarata byggnadens kulturvärden.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K3_P2" name="BFS2024-10_K3_P2">3 kap. 2 §</a>
+      </h3>
+      <p class="text">Försämring av byggnadens skydd mot buller får endast ske om</p>
+      <ol type="1">
+        <li>byggnaden även efter ändring uppfyller kravvärdena i 2 kap,</li>
+        <li>det krävs för att kunna tillgodose ett utformningskrav, ett annat tekniskt egenskapskrav eller för att tillvarata byggnadens kulturvärden, eller</li>
+        <li>försämringen kan anses vara försumbar.</li>
+      </ol>
+
+      <h3 id="BFS2024-10_andrad-anvandning">Ändrad användning</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K3_P3" name="BFS2024-10_K3_P3">3 kap. 3 §</a>
+      </h3>
+      <p class="text">Vid ändrad användning ska ändringens omfattning bedömas utifrån om den nya användningen ställer högre krav på skydd mot buller i byggnaden jämfört med den tidigare användningen.</p>
+
+      <h3 id="BFS2024-10_varsamhet">Varsamhet</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K3_P4" name="BFS2024-10_K3_P4">3 kap. 4 §</a>
+      </h3>
+      <p class="text">Vid en bedömning om kravet på varsamhet är uppfyllt ska hänsyn tas till hur åtgärden respekterar byggnadens karaktär avseende</p>
+      <ol type="1">
+        <li>proportioner, form och volym,</li>
+        <li>materialval och utförande,</li>
+        <li>färgsättning, samt</li>
+        <li>detaljomsorg och detaljeringsnivå.</li>
+      </ol>
+      <p class="text">Hänsyn ska också tas till om</p>
+      <ol type="1">
+        <li>detaljer som är väsentliga för byggnadens karaktär tillvaratas, och</li>
+        <li>egenskaper som har betydelse för boende- och brukarkvaliteter bibehålls.</li>
+      </ol>
+
+      <h3 id="BFS2024-10_forbud-mot-forvanskning">Förbud mot förvanskning</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K3_P5" name="BFS2024-10_K3_P5">3 kap. 5 §</a>
+      </h3>
+      <p class="text">För att en åtgärd inte ska anses medföra en förvanskning av en särskilt värdefull byggnad ska åtgärden</p>
+      <ol type="1">
+        <li>inte förändra byggnadens karaktärsdrag,</li>
+        <li>inte skada de egenskaper som ligger till grund för byggnadens eller områdets kulturvärden, och</li>
+        <li>vid utbyte av byggnadsdelar utföras med material och hantverksteknik som är anpassad till byggnadens ålder och karaktär.</li>
+      </ol>
+      <p class="text">Trots första stycket 3 ska en åtgärd inte anses utgöra en förvanskning om en förändring av material eller teknik är en förutsättning för att kunna</p>
+      <ol type="1">
+        <li>tillgodose utformningskraven och de tekniska egenskapskraven på en acceptabel nivå, eller</li>
+        <li>upprätthålla funktionen hos de tekniska systemen på en acceptabel nivå.</li>
+      </ol>
+
+      <h3 id="BFS2024-10_sarskilt-vardefull-byggnad">Särskilt värdefull byggnad</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-10_K3_P6" name="BFS2024-10_K3_P6">3 kap. 6 §</a>
+      </h3>
+      <p class="text">Vid bedömningen av om en byggnad ska anses vara särskilt värdefull, ska en prövning göras mot följande kriterier:</p>
+      <p class="text">1. Byggnaden tydliggör tidigare samhällsförhållanden genom att den</p>
+      <ol type="a">
+        <li>representerar en tidigare vanlig byggnadskategori eller konstruktion som nu har blivit sällsynt,</li>
+        <li>belyser tidigare bostadsförhållanden, sociala och ekonomiska villkor, arbetsförhållanden, olika gruppers livsvillkor, stadsbyggnadsideal eller arkitektoniska ideal samt värderingar och tankemönster, eller</li>
+        <li>har representerat en för lokalsamhället viktig funktion eller verksamhet.</li>
+      </ol>
+      <p class="text">2. Byggnaden tydliggör samhällsutvecklingen genom att den</p>
+      <ol type="a">
+        <li>genom sin funktion illustrerar ett väsentligt skeende eller en väsentlig samhällsföreteelse,</li>
+        <li>har tjänat som förebild eller på annat sätt varit uppmärksammad i sin samtid, eller</li>
+        <li>präglas av en stark arkitektonisk idé.</li>
+      </ol>
+      <p class="text">3. Byggnaden i sig utgör en källa till kunskap om äldre material och teknik.</p>
+      <p class="text">4. Byggnaden värderas högt i ett lokalt sammanhang genom att den har haft stor betydelse</p>
+      <ol type="a">
+        <li>i ortens sociala liv,</li>
+        <li>för ortens identitet, eller</li>
+        <li>i lokala traditioner.</li>
+      </ol>
+      <p class="text">Byggnaden kan anses vara särskilt värdefull från konstnärlig synpunkt genom att den uppvisar särskilda estetiska kvaliteter eller har en hög ambitionsnivå med avseende på</p>
+      <ol type="1">
+        <li>arkitektonisk gestaltning,</li>
+        <li>utförande och materialval, eller</li>
+        <li>konstnärlig gestaltning och utsmyckning.</li>
+      </ol>
+      <p class="text">Byggnaden kan anses vara särskilt värdefull från miljömässig synpunkt genom att den utgör en del av en miljö som uppfyller kriterierna i första stycket.</p>
+      <p class="text">För att en byggnad ska anses vara särskilt värdefull ska byggnaden särskilt väl belysa ett visst förhållande eller i sitt sammanhang ha få motsvarigheter som kan belysa samma förhållande.</p>
+      <p class="text">Byggnader från tiden före 1920-talets bebyggelseexpansion, som har sin huvudsakliga karaktär bevarad, ska anses vara särskilt värdefulla om inte något talar däremot.</p>
+    </section>
+  </div>
+
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <ol type="1">
+      <li>Denna författning träder i kraft den 1 juli 2025.</li>
+      <li>Äldre bestämmelser i Boverkets byggregler (2011:6) – föreskrifter och allmänna råd får dock tillämpas i den utsträckning som framgår av punkten 3 i övergångsbestämmelserna till Boverkets föreskrifter (2024:14) om ändring i Boverkets byggregler (2011:6) – föreskrifter och allmänna råd.</li>
+    </ol>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">ANDERS SJELVGREN</p>
+    <p class="text">Peter Petterson</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

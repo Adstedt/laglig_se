@@ -1,0 +1,244 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Elsäkerhetsverkets föreskrifter om stickproppar och uttag för allmänbruk",
+  "documentNumber": "ELSÄK-FS 2019:1",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Allmänna bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1 kap. 1",
+          "heading": null,
+          "content": "Dessa föreskrifter innehåller regler som närmare bestämmer säkerhetskraven för stickproppar och uttag för allmänbruk.\nAllmänna bestämmelser om elektrisk utrustning finns i 13-18 §§ elsäkerhetsförordningen (2017:218).\nFöreskrifterna gäller endast stickproppar och uttag för allmänbruk konstruerade för användning vid en märkspänning mellan 50 och 1 000 V för växelström och mellan 75 och 1500 V för likström.\nFöreskrifterna gäller inte stickproppar och uttag som omfattas av Europaparlamentets och rådets direktiv 2014/35/EU av den 26 februari 2014 om harmonisering av medlemsstaternas lagstiftning om tillhandahållande på marknaden av elektrisk utrustning eller direktiv som trätt i dess ställe.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Dessa föreskrifter innehåller regler som närmare bestämmer säkerhetskraven för stickproppar och uttag för allmänbruk.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Allmänna bestämmelser om elektrisk utrustning finns i 13-18 §§ elsäkerhetsförordningen (2017:218).",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Föreskrifterna gäller endast stickproppar och uttag för allmänbruk konstruerade för användning vid en märkspänning mellan 50 och 1 000 V för växelström och mellan 75 och 1500 V för likström.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Föreskrifterna gäller inte stickproppar och uttag som omfattas av Europaparlamentets och rådets direktiv 2014/35/EU av den 26 februari 2014 om harmonisering av medlemsstaternas lagstiftning om tillhandahållande på marknaden av elektrisk utrustning eller direktiv som trätt i dess ställe.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "1 kap. 2",
+          "heading": "Definitioner och förkortningar",
+          "content": "I dessa föreskrifter avses med",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I dessa föreskrifter avses med",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Krav på stickproppar och uttag",
+      "paragrafer": [
+        {
+          "number": "2 kap. 1",
+          "heading": null,
+          "content": "De övergripande säkerhetskraven finns angivna i 13-18 §§ elsäkerhetsförordningen (2017:218).\nAv 16 § elsäkerhetslagen (2016:732) framgår vem som ska ansvara för att utrustningen uppfyller gällande säkerhetskrav.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "De övergripande säkerhetskraven finns angivna i 13-18 §§ elsäkerhetsförordningen (2017:218).",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Av 16 § elsäkerhetslagen (2016:732) framgår vem som ska ansvara för att utrustningen uppfyller gällande säkerhetskrav.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2 kap. 2",
+          "heading": "Särskilda säkerhetskrav",
+          "content": "Stickproppar och uttag ska vara utförda enligt och uppfylla kraven i någon av de standarder som anges i bilaga 1, samt vara certifierade mot kraven.\nLampproppar utförda enligt SS 428 08 31 utgåva 4 får dock endast sättas på marknaden som separata produkter med eller utan sladd, för utbyte på befintlig ljusarmatur.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Stickproppar och uttag ska vara utförda enligt och uppfylla kraven i någon av de standarder som anges i bilaga 1, samt vara certifierade mot kraven.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Lampproppar utförda enligt SS 428 08 31 utgåva 4 får dock endast sättas på marknaden som separata produkter med eller utan sladd, för utbyte på befintlig ljusarmatur.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2 kap. 3",
+          "heading": null,
+          "content": "Kravet på certifiering mot kraven i bilaga 1 enligt 2 § gäller inte stickproppar som uppfyller kraven för att få tillverkas eller saluföras i annat EU eller EES-land under förutsättning att stickpropparna är certifierade mot krav som motsvarar utförande i enlighet med de standarder som anges i bilaga 1.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Kravet på certifiering mot kraven i bilaga 1 enligt 2 § gäller inte stickproppar som uppfyller kraven för att få tillverkas eller saluföras i annat EU eller EES-land under förutsättning att stickpropparna är certifierade mot krav som motsvarar utförande i enlighet med de standarder som anges i bilaga 1.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2 kap. 4",
+          "heading": "Undantag för vissa adaptrar",
+          "content": "Stickproppar och uttag i adaptrar avsedda endast för tillfällig anslutning av elektrisk utrustning omfattas inte av kravet i 2 §.\nUndantaget enligt första stycket gäller endast stickproppar och uttag som kan visas är utförda enligt och uppfyller kraven i något annat lands nationella bestämmelser om stickproppar och uttag.\nOm adaptern är avsedd att användas i svenska uttag eller till svenska stickproppar ska adaptern i dessa delar vara utförda i enlighet med och uppfylla kraven i någon av de standarder som anges i bilaga 1.\nStickproppar och uttag i adaptrar omfattas av övriga krav i dessa föreskrifter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Stickproppar och uttag i adaptrar avsedda endast för tillfällig anslutning av elektrisk utrustning omfattas inte av kravet i 2 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Undantaget enligt första stycket gäller endast stickproppar och uttag som kan visas är utförda enligt och uppfyller kraven i något annat lands nationella bestämmelser om stickproppar och uttag.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Om adaptern är avsedd att användas i svenska uttag eller till svenska stickproppar ska adaptern i dessa delar vara utförda i enlighet med och uppfylla kraven i någon av de standarder som anges i bilaga 1.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Stickproppar och uttag i adaptrar omfattas av övriga krav i dessa föreskrifter.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2 kap. 5",
+          "heading": "Certifiering",
+          "content": "Certifiering ska utföras av ett certifieringsorgan som är ackrediterat för uppgiften i enlighet med Europaparlamentets och rådets förordning 765/2008 av den 9 juli 2008 om krav för ackreditering och marknadskontroll i samband med saluföring av produkter och lagen (2011:791) om ackreditering och teknisk kontroll.\nCertifiering kan också utföras av ett certifieringsorgan som uppfyller motsvarande krav.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Certifiering ska utföras av ett certifieringsorgan som är ackrediterat för uppgiften i enlighet med Europaparlamentets och rådets förordning 765/2008 av den 9 juli 2008 om krav för ackreditering och marknadskontroll i samband med saluföring av produkter och lagen (2011:791) om ackreditering och teknisk kontroll.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Certifiering kan också utföras av ett certifieringsorgan som uppfyller motsvarande krav.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2 kap. 6",
+          "heading": "Information som ska medfölja",
+          "content": "Bestämmelser om den information som ska medfölja stickpropparna eller uttagen finns i 14-15 §§ elsäkerhetsförordningen (2017:218).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om den information som ska medfölja stickpropparna eller uttagen finns i 14-15 §§ elsäkerhetsförordningen (2017:218).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2 kap. 7",
+          "heading": "Klausul om ömsesidigt erkännande",
+          "content": "Bestämmelserna i 2 och 4 §§ gäller inte för stickproppar och uttag som antingen är lagligen tillverkade eller lagligen saluförda i en annan medlemsstat inom EU eller i Turkiet, eller är lagligen tillverkade i ett EFTA-land, som har undertecknat EES-avtalet.\nBestämmelserna i 2 och 4 §§ ska däremot gälla i de fall då Elsäkerhetsverket kan visa att produkten i fråga inte uppnår en säkerhetsnivå som är likvärdig med den som garanteras genom dessa föreskrifter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i 2 och 4 §§ gäller inte för stickproppar och uttag som antingen är lagligen tillverkade eller lagligen saluförda i en annan medlemsstat inom EU eller i Turkiet, eller är lagligen tillverkade i ett EFTA-land, som har undertecknat EES-avtalet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Bestämmelserna i 2 och 4 §§ ska däremot gälla i de fall då Elsäkerhetsverket kan visa att produkten i fråga inte uppnår en säkerhetsnivå som är likvärdig med den som garanteras genom dessa föreskrifter.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Övriga bestämmelser",
+      "paragrafer": [
+        {
+          "number": "3 kap. 1",
+          "heading": null,
+          "content": "Elsäkerhetsverket utövar tillsyn i enlighet med 39 § elsäkerhetsförordningen (2017:218).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Elsäkerhetsverket utövar tillsyn i enlighet med 39 § elsäkerhetsförordningen (2017:218).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3 kap. 2",
+          "heading": null,
+          "content": "Bestämmelser om ekonomisk ersättning för tillsyn och annan betalningsskyldighet finns i Elsäkerhetsverkets föreskrifter (2017:1) om ersättning och avgifter vid marknadskontroll av viss elektrisk utrustning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om ekonomisk ersättning för tillsyn och annan betalningsskyldighet finns i Elsäkerhetsverkets föreskrifter (2017:1) om ersättning och avgifter vid marknadskontroll av viss elektrisk utrustning.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "Dessa föreskrifter träder ikraft den 1 maj 2019.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "ELISABET FALEMO",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Katarina Olofsson",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "ELSÄK-FS 2019:1",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

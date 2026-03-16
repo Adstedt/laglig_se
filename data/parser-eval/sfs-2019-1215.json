@@ -1,0 +1,843 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (2019:1215) med kompletterande bestämmelser till EU:s förordning om värdepapperisering",
+  "documentNumber": "SFS 2019:1215",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Inledande bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna lag kompletterar Europaparlamentets och rådets förordning (EU) 2017/2402 av den 12 december 2017 om ett allmänt ramverk för värdepapperisering och om inrättande av ett särskilt ramverk för enkel, transparent och standardiserad värdepapperisering samt om ändring av direktiven 2009/65/EG, 2009/138/EG och 2011/61/EU och förordningarna (EG) nr 1060/2009 och (EU) nr 648/2012, i denna lag kallad EU- förordningen.\nTermer och uttryck i denna lag har samma betydelse som i EU- förordningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag kompletterar Europaparlamentets och rådets förordning (EU) 2017/2402 av den 12 december 2017 om ett allmänt ramverk för värdepapperisering och om inrättande av ett särskilt ramverk för enkel, transparent och standardiserad värdepapperisering samt om ändring av direktiven 2009/65/EG, 2009/138/EG och 2011/61/EU och förordningarna (EG) nr 1060/2009 och (EU) nr 648/2012, i denna lag kallad EU- förordningen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Termer och uttryck i denna lag har samma betydelse som i EU- förordningen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Finansinspektionen är behörig myndighet enligt EU- förordningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Finansinspektionen är behörig myndighet enligt EU- förordningen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "För att bekosta Finansinspektionens verksamhet enligt denna lag och enligt EU-förordningen ska de företag som står under inspektionens tillsyn betala årliga avgifter.\nFinansinspektionen får ta ut avgifter för prövning av ansökningar enligt EU-förordningen.\nRegeringen får meddela föreskrifter om avgifterna.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att bekosta Finansinspektionens verksamhet enligt denna lag och enligt EU-förordningen ska de företag som står under inspektionens tillsyn betala årliga avgifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Finansinspektionen får ta ut avgifter för prövning av ansökningar enligt EU-förordningen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Regeringen får meddela föreskrifter om avgifterna.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Tillsyns- och utredningsbefogenheter samt tvångsmedel",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "För tillsynen över att bestämmelserna i EU-förordningen följs får Finansinspektionen förelägga\n1. en fysisk eller juridisk person att tillhandahålla uppgifter, handlingar eller annat, och\n2. den som förväntas kunna lämna upplysningar i saken att inställa sig till förhör på tid och plats som inspektionen bestämmer.\nFörsta stycket gäller inte i den utsträckning uppgiftslämnandet skulle strida mot den i lag reglerade tystnadsplikten för advokater.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För tillsynen över att bestämmelserna i EU-förordningen följs får Finansinspektionen förelägga",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. en fysisk eller juridisk person att tillhandahålla uppgifter, handlingar eller annat, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. den som förväntas kunna lämna upplysningar i saken att inställa sig till förhör på tid och plats som inspektionen bestämmer.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket gäller inte i den utsträckning uppgiftslämnandet skulle strida mot den i lag reglerade tystnadsplikten för advokater.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Platsundersökning",
+          "content": "Om det är nödvändigt för tillsynen över att en fysisk eller juridisk person följer bestämmelserna i EU-förordningen, får Finansinspektionen genomföra en undersökning i personens verksamhetslokaler.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det är nödvändigt för tillsynen över att en fysisk eller juridisk person följer bestämmelserna i EU-förordningen, får Finansinspektionen genomföra en undersökning i personens verksamhetslokaler.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Handräckning",
+          "content": "Finansinspektionen får begära handräckning av Kronofogdemyndigheten för att en kontroll på plats enligt artikel 14.1 i EU-förordningen ska kunna genomföras.\nVid handräckning gäller bestämmelserna i utsökningsbalken om verkställighet av förpliktelser som inte avser betalningsskyldighet, avhysning eller avlägsnande. Om Finansinspektionen begär det, ska Kronofogdemyndigheten inte i förväg underrätta den som kontrollen ska genomföras hos.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Finansinspektionen får begära handräckning av Kronofogdemyndigheten för att en kontroll på plats enligt artikel 14.1 i EU-förordningen ska kunna genomföras.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vid handräckning gäller bestämmelserna i utsökningsbalken om verkställighet av förpliktelser som inte avser betalningsskyldighet, avhysning eller avlägsnande. Om Finansinspektionen begär det, ska Kronofogdemyndigheten inte i förväg underrätta den som kontrollen ska genomföras hos.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Äkthetskontroll",
+          "content": "Kronofogdemyndigheten är ansvarig myndighet för sådan äkthetskontroll som följer av artikel 14.1 i EU-förordningen.\nVerkställighet av beslut om avgifter och viten enligt EU- förordningen",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Kronofogdemyndigheten är ansvarig myndighet för sådan äkthetskontroll som följer av artikel 14.1 i EU-förordningen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Verkställighet av beslut om avgifter och viten enligt EU- förordningen",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Beslut om avgifter eller viten enligt EU-förordningen får verkställas enligt utsökningsbalken på samma sätt som en svensk dom som har fått laga kraft, om inte något annat följer av EU-förordningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Beslut om avgifter eller viten enligt EU-förordningen får verkställas enligt utsökningsbalken på samma sätt som en svensk dom som har fått laga kraft, om inte något annat följer av EU-förordningen.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Ingripanden",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Bestämmelser om ingripanden mot en institutionell investerare som inte är originator, medverkande institut eller ursprunglig långivare och som åsidosätter sina skyldigheter enligt artikel 5 i EU-förordningen finns i de lagar som reglerar den berörda verksamheten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om ingripanden mot en institutionell investerare som inte är originator, medverkande institut eller ursprunglig långivare och som åsidosätter sina skyldigheter enligt artikel 5 i EU-förordningen finns i de lagar som reglerar den berörda verksamheten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Finansinspektionen ska ingripa mot\n1. en institutionell investerare som är förvaltande part enligt artikel 5.5 i EU-förordningen och som har åsidosatt någon av de skyldigheter som följer av artikel 5.1-5.4,\n2. en originator eller ett medverkande institut som har åsidosatt sina skyldigheter enligt EU-förordningen genom att\n- inte uppfylla kraven på bibehållande av risk i artikel 6,\n- inte uppfylla transparenskraven i artikel 7,\n- inte beakta förbudet mot återvärdepapperisering i artikel 8,\n- inte uppfylla kraven för kreditgivning i artikel 9,\n- inte uppfylla kraven för STS-värdepapperisering i artikel 18, eller\n- inte fullgöra skyldigheten att lämna underrättelser enligt artikel 27.4,\n3. en originator eller ett medverkande institut som har åsidosatt sina skyldigheter enligt EU-förordningen genom att\n- inte uppfylla kraven för STS-värdepapperisering i någon av artiklarna 19-22, 23-26 eller 26a-26e, eller\n- inte uppfylla kraven på STS-anmälan i artikel 27.1,\n4. en ursprunglig långivare som har åsidosatt sina skyldigheter enligt EU-förordningen genom att\n- inte uppfylla kraven på bibehållande av risk i artikel 6,\n- inte beakta förbudet mot återvärdepapperisering i artikel 8, eller\n- inte uppfylla kraven för kreditgivning i artikel 9,\n5. ett specialföretag för värdepapperisering som har åsidosatt sina skyldigheter enligt EU-förordningen genom att\n- inte uppfylla transparenskraven i artikel 7,\n- inte beakta förbudet mot återvärdepapperisering i artikel 8, eller\n- inte uppfylla kraven för STS-värdepapperisering i artikel 18, och\n6. en tredje part som har beviljats tillstånd enligt artikel 28.1 i EU-förordningen och som har åsidosatt underrättelseskyldigheten enligt artikel 28.2.",
+          "amendedBy": "Lag (2021:974)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Finansinspektionen ska ingripa mot",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. en institutionell investerare som är förvaltande part enligt artikel 5.5 i EU-förordningen och som har åsidosatt någon av de skyldigheter som följer av artikel 5.1-5.4,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. en originator eller ett medverkande institut som har åsidosatt sina skyldigheter enligt EU-förordningen genom att",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla kraven på bibehållande av risk i artikel 6,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla transparenskraven i artikel 7,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte beakta förbudet mot återvärdepapperisering i artikel 8,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla kraven för kreditgivning i artikel 9,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla kraven för STS-värdepapperisering i artikel 18, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte fullgöra skyldigheten att lämna underrättelser enligt artikel 27.4,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. en originator eller ett medverkande institut som har åsidosatt sina skyldigheter enligt EU-förordningen genom att",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla kraven för STS-värdepapperisering i någon av artiklarna 19-22, 23-26 eller 26a-26e, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla kraven på STS-anmälan i artikel 27.1,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. en ursprunglig långivare som har åsidosatt sina skyldigheter enligt EU-förordningen genom att",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla kraven på bibehållande av risk i artikel 6,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte beakta förbudet mot återvärdepapperisering i artikel 8, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla kraven för kreditgivning i artikel 9,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. ett specialföretag för värdepapperisering som har åsidosatt sina skyldigheter enligt EU-förordningen genom att",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla transparenskraven i artikel 7,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte beakta förbudet mot återvärdepapperisering i artikel 8, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "- inte uppfylla kraven för STS-värdepapperisering i artikel 18, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 6,
+              "text": "6. en tredje part som har beviljats tillstånd enligt artikel 28.1 i EU-förordningen och som har åsidosatt underrättelseskyldigheten enligt artikel 28.2.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Ett ingripande enligt 2 § sker genom beslut om\n1. föreläggande att inom en viss tid upphöra med överträdelsen,\n2. föreläggande att inom en viss tid begränsa rörelsen i något avseende, minska riskerna i den eller vidta någon annan åtgärd för att komma till rätta med situationen,\n3. anmärkning,\n4. förbud mot STS-anmälan enligt 4 §, eller\n5. tillfällig återkallelse av tillstånd enligt 5 §.\nEtt ingripande enligt första stycket 4 eller 5 får ske bara om överträdelsen är uppsåtlig eller oaktsam.\nEtt ingripande får inte ske om överträdelsen omfattas av ett föreläggande som har förenats med vite och en ansökan om utdömande av vitet har gjorts.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett ingripande enligt 2 § sker genom beslut om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. föreläggande att inom en viss tid upphöra med överträdelsen,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. föreläggande att inom en viss tid begränsa rörelsen i något avseende, minska riskerna i den eller vidta någon annan åtgärd för att komma till rätta med situationen,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. anmärkning,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. förbud mot STS-anmälan enligt 4 §, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. tillfällig återkallelse av tillstånd enligt 5 §.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Ett ingripande enligt första stycket 4 eller 5 får ske bara om överträdelsen är uppsåtlig eller oaktsam.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Ett ingripande får inte ske om överträdelsen omfattas av ett föreläggande som har förenats med vite och en ansökan om utdömande av vitet har gjorts.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Om en originator eller ett medverkande institut har överträtt EU-förordningen i ett fall som anges i 2 § 3, får Finansinspektionen besluta att originatorn eller det medverkande institutet för en viss tid, högst ett år, inte får göra en STS-anmälan enligt artikel 27.1 i förordningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om en originator eller ett medverkande institut har överträtt EU-förordningen i ett fall som anges i 2 § 3, får Finansinspektionen besluta att originatorn eller det medverkande institutet för en viss tid, högst ett år, inte får göra en STS-anmälan enligt artikel 27.1 i förordningen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Om en tredje part har överträtt EU-förordningen i ett fall som anges i 2 § 6, får Finansinspektionen besluta att för en viss tid, högst ett år, återkalla tillståndet.\nI artikel 28.1 i EU-förordningen finns bestämmelser om återkallelse av tillstånd om en tredje part som har beviljats tillstånd enligt den artikeln i något väsentligt avseende inte uppfyller förutsättningarna för tillstånd.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om en tredje part har överträtt EU-förordningen i ett fall som anges i 2 § 6, får Finansinspektionen besluta att för en viss tid, högst ett år, återkalla tillståndet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "I artikel 28.1 i EU-förordningen finns bestämmelser om återkallelse av tillstånd om en tredje part som har beviljats tillstånd enligt den artikeln i något väsentligt avseende inte uppfyller förutsättningarna för tillstånd.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Om beslut om anmärkning enligt 3 § första stycket 3 har meddelats, får Finansinspektionen besluta att den som har gjort sig skyldig till överträdelsen ska betala en sanktionsavgift.\nSanktionsavgiften får beslutas bara om\n1. överträdelsen är uppsåtlig eller oaktsam, och\n2. den som avgiften gäller, inom två år från det att överträdelsen ägde rum, har delgetts en upplysning om att frågan om sanktionsavgift har tagits upp av Finansinspektionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om beslut om anmärkning enligt 3 § första stycket 3 har meddelats, får Finansinspektionen besluta att den som har gjort sig skyldig till överträdelsen ska betala en sanktionsavgift.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Sanktionsavgiften får beslutas bara om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. överträdelsen är uppsåtlig eller oaktsam, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. den som avgiften gäller, inom två år från det att överträdelsen ägde rum, har delgetts en upplysning om att frågan om sanktionsavgift har tagits upp av Finansinspektionen.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": "Ingripanden mot vissa företrädare för juridiska personer",
+          "content": "Om en juridisk person har överträtt EU-förordningen i ett fall som anges i 2 §, ska Finansinspektionen ingripa mot den som ingår i den juridiska personens styrelse eller är dess verkställande direktör, eller ersättare för någon av dem. Ingripande får ske genom en eller båda av följande sanktioner:\n1. att den fysiska personen under en viss tid, lägst tre och högst tio år, inte får vara styrelseledamot eller verkställande direktör, eller ersättare för någon av dem, i en originator, ett medverkande institut eller ett specialföretag för värdepapperisering, eller\n2. sanktionsavgift.\nEtt ingripande enligt första stycket får ske bara om den juridiska personens överträdelse är allvarlig och den fysiska personen i fråga uppsåtligen eller av grov oaktsamhet orsakat överträdelsen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om en juridisk person har överträtt EU-förordningen i ett fall som anges i 2 §, ska Finansinspektionen ingripa mot den som ingår i den juridiska personens styrelse eller är dess verkställande direktör, eller ersättare för någon av dem. Ingripande får ske genom en eller båda av följande sanktioner:",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. att den fysiska personen under en viss tid, lägst tre och högst tio år, inte får vara styrelseledamot eller verkställande direktör, eller ersättare för någon av dem, i en originator, ett medverkande institut eller ett specialföretag för värdepapperisering, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. sanktionsavgift.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Ett ingripande enligt första stycket får ske bara om den juridiska personens överträdelse är allvarlig och den fysiska personen i fråga uppsåtligen eller av grov oaktsamhet orsakat överträdelsen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": "Sanktionsföreläggande",
+          "content": "Frågor om ingripande mot fysiska personer enligt 7 § tas upp av Finansinspektionen genom sanktionsföreläggande.\nEtt sanktionsföreläggande innebär att den fysiska personen föreläggs att inom en viss tid godkänna en sanktion som är bestämd till tid eller belopp.\nNär föreläggande har godkänts, gäller det som ett domstolsavgörande som fått laga kraft. Ett godkännande som görs efter den tid som angetts i föreläggandet är utan verkan.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Frågor om ingripande mot fysiska personer enligt 7 § tas upp av Finansinspektionen genom sanktionsföreläggande.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ett sanktionsföreläggande innebär att den fysiska personen föreläggs att inom en viss tid godkänna en sanktion som är bestämd till tid eller belopp.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "När föreläggande har godkänts, gäller det som ett domstolsavgörande som fått laga kraft. Ett godkännande som görs efter den tid som angetts i föreläggandet är utan verkan.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Ett sanktionsföreläggande ska innehålla uppgift om\n1. den fysiska person som föreläggandet avser,\n2. överträdelsen och de omständigheter som behövs för att känneteckna den,\n3. de bestämmelser som är tillämpliga på överträdelsen, och\n4. den sanktion som föreläggs personen.\nFöreläggandet ska också innehålla en upplysning om att ansökan om sanktion kan komma att ges in till domstol, om föreläggandet inte godkänns inom den tid som Finansinspektionen anger.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett sanktionsföreläggande ska innehålla uppgift om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. den fysiska person som föreläggandet avser,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. överträdelsen och de omständigheter som behövs för att känneteckna den,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. de bestämmelser som är tillämpliga på överträdelsen, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. den sanktion som föreläggs personen.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Föreläggandet ska också innehålla en upplysning om att ansökan om sanktion kan komma att ges in till domstol, om föreläggandet inte godkänns inom den tid som Finansinspektionen anger.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Om ett sanktionsföreläggande inte har godkänts inom angiven tid, får Finansinspektionen ansöka hos domstol om att sanktion ska beslutas. En sådan ansökan ska göras hos den förvaltningsrätt som är behörig att pröva ett överklagande av Finansinspektionens beslut om ingripande mot den juridiska personen för samma överträdelse.\nPrövningstillstånd krävs vid överklagande till kammarrätten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ett sanktionsföreläggande inte har godkänts inom angiven tid, får Finansinspektionen ansöka hos domstol om att sanktion ska beslutas. En sådan ansökan ska göras hos den förvaltningsrätt som är behörig att pröva ett överklagande av Finansinspektionens beslut om ingripande mot den juridiska personen för samma överträdelse.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Ett sanktionsföreläggande enligt 8 § är utan verkan, om föreläggandet inte har delgetts den som det riktas mot inom två år från den tidpunkt då överträdelsen ägde rum. I ett sådant fall får inte heller någon sanktion enligt 10 § första stycket beslutas.",
+          "amendedBy": "Lag (2023:834)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett sanktionsföreläggande enligt 8 § är utan verkan, om föreläggandet inte har delgetts den som det riktas mot inom två år från den tidpunkt då överträdelsen ägde rum. I ett sådant fall får inte heller någon sanktion enligt 10 § första stycket beslutas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": "Sanktionsavgifter",
+          "content": "Sanktionsavgiften för en juridisk person ska fastställas till högst det högsta av\n1. ett belopp som per den 17 januari 2018 i svenska kronor motsvarade fem miljoner euro,\n2. tio procent av den juridiska personens omsättning närmast föregående räkenskapsår eller, i förekommande fall, motsvarande omsättning på koncernnivå, eller\n3. två gånger den vinst som den juridiska personen gjort till följd av överträdelsen, om beloppet går att fastställa.\nSanktionsavgiften får inte fastställas till ett lägre belopp än 5 000 kronor.\nOm överträdelsen har skett under den juridiska personens första verksamhetsår eller om uppgifter om omsättningen annars saknas eller är bristfälliga, får omsättningen uppskattas.\nAvgiften tillfaller staten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sanktionsavgiften för en juridisk person ska fastställas till högst det högsta av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. ett belopp som per den 17 januari 2018 i svenska kronor motsvarade fem miljoner euro,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. tio procent av den juridiska personens omsättning närmast föregående räkenskapsår eller, i förekommande fall, motsvarande omsättning på koncernnivå, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. två gånger den vinst som den juridiska personen gjort till följd av överträdelsen, om beloppet går att fastställa.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Sanktionsavgiften får inte fastställas till ett lägre belopp än 5 000 kronor.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Om överträdelsen har skett under den juridiska personens första verksamhetsår eller om uppgifter om omsättningen annars saknas eller är bristfälliga, får omsättningen uppskattas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Avgiften tillfaller staten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "Sanktionsavgiften för en fysisk person ska fastställas till högst det högsta av\n1. ett belopp som per den 17 januari 2018 i svenska kronor motsvarade fem miljoner euro, eller\n2. två gånger den vinst som den fysiska personen gjort till följd av överträdelsen, om beloppet går att fastställa.\nAvgiften tillfaller staten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sanktionsavgiften för en fysisk person ska fastställas till högst det högsta av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. ett belopp som per den 17 januari 2018 i svenska kronor motsvarade fem miljoner euro, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. två gånger den vinst som den fysiska personen gjort till följd av överträdelsen, om beloppet går att fastställa.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Avgiften tillfaller staten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": "Val av ingripande",
+          "content": "Vid valet av ingripande ska Finansinspektionen ta hänsyn till hur allvarlig överträdelsen är och hur länge den har pågått. Särskild hänsyn ska tas till överträdelsens art, överträdelsens konkreta och potentiella effekter på det finansiella systemet, skador som uppstått samt graden av ansvar hos den fysiska eller juridiska person som har gjort sig skyldig till överträdelsen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid valet av ingripande ska Finansinspektionen ta hänsyn till hur allvarlig överträdelsen är och hur länge den har pågått. Särskild hänsyn ska tas till överträdelsens art, överträdelsens konkreta och potentiella effekter på det finansiella systemet, skador som uppstått samt graden av ansvar hos den fysiska eller juridiska person som har gjort sig skyldig till överträdelsen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": null,
+          "content": "Utöver det som anges i 14 § ska det i försvårande riktning beaktas om den som har begått överträdelsen tidigare har begått en överträdelse. Vid denna bedömning ska särskild vikt fästas vid om överträdelserna är likartade och den tid som har gått mellan de olika överträdelserna.\nI förmildrande riktning ska det beaktas om den som har begått överträdelsen\n1. i väsentlig utsträckning genom ett aktivt samarbete har underlättat Finansinspektionens utredning, och\n2. snabbt upphört med överträdelsen eller snabbt verkat för att överträdelsen ska upphöra, sedan den anmälts till eller påtalats av Finansinspektionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utöver det som anges i 14 § ska det i försvårande riktning beaktas om den som har begått överträdelsen tidigare har begått en överträdelse. Vid denna bedömning ska särskild vikt fästas vid om överträdelserna är likartade och den tid som har gått mellan de olika överträdelserna.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "I förmildrande riktning ska det beaktas om den som har begått överträdelsen",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. i väsentlig utsträckning genom ett aktivt samarbete har underlättat Finansinspektionens utredning, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. snabbt upphört med överträdelsen eller snabbt verkat för att överträdelsen ska upphöra, sedan den anmälts till eller påtalats av Finansinspektionen.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": null,
+          "content": "När sanktionsavgiftens storlek fastställs ska särskild hänsyn tas till sådana omständigheter som anges i 14 och 15 §§, samt till den berörda fysiska eller juridiska personens finansiella ställning och, om det går att bestämma, den vinst som personen gjort till följd av överträdelsen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När sanktionsavgiftens storlek fastställs ska särskild hänsyn tas till sådana omständigheter som anges i 14 och 15 §§, samt till den berörda fysiska eller juridiska personens finansiella ställning och, om det går att bestämma, den vinst som personen gjort till följd av överträdelsen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": null,
+          "content": "Finansinspektionen får avstå från ingripande om\n1. överträdelsen är ringa eller ursäktlig,\n2. den fysiska eller juridiska personen i fråga gör rättelse,\n3. den fysiska personen verkat för att den juridiska personen gör rättelse,\n4. någon annan myndighet eller något annat organ har vidtagit åtgärder mot den fysiska eller juridiska personen och dessa åtgärder bedöms tillräckliga, eller\n5. det annars finns särskilda skäl.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Finansinspektionen får avstå från ingripande om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. överträdelsen är ringa eller ursäktlig,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. den fysiska eller juridiska personen i fråga gör rättelse,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. den fysiska personen verkat för att den juridiska personen gör rättelse,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. någon annan myndighet eller något annat organ har vidtagit åtgärder mot den fysiska eller juridiska personen och dessa åtgärder bedöms tillräckliga, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. det annars finns särskilda skäl.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": "Verkställighet av beslut om sanktionsavgift",
+          "content": "En sanktionsavgift ska betalas till Finansinspektionen inom 30 dagar efter det att ett beslut eller en dom om att ta ut avgiften har fått laga kraft eller sanktionsföreläggandet godkänts eller den längre tid som anges i beslutet eller föreläggandet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En sanktionsavgift ska betalas till Finansinspektionen inom 30 dagar efter det att ett beslut eller en dom om att ta ut avgiften har fått laga kraft eller sanktionsföreläggandet godkänts eller den längre tid som anges i beslutet eller föreläggandet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "19",
+          "heading": null,
+          "content": "Finansinspektionens beslut om sanktionsavgift får verkställas enligt utsökningsbalken, om avgiften inte har betalats inom den tid som anges i 18 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Finansinspektionens beslut om sanktionsavgift får verkställas enligt utsökningsbalken, om avgiften inte har betalats inom den tid som anges i 18 §.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "20",
+          "heading": null,
+          "content": "Om sanktionsavgiften inte har betalats inom den tid som anges i 18 §, ska Finansinspektionen lämna avgiften för indrivning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om sanktionsavgiften inte har betalats inom den tid som anges i 18 §, ska Finansinspektionen lämna avgiften för indrivning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "21",
+          "heading": "Bestämmelser om indrivning finns i lagen (1993:891) om  indrivning av statliga fordringar m.m.",
+          "content": "En sanktionsavgift som har beslutats faller bort i den utsträckning verkställighet inte har skett inom fem år från det att beslutet eller domen om att ta ut avgiften fick laga kraft eller sanktionsföreläggandet godkändes.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En sanktionsavgift som har beslutats faller bort i den utsträckning verkställighet inte har skett inom fem år från det att beslutet eller domen om att ta ut avgiften fick laga kraft eller sanktionsföreläggandet godkändes.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Överklagande, beslut som ska gälla omedelbart och vite",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Finansinspektionens beslut om sanktionsföreläggande enligt denna lag får inte överklagas.\nAndra beslut som Finansinspektionen meddelar enligt denna lag får överklagas till allmän förvaltningsdomstol.\nPrövningstillstånd krävs vid överklagande till kammarrätten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Finansinspektionens beslut om sanktionsföreläggande enligt denna lag får inte överklagas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Andra beslut som Finansinspektionen meddelar enligt denna lag får överklagas till allmän förvaltningsdomstol.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Finansinspektionen får bestämma att ett beslut av inspektionen om förbud, föreläggande eller återkallelse enligt 3 kap. 3, 4 eller 5 § eller om återkallelse enligt artikel 28.1 andra stycket i EU-förordningen ska gälla omedelbart.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Finansinspektionen får bestämma att ett beslut av inspektionen om förbud, föreläggande eller återkallelse enligt 3 kap. 3, 4 eller 5 § eller om återkallelse enligt artikel 28.1 andra stycket i EU-förordningen ska gälla omedelbart.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Ett beslut om föreläggande enligt denna lag eller enligt EU-förordningen får förenas med vite.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett beslut om föreläggande enligt denna lag eller enligt EU-förordningen får förenas med vite.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "2019:1215",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 februari 2020.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Genom lagen upphävs",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "med kompletterande  bestämmelser till EU:s förordning om värdepapperisering.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "3. Ingripande enligt denna lag får inte ske för överträdelser  som har ägt rum före ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2021:974",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 december 2021.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Äldre bestämmelser gäller för överträdelser som har ägt rum  före ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 2019:1215",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

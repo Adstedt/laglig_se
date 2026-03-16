@@ -1,0 +1,2780 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Arbetsmiljölag (1977:1160)",
+  "documentNumber": "SFS 1977:1160",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Lagens ändamål och tillämpningsområde",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Lagens ändamål är att förebygga ohälsa och olycksfall i arbetet samt att även i övrigt uppnå en god arbetsmiljö.",
+          "amendedBy": "Lag (1994:579)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Lagens ändamål är att förebygga ohälsa och olycksfall i arbetet samt att även i övrigt uppnå en god arbetsmiljö.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Denna lag gäller varje verksamhet i vilken arbetstagare utför arbete för en arbetsgivares räkning. I fråga om fartygsarbete gäller lagen även när svenska fartyg används till sjöfart utanför Sveriges sjöterritorium.\nI fråga om fartyg och fartygsarbete ska vad som sägs i denna lag om Arbetsmiljöverket i stället gälla Transportstyrelsen. Vad som sägs om en arbetsgivare i denna lag ska såvitt avser fartyg också gälla en redare, även då fartygsarbete utförs av någon annan än den som är anställd av redaren. Med redare likställs i denna lag den som i redarens ställe utövar ett avgörande inflytande över fartygets drift.\nOm skyldigheter i vissa avseenden för andra än arbetsgivare och arbetstagare finns bestämmelser i 3 och 5 kap.\nI lagen finns också bestämmelser om marknadskontroll.",
+          "amendedBy": "Lag (2022:1109)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag gäller varje verksamhet i vilken arbetstagare utför arbete för en arbetsgivares räkning. I fråga om fartygsarbete gäller lagen även när svenska fartyg används till sjöfart utanför Sveriges sjöterritorium.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "I fråga om fartyg och fartygsarbete ska vad som sägs i denna lag om Arbetsmiljöverket i stället gälla Transportstyrelsen. Vad som sägs om en arbetsgivare i denna lag ska såvitt avser fartyg också gälla en redare, även då fartygsarbete utförs av någon annan än den som är anställd av redaren. Med redare likställs i denna lag den som i redarens ställe utövar ett avgörande inflytande över fartygets drift.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Om skyldigheter i vissa avseenden för andra än arbetsgivare och arbetstagare finns bestämmelser i 3 och 5 kap.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "I lagen finns också bestämmelser om marknadskontroll.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2a",
+          "heading": null,
+          "content": "Bestämmelser om befälhavarens skyldigheter vid fartygsarbete finns i fartygssäkerhetslagen (2003:364).\nI fråga om varor som är avsedda för konsumenter eller som kan antas komma att användas av konsumenter gäller också produktsäkerhetslagen (2004:451).",
+          "amendedBy": "Lag (2018:126)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om befälhavarens skyldigheter vid fartygsarbete finns i fartygssäkerhetslagen (2003:364).",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "I fråga om varor som är avsedda för konsumenter eller som kan antas komma att användas av konsumenter gäller också produktsäkerhetslagen (2004:451).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2b",
+          "heading": null,
+          "content": "Bestämmelser om tillverkning, utsläppande på marknaden och användning av ämnen, även när de ingår i blandningar eller i varor, finns i Europaparlamentets och rådets förordning (EG) nr 1907/2006 av den 18 december 2006 om registrering, utvärdering, godkännande och begränsning av kemikalier (Reach), inrättande av en europeisk kemikaliemyndighet, ändring av direktiv 1999/45/EG och upphävande av rådets förordning (EEG) nr 793/93 och kommissionens förordning (EG) nr 1488/94 samt rådets direktiv 76/769/EEG och kommissionens direktiv 91/155/EEG, 93/67/EEG, 93/105/EG och 2000/21/EG.\nBestämmelser om utformning och tillverkning av personlig skyddsutrustning finns i Europaparlamentets och rådets förordning (EU) nr 2016/425 av den 9 mars 2016 om personlig skyddsutrustning och om upphävande av rådets direktiv 89/686/EEG.",
+          "amendedBy": "Lag (2018:126)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om tillverkning, utsläppande på marknaden och användning av ämnen, även när de ingår i blandningar eller i varor, finns i Europaparlamentets och rådets förordning (EG) nr 1907/2006 av den 18 december 2006 om registrering, utvärdering, godkännande och begränsning av kemikalier (Reach), inrättande av en europeisk kemikaliemyndighet, ändring av direktiv 1999/45/EG och upphävande av rådets förordning (EEG) nr 793/93 och kommissionens förordning (EG) nr 1488/94 samt rådets direktiv 76/769/EEG och kommissionens direktiv 91/155/EEG, 93/67/EEG, 93/105/EG och 2000/21/EG.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Bestämmelser om utformning och tillverkning av personlig skyddsutrustning finns i Europaparlamentets och rådets förordning (EU) nr 2016/425 av den 9 mars 2016 om personlig skyddsutrustning och om upphävande av rådets direktiv 89/686/EEG.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2c",
+          "heading": null,
+          "content": "Bestämmelserna i 2 kap. 1 § första stycket, 2 och 3 §§ och 3 kap. 4 § andra stycket gäller utländska fartyg inom Sveriges sjöterritorium. Regeringen får meddela föreskrifter om att även andra bestämmelser i lagen ska gälla för sådana fartyg.",
+          "amendedBy": "Lag (2018:126)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i 2 kap. 1 § första stycket, 2 och 3 §§ och 3 kap. 4 § andra stycket gäller utländska fartyg inom Sveriges sjöterritorium. Regeringen får meddela föreskrifter om att även andra bestämmelser i lagen ska gälla för sådana fartyg.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Vid tillämpning av 2-4 och 7-9 kap. ska med arbetstagare likställas\n1. den som genomgår utbildning, med undantag för barn i förskolan och elever i fritidshemmet,\n2. den som under vård i anstalt utför anvisat arbete,\n3. den som tjänstgör enligt lagen (1994:1809) om totalförsvarsplikt och annan som fullgör i lag föreskriven tjänstgöring eller som deltar i frivillig utbildning för verksamhet inom totalförsvaret.\nDe som avses i första stycket 1 och 2 ska likställas med arbetstagare även vid tillämpning av 5 kap. 1 och 3 §§. I fråga om dem som genomgår utbildning finns dessutom särskilda bestämmelser i 6 kap. 6 a, 8, 15, 17 och 18 §§, 7 kap. 13 och 14 §§ samt 9 kap. 3 §.\nI fall som avses i första och andra styckena ska det som i lagen sägs om arbetsgivare gälla den som driver den verksamhet i vilken arbetet utförs.",
+          "amendedBy": "Lag (2010:856)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid tillämpning av 2-4 och 7-9 kap. ska med arbetstagare likställas",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. den som genomgår utbildning, med undantag för barn i förskolan och elever i fritidshemmet,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. den som under vård i anstalt utför anvisat arbete,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. den som tjänstgör enligt lagen (1994:1809) om totalförsvarsplikt och annan som fullgör i lag föreskriven tjänstgöring eller som deltar i frivillig utbildning för verksamhet inom totalförsvaret.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "De som avses i första stycket 1 och 2 ska likställas med arbetstagare även vid tillämpning av 5 kap. 1 och 3 §§. I fråga om dem som genomgår utbildning finns dessutom särskilda bestämmelser i 6 kap. 6 a, 8, 15, 17 och 18 §§, 7 kap. 13 och 14 §§ samt 9 kap. 3 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "I fall som avses i första och andra styckena ska det som i lagen sägs om arbetsgivare gälla den som driver den verksamhet i vilken arbetet utförs.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "För deltagare i arbetsmarknadspolitiska program är denna lag tillämplig i den utsträckning som framgår av 7 § lagen (2000:625) om den arbetsmarknadspolitiska verksamheten.\nFör deltagare i praktik eller annan kompetenshöjande verksamhet som har anvisats av socialnämnd är denna lag tillämplig i den utsträckning som framgår av 12 kap. 6 § socialtjänstlagen (2025:400).\nFör dem som Migrationsverket ger sysselsättning enligt 4 § lagen (1994:137) om mottagande av asylsökande m.fl. är denna lag tillämplig i den utsträckning som framgår av 5 § lagen om mottagande av asylsökande m.fl.\nAtt denna lag i vissa fall, utöver vad som framgår av 2 § första stycket andra meningen, gäller även utomlands framgår av 5 § lagen (2010:449) om Försvarsmaktens personal vid internationella militära insatser.",
+          "amendedBy": "Lag (2025:406)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För deltagare i arbetsmarknadspolitiska program är denna lag tillämplig i den utsträckning som framgår av 7 § lagen (2000:625) om den arbetsmarknadspolitiska verksamheten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "För deltagare i praktik eller annan kompetenshöjande verksamhet som har anvisats av socialnämnd är denna lag tillämplig i den utsträckning som framgår av 12 kap. 6 § socialtjänstlagen (2025:400).",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "För dem som Migrationsverket ger sysselsättning enligt 4 § lagen (1994:137) om mottagande av asylsökande m.fl. är denna lag tillämplig i den utsträckning som framgår av 5 § lagen om mottagande av asylsökande m.fl.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Att denna lag i vissa fall, utöver vad som framgår av 2 § första stycket andra meningen, gäller även utomlands framgår av 5 § lagen (2010:449) om Försvarsmaktens personal vid internationella militära insatser.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får meddela särskilda föreskrifter för totalförsvaret med avvikelse från denna lag.",
+          "amendedBy": "Lag (1991:677)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela särskilda föreskrifter för totalförsvaret med avvikelse från denna lag.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Arbetsmiljöns beskaffenhet",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Arbetsmiljön skall vara tillfredsställande med hänsyn till arbetets natur och den sociala och tekniska utvecklingen i samhället. Vid fartygsarbete skall arbetsmiljön vara tillfredsställande också med hänsyn till sjösäkerhetens krav.\nArbetsförhållandena skall anpassas till människors olika förutsättningar i fysiskt och psykiskt avseende.\nArbetstagaren skall ges möjlighet att medverka i utformningen av sin egen arbetssituation samt i förändrings- och utvecklingsarbete som rör hans eget arbete.\nTeknik, arbetsorganisation och arbetsinnehåll skall utformas så att arbetstagaren inte utsätts för fysiska eller psykiska belastningar som kan medföra ohälsa eller olycksfall. Därvid skall även löneformer och förläggning av arbetstid beaktas.\nStarkt styrt eller bundet arbete skall undvikas eller begränsas.\nDet skall eftersträvas att arbetet ger möjligheter till variation, social kontakt och samarbete samt sammanhang mellan enskilda arbetsuppgifter.\nDet skall vidare eftersträvas att arbetsförhållandena ger möjligheter till personlig och yrkesmässig utveckling liksom till självbestämmande och yrkesmässigt ansvar.",
+          "amendedBy": "Lag (2003:365)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsmiljön skall vara tillfredsställande med hänsyn till arbetets natur och den sociala och tekniska utvecklingen i samhället. Vid fartygsarbete skall arbetsmiljön vara tillfredsställande också med hänsyn till sjösäkerhetens krav.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Arbetsförhållandena skall anpassas till människors olika förutsättningar i fysiskt och psykiskt avseende.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Arbetstagaren skall ges möjlighet att medverka i utformningen av sin egen arbetssituation samt i förändrings- och utvecklingsarbete som rör hans eget arbete.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Teknik, arbetsorganisation och arbetsinnehåll skall utformas så att arbetstagaren inte utsätts för fysiska eller psykiska belastningar som kan medföra ohälsa eller olycksfall. Därvid skall även löneformer och förläggning av arbetstid beaktas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "Starkt styrt eller bundet arbete skall undvikas eller begränsas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 6,
+              "text": "Det skall eftersträvas att arbetet ger möjligheter till variation, social kontakt och samarbete samt sammanhang mellan enskilda arbetsuppgifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 7,
+              "text": "Det skall vidare eftersträvas att arbetsförhållandena ger möjligheter till personlig och yrkesmässig utveckling liksom till självbestämmande och yrkesmässigt ansvar.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Arbete skall planläggas och anordnas så, att det kan utföras i en sund och säker miljö.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbete skall planläggas och anordnas så, att det kan utföras i en sund och säker miljö.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Arbetslokal skall vara så utformad och inredd att den är lämplig från arbetsmiljösynpunkt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetslokal skall vara så utformad och inredd att den är lämplig från arbetsmiljösynpunkt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "De arbetshygieniska förhållandena när det gäller luft, ljud, ljus, vibrationer och liknande skall vara tillfredsställande.\nBetryggande skyddsåtgärder skall vidtagas mot skada genom fall, ras, brand, explosion, elektrisk ström eller liknande.",
+          "amendedBy": "Lag (2003:365)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "De arbetshygieniska förhållandena när det gäller luft, ljud, ljus, vibrationer och liknande skall vara tillfredsställande.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Betryggande skyddsåtgärder skall vidtagas mot skada genom fall, ras, brand, explosion, elektrisk ström eller liknande.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Maskiner, redskap och andra tekniska anordningar skall vara så beskaffade och placerade och brukas på sådant sätt, att betryggande säkerhet ges mot ohälsa och olycksfall.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Maskiner, redskap och andra tekniska anordningar skall vara så beskaffade och placerade och brukas på sådant sätt, att betryggande säkerhet ges mot ohälsa och olycksfall.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Ämne som kan föranleda ohälsa eller olycksfall får användas endast under förhållanden som ger betryggande säkerhet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ämne som kan föranleda ohälsa eller olycksfall får användas endast under förhållanden som ger betryggande säkerhet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Kan betryggande skydd mot ohälsa eller olycksfall icke nås på annat sätt, skall personlig skyddsutrustning användas. Denna skall tillhandahållas genom arbetsgivarens försorg.\nVid fartygsarbete skall den personliga skyddsutrustningen tillhandahållas av redaren, om inte någon annan som arbetstagaren är anställd hos har åtagit sig detta ansvar.",
+          "amendedBy": "Lag (2003:365)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Kan betryggande skydd mot ohälsa eller olycksfall icke nås på annat sätt, skall personlig skyddsutrustning användas. Denna skall tillhandahållas genom arbetsgivarens försorg.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vid fartygsarbete skall den personliga skyddsutrustningen tillhandahållas av redaren, om inte någon annan som arbetstagaren är anställd hos har åtagit sig detta ansvar.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "I den utsträckning som föranleds av arbetets art och arbetstagarnas behov ska det finnas utrymmen och anordningar för personlig hygien, förtäring och vila samt första hjälp vid olycksfall eller sjukdom.\nFordon för personaltransport ska vara lämpade för ändamålet.\nOm utrymmen, anordningar, åtgärder för hjälp och vård vid olycksfall eller sjukdom samt kost och vatten ombord på fartyg finns det ytterligare bestämmelser i fartygssäkerhetslagen (2003:364).",
+          "amendedBy": "Lag (2019:614)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I den utsträckning som föranleds av arbetets art och arbetstagarnas behov ska det finnas utrymmen och anordningar för personlig hygien, förtäring och vila samt första hjälp vid olycksfall eller sjukdom.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Fordon för personaltransport ska vara lämpade för ändamålet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Om utrymmen, anordningar, åtgärder för hjälp och vård vid olycksfall eller sjukdom samt kost och vatten ombord på fartyg finns det ytterligare bestämmelser i fartygssäkerhetslagen (2003:364).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Särskilda bestämmelser om konstruktion och utformning av byggnader finns i plan- och bygglagen (2010:900) och föreskrifter som har meddelats med stöd av den lagen.",
+          "amendedBy": "Lag (2010:905)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Särskilda bestämmelser om konstruktion och utformning av byggnader finns i plan- och bygglagen (2010:900) och föreskrifter som har meddelats med stöd av den lagen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Bestämmelser om arbetstid finns i arbetstidslagen (1982:673) och i föreskrifter som har meddelats med stöd av den lagen.\nBestämmelser om arbetstiden och vilotiden vid fartygsarbete finns i lagen (1998:958) om vilotid för sjömän och lagen (2016:960) om arbetstid vid inlandssjöfart.\nBestämmelser om arbetstiden vid visst vägtransportarbete finns i lagen (2005:395) om arbetstid vid visst vägtransportarbete.\nSärskilda bestämmelser om arbetstid för minderåriga finns i 5 kap. 5 §.",
+          "amendedBy": "Lag (2016:961)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om arbetstid finns i arbetstidslagen (1982:673) och i föreskrifter som har meddelats med stöd av den lagen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Bestämmelser om arbetstiden och vilotiden vid fartygsarbete finns i lagen (1998:958) om vilotid för sjömän och lagen (2016:960) om arbetstid vid inlandssjöfart.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Bestämmelser om arbetstiden vid visst vägtransportarbete finns i lagen (2005:395) om arbetstid vid visst vägtransportarbete.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Särskilda bestämmelser om arbetstid för minderåriga finns i 5 kap. 5 §.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Allmänna skyldigheter",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Bestämmelserna i detta kapitel skall tillämpas med beaktande av kraven på arbetsmiljöns beskaffenhet enligt 2 kap.",
+          "amendedBy": "Lag (1994:579)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i detta kapitel skall tillämpas med beaktande av kraven på arbetsmiljöns beskaffenhet enligt 2 kap.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "1a",
+          "heading": null,
+          "content": "Arbetsgivare och arbetstagare skall samverka för att åstadkomma en god arbetsmiljö.",
+          "amendedBy": "Lag (1994:579)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivare och arbetstagare skall samverka för att åstadkomma en god arbetsmiljö.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Arbetsgivaren skall vidta alla åtgärder som behövs för att förebygga att arbetstagaren utsätts för ohälsa eller olycksfall. En utgångspunkt skall därvid vara att allt sådant som kan leda till ohälsa eller olycksfall skall ändras eller ersättas så att risken för ohälsa eller olycksfall undanröjs.\nArbetsgivaren skall beakta den särskilda risk för ohälsa och olycksfall som kan följa av att arbetstagaren utför arbete ensam.\nLokaler samt maskiner, redskap, skyddsutrustning och andra tekniska anordningar skall underhållas väl.",
+          "amendedBy": "Lag (2002:585)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren skall vidta alla åtgärder som behövs för att förebygga att arbetstagaren utsätts för ohälsa eller olycksfall. En utgångspunkt skall därvid vara att allt sådant som kan leda till ohälsa eller olycksfall skall ändras eller ersättas så att risken för ohälsa eller olycksfall undanröjs.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Arbetsgivaren skall beakta den särskilda risk för ohälsa och olycksfall som kan följa av att arbetstagaren utför arbete ensam.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Lokaler samt maskiner, redskap, skyddsutrustning och andra tekniska anordningar skall underhållas väl.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2a",
+          "heading": null,
+          "content": "Arbetsgivaren ska systematiskt planera, leda och kontrollera verksamheten på ett sätt som leder till att arbetsmiljön uppfyller föreskrivna krav på en god arbetsmiljö.\nHan ska utreda arbetsskador, fortlöpande undersöka riskerna i verksamheten och vidta de åtgärder som föranleds av detta.\nÅtgärder som inte kan vidtas omedelbart ska tidsplaneras.\nArbetsgivaren ska i den utsträckning verksamheten kräver dokumentera arbetsmiljön och arbetet med denna. Handlingsplaner ska därvid upprättas.\nArbetsgivaren ska vidare se till att det i hans verksamhet finns en på lämpligt sätt organiserad arbetsanpassnings- och rehabiliteringsverksamhet för fullgörande av de uppgifter som enligt denna lag och enligt 30 kap. socialförsäkringsbalken vilar på honom.",
+          "amendedBy": "Lag (2010:1225)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska systematiskt planera, leda och kontrollera verksamheten på ett sätt som leder till att arbetsmiljön uppfyller föreskrivna krav på en god arbetsmiljö.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Han ska utreda arbetsskador, fortlöpande undersöka riskerna i verksamheten och vidta de åtgärder som föranleds av detta.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Åtgärder som inte kan vidtas omedelbart ska tidsplaneras.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Arbetsgivaren ska i den utsträckning verksamheten kräver dokumentera arbetsmiljön och arbetet med denna. Handlingsplaner ska därvid upprättas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "Arbetsgivaren ska vidare se till att det i hans verksamhet finns en på lämpligt sätt organiserad arbetsanpassnings- och rehabiliteringsverksamhet för fullgörande av de uppgifter som enligt denna lag och enligt 30 kap. socialförsäkringsbalken vilar på honom.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2b",
+          "heading": null,
+          "content": "Regeringen får meddela föreskrifter i frågor som faller under Arbetsmiljöverkets tillsynsansvar om att 2 a § första och andra styckena ska gälla även i fråga om att följa Europaparlamentets och rådets förordning (EG) nr 1907/2006 av den 18 december 2006 om registrering, utvärdering, godkännande och begränsning av kemikalier (Reach), inrättande av en europeisk kemikaliemyndighet, ändring av direktiv 1999/45/EG och upphävande av rådets förordning (EEG) nr 793/93 och kommissionens förordning (EG) nr 1488/94 samt rådets direktiv 76/ 769/EEG och kommissionens direktiv 91/155/EEG, 93/67/EEG, 93/105/EG och 2000/21/EG.",
+          "amendedBy": "Lag (2010:1543)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen får meddela föreskrifter i frågor som faller under Arbetsmiljöverkets tillsynsansvar om att 2 a § första och andra styckena ska gälla även i fråga om att följa Europaparlamentets och rådets förordning (EG) nr 1907/2006 av den 18 december 2006 om registrering, utvärdering, godkännande och begränsning av kemikalier (Reach), inrättande av en europeisk kemikaliemyndighet, ändring av direktiv 1999/45/EG och upphävande av rådets förordning (EEG) nr 793/93 och kommissionens förordning (EG) nr 1488/94 samt rådets direktiv 76/ 769/EEG och kommissionens direktiv 91/155/EEG, 93/67/EEG, 93/105/EG och 2000/21/EG.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2c",
+          "heading": null,
+          "content": "Arbetsgivaren skall svara för att den företagshälsovård som arbetsförhållandena kräver finns att tillgå.\nMed företagshälsovård avses en oberoende expertresurs inom områdena arbetsmiljö och rehabilitering. Företagshälsovården skall särskilt arbeta för att förebygga och undanröja hälsorisker på arbetsplatser samt ha kompetens att identifiera och beskriva sambanden mellan arbetsmiljö, organisation, produktivitet och hälsa.",
+          "amendedBy": "Lag (2010:1543)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren skall svara för att den företagshälsovård som arbetsförhållandena kräver finns att tillgå.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Med företagshälsovård avses en oberoende expertresurs inom områdena arbetsmiljö och rehabilitering. Företagshälsovården skall särskilt arbeta för att förebygga och undanröja hälsorisker på arbetsplatser samt ha kompetens att identifiera och beskriva sambanden mellan arbetsmiljö, organisation, produktivitet och hälsa.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Arbetsgivaren skall se till att arbetstagaren får god kännedom om de förhållanden, under vilka arbetet bedrivs, och att arbetstagaren upplyses om de risker som kan vara förbundna med arbetet. Arbetsgivaren skall förvissa sig om att arbetstagaren har den utbildning som behövs och vet vad han har att iaktta för att undgå riskerna i arbetet. Arbetsgivaren skall se till att endast arbetstagare som har fått tillräckliga instruktioner får tillträde till områden där det finns en påtaglig risk för ohälsa eller olycksfall.\nArbetsgivaren skall genom att anpassa arbetsförhållandena eller vidta annan lämplig åtgärd ta hänsyn till arbetstagarens särskilda förutsättningar för arbetet. Vid arbetets planläggning och anordnande skall beaktas att människors förutsättningar att utföra arbetsuppgifter är olika.\nLag (2002:585)\n3 a § En arbetsgivare ska utan dröjsmål underrätta den myndighet som regeringen bestämmer om dödsfall eller svårare personskada som har inträffat i samband med arbetets utförande.\nEn arbetsgivare ska också utan dröjsmål underrätta samma myndighet om skador i samband med arbetet som drabbat flera arbetstagare samtidigt och om tillbud som inneburit allvarlig fara för liv och hälsa.\nFöreskrifter om befälhavares skyldighet att vid fartygsarbete rapportera vissa händelser finns i 6 kap. 14 § sjölagen (1994:1009).",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren skall se till att arbetstagaren får god kännedom om de förhållanden, under vilka arbetet bedrivs, och att arbetstagaren upplyses om de risker som kan vara förbundna med arbetet. Arbetsgivaren skall förvissa sig om att arbetstagaren har den utbildning som behövs och vet vad han har att iaktta för att undgå riskerna i arbetet. Arbetsgivaren skall se till att endast arbetstagare som har fått tillräckliga instruktioner får tillträde till områden där det finns en påtaglig risk för ohälsa eller olycksfall.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Arbetsgivaren skall genom att anpassa arbetsförhållandena eller vidta annan lämplig åtgärd ta hänsyn till arbetstagarens särskilda förutsättningar för arbetet. Vid arbetets planläggning och anordnande skall beaktas att människors förutsättningar att utföra arbetsuppgifter är olika.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Lag (2002:585)",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "3 a § En arbetsgivare ska utan dröjsmål underrätta den myndighet som regeringen bestämmer om dödsfall eller svårare personskada som har inträffat i samband med arbetets utförande.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "En arbetsgivare ska också utan dröjsmål underrätta samma myndighet om skador i samband med arbetet som drabbat flera arbetstagare samtidigt och om tillbud som inneburit allvarlig fara för liv och hälsa.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 6,
+              "text": "Föreskrifter om befälhavares skyldighet att vid fartygsarbete rapportera vissa händelser finns i 6 kap. 14 § sjölagen (1994:1009).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Arbetstagaren skall medverka i arbetsmiljöarbetet och delta i genomförandet av de åtgärder som behövs för att åstadkomma en god arbetsmiljö. Han skall följa givna föreskrifter samt använda de skyddsanordningar och iaktta den försiktighet i övrigt som behövs för att förebygga ohälsa och olycksfall.\nOm arbetstagaren finner att arbetet innebär omedelbar och allvarlig fara för liv eller hälsa, skall han snarast underrätta arbetsgivaren eller skyddsombud. Arbetstagaren är fri från ersättningsskyldighet för skada som uppstår till följd av att han underlåter att utföra arbetet i avvaktan på besked om det skall fortsättas.",
+          "amendedBy": "Lag (1991:677)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetstagaren skall medverka i arbetsmiljöarbetet och delta i genomförandet av de åtgärder som behövs för att åstadkomma en god arbetsmiljö. Han skall följa givna föreskrifter samt använda de skyddsanordningar och iaktta den försiktighet i övrigt som behövs för att förebygga ohälsa och olycksfall.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om arbetstagaren finner att arbetet innebär omedelbar och allvarlig fara för liv eller hälsa, skall han snarast underrätta arbetsgivaren eller skyddsombud. Arbetstagaren är fri från ersättningsskyldighet för skada som uppstår till följd av att han underlåter att utföra arbetet i avvaktan på besked om det skall fortsättas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "I fråga om arbete som arbetsgivare själv utför skall denna lag och med stöd därav meddelade föreskrifter iakttagas i tillämpliga delar. Detsamma gäller när två eller flera för gemensam räkning yrkesmässigt driver verksamhet utan att ha arbetstagare anställd, dock ej om verksamheten bedrives endast av medlemmar av samma familj.\nDen som ensam eller gemensamt med familjemedlem driver yrkesmässig verksamhet utan anställd är skyldig att följa vad i denna lag och med stöd av den har föreskrivits i fråga om teknisk anordning och ämne, som kan föranleda ohälsa eller olycksfall, samt beträffande gemensamt arbetsställe.\nAv 4 kap. 10 § framgår att föreskrifter får meddelas om skyldigheter även i andra avseenden.",
+          "amendedBy": "Lag (1994:579)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I fråga om arbete som arbetsgivare själv utför skall denna lag och med stöd därav meddelade föreskrifter iakttagas i tillämpliga delar. Detsamma gäller när två eller flera för gemensam räkning yrkesmässigt driver verksamhet utan att ha arbetstagare anställd, dock ej om verksamheten bedrives endast av medlemmar av samma familj.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Den som ensam eller gemensamt med familjemedlem driver yrkesmässig verksamhet utan anställd är skyldig att följa vad i denna lag och med stöd av den har föreskrivits i fråga om teknisk anordning och ämne, som kan föranleda ohälsa eller olycksfall, samt beträffande gemensamt arbetsställe.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Av 4 kap. 10 § framgår att föreskrifter får meddelas om skyldigheter även i andra avseenden.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Den som låter utföra ett byggnads- eller anläggningsarbete ska\n1. under varje skede av planeringen och projekteringen se till att arbetsmiljösynpunkter beaktas när det gäller såväl byggskedet som det framtida brukandet,\n2. utse en lämplig byggarbetsmiljösamordnare för planering och projektering av arbetet med de uppgifter som anges i 7 a §, och\n3. utse en lämplig byggarbetsmiljösamordnare för utförande av arbetet med de uppgifter som anges i 7 b och 7 f §§.\nDen som låter utföra ett byggnads- eller anläggningsarbete kan utse sig själv eller någon annan till byggarbetsmiljösamordnare. Om någon annan har utsetts befrias dock inte den som låter utföra ett byggnads- eller anläggningsarbete från ansvar för sådana arbetsuppgifter som anges i första stycket 2 eller 3.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som låter utföra ett byggnads- eller anläggningsarbete ska",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. under varje skede av planeringen och projekteringen se till att arbetsmiljösynpunkter beaktas när det gäller såväl byggskedet som det framtida brukandet,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. utse en lämplig byggarbetsmiljösamordnare för planering och projektering av arbetet med de uppgifter som anges i 7 a §, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. utse en lämplig byggarbetsmiljösamordnare för utförande av arbetet med de uppgifter som anges i 7 b och 7 f §§.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Den som låter utföra ett byggnads- eller anläggningsarbete kan utse sig själv eller någon annan till byggarbetsmiljösamordnare. Om någon annan har utsetts befrias dock inte den som låter utföra ett byggnads- eller anläggningsarbete från ansvar för sådana arbetsuppgifter som anges i första stycket 2 eller 3.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Under varje skede av planeringen och projekteringen av ett byggnads- eller anläggningsarbete ska arkitekter, konstruktörer och andra som medverkar, inom ramen för sina uppdrag, se till att arbetsmiljösynpunkter beaktas när det gäller såväl byggskedet som det framtida brukandet.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Under varje skede av planeringen och projekteringen av ett byggnads- eller anläggningsarbete ska arkitekter, konstruktörer och andra som medverkar, inom ramen för sina uppdrag, se till att arbetsmiljösynpunkter beaktas när det gäller såväl byggskedet som det framtida brukandet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7a",
+          "heading": null,
+          "content": "Den byggarbetsmiljösamordnare som enligt 6 § första stycket 2 har utsetts för planering och projektering av ett byggnads- eller anläggningsarbete, ska samordna tillämpningen av relevanta arbetsmiljöregler som under varje skede av planeringen och projekteringen ska följas i fråga om såväl byggskedet som brukandet av byggnaden eller anläggningen. Det gäller särskilt då frågor om planeringen av arbetsmoment som ska utföras samtidigt eller efter varandra avgörs och när tidsåtgången för sådana arbetsmoment beräknas.\nByggarbetsmiljösamordnaren ska beakta en sådan arbetsmiljöplan och annan dokumentation som avses i 4 kap. 8 § andra stycket 1-3.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den byggarbetsmiljösamordnare som enligt 6 § första stycket 2 har utsetts för planering och projektering av ett byggnads- eller anläggningsarbete, ska samordna tillämpningen av relevanta arbetsmiljöregler som under varje skede av planeringen och projekteringen ska följas i fråga om såväl byggskedet som brukandet av byggnaden eller anläggningen. Det gäller särskilt då frågor om planeringen av arbetsmoment som ska utföras samtidigt eller efter varandra avgörs och när tidsåtgången för sådana arbetsmoment beräknas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Byggarbetsmiljösamordnaren ska beakta en sådan arbetsmiljöplan och annan dokumentation som avses i 4 kap. 8 § andra stycket 1-3.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7b",
+          "heading": null,
+          "content": "Den byggarbetsmiljösamordnare som enligt 6 § första stycket 3 har utsetts för utförande av ett byggnads- eller anläggningsarbete, ska se till att samordna arbetet med att förebygga risker för ohälsa och olycksfall på arbetsstället och utföra de uppgifter som framgår av 7 e § 2-5, samt\n1. samordna tillämpningen av relevanta arbetsmiljöregler när tekniska eller organisatoriska frågor om planeringen av arbetsmoment som ska utföras samtidigt eller efter varandra avgörs och när tidsåtgången för sådana moment beräknas,\n2. samordna tillämpningen av relevanta arbetsmiljöregler för att säkerställa att den eller de som bedriver verksamhet på arbetsstället tillämpar dessa regler på ett systematiskt sätt samt följer en arbetsmiljöplan,\n3. samordna åtgärder för att kontrollera att byggnads- eller anläggningsarbetet med avseende på arbetsmiljön utförs på ett korrekt sätt,\n4. vidta nödvändiga åtgärder för att säkerställa att endast behöriga personer ges tillträde till arbetsstället, och\n5. organisera de uppgifter som enligt 7 g § ankommer på dem som bedriver verksamhet på ett gemensamt arbetsställe.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den byggarbetsmiljösamordnare som enligt 6 § första stycket 3 har utsetts för utförande av ett byggnads- eller anläggningsarbete, ska se till att samordna arbetet med att förebygga risker för ohälsa och olycksfall på arbetsstället och utföra de uppgifter som framgår av 7 e § 2-5, samt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. samordna tillämpningen av relevanta arbetsmiljöregler när tekniska eller organisatoriska frågor om planeringen av arbetsmoment som ska utföras samtidigt eller efter varandra avgörs och när tidsåtgången för sådana moment beräknas,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. samordna tillämpningen av relevanta arbetsmiljöregler för att säkerställa att den eller de som bedriver verksamhet på arbetsstället tillämpar dessa regler på ett systematiskt sätt samt följer en arbetsmiljöplan,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. samordna åtgärder för att kontrollera att byggnads- eller anläggningsarbetet med avseende på arbetsmiljön utförs på ett korrekt sätt,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. vidta nödvändiga åtgärder för att säkerställa att endast behöriga personer ges tillträde till arbetsstället, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. organisera de uppgifter som enligt 7 g § ankommer på dem som bedriver verksamhet på ett gemensamt arbetsställe.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "7c",
+          "heading": null,
+          "content": "Det som sägs i 6 § och i föreskrifter som har meddelats med stöd av 4 kap. 8 § om den som låter utföra byggnads- eller anläggningsarbete ska i stället gälla en av denne anlitad uppdragstagare i den mån\n1. uppdragstagaren har fått i uppdrag att självständigt ansvara för planering och projektering eller arbetets utförande, och\n2. det skriftligen har avtalats att de uppgifter som avses i 6 § och i de anslutande föreskrifterna ska åvila uppdragstagaren vid utförandet av uppdraget.\nOm konsumenttjänstlagen (1985:716) ska tillämpas på uppdrag enligt första stycket 1, ska det som sägs i 6 § och i föreskrifter som har meddelats med stöd av 4 kap. 8 § gälla för uppdragstagaren vid arbetets utförande. Det gäller dock inte om det skriftligen har avtalats att det som sägs i 6 § och i de anslutande föreskrifterna i stället ska gälla för den som låter utföra byggnads- eller anläggningsarbetet.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det som sägs i 6 § och i föreskrifter som har meddelats med stöd av 4 kap. 8 § om den som låter utföra byggnads- eller anläggningsarbete ska i stället gälla en av denne anlitad uppdragstagare i den mån",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. uppdragstagaren har fått i uppdrag att självständigt ansvara för planering och projektering eller arbetets utförande, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. det skriftligen har avtalats att de uppgifter som avses i 6 § och i de anslutande föreskrifterna ska åvila uppdragstagaren vid utförandet av uppdraget.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Om konsumenttjänstlagen (1985:716) ska tillämpas på uppdrag enligt första stycket 1, ska det som sägs i 6 § och i föreskrifter som har meddelats med stöd av 4 kap. 8 § gälla för uppdragstagaren vid arbetets utförande. Det gäller dock inte om det skriftligen har avtalats att det som sägs i 6 § och i de anslutande föreskrifterna i stället ska gälla för den som låter utföra byggnads- eller anläggningsarbetet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7d",
+          "heading": null,
+          "content": "Om ett fast driftsställe är gemensamt arbetsställe för flera verksamheter, är den som råder över arbetsstället ansvarig för samordningen av arbetsmiljöfrågor. Om ett fartyg är gemensamt arbetsställe för flera verksamheter är redaren ansvarig för samordningen. Har ett fartyg tagits in på ett varv i Sverige är dock den som svarar för varvsdriften ansvarig för samordningen. Ansvaret för samordning av skyddsåtgärder som föranleds av att ett fartyg är under lastning eller lossning i en svensk hamn åvilar den arbetsgivare som har ansvaret för detta arbete.\nAnsvaret för samordningen enligt första stycket kan överlåtas till någon som bedriver verksamhet på arbetsstället eller, i fråga om lastning eller lossning av ett fartyg i svensk hamn, på hamnen eller redaren.\nI fråga om annat gemensamt arbetsställe än som avses i första stycket kan de som bedriver verksamhet där komma överens om att en av dem ska vara ansvarig för samordningen. Det gäller inte för arbetsställen för byggnads- eller anläggningsarbete.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ett fast driftsställe är gemensamt arbetsställe för flera verksamheter, är den som råder över arbetsstället ansvarig för samordningen av arbetsmiljöfrågor. Om ett fartyg är gemensamt arbetsställe för flera verksamheter är redaren ansvarig för samordningen. Har ett fartyg tagits in på ett varv i Sverige är dock den som svarar för varvsdriften ansvarig för samordningen. Ansvaret för samordning av skyddsåtgärder som föranleds av att ett fartyg är under lastning eller lossning i en svensk hamn åvilar den arbetsgivare som har ansvaret för detta arbete.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ansvaret för samordningen enligt första stycket kan överlåtas till någon som bedriver verksamhet på arbetsstället eller, i fråga om lastning eller lossning av ett fartyg i svensk hamn, på hamnen eller redaren.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "I fråga om annat gemensamt arbetsställe än som avses i första stycket kan de som bedriver verksamhet där komma överens om att en av dem ska vara ansvarig för samordningen. Det gäller inte för arbetsställen för byggnads- eller anläggningsarbete.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7e",
+          "heading": null,
+          "content": "Den som är ansvarig för samordningen av arbetsmiljöfrågor enligt 7 d § ska se till att\n1. arbetet med att förebygga risker för ohälsa och olycksfall samordnas på det gemensamma arbetsstället,\n2. arbete tidsplaneras på det sätt som behövs för att förebygga risker för ohälsa och olycksfall till följd av att olika verksamheter pågår på arbetsstället,\n3. allmänna skyddsanordningar inrättas och underhålls och allmänna skyddsregler för arbetsstället utfärdas,\n4. ansvaret för de speciella skyddsanordningar som kan behövas för ett visst eller vissa arbeten klargörs, och\n5. personalutrymmen och sanitära anordningar inrättas på arbetsstället i behövlig omfattning.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som är ansvarig för samordningen av arbetsmiljöfrågor enligt 7 d § ska se till att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. arbetet med att förebygga risker för ohälsa och olycksfall samordnas på det gemensamma arbetsstället,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. arbete tidsplaneras på det sätt som behövs för att förebygga risker för ohälsa och olycksfall till följd av att olika verksamheter pågår på arbetsstället,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. allmänna skyddsanordningar inrättas och underhålls och allmänna skyddsregler för arbetsstället utfärdas,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. ansvaret för de speciella skyddsanordningar som kan behövas för ett visst eller vissa arbeten klargörs, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. personalutrymmen och sanitära anordningar inrättas på arbetsstället i behövlig omfattning.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "7f",
+          "heading": null,
+          "content": "Om ett byggnads- eller anläggningsarbete utgör gemensamt arbetsställe med annan verksamhet som avses i 7 d §, tillämpas 6-7 c §§ i fråga om byggnads- eller anläggningsarbetet samt 7 d och 7 e §§ i fråga om den övriga verksamheten.\nDen som är ansvarig för samordningen av arbetsmiljöfrågor enligt 7 d § ska i syfte att åstadkomma tillfredsställande skyddsförhållanden se till att samråd kommer till stånd med den som har utsetts till byggarbetsmiljösamordnare enligt 6 §.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ett byggnads- eller anläggningsarbete utgör gemensamt arbetsställe med annan verksamhet som avses i 7 d §, tillämpas 6-7 c §§ i fråga om byggnads- eller anläggningsarbetet samt 7 d och 7 e §§ i fråga om den övriga verksamheten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Den som är ansvarig för samordningen av arbetsmiljöfrågor enligt 7 d § ska i syfte att åstadkomma tillfredsställande skyddsförhållanden se till att samråd kommer till stånd med den som har utsetts till byggarbetsmiljösamordnare enligt 6 §.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7g",
+          "heading": null,
+          "content": "De som samtidigt, eller i tidsmässig anslutning till varandra, bedriver verksamhet på ett gemensamt arbetsställe, ska samråda och gemensamt verka för att åstadkomma tillfredsställande skyddsförhållanden.\nVar och en av dem ska se till att den egna verksamheten och anordningarna på det gemensamma arbetsstället inte medför att någon som arbetar där utsätts för risk för ohälsa eller olycksfall.\nDe som bedriver verksamhet eller arbetar på det gemensamma arbetsstället ska följa anvisningar från en byggarbetsmiljösamordnare i fråga om byggnads- eller anläggningsarbete och från den som är ansvarig för samordningen av arbetsmiljöfrågor i övriga fall.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "De som samtidigt, eller i tidsmässig anslutning till varandra, bedriver verksamhet på ett gemensamt arbetsställe, ska samråda och gemensamt verka för att åstadkomma tillfredsställande skyddsförhållanden.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Var och en av dem ska se till att den egna verksamheten och anordningarna på det gemensamma arbetsstället inte medför att någon som arbetar där utsätts för risk för ohälsa eller olycksfall.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "De som bedriver verksamhet eller arbetar på det gemensamma arbetsstället ska följa anvisningar från en byggarbetsmiljösamordnare i fråga om byggnads- eller anläggningsarbete och från den som är ansvarig för samordningen av arbetsmiljöfrågor i övriga fall.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7h",
+          "heading": null,
+          "content": "Den som tillverkar monteringsfärdiga byggnader eller anläggningar ska se till att arbetsmiljösynpunkter beaktas vid projekteringen när det gäller såväl byggskedet som det framtida brukandet samt se till att olika delar av projekteringen samordnas.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som tillverkar monteringsfärdiga byggnader eller anläggningar ska se till att arbetsmiljösynpunkter beaktas vid projekteringen när det gäller såväl byggskedet som det framtida brukandet samt se till att olika delar av projekteringen samordnas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Den som tillverkar, importerar, överlåter eller upplåter en maskin, ett redskap, skyddsutrustning eller annan teknisk anordning ska se till att anordningen erbjuder betryggande säkerhet mot ohälsa och olycksfall, när den släpps ut på marknaden, avlämnas för att tas i bruk eller ställs ut till försäljning.\nEn teknisk anordning som inte uppfyller kraven i första stycket får visas på mässor, utställningar eller liknande om det tydligt anges att kraven inte är uppfyllda och att anordningen inte får släppas ut på marknaden eller avlämnas för att tas i bruk förrän den uppfyller kraven. Sätts anordningen i funktion ska tillräckliga säkerhetsåtgärder vidtas mot olycksfall.\nAnvisningar för anordningens montering, installation, användning och skötsel samt övriga uppgifter om anordningen som är av betydelse för att förebygga ohälsa och olycksfall (produktinformation) ska medfölja vid avlämnandet genom tydlig märkning, i form av handlingar eller på annat sätt. Information av särskild betydelse för arbetsmiljön ska lämnas vid marknadsföring av anordningen.",
+          "amendedBy": "Lag (2008:295)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som tillverkar, importerar, överlåter eller upplåter en maskin, ett redskap, skyddsutrustning eller annan teknisk anordning ska se till att anordningen erbjuder betryggande säkerhet mot ohälsa och olycksfall, när den släpps ut på marknaden, avlämnas för att tas i bruk eller ställs ut till försäljning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "En teknisk anordning som inte uppfyller kraven i första stycket får visas på mässor, utställningar eller liknande om det tydligt anges att kraven inte är uppfyllda och att anordningen inte får släppas ut på marknaden eller avlämnas för att tas i bruk förrän den uppfyller kraven. Sätts anordningen i funktion ska tillräckliga säkerhetsåtgärder vidtas mot olycksfall.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Anvisningar för anordningens montering, installation, användning och skötsel samt övriga uppgifter om anordningen som är av betydelse för att förebygga ohälsa och olycksfall (produktinformation) ska medfölja vid avlämnandet genom tydlig märkning, i form av handlingar eller på annat sätt. Information av särskild betydelse för arbetsmiljön ska lämnas vid marknadsföring av anordningen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8a",
+          "heading": null,
+          "content": "Vad som sägs i 8 § gäller inte sådan skyddsutrustning som omfattas av Europaparlamentets och rådets förordning (EU) nr 2016/425 av den 9 mars 2016 om personlig skyddsutrustning och om upphävande av rådets direktiv 89/686/EEG.",
+          "amendedBy": "Lag (2018:126)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vad som sägs i 8 § gäller inte sådan skyddsutrustning som omfattas av Europaparlamentets och rådets förordning (EU) nr 2016/425 av den 9 mars 2016 om personlig skyddsutrustning och om upphävande av rådets direktiv 89/686/EEG.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Den som tillverkar, importerar eller överlåter ett ämne, som kan föranleda ohälsa eller olycksfall, skall vidta de åtgärder som behövs för att hindra eller motverka att ämnet vid avsedd användning innebär risk från skyddssynpunkt.\nVad som sägs i 8 § tredje stycket om produktinformation och information vid marknadsföring skall gälla även i fråga om ämnen som kan föranleda ohälsa eller olycksfall.",
+          "amendedBy": "Lag (2002:585)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som tillverkar, importerar eller överlåter ett ämne, som kan föranleda ohälsa eller olycksfall, skall vidta de åtgärder som behövs för att hindra eller motverka att ämnet vid avsedd användning innebär risk från skyddssynpunkt.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vad som sägs i 8 § tredje stycket om produktinformation och information vid marknadsföring skall gälla även i fråga om ämnen som kan föranleda ohälsa eller olycksfall.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Den som överlåter eller upplåter en förpackad produkt skall se till att förpackningen inte innebär risk för ohälsa eller olycksfall.\nLag ( 1991:677).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som överlåter eller upplåter en förpackad produkt skall se till att förpackningen inte innebär risk för ohälsa eller olycksfall.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Lag ( 1991:677).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Den som installerar en teknisk anordning skall se till att behövliga skyddsanordningar sätts upp och att i övrigt erforderliga skyddsåtgärder vidtas.",
+          "amendedBy": "Lag (1991:677)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som installerar en teknisk anordning skall se till att behövliga skyddsanordningar sätts upp och att i övrigt erforderliga skyddsåtgärder vidtas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "Den som råder över ett arbetsställe skall se till att det på arbetsstället finns sådana fasta anordningar att den som arbetar där utan att vara arbetstagare i förhållande till honom inte utsätts för risk för ohälsa eller olycksfall. Han skall även se till att andra anordningar som finns på arbetsstället kan användas utan sådan risk.\nDen som anlitar inhyrd arbetskraft för att utföra arbete i sin verksamhet skall vidta de skyddsåtgärder som behövs i detta arbete.",
+          "amendedBy": "Lag (1994:579)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som råder över ett arbetsställe skall se till att det på arbetsstället finns sådana fasta anordningar att den som arbetar där utan att vara arbetstagare i förhållande till honom inte utsätts för risk för ohälsa eller olycksfall. Han skall även se till att andra anordningar som finns på arbetsstället kan användas utan sådan risk.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Den som anlitar inhyrd arbetskraft för att utföra arbete i sin verksamhet skall vidta de skyddsåtgärder som behövs i detta arbete.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "I 7 kap. 8 § föreskrivs om skyddsansvar i vissa fall för den som upplåter en lokal, ett markområde eller ett utrymme under jord för arbete eller som personalutrymme.",
+          "amendedBy": "Lag (1994:579)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I 7 kap. 8 § föreskrivs om skyddsansvar i vissa fall för den som upplåter en lokal, ett markområde eller ett utrymme under jord för arbete eller som personalutrymme.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": null,
+          "content": "Har upphävts genom\nlag (2008:934)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "lag (2008:934)",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Bemyndiganden",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får, i fråga om tekniska anordningar eller ämnen som kan orsaka ohälsa eller olycksfall, meddela föreskrifter om\n1. villkor för tillverkning, användning samt märkning eller annan produktinformation,\n2. provning eller kontroll av att föreskrivna krav eller villkor är uppfyllda, och\n3. förbud mot eller särskilda villkor för eller annan begränsning av utsläppande på marknaden.\nRegeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om utformning och användning av skyddsanordningar mot fall till lägre nivå.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får, i fråga om tekniska anordningar eller ämnen som kan orsaka ohälsa eller olycksfall, meddela föreskrifter om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. villkor för tillverkning, användning samt märkning eller annan produktinformation,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. provning eller kontroll av att föreskrivna krav eller villkor är uppfyllda, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. förbud mot eller särskilda villkor för eller annan begränsning av utsläppande på marknaden.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om utformning och användning av skyddsanordningar mot fall till lägre nivå.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Om det behövs för att förebygga ohälsa eller olycksfall i arbetet, får regeringen eller den myndighet som regeringen bestämmer meddela föreskrifter om att ett tillstånd, godkännande eller annat bevis om överensstämmelse med gällande krav fordras innan\n1. arbetsprocesser, arbetsmetoder eller anläggningar får användas, och\n2. tekniska anordningar eller ämnen som kan leda till ohälsa eller olycksfall får släppas ut på marknaden, användas eller avlämnas för att tas i bruk.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det behövs för att förebygga ohälsa eller olycksfall i arbetet, får regeringen eller den myndighet som regeringen bestämmer meddela föreskrifter om att ett tillstånd, godkännande eller annat bevis om överensstämmelse med gällande krav fordras innan",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. arbetsprocesser, arbetsmetoder eller anläggningar får användas, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. tekniska anordningar eller ämnen som kan leda till ohälsa eller olycksfall får släppas ut på marknaden, användas eller avlämnas för att tas i bruk.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att\n1. det på arbetsställen ska föras en förteckning över där befintliga tekniska anordningar av vissa slag eller vissa ämnen som kan leda till ohälsa eller olycksfall, och\n2. arbetsgivare ska föra register över arbetstagare som utsätts för exposition som kan medföra ohälsa med uppgift om arbetet och expositionen samt att arbetsgivare ska lämna uppgifter ur registret till läkare.\nRegeringen eller den myndighet som regeringen bestämmer får också meddela föreskrifter om undersökning av skyddsförhållandena i ett visst slag av verksamhet och om installation av tekniska anordningar.\nEn arbetstagare ska på begäran ges tillfälle att ta del av de uppgifter i register enligt första stycket 2 som rör honom eller henne.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. det på arbetsställen ska föras en förteckning över där befintliga tekniska anordningar av vissa slag eller vissa ämnen som kan leda till ohälsa eller olycksfall, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. arbetsgivare ska föra register över arbetstagare som utsätts för exposition som kan medföra ohälsa med uppgift om arbetet och expositionen samt att arbetsgivare ska lämna uppgifter ur registret till läkare.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får också meddela föreskrifter om undersökning av skyddsförhållandena i ett visst slag av verksamhet och om installation av tekniska anordningar.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "En arbetstagare ska på begäran ges tillfälle att ta del av de uppgifter i register enligt första stycket 2 som rör honom eller henne.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Om det är av särskild betydelse från skyddssynpunkt, får regeringen eller den myndighet som regeringen bestämmer meddela föreskrifter om förbud att använda arbetsprocesser, arbetsmetoder eller tekniska anordningar eller ämnen som kan leda till ohälsa eller olycksfall.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det är av särskild betydelse från skyddssynpunkt, får regeringen eller den myndighet som regeringen bestämmer meddela föreskrifter om förbud att använda arbetsprocesser, arbetsmetoder eller tekniska anordningar eller ämnen som kan leda till ohälsa eller olycksfall.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Om ett arbete innebär risk för ohälsa eller olycksfall, får regeringen eller den myndighet som regeringen bestämmer meddela föreskrifter om skyldighet att ordna med läkarundersökning eller vaccinering eller annan förebyggande behandling mot smitta av dem som sysselsätts eller ska sysselsättas i arbetet.\nRegeringen eller den myndighet som regeringen bestämmer får också meddela föreskrifter om förbud att till arbetet anlita den som vid läkarundersökning har visat sjuklighet eller svaghet som gör honom eller henne särskilt mottaglig för risk för ohälsa eller olycksfall.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ett arbete innebär risk för ohälsa eller olycksfall, får regeringen eller den myndighet som regeringen bestämmer meddela föreskrifter om skyldighet att ordna med läkarundersökning eller vaccinering eller annan förebyggande behandling mot smitta av dem som sysselsätts eller ska sysselsättas i arbetet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får också meddela föreskrifter om förbud att till arbetet anlita den som vid läkarundersökning har visat sjuklighet eller svaghet som gör honom eller henne särskilt mottaglig för risk för ohälsa eller olycksfall.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Om ett arbete medför särskild risk för vissa grupper av arbetstagare, får regeringen eller den myndighet som regeringen bestämmer meddela föreskrifter om förbud mot att arbetet utförs av arbetstagare som tillhör en sådan grupp eller om att särskilda villkor ska gälla när arbetet utförs av sådana arbetstagare.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ett arbete medför särskild risk för vissa grupper av arbetstagare, får regeringen eller den myndighet som regeringen bestämmer meddela föreskrifter om förbud mot att arbetet utförs av arbetstagare som tillhör en sådan grupp eller om att särskilda villkor ska gälla när arbetet utförs av sådana arbetstagare.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att register ska föras vid en läkarundersökning som avses i 5 och 6 §§ med uppgifter om de undersöktas namn och om undersökningsresultatet.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att register ska föras vid en läkarundersökning som avses i 5 och 6 §§ med uppgifter om de undersöktas namn och om undersökningsresultatet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om\n1. förhandsanmälan\na) när det gäller skyldighet för den som låter utföra ett byggnads- eller anläggningsarbete att se till att en sådan anmälan lämnas till tillsynsmyndigheten, och\nb) i övrigt, samt\n2. skyldighet att i övrigt göra anmälan eller lämna uppgifter till tillsynsmyndigheten eller att förvara handlingar som har betydelse från skyddssynpunkt.\nRegeringen eller den myndighet som regeringen bestämmer får vidare meddela föreskrifter om\n1. att den som låter utföra ett byggnads- eller anläggningsarbete ska se till att\na) det upprättas en arbetsmiljöplan,\nb) det utarbetas en till projektets art avpassad dokumentation som ska beaktas vid efterföljande arbeten, och\nc) arbetsmiljöplanen och dokumentationen anpassas med hänsyn till hur arbetet fortskrider och de eventuella förändringar som ägt rum,\n2. att en byggarbetsmiljösamordnare enligt 3 kap. 7 a § ska upprätta eller låta upprätta en arbetsmiljöplan och utarbeta en sådan dokumentation som avses i 1,\n3. att en byggarbetsmiljösamordnare enligt 3 kap. 7 b § ska se till att det genomförs nödvändiga anpassningar av en arbetsmiljöplan och sådan dokumentation som avses i 1, och\n4. skyldighet att i övrigt upprätta handlingar som har betydelse från skyddssynpunkt.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. förhandsanmälan",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "a) när det gäller skyldighet för den som låter utföra ett byggnads- eller anläggningsarbete att se till att en sådan anmälan lämnas till tillsynsmyndigheten, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "b) i övrigt, samt",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. skyldighet att i övrigt göra anmälan eller lämna uppgifter till tillsynsmyndigheten eller att förvara handlingar som har betydelse från skyddssynpunkt.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får vidare meddela föreskrifter om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. att den som låter utföra ett byggnads- eller anläggningsarbete ska se till att",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "a) det upprättas en arbetsmiljöplan,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "b) det utarbetas en till projektets art avpassad dokumentation som ska beaktas vid efterföljande arbeten, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "c) arbetsmiljöplanen och dokumentationen anpassas med hänsyn till hur arbetet fortskrider och de eventuella förändringar som ägt rum,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. att en byggarbetsmiljösamordnare enligt 3 kap. 7 a § ska upprätta eller låta upprätta en arbetsmiljöplan och utarbeta en sådan dokumentation som avses i 1,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. att en byggarbetsmiljösamordnare enligt 3 kap. 7 b § ska se till att det genomförs nödvändiga anpassningar av en arbetsmiljöplan och sådan dokumentation som avses i 1, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. skyldighet att i övrigt upprätta handlingar som har betydelse från skyddssynpunkt.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om skyldighet för läkare att hos tillsynsmyndigheten göra anmälan om sjukdom som kan ha samband med arbete och att lämna tillsynsmyndigheten upplysningar och biträde.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om skyldighet för läkare att hos tillsynsmyndigheten göra anmälan om sjukdom som kan ha samband med arbete och att lämna tillsynsmyndigheten upplysningar och biträde.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får meddela de ytterligare föreskrifter om arbetsmiljöns beskaffenhet och om allmänna skyldigheter i fråga om arbetsmiljön som behövs för att förebygga ohälsa och olycksfall i arbetet.\nRegeringen eller den myndighet som regeringen bestämmer får också meddela föreskrifter om att den som ensam eller gemensamt med en familjemedlem driver yrkesmässig verksamhet utan någon anställd ska följa denna lag och föreskrifter som har meddelats med stöd av lagen när det gäller skyldigheter i andra avseenden än som framgår av 3 kap. 5 § andra stycket.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela de ytterligare föreskrifter om arbetsmiljöns beskaffenhet och om allmänna skyldigheter i fråga om arbetsmiljön som behövs för att förebygga ohälsa och olycksfall i arbetet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får också meddela föreskrifter om att den som ensam eller gemensamt med en familjemedlem driver yrkesmässig verksamhet utan någon anställd ska följa denna lag och föreskrifter som har meddelats med stöd av lagen när det gäller skyldigheter i andra avseenden än som framgår av 3 kap. 5 § andra stycket.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "5",
+      "title": "Minderåriga",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Med minderårig avses i denna lag den som icke har fyllt aderton år.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Med minderårig avses i denna lag den som icke har fyllt aderton år.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "En minderårig får inte som arbetstagare eller på annat sätt anlitas till eller utföra arbete före det kalenderår då den minderårige fyller sexton år och inte heller innan den minderårige har fullgjort sin skolplikt.\nFörsta stycket hindrar inte att en minderårig som har fyllt tretton år anlitas till eller utföra lätt arbete som inte är av sådant slag att det kan inverka skadligt på den minderåriges hälsa, utveckling eller skolgång.\nRegeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om undantag från första stycket för anlitande av en minderårig som inte har fyllt tretton år. Ett sådant undantag får endast avse mycket lätt arbete av sådant slag att speciella och betydande tillämpningsproblem skulle uppstå, om undantag inte gavs.\nRegeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om sådant arbete som avses i andra och tredje styckena.\nI sjömanslagen (1973:282) och fartygssäkerhetslagen (2003:364) finns särskilda bestämmelser om minimiålder för fartygsarbete.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En minderårig får inte som arbetstagare eller på annat sätt anlitas till eller utföra arbete före det kalenderår då den minderårige fyller sexton år och inte heller innan den minderårige har fullgjort sin skolplikt.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket hindrar inte att en minderårig som har fyllt tretton år anlitas till eller utföra lätt arbete som inte är av sådant slag att det kan inverka skadligt på den minderåriges hälsa, utveckling eller skolgång.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om undantag från första stycket för anlitande av en minderårig som inte har fyllt tretton år. Ett sådant undantag får endast avse mycket lätt arbete av sådant slag att speciella och betydande tillämpningsproblem skulle uppstå, om undantag inte gavs.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om sådant arbete som avses i andra och tredje styckena.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "I sjömanslagen (1973:282) och fartygssäkerhetslagen (2003:364) finns särskilda bestämmelser om minimiålder för fartygsarbete.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "En minderårig får inte anlitas till eller utföra arbete på ett sätt som medför risk för olycksfall eller för överansträngning eller annan skadlig inverkan på den minderåriges hälsa eller utveckling.\nRegeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om villkor för eller förbud mot att en minderårig anlitas till eller utför arbete som medför påtaglig risk för olycksfall eller för överansträngning eller annan skadlig inverkan på den minderåriges hälsa eller utveckling.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En minderårig får inte anlitas till eller utföra arbete på ett sätt som medför risk för olycksfall eller för överansträngning eller annan skadlig inverkan på den minderåriges hälsa eller utveckling.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om villkor för eller förbud mot att en minderårig anlitas till eller utför arbete som medför påtaglig risk för olycksfall eller för överansträngning eller annan skadlig inverkan på den minderåriges hälsa eller utveckling.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att det vid läkarundersökningar som har föreskrivits med stöd av 2 § fjärde stycket eller 3 § andra stycket ska föras register med uppgifter om de undersöktas namn och om undersökningsresultatet.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att det vid läkarundersökningar som har föreskrivits med stöd av 2 § fjärde stycket eller 3 § andra stycket ska föras register med uppgifter om de undersöktas namn och om undersökningsresultatet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om arbetstidens längd och förläggning för minderåriga som anlitas till eller utför arbete.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om arbetstidens längd och förläggning för minderåriga som anlitas till eller utför arbete.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "6",
+      "title": "Samverkan mellan arbetsgivare och arbetstagare m.m.",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Arbetsgivare och arbetstagare skall bedriva en på lämpligt sätt organiserad arbetsmiljöverksamhet.",
+          "amendedBy": "Lag (1991:677)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivare och arbetstagare skall bedriva en på lämpligt sätt organiserad arbetsmiljöverksamhet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "På ett arbetsställe, där minst fem arbetstagare regelbundet sysselsätts, ska det bland arbetstagarna utses ett eller flera skyddsombud (arbetsmiljöombud). Skyddsombud ska utses även på ett annat arbetsställe, om arbetsförhållandena kräver det. För skyddsombud bör ersättare utses.\nSkyddsombud utses av en lokal arbetstagarorganisation som är eller brukar vara bunden av kollektivavtal i förhållande till arbetsgivaren. Finns det inte någon sådan organisation, utses skyddsombud av arbetstagarna.\nFör ett arbetsställe där sådan skyddskommitté som avses i 8 § inte har tillsatts får en lokal avdelning inom ett förbund eller en med sådan avdelning jämförlig sammanslutning av arbetstagare utse ett skyddsombud utanför kretsen av arbetstagarna på arbetsstället (regionalt skyddsombud).\nRätten att utse ett regionalt skyddsombud gäller endast om avdelningen eller sammanslutningen har någon medlem på arbetsstället.\nBestämmelser om hur skyddsombud på fartyg ska utses finns i fartygssäkerhetslagen (2003:364).",
+          "amendedBy": "Lag (2009:870)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "På ett arbetsställe, där minst fem arbetstagare regelbundet sysselsätts, ska det bland arbetstagarna utses ett eller flera skyddsombud (arbetsmiljöombud). Skyddsombud ska utses även på ett annat arbetsställe, om arbetsförhållandena kräver det. För skyddsombud bör ersättare utses.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Skyddsombud utses av en lokal arbetstagarorganisation som är eller brukar vara bunden av kollektivavtal i förhållande till arbetsgivaren. Finns det inte någon sådan organisation, utses skyddsombud av arbetstagarna.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "För ett arbetsställe där sådan skyddskommitté som avses i 8 § inte har tillsatts får en lokal avdelning inom ett förbund eller en med sådan avdelning jämförlig sammanslutning av arbetstagare utse ett skyddsombud utanför kretsen av arbetstagarna på arbetsstället (regionalt skyddsombud).",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Rätten att utse ett regionalt skyddsombud gäller endast om avdelningen eller sammanslutningen har någon medlem på arbetsstället.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "Bestämmelser om hur skyddsombud på fartyg ska utses finns i fartygssäkerhetslagen (2003:364).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Finns vid arbetsställe mer än ett skyddsombud, skall ett av ombuden utses att vara huvudskyddsombud med uppgift att samordna skyddsombudens verksamhet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Finns vid arbetsställe mer än ett skyddsombud, skall ett av ombuden utses att vara huvudskyddsombud med uppgift att samordna skyddsombudens verksamhet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Skyddsombud företräder arbetstagarna i arbetsmiljöfrågor och skall verka för en tillfredsställande arbetsmiljö. I detta syfte skall ombudet inom sitt skyddsområde vaka över skyddet mot ohälsa och olycksfall samt över att arbetsgivaren uppfyller kraven i 3 kap. 2 a §. Skyddsombud på fartyg skall vidare vaka över att fartyget har den bemanning som det skall ha enligt beslut eller föreskrifter.\nSkyddsombud skall delta vid planering av nya eller ändrade lokaler, anordningar, arbetsprocesser, arbetsmetoder och av arbetsorganisation liksom vid planering av användning av ämnen som kan medföra ohälsa eller olycksfall. Skyddsombud skall vidare delta vid upprättande av handlingsplaner enligt 3 kap. 2 a §.\nArbetsgivaren skall underrätta skyddsombud om förändringar av betydelse för arbetsmiljöförhållandena inom ombudets område.\nArbetsgivare och arbetstagare svarar gemensamt för att skyddsombud får erforderlig utbildning.",
+          "amendedBy": "Lag (2003:365)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skyddsombud företräder arbetstagarna i arbetsmiljöfrågor och skall verka för en tillfredsställande arbetsmiljö. I detta syfte skall ombudet inom sitt skyddsområde vaka över skyddet mot ohälsa och olycksfall samt över att arbetsgivaren uppfyller kraven i 3 kap. 2 a §. Skyddsombud på fartyg skall vidare vaka över att fartyget har den bemanning som det skall ha enligt beslut eller föreskrifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Skyddsombud skall delta vid planering av nya eller ändrade lokaler, anordningar, arbetsprocesser, arbetsmetoder och av arbetsorganisation liksom vid planering av användning av ämnen som kan medföra ohälsa eller olycksfall. Skyddsombud skall vidare delta vid upprättande av handlingsplaner enligt 3 kap. 2 a §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Arbetsgivaren skall underrätta skyddsombud om förändringar av betydelse för arbetsmiljöförhållandena inom ombudets område.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Arbetsgivare och arbetstagare svarar gemensamt för att skyddsombud får erforderlig utbildning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Skyddsombud, som avses i 2 § andra stycket, har rätt till den ledighet som fordras för uppdraget. Vid sådan ledighet bibehåller ombudet sina anställningsförmåner.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skyddsombud, som avses i 2 § andra stycket, har rätt till den ledighet som fordras för uppdraget. Vid sådan ledighet bibehåller ombudet sina anställningsförmåner.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Skyddsombud har rätt att taga del av de handlingar och erhålla de upplysningar i övrigt som behövs för ombudets verksamhet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skyddsombud har rätt att taga del av de handlingar och erhålla de upplysningar i övrigt som behövs för ombudets verksamhet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6a",
+          "heading": null,
+          "content": "Om ett skyddsombud anser att åtgärder behöver vidtas för att uppnå en tillfredsställande arbetsmiljö, ska skyddsombudet vända sig till arbetsgivaren och begära sådana åtgärder. Skyddsombudet kan också begära att en viss undersökning ska göras för kontroll av förhållandena inom skyddsområdet. På framställning ska arbetsgivaren genast lämna skyddsombudet en skriftlig bekräftelse på att arbetsgivaren mottagit dennes begäran. Arbetsgivaren ska utan dröjsmål lämna besked i frågan. Gör arbetsgivaren inte det eller beaktas inte begäran inom skälig tid, ska Arbetsmiljöverket efter framställan av skyddsombudet pröva om föreläggande eller förbud enligt 7 kap. 7 § ska meddelas.\nSådan framställning av ett skyddsombud på fartyg ska i stället lämnas till Transportstyrelsen, som ska pröva om föreläggande eller förbud enligt fartygssäkerhetslagen (2003:364) ska meddelas.\nDär skyddskommitté finns, kan skyddsombud direkt påkalla kommitténs behandling av en arbetsmiljöfråga.\nEtt skyddsombuds begäran enligt första stycket får även avse skyddsåtgärder som behövs för att arbetsgivaren på det arbetsställe där skyddsombudet är verksamt ska uppfylla sina skyldigheter gentemot utomstående arbetskraft enligt 3 kap. 12 §.\nDet som i första och andra styckena sägs om skyddsombud ska också gälla för studerandeskyddsombud som avses i 17 §.",
+          "amendedBy": "Lag (2009:870)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ett skyddsombud anser att åtgärder behöver vidtas för att uppnå en tillfredsställande arbetsmiljö, ska skyddsombudet vända sig till arbetsgivaren och begära sådana åtgärder. Skyddsombudet kan också begära att en viss undersökning ska göras för kontroll av förhållandena inom skyddsområdet. På framställning ska arbetsgivaren genast lämna skyddsombudet en skriftlig bekräftelse på att arbetsgivaren mottagit dennes begäran. Arbetsgivaren ska utan dröjsmål lämna besked i frågan. Gör arbetsgivaren inte det eller beaktas inte begäran inom skälig tid, ska Arbetsmiljöverket efter framställan av skyddsombudet pröva om föreläggande eller förbud enligt 7 kap. 7 § ska meddelas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Sådan framställning av ett skyddsombud på fartyg ska i stället lämnas till Transportstyrelsen, som ska pröva om föreläggande eller förbud enligt fartygssäkerhetslagen (2003:364) ska meddelas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Där skyddskommitté finns, kan skyddsombud direkt påkalla kommitténs behandling av en arbetsmiljöfråga.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Ett skyddsombuds begäran enligt första stycket får även avse skyddsåtgärder som behövs för att arbetsgivaren på det arbetsställe där skyddsombudet är verksamt ska uppfylla sina skyldigheter gentemot utomstående arbetskraft enligt 3 kap. 12 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "Det som i första och andra styckena sägs om skyddsombud ska också gälla för studerandeskyddsombud som avses i 17 §.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Innebär visst arbete omedelbar och allvarlig fara för arbetstagares liv eller hälsa och kan rättelse inte genast uppnås genom att skyddsombudet vänder sig till arbetsgivaren, kan skyddsombudet bestämma att arbetet ska avbrytas i avvaktan på ställningstagande av Arbetsmiljöverket.\nOm det är påkallat från skyddssynpunkt och rättelse inte genast kan uppnås genom att skyddsombudet vänder sig till arbetsgivaren kan skyddsombudet i avvaktan på Arbetsmiljöverkets ställningstagande avbryta arbete som en arbetstagare utför ensam.\nÖverträds en tillsynsmyndighets förbud, som har vunnit laga kraft eller som på grund av förordnande enligt 9 kap. 5 § ska gälla omedelbart, kan skyddsombudet avbryta sådant arbete som avses med förbudet.\nEtt skyddsombuds åtgärder enligt första-tredje styckena får även avse arbete som utförs av inhyrd arbetskraft i arbetsgivarens verksamhet.\nFör skada till följd av någon åtgärd som avses i denna paragraf är ett skyddsombud fritt från ersättningsskyldighet.\nBestämmelser om rätten för ett skyddsombud att avbryta arbete på fartyg och om verkan av en sådan åtgärd finns i fartygssäkerhetslagen (2003:364).",
+          "amendedBy": "Lag (2009:870)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Innebär visst arbete omedelbar och allvarlig fara för arbetstagares liv eller hälsa och kan rättelse inte genast uppnås genom att skyddsombudet vänder sig till arbetsgivaren, kan skyddsombudet bestämma att arbetet ska avbrytas i avvaktan på ställningstagande av Arbetsmiljöverket.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om det är påkallat från skyddssynpunkt och rättelse inte genast kan uppnås genom att skyddsombudet vänder sig till arbetsgivaren kan skyddsombudet i avvaktan på Arbetsmiljöverkets ställningstagande avbryta arbete som en arbetstagare utför ensam.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Överträds en tillsynsmyndighets förbud, som har vunnit laga kraft eller som på grund av förordnande enligt 9 kap. 5 § ska gälla omedelbart, kan skyddsombudet avbryta sådant arbete som avses med förbudet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Ett skyddsombuds åtgärder enligt första-tredje styckena får även avse arbete som utförs av inhyrd arbetskraft i arbetsgivarens verksamhet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "För skada till följd av någon åtgärd som avses i denna paragraf är ett skyddsombud fritt från ersättningsskyldighet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 6,
+              "text": "Bestämmelser om rätten för ett skyddsombud att avbryta arbete på fartyg och om verkan av en sådan åtgärd finns i fartygssäkerhetslagen (2003:364).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Vid ett arbetsställe, där minst femtio arbetstagare regelbundet sysselsätts, ska det finnas en skyddskommitté, sammansatt av företrädare för arbetsgivaren och arbetstagarna. En skyddskommitté ska tillsättas även vid arbetsställen med mindre antal arbetstagare, om det begärs av arbetstagarna.\nFöreträdare för de anställda utses bland arbetstagarna av en lokal arbetstagarorganisation som är eller brukar vara bunden av kollektivavtal i förhållande till arbetsgivaren. Finns det ingen sådan organisation utses företrädare av arbetstagarna.\nVid ett arbetsställe där det finns studerandeskyddsombud ska även två av dessa ingå i skyddskommittén.\nStuderandeskyddsombuden bestämmer själva vilka av dem som ska ingå i skyddskommittén.\nBestämmelser om hur en skyddskommitté på fartyg ska tillsättas finns i fartygssäkerhetslagen (2003:364).",
+          "amendedBy": "Lag (2009:870)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid ett arbetsställe, där minst femtio arbetstagare regelbundet sysselsätts, ska det finnas en skyddskommitté, sammansatt av företrädare för arbetsgivaren och arbetstagarna. En skyddskommitté ska tillsättas även vid arbetsställen med mindre antal arbetstagare, om det begärs av arbetstagarna.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Företrädare för de anställda utses bland arbetstagarna av en lokal arbetstagarorganisation som är eller brukar vara bunden av kollektivavtal i förhållande till arbetsgivaren. Finns det ingen sådan organisation utses företrädare av arbetstagarna.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Vid ett arbetsställe där det finns studerandeskyddsombud ska även två av dessa ingå i skyddskommittén.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Studerandeskyddsombuden bestämmer själva vilka av dem som ska ingå i skyddskommittén.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "Bestämmelser om hur en skyddskommitté på fartyg ska tillsättas finns i fartygssäkerhetslagen (2003:364).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Skyddskommittén skall delta i planeringen av arbetsmiljöarbetet på arbetsstället samt följa arbetets genomförande. Den skall noga följa utvecklingen i frågor som rör skyddet mot ohälsa och olycksfall samt verka för tillfredsställande arbetsmiljöförhållanden. En skyddskommitté på fartyg skall vidare vaka över att fartyget har den bemanning som det skall ha enligt beslut eller föreskrifter. I skyddskommittén skall behandlas frågor om\n1. företagshälsovård,\n2. handlingsplaner enligt 3 kap. 2 a §,\n3. planering av nya eller ändrade lokaler, anordningar, arbetsprocesser, arbetsmetoder och av arbetsorganisation,\n4. planering av användning av ämnen som kan föranleda ohälsa eller olycksfall,\n5. upplysning och utbildning rörande arbetsmiljön,\n6. arbetsanpassnings- och rehabiliteringsverksamheten på arbetsstället.",
+          "amendedBy": "Lag (2003:365)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skyddskommittén skall delta i planeringen av arbetsmiljöarbetet på arbetsstället samt följa arbetets genomförande. Den skall noga följa utvecklingen i frågor som rör skyddet mot ohälsa och olycksfall samt verka för tillfredsställande arbetsmiljöförhållanden. En skyddskommitté på fartyg skall vidare vaka över att fartyget har den bemanning som det skall ha enligt beslut eller föreskrifter. I skyddskommittén skall behandlas frågor om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. företagshälsovård,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. handlingsplaner enligt 3 kap. 2 a §,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. planering av nya eller ändrade lokaler, anordningar, arbetsprocesser, arbetsmetoder och av arbetsorganisation,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. planering av användning av ämnen som kan föranleda ohälsa eller olycksfall,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. upplysning och utbildning rörande arbetsmiljön,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 6,
+              "text": "6. arbetsanpassnings- och rehabiliteringsverksamheten på arbetsstället.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "9a",
+          "heading": null,
+          "content": "Till skyddskommitté som avses i 8 § får genom ett kollektivavtal utses ett organ som behandlar också andra frågor än som anges i 9 §. Ett sådant organ får ha en annan benämning än skyddskommitté.\nDenna paragraf är inte tillämplig i fråga om skyddskommitté på fartyg.",
+          "amendedBy": "Lag (2011:741)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Till skyddskommitté som avses i 8 § får genom ett kollektivavtal utses ett organ som behandlar också andra frågor än som anges i 9 §. Ett sådant organ får ha en annan benämning än skyddskommitté.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Denna paragraf är inte tillämplig i fråga om skyddskommitté på fartyg.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Skyddsombud får inte hindras att fullgöra sina uppgifter.\nOm ett skyddsombud företräder en arbetstagare som utför arbete på ett arbetsställe över vilket dennes arbetsgivare inte råder är den arbetsgivare som råder över arbetsstället skyldig att låta skyddsombudet få tillträde dit i den omfattning som ombudet behöver för att fullgöra sitt uppdrag.\nSkyddsombud får ej med anledning av sitt uppdrag ges försämrade arbetsförhållanden eller anställningsvillkor. När uppdraget upphör skall arbetstagaren vara tillförsäkrad arbetsförhållanden och anställningsvillkor, vilka överensstämmer med eller är likvärdiga med dem som skulle ha rått om han ej hade haft uppdraget.",
+          "amendedBy": "Lag (1994:579)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skyddsombud får inte hindras att fullgöra sina uppgifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om ett skyddsombud företräder en arbetstagare som utför arbete på ett arbetsställe över vilket dennes arbetsgivare inte råder är den arbetsgivare som råder över arbetsstället skyldig att låta skyddsombudet få tillträde dit i den omfattning som ombudet behöver för att fullgöra sitt uppdrag.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Skyddsombud får ej med anledning av sitt uppdrag ges försämrade arbetsförhållanden eller anställningsvillkor. När uppdraget upphör skall arbetstagaren vara tillförsäkrad arbetsförhållanden och anställningsvillkor, vilka överensstämmer med eller är likvärdiga med dem som skulle ha rått om han ej hade haft uppdraget.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Bryter arbetsgivare eller arbetstagare mot 10 §, skall han ersätta uppkommen skada. Vid bedömande om och i vad mån skada har uppstått skall hänsyn tagas även till omständigheter av annan än rent ekonomisk betydelse. Om det med hänsyn till skadans storlek eller andra omständigheter är skäligt, kan skadeståndet nedsättas eller helt bortfalla.\nÄr flera ansvariga för skada, skall skadeståndsskyldigheten fördelas mellan dem efter vad som är skäligt med hänsyn till omständigheterna.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bryter arbetsgivare eller arbetstagare mot 10 §, skall han ersätta uppkommen skada. Vid bedömande om och i vad mån skada har uppstått skall hänsyn tagas även till omständigheter av annan än rent ekonomisk betydelse. Om det med hänsyn till skadans storlek eller andra omständigheter är skäligt, kan skadeståndet nedsättas eller helt bortfalla.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Är flera ansvariga för skada, skall skadeståndsskyldigheten fördelas mellan dem efter vad som är skäligt med hänsyn till omständigheterna.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "Den som vill fordra skadestånd enligt 11 § skall underrätta motparten om sitt anspråk inom fyra månader från det skadan inträffade. Har inom den tiden förhandling rörande anspråket påkallats enligt lagen (1976:580) om medbestämmande i arbetslivet eller med stöd av kollektivavtal, skall talan väckas inom fyra månader efter det att förhandlingen avslutades. I annat fall skall talan väckas inom åtta månader från skadans uppkomst.\nFörsta stycket skall tillämpas på motsvarande sätt i fråga om anspråk på anställningsförmåner enligt 5 §.\nIakttages ej vad som föreskrives i första eller andra stycket, är rätten till talan förlorad.\nFör skyddsombud på fartyg gäller fartygssäkerhetslagen (2003:364) i stället för vad som anges i denna paragraf.",
+          "amendedBy": "Lag (2003:365)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som vill fordra skadestånd enligt 11 § skall underrätta motparten om sitt anspråk inom fyra månader från det skadan inträffade. Har inom den tiden förhandling rörande anspråket påkallats enligt lagen (1976:580) om medbestämmande i arbetslivet eller med stöd av kollektivavtal, skall talan väckas inom fyra månader efter det att förhandlingen avslutades. I annat fall skall talan väckas inom åtta månader från skadans uppkomst.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket skall tillämpas på motsvarande sätt i fråga om anspråk på anställningsförmåner enligt 5 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Iakttages ej vad som föreskrives i första eller andra stycket, är rätten till talan förlorad.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "För skyddsombud på fartyg gäller fartygssäkerhetslagen (2003:364) i stället för vad som anges i denna paragraf.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "Mål om tillämpning av 10 och 11 §§ handläggs enligt lagen (1974:371) om rättegången i arbetstvister. I fråga om talan mot arbetstagare eller, i fall som avses i 10 § andra stycket, mot den som råder över ett arbetsställe gäller dock vad som är föreskrivet om rättegång i allmänhet.",
+          "amendedBy": "Lag (1994:579)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Mål om tillämpning av 10 och 11 §§ handläggs enligt lagen (1974:371) om rättegången i arbetstvister. I fråga om talan mot arbetstagare eller, i fall som avses i 10 § andra stycket, mot den som råder över ett arbetsställe gäller dock vad som är föreskrivet om rättegång i allmänhet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": null,
+          "content": "I förhållande till arbetsgivare vinner 4--7 och 10--13 §§ tillämpning när den organisation eller de arbetstagare, som har utsett skyddsombudet, har underrättat arbetsgivaren om valet eller, om arbetsgivaren icke har kunnat nås, sänt underrättelse om valet till arbetsstället.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I förhållande till arbetsgivare vinner 4--7 och 10--13 §§ tillämpning när den organisation eller de arbetstagare, som har utsett skyddsombudet, har underrättat arbetsgivaren om valet eller, om arbetsgivaren icke har kunnat nås, sänt underrättelse om valet till arbetsstället.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": null,
+          "content": "Det som sägs i 5 §, 10 § första och tredje styckena samt 11-14 §§ ska tillämpas på motsvarande sätt på en ledamot av en skyddskommitté som inte är studerandeskyddsombud.\nFör studerandeskyddsombud ska 10 § första och andra styckena, 11, 12 och 14 §§ tillämpas på motsvarande sätt. För mål om tillämpning av 10 och 11 §§ som rör studerandeskyddsombud gäller det som är föreskrivet om rättegång i allmänhet.",
+          "amendedBy": "Lag (2009:870)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det som sägs i 5 §, 10 § första och tredje styckena samt 11-14 §§ ska tillämpas på motsvarande sätt på en ledamot av en skyddskommitté som inte är studerandeskyddsombud.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "För studerandeskyddsombud ska 10 § första och andra styckena, 11, 12 och 14 §§ tillämpas på motsvarande sätt. För mål om tillämpning av 10 och 11 §§ som rör studerandeskyddsombud gäller det som är föreskrivet om rättegång i allmänhet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": null,
+          "content": "Beträffande skyddsombud och ledamot av skyddskommitté, vilka har utsetts av organisation som avses i 2 § andra eller tredje stycket, äger även lagen (1974:358) om facklig förtroendemans ställning på arbetsplatsen tilllämpning. Har skyddsombud eller ledamot av skyddskommitté på fartyg utsetts av de ombordanställda, tillämpas lagen som om han eller hon var utsedd av sin lokala arbetstagarorganisation. Det som sägs i denna paragraf gäller dock inte i den mån ombuds eller ledamots rättigheter enligt detta kapitel eller enligt fartygssäkerhetslagen (2003:364) därigenom skulle inskränkas.",
+          "amendedBy": "Lag (2003:365)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Beträffande skyddsombud och ledamot av skyddskommitté, vilka har utsetts av organisation som avses i 2 § andra eller tredje stycket, äger även lagen (1974:358) om facklig förtroendemans ställning på arbetsplatsen tilllämpning. Har skyddsombud eller ledamot av skyddskommitté på fartyg utsetts av de ombordanställda, tillämpas lagen som om han eller hon var utsedd av sin lokala arbetstagarorganisation. Det som sägs i denna paragraf gäller dock inte i den mån ombuds eller ledamots rättigheter enligt detta kapitel eller enligt fartygssäkerhetslagen (2003:364) därigenom skulle inskränkas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": null,
+          "content": "/Upphör att gälla U:2028-07-01/\nDe som genomgår utbildning ska av huvudmannen för utbildningen ges tillfälle att medverka i arbetsmiljöarbetet på arbetsstället, om det är rimligt med hänsyn till utbildningens art och utbildningsperiodens längd.\nOmfattningen och utformningen av elevernas deltagande i skolans arbetsmiljöarbete ska anpassas efter deras ålder, mognad och förutsättningar i övrigt när det gäller\n1. elever i förskoleklass och i lägre årskurs än årskurs 7 i grundskolan, specialskolan och i motsvarande utbildningar samt i sameskolan,\n2. elever i anpassade grundskolan, anpassade gymnasieskolan och motsvarande utbildningar, och\n3. elever i kommunal vuxenutbildning som anpassad utbildning.\nElever i grundskolans årskurs 7-9, specialskolans årskurs 7-10 och gymnasieskolan samt motsvarande utbildningar företräds i arbetsmiljöarbetet av elevskyddsombud.\nDe som genomgår eftergymnasial utbildning och annan utbildning för vuxna än kommunal vuxenutbildning som anpassad utbildning företräds i arbetsmiljöarbetet av studerandeskyddsombud. Ett studerandeskyddsombud ska vara minst 18 år.",
+          "amendedBy": "Lag (2023:349)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "/Upphör att gälla U:2028-07-01/",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "De som genomgår utbildning ska av huvudmannen för utbildningen ges tillfälle att medverka i arbetsmiljöarbetet på arbetsstället, om det är rimligt med hänsyn till utbildningens art och utbildningsperiodens längd.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Omfattningen och utformningen av elevernas deltagande i skolans arbetsmiljöarbete ska anpassas efter deras ålder, mognad och förutsättningar i övrigt när det gäller",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. elever i förskoleklass och i lägre årskurs än årskurs 7 i grundskolan, specialskolan och i motsvarande utbildningar samt i sameskolan,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. elever i anpassade grundskolan, anpassade gymnasieskolan och motsvarande utbildningar, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. elever i kommunal vuxenutbildning som anpassad utbildning.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "Elever i grundskolans årskurs 7-9, specialskolans årskurs 7-10 och gymnasieskolan samt motsvarande utbildningar företräds i arbetsmiljöarbetet av elevskyddsombud.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "De som genomgår eftergymnasial utbildning och annan utbildning för vuxna än kommunal vuxenutbildning som anpassad utbildning företräds i arbetsmiljöarbetet av studerandeskyddsombud. Ett studerandeskyddsombud ska vara minst 18 år.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": null,
+          "content": "/Träder i kraft I:2028-07-01/\nDe som genomgår utbildning ska av huvudmannen för utbildningen ges tillfälle att medverka i arbetsmiljöarbetet på arbetsstället, om det är rimligt med hänsyn till utbildningens art och utbildningsperiodens längd.\nOmfattningen och utformningen av elevernas deltagande i skolans arbetsmiljöarbete ska anpassas efter deras ålder, mognad och förutsättningar i övrigt när det gäller\n1. elever i lägre årskurs än årskurs 8 i grundskolan, specialskolan och i motsvarande utbildningar samt i sameskolan,\n2. elever i anpassade grundskolan, anpassade gymnasieskolan och motsvarande utbildningar, och\n3. elever i kommunal vuxenutbildning som anpassad utbildning.\nElever i grundskolans årskurs 8-10, specialskolans årskurs 8-11 och gymnasieskolan samt motsvarande utbildningar företräds i arbetsmiljöarbetet av elevskyddsombud.\nDe som genomgår eftergymnasial utbildning och annan utbildning för vuxna än kommunal vuxenutbildning som anpassad utbildning företräds i arbetsmiljöarbetet av studerandeskyddsombud. Ett studerandeskyddsombud ska vara minst 18 år.",
+          "amendedBy": "Lag (2025:732)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "/Träder i kraft I:2028-07-01/",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "De som genomgår utbildning ska av huvudmannen för utbildningen ges tillfälle att medverka i arbetsmiljöarbetet på arbetsstället, om det är rimligt med hänsyn till utbildningens art och utbildningsperiodens längd.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Omfattningen och utformningen av elevernas deltagande i skolans arbetsmiljöarbete ska anpassas efter deras ålder, mognad och förutsättningar i övrigt när det gäller",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. elever i lägre årskurs än årskurs 8 i grundskolan, specialskolan och i motsvarande utbildningar samt i sameskolan,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. elever i anpassade grundskolan, anpassade gymnasieskolan och motsvarande utbildningar, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. elever i kommunal vuxenutbildning som anpassad utbildning.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "Elever i grundskolans årskurs 8-10, specialskolans årskurs 8-11 och gymnasieskolan samt motsvarande utbildningar företräds i arbetsmiljöarbetet av elevskyddsombud.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "De som genomgår eftergymnasial utbildning och annan utbildning för vuxna än kommunal vuxenutbildning som anpassad utbildning företräds i arbetsmiljöarbetet av studerandeskyddsombud. Ett studerandeskyddsombud ska vara minst 18 år.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": null,
+          "content": "Elevskyddsombuden utses av eleverna och studerandeskyddsombuden av de studerande.\nHuvudmannen för utbildningen ska se till att elevskyddsombuden och studerandeskyddsombuden får den utbildning och den ledighet som behövs för uppdraget.\nElevskyddsombuden och studerandeskyddsombuden har rätt till den information som behövs för uppdraget. För elevskyddsombuden gäller dock rätten till information inte sådana uppgifter som är föremål för tystnadsplikt enligt 7 kap. 13 § första stycket. I fråga om uppgifter som är föremål för sekretess i det allmännas verksamhet gäller offentlighets- och sekretesslagen (2009:400).",
+          "amendedBy": "Lag (2009:870)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Elevskyddsombuden utses av eleverna och studerandeskyddsombuden av de studerande.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Huvudmannen för utbildningen ska se till att elevskyddsombuden och studerandeskyddsombuden får den utbildning och den ledighet som behövs för uppdraget.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Elevskyddsombuden och studerandeskyddsombuden har rätt till den information som behövs för uppdraget. För elevskyddsombuden gäller dock rätten till information inte sådana uppgifter som är föremål för tystnadsplikt enligt 7 kap. 13 § första stycket. I fråga om uppgifter som är föremål för sekretess i det allmännas verksamhet gäller offentlighets- och sekretesslagen (2009:400).",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "7",
+      "title": "Tillsyn",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Arbetsmiljöverket utövar tillsyn över att denna lag och föreskrifter som meddelats med stöd av lagen följs.\nMed undantag för 13 § gäller detta kapitel inte fartygsarbete.\nBestämmelser om tillsyn vid fartygsarbete och inskränkningar i rätten att använda fartyg finns i fartygssäkerhetslagen (2003:364).",
+          "amendedBy": "Lag (2003:365)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsmiljöverket utövar tillsyn över att denna lag och föreskrifter som meddelats med stöd av lagen följs.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Med undantag för 13 § gäller detta kapitel inte fartygsarbete.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Bestämmelser om tillsyn vid fartygsarbete och inskränkningar i rätten att använda fartyg finns i fartygssäkerhetslagen (2003:364).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Regeringen får meddela föreskrifter om Arbetsmiljöverkets tillsyn enligt detta kapitel över att Europaparlamentets och rådets förordning (EG) nr 1907/2006 av den 18 december 2006 om registrering, utvärdering, godkännande och begränsning av kemikalier (Reach), inrättande av en europeisk kemikaliemyndighet, ändring av direktiv 1999/45/EG och upphävande av rådets förordning (EEG) nr 793/93 och kommissionens förordning (EG) nr 1488/94 samt rådets direktiv 76/769/EEG och kommissionens direktiv 91/155/EEG, 93/67/EEG, 93/105/EG och 2000/21/EG följs.",
+          "amendedBy": "Lag (2010:1543)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen får meddela föreskrifter om Arbetsmiljöverkets tillsyn enligt detta kapitel över att Europaparlamentets och rådets förordning (EG) nr 1907/2006 av den 18 december 2006 om registrering, utvärdering, godkännande och begränsning av kemikalier (Reach), inrättande av en europeisk kemikaliemyndighet, ändring av direktiv 1999/45/EG och upphävande av rådets förordning (EEG) nr 793/93 och kommissionens förordning (EG) nr 1488/94 samt rådets direktiv 76/769/EEG och kommissionens direktiv 91/155/EEG, 93/67/EEG, 93/105/EG och 2000/21/EG följs.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Tillsynsmyndighet har rätt att efter anfordran erhålla de upplysningar, handlingar och prov samt påkalla de undersökningar som behövs för tillsyn enligt denna lag.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndighet har rätt att efter anfordran erhålla de upplysningar, handlingar och prov samt påkalla de undersökningar som behövs för tillsyn enligt denna lag.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Den som i sin verksamhet använder en viss produkt eller har uppdragit åt annan att utföra ett visst arbete är skyldig att på en tillsynsmyndighets begäran lämna upplysning om vem som har levererat produkten eller utför arbetet.\nDen som har överlåtit eller upplåtit en teknisk anordning eller överlåtit ett ämne, som kan föranleda ohälsa eller olycksfall, är skyldig att på en tillsynsmyndighets begäran lämna tillgängliga upplysningar om till vilka produkten har överlåtits eller upplåtits.",
+          "amendedBy": "Lag (1991:677)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som i sin verksamhet använder en viss produkt eller har uppdragit åt annan att utföra ett visst arbete är skyldig att på en tillsynsmyndighets begäran lämna upplysning om vem som har levererat produkten eller utför arbetet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Den som har överlåtit eller upplåtit en teknisk anordning eller överlåtit ett ämne, som kan föranleda ohälsa eller olycksfall, är skyldig att på en tillsynsmyndighets begäran lämna tillgängliga upplysningar om till vilka produkten har överlåtits eller upplåtits.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "För tillsyn enligt denna lag ska tillsynsmyndigheten ges tillträde till arbetsställe och får där göra undersökningar och ta prov. För uttaget prov betalas inte ersättning.\nPolismyndigheten ska lämna den handräckning som behövs för att tillsynsmyndigheten ska kunna utöva tillsyn enligt denna lag.\nRegeringen eller, efter regeringens bemyndigande, Arbetsmiljöverket, får föreskriva skyldighet att ersätta tillsynsmyndighetens kostnader för provtagning och undersökning av prov som skäligen har krävts.",
+          "amendedBy": "Lag (2014:659)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För tillsyn enligt denna lag ska tillsynsmyndigheten ges tillträde till arbetsställe och får där göra undersökningar och ta prov. För uttaget prov betalas inte ersättning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Polismyndigheten ska lämna den handräckning som behövs för att tillsynsmyndigheten ska kunna utöva tillsyn enligt denna lag.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Regeringen eller, efter regeringens bemyndigande, Arbetsmiljöverket, får föreskriva skyldighet att ersätta tillsynsmyndighetens kostnader för provtagning och undersökning av prov som skäligen har krävts.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Om det på ett gemensamt arbetsställe som avses i 3 kap. 7 d § tredje stycket inte finns någon som är ansvarig för samordningen av arbetsmiljöfrågor, får Arbetsmiljöverket besluta att någon av dem som bedriver verksamhet där ska ha sådant ansvar.\nNär det finns särskilda skäl får Arbetsmiljöverket besluta att ansvaret för samordningen av arbetsmiljöfrågor i fall som avses i 3 kap. 7 d § ska flyttas över till någon av dem som bedriver verksamhet på det gemensamma arbetsstället.\nI fråga om ansvaret för arbetsmiljöfrågor vid byggnads- eller anläggningsarbete enligt 3 kap. 6 § får Arbetsmiljöverket om det finns särskilda skäl i beslut flytta över detta ansvar\n1. från en uppdragstagare till den som låter utföra byggnads- eller anläggningsarbetet i fall som avses i 3 kap. 7 c §, eller\n2. från den som låter utföra byggnads- eller anläggningsarbetet till en uppdragstagare i den mån det finns ett sådant uppdrag som avses i 3 kap. 7 c § första stycket 1.",
+          "amendedBy": "Lag (2008:934)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det på ett gemensamt arbetsställe som avses i 3 kap. 7 d § tredje stycket inte finns någon som är ansvarig för samordningen av arbetsmiljöfrågor, får Arbetsmiljöverket besluta att någon av dem som bedriver verksamhet där ska ha sådant ansvar.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "När det finns särskilda skäl får Arbetsmiljöverket besluta att ansvaret för samordningen av arbetsmiljöfrågor i fall som avses i 3 kap. 7 d § ska flyttas över till någon av dem som bedriver verksamhet på det gemensamma arbetsstället.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "I fråga om ansvaret för arbetsmiljöfrågor vid byggnads- eller anläggningsarbete enligt 3 kap. 6 § får Arbetsmiljöverket om det finns särskilda skäl i beslut flytta över detta ansvar",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. från en uppdragstagare till den som låter utföra byggnads- eller anläggningsarbetet i fall som avses i 3 kap. 7 c §, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. från den som låter utföra byggnads- eller anläggningsarbetet till en uppdragstagare i den mån det finns ett sådant uppdrag som avses i 3 kap. 7 c § första stycket 1.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Arbetsmiljöverket får gentemot den som har skyddsansvar enligt 3 kap. 2-12 §§, 5 kap. 3 § första stycket eller 6 § i detta kapitel besluta de förelägganden eller förbud som behövs för att\n1. denna lag eller föreskrifter som har meddelats med stöd av lagen ska följas, och\n2. de bestämmelser i förordning (EG) nr 1907/2006 som omfattas av Arbetsmiljöverkets tillsynsansvar ska följas.\nEtt beslut om föreläggande eller förbud får förenas med vite.\nEtt sådant föreläggande eller förbud får riktas även mot staten som arbetsgivare.\nOm någon inte följer ett föreläggande, får Arbetsmiljöverket besluta att rättelse ska ske på hans eller hennes bekostnad.\nOm ett föreläggande har beslutats beträffande en åtgärd som kräver bygglov, rivningslov eller marklov enligt plan- och bygglagen (2010:900) men sådant lov inte beviljas, upphör föreläggandet att gälla i fråga om den åtgärden.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsmiljöverket får gentemot den som har skyddsansvar enligt 3 kap. 2-12 §§, 5 kap. 3 § första stycket eller 6 § i detta kapitel besluta de förelägganden eller förbud som behövs för att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. denna lag eller föreskrifter som har meddelats med stöd av lagen ska följas, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. de bestämmelser i förordning (EG) nr 1907/2006 som omfattas av Arbetsmiljöverkets tillsynsansvar ska följas.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Ett beslut om föreläggande eller förbud får förenas med vite.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Ett sådant föreläggande eller förbud får riktas även mot staten som arbetsgivare.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Om någon inte följer ett föreläggande, får Arbetsmiljöverket besluta att rättelse ska ske på hans eller hennes bekostnad.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "Om ett föreläggande har beslutats beträffande en åtgärd som kräver bygglov, rivningslov eller marklov enligt plan- och bygglagen (2010:900) men sådant lov inte beviljas, upphör föreläggandet att gälla i fråga om den åtgärden.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Om det finns något missförhållande i skyddshänseende beträffande en lokal, ett markområde eller ett utrymme under jord som har upplåtits för arbete eller som personalutrymme, kan Arbetsmiljöverket meddela förbud enligt 7 § mot en sådan upplåtelse till dess angiven åtgärd har vidtagits med lokalen, markområdet eller utrymmet.\nArbetsmiljöverket kan gentemot den som upplåter en lokal, ett markområde eller ett utrymme under jord för arbete eller som personalutrymme, meddela förelägganden enligt 7 § om undersökning av skyddsförhållandena på platsen.",
+          "amendedBy": "Lag (2000:764)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det finns något missförhållande i skyddshänseende beträffande en lokal, ett markområde eller ett utrymme under jord som har upplåtits för arbete eller som personalutrymme, kan Arbetsmiljöverket meddela förbud enligt 7 § mot en sådan upplåtelse till dess angiven åtgärd har vidtagits med lokalen, markområdet eller utrymmet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Arbetsmiljöverket kan gentemot den som upplåter en lokal, ett markområde eller ett utrymme under jord för arbete eller som personalutrymme, meddela förelägganden enligt 7 § om undersökning av skyddsförhållandena på platsen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "har upphävts genom\nlag (2000:764)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "har upphävts genom",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "lag (2000:764)",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "För att säkerställa förbud enligt 7 eller 8 § kan tillsynsmyndighet meddela beslut om försegling eller annan avstängning av anläggning, utrymme eller anordning. Sådant beslut verkställs genom myndighetens försorg.",
+          "amendedBy": "Lag (1994:579)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att säkerställa förbud enligt 7 eller 8 § kan tillsynsmyndighet meddela beslut om försegling eller annan avstängning av anläggning, utrymme eller anordning. Sådant beslut verkställs genom myndighetens försorg.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Den som har skyddsansvar enligt 3 kap. 8-10 §§ får åläggas att lämna varningsinformation eller att återkalla en produkt.\nInnehållet i ett sådant åläggande ska motsvara vad som anges i 14-18 §§ produktsäkerhetslagen (2004:451). Vad som där sägs om tillverkare ska dock i stället avse den som har skyddsansvar enligt 3 kap. 8-10 §§.\nÅläggandet ska förenas med vite om det inte av särskilda skäl är obehövligt.",
+          "amendedBy": "Lag (2008:295)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som har skyddsansvar enligt 3 kap. 8-10 §§ får åläggas att lämna varningsinformation eller att återkalla en produkt.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Innehållet i ett sådant åläggande ska motsvara vad som anges i 14-18 §§ produktsäkerhetslagen (2004:451). Vad som där sägs om tillverkare ska dock i stället avse den som har skyddsansvar enligt 3 kap. 8-10 §§.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Åläggandet ska förenas med vite om det inte av särskilda skäl är obehövligt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "Regeringen kan föreskriva att särskilda avgifter skall tagas ut i ärende enligt denna lag.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen kan föreskriva att särskilda avgifter skall tagas ut i ärende enligt denna lag.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "Den som har utsetts till skyddsombud, studerandeskyddsombud eller ledamot i en skyddskommitté eller den som har deltagit i arbetsanpassnings- och rehabiliteringsverksamhet enligt denna lag får inte obehörigen röja eller utnyttja vad han eller hon under uppdraget har fått veta om yrkeshemlighet, arbetsförfarande, affärsförhållande, en enskilds personliga förhållanden eller förhållande av betydelse för landets försvar.\nHar ombudet, ledamoten eller deltagaren utsetts av en sådan lokal arbetstagarorganisation som avses i 6 kap. 2 och 8 §§, får han eller hon trots tystnadsplikten enligt första stycket lämna uppgift vidare till en ledamot i organisationens styrelse eller till en sakkunnig i arbetsmiljöfrågor hos en central arbetstagarorganisation till vilken den lokala organisationen hör. Rätten att lämna uppgift vidare gäller endast om uppgiftslämnaren underrättar mottagaren om tystnadsplikten. I sådant fall gäller tystnadsplikten också för denne.\nI det allmännas verksamhet tillämpas i stället bestämmelserna i 10 kap. 11-14 §§ och 12 kap. 2 § offentlighets- och sekretesslagen (2009:400).",
+          "amendedBy": "Lag (2009:870)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som har utsetts till skyddsombud, studerandeskyddsombud eller ledamot i en skyddskommitté eller den som har deltagit i arbetsanpassnings- och rehabiliteringsverksamhet enligt denna lag får inte obehörigen röja eller utnyttja vad han eller hon under uppdraget har fått veta om yrkeshemlighet, arbetsförfarande, affärsförhållande, en enskilds personliga förhållanden eller förhållande av betydelse för landets försvar.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Har ombudet, ledamoten eller deltagaren utsetts av en sådan lokal arbetstagarorganisation som avses i 6 kap. 2 och 8 §§, får han eller hon trots tystnadsplikten enligt första stycket lämna uppgift vidare till en ledamot i organisationens styrelse eller till en sakkunnig i arbetsmiljöfrågor hos en central arbetstagarorganisation till vilken den lokala organisationen hör. Rätten att lämna uppgift vidare gäller endast om uppgiftslämnaren underrättar mottagaren om tystnadsplikten. I sådant fall gäller tystnadsplikten också för denne.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "I det allmännas verksamhet tillämpas i stället bestämmelserna i 10 kap. 11-14 §§ och 12 kap. 2 § offentlighets- och sekretesslagen (2009:400).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": null,
+          "content": "Tillsynsmyndighet ska till skyddsombud och studerandeskyddsombud lämna var sin kopia av de skriftliga meddelanden i arbetsmiljöfrågor som lämnas till ett arbetsställe.",
+          "amendedBy": "Lag (2009:870)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndighet ska till skyddsombud och studerandeskyddsombud lämna var sin kopia av de skriftliga meddelanden i arbetsmiljöfrågor som lämnas till ett arbetsställe.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": null,
+          "content": "Bestämmelser om marknadskontroll finns i Europaparlamentets och rådets förordning (EU) 2019/1020 av den 20 juni 2019 om marknadskontroll och överensstämmelse för produkter och om ändring av direktiv 2004/42/EG och förordningarna (EG) nr 765/2008 och (EU) nr 305/2011.\nDen myndighet som regeringen bestämmer är marknadskontrollmyndighet.",
+          "amendedBy": "Lag (2022:1109)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om marknadskontroll finns i Europaparlamentets och rådets förordning (EU) 2019/1020 av den 20 juni 2019 om marknadskontroll och överensstämmelse för produkter och om ändring av direktiv 2004/42/EG och förordningarna (EG) nr 765/2008 och (EU) nr 305/2011.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Den myndighet som regeringen bestämmer är marknadskontrollmyndighet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": null,
+          "content": "Vid marknadskontroll enligt förordning (EU) 2019/1020 har marknadskontrollmyndigheten befogenhet\n1. att enligt artikel 14.4 a-14.4 c kräva att ekonomiska aktörer ska tillhandahålla handlingar, specifikationer, data eller uppgifter,\n2. att enligt artikel 14.4 d utföra oanmälda inspektioner på plats och fysiska kontroller av produkter,\n3. att enligt artikel 14.4 e få tillträde till lokaler, mark eller transportmedel,\n4. att enligt artikel 14.4 f inleda undersökningar på eget initiativ,\n5. att enligt artikel 14.4 g kräva att ekonomiska aktörer ska vidta lämpliga åtgärder för att få en bristande överensstämmelse att upphöra eller att eliminera en risk,\n6. att enligt artikel 14.4 h själv vidta åtgärder,\n7. att enligt artikel 14.4 j införskaffa, inspektera och demontera varuprover, och\n8. att enligt artikel 14.4 k kräva att innehåll på ett onlinegränssnitt ska avlägsnas, att en varning ska visas eller att åtkomsten ska begränsas.\nMarknadskontrollmyndigheten får införskaffa ett varuprov under dold identitet enligt artikel 14.4 j i förordning (EU) 2019/1020 endast om det är nödvändigt för att syftet med kontrollen ska uppnås. Myndigheten ska underrätta den ekonomiska aktören om att införskaffandet har skett under dold identitet, så snart det går utan att syftet med åtgärden går förlorat.\nBefogenheten enligt första stycket 8 gäller inte i fråga om databaser som omfattas av tryckfrihetsförordningens eller yttrandefrihetsgrundlagens skydd.\nNär ändrade förhållanden ger anledning till det, ska marknadskontrollmyndigheten besluta att en sådan skyldighet som avses i första stycket 8 inte längre ska gälla.",
+          "amendedBy": "Lag (2022:1109)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid marknadskontroll enligt förordning (EU) 2019/1020 har marknadskontrollmyndigheten befogenhet",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. att enligt artikel 14.4 a-14.4 c kräva att ekonomiska aktörer ska tillhandahålla handlingar, specifikationer, data eller uppgifter,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. att enligt artikel 14.4 d utföra oanmälda inspektioner på plats och fysiska kontroller av produkter,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. att enligt artikel 14.4 e få tillträde till lokaler, mark eller transportmedel,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. att enligt artikel 14.4 f inleda undersökningar på eget initiativ,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. att enligt artikel 14.4 g kräva att ekonomiska aktörer ska vidta lämpliga åtgärder för att få en bristande överensstämmelse att upphöra eller att eliminera en risk,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 6,
+              "text": "6. att enligt artikel 14.4 h själv vidta åtgärder,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 7,
+              "text": "7. att enligt artikel 14.4 j införskaffa, inspektera och demontera varuprover, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 8,
+              "text": "8. att enligt artikel 14.4 k kräva att innehåll på ett onlinegränssnitt ska avlägsnas, att en varning ska visas eller att åtkomsten ska begränsas.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Marknadskontrollmyndigheten får införskaffa ett varuprov under dold identitet enligt artikel 14.4 j i förordning (EU) 2019/1020 endast om det är nödvändigt för att syftet med kontrollen ska uppnås. Myndigheten ska underrätta den ekonomiska aktören om att införskaffandet har skett under dold identitet, så snart det går utan att syftet med åtgärden går förlorat.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Befogenheten enligt första stycket 8 gäller inte i fråga om databaser som omfattas av tryckfrihetsförordningens eller yttrandefrihetsgrundlagens skydd.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "När ändrade förhållanden ger anledning till det, ska marknadskontrollmyndigheten besluta att en sådan skyldighet som avses i första stycket 8 inte längre ska gälla.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": null,
+          "content": "Marknadskontrollmyndigheten får besluta de förelägganden som behövs för att förordning (EU) 2019/1020 ska följas.",
+          "amendedBy": "Lag (2022:1109)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Marknadskontrollmyndigheten får besluta de förelägganden som behövs för att förordning (EU) 2019/1020 ska följas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": null,
+          "content": "Ett beslut om föreläggande enligt 16 eller 17 § får förenas med vite.",
+          "amendedBy": "Lag (2022:1109)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett beslut om föreläggande enligt 16 eller 17 § får förenas med vite.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "19",
+          "heading": null,
+          "content": "Polismyndigheten ska på begäran av marknadskontrollmyndigheten lämna den hjälp som behövs för att marknadskontrollmyndigheten ska kunna vidta åtgärder enligt 16 §.\nHjälp enligt första stycket får begäras endast om\n1. det på grund av särskilda omständigheter kan befaras att åtgärden inte kan utföras utan att en polismans särskilda befogenheter enligt 10 § polislagen (1984:387) behöver tillgripas, eller\n2. det annars finns synnerliga skäl.",
+          "amendedBy": "Lag (2022:1109)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Polismyndigheten ska på begäran av marknadskontrollmyndigheten lämna den hjälp som behövs för att marknadskontrollmyndigheten ska kunna vidta åtgärder enligt 16 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Hjälp enligt första stycket får begäras endast om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. det på grund av särskilda omständigheter kan befaras att åtgärden inte kan utföras utan att en polismans särskilda befogenheter enligt 10 § polislagen (1984:387) behöver tillgripas, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. det annars finns synnerliga skäl.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "20",
+          "heading": null,
+          "content": "Den som har tagit befattning med ett ärende som gäller marknadskontroll enligt denna lag får inte obehörigen röja eller utnyttja vad denne har fått veta om någons affärs- eller driftförhållanden.\nI det allmännas verksamhet tillämpas i stället bestämmelserna i offentlighets- och sekretesslagen (2009:400).",
+          "amendedBy": "Lag (2022:1109)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som har tagit befattning med ett ärende som gäller marknadskontroll enligt denna lag får inte obehörigen röja eller utnyttja vad denne har fått veta om någons affärs- eller driftförhållanden.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "I det allmännas verksamhet tillämpas i stället bestämmelserna i offentlighets- och sekretesslagen (2009:400).",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "8",
+      "title": "Påföljder",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Till böter eller fängelse i högst ett år döms den som uppsåtligen eller av oaktsamhet bryter mot ett föreläggande eller förbud som har meddelats med stöd av 7 kap. 7 eller 8 §.\nDetta gäller dock inte om föreläggandet eller förbudet har förenats med vite.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Till böter eller fängelse i högst ett år döms den som uppsåtligen eller av oaktsamhet bryter mot ett föreläggande eller förbud som har meddelats med stöd av 7 kap. 7 eller 8 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Detta gäller dock inte om föreläggandet eller förbudet har förenats med vite.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Till böter döms den som uppsåtligen eller av oaktsamhet\n1. anlitar en minderårig i strid mot 5 kap. 2 § första stycket eller mot föreskrifter som meddelats med stöd av 5 kap. 2 § tredje eller fjärde stycket,\n2. bryter mot föreskrifter om minderårigas arbete som har meddelats med stöd av 5 kap. 3 § andra stycket, 4 eller 5 §,\n3. lämnar oriktiga uppgifter om förhållanden av vikt, när en tillsynsmyndighet har begärt upplysningar, handlingar eller prov eller begärt undersökningar enligt 7 kap. 3 eller 4 §,\n4. utan giltigt skäl tar bort en skyddsanordning eller sätter den ur bruk, eller\n5. inte lämnar underrättelse till tillsynsmyndigheten i enlighet med 3 kap. 3 a §.\nEn gärning som omfattas av ett föreläggande eller förbud enligt 7 kap. 7 § ska inte medföra straffansvar enligt första stycket.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Till böter döms den som uppsåtligen eller av oaktsamhet",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. anlitar en minderårig i strid mot 5 kap. 2 § första stycket eller mot föreskrifter som meddelats med stöd av 5 kap. 2 § tredje eller fjärde stycket,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. bryter mot föreskrifter om minderårigas arbete som har meddelats med stöd av 5 kap. 3 § andra stycket, 4 eller 5 §,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. lämnar oriktiga uppgifter om förhållanden av vikt, när en tillsynsmyndighet har begärt upplysningar, handlingar eller prov eller begärt undersökningar enligt 7 kap. 3 eller 4 §,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. utan giltigt skäl tar bort en skyddsanordning eller sätter den ur bruk, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. inte lämnar underrättelse till tillsynsmyndigheten i enlighet med 3 kap. 3 a §.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "En gärning som omfattas av ett föreläggande eller förbud enligt 7 kap. 7 § ska inte medföra straffansvar enligt första stycket.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Om ansvar för den som överträder 7 kap. 13 § finns bestämmelser i 20 kap. 3 § brottsbalken.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om ansvar för den som överträder 7 kap. 13 § finns bestämmelser i 20 kap. 3 § brottsbalken.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Har upphävts genom\nlag (2024:804)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "lag (2024:804)",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Sanktionsavgift",
+          "content": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att en sanktionsavgift ska tas ut om en överträdelse har skett av en föreskrift som har meddelats med stöd av 4 kap. 1-8 §§. Avgiften ska tas ut även om överträdelsen inte skett uppsåtligen eller av oaktsamhet.\nEn föreskrift om sanktionsavgift ska ange hur avgiften beräknas för olika slag av överträdelser.\nAvgiftsbeloppet ska kunna fastställas direkt med ledning av den angivna beräkningsgrunden. Avgiften ska vara lägst 1 000 och högst 1 000 000 kronor.\nLag (2013:610)\n5 a § Någon sanktionsavgift ska inte tas ut för en gärning som omfattas av ett föreläggande eller förbud enligt 7 kap. 7 §.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att en sanktionsavgift ska tas ut om en överträdelse har skett av en föreskrift som har meddelats med stöd av 4 kap. 1-8 §§. Avgiften ska tas ut även om överträdelsen inte skett uppsåtligen eller av oaktsamhet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "En föreskrift om sanktionsavgift ska ange hur avgiften beräknas för olika slag av överträdelser.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Avgiftsbeloppet ska kunna fastställas direkt med ledning av den angivna beräkningsgrunden. Avgiften ska vara lägst 1 000 och högst 1 000 000 kronor.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Lag (2013:610)",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "5 a § Någon sanktionsavgift ska inte tas ut för en gärning som omfattas av ett föreläggande eller förbud enligt 7 kap. 7 §.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Sanktionsavgiften ska tas ut av den fysiska eller juridiska person som drev den verksamhet där överträdelsen skedde.\nAvgiften får sättas ned helt eller delvis om överträdelsen är ringa eller ursäktlig eller om det annars med hänsyn till omständigheterna skulle vara oskäligt att ta ut sanktionsavgiften.\nAvgiften tillfaller staten.\nLag (2013:610)\n6 a § Arbetsmiljöverket prövar genom avgiftsföreläggande frågor om sanktionsavgifter.\nAvgiftsföreläggande innebär att den som bedöms vara ansvarig enligt 6 § för en överträdelse föreläggs att godkänna avgiften omedelbart eller inom viss tid.\nNär föreläggandet har godkänts, gäller det som domstols lagakraftvunna avgörande om att avgift ska tas ut. Ett godkännande som görs efter det att den tid som angetts i föreläggandet har gått ut är dock utan verkan.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sanktionsavgiften ska tas ut av den fysiska eller juridiska person som drev den verksamhet där överträdelsen skedde.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Avgiften får sättas ned helt eller delvis om överträdelsen är ringa eller ursäktlig eller om det annars med hänsyn till omständigheterna skulle vara oskäligt att ta ut sanktionsavgiften.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Avgiften tillfaller staten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Lag (2013:610)",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "6 a § Arbetsmiljöverket prövar genom avgiftsföreläggande frågor om sanktionsavgifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 6,
+              "text": "Avgiftsföreläggande innebär att den som bedöms vara ansvarig enligt 6 § för en överträdelse föreläggs att godkänna avgiften omedelbart eller inom viss tid.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 7,
+              "text": "När föreläggandet har godkänts, gäller det som domstols lagakraftvunna avgörande om att avgift ska tas ut. Ett godkännande som görs efter det att den tid som angetts i föreläggandet har gått ut är dock utan verkan.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Om avgiftsföreläggandet inte har godkänts inom utsatt tid, får Arbetsmiljöverket ansöka hos den förvaltningsrätt inom vars domkrets avgiftsföreläggandet har utfärdats, om att sanktionsavgift ska tas ut.\nPrövningstillstånd krävs vid överklagande till kammarrätten.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om avgiftsföreläggandet inte har godkänts inom utsatt tid, får Arbetsmiljöverket ansöka hos den förvaltningsrätt inom vars domkrets avgiftsföreläggandet har utfärdats, om att sanktionsavgift ska tas ut.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "En sanktionsavgift får tas ut bara om ansökan har delgetts den som avgiftsföreläggandet riktas mot inom fem år från den tidpunkt då överträdelsen skedde.\nEtt beslut om att avgift ska tas ut ska genast sändas till länsstyrelsen. Avgiften ska betalas till länsstyrelsen inom två månader från det att beslutet vann laga kraft. En upplysning om detta ska tas in i beslutet.\nOm avgiften inte betalas inom den tid som anges i andra stycket, ska dröjsmålsavgift tas ut enligt lagen (1997:484) om dröjsmålsavgift. Den obetalda avgiften och dröjsmålsavgiften ska lämnas för indrivning enligt lagen (1993:891) om indrivning av statliga fordringar m.m.",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En sanktionsavgift får tas ut bara om ansökan har delgetts den som avgiftsföreläggandet riktas mot inom fem år från den tidpunkt då överträdelsen skedde.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ett beslut om att avgift ska tas ut ska genast sändas till länsstyrelsen. Avgiften ska betalas till länsstyrelsen inom två månader från det att beslutet vann laga kraft. En upplysning om detta ska tas in i beslutet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Om avgiften inte betalas inom den tid som anges i andra stycket, ska dröjsmålsavgift tas ut enligt lagen (1997:484) om dröjsmålsavgift. Den obetalda avgiften och dröjsmålsavgiften ska lämnas för indrivning enligt lagen (1993:891) om indrivning av statliga fordringar m.m.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Har upphävts genom\nlag (2013:610)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "lag (2013:610)",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "En beslutad avgift bortfaller om verkställighet inte har skett inom fem år från det att avgörandet vann laga kraft.\nLag (2013:610)",
+          "amendedBy": "Lag (2013:610)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En beslutad avgift bortfaller om verkställighet inte har skett inom fem år från det att avgörandet vann laga kraft.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Lag (2013:610)",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "9",
+      "title": "Överklagande",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Har upphävts genom\nlag (2000:764)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "lag (2000:764)",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "En myndighets beslut i enskilda fall enligt denna lag eller enligt föreskrifter som har meddelats med stöd av lagen får överklagas till allmän förvaltningsdomstol.\nPrövningstillstånd krävs vid överklagande till kammarrätten.",
+          "amendedBy": "Lag (2022:1109)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En myndighets beslut i enskilda fall enligt denna lag eller enligt föreskrifter som har meddelats med stöd av lagen får överklagas till allmän förvaltningsdomstol.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "För att ta till vara arbetstagarnas intressen i ärenden enligt denna lag får överklagande enligt 2 § göras av ett huvudskyddsombud eller, om något sådant ombud inte finns, av ett annat skyddsombud.\nOm det inte finns något skyddsombud, får överklagande göras av en arbetstagarorganisation i den mån saken rör medlemmarnas intressen. Om talan avser annat än fartygsarbete krävs att organisationen tidigare har yttrat sig i ärendet.\nFör att ta till vara de studerandes intressen i ärenden enligt denna lag får överklagande också göras av ett studerandeskyddsombud.",
+          "amendedBy": "Lag (2009:870)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att ta till vara arbetstagarnas intressen i ärenden enligt denna lag får överklagande enligt 2 § göras av ett huvudskyddsombud eller, om något sådant ombud inte finns, av ett annat skyddsombud.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om det inte finns något skyddsombud, får överklagande göras av en arbetstagarorganisation i den mån saken rör medlemmarnas intressen. Om talan avser annat än fartygsarbete krävs att organisationen tidigare har yttrat sig i ärendet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "För att ta till vara de studerandes intressen i ärenden enligt denna lag får överklagande också göras av ett studerandeskyddsombud.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "I fråga om föreskrifter får Arbetsmiljöverket underställa regeringen frågor av särskild betydelse, innan verket meddelar beslut i ärendet.",
+          "amendedBy": "Lag (2000:764)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I fråga om föreskrifter får Arbetsmiljöverket underställa regeringen frågor av särskild betydelse, innan verket meddelar beslut i ärendet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "En tillsynsmyndighet eller en marknadskontrollmyndighet får bestämma att dess beslut ska gälla omedelbart.",
+          "amendedBy": "Lag (2022:1109)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En tillsynsmyndighet eller en marknadskontrollmyndighet får bestämma att dess beslut ska gälla omedelbart.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "1977:1160",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 juli 1978, då arbetarskyddslagen (1949:1)\noch skogsförläggningslagen (1963:246) skall upphöra att gälla. Till dess regeringen eller, efter regeringens bestämmande, arbetarskyddsstyrelsen enligt bemyndigande i den nya lagen meddelar bestämmelser som motsvarar kungörelsen (1949:210) om förbud att använda arbetstagare till målnings-\narbete med blyfärg, kungörelsen (1949:211) om läkarundersökning och läkarbesiktning till förebyggande av vissa yrkessjukdomar, kungörelsen\n(1949:491) om förbud att använda bensolhaltigt ämne vid tillverkning av läderskodon och kungörelsen (1966:521) om förbud att använda minderårig till vissa arbeten skall dock 14 och 16 §§, 26 § andra stycket, 74 §\nförsta stycket och 75 § arbetarskyddslagen fortfarande gälla.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Vid ikraftträdandet gällande föreskrift, råd eller anvisning, som har meddelats med stöd av 45 § andra eller tredje stycket eller 74 § andra stycket arbetarskyddslagen, äger fortsatt giltighet inom sitt tidigare tillämpningsområde och skall vid tillämpningen av arbetsmiljölagen anses ha meddelats enligt denna.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Vad som sägs i andra stycket skall tillämpas på motsvarande sätt i fråga om föreskrift, råd eller anvisning, som där nämns men som avses träda i kraft den 1 juli 1978 eller senare.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Förekommer i lag eller annan författning hänvisning till eller avses eljest däri föreskrift, som har ersatts genom bestämmelse i arbetsmiljölagen, tillämpas i stället den nya bestämmelsen.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1994:579",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 oktober 1994.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "De äldre bestämmelserna i 8 kap. 2 § gäller fortfarande i fråga om överträdelser som har skett före den 1 oktober 1994, dock får ej dömas till annan påföljd än böter.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Sanktionsavgift som avses i 8 kap. 5 § denna lag får påföras endast för överträdelse som har skett efter lagens ikraftträdande.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1995:326",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 maj 1995. Beslut som har meddelats före ikraftträdandet överklagas enligt äldre bestämmelser.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2008:297",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 juli 2008.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. För beslut som meddelats av Arbetsmiljöverket före den 1 juli 2008 gäller 9 kap. 2 § i sin äldre lydelse.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2008:1362",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 januari 2009. Vid tillämpning av 7 a § förvaltningsprocesslagen (1971:291) ska Transportstyrelsen i stället för Sjöfartsverket vara den enskildes motpart, om styrelsen efter ikraftträdandet är behörig att handlägga den typ av fråga som är föremål för prövning.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2010:856",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 juli 2011.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Äldre bestämmelser gäller fortfarande för vuxenutbildning för utvecklingsstörda till utgången av juni 2012.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2011:741",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 augusti 2011. För arbetsställen där arbetsmiljösamrådet regleras av kollektivavtal vid ikraftträdandet, tillämpas lagen från och med den 1 januari 2013.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2013:610",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 juli 2014.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Äldre föreskrifter gäller fortfarande för överträdelser som har skett före ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:126",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 21 april 2018.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Förelägganden och förbud som har meddelats före  ikraftträdandet med stöd av 7 kap. i förening med 3 kap. 8 §  ska fortfarande gälla.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1977:1160",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

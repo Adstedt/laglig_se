@@ -1,0 +1,33 @@
+{
+  "collectedBatchIds": [
+    "msgbatch_01GyBUA2Wi3uXJWse69frdja",
+    "msgbatch_01UminBnY7NrzWLCMbGBb6EV",
+    "msgbatch_0129P788k98T9ph5Q1WAbdqv",
+    "msgbatch_01MMd3SqtDWmcDYGPEaXCQ8T",
+    "msgbatch_01R8dLTmQxcTHiRgH11xknK3",
+    "msgbatch_0187KaLSi9z3svTznqD6DUXx",
+    "msgbatch_01WAHMVDGYPy9oVveF669kFu",
+    "msgbatch_01USZ6fp5CYXfRtxwFhFVa2F",
+    "msgbatch_01LeTXGZRSCS5p6KJwGKtAUn",
+    "msgbatch_01ENeCucohrb3i8zCqWLMdct",
+    "msgbatch_01TsEezymRisKoMZWq5gxVf9",
+    "msgbatch_019bZhZhCHJyrUGFK8T9XovX",
+    "msgbatch_014BcBgCLgFuA7WcMm2BFeRr",
+    "msgbatch_016SQf2EpAp1krWqRZU8ZMZD",
+    "msgbatch_01SZ5Hyq6qqUyJmqyQfqH9Tp",
+    "msgbatch_01NaxpE9wNHxJCnJuoo2qzLg",
+    "msgbatch_013uw6w2dTEHRx4Njc1EKxXg",
+    "msgbatch_016xWqFDM2uHeVSrQq7c9kqm",
+    "msgbatch_01QQjfE42Fot2mz9PzMM962C",
+    "msgbatch_01GeKMwRnM1rJTky43kW4oQM",
+    "msgbatch_01A9Z3CeySg4PLcMdW7VaPAG",
+    "msgbatch_015anEQC2mej9vYv3AZLs5jr",
+    "msgbatch_015F5LREq5edeNa5hkCmrdqn",
+    "msgbatch_01D641GFv4wvF6XLUmUaA8bW"
+  ],
+  "totalPrefixesWritten": 0,
+  "totalFailed": 193625,
+  "totalErrored": 15,
+  "startedAt": "2026-02-26T08:30:10.976Z",
+  "lastUpdatedAt": "2026-02-26T12:44:45.004Z"
+}

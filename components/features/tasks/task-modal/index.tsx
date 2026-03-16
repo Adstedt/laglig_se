@@ -44,6 +44,8 @@ interface TaskModalProps {
   columns?: TaskColumnWithCount[]
   /** Callback when task is updated - syncs changes back to parent workspace */
   onTaskUpdate?: (_taskId: string, _updates: Partial<TaskWithRelations>) => void
+  /** Callback when task is deleted from the modal */
+  onTaskDelete?: (_taskId: string) => void
   /** Callback to open a linked list item in the Legal Document Modal */
   onOpenListItem?: ((_listItemId: string) => void) | undefined
 }
@@ -55,6 +57,7 @@ export function TaskModal({
   workspaceMembers: preloadedMembers = [],
   columns: preloadedColumns = [],
   onTaskUpdate,
+  onTaskDelete,
   onOpenListItem,
 }: TaskModalProps) {
   const [aiChatOpen, setAiChatOpen] = useState(false)
@@ -154,7 +157,12 @@ export function TaskModal({
                 {/* Header with breadcrumb and close button */}
                 <ModalHeader
                   taskTitle={task.title}
+                  taskId={task.id}
                   onClose={onClose}
+                  onDelete={() => {
+                    if (taskId) onTaskDelete?.(taskId)
+                    onClose()
+                  }}
                   aiChatOpen={aiChatOpen}
                   onAiChatToggle={() => setAiChatOpen(!aiChatOpen)}
                 />

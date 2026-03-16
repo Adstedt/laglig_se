@@ -1,0 +1,585 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Kemikalieinspektionens föreskrifter om bekämpningsmedel",
+  "documentNumber": "KIFS 2022:3",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Gemensamma bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Dessa föreskrifter innehåller bestämmelser om bekämpningsmedel i form av växtskyddsmedel och biocidprodukter samt om träskyddsbehandlat virke.\nFöreskrifterna kompletterar\nEuropaparlamentets och rådets förordning (EG) nr 1107/2009 av den 21 oktober 2009 om utsläppande av växtskyddsmedel på marknaden och om upphävande av rådets direktiv 79/117/EEG och 91/414/EEG,\n        Europaparlamentets och rådets förordning (EU) nr 528/2012 av den 22 maj 2012 om tillhandahållande på marknaden och användning av biocidprodukter, och\n        förordningen (2014:425) om bekämpningsmedel.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Dessa föreskrifter innehåller bestämmelser om bekämpningsmedel i form av växtskyddsmedel och biocidprodukter samt om träskyddsbehandlat virke.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Föreskrifterna kompletterar",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Europaparlamentets och rådets förordning (EG) nr 1107/2009 av den 21 oktober 2009 om utsläppande av växtskyddsmedel på marknaden och om upphävande av rådets direktiv 79/117/EEG och 91/414/EEG,\n        Europaparlamentets och rådets förordning (EU) nr 528/2012 av den 22 maj 2012 om tillhandahållande på marknaden och användning av biocidprodukter, och\n        förordningen (2014:425) om bekämpningsmedel.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>Europaparlamentets och rådets förordning (EG) nr 1107/2009 av den 21 oktober 2009 om utsläppande av växtskyddsmedel på marknaden och om upphävande av rådets direktiv 79/117/EEG och 91/414/EEG,</li>\n        <li>Europaparlamentets och rådets förordning (EU) nr 528/2012 av den 22 maj 2012 om tillhandahållande på marknaden och användning av biocidprodukter, och</li>\n        <li><a href=\"/lagar/forordning-2014425-om-bekampningsmedel-2014-425\" class=\"legal-ref\" title=\"Förordning (2014:425) om bekämpningsmedel\" target=\"_blank\" rel=\"noopener\">förordningen (2014:425)</a> om bekämpningsmedel.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Termer och uttryck",
+          "content": "Termer och uttryck i dessa föreskrifter har samma betydelse som i\nEuropaparlamentets och rådets förordning (EG) nr 1107/2009, när det gäller växtskyddsmedel,\n        Europaparlamentets och rådets förordning (EU) nr 528/2012, när det gäller biocidprodukter, och\n        14 kap. miljöbalken och förordningen (2014:425) om bekämpningsmedel, när det gäller andra termer och begrepp än de som används i dessa EU-förordningar.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Termer och uttryck i dessa föreskrifter har samma betydelse som i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Europaparlamentets och rådets förordning (EG) nr 1107/2009, när det gäller växtskyddsmedel,\n        Europaparlamentets och rådets förordning (EU) nr 528/2012, när det gäller biocidprodukter, och\n        14 kap. miljöbalken och förordningen (2014:425) om bekämpningsmedel, när det gäller andra termer och begrepp än de som används i dessa EU-förordningar.",
+              "role": "STYCKE",
+              "htmlContent": "<ul>\n        <li>Europaparlamentets och rådets förordning (EG) nr 1107/2009, när det gäller växtskyddsmedel,</li>\n        <li>Europaparlamentets och rådets förordning (EU) nr 528/2012, när det gäller biocidprodukter, och</li>\n        <li>14 kap. miljöbalken och <a href=\"/lagar/forordning-2014425-om-bekampningsmedel-2014-425\" class=\"legal-ref\" title=\"Förordning (2014:425) om bekämpningsmedel\" target=\"_blank\" rel=\"noopener\">förordningen (2014:425)</a> om bekämpningsmedel, när det gäller andra termer och begrepp än de som används i dessa EU-förordningar.</li>\n      </ul>"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Information om bekämpningsmedel",
+          "content": "Information om bekämpningsmedel finns i bekämpningsmedelsregistret på Kemikalieinspektionens webbplats.\nBekämpningsmedelsregistret innehåller information om\nbekämpningsmedel som har godkänts av Kemikalieinspektionen,\n        tidpunkten för när ett godkännande av ett bekämpningsmedel med ett visst registreringsnummer har upphört att gälla,\n        anståndsperioder som gäller för ett bekämpningsmedel vars godkännande med ett visst registreringsnummer har upphört att gälla,\n        växtskyddsmedel som är godkända för mindre användningsområden och de bruksanvisningar som gäller för dem,\n        beslut om undantag i särskilda fall enligt artikel 53 i Europaparlamentets och rådets förordning (EG) nr 1107/2009, och\n        Kemikalieinspektionens tillstånd till parallellhandel med bekämpningsmedel som är godkända i andra medlemsstater i Europeiska unionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Information om bekämpningsmedel finns i bekämpningsmedelsregistret på Kemikalieinspektionens webbplats.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Bekämpningsmedelsregistret innehåller information om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "bekämpningsmedel som har godkänts av Kemikalieinspektionen,\n        tidpunkten för när ett godkännande av ett bekämpningsmedel med ett visst registreringsnummer har upphört att gälla,\n        anståndsperioder som gäller för ett bekämpningsmedel vars godkännande med ett visst registreringsnummer har upphört att gälla,\n        växtskyddsmedel som är godkända för mindre användningsområden och de bruksanvisningar som gäller för dem,\n        beslut om undantag i särskilda fall enligt artikel 53 i Europaparlamentets och rådets förordning (EG) nr 1107/2009, och\n        Kemikalieinspektionens tillstånd till parallellhandel med bekämpningsmedel som är godkända i andra medlemsstater i Europeiska unionen.",
+              "role": "STYCKE",
+              "htmlContent": "<ul>\n        <li>bekämpningsmedel som har godkänts av Kemikalieinspektionen,</li>\n        <li>tidpunkten för när ett godkännande av ett bekämpningsmedel med ett visst registreringsnummer har upphört att gälla,</li>\n        <li>anståndsperioder som gäller för ett bekämpningsmedel vars godkännande med ett visst registreringsnummer har upphört att gälla,</li>\n        <li>växtskyddsmedel som är godkända för mindre användningsområden och de bruksanvisningar som gäller för dem,</li>\n        <li>beslut om undantag i särskilda fall enligt artikel 53 i Europaparlamentets och rådets förordning (EG) nr 1107/2009, och</li>\n        <li>Kemikalieinspektionens tillstånd till parallellhandel med bekämpningsmedel som är godkända i andra medlemsstater i Europeiska unionen.</li>\n      </ul>"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Årlig redovisning av mängduppgifter",
+          "content": "Den som någon gång under ett kalenderår har innehaft ett produktgodkännande för ett växtskyddsmedel eller en biocidprodukt ska lämna mängduppgifter till Kemikalieinspektionen. Detsamma gäller för den som har innehaft ett tillstånd till parallellhandel för ett växtskyddsmedel enligt artikel 52 i Europaparlamentets och rådets förordning (EG) nr 1107/2009.\nUppgifterna ska så långt som möjligt redovisa\nhur mycket av bekämpningsmedlet som har överlåtits för att användas på den svenska marknaden, med tillägg av vad innehavaren själv har använt av medlet i Sverige, och\n        en uppskattning av hur medlets användning fördelas mellan jordbruk, skogsbruk, kommersiell frukt- och trädgårdsodling, industri samt hushållskonsumtion.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som någon gång under ett kalenderår har innehaft ett produktgodkännande för ett växtskyddsmedel eller en biocidprodukt ska lämna mängduppgifter till Kemikalieinspektionen. Detsamma gäller för den som har innehaft ett tillstånd till parallellhandel för ett växtskyddsmedel enligt artikel 52 i Europaparlamentets och rådets förordning (EG) nr 1107/2009.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Uppgifterna ska så långt som möjligt redovisa",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "hur mycket av bekämpningsmedlet som har överlåtits för att användas på den svenska marknaden, med tillägg av vad innehavaren själv har använt av medlet i Sverige, och\n        en uppskattning av hur medlets användning fördelas mellan jordbruk, skogsbruk, kommersiell frukt- och trädgårdsodling, industri samt hushållskonsumtion.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>hur mycket av bekämpningsmedlet som har överlåtits för att användas på den svenska marknaden, med tillägg av vad innehavaren själv har använt av medlet i Sverige, och</li>\n        <li>en uppskattning av hur medlets användning fördelas mellan jordbruk, skogsbruk, kommersiell frukt- och trädgårdsodling, industri samt hushållskonsumtion.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Mängduppgifterna ska avse bekämpningsmedlet i oförpackat skick. Mängden ska anges i liter eller kilogram.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Mängduppgifterna ska avse bekämpningsmedlet i oförpackat skick. Mängden ska anges i liter eller kilogram.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Mängduppgifterna ska lämnas till Kemikalieinspektionen senast den 28 februari året efter det kalenderår som uppgifterna avser.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Mängduppgifterna ska lämnas till Kemikalieinspektionen senast den 28 februari året efter det kalenderår som uppgifterna avser.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Särskilda bestämmelser om växtskyddsmedel",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "I Europaparlamentets och rådets förordning (EG) nr 1107/2009 finns bestämmelser om godkännande av växtskyddsmedel och om utsläppande på marknaden, användning och kontroll av växtskyddsmedel inom Europeiska unionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I Europaparlamentets och rådets förordning (EG) nr 1107/2009 finns bestämmelser om godkännande av växtskyddsmedel och om utsläppande på marknaden, användning och kontroll av växtskyddsmedel inom Europeiska unionen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Kriterier för behörighetsklasser",
+          "content": "För att undvika farliga moment när ett växtskyddsmedel hanteras av andra än yrkesmässiga användare ska växtskyddsmedlet placeras endast i behörighetsklass 1 eller 2 om\nväxtskyddsmedlets toxiska egenskaper kräver särskild försiktighet eller om växtskyddsmedlet på annat sätt motiverar särskild försiktighet vid hanteringen av medlet med avseende på hälso- eller miljörisker, eller\n        växtskyddsmedlet innehåller andra verksamma ämnen än sådana som\n          \n            är godkända som verksamma ämnen med låg risk enligt kommissionens genomförandeförordning (EU) nr 540/2011 av den 25 maj 2011 om tillämpning av Europaparlamentets och rådets förordning (EG) nr 1107/2009 vad gäller förteckningen över godkända verksamma ämnen, eller\n            anges i bilaga 1.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att undvika farliga moment när ett växtskyddsmedel hanteras av andra än yrkesmässiga användare ska växtskyddsmedlet placeras endast i behörighetsklass 1 eller 2 om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "växtskyddsmedlets toxiska egenskaper kräver särskild försiktighet eller om växtskyddsmedlet på annat sätt motiverar särskild försiktighet vid hanteringen av medlet med avseende på hälso- eller miljörisker, eller\n        växtskyddsmedlet innehåller andra verksamma ämnen än sådana som\n          \n            är godkända som verksamma ämnen med låg risk enligt kommissionens genomförandeförordning (EU) nr 540/2011 av den 25 maj 2011 om tillämpning av Europaparlamentets och rådets förordning (EG) nr 1107/2009 vad gäller förteckningen över godkända verksamma ämnen, eller\n            anges i bilaga 1.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>växtskyddsmedlets toxiska egenskaper kräver särskild försiktighet eller om växtskyddsmedlet på annat sätt motiverar särskild försiktighet vid hanteringen av medlet med avseende på hälso- eller miljörisker, eller</li>\n        <li>växtskyddsmedlet innehåller andra verksamma ämnen än sådana som\n          <ul>\n            <li>är godkända som verksamma ämnen med låg risk enligt kommissionens genomförandeförordning (EU) nr 540/2011 av den 25 maj 2011 om tillämpning av Europaparlamentets och rådets förordning (EG) nr 1107/2009 vad gäller förteckningen över godkända verksamma ämnen, eller</li>\n            <li>anges i bilaga 1.</li>\n          </ul>\n        </li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Undantag från förbudet mot att använda växtskyddsmedel inom vissa områden",
+          "content": "Förbuden mot att använda växtskyddsmedel inom vissa områden i 2 kap. 37 § 2–6 förordningen (2014:425) om bekämpningsmedel gäller inte växtskyddsmedel vilkas samtliga verksamma ämnen\när godkända som verksamma ämnen med låg risk enligt kommissionens genomförandeförordning (EU) nr 540/2011 av den 25 maj 2011 om tillämpning av Europaparlamentets och rådets förordning (EG) nr 1107/2009 vad gäller förteckningen över godkända verksamma ämnen, eller\n        anges i bilaga 1.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Förbuden mot att använda växtskyddsmedel inom vissa områden i 2 kap. 37 § 2–6 förordningen (2014:425) om bekämpningsmedel gäller inte växtskyddsmedel vilkas samtliga verksamma ämnen",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "är godkända som verksamma ämnen med låg risk enligt kommissionens genomförandeförordning (EU) nr 540/2011 av den 25 maj 2011 om tillämpning av Europaparlamentets och rådets förordning (EG) nr 1107/2009 vad gäller förteckningen över godkända verksamma ämnen, eller\n        anges i bilaga 1.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>är godkända som verksamma ämnen med låg risk enligt kommissionens genomförandeförordning (EU) nr 540/2011 av den 25 maj 2011 om tillämpning av Europaparlamentets och rådets förordning (EG) nr 1107/2009 vad gäller förteckningen över godkända verksamma ämnen, eller</li>\n        <li>anges i bilaga 1.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Testanläggningar och testorgan som utför effektivitetstester av växtskyddsmedel",
+          "content": "Testanläggningar och testorgan som är ackrediterade för att utföra effektivitetstester som avses i kommissionens förordning av den 1 mars 2013 (EU) nr 284/2013 om uppgiftskrav för växtskyddsmedel, i enlighet med Europaparlamentets och rådets förordning (EG) nr 1107/2009 om utsläppande av växtskyddsmedel på marknaden, ska anses vara sådana officiella eller officiellt erkända testanläggningar eller testorgan som uppfyller kraven i punkterna 3.2–3.4 i inledningen i bilagan till förordning (EU) nr 284/2013.\nAckreditering enligt första stycket utförs av Styrelsen för ackreditering och teknisk kontroll (Swedac) enligt Europaparlamentets och rådets förordning (EG) nr 765/2008 av den 9 juli 2008 om krav för ackreditering och upphävande av förordning (EEG) nr 339/93, lagen (2011:791) om ackreditering och teknisk kontroll och den harmoniserade standarden som gäller för laboratorier.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Testanläggningar och testorgan som är ackrediterade för att utföra effektivitetstester som avses i kommissionens förordning av den 1 mars 2013 (EU) nr 284/2013 om uppgiftskrav för växtskyddsmedel, i enlighet med Europaparlamentets och rådets förordning (EG) nr 1107/2009 om utsläppande av växtskyddsmedel på marknaden, ska anses vara sådana officiella eller officiellt erkända testanläggningar eller testorgan som uppfyller kraven i punkterna 3.2–3.4 i inledningen i bilagan till förordning (EU) nr 284/2013.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ackreditering enligt första stycket utförs av Styrelsen för ackreditering och teknisk kontroll (Swedac) enligt Europaparlamentets och rådets förordning (EG) nr 765/2008 av den 9 juli 2008 om krav för ackreditering och upphävande av förordning (EEG) nr 339/93, lagen (2011:791) om ackreditering och teknisk kontroll och den harmoniserade standarden som gäller för laboratorier.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Utbildning och utbildningsbevis för distributörer av växtskyddsmedel",
+          "content": "Länsstyrelsen ska tillhandahålla grundutbildning och vidareutbildning för distributörer av växtskyddsmedel i hur medlen används. Utbildning ska genomföras i enlighet med de kursplaner som Kemikalieinspektionen beslutar och ge kunskap i de ämnesområden som framgår av bilaga 2.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Länsstyrelsen ska tillhandahålla grundutbildning och vidareutbildning för distributörer av växtskyddsmedel i hur medlen används. Utbildning ska genomföras i enlighet med de kursplaner som Kemikalieinspektionen beslutar och ge kunskap i de ämnesområden som framgår av bilaga 2.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Av 2 kap. 15 § förordningen (2014:425) om bekämpningsmedel följer att länsstyrelsen utfärdar ett utbildningsbevis till den som har deltagit i en utbildning enligt 5 § och har avlagt ett kunskapsprov med godkänt resultat.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Av 2 kap. 15 § förordningen (2014:425) om bekämpningsmedel följer att länsstyrelsen utfärdar ett utbildningsbevis till den som har deltagit i en utbildning enligt 5 § och har avlagt ett kunskapsprov med godkänt resultat.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Utgångspunkten för beräkningen av giltighetstiden för ett utbildningsbevis är den kurssäsong som utbildningen genomfördes. En kurssäsong omfattar perioden den 1 juni–31 maj påföljande år.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utgångspunkten för beräkningen av giltighetstiden för ett utbildningsbevis är den kurssäsong som utbildningen genomfördes. En kurssäsong omfattar perioden den 1 juni–31 maj påföljande år.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Ett utbildningsbevis som har utfärdats efter genomgången grundutbildning är giltigt till och med den 31 maj femte året efter utgången av den kurssäsong då utbildningen genomfördes.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett utbildningsbevis som har utfärdats efter genomgången grundutbildning är giltigt till och med den 31 maj femte året efter utgången av den kurssäsong då utbildningen genomfördes.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Den som vill ha ett förnyat utbildningsbevis ska genomgå en vidareutbildning under fjärde eller femte kurssäsongen efter den kurssäsong då utbildningsbeviset för grundutbildningen eller ett tidigare förnyat utbildningsbevis utfärdades.\nEtt förnyat utbildningsbevis är giltigt till och med den 31 maj\nfemte året efter den kurssäsong som vidareutbildningen genomfördes om utbildningen ägde rum under den femte kurssäsongen enligt första stycket, och\n        sjätte året efter den kurssäsong som vidareutbildningen genomfördes om utbildningen ägde rum under den fjärde kurssäsongen enligt första stycket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som vill ha ett förnyat utbildningsbevis ska genomgå en vidareutbildning under fjärde eller femte kurssäsongen efter den kurssäsong då utbildningsbeviset för grundutbildningen eller ett tidigare förnyat utbildningsbevis utfärdades.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ett förnyat utbildningsbevis är giltigt till och med den 31 maj",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "femte året efter den kurssäsong som vidareutbildningen genomfördes om utbildningen ägde rum under den femte kurssäsongen enligt första stycket, och\n        sjätte året efter den kurssäsong som vidareutbildningen genomfördes om utbildningen ägde rum under den fjärde kurssäsongen enligt första stycket.",
+              "role": "STYCKE",
+              "htmlContent": "<ul>\n        <li>femte året efter den kurssäsong som vidareutbildningen genomfördes om utbildningen ägde rum under den femte kurssäsongen enligt första stycket, och</li>\n        <li>sjätte året efter den kurssäsong som vidareutbildningen genomfördes om utbildningen ägde rum under den fjärde kurssäsongen enligt första stycket.</li>\n      </ul>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Särskilda bestämmelser om biocidprodukter som inte omfattas av EU-krav på godkännande",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Detta kapitel gäller endast biocidprodukter som avses i\nartikel 89.2 eller 93 i Europaparlamentets och rådets förordning (EU) nr 528/2012, eller\n        artikel 21 i kommissionens delegerade förordning (EU) nr 1062/2014 av den 4 augusti 2014 om arbetsprogrammet för en systematisk granskning av alla existerande verksamma ämnen som används i biocidprodukter som avses i Europaparlamentets och rådets förordning (EU) nr 528/2012.\nTidsfrister för tillämpningen av bestämmelserna i detta kapitel finns i artikel 89 i Europaparlamentets och rådets förordning (EU) nr 528/2012.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Detta kapitel gäller endast biocidprodukter som avses i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "artikel 89.2 eller 93 i Europaparlamentets och rådets förordning (EU) nr 528/2012, eller\n        artikel 21 i kommissionens delegerade förordning (EU) nr 1062/2014 av den 4 augusti 2014 om arbetsprogrammet för en systematisk granskning av alla existerande verksamma ämnen som används i biocidprodukter som avses i Europaparlamentets och rådets förordning (EU) nr 528/2012.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>artikel 89.2 eller 93 i Europaparlamentets och rådets förordning (EU) nr 528/2012, eller</li>\n        <li>artikel 21 i kommissionens delegerade förordning (EU) nr 1062/2014 av den 4 augusti 2014 om arbetsprogrammet för en systematisk granskning av alla existerande verksamma ämnen som används i biocidprodukter som avses i Europaparlamentets och rådets förordning (EU) nr 528/2012.</li>\n      </ol>"
+            },
+            {
+              "number": 3,
+              "text": "Tidsfrister för tillämpningen av bestämmelserna i detta kapitel finns i artikel 89 i Europaparlamentets och rådets förordning (EU) nr 528/2012.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Krav på godkännande av biocidprodukter som omfattas av detta kapitel finns i 4 kap. 2 § förordningen (2014:425) om bekämpningsmedel.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Krav på godkännande av biocidprodukter som omfattas av detta kapitel finns i 4 kap. 2 § förordningen (2014:425) om bekämpningsmedel.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Undantag från kravet på godkännande av biocidprodukter i 4 kap. 2 § förordningen (2014:425) om bekämpningsmedel",
+          "content": "Kravet på godkännande gäller inte för en biocidprodukt vars biocidfunktion ska bedömas enligt bestämmelser i en annan författning än förordningen (2014:425) om bekämpningsmedel.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Kravet på godkännande gäller inte för en biocidprodukt vars biocidfunktion ska bedömas enligt bestämmelser i en annan författning än förordningen (2014:425) om bekämpningsmedel.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Kravet på godkännande gäller inte för färger, fernissor, tjäror och andra kemiska produkter som är avsedda att huvudsakligen användas för andra ändamål än bekämpning, förutsatt att en sådan kemisk produkt inte genom särskild benämning eller på något annat sätt anges vara avsedd att användas som en biocidprodukt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Kravet på godkännande gäller inte för färger, fernissor, tjäror och andra kemiska produkter som är avsedda att huvudsakligen användas för andra ändamål än bekämpning, förutsatt att en sådan kemisk produkt inte genom särskild benämning eller på något annat sätt anges vara avsedd att användas som en biocidprodukt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Biocidprodukter av vissa produkttyper är undantagna från kravet på godkännande i enlighet med vad som anges i bilaga 3.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Biocidprodukter av vissa produkttyper är undantagna från kravet på godkännande i enlighet med vad som anges i bilaga 3.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Förpackning och märkning",
+          "content": "Förpackningen till en godkänd biocidprodukt ska vara märkt enligt bestämmelserna i bilaga 4 när produkten tillhandahålls på marknaden.\nUppgifterna i märkningen ska stämma överens med motsvarande uppgifter som anges i beslutet om godkännande.\nEn biocidprodukt som är undantagen enligt 4 eller 5 § från kravet på godkännande ska märkas med de uppgifter som anges i bilaga 4, förutom uppgifterna som anges i punkterna b, d, e och k i bilagan. Dessutom ska uppgifter om biocidproduktens avsedda användningsområde lämnas i märkningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Förpackningen till en godkänd biocidprodukt ska vara märkt enligt bestämmelserna i bilaga 4 när produkten tillhandahålls på marknaden.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Uppgifterna i märkningen ska stämma överens med motsvarande uppgifter som anges i beslutet om godkännande.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "En biocidprodukt som är undantagen enligt 4 eller 5 § från kravet på godkännande ska märkas med de uppgifter som anges i bilaga 4, förutom uppgifterna som anges i punkterna b, d, e och k i bilagan. Dessutom ska uppgifter om biocidproduktens avsedda användningsområde lämnas i märkningen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Biocidprodukter som kan förväxlas med dryckesvaror eller andra livsmedel eller med foder, ska förpackas på ett sådant sätt att sannolikheten för att de förväxlas blir så liten som möjligt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Biocidprodukter som kan förväxlas med dryckesvaror eller andra livsmedel eller med foder, ska förpackas på ett sådant sätt att sannolikheten för att de förväxlas blir så liten som möjligt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Biocidprodukter som är tillgängliga för allmänheten och som kan förväxlas med dryckesvaror eller andra livsmedel eller med foder, ska innehålla beståndsdelar som avskräcker från konsumtion.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Biocidprodukter som är tillgängliga för allmänheten och som kan förväxlas med dryckesvaror eller andra livsmedel eller med foder, ska innehålla beståndsdelar som avskräcker från konsumtion.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": "Förutsättningar för godkännande",
+          "content": "En förutsättning för att en biocidprodukt ska godkännas för att tillhandahållas på marknaden till eller användas av allmänheten, är att den inte har klassificerats som giftig, mycket giftig, cancerframkallande i kategori 1 eller 2, mutagen i kategori 1 eller 2 eller reproduktionsstörande i kategori 1 eller 2. Detsamma gäller vid förnyelse av ett godkännande av en biocidprodukt och ändring av användningsområdet eller andra villkor för godkännandet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En förutsättning för att en biocidprodukt ska godkännas för att tillhandahållas på marknaden till eller användas av allmänheten, är att den inte har klassificerats som giftig, mycket giftig, cancerframkallande i kategori 1 eller 2, mutagen i kategori 1 eller 2 eller reproduktionsstörande i kategori 1 eller 2. Detsamma gäller vid förnyelse av ett godkännande av en biocidprodukt och ändring av användningsområdet eller andra villkor för godkännandet.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Träskyddsbehandlat virke",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Bestämmelserna i 2–7 §§ gäller virke och annat trämaterial som behandlats med bekämpningsmedel till skydd mot angrepp av svampar, bakterier, insekter eller marina organismer (träskyddsbehandlat virke). Bestämmelserna gäller även träskyddsbehandlat virke som förs in till Sverige.\nBestämmelserna i 4–7 §§ gäller inte träskyddsbehandlat virke som förs ut från landet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i 2–7 §§ gäller virke och annat trämaterial som behandlats med bekämpningsmedel till skydd mot angrepp av svampar, bakterier, insekter eller marina organismer (träskyddsbehandlat virke). Bestämmelserna gäller även träskyddsbehandlat virke som förs in till Sverige.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Bestämmelserna i 4–7 §§ gäller inte träskyddsbehandlat virke som förs ut från landet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Krav på åtgärder före utlämnande och användning",
+          "content": "Den som bedriver yrkesmässig träskyddsbehandling med bekämpningsmedel ska vidta de åtgärder som behövs för att säkerställa att virket inte lämnas ut i strid med bestämmelserna i 3 §. Motsvarande skyldigheter åligger den som yrkesmässigt för in träskyddsbehandlat virke till Sverige.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som bedriver yrkesmässig träskyddsbehandling med bekämpningsmedel ska vidta de åtgärder som behövs för att säkerställa att virket inte lämnas ut i strid med bestämmelserna i 3 §. Motsvarande skyldigheter åligger den som yrkesmässigt för in träskyddsbehandlat virke till Sverige.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "En behandlingsanläggning får inte lämna ut träskyddsbehandlat virke om inte virket är yttorrt och i allt väsentligt smetfritt, eller innan eventuell fixering av bekämpningsmedlet har avslutats.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En behandlingsanläggning får inte lämna ut träskyddsbehandlat virke om inte virket är yttorrt och i allt väsentligt smetfritt, eller innan eventuell fixering av bekämpningsmedlet har avslutats.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Träskyddsbehandlat virke får inte tas i bruk för yrkesmässig användning om virket inte är yttorrt och i allt väsentligt smetfritt eller innan eventuell fixering av bekämpningsmedlet har avslutats.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Träskyddsbehandlat virke får inte tas i bruk för yrkesmässig användning om virket inte är yttorrt och i allt väsentligt smetfritt eller innan eventuell fixering av bekämpningsmedlet har avslutats.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Begränsningar i användningen",
+          "content": "Den som använder träskyddsbehandlat virke ska noga överväga behovet samt vid konstruktion och virkesval se till att användningen leder till så liten belastning på hälsa och miljö som möjligt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som använder träskyddsbehandlat virke ska noga överväga behovet samt vid konstruktion och virkesval se till att användningen leder till så liten belastning på hälsa och miljö som möjligt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Virke behandlat med bekämpningsmedel som innehåller kromföreningar får användas endast när det behöver ha ett långvarigt skydd\ndär det är nedgrävt eller på annat sätt fast anbringat i varaktig kontakt med fuktig mark eller vatten,\n        i bryggdäck och andra marina anläggningar,\n        i fast anbringade säkerhetsanordningar till skydd mot olycksfall, eller\n        där det blir svårutbytbart efter inbyggnad i fukthotad miljö; till exempel i syllar, på plintar och betongplattor eller i bottenbjälklag och liknande inbyggnadsdelar.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Virke behandlat med bekämpningsmedel som innehåller kromföreningar får användas endast när det behöver ha ett långvarigt skydd",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "där det är nedgrävt eller på annat sätt fast anbringat i varaktig kontakt med fuktig mark eller vatten,\n        i bryggdäck och andra marina anläggningar,\n        i fast anbringade säkerhetsanordningar till skydd mot olycksfall, eller\n        där det blir svårutbytbart efter inbyggnad i fukthotad miljö; till exempel i syllar, på plintar och betongplattor eller i bottenbjälklag och liknande inbyggnadsdelar.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>där det är nedgrävt eller på annat sätt fast anbringat i varaktig kontakt med fuktig mark eller vatten,</li>\n        <li>i bryggdäck och andra marina anläggningar,</li>\n        <li>i fast anbringade säkerhetsanordningar till skydd mot olycksfall, eller</li>\n        <li>där det blir svårutbytbart efter inbyggnad i fukthotad miljö; till exempel i syllar, på plintar och betongplattor eller i bottenbjälklag och liknande inbyggnadsdelar.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Virke behandlat med bekämpningsmedel som innehåller kromföreningar får inte yrkesmässigt saluföras eller överlåtas för andra ändamål än de som anges i 6 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Virke behandlat med bekämpningsmedel som innehåller kromföreningar får inte yrkesmässigt saluföras eller överlåtas för andra ändamål än de som anges i 6 §.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "Dessa föreskrifter träder i kraft den 1 maj 2022.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "På Kemikalieinspektionens vägnar",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "PER ÄNGQUIST",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Gerda Lind",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": [
+    {
+      "title": "Bilaga 1",
+      "htmlContent": "<h2>Bilaga 1</h2>\n<h3 id=\"KIFS2022-3_verksamma-amnen-som-avses-i-2-kap-2-och-3\">Verksamma ämnen som avses i 2 kap. 2 och 3 §§</h3>\n<p class=\"text\">Aluminiumammoniumsulfat</p>\n<p class=\"text\">Askorbinsyra</p>\n<p class=\"text\">Restprodukter från destillering av fett</p>\n<p class=\"text\">Fettsyror C7–C20<br>\n- Pelargonsyra<br>\n- Fettsyror C7-C18 och C18 omättade kaliumsalter<br>\n- Kaprinsyra<br>\n- Kaprylsyra<br>\n- Laurinsyra<br>\n- Oljesyra<br>\n- Fettsyror C8-C10 metylestrar<br>\n- Metyloktanoat<br>\n-Metyldekanoat</p>\n<p class=\"text\">FEN 560 (bockhornsklöverfrö i pulverform)</p>\n<p class=\"text\">Vitlöksextrakt</p>\n<p class=\"text\">Gibberellinsyra</p>\n<p class=\"text\">Gibberelliner</p>\n<p class=\"text\">Heptamaloxiloglukan</p>\n<p class=\"text\">Hydrolyserade proteiner</p>\n<p class=\"text\">Järn(II)sulfat</p>\n<p class=\"text\">Maltodextrin</p>\n<p class=\"text\">Rapsolja</p>\n<p class=\"text\">Rybsolja</p>\n<p class=\"text\">Prohexadion</p>\n<p class=\"text\">Kvartssand</p>\n<p class=\"text\">Fiskolja</p>\n<p class=\"text\">Fårtalg</p>\n<p class=\"text\">Fjärilsferomoner med raka kolkedjor</p>\n<p class=\"text\">Svavel</p>\n<p class=\"text\">Urea</p>\n<p class=\"text\">Ättiksyra</p>\n<p class=\"text\">Adoxophyes orana GV, stam BV-0001</p>\n<p class=\"text\">Bacillus amyloliquefaciens subsp. plantarum D747</p>\n<p class=\"text\">Bacillus firmus I-1582</p>\n<p class=\"text\">Bacillus pumilus QST 2808</p>\n<p class=\"text\">Bacillus subtilis stam QST 713</p>\n<p class=\"text\">Bacillus thuringiensis subsp. aizawai stammarna ABTS-1857 och GC-91</p>\n<p class=\"text\">Bacillus thuringiensis subsp. israeliensis (serotyp H-14) stam AM65-52</p>\n<p class=\"text\">Bacillus thuringiensis subsp. kurstaki stammarna ABTS 351, PB 54, SA 11, SA 12 och EG 2348</p>\n<p class=\"text\">Beauveria bassiana stammarna ATCC 74040 och GHA</p>\n<p class=\"text\">Candida oleophila stam O</p>\n<p class=\"text\">Cydia pomonella Granulovirus (CpGV)</p>\n<p class=\"text\">Helicoverpa armigera nucleopolyhedrovirus (HearNPV)</p>\n<p class=\"text\">Lecanicillium muscarium (tidigare Verticillium lecanii) stam Ve 6</p>\n<p class=\"text\">Metarhizium anisopliae var. anisopliae stam BIPESCO 5/F52</p>\n<p class=\"text\">Pythium oligandrum M1</p>\n<p class=\"text\">Spodoptera littoralis nukleopolyhedrovirus</p>\n<p class=\"text\">Streptomyces K61 (tidigare S. griseoviridis)</p>\n<p class=\"text\">Trichoderma asperellum (tidigare T. harzianum) stammarna ICC012, T25 och TV1</p>\n<p class=\"text\">Trichoderma asperellum (stam T34)</p>\n<p class=\"text\">Trichoderma atroviride (tidigare T. harzianum) stammarna IMI 206040 och T11</p>\n<p class=\"text\">Trichoderma atroviride stam I-1237</p>\n<p class=\"text\">Trichoderma gamsii (tidigare T. viride) stam ICC080</p>\n<p class=\"text\">Trichoderma harzianum stammarna T-22 och ITEM 908</p>\n<p class=\"text\">Zucchinigulmosaikvirus, svag stam</p>",
+      "text": "Bilaga 1\nVerksamma ämnen som avses i 2 kap. 2 och 3 §§\nAluminiumammoniumsulfat\nAskorbinsyra\nRestprodukter från destillering av fett\nFettsyror C7–C20\n- Pelargonsyra\n- Fettsyror C7-C18 och C18 omättade kaliumsalter\n- Kaprinsyra\n- Kaprylsyra\n- Laurinsyra\n- Oljesyra\n- Fettsyror C8-C10 metylestrar\n- Metyloktanoat\n-Metyldekanoat\nFEN 560 (bockhornsklöverfrö i pulverform)\nVitlöksextrakt\nGibberellinsyra\nGibberelliner\nHeptamaloxiloglukan\nHydrolyserade proteiner\nJärn(II)sulfat\nMaltodextrin\nRapsolja\nRybsolja\nProhexadion\nKvartssand\nFiskolja\nFårtalg\nFjärilsferomoner med raka kolkedjor\nSvavel\nUrea\nÄttiksyra\nAdoxophyes orana GV, stam BV-0001\nBacillus amyloliquefaciens subsp. plantarum D747\nBacillus firmus I-1582\nBacillus pumilus QST 2808\nBacillus subtilis stam QST 713\nBacillus thuringiensis subsp. aizawai stammarna ABTS-1857 och GC-91\nBacillus thuringiensis subsp. israeliensis (serotyp H-14) stam AM65-52\nBacillus thuringiensis subsp. kurstaki stammarna ABTS 351, PB 54, SA 11, SA 12 och EG 2348\nBeauveria bassiana stammarna ATCC 74040 och GHA\nCandida oleophila stam O\nCydia pomonella Granulovirus (CpGV)\nHelicoverpa armigera nucleopolyhedrovirus (HearNPV)\nLecanicillium muscarium (tidigare Verticillium lecanii) stam Ve 6\nMetarhizium anisopliae var. anisopliae stam BIPESCO 5/F52\nPythium oligandrum M1\nSpodoptera littoralis nukleopolyhedrovirus\nStreptomyces K61 (tidigare S. griseoviridis)\nTrichoderma asperellum (tidigare T. harzianum) stammarna ICC012, T25 och TV1\nTrichoderma asperellum (stam T34)\nTrichoderma atroviride (tidigare T. harzianum) stammarna IMI 206040 och T11\nTrichoderma atroviride stam I-1237\nTrichoderma gamsii (tidigare T. viride) stam ICC080\nTrichoderma harzianum stammarna T-22 och ITEM 908\nZucchinigulmosaikvirus, svag stam"
+    },
+    {
+      "title": "Bilaga 2",
+      "htmlContent": "<h2>Bilaga 2</h2>\n<h3 id=\"KIFS2022-3_utbildningar-for-distributorer-av-vaxtskyddsmedel\">Utbildningar för distributörer av växtskyddsmedel</h3>\n<p class=\"text\">Utbildningarna ska omfatta följande ämnesområden.</p>\n<p class=\"text\">1. Tillämplig lagstiftning om bekämpningsmedel och deras användning.</p>\n<p class=\"text\">2. Förekomsten av och riskerna med olagliga växtskyddsmedel, och metoderna för att identifiera sådana produkter.</p>\n<p class=\"text\">3. Faror och risker som är förknippade med bekämpningsmedel och hur dessa kan identifieras och kontrolleras, särskilt<br>\na) risker för människor, såsom operatörer, boende, andra personer som ger sig in i behandlade områden och personer som hanterar eller äter behandlade produkter,<br>\nb) faktorer som förvärrar riskerna, till exempel rökning,<br>\nc) symptom på bekämpningsmedelsförgiftning och första hjälpen vid olyckor, och<br>\nd) risker för växter utanför målgrupperna, nyttiga insekter, vilda djur och växter, biologisk mångfald och miljön i stort.</p>\n<p class=\"text\">4. Orienterande kunskaper om strategier och metoder för integrerat växtskydd, strategier och metoder för integrerad odling, principer för ekologiskt jordbruk, metoder för biologisk bekämpning av skadegörare och ogräs, samt information om allmänna principer och grödspecifika eller sektorspecifika riktlinjer för integrerat växtskydd.</p>\n<p class=\"text\">5. En introduktion till hur en jämförande bedömning görs på användarnivå för att distributören ska kunna hjälpa yrkesmässiga användare att göra det lämpligaste valet av bekämpningsmedel. Med lämpligaste valet avses medlet med minsta möjliga biverkningar för människors hälsa, icke-målorganismer och miljön bland alla godkända medel för ett visst skadegörarproblem i en given situation.</p>\n<p class=\"text\">6. Åtgärder för att minimera riskerna för människor, icke-målorganismer och miljön, såsom<br>\na) säkra arbetsmetoder för lagring, hantering och blandning av bekämpningsmedel,<br>\nb) säkra arbetsmetoder för bortskaffande av tomma förpackningar, annat förorenat material och bekämpningsmedelsrester (även tankblandningar) i koncentrerad eller utspädd form, och<br>\nc) rekommenderat sätt att hantera personlig skyddsutrustning för att skydda användaren från exponering.</p>\n<p class=\"text\">7. Riskbaserade tillvägagångssätt för att skydda vattentäkter med hänsyn till lokala faktorer, såsom klimat, jordmån, slag av gröda och marklutning.</p>\n<p class=\"text\">8. Metoder för att förbereda utrustning som används för att sprida bekämpningsmedel, inbegripet kalibrering, och metoder för att använda utrustningen med minsta möjliga risker för användaren, andra personer, djur och växter utanför målgrupperna, den biologiska mångfalden och miljön i stort, inklusive vattentillgångar.</p>\n<p class=\"text\">9. Spridning av bekämpningsmedel, såsom<br>\na) användning och underhåll av utrustning för spridning av bekämpningsmedel,<br>\nb) särskilda spruttekniker, till exempel lågvolymssprutning och avdriftsreducerande munstycken,<br>\nc) mål för den tekniska kontrollen av sprutor i bruk och metoder för att förbättra sprutningskvaliteten, och<br>\nd) särskilda risker och relevanta riskhanteringsåtgärder i samband med användning av handhållen utrustning för spridning av bekämpningsmedel eller ryggburna sprutor.</p>\n<p class=\"text\">10. Nödåtgärder för att skydda människors hälsa och miljön vid oavsiktligt spill, kontaminering och extrema väderleksförhållanden med åtföljande risk för utlakning av bekämpningsmedel.</p>\n<p class=\"text\">11. Särskild omsorg i skyddade områden som inrättats enligt artikel 6 och 7 i Europaparlamentets och rådets direktiv 2000/60/EG av den 23 oktober 2000 om upprättande av en ram för gemenskapens åtgärder på vattenpolitikens område.</p>\n<p class=\"text\">12. Hälsoövervakning och anordningar för rapportering om eventuella incidenter eller misstänkta incidenter.</p>\n<p class=\"text\">13. Dokumentation av all bekämpningsmedelsanvändning i enlighet med tillämplig lagstiftning.</p>",
+      "text": "Bilaga 2\nUtbildningar för distributörer av växtskyddsmedel\nUtbildningarna ska omfatta följande ämnesområden.\n1. Tillämplig lagstiftning om bekämpningsmedel och deras användning.\n2. Förekomsten av och riskerna med olagliga växtskyddsmedel, och metoderna för att identifiera sådana produkter.\n3. Faror och risker som är förknippade med bekämpningsmedel och hur dessa kan identifieras och kontrolleras, särskilt\na) risker för människor, såsom operatörer, boende, andra personer som ger sig in i behandlade områden och personer som hanterar eller äter behandlade produkter,\nb) faktorer som förvärrar riskerna, till exempel rökning,\nc) symptom på bekämpningsmedelsförgiftning och första hjälpen vid olyckor, och\nd) risker för växter utanför målgrupperna, nyttiga insekter, vilda djur och växter, biologisk mångfald och miljön i stort.\n4. Orienterande kunskaper om strategier och metoder för integrerat växtskydd, strategier och metoder för integrerad odling, principer för ekologiskt jordbruk, metoder för biologisk bekämpning av skadegörare och ogräs, samt information om allmänna principer och grödspecifika eller sektorspecifika riktlinjer för integrerat växtskydd.\n5. En introduktion till hur en jämförande bedömning görs på användarnivå för att distributören ska kunna hjälpa yrkesmässiga användare att göra det lämpligaste valet av bekämpningsmedel. Med lämpligaste valet avses medlet med minsta möjliga biverkningar för människors hälsa, icke-målorganismer och miljön bland alla godkända medel för ett visst skadegörarproblem i en given situation.\n6. Åtgärder för att minimera riskerna för människor, icke-målorganismer och miljön, såsom\na) säkra arbetsmetoder för lagring, hantering och blandning av bekämpningsmedel,\nb) säkra arbetsmetoder för bortskaffande av tomma förpackningar, annat förorenat material och bekämpningsmedelsrester (även tankblandningar) i koncentrerad eller utspädd form, och\nc) rekommenderat sätt att hantera personlig skyddsutrustning för att skydda användaren från exponering.\n7. Riskbaserade tillvägagångssätt för att skydda vattentäkter med hänsyn till lokala faktorer, såsom klimat, jordmån, slag av gröda och marklutning.\n8. Metoder för att förbereda utrustning som används för att sprida bekämpningsmedel, inbegripet kalibrering, och metoder för att använda utrustningen med minsta möjliga risker för användaren, andra personer, djur och växter utanför målgrupperna, den biologiska mångfalden och miljön i stort, inklusive vattentillgångar.\n9. Spridning av bekämpningsmedel, såsom\na) användning och underhåll av utrustning för spridning av bekämpningsmedel,\nb) särskilda spruttekniker, till exempel lågvolymssprutning och avdriftsreducerande munstycken,\nc) mål för den tekniska kontrollen av sprutor i bruk och metoder för att förbättra sprutningskvaliteten, och\nd) särskilda risker och relevanta riskhanteringsåtgärder i samband med användning av handhållen utrustning för spridning av bekämpningsmedel eller ryggburna sprutor.\n10. Nödåtgärder för att skydda människors hälsa och miljön vid oavsiktligt spill, kontaminering och extrema väderleksförhållanden med åtföljande risk för utlakning av bekämpningsmedel.\n11. Särskild omsorg i skyddade områden som inrättats enligt artikel 6 och 7 i Europaparlamentets och rådets direktiv 2000/60/EG av den 23 oktober 2000 om upprättande av en ram för gemenskapens åtgärder på vattenpolitikens område.\n12. Hälsoövervakning och anordningar för rapportering om eventuella incidenter eller misstänkta incidenter.\n13. Dokumentation av all bekämpningsmedelsanvändning i enlighet med tillämplig lagstiftning."
+    },
+    {
+      "title": "Bilaga 3",
+      "htmlContent": "<h2>Bilaga 3</h2>\n<h3 id=\"KIFS2022-3_undantag-enligt-3-kap-5-for-biocidprodukter-av-vissa-produkttyper\">Undantag enligt 3 kap. 5 § för biocidprodukter av vissa produkttyper</h3>\n<p class=\"text\">Biocidprodukter som anges i denna bilaga är undantagna från kravet på godkännande i <a href=\"/lagar/forordning-2014425-om-bekampningsmedel-2014-425#K4P2\" class=\"legal-ref\" title=\"Förordning (2014:425) om bekämpningsmedel\" target=\"_blank\" rel=\"noopener\">4 kap. 2 § förordningen (2014:425)</a> om bekämpningsmedel enligt följande.</p>\n<p class=\"text\">Inom parentes anges produkttypens nummer i bilaga V till Europaparlamentets och rådets förordning (EU) nr 528/2012.</p>\n<h4 id=\"KIFS2022-3_desinfektionsmedel\">Desinfektionsmedel</h4>\n<h4 id=\"KIFS2022-3_mansklig-hygien-produkttyp-1\">Mänsklig hygien (produkttyp 1)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för mänsklig hygien och som används på eller kommer i kontakt med människors hud eller hårbotten i det primära syftet att desinficera dessa.</p>\n<h4 id=\"KIFS2022-3_desinfektionsmedel-och-algicider-som-inte-ar-avsedda-att-anvandas-direkt-pa-manniskor-eller-djur-produkttyp-2\">Desinfektionsmedel och algicider som inte är avsedda att användas direkt på människor eller djur (produkttyp 2)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp, utom<br>\n- produkter som används mot mikroorganismer i kemiska toaletter, och<br>\n- produkter mot alger och mikroorganismer i hav, sjöar och vattendrag.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för desinfektion av sådana ytor, material, utrustning och möbler som inte används i direktkontakt med livsmedel eller djurfoder.</p>\n<p class=\"text\">Användningsområdena omfattar bland annat badbassänger, akvarier, badvatten och annat vatten, luftkonditioneringsanläggningar, samt golv och väggar i privata, offentliga, industriella och andra utrymmen för yrkesmässig verksamhet.</p>\n<p class=\"text\">Produkter som används för desinfektion av luft, annat vatten än dricksvatten för både människor och djur, kemiska toaletter, avloppsvatten, sjukhusavfall och jord.</p>\n<p class=\"text\">Produkter som används som algicider för behandling av badbassänger, akvarier och annat vatten samt för avhjälpande behandling av byggnadsmaterial.</p>\n<p class=\"text\">Produkter som används som beståndsdel i textilier, vävnader, masker, färg och andra varor eller material med syftet att framställa behandlade varor med desinfekterande verkan.</p>\n<h4 id=\"KIFS2022-3_veterinarhygien-produkttyp-3\">Veterinärhygien (produkttyp 3)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för hygienändamål inom veterinärverksamhet, till exempel desinfektionsmedel, desinfekterande tvålar, produkter för munhygien eller kroppshygien eller med antimikrobiell funktion.</p>\n<p class=\"text\">Produkter som används för desinfektion av material och ytor som förknippas med djurhållning och djurtransport.</p>\n<h4 id=\"KIFS2022-3_ytor-som-kommer-i-kontakt-med-livsmedel-och-djurfoder-produkttyp-4\">Ytor som kommer i kontakt med livsmedel och djurfoder (produkttyp 4)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för desinfektion av utrustning, behållare, mat- och foderredskap, ytor eller rör för framställning, transport, lagring eller konsumtion av livsmedel eller djurfoder (inklusive dricksvatten) avsedda för människor och djur.</p>\n<p class=\"text\">Produkter avsedda att ingå i material som får komma i kontakt med livsmedel.</p>\n<h4 id=\"KIFS2022-3_dricksvatten-produkttyp-5\">Dricksvatten (produkttyp 5)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för desinfektion av dricksvatten för både människor och djur.</p>\n<h4 id=\"KIFS2022-3_konserveringsmedel\">Konserveringsmedel</h4>\n<h4 id=\"KIFS2022-3_konserveringsmedel-for-produkter-under-lagring-produkttyp-6\">Konserveringsmedel för produkter under lagring (produkttyp 6)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för konservering av industriprodukter, med undantag av livsmedel, djurfoder, kosmetika, eller läkemedel och medicintekniska produkter genom bekämpning av mikrobangrepp för att garantera hållbarheten.</p>\n<p class=\"text\">Produkter som används som konserveringsmedel vid lagring eller användning av lockbeten med rodenticider, insekticider eller andra lockbeten.</p>\n<h4 id=\"KIFS2022-3_konserveringsmedel-for-ytbelaggningar-produkttyp-7\">Konserveringsmedel för ytbeläggningar (produkttyp 7)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för konservering av ytor eller ytbeläggningar genom bekämpning av mikrobangrepp eller algtillväxt, för att skydda ytans ursprungliga egenskaper för material eller föremål som färger, plast, tätning, vägglim, väv, tapeter eller konstföremål.</p>\n<h4 id=\"KIFS2022-3_konserveringsmedel-for-fibrer-lader-gummi-och-polymeriserade-material-produkttyp-9\">Konserveringsmedel för fibrer, läder, gummi och polymeriserade material (produkttyp 9)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp, utom<br>\n- produkter mot organismer som bryter ned mjukgörare i polymeriserade material, och<br>\n- produkter mot mikroorganismer på hudar och skinn.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för att skydda fibermaterial och polymeriserade material som läder, gummi eller pappers- eller textilprodukter genom bekämpning av mikrobangrepp.</p>\n<p class=\"text\">I denna produkttyp ingår också biocidprodukter som motverkar att mikroorganismer får fäste på ytan av material och således hämmar eller förebygger uppkomsten av lukt och/eller är till annan nytta.</p>\n<h4 id=\"KIFS2022-3_skyddsmedel-for-kylvattens-och-processystem-produkttyp-11\">Skyddsmedel för kylvattens- och processystem (produkttyp 11)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för skydd av vatten eller andra vätskor som används i kylnings- och bearbetningssystem genom bekämpning av skadliga organismer som mikrober, alger och musslor.</p>\n<p class=\"text\">Produkter som används för desinfektion av dricksvatten eller vatten till badbassänger ingår inte i denna produkttyp.</p>\n<h4 id=\"KIFS2022-3_slembekampningsmedel-produkttyp-12\">Slembekämpningsmedel (produkttyp 12)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp, utom produkter mot slembildande mikroorganismer i maskinsystem inom pappers- och cellulosaindustrin.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för förebyggande eller bekämpning av slembildning på material, utrustning och konstruktioner som används i industriprocesser till exempel på trä- och pappersmassa samt i porösa sandskikt vid oljeutvinning.</p>\n<h4 id=\"KIFS2022-3_konserveringsmedel-for-vatskor-som-anvands-vid-bearbetning-eller-skarning-produkttyp-13\">Konserveringsmedel för vätskor som används vid bearbetning eller skärning (produkttyp 13)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för bekämpning av mikrobangrepp i vätskor som används vid bearbetning eller skärning av metall, glas eller andra material.</p>\n<h4 id=\"KIFS2022-3_bekampning-av-skadedjur\">Bekämpning av skadedjur</h4>\n<h4 id=\"KIFS2022-3_avskrackande-och-tilldragande-medel-produkttyp-19\">Avskräckande och tilldragande medel (produkttyp 19)</h4>\n<p class=\"text\">Undantaget gäller endast sådana produkter av denna produkttyp vars verksamma ämnen enbart består av<br>\na) livsmedel eller foder, eller<br>\nb) koldioxid som genereras på plats genom förbränning av propan, butan eller en blandning av dessa ämnen.</p>\n<p class=\"text\">Med livsmedel eller foder avses här alla ätbara ämnen eller ätbara produkter av vegetabiliskt eller animaliskt ursprung, bearbetade, delvis bearbetade eller obearbetade, som är avsedda eller rimligen kan förväntas förtäras av människor eller djur. Extrakt eller enskilda ämnen som är isolerade från livsmedel eller foder omfattas inte.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för bekämpning av skadliga organismer (ryggradslösa djur som loppor och ryggradsdjur som fåglar, fiskar och gnagare) genom att avskräcka eller dra till sig dem, inklusive produkter som används som hygienprodukter för människor eller djur antingen direkt på huden eller indirekt i människors och djurs miljö.</p>\n<h4 id=\"KIFS2022-3_ovriga-biocidprodukter\">Övriga biocidprodukter</h4>\n<h4 id=\"KIFS2022-3_balsamerings-och-konserveringsvattskor-produkttyp-22\">Balsamerings- och konserveringsvätskor (produkttyp 22)</h4>\n<p class=\"text\">Undantaget gäller alla produkter av denna produkttyp.</p>\n<p class=\"text\"><strong>Beskrivning av produkttypen</strong><br>\nProdukter som används för desinfektion och konservering av människo- eller djurkroppar eller delar av dessa.</p>",
+      "text": "Bilaga 3\nUndantag enligt 3 kap. 5 § för biocidprodukter av vissa produkttyper\nBiocidprodukter som anges i denna bilaga är undantagna från kravet på godkännande i 4 kap. 2 § förordningen (2014:425) om bekämpningsmedel enligt följande.\nInom parentes anges produkttypens nummer i bilaga V till Europaparlamentets och rådets förordning (EU) nr 528/2012.\nDesinfektionsmedel\nMänsklig hygien (produkttyp 1)\nUndantaget gäller alla produkter av denna produkttyp.\nBeskrivning av produkttypen\nProdukter som används för mänsklig hygien och som används på eller kommer i kontakt med människors hud eller hårbotten i det primära syftet att desinficera dessa.\nDesinfektionsmedel och algicider som inte är avsedda att användas direkt på människor eller djur (produkttyp 2)\nUndantaget gäller alla produkter av denna produkttyp, utom\n- produkter som används mot mikroorganismer i kemiska toaletter, och\n- produkter mot alger och mikroorganismer i hav, sjöar och vattendrag.\nBeskrivning av produkttypen\nProdukter som används för desinfektion av sådana ytor, material, utrustning och möbler som inte används i direktkontakt med livsmedel eller djurfoder.\nAnvändningsområdena omfattar bland annat badbassänger, akvarier, badvatten och annat vatten, luftkonditioneringsanläggningar, samt golv och väggar i privata, offentliga, industriella och andra utrymmen för yrkesmässig verksamhet.\nProdukter som används för desinfektion av luft, annat vatten än dricksvatten för både människor och djur, kemiska toaletter, avloppsvatten, sjukhusavfall och jord.\nProdukter som används som algicider för behandling av badbassänger, akvarier och annat vatten samt för avhjälpande behandling av byggnadsmaterial.\nProdukter som används som beståndsdel i textilier, vävnader, masker, färg och andra varor eller material med syftet att framställa behandlade varor med desinfekterande verkan.\nVeterinärhygien (produkttyp 3)\nUndantaget gäller alla produkter av denna produkttyp.\nBeskrivning av produkttypen\nProdukter som används för hygienändamål inom veterinärverksamhet, till exempel desinfektionsmedel, desinfekterande tvålar, produkter för munhygien eller kroppshygien eller med antimikrobiell funktion.\nProdukter som används för desinfektion av material och ytor som förknippas med djurhållning och djurtransport.\nYtor som kommer i kontakt med livsmedel och djurfoder (produkttyp 4)\nUndantaget gäller alla produkter av denna produkttyp.\nBeskrivning av produkttypen\nProdukter som används för desinfektion av utrustning, behållare, mat- och foderredskap, ytor eller rör för framställning, transport, lagring eller konsumtion av livsmedel eller djurfoder (inklusive dricksvatten) avsedda för människor och djur.\nProdukter avsedda att ingå i material som får komma i kontakt med livsmedel.\nDricksvatten (produkttyp 5)\nUndantaget gäller alla produkter av denna produkttyp.\nBeskrivning av produkttypen\nProdukter som används för desinfektion av dricksvatten för både människor och djur.\nKonserveringsmedel\nKonserveringsmedel för produkter under lagring (produkttyp 6)\nUndantaget gäller alla produkter av denna produkttyp.\nBeskrivning av produkttypen\nProdukter som används för konservering av industriprodukter, med undantag av livsmedel, djurfoder, kosmetika, eller läkemedel och medicintekniska produkter genom bekämpning av mikrobangrepp för att garantera hållbarheten.\nProdukter som används som konserveringsmedel vid lagring eller användning av lockbeten med rodenticider, insekticider eller andra lockbeten.\nKonserveringsmedel för ytbeläggningar (produkttyp 7)\nUndantaget gäller alla produkter av denna produkttyp.\nBeskrivning av produkttypen\nProdukter som används för konservering av ytor eller ytbeläggningar genom bekämpning av mikrobangrepp eller algtillväxt, för att skydda ytans ursprungliga egenskaper för material eller föremål som färger, plast, tätning, vägglim, väv, tapeter eller konstföremål.\nKonserveringsmedel för fibrer, läder, gummi och polymeriserade material (produkttyp 9)\nUndantaget gäller alla produkter av denna produkttyp, utom\n- produkter mot organismer som bryter ned mjukgörare i polymeriserade material, och\n- produkter mot mikroorganismer på hudar och skinn.\nBeskrivning av produkttypen\nProdukter som används för att skydda fibermaterial och polymeriserade material som läder, gummi eller pappers- eller textilprodukter genom bekämpning av mikrobangrepp.\nI denna produkttyp ingår också biocidprodukter som motverkar att mikroorganismer får fäste på ytan av material och således hämmar eller förebygger uppkomsten av lukt och/eller är till annan nytta.\nSkyddsmedel för kylvattens- och processystem (produkttyp 11)\nUndantaget gäller alla produkter av denna produkttyp.\nBeskrivning av produkttypen\nProdukter som används för skydd av vatten eller andra vätskor som används i kylnings- och bearbetningssystem genom bekämpning av skadliga organismer som mikrober, alger och musslor.\nProdukter som används för desinfektion av dricksvatten eller vatten till badbassänger ingår inte i denna produkttyp.\nSlembekämpningsmedel (produkttyp 12)\nUndantaget gäller alla produkter av denna produkttyp, utom produkter mot slembildande mikroorganismer i maskinsystem inom pappers- och cellulosaindustrin.\nBeskrivning av produkttypen\nProdukter som används för förebyggande eller bekämpning av slembildning på material, utrustning och konstruktioner som används i industriprocesser till exempel på trä- och pappersmassa samt i porösa sandskikt vid oljeutvinning.\nKonserveringsmedel för vätskor som används vid bearbetning eller skärning (produkttyp 13)\nUndantaget gäller alla produkter av denna produkttyp.\nBeskrivning av produkttypen\nProdukter som används för bekämpning av mikrobangrepp i vätskor som används vid bearbetning eller skärning av metall, glas eller andra material.\nBekämpning av skadedjur\nAvskräckande och tilldragande medel (produkttyp 19)\nUndantaget gäller endast sådana produkter av denna produkttyp vars verksamma ämnen enbart består av\na) livsmedel eller foder, eller\nb) koldioxid som genereras på plats genom förbränning av propan, butan eller en blandning av dessa ämnen.\nMed livsmedel eller foder avses här alla ätbara ämnen eller ätbara produkter av vegetabiliskt eller animaliskt ursprung, bearbetade, delvis bearbetade eller obearbetade, som är avsedda eller rimligen kan förväntas förtäras av människor eller djur. Extrakt eller enskilda ämnen som är isolerade från livsmedel eller foder omfattas inte.\nBeskrivning av produkttypen\nProdukter som används för bekämpning av skadliga organismer (ryggradslösa djur som loppor och ryggradsdjur som fåglar, fiskar och gnagare) genom att avskräcka eller dra till sig dem, inklusive produkter som används som hygienprodukter för människor eller djur antingen direkt på huden eller indirekt i människors och djurs miljö.\nÖvriga biocidprodukter\nBalsamerings- och konserveringsvätskor (produkttyp 22)\nUndantaget gäller alla produkter av denna produkttyp.\nBeskrivning av produkttypen\nProdukter som används för desinfektion och konservering av människo- eller djurkroppar eller delar av dessa."
+    },
+    {
+      "title": "Bilaga 4",
+      "htmlContent": "<h2>Bilaga 4</h2>\n<h3 id=\"KIFS2022-3_markning-av-biocidprodukter-som-inte-omfattas-av-eu-krav-pa-godkannande\">Märkning av biocidprodukter som inte omfattas av EU-krav på godkännande</h3>\n<p class=\"text\">Bestämmelser om märkning finns i Europaparlamentets och rådets förordning (EG) nr 1272/2008 av den 16 december 2008 om klassificering, märkning och förpackning av ämnen och blandningar, ändring och upphävande av direktiven 67/548/EEG och 1999/45/EG samt ändring av förordning (EG) nr 1907/2006. Även om skyldigheter att märka inte följer av den förordningen ska förpackningen till en biocidprodukt vara tydligt och outplånligt märkt med följande information.</p>\n<p class=\"text\">a) Alla verksamma ämnens identitet och koncentration i metriska enheter.</p>\n<p class=\"text\">b) Det registreringsnummer som den behöriga myndigheten har tilldelat biocidprodukten vid godkännandet eller registreringen.</p>\n<p class=\"text\">c) Typ av preparat (till exempel flytande koncentrat, granulat, pulver, fast form).</p>\n<p class=\"text\">d) Det användningsområde som biocidprodukten är godkänd för. För biocidprodukter som släpps ut på den svenska marknaden ska dessutom följande text anges i anslutning till användningsområdet: \"All annan användning är otillåten om den inte särskilt tillåtits\".</p>\n<p class=\"text\">e) Anvisningar om användning och dosering, uttryckta i metriska enheter, för varje användning som godkännandet omfattar.</p>\n<p class=\"text\">f) Uppgifter om troliga direkta eller indirekta negativa biverkningar och anvisningar om första hjälpen.</p>\n<p class=\"text\">g) Texten \"Läs medföljande anvisningar\" om det finns ett informationsblad för produkten.</p>\n<p class=\"text\">h) Anvisningar för säkert bortskaffande av biocidprodukten och dess förpackning, samt upplysningar om ett eventuellt förbud mot att återanvända förpackningen.</p>\n<p class=\"text\">i) Formuleringens satsnummer eller beteckning samt sista användningsdatum vid normala lagringsförhållanden.</p>\n<p class=\"text\">j) Information om<br>\n- den tid som behövs för att biocidprodukten ska verka,<br>\n- den tid som ska passera mellan två behandlingar med biocidprodukten eller mellan en behandling och följande användning av den behandlade produkten,<br>\n- den tid som ska förflyta innan människor eller djur ska få tillträde till det område där biocidprodukten har använts,<br>\n- medel och metoder för sanering samt den tid som krävs för ventilation av behandlade områden,<br>\n- lämplig rengöring av utrustning, och<br>\n- försiktighetsåtgärder vid användning, lagring och transport, exempelvis personliga skyddskläder och personlig skyddsutrustning, brandskyddsåtgärder, övertäckning av möbler och avlägsnande av livsmedel och foder, samt anvisningar om hur exponering av djur kan förhindras.</p>\n<p class=\"text\">I tillämpliga fall ska också följande anges:</p>\n<p class=\"text\">k) De användarkategorier som biocidprodukten är begränsad till. För biocidprodukter som släpps ut på den svenska marknaden ska märkningen innehålla<br>\n- uppgift om den behörighetsklass som biocidprodukten har hänförts till enligt <a href=\"/lagar/forordning-2014425-om-bekampningsmedel-2014-425#K3P7\" class=\"legal-ref\" title=\"Förordning (2014:425) om bekämpningsmedel\" target=\"_blank\" rel=\"noopener\">3 kap. 7 § förordningen (2014:425)</a> om bekämpningsmedel,<br>\n- upplysningen \"Endast för yrkesmässigt bruk efter särskilt tillstånd\" för biocidprodukter som tillhör behörighetsklass 1, och<br>\n- upplysningen \"Endast för yrkesmässigt bruk\" för biocidprodukter som tillhör behörighetsklass 2.</p>\n<p class=\"text\">l) Särskilda faror för miljön, särskilt när det gäller skydd av icke-målorganismer och förhindrande av förorening av vatten.</p>\n<p class=\"text\">m) Mikrobiologiska biocidprodukter ska märkas i enlighet med kraven i Europaparlamentets och rådets direktiv 2000/54/EG av den 18 september 2000 om skydd för arbetstagare mot risker vid exponering för biologiska agens i arbetet (sjunde särdirektivet enligt artikel 16.1 i direktiv 89/391/EEG).</p>\n<p class=\"text\">Uppgifterna under a, b och d, samt i förekommande fall g och k, ska alltid finnas på produktetiketten.</p>\n<p class=\"text\">Uppgifterna under c, e, f, h, i, j och l får anges på annat ställe på förpackningen eller i ett separat informationsblad som i så fall ska åtfölja varje förpackning och anses som en del av märkningen.</p>",
+      "text": "Bilaga 4\nMärkning av biocidprodukter som inte omfattas av EU-krav på godkännande\nBestämmelser om märkning finns i Europaparlamentets och rådets förordning (EG) nr 1272/2008 av den 16 december 2008 om klassificering, märkning och förpackning av ämnen och blandningar, ändring och upphävande av direktiven 67/548/EEG och 1999/45/EG samt ändring av förordning (EG) nr 1907/2006. Även om skyldigheter att märka inte följer av den förordningen ska förpackningen till en biocidprodukt vara tydligt och outplånligt märkt med följande information.\na) Alla verksamma ämnens identitet och koncentration i metriska enheter.\nb) Det registreringsnummer som den behöriga myndigheten har tilldelat biocidprodukten vid godkännandet eller registreringen.\nc) Typ av preparat (till exempel flytande koncentrat, granulat, pulver, fast form).\nd) Det användningsområde som biocidprodukten är godkänd för. För biocidprodukter som släpps ut på den svenska marknaden ska dessutom följande text anges i anslutning till användningsområdet: \"All annan användning är otillåten om den inte särskilt tillåtits\".\ne) Anvisningar om användning och dosering, uttryckta i metriska enheter, för varje användning som godkännandet omfattar.\nf) Uppgifter om troliga direkta eller indirekta negativa biverkningar och anvisningar om första hjälpen.\ng) Texten \"Läs medföljande anvisningar\" om det finns ett informationsblad för produkten.\nh) Anvisningar för säkert bortskaffande av biocidprodukten och dess förpackning, samt upplysningar om ett eventuellt förbud mot att återanvända förpackningen.\ni) Formuleringens satsnummer eller beteckning samt sista användningsdatum vid normala lagringsförhållanden.\nj) Information om\n- den tid som behövs för att biocidprodukten ska verka,\n- den tid som ska passera mellan två behandlingar med biocidprodukten eller mellan en behandling och följande användning av den behandlade produkten,\n- den tid som ska förflyta innan människor eller djur ska få tillträde till det område där biocidprodukten har använts,\n- medel och metoder för sanering samt den tid som krävs för ventilation av behandlade områden,\n- lämplig rengöring av utrustning, och\n- försiktighetsåtgärder vid användning, lagring och transport, exempelvis personliga skyddskläder och personlig skyddsutrustning, brandskyddsåtgärder, övertäckning av möbler och avlägsnande av livsmedel och foder, samt anvisningar om hur exponering av djur kan förhindras.\nI tillämpliga fall ska också följande anges:\nk) De användarkategorier som biocidprodukten är begränsad till. För biocidprodukter som släpps ut på den svenska marknaden ska märkningen innehålla\n- uppgift om den behörighetsklass som biocidprodukten har hänförts till enligt 3 kap. 7 § förordningen (2014:425) om bekämpningsmedel,\n- upplysningen \"Endast för yrkesmässigt bruk efter särskilt tillstånd\" för biocidprodukter som tillhör behörighetsklass 1, och\n- upplysningen \"Endast för yrkesmässigt bruk\" för biocidprodukter som tillhör behörighetsklass 2.\nl) Särskilda faror för miljön, särskilt när det gäller skydd av icke-målorganismer och förhindrande av förorening av vatten.\nm) Mikrobiologiska biocidprodukter ska märkas i enlighet med kraven i Europaparlamentets och rådets direktiv 2000/54/EG av den 18 september 2000 om skydd för arbetstagare mot risker vid exponering för biologiska agens i arbetet (sjunde särdirektivet enligt artikel 16.1 i direktiv 89/391/EEG).\nUppgifterna under a, b och d, samt i förekommande fall g och k, ska alltid finnas på produktetiketten.\nUppgifterna under c, e, f, h, i, j och l får anges på annat ställe på förpackningen eller i ett separat informationsblad som i så fall ska åtfölja varje förpackning och anses som en del av märkningen."
+    }
+  ],
+  "metadata": {
+    "sfsNumber": "KIFS 2022:3",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

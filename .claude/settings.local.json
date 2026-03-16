@@ -251,7 +251,15 @@
       "WebFetch(domain:www.elastic.co)",
       "WebFetch(domain:bonsai.io)",
       "Bash(git:*)",
-      "Bash(diff:*)"
+      "Bash(diff:*)",
+      "Bash(cat \"/c/Users/audri/Desktop/dev/laglig_se/app/\\(workspace\\)/tasks/page.tsx\" | head -100)",
+      "WebFetch(domain:bolagsapi.se)",
+      "WebFetch(domain:foretagsapi.se)",
+      "WebFetch(domain:www.dataportal.se)",
+      "WebFetch(domain:via.tt.se)",
+      "WebFetch(domain:api.bolagsapi.se)",
+      "Bash(npm run:*)",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []

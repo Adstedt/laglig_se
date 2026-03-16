@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (1986:3) om rundradiosändning av finländska \ntelevisionsprogram",
+  "documentNumber": "SFS 1986:3",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Regeringen får för tiden intill utgången av år 1996 medge rätt till rundradiosändning från radiosändare av televisionsprogram i radio- eller trådsändning från Finland.\nMed rundradiosändning, radiosändning och trådsändning förstås detsamma som i",
+          "amendedBy": "Lag (1995:563)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen får för tiden intill utgången av år 1996 medge rätt till rundradiosändning från radiosändare av televisionsprogram i radio- eller trådsändning från Finland.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Med rundradiosändning, radiosändning och trådsändning förstås detsamma som i",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Sändningen skall bestå av vidaresändning av program som samtidigt sänds eller kort tid dessförinnan har sänts i Finland med stöd av tillstånd från Finlands regering.",
+          "amendedBy": "Lag (1993:378)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sändningen skall bestå av vidaresändning av program som samtidigt sänds eller kort tid dessförinnan har sänts i Finland med stöd av tillstånd från Finlands regering.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "För sändningen gäller inte 6 -",
+          "amendedBy": "Lag (1991:1569)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För sändningen gäller inte 6 -",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Ett sändningstillstånd får förenas med särskilda villkor. Dessa får avse vilka radiosändare som får användas och sändningens räckvidd ävensom program- verksamhetens omfattning och förbud mot eller föreskrifter om kommersiell reklam.",
+          "amendedBy": "Lag (1993:378)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett sändningstillstånd får förenas med särskilda villkor. Dessa får avse vilka radiosändare som får användas och sändningens räckvidd ävensom program- verksamhetens omfattning och förbud mot eller föreskrifter om kommersiell reklam.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Sändningstillståndet får återkallas, om tillståndshavaren bryter mot villkor som avser förbud mot eller föreskrifter om reklam.",
+          "amendedBy": "Lag (1993:378)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sändningstillståndet får återkallas, om tillståndshavaren bryter mot villkor som avser förbud mot eller föreskrifter om reklam.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "1991:1569",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 januari 1992. Äldre föreskrifter gäller fortfarande i fråga om radioprogram som har sänts före ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1986:3",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

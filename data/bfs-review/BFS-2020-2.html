@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2020:2</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2020-2">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2020:2</p>
+      <p class="text">Boverkets allmänna råd om omgivningsbuller utomhus från industriell verksamhet och annan verksamhet med likartad ljudkaraktär</p>
+    </h1>
+  </div>
+  <div class="body">
+    <h3 id="BFS2020-2_inledning">1 Inledning</h3>
+    
+    <h4 id="BFS2020-2_allmant">1.1 Allmänt</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Detta är allmänna råd till 2 kap. 6 a §, 4 kap. 33 a § och 9 kap. 40 § plan- och bygglagen (2010:900).</p>
+      <p class="text">De allmänna råden innehåller generella rekommendationer om tillämpningen av bestämmelserna i ovan nämnda författning och anger hur någon lämpligen kan eller bör handla för att uppfylla bestämmelserna.</p>
+      <p class="text">De allmänna råden kan även innehålla vissa förklarande eller redaktionella upplysningar.</p>
+      <p class="text">De allmänna råden föregås av texten Allmänt råd och är tryckta med mindre och indragen text.</p>
+    </div>
+    
+    <h4 id="BFS2020-2_tillampningsomrade">1.2 Tillämpningsområde</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Dessa allmänna råd avser omgivningsbuller utomhus från industriell verksamhet och annan verksamhet med likartad ljudkaraktär vid planläggning och bygglovsprövning av bostadsbyggnader. En eller flera bostäder i byggnadsverk, som i huvudsak har annat användningsområde, jämställs med bostadsbyggnad.</p>
+      <p class="text">Skolor, förskolor och vårdlokaler kan i vissa avseenden jämställas med bostadsbyggnader, under den tid som verksamhet normalt pågår. Även avgränsade friytor för utevistelse vid dessa kan jämställas med uteplats vid bostadsbyggnad.</p>
+      <p class="text">Buller från teknisk utrustning vid annat än industriell verksamhet kan omfattas av dessa allmänna råd.</p>
+    </div>
+    
+    <h3 id="BFS2020-2_definitioner-av-begrepp">2 Definitioner av begrepp</h3>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">I dessa allmänna råd avses med:</p>
+      <dl>
+        <dt><strong>Bostadsrum:</strong></dt>
+        <dd>rum för sömn och vila samt daglig samvaro, utom kök.</dd>
+        
+        <dt><strong>Buller från industriell och annan verksamhet:</strong></dt>
+        <dd>buller utomhus från industriell verksamhet och annan verksamhet med likartad ljudkaraktär så som rangerbangårdar, vid godshantering, fordonsrörelser med anknytning till verksamheten inom verksamhetsområden, uppställningsplatser och depåer för fordon, hamnar och färjelägen och markverksamhet vid flygplatser samt teknisk utrustning.</dd>
+        
+        <dt><strong>Bulleranpassning av bostadsbyggnad:</strong></dt>
+        <dd>bostadsbyggnadens placering och utformning tar hänsyn till bullerexponering samt att minst hälften av bostadsrummen i en bostad är vända mot den ljuddämpade sidan.</dd>
+        
+        <dt><strong>Ekvivalent ljudnivå (L<sub>eq</sub>):</strong></dt>
+        <dd>energimedelvärdet av en varierande ljudtrycksnivå under en viss tidsperiod, A-vägd ekvivalent ljudnivå.</dd>
+        
+        <dt><strong>Frifältsvärde:</strong></dt>
+        <dd>en ljudnivå som inte påverkas av reflexer i egen fasad.</dd>
+        
+        <dt><strong>Ljuddämpad sida:</strong></dt>
+        <dd>sida av bostaden vars fasad är mindre bullerexponerad än övriga fasader och där beräknad ljudnivå utomhus inte överskrider de värden som anges i tabell 2.</dd>
+        
+        <dt><strong>Maximal ljudnivå (L<sub>Fmax</sub>):</strong></dt>
+        <dd>maximal ljudnivå avser den högsta ljudnivån i samband med en enskild bullerhändelse under en viss tidsperiod, A-vägd ljudnivå med tidsvägning F (Fast).</dd>
+        
+        <dt><strong>Teknisk utrustning:</strong></dt>
+        <dd>värmepumpar, kylaggregat, ventilationsanläggningar och liknande yttre installationer.</dd>
+        
+        <dt><strong>Uteplats:</strong></dt>
+        <dd>en iordningställd yta i anslutning till bostad avsedd för vistelse utomhus, så som en balkong, terrass eller del av gemensam gård.</dd>
+      </dl>
+    </div>
+    
+    <h3 id="BFS2020-2_matning-och-berakning-av-ljudnivaer-utomhus">3 Mätning och beräkning av ljudnivåer utomhus</h3>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">I utredningar om buller från industriell och annan verksamhet bör etablerade akustiska beräknings- och mätmetoder användas.</p>
+      <p class="text">Hänsyn bör tas till den aktuella verksamhetens framtida utveckling.</p>
+    </div>
+    
+    <h3 id="BFS2020-2_ljudnivaer-utomhus">4 Ljudnivåer utomhus</h3>
+    
+    <h4 id="BFS2020-2_ljudnivaer-utomhus-vid-exponerad-sida">4.1. Ljudnivåer utomhus vid exponerad sida</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Zonindelning A, B och C relaterar till ljudnivå vid exponerad bostadsbyggnads fasad.</p>
+      <p class="text">Följande ljudnivåer vid exponerad sida bör tillämpas vid planläggning och bygglovsprövning av bostäder, tabell 1.</p>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 1</strong> Högsta ekvivalenta ljudnivåer från industriell och annan verksamhet, uttryckt som frifältsvärde utomhus vid bostadsbyggnads fasad</caption>
+        <thead>
+          <tr>
+            <th></th>
+            <th>L<sub>eq</sub> dag<br>(kl. 06-18)</th>
+            <th>L<sub>eq</sub> kväll<br>(kl. 18–22)<br><br>Lördagar, söndagar och helgdagar<br>L<sub>eq</sub> dag + kväll<br>(kl. 06–22)</th>
+            <th>L<sub>eq</sub> natt<br>(kl. 22–06)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Zon A*<br>Bostadsbyggnader bör kunna medges upp till angivna nivåer.</td>
+            <td>50 dBA</td>
+            <td>45 dBA</td>
+            <td>45 dBA</td>
+          </tr>
+          <tr>
+            <td>Zon B<br>Bostadsbyggnader bör kunna medges upp till angivna nivåer förutsatt att tillgång till ljuddämpad sida finns och att byggnaderna bulleranpassas.</td>
+            <td>60 dBA</td>
+            <td>55 dBA</td>
+            <td>50 dBA</td>
+          </tr>
+          <tr>
+            <td>Zon C<br>Bostadsbyggnader bör inte medges över angivna nivåer.</td>
+            <td>&gt;60 dBA</td>
+            <td>&gt;55 dBA</td>
+            <td>&gt;50 dBA</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p class="text">*Vad avser buller från teknisk utrustning vid annat än industriell verksamhet tillämpas värdena för ljuddämpad sida enligt tabell 2 också på den exponerade sidan.</p>
+      
+      <p class="text">Vid uteplats, om sådan planeras, gäller ljudnivåerna i tabell 2.</p>
+      <p class="text">I de fall den bullrande verksamheten endast pågår en del av tidsperioderna, eller om ljudnivån från verksamheten varierar mycket, bör den ekvivalenta ljudnivån bestämmas för den tid då den bullrande verksamheten pågår, dock minst en timme.</p>
+    </div>
+    
+    <h4 id="BFS2020-2_maximala-ljudnivaer">4.2 Maximala ljudnivåer</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Maximala ljudnivåer, L<sub>Fmax</sub> över 55 dBA, bör inte förekomma nattetid klockan 22–06 annat än vid enstaka tillfällen. Om de berörda bostadsbyggnaderna har tillgång till en ljuddämpad sida avser begränsningen den ljuddämpade sidan.</p>
+      <p class="text">Om ekvivalenta ljudnivåer inom zon A uppfylls, men maximala ljudnivåer regelbundet överskrids nattetid vid exponerad sida, bör bulleranpassning av bostadsbyggnader i enlighet med zon B göras. Om en sådan situation uppstår blir bedömningen därmed densamma som när den ekvivalenta ljudnivån är högre än riktvärdena i zon A.</p>
+    </div>
+    
+    <h4 id="BFS2020-2_sarskilt-storande-ljudkaraktarer">4.3. Särskilt störande ljudkaraktärer</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">När buller från industriell verksamhet karaktäriseras av ofta återkommande impulser eller av ljud med tydligt hörbara tonkomponenter, bör värdena i tabell 1 sänkas med 5 dBA.</p>
+    </div>
+    
+    <h4 id="BFS2020-2_lagfrekvent-ljud">4.4 Lågfrekvent ljud</h4>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Betydande förekomst av lågfrekvent ljud kan bedömas som särskilt störande. Lågfrekvent ljud bör därför beaktas vid lokalisering, placering och utformning av bostadsbyggnader.</p>
+    </div>
+    
+    <h3 id="BFS2020-2_ljudnivaer-utomhus-vid-ljuddampad-sida-och-uteplats">5. Ljudnivåer utomhus vid ljuddämpad sida och uteplats</h3>
+    
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Följande ljudnivåer bör tillämpas på ljuddämpad sida vid bostadsbyggnads fasad och vid uteplats om sådan planeras, tabell 2.</p>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 2</strong> Högsta ekvivalenta ljudnivåer från industriell och annan verksamhet på ljuddämpad sida, uttryckt som frifältsvärde utomhus vid bostadsbyggnads fasad, och vid uteplats</caption>
+        <thead>
+          <tr>
+            <th></th>
+            <th>L<sub>eq</sub> dag<br>(kl. 06–18)</th>
+            <th>L<sub>eq</sub> kväll<br>(kl. 18–22)</th>
+            <th>L<sub>eq</sub> natt<br>(kl. 22–06)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ljuddämpad sida och uteplats</td>
+            <td>45 dBA</td>
+            <td>45 dBA</td>
+            <td>40 dBA</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <p class="text">Vid bedömning av ljudnivåer från teknisk utrustning vid annat än industriell verksamhet bör värdena i denna tabell också tillämpas på den exponerade sidan.</p>
+      <p class="text">Det bör vara tillräckligt att angivna ljudnivåer uppfylls på en uteplats.</p>
+    </div>
+  </div>
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <p class="text">Dessa allmänna råd gäller från och med den 1 april 2020.</p>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">ANDERS SJELVGREN</p>
+    <p class="text">Magnus Lindqvist</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

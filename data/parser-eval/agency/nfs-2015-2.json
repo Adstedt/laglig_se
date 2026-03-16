@@ -1,0 +1,448 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Naturvårdsverkets föreskrifter om spridning och viss övrig hantering av växtskyddsmedel",
+  "documentNumber": "NFS 2015:2",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Tillämpningsområde",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Dessa föreskrifter gäller vid spridning och viss övrig hantering av växtskyddsmedel. Föreskrifterna innehåller bestämmelser om den närmare tillämpningen av förordningen (2014:425) om bekämpningsmedel.\nDessa föreskrifter gäller inte växtskyddsmedel som innehåller nematoder, insekter eller spindeldjur.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Dessa föreskrifter gäller vid spridning och viss övrig hantering av växtskyddsmedel. Föreskrifterna innehåller bestämmelser om den närmare tillämpningen av förordningen (2014:425) om bekämpningsmedel.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Dessa föreskrifter gäller inte växtskyddsmedel som innehåller nematoder, insekter eller spindeldjur.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Definitioner m.m.",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Om inte annat särskilt anges i dessa föreskrifter, har uttryck i föreskrifterna samma betydelse som i 14 kap. miljöbalken, förordningen (2014:425) om bekämpningsmedel och Europaparlamentets och rådets förordning (EG) nr 1107/2009 av den 21 oktober 2009 om utsläppande av växtskyddsmedel på marknaden och om upphävande av rådets direktiv 79/117/EEG och 91/414/EEG.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om inte annat särskilt anges i dessa föreskrifter, har uttryck i föreskrifterna samma betydelse som i 14 kap. miljöbalken, förordningen (2014:425) om bekämpningsmedel och Europaparlamentets och rådets förordning (EG) nr 1107/2009 av den 21 oktober 2009 om utsläppande av växtskyddsmedel på marknaden och om upphävande av rådets direktiv 79/117/EEG och 91/414/EEG.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "I dessa föreskrifter avses med",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I dessa föreskrifter avses med",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Vid tillämpning av 2 kap. 42 § förordningen (2014:425) om bekämpningsmedel gäller, i fråga om annan användning av växtskyddsmedel än användning på skogsmark, definitionen av punktbehandling i 2 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid tillämpning av 2 kap. 42 § förordningen (2014:425) om bekämpningsmedel gäller, i fråga om annan användning av växtskyddsmedel än användning på skogsmark, definitionen av punktbehandling i 2 §.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Spridning av växtskyddsmedel",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Den som sprider växtskyddsmedel utomhus ska hålla följande minsta skyddsavstånd.\n2 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,\n        6 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och\n        12 meter till dricksvattenbrunnar.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som sprider växtskyddsmedel utomhus ska hålla följande minsta skyddsavstånd.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "2 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,\n        6 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och\n        12 meter till dricksvattenbrunnar.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>2 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,</li>\n        <li>6 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och</li>\n        <li>12 meter till dricksvattenbrunnar.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Anpassade skyddsavstånd",
+          "content": "Utöver vad som följer av 1 § ska den som yrkesmässigt sprider växtskyddsmedel utomhus alltid bestämma och hålla skyddsavstånd till vattentäkter, sjöar och vattendrag och omgivande mark. Skyddsavstånden ska anpassas efter omständigheterna på platsen för spridningen, varvid särskild hänsyn ska tas till\npå platsen för spridning rådande temperatur, vindförhållanden och övriga väderförhållanden,\n        det avsedda spridningsområdets utbredning i vindriktningen,\n        växtskyddsmedlets egenskaper,\n        omgivningens känslighet för medlet, samt\n        den använda spridningsmetodens precision.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utöver vad som följer av 1 § ska den som yrkesmässigt sprider växtskyddsmedel utomhus alltid bestämma och hålla skyddsavstånd till vattentäkter, sjöar och vattendrag och omgivande mark. Skyddsavstånden ska anpassas efter omständigheterna på platsen för spridningen, varvid särskild hänsyn ska tas till",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "på platsen för spridning rådande temperatur, vindförhållanden och övriga väderförhållanden,\n        det avsedda spridningsområdets utbredning i vindriktningen,\n        växtskyddsmedlets egenskaper,\n        omgivningens känslighet för medlet, samt\n        den använda spridningsmetodens precision.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>på platsen för spridning rådande temperatur, vindförhållanden och övriga väderförhållanden,</li>\n        <li>det avsedda spridningsområdets utbredning i vindriktningen,</li>\n        <li>växtskyddsmedlets egenskaper,</li>\n        <li>omgivningens känslighet för medlet, samt</li>\n        <li>den använda spridningsmetodens precision.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "För att bestämma anpassade skyddsavstånd enligt 2 §, ska den som avser att sprida växtskyddsmedel med bogserad eller maskinburen spruta ha utrustning för att bestämma temperatur, vindriktning och vindhastighet på platsen för spridning.\nVindhastigheten ska kunna bestämmas med en noggrannhet av ± 0,5 m/s.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att bestämma anpassade skyddsavstånd enligt 2 §, ska den som avser att sprida växtskyddsmedel med bogserad eller maskinburen spruta ha utrustning för att bestämma temperatur, vindriktning och vindhastighet på platsen för spridning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vindhastigheten ska kunna bestämmas med en noggrannhet av ± 0,5 m/s.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Undantag",
+          "content": "Bestämmelserna i 1-3 §§ gäller inte vid användning som har karaktär av punktbehandling och som har en sådan begränsad omfattning att människors hälsa och miljön inte riskerar att skadas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i 1-3 §§ gäller inte vid användning som har karaktär av punktbehandling och som har en sådan begränsad omfattning att människors hälsa och miljön inte riskerar att skadas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Upphör att gälla U:2021-12-31/ Bestämmelserna i 1 § gäller inte den som från spårbundet fordon sprider växtskyddsmedel på banvallar för järnvägsspår. Den som från spårbundet fordon sprider växtskyddsmedel på banvallar för järnvägsspår ska hålla följande minsta skyddsavstånd.\n1 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,\n        6 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och\n        12 meter till dricksvattenbrunnar.\n(NFS 2019:2 / NFS 2019:3)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Upphör att gälla U:2021-12-31/ Bestämmelserna i 1 § gäller inte den som från spårbundet fordon sprider växtskyddsmedel på banvallar för järnvägsspår. Den som från spårbundet fordon sprider växtskyddsmedel på banvallar för järnvägsspår ska hålla följande minsta skyddsavstånd.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "1 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,\n        6 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och\n        12 meter till dricksvattenbrunnar.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>1 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,</li>\n        <li>6 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och</li>\n        <li>12 meter till dricksvattenbrunnar.</li>\n      </ol>"
+            },
+            {
+              "number": 3,
+              "text": "(NFS 2019:2 / NFS 2019:3)",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Utspädning, blandning och påfyllning m.m.",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Utspädning, blandning och påfyllning av växtskyddsmedel samt utvändig rengöring av utrustning som används för spridning av växtskyddsmedel, ska ske på en plats som är lämplig för ändamålet. Sådan hantering får inte ske\npå vägområden, samt på grusytor och andra mycket genomsläppliga ytor, eller\n        på ytor av asfalt eller betong eller andra hårdgjorda material på vilka det inte finns möjlighet till uppsamling av växtskyddsmedlet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utspädning, blandning och påfyllning av växtskyddsmedel samt utvändig rengöring av utrustning som används för spridning av växtskyddsmedel, ska ske på en plats som är lämplig för ändamålet. Sådan hantering får inte ske",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "på vägområden, samt på grusytor och andra mycket genomsläppliga ytor, eller\n        på ytor av asfalt eller betong eller andra hårdgjorda material på vilka det inte finns möjlighet till uppsamling av växtskyddsmedlet.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>på vägområden, samt på grusytor och andra mycket genomsläppliga ytor, eller</li>\n        <li>på ytor av asfalt eller betong eller andra hårdgjorda material på vilka det inte finns möjlighet till uppsamling av växtskyddsmedlet.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Fasta skyddsavstånd",
+          "content": "Vid utspädning, blandning och påfyllning av växtskyddsmedel utomhus samt utvändig rengöring utomhus av utrustning som används för spridning av växtskyddsmedel, ska följande minsta skyddsavstånd hållas.\n30 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,\n        30 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och\n        30 meter till dricksvattenbrunnar.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid utspädning, blandning och påfyllning av växtskyddsmedel utomhus samt utvändig rengöring utomhus av utrustning som används för spridning av växtskyddsmedel, ska följande minsta skyddsavstånd hållas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "30 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,\n        30 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och\n        30 meter till dricksvattenbrunnar.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>30 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,</li>\n        <li>30 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och</li>\n        <li>30 meter till dricksvattenbrunnar.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "De skyddsavstånd som anges i 2 § gäller inte vid sådan hantering som sker på yta där det finns möjlighet till uppsamling av växtskyddsmedel, på biobädd eller på annan plats med motsvarande funktion. I de fallen ska i stället följande minsta skyddsavstånd gälla.\n15 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,\n        15 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och\n        15 meter till dricksvattenbrunnar.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "De skyddsavstånd som anges i 2 § gäller inte vid sådan hantering som sker på yta där det finns möjlighet till uppsamling av växtskyddsmedel, på biobädd eller på annan plats med motsvarande funktion. I de fallen ska i stället följande minsta skyddsavstånd gälla.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "15 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,\n        15 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och\n        15 meter till dricksvattenbrunnar.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>15 meter till öppna diken samt till dagvattenbrunnar och dräneringsbrunnar,</li>\n        <li>15 meter till sjöar och vattendrag räknat från strandlinje för högvattenyta eller strandbrinkens överkant, och</li>\n        <li>15 meter till dricksvattenbrunnar.</li>\n      </ol>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "5",
+      "title": "Förvaring av växtskyddsmedel",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Växtskyddsmedel som används i yrkesmässig spridning ska lagras i ett invallat utrymme eller invallad behållare, med möjlighet till uppsamling av läckage eller spill.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Växtskyddsmedel som används i yrkesmässig spridning ska lagras i ett invallat utrymme eller invallad behållare, med möjlighet till uppsamling av läckage eller spill.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "6",
+      "title": "Tillstånd för användning i vattenskyddsområde",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Det är förbjudet att utan särskilt tillstånd av den kommunala nämnden yrkesmässigt använda växtskyddsmedel utomhus inom de delar av ett vattenskyddsområde som betecknas som vattentäktzon, primär (inre) skyddszon och sekundär (yttre) skyddszon.\nOm ett vattenskyddsområde inte har indelats i zoner gäller förbudet mot användning utan tillstånd enligt första stycket inom hela vattenskyddsområdet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det är förbjudet att utan särskilt tillstånd av den kommunala nämnden yrkesmässigt använda växtskyddsmedel utomhus inom de delar av ett vattenskyddsområde som betecknas som vattentäktzon, primär (inre) skyddszon och sekundär (yttre) skyddszon.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om ett vattenskyddsområde inte har indelats i zoner gäller förbudet mot användning utan tillstånd enligt första stycket inom hela vattenskyddsområdet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Bestämmelsen i 1 § gäller inte vid användning som har karaktär av punktbehandling och som har en sådan begränsad omfattning att människors hälsa och miljön inte riskerar att skadas.\nBestämmelsen i 1 § gäller inte vattenskyddsområden som har inrättats efter den 1 januari 2018 eller vattenskyddsområden för vilka föreskrifter till skydd för området har ändrats efter den 1 januari 2018.\nEnligt 2 kap. 36 § andra stycket förordningen (2014:425) om bekämpningsmedel gäller bestämmelsen i 1 § inte för ett vattenskyddsområde eller de delar av ett vattenskyddsområde som omfattas av föreskrifter meddelade med stöd av 7 kap. 22 § miljöbalken med förbud mot användning av växtskyddsmedel.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelsen i 1 § gäller inte vid användning som har karaktär av punktbehandling och som har en sådan begränsad omfattning att människors hälsa och miljön inte riskerar att skadas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Bestämmelsen i 1 § gäller inte vattenskyddsområden som har inrättats efter den 1 januari 2018 eller vattenskyddsområden för vilka föreskrifter till skydd för området har ändrats efter den 1 januari 2018.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Enligt 2 kap. 36 § andra stycket förordningen (2014:425) om bekämpningsmedel gäller bestämmelsen i 1 § inte för ett vattenskyddsområde eller de delar av ett vattenskyddsområde som omfattas av föreskrifter meddelade med stöd av 7 kap. 22 § miljöbalken med förbud mot användning av växtskyddsmedel.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "7",
+      "title": "Tillstånd och anmälan",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "En ansökan om tillstånd att använda växtskyddsmedel enligt 2 kap. 40 § förordningen (2014:425) om bekämpningsmedel eller en anmälan avseende annan användning av växtskyddsmedel än användning på skogsmark enligt 2 kap. 41 § förordningen (2014:425) om bekämpningsmedel, ska innehålla\nkarta eller annan beskrivning av spridningsområdets läge och areal,\n        kontaktuppgifter till den som ska sprida växtskyddsmedel samt i förekommande fall till den för vars räkning spridningen ska ske,\n        syftet med spridningen,\n        växtskyddsmedlets namn och registreringsnummer med upplysning om verksamt ämne,\n        beskrivning av spridningsmetod,\n        dos som ska användas, och\n        beräknad tidpunkt eller tidsperiod för spridningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En ansökan om tillstånd att använda växtskyddsmedel enligt 2 kap. 40 § förordningen (2014:425) om bekämpningsmedel eller en anmälan avseende annan användning av växtskyddsmedel än användning på skogsmark enligt 2 kap. 41 § förordningen (2014:425) om bekämpningsmedel, ska innehålla",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "karta eller annan beskrivning av spridningsområdets läge och areal,\n        kontaktuppgifter till den som ska sprida växtskyddsmedel samt i förekommande fall till den för vars räkning spridningen ska ske,\n        syftet med spridningen,\n        växtskyddsmedlets namn och registreringsnummer med upplysning om verksamt ämne,\n        beskrivning av spridningsmetod,\n        dos som ska användas, och\n        beräknad tidpunkt eller tidsperiod för spridningen.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>karta eller annan beskrivning av spridningsområdets läge och areal,</li>\n        <li>kontaktuppgifter till den som ska sprida växtskyddsmedel samt i förekommande fall till den för vars räkning spridningen ska ske,</li>\n        <li>syftet med spridningen,</li>\n        <li>växtskyddsmedlets namn och registreringsnummer med upplysning om verksamt ämne,</li>\n        <li>beskrivning av spridningsmetod,</li>\n        <li>dos som ska användas, och</li>\n        <li>beräknad tidpunkt eller tidsperiod för spridningen.</li>\n      </ol>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "8",
+      "title": "Information till allmänheten",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Den som avser att sprida växtskyddsmedel enligt 2 kap. 45 § förordningen (2014:425) om bekämpningsmedel ska senast en vecka före spridningen informera om den på väl synliga anslag. Informationen ska lämnas på anslag av minst A5-format av väderbeständigt material. Anslagen ska innehålla\nkarta eller annan beskrivning av spridningsområdets läge och areal,\n        kontaktuppgifter till den som ska sprida växtskyddsmedel samt i förekommande fall till den för vars räkning spridningen ska ske,\n        syftet med spridningen,\n        växtskyddsmedlets namn och registreringsnummer med upplysning om verksamt ämne,\n        beskrivning av spridningsmetod, och\n        beräknad tidpunkt eller tidsperiod för spridningen.\nAnslagen ska sitta kvar minst en månad efter spridningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som avser att sprida växtskyddsmedel enligt 2 kap. 45 § förordningen (2014:425) om bekämpningsmedel ska senast en vecka före spridningen informera om den på väl synliga anslag. Informationen ska lämnas på anslag av minst A5-format av väderbeständigt material. Anslagen ska innehålla",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "karta eller annan beskrivning av spridningsområdets läge och areal,\n        kontaktuppgifter till den som ska sprida växtskyddsmedel samt i förekommande fall till den för vars räkning spridningen ska ske,\n        syftet med spridningen,\n        växtskyddsmedlets namn och registreringsnummer med upplysning om verksamt ämne,\n        beskrivning av spridningsmetod, och\n        beräknad tidpunkt eller tidsperiod för spridningen.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>karta eller annan beskrivning av spridningsområdets läge och areal,</li>\n        <li>kontaktuppgifter till den som ska sprida växtskyddsmedel samt i förekommande fall till den för vars räkning spridningen ska ske,</li>\n        <li>syftet med spridningen,</li>\n        <li>växtskyddsmedlets namn och registreringsnummer med upplysning om verksamt ämne,</li>\n        <li>beskrivning av spridningsmetod, och</li>\n        <li>beräknad tidpunkt eller tidsperiod för spridningen.</li>\n      </ol>"
+            },
+            {
+              "number": 3,
+              "text": "Anslagen ska sitta kvar minst en månad efter spridningen.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "9",
+      "title": "Skyldighet att underrätta vid förorening",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Vid olyckor då en större mängd växtskyddsmedel läckt ut eller kan befaras läcka ut, ska räddningstjänsten och den kommunala nämnden omedelbart underrättas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid olyckor då en större mängd växtskyddsmedel läckt ut eller kan befaras läcka ut, ska räddningstjänsten och den kommunala nämnden omedelbart underrättas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Om det finns anledning att misstänka att ett markområde blivit förorenat av växtskyddsmedel i sådan omfattning att egendomsskada kan befaras, ska områdets ägare eller nyttjanderättshavare snarast underrättas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det finns anledning att misstänka att ett markområde blivit förorenat av växtskyddsmedel i sådan omfattning att egendomsskada kan befaras, ska områdets ägare eller nyttjanderättshavare snarast underrättas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Om vattentäkt, grundvatten eller en sjö eller ett vattendrag befaras bli förorenat av växtskyddsmedel, ska områdets ägare eller nyttjanderättshavare och den kommunala nämnden snarast underrättas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om vattentäkt, grundvatten eller en sjö eller ett vattendrag befaras bli förorenat av växtskyddsmedel, ska områdets ägare eller nyttjanderättshavare och den kommunala nämnden snarast underrättas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Ansvarig för att underrättelse sker enligt 1-3 §§ är den som har hanterat växtskyddsmedlet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ansvarig för att underrättelse sker enligt 1-3 §§ är den som har hanterat växtskyddsmedlet.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "NFS 2015:2",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Dessa föreskrifter träder i kraft den 1 november 2015.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "NFS 2019:2 och NFS 2019:3",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Dessa föreskrifter träder i kraft den 23 maj 2019 och upphör att gälla den 31 december 2021.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "NFS 2015:2",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

@@ -1,0 +1,638 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Styrelsen för ackreditering och teknisk kontrolls föreskrifter och allmänna råd om ackreditering",
+  "documentNumber": "STAFS 2020:1",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Dessa föreskrifter tillämpas på organ som ansöker om eller beviljats ackreditering av Swedac.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Dessa föreskrifter tillämpas på organ som ansöker om eller beviljats ackreditering av Swedac.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "I dessa föreskrifter avses med\nEA: den europeiska samarbetsorganisationen för ackreditering (European co-operation for Accreditation),\n      Emas: Europeiska Unionens miljölednings- och miljörevisionsordning (Eco Management and Audit Scheme) enligt Europaparlamentets och rådets förordning (EG) nr 1221/2009 av den 25 november 2009 om frivilligt deltagande för organisationer i gemenskapens miljölednings- och miljörevisionsordning (Emas) och om upphävande av förordning (EG) nr 761/2001 och kommissionens beslut 2001/681/EG och 2006/193/EG,\n      IAF: det internationella samarbetsorganisationen för ackreditering av certifierings-, verifierings- och valideringsorgan (International Accreditation Forum),\n      ILAC: den internationella samarbetsorganisationen för ackreditering av bio-banker, kontrollorgan, laboratorier, arrangörer av program för kompetensprövning och producenter av referensmaterial (International Laboratory Accreditation Cooperation),\n      organ: företag, verksamhet eller organisation (exempelvis bolag, enskild firma, myndighet, kommun och region) som innehar rättslig handlingsförmåga,\n      underleverantör: den som anlitas av ett ackrediterat organ för att utföra en aktivitet relaterad till bedömning av överensstämmelse, t.ex. kontroll eller provning,\n      ackrediterad rapport / ackrediterat certifikat, intyg eller kalibreringsbevis: rapport, certifikat, intyg eller kalibreringsbevis som innehåller resultat från en aktivitet relaterad till bedömning av överensstämmelse som ingår i det ackrediterade organets ackrediteringsomfattning och som med ackrediteringssymbol eller text innehåller en hänvisning till ackreditering,\n      ackreditering med flexibel omfattning: ackreditering vars omfattning formulerats på ett sätt som medger att det ackrediterade organet får göra vissa typer av ändringar av de tjänster som erbjuds under ackreditering,\n      kontrollform: aktivitet som är relaterad till bedömning av överensstämmelse utfört av ett organ som är eller kan bli ackrediterad för uppgiften. Exempel på olika kontrollformer är provning, kalibrering, kontroll och certifiering av ledningssystem,\n      kontrollformsstandard: harmoniserad standard för organ som utför en aktivitet relaterad till bedömning av överensstämmelse,\n      kontrollordning: uppsättning av regler och förfaranden som beskriver objekt, krav och metodik för en viss bedömning av överensstämmelse (inom området certifiering används även begreppet certifieringsordning),\n      ackrediteringssymbol: återgivande i nedan angiven ordning av\n        \n          Swedacs ackrediteringsmärke,\n          ackrediteringsnummer, föregånget av \"SE-V-\" för organ som är ackrediterade för uppgifter enligt Emas,\n          kontrollform,\n          kontrollformsstandard, åtföljd av aktuell beteckning för oberoende (A), (B) eller (C) för ackrediterade kontrollorgan, eller \"EMAS\" för organ som är ackrediterade för uppgifter enligt Emas,\n        \n      \n      samma organisation: grupp bestående av flera organ, fördelade på en eller flera platser, sammanbundna med det ackrediterade organet genom ett kontrakt eller ett motsvarande rättsförhållande vilka bedriver verksamhet under samma namn och logotyp,\n      samma ledning: person eller grupp av personer inom samma organisation som tar övergripande ansvar för den ackrediterade verksamheten,\n      samma ledningssystem: samling av sammankopplade regler och processer som fastställts av samma ledning för att möjliggöra för denna ledning att ta ansvar för den ackrediterade verksamheten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I dessa föreskrifter avses med",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "EA: den europeiska samarbetsorganisationen för ackreditering (European co-operation for Accreditation),\n      Emas: Europeiska Unionens miljölednings- och miljörevisionsordning (Eco Management and Audit Scheme) enligt Europaparlamentets och rådets förordning (EG) nr 1221/2009 av den 25 november 2009 om frivilligt deltagande för organisationer i gemenskapens miljölednings- och miljörevisionsordning (Emas) och om upphävande av förordning (EG) nr 761/2001 och kommissionens beslut 2001/681/EG och 2006/193/EG,\n      IAF: det internationella samarbetsorganisationen för ackreditering av certifierings-, verifierings- och valideringsorgan (International Accreditation Forum),\n      ILAC: den internationella samarbetsorganisationen för ackreditering av bio-banker, kontrollorgan, laboratorier, arrangörer av program för kompetensprövning och producenter av referensmaterial (International Laboratory Accreditation Cooperation),\n      organ: företag, verksamhet eller organisation (exempelvis bolag, enskild firma, myndighet, kommun och region) som innehar rättslig handlingsförmåga,\n      underleverantör: den som anlitas av ett ackrediterat organ för att utföra en aktivitet relaterad till bedömning av överensstämmelse, t.ex. kontroll eller provning,\n      ackrediterad rapport / ackrediterat certifikat, intyg eller kalibreringsbevis: rapport, certifikat, intyg eller kalibreringsbevis som innehåller resultat från en aktivitet relaterad till bedömning av överensstämmelse som ingår i det ackrediterade organets ackrediteringsomfattning och som med ackrediteringssymbol eller text innehåller en hänvisning till ackreditering,\n      ackreditering med flexibel omfattning: ackreditering vars omfattning formulerats på ett sätt som medger att det ackrediterade organet får göra vissa typer av ändringar av de tjänster som erbjuds under ackreditering,\n      kontrollform: aktivitet som är relaterad till bedömning av överensstämmelse utfört av ett organ som är eller kan bli ackrediterad för uppgiften. Exempel på olika kontrollformer är provning, kalibrering, kontroll och certifiering av ledningssystem,\n      kontrollformsstandard: harmoniserad standard för organ som utför en aktivitet relaterad till bedömning av överensstämmelse,\n      kontrollordning: uppsättning av regler och förfaranden som beskriver objekt, krav och metodik för en viss bedömning av överensstämmelse (inom området certifiering används även begreppet certifieringsordning),\n      ackrediteringssymbol: återgivande i nedan angiven ordning av\n        \n          Swedacs ackrediteringsmärke,\n          ackrediteringsnummer, föregånget av \"SE-V-\" för organ som är ackrediterade för uppgifter enligt Emas,\n          kontrollform,\n          kontrollformsstandard, åtföljd av aktuell beteckning för oberoende (A), (B) eller (C) för ackrediterade kontrollorgan, eller \"EMAS\" för organ som är ackrediterade för uppgifter enligt Emas,\n        \n      \n      samma organisation: grupp bestående av flera organ, fördelade på en eller flera platser, sammanbundna med det ackrediterade organet genom ett kontrakt eller ett motsvarande rättsförhållande vilka bedriver verksamhet under samma namn och logotyp,\n      samma ledning: person eller grupp av personer inom samma organisation som tar övergripande ansvar för den ackrediterade verksamheten,\n      samma ledningssystem: samling av sammankopplade regler och processer som fastställts av samma ledning för att möjliggöra för denna ledning att ta ansvar för den ackrediterade verksamheten.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>EA: den europeiska samarbetsorganisationen för ackreditering (European co-operation for Accreditation),</li>\n      <li>Emas: Europeiska Unionens miljölednings- och miljörevisionsordning (Eco Management and Audit Scheme) enligt Europaparlamentets och rådets förordning (EG) nr 1221/2009 av den 25 november 2009 om frivilligt deltagande för organisationer i gemenskapens miljölednings- och miljörevisionsordning (Emas) och om upphävande av förordning (EG) nr 761/2001 och kommissionens beslut 2001/681/EG och 2006/193/EG,</li>\n      <li>IAF: det internationella samarbetsorganisationen för ackreditering av certifierings-, verifierings- och valideringsorgan (International Accreditation Forum),</li>\n      <li>ILAC: den internationella samarbetsorganisationen för ackreditering av bio-banker, kontrollorgan, laboratorier, arrangörer av program för kompetensprövning och producenter av referensmaterial (International Laboratory Accreditation Cooperation),</li>\n      <li>organ: företag, verksamhet eller organisation (exempelvis bolag, enskild firma, myndighet, kommun och region) som innehar rättslig handlingsförmåga,</li>\n      <li>underleverantör: den som anlitas av ett ackrediterat organ för att utföra en aktivitet relaterad till bedömning av överensstämmelse, t.ex. kontroll eller provning,</li>\n      <li>ackrediterad rapport / ackrediterat certifikat, intyg eller kalibreringsbevis: rapport, certifikat, intyg eller kalibreringsbevis som innehåller resultat från en aktivitet relaterad till bedömning av överensstämmelse som ingår i det ackrediterade organets ackrediteringsomfattning och som med ackrediteringssymbol eller text innehåller en hänvisning till ackreditering,</li>\n      <li>ackreditering med flexibel omfattning: ackreditering vars omfattning formulerats på ett sätt som medger att det ackrediterade organet får göra vissa typer av ändringar av de tjänster som erbjuds under ackreditering,</li>\n      <li>kontrollform: aktivitet som är relaterad till bedömning av överensstämmelse utfört av ett organ som är eller kan bli ackrediterad för uppgiften. Exempel på olika kontrollformer är provning, kalibrering, kontroll och certifiering av ledningssystem,</li>\n      <li>kontrollformsstandard: harmoniserad standard för organ som utför en aktivitet relaterad till bedömning av överensstämmelse,</li>\n      <li>kontrollordning: uppsättning av regler och förfaranden som beskriver objekt, krav och metodik för en viss bedömning av överensstämmelse (inom området certifiering används även begreppet certifieringsordning),</li>\n      <li>ackrediteringssymbol: återgivande i nedan angiven ordning av\n        <ol type=\"a\">\n          <li>Swedacs ackrediteringsmärke,</li>\n          <li>ackrediteringsnummer, föregånget av \"SE-V-\" för organ som är ackrediterade för uppgifter enligt Emas,</li>\n          <li>kontrollform,</li>\n          <li>kontrollformsstandard, åtföljd av aktuell beteckning för oberoende (A), (B) eller (C) för ackrediterade kontrollorgan, eller \"EMAS\" för organ som är ackrediterade för uppgifter enligt Emas,</li>\n        </ol>\n      </li>\n      <li>samma organisation: grupp bestående av flera organ, fördelade på en eller flera platser, sammanbundna med det ackrediterade organet genom ett kontrakt eller ett motsvarande rättsförhållande vilka bedriver verksamhet under samma namn och logotyp,</li>\n      <li>samma ledning: person eller grupp av personer inom samma organisation som tar övergripande ansvar för den ackrediterade verksamheten,</li>\n      <li>samma ledningssystem: samling av sammankopplade regler och processer som fastställts av samma ledning för att möjliggöra för denna ledning att ta ansvar för den ackrediterade verksamheten.</li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Krav relaterade till kontrollordning och kontrollform",
+          "content": "Swedac ackrediterar organ för bedömning av överensstämmelse enligt sådana krav i harmoniserade standarder och eventuella ytterligare krav som avses i artikel 2.10 i Europaparlamentets och rådets förordning (EG) nr 765/2008 av den 9 juli 2008 om krav för ackreditering och marknadskontroll i samband med saluföring av produkter och upphävande av förordning (EEG) nr 339/93. Dessa krav finns angivna för respektive ackrediteringsområde på Swedacs webbplats https://www.swedac.se/.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Swedac ackrediterar organ för bedömning av överensstämmelse enligt sådana krav i harmoniserade standarder och eventuella ytterligare krav som avses i artikel 2.10 i Europaparlamentets och rådets förordning (EG) nr 765/2008 av den 9 juli 2008 om krav för ackreditering och marknadskontroll i samband med saluföring av produkter och upphävande av förordning (EEG) nr 339/93. Dessa krav finns angivna för respektive ackrediteringsområde på Swedacs webbplats https://www.swedac.se/.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Krav relaterade till ackrediteringstjänsten",
+          "content": "Ansökan om ackreditering ska göras hos Swedac.\nAnsökan krävs för\nnyackreditering,\n      ändring av ackrediteringens omfattning,\n      utökning av ackreditering med nya filialer eller etableringsplatser, eller\n      ackreditering med flexibel omfattning.\nEn ansökan om ackreditering ska innehålla uppgifter enligt Swedacs ansökningsformulär för respektive ackrediteringsområde. Formulären finns publicerade på Swedacs webbplats https://www.swedac.se/.\nAllmänna råd till 4 §\nAnsökan om ändring av ackrediteringens omfattning bör inkomma senast tre månader innan planerat tillsynsbesök för att möjliggöra bedömning i samband med tillsynen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ansökan om ackreditering ska göras hos Swedac.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ansökan krävs för",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "nyackreditering,\n      ändring av ackrediteringens omfattning,\n      utökning av ackreditering med nya filialer eller etableringsplatser, eller\n      ackreditering med flexibel omfattning.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>nyackreditering,</li>\n      <li>ändring av ackrediteringens omfattning,</li>\n      <li>utökning av ackreditering med nya filialer eller etableringsplatser, eller</li>\n      <li>ackreditering med flexibel omfattning.</li>\n    </ol>"
+            },
+            {
+              "number": 4,
+              "text": "En ansökan om ackreditering ska innehålla uppgifter enligt Swedacs ansökningsformulär för respektive ackrediteringsområde. Formulären finns publicerade på Swedacs webbplats https://www.swedac.se/.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänna råd till 4 §",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Ansökan om ändring av ackrediteringens omfattning bör inkomma senast tre månader innan planerat tillsynsbesök för att möjliggöra bedömning i samband med tillsynen.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Om en ansökan avser en kontrollordning ska kontrollordningen med avseende på dess förvaltning, utformning och syfte vara lämplig för ackreditering. Swedac tillämpar Swedacs policy för bedömning av lämplighet av kontrollordning med avseende på ackreditering vid sin bedömning. Policyn finns publicerad på Swedacs webbplats https://www.swedac.se/.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om en ansökan avser en kontrollordning ska kontrollordningen med avseende på dess förvaltning, utformning och syfte vara lämplig för ackreditering. Swedac tillämpar Swedacs policy för bedömning av lämplighet av kontrollordning med avseende på ackreditering vid sin bedömning. Policyn finns publicerad på Swedacs webbplats https://www.swedac.se/.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "För att en ansökan om ackreditering ska kunna beviljas ska verksamheten bedrivas inom eller styras från ett område där Swedac har mandat att besluta om ackreditering och enligt ingångna internationella avtal har rätt att erbjuda ackreditering. Swedac hanterar ansökningar om ackreditering för verksamhet utanför Sveriges gränser enligt Swedacs policy för gränsöverskridande ackreditering. Policyn finns publicerad på Swedacs webbplats https://www.swedac.se/.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att en ansökan om ackreditering ska kunna beviljas ska verksamheten bedrivas inom eller styras från ett område där Swedac har mandat att besluta om ackreditering och enligt ingångna internationella avtal har rätt att erbjuda ackreditering. Swedac hanterar ansökningar om ackreditering för verksamhet utanför Sveriges gränser enligt Swedacs policy för gränsöverskridande ackreditering. Policyn finns publicerad på Swedacs webbplats https://www.swedac.se/.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Ett organ kan beviljas ackreditering för verksamhet som styrs av samma ledning genom samma ledningssystem. Om ackreditering söks för verksamhet som omfattar mer än ett organ kan ackreditering beviljas om organen ingår i samma organisation. Om verksamheten är gränsöverskridande gäller även följande som förutsättningar för ackrediteringen:\natt organet låter ett ackrediteringsorgan i det land där verksamheten bedrivs granska bedömningar av överensstämmelse som görs där, och\n      att organet godtar att Swedac och ett ackrediteringsorgan i det land där verksamheten bedrivs utbyter information om organet även om det utländska ackrediteringsorganet inte gjort någon granskning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett organ kan beviljas ackreditering för verksamhet som styrs av samma ledning genom samma ledningssystem. Om ackreditering söks för verksamhet som omfattar mer än ett organ kan ackreditering beviljas om organen ingår i samma organisation. Om verksamheten är gränsöverskridande gäller även följande som förutsättningar för ackrediteringen:",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "att organet låter ett ackrediteringsorgan i det land där verksamheten bedrivs granska bedömningar av överensstämmelse som görs där, och\n      att organet godtar att Swedac och ett ackrediteringsorgan i det land där verksamheten bedrivs utbyter information om organet även om det utländska ackrediteringsorganet inte gjort någon granskning.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>att organet låter ett ackrediteringsorgan i det land där verksamheten bedrivs granska bedömningar av överensstämmelse som görs där, och</li>\n      <li>att organet godtar att Swedac och ett ackrediteringsorgan i det land där verksamheten bedrivs utbyter information om organet även om det utländska ackrediteringsorganet inte gjort någon granskning.</li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Beslut om ackreditering meddelas inom två månader från att det underlag som är nödvändigt för utvärderingen av organet har inkommit till Swedac. Med ett nödvändigt underlag avses en fullständig ansökan i enlighet med lagen (2009:1079) om tjänster på den inre marknaden, vilket innebär att sökanden till Swedac har lämnat in alla handlingar som behövs för att bedöma om ackreditering kan meddelas eller inte, att bedömningsrapport är färdigställd och att sådan redogörelse för korrigerande åtgärder har inkommit till Swedac som inte kräver kompletterande information.\nOm det är nödvändigt på grund av utredningen av ackrediteringsärendet, kan handläggningstiden vid högst ett tillfälle förlängas med högst en månad. Sökanden informeras om skälen till att handläggningstiden förlängs innan den ursprungliga tidsfristen går ut.\nI enlighet med 8 § lagen (2009:1079) om tjänster på den inre marknaden skickas ett mottagningsbevis till sökanden när det nödvändiga underlaget har kommit in till Swedac.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Beslut om ackreditering meddelas inom två månader från att det underlag som är nödvändigt för utvärderingen av organet har inkommit till Swedac. Med ett nödvändigt underlag avses en fullständig ansökan i enlighet med lagen (2009:1079) om tjänster på den inre marknaden, vilket innebär att sökanden till Swedac har lämnat in alla handlingar som behövs för att bedöma om ackreditering kan meddelas eller inte, att bedömningsrapport är färdigställd och att sådan redogörelse för korrigerande åtgärder har inkommit till Swedac som inte kräver kompletterande information.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om det är nödvändigt på grund av utredningen av ackrediteringsärendet, kan handläggningstiden vid högst ett tillfälle förlängas med högst en månad. Sökanden informeras om skälen till att handläggningstiden förlängs innan den ursprungliga tidsfristen går ut.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "I enlighet med 8 § lagen (2009:1079) om tjänster på den inre marknaden skickas ett mottagningsbevis till sökanden när det nödvändiga underlaget har kommit in till Swedac.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Ett organ som ansöker om ackreditering eller är ackrediterat ska kunna visa att det uppfyller de krav som gäller för ackrediteringen.\nAllmänna råd till 9 §\nEtt organ som ansöker om ackreditering eller är ackrediterat kan visa att det uppfyller de krav som gäller för ackrediteringen genom att ge tillgång till personal, lokaler, utrustning, information och dokumentation i de avseenden och med den framförhållning som behövs för att Swedac ska kunna konstatera att kraven är uppfyllda.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett organ som ansöker om ackreditering eller är ackrediterat ska kunna visa att det uppfyller de krav som gäller för ackrediteringen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänna råd till 9 §",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Ett organ som ansöker om ackreditering eller är ackrediterat kan visa att det uppfyller de krav som gäller för ackrediteringen genom att ge tillgång till personal, lokaler, utrustning, information och dokumentation i de avseenden och med den framförhållning som behövs för att Swedac ska kunna konstatera att kraven är uppfyllda.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Ett organ som ansöker om ackreditering eller är ackrediterat ska ha överenskommelser med\nsina kunder genom vilka dessa förpliktar sig att tillåta att bedömarlag från Swedac får bevittna organets arbete hos kund, och\n      sina underleverantörer genom vilka dessa förpliktar sig att tillåta att bedömarlag från Swedac får bevittna underleverantörens arbete hos kund eller det ackrediterade organets bedömning av underleverantören.\nDetta gäller när så är tillämpligt och inte begränsas av annan lagstiftning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett organ som ansöker om ackreditering eller är ackrediterat ska ha överenskommelser med",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "sina kunder genom vilka dessa förpliktar sig att tillåta att bedömarlag från Swedac får bevittna organets arbete hos kund, och\n      sina underleverantörer genom vilka dessa förpliktar sig att tillåta att bedömarlag från Swedac får bevittna underleverantörens arbete hos kund eller det ackrediterade organets bedömning av underleverantören.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>sina kunder genom vilka dessa förpliktar sig att tillåta att bedömarlag från Swedac får bevittna organets arbete hos kund, och</li>\n      <li>sina underleverantörer genom vilka dessa förpliktar sig att tillåta att bedömarlag från Swedac får bevittna underleverantörens arbete hos kund eller det ackrediterade organets bedömning av underleverantören.</li>\n    </ol>"
+            },
+            {
+              "number": 3,
+              "text": "Detta gäller när så är tillämpligt och inte begränsas av annan lagstiftning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Ett organ som ansöker om ackreditering eller är ackrediterat ska tillåta att observatörer från EA, IAF och ILAC vid behov närvarar vid Swedacs bedömningar.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett organ som ansöker om ackreditering eller är ackrediterat ska tillåta att observatörer från EA, IAF och ILAC vid behov närvarar vid Swedacs bedömningar.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "Ett ackrediterat organ ska utfärda en ackrediterad rapport eller ett ackrediterat certifikat, intyg eller kalibreringsbevis om det finns ett föreskrivet eller avtalat krav på ackreditering, eller om det är avsett att någon annan än det ackrediterade organet och dess kund ska få tillgång till rapporten, certifikatet, intyget eller kalibreringsbeviset. Ett ackrediterat organ ska även i andra fall utfärda en ackrediterad rapport eller ett intyg eller kalibreringsbevis om annat inte avtalats mellan organet och dess kund.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett ackrediterat organ ska utfärda en ackrediterad rapport eller ett ackrediterat certifikat, intyg eller kalibreringsbevis om det finns ett föreskrivet eller avtalat krav på ackreditering, eller om det är avsett att någon annan än det ackrediterade organet och dess kund ska få tillgång till rapporten, certifikatet, intyget eller kalibreringsbeviset. Ett ackrediterat organ ska även i andra fall utfärda en ackrediterad rapport eller ett intyg eller kalibreringsbevis om annat inte avtalats mellan organet och dess kund.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "När ett organ hänvisar till sin ackreditering ska det använda tillämplig ackrediteringssymbol i bilaga 1 till dessa föreskrifter eller hänvisa till ackrediteringen i text. Om organet hänvisar till ackrediteringen i text ska informationen i texten motsvara den som följer av ackrediteringssymbolen.\nNär ett organ redovisar resultat i en ackrediterad rapport eller i ett ackrediterat certifikat, intyg eller kalibreringsbevis ska organet i anslutning till en hänvisning till ackreditering ange sitt namn, märke eller logotyp.\nAllmänna råd till 13 §\nNär organet hänvisar till ackrediteringen i text kan texten t.ex. utformas enligt följande. <Det ackrediterade organets namn> med ackrediteringsnummer <X> är ackrediterat av Swedac för <kontrollform> enligt <kontrollformsstandard>.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När ett organ hänvisar till sin ackreditering ska det använda tillämplig ackrediteringssymbol i bilaga 1 till dessa föreskrifter eller hänvisa till ackrediteringen i text. Om organet hänvisar till ackrediteringen i text ska informationen i texten motsvara den som följer av ackrediteringssymbolen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "När ett organ redovisar resultat i en ackrediterad rapport eller i ett ackrediterat certifikat, intyg eller kalibreringsbevis ska organet i anslutning till en hänvisning till ackreditering ange sitt namn, märke eller logotyp.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänna råd till 13 §",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "När organet hänvisar till ackrediteringen i text kan texten t.ex. utformas enligt följande. <Det ackrediterade organets namn> med ackrediteringsnummer <X> är ackrediterat av Swedac för <kontrollform> enligt <kontrollformsstandard>.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": null,
+          "content": "Swedacs ackrediteringsmärke har följande utseende och ska återges i blått med färgen CMYK 100.44.0.0, PMS 300, RGB 0.120.193 eller HEX #0078c1 och i gult med färgen CMYK 0.30.100.0, PMS 7409, RGB 253.185.19 eller HEX #fdb913, eller i svart eller vitt, mot en bakgrund med god kontrast.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Swedacs ackrediteringsmärke har följande utseende och ska återges i blått med färgen CMYK 100.44.0.0, PMS 300, RGB 0.120.193 eller HEX #0078c1 och i gult med färgen CMYK 0.30.100.0, PMS 7409, RGB 253.185.19 eller HEX #fdb913, eller i svart eller vitt, mot en bakgrund med god kontrast.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": null,
+          "content": "Ett ackrediterat organ får hänvisa till sin ackreditering endast om det sker i ett sådant sammanhang och på ett sådant sätt att missförstånd inte kan uppstå om att Swedac beviljat ackrediteringen, vilket organ som är ackrediterat, ackrediteringens omfattning eller dess innebörd.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett ackrediterat organ får hänvisa till sin ackreditering endast om det sker i ett sådant sammanhang och på ett sådant sätt att missförstånd inte kan uppstå om att Swedac beviljat ackrediteringen, vilket organ som är ackrediterat, ackrediteringens omfattning eller dess innebörd.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": null,
+          "content": "Ett ackrediterat organ ska i information till kunder och andra intressenter samt i rapporter, certifikat, intyg eller kalibreringsbevis tydliggöra i vilken utsträckning erbjudna tjänster kommer att utföras eller har utförts under ackreditering.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett ackrediterat organ ska i information till kunder och andra intressenter samt i rapporter, certifikat, intyg eller kalibreringsbevis tydliggöra i vilken utsträckning erbjudna tjänster kommer att utföras eller har utförts under ackreditering.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": null,
+          "content": "Om hänvisning till ackreditering görs på annat språk än svenska ska vedertagna termer som motsvarar de svenska termerna användas. Texten i Swedacs ackrediteringsmärke får inte översättas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om hänvisning till ackreditering görs på annat språk än svenska ska vedertagna termer som motsvarar de svenska termerna användas. Texten i Swedacs ackrediteringsmärke får inte översättas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": null,
+          "content": "I de fall Swedac har licensavtal om användning av ILAC:s MRA-märke eller IAF:s MLA-märke får ett ackrediterat organ hänvisa till internationella avtal om ömsesidigt erkännande genom användande av märkena i anslutning till en hänvisning till ackreditering med Swedacs ackrediteringssymbol.\nDet ackrediterade organet får använda ILAC:s MRA-märke eller IAF:s MLA-märke under förutsättning att Swedac beviljat detta. Ansökan om att göra detta ska lämnas till Swedac. Ansökan ska innehålla en bild av hur ILAC:s MRA-märke eller IAF:s MLA-märke ska vara ordnat i förhållande till Swedacs ackrediteringssymbol vid hänvisning.\nILAC:s MRA-märke har följande utseende och ska återges utan att proportionerna eller teckensnittet förändras och med texten i läsbar storlek. Märket ska återges i blått eller svart och på en bakgrund som inte försvårar läsning av märket. När blått används ska färgerna vara CMYK C100 M56 Y0 K0, eller Pantone Matching System 293C, eller RGB R0 G0 B229.\nIAF:s MLA-märke har följande utseende:",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I de fall Swedac har licensavtal om användning av ILAC:s MRA-märke eller IAF:s MLA-märke får ett ackrediterat organ hänvisa till internationella avtal om ömsesidigt erkännande genom användande av märkena i anslutning till en hänvisning till ackreditering med Swedacs ackrediteringssymbol.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Det ackrediterade organet får använda ILAC:s MRA-märke eller IAF:s MLA-märke under förutsättning att Swedac beviljat detta. Ansökan om att göra detta ska lämnas till Swedac. Ansökan ska innehålla en bild av hur ILAC:s MRA-märke eller IAF:s MLA-märke ska vara ordnat i förhållande till Swedacs ackrediteringssymbol vid hänvisning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "ILAC:s MRA-märke har följande utseende och ska återges utan att proportionerna eller teckensnittet förändras och med texten i läsbar storlek. Märket ska återges i blått eller svart och på en bakgrund som inte försvårar läsning av märket. När blått används ska färgerna vara CMYK C100 M56 Y0 K0, eller Pantone Matching System 293C, eller RGB R0 G0 B229.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "IAF:s MLA-märke har följande utseende:",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "19",
+          "heading": null,
+          "content": "Ett ackrediterat organ får också hänvisa i text till internationella avtal om ömsesidigt erkännande som Swedac ingått med EA, ILAC eller IAF. Det ackrediterade organet ska då tillsammans med en hänvisning till ackreditering enligt 18 § ange\n\"Ackrediterad av signatär till IAF:s MLA-avtal för _ _ _\", eller\n      \"Accredited by signatory to the IAF MLA for _ _ _ \".",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett ackrediterat organ får också hänvisa i text till internationella avtal om ömsesidigt erkännande som Swedac ingått med EA, ILAC eller IAF. Det ackrediterade organet ska då tillsammans med en hänvisning till ackreditering enligt 18 § ange",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "\"Ackrediterad av signatär till IAF:s MLA-avtal för _ _ _\", eller\n      \"Accredited by signatory to the IAF MLA for _ _ _ \".",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>\"Ackrediterad av signatär till IAF:s MLA-avtal för _ _ _\", eller</li>\n      <li>\"Accredited by signatory to the IAF MLA for _ _ _ \".</li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "20",
+          "heading": null,
+          "content": "Ett ackrediterat organ ska utan dröjsmål informera Swedac om förändringar som kan påverka dess möjligheter att uppfylla kraven för ackreditering eller villkoren för verksamhetens bedrivande.\nAllmänna råd till 20 §\nVäsentliga förändringar som påverkar organets förmåga att uppfylla kraven för ackreditering eller villkoren för verksamhetens bedrivande kan exempelvis vara",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett ackrediterat organ ska utan dröjsmål informera Swedac om förändringar som kan påverka dess möjligheter att uppfylla kraven för ackreditering eller villkoren för verksamhetens bedrivande.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänna råd till 20 §",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Väsentliga förändringar som påverkar organets förmåga att uppfylla kraven för ackreditering eller villkoren för verksamhetens bedrivande kan exempelvis vara",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "21",
+          "heading": null,
+          "content": "Ett ackrediterat organ ska ha rutiner som säkerställer att organets kunder får information om organets ackreditering återkallas helt eller delvis, eller om dess ackreditering begränsas, och detta kan antas ha betydelse för kunderna. Rutinerna ska också säkerställa att kunderna får information om vilka konsekvenser återkallelsen eller begränsningen av ackrediteringen får. Informationen ska lämnas på ett sätt och i en omfattning som är ändamålsenligt i det enskilda fallet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett ackrediterat organ ska ha rutiner som säkerställer att organets kunder får information om organets ackreditering återkallas helt eller delvis, eller om dess ackreditering begränsas, och detta kan antas ha betydelse för kunderna. Rutinerna ska också säkerställa att kunderna får information om vilka konsekvenser återkallelsen eller begränsningen av ackrediteringen får. Informationen ska lämnas på ett sätt och i en omfattning som är ändamålsenligt i det enskilda fallet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "22",
+          "heading": "Särskilda krav vid ackreditering med flexibel omfattning",
+          "content": "Ett organ som har beviljats ackreditering med flexibel omfattning ska tillämpa en dokumenterad process för utveckling och implementering som omfattar och säkerställer\nhur organet bestämmer krav på utförande och resultat,\n      hur organet utvecklar och validerar processen mot de ställda kraven,\n      hur organet verifierar att kraven har uppfyllts,\n      att det finns en ansvarsfördelning för hanteringen av ackrediteringen med flexibel omfattning och för de aktiviteter som utförs inom denna,\n      att kunden i samband med kontraktsgenomgång informeras om uppdraget kan omfattas av ackrediteringen med flexibel omfattning, och\n      att informationen om vad som omfattas av ackrediteringen är transparent och korrekt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett organ som har beviljats ackreditering med flexibel omfattning ska tillämpa en dokumenterad process för utveckling och implementering som omfattar och säkerställer",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "hur organet bestämmer krav på utförande och resultat,\n      hur organet utvecklar och validerar processen mot de ställda kraven,\n      hur organet verifierar att kraven har uppfyllts,\n      att det finns en ansvarsfördelning för hanteringen av ackrediteringen med flexibel omfattning och för de aktiviteter som utförs inom denna,\n      att kunden i samband med kontraktsgenomgång informeras om uppdraget kan omfattas av ackrediteringen med flexibel omfattning, och\n      att informationen om vad som omfattas av ackrediteringen är transparent och korrekt.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>hur organet bestämmer krav på utförande och resultat,</li>\n      <li>hur organet utvecklar och validerar processen mot de ställda kraven,</li>\n      <li>hur organet verifierar att kraven har uppfyllts,</li>\n      <li>att det finns en ansvarsfördelning för hanteringen av ackrediteringen med flexibel omfattning och för de aktiviteter som utförs inom denna,</li>\n      <li>att kunden i samband med kontraktsgenomgång informeras om uppdraget kan omfattas av ackrediteringen med flexibel omfattning, och</li>\n      <li>att informationen om vad som omfattas av ackrediteringen är transparent och korrekt.</li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "23",
+          "heading": null,
+          "content": "Organet ska ha en lista över de aktiviteter som godkänts av organet och som kan erbjudas under ackreditering med flexibel omfattning. Listan ska innehålla de uppgifter som anges i bilaga 2 till denna författning och vara tillgänglig för allmänheten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Organet ska ha en lista över de aktiviteter som godkänts av organet och som kan erbjudas under ackreditering med flexibel omfattning. Listan ska innehålla de uppgifter som anges i bilaga 2 till denna författning och vara tillgänglig för allmänheten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "24",
+          "heading": "Särskilda krav vid ackreditering av certifieringsorgan",
+          "content": "En certifiering som utfördes innan beslutet om ackreditering meddelades, gäller som en certifiering under ackreditering om certifieringsorganet efter en granskning kan konstatera att de förutsättningar som gäller för certifiering under ackreditering är uppfyllda och ett ackrediterat certifikat därefter har utfärdats.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En certifiering som utfördes innan beslutet om ackreditering meddelades, gäller som en certifiering under ackreditering om certifieringsorganet efter en granskning kan konstatera att de förutsättningar som gäller för certifiering under ackreditering är uppfyllda och ett ackrediterat certifikat därefter har utfärdats.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "25",
+          "heading": null,
+          "content": "I de fall ett ackrediterat certifieringsorgan har rätt att medge att en kund, som erhållit certifiering av sitt ledningssystem eller av en produkt, återger certifieringsorganets logotyp eller certifieringsmärke i kombination med ackrediteringssymbolen ska certifieringsorganet ha en policy och rutiner för sådan användning om ett sådant medgivande lämnas.\nEtt certifieringsorgan som har lämnat ett medgivande enligt första stycket ska bevaka att ackrediteringssymbolen inte används i ett sådant sammanhang eller på ett sådant sätt att det kan leda till missförstånd om ackrediteringens omfattning eller innebörd.\nOm certifieringsorganet får kännedom om att ackrediteringssymbolen används i ett sådant sammanhang eller på ett sådant sätt som anges i andra stycket, ska organet kräva rättelse och informera Swedac om det inträffade.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I de fall ett ackrediterat certifieringsorgan har rätt att medge att en kund, som erhållit certifiering av sitt ledningssystem eller av en produkt, återger certifieringsorganets logotyp eller certifieringsmärke i kombination med ackrediteringssymbolen ska certifieringsorganet ha en policy och rutiner för sådan användning om ett sådant medgivande lämnas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ett certifieringsorgan som har lämnat ett medgivande enligt första stycket ska bevaka att ackrediteringssymbolen inte används i ett sådant sammanhang eller på ett sådant sätt att det kan leda till missförstånd om ackrediteringens omfattning eller innebörd.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Om certifieringsorganet får kännedom om att ackrediteringssymbolen används i ett sådant sammanhang eller på ett sådant sätt som anges i andra stycket, ska organet kräva rättelse och informera Swedac om det inträffade.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "26",
+          "heading": null,
+          "content": "När ett certifieringsorgan använder sig av informations- och kommunikationsteknologi för att förenkla revisionen eller för att genomföra revisionen utan närvaro på plats ska åtgärder vidtas för att säkerställa tillräcklig effektivitet av revisionsinsatserna. Dessa åtgärder ska inkludera:\natt certifieringsorganet har träffat en överenskommelse om arrangemanget med kunden,\n      att det har genomförts och dokumenterats en riskanalys beträffande effektiviteten av revisionsinsatserna, samt att nödvändiga åtgärder vidtagits för att säkerställa effektivitet av revisionen, och\n      att det i revisionsrapporten framgår i vilken omfattning och på vilket sätt det utförts revisionsinsatser baserade på informations- och kommunikationsteknologi för att förenkla revisionen eller för att genomföra revisionen utan närvaro på plats.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När ett certifieringsorgan använder sig av informations- och kommunikationsteknologi för att förenkla revisionen eller för att genomföra revisionen utan närvaro på plats ska åtgärder vidtas för att säkerställa tillräcklig effektivitet av revisionsinsatserna. Dessa åtgärder ska inkludera:",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "att certifieringsorganet har träffat en överenskommelse om arrangemanget med kunden,\n      att det har genomförts och dokumenterats en riskanalys beträffande effektiviteten av revisionsinsatserna, samt att nödvändiga åtgärder vidtagits för att säkerställa effektivitet av revisionen, och\n      att det i revisionsrapporten framgår i vilken omfattning och på vilket sätt det utförts revisionsinsatser baserade på informations- och kommunikationsteknologi för att förenkla revisionen eller för att genomföra revisionen utan närvaro på plats.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>att certifieringsorganet har träffat en överenskommelse om arrangemanget med kunden,</li>\n      <li>att det har genomförts och dokumenterats en riskanalys beträffande effektiviteten av revisionsinsatserna, samt att nödvändiga åtgärder vidtagits för att säkerställa effektivitet av revisionen, och</li>\n      <li>att det i revisionsrapporten framgår i vilken omfattning och på vilket sätt det utförts revisionsinsatser baserade på informations- och kommunikationsteknologi för att förenkla revisionen eller för att genomföra revisionen utan närvaro på plats.</li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "27",
+          "heading": "Särskilda krav vid ackreditering av certifieringsorgan för ledningssystem",
+          "content": "Ett certifieringsorgan får ta över ett giltigt ackrediterat certifikat endast om det överlåtande certifieringsorganet är ackrediterat av ett ackrediteringsorgan som är signatär till IAF:s MLA-avtal på nivå 3, samt nivå 4 och 5 när så är tillämpligt. En överlåtelse av certifikatet får även göras om det överlåtande certifieringsorganets ackreditering har upphört att gälla, dock endast om det sker senast inom sex månader från det att ackrediteringen upphört och innan certifikatets giltighetstid löpt ut.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett certifieringsorgan får ta över ett giltigt ackrediterat certifikat endast om det överlåtande certifieringsorganet är ackrediterat av ett ackrediteringsorgan som är signatär till IAF:s MLA-avtal på nivå 3, samt nivå 4 och 5 när så är tillämpligt. En överlåtelse av certifikatet får även göras om det överlåtande certifieringsorganets ackreditering har upphört att gälla, dock endast om det sker senast inom sex månader från det att ackrediteringen upphört och innan certifikatets giltighetstid löpt ut.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "28",
+          "heading": null,
+          "content": "Innan ett certifieringsorgan tar över ett certifikat ska det genomföra en granskning av certifikatet och därvid kunna konstatera att kraven för att utfärda ett certifikat är uppfyllda. Granskningen ska i förekommande fall omfatta kvarvarande avvikelser, förutsättningar för att upprätta en revisionsplan, klagomål som det överlåtande certifieringsorganet tagit emot och tillsynsåtgärder från andra myndigheter mot det överlåtande certifieringsorganet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Innan ett certifieringsorgan tar över ett certifikat ska det genomföra en granskning av certifikatet och därvid kunna konstatera att kraven för att utfärda ett certifikat är uppfyllda. Granskningen ska i förekommande fall omfatta kvarvarande avvikelser, förutsättningar för att upprätta en revisionsplan, klagomål som det överlåtande certifieringsorganet tagit emot och tillsynsåtgärder från andra myndigheter mot det överlåtande certifieringsorganet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "29",
+          "heading": null,
+          "content": "När ett certifieringsorgan får vetskap om att en kund vill överföra ett utfärdat certifikat till ett annat certifieringsorgan ska det samarbeta med det övertagande certifieringsorganet i den utsträckning som behövs för att säkerställa en problemfri överföring.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "När ett certifieringsorgan får vetskap om att en kund vill överföra ett utfärdat certifikat till ett annat certifieringsorgan ska det samarbeta med det övertagande certifieringsorganet i den utsträckning som behövs för att säkerställa en problemfri överföring.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "30",
+          "heading": null,
+          "content": "Ett certifieringsorgan ska meddela Swedac när det avser att ta över ett certifikat som utfärdats av ett certifieringsorgan vars ackreditering har upphört. Det övertagande certifieringsorganet ska också informera Swedac om det överlåtande certifieringsorganet inte har samarbetat med det övertagande certifieringsorganet vid överlåtelsen och om det överlåtande certifieringsorganet tillfälligt eller slutligt har återkallat certifikat utan giltigt skäl.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett certifieringsorgan ska meddela Swedac när det avser att ta över ett certifikat som utfärdats av ett certifieringsorgan vars ackreditering har upphört. Det övertagande certifieringsorganet ska också informera Swedac om det överlåtande certifieringsorganet inte har samarbetat med det övertagande certifieringsorganet vid överlåtelsen och om det överlåtande certifieringsorganet tillfälligt eller slutligt har återkallat certifikat utan giltigt skäl.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "32",
+          "heading": null,
+          "content": "Ett ackrediterat organ för certifiering av ledningssystem som använder IAF:s CERTSEARCH-märke ska använda märket endast på en webbplats där det ackrediterade organet närmare beskriver eller marknadsför sina ackrediterade tjänster. Det ackrediterade organet får inte använda IAF:s CERTSEARCH-märke på ett sätt som är vilseledande eller som kan leda till missuppfattningar om ackrediteringsomfattningen.\nEtt ackrediterat organ för certifiering av ledningssystem som använder IAF:s CERTSEARCH-märke ska ha avtal med sina kunder som säkerställer att kunderna använder IAF:s CERTSEARCH-märke på ett korrekt sätt och som innehåller information om att det ackrediterade organet kommer att återkalla certifikatet om kunden använder IAF:s CERTSEARCH-märke på ett felaktigt sätt. I avtalet ska anges att kunden endast får använda märket på en webbplats där kunden närmare beskriver eller marknadsför sina tjänster mot bakgrund av sitt ackrediterade certifikat för ett visst ledningssystem samt att kunden inte får använda IAF:s CERT-SEARCH-märke på ett sätt som är vilseledande eller som kan leda till missuppfattningar om certifieringsomfattningen.\nIAF:s CERTSEARCH-märke har följande utseende:",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett ackrediterat organ för certifiering av ledningssystem som använder IAF:s CERTSEARCH-märke ska använda märket endast på en webbplats där det ackrediterade organet närmare beskriver eller marknadsför sina ackrediterade tjänster. Det ackrediterade organet får inte använda IAF:s CERTSEARCH-märke på ett sätt som är vilseledande eller som kan leda till missuppfattningar om ackrediteringsomfattningen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ett ackrediterat organ för certifiering av ledningssystem som använder IAF:s CERTSEARCH-märke ska ha avtal med sina kunder som säkerställer att kunderna använder IAF:s CERTSEARCH-märke på ett korrekt sätt och som innehåller information om att det ackrediterade organet kommer att återkalla certifikatet om kunden använder IAF:s CERTSEARCH-märke på ett felaktigt sätt. I avtalet ska anges att kunden endast får använda märket på en webbplats där kunden närmare beskriver eller marknadsför sina tjänster mot bakgrund av sitt ackrediterade certifikat för ett visst ledningssystem samt att kunden inte får använda IAF:s CERT-SEARCH-märke på ett sätt som är vilseledande eller som kan leda till missuppfattningar om certifieringsomfattningen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "IAF:s CERTSEARCH-märke har följande utseende:",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "33",
+          "heading": "Särskilda krav vid ackreditering av anmälda organ",
+          "content": "Ett ackrediterat organ som också är ett anmält organ och ska ange det identifikationsnummer som tilldelats av den Europeiska kommissionen ska samtidigt hänvisa till ackreditering enligt dessa föreskrifter.\nDetta gäller även ett organ som är anmält som erkänt tredjepartsorgan till Europeiska kommissionen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett ackrediterat organ som också är ett anmält organ och ska ange det identifikationsnummer som tilldelats av den Europeiska kommissionen ska samtidigt hänvisa till ackreditering enligt dessa föreskrifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Detta gäller även ett organ som är anmält som erkänt tredjepartsorgan till Europeiska kommissionen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "34",
+          "heading": "Övriga bestämmelser",
+          "content": "Bestämmelser om att ett ackrediterat organ ska betala avgift till Swedac finns i 21 § lagen (2011:791) om ackreditering och teknisk kontroll. Bestämmelser om sådana avgifter finns i Swedacs avgiftsföreskrifter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om att ett ackrediterat organ ska betala avgift till Swedac finns i 21 § lagen (2011:791) om ackreditering och teknisk kontroll. Bestämmelser om sådana avgifter finns i Swedacs avgiftsföreskrifter.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "35",
+          "heading": null,
+          "content": "Swedac kan, i enskilda fall och om det finns särskilda skäl, medge undantag från tillämpningen av dessa föreskrifter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Swedac kan, i enskilda fall och om det finns särskilda skäl, medge undantag från tillämpningen av dessa föreskrifter.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "STAFS 2020:1",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "På Swedacs vägnar",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "ULF HAMMARSTRÖM",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Kristina Hallman",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "STAFS 2020:1",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

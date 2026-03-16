@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (1946:817) om bevisupptagning vid utländsk domstol",
+  "documentNumber": "SFS 1946:817",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "I mål eller ärende vid en svensk domstol får domstolen besluta att bevis ska tas upp vid en utländsk domstol. Sådan bevisupptagning får avse syn, skriftligt bevis eller förhör med vittne, sakkunnig, part under sanningsförsäkran, målsägande eller den som avses i 36 kap. 1 § andra eller tredje styckena rättegångsbalken.\nDenna lag tillämpas inte om lagen (2000:562) om internationell rättslig hjälp i brottmål, Europaparlamentets och rådets förordning (EU) 2020/1783 av den 25 november 2020 om samarbete mellan medlemsstaternas domstolar i fråga om bevisupptagning i mål och ärenden av civil eller kommersiell natur eller\nom en europeisk utredningsorder är tillämplig.",
+          "amendedBy": "Lag (2022:623)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I mål eller ärende vid en svensk domstol får domstolen besluta att bevis ska tas upp vid en utländsk domstol. Sådan bevisupptagning får avse syn, skriftligt bevis eller förhör med vittne, sakkunnig, part under sanningsförsäkran, målsägande eller den som avses i 36 kap. 1 § andra eller tredje styckena rättegångsbalken.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Denna lag tillämpas inte om lagen (2000:562) om internationell rättslig hjälp i brottmål, Europaparlamentets och rådets förordning (EU) 2020/1783 av den 25 november 2020 om samarbete mellan medlemsstaternas domstolar i fråga om bevisupptagning i mål och ärenden av civil eller kommersiell natur eller",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "om en europeisk utredningsorder är tillämplig.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Enskild part som begärt bevisupptagning eller som eljest enligt lag har att utgiva kostnaden därför åligge att inom tid som honom av rätten förelägges antingen till rätten avlämna skriftlig förbindelse av två vederhäftiga, inom riket bosatta personer, vilka en för båda och båda för en borga såsom för egen skuld för den kostnad åtgärden kan medföra, eller ock erlägga det belopp vartill rätten finner kostnaden kunna skäligen beräknas. Försummas det och har bevisupptagningen begärts av part, vare frågan därom förfallen.\nVad nu sagts skall ej äga tillämpning, då kostnad för bevisupptagning skall utgivas av staten såsom part eller annars skall utgå av allmänna medel.",
+          "amendedBy": "Lag (1996:1627)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Enskild part som begärt bevisupptagning eller som eljest enligt lag har att utgiva kostnaden därför åligge att inom tid som honom av rätten förelägges antingen till rätten avlämna skriftlig förbindelse av två vederhäftiga, inom riket bosatta personer, vilka en för båda och båda för en borga såsom för egen skuld för den kostnad åtgärden kan medföra, eller ock erlägga det belopp vartill rätten finner kostnaden kunna skäligen beräknas. Försummas det och har bevisupptagningen begärts av part, vare frågan därom förfallen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vad nu sagts skall ej äga tillämpning, då kostnad för bevisupptagning skall utgivas av staten såsom part eller annars skall utgå av allmänna medel.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Då rätten beslutat bevisupptagning vid utländsk domstol samt, i fall som avses i 2 §, vad där är föreskrivet blivit fullgjort, utfärde rätten framställning till den utländska domstolen om bevisupptagningen enligt bestämmelser som regeringen meddelar.\nFramställning om bevisupptagning skall av rätten tillställas Justitiedepartementet för vidare åtgärd. Framställning enligt den i Haag den 18 mars 1970 dagtecknade konventionen om bevisupptagning i utlandet i mål och ärenden av civil eller kommersiell natur får i stället översändas till myndighet i den främmande staten som utsetts att mottaga sådan framställning (centralorganet). Där enligt regeringens förordnande omedelbar skriftväxling med den utländska domstolen må äga rum, översändes framställning om bevisupptagning till den domstolen.",
+          "amendedBy": "Lag (2000:566)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Då rätten beslutat bevisupptagning vid utländsk domstol samt, i fall som avses i 2 §, vad där är föreskrivet blivit fullgjort, utfärde rätten framställning till den utländska domstolen om bevisupptagningen enligt bestämmelser som regeringen meddelar.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Framställning om bevisupptagning skall av rätten tillställas Justitiedepartementet för vidare åtgärd. Framställning enligt den i Haag den 18 mars 1970 dagtecknade konventionen om bevisupptagning i utlandet i mål och ärenden av civil eller kommersiell natur får i stället översändas till myndighet i den främmande staten som utsetts att mottaga sådan framställning (centralorganet). Där enligt regeringens förordnande omedelbar skriftväxling med den utländska domstolen må äga rum, översändes framställning om bevisupptagning till den domstolen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Närmare bestämmelser om gäldande av kostnad för bevisupptagning som avses i denna lag meddelas av Konungen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Närmare bestämmelser om gäldande av kostnad för bevisupptagning som avses i denna lag meddelas av Konungen.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1946:817",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

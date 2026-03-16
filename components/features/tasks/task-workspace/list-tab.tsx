@@ -65,6 +65,7 @@ import { cn } from '@/lib/utils'
 import {
   updateTasksBulk,
   deleteTasksBulk,
+  deleteTask,
   type TaskWithRelations,
   type TaskColumnWithCount,
 } from '@/app/actions/tasks'
@@ -84,6 +85,7 @@ import {
 import { DueDateEditor } from '@/components/features/document-list/table-cell-editors/due-date-editor'
 import { AssigneeEditor } from '@/components/features/document-list/table-cell-editors/assignee-editor'
 import { BulkActionBar } from './bulk-action-bar'
+import { TaskDeleteDialog } from '../task-delete-dialog'
 import { toast } from 'sonner'
 
 // ============================================================================
@@ -581,33 +583,8 @@ export function ListTab({
       {
         id: 'actions',
         header: '',
-        cell: ({ row: _row }) => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Tilldela
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Flag className="mr-2 h-4 w-4" />
-                Ändra prioritet
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Ta bort
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        cell: ({ row }) => (
+          <TaskRowActions task={row.original} onTasksDelete={onTasksDelete} />
         ),
         enableSorting: false,
         enableResizing: false,
@@ -986,6 +963,79 @@ export function ListTab({
         </Table>
       </div>
     </div>
+  )
+}
+
+// ============================================================================
+// Task Row Actions (extracted for state management)
+// ============================================================================
+
+function TaskRowActions({
+  task,
+  onTasksDelete,
+}: {
+  task: TaskWithRelations
+  onTasksDelete: (_taskIds: string[]) => void
+}) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    // Optimistic delete via parent
+    onTasksDelete([task.id])
+
+    const result = await deleteTask(task.id)
+    if (result.success) {
+      toast.success('Uppgift raderad')
+    } else {
+      toast.error('Kunde inte radera uppgift', {
+        description: result.error,
+      })
+    }
+    setIsDeleting(false)
+    setDeleteDialogOpen(false)
+  }
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 opacity-0 group-hover:opacity-100"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Tilldela
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Flag className="mr-2 h-4 w-4" />
+            Ändra prioritet
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="text-destructive"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Ta bort
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <TaskDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        taskTitle={task.title}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
+    </>
   )
 }
 

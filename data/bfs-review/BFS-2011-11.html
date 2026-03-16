@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2011:11</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2011-11">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2011:11</p>
+      <p class="text">EVP 3</p>
+      <p class="text">Boverkets föreskrifter och allmänna råd om effektivitetskrav för nya värmepannor som eldas med flytande eller gasformigt bränsle</p>
+    </h1>
+    <p class="text">Utkom från trycket den 26 april 2011</p>
+    <p class="text">beslutade den 19 april 2011.</p>
+    <p class="text">Boverket föreskriver<sup class="footnote-ref" data-note="1" title="Jämför rådets direktiv 92/42/EEG av den 21 maj 1992 om effektivitetskrav för nya värmepannor som eldas med flytande eller gasformigt bränsle, EGT L 167, 22. 6. 92, s. 17 (Celex 392L0042), senast ändrat genom rådets direktiv 2008/28/EG, EUT L 81, 20. 3. 2008, s. 48 (Celex 32008L0028).">1</sup> följande med stöd av 10 kap.16 § plan- och byggförordningen (2011:338) samt 7 § förordningen (2005:894) om teknisk kontroll.</p>
+  </div>
+  <div class="body">
+    <section class="kapitel" id="BFS2011-11_K1">
+      <h2 class="kapitel-rubrik">1 Kap. Tillämpningsområde, definitioner m.m.</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K1_P1" name="BFS2011-11_K1_P1">1 §</a>
+      </h3>
+      <p class="text">Dessa föreskrifter syftar till effektivare energianvändning och ett varsamt utnyttjande av naturresurserna genom att för vissa värmepannor precisera tekniska krav på verkningsgrad m.m. som överensstämmer med de gemensamma krav som ställs inom Europeiska unionen.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K1_P2" name="BFS2011-11_K1_P2">2 §</a>
+      </h3>
+      <p class="text">Dessa föreskrifter gäller nya pannor m.m. med en märkeffekt på minst 4 kW och högst 400 kW som eldas med flytande eller gasformiga bränslen.</p>
+      <p class="text">Föreskrifterna gäller även pannor som kombinerar sådan eldning med möjlighet till elektrisk uppvärmning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K1_P3" name="BFS2011-11_K1_P3">3 §</a>
+      </h3>
+      <p class="text">Dessa föreskrifter gäller vare sig</p>
+      <ol type="1">
+        <li>pannor som kan eldas med olika typer av bränsle, inklusive fasta bränslen,</li>
+        <li>genomströmningsapparat för beredning av varmvatten,</li>
+        <li>pannor konstruerade för att eldas med bränslen vars egenskaper avsevärt skiljer sig från egenskaperna hos de bränslen i vätskeform och gasform som vanligen används,</li>
+        <li>kaminer och anordningar som huvudsakligen är avsedda att värma upp de lokaler där de är installerade och som samtidigt, som en sidofunktion, framställer varmvatten för centralvärme och för tappvarmvatten,</li>
+        <li>anordningar med en märkeffekt som är mindre än 6 kW, med självcirkulation och som uteslutande är konstruerade för att framställa tappvarmvatten,</li>
+        <li>specialtillverkade pannor, eller</li>
+        <li>pannor som kan användas vid kraftvärmedrift.</li>
+      </ol>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Således undantas t.ex. pannor som eldas med kombinationerna olja/fastbränsle och olja/gas och bränslen som industriavfall, biogas m.m. Föreskrifter och allmänna råd om verkningsgrad för pannor m.m. som är undantagna finns i avsnitt 6, Boverkets Byggregler (BFS 2011:6).</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K1_P4" name="BFS2011-11_K1_P4">4 §</a>
+      </h3>
+      <p class="text">I denna författning används följande beteckningar med de betydelser som anges här. I övrigt gäller byggtermer enligt Tekniska Nomenklaturcentralen (TNC 95).</p>
+      
+      <dl>
+        <dt><strong>Panna:</strong></dt>
+        <dd>den kombinerade enheten av varmvattenbehållare och brännare konstruerad för att överföra värme som frigörs vid förbränningen till vattnet.</dd>
+        
+        <dt><strong>Anordning:</strong></dt>
+        <dd>en behållare som är konstruerad för att en brännare ska kunna monteras och en brännare konstruerad för montering på en behållare.</dd>
+        
+        <dt><strong>Märkeffekt (uttryckt i kW):</strong></dt>
+        <dd>den högsta av tillverkaren fastställda och garanterade värmeeffekt som kan avges under kontinuerlig drift under förutsättning att den av tillverkaren angivna pannverkningsgraden uppfylls.</dd>
+        
+        <dt><strong>Pannverkningsgrad (uttryckt i %):</strong></dt>
+        <dd>förhållandet mellan den värmeeffekt som överförs till utgående värmebärare och produkten av bränslets effektiva värmevärde och förbrukning.</dd>
+        
+        <dt><strong>Genomsnittlig pannvattentemperatur:</strong></dt>
+        <dd>medelvärdet av vattentemperaturerna vid vattnets inlopp i och utlopp ur pannan.</dd>
+        
+        <dt><strong>Standardpanna:</strong></dt>
+        <dd>en panna vars genomsnittliga vattentemperatur kan begränsas genom konstruktionen.</dd>
+        
+        <dt><strong>Lågtemperaturpanna:</strong></dt>
+        <dd>en panna som kan fungera kontinuerligt med en matarvattentemperatur på 35–40 °C och som under vissa förhållanden bildar kondensat.</dd>
+        
+        <dt><strong>Gaskondensationspanna:</strong></dt>
+        <dd>en panna som är konstruerad för att kontinuerligt kondensera en stor del av den vattenånga som finns i förbränningsgaserna.</dd>
+        
+        <dt><strong>Anmält organ:</strong></dt>
+        <dd>organ som utsetts och anmälts till Europeiska kommissionen och de andra medlemsstaterna för uppgifter i samband med bedömning av överensstämmelse av tekniska krav enligt denna författning.</dd>
+        
+        <dt><strong>Tillverkare:</strong></dt>
+        <dd>förutom tillverkaren även den som representerar denne inom Europeiska unionen eller den importör som släpper ut produkten på marknaden.</dd>
+        
+        <dt><strong>Typ:</strong></dt>
+        <dd>det provexemplar som är representativt för den planerade tillverkningen och som tillverkare ställer till förfogande för det anmälda organets bedömning.</dd>
+      </dl>
+    </section>
+
+    <section class="kapitel" id="BFS2011-11_K2">
+      <h2 class="kapitel-rubrik">2 Kap. Tekniska krav m.m.</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K2_P1" name="BFS2011-11_K2_P1">1 §</a>
+      </h3>
+      <p class="text">För att pannor och anordningar ska få tas i bruk, ska de</p>
+      <ol type="1">
+        <li>uppfylla krav på pannverkningsgrad enligt 2 §,</li>
+        <li>ha bestyrkts överensstämma med kraven i 3 kap., samt</li>
+        <li>vara CE-märkta i enlighet med kraven i 7 kap.</li>
+      </ol>
+      <p class="text">För pannor som är avsedda att både värma upp utrymmen och samtidigt ge tappvarmvatten, gäller de krav på verkningsgrad som anges i 2 § endast för uppvärmningsfunktionen.</p>
+
+      <h3 id="BFS2011-11_verkningsgrad">Verkningsgrad</h3>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K2_P2" name="BFS2011-11_K2_P2">2 §</a>
+      </h3>
+      <p class="text">Pannor ska uppfylla tabellens krav på pannverkningsgrad både under drift vid märkeffekt (Pn), uttryckt i kW, och vid 30 % belastning med angivna pannvattentemperaturer.</p>
+
+      <table class="legal-table">
+        <thead>
+          <tr>
+            <th>Panntyp</th>
+            <th>Effektområde<br>kW</th>
+            <th colspan="2">Pannverkningsgrad vid märkeffekt (Pn)</th>
+            <th colspan="2">Pannverkningsgrad vid 30 % belastning (0.3 Pn)</th>
+          </tr>
+          <tr>
+            <th></th>
+            <th></th>
+            <th>Genomsnittstemperatur för pannvattnet (°C)</th>
+            <th>Krav på verkningsgrad</th>
+            <th>Genomsnittstemperatur för pannvattnet (°C)</th>
+            <th>Krav på verkningsgrad (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Standardpannor</td>
+            <td>4–400</td>
+            <td>70</td>
+            <td>≥ 84 + 2 log Pn</td>
+            <td>≥ 50</td>
+            <td>≥ 80 + 3 log Pn</td>
+          </tr>
+          <tr>
+            <td>Lågtemperaturpannor*</td>
+            <td>4–400</td>
+            <td>70</td>
+            <td>≥ 87,5 + 1,5 log Pn</td>
+            <td>40</td>
+            <td>≥ 87,5 + 1,5 log Pn</td>
+          </tr>
+          <tr>
+            <td>Gaseldade kondensationspannor</td>
+            <td>4–400</td>
+            <td>70</td>
+            <td>≥ 91 + 1 log Pn</td>
+            <td>30**</td>
+            <td>≥ 97 + 1 log Pn</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text">* Inklusive kondensationspannor för flytande bränsle.</p>
+      <p class="text">** Matarvattentemperatur</p>
+
+      <h4 id="BFS2011-11_provningsmetoder">Provningsmetoder</h4>
+      
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Provning av pannor kan utföras enligt SS-EN 303-2 och SS-EN 304 med tillägg för parametrar och tabellvärden enligt 2 §.</p>
+      </div>
+    </section>
+
+    <section class="kapitel" id="BFS2011-11_K3">
+      <h2 class="kapitel-rubrik">3 Kap. Överensstämmelse med tekniska krav</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K3_P1" name="BFS2011-11_K3_P1">1 §</a>
+      </h3>
+      <p class="text">För serietillverkade pannor som eldas med flytande bränsle ska överensstämmelsen med de tekniska kraven säkerställas och bekräftas genom</p>
+      <ol type="1">
+        <li>EG-typkontroll av verkningsgraden för en panntyp enligt 4 kap., och</li>
+        <li>EG-försäkran om att pannorna överensstämmer med godkänd typ enligt 5 kap.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K3_P2" name="BFS2011-11_K3_P2">2 §</a>
+      </h3>
+      <p class="text">För serietillverkade pannor som eldas med gasformiga bränslen ska vid bedömning av verkningsgradens överensstämmelse, samma förfarande användas som gäller vid bedömningen av säkerhetskrav enligt Sprängämnesinspektionens föreskrifter (SÄIFS 2000:6)<sup class="footnote-ref" data-note="2" title="Myndigheten för samhällsskydd och beredskap har tagit över ansvaret för SÄIFS 2000:6.">2</sup>.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K3_P3" name="BFS2011-11_K3_P3">3 §</a>
+      </h3>
+      <p class="text">När brännare, eller pannor utan brännare, förs ut på marknaden separat ska de åtföljas av en EG-försäkran om överensstämmelse med godkänd typ. Denna ska dessutom ange de tekniska förutsättningar som efter hopmontering till panna gör att kombinationen uppnår den pannverkningsgrad som anges i 2 kap. 2 §.</p>
+    </section>
+
+    <h3 id="BFS2011-11_forfaranden-for-att-bedoma-sakerstalla-och-bekrafta-overensstammelse-med-kraven">Förfaranden för att bedöma, säkerställa och bekräfta överensstämmelse med kraven</h3>
+
+    <section class="kapitel" id="BFS2011-11_K4">
+      <h2 class="kapitel-rubrik">4 Kap. EG-typkontroll genom anmälda organ (modul B)</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K4_P1" name="BFS2011-11_K4_P1">1 §</a>
+      </h3>
+      <p class="text">EG-typkontroll (modul B i bilaga 1) är den del av förfarandet då ett anmält organ förvissar sig om och intygar att ett för den planerade tillverkningen representativt provexemplar uppfyller tillämpliga bestämmelser i denna författning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K4_P2" name="BFS2011-11_K4_P2">2 §</a>
+      </h3>
+      <p class="text">Ansökan om EG-typkontroll ska lämnas in av tillverkaren till det anmälda organ som hon eller han väljer. Ansökan ska innehålla</p>
+      <ol type="1">
+        <li>tillverkarens namn och adress samt i förekommande fall namn och adress för tillverkarens representant inom den Europeiska unionen,</li>
+        <li>skriftlig försäkran att samma ansökan inte har givits in till något annat anmält organ, och</li>
+        <li>den tekniska dokumentationen enligt 3 §.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K4_P3" name="BFS2011-11_K4_P3">3 §</a>
+      </h3>
+      <p class="text">Den tekniska dokumentationen ska göra det möjligt att bedöma hur produkten överensstämmer med kraven i dessa föreskrifter. Den ska omfatta produktens konstruktion, tillverkning och funktion i den mån det behövs för bedömningen. Den ska också, i den utsträckning det är av betydelse för bedömningen, innehålla</p>
+      <ol type="1">
+        <li>allmän typbeskrivning,</li>
+        <li>översiktliga konstruktions- och tillverkningsritningar samt scheman över exempelvis komponenter, delmonteringar och kretsar,</li>
+        <li>beskrivningar och förklaringar som behövs för att förstå dessa ritningar och scheman och hur produkten fungerar,</li>
+        <li>en lista över de standarder som eventuellt följs eller beskrivningar av de lösningar som har valts för att uppfylla de väsentliga kraven enligt denna författning,</li>
+        <li>resultat av gjorda konstruktionsberäkningar och genomförda undersökningar, och</li>
+        <li>provningsrapporter.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K4_P4" name="BFS2011-11_K4_P4">4 §</a>
+      </h3>
+      <p class="text">Sökanden ska till det anmälda organets förfogande ställa en typ (provexemplar) som är representativ för den planerade tillverkningen. Det anmälda organet får begära in ytterligare typer om så krävs för att genomföra provningsprogrammet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K4_P5" name="BFS2011-11_K4_P5">5 §</a>
+      </h3>
+      <p class="text">Det anmälda organet ska</p>
+      <ol type="1">
+        <li>granska den tekniska dokumentationen och förvissa sig om att typen är tillverkad i överensstämmelse med denna samt identifiera vilka delar som är konstruerade enligt gällande tillämpliga harmoniserade standarder i den mån sådana finns utarbetade och vilka delar som är konstruerade utan tillämpning av sådana standarder,</li>
+        <li>utföra eller låta utföra vederbörliga undersökningar och nödvändiga provningar för att, när standarder inte har följts, kontrollera om de lösningar som tillverkaren har valt uppfyller de tekniska kraven i denna författning, och</li>
+        <li>utföra eller låta utföra vederbörliga undersökningar och nödvändiga prov för att, när tillverkaren valt att följa tillämpliga standarder, kontrollera om dessa verkligen har följts.</li>
+      </ol>
+      <p class="text">Det anmälda organet ska i samråd med sökanden bestämma var undersökningar och nödvändiga provningar ska utföras.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K4_P6" name="BFS2011-11_K4_P6">6 §</a>
+      </h3>
+      <p class="text">Om typen uppfyller kraven, ska det anmälda organet utfärda ett EG-typintyg till sökanden. Intyget ska innehålla</p>
+      <ol type="1">
+        <li>tillverkarens namn och adress,</li>
+        <li>slutsatser av undersökningen, samt</li>
+        <li>de uppgifter som behövs för att identifiera den godkända typen.</li>
+      </ol>
+      <p class="text">Till intyget ska det bifogas en lista över de delar av den tekniska dokumentationen som är av betydelse. Det anmälda organet ska bevara en kopia av denna lista.</p>
+      <p class="text">Tillverkaren ska tillsammans med den tekniska dokumentationen bevara kopior av EG-typintyg och tillägg till dessa under minst tio år efter det att tillverkningen av produkten har upphört. Om varken tillverkaren eller någon som representerar honom eller henne finns i den Europeiska unionen ska skyldigheten att hålla den tekniska dokumentationen tillgänglig vila på den som släpper ut produkten på marknaden (importören).</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K4_P7" name="BFS2011-11_K4_P7">7 §</a>
+      </h3>
+      <p class="text">Det anmälda organet ska utförligt motivera ett avslag på en ansökan om typintyg.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K4_P8" name="BFS2011-11_K4_P8">8 §</a>
+      </h3>
+      <p class="text">Sökanden ska underrätta det anmälda organ som bevarar den tekniska dokumentationen för EG-typintyget om alla ändringar av den godkända produkten.</p>
+      <p class="text">Det krävs ett nytt godkännande av produkten om ändringarna kan påverka överensstämmelsen med de tekniska krav och övriga villkor för att få använda produkten som framgår av 2 kap. Det nya godkännandet utfärdas i form av ett tillägg till det ursprungliga EG-typintyget.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K4_P9" name="BFS2011-11_K4_P9">9 §</a>
+      </h3>
+      <p class="text">Varje anmält organ ska till övriga anmälda organ lämna information av betydelse om utfärdade eller återkallade EG-typintyg och tillägg till sådana. Övriga anmälda organ har rätt att få kopior av EG-typintyg och tillägg till dessa. Intygens bilagor ska stå till deras förfogande.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2011-11_K5">
+      <h2 class="kapitel-rubrik">5 Kap. Tillverkarens säkerställande av överensstämmelse med typ och EG-försäkran om överensstämmelse med typ</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P1" name="BFS2011-11_K5_P1">1 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska säkerställa och försäkra att produkten</p>
+      <ol type="1">
+        <li>överensstämmer med typen enligt beskrivningen i EG-typintyget, och att</li>
+        <li>produkten uppfyller tillämpliga krav i denna författning.</li>
+      </ol>
+      <p class="text">Detta kallas bedömning av överensstämmelse med typ. Bedömningen kan ske på följande sätt</p>
+      <ol type="1">
+        <li>Enligt bestämmelserna i 3–5 §§ med stickprovskontroll (modul C, se bilaga 1),</li>
+        <li>med kvalitetssäkring av produktionen enligt 6–18 §§ (modul D, se bilagan), eller</li>
+        <li>med kvalitetssäkring av produkten enligt 19–31 §§ (modul E, se bilaga 1).</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P2" name="BFS2011-11_K5_P2">2 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska låta anbringa CE-märkningen på varje apparat samt upprätta en skriftlig försäkran om överensstämmelse. I försäkran ska tillverkaren även ange identifikationsnumret för det anmälda organ som ansvarar för kontroll enligt 13–15 §§ eller 26–28 §§.</p>
+
+      <h4 id="BFS2011-11_kontroll-av-produkten-genom-stickprov-modul-c">Kontroll av produkten genom stickprov (modul C)</h4>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P3" name="BFS2011-11_K5_P3">3 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska vidta alla de åtgärder som behövs för att det i tillverkningsprocessen ska säkerställas att de tillverkade produkterna överensstämmer med typen enligt beskrivningen i EG-typintyget och med kraven på verkningsgrad enligt denna författning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P4" name="BFS2011-11_K5_P4">4 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska bevara en kopia av försäkran om överensstämmelse under minst 10 år efter det att tillverkningen av produkten har upphört. Om varken tillverkaren eller någon som representerar honom finns inom Europeiska unionen ska skyldigheten att hålla den tekniska dokumentationen tillgänglig vila på den som släpper ut produkten på marknaden (importören).</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P5" name="BFS2011-11_K5_P5">5 §</a>
+      </h3>
+      <p class="text">Det anmälda organ som tillverkaren har valt ut, ska utföra eller låta utföra kontroll av produkten med slumpvisa mellanrum. Bland färdiga produkter ska det anmälda organet på plats ta ut ett tillräckligt antal provenheter, undersöka dessa och utföra de provningar som anges i eventuella standarder eller motsvarande provningar, för kontroll av om produkten överensstämmer med de tekniska kraven enligt denna författning.</p>
+      <p class="text">Om en eller flera av de kontrollerade produkterna inte uppfyller dessa krav, ska det anmälda organet vidta lämpliga åtgärder såsom att underrätta Boverket som utövar marknadskontroll av dessa produkter enligt 8 kap. 3 § 3 plan- och byggförordningen (2011:338). Bestämmelser om åtgärder som marknadskontrollmyndigheten får vidta finns i 11 kap. plan- och bygglagen (2010:900).</p>
+
+      <h4 id="BFS2011-11_kvalitetssakring-av-produktionen-modul-d">Kvalitetssäkring av produktionen (modul D)</h4>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P6" name="BFS2011-11_K5_P6">6 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska ansöka om att få sitt kvalitetssystem för den berörda produktionen bedömt hos ett anmält organ som han eller hon väljer. Ansökan ska innehålla</p>
+      <ol type="1">
+        <li>alla upplysningar av betydelse för den planerade produktkategorin,</li>
+        <li>dokumentation om kvalitetssystemet,</li>
+        <li>den tekniska dokumentationen för den godkända typen, och</li>
+        <li>en kopia av EG-typintyget.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P7" name="BFS2011-11_K5_P7">7 §</a>
+      </h3>
+      <p class="text">Kvalitetssystemet ska säkerställa att produkterna överensstämmer med typen enligt beskrivningen i EG-typintyget och med de tillämpliga kraven i denna författning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P8" name="BFS2011-11_K5_P8">8 §</a>
+      </h3>
+      <p class="text">Alla de faktorer, krav och bestämmelser som tillverkaren har tagit hänsyn till ska dokumenteras på ett systematiskt och överskådligt sätt i form av skriftliga riktlinjer, rutiner och anvisningar. Denna dokumentation av kvalitetssystemet ska möjliggöra en enhetlig tolkning av kvalitetssystemets program, planer, manualer och dokument.</p>
+      <p class="text">Dokumentationen ska framför allt innehålla en fullgod beskrivning av</p>
+      <ol type="1">
+        <li>uppsatta kvalitetsmål samt ledningens organisatoriska struktur, ansvar och befogenheter när det gäller produktkvalitet,</li>
+        <li>tekniker, processer och systematiska förfaranden som ska användas vid tillverkning, kvalitetskontroll och kvalitetssäkring,</li>
+        <li>undersökningar och provningar som ska utföras före, under och efter tillverkningen och hur ofta dessa ska utföras,</li>
+        <li>kvalitetsdokumenten, såsom granskningsrapporter och provningsresultat, kalibreringsresultat, redogörelser för berörd personals kvalifikationer osv., och</li>
+        <li>hur övervakning sker av att åsyftad produktkvalitet uppnås och att kvalitetssystemet fungerar effektivt.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P9" name="BFS2011-11_K5_P9">9 §</a>
+      </h3>
+      <p class="text">Det anmälda organet ska bedöma kvalitetssystemet för att avgöra om kraven i 7 och 8 §§ är uppfyllda. Överensstämmelse med dessa krav ska förutsättas för kvalitetssystem som följer tillämplig harmoniserad standard. Bland bedömarna ska minst en ha erfarenhet av bedömning inom berörd produktteknologi. Ett besök i tillverkarens lokaler ska ingå i bedömningsförfarandet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P10" name="BFS2011-11_K5_P10">10 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska åta sig att fullgöra de skyldigheter som är förenade med det godkända kvalitetssystemet och att vidmakthålla det så att det förblir ändamålsenligt och effektivt.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P11" name="BFS2011-11_K5_P11">11 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska underrätta det anmälda organ som har godkänt kvalitetssystemet om alla ändringar som planeras i systemet. Det anmälda organet ska ta ställning till ändringsförslag samt avgöra om systemet med sådana ändringar fortfarande uppfyller kraven i 7 och 8 §§ eller om en ny bedömning är nödvändig.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P12" name="BFS2011-11_K5_P12">12 §</a>
+      </h3>
+      <p class="text">Organet ska meddela tillverkaren sitt beslut om kvalitetssystemet godkänns eller inte. Organet ska då redovisa slutsatserna av undersökningen samt motiven till bedömningen. Detsamma gäller vid prövning av ändringar i systemet.</p>
+
+      <h4 id="BFS2011-11_det-anmalda-organets-kontroll">Det anmälda organets kontroll</h4>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P13" name="BFS2011-11_K5_P13">13 §</a>
+      </h3>
+      <p class="text">Det anmälda organet ska regelbundet genomföra kontroller för att försäkra sig om att tillverkaren fullgör de skyldigheter som är förenade med det godkända kvalitetssystemet och tillämpar det på rätt sätt. Det anmälda organet ska ge tillverkaren rapporter om kontrollerna.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P14" name="BFS2011-11_K5_P14">14 §</a>
+      </h3>
+      <p class="text">Det anmälda organet får besöka tillverkaren utan förvarning. I samband med sådana besök får det anmälda organet, om så behövs, utföra eller låta utföra provningar för att kontrollera att kvalitetssystemet fungerar på riktigt sätt.</p>
+      <p class="text">Det anmälda organet ska ge tillverkaren rapporter om genomförda besök och en provningsrapport över eventuella provningar.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P15" name="BFS2011-11_K5_P15">15 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska för kontrollen ge det anmälda organet tillträde till lokaler för tillverkning, kontroll, provning och lagring och ska vidare tillhandahålla all nödvändig information, särskilt om</p>
+      <ol type="1">
+        <li>dokumentation av kvalitetssystemet, och</li>
+        <li>kvalitetsdokumenten, såsom granskningsrapporter och provningsresultat, kalibreringsresultat, redogörelser för berörd personals kvalifikationer osv.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P16" name="BFS2011-11_K5_P16">16 §</a>
+      </h3>
+      <p class="text">Om kvalitetssystemet inte uppfyller kraven, får det anmälda organet återkalla godkännandet och då ska 12 § tillämpas.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P17" name="BFS2011-11_K5_P17">17 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska under minst 10 år efter det att tillverkningen av produkten har upphört kunna visa upp följande för marknadskontrollmyndigheterna</p>
+      <ol type="1">
+        <li>dokumentation som avses i 6 § 2,</li>
+        <li>dokumentation av ändringar som avses i 11 §, och</li>
+        <li>sådana beslut och rapporter från det anmälda organet som avses i 12, 13 och 14 §§.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P18" name="BFS2011-11_K5_P18">18 §</a>
+      </h3>
+      <p class="text">Varje anmält organ ska till övriga anmälda organ lämna upplysningar av betydelse om utfärdade och återkallade godkännanden av kvalitetssystem.</p>
+
+      <h4 id="BFS2011-11_kvalitetssakring-av-produkterna-modul-e">Kvalitetssäkring av produkterna (modul E)</h4>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P19" name="BFS2011-11_K5_P19">19 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska hos ett anmält organ, som han eller hon väljer ut, ansöka om att få kvalitetssystemet för sina pannor och anordningar bedömt. Ansökan ska innehålla</p>
+      <ol type="1">
+        <li>alla upplysningar av betydelse om den planerade kategorin av pannor eller anordningar,</li>
+        <li>dokumentation om kvalitetssystemet,</li>
+        <li>den tekniska dokumentationen för den godkända typen, och</li>
+        <li>en kopia av EG-typintyget.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P20" name="BFS2011-11_K5_P20">20 §</a>
+      </h3>
+      <p class="text">Inom ramen för kvalitetssystemet ska varje panna eller anordning undersökas och de provningar ska utföras som anges i eventuella standarder eller motsvarande provningar för kontroll av att produkten överensstämmer med de tekniska kraven i 2 kap.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P21" name="BFS2011-11_K5_P21">21 §</a>
+      </h3>
+      <p class="text">Alla de faktorer, krav och bestämmelser som tillverkaren har tagit hänsyn till ska dokumenteras på ett systematiskt och överskådligt sätt i form av skriftliga riktlinjer, rutiner och anvisningar. Denna dokumentation av kvalitetssystemet ska säkerställa en enhetlig tolkning av kvalitetssystemets program, planer, manualer och dokument.</p>
+      <p class="text">Dokumentationen ska framför allt innehålla en fullgod beskrivning av</p>
+      <ol type="1">
+        <li>uppsatta kvalitetsmål samt ledningens organisatoriska struktur, ansvar och befogenheter när det gäller produktkvalitet,</li>
+        <li>undersökningar och provningar som ska utföras efter tillverkningen,</li>
+        <li>hur övervakning ska ske av att kvalitetssystemet fungerar effektivt, och av</li>
+        <li>kvalitetsdokumenten, såsom granskningsrapporter och provningsresultat, kalibreringsresultat, redogörelser för berörd personals kvalifikationer osv.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P22" name="BFS2011-11_K5_P22">22 §</a>
+      </h3>
+      <p class="text">Det anmälda organet ska bedöma kvalitetssystemet för att avgöra om kraven i 20 och 21 §§ är uppfyllda. Överensstämmelse med dessa krav ska förutsättas för kvalitetssystem som följer tillämplig harmoniserad standard.</p>
+      <p class="text">Bland bedömarna ska minst en ha erfarenhet av bedömning inom berörd produktteknologi. Ett besök i tillverkarens lokaler ska ingå i bedömningsförfarandet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P23" name="BFS2011-11_K5_P23">23 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska åta sig att fullgöra de skyldigheter som är förenade med det godkända kvalitetssystemet och att vidmakthålla det på ett ändamålsenligt och effektivt sätt.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P24" name="BFS2011-11_K5_P24">24 §</a>
+      </h3>
+      <p class="text">Tillverkaren eller den som representerar honom eller henne ska underrätta det anmälda organ som har godkänt kvalitetssystemet om alla ändringar som planeras i systemet.</p>
+      <p class="text">Det anmälda organet ska ta ställning till ändringsförslag och avgöra om systemet med sådana ändringar fortfarande uppfyller kraven i 20 och 21 §§ eller om en ny bedömning är nödvändig.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P25" name="BFS2011-11_K5_P25">25 §</a>
+      </h3>
+      <p class="text">Organet ska meddela tillverkaren sitt beslut om kvalitetssystemet godkänns eller inte. Organet ska då redovisa slutsatserna av undersökningen samt motiven till bedömningen. Motsvarande gäller vid prövning av ändringar i systemet.</p>
+
+      <h4 id="BFS2011-11_det-anmalda-organets-kontroll-2">Det anmälda organets kontroll</h4>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P26" name="BFS2011-11_K5_P26">26 §</a>
+      </h3>
+      <p class="text">Det anmälda organet ska regelbundet genomföra kontroller för att försäkra sig om att tillverkaren vidmakthåller och tillämpar kvalitetssystemet och därmed fullgör de skyldigheter som är förenade med det godkända kvalitetssystemet. Tillverkaren ska få kontrollrapporter.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P27" name="BFS2011-11_K5_P27">27 §</a>
+      </h3>
+      <p class="text">Det anmälda organet får dessutom besöka tillverkaren utan förvarning. I samband med sådana besök får det anmälda organet, om så krävs, utföra eller låta utföra provningar för att kontrollera att kvalitetssystemet fungerar på ett riktigt sätt.</p>
+      <p class="text">Det anmälda organet ska ge tillverkaren rapporter om genomförda besök med en provningsrapport över eventuella provningar.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P28" name="BFS2011-11_K5_P28">28 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska för kontrollen ge det anmälda organet tillträde till lokaler för kontroll, provning och lagring och ska vidare tillhandahålla all nödvändig information, särskilt i följande avseenden</p>
+      <ol type="1">
+        <li>dokumentation av kvalitetssystemet,</li>
+        <li>teknisk dokumentation, och</li>
+        <li>kvalitetsdokumenten, såsom granskningsrapporter och provningsresultat, kalibreringsresultat, redogörelser för berörd personals kvalifikationer osv.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P29" name="BFS2011-11_K5_P29">29 §</a>
+      </h3>
+      <p class="text">Om kvalitetssystemet inte uppfyller kraven, får det anmälda organet återkalla godkännandet och då ska 25 § tillämpas.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P30" name="BFS2011-11_K5_P30">30 §</a>
+      </h3>
+      <p class="text">Tillverkaren ska under minst 10 år efter det att tillverkningen av pannan eller anordningen har upphört kunna visa upp följande för marknadskontrollmyndigheten</p>
+      <ol type="1">
+        <li>dokumentation som avses i 19 § 3,</li>
+        <li>dokumentation av ändringar som avses i 24 §, och</li>
+        <li>sådana beslut och rapporter från det anmälda organet som avses i 25–27 §§.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K5_P31" name="BFS2011-11_K5_P31">31 §</a>
+      </h3>
+      <p class="text">Varje anmält organ ska till övriga anmälda organ lämna upplysningar av betydelse om utfärdade och återkallade godkännanden av kvalitetssystem.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2011-11_K6">
+      <h2 class="kapitel-rubrik">6 Kap. Krav för att bli ett anmält organ</h2>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K6_P1" name="BFS2011-11_K6_P1">1 §</a>
+      </h3>
+      <p class="text">Organet, dess chef eller den personal som har ansvaret för att utföra verifieringsprovning får inte vara konstruktör, tillverkare, leverantör eller installatör av de anordningar som de ska kontrollera och inte heller vara representant för någon sådan part. De får vare sig delta direkt i konstruktion, tillverkning, försäljning eller underhåll av dessa pannor och anordningar eller representera parter som är engagerade i sådana aktiviteter. Detta utesluter inte att tekniska upplysningar kan utväxlas mellan tillverkaren och organet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K6_P2" name="BFS2011-11_K6_P2">2 §</a>
+      </h3>
+      <p class="text">Personalen ska utföra verifikationsprovningarna med den största yrkesintegritet och tekniska kompetens och måste stå fria från all påtryckning och påverkan, särskilt av ekonomisk art, som kan inverka på deras bedömning eller resultatet av kontrollen, speciellt från personer eller grupper av personer med intresse av verifieringsresultaten.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K6_P3" name="BFS2011-11_K6_P3">3 §</a>
+      </h3>
+      <p class="text">Organet ska ha den personal och de hjälpmedel som behövs för att på ett riktigt sätt kunna utföra de administrativa och tekniska uppgifterna i samband med verifieringen. Det måste också ha tillgång till den utrustning som behövs för speciell verifiering.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K6_P4" name="BFS2011-11_K6_P4">4 §</a>
+      </h3>
+      <p class="text">Den personal som genomför kontrollen ska ha</p>
+      <ol type="1">
+        <li>grundlig teknisk och yrkesmässig utbildning,</li>
+        <li>tillräcklig kunskap om kraven på de provningar de utför,</li>
+        <li>tillräcklig erfarenhet av sådana provningar, och</li>
+        <li>förmåga att upprätta de intyg, protokoll och rapporter som utgör bevis om provningen.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K6_P5" name="BFS2011-11_K6_P5">5 §</a>
+      </h3>
+      <p class="text">Personalens opartiskhet ska garanteras. Personalens lön får inte vara beroende av antalet utförda provningar eller av resultaten av sådana provningar.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2011-11_K7">
+      <h2 class="kapitel-rubrik">7 Kap. CE-märkning</h2>
+      
+      <h3 id="BFS2011-11_ce-markning-om-overensstammelse-med-kraven">CE-märkning om överensstämmelse med kraven</h3>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K7_P1" name="BFS2011-11_K7_P1">1 §</a>
+      </h3>
+      <p class="text">CE-märkning anger att pannor eller anordningar överensstämmer med kraven i denna författning och med övriga bestämmelser som rör medgivande till CE-märkning. Generella bestämmelser om CE-märkning finns i artikel 30.1–30.5 i Europaparlamentets och rådets förordning (EG) nr 765/2008 av den 9 juli 2008 om krav för ackreditering och marknadskontroll i samband med saluföring av produkter och upphävande av förordning (EEG) nr 393/93<sup class="footnote-ref" data-note="3" title="EUT L218, 13.8.2008, s. 30 (Celex 2008R0765).">3</sup> samt i lagen (1992:1534) om CE-märkning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2011-11_K7_P2" name="BFS2011-11_K7_P2">2 §</a>
+      </h3>
+      <p class="text">CE-märket ska fästas på pannorna på så sätt att märkningen är väl synlig, lättläst och inte kan utplånas.</p>
+      <p class="text">Anordningar som avses säljas separat måste vara CE-märkta och åtföljas av en EG-försäkran om överensstämmelse med godkänd typ som anger de parametrar som efter montering gör att de uppnår den nyttoverkningsgrad som framgår 2 kap. 2 §.</p>
+      <p class="text">Det är förbjudet att på pannor och anordningar fästa märkningar som kan vilseleda tredje man vad gäller CE-märkningens innebörd och utformning. Andra märkningar får anbringas på pannor och anordningar förutsatt att detta inte minskar CE-märkningens synlighet eller läslighet.</p>
+    </section>
+  </div>
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <ol type="1">
+      <li>Denna författning träder i kraft den 2 maj 2011.</li>
+      <li>Genom författningen upphävs Boverkets föreskrifter (BFS 1997:58) om effektivitetskrav för nya värmepannor som eldas med flytande eller gasformigt bränsle<sup class="footnote-ref" data-note="4" title="Senast ändrad (BFS 2006:5) EVP 2.">4</sup>.</li>
+      <li>CE-märkning som har skett före den 2 maj 2011 enligt den upphävda författningen har fortsatt giltighet under förutsättning att CE-märkningen överensstämmer med de då gällande kraven.</li>
+    </ol>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">JANNA VALIK</p>
+    <p class="text">Annika Wessel</p>
+  </footer>
+  <div class="appendices">
+    <h2>Bilaga 1</h2>
+    <p class="text"><strong>Principschema över Boverkets föreskrifter om effektivitetskrav för nya värmepannor som eldas med flytande eller gasformigt bränsle</strong></p>
+    <p class="text">[Bilaga 1 innehåller ett flödesschema som visar förfarandet för bedömning av överensstämmelse enligt denna författning, från tillverkare eller importör genom tekniska krav och provningsmetoder, EG-typkontroll och teknisk dokumentation, till valet mellan Modul C (stickprovskontroll), Modul D (kvalitetssäkring av produktionen) eller Modul E (kvalitetssäkring av produkten), och slutligen CE-märkning.]</p>
+  </div>
+</article></body></html>
+</body>
+</html>

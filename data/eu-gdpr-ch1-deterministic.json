@@ -1,0 +1,538 @@
+{
+  "number": "I",
+  "title": "KAPITEL I — Allmänna bestämmelser",
+  "sections": [
+    {
+      "number": "art1",
+      "heading": "Syfte",
+      "paragraphs": [
+        {
+          "number": null,
+          "text": "1.   I denna förordning fastställs bestämmelser om skydd för fysiska personer med avseende på behandlingen av personuppgifter och om det fria flödet av personuppgifter.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "2.   Denna förordning skyddar fysiska personers grundläggande rättigheter och friheter, särskilt deras rätt till skydd av personuppgifter.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "3.   Det fria flödet av personuppgifter inom unionen får varken begränsas eller förbjudas av skäl som rör skyddet för fysiska personer med avseende på behandlingen av personuppgifter.",
+          "role": "PARAGRAPH"
+        }
+      ]
+    },
+    {
+      "number": "art2",
+      "heading": "Materiellt tillämpningsområde",
+      "paragraphs": [
+        {
+          "number": null,
+          "text": "1.   Denna förordning ska tillämpas på sådan behandling av personuppgifter som helt eller delvis företas på automatisk väg samt på annan behandling än automatisk av personuppgifter som ingår i eller kommer att ingå i ett register.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "2.   Denna förordning ska inte tillämpas på behandling av personuppgifter som",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "a)",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "utgör ett led i en verksamhet som inte omfattas av unionsrätten,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "b)",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "medlemsstaterna utför när de bedriver verksamhet som omfattas av avdelning V kapitel 2 i EU-fördraget,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "c)",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "en fysisk person utför som ett led i verksamhet av rent privat natur eller som har samband med hans eller hennes hushåll,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "d)",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "behöriga myndigheter utför i syfte att förebygga, förhindra, utreda, avslöja eller lagföra brott eller verkställa straffrättsliga påföljder, i vilket även ingår att skydda mot samt förebygga och förhindra hot mot den allmänna säkerheten.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "3.   Förordning (EG) nr 45/2001 är tillämplig på den behandling av personuppgifter som sker i EU:s institutioner, organ och byråer. Förordning (EG) nr 45/2001 och de av unionens övriga rättsakter som är tillämpliga på sådan behandling av personuppgifter ska anpassas till principerna och bestämmelserna i denna förordning i enlighet med artikel 98.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "4.   Denna förordning påverkar inte tillämpningen av direktiv 2000/31/EG, särskilt bestämmelserna om tjänstelevererande mellanhänders ansvar i artiklarna 12–15 i det direktivet.",
+          "role": "PARAGRAPH"
+        }
+      ]
+    },
+    {
+      "number": "art3",
+      "heading": "Territoriellt tillämpningsområde",
+      "paragraphs": [
+        {
+          "number": null,
+          "text": "1.   Denna förordning ska tillämpas på behandlingen av personuppgifter inom ramen för den verksamhet som bedrivs av en personuppgiftsansvarig eller ett personuppgiftsbiträde som är etablerad i unionen, oavsett om behandlingen utförs i unionen eller inte.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "2.   Denna förordning ska tillämpas på behandling av personuppgifter som avser registrerade som befinner sig i unionen och som utförs av en personuppgiftsansvarig eller ett personuppgiftsbiträde som inte är etablerad i unionen, om behandlingen har anknytning till",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "a)",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "utbjudande av varor eller tjänster till sådana registrerade i unionen, oavsett om dessa varor eller tjänster erbjuds kostnadsfritt eller inte, eller",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "b)",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "övervakning av deras beteende så länge beteendet sker inom unionen.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "3.   Denna förordning ska tillämpas på behandling av personuppgifter som utförs av en personuppgiftsansvarig som inte är etablerad i unionen, men på en plats där en medlemsstats nationella rätt gäller enligt folkrätten.",
+          "role": "PARAGRAPH"
+        }
+      ]
+    },
+    {
+      "number": "art4",
+      "heading": "Definitioner",
+      "paragraphs": [
+        {
+          "number": null,
+          "text": "I denna förordning avses med",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "1.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "personuppgifter: varje upplysning som avser en identifierad eller identifierbar fysisk person (nedan kallad en registrerad), varvid en identifierbarfysisk person är en person som direkt eller indirekt kan identifieras särskilt med hänvisning till en identifierare som ett namn, ett identifikationsnummer, en lokaliseringsuppgift eller onlineidentifikatorer eller en eller flera faktorer som är specifika för den fysiska personens fysiska, fysiologiska, genetiska, psykiska, ekonomiska, kulturella eller sociala identitet,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "2.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "behandling: en åtgärd eller kombination av åtgärder beträffande personuppgifter eller uppsättningar av personuppgifter, oberoende av om de utförs automatiserat eller ej, såsom insamling, registrering, organisering, strukturering, lagring, bearbetning eller ändring, framtagning, läsning, användning, utlämning genom överföring, spridning eller tillhandahållande på annat sätt, justering eller sammanförande, begränsning, radering eller förstöring,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "3.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "begränsning av behandling: markering av lagrade personuppgifter med syftet att begränsa behandlingen av dessa i framtiden,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "4.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "profilering: varje form av automatisk behandling av personuppgifter som består i att dessa personuppgifter används för att bedöma vissa personliga egenskaper hos en fysisk person, i synnerhet för att analysera eller förutsäga denna fysiska persons arbetsprestationer, ekonomiska situation, hälsa, personliga preferenser, intressen, pålitlighet, beteende, vistelseort eller förflyttningar,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "5.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "pseudonymisering: behandling av personuppgifter på ett sätt som innebär att personuppgifterna inte längre kan tillskrivas en specifik registrerad utan att kompletterande uppgifter används, under förutsättning att dessa kompletterande uppgifter förvaras separat och är föremål för tekniska och organisatoriska åtgärder som säkerställer att personuppgifterna inte tillskrivs en identifierad eller identifierbar fysisk person,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "6.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "register: en strukturerad samling av personuppgifter som är tillgänglig enligt särskilda kriterier, oavsett om samlingen är centraliserad, decentraliserad eller spridd på grundval av funktionella eller geografiska förhållanden,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "7.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "personuppgiftsansvarig: en fysisk eller juridisk person, offentlig myndighet, institution eller annat organ som ensamt eller tillsammans med andra bestämmer ändamålen och medlen för behandlingen av personuppgifter; om ändamålen och medlen för behandlingen bestäms av unionsrätten eller medlemsstaternas nationella rätt kan den personuppgiftsansvarige eller de särskilda kriterierna för hur denne ska utses föreskrivas i unionsrätten eller i medlemsstaternas nationella rätt,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "8.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "personuppgiftsbiträde: en fysisk eller juridisk person, offentlig myndighet, institution eller annat organ som behandlar personuppgifter för den personuppgiftsansvariges räkning,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "9.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "mottagare: en fysisk eller juridisk person, offentlig myndighet, institution eller annat organ till vilket personuppgifterna utlämnas, vare sig det är en tredje part eller inte; offentliga myndigheter som kan komma att motta personuppgifter inom ramen för ett särskilt uppdrag i enlighet med unionsrätten eller medlemsstaternas nationella rätt ska dock inte betraktas som mottagare; offentliga myndigheters behandling av dessa uppgifter ska vara förenlig med tillämpliga bestämmelser för dataskydd beroende på behandlingens syfte,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "10.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "tredje part: en fysisk eller juridisk person, offentlig myndighet, institution eller organ som inte är den registrerade, den personuppgiftsansvarige, personuppgiftsbiträdet eller de personer som under den personuppgiftsansvariges eller personuppgiftsbiträdets direkta ansvar är behöriga att behandla personuppgifterna,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "11.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "samtycke av den registrerade: varje slag av frivillig, specifik, informerad och otvetydig viljeyttring, genom vilken den registrerade, antingen genom ett uttalande eller genom en entydig bekräftande handling, godtar behandling av personuppgifter som rör honom eller henne,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "12.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "personuppgiftsincident: en säkerhetsincident som leder till oavsiktlig eller olaglig förstöring, förlust eller ändring eller till obehörigt röjande av eller obehörig åtkomst till de personuppgifter som överförts, lagrats eller på annat sätt behandlats,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "13.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "genetiska uppgifter: alla personuppgifter som rör nedärvda eller förvärvade genetiska kännetecken för en fysisk person, vilka ger unik information om denna fysiska persons fysiologi eller hälsa och vilka framför allt härrör från en analys av ett biologiskt prov från den fysiska personen i fråga,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "14.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "biometriska uppgifter: personuppgifter som erhållits genom en särskild teknisk behandling som rör en fysisk persons fysiska, fysiologiska eller beteendemässiga kännetecken och som möjliggör eller bekräftar identifieringen av denna fysiska person, såsom ansiktsbilder eller fingeravtrycksuppgifter,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "15.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "uppgifter om hälsa: personuppgifter som rör en fysisk persons fysiska eller psykiska hälsa, inbegripet tillhandahållande av hälso- och sjukvårdstjänster, vilka ger information om dennes hälsostatus,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "16.\n                           \n                           \n                              \n                                 huvudsakligt verksamhetsställe:\n                              a) \n                                          när det gäller en personuppgiftsansvarig med verksamhetsställen i mer än en medlemsstat, den plats i unionen där vederbörande har sin centrala förvaltning, om inte besluten om ändamålen och medlen för behandlingen av personuppgifter fattas vid ett annat av den personuppgiftsansvariges verksamhetsställen i unionen och det sistnämnda verksamhetsstället har befogenhet att få sådana beslut genomförda, i vilket fall det verksamhetsställe som har fattat sådana beslut ska betraktas som det huvudsakliga verksamhetsstället,\n                                       \n                              b) \n                                          när det gäller ett personuppgiftsbiträde med verksamhetsställen i mer än en medlemsstat, den plats i unionen där vederbörande har sin centrala förvaltning eller, om personuppgiftsbiträdet inte har någon central förvaltning i unionen, det av personuppgiftsbiträdets verksamhetsställen i unionen där den huvudsakliga behandlingen inom ramen för verksamheten vid ett av personuppgiftsbiträdets verksamhetsställen sker, i den utsträckning som personuppgiftsbiträdet omfattas av särskilda skyldigheter enligt denna förordning,",
+          "role": "TABLE",
+          "htmlContent": "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" class=\"legal-table\">\n                     <colgroup><col width=\"4%\">\n                     <col width=\"96%\">\n                     </colgroup><tbody>\n                        <tr>\n                           <td valign=\"top\">\n                              <p class=\"text\">16.</p>\n                           </td>\n                           <td valign=\"top\">\n                              <p class=\"text\">\n                                 <span>huvudsakligt verksamhetsställe</span>:</p>\n                              <p class=\"text\">a) \n                                          </p><p class=\"text\">när det gäller en personuppgiftsansvarig med verksamhetsställen i mer än en medlemsstat, den plats i unionen där vederbörande har sin centrala förvaltning, om inte besluten om ändamålen och medlen för behandlingen av personuppgifter fattas vid ett annat av den personuppgiftsansvariges verksamhetsställen i unionen och det sistnämnda verksamhetsstället har befogenhet att få sådana beslut genomförda, i&nbsp;vilket fall det verksamhetsställe som har fattat sådana beslut ska betraktas som det huvudsakliga verksamhetsstället,</p>\n                                       <p class=\"text\"></p>\n                              <p class=\"text\">b) \n                                          </p><p class=\"text\">när det gäller ett personuppgiftsbiträde med verksamhetsställen i mer än en medlemsstat, den plats i unionen där vederbörande har sin centrala förvaltning eller, om personuppgiftsbiträdet inte har någon central förvaltning i unionen, det av personuppgiftsbiträdets verksamhetsställen i unionen där den huvudsakliga behandlingen inom ramen för verksamheten vid ett av personuppgiftsbiträdets verksamhetsställen sker, i den utsträckning som personuppgiftsbiträdet omfattas av särskilda skyldigheter enligt denna förordning,</p>\n                                       <p class=\"text\"></p>\n                           </td>\n                        </tr>\n                     </tbody>\n                  </table>"
+        },
+        {
+          "number": null,
+          "text": "17.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "företrädare: en i unionen etablerad fysisk eller juridisk person som skriftligen har utsetts av den personuppgiftsansvarige eller personuppgiftsbiträdet i enlighet med artikel 27 och företräder denne i frågor som gäller dennes skyldigheter enligt denna förordning,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "18.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "företag: en fysisk eller juridisk person som bedriver ekonomisk verksamhet, oavsett dess juridiska form, vilket inbegriper partnerskap eller föreningar som regelbundet bedriver ekonomisk verksamhet,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "19.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "koncern: ett kontrollerande företag och dess kontrollerade företag,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "20.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "bindande företagsbestämmelser: strategier för skydd av personuppgifter som en personuppgiftsansvarig eller ett personuppgiftsbiträde som är etablerad på en medlemsstats territorium använder sig av vid överföringar eller en uppsättning av överföringar av personuppgifter till en personuppgiftsansvarig eller ett personuppgiftsbiträde i ett eller flera tredjeländer inom en koncern eller en grupp av företag som deltar i gemensam ekonomisk verksamhet,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "21.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "tillsynsmyndighet: en oberoende offentlig myndighet som är utsedd av en medlemsstat i enlighet med artikel 51,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "22.\n                           \n                           \n                              \n                                 berörd tillsynsmyndighet: en tillsynsmyndighet som berörs av behandlingen av personuppgifter på grund av att\n                              a) \n                                          den personuppgiftsansvarige eller personuppgiftsbiträdet är etablerad på tillsynsmyndighetens medlemsstats territorium,\n                                       \n                              b) \n                                          registrerade som är bosatta i den tillsynsmyndighetens medlemsstat i väsentlig grad påverkas eller sannolikt i väsentlig grad kommer att påverkas av behandlingen, eller\n                                       \n                              c) \n                                          ett klagomål har lämnats in till denna tillsynsmyndighet,",
+          "role": "TABLE",
+          "htmlContent": "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" class=\"legal-table\">\n                     <colgroup><col width=\"4%\">\n                     <col width=\"96%\">\n                     </colgroup><tbody>\n                        <tr>\n                           <td valign=\"top\">\n                              <p class=\"text\">22.</p>\n                           </td>\n                           <td valign=\"top\">\n                              <p class=\"text\">\n                                 <span>berörd tillsynsmyndighet</span>: en tillsynsmyndighet som berörs av behandlingen av personuppgifter på grund av att</p>\n                              <p class=\"text\">a) \n                                          </p><p class=\"text\">den personuppgiftsansvarige eller personuppgiftsbiträdet är etablerad på tillsynsmyndighetens medlemsstats territorium,</p>\n                                       <p class=\"text\"></p>\n                              <p class=\"text\">b) \n                                          </p><p class=\"text\">registrerade som är bosatta i den tillsynsmyndighetens medlemsstat i väsentlig grad påverkas eller sannolikt i väsentlig grad kommer att påverkas av behandlingen, eller</p>\n                                       <p class=\"text\"></p>\n                              <p class=\"text\">c) \n                                          </p><p class=\"text\">ett klagomål har lämnats in till denna tillsynsmyndighet,</p>\n                                       <p class=\"text\"></p>\n                           </td>\n                        </tr>\n                     </tbody>\n                  </table>"
+        },
+        {
+          "number": null,
+          "text": "23.\n                           \n                           \n                              \n                                 gränsöverskridande behandling:\n                              a) \n                                          behandling av personuppgifter som äger rum inom ramen för verksamhet vid verksamhetsställen i mer än en medlemsstat tillhörande en personuppgiftsansvarig eller ett personuppgiftsbiträde i unionen, när den personuppgiftsansvarige eller personuppgiftsbiträdet är etablerad i mer än en medlemsstat, eller\n                                       \n                              b) \n                                          behandling av personuppgifter som äger rum inom ramen för verksamhet vid ett enda verksamhetsställe tillhörande en personuppgiftsansvarig eller ett personuppgiftsbiträde i unionen men som i väsentlig grad påverkar eller sannolikt i väsentlig grad kommer att påverka registrerade i mer än en medlemsstat,",
+          "role": "TABLE",
+          "htmlContent": "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" class=\"legal-table\">\n                     <colgroup><col width=\"4%\">\n                     <col width=\"96%\">\n                     </colgroup><tbody>\n                        <tr>\n                           <td valign=\"top\">\n                              <p class=\"text\">23.</p>\n                           </td>\n                           <td valign=\"top\">\n                              <p class=\"text\">\n                                 <span>gränsöverskridande behandling</span>:</p>\n                              <p class=\"text\">a) \n                                          </p><p class=\"text\">behandling av personuppgifter som äger rum inom ramen för verksamhet vid verksamhetsställen i&nbsp;mer än en medlemsstat tillhörande en personuppgiftsansvarig eller ett personuppgiftsbiträde i&nbsp;unionen, när den personuppgiftsansvarige eller personuppgiftsbiträdet är etablerad i mer än en medlemsstat, eller</p>\n                                       <p class=\"text\"></p>\n                              <p class=\"text\">b) \n                                          </p><p class=\"text\">behandling av personuppgifter som äger rum inom ramen för verksamhet vid ett enda verksamhetsställe tillhörande en personuppgiftsansvarig eller ett personuppgiftsbiträde i unionen men som i väsentlig grad påverkar eller sannolikt i&nbsp;väsentlig grad kommer att påverka registrerade i mer än en medlemsstat,</p>\n                                       <p class=\"text\"></p>\n                           </td>\n                        </tr>\n                     </tbody>\n                  </table>"
+        },
+        {
+          "number": null,
+          "text": "24.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "relevant och motiverad invändning: en invändning mot ett förslag till beslut avseende frågan huruvida det föreligger en överträdelse av denna förordning eller huruvida den planerade åtgärden i förhållande till den personuppgiftsansvarige eller personuppgiftsbiträdet är förenlig med denna förordning, av vilken invändning det tydligt framgår hur stora risker utkastet till beslut medför när det gäller registrerades grundläggande rättigheter och friheter samt i tillämpliga fall det fria flödet av personuppgifter inom unionen,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "25.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "informationssamhällets tjänster: alla tjänster enligt definitionen i artikel 1.1 b i Europaparlamentets och rådets direktiv (EU) 2015/1535 19,",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "26.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "internationell organisation: en organisation och dess underställda organ som lyder under folkrätten, eller ett annat organ som inrättats genom eller på grundval av en överenskommelse mellan två eller flera länder.",
+          "role": "PARAGRAPH"
+        },
+        {
+          "number": null,
+          "text": "",
+          "role": "PARAGRAPH"
+        }
+      ]
+    }
+  ]
+}

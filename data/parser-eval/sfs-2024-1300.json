@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (2024:1300) om uppgiftsskyldighet i fråga om frånvaro på grund av vård av barn",
+  "documentNumber": "SFS 2024:1300",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna lag innehåller bestämmelser om skyldighet för den som är skyldig att lämna en arbetsgivardeklaration att lämna uppgifter om frånvaro från arbetet på grund av vård av barn. Syftet med uppgiftslämnandet är att effektivisera Försäkringskassans kontroll av föräldrapenningsförmåner.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag innehåller bestämmelser om skyldighet för den som är skyldig att lämna en arbetsgivardeklaration att lämna uppgifter om frånvaro från arbetet på grund av vård av barn. Syftet med uppgiftslämnandet är att effektivisera Försäkringskassans kontroll av föräldrapenningsförmåner.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Uppgifter om frånvaro",
+          "content": "Den som är skyldig att lämna en sådan arbetsgivardeklaration som avses i 26 kap. 3 § skatteförfarandelagen (2011:1244) ska i samband med deklarationen uppge per betalningsmottagare om redovisad ersättning har påverkats av frånvaro från arbetet av skäl som kan ge rätt till\n1. föräldrapenning enligt 12 kap. socialförsäkringsbalken, eller\n2. tillfällig föräldrapenning enligt 13 kap. socialförsäkringsbalken.\nUppgifter behöver inte lämnas i fråga om ersättning som avses i 26 kap. 19 a § första stycket 5 skatteförfarandelagen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som är skyldig att lämna en sådan arbetsgivardeklaration som avses i 26 kap. 3 § skatteförfarandelagen (2011:1244) ska i samband med deklarationen uppge per betalningsmottagare om redovisad ersättning har påverkats av frånvaro från arbetet av skäl som kan ge rätt till",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. föräldrapenning enligt 12 kap. socialförsäkringsbalken, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. tillfällig föräldrapenning enligt 13 kap. socialförsäkringsbalken.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Uppgifter behöver inte lämnas i fråga om ersättning som avses i 26 kap. 19 a § första stycket 5 skatteförfarandelagen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Om den redovisade ersättningen har påverkats av sådan frånvaro som anges i 2 §, ska den deklarationsskyldige också uppge datum för respektive slag av frånvaro och frånvarons omfattning för varje datum.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om den redovisade ersättningen har påverkats av sådan frånvaro som anges i 2 §, ska den deklarationsskyldige också uppge datum för respektive slag av frånvaro och frånvarons omfattning för varje datum.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Uppgifter till betalningsmottagare",
+          "content": "Den som är skyldig att lämna uppgifter enligt 2 § ska senast den dag då arbetsgivardeklarationen ska ha kommit in till Skatteverket informera den som uppgifterna avser om de uppgifter om denne som lämnas i samband med arbetsgivardeklarationen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som är skyldig att lämna uppgifter enligt 2 § ska senast den dag då arbetsgivardeklarationen ska ha kommit in till Skatteverket informera den som uppgifterna avser om de uppgifter om denne som lämnas i samband med arbetsgivardeklarationen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Utlämnande av uppgifter till Försäkringskassan",
+          "content": "Skatteverket ska till Försäkringskassan lämna ut de uppgifter som enligt denna lag lämnas i samband med arbetsgivardeklarationen. Skatteverket ska även lämna ut identifikationsuppgifter för den uppgiftsskyldige och betalningsmottagaren samt uppgift om den redovisningsperiod som deklarationen avser.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skatteverket ska till Försäkringskassan lämna ut de uppgifter som enligt denna lag lämnas i samband med arbetsgivardeklarationen. Skatteverket ska även lämna ut identifikationsuppgifter för den uppgiftsskyldige och betalningsmottagaren samt uppgift om den redovisningsperiod som deklarationen avser.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "2024:1300",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 januari 2025.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Lagen tillämpas första gången i fråga om uppgifter som ska  lämnas i samband med arbetsgivardeklarationer som avser  redovisningsperioden januari 2025.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 2024:1300",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

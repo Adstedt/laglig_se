@@ -1,0 +1,313 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Strålsäkerhetsmyndighetens föreskrifter om naturligt förekommande radioaktivt material och byggnadsmaterial",
+  "documentNumber": "SSMFS 2018:4",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Dessa föreskrifter innehåller bestämmelser som ska iakttas av den som hanterar naturligt förekommande radioaktivt material inklusive byggnadsmaterial.\nFöreskrifterna ska inte tillämpas vid hantering av torvaska som innehåller naturligt förekommande radioaktiva ämnen och som regleras i Strålsäkerhetsmyndighetens föreskrifter om hantering av sådan aska.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Dessa föreskrifter innehåller bestämmelser som ska iakttas av den som hanterar naturligt förekommande radioaktivt material inklusive byggnadsmaterial.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Föreskrifterna ska inte tillämpas vid hantering av torvaska som innehåller naturligt förekommande radioaktiva ämnen och som regleras i Strålsäkerhetsmyndighetens föreskrifter om hantering av sådan aska.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Ord och uttryck som används i dessa föreskrifter har samma betydelse som i strålskyddslagen (2018:396), strålskyddsförordningen (2018:506), lagen (1984:3) om kärnteknisk verksamhet och miljöbalken.\nMed naturligt förekommande radioaktivt material avses i dessa föreskrifter material som innehåller naturligt förekommande radioaktiva ämnen och som är i sitt naturliga tillstånd eller enbart har bearbetats eller anrikats för andra ändamål än för utvinning av dessa ämnen och som inte heller är avsett att bearbetas för användning av materialets radioaktiva, fissila eller fertila egenskaper.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ord och uttryck som används i dessa föreskrifter har samma betydelse som i strålskyddslagen (2018:396), strålskyddsförordningen (2018:506), lagen (1984:3) om kärnteknisk verksamhet och miljöbalken.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Med naturligt förekommande radioaktivt material avses i dessa föreskrifter material som innehåller naturligt förekommande radioaktiva ämnen och som är i sitt naturliga tillstånd eller enbart har bearbetats eller anrikats för andra ändamål än för utvinning av dessa ämnen och som inte heller är avsett att bearbetas för användning av materialets radioaktiva, fissila eller fertila egenskaper.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Undantag och anmälan",
+          "content": "Bestämmelserna i lagen (1984:3) om kärnteknisk verksamhet gäller inte för naturligt förekommande radioaktivt material förutsatt att materialet inte står under internationell kontroll enligt kommissionens förordning (Euratom) nr 302/2005 av den 8 februari 2005 om genomförandet av Euratoms kärnämneskontroll.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i lagen (1984:3) om kärnteknisk verksamhet gäller inte för naturligt förekommande radioaktivt material förutsatt att materialet inte står under internationell kontroll enligt kommissionens förordning (Euratom) nr 302/2005 av den 8 februari 2005 om genomförandet av Euratoms kärnämneskontroll.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Bestämmelserna i strålskyddslagen (2018:396) och strålskyddsförordningen (2018:506) gäller inte för den som i sin verksamhet hanterar naturligt förekommande radioaktivt material med en aktivitetskoncentration som är\nhögst 1 kilobecquerel per kilogram torrsubstans per radionuklid i uran- och toriumserierna, och\n      högst 10 kilobecquerel per kilogram torrsubstans för kalium-40.\nFör byggnadsmaterial med en aktivitetskoncentration som understiger vad som anges i första stycket gäller dock fortfarande bestämmelserna i 3 kap. 3, 5, 11 och 13 §§ strålskyddslagen och 3 kap. 7 § och 6 kap. 6 § strålskyddsförordningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i strålskyddslagen (2018:396) och strålskyddsförordningen (2018:506) gäller inte för den som i sin verksamhet hanterar naturligt förekommande radioaktivt material med en aktivitetskoncentration som är",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "högst 1 kilobecquerel per kilogram torrsubstans per radionuklid i uran- och toriumserierna, och\n      högst 10 kilobecquerel per kilogram torrsubstans för kalium-40.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>högst 1 kilobecquerel per kilogram torrsubstans per radionuklid i uran- och toriumserierna, och</li>\n      <li>högst 10 kilobecquerel per kilogram torrsubstans för kalium-40.</li>\n    </ol>"
+            },
+            {
+              "number": 3,
+              "text": "För byggnadsmaterial med en aktivitetskoncentration som understiger vad som anges i första stycket gäller dock fortfarande bestämmelserna i 3 kap. 3, 5, 11 och 13 §§ strålskyddslagen och 3 kap. 7 § och 6 kap. 6 § strålskyddsförordningen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Förbudet i 4 kap. 1 § 1 strålskyddslagen (2018:396) gäller inte för lärlingar, praktikanter eller studerande mellan 16 och 18 år som i sin utbildning måste befatta sig med naturligt förekommande radioaktivt material.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Förbudet i 4 kap. 1 § 1 strålskyddslagen (2018:396) gäller inte för lärlingar, praktikanter eller studerande mellan 16 och 18 år som i sin utbildning måste befatta sig med naturligt förekommande radioaktivt material.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Bestämmelserna i 4 kap. 3–5 och 15 §§, 5 kap. 1 § samt 6 kap. 1 och 24 §§ strålskyddslagen (2018:396) gäller inte den som\nhanterar alunskifferbaserad lättbetong,\n      hanterar jord- eller bergmassor,\n      innehar, lagrar eller på något sätt icke-fysiskt hanterar rödfyr eller fosfatgips,\n      hanterar obearbetade mineralprover som ingår i en geologisk samling,\n      hanterar keramiska bruksföremål som är avsedda för hushållsändamål eller keramiska prydnadsföremål, eller\n      hanterar vattenfilter i ett enskilt hushåll.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i 4 kap. 3–5 och 15 §§, 5 kap. 1 § samt 6 kap. 1 och 24 §§ strålskyddslagen (2018:396) gäller inte den som",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "hanterar alunskifferbaserad lättbetong,\n      hanterar jord- eller bergmassor,\n      innehar, lagrar eller på något sätt icke-fysiskt hanterar rödfyr eller fosfatgips,\n      hanterar obearbetade mineralprover som ingår i en geologisk samling,\n      hanterar keramiska bruksföremål som är avsedda för hushållsändamål eller keramiska prydnadsföremål, eller\n      hanterar vattenfilter i ett enskilt hushåll.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>hanterar alunskifferbaserad lättbetong,</li>\n      <li>hanterar jord- eller bergmassor,</li>\n      <li>innehar, lagrar eller på något sätt icke-fysiskt hanterar rödfyr eller fosfatgips,</li>\n      <li>hanterar obearbetade mineralprover som ingår i en geologisk samling,</li>\n      <li>hanterar keramiska bruksföremål som är avsedda för hushållsändamål eller keramiska prydnadsföremål, eller</li>\n      <li>hanterar vattenfilter i ett enskilt hushåll.</li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Hantering av naturligt förekommande radioaktivt material med en aktivitetskoncentration som överstiger 1 kilobecquerel per kilogram torrsubstans per radionuklid i uran- eller toriumserierna eller 10 kilobecquerel per kilogram torrsubstans för kalium-40, och som inte undantas från tillståndsplikt enligt 6 §, ska anmälas till Strålsäkerhetsmyndigheten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Hantering av naturligt förekommande radioaktivt material med en aktivitetskoncentration som överstiger 1 kilobecquerel per kilogram torrsubstans per radionuklid i uran- eller toriumserierna eller 10 kilobecquerel per kilogram torrsubstans för kalium-40, och som inte undantas från tillståndsplikt enligt 6 §, ska anmälas till Strålsäkerhetsmyndigheten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "En anmälan enligt 7 § ska göras på ett formulär som tillhandahålls av Strålsäkerhetsmyndigheten och innehålla de uppgifter som framgår av detta.\nAnmälan ska förnyas inom fem år från det datum som den senaste anmälan gjordes om hanteringen fortfarande pågår och inget annat har meddelats av Strålsäkerhetsmyndigheten.\nFörändringar i verksamheten som rör uppgifterna i anmälan ska snarast meddelas till Strålsäkerhetsmyndigheten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En anmälan enligt 7 § ska göras på ett formulär som tillhandahålls av Strålsäkerhetsmyndigheten och innehålla de uppgifter som framgår av detta.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Anmälan ska förnyas inom fem år från det datum som den senaste anmälan gjordes om hanteringen fortfarande pågår och inget annat har meddelats av Strålsäkerhetsmyndigheten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Förändringar i verksamheten som rör uppgifterna i anmälan ska snarast meddelas till Strålsäkerhetsmyndigheten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": "Friklassning av material",
+          "content": "Naturligt förekommande radioaktivt material i en verksamhet som omfattas av bestämmelserna i strålskyddslagen (2018:396), får friklassas av den som hanterar materialet om\naktivitetskoncentrationen är\n        \n          högst 1 kilobecquerel per kilogram torrsubstans per radionuklid i uran- och toriumserierna, och\n          högst 10 kilobecquerel per kilogram torrsubstans för kalium-40, eller\n        \n      \n      materialet har sitt ursprung i Sverige och bortskaffas eller återvinns på sådant sätt som anges i 11–13 §§.\nFörsta stycket 1 gäller inte material som ska användas som byggnadsmaterial.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Naturligt förekommande radioaktivt material i en verksamhet som omfattas av bestämmelserna i strålskyddslagen (2018:396), får friklassas av den som hanterar materialet om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "aktivitetskoncentrationen är\n        \n          högst 1 kilobecquerel per kilogram torrsubstans per radionuklid i uran- och toriumserierna, och\n          högst 10 kilobecquerel per kilogram torrsubstans för kalium-40, eller\n        \n      \n      materialet har sitt ursprung i Sverige och bortskaffas eller återvinns på sådant sätt som anges i 11–13 §§.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>aktivitetskoncentrationen är\n        <ol type=\"a\">\n          <li>högst 1 kilobecquerel per kilogram torrsubstans per radionuklid i uran- och toriumserierna, och</li>\n          <li>högst 10 kilobecquerel per kilogram torrsubstans för kalium-40, eller</li>\n        </ol>\n      </li>\n      <li>materialet har sitt ursprung i Sverige och bortskaffas eller återvinns på sådant sätt som anges i 11–13 §§.</li>\n    </ol>"
+            },
+            {
+              "number": 3,
+              "text": "Första stycket 1 gäller inte material som ska användas som byggnadsmaterial.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Det är förbjudet att späda ut naturligt förekommande radioaktivt material om syftet med detta är att materialet ska kunna friklassas.\nStrålsäkerhetsmyndigheten kan godkänna att naturligt förekommande radioaktivt material blandas med icke-radioaktivt material i återanvändnings- eller återvinningssyfte eller för deponering eller annat omhändertagande om det kan ske utan att det innebär en oacceptabel risk för att människor eller miljön utsätts för skadlig verkan av strålning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det är förbjudet att späda ut naturligt förekommande radioaktivt material om syftet med detta är att materialet ska kunna friklassas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Strålsäkerhetsmyndigheten kan godkänna att naturligt förekommande radioaktivt material blandas med icke-radioaktivt material i återanvändnings- eller återvinningssyfte eller för deponering eller annat omhändertagande om det kan ske utan att det innebär en oacceptabel risk för att människor eller miljön utsätts för skadlig verkan av strålning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Naturligt förekommande radioaktivt material med en aktivitetskoncentration som är högst 10 kilobecquerel per kilogram torrsubstans per radionuklid i uran- och toriumserierna och högst 100 kilobecquerel per kilogram torrsubstans för kalium-40, får läggas på en deponi utan att hänsyn behöver tas till materialets radioaktiva egenskaper.\nNaturligt förekommande radioaktivt material som har uppkommit som avfall i samband med prospektering, får läggas på en deponi eller återplaceras i håligheter som har uppkommit vid prospekteringen utan att hänsyn behöver tas till materialets radioaktiva egenskaper.\nEn sådan deponi som avses i första och andra stycket, ska vara utformad så att den minst ger samma skydd som en deponi för icke-farligt avfall enligt förordningen (2001:512) om deponering av avfall.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Naturligt förekommande radioaktivt material med en aktivitetskoncentration som är högst 10 kilobecquerel per kilogram torrsubstans per radionuklid i uran- och toriumserierna och högst 100 kilobecquerel per kilogram torrsubstans för kalium-40, får läggas på en deponi utan att hänsyn behöver tas till materialets radioaktiva egenskaper.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Naturligt förekommande radioaktivt material som har uppkommit som avfall i samband med prospektering, får läggas på en deponi eller återplaceras i håligheter som har uppkommit vid prospekteringen utan att hänsyn behöver tas till materialets radioaktiva egenskaper.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "En sådan deponi som avses i första och andra stycket, ska vara utformad så att den minst ger samma skydd som en deponi för icke-farligt avfall enligt förordningen (2001:512) om deponering av avfall.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "Ett enskilt hushåll får låta vattenfilter omhändertas som hushållsavfall utan att hänsyn behöver tas till vattenfiltrets radioaktiva egenskaper.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett enskilt hushåll får låta vattenfilter omhändertas som hushållsavfall utan att hänsyn behöver tas till vattenfiltrets radioaktiva egenskaper.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "Rivningsmassor från byggnader där naturligt förekommande radioaktivt material ingår i byggnadsmaterialet samt rödfyr, fosfatgips och jord- eller bergmassor, får läggas på en deponi eller återvinnas för anläggningsändamål utan att hänsyn behöver tas till materialets radioaktiva egenskaper.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Rivningsmassor från byggnader där naturligt förekommande radioaktivt material ingår i byggnadsmaterialet samt rödfyr, fosfatgips och jord- eller bergmassor, får läggas på en deponi eller återvinnas för anläggningsändamål utan att hänsyn behöver tas till materialets radioaktiva egenskaper.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": "Byggnadsmaterial",
+          "content": "Aktivitetskoncentrationen för byggnadsmaterial som har betydelse från strålskyddssynpunkt, ska anges i becquerel per kilogram torrsubstans för radium-226, torium-232 och kalium-40.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Aktivitetskoncentrationen för byggnadsmaterial som har betydelse från strålskyddssynpunkt, ska anges i becquerel per kilogram torrsubstans för radium-226, torium-232 och kalium-40.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": null,
+          "content": "Aktivitetsindex för byggnadsmaterial som har betydelse från strålskyddssynpunkt ska beräknas enligt bilagan.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Aktivitetsindex för byggnadsmaterial som har betydelse från strålskyddssynpunkt ska beräknas enligt bilagan.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": null,
+          "content": "Den som ska använda ett byggnadsmaterial med aktivitetsindex som överstiger 1, ska planera användningen så att referensnivån i 3 kap. 7 § strålskyddsförordningen (2018:506) inte riskerar att överskridas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som ska använda ett byggnadsmaterial med aktivitetsindex som överstiger 1, ska planera användningen så att referensnivån i 3 kap. 7 § strålskyddsförordningen (2018:506) inte riskerar att överskridas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": "Dispens m.m.",
+          "content": "Strålsäkerhetsmyndigheten kan\nge dispens från dessa föreskrifter om det finns särskilda skäl och om det kan ske utan att det kan antas medföra en oacceptabel risk för att människor eller miljön utsätts för skadlig verkan av strålning, och\n      i enskilda fall besluta att lagen (1984:3) om kärnteknisk verksamhet eller strålskyddslagen (2018:396) ska gälla trots vad som sägs i 3, 4, 6 eller 9 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Strålsäkerhetsmyndigheten kan",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "ge dispens från dessa föreskrifter om det finns särskilda skäl och om det kan ske utan att det kan antas medföra en oacceptabel risk för att människor eller miljön utsätts för skadlig verkan av strålning, och\n      i enskilda fall besluta att lagen (1984:3) om kärnteknisk verksamhet eller strålskyddslagen (2018:396) ska gälla trots vad som sägs i 3, 4, 6 eller 9 §.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>ge dispens från dessa föreskrifter om det finns särskilda skäl och om det kan ske utan att det kan antas medföra en oacceptabel risk för att människor eller miljön utsätts för skadlig verkan av strålning, och</li>\n      <li>i enskilda fall besluta att <a href=\"/lagar/lag-19843-om-karnteknisk-verksamhet-1984-3\" class=\"legal-ref\" title=\"Lag (1984:3) om kärnteknisk verksamhet\" target=\"_blank\" rel=\"noopener\">lagen (1984:3)</a> om kärnteknisk verksamhet eller <a href=\"/lagar/stralskyddslag-2018396-2018-396\" class=\"legal-ref\" title=\"Strålskyddslag (2018:396)\" target=\"_blank\" rel=\"noopener\">strålskyddslagen (2018:396)</a> ska gälla trots vad som sägs i 3, 4, 6 eller 9 §.</li>\n    </ol>"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SSMFS 2018:4",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

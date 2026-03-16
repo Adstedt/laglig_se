@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Förordning (1985:885) om försöksverksamhet vid tillsättning \nav vissa tjänster inom folktandvården",
+  "documentNumber": "SFS 1985:885",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Utan hinder av 5--\nom behörighet till vissa tjänster inom folktandvården och om tillsättning av sådana tjänster får de landstingskommuner som får bedriva försöksverksamhet enligt\nom försöksverksamhet med en friare kommunal nämndorganisation tillsätta tjänster som chef vid en enhet för specialisttandvård på följande sätt. Vad som i denna förordning sägs om landstingskommuner gäller även kommuner som inte ingår i någon landstingskommun. Förordning (1988:1421).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utan hinder av 5--",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om behörighet till vissa tjänster inom folktandvården och om tillsättning av sådana tjänster får de landstingskommuner som får bedriva försöksverksamhet enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "om försöksverksamhet med en friare kommunal nämndorganisation tillsätta tjänster som chef vid en enhet för specialisttandvård på följande sätt. Vad som i denna förordning sägs om landstingskommuner gäller även kommuner som inte ingår i någon landstingskommun. Förordning (1988:1421).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Tjänsten tillsätts efter förslag av en sakkunnig som utses av landstingskommunen för varje tillsättningsärende. Den sakkunnige skall inneha specialistkompetens inom den specialitet som den lediga tjänsten avser.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tjänsten tillsätts efter förslag av en sakkunnig som utses av landstingskommunen för varje tillsättningsärende. Den sakkunnige skall inneha specialistkompetens inom den specialitet som den lediga tjänsten avser.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Den sakkunnige skall i ett skriftligt beslut på förslag föra upp de fyra sökande som anses främst i fråga om förtjänst och skicklighet.\nLandstingskommunen skall anslå beslutet på landstingskommunens anslagstavla med uppgift om den dag då beslutet anslogs.\nEn av de föreslagna sökandena skall förordnas på tjänsten.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den sakkunnige skall i ett skriftligt beslut på förslag föra upp de fyra sökande som anses främst i fråga om förtjänst och skicklighet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Landstingskommunen skall anslå beslutet på landstingskommunens anslagstavla med uppgift om den dag då beslutet anslogs.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "En av de föreslagna sökandena skall förordnas på tjänsten.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Den sakkunniges beslut om tjänsteförslag får överklagas hos socialstyrelsen genom besvär. Besvärshandlingen skall ha kommit in till socialstyrelsen inom tre veckor från den dag då beslutet anslogs.\nSocialstyrelsens beslut får inte överklagas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den sakkunniges beslut om tjänsteförslag får överklagas hos socialstyrelsen genom besvär. Besvärshandlingen skall ha kommit in till socialstyrelsen inom tre veckor från den dag då beslutet anslogs.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Socialstyrelsens beslut får inte överklagas.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1985:885",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

@@ -1,0 +1,358 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": null,
+  "documentNumber": null,
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Bestämmelserna i detta kapitel gäller användning av bildskärm med tillhörande utrustning. De preciserar och kompletterar föreskrifterna om användning av arbetsutrustning i kapitel 2.\nAllmänna råd\nFöreskrifterna gäller även när arbetet utförs på annan plats än huvudarbetsplatsen, till exempel från det egna hemmet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i detta kapitel gäller användning av bildskärm med tillhörande utrustning. De preciserar och kompletterar föreskrifterna om användning av arbetsutrustning i kapitel 2.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänna råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Föreskrifterna gäller även när arbetet utförs på annan plats än huvudarbetsplatsen, till exempel från det egna hemmet.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Föreskrifterna gäller inte arbete med siffer- eller textvisande display på mätinstrument, skrivmaskin, kassaregister, miniräknare eller liknande. De gäller inte heller för kortvarig användning av bärbar utrustning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Föreskrifterna gäller inte arbete med siffer- eller textvisande display på mätinstrument, skrivmaskin, kassaregister, miniräknare eller liknande. De gäller inte heller för kortvarig användning av bärbar utrustning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Vem föreskrifterna riktar sig till",
+          "content": "Arbetsgivaren ansvarar för att föreskrifterna i detta kapitel följs. Med arbetsgivare likställs den som hyr in arbetskraft. Kraven i 14 § gäller inte den som enligt 1 kap. 3 § arbetsmiljölagen (1977:1160) ska likställas med arbetstagare.\nDen som ensam eller gemensamt med familjemedlem driver yrkesmässig verksamhet utan anställd, ska följa bestämmelserna i detta kapitel. Detta följer av 3 kap. 5 § andra stycket arbetsmiljölagen. Det innebär att den som driver sådan verksamhet ska följa det som sägs i detta kapitel om arbetsgivare och om arbetstagare.\nAv 1 och 3 kap. arbetsmiljölagen följer att föreskrifterna i detta kapitel under vissa omständigheter kan medföra skyldigheter även för andra än arbetsgivaren. Det som sägs i detta kapitel gäller då även dem.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ansvarar för att föreskrifterna i detta kapitel följs. Med arbetsgivare likställs den som hyr in arbetskraft. Kraven i 14 § gäller inte den som enligt 1 kap. 3 § arbetsmiljölagen (1977:1160) ska likställas med arbetstagare.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Den som ensam eller gemensamt med familjemedlem driver yrkesmässig verksamhet utan anställd, ska följa bestämmelserna i detta kapitel. Detta följer av 3 kap. 5 § andra stycket arbetsmiljölagen. Det innebär att den som driver sådan verksamhet ska följa det som sägs i detta kapitel om arbetsgivare och om arbetstagare.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Av 1 och 3 kap. arbetsmiljölagen följer att föreskrifterna i detta kapitel under vissa omständigheter kan medföra skyldigheter även för andra än arbetsgivaren. Det som sägs i detta kapitel gäller då även dem.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Definitioner",
+          "content": "I detta kapitel har följande begrepp denna betydelse.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I detta kapitel har följande begrepp denna betydelse.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "BegreppBetydelseBildskärmDigital skärm som visar bokstäver, siffror, bilder, tecken och grafik, oavsett hur bilden framställs.",
+              "role": "TABLE",
+              "htmlContent": "<table class=\"legal-table\"><tbody><tr><th><p class=\"text\">Begrepp</p></th><th><p class=\"text\">Betydelse</p></th></tr><tr><td><p class=\"text\">Bildskärm</p></td><td><p class=\"text\">Digital skärm som visar bokstäver, siffror, bilder, tecken och grafik, oavsett hur bilden framställs.</p></td></tr></tbody></table>"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Organisering av bildskärmsarbete",
+          "content": "Arbetsgivaren ska se till att arbete vid bildskärm, som är starkt styrt eller bundet i fysiskt eller psykiskt avseende eller är ensidigt upprepat, normalt inte förekommer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska se till att arbete vid bildskärm, som är starkt styrt eller bundet i fysiskt eller psykiskt avseende eller är ensidigt upprepat, normalt inte förekommer.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Arbetsgivaren ska se till att arbetet om möjligt ordnas så att den arbetande kan växla till mindre ansträngande arbetsuppgifter om synbesvär eller andra belastningsbesvär uppträder till följd av bildskärmsarbete trots åtgärder. Om arbetet inte kan ordnas på sådant sätt ska arbetsgivaren se till att den arbetande får tillräckliga pauser så att besvär inte uppstår i arbetet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska se till att arbetet om möjligt ordnas så att den arbetande kan växla till mindre ansträngande arbetsuppgifter om synbesvär eller andra belastningsbesvär uppträder till följd av bildskärmsarbete trots åtgärder. Om arbetet inte kan ordnas på sådant sätt ska arbetsgivaren se till att den arbetande får tillräckliga pauser så att besvär inte uppstår i arbetet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": "Programvara och system",
+          "content": "Arbetsgivaren ska se till att\nprogramvara och system är lämpligt utformade med hänsyn till arbetsuppgiftens krav och användarens förutsättningar och behov,programvaran är lätt att använda och kan anpassas till användarens kunskaper och erfarenheter,systemen så långt som möjligt ger användaren återkoppling i fråga om det utförda arbetet, ochsystemen visar information i ett format och i en takt, som är anpassade till användaren.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska se till att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "programvara och system är lämpligt utformade med hänsyn till arbetsuppgiftens krav och användarens förutsättningar och behov,programvaran är lätt att använda och kan anpassas till användarens kunskaper och erfarenheter,systemen så långt som möjligt ger användaren återkoppling i fråga om det utförda arbetet, ochsystemen visar information i ett format och i en takt, som är anpassade till användaren.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\"><li><p class=\"text\">programvara och system är lämpligt utformade med hänsyn till arbetsuppgiftens krav och användarens förutsättningar och behov,</p></li><li><p class=\"text\">programvaran är lätt att använda och kan anpassas till användarens kunskaper och erfarenheter,</p></li><li><p class=\"text\">systemen så långt som möjligt ger användaren återkoppling i fråga om det utförda arbetet, och</p></li><li><p class=\"text\">systemen visar information i ett format och i en takt, som är anpassade till användaren.</p></li></ol>"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Arbetsgivaren ska, vid utformning, val och ändring av programvara, ta särskild hänsyn till de ergonomiska principer som gäller för människans förmåga att uppfatta, förstå och bearbeta information.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska, vid utformning, val och ändring av programvara, ta särskild hänsyn till de ergonomiska principer som gäller för människans förmåga att uppfatta, förstå och bearbeta information.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Arbetsgivaren får inte kontrollera arbetstagarnas arbetsinsats via datasystemet, vare sig kvantitativt eller kvalitativt, utan att arbetstagarna känner till det.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren får inte kontrollera arbetstagarnas arbetsinsats via datasystemet, vare sig kvantitativt eller kvalitativt, utan att arbetstagarna känner till det.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": "Bildskärm och tangentbord",
+          "content": "Arbetsgivaren ska se till att\nbildskärmar och tangentbord är lätta att läsa av och lätta att använda,så långt det är praktiskt möjligt, skärmen och tangentbordet kan vridas, vinklas och flyttas efter användarens behov,ljusstyrkan eller kontrasten mellan tecknen och bakgrunden lätt ska kunna justeras av användaren och anpassas till den omgivande miljön,skärmen är fri från reflexer och speglingar, som kan orsaka besvär för användaren,tangentbordet har en matt yta, för att undvika reflexer,det som visas på skärmen och tangentbordet har god läsbarhet med tillräcklig skärpa, storlek och kontrast,bilden på skärmen är fri från besvärande flimmer och annan instabilitet, ochavstånden mellan tecken och rader är tillräckligt stora för god läsbarhet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska se till att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "bildskärmar och tangentbord är lätta att läsa av och lätta att använda,så långt det är praktiskt möjligt, skärmen och tangentbordet kan vridas, vinklas och flyttas efter användarens behov,ljusstyrkan eller kontrasten mellan tecknen och bakgrunden lätt ska kunna justeras av användaren och anpassas till den omgivande miljön,skärmen är fri från reflexer och speglingar, som kan orsaka besvär för användaren,tangentbordet har en matt yta, för att undvika reflexer,det som visas på skärmen och tangentbordet har god läsbarhet med tillräcklig skärpa, storlek och kontrast,bilden på skärmen är fri från besvärande flimmer och annan instabilitet, ochavstånden mellan tecken och rader är tillräckligt stora för god läsbarhet.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\"><li><p class=\"text\">bildskärmar och tangentbord är lätta att läsa av och lätta att använda,</p></li><li><p class=\"text\">så långt det är praktiskt möjligt, skärmen och tangentbordet kan vridas, vinklas och flyttas efter användarens behov,</p></li><li><p class=\"text\">ljusstyrkan eller kontrasten mellan tecknen och bakgrunden lätt ska kunna justeras av användaren och anpassas till den omgivande miljön,</p></li><li><p class=\"text\">skärmen är fri från reflexer och speglingar, som kan orsaka besvär för användaren,</p></li><li><p class=\"text\">tangentbordet har en matt yta, för att undvika reflexer,</p></li><li><p class=\"text\">det som visas på skärmen och tangentbordet har god läsbarhet med tillräcklig skärpa, storlek och kontrast,</p></li><li><p class=\"text\">bilden på skärmen är fri från besvärande flimmer och annan instabilitet, och</p></li><li><p class=\"text\">avstånden mellan tecken och rader är tillräckligt stora för god läsbarhet.</p></li></ol>"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": "Belysning och synförhållanden",
+          "content": "Arbetsgivaren ska se till att allmänbelysningen ger lämplig kontrast mellan skärmen och den omgivande miljön, så att det inte blir svårt att läsa på skärmen. Syn- och belysningsförhållanden får inte orsaka olämpliga arbetsställningar.\nAllmänbelysningen ska anpassas till arbetstagarens förutsättningar, synkraven i bildskärmsarbetet och arbetets art.\nOm det behövs, ska det finnas platsbelysning. Den ska vara justerbar och får inte blända.\nArbetsgivaren ska se till att bildskärmsarbetsplatsen är utformad så att den inte har besvärande bländning och reflexer från den omgivande miljön. Det ska man uppnå genom att samordna utformningen av arbetsplatsen och lokalen med placeringen av de artificiella ljuskällorna och deras tekniska egenskaper. Fönster ska ha en justerbar anordning för att skärma av dagsljus som lyser in på arbetsplatsen. Arbetsytor ska vara lågreflekterande där det behövs för att undvika besvärande reflexer.\nAllmänna råd\nSärskilt i lokaler med flera arbetsplatser är ljusfördelning och avbländning av armaturen viktig. Besvärande bländning och reflexer kan uppstå av artificiella ljuskällor, fönster och andra öppningar, genomskinliga eller halvgenomskinliga väggar, och ljusa inventarier och väggar.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska se till att allmänbelysningen ger lämplig kontrast mellan skärmen och den omgivande miljön, så att det inte blir svårt att läsa på skärmen. Syn- och belysningsförhållanden får inte orsaka olämpliga arbetsställningar.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Allmänbelysningen ska anpassas till arbetstagarens förutsättningar, synkraven i bildskärmsarbetet och arbetets art.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Om det behövs, ska det finnas platsbelysning. Den ska vara justerbar och får inte blända.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Arbetsgivaren ska se till att bildskärmsarbetsplatsen är utformad så att den inte har besvärande bländning och reflexer från den omgivande miljön. Det ska man uppnå genom att samordna utformningen av arbetsplatsen och lokalen med placeringen av de artificiella ljuskällorna och deras tekniska egenskaper. Fönster ska ha en justerbar anordning för att skärma av dagsljus som lyser in på arbetsplatsen. Arbetsytor ska vara lågreflekterande där det behövs för att undvika besvärande reflexer.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänna råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Särskilt i lokaler med flera arbetsplatser är ljusfördelning och avbländning av armaturen viktig. Besvärande bländning och reflexer kan uppstå av artificiella ljuskällor, fönster och andra öppningar, genomskinliga eller halvgenomskinliga väggar, och ljusa inventarier och väggar.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": "Arbetsplatsen",
+          "content": "Arbetsgivaren ska se till att arbetsplatsen är dimensionerad, utformad och utrustad så att arbetstagaren kan variera och arbeta med bekväma arbetsställningar och arbetsrörelser. I Arbetsmiljöverkets föreskrifter och allmänna råd (AFS 2023:10) om risker i arbetsmiljön finns grundläggande bestämmelser om belastningsergonomi.\nBildskärmen, tangentbordet eller motsvarande, ska placeras så att arbetshöjden och blickvinkeln till skärmen blir lämplig och passar användarens kroppsmått.\nArbetsbord och arbetsytor ska vara tillräckligt stora, så att skärm, tangentbord, datormus, dokument och övrig utrustning kan placeras flexibelt. Arbetstagaren ska kunna avlasta armar och händer på bordsytan.\nOm man använder manushållare, ska den vara stabil och reglerbar och placeras så att man undviker olämpliga huvud- och ögonrörelser.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska se till att arbetsplatsen är dimensionerad, utformad och utrustad så att arbetstagaren kan variera och arbeta med bekväma arbetsställningar och arbetsrörelser. I Arbetsmiljöverkets föreskrifter och allmänna råd (AFS 2023:10) om risker i arbetsmiljön finns grundläggande bestämmelser om belastningsergonomi.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Bildskärmen, tangentbordet eller motsvarande, ska placeras så att arbetshöjden och blickvinkeln till skärmen blir lämplig och passar användarens kroppsmått.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Arbetsbord och arbetsytor ska vara tillräckligt stora, så att skärm, tangentbord, datormus, dokument och övrig utrustning kan placeras flexibelt. Arbetstagaren ska kunna avlasta armar och händer på bordsytan.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Om man använder manushållare, ska den vara stabil och reglerbar och placeras så att man undviker olämpliga huvud- och ögonrörelser.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "Arbetsstolen ska vara stadig, ge möjlighet till rörelsefrihet och en bekväm arbetsställning. Stolen ska vara lätt att ställa in. Sitsen och ryggstödet ska vara reglerbara i höjdled och ryggstödet ska kunna vinklas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsstolen ska vara stadig, ge möjlighet till rörelsefrihet och en bekväm arbetsställning. Stolen ska vara lätt att ställa in. Sitsen och ryggstödet ska vara reglerbara i höjdled och ryggstödet ska kunna vinklas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": "Synundersökning och glasögon för bildskärmsarbete",
+          "content": "Arbetsgivaren ska erbjuda arbetstagare, som normalt ska arbeta vid bildskärm mer än en timme under arbetsdagen, att genomgå en synundersökning. En person med tillräckliga kvalifikationer ska utföra undersökningen.\nOm arbetstagaren nyligen har genomgått en synundersökning hos en annan arbetsgivare, ska en ny synundersökning genomföras bara om\ndet finns nya eller förändrade synkrav i det aktuella bildskärmsarbetet, ellerarbetstagarens syn har förändrats sedan den förra synundersökningen.\nArbetsgivaren ska därefter ordna synundersökningar regelbundet, samt när arbetstagaren uppger besvär som kan ha samband med synkraven i arbetet.\nArbetsgivaren ska stå för kostnaderna för synundersökningen. Denna ska även bekosta glasögon om\nsynundersökningen visar att arbetstagaren behöver särskilda glasögon, som är utprovade för bildskärmsarbetet, ochglasögon som arbetstagaren normalt använder, inte kan användas.\nOm synundersökningen visar att det behövs en kompletterande undersökning av en ögonläkare på grund av synkraven i arbetet med bildskärm, ska arbetsgivaren ordna en sådan undersökning.\nAllmänna råd\nSynundersökningen kan man dela upp i två steg:\nSynscreening för att bedöma om arbetstagaren behöver en synkorrektion.\nFullständig synundersökning för de arbetstagare som behöver synkorrektion.\nEn person med tillräckliga kvalifikationer för att utföra en synscreening kan till exempel vara personal från företagshälsovården med utbildning i synundersökning.\nEn fullständig synundersökning omfattar bestämning av synskärpa och eventuell ordination av särskilda arbetsglasögon. Det är viktigt att ta hänsyn till synkraven i den aktuella arbetssituationen. En person med tillräckliga kvalifikationer för att utföra en fullständig synundersökning, är ögonläkare eller optiker med kunskaper inom synergonomi och arbetsmedicin.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska erbjuda arbetstagare, som normalt ska arbeta vid bildskärm mer än en timme under arbetsdagen, att genomgå en synundersökning. En person med tillräckliga kvalifikationer ska utföra undersökningen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om arbetstagaren nyligen har genomgått en synundersökning hos en annan arbetsgivare, ska en ny synundersökning genomföras bara om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "det finns nya eller förändrade synkrav i det aktuella bildskärmsarbetet, ellerarbetstagarens syn har förändrats sedan den förra synundersökningen.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\"><li><p class=\"text\">det finns nya eller förändrade synkrav i det aktuella bildskärmsarbetet, eller</p></li><li><p class=\"text\">arbetstagarens syn har förändrats sedan den förra synundersökningen.</p></li></ol>"
+            },
+            {
+              "number": 4,
+              "text": "Arbetsgivaren ska därefter ordna synundersökningar regelbundet, samt när arbetstagaren uppger besvär som kan ha samband med synkraven i arbetet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "Arbetsgivaren ska stå för kostnaderna för synundersökningen. Denna ska även bekosta glasögon om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 6,
+              "text": "synundersökningen visar att arbetstagaren behöver särskilda glasögon, som är utprovade för bildskärmsarbetet, ochglasögon som arbetstagaren normalt använder, inte kan användas.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\"><li><p class=\"text\">synundersökningen visar att arbetstagaren behöver särskilda glasögon, som är utprovade för bildskärmsarbetet, och</p></li><li><p class=\"text\">glasögon som arbetstagaren normalt använder, inte kan användas.</p></li></ol>"
+            },
+            {
+              "number": 7,
+              "text": "Om synundersökningen visar att det behövs en kompletterande undersökning av en ögonläkare på grund av synkraven i arbetet med bildskärm, ska arbetsgivaren ordna en sådan undersökning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänna råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Synundersökningen kan man dela upp i två steg:",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Synscreening för att bedöma om arbetstagaren behöver en synkorrektion.",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Fullständig synundersökning för de arbetstagare som behöver synkorrektion.",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "En person med tillräckliga kvalifikationer för att utföra en synscreening kan till exempel vara personal från företagshälsovården med utbildning i synundersökning.",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "En fullständig synundersökning omfattar bestämning av synskärpa och eventuell ordination av särskilda arbetsglasögon. Det är viktigt att ta hänsyn till synkraven i den aktuella arbetssituationen. En person med tillräckliga kvalifikationer för att utföra en fullständig synundersökning, är ögonläkare eller optiker med kunskaper inom synergonomi och arbetsmedicin.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": "Omgivande miljö",
+          "content": "Arbetsgivaren ska se till att buller, värme, kemiska ämnen samt elektriska och magnetiska fält från bildskärmen och den tillhörande utrustningen, inte stör eller orsakar besvär eller obehag, som är en risk för arbetstagarens säkerhet och hälsa.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Arbetsgivaren ska se till att buller, värme, kemiska ämnen samt elektriska och magnetiska fält från bildskärmen och den tillhörande utrustningen, inte stör eller orsakar besvär eller obehag, som är en risk för arbetstagarens säkerhet och hälsa.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "AFS 2023:11 kap. 3",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

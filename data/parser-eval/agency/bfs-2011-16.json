@@ -1,0 +1,494 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Boverkets föreskrifter och allmänna råd om funktionskontroll av ventilationssystem och certifiering av sakkunniga funktionskontrollanter",
+  "documentNumber": "BFS 2011:16",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna författning innehåller föreskrifter och allmänna råd, dels om undantag från funktionskontroll, dels om intervaller för återkommande besiktning m.m., dels om certifiering av sakkunniga funktionskontrollanter och sådana sakkunniga som avses i 10 kap. 8 § 2 plan- och bygglagen (2010:900), som ska utföra de kontroller som behövs för att verifiera att samhällets krav om skydd med hänsyn till hygien, hälsa och miljön med avseende på luft uppfylls. I denna författning används begreppet funktionskontrollant för både sakkunnig funktionskontrollant enligt 8 kap. 25 § plan- och bygglagen och sådan sakkunnig som avses i 10 kap. 8 § 2 plan- och bygglagen.\nDe allmänna råden innehåller rekommendationer om och exempel på tillämpningen av föreskrifterna i denna författning. De allmänna råden föregås av texten Allmänt råd och är tryckta med mindre och indragen text omedelbart efter den föreskrift de hänför sig till. (BFS 2017:10).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna författning innehåller föreskrifter och allmänna råd, dels om undantag från funktionskontroll, dels om intervaller för återkommande besiktning m.m., dels om certifiering av sakkunniga funktionskontrollanter och sådana sakkunniga som avses i 10 kap. 8 § 2 plan- och bygglagen (2010:900), som ska utföra de kontroller som behövs för att verifiera att samhällets krav om skydd med hänsyn till hygien, hälsa och miljön med avseende på luft uppfylls. I denna författning används begreppet funktionskontrollant för både sakkunnig funktionskontrollant enligt 8 kap. 25 § plan- och bygglagen och sådan sakkunnig som avses i 10 kap. 8 § 2 plan- och bygglagen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "De allmänna råden innehåller rekommendationer om och exempel på tillämpningen av föreskrifterna i denna författning. De allmänna råden föregås av texten Allmänt råd och är tryckta med mindre och indragen text omedelbart efter den föreskrift de hänför sig till. (BFS 2017:10).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Undantag från funktionskontroll",
+          "content": "Kravet på funktionskontroll gäller inte en- och tvåbostadshus med självdragsventilation eller mekanisk frånluftsventilation utan värmeåtervinning.\nKravet gäller inte heller ekonomibyggnader för jordbruk, skogsbruk eller därmed jämförlig näring, industribyggnader samt byggnader som är avsedda för totalförsvaret och som är av hemlig natur. (BFS 2017:10).\nAllmänt råd\nStorkök, centralkök och motsvarande i separata byggnader bör också betraktas som industribyggnader.\nOm det finns kontors- och personalutrymmen i en industribyggnad bör ventilationssystem som betjänar sådana utrymmen funktionskontrolleras. (BFS 2012:6).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Kravet på funktionskontroll gäller inte en- och tvåbostadshus med självdragsventilation eller mekanisk frånluftsventilation utan värmeåtervinning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Kravet gäller inte heller ekonomibyggnader för jordbruk, skogsbruk eller därmed jämförlig näring, industribyggnader samt byggnader som är avsedda för totalförsvaret och som är av hemlig natur. (BFS 2017:10).",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänt råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Storkök, centralkök och motsvarande i separata byggnader bör också betraktas som industribyggnader.",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Om det finns kontors- och personalutrymmen i en industribyggnad bör ventilationssystem som betjänar sådana utrymmen funktionskontrolleras. (BFS 2012:6).",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Intervaller för återkommande besiktning m.m.",
+          "content": "Återkommande besiktning ska utföras med de intervall som anges i följande sammanställning:\nBesiktning ska utföras senast inom föreskrivet intervall. Om besiktningen utförs tidigare än inom föreskrivet intervall ska dock nästa besiktning ske senast inom föreskrivet intervall (tre eller sex år) räknat från den senaste faktiskt utförda besiktningen. Om besiktningen inte har utförts inom föreskrivet intervall ska tiden för nästa besiktning räknas från när den senaste besiktningen skulle ha utförts.\nAllmänt råd\nExempel på byggnader som oavsett typ av ventilationssystem alltid bör ingå i kategori 1 är även gymnasier, fritidshem och servicehus för äldre. Högskolor och universitet, samlingslokaler, butikslokaler, teatrar, biografer, idrottshallar, terminaler, museer, utställningshallar, hotell och garage bör däremot hänföras till kategori 1 eller 2 beroende på typ av ventilationssystem.\nMed FT-ventilation avses fläktventilation där både frånlufts- och tilluftsflödena är fläktstyrda. Med F-ventilation avses fläktventilation där endast frånluftsflödet är fläktstyrt. Med S-ventilation avses självdragsventilation.\nMed FTX- och FX-ventilation avses FT- respektive F-ventilation med värmeåtervinning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Återkommande besiktning ska utföras med de intervall som anges i följande sammanställning:",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Byggnader\n          Besiktningsintervall\n        \n      \n      \n        \n          1. Förskolor, skolor, vårdlokaler och liknande oavsett typ av ventilationssystem samt flerbostadshus, kontorsbyggnader och liknande med FT- och FTX-ventilation.\n          3 år\n        \n        \n          2. Flerbostadshus, kontorsbyggnader och liknande med F-, FX- och S-ventilation.\n          6 år",
+              "role": "TABLE",
+              "htmlContent": "<table class=\"legal-table\">\n      <thead>\n        <tr>\n          <th>Byggnader</th>\n          <th>Besiktningsintervall</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr>\n          <td>1. Förskolor, skolor, vårdlokaler och liknande oavsett typ av ventilationssystem samt flerbostadshus, kontorsbyggnader och liknande med FT- och FTX-ventilation.</td>\n          <td>3 år</td>\n        </tr>\n        <tr>\n          <td>2. Flerbostadshus, kontorsbyggnader och liknande med F-, FX- och S-ventilation.</td>\n          <td>6 år</td>\n        </tr>\n      </tbody>\n    </table>"
+            },
+            {
+              "number": 2,
+              "text": "Besiktning ska utföras senast inom föreskrivet intervall. Om besiktningen utförs tidigare än inom föreskrivet intervall ska dock nästa besiktning ske senast inom föreskrivet intervall (tre eller sex år) räknat från den senaste faktiskt utförda besiktningen. Om besiktningen inte har utförts inom föreskrivet intervall ska tiden för nästa besiktning räknas från när den senaste besiktningen skulle ha utförts.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänt råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Exempel på byggnader som oavsett typ av ventilationssystem alltid bör ingå i kategori 1 är även gymnasier, fritidshem och servicehus för äldre. Högskolor och universitet, samlingslokaler, butikslokaler, teatrar, biografer, idrottshallar, terminaler, museer, utställningshallar, hotell och garage bör däremot hänföras till kategori 1 eller 2 beroende på typ av ventilationssystem.",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Med FT-ventilation avses fläktventilation där både frånlufts- och tilluftsflödena är fläktstyrda. Med F-ventilation avses fläktventilation där endast frånluftsflödet är fläktstyrt. Med S-ventilation avses självdragsventilation.",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Med FTX- och FX-ventilation avses FT- respektive F-ventilation med värmeåtervinning.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Om det finns särskilda skäl, får den eller de kommunala nämnder som fullgör kommunens uppgifter enligt plan- och bygglagen, besluta om senareläggning av de besiktningstidpunkter som följer av 3 §.\nAllmänt råd\nSärskilda skäl för senareläggning kan vara att en byggnad berörs av en omedelbar ändringsåtgärd eller att en byggnad inte är i bruk.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det finns särskilda skäl, får den eller de kommunala nämnder som fullgör kommunens uppgifter enligt plan- och bygglagen, besluta om senareläggning av de besiktningstidpunkter som följer av 3 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänt råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Särskilda skäl för senareläggning kan vara att en byggnad berörs av en omedelbar ändringsåtgärd eller att en byggnad inte är i bruk.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Certifiering av funktionskontrollant",
+          "content": "För att bli certifierad som funktionskontrollant enligt 8 kap. 25 § och 10 kap. 8 § 2 plan- och bygglagen, ska kraven i 7–16 §§ denna författning uppfyllas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att bli certifierad som funktionskontrollant enligt 8 kap. 25 § och 10 kap. 8 § 2 plan- och bygglagen, ska kraven i 7–16 §§ denna författning uppfyllas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Behörighet får lämnas enligt följande:\nBehörighet N: Alla byggnader med S-, F- och FX-ventilation samt en- och tvåbostadshus med FT- och FTX-ventilation.\nBehörighet K: Alla byggnader oavsett typ av ventilationssystem. (BFS 2017:10).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Behörighet får lämnas enligt följande:",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Behörighet N: Alla byggnader med S-, F- och FX-ventilation samt en- och tvåbostadshus med FT- och FTX-ventilation.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Behörighet K: Alla byggnader oavsett typ av ventilationssystem. (BFS 2017:10).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "För att få behörighet N eller K ska sökanden ha allmän teknisk kunskap genom avlagd examen eller genomförd utbildning med inriktning mot installationsteknik i kombination med byggnaders styr- och reglerteknik, energisystem eller byggnadsteknik från\nteknisk högskola motsvarande minst 120 högskolepoäng,\n      yrkeshögskoleutbildning eller tidigare yrkesteknisk utbildning,\n      tre- eller fyraårig teknisk gymnasieutbildning, eller\n      annan likvärdig utbildning. (BFS 2017:10).\nAllmänt råd\nAnnan likvärdig utbildning enligt punkt 4 ovan bör omfatta en studietid om minst 70 veckor. (BFS 2017:10).\nUtbildningskravet kan även tillgodoses genom motsvarande utbildningar i annat land inom Europeiska unionen eller Europeiska ekonomiska samarbetsområdet. (BFS 2017:10).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att få behörighet N eller K ska sökanden ha allmän teknisk kunskap genom avlagd examen eller genomförd utbildning med inriktning mot installationsteknik i kombination med byggnaders styr- och reglerteknik, energisystem eller byggnadsteknik från",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "teknisk högskola motsvarande minst 120 högskolepoäng,\n      yrkeshögskoleutbildning eller tidigare yrkesteknisk utbildning,\n      tre- eller fyraårig teknisk gymnasieutbildning, eller\n      annan likvärdig utbildning. (BFS 2017:10).",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>teknisk högskola motsvarande minst 120 högskolepoäng,</li>\n      <li>yrkeshögskoleutbildning eller tidigare yrkesteknisk utbildning,</li>\n      <li>tre- eller fyraårig teknisk gymnasieutbildning, eller</li>\n      <li>annan likvärdig utbildning. (BFS 2017:10).</li>\n    </ol>"
+            },
+            {
+              "number": null,
+              "text": "Allmänt råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Annan likvärdig utbildning enligt punkt 4 ovan bör omfatta en studietid om minst 70 veckor. (BFS 2017:10).",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Utbildningskravet kan även tillgodoses genom motsvarande utbildningar i annat land inom Europeiska unionen eller Europeiska ekonomiska samarbetsområdet. (BFS 2017:10).",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Allmän teknisk kunskap enligt 7 § krävs inte för sökande för behörighet N med minst sju års yrkeserfarenhet inom de områden som framgår av 9 §. Detsamma gäller för sökande för behörighet K med minst nio års yrkeserfarenhet inom de områden som framgår av 10 §. (BFS 2017:10).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Allmän teknisk kunskap enligt 7 § krävs inte för sökande för behörighet N med minst sju års yrkeserfarenhet inom de områden som framgår av 9 §. Detsamma gäller för sökande för behörighet K med minst nio års yrkeserfarenhet inom de områden som framgår av 10 §. (BFS 2017:10).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "För att få behörighet N ska sökanden efter erhållen allmän teknisk kunskap enligt 7 §, under minst två år ha varit yrkesverksam inom injustering och flödesmätning samt kontroll av sådana byggnaders ventilationssystem som framgår av 6 § för behörighet N. (BFS 2017:10).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att få behörighet N ska sökanden efter erhållen allmän teknisk kunskap enligt 7 §, under minst två år ha varit yrkesverksam inom injustering och flödesmätning samt kontroll av sådana byggnaders ventilationssystem som framgår av 6 § för behörighet N. (BFS 2017:10).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "För att få behörighet K ska sökanden efter erhållen allmän teknisk kunskap enligt 7 § ha varit yrkesverksam inom injustering och flödesmätning samt arbetsledning, projektering, besiktning eller entreprenadkontroll av ventilationssystem typ FT/FTX under minst\ntre år med utbildning enligt 7 § första stycket 1,\n      fyra år med utbildning enligt 7 § första stycket 2,\n      fem år med utbildning enligt 7 § första stycket 3 eller 4. (BFS 2017:10).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att få behörighet K ska sökanden efter erhållen allmän teknisk kunskap enligt 7 § ha varit yrkesverksam inom injustering och flödesmätning samt arbetsledning, projektering, besiktning eller entreprenadkontroll av ventilationssystem typ FT/FTX under minst",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "tre år med utbildning enligt 7 § första stycket 1,\n      fyra år med utbildning enligt 7 § första stycket 2,\n      fem år med utbildning enligt 7 § första stycket 3 eller 4. (BFS 2017:10).",
+              "role": "STYCKE",
+              "htmlContent": "<ul>\n      <li>tre år med utbildning enligt 7 § första stycket 1,</li>\n      <li>fyra år med utbildning enligt 7 § första stycket 2,</li>\n      <li>fem år med utbildning enligt 7 § första stycket 3 eller 4. (BFS 2017:10).</li>\n    </ul>"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Utöver de kompetenskrav som anges i 7–10 §§ ska sökanden ha kunskaper avseende ventilation och inomhusmiljö samt energi inom tillämpliga delar av\nplan- och bygglagen (2010:900), plan- och byggförordningen (2011:338) samt de föreskrifter och allmänna råd som har meddelats med stöd av dessa författningar,\n      äldre lagar och föreskrifter som berör byggandet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utöver de kompetenskrav som anges i 7–10 §§ ska sökanden ha kunskaper avseende ventilation och inomhusmiljö samt energi inom tillämpliga delar av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "plan- och bygglagen (2010:900), plan- och byggförordningen (2011:338) samt de föreskrifter och allmänna råd som har meddelats med stöd av dessa författningar,\n      äldre lagar och föreskrifter som berör byggandet.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>plan- och <a href=\"/lagar/plan-och-bygglag-2010900-2010-900\" class=\"legal-ref\" title=\"Plan- och bygglag (2010:900)\" target=\"_blank\" rel=\"noopener\">bygglagen (2010:900)</a>, plan- och <a href=\"/lagar/plan-och-byggforordning-2011338-2011-338\" class=\"legal-ref\" title=\"Plan- och byggförordning (2011:338)\" target=\"_blank\" rel=\"noopener\">byggförordningen (2011:338)</a> samt de föreskrifter och allmänna råd som har meddelats med stöd av dessa författningar,</li>\n      <li>äldre lagar och föreskrifter som berör byggandet.</li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "Utöver de kompetenskrav som anges i 7–10 §§ ska sökanden ha kännedom avseende ventilation och inomhusmiljö samt energi inom tillämpliga delar av\narbetsmiljölagen (1977:1160) och Arbetsmiljöverkets föreskrifter och allmänna råd om arbetsplatsens utformning (AFS 2009:2),\n      Arbetsmiljöverkets föreskrifter och allmänna råd om asbest (AFS 2006:1),\n      Folkhälsomyndighetens allmänna råd om ventilation (FoHMFS 2014:18),\n      miljöbalken,\n      lagen (2006:985) om energideklaration för byggnader,\n      förordningen (2006:1592) om energideklaration för byggnader, samt\n      Boverkets föreskrifter och allmänna råd (2007:4) om energideklaration för byggnader. (BFS 2017:10).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utöver de kompetenskrav som anges i 7–10 §§ ska sökanden ha kännedom avseende ventilation och inomhusmiljö samt energi inom tillämpliga delar av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "arbetsmiljölagen (1977:1160) och Arbetsmiljöverkets föreskrifter och allmänna råd om arbetsplatsens utformning (AFS 2009:2),\n      Arbetsmiljöverkets föreskrifter och allmänna råd om asbest (AFS 2006:1),\n      Folkhälsomyndighetens allmänna råd om ventilation (FoHMFS 2014:18),\n      miljöbalken,\n      lagen (2006:985) om energideklaration för byggnader,\n      förordningen (2006:1592) om energideklaration för byggnader, samt\n      Boverkets föreskrifter och allmänna råd (2007:4) om energideklaration för byggnader. (BFS 2017:10).",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li><a href=\"/lagar/arbetsmiljolag-19771160-1977-1160\" class=\"legal-ref\" title=\"Arbetsmiljölag (1977:1160)\" target=\"_blank\" rel=\"noopener\">arbetsmiljölagen (1977:1160)</a> och Arbetsmiljöverkets föreskrifter och allmänna råd om arbetsplatsens utformning (AFS 2009:2),</li>\n      <li>Arbetsmiljöverkets föreskrifter och allmänna råd om asbest (AFS 2006:1),</li>\n      <li>Folkhälsomyndighetens allmänna råd om ventilation (FoHMFS 2014:18),</li>\n      <li>miljöbalken,</li>\n      <li><a href=\"/lagar/lag-2006985-om-energideklaration-for-byggnader-2006-985\" class=\"legal-ref\" title=\"Lag (2006:985) om energideklaration för byggnader\" target=\"_blank\" rel=\"noopener\">lagen (2006:985)</a> om energideklaration för byggnader,</li>\n      <li><a href=\"/lagar/forordning-20061592-om-energideklaration-for-byggn-2006-1592\" class=\"legal-ref\" title=\"Förordning (2006:1592) om energideklaration för byggnader\" target=\"_blank\" rel=\"noopener\">förordningen (2006:1592)</a> om energideklaration för byggnader, samt</li>\n      <li>Boverkets föreskrifter och allmänna råd (2007:4) om energideklaration för byggnader. (BFS 2017:10).</li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "Sökanden för behörighet N ska också ha kunskap om\nbyggnaders grundläggande inneklimatfaktorer som påverkar människors hälsa och mätmetoder för inneklimatfaktorerna,\n      värmeåtervinningssystem med koppling till värme, och tappvatten samt dess uppbyggnad, komponenter och reglering,\n      möjliga energieffektiviseringsåtgärder i ventilationssystemet med hänsyn till inomhusmiljön.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sökanden för behörighet N ska också ha kunskap om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "byggnaders grundläggande inneklimatfaktorer som påverkar människors hälsa och mätmetoder för inneklimatfaktorerna,\n      värmeåtervinningssystem med koppling till värme, och tappvatten samt dess uppbyggnad, komponenter och reglering,\n      möjliga energieffektiviseringsåtgärder i ventilationssystemet med hänsyn till inomhusmiljön.",
+              "role": "STYCKE",
+              "htmlContent": "<ul>\n      <li>byggnaders grundläggande inneklimatfaktorer som påverkar människors hälsa och mätmetoder för inneklimatfaktorerna,</li>\n      <li>värmeåtervinningssystem med koppling till värme, och tappvatten samt dess uppbyggnad, komponenter och reglering,</li>\n      <li>möjliga energieffektiviseringsåtgärder i ventilationssystemet med hänsyn till inomhusmiljön.</li>\n    </ul>"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": null,
+          "content": "Utöver kraven i 13 § ska sökanden för behörighet K ha kunskap om\nradonmätningar och möjliga åtgärdsförslag för att minska radon i byggnader,\n      vatten- och luftburna komfortkylsystem och deras funktion, uppbyggnad komponenter och reglering.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utöver kraven i 13 § ska sökanden för behörighet K ha kunskap om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "radonmätningar och möjliga åtgärdsförslag för att minska radon i byggnader,\n      vatten- och luftburna komfortkylsystem och deras funktion, uppbyggnad komponenter och reglering.",
+              "role": "STYCKE",
+              "htmlContent": "<ul>\n      <li>radonmätningar och möjliga åtgärdsförslag för att minska radon i byggnader,</li>\n      <li>vatten- och luftburna komfortkylsystem och deras funktion, uppbyggnad komponenter och reglering.</li>\n    </ul>"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": null,
+          "content": "Sökandens kunskap och kännedom enligt 11–14 §§ ska dokumenteras genom skriftligt kunskapsprov.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sökandens kunskap och kännedom enligt 11–14 §§ ska dokumenteras genom skriftligt kunskapsprov.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": null,
+          "content": "Den sökande ska vara lämplig för uppgiften. Lämpligheten ska styrkas med aktuellt intyg.\nAllmänt råd\nIntygsgivaren bör ha, eller ha haft, en nära arbetsrelation till sökanden som arbetsgivare eller liknande. Även intyg som lämnats från byggnadsnämnden bör kunna godtas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den sökande ska vara lämplig för uppgiften. Lämpligheten ska styrkas med aktuellt intyg.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänt råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Intygsgivaren bör ha, eller ha haft, en nära arbetsrelation till sökanden som arbetsgivare eller liknande. Även intyg som lämnats från byggnadsnämnden bör kunna godtas.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": null,
+          "content": "Certifiering av funktionskontrollant får lämnas för en period av högst fem år.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Certifiering av funktionskontrollant får lämnas för en period av högst fem år.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": null,
+          "content": "Certifieringsorganet ska omgående sända beslut om meddelad eller återkallad certifiering av en funktionskontrollant till Boverket. Certifieringsorganet ska till Boverket sända uppgifter om certifieringsnummer, behörighet, giltighetstid på certifikatet, förnamn, efternamn, företag, adress, postnummer och ort samt e-postadress och telefonnummer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Certifieringsorganet ska omgående sända beslut om meddelad eller återkallad certifiering av en funktionskontrollant till Boverket. Certifieringsorganet ska till Boverket sända uppgifter om certifieringsnummer, behörighet, giltighetstid på certifikatet, förnamn, efternamn, företag, adress, postnummer och ort samt e-postadress och telefonnummer.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "19",
+          "heading": null,
+          "content": "Certifierad funktionskontrollant ska varje år lämna in rapport till certifieringsorganet med uppgifter dels om genomförda uppdrag som funktionskontrollant eller samordnare av funktionskontroller, dels om fortbildning avseende 11–14 §§ denna författning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Certifierad funktionskontrollant ska varje år lämna in rapport till certifieringsorganet med uppgifter dels om genomförda uppdrag som funktionskontrollant eller samordnare av funktionskontroller, dels om fortbildning avseende 11–14 §§ denna författning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "20",
+          "heading": null,
+          "content": "För att få ett nytt beslut om certifiering ska den certifierade funktionskontrollanten gå igenom en förenklad kompetensprövning eller en förnyad grundlig kompetensprövning. Endast om det finns särskilda skäl krävs det en förnyad grundlig kompetensprövning. Lämplighet enligt 16 § ska alltid prövas. (BFS 2017:10).\nAllmänt råd\nVid en förenklad kompetensprövning kan det, förutom att pröva lämplighet, räcka att genom skriftligt kunskapsprov kontrollera att funktionskontrollanten skaffat ny kunskap under den senaste femårsperioden inom de områden som omfattas av 11–14 §§.\nSärskilda skäl, som gör att det krävs en förnyad grundlig kompetensprövning, kan vara att den sökande inte har arbetat som funktionskontrollant eller varit samordnare för funktionskontroller i väsentlig omfattning under den senaste femårsperioden.\nArbete i väsentlig omfattning bör omfatta minst 500 timmars arbete.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att få ett nytt beslut om certifiering ska den certifierade funktionskontrollanten gå igenom en förenklad kompetensprövning eller en förnyad grundlig kompetensprövning. Endast om det finns särskilda skäl krävs det en förnyad grundlig kompetensprövning. Lämplighet enligt 16 § ska alltid prövas. (BFS 2017:10).",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänt råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Vid en förenklad kompetensprövning kan det, förutom att pröva lämplighet, räcka att genom skriftligt kunskapsprov kontrollera att funktionskontrollanten skaffat ny kunskap under den senaste femårsperioden inom de områden som omfattas av 11–14 §§.",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Särskilda skäl, som gör att det krävs en förnyad grundlig kompetensprövning, kan vara att den sökande inte har arbetat som funktionskontrollant eller varit samordnare för funktionskontroller i väsentlig omfattning under den senaste femårsperioden.",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Arbete i väsentlig omfattning bör omfatta minst 500 timmars arbete.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        },
+        {
+          "number": "21",
+          "heading": null,
+          "content": "Har den certifierade funktionskontrollanten visat sig uppenbart olämplig för uppgiften eller fått certifikat på felaktiga grunder, får det organ som utfärdat certifieringen återkalla den.\nAllmänt råd\nOlämplighet kan bestå i att den certifierade har utfärdat felaktiga eller falska protokoll eller har varit oskicklig i arbetet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har den certifierade funktionskontrollanten visat sig uppenbart olämplig för uppgiften eller fått certifikat på felaktiga grunder, får det organ som utfärdat certifieringen återkalla den.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänt råd",
+              "role": "ALLMANT_RAD"
+            },
+            {
+              "number": null,
+              "text": "Olämplighet kan bestå i att den certifierade har utfärdat felaktiga eller falska protokoll eller har varit oskicklig i arbetet.",
+              "role": "ALLMANT_RAD"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "BFS 2011:16",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Dessa föreskrifter träder i kraft den 1 januari 2012. Föreskrifterna gäller för alla byggnader oavsett när de har uppförts.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "BFS 2012:6",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Dessa föreskrifter träder i kraft den 1 maj 2012.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "BFS 2017:10",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Dessa föreskrifter träder i kraft den 1 juli 2017.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "BFS 2011:16",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

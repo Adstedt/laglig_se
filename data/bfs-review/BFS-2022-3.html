@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2022:3</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2022-3">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2022:3</p>
+      <p class="text">Boverkets föreskrifter och allmänna råd om energimätning i byggnader</p>
+    </h1>
+  </div>
+  <div class="body">
+    <p class="text">Utkom från trycket den 9 juni 2022</p>
+    <p class="text">beslutade den 7 juni 2022.</p>
+    <p class="text">Boverket föreskriver<sup class="footnote-ref" data-note="1" title="Jfr Europaparlamentets och rådets direktiv 2012/27/EU av den 25 oktober 2012 om energieffektivitet, om ändring av direktiven 2009/125/EG och 2010/30/EU och om upphävande av direktiven 2004/8/EG och 2006/32/EG (EGT L 315/1, Celex 32012L0027), senast ändrad genom Europaparlamentets och rådets direktiv (EU) 2018/2002 av den 11 december 2018 om ändring av direktiv 2012/27/EU om energieffektivitet (EGT L 328/210, Celex 32018L2002).">1</sup> följande med stöd av 10 och 11 §§ förordningen (2022:336) om energimätning i byggnader.</p>
+
+    <h3 id="BFS2022-3_inledning">Inledning</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P1" name="BFS2022-3_P1">1 §</a>
+    </h3>
+    <p class="text">Denna författning innehåller föreskrifter till lagen (2022:333) om energimätning i byggnader och förordningen (2022:336) om energimätning i byggnader.</p>
+
+    <h3 id="BFS2022-3_definitioner">Definitioner</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P2" name="BFS2022-3_P2">2 §</a>
+    </h3>
+    <p class="text">Termer och uttryck i denna författning har samma betydelse som i lagen (2022:333) om energimätning i byggnader, förordningen (2022:336) om energimätning i byggnader och plan- och bygglagen (2010:900).</p>
+
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P3" name="BFS2022-3_P3">3 §</a>
+    </h3>
+    <p class="text">I denna författning avses med:</p>
+    <p class="text"><strong>A<sub>temp</sub>:</strong> Arean av samtliga våningsplan, vindsplan och källarplan för temperaturreglerade utrymmen, avsedda att värmas till mer än 10 ºC, som begränsas av klimatskärmens insida. Area som upptas av innerväggar, öppningar för trappa, schakt och dylikt, inräknas. Area för garage, inom byggnaden i bostadshus eller annan lokalbyggnad än garage, inräknas inte.</p>
+    <p class="text"><strong>Byggnadens energianvändning, E<sub>bea</sub>:</strong> Den summerade energi som vid normalt brukande under ett normalår behöver levereras till en byggnad (oftast benämnd köpt energi) för uppvärmning (E<sub>uppv</sub>), komfortkyla (E<sub>kyl</sub>), tappvarmvatten (E<sub>tvv</sub>) och byggnadens fastighetsenergi (E<sub>f</sub>). Om golvvärme, handdukstork eller annan apparat för uppvärmning installeras, inräknas även dess energianvändning. Energi från sol, vind, mark, luft eller vatten som alstras i byggnaden eller på dess tomt och används till byggnadens uppvärmning, komfortkyla, varmvatten och fastighetsenergi räknas inte med i byggnadens energianvändning. Byggnadens energianvändning (E<sub>bea</sub>) beräknas enligt nedanstående formel:</p>
+    <p class="text" style="text-align: center;">E<sub>bea</sub> = E<sub>uppv</sub> + E<sub>kyl</sub> + E<sub>tvv</sub> + E<sub>f</sub></p>
+    <p class="text"><strong>Byggnadens fastighetsenergi, E<sub>f</sub> (kWh/år):</strong> Den del av byggnadens energianvändning som är relaterad till byggnadens behov där den energikrävande apparaten finns inom, under eller anbringad på utsidan av byggnaden. I fastighetsenergin ingår fast belysning i allmänna utrymmen och driftsutrymmen. Dessutom ingår energi som används i värmekablar, pumpar, fläktar, motorer, styr- och övervakningsutrustning och dylikt. Även externt lokalt placerad apparat som försörjer byggnaden, såsom pumpar och fläktar för frikyla, inräknas. Apparater avsedda för annan användning än för byggnaden, såsom motor- och kupévärmare för fordon, batteriladdare för extern användare, belysning i trädgård och på gångstråk, inräknas inte.</p>
+    <p class="text"><strong>Byggnadens primärenergital, EP<sub>pet</sub> (kWh/m<sup>2</sup> och år):</strong> Det värde som beskriver byggnadens energiprestanda. Primärenergitalet beräknas ur byggnadens energianvändning, där summan av energi till uppvärmning (E<sub>uppv,i</sub>), korrigerad med en geografisk justeringsfaktor (F<sub>geo</sub>), energi till komfortkyla (E<sub>kyl,i</sub>), energi till tappvarmvatten (E<sub>tvv,i</sub>) och fastighetsenergi (E<sub>f,i</sub>) för varje energibärare, multipliceras med primärenergifaktorn för respektive energibärare och fördelat på A<sub>temp</sub>. Primärenergitalet (EP<sub>pet</sub>), beräknas enligt nedanstående formel:</p>
+    <p class="text" style="text-align: center;">EP<sub>pet</sub> = (Σ<sub>i=1</sub><sup>6</sup> (E<sub>uppv,i</sub>/F<sub>geo</sub> + E<sub>kyl,i</sub> + E<sub>tvv,i</sub> + E<sub>f,i</sub>) × PE<sub>i</sub>) / A<sub>temp</sub></p>
+    <p class="text"><strong>Drift- och underhållskostnader, DK<sub>i</sub>:</strong> Omfattar kostnader för bland annat underhåll av mätutrustning, avläsning av mätare och kostnader för fördelning och debitering av varje hyresgäst samt tillkommande administrativa kostnader för rapportering av faktureringsinformation till lägenhetsinnehavare, informationsinsatser, hyresförhandlingar om individuell mätning och debitering, kostnader för att hantera boendes klagomål och kostnader för momsredovisning.</p>
+    <p class="text"><strong>Ekonomisk livslängd, n:</strong> Den tid som en investering är, eller bedöms vara, företagsekonomiskt lönsam.</p>
+    <p class="text"><strong>Energi för komfortkyla, E<sub>kyl</sub> (kWh/år):</strong> Den till byggnaden levererade kyl- eller energimängd som används för att sänka byggnadens innetemperatur för människors komfort. Kylenergi som hämtas direkt från omgivningen utan kylmaskin från sjövatten, uteluft dylikt (s.k. frikyla), inräknas inte.</p>
+    <p class="text"><strong>Energimix:</strong> Energileverantörens totalt tillförda bränslen eller energibärare uppdelade på olika ursprung.</p>
+    <p class="text"><strong>Fjärravläsning:</strong> Avläsning av mätares register på distans, vilket inte kräver tillträde till enskilda lägenheter/enheter, för överföring av de avlästa mätvärdena till insamlingssystemet.</p>
+    <p class="text"><strong>Grundinvestering, G:</strong> Kostnader för mätare, installation och driftsättning.</p>
+    <p class="text"><strong>Internränta, IR:</strong> Genomsnittlig årlig procentuell avkastning av en investering.</p>
+    <p class="text"><strong>Kalkylränta:</strong> Den räntesats som motsvarar byggnadsägarens avkastningskrav på investerat kapital.</p>
+
+    <h3 id="BFS2022-3_berakning-av-primarenergital-for-energimatning-i-byggnaden">Beräkning av primärenergital för energimätning i byggnaden</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P4" name="BFS2022-3_P4">4 §</a>
+    </h3>
+    <p class="text">Vid fastställande av byggnadens energiprestanda, uttryckt som primärenergital, ska hänsyn tas till primärenergifaktorer enligt tabell 1 och geografisk justeringsfaktor enligt tabell 2.</p>
+    <p class="text">Vid beräkningen av byggnadens primärenergital ska byggnadens energianvändning fastställas enligt Boverkets föreskrifter och allmänna råd (2016:12) om fastställande av byggnadens energianvändning vid normalt brukande och ett normalår.</p>
+
+    <table class="legal-table">
+      <caption>Tabell 1 Primärenergifaktorer</caption>
+      <thead>
+        <tr>
+          <th>Energibärare</th>
+          <th>Primärenergifaktor (PE<sub>i</sub>)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>El (PE<sub>el</sub>)</td>
+          <td>1,6</td>
+        </tr>
+        <tr>
+          <td>Fjärrvärme (PE<sub>fjv</sub>)</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Fjärrkyla (PE<sub>kyl</sub>)</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Biobränsle (PE<sub>bio</sub>)</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Olja (PE<sub>olja</sub>)</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Gas (PE<sub>gas</sub>)</td>
+          <td>1,0</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="legal-table">
+      <caption>Tabell 2 Geografiska justeringsfaktorer</caption>
+      <thead>
+        <tr>
+          <th>Län</th>
+          <th>Kommun</th>
+          <th>Geografisk justeringsfaktor F<sub>geo</sub></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Blekinge</td>
+          <td>Samtliga kommuner</td>
+          <td>0,9</td>
+        </tr>
+        <tr>
+          <td>Dalarna</td>
+          <td>Avesta, Hedemora och Säter</td>
+          <td>1,1</td>
+        </tr>
+        <tr>
+          <td>Dalarna</td>
+          <td>Borlänge, Falun, Gagnef, Leksand, Ludvika, Mora, Orsa, Rättvik, Smedjebacken och Vansbro</td>
+          <td>1,2</td>
+        </tr>
+        <tr>
+          <td>Dalarna</td>
+          <td>Malung-Sälen och Älvdalen</td>
+          <td>1,4</td>
+        </tr>
+        <tr>
+          <td>Gotland</td>
+          <td>Gotland</td>
+          <td>0,9</td>
+        </tr>
+        <tr>
+          <td>Gävleborg</td>
+          <td>Gävle, Ockelbo och Sandviken</td>
+          <td>1,1</td>
+        </tr>
+        <tr>
+          <td>Gävleborg</td>
+          <td>Bollnäs, Hofors, Hudiksvall, Nordanstig och Söderhamn</td>
+          <td>1,2</td>
+        </tr>
+        <tr>
+          <td>Gävleborg</td>
+          <td>Ljusdal och Ovanåker</td>
+          <td>1,3</td>
+        </tr>
+        <tr>
+          <td>Halland</td>
+          <td>Samtliga utom Hylte</td>
+          <td>0,9</td>
+        </tr>
+        <tr>
+          <td>Halland</td>
+          <td>Hylte</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Jämtland</td>
+          <td>Berg, Bräcke, Ragunda och Östersund</td>
+          <td>1,4</td>
+        </tr>
+        <tr>
+          <td>Jämtland</td>
+          <td>Härjedalen, Krokom och Strömsund</td>
+          <td>1,5</td>
+        </tr>
+        <tr>
+          <td>Jämtland</td>
+          <td>Åre</td>
+          <td>1,6</td>
+        </tr>
+        <tr>
+          <td>Jönköping</td>
+          <td>Aneby, Gislaved, Gnosjö, Habo, Jönköping, Mullsjö, Tranås, Vaggeryd, Vetlanda och Värnamo</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Jönköping</td>
+          <td>Eksjö, Nässjö och Sävsjö</td>
+          <td>1,1</td>
+        </tr>
+        <tr>
+          <td>Kalmar</td>
+          <td>Borgholm, Emmaboda, Kalmar, Mönsterås, Mörbylånga, Nybro, Oskarshamn, Torsås och Västervik</td>
+          <td>0,9</td>
+        </tr>
+        <tr>
+          <td>Kalmar</td>
+          <td>Hultsfred, Högsby och Vimmerby</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Kronoberg</td>
+          <td>Samtliga kommuner</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Norrbotten</td>
+          <td>Piteå</td>
+          <td>1,4</td>
+        </tr>
+        <tr>
+          <td>Norrbotten</td>
+          <td>Boden, Haparanda, Kalix, Luleå och Älvsbyn</td>
+          <td>1,5</td>
+        </tr>
+        <tr>
+          <td>Norrbotten</td>
+          <td>Arvidsjaur, Överkalix och Övertorneå</td>
+          <td>1,6</td>
+        </tr>
+        <tr>
+          <td>Norrbotten</td>
+          <td>Arjeplog och Pajala</td>
+          <td>1,7</td>
+        </tr>
+        <tr>
+          <td>Norrbotten</td>
+          <td>Jokkmokk</td>
+          <td>1,8</td>
+        </tr>
+        <tr>
+          <td>Norrbotten</td>
+          <td>Gällivare och Kiruna</td>
+          <td>1,9</td>
+        </tr>
+        <tr>
+          <td>Skåne</td>
+          <td>Höganäs, Landskrona, Lomma, Malmö och Vellinge</td>
+          <td>0,8</td>
+        </tr>
+        <tr>
+          <td>Skåne</td>
+          <td>Bjuv, Bromölla, Burlöv, Båstad, Eslöv, Helsingborg, Hässleholm, Hörby, Höör, Klippan, Kristianstad, Kävlinge, Lund, Perstorp, Simrishamn, Sjöbo, Skurup, Staffanstorp, Svalöv, Svedala, Tomelilla, Trelleborg, Ystad, Åstorp, Ängelholm och Östra Göinge</td>
+          <td>0,9</td>
+        </tr>
+        <tr>
+          <td>Skåne</td>
+          <td>Osby och Örkelljunga</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Stockholm</td>
+          <td>Samtliga kommuner</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Södermanland</td>
+          <td>Samtliga kommuner</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Uppsala</td>
+          <td>Enköping, Håbo, Knivsta och Uppsala</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Uppsala</td>
+          <td>Heby, Tierp, Älvkarleby och Östhammar</td>
+          <td>1,1</td>
+        </tr>
+        <tr>
+          <td>Värmland</td>
+          <td>Grums och Säffle</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Värmland</td>
+          <td>Arvika, Eda, Filipstad, Forshaga, Hammarö, Karlstad, Kil, Kristinehamn, Munkfors, Storfors, Sunne och Årjäng</td>
+          <td>1,1</td>
+        </tr>
+        <tr>
+          <td>Värmland</td>
+          <td>Hagfors och Torsby</td>
+          <td>1,2</td>
+        </tr>
+        <tr>
+          <td>Västerbotten</td>
+          <td>Nordmaling och Umeå</td>
+          <td>1,3</td>
+        </tr>
+        <tr>
+          <td>Västerbotten</td>
+          <td>Bjurholm, Robertsfors, Skellefteå och Vännäs</td>
+          <td>1,4</td>
+        </tr>
+        <tr>
+          <td>Västerbotten</td>
+          <td>Dorotea, Lycksele, Vindeln och Åsele</td>
+          <td>1,5</td>
+        </tr>
+        <tr>
+          <td>Västerbotten</td>
+          <td>Malå, Norsjö och Vilhelmina</td>
+          <td>1,6</td>
+        </tr>
+        <tr>
+          <td>Västerbotten</td>
+          <td>Sorsele</td>
+          <td>1,7</td>
+        </tr>
+        <tr>
+          <td>Västerbotten</td>
+          <td>Storuman</td>
+          <td>1,8</td>
+        </tr>
+        <tr>
+          <td>Västernorrland</td>
+          <td>Härnösand, Kramfors, Sundsvall, Timrå och Örnsköldsvik</td>
+          <td>1,3</td>
+        </tr>
+        <tr>
+          <td>Västernorrland</td>
+          <td>Sollefteå och Ånge</td>
+          <td>1,4</td>
+        </tr>
+        <tr>
+          <td>Västmanland</td>
+          <td>Arboga, Hallstahammar, Kungsör, Köping, Surahammar och Västerås</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Västmanland</td>
+          <td>Fagersta, Norberg, Sala och Skinnskatteberg</td>
+          <td>1,1</td>
+        </tr>
+        <tr>
+          <td>Västra Götaland</td>
+          <td>Göteborg, Härryda, Kungälv, Lerum, Lysekil, Mölndal, Orust, Partille, Sotenäs, Stenungsund, Strömstad, Tanum, Tjörn, Uddevalla och Öckerö</td>
+          <td>0,9</td>
+        </tr>
+        <tr>
+          <td>Västra Götaland</td>
+          <td>Ale, Alingsås, Bengtsfors, Bollebygd, Borås, Dals-Ed, Essunga, Falköping, Färgelanda, Grästorp, Gullspång, Götene, Herrljunga, Hjo, Karlsborg, Lidköping, Lilla Edet, Mariestad, Mark, Mellerud, Munkedal, Skara, Skövde, Svenljunga, Tibro, Tidaholm, Trollhättan, Töreboda, Vara, Vårgårda, Vänersborg och Åmål</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Västra Götaland</td>
+          <td>Tranemo och Ulricehamn</td>
+          <td>1,1</td>
+        </tr>
+        <tr>
+          <td>Örebro</td>
+          <td>Hallsberg, Kumla, Laxå, Lekeberg och Örebro</td>
+          <td>1,0</td>
+        </tr>
+        <tr>
+          <td>Örebro</td>
+          <td>Askersund, Degerfors, Hällefors, Karlskoga, Lindesberg och Nora</td>
+          <td>1,1</td>
+        </tr>
+        <tr>
+          <td>Örebro</td>
+          <td>Ljusnarsberg</td>
+          <td>1,2</td>
+        </tr>
+        <tr>
+          <td>Östergötland</td>
+          <td>Samtliga kommuner</td>
+          <td>1,0</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 id="BFS2022-3_kriterier-for-undantag-for-teknisk-genomforbarhet">Kriterier för undantag för teknisk genomförbarhet</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P5" name="BFS2022-3_P5">5 §</a>
+    </h3>
+    <p class="text">Installation av system för individuell mätning och debitering av värme är inte tekniskt genomförbart om byggnaden har luftburen värme.</p>
+    <p class="text">Installation av system för individuell mätning och debitering av värme och förbrukning av tappvarmvatten är inte tekniskt genomförbart om de historiska, kulturhistoriska, miljömässiga eller konstnärliga värdena förvanskas i en särskilt värdefull byggnad.</p>
+    <p class="text">Det kan finnas andra situationer motsvarande de som anges i första och andra styckena som inte kan anses vara tekniskt genomförbara i byggnaden. Byggnadsägaren ska på tillsynsmyndighetens begäran kunna göra sannolikt varför installation av system för individuell mätning och debitering inte är tekniskt genomförbart.</p>
+
+    <h3 id="BFS2022-3_kriterier-for-undantag-utifran-proportionalitet">Kriterier för undantag utifrån proportionalitet</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P6" name="BFS2022-3_P6">6 §</a>
+    </h3>
+    <p class="text">Installation av system för individuell mätning och debitering är inte proportionellt i förhållande till möjliga energibesparingar om åtgärden är privat- eller företagsekonomiskt olönsam. En åtgärd antas vara olönsam om investeringen ger en avkastning, internränta, som är lägre än byggnadsägarens avkastningskrav på investeringar, kalkylräntan. Den ekonomiska beräkningen innehåller grundinvestering (G) i kronor, energi-, effekt- och vattenbesparing (EB<sub>i</sub>) i kronor för år i, drift och underhållskostnader (DK<sub>i</sub>) i kronor för år i, årlig energiprisökning (EPÖ) i procentsats i decimalform, investeringens internränta (IR) i procentsats i decimalform, och den ekonomiska livslängden (n) i år. För att beräkna investeringens internränta ska följande formel användas:</p>
+    <p class="text" style="text-align: center;">G − Σ<sub>i=1</sub><sup>n</sup> ((EB<sub>i</sub> − DK<sub>i</sub>) × (1 + EPÖ)<sup>i</sup>) / (1 + IR)<sup>i</sup> = 0</p>
+    <p class="text">Den ekonomiska livslängden ska vara tio år. Byggnadsägaren ska på tillsynsmyndighetens begäran kunna visa upp beräkningar som gör det sannolikt att byggnaden inte längre omfattas av krav enligt förordningen (2022:336) om energimätning i byggnader.</p>
+
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Byggnadsägarens avkastningskrav, kalkylräntan, bör vara marknadsmässig. Kalkylräntan får bestämmas med hänsyn till byggnadsägarens faktiska kapitalkostnader, risker med investeringen samt avkastningen på alternativa energieffektiviseringsåtgärder.</p>
+      <p class="text">Den årliga energiprisökningen bör ta utgångspunkt i de lokala förutsättningarna som finns på orten.</p>
+    </div>
+
+    <h3 id="BFS2022-3_kriterier-for-undantag-for-energieffektiviserande-atgarder">Kriterier för undantag för energieffektiviserande åtgärder</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P7" name="BFS2022-3_P7">7 §</a>
+    </h3>
+    <p class="text">En byggnadsägare som utför andra energieffektiviserande åtgärder ska på tillsynsmyndighetens begäran kunna göra sannolikt att planerade eller genomförda åtgärder ger en minskad energianvändning som innebär att byggnaden inte längre omfattas av krav enligt 6 och 7 §§ förordningen (2022:336) om energimätning i byggnader.</p>
+    <p class="text">Om byggnadsägaren avser att genomföra energieffektiviserande åtgärder i samband med en planerad ombyggnad ska åtgärderna vara genomförda senast den 1 juli 2026.</p>
+    <p class="text">Om byggnadsägaren avser att genomföra energieffektiviserande åtgärder som inte sker i samband med en planerad ombyggnad ska åtgärderna vara genomförda senast den 1 juli 2023.</p>
+    <p class="text">Byggnadsägaren ska på tillsynsmyndighetens begäran kunna styrka att åtgärderna har genomförts.</p>
+
+    <h3 id="BFS2022-3_matsystem-och-matutrustning">Mätsystem och mätutrustning</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P8" name="BFS2022-3_P8">8 §</a>
+    </h3>
+    <p class="text">Värmeenergimätare, värmekostnadsfördelare och mätare för tappvarmvatten för hushållsbruk som installeras ska vara fjärravläsbara.</p>
+    <p class="text">Värmeenergimätare, värmekostnadsfördelare och mätare för tappvarmvatten för hushållsbruk ska göras fjärravläsbara eller ersättas med fjärravläsbara mätsystem senast den 1 januari 2027, om dessa har installerats i byggnader före ikraftträdandet av förordningen (2022:336) om energimätning i byggnader och som omfattas av kraven enligt 6–8 §§ förordningen.</p>
+    <p class="text">De uppgifter som krävs för att fastställa faktisk användning ska kunna fjärravläsas.</p>
+
+    <h3 id="BFS2022-3_fakturering">Fakturering</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P9" name="BFS2022-3_P9">9 §</a>
+    </h3>
+    <p class="text">Fakturering till lägenhetsinnehavare som baseras på faktisk användning eller avläsning av värmekostnadsfördelare ska ske minst en gång per år.</p>
+
+    <h3 id="BFS2022-3_skyldighet-att-lamna-fakturerings-och-anvandningsinformation">Skyldighet att lämna fakturerings- och användningsinformation</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P10" name="BFS2022-3_P10">10 §</a>
+    </h3>
+    <p class="text">Om värmeenergimätare, värmekostnadsfördelare eller mätare för tappvarmvatten för hushållsbruk är installerade, ska lägenhetsinnehavaren få faktureringsinformation med information om sin energianvändning av byggnadsägaren. Informationen ska vara baserad på faktisk användning eller avläsningar av värmekostnadsfördelare.</p>
+    <p class="text">Om mätanordningarna är fjärravläsbara ska lägenhetsinnehavaren få information om sin energianvändning minst en gång varje månad. Om mätanordningarna inte är fjärravläsbara ska informationen i stället lämnas minst två gånger per år till och med den 31 december 2026.</p>
+    <p class="text">Informationen får göras tillgänglig via internet och uppdateras så ofta som mätanordningarna och systemen tillåter.</p>
+    <p class="text">Om faktureringsinformationen och informationen om energianvändning görs tillgänglig via internet måste lägenhetsinnehavaren få ett meddelande från byggnadsägaren om var den finns att tillgå.</p>
+    <p class="text">Faktureringsinformation och information om energianvändning för värme behöver inte lämnas till lägenhetsinnehavare vid driftstopp eller utanför säsongerna för uppvärmning.</p>
+
+    <h3 id="BFS2022-3_fakturerings-och-anvandningsinformation-baserad-pa-individuell-matning">Fakturerings- och användningsinformation baserad på individuell mätning</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P11" name="BFS2022-3_P11">11 §</a>
+    </h3>
+    <p class="text">Byggnadsägaren ansvarar för att tydlig och begriplig faktureringsinformation med information om energianvändningen görs tillgänglig tillsammans med fakturan. Faktureringsinformation och information om energianvändningen till lägenhetsinnehavaren som baseras på faktisk användning eller avläsning av värmekostnadsfördelare ska innehålla följande:</p>
+    <ul>
+      <li>Faktiska priser och faktisk energianvändning eller total värmekostnad och avläsningar av värmekostnadsfördelare.</li>
+      <li>En beskrivning av de olika skatter, påminnelseavgifter och taxor som tillämpas.</li>
+      <li>Uppgifter om den energimix som använts och de med framställningen årliga förknippade växthusgasutsläppen. Kravet på uppgifter om växthusgasutsläpp gäller enbart fjärrvärmesystem med en total installerad tillförd effekt som överstiger 20 MW.</li>
+      <li>Jämförelser av lägenhetsinnehavarens aktuella klimatkorrigerade energianvändning i grafisk form med användningen för samma period föregående år.</li>
+      <li>Jämförelser med en genomsnittlig lägenhetsinnehavare eller en jämförelselägenhetsinnehavare i samma användarkategori.</li>
+      <li>Kontaktinformation till organisationer för byggnadsägare och oberoende organ för information om tillgängliga energieffektiviseringsåtgärder, jämförbara lägenhetsinnehavarprofiler och objektiva tekniska specifikationer för utrustning som använder energi.</li>
+      <li>Information om var lägenhetsinnehavaren kan lämna klagomål på fakturan.</li>
+      <li>Information om vilka oberoende konsumentorganisationer som finns.</li>
+    </ul>
+
+    <h3 id="BFS2022-3_faktureringsinformation-som-inte-baseras-pa-individuell-matning">Faktureringsinformation som inte baseras på individuell mätning</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P12" name="BFS2022-3_P12">12 §</a>
+    </h3>
+    <p class="text">Byggnadsägaren ansvarar för att tydlig och begriplig faktureringsinformation görs tillgänglig för lägenhetsinnehavaren tillsammans med fakturan. Vid driftstopp eller motsvarande situationer när fakturan inte kan baseras på faktisk användning eller avläsning av värmekostnadsfördelare ska faktureringsinformationen innehålla följande:</p>
+    <ul>
+      <li>En förklaring till hur beloppet beräknats.</li>
+      <li>Kontaktinformation till organisationer för byggnadsägare och oberoende organ för information om tillgängliga energieffektiviseringsåtgärder, jämförbara lägenhetsinnehavarprofiler och objektiva tekniska specifikationer för utrustning som använder energi.</li>
+      <li>Information om var lägenhetsinnehavaren kan lämna klagomål på fakturan.</li>
+      <li>Information om vilka oberoende konsumentorganisationer som finns.</li>
+    </ul>
+
+    <h3 id="BFS2022-3_kostnadsfordelning-i-bostadslagenheter-och-lokallagenheter-i-flerbostadshus-avseende-uppvarmning">Kostnadsfördelning i bostadslägenheter och lokallägenheter i flerbostadshus avseende uppvärmning</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P13" name="BFS2022-3_P13">13 §</a>
+    </h3>
+    <p class="text">Faktureringen av lägenhetsinnehavare ska baseras på den faktiska användningen eller avläsningar av värmekostnadsfördelare. Därutöver får andra faktorer som bidrar till en rättvis kostnadsfördelning mellan lägenhetsinnehavarna, och som balanserar lägenhetsinnehavarnas incitament till energibesparing mot byggnadsägarens incitament att energieffektivisera, vägas in vid bestämningen av en enskild lägenhetsinnehavares andel av byggnadens totala uppvärmningskostnad.</p>
+
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Faktorer som avses kan vara följande:</p>
+      <ul>
+        <li>Kostnaden för grundinvestering enligt metoden för beräkning av lönsamhet i 6 §.</li>
+        <li>Drift- och underhållskostnader för uppvärmningssystem och för system för individuell mätning och debitering.</li>
+        <li>Kostnader för abonnerad effekt.</li>
+        <li>Kostnaden för uppvärmning av gemensamma utrymmen.</li>
+        <li>Kostnader för värmeförluster i byggnadens distributionssystem.</li>
+        <li>Hänsyn till lägenheters olika uppvärmningsbehov beroende på placering i byggnaden och till värmeförluster mellan lägenheter.</li>
+        <li>Fördelningen mellan den kostnadsandel som baseras på den faktiska användningen och den andel som baseras på andra faktorer.</li>
+      </ul>
+      <p class="text">En rättvis fördelning kan ske utifrån boarea. Kostnaden för uppvärmning av gemensamma utrymmen bör dock fördelas lika per lägenhet eftersom dessa utrymmen kan antas nyttjas i liknande utsträckning av samtliga lägenhetsinnehavare.</p>
+      <p class="text">En lägenhetsinnehavare bör inte kunna välja en inomhustemperatur som understiger Folkhälsomyndighetens allmänna råd om temperatur inomhus (FoHMFS 2014:17).</p>
+    </div>
+
+    <h3 id="BFS2022-3_kostnadsfordelning-i-bostadslagenheter-och-lokallagenheter-i-flerbostadshus-avseende-tappvarmvatten-for-hushallsbruk">Kostnadsfördelning i bostadslägenheter och lokallägenheter i flerbostadshus avseende tappvarmvatten för hushållsbruk</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P14" name="BFS2022-3_P14">14 §</a>
+    </h3>
+    <p class="text">Faktureringen av lägenhetsinnehavare ska baseras på faktisk användning. Därutöver får andra faktorer som bidrar till en rättvis kostnadsfördelning mellan lägenhetsinnehavarna, vägas in vid bestämningen av en enskild lägenhetsinnehavares andel av byggnadens totala kostnad för tappvarmvatten för hushållsbruk.</p>
+
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Faktorer som avses kan vara följande:</p>
+      <ul>
+        <li>Kostnaden för grundinvestering enligt metoden för beräkning av lönsamhet i 6 §.</li>
+        <li>Drift- och underhållskostnader för tappvattenssystem och för system för individuell mätning och debitering av tappvarmvatten.</li>
+        <li>Kostnader för abonnerad effekt.</li>
+        <li>Kostnader för värmeförluster i byggnadens distributionssystem.</li>
+        <li>Fördelningen mellan den kostnadsandel som baseras på den faktiska användningen och den andel som baseras på andra faktorer.</li>
+      </ul>
+      <p class="text">Kostnaderna kan fördelas lika per lägenhet eller på basis av antal mätare per lägenhet.</p>
+    </div>
+
+    <h3 id="BFS2022-3_overenskommelse-och-beslut-om-kostnadsfordelning">Överenskommelse och beslut om kostnadsfördelning</h3>
+    <h3 class="paragraph">
+      <a class="paragraf" id="BFS2022-3_P15" name="BFS2022-3_P15">15 §</a>
+    </h3>
+    <p class="text">Om system för individuell mätning och debitering av uppvärmning eller tappvarmvatten installeras i hyresbostadslägenheter, kan förhandlingsordningens parter enligt hyresförhandlingslagen (1978:304), ingå överenskommelser och avtal om kostnadsfördelningens närmare utformning. Sådana överenskommelser ska ta utgångspunkt i 13–14 §§ och kan avse vilka faktorer utöver den faktiska användningen som ska ligga till grund för kostnadsfördelningen, samt vilken vikt som den faktiska energianvändningen respektive övriga faktorer ska ha vid faktureringen av lägenhetsinnehavare.</p>
+    <p class="text">Om system för individuell mätning och debitering av uppvärmning eller tappvarmvatten installeras i flerbostadshus med bostadsrätt eller kooperativ hyresrätt som upplåtelseform, kan föreningens styrelse besluta om kostnadsfördelningens närmare utformning, förutsatt att föreningens stadgar medger detta. Sådana beslut ska ta utgångspunkt i 13–14 §§ och kan avse vilka faktorer utöver den faktiska användningen som ska ligga till grund för kostnadsfördelningen, samt vilken vikt som den faktiska energianvändningen respektive övriga faktorer ska ha vid faktureringen av lägenhetsinnehavare.</p>
+    <p class="text">Om system för individuell mätning och debitering av uppvärmning eller tappvarmvatten installeras i lokallägenheter i flerbostadshus, kan lokalhyresavtalets parter avtala om kostnadsfördelningens närmare utformning. Sådana avtal ska ta utgångspunkt i 13–14 §§ och kan avse vilka faktorer utöver den faktiska användningen som ska ligga till grund för kostnadsfördelningen, samt vilken vikt som den faktiska energianvändningen respektive övriga faktorer ska ha vid faktureringen av lägenhetsinnehavare.</p>
+  </div>
+
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <p class="text">Denna författning träder i kraft den 1 juli 2022.</p>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">ANDERS SJELVGREN</p>
+    <p class="text">Mikael Näslund</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

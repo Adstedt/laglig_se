@@ -1,0 +1,126 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Förordning (1997:30) om översyn av statliga\nmyndigheters informationssystem inför år 2000",
+  "documentNumber": "SFS 1997:30",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna förordning tillämpas på myndigheter under regeringen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna förordning tillämpas på myndigheter under regeringen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Myndigheterna skall analysera vilka tekniska anpassningar som behöver göras inför övergången till år 2000 i de informationsssystem som är av väsentlig betydelse för egen eller andras verksamhet.\nMyndigheter som utövar tillsyn skall också redovisa en bedömning av anpassningsarbetet inom tillsynsområdet.\nMyndigheter som lyder omedelbart under regeringen skall svara för en samlad analys av underställda myndigheter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Myndigheterna skall analysera vilka tekniska anpassningar som behöver göras inför övergången till år 2000 i de informationsssystem som är av väsentlig betydelse för egen eller andras verksamhet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Myndigheter som utövar tillsyn skall också redovisa en bedömning av anpassningsarbetet inom tillsynsområdet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Myndigheter som lyder omedelbart under regeringen skall svara för en samlad analys av underställda myndigheter.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Myndigheterna skall i anslutning till sina analyser utarbeta en plan för den anpassning som behövs.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Myndigheterna skall i anslutning till sina analyser utarbeta en plan för den anpassning som behövs.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Myndigheterna skall senast den 31 maj 1997 i en rapport till Statskontoret redovisa analysresultaten och den anpassning som genomförts eller planeras med anledning av analyserna.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Myndigheterna skall senast den 31 maj 1997 i en rapport till Statskontoret redovisa analysresultaten och den anpassning som genomförts eller planeras med anledning av analyserna.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Statskontoret skall bistå med vägledning och metodstöd för myndigheternas analys- och anpassningsarbete.\nStatskontoret skall senast den 15 september 1997 till regeringen lämna en samlad bedömning av anpassningsarbetet och därefter varje halvår lämna en uppföljningsrapport.\nStatskontoret får begära in ytterligare analyser och planer från myndigheterna som underlag för sin uppföljning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Statskontoret skall bistå med vägledning och metodstöd för myndigheternas analys- och anpassningsarbete.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Statskontoret skall senast den 15 september 1997 till regeringen lämna en samlad bedömning av anpassningsarbetet och därefter varje halvår lämna en uppföljningsrapport.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Statskontoret får begära in ytterligare analyser och planer från myndigheterna som underlag för sin uppföljning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Anpassningarna i de informationssystem som är av väsentlig betydelse för egen eller andras verksamhet skall ha genomförts, kontrollerats och godkänts av myndigheten senast den 1 juni 1999.\nOm myndigheten finner att den inte kan uppfylla detta krav skall en redovisning lämnas till regeringen omgående, dock senast den 31 mars 1999.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Anpassningarna i de informationssystem som är av väsentlig betydelse för egen eller andras verksamhet skall ha genomförts, kontrollerats och godkänts av myndigheten senast den 1 juni 1999.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om myndigheten finner att den inte kan uppfylla detta krav skall en redovisning lämnas till regeringen omgående, dock senast den 31 mars 1999.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1997:30",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

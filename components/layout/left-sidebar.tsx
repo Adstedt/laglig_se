@@ -507,7 +507,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-3">
+        <nav className="flex-1 overflow-y-auto px-2 py-3">
           {/* Platform Section — hide AI Chat toggle on /dashboard (Hem IS the chat) */}
           <div className="space-y-0.5">
             {platformItems
@@ -534,7 +534,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
         </nav>
 
         {/* Bottom section */}
-        <div className="border-t px-3 py-2">
+        <div className="border-t px-2 py-2">
           {/* Inställningar */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -548,7 +548,9 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                     : 'text-foreground/60 hover:bg-accent hover:text-foreground'
                 )}
               >
-                <Settings className="h-4 w-4 shrink-0" />
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                  <Settings className="h-4 w-4" />
+                </span>
                 <span className="truncate">Inställningar</span>
               </Link>
             </TooltipTrigger>
@@ -635,11 +637,13 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                   onClick={toggleLeftSidebar}
                   className="flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm transition-colors text-foreground/60 hover:bg-accent hover:text-foreground"
                 >
-                  {collapsed ? (
-                    <PanelLeftOpen className="h-4 w-4 shrink-0" />
-                  ) : (
-                    <PanelLeftClose className="h-4 w-4 shrink-0" />
-                  )}
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                    {collapsed ? (
+                      <PanelLeftOpen className="h-4 w-4" />
+                    ) : (
+                      <PanelLeftClose className="h-4 w-4" />
+                    )}
+                  </span>
                   <span className="truncate">
                     {collapsed ? 'Expandera sidofält' : 'Dölj sidofält'}
                   </span>
