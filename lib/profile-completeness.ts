@@ -45,6 +45,7 @@ export function calculateProfileCompleteness(
     | 'has_collective_agreement'
     | 'website_url'
     | 'collective_agreement_name'
+    | 'business_description'
   >
 ): number {
   let score = 0
@@ -56,7 +57,7 @@ export function calculateProfileCompleteness(
   if (profile.employee_count_range) score += 10
   if (profile.municipality) score += 10
 
-  // Extended fields — 5% each (50% total)
+  // Extended fields — 5% each (55% total, clamped to 100)
   if (profile.sni_code) score += 5
 
   if (profile.activity_flags) {
@@ -73,6 +74,7 @@ export function calculateProfileCompleteness(
   if (profile.has_collective_agreement) score += 5
   if (profile.website_url) score += 5
   if (profile.collective_agreement_name) score += 5
+  if (profile.business_description) score += 5
 
-  return score
+  return Math.min(score, 100)
 }

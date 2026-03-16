@@ -97,6 +97,22 @@ export async function createWorkspace(formData: FormData): Promise<{
     const legalForm = formData.get('legalForm') as string | null
     const rawEmployeeCount = formData.get('employeeCount') as string | null
 
+    // Enrichment fields from BolagsAPI auto-fill
+    const businessDescription = formData.get('businessDescription') as
+      | string
+      | null
+    const taxStatus = formData.get('taxStatus') as string | null
+    const foreignOwnedRaw = formData.get('foreignOwned') as string | null
+    const parentCompanyName = formData.get('parentCompanyName') as string | null
+    const parentCompanyOrgnr = formData.get('parentCompanyOrgnr') as
+      | string
+      | null
+    const fiRegulatedRaw = formData.get('fiRegulated') as string | null
+    const activeStatus = formData.get('activeStatus') as string | null
+    const ongoingProcedures = formData.get('ongoingProcedures') as string | null
+    const registeredDate = formData.get('registeredDate') as string | null
+    const dataSource = formData.get('dataSource') as string | null
+
     // Server-side validation of optional company fields
     if (rawOrgNumber && !/^\d{6}-?\d{4}$/.test(rawOrgNumber)) {
       return {
@@ -169,6 +185,8 @@ export async function createWorkspace(formData: FormData): Promise<{
 
       // Create CompanyProfile if company-specific fields are provided
       if (hasCompanyFields) {
+        const isAutoFilled = dataSource === 'bolagsapi'
+
         await tx.companyProfile.create({
           data: {
             workspace_id: ws.id,
@@ -177,6 +195,46 @@ export async function createWorkspace(formData: FormData): Promise<{
             ...(legalForm && { legal_form: legalForm }),
             ...(employeeCount !== null && { employee_count: employeeCount }),
             ...(address && { address }),
+            // Enrichment fields
+            ...(businessDescription && {
+              business_description: businessDescription,
+            }),
+            ...(taxStatus && {
+              tax_status: (() => {
+                try {
+                  return JSON.parse(taxStatus)
+                } catch {
+                  return undefined
+                }
+              })(),
+            }),
+            ...(foreignOwnedRaw && {
+              foreign_owned: foreignOwnedRaw === 'true',
+            }),
+            ...(parentCompanyName && {
+              parent_company_name: parentCompanyName,
+            }),
+            ...(parentCompanyOrgnr && {
+              parent_company_orgnr: parentCompanyOrgnr,
+            }),
+            ...(fiRegulatedRaw && {
+              fi_regulated: fiRegulatedRaw === 'true',
+            }),
+            ...(activeStatus && { active_status: activeStatus }),
+            ...(ongoingProcedures && {
+              ongoing_procedures: (() => {
+                try {
+                  return JSON.parse(ongoingProcedures)
+                } catch {
+                  return undefined
+                }
+              })(),
+            }),
+            ...(registeredDate && {
+              registered_date: new Date(registeredDate),
+            }),
+            data_source: isAutoFilled ? 'bolagsapi' : 'manual',
+            ...(isAutoFilled && { last_enriched_at: new Date() }),
           },
         })
       }

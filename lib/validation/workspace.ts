@@ -39,6 +39,17 @@ export const WorkspaceOnboardingSchema = z.object({
     .regex(/^\d+$/, 'Ange ett giltigt antal')
     .optional()
     .or(z.literal('')),
+  // Enrichment fields (auto-filled from BolagsAPI, not shown in form)
+  businessDescription: z.string().optional(),
+  taxStatus: z.string().optional(),
+  foreignOwned: z.boolean().optional(),
+  parentCompanyName: z.string().optional(),
+  parentCompanyOrgnr: z.string().optional(),
+  fiRegulated: z.boolean().optional(),
+  activeStatus: z.string().optional(),
+  ongoingProcedures: z.string().optional(),
+  registeredDate: z.string().optional(),
+  dataSource: z.enum(['bolagsapi', 'manual']).optional(),
 })
 
 export type WorkspaceOnboardingData = z.infer<typeof WorkspaceOnboardingSchema>

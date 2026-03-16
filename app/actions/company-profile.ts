@@ -108,6 +108,7 @@ const updateCompanyProfileSchema = z.object({
     ] as const satisfies readonly RevenueRange[])
     .optional()
     .nullable(),
+  business_description: z.string().max(1000).optional().nullable(),
 })
 
 export type UpdateCompanyProfileInput = z.infer<
@@ -220,6 +221,8 @@ export async function updateCompanyProfile(
       updateData.workforce_composition = validated.workforce_composition
     if (validated.revenue_range !== undefined)
       updateData.revenue_range = validated.revenue_range
+    if (validated.business_description !== undefined)
+      updateData.business_description = validated.business_description
 
     // Update profile fields + completeness atomically
     const completeness = await prisma.$transaction(async (tx) => {
