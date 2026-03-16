@@ -89,6 +89,14 @@ export function CompanyInfoStep({
     }
 
     // Enrichment fields (hidden — flow through data model)
+    if (profile.municipality)
+      setValue('municipality', profile.municipality as string)
+    if (profile.industry_label)
+      setValue('industryLabel', profile.industry_label as string)
+    if (profile.founded_year)
+      setValue('foundedYear', String(profile.founded_year))
+    if (profile.website_url)
+      setValue('websiteUrl', profile.website_url as string)
     if (profile.business_description)
       setValue('businessDescription', profile.business_description as string)
     if (profile.tax_status)

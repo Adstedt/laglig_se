@@ -191,64 +191,71 @@ export async function createWorkspace(formData: FormData): Promise<{
       if (hasCompanyFields) {
         const isAutoFilled = dataSource === 'bolagsapi'
 
-        await tx.companyProfile.create({
-          data: {
-            workspace_id: ws.id,
-            company_name: result.data.name,
-            ...(sniCode && { sni_code: sniCode }),
-            ...(legalForm && { legal_form: legalForm }),
-            ...(employeeCount !== null && { employee_count: employeeCount }),
-            ...(orgNumber && { org_number: orgNumber }),
-            ...(address && { address }),
-            ...(municipality && { municipality }),
-            ...(industryLabel && { industry_label: industryLabel }),
-            ...(foundedYear &&
-              !isNaN(parseInt(foundedYear, 10)) && {
-                founded_year: parseInt(foundedYear, 10),
-              }),
-            ...(websiteUrl && { website_url: websiteUrl }),
-            // Enrichment fields
-            ...(businessDescription && {
-              business_description: businessDescription,
-            }),
-            ...(taxStatus && {
-              tax_status: (() => {
-                try {
-                  return JSON.parse(taxStatus)
-                } catch {
-                  return undefined
-                }
-              })(),
-            }),
-            ...(foreignOwnedRaw && {
-              foreign_owned: foreignOwnedRaw === 'true',
-            }),
-            ...(parentCompanyName && {
-              parent_company_name: parentCompanyName,
-            }),
-            ...(parentCompanyOrgnr && {
-              parent_company_orgnr: parentCompanyOrgnr,
-            }),
-            ...(fiRegulatedRaw && {
-              fi_regulated: fiRegulatedRaw === 'true',
-            }),
-            ...(activeStatus && { active_status: activeStatus }),
-            ...(ongoingProcedures && {
-              ongoing_procedures: (() => {
-                try {
-                  return JSON.parse(ongoingProcedures)
-                } catch {
-                  return undefined
-                }
-              })(),
-            }),
-            ...(registeredDate && {
-              registered_date: new Date(registeredDate),
-            }),
-            data_source: isAutoFilled ? 'bolagsapi' : 'manual',
-            ...(isAutoFilled && { last_enriched_at: new Date() }),
-          },
-        })
+        // Map legal_form to organization_type enum
+        const orgTypeMap: Record<string, string> = {
+          AB: 'AB',
+          HB: 'HB',
+          KB: 'OTHER',
+          EF: 'ENSKILD_FIRMA',
+          OVRIGT: 'OTHER',
+        }
+
+        // Parse JSON fields safely
+        let parsedTaxStatus: object | null = null
+        if (taxStatus) {
+          try {
+            parsedTaxStatus = JSON.parse(taxStatus)
+          } catch {
+            /* ignore */
+          }
+        }
+        let parsedOngoingProcedures: object | null = null
+        if (ongoingProcedures) {
+          try {
+            parsedOngoingProcedures = JSON.parse(ongoingProcedures)
+          } catch {
+            /* ignore */
+          }
+        }
+
+        const parsedFoundedYear = foundedYear ? parseInt(foundedYear, 10) : null
+
+        const profileData: Record<string, unknown> = {
+          workspace_id: ws.id,
+          company_name: result.data.name,
+          data_source: isAutoFilled ? 'bolagsapi' : 'manual',
+        }
+        if (orgNumber) profileData.org_number = orgNumber
+        if (sniCode) profileData.sni_code = sniCode
+        if (legalForm) {
+          profileData.legal_form = legalForm
+          profileData.organization_type = orgTypeMap[legalForm] ?? 'OTHER'
+        }
+        if (employeeCount !== null) profileData.employee_count = employeeCount
+        if (address) profileData.address = address
+        if (municipality) profileData.municipality = municipality
+        if (industryLabel) profileData.industry_label = industryLabel
+        if (parsedFoundedYear && !isNaN(parsedFoundedYear))
+          profileData.founded_year = parsedFoundedYear
+        if (websiteUrl) profileData.website_url = websiteUrl
+        if (businessDescription)
+          profileData.business_description = businessDescription
+        if (parsedTaxStatus) profileData.tax_status = parsedTaxStatus
+        if (foreignOwnedRaw)
+          profileData.foreign_owned = foreignOwnedRaw === 'true'
+        if (parentCompanyName)
+          profileData.parent_company_name = parentCompanyName
+        if (parentCompanyOrgnr)
+          profileData.parent_company_orgnr = parentCompanyOrgnr
+        if (fiRegulatedRaw) profileData.fi_regulated = fiRegulatedRaw === 'true'
+        if (activeStatus) profileData.active_status = activeStatus
+        if (parsedOngoingProcedures)
+          profileData.ongoing_procedures = parsedOngoingProcedures
+        if (registeredDate)
+          profileData.registered_date = new Date(registeredDate)
+        if (isAutoFilled) profileData.last_enriched_at = new Date()
+
+        await tx.companyProfile.create({ data: profileData as never })
       }
 
       return ws
