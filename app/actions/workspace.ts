@@ -98,6 +98,10 @@ export async function createWorkspace(formData: FormData): Promise<{
     const rawEmployeeCount = formData.get('employeeCount') as string | null
 
     // Enrichment fields from BolagsAPI auto-fill
+    const municipality = formData.get('municipality') as string | null
+    const industryLabel = formData.get('industryLabel') as string | null
+    const foundedYear = formData.get('foundedYear') as string | null
+    const websiteUrl = formData.get('websiteUrl') as string | null
     const businessDescription = formData.get('businessDescription') as
       | string
       | null
@@ -194,7 +198,15 @@ export async function createWorkspace(formData: FormData): Promise<{
             ...(sniCode && { sni_code: sniCode }),
             ...(legalForm && { legal_form: legalForm }),
             ...(employeeCount !== null && { employee_count: employeeCount }),
+            ...(orgNumber && { org_number: orgNumber }),
             ...(address && { address }),
+            ...(municipality && { municipality }),
+            ...(industryLabel && { industry_label: industryLabel }),
+            ...(foundedYear &&
+              !isNaN(parseInt(foundedYear, 10)) && {
+                founded_year: parseInt(foundedYear, 10),
+              }),
+            ...(websiteUrl && { website_url: websiteUrl }),
             // Enrichment fields
             ...(businessDescription && {
               business_description: businessDescription,

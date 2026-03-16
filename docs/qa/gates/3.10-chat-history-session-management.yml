@@ -1,0 +1,70 @@
+schema: 1
+story: '3.10'
+story_title: 'Chat History Enhancements — Pagination, Search, Export'
+gate: PASS
+status_reason: 'Solid implementation of all 5 ACs with 33 passing tests. Two bugs found and fixed during review (stale closure in loadMore, stateful global regex in highlightSnippet). Deferred items (server-side rate limiting, mobile long-press) are documented and acceptable at current scale.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-16T14:50:00Z'
+
+top_issues:
+  - severity: medium
+    title: 'Stale closure in loadMore — messages captured by value'
+    suggested_owner: dev
+    status: resolved
+    notes: 'setMessages([...olderUIMessages, ...messages]) captured stale `messages` ref. Fixed to use functional updater: setMessages(prev => [...olderUIMessages, ...prev])'
+  - severity: low
+    title: 'highlightSnippet global regex with .test() is stateful'
+    suggested_owner: dev
+    status: resolved
+    notes: 'RegExp.test() with g flag advances lastIndex causing alternating match failures. Fixed to use index parity from split capture group.'
+  - severity: low
+    title: 'N+1 count queries in searchConversations'
+    suggested_owner: dev
+    status: deferred
+    notes: 'Promise.all fires a COUNT query per unique conversation. Bounded to ~50 max conversations. Acceptable at current scale; consider single groupBy query if search volume grows.'
+  - severity: low
+    title: 'Server-side rate limiting for search deferred'
+    suggested_owner: dev
+    status: deferred
+    notes: 'AC 4.1 specified max 10 req/min. Client-side 300ms debounce provides throttling. Add server-side limiter when needed.'
+
+waiver: { active: false }
+
+quality_score: 80
+
+expires: '2026-03-30T14:50:00Z'
+
+evidence:
+  tests_reviewed: 33
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All actions use withWorkspace() auth. Zod validation on all inputs. UUID check on delete. Prisma contains (parameterized) for search — no SQL injection. Workspace scoping on all queries.'
+  performance:
+    status: CONCERNS
+    notes: 'Search uses ILIKE (sequential scan) — acceptable at current scale per story notes. N+1 count queries in searchConversations bounded but suboptimal. groupMessagesByDate not memoized but lightweight.'
+  reliability:
+    status: PASS
+    notes: 'Optimistic delete with rollback. Cursor pagination handles edge cases (empty, single page, non-existent cursor). Error handling consistent across all actions.'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation of concerns. New utilities are focused and well-tested. Follows existing codebase patterns. Code is self-documenting.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add GIN trigram index for search if ILIKE performance degrades'
+      refs: ['app/actions/ai-chat.ts']
+    - action: 'Replace N+1 count queries with single groupBy in searchConversations'
+      refs: ['app/actions/ai-chat.ts']
+    - action: 'Add server-side rate limiting for search endpoint'
+      refs: ['app/actions/ai-chat.ts']
+    - action: 'Memoize groupMessagesByDate with useMemo if render frequency becomes an issue'
+      refs: ['components/features/ai-chat/chat-message-list.tsx']
+    - action: 'Add UI component tests (IntersectionObserver, scroll preservation, delete flow)'
+      refs: ['components/features/ai-chat/chat-message-list.tsx']

@@ -49,7 +49,8 @@ const saveChatMessageSchema = z.object({
 const getChatHistorySchema = z.object({
   contextType: chatContextTypeSchema,
   contextId: contextIdSchema.optional(),
-  limit: z.number().min(1).max(100).optional().default(50),
+  limit: z.number().min(1).max(100).optional().default(30),
+  cursor: z.string().uuid().optional(),
 })
 
 const clearChatHistorySchema = z.object({
@@ -153,15 +154,33 @@ export async function saveChatMessages(
 
 /**
  * Get chat history for a specific context.
- * Returns messages in chronological order (oldest first).
+ * Returns messages in chronological order (oldest first) with cursor-based pagination.
+ * When a cursor is provided, fetches messages older than that cursor.
  */
 export async function getChatHistory(
   input: z.infer<typeof getChatHistorySchema>
-): Promise<ActionResult<ChatMessageData[]>> {
+): Promise<
+  ActionResult<{ messages: ChatMessageData[]; nextCursor: string | null }>
+> {
   try {
     const validated = getChatHistorySchema.parse(input)
 
     return await withWorkspace(async (ctx) => {
+      // If cursor provided, look up its created_at for the range query
+      let cursorDate: Date | undefined
+      if (validated.cursor) {
+        const cursorMsg = await prisma.chatMessage.findFirst({
+          where: {
+            id: validated.cursor,
+            workspace_id: ctx.workspaceId,
+          },
+          select: { created_at: true },
+        })
+        if (cursorMsg) {
+          cursorDate = cursorMsg.created_at
+        }
+      }
+
       const messages = await prisma.chatMessage.findMany({
         where: {
           workspace_id: ctx.workspaceId,
@@ -171,9 +190,11 @@ export async function getChatHistory(
           ...(validated.contextType === 'GLOBAL'
             ? { conversation_id: null }
             : {}),
+          // Cursor: fetch messages older than cursor
+          ...(cursorDate ? { created_at: { lt: cursorDate } } : {}),
         },
-        orderBy: { created_at: 'asc' },
-        take: validated.limit,
+        orderBy: { created_at: 'desc' },
+        take: validated.limit + 1, // Fetch one extra to detect hasMore
         select: {
           id: true,
           role: true,
@@ -185,6 +206,12 @@ export async function getChatHistory(
         },
       })
 
+      const hasMore = messages.length > validated.limit
+      if (hasMore) messages.pop()
+
+      // Reverse to chronological order (oldest first)
+      messages.reverse()
+
       const data: ChatMessageData[] = messages.map((msg) => ({
         id: msg.id,
         role: msg.role,
@@ -195,7 +222,13 @@ export async function getChatHistory(
         createdAt: msg.created_at,
       }))
 
-      return { success: true, data }
+      return {
+        success: true,
+        data: {
+          messages: data,
+          nextCursor: hasMore && data.length > 0 ? (data[0]?.id ?? null) : null,
+        },
+      }
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -343,6 +376,175 @@ export async function getConversationHistory(): Promise<
     console.error('Error getting conversation history:', error)
     return { success: false, error: 'Failed to get conversation history' }
   }
+}
+
+// ============================================================================
+// Story 3.10: Enhanced Chat Features
+// ============================================================================
+
+/**
+ * Delete a single chat message by ID.
+ * Verifies workspace ownership before deletion.
+ */
+export async function deleteChatMessage(
+  messageId: string
+): Promise<ActionResult<{ deleted: boolean }>> {
+  try {
+    const validated = z.string().uuid().parse(messageId)
+
+    return await withWorkspace(async (ctx) => {
+      // Verify message belongs to this workspace
+      const message = await prisma.chatMessage.findFirst({
+        where: {
+          id: validated,
+          workspace_id: ctx.workspaceId,
+        },
+        select: { id: true },
+      })
+
+      if (!message) {
+        return { success: false, error: 'Message not found' }
+      }
+
+      await prisma.chatMessage.delete({
+        where: { id: validated },
+      })
+
+      return { success: true, data: { deleted: true } }
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: 'Invalid message ID' }
+    }
+    console.error('Error deleting chat message:', error)
+    return { success: false, error: 'Failed to delete message' }
+  }
+}
+
+/**
+ * Search across all conversations (active and archived) by message content.
+ * Returns matching conversations with a snippet of the matching message.
+ */
+export async function searchConversations(query: string): Promise<
+  ActionResult<
+    Array<{
+      conversationId: string | null
+      snippet: string
+      messageCount: number
+      createdAt: Date
+    }>
+  >
+> {
+  try {
+    const validated = z.string().min(1).max(200).parse(query)
+
+    return await withWorkspace(async (ctx) => {
+      // Find messages matching the query across all conversations
+      const matchingMessages = await prisma.chatMessage.findMany({
+        where: {
+          workspace_id: ctx.workspaceId,
+          context_type: 'GLOBAL',
+          content: {
+            contains: validated,
+            mode: 'insensitive',
+          },
+        },
+        orderBy: { created_at: 'desc' },
+        take: 50,
+        select: {
+          id: true,
+          content: true,
+          conversation_id: true,
+          created_at: true,
+        },
+      })
+
+      // Group by conversation_id (null = active conversation)
+      const conversationMap = new Map<
+        string,
+        { snippet: string; createdAt: Date; conversationId: string | null }
+      >()
+
+      for (const msg of matchingMessages) {
+        const key = msg.conversation_id ?? '__active__'
+        if (!conversationMap.has(key)) {
+          // Extract snippet around the match
+          const snippet = extractSnippet(msg.content, validated, 120)
+          conversationMap.set(key, {
+            snippet,
+            createdAt: msg.created_at,
+            conversationId: msg.conversation_id,
+          })
+        }
+      }
+
+      // Get message counts for each conversation
+      const results = await Promise.all(
+        Array.from(conversationMap.entries()).map(async ([key, data]) => {
+          const count = await prisma.chatMessage.count({
+            where: {
+              workspace_id: ctx.workspaceId,
+              context_type: 'GLOBAL',
+              ...(key === '__active__'
+                ? { conversation_id: null }
+                : { conversation_id: key }),
+            },
+          })
+          return {
+            conversationId: data.conversationId,
+            snippet: data.snippet,
+            messageCount: count,
+            createdAt: data.createdAt,
+          }
+        })
+      )
+
+      return { success: true, data: results }
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: 'Invalid search query' }
+    }
+    console.error('Error searching conversations:', error)
+    return { success: false, error: 'Failed to search conversations' }
+  }
+}
+
+/**
+ * Extract a snippet from content around the first occurrence of the query.
+ * Truncates to maxLength with ellipsis.
+ */
+function extractSnippet(
+  content: string,
+  query: string,
+  maxLength: number
+): string {
+  const lowerContent = content.toLowerCase()
+  const lowerQuery = query.toLowerCase()
+  const matchIndex = lowerContent.indexOf(lowerQuery)
+
+  if (matchIndex === -1) {
+    // Shouldn't happen, but fallback
+    return content.length > maxLength
+      ? content.slice(0, maxLength) + '\u2026'
+      : content
+  }
+
+  // Center the snippet around the match
+  const padding = Math.floor((maxLength - query.length) / 2)
+  let start = Math.max(0, matchIndex - padding)
+  const end = Math.min(content.length, start + maxLength)
+
+  // Adjust start if we hit the end
+  if (end === content.length) {
+    start = Math.max(0, end - maxLength)
+  }
+
+  let snippet = content.slice(start, end)
+  if (start > 0) snippet = '\u2026' + snippet
+  if (end < content.length) snippet = snippet + '\u2026'
+
+  return snippet
 }
 
 /**

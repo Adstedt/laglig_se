@@ -40,6 +40,10 @@ export const WorkspaceOnboardingSchema = z.object({
     .optional()
     .or(z.literal('')),
   // Enrichment fields (auto-filled from BolagsAPI, not shown in form)
+  municipality: z.string().optional(),
+  industryLabel: z.string().optional(),
+  foundedYear: z.string().optional(),
+  websiteUrl: z.string().optional(),
   businessDescription: z.string().optional(),
   taxStatus: z.string().optional(),
   foreignOwned: z.boolean().optional(),

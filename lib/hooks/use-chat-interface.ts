@@ -56,6 +56,12 @@ export interface UseChatInterfaceReturn {
   clearHistory: () => Promise<void>
   /** Replace local message state (e.g. when loading an archived conversation) */
   replaceMessages: (_messages: UIMessage[]) => void
+  /** Load older messages (pagination). Returns true if there are more pages. */
+  loadMore: () => Promise<boolean>
+  /** Whether older messages are currently being fetched */
+  isLoadingMore: boolean
+  /** Whether there are more older messages to load (null = unknown yet) */
+  hasMore: boolean | null
 }
 
 // Map ChatContextType to Prisma enum format
@@ -90,11 +96,14 @@ export function useChatInterface(
 
   const [retryAfter, setRetryAfter] = useState<number | undefined>(undefined)
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
+  const [hasMore, setHasMore] = useState<boolean | null>(null)
   const lastMessageRef = useRef<string>('')
   const initialMessageSentRef = useRef(false)
   const startTimeRef = useRef<number>(0)
   const pendingSaveRef = useRef<Set<string>>(new Set())
+  const nextCursorRef = useRef<string | null>(null)
 
   // Stable chat ID so AI SDK preserves messages in memory across unmount/remount
   const chatId = contextId ? `${contextType}-${contextId}` : contextType
@@ -193,14 +202,19 @@ export function useChatInterface(
         const result = await getChatHistory({
           contextType: toPrismaContextType(contextType),
           contextId,
-          limit: 50,
+          limit: 30,
         })
 
-        if (result.success && result.data && result.data.length > 0) {
-          const uiMessages = toUIMessages(result.data)
-          setMessages(uiMessages)
-          // Mark these message IDs as already saved
-          result.data.forEach((msg) => pendingSaveRef.current.add(msg.id))
+        if (result.success && result.data) {
+          const { messages: msgData, nextCursor } = result.data
+          nextCursorRef.current = nextCursor
+          setHasMore(nextCursor !== null)
+          if (msgData.length > 0) {
+            const uiMessages = toUIMessages(msgData)
+            setMessages(uiMessages)
+            // Mark these message IDs as already saved
+            msgData.forEach((msg) => pendingSaveRef.current.add(msg.id))
+          }
         }
       } catch (err) {
         console.error('Failed to load chat history:', err)
@@ -303,6 +317,41 @@ export function useChatInterface(
     }
   }, [contextType, contextId, setMessages])
 
+  // Load older messages (cursor pagination)
+  const loadMore = useCallback(async (): Promise<boolean> => {
+    if (!nextCursorRef.current || isLoadingMore) return false
+    setIsLoadingMore(true)
+    try {
+      const result = await getChatHistory({
+        contextType: toPrismaContextType(contextType),
+        contextId,
+        limit: 30,
+        cursor: nextCursorRef.current,
+      })
+
+      if (result.success && result.data) {
+        const { messages: olderMsgData, nextCursor } = result.data
+        nextCursorRef.current = nextCursor
+        setHasMore(nextCursor !== null)
+
+        if (olderMsgData.length > 0) {
+          const olderUIMessages = toUIMessages(olderMsgData)
+          // Mark as already saved
+          olderMsgData.forEach((msg) => pendingSaveRef.current.add(msg.id))
+          // Prepend older messages — functional updater avoids stale closure
+          setMessages((prev) => [...olderUIMessages, ...prev])
+        }
+        return nextCursor !== null
+      }
+      return false
+    } catch (err) {
+      console.error('Failed to load more messages:', err)
+      return false
+    } finally {
+      setIsLoadingMore(false)
+    }
+  }, [contextType, contextId, isLoadingMore, setMessages])
+
   const isLoading = status === 'streaming' || status === 'submitted'
 
   return {
@@ -317,6 +366,9 @@ export function useChatInterface(
     isLoadingHistory,
     clearHistory,
     replaceMessages: setMessages,
+    loadMore,
+    isLoadingMore,
+    hasMore,
   }
 }
 

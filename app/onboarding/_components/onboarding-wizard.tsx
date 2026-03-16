@@ -72,6 +72,10 @@ export function OnboardingWizard({
         fd.append('employeeCount', data.employeeCount)
 
       // Enrichment fields from BolagsAPI auto-fill
+      if (data.municipality) fd.append('municipality', data.municipality)
+      if (data.industryLabel) fd.append('industryLabel', data.industryLabel)
+      if (data.foundedYear) fd.append('foundedYear', data.foundedYear)
+      if (data.websiteUrl) fd.append('websiteUrl', data.websiteUrl)
       if (data.businessDescription)
         fd.append('businessDescription', data.businessDescription)
       if (data.taxStatus) fd.append('taxStatus', data.taxStatus)
