@@ -153,8 +153,10 @@ export function mapBolagsApiToProfile(
       response.fi.registrations.length > 0
   }
 
-  // Active status
-  if (response.status?.status_text) {
+  // Active status — API returns either a string ("active") or object ({ status_text })
+  if (typeof response.status === 'string') {
+    result.active_status = response.status
+  } else if (response.status?.status_text) {
     result.active_status = response.status.status_text
   }
 

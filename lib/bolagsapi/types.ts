@@ -70,7 +70,7 @@ export interface BolagsApiCompany {
   foreign_owned?: boolean
   parent_company?: BolagsApiParentCompany | null
   fi?: BolagsApiFi | null
-  status?: BolagsApiStatus
+  status?: BolagsApiStatus | string
   ongoing_procedures?: BolagsApiOngoingProcedures | null
   meta?: BolagsApiMeta
 }
