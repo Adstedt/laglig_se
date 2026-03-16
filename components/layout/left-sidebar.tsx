@@ -177,13 +177,14 @@ function CollapsedAccordionItem({
               <button
                 disabled={item.disabled}
                 className={cn(
-                  'relative flex w-full items-center justify-center rounded-lg p-2 text-sm transition-colors',
+                  'relative flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm transition-colors',
                   'hover:bg-accent hover:text-accent-foreground',
                   item.disabled ? 'opacity-50 cursor-not-allowed' : '',
                   'text-foreground/60 hover:text-foreground'
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1 truncate text-left">{item.title}</span>
                 {item.title === 'Efterlevnad' && changeCount > 0 && (
                   <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
                 )}
@@ -317,47 +318,34 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
     const active = isActive(item.href)
 
     // Toggle button for AI Chat
+    // Single DOM tree — text clipped by aside overflow-hidden when collapsed
     if (item.isToggle) {
-      if (collapsed) {
-        return (
-          <Tooltip key={item.title}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={toggleRightSidebar}
-                className={cn(
-                  'flex w-full items-center justify-center rounded-lg p-2 text-sm transition-colors',
-                  'hover:bg-accent hover:text-foreground',
-                  'text-foreground/60'
-                )}
-              >
-                <Icon className="h-5 w-5" />
-              </button>
-            </TooltipTrigger>
+      return (
+        <Tooltip key={item.title}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={toggleRightSidebar}
+              className={cn(
+                'flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm transition-colors',
+                'hover:bg-accent hover:text-foreground',
+                'text-foreground/60'
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="flex-1 truncate text-left">{item.title}</span>
+            </button>
+          </TooltipTrigger>
+          {collapsed && (
             <TooltipContent side="right" sideOffset={6}>
               {item.title}
             </TooltipContent>
-          </Tooltip>
-        )
-      }
-      return (
-        <button
-          key={item.title}
-          onClick={toggleRightSidebar}
-          className={cn(
-            'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-            'hover:bg-accent hover:text-foreground',
-            'text-foreground/60'
           )}
-        >
-          <Icon className="h-4 w-4" />
-          <span className="flex-1 text-left">{item.title}</span>
-        </button>
+        </Tooltip>
       )
     }
 
-    // Accordion menu item
+    // Accordion menu item — collapsed uses dedicated Popover component
     if (item.isAccordion && item.subItems) {
-      // Collapsed: use dedicated component with proper tooltip/popover management
       if (collapsed) {
         return (
           <CollapsedAccordionItem
@@ -369,7 +357,6 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
         )
       }
 
-      // Expanded: accordion behavior
       const isOpen = openAccordions[item.title] ?? false
       return (
         <div key={item.title}>
@@ -383,7 +370,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
               'text-foreground/60'
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-4 w-4 shrink-0" />
             <span className="flex-1 text-left">{item.title}</span>
             {item.title === 'Efterlevnad' && changeCount > 0 && !isOpen && (
               <span className="h-2 w-2 rounded-full bg-destructive flex-shrink-0" />
@@ -422,83 +409,57 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
     }
 
     // Regular disabled item
+    // Single DOM tree — tooltip only shows in collapsed state
     if (item.disabled) {
-      if (collapsed) {
-        return (
-          <Tooltip key={item.title}>
-            <TooltipTrigger asChild>
-              <span
-                className={cn(
-                  'flex items-center justify-center rounded-lg p-2 text-sm',
-                  'opacity-40 cursor-not-allowed text-foreground/60'
-                )}
-              >
-                <Icon className="h-5 w-5" />
-              </span>
-            </TooltipTrigger>
+      return (
+        <Tooltip key={item.title}>
+          <TooltipTrigger asChild>
+            <span
+              className={cn(
+                'flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm',
+                'opacity-40 cursor-not-allowed text-foreground/60'
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="flex-1 truncate">{item.title}</span>
+              {item.lockedReason && <Lock className="h-3 w-3 shrink-0" />}
+            </span>
+          </TooltipTrigger>
+          {collapsed && (
             <TooltipContent side="right" sideOffset={6}>
               {item.title}
               {item.lockedReason && ` — ${item.lockedReason}`}
             </TooltipContent>
-          </Tooltip>
-        )
-      }
-      return (
-        <span
-          key={item.title}
-          className={cn(
-            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
-            'opacity-40 cursor-not-allowed text-foreground/60'
           )}
-          title={item.lockedReason}
-        >
-          <Icon className="h-4 w-4" />
-          <span className="flex-1">{item.title}</span>
-          {item.lockedReason && <Lock className="h-3 w-3" />}
-        </span>
-      )
-    }
-
-    // Regular link item
-    if (collapsed) {
-      return (
-        <Tooltip key={item.title}>
-          <TooltipTrigger asChild>
-            <Link
-              href={item.href}
-              prefetch={true}
-              className={cn(
-                'flex items-center justify-center rounded-lg p-2 text-sm transition-colors',
-                active
-                  ? 'bg-accent text-foreground'
-                  : 'text-foreground/60 hover:bg-accent hover:text-foreground'
-              )}
-            >
-              <Icon className="h-5 w-5" />
-            </Link>
-          </TooltipTrigger>
-          <TooltipContent side="right" sideOffset={6}>
-            {item.title}
-          </TooltipContent>
         </Tooltip>
       )
     }
 
+    // Regular link item
+    // Single DOM tree — text clipped by overflow-hidden when collapsed
     return (
-      <Link
-        key={item.title}
-        href={item.href}
-        prefetch={true}
-        className={cn(
-          'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-          active
-            ? 'bg-accent text-foreground'
-            : 'text-foreground/60 hover:bg-accent hover:text-foreground'
+      <Tooltip key={item.title}>
+        <TooltipTrigger asChild>
+          <Link
+            href={item.href}
+            prefetch={true}
+            className={cn(
+              'flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm transition-colors',
+              active
+                ? 'bg-accent text-foreground'
+                : 'text-foreground/60 hover:bg-accent hover:text-foreground'
+            )}
+          >
+            <Icon className="h-4 w-4 shrink-0" />
+            <span className="truncate">{item.title}</span>
+          </Link>
+        </TooltipTrigger>
+        {collapsed && (
+          <TooltipContent side="right" sideOffset={6}>
+            {item.title}
+          </TooltipContent>
         )}
-      >
-        <Icon className="h-4 w-4" />
-        <span>{item.title}</span>
-      </Link>
+      </Tooltip>
     )
   }
 
@@ -506,21 +467,16 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          'flex h-full flex-col border-r bg-background transition-all duration-200',
+          'flex h-full flex-col overflow-hidden border-r bg-background transition-all duration-200',
           'hidden md:flex',
           collapsed ? 'w-16' : 'w-[240px]'
         )}
       >
         {/* Logo + collapse toggle */}
-        <div
-          className={cn(
-            'relative flex h-[60px] shrink-0 items-center',
-            collapsed ? 'justify-center px-2' : 'justify-between px-4'
-          )}
-        >
+        <div className="relative flex h-[60px] shrink-0 items-center overflow-hidden px-4">
           <Link
             href="/dashboard"
-            className={collapsed ? '' : 'ml-2'}
+            className="ml-2 shrink-0"
             onClick={() => {
               if (pathname === '/dashboard') {
                 window.dispatchEvent(new CustomEvent('laglig:new-chat'))
@@ -547,30 +503,11 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
               />
             )}
           </Link>
-          {!collapsed && (
-            <button
-              onClick={toggleLeftSidebar}
-              className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-            >
-              <PanelLeftClose className="h-4 w-4" />
-            </button>
-          )}
-          {/* Short centered separator — sits at bottom of 60px container, aligned with header border-b */}
-          <div
-            className={cn(
-              'absolute bottom-0 h-px bg-border',
-              collapsed ? 'left-2 right-2' : 'left-3 right-3'
-            )}
-          />
+          <div className="absolute bottom-0 left-3 right-3 h-px bg-border" />
         </div>
 
         {/* Navigation */}
-        <nav
-          className={cn(
-            'flex-1 overflow-y-auto',
-            collapsed ? 'px-2 py-3' : 'px-3 py-3'
-          )}
-        >
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
           {/* Platform Section — hide AI Chat toggle on /dashboard (Hem IS the chat) */}
           <div className="space-y-0.5">
             {platformItems
@@ -580,12 +517,16 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
 
           {/* Work Section */}
           <div className="mt-6">
-            {!collapsed && (
-              <h3 className="mb-1 px-3 text-xs font-medium text-muted-foreground">
-                Arbete
-              </h3>
-            )}
-            {collapsed && <Separator className="mb-3" />}
+            {/* Fixed-height divider so items don't shift vertically on collapse */}
+            <div className="mb-1 flex h-4 items-center px-3">
+              {collapsed ? (
+                <Separator />
+              ) : (
+                <span className="text-xs font-medium text-muted-foreground">
+                  Arbete
+                </span>
+              )}
+            </div>
             <div className="space-y-0.5">
               {permissionGatedWorkItems.map(renderNavItem)}
             </div>
@@ -593,177 +534,124 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
         </nav>
 
         {/* Bottom section */}
-        <div className={cn('border-t', collapsed ? 'px-2 py-2' : 'px-3 py-2')}>
+        <div className="border-t px-3 py-2">
           {/* Inställningar */}
-          {collapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  href="/settings"
-                  prefetch={true}
-                  className={cn(
-                    'flex items-center justify-center rounded-lg p-2 text-sm transition-colors',
-                    pathname.startsWith('/settings')
-                      ? 'bg-accent text-foreground'
-                      : 'text-foreground/60 hover:bg-accent hover:text-foreground'
-                  )}
-                >
-                  <Settings className="h-5 w-5" />
-                </Link>
-              </TooltipTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                href="/settings"
+                prefetch={true}
+                className={cn(
+                  'flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm transition-colors',
+                  pathname.startsWith('/settings')
+                    ? 'bg-accent text-foreground'
+                    : 'text-foreground/60 hover:bg-accent hover:text-foreground'
+                )}
+              >
+                <Settings className="h-4 w-4 shrink-0" />
+                <span className="truncate">Inställningar</span>
+              </Link>
+            </TooltipTrigger>
+            {collapsed && (
               <TooltipContent side="right" sideOffset={6}>
                 Inställningar
               </TooltipContent>
-            </Tooltip>
-          ) : (
-            <Link
-              href="/settings"
-              prefetch={true}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                pathname.startsWith('/settings')
-                  ? 'bg-accent text-foreground'
-                  : 'text-foreground/60 hover:bg-accent hover:text-foreground'
-              )}
-            >
-              <Settings className="h-4 w-4" />
-              <span>Inställningar</span>
-            </Link>
-          )}
+            )}
+          </Tooltip>
 
           {/* Workspace Switcher */}
-          <div className={cn('mt-0.5', collapsed && 'flex justify-center')}>
-            {collapsed ? (
-              <WorkspaceSwitcher collapsed />
-            ) : (
-              <WorkspaceSwitcher />
-            )}
+          <div className="mt-0.5">
+            <WorkspaceSwitcher collapsed={collapsed} />
           </div>
 
           {/* User avatar with dropdown menu */}
           <div className="mt-0.5">
-            {collapsed ? (
-              <DropdownMenu>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="block">
-                      <DropdownMenuTrigger asChild>
-                        <button className="flex w-full items-center justify-center rounded-lg p-2 transition-colors hover:bg-accent">
-                          <Avatar className="h-7 w-7">
-                            <AvatarImage
-                              src={user?.image || undefined}
-                              alt={user?.name || 'User'}
-                            />
-                            <AvatarFallback className="text-xs">
-                              {userInitials}
-                            </AvatarFallback>
-                          </Avatar>
-                        </button>
-                      </DropdownMenuTrigger>
-                    </span>
-                  </TooltipTrigger>
+            <DropdownMenu>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="block">
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm transition-colors text-foreground/60 hover:bg-accent hover:text-foreground">
+                        <Avatar className="h-7 w-7 shrink-0">
+                          <AvatarImage
+                            src={user?.image || undefined}
+                            alt={user?.name || 'User'}
+                          />
+                          <AvatarFallback className="text-xs">
+                            {userInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0 text-left">
+                          <p className="text-sm font-medium truncate">
+                            {user?.name || 'Användare'}
+                          </p>
+                        </div>
+                        <ChevronsUpDown className="h-3.5 w-3.5 shrink-0" />
+                      </button>
+                    </DropdownMenuTrigger>
+                  </span>
+                </TooltipTrigger>
+                {collapsed && (
                   <TooltipContent side="right" sideOffset={6}>
                     {user?.name || user?.email || 'Konto'}
                   </TooltipContent>
-                </Tooltip>
-                <DropdownMenuContent side="right" align="end" className="w-56">
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {user?.name || 'Användare'}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings" className="flex items-center">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Inställningar</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logga ut</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors text-foreground/60 hover:bg-accent hover:text-foreground">
-                    <Avatar className="h-7 w-7 shrink-0">
-                      <AvatarImage
-                        src={user?.image || undefined}
-                        alt={user?.name || 'User'}
-                      />
-                      <AvatarFallback className="text-xs">
-                        {userInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className="text-sm font-medium truncate">
-                        {user?.name || 'Användare'}
-                      </p>
-                    </div>
-                    <ChevronsUpDown className="h-3.5 w-3.5 shrink-0" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="right" align="end" className="w-56">
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {user?.name || 'Användare'}
-                      </p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings" className="flex items-center">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Inställningar</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logga ut</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                )}
+              </Tooltip>
+              <DropdownMenuContent side="right" align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user?.name || 'Användare'}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Inställningar</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logga ut</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          {/* Expand toggle — only when collapsed */}
-          {collapsed && (
-            <div className="mt-0.5">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={toggleLeftSidebar}
-                    className="flex w-full items-center justify-center rounded-lg p-2 text-sm transition-colors text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <PanelLeftOpen className="h-5 w-5" />
-                  </button>
-                </TooltipTrigger>
+          {/* Sidebar toggle — always visible at bottom */}
+          <div className="mt-0.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={toggleLeftSidebar}
+                  className="flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm transition-colors text-foreground/60 hover:bg-accent hover:text-foreground"
+                >
+                  {collapsed ? (
+                    <PanelLeftOpen className="h-4 w-4 shrink-0" />
+                  ) : (
+                    <PanelLeftClose className="h-4 w-4 shrink-0" />
+                  )}
+                  <span className="truncate">
+                    {collapsed ? 'Expandera sidofält' : 'Dölj sidofält'}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              {collapsed && (
                 <TooltipContent side="right" sideOffset={6}>
                   Expandera sidofält
                 </TooltipContent>
-              </Tooltip>
-            </div>
-          )}
+              )}
+            </Tooltip>
+          </div>
         </div>
       </aside>
     </TooltipProvider>
