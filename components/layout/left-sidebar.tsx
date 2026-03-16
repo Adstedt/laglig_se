@@ -20,6 +20,7 @@ import {
   PanelLeftOpen,
   LogOut,
   ChevronsUpDown,
+  ClipboardList,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
@@ -126,6 +127,11 @@ const workItems: NavItem[] = [
       { title: 'Anställda', href: '/hr/employees' },
       { title: 'Efterlevnad', href: '/hr/compliance' },
     ],
+  },
+  {
+    title: 'Aktivitetslogg',
+    icon: ClipboardList,
+    href: '/workspace/activity',
   },
   {
     title: 'Ändringsbevakning',

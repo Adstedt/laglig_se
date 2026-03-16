@@ -12,6 +12,7 @@ import { z } from 'zod'
 import type { ComplianceStatus } from '@prisma/client'
 import { redis } from '@/lib/cache/redis'
 import { getCachedDocument } from '@/lib/services/document-cache'
+import { logActivity } from '@/lib/services/activity-logger'
 // REMOVED: getCachedDocumentContent - using only Redis via getCachedDocument
 
 // ============================================================================
@@ -87,6 +88,22 @@ interface ActionResult<T = void> {
   success: boolean
   data?: T
   error?: string
+}
+
+export type ListItemActivity = {
+  id: string
+  action: string
+  entity_type: string
+  entity_id: string
+  old_value: unknown
+  new_value: unknown
+  created_at: Date
+  user: {
+    id: string
+    name: string | null
+    email: string
+    avatar_url: string | null
+  }
 }
 
 // Story 6.9: Comment types
@@ -423,6 +440,16 @@ export async function updateListItemBusinessContext(
         data: { business_context: content || null },
       })
 
+      await logActivity(
+        ctx.workspaceId,
+        ctx.userId,
+        'list_item',
+        listItemId,
+        'business_context_updated',
+        { changed: true },
+        { changed: true }
+      )
+
       // Invalidate Redis cache for this list item
       try {
         await redis.del(`list-item-details:${listItemId}`)
@@ -482,6 +509,16 @@ export async function updateListItemComplianceActions(
         },
       })
 
+      await logActivity(
+        ctx.workspaceId,
+        ctx.userId,
+        'list_item',
+        listItemId,
+        'compliance_actions_updated',
+        { changed: true },
+        { changed: true }
+      )
+
       // Invalidate Redis cache for this list item
       try {
         await redis.del(`list-item-details:${listItemId}`)
@@ -537,6 +574,16 @@ export async function updateListItemComplianceStatus(
         data: { compliance_status: status },
       })
 
+      await logActivity(
+        ctx.workspaceId,
+        ctx.userId,
+        'list_item',
+        listItemId,
+        'status_changed',
+        { compliance_status: item.compliance_status },
+        { compliance_status: status }
+      )
+
       // Invalidate Redis cache for this list item
       try {
         await redis.del(`list-item-details:${listItemId}`)
@@ -588,6 +635,16 @@ export async function updateListItemPriority(
         where: { id: listItemId },
         data: { priority },
       })
+
+      await logActivity(
+        ctx.workspaceId,
+        ctx.userId,
+        'list_item',
+        listItemId,
+        'priority_changed',
+        { priority: item.priority },
+        { priority }
+      )
 
       // Invalidate Redis cache for this list item
       try {
@@ -657,6 +714,16 @@ export async function updateListItemResponsible(
         where: { id: listItemId },
         data: { responsible_user_id: userId },
       })
+
+      await logActivity(
+        ctx.workspaceId,
+        ctx.userId,
+        'list_item',
+        listItemId,
+        'responsible_changed',
+        { responsible_user_id: item.responsible_user_id },
+        { responsible_user_id: userId }
+      )
 
       // Invalidate Redis cache for this list item
       try {
@@ -1044,16 +1111,15 @@ export async function createListItemComment(
       })
 
       // Log activity for the list item
-      await prisma.activityLog.create({
-        data: {
-          workspace_id: workspaceId,
-          user_id: userId,
-          entity_type: 'law_list_item',
-          entity_id: validated.listItemId,
-          action: 'comment_added',
-          new_value: JSON.parse(JSON.stringify({ comment_id: comment.id })),
-        },
-      })
+      await logActivity(
+        workspaceId,
+        userId,
+        'list_item',
+        validated.listItemId,
+        'comment_added',
+        undefined,
+        { comment_id: comment.id }
+      )
 
       revalidatePath('/laglistor')
       return { success: true, data: comment as unknown as ListItemComment }
@@ -1104,6 +1170,18 @@ export async function updateListItemComment(
         },
       })
 
+      if (comment.law_list_item_id) {
+        await logActivity(
+          workspaceId,
+          userId,
+          'list_item',
+          comment.law_list_item_id,
+          'comment_updated',
+          { comment_id: comment.id },
+          { comment_id: comment.id }
+        )
+      }
+
       revalidatePath('/laglistor')
       return { success: true }
     })
@@ -1147,11 +1225,64 @@ export async function deleteListItemComment(
         where: { id: commentId },
       })
 
+      if (comment.law_list_item_id) {
+        await logActivity(
+          workspaceId,
+          userId,
+          'list_item',
+          comment.law_list_item_id,
+          'comment_deleted',
+          { comment_id: comment.id },
+          undefined
+        )
+      }
+
       revalidatePath('/laglistor')
       return { success: true }
     })
   } catch (error) {
     console.error('deleteListItemComment error:', error)
     return { success: false, error: 'Kunde inte radera kommentar' }
+  }
+}
+
+// ============================================================================
+// Story 6.10: Get List Item Activity (History)
+// ============================================================================
+
+export async function getListItemActivity(
+  listItemId: string,
+  limit: number = 50
+): Promise<ActionResult<ListItemActivity[]>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      const activity = await prisma.activityLog.findMany({
+        where: {
+          workspace_id: workspaceId,
+          entity_type: 'list_item',
+          entity_id: listItemId,
+        },
+        orderBy: { created_at: 'desc' },
+        take: limit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar_url: true,
+            },
+          },
+        },
+      })
+
+      return { success: true, data: activity as ListItemActivity[] }
+    })
+  } catch (error) {
+    console.error('getListItemActivity error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
   }
 }

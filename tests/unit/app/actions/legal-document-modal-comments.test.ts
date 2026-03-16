@@ -126,7 +126,7 @@ describe('Story 6.9: List Item Comment Actions', () => {
       expect(mockActivityLogCreate).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            entity_type: 'law_list_item',
+            entity_type: 'list_item',
             entity_id: LLI_ID,
             action: 'comment_added',
           }),
