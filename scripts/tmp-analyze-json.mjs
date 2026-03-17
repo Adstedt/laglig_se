@@ -1,5 +1,7 @@
 import fs from 'fs'
-const json = JSON.parse(fs.readFileSync('data/sfs-law-arbetsmiljolagen-parsed.json', 'utf8'))
+const json = JSON.parse(
+  fs.readFileSync('data/sfs-law-arbetsmiljolagen-parsed.json', 'utf8')
+)
 
 let amendRefCount = 0
 let singleParagraphSections = 0
@@ -27,11 +29,13 @@ console.log('\nTransition provisions (first 8):')
 })
 
 // Chapter 6 details
-const ch6 = allChapters.find(c => c.number === '6')
+const ch6 = allChapters.find((c) => c.number === '6')
 console.log('\nChapter 6:', ch6?.title)
 console.log('  Sections:', ch6?.sections.length)
 for (const s of ch6?.sections || []) {
-  console.log(`  § ${s.number} (${s.paragraphs.length} p)${s.heading ? ' — ' + s.heading : ''}`)
+  console.log(
+    `  § ${s.number} (${s.paragraphs.length} p)${s.heading ? ' — ' + s.heading : ''}`
+  )
   for (const p of s.paragraphs) {
     if (p.role !== 'PARAGRAPH') {
       console.log(`    [${p.role}] ${p.text.slice(0, 80)}`)
@@ -45,14 +49,16 @@ for (const ch of allChapters) {
   for (const sec of ch.sections) {
     for (const p of sec.paragraphs) {
       if (p.role !== 'PARAGRAPH') {
-        console.log(`  Ch ${ch.number} § ${sec.number}: [${p.role}] ${p.text.slice(0, 80)}`)
+        console.log(
+          `  Ch ${ch.number} § ${sec.number}: [${p.role}] ${p.text.slice(0, 80)}`
+        )
       }
     }
   }
 }
 
 // Check § 1 of chapter 7 which has Skyddskommitté heading
-const ch7 = allChapters.find(c => c.number === '7')
+const ch7 = allChapters.find((c) => c.number === '7')
 if (ch7) {
   console.log('\nChapter 7:', ch7.title)
   console.log('  Sections:', ch7.sections.length)
