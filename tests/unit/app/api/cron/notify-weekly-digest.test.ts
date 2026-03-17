@@ -82,7 +82,7 @@ describe('notify-weekly-digest cron', () => {
         data: expect.objectContaining({
           type: NotificationType.WEEKLY_DIGEST,
           user_id: 'user-1',
-          title: 'Veckans uppgifter',
+          title: 'Kommande veckan',
         }),
       })
     )
