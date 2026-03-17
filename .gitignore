@@ -44,6 +44,9 @@ next-env.d.ts
 # Large batch data files (LLM processing)
 data/batches/*.jsonl
 
+# Large log files
+data/embed-run.log
+
 # Test artifacts
 playwright-report/
 test-results/

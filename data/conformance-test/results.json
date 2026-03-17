@@ -1,0 +1,599 @@
+[
+  {
+    "contentType": "SFS_LAW",
+    "documentNumber": "SFS 1962:516",
+    "title": "Kungörelse (1962:516)\nmed föreskrifter rörande rätt till folkpension utom riket i vissa\n\nfall\n",
+    "inputSize": 1315,
+    "outputSize": 1314,
+    "inputTokens": 3003,
+    "outputTokens": 469,
+    "cost": 0.0042784,
+    "duration": 2948,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": false,
+      "hasParagrafClass": false,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "SFS_LAW",
+    "documentNumber": "SFS 2021:1198",
+    "title": "Förordning (2021:1198) med instruktion för Institutet för mänskliga rättigheter",
+    "inputSize": 1922,
+    "outputSize": 1922,
+    "inputTokens": 3334,
+    "outputTokens": 805,
+    "cost": 0.0058872,
+    "duration": 3452,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "SFS_LAW",
+    "documentNumber": "SFS 2001:782",
+    "title": "Tillkännagivande (2001:782) av överenskommelser som avses i \nlagen (2000:562) om internationell rättslig hjälp i brottmål\n",
+    "inputSize": 8437,
+    "outputSize": 8435,
+    "inputTokens": 5746,
+    "outputTokens": 3196,
+    "cost": 0.0173808,
+    "duration": 19280,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": false,
+      "hasParagrafClass": false,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": false,
+      "issues": [
+        "Has § but missing h3.paragraph",
+        "Has § but missing a.paragraf"
+      ]
+    }
+  },
+  {
+    "contentType": "SFS_LAW",
+    "documentNumber": "SFS 1981:672",
+    "title": "Förordning (1981:672) med instruktion för statens \nkärnbränslenämnd\n",
+    "inputSize": 8980,
+    "outputSize": 8978,
+    "inputTokens": 5983,
+    "outputTokens": 3454,
+    "cost": 0.0186024,
+    "duration": 25811,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "SFS_LAW",
+    "documentNumber": "SFS 1990:643",
+    "title": "Förordning (1990:643) om glesbygdsstöd\n",
+    "inputSize": 23348,
+    "outputSize": 23824,
+    "inputTokens": 11418,
+    "outputTokens": 9170,
+    "cost": 0.0458144,
+    "duration": 79377,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "SFS_AMENDMENT",
+    "documentNumber": "SFS 2010:1403",
+    "title": "Lag om ändring i lagen (1991:572) om särskild utlänningskontroll",
+    "inputSize": 2257,
+    "outputSize": 1867,
+    "inputTokens": 3492,
+    "outputTokens": 791,
+    "cost": 0.0059576,
+    "duration": 3528,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": false,
+      "hasParagrafClass": false,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": false,
+      "issues": [
+        "Has § but missing h3.paragraph",
+        "Has § but missing a.paragraf"
+      ]
+    }
+  },
+  {
+    "contentType": "SFS_AMENDMENT",
+    "documentNumber": "SFS 2024:1074",
+    "title": "SFS 2024:1074 Lag om ändring i lagen (2023:393) om ändring i skollagen (2010:800)",
+    "inputSize": 3799,
+    "outputSize": 3000,
+    "inputTokens": 4069,
+    "outputTokens": 1226,
+    "cost": 0.0081592,
+    "duration": 6689,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "SFS_AMENDMENT",
+    "documentNumber": "SFS 2019:1133",
+    "title": "Förordning om ändring i förordningen (2018:1879) med instruktion för Etikprövningsmyndigheten",
+    "inputSize": 5837,
+    "outputSize": 5186,
+    "inputTokens": 4802,
+    "outputTokens": 1977,
+    "cost": 0.0117496,
+    "duration": 12889,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "SFS_AMENDMENT",
+    "documentNumber": "SFS 2005:69",
+    "title": "Förordning om ändring i förordningen (1992:986) om statlig bostadsbyggnadssubvention",
+    "inputSize": 6730,
+    "outputSize": 6097,
+    "inputTokens": 5068,
+    "outputTokens": 2287,
+    "cost": 0.0132024,
+    "duration": 14438,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "SFS_AMENDMENT",
+    "documentNumber": "SFS 2002:723",
+    "title": "Förordning om ändring i djurskyddsförordningen (1988:539)",
+    "inputSize": 7661,
+    "outputSize": 6558,
+    "inputTokens": 5518,
+    "outputTokens": 2615,
+    "cost": 0.014874400000000001,
+    "duration": 16805,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "AGENCY_REGULATION",
+    "documentNumber": "BFS 2021:2",
+    "title": "Boverkets föreskrifter och allmänna råd om utrustning för laddning av elfordon",
+    "inputSize": 4705,
+    "outputSize": 4716,
+    "inputTokens": 4338,
+    "outputTokens": 1812,
+    "cost": 0.0107184,
+    "duration": 9644,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "AGENCY_REGULATION",
+    "documentNumber": "SSMFS 2008:47",
+    "title": "Strålsäkerhetsmyndighetens föreskrifter om brandvarnare som innehåller strålkälla med radioaktivt ämne",
+    "inputSize": 8287,
+    "outputSize": 8370,
+    "inputTokens": 5892,
+    "outputTokens": 3376,
+    "cost": 0.018217599999999997,
+    "duration": 22751,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "AGENCY_REGULATION",
+    "documentNumber": "SSMFS 2008:32",
+    "title": "Strålsäkerhetsmyndighetens föreskrifter och allmänna råd om kompetens hos driftpersonal vid reaktoranläggningar",
+    "inputSize": 16960,
+    "outputSize": 17204,
+    "inputTokens": 8642,
+    "outputTokens": 6180,
+    "cost": 0.0316336,
+    "duration": 53321,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "AGENCY_REGULATION",
+    "documentNumber": "MSBFS 2025:4",
+    "title": "Föreskrifter och allmänna råd om statliga myndigheters uppgifter inför och vid höjd beredskap",
+    "inputSize": 24498,
+    "outputSize": 25396,
+    "inputTokens": 11270,
+    "outputTokens": 9035,
+    "cost": 0.045156,
+    "duration": 73609,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "AGENCY_REGULATION",
+    "documentNumber": "BFS 2020:5",
+    "title": "Boverkets föreskrifter om detaljplan",
+    "inputSize": 121745,
+    "outputSize": 43370,
+    "inputTokens": 49981,
+    "outputTokens": 16384,
+    "cost": 0.1055208,
+    "duration": 85352,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "EU_REGULATION",
+    "documentNumber": "Regulation (EU) 2021/1819",
+    "title": "Rådets förordning (EU) 2021/1819 av den 18 oktober 2021 om ändring av förordning (EU) nr 224/2014 om restriktiva åtgärder med hänsyn till situationen i Centralafrikanska republiken",
+    "inputSize": 12335,
+    "outputSize": 5723,
+    "inputTokens": 6624,
+    "outputTokens": 2260,
+    "cost": 0.0143392,
+    "duration": 18299,
+    "validation": {
+      "hasArticleWrapper": false,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": false,
+      "issues": [
+        "Missing article.legal-document wrapper with correct DOC_ID"
+      ]
+    }
+  },
+  {
+    "contentType": "EU_REGULATION",
+    "documentNumber": "Regulation (EU) 2023/2920",
+    "title": "Rådets förordning (EU) 2023/2920 av den 21 december 2023 om ändring av förordning (EU) 2022/2578 vad gäller förlängningen av dess tillämpningsperiod",
+    "inputSize": 24094,
+    "outputSize": 11899,
+    "inputTokens": 10108,
+    "outputTokens": 4100,
+    "cost": 0.024486400000000002,
+    "duration": 45900,
+    "validation": {
+      "hasArticleWrapper": false,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": false,
+      "issues": [
+        "Missing article.legal-document wrapper with correct DOC_ID"
+      ]
+    }
+  },
+  {
+    "contentType": "EU_REGULATION",
+    "documentNumber": "32020R1373",
+    "title": "Kommissionens genomförandeförordning (EU) 2020/1373 av den 1 oktober 2020 om godkännande av zinkkelat av lysin och glutaminsyra som fodertillsats för alla djurarter (Text av betydelse för EES)",
+    "inputSize": 28761,
+    "outputSize": 12093,
+    "inputTokens": 11051,
+    "outputTokens": 4529,
+    "cost": 0.026956800000000003,
+    "duration": 37185,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "EU_REGULATION",
+    "documentNumber": "Regulation (EU) 2024/1960",
+    "title": "Rådets genomförandeförordning (EU) 2024/1960 av den 15 juli 2024 om genomförande av förordning (EU) 2020/1998 om restriktiva åtgärder mot allvarliga kränkningar av och brott mot de mänskliga rättigheterna",
+    "inputSize": 38129,
+    "outputSize": 20503,
+    "inputTokens": 14471,
+    "outputTokens": 7184,
+    "cost": 0.0403128,
+    "duration": 66607,
+    "validation": {
+      "hasArticleWrapper": false,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": false,
+      "issues": [
+        "Missing article.legal-document wrapper with correct DOC_ID"
+      ]
+    }
+  },
+  {
+    "contentType": "EU_REGULATION",
+    "documentNumber": "Regulation (EU) 2022/160",
+    "title": "Kommissionens genomförandeförordning (EU) 2022/160 av den 4 februari 2022 om fastställande av enhetliga minimifrekvenser för viss offentlig kontroll för att verifiera efterlevnaden av unionens djurhälsokrav i enlighet med Europaparlamentets och rådets förordning (EU) 2017/625 och om upphävande av förordningarna (EG) nr 1082/2003 och (EG) nr 1505/2006 (Text av betydelse för EES)",
+    "inputSize": 63149,
+    "outputSize": 29831,
+    "inputTokens": 22158,
+    "outputTokens": 11334,
+    "cost": 0.0630624,
+    "duration": 75778,
+    "validation": {
+      "hasArticleWrapper": false,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": false,
+      "hasParagrafClass": false,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": false,
+      "issues": [
+        "Missing article.legal-document wrapper with correct DOC_ID",
+        "Has § but missing h3.paragraph",
+        "Has § but missing a.paragraf"
+      ]
+    }
+  },
+  {
+    "contentType": "EU_DIRECTIVE",
+    "documentNumber": "32020L1756",
+    "title": "Rådets direktiv (EU) 2020/1756 av den 20 november 2020 om ändring av direktiv 2006/112/EG om ett gemensamt system för mervärdesskatt vad gäller identifiering av beskattningsbara personer i Nordirland",
+    "inputSize": 14205,
+    "outputSize": 7657,
+    "inputTokens": 7179,
+    "outputTokens": 2881,
+    "cost": 0.0172672,
+    "duration": 23202,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "EU_DIRECTIVE",
+    "documentNumber": "32020L0739",
+    "title": "Kommissionens direktiv (EU) 2020/739 av den 3 juni 2020 om ändring av bilaga III till Europaparlamentets och rådets direktiv 2000/54/EG vad gäller införande av sars-CoV-2 i förteckningen över biologiska agens som är kända för att smitta människor och om ändring av kommissionens direktiv (EU) 2019/1833",
+    "inputSize": 26305,
+    "outputSize": 18373,
+    "inputTokens": 11030,
+    "outputTokens": 6592,
+    "cost": 0.035192,
+    "duration": 52664,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "EU_DIRECTIVE",
+    "documentNumber": "32020L0432",
+    "title": "Kommissionens genomförandedirektiv (EU) 2020/432 av den 23 mars 2020 om ändring av rådets direktiv 2002/55/EG vad gäller definitionen av köksväxter och förteckningen över släkten och arter i artikel 2.1 b (Text av betydelse för EES)",
+    "inputSize": 44855,
+    "outputSize": 9868,
+    "inputTokens": 15867,
+    "outputTokens": 4149,
+    "cost": 0.0292896,
+    "duration": 33030,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": false,
+      "hasParagrafClass": false,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": false,
+      "issues": [
+        "Has § but missing h3.paragraph",
+        "Has § but missing a.paragraf"
+      ]
+    }
+  },
+  {
+    "contentType": "EU_DIRECTIVE",
+    "documentNumber": "32020L0700",
+    "title": "Europaparlamentets och rådets direktiv (EU) 2020/700 av den 25 maj 2020 om ändring av direktiven (EU) 2016/797 och (EU) 2016/798 vad gäller förlängning av deras införlivandeperioder (Text av betydelse för EES)",
+    "inputSize": 28937,
+    "outputSize": 13764,
+    "inputTokens": 11674,
+    "outputTokens": 5233,
+    "cost": 0.0302712,
+    "duration": 41345,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": true,
+      "hasParagrafClass": true,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": true,
+      "issues": []
+    }
+  },
+  {
+    "contentType": "EU_DIRECTIVE",
+    "documentNumber": "32020L0285",
+    "title": "Rådets direktiv (EU) 2020/285 av den 18 februari 2020 om ändring av direktiv 2006/112/EG om ett gemensamt system för mervärdesskatt vad gäller den särskilda ordningen för små företag och förordning (EU) nr 904/2010 vad gäller det administrativa samarbetet och utbyte av information för kontrollen av att den särskilda ordningen för små företag tillämpas på ett korrekt sätt",
+    "inputSize": 133886,
+    "outputSize": 49481,
+    "inputTokens": 37683,
+    "outputTokens": 16384,
+    "cost": 0.0956824,
+    "duration": 142645,
+    "validation": {
+      "hasArticleWrapper": true,
+      "hasLovhead": true,
+      "hasBody": true,
+      "hasParagraphClass": false,
+      "hasParagrafClass": false,
+      "hasTextClass": true,
+      "hasOldBoldParagraf": false,
+      "hasOldAnchorFormat": false,
+      "valid": false,
+      "issues": [
+        "Has § but missing h3.paragraph",
+        "Has § but missing a.paragraf"
+      ]
+    }
+  }
+]

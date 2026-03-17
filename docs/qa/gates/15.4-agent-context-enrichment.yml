@@ -1,0 +1,45 @@
+schema: 1
+story: '15.4'
+story_title: 'Agent Context Enrichment'
+gate: PASS
+status_reason: 'All 11 ACs met. 12 unit tests (exceeds required 8). 97/97 agent regression suite green. Clean additive changes following established patterns. No security, performance, or reliability concerns.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-16T21:30:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-03-30T00:00:00Z'
+
+evidence:
+  tests_reviewed: 28
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No user input surfaces directly. Read-only DB data → string formatting → prompt. No injection vectors.'
+  performance:
+    status: PASS
+    notes: 'Zero new DB queries. In-memory formatting of already-fetched profile data only.'
+  reliability:
+    status: PASS
+    notes: 'Thorough null handling with ?? null coalescing. All nullable fields guarded.'
+  maintainability:
+    status: PASS
+    notes: 'Follows established patterns (flagLabels, Record<string,boolean> casting). Inline procedureLabels mirrors existing codebase conventions.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add ordering assertion for business_description position in formatCompanyContext test'
+      refs: ['tests/unit/agent/system-prompt.test.ts']
+    - action: 'Add edge case test for foreign_owned:true without parent_company_name'
+      refs: ['tests/unit/agent/system-prompt.test.ts']
+    - action: 'Update JSDoc comment in calculateProfileCompleteness to list tax_status in extended fields'
+      refs: ['lib/profile-completeness.ts:25-28']

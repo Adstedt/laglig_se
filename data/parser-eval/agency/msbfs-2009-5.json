@@ -1,0 +1,174 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Myndigheten för samhällsskydd och beredskaps föreskrifter om ackreditering av organ som ska utföra certifiering av förpackningar, IBC-behållare och storförpackningar för transport av farligt gods på land",
+  "documentNumber": "MSBFS 2009:5",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna författning innehåller de särskilda krav som gäller för ackreditering av organ som ska utföra certifiering av förpackningar, IBC-behållare och storförpackningar enligt bestämmelserna i kapitel 6.1, 6.3, 6.5 eller 6.6 i Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:2) om transport av farligt gods på väg och i terräng (ADR-S), eller Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:3) om transport av farligt gods på järnväg (RID-S), eller annan författning som trätt i någon av dessas ställe.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna författning innehåller de särskilda krav som gäller för ackreditering av organ som ska utföra certifiering av förpackningar, IBC-behållare och storförpackningar enligt bestämmelserna i kapitel 6.1, 6.3, 6.5 eller 6.6 i Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:2) om transport av farligt gods på väg och i terräng (ADR-S), eller Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:3) om transport av farligt gods på järnväg (RID-S), eller annan författning som trätt i någon av dessas ställe.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Definitioner",
+          "content": "I denna författning avses med\nAndra begrepp som används i Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:2) om transport av farligt gods på väg och i terräng (ADR-S), eller Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:3) om transport av farligt gods på järnväg (RID-S), har samma betydelse då de används i denna författning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I denna författning avses med",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Andra begrepp som används i Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:2) om transport av farligt gods på väg och i terräng (ADR-S), eller Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:3) om transport av farligt gods på järnväg (RID-S), har samma betydelse då de används i denna författning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Verksamhetsområde",
+          "content": "Certifieringsorganets verksamhet ska innefatta certifiering och efterkontroll av en eller flera typer av objekt som har provats enligt metoder som anges i någon av nedanstående författningar.\nMyndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:2) om transport av farligt gods på väg och i terräng (ADR-S), eller annan författning som trätt i dess ställe.\n      Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:3) om transport av farligt gods på järnväg (RID-S), eller annan författning som trätt i dess ställe.\n      Sjöfartsverkets föreskrifter (SJÖFS 2007:20) om transport till sjöss av förpackat farligt gods (IMDG-koden), eller annan författning som trätt i dess ställe.\n      Luftfartsstyrelsens föreskrifter (LFS 2007:23) om medförande av farligt gods, eller annan författning som trätt i dess ställe.\nVerksamheten ska i förekommande fall även innefatta efterkontroll av objekt som har provats enligt metoder som anges i författningar som ersatts av någon av de författningar som avses i första stycket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Certifieringsorganets verksamhet ska innefatta certifiering och efterkontroll av en eller flera typer av objekt som har provats enligt metoder som anges i någon av nedanstående författningar.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:2) om transport av farligt gods på väg och i terräng (ADR-S), eller annan författning som trätt i dess ställe.\n      Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:3) om transport av farligt gods på järnväg (RID-S), eller annan författning som trätt i dess ställe.\n      Sjöfartsverkets föreskrifter (SJÖFS 2007:20) om transport till sjöss av förpackat farligt gods (IMDG-koden), eller annan författning som trätt i dess ställe.\n      Luftfartsstyrelsens föreskrifter (LFS 2007:23) om medförande av farligt gods, eller annan författning som trätt i dess ställe.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:2) om transport av farligt gods på väg och i terräng (ADR-S), eller annan författning som trätt i dess ställe.</li>\n      <li>Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2009:3) om transport av farligt gods på järnväg (RID-S), eller annan författning som trätt i dess ställe.</li>\n      <li>Sjöfartsverkets föreskrifter (SJÖFS 2007:20) om transport till sjöss av förpackat farligt gods (IMDG-koden), eller annan författning som trätt i dess ställe.</li>\n      <li>Luftfartsstyrelsens föreskrifter (LFS 2007:23) om medförande av farligt gods, eller annan författning som trätt i dess ställe.</li>\n    </ol>"
+            },
+            {
+              "number": 3,
+              "text": "Verksamheten ska i förekommande fall även innefatta efterkontroll av objekt som har provats enligt metoder som anges i författningar som ersatts av någon av de författningar som avses i första stycket.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Teknisk kompetens",
+          "content": "Certifieringsorganet ska förfoga över en eller flera ansvarspersoner som var för sig eller tillsammans har kunskap om\nsamtliga typer av objekt inom certifieringsorganets verksamhetsområde,\n      tillämpligt internationellt standardiseringsarbete, och\n      tillämpliga författningar enligt 3 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Certifieringsorganet ska förfoga över en eller flera ansvarspersoner som var för sig eller tillsammans har kunskap om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "samtliga typer av objekt inom certifieringsorganets verksamhetsområde,\n      tillämpligt internationellt standardiseringsarbete, och\n      tillämpliga författningar enligt 3 §.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>samtliga typer av objekt inom certifieringsorganets verksamhetsområde,</li>\n      <li>tillämpligt internationellt standardiseringsarbete, och</li>\n      <li>tillämpliga författningar enligt 3 §.</li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Den personal som självständigt ska utföra bedömning inför certifiering och efterkontroll ska ha nedanstående kompetens:\nLägst teknisk utbildning på gymnasienivå eller motsvarande.\n      Minst ett års erfarenhet från praktisk yrkesverksamhet. Erfarenheten ska vara lämplig för ändamålet och ska avse tillverkning av aktuellt objekt eller att certifieringsuppdrag har utförts under en erfaren handledare.\n      Kunskaper inom verksamhetsområdet om\n        \n          typer av objekt,\n          provningsmoment,\n          objektens användning,\n          mät- och provningsutrustningar,\n          objektens material,\n          objektens tillverkningsmetoder,\n          konstruktionskontroll,\n          revision av kvalitetsledningssystem, och\n          författningar som anges i 3 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den personal som självständigt ska utföra bedömning inför certifiering och efterkontroll ska ha nedanstående kompetens:",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Lägst teknisk utbildning på gymnasienivå eller motsvarande.\n      Minst ett års erfarenhet från praktisk yrkesverksamhet. Erfarenheten ska vara lämplig för ändamålet och ska avse tillverkning av aktuellt objekt eller att certifieringsuppdrag har utförts under en erfaren handledare.\n      Kunskaper inom verksamhetsområdet om\n        \n          typer av objekt,\n          provningsmoment,\n          objektens användning,\n          mät- och provningsutrustningar,\n          objektens material,\n          objektens tillverkningsmetoder,\n          konstruktionskontroll,\n          revision av kvalitetsledningssystem, och\n          författningar som anges i 3 §.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>Lägst teknisk utbildning på gymnasienivå eller motsvarande.</li>\n      <li>Minst ett års erfarenhet från praktisk yrkesverksamhet. Erfarenheten ska vara lämplig för ändamålet och ska avse tillverkning av aktuellt objekt eller att certifieringsuppdrag har utförts under en erfaren handledare.</li>\n      <li>Kunskaper inom verksamhetsområdet om\n        <ul>\n          <li>typer av objekt,</li>\n          <li>provningsmoment,</li>\n          <li>objektens användning,</li>\n          <li>mät- och provningsutrustningar,</li>\n          <li>objektens material,</li>\n          <li>objektens tillverkningsmetoder,</li>\n          <li>konstruktionskontroll,</li>\n          <li>revision av kvalitetsledningssystem, och</li>\n          <li>författningar som anges i 3 §.</li>\n        </ul>\n      </li>\n    </ol>"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Arbetsmetoder",
+          "content": "Certifieringsorganet ska ha utarbetat tekniska instruktioner och metodbeskrivningar för certifiering och efterkontroll som baserar sig på gällande författningar enligt 3 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Certifieringsorganet ska ha utarbetat tekniska instruktioner och metodbeskrivningar för certifiering och efterkontroll som baserar sig på gällande författningar enligt 3 §.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Varje certifieringsuppdrag ska redovisas i ett certifikat om typgodkännande som visar att den typ av objekt som har certifierats uppfyller kraven i tillämpliga författningar enligt 3 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Varje certifieringsuppdrag ska redovisas i ett certifikat om typgodkännande som visar att den typ av objekt som har certifierats uppfyller kraven i tillämpliga författningar enligt 3 §.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Certifieringsorganet ska snarast informera Myndigheten för samhällsskydd och beredskap om sådana skador eller andra omständigheter som är av betydelse för objektens transportsäkerhet och som har framkommit vid certifiering eller efterkontroll.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Certifieringsorganet ska snarast informera Myndigheten för samhällsskydd och beredskap om sådana skador eller andra omständigheter som är av betydelse för objektens transportsäkerhet och som har framkommit vid certifiering eller efterkontroll.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "All dokumentation som ingår som underlag för certifieringar och efterkontroller av objekt ska arkiveras hos certifieringsorganet i minst tio år.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "All dokumentation som ingår som underlag för certifieringar och efterkontroller av objekt ska arkiveras hos certifieringsorganet i minst tio år.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "Denna författning träder i kraft den 16 februari 2009, då Statens räddningsverks föreskrifter (SRVFS 1999:3) för ackreditering av organ som skall utföra certifiering av förpackningar och småbulkbehållare för inrikes landtransport av farligt gods ska upphöra att gälla.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "MSBFS 2009:5",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

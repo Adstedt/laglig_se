@@ -8,6 +8,10 @@ import {
   Gavel,
   Clock,
   Bell,
+  UserPlus,
+  MessageSquare,
+  AtSign,
+  ArrowRightLeft,
   type LucideProps,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
@@ -18,12 +22,12 @@ const NOTIFICATION_ICON_MAP: Record<string, ComponentType<LucideProps>> = {
   LAW_REPEALED: XCircle,
   RULING_CITED: Gavel,
   AMENDMENT_REMINDER: Clock,
-  TASK_ASSIGNED: Bell,
+  TASK_ASSIGNED: UserPlus,
   TASK_DUE_SOON: Clock,
   TASK_OVERDUE: Clock,
-  COMMENT_ADDED: Bell,
-  MENTION: Bell,
-  STATUS_CHANGED: Bell,
+  COMMENT_ADDED: MessageSquare,
+  MENTION: AtSign,
+  STATUS_CHANGED: ArrowRightLeft,
   WEEKLY_DIGEST: Bell,
 }
 

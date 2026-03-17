@@ -1,0 +1,430 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (1982:618) om utländska förvärv av \nfast egendom m.m.",
+  "documentNumber": "SFS 1982:618",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Fast egendom, tomträtt och bostadsarrende",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Den som skulle ha varit kontrollsubjekt enligt\nom utländska förvärv av svenska företag m. m., om denna hade gällt även efter utgången av år 1991, får inte utan tillstånd (förvärvstillstånd) för varje särskilt fall förvärva fast egendom här i landet.\nVad som i denna lag sägs om fast egendom skall gälla även tomträtt och bostadsarrende. Vad som sägs om lagfart skall, när det är fråga om tomträtt, i stället avse inskrivning av upplåtelse eller förvärv av tomträtt.",
+          "amendedBy": "Lag (1991:1897)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som skulle ha varit kontrollsubjekt enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om utländska förvärv av svenska företag m. m., om denna hade gällt även efter utgången av år 1991, får inte utan tillstånd (förvärvstillstånd) för varje särskilt fall förvärva fast egendom här i landet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Vad som i denna lag sägs om fast egendom skall gälla även tomträtt och bostadsarrende. Vad som sägs om lagfart skall, när det är fråga om tomträtt, i stället avse inskrivning av upplåtelse eller förvärv av tomträtt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Förvärvstillstånd behövs inte\n1. för förvärv genom bodelning, arv eller testamente,\n2. för förvärv genom fusion enligt\n3. för förvärv genom inrop på exekutiv auktion,\n4. om förvärvaren är gift med en svensk medborgare,\n5. om förvärvaren är gift med överlåtaren och inte heller om förvärvaren eller, när makar förvärvar gemensamt, någon av dem är överlåtarens avkomling, allt under förutsättning att överlåtaren inte är skyldig att avyttra egendomen enligt 3 kap. 1 § eller enligt\n6. för förvärv av egendom som är taxerad som hyreshusenhet eller industrienhet.",
+          "amendedBy": "Lag (1991:1897)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Förvärvstillstånd behövs inte",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. för förvärv genom bodelning, arv eller testamente,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. för förvärv genom fusion enligt",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. för förvärv genom inrop på exekutiv auktion,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. om förvärvaren är gift med en svensk medborgare,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. om förvärvaren är gift med överlåtaren och inte heller om förvärvaren eller, när makar förvärvar gemensamt, någon av dem är överlåtarens avkomling, allt under förutsättning att överlåtaren inte är skyldig att avyttra egendomen enligt 3 kap. 1 § eller enligt",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 6,
+              "text": "6. för förvärv av egendom som är taxerad som hyreshusenhet eller industrienhet.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Frågor om förvärvstillstånd prövas av regeringen eller den myndighet som regeringen bestämmer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Frågor om förvärvstillstånd prövas av regeringen eller den myndighet som regeringen bestämmer.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Ansökan om förvärvstillstånd",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Förvärvstillstånd skall sökas inom tre månader från det förvärvet skedde.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Förvärvstillstånd skall sökas inom tre månader från det förvärvet skedde.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Frågan om förvärvstillstånd får inte prövas förrän förvärvet har skett, om det är fråga om köp, byte eller gåva av fast egendom som är taxerad som lantbruksenhet.\nTillstånd att förvärva fast egendom på offentlig auktion enligt 3 kap. 3 § eller enligt\nlämnas före auktionen.",
+          "amendedBy": "Lag (1991:1897)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Frågan om förvärvstillstånd får inte prövas förrän förvärvet har skett, om det är fråga om köp, byte eller gåva av fast egendom som är taxerad som lantbruksenhet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Tillstånd att förvärva fast egendom på offentlig auktion enligt 3 kap. 3 § eller enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "lämnas före auktionen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Ansökan om tillstånd att förvärva fast egendom genom köp eller byte får inte prövas och inte heller avskrivas på grund av återkallelse innan det blivit slutligt avgjort huruvida förköp enligt\näger rum. Vad som har sagts nu gäller inte om det är uppenbart att förköpsrätt inte kommer att utövas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ansökan om tillstånd att förvärva fast egendom genom köp eller byte får inte prövas och inte heller avskrivas på grund av återkallelse innan det blivit slutligt avgjort huruvida förköp enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "äger rum. Vad som har sagts nu gäller inte om det är uppenbart att förköpsrätt inte kommer att utövas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Ogiltighet",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Om förvärvstillstånd inte söks inom föreskriven tid och på föreskrivet sätt eller om tillstånd vägras, är förvärvet ogiltigt.\nFörsta stycket gäller inte, om lagfart har meddelats i strid mot 20 kap. 6 § 8 eller 7 § 13 jordabalken.\nLag (1988:728)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om förvärvstillstånd inte söks inom föreskriven tid och på föreskrivet sätt eller om tillstånd vägras, är förvärvet ogiltigt.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket gäller inte, om lagfart har meddelats i strid mot 20 kap. 6 § 8 eller 7 § 13 jordabalken.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Lag (1988:728)",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Förutsättningar för förvärvstillstånd m.m.",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Förvärvstillstånd skall medelas, om det inte möter hinder med hänsyn till landets försvar eller säkerhet, egendomens lämplighet för avsett ändamål eller andra allmänna intressen eller med hänsyn till förvärvarens förhållanden.\nFörvärvstillstånd får inte meddelas om tillstånd skulle ha vägrats vid en prövning av",
+          "amendedBy": "Lag (1991:1897)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Förvärvstillstånd skall medelas, om det inte möter hinder med hänsyn till landets försvar eller säkerhet, egendomens lämplighet för avsett ändamål eller andra allmänna intressen eller med hänsyn till förvärvarens förhållanden.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Förvärvstillstånd får inte meddelas om tillstånd skulle ha vägrats vid en prövning av",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "I fråga om förvärv av fast egendom som är taxerad som lantbruksenhet gäller 10, 11 och",
+          "amendedBy": "Lag (1990:1389)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I fråga om förvärv av fast egendom som är taxerad som lantbruksenhet gäller 10, 11 och",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Även om hinder inte föreligger enligt 8 § skall förvärvstillstånd vägras, om förvärvet sker för fritidsändamål och egendomen är belägen inom ett område där efterfrågan på fritidsfastigheter är så betydande att på grund därav risk föreligger för en stegring av fastighetsvärdena.\nFörsta stycket gäller inte om förvärvaren tidigare har varit svensk medborgare eller på annat sätt har en särskild anknytning till Sverige.",
+          "amendedBy": "Lag (1985:944)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Även om hinder inte föreligger enligt 8 § skall förvärvstillstånd vägras, om förvärvet sker för fritidsändamål och egendomen är belägen inom ett område där efterfrågan på fritidsfastigheter är så betydande att på grund därav risk föreligger för en stegring av fastighetsvärdena.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket gäller inte om förvärvaren tidigare har varit svensk medborgare eller på annat sätt har en särskild anknytning till Sverige.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Tillstånd till framtida förvärv gäller ett år från det tillståndet meddelades. I tillståndsbeslutet skall upplysas om detta.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tillstånd till framtida förvärv gäller ett år från det tillståndet meddelades. I tillståndsbeslutet skall upplysas om detta.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "har upphävts genom lag (1991:1897).",
+      "paragrafer": []
+    },
+    {
+      "number": "3",
+      "title": "Förvärv på exekutiv auktion",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Fast egendom, som har förvärvats genom inrop på exekutiv auktion under sådana förhållanden att förvärvstillstånd skulle ha krävts vid ett vanligt köp, skall åter avyttras inom två år efter det att auktionen har vunnit laga kraft, om inte dessförinnan nämnda förhållanden har upphört eller inroparen har fått tillstånd att behålla egendomen. Har inropet skett för att skydda en fordran, för vilken inroparen har panträtt i egendomen, eller någon rättighet som tillkommer inroparen och som är inskriven i egendomen, får länsstyrelsen på ansökan av inroparen medge skäligt anstånd med avytt randet, om det är sannolikt att förlust annars skulle uppkomma för inroparen.\nAvyttras inte egendomen inom föreskriven tid, skall länsstyrelsen, om inte synnerliga skäl talar däremot, förordna att egendomen skall säljas av kronofogdemyndigheten på offentlig auktion enligt 3 §.\nAnteckning om bestämmelserna i första och andra styckena skall göras i det köpebrev som utfärdas med anledning av den exekutiva auktionen och, när lagfart söks, införas i fastighetsboken, om inte sökanden visar att avyttringsskyldigheten har upphört.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fast egendom, som har förvärvats genom inrop på exekutiv auktion under sådana förhållanden att förvärvstillstånd skulle ha krävts vid ett vanligt köp, skall åter avyttras inom två år efter det att auktionen har vunnit laga kraft, om inte dessförinnan nämnda förhållanden har upphört eller inroparen har fått tillstånd att behålla egendomen. Har inropet skett för att skydda en fordran, för vilken inroparen har panträtt i egendomen, eller någon rättighet som tillkommer inroparen och som är inskriven i egendomen, får länsstyrelsen på ansökan av inroparen medge skäligt anstånd med avytt randet, om det är sannolikt att förlust annars skulle uppkomma för inroparen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Avyttras inte egendomen inom föreskriven tid, skall länsstyrelsen, om inte synnerliga skäl talar däremot, förordna att egendomen skall säljas av kronofogdemyndigheten på offentlig auktion enligt 3 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Anteckning om bestämmelserna i första och andra styckena skall göras i det köpebrev som utfärdas med anledning av den exekutiva auktionen och, när lagfart söks, införas i fastighetsboken, om inte sökanden visar att avyttringsskyldigheten har upphört.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "I fråga om tillstånd enligt 1 § att behålla fast egendom gäller i tillämpliga delar bestämmelsera i denna lag om förvärv av fast egendom.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I fråga om tillstånd enligt 1 § att behålla fast egendom gäller i tillämpliga delar bestämmelsera i denna lag om förvärv av fast egendom.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Länsstyrelsen får besluta att ett förordnande enligt 1 § andra stycket om försäljning på offentlig auktion inte skall verkställas, om inroparen före eller efter förordnandet har avyttrat egendomen.\nI övrigt skall så anses och med ärendet i tillämpliga delar så förfaras, som om egendomen hade blivit utmätt för fordran med bästa förmånsrätt efter sådana rättigheter som besvärade egendomen redan vid den exekutiva auktionen och som har företräde framför alla befintliga fordringar. Även om det i enlighet härmed bestämda skyddsbeloppet täcks, får försäljning inte ske, om inte den bjudna köpeskillingen täcker även det värde som i ärendet har åsatts egendomen enligt 12 kap. utsökningsbalken eller, om ägaren eller en innehavare av fordran som är förenad med panträtt i egendomen i god tid före auktionen har påkallat en särskild värdering, det värde vartill egendomen uppskattats av värderingsmän som länsstyrelsen utser.\nEgendomen får säljas till sådana rättssubjekt som avses i 1 kap. 1 § endast om de har fått förvärvstillstånd. Vidare gäller i fråga om jordbruksfastighet de inskränkningar som föreskrivs i 17 § andra stycket tredje meningen\nAvges vid auktionen bud som sålunda får antas, skall försäljning ske även om innehavare av fordran bestrider det.",
+          "amendedBy": "Lag (1991:1897)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Länsstyrelsen får besluta att ett förordnande enligt 1 § andra stycket om försäljning på offentlig auktion inte skall verkställas, om inroparen före eller efter förordnandet har avyttrat egendomen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "I övrigt skall så anses och med ärendet i tillämpliga delar så förfaras, som om egendomen hade blivit utmätt för fordran med bästa förmånsrätt efter sådana rättigheter som besvärade egendomen redan vid den exekutiva auktionen och som har företräde framför alla befintliga fordringar. Även om det i enlighet härmed bestämda skyddsbeloppet täcks, får försäljning inte ske, om inte den bjudna köpeskillingen täcker även det värde som i ärendet har åsatts egendomen enligt 12 kap. utsökningsbalken eller, om ägaren eller en innehavare av fordran som är förenad med panträtt i egendomen i god tid före auktionen har påkallat en särskild värdering, det värde vartill egendomen uppskattats av värderingsmän som länsstyrelsen utser.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Egendomen får säljas till sådana rättssubjekt som avses i 1 kap. 1 § endast om de har fått förvärvstillstånd. Vidare gäller i fråga om jordbruksfastighet de inskränkningar som föreskrivs i 17 § andra stycket tredje meningen",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Avges vid auktionen bud som sålunda får antas, skall försäljning ske även om innehavare av fordran bestrider det.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Om försäljning inte kommer till stånd vid en auktion enligt 3 §, får länsstyrelsen inom två år efter det att auktionen har vunnit laga kraft förordna om en ny auktion. Avges inte heller vid denna auktion ett bud som får antas, är frågan om försäljning av egendomen förfallen.\nKostnader i samband med en auktion som inte har lett till försäljning betalas av statsmedel.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om försäljning inte kommer till stånd vid en auktion enligt 3 §, får länsstyrelsen inom två år efter det att auktionen har vunnit laga kraft förordna om en ny auktion. Avges inte heller vid denna auktion ett bud som får antas, är frågan om försäljning av egendomen förfallen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Kostnader i samband med en auktion som inte har lett till försäljning betalas av statsmedel.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "har upphävts genom\nlag (1991:1897)",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "har upphävts genom",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "lag (1991:1897)",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Gemensamma bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Om någon annan än regeringen har meddelat beslut i tillståndsärende enligt denna lag, överklagas beslutet hos regeringen genom besvär.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om någon annan än regeringen har meddelat beslut i tillståndsärende enligt denna lag, överklagas beslutet hos regeringen genom besvär.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Beslut av länsstyrelsen enligt 3 kap. 1, 3 eller 4 § överklagas hos regeringen genom besvär.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Beslut av länsstyrelsen enligt 3 kap. 1, 3 eller 4 § överklagas hos regeringen genom besvär.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "1985:944",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 januari 1986.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Beträffande förvärv som har skett före ikraftträdandet skall lagen fortsätta att gälla i sin äldre lydelse, om förvärvet avser en hyreshusenhet, en jordbruksfastighet eller en eldistributionsanläggning.\n1991:48",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 juli 1992.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Beträffande inmutningar och utmål enligt",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "gäller äldre bestämmelser.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1982:618",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

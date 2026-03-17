@@ -55,6 +55,17 @@ function makeProfile(overrides: Partial<CompanyProfile> = {}): CompanyProfile {
     collective_agreement_name: null,
     workforce_composition: null,
     revenue_range: null,
+    business_description: null,
+    tax_status: null,
+    foreign_owned: false,
+    parent_company_name: null,
+    parent_company_orgnr: null,
+    fi_regulated: false,
+    active_status: null,
+    ongoing_procedures: null,
+    registered_date: null,
+    data_source: null,
+    last_enriched_at: null,
     created_at: new Date(),
     updated_at: new Date(),
     ...overrides,
@@ -293,5 +304,128 @@ describe('formatCompanyContext', () => {
     expect(result).not.toContain('Bransch')
     expect(result).not.toContain('Certifieringar')
     expect(result).not.toContain('Compliance-mognad')
+  })
+
+  it('includes all enrichment fields when populated', () => {
+    const profile = makeProfile({
+      company_name: 'Enriched AB',
+      business_description: 'Tillverkning av industriella komponenter',
+      registered_date: new Date('2015-03-20'),
+      tax_status: { f_tax: true, vat: true, employer: false },
+      foreign_owned: true,
+      parent_company_name: 'Global Corp Ltd',
+      fi_regulated: true,
+      ongoing_procedures: {
+        liquidation: false,
+        restructuring: true,
+        bankruptcy: false,
+      },
+      active_status: 'deregistered',
+    })
+
+    const result = formatCompanyContext(profile)!
+    expect(result).toContain(
+      'Verksamhet: Tillverkning av industriella komponenter'
+    )
+    expect(result).toContain('Registrerad: 2015')
+    expect(result).toContain('F-skatt: Ja')
+    expect(result).toContain('Momsregistrerad: Ja')
+    expect(result).toContain('Registrerad arbetsgivare: Nej')
+    expect(result).toContain('Utlandsägt: Ja (moderbolag: Global Corp Ltd)')
+    expect(result).toContain('Finansinspektionen-reglerad: Ja')
+    expect(result).toContain('Pågående förfaranden: Rekonstruktion')
+    expect(result).toContain('Status: Avregistrerad')
+  })
+
+  it('backward compat: enrichment fields null/false produce identical output', () => {
+    const profile = makeProfile({
+      company_name: 'Legacy AB',
+      org_number: '556000-0000',
+      industry_label: 'Bygg',
+      sni_code: '41200',
+      employee_count_range: 'RANGE_10_49',
+      certifications: ['ISO 9001'],
+      compliance_maturity: 'BASIC',
+      activity_flags: { chemicals: true },
+    })
+
+    const result = formatCompanyContext(profile)!
+    // New enrichment lines should NOT appear
+    expect(result).not.toContain('Verksamhet:')
+    expect(result).not.toContain('Registrerad:')
+    expect(result).not.toContain('F-skatt:')
+    expect(result).not.toContain('Utlandsägt:')
+    expect(result).not.toContain('Finansinspektionen')
+    expect(result).not.toContain('Pågående förfaranden')
+    expect(result).not.toContain('Status:')
+    // Existing lines still present
+    expect(result).toContain('Legacy AB')
+    expect(result).toContain('Bygg (SNI 41200)')
+    expect(result).toContain('Hanterar kemikalier')
+  })
+
+  it('partial enrichment: only business_description set', () => {
+    const profile = makeProfile({
+      company_name: 'Partial AB',
+      business_description: 'Konsultverksamhet inom IT',
+    })
+
+    const result = formatCompanyContext(profile)!
+    expect(result).toContain('Verksamhet: Konsultverksamhet inom IT')
+    expect(result).not.toContain('F-skatt')
+    expect(result).not.toContain('Utlandsägt')
+  })
+
+  it('foreign_owned true with parent_company_name shows moderbolag', () => {
+    const profile = makeProfile({
+      company_name: 'Foreign AB',
+      foreign_owned: true,
+      parent_company_name: 'Mother Inc',
+    })
+
+    const result = formatCompanyContext(profile)!
+    expect(result).toContain('Utlandsägt: Ja (moderbolag: Mother Inc)')
+  })
+
+  it('active_status "deregistered" shows status line', () => {
+    const profile = makeProfile({
+      company_name: 'Closed AB',
+      active_status: 'deregistered',
+    })
+
+    const result = formatCompanyContext(profile)!
+    expect(result).toContain('Status: Avregistrerad')
+  })
+
+  it('active_status "active" does not show status line', () => {
+    const profile = makeProfile({
+      company_name: 'Active AB',
+      active_status: 'active',
+    })
+
+    const result = formatCompanyContext(profile)!
+    expect(result).not.toContain('Status:')
+  })
+
+  it('skips null tax_status fields instead of showing Nej', () => {
+    const profile = makeProfile({
+      company_name: 'Null Employer AB',
+      tax_status: { f_tax: true, vat: true, employer: null },
+    })
+
+    const result = formatCompanyContext(profile)!
+    expect(result).toContain('F-skatt: Ja')
+    expect(result).toContain('Momsregistrerad: Ja')
+    expect(result).not.toContain('Registrerad arbetsgivare')
+  })
+
+  it('uses founded_year as fallback when registered_date is null', () => {
+    const profile = makeProfile({
+      company_name: 'Old AB',
+      founded_year: 1998,
+    })
+
+    const result = formatCompanyContext(profile)!
+    expect(result).toContain('Registrerad: 1998')
   })
 })

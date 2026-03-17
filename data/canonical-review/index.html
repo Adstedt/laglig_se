@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Story 14.1 — Canonical Pipeline Review</title>
+  <style>
+    :root { --bg: #f8f9fa; --card: #fff; --border: #dee2e6; --accent: #0d6efd; --pass: #198754; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: #212529; padding: 2rem; line-height: 1.6; max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .subtitle { color: #6c757d; margin-bottom: 2rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; transition: box-shadow 0.15s; }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .card-left h2 { font-size: 1.1rem; margin-bottom: 0.2rem; }
+    .card-left .doc-num { color: #6c757d; font-size: 0.9rem; }
+    .badge { display: inline-block; padding: 0.15em 0.5em; border-radius: 4px; font-size: 0.75rem; font-weight: 600; color: #fff; margin-left: 0.5rem; }
+    .badge-type { background: var(--accent); }
+    .badge-pass { background: var(--pass); }
+    .badge-norm { background: #6f42c1; }
+    .arrow { font-size: 1.5rem; color: #adb5bd; }
+  </style>
+</head>
+<body>
+  <h1>Story 14.1 — Canonical Pipeline Review</h1>
+  <p class="subtitle">Click each document to review rendered HTML, source, derived JSON, and markdown.</p>
+  
+  <a class="card" href="sfs-law.html">
+    <div class="card-left">
+      <h2>SFS Law (Riksdag → normalized)</h2>
+      <div class="doc-num">SFS 1977:1160 — Arbetsmiljölag (1977:1160)</div>
+    </div>
+    <div>
+      <span class="badge badge-type">SFS_LAW</span>
+      <span class="badge badge-pass">VALID</span>
+      <span class="badge badge-norm">NORM</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  
+  <a class="card" href="sfs-amendment.html">
+    <div class="card-left">
+      <h2>SFS Amendment (already canonical)</h2>
+      <div class="doc-num">SFS SFS:2025-18 — Lag (SFS:2025-18) om ändring i lagen (null)</div>
+    </div>
+    <div>
+      <span class="badge badge-type">SFS_AMENDMENT</span>
+      <span class="badge badge-pass">VALID</span>
+      
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  
+  <a class="card" href="afs-regulation.html">
+    <div class="card-left">
+      <h2>AFS Agency Regulation</h2>
+      <div class="doc-num">AFS 2023:1 — Systematiskt arbetsmiljöarbete</div>
+    </div>
+    <div>
+      <span class="badge badge-type">AGENCY_REGULATION</span>
+      <span class="badge badge-pass">VALID</span>
+      
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  
+  <a class="card" href="eu-regulation.html">
+    <div class="card-left">
+      <h2>EU Regulation</h2>
+      <div class="doc-num">32016R0679 — Europaparlamentets och rådets förordning (EU) nr 679/2016</div>
+    </div>
+    <div>
+      <span class="badge badge-type">EU_REGULATION</span>
+      <span class="badge badge-pass">VALID</span>
+      
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  
+  <a class="card" href="flat-regulation.html">
+    <div class="card-left">
+      <h2>Flat Agency Regulation (no chapters)</h2>
+      <div class="doc-num">MSBFS 2009:1 — Föreskrifter om ändring i vissa författningar som beslutats av Statens räddningsverk, Krisberedskapsmyndigheten eller Sprängämnesinspektionen</div>
+    </div>
+    <div>
+      <span class="badge badge-type">AGENCY_REGULATION</span>
+      <span class="badge badge-pass">VALID</span>
+      
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2020:6</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2020-6">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2020:6</p>
+      <p class="text">Boverkets allmänna råd om redovisning av reglering i detaljplan</p>
+    </h1>
+  </div>
+  <div class="body">
+    <h3 id="BFS2020-6_inledning">1. Inledning</h3>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Detta är allmänna råd till 4 kap. 30 § och 32 § andra stycket plan- och bygglagen (2010:900) och till Boverkets föreskrifter (2020:5) om detaljplan.</p>
+      <p class="text">De allmänna råden innehåller generella rekommendationer om hur detaljplaner kan redovisas.</p>
+      <p class="text">De allmänna råden föregås av texten Allmänt råd och är tryckta med mindre och indragen text.</p>
+    </div>
+
+    <h3 id="BFS2020-6_redovisning-av-planbestammelser-mm">2. Redovisning av planbestämmelser m.m.</h3>
+
+    <h4 id="BFS2020-6_redovisning-av-planbestammelser-mm-2">2.1 Redovisning av planbestämmelser m.m.</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Detaljplanens bestämmelseformuleringar och beteckningar kan redovisas i en lista med planbestämmelser.</p>
+      <p class="text">Listan med planbestämmelser kan redovisas med följande rubriker:</p>
+      <ol type="1">
+        <li>Gränslinjer.</li>
+        <li>Användning av allmän plats.</li>
+        <li>Användning av kvartersmark.</li>
+        <li>Användning av vattenområde.</li>
+        <li>Egenskapsbestämmelser för allmän plats.</li>
+        <li>Egenskapsbestämmelser för kvartersmark.</li>
+        <li>Egenskapsbestämmelser för vattenområde.</li>
+        <li>Genomförandetid.</li>
+      </ol>
+      <p class="text">Var en planbestämmelse gäller kan på plankartan redovisas med beteckningar och olika typer av gränslinjer. Om en planbestämmelse gäller all kvartersmark, all allmän plats eller allt vattenområde behövs ingen beteckning på plankartan.</p>
+    </div>
+
+    <h4 id="BFS2020-6_redovisning-av-arendeinformation">2.2 Redovisning av ärendeinformation</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Information enligt 2 kap. 4–6 §§ Boverkets föreskrifter (2020:5) om detaljplan kan redovisas på detaljplanen.</p>
+      <p class="text">Om dessa allmänna råd har använts för redovisning kan det anges tillsammans med informationen enligt första stycket.</p>
+    </div>
+
+    <h4 id="BFS2020-6_indexering-av-beteckningar">2.3 Indexering av beteckningar</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Vid precisering av planbestämmelser eller vid olika formuleringar av planbestämmelser med samma beteckning kan detta redovisas genom att beteckningen indexeras med en nedsänkt siffra.</p>
+    </div>
+
+    <h4 id="BFS2020-6_tillfalliga-anvandningar">2.4 Tillfälliga användningar</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Tillfälliga användningar kan betecknas med den tillfälliga användningen inom hakparentes och den tid som den tillfälliga användningen får pågå anges i listan med planbestämmelser.</p>
+    </div>
+
+    <h4 id="BFS2020-6_kombinationer-av-anvandningar">2.5 Kombinationer av användningar</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Kombinationer av användningar kan på plankartan betecknas med de beteckningar som ingår i kombinationen.</p>
+      <p class="text">Vid färgläggning av kombinationer av användningar kan på plankartan en av användningarnas färger användas. Den användning vars färg har redovisats på plankartan kan i listan med bestämmelser redovisas tillsammans med bestämmelseformuleringen. Övriga användningar som ingår i kombinationen kan redovisas utan färg.</p>
+      <p class="text">Om en egenskapsbestämmelse inte gäller för alla användningar i kombinationen kan det av egenskapsbestämmelsens formulering framgå vilken användning bestämmelsen gäller för.</p>
+    </div>
+
+    <h4 id="BFS2020-6_genomforandetid">2.6 Genomförandetid</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Detaljplanens genomförandetid kan framgå i listan med planbestämmelser. Om genomförandetiden inte är densamma över hela planområdet kan genomförandetid anges för varje användningsområde och betecknas A med index.</p>
+    </div>
+
+    <h3 id="BFS2020-6_avgransningar">3. Avgränsningar</h3>
+
+    <h4 id="BFS2020-6_avgransning-av-planomradet">3.1 Avgränsning av planområdet</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">För att på plankartan redovisa vilket område som detaljplanen omfattar kan planområdesgräns användas.</p>
+      <p class="text">Planområdesgräns kan anges med linjen:</p>
+    </div>
+
+    <h4 id="BFS2020-6_avgransning-av-anvandningsbestammelser">3.2 Avgränsning av användningsbestämmelser</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">För att på plankartan redovisa inom vilket område en eller flera användningsbestämmelser gäller kan användningsgräns användas. Användningsgräns kan anges med linjen:</p>
+      <p class="text">I de fall användningsgräns sammanfaller med planområdesgräns räcker det att planområdesgräns redovisas.</p>
+    </div>
+
+    <h4 id="BFS2020-6_avgransning-av-egenskapsbestammelser">3.3 Avgränsning av egenskapsbestämmelser</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">För att på plankartan redovisa inom vilket område en eller flera av egenskapsbestämmelserna gäller kan egenskapsgräns användas. Egenskapsgräns kan anges med linjen:</p>
+      <p class="text">Vid behov kan även sekundär egenskapsgräns användas för att på plankartan redovisa inom vilket område en eller flera egenskapsbestämmelser gäller. Om den sekundära egenskapsgränsen används kan det framgå av listan med planbestämmelser vilka egenskapsbestämmelser som avgränsas genom denna gräns.</p>
+      <p class="text">Sekundär egenskapsgräns kan anges med linjen:</p>
+      <p class="text">I de fall någon av egenskapsgränserna sammanfaller med användningsgräns räcker det att användningsgräns redovisas. I de fall de två varianterna av egenskapsgräns sammanfaller kan de redovisas med linjen:</p>
+    </div>
+
+    <h4 id="BFS2020-6_granshierarki">3.4 Gränshierarki</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Vid avgränsning enligt 3.1–3.3 kan gränshierarki enligt andra stycket tillämpas.</p>
+      <p class="text">Användningsgräns gäller fram till annan användningsgräns eller planområdesgräns. Egenskapsgränser gäller fram till annan egenskapsgräns av samma typ, användningsgräns eller planområdesgräns. Egenskapsgräns och sekundär egenskapsgräns kan korsa varandra utan inverkan på de bestämmelser som de reglerar.</p>
+    </div>
+
+    <h4 id="BFS2020-6_vertikal-avgransning">3.5 Vertikal avgränsning</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Om planområdet eller en användnings- eller egenskapsbestämmelse avgränsas vertikalt kan avgränsningen redovisas i listan med planbestämmelser. Den vertikala avgränsningen kan även framgå av en separat lägesbestämd redovisning på plankartan.</p>
+      <p class="text">När en planbestämmelse avgränsas vertikalt kan beteckningen redovisas inom parentes.</p>
+      <p class="text">Då användningsbestämmelser avgränsas vertikalt och en egenskapsbestämmelse inte gäller för alla användningar kan det av egenskapsbestämmelsens formulering framgå vilken användning bestämmelsen gäller för.</p>
+    </div>
+
+    <h3 id="BFS2020-6_beteckning-och-fargsattning-vid-redovisning-av-anvandning-av-allmanna-platser">4. Beteckning och färgsättning vid redovisning av användning av allmänna platser</h3>
+
+    <h4 id="BFS2020-6_anvandning-av-allmanna-platser">4.1 Användning av allmänna platser</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Planbestämmelser om användning av allmänna platser kan betecknas med avsedd användning uttryckt i ord i klartext med versaler och färgläggas enligt detta avsnitt.</p>
+    </div>
+
+    <h4 id="BFS2020-6_torg">4.2 Torg</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen torg kan betecknas TORG och kan vid färgläggning ges ljusgrå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_vag">4.3 Väg</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen väg kan betecknas VÄG och kan vid färgläggning ges ljusgrå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_gata">4.4 Gata</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen gata kan betecknas GATA och kan vid färgläggning ges ljusgrå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_gang-och-cykelvag">4.5 Gång- och cykelväg</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen gång- och cykelväg kan betecknas GC-VÄG och kan vid färgläggning ges ljusgrå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_parkering-allman-plats">4.6 Parkering</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen parkering kan betecknas P-PLATS och kan vid färgläggning ges ljusgrå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_park">4.7 Park</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen park kan betecknas PARK och kan vid färgläggning ges ljusgrön färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_natur">4.8 Natur</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen natur kan betecknas NATUR och kan vid färgläggning ges ljusgrön färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_skydd">4.9 Skydd</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen skydd kan betecknas SKYDD och kan vid färgläggning ges ljusgrön färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_annan-allman-plats">4.10 Annan allmän plats</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen annan allmän plats kan betecknas med avsedd användning i klartext med versaler och kan vid färgläggning ges ljusgrå färg.</p>
+    </div>
+
+    <h3 id="BFS2020-6_beteckning-och-fargsattning-vid-redovisning-av-anvandning-av-kvartersmark">5. Beteckning och färgsättning vid redovisning av användning av kvartersmark</h3>
+
+    <h4 id="BFS2020-6_anvandning-av-kvartersmark">5.1 Användning av kvartersmark</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Planbestämmelser om kvartersmark kan betecknas med fristående versal bokstav och färgläggas enligt detta avsnitt.</p>
+    </div>
+
+    <h4 id="BFS2020-6_bostader">5.2 Bostäder</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen bostäder kan betecknas B och kan vid färgläggning ges gul färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_centrum">5.3 Centrum</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen centrum kan betecknas C och kan vid färgläggning ges brun färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_vard">5.4 Vård</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen vård kan betecknas D och kan vid färgläggning ges röd färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_tekniska-anlaggningar">5.5 Tekniska anläggningar</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen tekniska anläggningar kan betecknas E och kan vid färgläggning ges blågrå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_flygtrafik">5.6 Flygtrafik</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen flygtrafik kan betecknas F och kan vid färgläggning ges grå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_drivmedel">5.7 Drivmedel</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen drivmedel kan betecknas G och kan vid färgläggning ges grå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_detaljhandel">5.8 Detaljhandel</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen detaljhandel kan betecknas H och kan vid färgläggning ges brun färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_industri">5.9 Industri</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen industri kan betecknas J och kan vid färgläggning ges blågrå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_kontor">5.10 Kontor</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen kontor kan betecknas K och kan vid färgläggning ges brun färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_odling-och-djurhallning">5.11 Odling och djurhållning</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen odling och djurhållning kan betecknas L och kan vid färgläggning ges grön färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_begravningsplats">5.12 Begravningsplats</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen begravningsplats kan betecknas M och kan vid färgläggning ges lila färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_friluftsliv-och-camping">5.13 Friluftsliv och camping</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen friluftsliv och camping kan betecknas N och kan vid färgläggning ges grön färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_tillfallig-vistelse">5.14 Tillfällig vistelse</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen tillfällig vistelse kan betecknas O och kan vid färgläggning ges orange färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_parkering-kvartersmark">5.15 Parkering</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen parkering kan betecknas P och kan vid färgläggning ges grå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_besoksanlaggningar">5.16 Besöksanläggningar</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen besöksanläggningar kan betecknas R och kan vid färgläggning ges orange färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_skola">5.17 Skola</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen skola kan betecknas S och kan vid färgläggning ges röd färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_trafik">5.18 Trafik</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen trafik kan betecknas T och kan vid färgläggning ges grå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_raddningstjanst-och-annat-samhallsviktigt-andamal">5.19 Räddningstjänst och annat samhällsviktigt ändamål</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen räddningstjänst och annat samhällsviktigt ändamål kan betecknas U och kan vid färgläggning ges röd färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_hamn">5.20 Hamn</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen hamn kan betecknas V och kan vid färgläggning ges grå färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_verksamheter">5.21 Verksamheter</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen verksamheter kan betecknas Z och kan vid färgläggning ges beige färg.</p>
+    </div>
+
+    <h4 id="BFS2020-6_annan-kvartersmark">5.22 Annan kvartersmark</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Annan kvartersmark kan betecknas Y och kan vid färgläggning ges rosa färg.</p>
+    </div>
+
+    <h3 id="BFS2020-6_beteckning-och-fargsattning-vid-redovisning-av-anvandning-av-vattenomrade">6. Beteckning och färgsättning vid redovisning av användning av vattenområde</h3>
+
+    <h4 id="BFS2020-6_anvandning-av-vattenomrade">6.1 Användning av vattenområde</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Planbestämmelser om användning av vattenområde kan betecknas med fristående versal bokstav och färgläggas enligt detta avsnitt.</p>
+    </div>
+
+    <h4 id="BFS2020-6_vattenomrade">6.2 Vattenområde</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Användningen vattenområde kan på plankartan betecknas W och kan vid färgläggning ges blå färg.</p>
+    </div>
+
+    <h3 id="BFS2020-6_beteckning-vid-redovisning-av-egenskapsbestammelser">7. Beteckning vid redovisning av egenskapsbestämmelser</h3>
+
+    <h4 id="BFS2020-6_egenskapsbestammelser">7.1 Egenskapsbestämmelser</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Egenskapsbestämmelser kan betecknas med fristående gemen bokstav, ord i klartext eller förkortningar skrivna med gemener enligt detta avsnitt.</p>
+      <p class="text">Egenskapsbestämmelser kan även betecknas med symboler, punkter, raster och linjer enligt detta avsnitt.</p>
+    </div>
+
+    <h4 id="BFS2020-6_utformning-av-allman-plats">7.2 Utformning av allmän plats</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om utformning av allmän plats kan betecknas med utformningen uttryckt med gemener i klartext eller som förkortning. Bestämmelser om marknivåer kan även betecknas + 0,0 där plustecknet anger den punkt där marknivån regleras.</p>
+      <p class="text">Bestämmelser om största lutning kan även betecknas med lutningsförhållanden tillsammans med pil som på plankartan pekar åt det håll som marken stiger uppåt:</p>
+    </div>
+
+    <h4 id="BFS2020-6_utnyttjandegrad">7.3 Utnyttjandegrad</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om utnyttjandegrad kan betecknas e.</p>
+    </div>
+
+    <h4 id="BFS2020-6_hojd-pa-byggnadsverk">7.4 Höjd på byggnadsverk</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om höjd på byggnadsverk kan betecknas h.</p>
+    </div>
+
+    <h4 id="BFS2020-6_begransning-av-markens-utnyttjande">7.5 Begränsning av markens utnyttjande</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om begränsning av markens utnyttjande som reglerar att marken inte får förses med byggnadsverk eller viss typ av byggnadsverk kan betecknas ö eller:</p>
+      <p class="text">Bestämmelser om begränsning av markens utnyttjande som reglerar att marken endast får förses med viss typ av byggnadsverk kan betecknas ö eller:</p>
+      <p class="text">Bestämmelser om begränsning av markens utnyttjande som reglerar att marken endast får förses med byggnadsverk under mark kan betecknas ö eller:</p>
+    </div>
+
+    <h4 id="BFS2020-6_takvinkel">7.6 Takvinkel</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om takvinkel kan betecknas o.</p>
+    </div>
+
+    <h4 id="BFS2020-6_fastighetsstorlek">7.7 Fastighetsstorlek</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om fastighetsstorlek kan betecknas d.</p>
+    </div>
+
+    <h4 id="BFS2020-6_placering">7.8 Placering</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om placering kan betecknas p.</p>
+    </div>
+
+    <h4 id="BFS2020-6_utformning">7.9 Utformning</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om utformning kan betecknas f.</p>
+    </div>
+
+    <h4 id="BFS2020-6_utforande">7.10 Utförande</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om utförande kan betecknas b.</p>
+    </div>
+
+    <h4 id="BFS2020-6_byggnaders-anvandning">7.11 Byggnaders användning</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om byggnaders användning kan betecknas s.</p>
+    </div>
+
+    <h4 id="BFS2020-6_lagenhetsfordelning-och-storlek-pa-lagenheter">7.12 Lägenhetsfördelning och storlek på lägenheter</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om lägenhetsfördelning och storlek på lägenheter kan betecknas v.</p>
+    </div>
+
+    <h4 id="BFS2020-6_markens-anordnande-och-vegetation">7.13 Markens anordnande och vegetation</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om markens anordnande och vegetation kan betecknas n.</p>
+      <p class="text">Bestämmelser om marknivå kan även betecknas + 0,0 där plustecknet anger den punkt där marknivån regleras.</p>
+      <p class="text">Bestämmelser om största lutning kan även betecknas med lutningsförhållanden tillsammans med pil som på plankartan pekar åt det håll som marken stiger uppåt:</p>
+    </div>
+
+    <h4 id="BFS2020-6_stangsel-utfart-och-annan-utgang">7.14 Stängsel, utfart och annan utgång</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om stängsel, utfart och annan utgång kan betecknas j. Bestämmelser om var stängsel ska anordnas kan även betecknas med fyllda cirklar över användningsgräns:</p>
+      <p class="text">Bestämmelser om utfart och annan utgång kan även betecknas med ofyllda cirklar över användningsgräns:</p>
+    </div>
+
+    <h4 id="BFS2020-6_skydd-av-kulturvarden">7.15 Skydd av kulturvärden</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om skydd av kulturvärden kan betecknas q.</p>
+    </div>
+
+    <h4 id="BFS2020-6_rivningsforbud">7.16 Rivningsförbud</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om rivningsförbud kan betecknas r.</p>
+    </div>
+
+    <h4 id="BFS2020-6_varsamhet">7.17 Varsamhet</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om varsamhet kan betecknas k.</p>
+    </div>
+
+    <h4 id="BFS2020-6_skydd-mot-storningar">7.18 Skydd mot störningar</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om skydd mot störningar kan betecknas m.</p>
+    </div>
+
+    <h4 id="BFS2020-6_markreservat-for-allmannyttiga-andamal">7.19 Markreservat för allmännyttiga ändamål</h4>
+
+    <h4 id="BFS2020-6_energianlaggningar-och-elektronisk-kommunikation">7.19.1 Energianläggningar och elektronisk kommunikation</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om markreservat för allmännyttiga ändamål avseende allmännyttiga energianläggningar eller allmännyttiga anläggningar för elektronisk kommunikation kan betecknas c.</p>
+    </div>
+
+    <h4 id="BFS2020-6_underjordiska-ledningar">7.19.2 Underjordiska ledningar</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om markreservat för allmännyttiga ändamål avseende allmännyttiga underjordiska ledningar kan betecknas u.</p>
+    </div>
+
+    <h4 id="BFS2020-6_luftledningar">7.19.3 Luftledningar</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om markreservat för allmännyttiga ändamål avseende allmännyttiga luftledningar kan betecknas l.</p>
+    </div>
+
+    <h4 id="BFS2020-6_gang-och-cykeltrafik">7.19.4 Gång- och cykeltrafik</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om markreservat för allmännyttiga ändamål avseende allmännyttig gång- och cykeltrafik kan betecknas x.</p>
+    </div>
+
+    <h4 id="BFS2020-6_kortrafik-eller-spartrafik">7.19.5 Körtrafik eller spårtrafik</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om markreservat för allmännyttiga ändamål avseende allmännyttig körtrafik eller spårtrafik kan betecknas z.</p>
+    </div>
+
+    <h4 id="BFS2020-6_tunnel-bro-eller-brygga">7.19.6 Tunnel, bro eller brygga</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om markreservat för allmännyttiga ändamål avseende tunnel, bro eller brygga för allmännyttig trafik kan betecknas t.</p>
+    </div>
+
+    <h4 id="BFS2020-6_markreservat-for-gemensamhetsanlaggningar">7.20 Markreservat för gemensamhetsanläggningar</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om markreservat för gemensamhetsanläggningar kan betecknas g.</p>
+    </div>
+
+    <h4 id="BFS2020-6_villkor-for-lov">7.21 Villkor för lov</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om villkor för lov kan betecknas a.</p>
+    </div>
+
+    <h4 id="BFS2020-6_villkor-for-startbesked">7.22 Villkor för startbesked</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om villkor för startbesked kan betecknas a.</p>
+    </div>
+
+    <h4 id="BFS2020-6_andrad-lovplikt">7.23 Ändrad lovplikt</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om ändrad lovplikt kan betecknas a.</p>
+    </div>
+
+    <h4 id="BFS2020-6_fastighetsindelningsbestammelser">7.24 Fastighetsindelningsbestämmelser</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Fastighetsindelningsbestämmelser för att ange hur en fastighet eller samfällighet ska utformas kan regleras med en fastighetsindelningslinje. Fastighetsindelningslinje kan betecknas:</p>
+      <p class="text">Fastighetsindelningslinjer gäller fram till planområdesgräns och är oberoende av de övriga plangränsernas hierarki. Om en fastighetsindelningslinje sammanfaller med någon plangräns bör den ritas ut ovanpå den andra gränsen.</p>
+      <p class="text">De blivande fastigheterna bör namnges med Fastighet som vid behov kan förkortas Fgh följt av en versal bokstav i alfabetisk ordning.</p>
+      <p class="text">Fastighetsindelningsbestämmelser för att reglera att servitut, ledningsrätter och liknande särskilda rättigheter samt gemensamhetsanläggningar ska skapas, ändras eller upphävas kan betecknas a.</p>
+    </div>
+
+    <h4 id="BFS2020-6_upphavande-av-strandskydd">7.25 Upphävande av strandskydd</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om upphävande av strandskydd kan betecknas a.</p>
+    </div>
+
+    <h4 id="BFS2020-6_huvudmannaskap">7.26 Huvudmannaskap</h4>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Bestämmelser om huvudmannaskap kan betecknas a.</p>
+    </div>
+  </div>
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <p class="text">Dessa allmänna råd gäller från och med den 1 oktober 2020, då Boverkets allmänna råd (2014:5) om planbestämmelser för detaljplan ska upphöra att gälla.</p>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">YVONNE SVENSSON</p>
+    <p class="text">Klara Falk</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

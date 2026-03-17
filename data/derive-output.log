@@ -1,0 +1,139 @@
+[dotenv@17.2.3] injecting env (17) from .env.local -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+normalize-and-derive.ts — Story 14.1, Task 9
+  Phase: B
+  Dry run: false
+  Content type: all
+  Limit: none
+  Resume: false
+
+=== Phase B: Derive JSON + Markdown ===
+
+  [SFS_LAW] Found 11398 documents
+[SFS_LAW] Processed 100/11398 (0.9%) | Skipped: 1500
+[SFS_LAW] Processed 200/11398 (1.8%) | Skipped: 1500
+[SFS_LAW] Processed 300/11398 (2.6%) | Skipped: 1500
+[SFS_LAW] Processed 400/11398 (3.5%) | Skipped: 1500
+[SFS_LAW] Processed 500/11398 (4.4%) | Skipped: 1500
+[SFS_LAW] Processed 600/11398 (5.3%) | Skipped: 1500
+[SFS_LAW] Processed 700/11398 (6.1%) | Skipped: 1500
+[SFS_LAW] Processed 800/11398 (7.0%) | Skipped: 1500
+[SFS_LAW] Processed 900/11398 (7.9%) | Skipped: 1500
+[SFS_LAW] Processed 1000/11398 (8.8%) | Skipped: 1500
+[SFS_LAW] Processed 1100/11398 (9.7%) | Skipped: 1500
+[SFS_LAW] Processed 1200/11398 (10.5%) | Skipped: 1500
+[SFS_LAW] Processed 1300/11398 (11.4%) | Skipped: 1500
+[SFS_LAW] Processed 1400/11398 (12.3%) | Skipped: 1500
+[SFS_LAW] Processed 1500/11398 (13.2%) | Skipped: 1500
+[SFS_LAW] Processed 1600/11398 (14.0%) | Skipped: 1500
+[SFS_LAW] Processed 1700/11398 (14.9%) | Skipped: 1500
+[SFS_LAW] Processed 1800/11398 (15.8%) | Skipped: 1500
+[SFS_LAW] Processed 1900/11398 (16.7%) | Skipped: 1500
+[SFS_LAW] Processed 2000/11398 (17.5%) | Skipped: 1500
+[SFS_LAW] Processed 2100/11398 (18.4%) | Skipped: 1500
+[SFS_LAW] Processed 2200/11398 (19.3%) | Skipped: 1500
+[SFS_LAW] Processed 2300/11398 (20.2%) | Skipped: 1500
+[SFS_LAW] Processed 2400/11398 (21.1%) | Skipped: 1500
+[SFS_LAW] Processed 2500/11398 (21.9%) | Skipped: 1500
+[SFS_LAW] Processed 2600/11398 (22.8%) | Skipped: 1500
+[SFS_LAW] Processed 2700/11398 (23.7%) | Skipped: 1500
+[SFS_LAW] Processed 2800/11398 (24.6%) | Skipped: 1500
+[SFS_LAW] Processed 2900/11398 (25.4%) | Skipped: 1500
+[SFS_LAW] Processed 3000/11398 (26.3%) | Skipped: 1500
+[SFS_LAW] Processed 3100/11398 (27.2%) | Skipped: 1500
+[SFS_LAW] Processed 3200/11398 (28.1%) | Skipped: 1500
+[SFS_LAW] Processed 3300/11398 (29.0%) | Skipped: 1500
+[SFS_LAW] Processed 3400/11398 (29.8%) | Skipped: 1500
+[SFS_LAW] Processed 3500/11398 (30.7%) | Skipped: 1500
+[SFS_LAW] Processed 3600/11398 (31.6%) | Skipped: 1500
+[SFS_LAW] Processed 3700/11398 (32.5%) | Skipped: 1500
+[SFS_LAW] Processed 3800/11398 (33.3%) | Skipped: 1500
+[SFS_LAW] Processed 3900/11398 (34.2%) | Skipped: 1500
+[SFS_LAW] Processed 4000/11398 (35.1%) | Skipped: 1500
+[SFS_LAW] Processed 4100/11398 (36.0%) | Skipped: 1500
+[SFS_LAW] Processed 4200/11398 (36.8%) | Skipped: 1500
+[SFS_LAW] Processed 4300/11398 (37.7%) | Skipped: 1500
+[SFS_LAW] Processed 4400/11398 (38.6%) | Skipped: 1500
+[SFS_LAW] Processed 4500/11398 (39.5%) | Skipped: 1500
+[SFS_LAW] Processed 4600/11398 (40.4%) | Skipped: 1500
+[SFS_LAW] Processed 4700/11398 (41.2%) | Skipped: 1500
+[SFS_LAW] Processed 4800/11398 (42.1%) | Skipped: 1500
+[SFS_LAW] Processed 4900/11398 (43.0%) | Skipped: 1500
+[SFS_LAW] Processed 5000/11398 (43.9%) | Skipped: 1500
+[SFS_LAW] Processed 5100/11398 (44.7%) | Skipped: 1500
+[SFS_LAW] Processed 5200/11398 (45.6%) | Skipped: 1500
+[SFS_LAW] Processed 5300/11398 (46.5%) | Skipped: 1500
+[SFS_LAW] Processed 5400/11398 (47.4%) | Skipped: 1500
+[SFS_LAW] Processed 5500/11398 (48.3%) | Skipped: 1500
+[SFS_LAW] Processed 5600/11398 (49.1%) | Skipped: 1500
+[SFS_LAW] Processed 5700/11398 (50.0%) | Skipped: 1500
+[SFS_LAW] Processed 5800/11398 (50.9%) | Skipped: 1500
+[SFS_LAW] Processed 5900/11398 (51.8%) | Skipped: 1500
+[SFS_LAW] Processed 6000/11398 (52.6%) | Skipped: 1500
+[SFS_LAW] Processed 6100/11398 (53.5%) | Skipped: 1500
+[SFS_LAW] Processed 6200/11398 (54.4%) | Skipped: 1500
+[SFS_LAW] Processed 6300/11398 (55.3%) | Skipped: 1500
+[SFS_LAW] Processed 6400/11398 (56.2%) | Skipped: 1500
+[SFS_LAW] Processed 6500/11398 (57.0%) | Skipped: 1500
+[SFS_LAW] Processed 6600/11398 (57.9%) | Skipped: 1500
+[SFS_LAW] Processed 6700/11398 (58.8%) | Skipped: 1500
+[SFS_LAW] Processed 6800/11398 (59.7%) | Skipped: 1500
+[SFS_LAW] Processed 6900/11398 (60.5%) | Skipped: 1500
+[SFS_LAW] Processed 7000/11398 (61.4%) | Skipped: 1500
+[SFS_LAW] Processed 7100/11398 (62.3%) | Skipped: 1500
+[SFS_LAW] Processed 7200/11398 (63.2%) | Skipped: 1500
+[SFS_LAW] Processed 7300/11398 (64.0%) | Skipped: 1500
+[SFS_LAW] Processed 7400/11398 (64.9%) | Skipped: 1500
+[SFS_LAW] Processed 7500/11398 (65.8%) | Skipped: 1500
+[SFS_LAW] Processed 7600/11398 (66.7%) | Skipped: 1500
+[SFS_LAW] Processed 7700/11398 (67.6%) | Skipped: 1500
+[SFS_LAW] Processed 7800/11398 (68.4%) | Skipped: 1500
+[SFS_LAW] Processed 7900/11398 (69.3%) | Skipped: 1500
+[SFS_LAW] Processed 8000/11398 (70.2%) | Skipped: 1500
+[SFS_LAW] Processed 8100/11398 (71.1%) | Skipped: 1500
+[SFS_LAW] Processed 8200/11398 (71.9%) | Skipped: 1500
+[SFS_LAW] Processed 8300/11398 (72.8%) | Skipped: 1500
+[SFS_LAW] Processed 8400/11398 (73.7%) | Skipped: 1500
+[SFS_LAW] Processed 8500/11398 (74.6%) | Skipped: 1500
+[SFS_LAW] Processed 8600/11398 (75.5%) | Skipped: 1500
+[SFS_LAW] Processed 8700/11398 (76.3%) | Skipped: 1500
+[SFS_LAW] Processed 8800/11398 (77.2%) | Skipped: 1500
+[SFS_LAW] Processed 8900/11398 (78.1%) | Skipped: 1500
+[SFS_LAW] Processed 9000/11398 (79.0%) | Skipped: 1500
+[SFS_LAW] Processed 9100/11398 (79.8%) | Skipped: 1500
+[SFS_LAW] Processed 9200/11398 (80.7%) | Skipped: 1500
+[SFS_LAW] Processed 9300/11398 (81.6%) | Skipped: 1500
+[SFS_LAW] Processed 9400/11398 (82.5%) | Skipped: 1500
+[SFS_LAW] Processed 9500/11398 (83.3%) | Skipped: 1500
+[SFS_LAW] Processed 9600/11398 (84.2%) | Skipped: 1500
+[SFS_LAW] Processed 9700/11398 (85.1%) | Skipped: 1500
+[SFS_LAW] Processed 9800/11398 (86.0%) | Skipped: 1500
+[SFS_LAW] Processed 9898/11398 (86.8%) | Skipped: 1500
+  [SFS_AMENDMENT] Found 34112 documents
+[SFS_AMENDMENT] Processed 9900/45510 (21.8%) | Skipped: 34301
+[SFS_AMENDMENT] Processed 10000/45510 (22.0%) | Skipped: 34774
+[SFS_AMENDMENT] Processed 10100/45510 (22.2%) | Skipped: 35234
+[SFS_AMENDMENT] Processed 10148/45510 (22.3%) | Skipped: 35362
+  [AGENCY_REGULATION] Found 282 documents
+[AGENCY_REGULATION] Processed 10200/45792 (22.3%) | Skipped: 35362
+[AGENCY_REGULATION] Processed 10300/45792 (22.5%) | Skipped: 35362
+[AGENCY_REGULATION] Processed 10400/45792 (22.7%) | Skipped: 35362
+[AGENCY_REGULATION] Processed 10430/45792 (22.8%) | Skipped: 35362
+Fatal error: PrismaClientUnknownRequestError: 
+Invalid `prisma.legalDocument.findMany()` invocation in
+C:\Users\audri\Desktop\dev\laglig_se\scripts\normalize-and-derive.ts:360:45
+
+  357   html_content: { not: null },
+  358 }
+  359 
+→ 360 const docs = await prisma.legalDocument.findMany(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "57014", message: "canceling statement due to statement timeout", severity: "ERROR", detail: None, column: None, hint: None }), transient: false })
+    at ei.handleRequestError (C:\Users\audri\Desktop\dev\laglig_se\node_modules\.pnpm\@prisma+client@6.19.0_prisma@6.19.0_typescript@5.9.3__typescript@5.9.3\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
+    at ei.handleAndLogRequestError (C:\Users\audri\Desktop\dev\laglig_se\node_modules\.pnpm\@prisma+client@6.19.0_prisma@6.19.0_typescript@5.9.3__typescript@5.9.3\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (C:\Users\audri\Desktop\dev\laglig_se\node_modules\.pnpm\@prisma+client@6.19.0_prisma@6.19.0_typescript@5.9.3__typescript@5.9.3\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (C:\Users\audri\Desktop\dev\laglig_se\node_modules\.pnpm\@prisma+client@6.19.0_prisma@6.19.0_typescript@5.9.3__typescript@5.9.3\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async runPhaseB (C:\Users\audri\Desktop\dev\laglig_se\scripts\normalize-and-derive.ts:360:18)
+    at async main (C:\Users\audri\Desktop\dev\laglig_se\scripts\normalize-and-derive.ts:481:19) {
+  clientVersion: '6.19.0'
+}

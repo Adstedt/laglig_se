@@ -1,0 +1,3113 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "EU_REGULATION",
+  "title": "(EU)",
+  "documentNumber": "Regulation (EU) 2023/956",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "I",
+      "title": "KAPITEL I — INNEHÅLL, TILLÄMPNINGSOMRÅDE OCH DEFINITIONER",
+      "sections": [
+        {
+          "number": "art1",
+          "heading": "Innehåll",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Genom denna förordning inrättas en mekanism för koldioxidjustering vid gränsen (CBAM) för att hantera växthusgasutsläpp som är inbäddade i de varor som förtecknas i bilaga I, vid import av dessa varor till unionens tullområde, i syfte att förebygga risken för koldioxidläckage och därigenom minska de globala koldioxidutsläppen och stödja målen i Parisavtalet, även genom att skapa incitament för verksamhetsutövare i tredjeländer att minska utsläppen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   CBAM kompletterar det system för handel med utsläppsrätter för växthusgaser inom unionen som inrättats genom direktiv 2003/87/EG (EU:s utsläppshandelssystem) genom att tillämpa en likvärdig uppsättning regler på import till unionens tullområde av de varor som avses i artikel 2 i denna förordning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   CBAM inrättas i syfte att ersätta de mekanismer som inrättats genom direktiv 2003/87/EG för att förebygga risken för koldioxidläckage genom att återspegla den utsträckning i vilken utsläppsrätter tilldelas gratis i enlighet med artikel 10a i det direktivet.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art2",
+          "heading": "Tillämpningsområde",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Denna förordning ska tillämpas på varor som förtecknas i bilaga I med ursprung i ett tredjeland, när dessa varor, eller förädlade produkter från dessa varor som är resultatet av det förfarande för aktiv förädling som avses i artikel 256 i förordning (EU) nr 952/2013, importeras till unionens tullområde.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Denna förordning ska också tillämpas på varor som förtecknas i bilaga I till denna förordning med ursprung i ett tredjeland, när dessa varor, eller förädlade produkter från dessa varor som är resultatet av det förfarande för aktiv förädling som avses i artikel 256 i förordning (EU) nr 952/2013, förs till en konstgjord ö, en fast eller flytande struktur eller någon annan struktur på kontinentalsockeln eller i en medlemsstats exklusiva ekonomiska zon som gränsar till unionens tullområde.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Kommissionen ska anta genomförandeakter för att fastställa närmare villkor för tillämpningen av CBAM på sådana varor, särskilt vad gäller begrepp som är likvärdiga med import till unionens tullområde och övergång till fri omsättning, vad gäller förfarandena avseende inlämnande av CBAM-deklarationen för sådana varor och de kontroller som tullmyndigheterna ska utföra. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2 i denna förordning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Genom undantag från punkterna 1 och 2 ska denna förordning inte tillämpas på följande:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Varor förtecknade i bilaga I till denna förordning som importeras till unionens tullområde, förutsatt att dessa varors egentliga värde per sändning inte överstiger det värde som anges för varor av ringa värde enligt artikel 23 i rådets förordning (EG) nr 1186/2009 22.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Varor som ingår i det personliga bagaget hos resande som kommer från ett tredjeland, förutsatt att varornas egentliga värde inte överstiger det värde som anges för varor av ringa värde enligt artikel 23 i förordning (EG) nr 1186/2009.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Varor som ska befordras eller användas inom ramen för militär verksamhet enligt artikel 1.49 i kommissionens delegerade förordning (EU) 2015/2446 23.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Genom undantag från punkterna 1 och 2 ska denna förordning inte tillämpas på varor med ursprung i de tredjeländer och territorier som anges i punkt 1 i bilaga III.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Importerade varor ska anses ha ursprung i tredjeländer i enlighet med de regler om icke-förmånsberättigande ursprung som avses i artikel 59 i förordning (EU) nr 952/2013.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Tredjeländer och territorier ska förtecknas i punkt 1 i bilaga III om de uppfyller samtliga följande villkor:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "EU:s utsläppshandelssystem är tillämpligt på det tredjelandet eller territoriet, eller ett avtal har ingåtts mellan det tredjelandet eller territoriet och unionen vilket till fullo länkar EU:s utsläppshandelssystem med det tredjelandets eller territoriets utsläppshandelssystem.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Det koldioxidpris som betalats i det land där varorna har sitt ursprung tas faktiskt ut på de växthusgasutsläpp som är inbäddade i dessa varor utan några rabatter utöver dem som också tillämpas i enlighet med EU:s utsläppshandelssystem.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "7.   Om ett tredjeland eller territorium har en elmarknad som är integrerad med unionens inre marknad för el genom marknadskoppling, och det inte finns någon teknisk lösning för tillämpningen av CBAM på import av el till unionens tullområde från det tredjelandet eller territoriet, ska sådan import av el från det landet eller territoriet undantas från tillämpningen av CBAM, förutsatt att kommissionen har bedömt att samtliga följande villkor är uppfyllda i enlighet med punkt 8:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Tredjelandet eller territoriet har ingått ett avtal med unionen som fastställer en skyldighet att tillämpa unionsrätten på elområdet, inbegripet lagstiftningen om utveckling av förnybara energikällor, samt andra regler på området energi, miljö och konkurrens.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den inhemska lagstiftningen i det tredjelandet eller territoriet genomför de huvudsakliga bestämmelserna i unionens lagstiftning om elmarknaden, inbegripet om utveckling av förnybara energikällor och sammankoppling av elmarknader.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Tredjelandet eller territoriet har lämnat in en färdplan till kommissionen innehållande en tidsplan för antagandet av åtgärder för att genomföra de villkor som anges i leden d och e.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Tredjelandet eller territoriet har åtagit sig att verka för klimatneutralitet senast 2050 och har, i tillämpliga fall, i enlighet med detta formellt formulerat och meddelat Förenta nationernas ramkonvention om klimatförändringar (UNFCCC) en långsiktig utvecklingsstrategi för låga växthusgasutsläpp i mitten av århundradet som är anpassad till detta mål, och har genomfört det åtagandet i sin inhemska lagstiftning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "e)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Tredjelandet eller territoriet har, vid genomförandet av den färdplan som avses i led c, visat att det iakttagit de fastställda tidsfristerna och gjort betydande framsteg mot en anpassning av den inhemska lagstiftningen till unionsrätten på klimatområdet på grundval av den färdplanen, inbegripet i riktning mot koldioxidprissättning på en nivå som är likvärdig med nivån i unionen, särskilt vad gäller elproduktion; genomförandet av ett utsläppshandelssystem för el, med ett pris som är likvärdigt med EU:s utsläppshandelssystem, ska vara slutfört senast den 1 januari 2030.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "f)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Tredjelandet eller territoriet har infört ett effektivt system för att förhindra indirekt import av el till unionen från andra tredjeländer eller territorier som inte uppfyller villkoren i leden a–e.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "8.   Ett tredjeland eller territorium som uppfyller alla villkor i punkt 7 ska förtecknas i punkt 2 i bilaga III och lämna in två rapporter om uppfyllandet av dessa villkor, den första rapporten senast den 1 juli 2025 och den andra senast den 31 december 2027. Senast den 31 december 2025 och senast den 1 juli 2028 ska kommissionen, särskilt på grundval av färdplanen enligt punkt 7 c och de rapporter som mottagits från tredjelandet eller territoriet, bedöma om det tredjelandet eller territoriet fortfarande uppfyller villkoren i punkt 7.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "9.   Ett tredjeland eller territorium som förtecknas i punkt 2 i bilaga III ska strykas från den förteckningen om ett eller flera av följande villkor är uppfyllda:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Kommissionen har skäl att anse att det tredjelandet eller territoriet inte har visat tillräckliga framsteg för att uppfylla något av villkoren i punkt 7, eller det tredjelandet eller territoriet har vidtagit åtgärder som är oförenliga med de mål som fastställts i unionens klimat- och miljölagstiftning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Det tredjelandet eller territoriet har vidtagit åtgärder som strider mot dess mål om utfasning av fossila bränslen, såsom att ge offentligt stöd till inrättandet av ny produktionskapacitet som släpper ut mer än 550 gram koldioxid från fossilt bränsle per kilowattimme el.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Kommissionen har bevis för att utsläppen per kilowattimme från el som produceras i det tredjelandet eller territoriet har ökat med minst 5 % jämfört med den 1 januari 2026 till följd av ökad elexport till unionen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "10.   Kommissionen ges befogenhet att anta delegerade akter i enlighet med artikel 28 i syfte att komplettera denna förordning genom att fastställa krav och förfaranden för tredjeländer eller territorier som har tagits bort från förteckningen i punkt 2 i bilaga III, för att säkerställa att denna förordning tillämpas på dessa länder eller territorier vad gäller el. Om marknadskopplingen i sådana fall fortfarande är oförenlig med tillämpningen av denna förordning får kommissionen besluta att utesluta dessa tredjeländer eller territorier från sammankopplingen med unionsmarknaden och kräva uttrycklig kapacitetstilldelning vid gränsen mellan unionen och dessa tredjeländer eller territorier, så att CBAM kan tillämpas.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "11.   Kommissionen ges befogenhet att anta delegerade akter i enlighet med artikel 28 för att ändra förteckningarna över tredjeländer eller territorier som förtecknas i punkt 1 eller 2 i bilaga III genom att lägga till eller ta bort ett tredjeland eller territorium, beroende på om de villkor som fastställs i punkt 6, 7 eller 9 i den här artikeln är uppfyllda med avseende på det tredjelandet eller territoriet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "12.   Unionen får ingå avtal med tredjeländer eller territorier i syfte att beakta mekanismer för koldioxidprissättning i sådana länder eller territorier vid tillämpningen av artikel 9.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art3",
+          "heading": "Definitioner",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "I denna förordning gäller följande definitioner:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "1.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "varor: varor som förtecknas i bilaga I.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "växthusgaser: de växthusgaser som anges i bilaga I för var och en av de varor som förtecknas i den bilagan.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "utsläpp: utsläpp av växthusgaser i atmosfären från produktion av varor.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "import: övergång till fri omsättning enligt artikel 201 i förordning (EU) nr 952/2013.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "EU:s utsläppshandelssystem: systemet för handel med utsläppsrätter för växthusgaser inom unionen med avseende på annan verksamhet enligt bilaga I till direktiv 2003/87/EG än luftfartsverksamhet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "unionens tullområde: det område som definieras i artikel 4 i förordning (EU) nr 952/2013.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "7.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "tredjeland: ett land eller territorium utanför unionens tullområde.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "8.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "kontinentalsockel: kontinentalsockeln enligt definitionen i artikel 76 i Förenta nationernas havsrättskonvention.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "9.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "exklusiv ekonomisk zon: en exklusiv ekonomisk zon enligt definitionen i artikel 55 i Förenta nationernas havsrättskonvention som av en medlemsstat har förklarats som en exklusiv ekonomisk zon enligt den konventionen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "10.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "egentligt värde: det egentliga värdet i fråga om varor av kommersiell natur enligt definitionen i artikel 1.48 i delegerad förordning (EU) 2015/2446.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "11.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "marknadskoppling: tilldelning av överföringskapacitet genom ett unionssystem som samtidigt matchar order och tilldelar kapacitet mellan elområden i enlighet med förordning (EU) 2015/1222.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "12.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "explicit kapacitetstilldelning: tilldelning av gränsöverskridande överföringskapacitet separat från handeln med el.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "13.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "behörig myndighet: den myndighet som varje medlemsstat har utsett i enlighet med artikel 11.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "14.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "tullmyndigheter: medlemsstaternas tullförvaltningar enligt definitionen i artikel 5.1 i förordning (EU) nr 952/2013.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "15.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "importör: antingen den person som inger en tulldeklaration för övergång till fri omsättning av varor i eget namn och för egen räkning eller, om tulldeklarationen inges av ett indirekt tullombud i enlighet med artikel 18 i förordning (EU) nr 952/2013, den person för vars räkning en sådan deklaration inges.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "16.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "tulldeklarant: en deklarant enligt definitionen i artikel 5.15 i förordning (EU) nr 952/2013 som inger en tulldeklaration för övergång till fri omsättning av varor i eget namn, eller den person i vars namn en sådan deklaration inges.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "17.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "godkänd CBAM-deklarant: en person som en behörig myndighet har godkänt i enlighet med artikel 17.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "18.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "person: en fysisk eller juridisk person eller en sammanslutning av personer som inte är en juridisk person men som enligt unionsrätt eller nationell rätt tillerkänns rättskapacitet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "19.\n                           \n                           \n                              etablerad i en medlemsstat:\n                              a) \n                                          beträffande fysiska personer, varje person som har sin hemvist i en medlemsstat;\n                                       \n                              b) \n                                          beträffande juridiska personer och sammanslutningar av personer, varje person vars säte, huvudkontor eller fasta etableringsställe finns i en medlemsstat.",
+              "role": "TABLE",
+              "htmlContent": "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" class=\"legal-table\">\n                     <colgroup><col width=\"4%\">\n                     <col width=\"96%\">\n                     </colgroup><tbody>\n                        <tr>\n                           <td valign=\"top\">\n                              <p class=\"text\">19.</p>\n                           </td>\n                           <td valign=\"top\">\n                              <p class=\"text\">etablerad i en medlemsstat:</p>\n                              <p class=\"text\">a) \n                                          </p><p class=\"text\">beträffande fysiska personer, varje person som har sin hemvist i en medlemsstat;</p>\n                                       <p class=\"text\"></p>\n                              <p class=\"text\">b) \n                                          </p><p class=\"text\">beträffande juridiska personer och sammanslutningar av personer, varje person vars säte, huvudkontor eller fasta etableringsställe finns i en medlemsstat.</p>\n                                       <p class=\"text\"></p>\n                           </td>\n                        </tr>\n                     </tbody>\n                  </table>"
+            },
+            {
+              "number": null,
+              "text": "20.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "registrerings- och identifikationsnummer för ekonomiska aktörer (Eori-nummer): det nummer som tilldelats av tullmyndigheten när registreringen för tulländamål har fullföljts i enlighet med artikel 9 i förordning (EU) nr 952/2013.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "21.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "direkta utsläpp: utsläpp från produktionsprocesserna för varor, inbegripet utsläpp från produktion av värme och kyla som förbrukas under produktionsprocesserna, oavsett var värmen eller kylan producerats.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "22.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "inbäddade utsläpp: direkta utsläpp som frigörs under produktionen av varor och indirekta utsläpp från produktionen av el som förbrukas under produktionsprocesserna, beräknade i enlighet med de metoder som anges i bilaga IV och som anges närmare i de genomförandeakter som antags enligt artikel 7.7.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "23.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "ton CO2e: ett ton koldioxid (CO2), eller en mängd av någon annan växthusgas som förtecknas i bilaga I och som har en motsvarande potential för global uppvärmning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "24.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "CBAM-certifikat: ett certifikat i elektroniskt format som motsvarar ett ton inbäddade CO2e-utsläpp i varor.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "25.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "överlämnande: avräkning av CBAM-certifikat mot deklarerade inbäddade utsläpp i importerade varor eller mot inbäddade utsläpp i importerade varor som borde ha deklarerats.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "26.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "produktionsprocesser: kemiska och fysiska processer som utförs för att producera varor i en anläggning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "27.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "standardiserat värde: ett värde, beräknat eller hämtat från sekundära data, som representerar de inbäddade utsläppen i varor.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "28.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "faktiska utsläpp: utsläpp beräknade på grundval av primära data från produktionsprocesser för varor och från produktion av el som förbrukats under dessa processer, såsom de fastställts i enlighet med de metoder som anges i bilaga IV.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "29.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "koldioxidpris: det penningbelopp som betalas i ett tredjeland, inom ramen för ett system för minskning av koldioxidutsläpp, i form av en skatt, pålaga eller avgift eller i form av utsläppsrätter inom ramen för ett utsläppshandelssystem för växthusgaser, beräknat på växthusgaser som omfattas av en sådan åtgärd och som frigörs under produktionen av varor.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "30.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "anläggning: en stationär teknisk enhet där en produktionsprocess utförs.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "31.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "verksamhetsutövare: varje person som driver eller kontrollerar en anläggning i ett tredjeland.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "32.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "nationellt ackrediteringsorgan: ett nationellt ackrediteringsorgan som utsetts av varje medlemsstat enligt artikel 4.1 i förordning (EG) nr 765/2008.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "33.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "utsläppsrätt inom ramen för EU:s utsläppshandelssystem: en utsläppsrätt enligt definitionen i artikel 3 a i direktiv 2003/87/EG för annan verksamhet enligt bilaga I till det direktivet än luftfartsverksamhet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "34.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "indirekta utsläpp: utsläpp från produktion av el som förbrukas under produktionsprocessen för varor, oavsett var den förbrukade elen produceras.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "II",
+      "title": "KAPITEL II — SKYLDIGHETER OCH RÄTTIGHETER FÖR GODKÄNDA CBAM-DEKLARANTER",
+      "sections": [
+        {
+          "number": "art4",
+          "heading": "Import av varor",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "Varor får endast importeras till unionens tullområde av en godkänd CBAM-deklarant.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art5",
+          "heading": "Ansökan om godkännande",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Varje importör som är etablerad i en medlemsstat ska, före import av varor till unionens tullområde, ansöka om status som godkänd CBAM-deklarant (ansökan om godkännande). Om importören utser ett indirekt tullombud i enlighet med artikel 18 i förordning (EU) nr 952/2013 och det indirekta tullombudet samtycker till att agera som godkänd CBAM-deklarant, ska det indirekta tullombudet lämna in ansökan om godkännande.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Om en importör inte är etablerad i en medlemsstat ska det indirekta tullombudet lämna in ansökan om godkännande.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   En ansökan om godkännande ska lämnas in via CBAM-registret inrättat i enlighet med artikel 14.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Genom undantag från punkt 1 ska den person till vilken kapacitet har tilldelats för import och vilken nominerar den importkapaciteten, om överföringskapacitet för import av el tilldelas genom explicit kapacitetstilldelning, vid tillämpningen av denna förordning betraktas som en godkänd CBAM-deklarant i den medlemsstat där personen har deklarerat importen av el i tulldeklarationen. Import ska mätas per gräns för tidsperioder som inte överstiger en timme, och det ska inte gå att göra avdrag för export eller transitering under samma timme.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den behöriga myndigheten i den medlemsstat där tulldeklarationen har ingetts ska registrera personen i CBAM-registret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Ansökan om godkännande ska innehålla följande uppgifter om sökanden:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Namn, adress och kontaktuppgifter.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Eori-nummer.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Huvudsaklig ekonomisk verksamhet i unionen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Intyg från skattemyndigheten i den medlemsstat där sökanden är etablerad om att sökanden inte är föremål för ett utestående betalningskrav för nationella skatteskulder.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "e)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "En försäkran på heder och samvete om att sökanden inte varit inblandad i några allvarliga eller upprepade överträdelser av tullagstiftning, skatteregler eller regler om marknadsmissbruk under de fem år som föregick året för ansökan, inbegripet att sökanden inte har dömts för några allvarliga brott relaterade till sin ekonomiska verksamhet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "f)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Uppgifter som behövs för att bedöma sökandens ekonomiska och operativa förmåga att fullgöra sina skyldigheter enligt denna förordning och, om så beslutas av den behöriga myndigheten på grundval av en riskbedömning, handlingar som styrker den informationen, såsom resultaträkning och balansräkning för upp till de senaste tre räkenskapsåren för vilka räkenskaperna avslutats.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "g)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Uppskattat penningvärde och volymen på varuimporten till unionens tullområde per varuslag, för det kalenderår under vilket ansökan lämnas in och för det påföljande kalenderåret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "h)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Namn och kontaktuppgifter för de personer på vars vägnar sökanden agerar, i tillämpliga fall.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Den sökande får när som helst dra tillbaka sin ansökan.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "7.   Den godkända CBAM-deklaranten ska utan dröjsmål, via CBAM-registret, underrätta den behöriga myndigheten om alla de ändringar av uppgifter lämnade enligt punkt 5 i denna artikel som har inträffat efter antagandet av beslutet om beviljande av status som godkänd CBAM-deklarant enligt artikel 17 och som kan påverka det beslutet eller innehållet i det godkännande som beviljats enligt det beslutet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "8.   Kommissionen ges befogenhet att anta genomförandeakter med avseende på kommunikationen mellan sökanden, den behöriga myndigheten och kommissionen, om standardformatet för ansökan om godkännande och förfarandena för att lämna in en sådan ansökan via CBAM-registret, om det förfarande som ska följas av den behöriga myndigheten och om tidsfristerna vid handläggning av ansökningar om godkännande i enlighet med punkt 1 i denna artikel samt om reglerna för den behöriga myndighetens identifiering av de godkända CBAM-deklaranterna för import av el. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art6",
+          "heading": "CBAM-deklaration",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Senast den 31 maj varje år, och den första gången 2027 för år 2026, ska varje godkänd CBAM-deklarant använda det CBAM-register som avses i artikel 14 för att lämna in en CBAM-deklaration för det föregående kalenderåret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   I CBAM-deklarationen ska följande uppgifter anges:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den totala mängden av varje typ av vara som importerats under det föregående kalenderåret, uttryckt i megawattimmar för el och i ton för andra varor.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "De totala inbäddade utsläppen i de varor som avses i led a i denna punkt, uttryckt i ton CO2e-utsläpp per megawattimme för el eller, för andra varor, i ton CO2e-utsläpp per ton av varje typ av vara, beräknade i enlighet med artikel 7 och verifierade i enlighet med artikel 8.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Det totala antal CBAM-certifikat som ska överlämnas motsvarande de totala inbäddade utsläpp som avses i led b i denna punkt efter det avdrag som ska göras för det koldioxidpris som betalats i ett ursprungsland i enlighet med artikel 9 och den justering som behövs för att återspegla den utsträckning i vilken utsläppsrätter inom ramen för EU:s utsläppshandelssystem tilldelas gratis i enlighet med artikel 31.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Kopior av verifieringsrapporter som ackrediterade kontrollörer utfärdat, enligt artikel 8 och bilaga VI.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   När förädlade produkter som är resultatet av förfarandet för aktiv förädling enligt artikel 256 i förordning (EU) nr 952/2013 importeras ska den godkända CBAM-deklaranten i CBAM-deklarationen rapportera de utsläpp som är inbäddade i de varor som hänförts till förfarandet för aktiv förädling och som resulterat i de importerade förädlade produkterna, även om de förädlade produkterna inte är varor som förtecknas i bilaga I till den här förordningen. Denna punkt ska också tillämpas när de förädlade produkter som är resultatet av förfarandet för aktiv förädling är återinförda varor enligt artikel 205 i förordning (EU) nr 952/2013.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Om de importerade varor som förtecknas i bilaga I till denna förordning är förädlade produkter som är resultatet av förfarandet för passiv förädling enligt artikel 259 i förordning (EU) nr 952/2013 ska den godkända CBAM-deklaranten, i CBAM-deklarationen, endast rapportera utsläppen från den förädlingsprocess som ägt rum utanför unionens tullområde.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Om de importerade varorna är återinförda varor enligt artikel 203 i förordning (EU) nr 952/2013 ska den godkända CBAM-deklaranten separat, i CBAM-deklarationen, rapportera ”noll” för de totala inbäddade utsläpp som motsvarar dessa varor.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Kommissionen ges befogenhet att anta genomförandeakter med avseende på CBAM-deklarationens standardformat, inbegripet detaljerade uppgifter för varje anläggning, ursprungsland och varutyp som ska rapporteras och som stödjer de totala mängder och antal som avses i punkt 2 i denna artikel, särskilt vad gäller inbäddade utsläpp och betalt koldioxidpris, förfarandet för inlämning av CBAM-deklarationen via CBAM-registret och arrangemangen för överlämnande av de CBAM-certifikat som avses i punkt 2 c i denna artikel, i enlighet med artikel 22.1, särskilt vad gäller processen och den godkända CBAM-deklarantens urval av certifikat för inlämning. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art7",
+          "heading": "Beräkning av inbäddade utsläpp",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Inbäddade utsläpp i varor ska beräknas enligt de metoder som anges i bilaga IV. För varor som förtecknas i bilaga II ska endast direkta utsläpp beräknas och beaktas.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Inbäddade utsläpp i andra varor än el ska fastställas på grundval av de faktiska utsläppen i enlighet med de metoder som anges i punkterna 2 och 3 i bilaga IV. När de faktiska utsläppen inte kan fastställas korrekt, liksom vid indirekta utsläpp, ska de inbäddade utsläppen fastställas genom hänvisning till standardiserade värden i enlighet med de metoder som anges i punkt 4.1 i bilaga IV.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Inbäddade utsläpp i importerad el ska fastställas genom hänvisning till standardiserade värden i enlighet med den metod som anges i punkt 4.2 i bilaga IV, såvida inte den godkända CBAM-deklaranten visar att kriterierna för att fastställa de inbäddade utsläppen på grundval av de faktiska utsläppen, som förtecknas i punkt 5 i bilaga IV, är uppfyllda.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Inbäddade indirekta utsläpp ska beräknas i enlighet med den metod som anges i punkt 4.3 i bilaga IV och specificeras närmare i de genomförandeakter som antas enligt punkt 7 i denna artikel, såvida inte den godkända CBAM-deklaranten visar att kriterierna för att fastställa de inbäddade utsläppen på grundval av faktiska utsläpp som förtecknas i punkt 6 i bilaga IV är uppfyllda.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Den godkända CBAM-deklaranten ska bevara dokumentation över de uppgifter som krävs för att beräkna de inbäddade utsläppen i enlighet med kraven i bilaga V. Dokumentationen ska vara tillräckligt detaljerad för att kontrollörer som ackrediterats enligt artikel 18 ska kunna verifiera de inbäddade utsläppen i enlighet med artikel 8 och bilaga VI och för att kommissionen och den behöriga myndigheten ska kunna granska CBAM-deklarationen i enlighet med artikel 19.2.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Den godkända CBAM-deklaranten ska bevara den dokumentation över uppgifter som avses i punkt 5, inbegripet kontrollörens rapport, till och med utgången av det fjärde året efter det år då CBAM-deklarationen lämnades in eller borde ha lämnats in.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "7.   Kommissionen ges befogenhet att anta genomförandeakter med avseende på",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "tillämpningen av elementen i de beräkningsmetoder som anges i bilaga IV, inbegripet fastställande av systemgränser för produktionsprocesser och relevanta insatsmaterial (prekursorer), emissionsfaktorer, anläggningsspecifika värden för faktiska utsläpp och standardiserade värden och deras respektive tillämpning på enskilda varor liksom fastställande av metoder för att säkerställa tillförlitligheten hos data som ligger till grund för fastställandet av de standardiserade värdena, inbegripet detaljnivå för data och verifiering av data, och inbegripet ytterligare specifikationer av vilka varor som ska anses vara enkla varor och komplexa varor vid tillämpningen av punkt 1 i bilaga IV; i dessa genomförandeakter ska det också anges på vilka villkor det anses att faktiska utsläpp inte kan fastställas korrekt, samt de bevis som visar att de kriterier som måste vara uppfyllda för att det ska vara motiverat att använda faktiska utsläpp för el som förbrukas i produktionsprocesserna för varor vid tillämpningen av punkt 2 och som förtecknas i punkterna 5 och 6 i bilaga IV är uppfyllda, och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "tillämpningen av elementen i beräkningsmetoderna enligt punkt 4 i enlighet med punkt 4.3 i bilaga IV.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Där det är objektivt motiverat ska de genomförandeakter som avses i första stycket föreskriva att standardiserade värden kan anpassas till särskilda områden, regioner eller länder i syfte att beakta specifika objektiva faktorer som påverkar utsläppen, t.ex. dominerande energikällor eller industriella processer. Dessa genomförandeakter ska bygga på befintlig lagstiftning för övervakning och verifiering av utsläpp och aktivitetsdata för anläggningar som omfattas av direktiv 2003/87/EG, särskilt kommissionens genomförandeförordning (EU) 2018/2066 24, genomförandeförordning (EU) 2018/2067 och kommissionens delegerade förordning (EU) 2019/331 25. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2 i denna förordning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art8",
+          "heading": "Verifiering av inbäddade utsläpp",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Den godkända CBAM-deklaranten ska säkerställa att de totala inbäddade utsläpp som deklareras i den CBAM-deklaration som lämnas in enligt artikel 6 är verifierade av en kontrollör som är ackrediterad enligt artikel 18, på grundval av de verifieringsprinciper som anges i bilaga VI.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   För inbäddade utsläpp i varor som produceras i anläggningar i ett tredjeland registrerade i enlighet med artikel 10 får den godkända CBAM-deklaranten välja att använda verifierade uppgifter som lämnats till CBAM-deklaranten i enlighet med artikel 10.7 för att fullgöra den skyldighet som avses i punkt 1 i den här artikeln.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ges befogenhet att anta genomförandeakter för tillämpningen av de verifieringsprinciper som avses i bilaga VI vad gäller",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "möjligheten att, under vederbörligen motiverade omständigheter och utan att äventyra en tillförlitlig uppskattning av de inbäddade utsläppen, frångå skyldigheten för kontrollören att besöka anläggningen där relevanta varor produceras,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "definitionen av tröskelvärden för att avgöra om felaktigheter eller avvikelser är väsentliga, och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "den styrkande dokumentation som behövs för verifieringsrapporten, inklusive dess format.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "När kommissionen antar de genomförandeakter som avses i första stycket ska den eftersträva likvärdighet och samstämmighet med de förfaranden som fastställs i genomförandeförordning (EU) 2018/2067. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2 i den här förordningen.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art9",
+          "heading": "Koldioxidpris som betalas i ett tredjeland",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   En godkänd CBAM-deklarant får i CBAM-deklarationen begära en minskning av antalet CBAM-certifikat som ska överlämnas i syfte att beakta det koldioxidpris som betalats i ursprungslandet för de deklarerade inbäddade utsläppen. Minskningen får endast begäras om koldioxidpriset faktiskt har betalats i ursprungslandet. I ett sådant fall ska eventuella rabatter eller andra former av kompensation som är tillgängliga i det landet och som skulle ha lett till en minskning av koldioxidpriset beaktas.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Den godkända CBAM-deklaranten ska bevara den dokumentation som krävs för att visa att de deklarerade inbäddade utsläppen omfattats av ett koldioxidpris i varornas ursprungsland som faktiskt har betalats i enlighet med vad som anges i punkt 1. Den godkända CBAM-deklaranten ska särskilt bevara bevis som rör eventuella rabatter eller andra former av tillgänglig kompensation, särskilt hänvisningarna till den relevanta lagstiftningen i det landet. Den information som ingår i den dokumentationen ska bestyrkas av en person som är oberoende i förhållande till den godkända CBAM-deklaranten och till myndigheterna i ursprungslandet. Den oberoende personens namn och kontaktuppgifter ska anges i dokumentationen. Den godkända CBAM-deklaranten ska också bevara bevis för den faktiska betalningen av koldioxidpriset.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Den godkända CBAM-deklaranten ska bevara den dokumentation som avses i punkt 2 till och med utgången av det fjärde året efter det år då CBAM-deklarationen lämnades in eller borde ha lämnats in.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Kommissionen ges befogenhet att anta genomförandeakter med avseende på omräkningen av det årliga genomsnittliga koldioxidpris som faktiskt betalats i enlighet med punkt 1 till en motsvarande minskning av antalet CBAM-certifikat som ska överlämnas, inbegripet omräkningen till euro av det koldioxidpris som faktiskt betalats i utländsk valuta till den årliga genomsnittliga växelkursen, beviset för den faktiska betalningen av koldioxidpriset, exempel på eventuella relevanta rabatter eller andra former av kompensation i enlighet med punkt 1 i denna artikel, kvalifikationerna hos den oberoende person som avses i punkt 2 i denna artikel och villkoren för att fastställa den personens oberoende. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art10",
+          "heading": "Registrering av verksamhetsutövare och anläggningar i tredjeländer",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Kommissionen ska, på begäran av en verksamhetsutövare för en anläggning som är belägen i ett tredjeland, registrera informationen om verksamhetsutövaren och dess anläggning i det CBAM-register som avses i artikel 14.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Den begäran om registrering som avses i punkt 1 ska innehålla följande information som ska införas i CBAM-registret vid registreringen:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Verksamhetsutövarens namn, adress och kontaktuppgifter.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Platsen för varje anläggning, inklusive fullständig adress och geografiska koordinater uttryckta i longitud och latitud med sex decimaler.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Anläggningens huvudsakliga ekonomiska verksamhet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ska underrätta verksamhetsutövaren om registreringen i CBAM-registret. Registreringen ska gälla i fem år från och med den dag då den anmäldes till verksamhetsutövaren för anläggningen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Verksamhetsutövaren ska utan dröjsmål informera kommissionen om alla ändringar av de uppgifter som avses i punkt 2 som uppstår efter registreringen och kommissionen ska uppdatera de relevanta uppgifterna i CBAM-registret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Verksamhetsutövaren ska",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "fastställa de inbäddade utsläppen, beräknade i enlighet med de metoder som anges i bilaga IV, per typ av varor som produceras vid den anläggning som avses i punkt 1 i denna artikel,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "säkerställa att de inbäddade utsläpp som avses i led a i denna punkt är verifierade i enlighet med de verifieringsprinciper som anges i bilaga VI av en kontrollör som ackrediterats enligt artikel 18,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "bevara en kopia av verifieringsrapporten samt dokumentation över de uppgifter som krävs för att beräkna de inbäddade utsläppen i varor i enlighet med kraven i bilaga V under en period av fyra år efter det att verifieringen har utförts.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Den dokumentation som avses i punkt 5 c i denna artikel ska vara tillräckligt detaljerad för att möjliggöra verifieringen av de inbäddade utsläppen i enlighet med artikel 8 och bilaga VI och för att möjliggöra granskning, i enlighet med artikel 19, av den CBAM-deklaration som lämnats av en godkänd CBAM-deklarant till vilken de relevanta uppgifterna lämnats ut i enlighet med punkt 7 i den här artikeln.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "7.   En verksamhetsutövare får lämna ut de uppgifter om verifieringen av inbäddade utsläpp som avses i punkt 5 i denna artikel till en godkänd CBAM-deklarant. Den godkända CBAM-deklaranten ska ha rätt att använda de utlämnade uppgifterna för att fullgöra den skyldighet som avses i artikel 8.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "8.   Verksamhetsutövaren får när som helst begära att bli avregistrerad från CBAM-registret. Kommissionen ska, vid en sådan begäran och efter att ha underrättat de behöriga myndigheterna, avregistrera verksamhetsutövaren och ta bort informationen om verksamhetsutövaren och dess anläggning från CBAM-registret, förutsatt att sådan information inte är nödvändig för granskningen av inlämnade CBAM-deklarationer. Kommissionen får, efter att ha gett berörd verksamhetsutövare möjlighet att yttra sig och efter att ha samrått med de relevanta behöriga myndigheterna, också avregistrera informationen om kommissionen konstaterar att informationen om denna verksamhetsutövare inte längre är korrekt. Kommissionen ska underrätta de behöriga myndigheterna om sådana avregistreringar.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "III",
+      "title": "KAPITEL III — BEHÖRIGA MYNDIGHETER",
+      "sections": [
+        {
+          "number": "art11",
+          "heading": "Behöriga myndigheter",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Varje medlemsstat ska utse den behöriga myndighet som ska fullgöra funktionerna och förpliktelserna enligt denna förordning och underrätta kommissionen om detta.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Kommissionen ska göra en förteckning över alla behöriga myndigheter tillgänglig för medlemsstaterna och offentliggöra denna information i Europeiska unionens officiella tidning och göra den informationen tillgänglig i CBAM-registret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   De behöriga myndigheterna ska utbyta all information som är väsentlig eller relevant för att de ska kunna fullgöra sina funktioner och förpliktelser enligt denna förordning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art12",
+          "heading": "Kommissionen",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "Utöver de övriga uppgifter som kommissionen ska utföra enligt denna förordning ska kommissionen bistå de behöriga myndigheterna i fullgörandet av deras funktioner och förpliktelser enligt denna förordning och samordna deras verksamhet genom att stödja utbytet av och utfärda riktlinjer för bästa praxis inom denna förordnings tillämpningsområde och genom att främja ett adekvat utbyte av information och samarbete mellan behöriga myndigheter samt mellan behöriga myndigheter och kommissionen.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art13",
+          "heading": "Tystnadsplikt och utlämnande av uppgifter",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Alla uppgifter som den behöriga myndigheten eller kommissionen tar emot vid utövandet av sina förpliktelser och som är av konfidentiell natur eller tillhandahålls på konfidentiell grund ska omfattas av tystnadsplikt. Sådana uppgifter får inte lämnas ut av den behöriga myndigheten eller kommissionen såvida inte det finns ett uttryckligt förhandstillstånd från den person eller myndighet som tillhandahållit dem eller det föreskrivs i unionsrätten eller nationell rätt.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Genom undantag från punkt 1 får de behöriga myndigheterna och kommissionen dela sådana uppgifter med varandra, tullmyndigheterna, de myndigheter som ansvarar för administrativa sanktioner eller straffrättsliga påföljder samt Europeiska åklagarmyndigheten, i syfte att säkerställa att personer fullgör sina skyldigheter enligt denna förordning och att tullagstiftningen tillämpas. Sådana delade uppgifter ska omfattas av tystnadsplikt och får inte lämnas ut till någon annan person eller myndighet utom när det föreskrivs i unionsrätten eller nationell rätt.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art14",
+          "heading": "CBAM-register",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Kommissionen ska inrätta ett CBAM-register över godkända CBAM-deklaranter i form av en standardiserad elektronisk databas med data om dessa godkända CBAM-deklaranters CBAM-certifikat. Kommissionen ska automatiskt och i realtid göra uppgifterna i CBAM-registret tillgängliga för tullmyndigheter och behöriga myndigheter.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Det CBAM-register som avses i punkt 1 ska innehålla konton med uppgifter om varje godkänd CBAM-deklarant, särskilt",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "den godkända CBAM-deklarantens namn, adress och kontaktuppgifter,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "den godkända CBAM-deklarantens Eori-nummer,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "CBAM-kontonumret,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "identifikationsnummer, försäljningspris, försäljningsdatum och datum för överlämnande, återköp eller annullering av CBAM-certifikat för varje godkänd CBAM-deklarant.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   I en separat del av CBAM-registret ska det finnas uppgifter om verksamhetsutövare och anläggningar i tredjeländer som är registrerade i enlighet med artikel 10.2.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   De uppgifter i CBAM-registret som avses i punkterna 2 och 3 ska vara konfidentiella, med undantag för namn, adresser och kontaktuppgifter för verksamhetsutövarna och uppgifter om anläggningars lokalisering i tredjeländer. En verksamhetsutövare får välja att dess namn, adress och kontaktuppgifter inte ska göras tillgängliga för allmänheten. De offentliga uppgifterna i CBAM-registret ska göras tillgängliga av kommissionen i ett driftskompatibelt format.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Kommissionen ska årligen för var och en av de varor som förtecknas i bilaga I offentliggöra de sammanlagda utsläpp som är inbäddade i de importerade varorna.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Kommissionen ska anta genomförandeakter om CBAM-registrets infrastruktur och specifika processer och förfaranden, inbegripet den riskanalys som avses i artikel 15, de elektroniska databaser som innehåller de uppgifter som avses i punkterna 2 och 3 i den här artikeln, uppgifterna i de konton i CBAM-registret som avses i artikel 16, överföringen till CBAM-registret av den information om försäljning, återköp och annullering av CBAM-certifikat som avses i artikel 20 samt den dubbelkontroll av uppgifter som avses i artikel 25.3. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art15",
+          "heading": "Riskanalys",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Kommissionen ska utföra riskbaserade kontroller av de data och transaktioner som registreras i CBAM-registret enligt artikel 14, för att säkerställa att det inte förekommer några oriktigheter i samband med köp, innehav, överlämnande, återköp och annullering av CBAM-certifikat.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Om kommissionen identifierar oriktigheter till följd av de kontroller som utförts enligt punkt 1 ska den underrätta de berörda behöriga myndigheterna så att ytterligare utredningar utförs i syfte att korrigera de identifierade oriktigheterna.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art16",
+          "heading": "Konton i CBAM-registret",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Kommissionen ska tilldela varje godkänd CBAM-deklarant ett unikt CBAM-kontonummer.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Varje godkänd CBAM-deklarant ska beviljas åtkomst till sitt konto i CBAM-registret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ska upprätta kontot så snart det godkännande som avses i artikel 17.1 har beviljats och underrätta den godkända CBAM-deklaranten om detta.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Om den godkända CBAM-deklaranten har upphört med sin ekonomiska verksamhet eller om godkännandet har återkallats, ska kommissionen avsluta den godkända CBAM-deklarantens konto, förutsatt att den godkända CBAM-deklaranten har fullgjort alla sina skyldigheter enligt denna förordning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art17",
+          "heading": "Godkännande",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Om en ansökan om godkännande lämnas in i enlighet med artikel 5 ska den behöriga myndigheten i den medlemsstat där sökanden är etablerad bevilja status som godkänd CBAM-deklarant, förutsatt att kriterierna i punkt 2 i den här artikeln är uppfyllda. Statusen som godkänd CBAM-deklarant ska erkännas i alla medlemsstater.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Innan den behöriga myndigheten beviljar status som godkänd CBAM-deklarant ska den genomföra ett samrådsförfarande om ansökan om godkännande via CBAM-registret. Samrådsförfarandet ska omfatta de behöriga myndigheterna i de andra medlemsstaterna och kommissionen och ska inte pågå längre än 15 arbetsdagar.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Kriterierna för beviljande av status som godkänd CBAM-deklarant ska vara följande:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Sökanden har inte varit inblandad i en allvarlig överträdelse eller upprepade överträdelser av tullagstiftning, skatteregler, regler om marknadsmissbruk eller denna förordning och delegerade akter och genomförandeakter som antagits enligt denna förordning, och sökanden har härvid särskilt inte begått några allvarliga brott i samband med sin ekonomiska verksamhet under de fem år som föregick ansökan.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Sökanden visar sin ekonomiska och operativa förmåga att fullgöra sina skyldigheter enligt denna förordning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Sökanden är etablerad i den medlemsstat där ansökan lämnats in.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Sökanden har tilldelats ett Eori-nummer i enlighet med artikel 9 i förordning (EU) nr 952/2013.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Om den behöriga myndigheten konstaterar att kriterierna i punkt 2 i denna artikel inte är uppfyllda, eller om sökanden inte har lämnat de uppgifter som anges i artikel 5.5, ska ansökan om beviljande av status som godkänd CBAM-deklarant avslås. Ett sådant beslut att avslå ansökan om beviljande av status som godkänd CBAM-deklarant ska innehålla skälen till avslaget och inkludera uppgifter om möjligheten att överklaga.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Ett beslut av den behöriga myndigheten att bevilja status som godkänd CBAM-deklarant ska registreras i CBAM-registret och innehålla följande uppgifter:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den godkända CBAM-deklarantens namn, adress och kontaktuppgifter.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den godkända CBAM-deklarantens Eori-nummer.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Det CBAM-kontonummer som tilldelats den godkända CBAM-deklaranten i enlighet med artikel 16.1.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den garanti som krävs i enlighet med punkt 5 i den här artikeln.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   För uppfyllandet av kriterierna i punkt 2 b i den här artikeln ska den behöriga myndigheten kräva att en garanti ställs om sökanden inte var etablerad under hela de båda räkenskapsår som föregick det år då ansökan i enlighet med artikel 5.1 lämnades in.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den behöriga myndigheten ska fastställa garantibeloppet till ett belopp som beräknas som det sammanlagda värdet av det antal CBAM-certifikat som den godkända CBAM-deklaranten skulle vara skyldig att överlämna i enlighet med artikel 22 med avseende på import av varor som rapporterats i enlighet med artikel 5.5 g. Den ställda garantin ska vara en bankgaranti, som ska betalas vid första anfordran, från ett finansiellt institut som är verksamt i unionen eller en annan form av garanti som ger likvärdig säkerhet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Om den behöriga myndigheten konstaterar att den ställda garantin inte säkerställer, eller inte längre är tillräcklig för att säkerställa, den godkända CBAM-deklarantens ekonomiska och operativa förmåga att uppfylla sina skyldigheter enligt denna förordning, ska den kräva att den godkända CBAM-deklaranten väljer mellan att ställa en ytterligare garanti eller att ersätta den ursprungliga garantin med en ny garanti i enlighet med punkt 5.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "7.   Den behöriga myndigheten ska frisläppa garantin omedelbart efter den 31 maj det andra året då den godkända CBAM-deklaranten har överlämnat CBAM-certifikat i enlighet med artikel 22.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "8.   Den behöriga myndigheten ska återkalla statusen som godkänd CBAM-deklarant om",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "den godkända CBAM-deklaranten begär ett återkallande, eller",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "den godkända CBAM-deklaranten inte längre uppfyller kriterierna i punkt 2 eller 6 i denna artikel, eller om den godkända CBAM-deklaranten har varit inblandad i en allvarlig eller upprepad överträdelse av den skyldighet att överlämna CBAM-certifikat som avses i artikel 22.1 eller av den skyldighet att säkerställa ett tillräckligt antal CBAM-certifikat på sitt konto i CBAM-registret i slutet av varje kvartal som avses i artikel 22.2.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Innan den behöriga myndigheten återkallar en status som godkänd CBAM-deklarant ska den ge den godkända CBAM-deklaranten möjlighet att yttra sig och ska genomföra ett samrådsförfarande om det eventuella återkallandet av en sådan status. Samrådsförfarandet ska omfatta de behöriga myndigheterna i de andra medlemsstaterna och kommissionen och ska inte pågå längre än 15 arbetsdagar.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Ett beslut om återkallande ska innehålla skälen till beslutet och information om rätten att överklaga.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "9.   Den behöriga myndigheten ska i CBAM-registret registrera uppgifter om",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "sökande vilkas ansökan om godkännande har avslagits enligt punkt 3, och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "de personer vilkas status som godkänd CBAM-deklarant har återkallats enligt punkt 8.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "10.   Kommissionen ska genom genomförandeakter anta villkoren för",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "tillämpningen av de kriterier som avses i punkt 2 i denna artikel, inbegripet kriteriet att inte ha varit inblandad i en allvarlig överträdelse eller i upprepade överträdelser enligt punkt 2 a i denna artikel,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "tillämpningen av den garanti som avses i punkterna 5, 6 och 7 i denna artikel,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "tillämpningen av kriterierna för en allvarlig eller upprepad överträdelse enligt punkt 8 i denna artikel,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "konsekvenserna av det återkallande av statusen som godkänd CBAM-deklarant som avses i punkt 8 i denna artikel, och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "e)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "specifika tidsfrister och format för det samrådsförfarande som avses i punkterna 1 och 8 i denna artikel.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "De genomförandeakter som avses i första stycket ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art18",
+          "heading": "Ackreditering av kontrollörer",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Varje person som ackrediterats i enlighet med genomförandeförordning (EU) 2018/2067 för en relevant grupp av verksamheter ska vara en ackrediterad kontrollör vid tillämpning av denna förordning. Kommissionen ges befogenhet att anta genomförandeakter med avseende på identifiering av relevanta grupper av verksamheter genom en anpassning av de kvalifikationer hos en ackrediterad kontrollör som är nödvändiga för att denne ska kunna utföra kontroller enligt denna förordning till den relevanta grupp av verksamheter som förtecknas i bilaga I till genomförandeförordning (EU) 2018/2067 och som anges i ackrediteringsintyget. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2 i denna artikel.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Ett nationellt ackrediteringsorgan får på begäran ackreditera en person som kontrollör inom ramen för tillämpningen av denna förordning om det, på grundval av den dokumentation som lämnats in till den, anser att denna person har förmåga att tillämpa de verifieringsprinciper som avses i bilaga VI när den fullgör uppgifterna i fråga om verifiering av de inbäddade utsläppen enligt artiklarna 8 och 10.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ges befogenhet att anta delegerade akter i enlighet med artikel 28 i syfte att komplettera denna förordning genom att specificera villkoren för beviljande av ackreditering enligt punkt 2 i denna artikel, för kontroll och tillsyn av ackrediterade kontrollörer, för återkallande av ackreditering och för ömsesidigt erkännande och inbördes utvärdering av ackrediteringsorgan.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art19",
+          "heading": "Granskning av CBAM-deklarationer",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Kommissionen ska ha tillsynsrollen i granskningen av CBAM-deklarationer.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Kommissionen får granska CBAM-deklarationer, i enlighet med en granskningsstrategi, inbegripet riskfaktorer, inom den period som avslutas med det fjärde året efter det år då CBAM-deklarationerna borde ha lämnats in.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Granskningen får bestå i en verifiering av de uppgifter som lämnats i CBAM-deklarationen och i verifieringsrapporter på grundval av de uppgifter som lämnats av tullmyndigheterna i enlighet med artikel 25 och andra relevanta bevis, och på grundval av varje revision som anses nödvändig, inbegripet i den godkända CBAM-deklarantens lokaler.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Kommissionen ska via CBAM-registret meddela den behöriga myndigheten i den medlemsstat där den godkända CBAM-deklaranten är etablerad om att en granskning har inletts och om resultaten av denna.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den behöriga myndigheten i den medlemsstat där den godkända CBAM-deklaranten är etablerad får också granska en CBAM-deklaration inom den period som avses i första stycket i denna punkt. Den behöriga myndigheten ska via CBAM-registret meddela kommissionen om att en granskning har inletts och om resultaten av denna.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ska regelbundet ange specifika riskfaktorer och omständigheter att uppmärksamma, på grundval av en riskanalys i förhållande till genomförandet av CBAM på unionsnivå, med beaktande av information i CBAM-registret, uppgifter från tullmyndigheter och andra relevanta informationskällor, inbegripet de kontroller som utförs enligt artikel 15.2 och artikel 25.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Kommissionen ska också underlätta utbytet av information med behöriga myndigheter om bedräglig verksamhet och om sanktionsavgifter som påförts i enlighet med artikel 26.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Om en godkänd CBAM-deklarant underlåter att lämna in en CBAM-deklaration i enlighet med artikel 6, eller om kommissionen, på grundval av sin granskning enligt punkt 2 i den här artikeln, anser att det deklarerade antalet CBAM-certifikat är felaktigt, ska kommissionen bedöma den godkända CBAM-deklarantens skyldigheter enligt denna förordning på grundval av de uppgifter den förfogar över. Kommissionen ska fastställa en preliminär beräkning av det totala antalet CBAM-certifikat som borde ha överlämnats, senast den 31 december året efter det år då CBAM-deklarationen borde ha lämnats in, eller senast den 31 december det fjärde året efter det att den felaktiga CBAM-deklarationen har lämnats in, beroende på vad som är tillämpligt. Kommissionen ska tillhandahålla de behöriga myndigheterna en sådan preliminär beräkning, i vägledande syfte och utan att det påverkar den slutgiltiga beräkning som fastställts av den behöriga myndigheten i den medlemsstat där den godkända CBAM-deklaranten är etablerad.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Om den behöriga myndigheten konstaterar att det deklarerade antalet CBAM-certifikat som ska överlämnas är felaktigt, eller att ingen CBAM-deklaration har lämnats in i enlighet med artikel 6, ska den fastställa antalet CBAM-certifikat som borde ha överlämnats av den godkända CBAM-deklaranten, med beaktande av de uppgifter som lämnats av kommissionen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den behöriga myndigheten ska underrätta den godkända CBAM-deklaranten om sitt beslut om det fastställda antalet CBAM-deklarationer och begära att den godkända CBAM-deklaranten överlämnar de ytterligare CBAM-certifikaten inom en månad.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den behöriga myndighetens beslut ska innehålla skälen till beslutet och information om rätten att överklaga. Underrättelse om beslutet ska också ske via CBAM-registret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Om den behöriga myndigheten, efter att ha mottagit den preliminära beräkningen från kommissionen i enlighet med punkterna 2 och 4 i denna artikel, beslutar att inte vidta några åtgärder, ska den behöriga myndigheten underrätta kommissionen om detta via CBAM-registret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Om den behöriga myndigheten konstaterar att antalet överlämnade CBAM-certifikat överstiger det antal som borde ha överlämnats, ska den underrätta kommissionen utan dröjsmål. De överskjutande överlämnade CBAM-certifikaten ska återköpas i enlighet med artikel 23.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "IV",
+      "title": "KAPITEL IV — CBAM-CERTIFIKAT",
+      "sections": [
+        {
+          "number": "art20",
+          "heading": "Försäljning av CBAM-certifikat",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   En medlemsstat ska sälja CBAM-certifikat på en gemensam central plattform till godkända CBAM-deklaranter som är etablerade i den medlemsstaten.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Kommissionen ska inrätta och förvalta den gemensamma centrala plattformen efter ett gemensamt upphandlingsförfarande mellan kommissionen och medlemsstaterna.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Kommissionen och de behöriga myndigheterna ska ha tillgång till informationen på den gemensamma centrala plattformen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Informationen om försäljning, återköp och annullering av CBAM-certifikat på den gemensamma centrala plattformen ska överföras till CBAM-registret i slutet av varje arbetsdag.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   CBAM-certifikat ska säljas till godkända CBAM-deklaranter till det pris som beräknats i enlighet med artikel 21.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Kommissionen ska säkerställa att varje CBAM-certifikat tilldelas ett unikt identifikationsnummer när det skapas. Kommissionen ska registrera det unika identifikationsnumret samt CBAM-certifikatets pris och försäljningsdatum i CBAM-registret på kontot för den godkända CBAM-deklarant som köper det certifikatet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Kommissionen ska anta delegerade akter i enlighet med artikel 28 som kompletterar denna förordning genom att ytterligare specificera tidsschema, administration och andra aspekter som rör förvaltningen av försäljning och återköp av CBAM-certifikat, i syfte att uppnå samstämmighet med förfarandena i kommissionens förordning (EU) nr 1031/2010 26.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art21",
+          "heading": "Pris på CBAM-certifikat",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Kommissionen ska beräkna priset på CBAM-certifikat som genomsnittet av slutpriserna för utsläppsrätter inom ramen för EU:s utsläppshandelssystem på auktionsplattformen i enlighet med de förfaranden som fastställs i förordning (EU) nr 1031/2010, för varje kalendervecka.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "För de kalenderveckor under vilka inga auktioner planeras på auktionsplattformen ska priset på CBAM-certifikat vara genomsnittet av slutpriserna på utsläppsrätter inom ramen för EU:s utsläppshandelssystem för den sista vecka då auktioner ägde rum på auktionsplattformen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Kommissionen ska offentliggöra det genomsnittspris som avses i punkt 1 andra stycket på sin webbplats eller på annat lämpligt sätt den första arbetsdagen i påföljande kalendervecka. Detta pris ska tillämpas från och med den första arbetsdagen efter dagen för offentliggörandet till och med den första arbetsdagen i påföljande kalendervecka.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ges befogenhet att anta genomförandeakter med avseende på tillämpningen av den metod som föreskrivs i punkt 1 i denna artikel för att beräkna genomsnittspriset för CBAM-certifikat och de praktiska arrangemangen för offentliggörande av priset. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art22",
+          "heading": "Överlämnande av CBAM-certifikat",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Senast den 31 maj varje år, och den första gången 2027 för år 2026, ska den godkända CBAM-deklaranten via CBAM-registret överlämna ett antal CBAM-certifikat som motsvarar de inbäddade utsläpp som deklarerats i enlighet med artikel 6.2 c och verifierats i enlighet med artikel 8 för det kalenderår som föregår överlämnandet. Kommissionen ska ta bort överlämnade CBAM-certifikat från CBAM-registret. Den godkända CBAM-deklaranten ska säkerställa att det antal CBAM-certifikat som krävs finns tillgängligt på dess konto i CBAM-registret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Den godkända CBAM-deklaranten ska säkerställa att antalet CBAM-certifikat på dess konto i CBAM-registret i slutet av varje kvartal motsvarar minst 80 % av de inbäddade utsläppen, fastställda genom hänvisning till standardiserade värden i enlighet med de metoder som anges i bilaga IV, för alla varor som den har importerat sedan början av kalenderåret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Om kommissionen konstaterar att antalet CBAM-certifikat på en godkänd CBAM-deklarants konto inte uppfyller skyldigheterna enligt punkt 2 ska den, via CBAM-registret, underrätta den behöriga myndigheten i den medlemsstat där den godkända CBAM-deklaranten är etablerad.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den behöriga myndigheten ska underrätta den godkända CBAM-deklaranten om behovet av att säkerställa att ett tillräckligt antal CBAM-certifikat finns på dess konto inom en månad efter underrättelsen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den behöriga myndigheten ska registrera underrättelsen till, och svaret från, den godkända CBAM-deklaranten i CBAM-registret.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art23",
+          "heading": "Återköp av CBAM-certifikat",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Om en godkänd CBAM-deklarant begär det ska den medlemsstat där den godkända CBAM-deklaranten är etablerad återköpa de överskjutande CBAM-certifikat som finns kvar på deklarantens konto i CBAM-registret efter det att certifikaten har överlämnats i enlighet med artikel 22.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Kommissionen ska återköpa de överskjutande CBAM-certifikaten via den gemensamma centrala plattform som avses i artikel 20 på den medlemsstats vägnar där den godkända CBAM-deklaranten är etablerad. Den godkända CBAM-deklaranten ska lämna in begäran om återköp senast den 30 juni under vart och ett av de år då CBAM-certifikat överlämnats.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Det antal certifikat som omfattas av återköp enligt punkt 1 ska vara begränsat till en tredjedel av det totala antal CBAM-certifikat som den godkända CBAM-deklaranten köpt under det föregående kalenderåret.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Återköpspriset för varje CBAM-certifikat ska vara det pris som den godkända CBAM-deklaranten betalat för certifikatet vid tidpunkten för köpet.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art24",
+          "heading": "Annullering av CBAM-certifikat",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "Den 1 juli varje år ska kommissionen annullera alla CBAM-certifikat som köpts under året före det föregående kalenderåret och som fanns kvar på en godkänd CBAM-deklarants konto i CBAM-registret. Dessa CBAM-certifikat ska annulleras utan kompensation.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Om det antal CBAM-certifikat som ska överlämnas bestrids i en pågående tvist i en medlemsstat ska kommissionen tillfälligt upphäva annulleringen av CBAM-certifikaten i den utsträckning som motsvarar det omtvistade beloppet. Den behöriga myndigheten i den medlemsstat där den godkända CBAM-deklaranten är etablerad ska utan dröjsmål meddela all relevant information till kommissionen.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "V",
+      "title": "KAPITEL V — REGLER FÖR IMPORT AV VAROR",
+      "sections": [
+        {
+          "number": "art25",
+          "heading": "Regler för import av varor",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Tullmyndigheterna får inte tillåta att någon annan person än en godkänd CBAM-deklarant importerar varor.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Tullmyndigheterna ska regelbundet och automatiskt, i synnerhet genom den övervakningsmekanism som inrättats enligt artikel 56.5 i förordning (EU) nr 952/2013, till kommissionen lämna specifika uppgifter om de varor som deklarerats för import. Dessa uppgifter ska omfatta den godkända CBAM-deklarantens Eori-nummer och CBAM-kontonummer, varornas åttasiffriga KN-nummer, kvantitet, ursprungsland, tulldeklarationsdatum och tullförfarande.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ska lämna de uppgifter som avses i punkt 2 i denna artikel till den behöriga myndigheten i den medlemsstat där den godkända CBAM-deklaranten är etablerad och ska för varje CBAM-deklarant dubbelkontrollera dessa uppgifter mot uppgifterna i CBAM-registret enligt artikel 14.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Tullmyndigheterna får i enlighet med artikel 12.1 i förordning (EU) nr 952/2013 meddela kommissionen och den behöriga myndigheten i den medlemsstat som har beviljat statusen som godkänd CBAM-deklarant sådana konfidentiella uppgifter som tullmyndigheterna mottagit vid utförandet av sina förpliktelser eller som har lämnats till tullmyndigheterna på konfidentiell grund.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Förordning (EG) nr 515/97 ska i tillämpliga delar gälla för den här förordningen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Kommissionen ges befogenhet att anta genomförandeakter som fastställer uppgifternas omfattning och periodicitet, tidpunkt och metoder när det gäller att lämna uppgifterna enligt punkt 2 i denna artikel. Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "VI",
+      "title": "KAPITEL VI — EFTERLEVNAD",
+      "sections": [
+        {
+          "number": "art26",
+          "heading": "Sanktioner",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   En godkänd CBAM-deklarant som inte senast den 31 maj varje år överlämnar det antal CBAM-certifikat som motsvarar de utsläpp som är inbäddade i varor som importerats under det föregående kalenderåret ska åläggas att betala en sanktionsavgift. Denna sanktionsavgift ska vara identisk med den avgift för överskridande utsläpp som anges i artikel 16.3 i direktiv 2003/87/EG, höjd enligt artikel 16.4 i det direktivet, och tillämplig under det år då varorna importeras. En sådan sanktionsavgift ska tillämpas för varje CBAM-certifikat som den godkända CBAM-deklaranten inte har överlämnat.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Om en annan person än en godkänd CBAM-deklarant för in varor till unionens tullområde utan att uppfylla skyldigheterna enligt denna förordning, ska den personen åläggas att betala en sanktionsavgift. En sådan sanktionsavgift ska vara effektiv, proportionell och avskräckande och ska, särskilt beroende på den bristande efterlevnadens varaktighet, allvarlighetsgrad, omfattning, avsiktliga karaktär och upprepning samt i vilken grad personen samarbetar med den behöriga myndigheten, uppgå till ett belopp på mellan tre och fem gånger den sanktionsavgift som avses i punkt 1 och som är tillämplig under det år varorna införs, för varje CBAM-certifikat som personen inte har överlämnat.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Betalning av sanktionsavgiften ska inte befria den godkända CBAM-deklaranten från skyldigheten att överlämna det utestående antalet CBAM-certifikat under ett visst år.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Om den behöriga myndigheten, inbegripet mot bakgrund av kommissionens preliminära beräkningar i enlighet med artikel 19, fastställer att en godkänd CBAM-deklarant har underlåtit att uppfylla skyldigheten att överlämna CBAM-certifikat enligt punkt 1 i den här artikeln, eller att en person har fört in varor till unionens tullområde utan att uppfylla skyldigheterna enligt denna förordning enligt punkt 2 i den här artikeln, ska den behöriga myndigheten påföra sanktionsavgiften enligt punkt 1 eller 2 i den här artikeln, beroende på vad som är tillämpligt. I detta syfte ska den behöriga myndigheten underrätta den godkända CBAM-deklaranten eller, om punkt 2 i denna artikel är tillämplig, personen om",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "att den behöriga myndigheten har dragit slutsatsen att den godkända CBAM-deklaranten eller den person som avses i punkt 2 i denna artikel inte fullgjort skyldigheterna enligt denna förordning,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "skälen till denna slutsats,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "beloppet på den sanktionsavgift som ålagts den godkända CBAM-deklaranten eller den person som avses i punkt 2 i denna artikel,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "det datum då sanktionsavgiften förfaller till betalning,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "e)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "den åtgärd som den godkända CBAM-deklaranten eller den person som avses i punkt 2 i denna artikel ska vidta för att betala sanktionsavgiften, och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "f)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "rätten för den godkända CBAM-deklaranten, eller den person som avses i punkt 2 i denna artikel, att överklaga.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Om sanktionsavgiften inte har betalats senast den förfallodag som avses i punkt 4 d ska den behöriga myndigheten säkerställa betalning av den sanktionsavgiften med alla medel som står till dess förfogande enligt den berörda medlemsstatens nationella rätt.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Medlemsstaterna ska meddela kommissionen de beslut om sanktionsavgifter som avses i punkterna 1 och 2 och registrera den slutbetalning som avses i punkt 5 i CBAM-registret.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art27",
+          "heading": "Kringgående",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Kommissionen ska vidta åtgärder i enlighet med denna artikel, på grundval av relevanta och objektiva data, för att hantera metoder för kringgående av denna förordning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Metoder för kringgående ska definieras som en förändring i handelsmönstret för varor vilken härrör från en metod, process eller bearbetning för vilken det inte finns någon annan tillräcklig grund eller ekonomisk motivering än att helt eller delvis undvika någon av de skyldigheter som fastställs i denna förordning. En sådan metod, sådana processer eller sådan bearbetning kan bestå i, men är inte begränsad till,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "en mindre ändring av de berörda varorna för att de ska omfattas av KN-nummer som inte förtecknas i bilaga I, förutom när ändringen påverkar deras väsentliga egenskaper,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "en konstlad uppdelning av transporter i sändningar vars egentliga värde inte överstiger det tröskelvärde som avses i artikel 2.3.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ska kontinuerligt övervaka situationen på unionsnivå i syfte att upptäcka metoder för kringgående, inbegripet genom marknadskontroll eller på grundval av relevanta informationskällor, såsom inlagor och rapportering från organisationer i det civila samhället.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   En medlemsstat eller en part som har berörts eller gynnats av någon av de situationer som avses i punkt 2 kan anmäla detta till kommissionen om den stöter på metoder för kringgående. Intressenter som inte är direkt berörda eller gynnade parter, såsom miljöorganisationer och icke-statliga organisationer, som finner konkreta bevis för metoder för kringgående får också anmäla detta till kommissionen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Den anmälan som avses i punkt 4 ska ange de skäl som den grundas på och innehålla relevanta data och statistik till stöd för påståendet om kringgående av denna förordning. Kommissionen ska inleda en utredning av ett påstående om kringgående antingen om det har anmälts av en medlemsstat eller av en berörd eller gynnad part eller annan intressent, förutsatt att anmälan uppfyller de krav som avses i denna punkt, eller om kommissionen själv fastställer att en sådan utredning är nödvändig. När kommissionen genomför utredningen får den biträdas av de behöriga myndigheterna och tullmyndigheterna. Kommissionen ska avsluta utredningen inom nio månader från dagen för anmälan. Om en utredning har inletts ska kommissionen underrätta alla behöriga myndigheter.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Om kommissionen, med beaktande av relevanta data, rapporter och statistik, även de som tillhandahålls av tullmyndigheterna, har tillräckliga skäl att anta att de omständigheter som avses i punkt 2 a i denna artikel inträffar i en eller flera medlemsstater enligt ett fast mönster, har den befogenhet att anta delegerade akter i enlighet med artikel 28 för att ändra förteckningen över varor i bilaga I genom att lägga till de relevanta något ändrade produkter som avses i punkt 2 a i denna artikel, för att motverka kringgående.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "VII",
+      "title": "KAPITEL VII — UTÖVANDE AV DELEGERINGEN OCH KOMMITTÉFÖRFARANDE",
+      "sections": [
+        {
+          "number": "art28",
+          "heading": "Utövande av delegeringen",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Befogenheten att anta delegerade akter ges till kommissionen med förbehåll för de villkor som anges i denna artikel.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Den befogenhet att anta delegerade akter som avses i artiklarna 2.10, 2.11, 18.3, 20.6 och 27.6 ska ges till kommissionen för en period på fem år från och med den 17 maj 2023. Kommissionen ska utarbeta en rapport om delegeringen av befogenhet senast nio månader före utgången av perioden på fem år. Delegeringen av befogenhet ska genom tyst medgivande förlängas med ytterligare perioder av samma längd, såvida inte Europaparlamentet eller rådet motsätter sig en sådan förlängning senast tre månader före utgången av perioden i fråga.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Den delegering av befogenhet som avses i artiklarna 2.10, 2.11, 18.3, 20.6 och 27.6 får när som helst återkallas av Europaparlamentet eller rådet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Ett beslut om återkallelse innebär att delegeringen av den befogenhet som anges i beslutet upphör att gälla. Beslutet får verkan dagen efter det att det offentliggjorts i Europeiska unionens officiella tidning eller vid ett senare i beslutet angivet datum. Det påverkar inte giltigheten av delegerade akter som redan har trätt i kraft.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Innan kommissionen antar en delegerad akt ska den samråda med experter som utsetts av varje medlemsstat i enlighet med principerna i det interinstitutionella avtalet av den 13 april 2016 om bättre lagstiftning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Så snart kommissionen antar en delegerad akt ska den samtidigt delge Europaparlamentet och rådet denna.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "7.   En delegerad akt som antas enligt artiklarna 2.10, 2.11, 18.3, 20.6 och 27.6 ska träda i kraft endast om varken Europaparlamentet eller rådet har gjort invändningar mot den delegerade akten inom en period på två månader från den dag då akten delgavs Europaparlamentet och rådet, eller om både Europaparlamentet och rådet, före utgången av den perioden, har underrättat kommissionen om att de inte kommer att invända. Denna period ska förlängas med två månader på Europaparlamentets eller rådets initiativ.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art29",
+          "heading": "Kommittéförfarande",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Kommissionen ska biträdas av CBAM-kommittén. Denna kommitté ska vara en kommitté i den mening som avses i förordning (EU) nr 182/2011.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   När det hänvisas till denna punkt ska artikel 5 i förordning (EU) nr 182/2011 tillämpas.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "VIII",
+      "title": "KAPITEL VIII — RAPPORTERING OCH ÖVERSYN",
+      "sections": [
+        {
+          "number": "art30",
+          "heading": "Kommissionens översyn och rapportering",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Kommissionen ska, i samråd med relevanta intressenter, samla in den information som behövs i syfte att utvidga tillämpningsområdet för denna förordning såsom anges i och enligt punkt 2 a och i syfte att utveckla metoder för beräkning av inbäddade utsläpp på grundval av metoder för miljöavtryck.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Före utgången av den övergångsperiod som avses i artikel 32 ska kommissionen överlämna en rapport om tillämpningen av denna förordning till Europaparlamentet och rådet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Rapporten ska innehålla en bedömning av",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)\n                              \n                              \n                                 möjligheten att utvidga tillämpningsområdet till\n                                 i) \n                                             inbäddade indirekta utsläpp i de varor som förtecknas i bilaga II,\n                                          \n                                 ii) \n                                             inbäddade utsläpp i transport av de varor som förtecknas i bilaga I och transporttjänster,\n                                          \n                                 iii) \n                                             andra varor som medför risk för koldioxidläckage än de som förtecknas i bilaga I, särskilt organiska kemikalier och polymerer,\n                                          \n                                 iv) \n                                             andra insatsmaterial (prekursorer) för de varor som förtecknas i bilaga I,",
+              "role": "TABLE",
+              "htmlContent": "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" class=\"legal-table\">\n                        <colgroup><col width=\"4%\">\n                        <col width=\"96%\">\n                        </colgroup><tbody>\n                           <tr>\n                              <td valign=\"top\">\n                                 <p class=\"text\">a)</p>\n                              </td>\n                              <td valign=\"top\">\n                                 <p class=\"text\">möjligheten att utvidga tillämpningsområdet till</p>\n                                 <p class=\"text\">i) \n                                             </p><p class=\"text\">inbäddade indirekta utsläpp i de varor som förtecknas i bilaga II,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">ii) \n                                             </p><p class=\"text\">inbäddade utsläpp i transport av de varor som förtecknas i bilaga I och transporttjänster,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">iii) \n                                             </p><p class=\"text\">andra varor som medför risk för koldioxidläckage än de som förtecknas i&nbsp;bilaga I, särskilt organiska kemikalier och polymerer,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">iv) \n                                             </p><p class=\"text\">andra insatsmaterial (prekursorer) för de varor som förtecknas i bilaga I,</p>\n                                          <p class=\"text\"></p>\n                              </td>\n                           </tr>\n                        </tbody>\n                     </table>"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "de kriterier som ska användas för att identifiera varor som ska inkluderas i förteckningen i bilaga I till denna förordning på grundval av de sektorer som medför risk för koldioxidläckage och som identifierats enligt artikel 10b i direktiv 2003/87/EG; den bedömningen ska åtföljas av en tidsplan fram till 2030 för gradvis inkluderande av varorna i denna förordnings tillämpningsområde, särskilt med beaktande av risknivån för deras respektive koldioxidläckage,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "de tekniska kraven för beräkning av inbäddade utsläpp för andra varor som ska inkluderas i förteckningen i bilaga I,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "de framsteg som gjorts i internationella diskussioner om klimatåtgärder,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "e)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "systemet för förvaltning, inklusive de administrativa kostnaderna,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "f)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "effekterna av denna förordning på varor som förtecknas i bilaga I och som importeras från utvecklingsländer, med särskild tonvikt på de minst utvecklade länderna enligt Förenta nationernas definition (MUL) och effekterna av det tekniska bistånd som ges,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "g)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "metoden för beräkning av indirekta utsläpp enligt artikel 7.7 och punkt 4.3 i bilaga IV.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Minst ett år före övergångsperiodens utgång ska kommissionen lägga fram en rapport för Europaparlamentet och rådet som identifierar produkter längre ned i värdekedjan för de varor som förtecknas i bilaga I och med avseende på vilka kommissionen rekommenderar att inkludering i denna förordnings tillämpningsområde övervägs. I det syftet ska kommissionen i god tid utarbeta en metod som bör baseras på relevans när det gäller kumulativa växthusgasutsläpp och risken för koldioxidläckage.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   De rapporter som avses i punkterna 2 och 3 ska när så är lämpligt åtföljas av ett lagstiftningsförslag före övergångsperiodens utgång, inbegripet en detaljerad konsekvensbedömning, särskilt i syfte att utvidga tillämpningsområdet för denna förordning på grundval av slutsatserna i de rapporterna.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Vartannat år efter övergångsperiodens utgång ska kommissionen, som en del av sin årliga rapport till Europaparlamentet och rådet enligt artikel 10.5 i direktiv 2003/87/EG, bedöma hur effektiv CBAM är för att hantera risken för koldioxidläckage för varor som produceras i unionen för export till tredjeländer som inte tillämpar EU:s utsläppshandelssystem eller någon liknande prissättningsmekanism för koldioxid. Rapporten ska särskilt bedöma utvecklingen av unionens export inom CBAM-sektorerna och utvecklingen när det gäller handelsflöden och de inbäddade utsläppen från dessa varor på den globala marknaden. Om det i rapporten konstateras att det finns en risk för koldioxidläckage för varor som tillverkas i unionen för export till sådana tredjeländer som inte tillämpar EU:s utsläppshandelssystem eller någon liknande prissättningsmekanism för koldioxid ska kommissionen vid behov lägga fram ett lagstiftningsförslag för att hantera den risken på ett sätt som är förenligt med Världshandelsorganisationens regelverk och som tar hänsyn till utfasningen av fossila bränslen i anläggningar i unionen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Kommissionen ska övervaka hur CBAM fungerar i syfte att utvärdera effekterna och eventuella justeringar av dess tillämpning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Före den 1 januari 2028 och därefter vartannat år ska kommissionen lägga fram en rapport för Europaparlamentet och rådet om tillämpningen av denna förordning och CBAM:s funktionssätt. Rapporten ska åtminstone innehålla följande:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)\n                              \n                              \n                                 En bedömning av CBAM:s inverkan på\n                                 i) \n                                             koldioxidläckage, inbegripet i samband med export,\n                                          \n                                 ii) \n                                             de sektorer som omfattas,\n                                          \n                                 iii) \n                                             konsekvenser för den inre marknaden samt ekonomiska och territoriella konsekvenser i hela unionen,\n                                          \n                                 iv) \n                                             inflation och råvarupriser,\n                                          \n                                 v) \n                                             effekten på industrier som använder varor som förtecknas i bilaga I,\n                                          \n                                 vi) \n                                             internationell handel, inklusive resursförflyttning, och\n                                          \n                                 vii) \n                                             MUL.",
+              "role": "TABLE",
+              "htmlContent": "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" class=\"legal-table\">\n                        <colgroup><col width=\"4%\">\n                        <col width=\"96%\">\n                        </colgroup><tbody>\n                           <tr>\n                              <td valign=\"top\">\n                                 <p class=\"text\">a)</p>\n                              </td>\n                              <td valign=\"top\">\n                                 <p class=\"text\">En bedömning av&nbsp;CBAM:s inverkan på</p>\n                                 <p class=\"text\">i) \n                                             </p><p class=\"text\">koldioxidläckage, inbegripet i samband med export,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">ii) \n                                             </p><p class=\"text\">de sektorer som omfattas,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">iii) \n                                             </p><p class=\"text\">konsekvenser för den inre marknaden samt ekonomiska och territoriella konsekvenser i hela unionen,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">iv) \n                                             </p><p class=\"text\">inflation och råvarupriser,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">v) \n                                             </p><p class=\"text\">effekten på industrier som använder varor som förtecknas i bilaga I,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">vi) \n                                             </p><p class=\"text\">internationell handel, inklusive resursförflyttning, och</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">vii) \n                                             </p><p class=\"text\">MUL.</p>\n                                          <p class=\"text\"></p>\n                              </td>\n                           </tr>\n                        </tbody>\n                     </table>"
+            },
+            {
+              "number": null,
+              "text": "b)\n                              \n                              \n                                 En bedömning av\n                                 i) \n                                             systemet för förvaltning, inbegripet en bedömning av genomförandet och administrationen av medlemsstaters godkännande av CBAM-deklaranter,\n                                          \n                                 ii) \n                                             denna förordnings tillämpningsområde,\n                                          \n                                 iii) \n                                             metoder för kringgående,\n                                          \n                                 iv) \n                                             tillämpningen av sanktioner i medlemsstaterna,",
+              "role": "TABLE",
+              "htmlContent": "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" class=\"legal-table\">\n                        <colgroup><col width=\"4%\">\n                        <col width=\"96%\">\n                        </colgroup><tbody>\n                           <tr>\n                              <td valign=\"top\">\n                                 <p class=\"text\">b)</p>\n                              </td>\n                              <td valign=\"top\">\n                                 <p class=\"text\">En bedömning av</p>\n                                 <p class=\"text\">i) \n                                             </p><p class=\"text\">systemet för förvaltning, inbegripet en bedömning av genomförandet och administrationen av medlemsstaters godkännande av CBAM-deklaranter,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">ii) \n                                             </p><p class=\"text\">denna förordnings tillämpningsområde,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">iii) \n                                             </p><p class=\"text\">metoder för kringgående,</p>\n                                          <p class=\"text\"></p>\n                                 <p class=\"text\">iv) \n                                             </p><p class=\"text\">tillämpningen av sanktioner i medlemsstaterna,</p>\n                                          <p class=\"text\"></p>\n                              </td>\n                           </tr>\n                        </tbody>\n                     </table>"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "resultaten av utredningar och påförda sanktioner,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "aggregerad information om utsläppsintensiteten för varje ursprungsland för de olika varor som förtecknas i bilaga I.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "7.   Om en oförutsebar, exceptionell och oprovocerad händelse har inträffat som ett eller flera tredjeländer som omfattas av CBAM inte haft någon kontroll över, och denna händelse har destruktiva konsekvenser för den ekonomiska och industriella infrastrukturen i ett sådant land eller berörda länder, ska kommissionen bedöma situationen och till Europaparlamentet och rådet överlämna en rapport, när så är lämpligt åtföljd av ett lagstiftningsförslag, för att ändra denna förordning genom att fastställa nödvändiga provisoriska åtgärder för att hantera dessa exceptionella omständigheter.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "8.   Från och med utgången av den övergångsperiod som avses i artikel 32 i denna förordning ska kommissionen, som en del av den årliga rapporteringen enligt artikel 41 i Europaparlamentets och rådets förordning (EU) 2021/947 27, utvärdera och rapportera om hur finansieringen enligt den förordningen har bidragit till utfasningen av fossila bränslen i tillverkningsindustrin i MUL.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "IX",
+      "title": "KAPITEL IX — SAMORDNING MED GRATIS TILLDELNING AV UTSLÄPPSRÄTTER INOM RAMEN FÖR EU:s UTSLÄPPSHANDELSSYSTEM",
+      "sections": [
+        {
+          "number": "art31",
+          "heading": "Gratis tilldelning av utsläppsrätter inom ramen för EU:s utsläppshandelssystem och skyldighet att överlämna CBAM-certifikat",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   De CBAM-certifikat som ska överlämnas i enlighet med artikel 22 i denna förordning ska justeras för att återspegla den utsträckning i vilken utsläppsrätter från EU ETS tilldelas gratis i enlighet med artikel 10a i direktiv 2003/87/EG till anläggningar som inom unionen producerar de varor som förtecknas i bilaga I till denna förordning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Kommissionen ges befogenhet att anta genomförandeakter med avseende på fastställandet av närmare regler för beräkning av den justering som avses i punkt 1 i denna artikel. Sådana närmare regler ska utarbetas med hänvisning till de principer som tillämpas i EU:s utsläppshandelssystem för gratis tilldelning av utsläppsrätter till anläggningar som inom unionen producerar de varor som förtecknas i bilaga I, med beaktande av de olika riktmärken som används i EU:s utsläppshandelssystem för gratis tilldelning i syfte att kombinera de riktmärkena till motsvarande värden för de berörda varorna och med beaktande av relevanta insatsmaterial (prekursorer). Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "X",
+      "title": "KAPITEL X — ÖVERGÅNGSBESTÄMMELSER",
+      "sections": [
+        {
+          "number": "art32",
+          "heading": "Övergångsperiodens omfattning",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "Under övergångsperioden från och med den 1 oktober 2023 till och med den 31 december 2025 ska importörens skyldigheter enligt denna förordning vara begränsade till de rapporteringsskyldigheter som anges i artiklarna 33, 34 och 35 i denna förordning. Om importören är etablerad i en medlemsstat och utser ett indirekt tullombud i enlighet med artikel 18 i förordning (EU) nr 952/2013, och om det indirekta tullombudet samtycker till detta, ska rapporteringsskyldigheterna gälla för detta indirekta tullombud. Om importören inte är etablerad i en medlemsstat ska rapporteringsskyldigheterna gälla för det indirekta tullombudet.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art33",
+          "heading": "Import av varor",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Tullmyndigheterna ska underrätta importören eller, i de situationer som avses i artikel 32, det indirekta tullombudet, om den rapporteringsskyldighet som avses i artikel 35 senast vid den tidpunkt då varorna övergår till fri omsättning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Tullmyndigheterna ska regelbundet och automatiskt, särskilt genom den övervakningsmekanism som inrättats enligt artikel 56.5 i förordning (EU) nr 952/2013 eller genom elektronisk dataöverföring, till kommissionen lämna uppgifter om importerade varor, inbegripet förädlade produkter som framställts genom förfarandet för passiv förädling. Dessa uppgifter ska omfatta tulldeklarantens och importörens Eori-nummer, det åttasiffriga KN-numret, kvantitet, ursprungsland, datum för tulldeklarationen och tullförfarandet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ska lämna de uppgifter som avses i punkt 2 till de behöriga myndigheterna i de medlemsstater där tulldeklaranten, och i förekommande fall importören, är etablerad.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art34",
+          "heading": "Rapporteringsskyldighet för vissa tullförfaranden",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   När förädlade produkter som framställts genom förfarandet för aktiv förädling enligt artikel 256 i förordning (EU) nr 952/2013 importeras, ska den rapporteringsskyldighet som avses i artikel 35 i den här förordningen inkludera information om de varor som hänförts till förfarandet för aktiv förädling och som resulterat i de importerade förädlade produkterna, även om de förädlade produkterna inte förtecknas i bilaga I till den här förordningen. Denna punkt ska också tillämpas när de förädlade produkter som framställts genom förfarandet för aktiv förädling är återinförda varor enligt vad som avses i artikel 205 i förordning (EU) nr 952/2013.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Den rapporteringsskyldighet som avses i artikel 35 i denna förordning ska inte tillämpas på import av",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "förädlade produkter som framställts genom förfarandet för passiv förädling enligt artikel 259 i förordning (EU) nr 952/2013,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "varor som klassificeras som återinförda varor i enlighet med artikel 203 i förordning (EU) nr 952/2013.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "art35",
+          "heading": "Rapporteringsskyldighet",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Varje importör eller, i de situationer som avses i artikel 32, det indirekta tullombudet, som har importerat varor under ett visst kvartal av ett kalenderår ska, senast en månad efter utgången av det kvartalet, för det kvartalet till kommissionen lämna in en rapport (CBAM-rapport) innehållande uppgifter om de varor som importerats under det kvartalet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   CBAM-rapporten ska innehålla följande uppgifter:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Den totala kvantiteten av varje typ av varor, uttryckt i megawattimmar för el och i ton för andra varor, angiven för varje anläggning som producerar varorna i ursprungslandet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "De faktiska totala inbäddade utsläppen, uttryckt i ton CO2e per megawattimme för el eller, för andra varor, i ton CO2e per ton av varje typ av vara, beräknade i enlighet med den metod som anges i bilaga IV.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "De totala indirekta utsläppen, beräknade i enlighet med den genomförandeakt som avses i punkt 7.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Det koldioxidpris som ska betalas i ett ursprungsland för de inbäddade utsläppen i de importerade varorna, med beaktande av eventuella rabatter eller andra former av kompensation som är tillgängliga.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "3.   Kommissionen ska till de relevanta behöriga myndigheterna regelbundet överlämna en förteckning över de importörer eller indirekta tullombud som är etablerade i medlemsstaten, som den har skäl att anta har underlåtit att uppfylla skyldigheten att lämna in en CBAM-rapport i enlighet med punkt 1, inklusive motsvarande motiveringar.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "4.   Om kommissionen anser att en CBAM-rapport är ofullständig eller felaktig ska den till den behöriga myndigheten i den medlemsstat där importören är etablerad eller, i de situationer som omfattas av artikel 32, där det indirekta tullombudet är etablerat, lämna de ytterligare uppgifter som den anser nödvändiga för att komplettera eller korrigera den rapporten. Sådana uppgifter ska lämnas i vägledande syfte och utan att det påverkar den behöriga myndighetens slutgiltiga bedömning. Den behöriga myndigheten ska inleda korrigeringsförfarandet och underrätta importören eller, i de situationer som omfattas av artikel 32, det indirekta tullombudet om de ytterligare uppgifter som behövs för att korrigera den rapporten. Den importören eller det indirekta tullombudet ska vid behov lämna en korrigerad rapport till den berörda behöriga myndigheten och till kommissionen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "5.   Om den behöriga myndigheten i den medlemsstat som avses i punkt 4 i den här artikeln inleder ett korrigeringsförfarande, inbegripet med beaktande av uppgifter som mottagits i enlighet med punkt 4 i den här artikeln, och fastställer att importören eller, i tillämpliga fall i enlighet med artikel 32, det indirekta tullombudet inte har vidtagit nödvändiga åtgärder för att korrigera CBAM-rapporten, eller om den berörda behöriga myndigheten fastställer, inbegripet med beaktande av uppgifter som mottagits i enlighet med punkt 3 i den här artikeln, att importören eller, i tillämpliga fall i enlighet med artikel 32, det indirekta tullombudet har underlåtit att uppfylla skyldigheten att lämna in en CBAM-rapport i enlighet med punkt 1 i den här artikeln, ska den behöriga myndigheten ålägga importören eller, i tillämpliga fall i enlighet med artikel 32, det indirekta tullombudet en effektiv, proportionell och avskräckande sanktion. I detta syfte ska den behöriga myndigheten underrätta importören eller, i tillämpliga fall i enlighet med artikel 32, det indirekta tullombudet och informera kommissionen om",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "slutsatsen, och skälen till denna slutsats, att importören eller, i tillämpliga fall i enlighet med artikel 32, det indirekta tullombudet har underlåtit att uppfylla skyldigheten att lämna in en rapport för ett visst kvartal eller att vidta nödvändiga åtgärder för att korrigera rapporten,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "beloppet för den sanktionsavgift som påförts importören eller, i tillämpliga fall i enlighet med artikel 32, det indirekta tullombudet,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "det datum då sanktionsavgiften förfaller till betalning,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "den åtgärd som importören eller, i tillämpliga fall i enlighet med artikel 32, det indirekta tullombudet ska vidta för att betala sanktionsavgiften, och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "e)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "rätten för importören eller, i tillämpliga fall i enlighet med artikel 32, det indirekta tullombudet att överklaga.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "6.   Om den behöriga myndigheten, efter att ha mottagit uppgifterna från kommissionen enligt denna artikel, beslutar att inte vidta några åtgärder, ska den underrätta kommissionen om detta.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "7.   Kommissionen ges befogenhet att anta genomförandeakter med avseende på",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "de uppgifter som ska rapporteras, metod och format för rapporteringen, inbegripet detaljerade uppgifter per ursprungsland och typ av varor till stöd för de totalbelopp som avses i punkt 2 a, b och c, samt exempel på eventuella relevanta rabatter eller någon annan form av kompensation som är tillgänglig enligt vad som avses i punkt 2 d,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "det vägledande intervall för sanktionsavgifter som ska påföras enligt punkt 5 och de kriterier som ska beaktas vid fastställandet av det faktiska beloppet, inbegripet allvaret och varaktigheten av underlåtenheten att rapportera,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "c)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "närmare regler om omräkningen till euro av det årliga genomsnittliga koldioxidpris som avses i punkt 2 d uttryckt i utländsk valuta till den årliga genomsnittliga växelkursen,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "d)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "närmare regler om elementen i de beräkningsmetoder som anges i bilaga IV, inbegripet fastställande av systemgränser för produktionsprocesser, emissionsfaktorer, anläggningsspecifika värden för faktiska utsläpp och deras respektive tillämpning på enskilda varor samt fastställande av metoder för att säkerställa tillförlitligheten hos data, inbegripet detaljnivån, och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "e)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "metod och format för rapporteringskraven för indirekta utsläpp i importerade varor; detta format ska omfatta den mängd el som används för produktion av de varor som förtecknas i bilaga I samt ursprungsland, produktionskälla och emissionsfaktorer för denna el.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Dessa genomförandeakter ska antas i enlighet med det granskningsförfarande som avses i artikel 29.2 i denna förordning. De ska tillämpas för varor som importerats under den övergångsperiod som avses i artikel 32 i denna förordning och ska bygga på befintlig lagstiftning för anläggningar som omfattas av tillämpningsområdet för direktiv 2003/87/EG.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "XI",
+      "title": "KAPITEL XI — SLUTBESTÄMMELSER",
+      "sections": [
+        {
+          "number": "art36",
+          "heading": "Ikraftträdande",
+          "paragraphs": [
+            {
+              "number": null,
+              "text": "1.   Denna förordning träder i kraft dagen efter det att den har offentliggjorts i Europeiska unionens officiella tidning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "2.   Den ska tillämpas från och med den 1 oktober 2023. Som ett undantag gäller dock följande:",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "a)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Artiklarna 5, 10, 14, 16 och 17 ska tillämpas från och med den 31 december 2024.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "b)",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "Artikel 2.2 och artiklarna 4, 6–9, 15 och 19, 20.1, 20.3, 20.4 och 20.5, 21–27 och 31 ska tillämpas från och med den 1 januari 2026.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": null,
+              "text": "",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "Regulation (EU) 2023/956",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2017:7</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2017-7">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2017:7</p>
+      <p class="text">Boverkets allmänna råd om ekonomiska planer och kostnadskalkyler för bostadsrättsföreningar, ekonomiska planer för kooperativa hyresrättsföreningar och förenklade ekonomiska planer för bostadsföreningar samt om intygsgivare</p>
+    </h1>
+  </div>
+  <div class="body">
+    <p class="text">Utkom från trycket den 28 augusti 2017</p>
+    <p class="text">beslutade den 22 augusti 2017.</p>
+    <p class="text">Boverket beslutar följande allmänna råd om ekonomiska planer och kostnadskalkyler för bostadsrättsföreningar, allmänna råd om ekonomiska planer för kooperativa hyresrättsföreningar och allmänna råd om förenklade ekonomiska planer för bostadsföreningar samt om intygsgivare.</p>
+
+    <h3 id="BFS2017-7_inledning">1. Inledning</h3>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Detta är allmänna råd till 1 kap. 5 §, 3 kap. 1–4 §§, 4 kap. 2 §, 5 kap. 3 § och 9 kap. 5 § 7 bostadsrättslagen (1991:614), till 1–6 §§, 8 § och 10 § bostadsrättsförordningen (1991:630), till 2 kap. 4 § och 4 kap. 2–3 §§ lagen (2002:93) om kooperativ hyresrätt, till 1–5 §§ och 8 § förordningen (2002:106) om kooperativ hyresrätt, och till 2 § och 4 § lagen (1991:615) om omregistrering av vissa bostadsföreningar till bostadsrättsföreningar.</p>
+      <p class="text">De allmänna råden innehåller generella rekommendationer om tillämpningen av bestämmelserna i ovan nämnda författningar och anger hur någon lämpligen kan eller bör handla för att uppfylla föreskrifterna.</p>
+      <p class="text">De allmänna råden kan även innehålla vissa förklarande eller redaktionella upplysningar.</p>
+      <p class="text">De allmänna råden föregås av texten Allmänt råd och är tryckta med mindre och indragen text.</p>
+      <p class="text">Vad som skrivs om ekonomiska planer gäller även i tillämpliga delar för kostnadskalkyler.</p>
+    </div>
+
+    <h3 id="BFS2017-7_ekonomiska-planer-och-kostnadskalkyler">2. Ekonomiska planer och kostnadskalkyler</h3>
+
+    <h4 id="BFS2017-7_ekonomisk-plan">2.1 Ekonomisk plan</h4>
+    <p class="text">3 kap. 1 § bostadsrättslagen, 1 § bostadsrättsförordningen, 4 kap. 2 § lagen om kooperativ hyresrätt samt 1 § förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">En ekonomisk plan bör ge en rättvisande bild av föreningens verksamhet. Om en uppgift i planen är preliminär bör detta tydligt anges. Även en preliminär uppgift bör vara ekonomiskt hållbar.</p>
+      <p class="text">I den ekonomiska planen bör framgå vilka lov och tillstånd som krävs för föreningens verksamhet. Att föreningen har erforderliga lov och tillstånd bör anges, i de fall det har betydelse för verksamheten.</p>
+      <p class="text">En ekonomisk plan bör upprättas vid en tidpunkt då uppgifterna som lämnas i planen är väl underbyggda.</p>
+    </div>
+
+    <h4 id="BFS2017-7_kostnadskalkyl">2.2 Kostnadskalkyl</h4>
+    <p class="text">5 kap. 3 § bostadsrättslagen samt 8 § bostadsrättsförordningen</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Uppgifterna i ett förhandsavtal bör grunda sig på en kostnadskalkyl som ger en rättvisande bild av föreningens verksamhet. Målsättningen bör vara att uppgifterna i kalkylen inte behöver ändras vid upprättandet av den ekonomiska planen.</p>
+      <p class="text">En kostnadskalkyl bör innehålla samma uppgifter som en ekonomisk plan vad gäller finansieringsplanen och beräkningen av löpande kostnader och intäkter. Driftskostnader kan däremot anges mer översiktligt.</p>
+      <p class="text">Kostnadskalkylen bör även innehålla uppgift om när i bostadsprojektets aktuella skede kalkylen har upprättats.</p>
+    </div>
+
+    <h4 id="BFS2017-7_andamalsenlig-samverkan">2.3 Ändamålsenlig samverkan</h4>
+    <p class="text">1 kap. 5 § och 3 kap. 2 § 1 bostadsrättslagen</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Initiativtagarna i föreningen bör i ett tidigt skede förvissa sig om att förutsättningarna för en ändamålsenlig samverkan kan anses uppfyllda.</p>
+    </div>
+
+    <h4 id="BFS2017-7_forvarv-av-foreningens-fastighet">2.4 Förvärv av föreningens fastighet</h4>
+    <p class="text">1 § 4 bostadsrättsförordningen samt 1 § 4 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Tillvägagångssättet vid förvärvet av föreningens fastighet bör redovisas tydligt i den ekonomiska planen. Om förvärvet medför tilläggsköpeskilling bör detta anges och om en latent skatteskuld uppkommer till följd av tillvägagångssättet bör planen innehålla uppgifter om fastighetens skattemässiga värde fördelat på byggnad och mark, så långt det kan uppskattas eller är känt.</p>
+      <p class="text">Även andra för föreningen relevanta förhållanden hänförliga till förvärvet bör redovisas.</p>
+    </div>
+
+    <h4 id="BFS2017-7_redovisning-av-uppgifter">2.5 Redovisning av uppgifter</h4>
+    <p class="text">1 § och 4 a § bostadsrättsförordningen samt 1 § och 4 a § förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Samtliga intäkter och kostnader samt in- och utbetalningar med underliggande antaganden bör beskrivas i den ekonomiska planen. Kostnaderna redovisas inklusive mervärdesskatt.</p>
+      <p class="text">Om indexreglering är avtalad bör detta framgå när intäkter och kostnader anges.</p>
+      <p class="text">Externa intäkter såsom uthyrningsverksamhet av parkeringsplatser, garage med mera bör specificeras med uppgifter om belopp och väsentliga avtalsvillkor.</p>
+      <p class="text">Tomträtts- och arrendeavtalens huvudsakliga villkor bör anges i planen.</p>
+    </div>
+
+    <h4 id="BFS2017-7_beskrivning-av-fastigheten">2.6 Beskrivning av fastigheten</h4>
+    <p class="text">1 § 2, 2 § 2–4 bostadsrättsförordningen samt 1 § 2, 2 § 2 och 3 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Beskrivningen av fastigheten bör innehålla uppgifter om allmänna och gemensamma utrymmen i och i anslutning till huset.</p>
+      <p class="text">Beskrivningen av föreningens hus bör innehålla följande uppgifter; antal våningar, källare och vind, grundläggning och bärande konstruktioner, material och utförande av fasader och tak, material och utförande av balkonger, fönster och ytterdörrar, kommunikationer (trappor, hiss och loftgångar), val av värmeproduktionsanläggning och sätt för värmedistribution, system för ventilation, vatten, avlopp och el och ursprungligt byggnadsår för befintliga hus. Vid ombildning kan beskrivningen vara mindre detaljerad.</p>
+      <p class="text">I beskrivningen av bostadslägenheter och lokaler bör följande uppgifter anges; inredning och utrustning i kök, förvaring (klädkammare och förråd), hygienrum och utrymmen för tvätt, avfall eller liknande samt golvmaterial och ytskikt på väggar och tak i olika utrymmen.</p>
+    </div>
+
+    <h4 id="BFS2017-7_redovisning-av-lagenheterna">2.7 Redovisning av lägenheterna</h4>
+    <p class="text">2 § 4, 3 § 3 och 4 § 3 bostadsrättsförordningen samt 2 § 3 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">I redovisningen av lägenheterna bör anges respektive lägenhets insats, upplåtelseavgift och årsavgift. Beskrivningen bör även ange lägenhetens grundutförande som kommer att ingå i upplåtelsen, såsom utrymmen, förråd, balkong, uteplats, terrass, parkeringsplats eller garage. Utrymmen som hanteras i annan form av nyttjanderätt, än bostadsrätt, genom sidoavtal bör även anges. Utrymmen som balkong, uteplats, terrass, parkeringsplats och garage kan endast ingå i en upplåtelse om de ligger i direkt anslutning till lägenheten.</p>
+      <p class="text">Samtliga årsavgifter oavsett fördelningsgrund bör framgå i planen, inklusive eventuell förekomst av årsavgifter som baseras på enhetsmätning, eller debiteras på annan grund. Om insatsökningar (kapitaltillskott) eller differentierade insatser är en förutsättning för föreningens verksamhet bör det anges i planen. Vid differentierade insatser och separata andelstal för drift och kapital bör konsekvenserna för föreningens medlemmar beskrivas.</p>
+    </div>
+
+    <h4 id="BFS2017-7_matning-av-lagenhetens-area">2.8 Mätning av lägenhetens area</h4>
+    <p class="text">2 § 4 bostadsrättsförordningen samt 2 § 3 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">När arean mäts bör vid mättillfället gällande mätregler enligt SS 21054:2009, användas. I annat fall bör det anges hur mätning har utförts.</p>
+      <p class="text">Vid uppförande av nya hus bör det anges att mätning av lägenheternas area har gjorts på ritning. Vid ombildning bör anges om förnyad mätning har skett eller om uppgifterna om lägenheternas area utgår från tidigare hyresavtal.</p>
+    </div>
+
+    <h4 id="BFS2017-7_platsbesok">2.9 Platsbesök</h4>
+    <p class="text">2 § 6 bostadsrättsförordningen samt 2§ 5 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">En av eller båda intygsgivarna bör besöka fastigheten i anslutning till intygsgivningen. Platsbesök kan vara särskilt angeläget vid ombyggnad och ombildning. Intygsgivarna bör ta ställning till om ett platsbesök kan antas tillföra något av betydelse för deras granskning. Detta bör även framgå av intyget till planen.</p>
+    </div>
+
+    <h4 id="BFS2017-7_gemensamhetsanlaggning-servitut-och-ledningsratt">2.10 Gemensamhetsanläggning, servitut och ledningsrätt</h4>
+    <p class="text">1 § 2 och 2 § 5 bostadsrättsförordningen samt 1 § 2 och 2 § 4 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">I den ekonomiska planen bör anges om föreningens fastighet ingår i eller har del i en gemensamhetsanläggning och om det föreligger föreningsförvaltning eller delägarförvaltning av anläggningen. Ändamålet med anläggningen och föreningens andel av driftskostnaderna bör också anges. Om föreningens andel ännu inte är känd kan uppgiften anges som preliminär.</p>
+      <p class="text">Vid nyuppförande av hus bör samma uppgifter anges som i första stycket. I förekommande fall bör även föreningens andel av kostnaderna för gemensamhetsanläggningens uppförande anges.</p>
+      <p class="text">Övriga åtaganden eller inskränkningar samt framtida kända förhållanden bör också anges.</p>
+      <p class="text">Det bör även anges om del av föreningens verksamhet bedrivs under andra former än i föreningens egen regi, permanent eller under begränsad tid.</p>
+    </div>
+
+    <h4 id="BFS2017-7_underhalls-och-investeringsbehov-vid-ombildning">2.11 Underhålls- och investeringsbehov vid ombildning</h4>
+    <p class="text">1 § 2 och 2 § 6 bostadsrättsförordningen samt 1 § 2 och 2 § 5 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Vid ombildning bör fastighetens underhålls- och investeringsbehov samt uppskattade utgifter för detta anges med besiktningsprotokollet som underlag. Planen bör även redovisa när åtgärderna behöver vidtas samt hur dessa utgifter finansieras.</p>
+      <p class="text">Tidigare genomförda åtgärder bör anges tillsammans med tidpunkt och omfattning.</p>
+    </div>
+
+    <h4 id="BFS2017-7_avsattning-till-underhall">2.12 Avsättning till underhåll</h4>
+    <p class="text">9 kap. 5 § 7 bostadsrättslagen, 4 a § 3 och 5 bostadsrättsförordningen, 2 kap. 4 § 2 lagen om kooperativ hyresrätt samt 4 a § 3 och 5 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Grunden för avsättning av medel till underhåll av föreningens hus bör vara ekonomiskt hållbar och anges i den ekonomiska planen. Planen bör även redovisa hur avsättning av medel till underhåll säkerställs och finansieras.</p>
+      <p class="text">En hållbar nivå på avsättningar till underhåll av föreningens hus och i förekommande fall mark kan tas fram genom en underhållsplan.</p>
+    </div>
+
+    <h4 id="BFS2017-7_forsakringar">2.13 Försäkringar</h4>
+    <p class="text">2 § 7 bostadsrättsförordningen samt 2 § 6 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Uppgift om försäkringar bör innefatta kort om vad försäkringarna omfattar.</p>
+    </div>
+
+    <h4 id="BFS2017-7_taxeringsvarde">2.14 Taxeringsvärde</h4>
+    <p class="text">1 § 2 bostadsrättsförordningen samt 1 § 2 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Fastighetens taxeringsvärde bör anges i den ekonomiska planen. Är huset under uppförande anges i stället beräknat slutligt taxeringsvärde.</p>
+      <p class="text">Taxeringsvärdet bör delas upp på mark och byggnader och även delas upp på bostäder och lokaler varav garage särskilt anges.</p>
+    </div>
+
+    <h4 id="BFS2017-7_nyckeltal-i-ekonomisk-plan-och-kostnadskalkyl">2.15 Nyckeltal i ekonomisk plan och kostnadskalkyl</h4>
+    <p class="text">1 § bostadsrättsförordningen samt 1 § förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Följande nyckeltal bör användas vid ekonomiska uppställningar i ekonomisk plan/kostnadskalkyl (se bilaga). Upplåten eller uthyrd lägenhetsarea omfattar boarea (BOA) och lokalarea (LOA).</p>
+      <ol type="1">
+        <li>Anskaffningsvärde kronor per kvadratmeter bruttoarea (BTA).</li>
+        <li>Insatser och upplåtelseavgifter kronor per kvadratmeter upplåten lägenhetsarea (BOA+LOA).</li>
+        <li>Lån kronor per kvadratmeter upplåten lägenhetsarea (BOA+LOA).</li>
+        <li>Årsavgift kronor per kvadratmeter upplåten lägenhetsarea (BOA+LOA).</li>
+        <li>Enskilds (hushåll/innehavare) genomsnittliga förbrukningsavgift som debiteras separat – utöver årsavgift enligt andelstal/insats – kronor per kvadratmeter upplåten lägenhetsarea (BOA+LOA).</li>
+        <li>Driftskostnader kronor per kvadratmeter upplåten lägenhetsarea + uthyrd lägenhetsarea (BOA+LOA).</li>
+        <li>Hyresintäkter per kvadratmeter uthyrd area (BOA + LOA).</li>
+        <li>Kassaflöde kronor per kvadratmeter total lägenhetsarea (BOA+LOA).</li>
+        <li>Avsättning till underhållsfond + avskrivningar per kvadratmeter bruttoarea total lägenhetsarea (BOA+LOA).</li>
+      </ol>
+    </div>
+
+    <h4 id="BFS2017-7_kostnad-vid-nybyggnad">2.16 Kostnad vid nybyggnad</h4>
+    <p class="text">1 § 4 bostadsrättsförordningen</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Samtliga utgifter för föreningens förvärv av fastigheten, däribland entreprenadkostnaderna för uppförande av hus, bör framgå i den ekonomiska planen. Om det vid förvärvet kan utgå tilläggsköpeskilling bör även det tydligt framgå och beskrivas.</p>
+      <p class="text">Ombyggnad av befintligt hus som tidigare nyttjats för annat ändamål än bostäder kan likställas med nyproduktion av hus.</p>
+      <p class="text">För entreprenadkostnader bör även entreprenadformen anges, det vill säga hur ansvaret för entreprenaden fördelas mellan förening och inblandade entreprenörer.</p>
+      <p class="text">Samtliga avtal och överenskommelser som ligger till grund för utgifterna för förvärvet av föreningens fastighet bör beskrivas i planen. De väsentliga avtalsvillkoren i dessa bör också återges i planen.</p>
+      <p class="text">Dolda utgifter i exploaterings- eller markanvisningsavtal eller i andra avtal som övergått till föreningen i samband med förvärvet bör specificeras och beloppen anges.</p>
+    </div>
+
+    <h4 id="BFS2017-7_kostnad-vid-ombildning">2.17 Kostnad vid ombildning</h4>
+    <p class="text">1 § 4 bostadsrättsförordningen samt 1 § 4 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Samtliga utgifter för föreningens förvärv av fastigheten bör framgå i den ekonomiska planen.</p>
+      <p class="text">I den ekonomiska planen bör särskilt uppgifter om köpeskillingen för fastigheten, inklusive utgifter för pantbrev, lagfart, fastighetsbildning och ombildning anges. Om det vid förvärvet kan utgå tilläggsköpeskilling bör även det tydligt framgå och beskrivas.</p>
+      <p class="text">Beräknade utgifter för åtgärder föranledda av besiktningsanmärkningar bör redovisas under en egen post.</p>
+      <p class="text">Samtliga avtal och överenskommelser som ligger till grund för utgifterna för förvärvet av föreningens fastighet bör beskrivas i planen. De väsentliga avtalsvillkoren i dessa bör också återges i planen.</p>
+    </div>
+
+    <h4 id="BFS2017-7_slutlig-kostnad">2.18 Slutlig kostnad</h4>
+    <p class="text">4 kap. 2 § bostadsrättslagen samt 1 § 4 bostadsrättsförordningen</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Kostnaden bör endast anges som slutlig när den är känd.</p>
+      <p class="text">Vid uppförande av nya hus bör samtliga utgifter för förvärvet av föreningens fastighet anges som känd först när entreprenaden är slutförd och har godkänts vid slutbesiktningen.</p>
+      <p class="text">Om föreningen behöver ansöka om tillstånd att upplåta lägenheter med bostadsrätt bör det framgå av planen.</p>
+    </div>
+
+    <h4 id="BFS2017-7_finansieringsplan">2.19 Finansieringsplan</h4>
+    <p class="text">1 § 7, 2 § 4 och 3 § bostadsrättsförordningen samt 1 § 7 och 3 § förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Finansieringsplanen bör utgå från att föreningen kan amortera från år ett.</p>
+      <p class="text">Om föreningens lån är amorteringsfria de första åren bör det anges när amortering beräknas ske och till vilket belopp.</p>
+      <p class="text">Amorteringstiden bör inte överstiga husets nyttjandeperiod.</p>
+      <p class="text">Insatser och upplåtelseavgifter fördelade på de olika bostadsrätterna kan anges per kvadratmeter lägenhetsarea i finansieringsplanen, eller anges i lägenhetsredovisningen. Finansieringsplanen bör utgå från en låneränta, även om kostnader föranledda av lån utgår i annan form än ränta.</p>
+      <p class="text">Det bör då anges med vilken avgift/kostnad ett lån är förenat med och hur det eventuellt kan komma att variera över tid. Om det varken finns ränta eller avgift så bör det anges om och när det kan komma att tas ut.</p>
+    </div>
+
+    <h4 id="BFS2017-7_kapitalkostnader">2.20 Kapitalkostnader</h4>
+    <p class="text">1 § 8 och 4 § 1 bostadsrättsförordningen samt 1 § 8 och 4 § 1 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Planenliga avskrivningar bör ske enligt gällande bestämmelser och tas upp under kapitalkostnader eller som enskild post.</p>
+      <p class="text">Avskrivningsunderlag, avskrivningsmetod, nyttjandeperiod och belopp bör anges. Om K3-regelverket (Bokföringsnämndens allmänna råd, BFNAR 2012:1) tillämpas kan en schablonmässig avskrivning ingå i den ekonomiska planen samt motiveras och förklaras. Det bör framgå hur anskaffningsvärdet avseende tomträtt ingår i avskrivningsunderlaget. Om föreningen inte är ett äkta privatbostadsföretag så bör underlag för skattemässiga värdeminskningsavdrag framgå.</p>
+    </div>
+
+    <h4 id="BFS2017-7_driftskostnader">2.21 Driftskostnader</h4>
+    <p class="text">1 § 8 och 4 § 1 bostadsrättsförordningen samt 1 § 8 och 4 § 1 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Föreningens driftskostnader (bilaga) bör redovisas som delposter i den ekonomiska planen. Redovisningen bör vara tydlig och rättvisande. Beräknad kostnad bör anges för respektive post.</p>
+      <p class="text">Kostnader för det inre underhållet av befintliga hyresrätter bör anges särskilt.</p>
+      <p class="text">Vid beräkning av driftskostnader bör jämförelse göras med likvärdiga objekt.</p>
+      <p class="text">I en kostnadskalkyl kan driftskostnaderna anges mer översiktligt.</p>
+    </div>
+
+    <h4 id="BFS2017-7_driftskostnader-for-vilka-avgifter-debiteras-separat">2.22 Driftskostnader för vilka avgifter debiteras separat</h4>
+    <p class="text">1 § 9 bostadsrättsförordningen samt 1 § 9 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Om föreningen helt eller delvis debiterar bostadsrättshavare efter förbrukning eller på andra grunder bör dessa avgifter anges särskilt. Beloppen kan vara preliminära.</p>
+    </div>
+
+    <h4 id="BFS2017-7_fastighetsskatt-och-fastighetsavgift">2.23 Fastighetsskatt och fastighetsavgift</h4>
+    <p class="text">1 § 8, 4 § 1 och 4 a § 6 bostadsrättsförordningen samt 1 § 8,4 § 1 och 4 a § 6 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Aktuella skatte- och avgiftsregler för bostadsrättsföreningar bör redovisas. För det fall fastighetsskatt och fastighetsavgift inte utfaller under prognosperioden bör den ekonomiska prognosen redovisa beräknat belopp och tidpunkten för när skyldigheten att erlägga avgiften inträder.</p>
+    </div>
+
+    <h4 id="BFS2017-7_foreningens-skattemassiga-klassificering">2.24 Föreningens skattemässiga klassificering</h4>
+    <p class="text">1 § bostadsrättsförordningen samt 1 § förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Uppgift om föreningens skattemässiga klassificering, det vill säga om föreningen är ett äkta eller ett oäkta privatbostadsföretag, bör lämnas i planen.</p>
+    </div>
+
+    <h4 id="BFS2017-7_tomtrattsavgald-och-arrendeavgift">2.25 Tomträttsavgäld och arrendeavgift</h4>
+    <p class="text">1 § 8, 4 § 1och 4 a § 6 bostadsrättsförordningen samt 1 § 8, 4 § 1 och 4 a § 6 förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">För det fall tomträttsavgäld eller arrendeavgift inte utfaller eller utgår med reducerat belopp under prognosperioden bör den ekonomiska prognosen redovisa beräknat belopp och tidpunkten för när skyldigheten inträder.</p>
+      <p class="text">Av planen bör även framgå när ett tomträttsavtal eller arrendeavtal löper ut. Ett avtals avgäldsperiod respektive avgiftsperiod bör också framgå.</p>
+    </div>
+
+    <h4 id="BFS2017-7_ekonomisk-prognos">2.26 Ekonomisk prognos</h4>
+    <p class="text">1 § andra stycket och 4 a § bostadsrättsförordningen samt 1 § andra stycket och 4 a § förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Antaganden om ränta och inflation bör inte understiga gällande ränteläge, låneoffert eller ingångna avtal. Räntan kan till exempel sättas till motsvarande den bundna räntan för prognosperioden.</p>
+      <p class="text">Grunderna för hur avgifterna har beräknats bör anges.</p>
+      <p class="text">Uppgift om kända förändringar som infaller under eller efter prognosperioden bör anges.</p>
+      <p class="text">Prognosen bör visa förväntade kostnader och utgifter och på så sätt visa nödvändig nivå på årsavgiften.</p>
+      <p class="text">Prognoserna bör redovisas i löpande penningvärde.</p>
+      <p class="text">Uppgift om valt K-regelverk (BFNAR 2012:1 och BFNAR 2016:10) vid upprättandet av planen bör anges och eventuellt ackumulerat resultatmässigt underskott under prognosperioden framgå.</p>
+      <p class="text">Uppgifterna i prognosen bör även omfatta det år fastighetsskatten förändras eller utfaller första gången.</p>
+      <p class="text">För bedömning av föreningens betalningsförmåga vid olika tidpunkter under de sex första och elfte verksamhetsåren bör en prognos av kassaflödet göras. I prognosen bör även det år fastighetsskatten förändras eller utfaller första gången beaktas.</p>
+      <p class="text">Uppgift om ackumulerat kassaflöde under prognosperioden bör framgå.</p>
+    </div>
+
+    <h4 id="BFS2017-7_kanslighetsanalys">2.27 Känslighetsanalys</h4>
+    <p class="text">1 § andra stycket och 4 b § bostadsrättsförordningen samt 1 § andra stycket och 4 b § förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Antaganden om ränta bör inte understiga gällande ränteläge eller enligt låneoffert eller ingångna avtal.</p>
+      <p class="text">Känslighetsanalysen bör visa den beräknade årsavgiften vid</p>
+      <ul>
+        <li>olika inflationsnivåer och oförändrat ränteläge och</li>
+        <li>olika räntenivåer och oförändrat inflationsläge.</li>
+      </ul>
+      <p class="text">Om aktuellt ränteläge är negativt vid planens upprättande bör analysen utgå från en högre räntenivå.</p>
+      <p class="text">Analysen bör avse beräknad årsavgift vid olika inflations- och räntenivåer beträffande det år fastighetsskatten förändras eller utfaller första gången.</p>
+    </div>
+
+    <h4 id="BFS2017-7_anslutningsgrader-vid-ombildning">2.28 Anslutningsgrader vid ombildning</h4>
+    <p class="text">1 § andra stycket bostadsrättsförordningen samt 1 § andra stycket förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Vid ombildning bör det i den ekonomiska planen finnas information om hur föreningens ekonomi förändras vid olika anslutningsgrader.</p>
+      <p class="text">I denna framställning bör det även framgå hur uteblivna insatser finansieras vid lägre anslutningsgrad än den beräknade.</p>
+    </div>
+
+    <h3 id="BFS2017-7_ny-ekonomisk-plan">3. Ny ekonomisk plan</h3>
+
+    <h4 id="BFS2017-7_ny-ekonomisk-plan-31">3.1 Ny ekonomisk plan</h4>
+    <p class="text">3 kap. 4 § bostadsrättslagen</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Vid bedömningen av om det inträffat något av väsentlig betydelse för föreningens verksamhet bör en jämförelse göras mellan verkliga förhållanden och den senast registrerade ekonomiska planen. Om planen inte längre ger en rättvisande bild av föreningens ekonomi kan en jämförelse i stället göras med föreningens senaste årsredovisning om sådan finns.</p>
+    </div>
+
+    <h4 id="BFS2017-7_vasentlig-betydelse">3.2 Väsentlig betydelse</h4>
+    <p class="text">3 kap. 4 § bostadsrättslagen</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Med förändring av väsentlig betydelse avses en varaktig negativ förändring som påverkar föreningens årsavgifter, skuldsättning eller insatser och upplåtelseavgifter. Följden av en förändring kan bland annat anses vara väsentlig om det kan antas påverka bostadsrättsköpares beslut att förvärva en bostadsrätt på grundval av förändringen, eller föranleda en bostadsrättsköpare att åberopa rätten att frånträda ett förhandsavtal enligt 5 kap. 8 § bostadsrättslagen.</p>
+      <p class="text">En kalkyl behöver göras för att kunna bedöma om förändringen kan antas varaktigt negativ för föreningen. Vid en konstaterad negativ förändring som är väsentlig bör en ny ekonomisk plan upprättas.</p>
+      <p class="text">Om en befintlig förening avser att upplåta fler än enstaka nya lägenheter eller utöka/förändra upplåten lägenhetsarea bör föreningen upprätta en ny ekonomisk plan. Det kan bli aktuellt även i fall då fördelningen av arean mellan bostäder och lokaler ändras.</p>
+      <p class="text">En kalkyl bör även i denna situation tas fram för att kunna bedöma om den negativa förändringen är väsentlig.</p>
+    </div>
+
+    <h3 id="BFS2017-7_forenklad-ekonomisk-plan">4. Förenklad ekonomisk plan</h3>
+
+    <h4 id="BFS2017-7_forenklad-ekonomisk-plan-for-bostadsforeningar">4.1 Förenklad ekonomisk plan för bostadsföreningar</h4>
+    <p class="text">2 och 4 §§ lagen om omregistrering av vissa bostadsföreningar till bostadsrättsföreningar samt 6 § bostadsrättsförordningen</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">En förenklad ekonomisk plan bör ge en rättvisande bild av föreningens verksamhet. Om en uppgift i planen är preliminär bör detta tydligt anges. Föreningens årsredovisning kan utgöra underlag för planen.</p>
+    </div>
+
+    <h3 id="BFS2017-7_intygsgivare-och-intyg">5. Intygsgivare och intyg</h3>
+
+    <h4 id="BFS2017-7_intygsgivares-opartiskhet">5.1 Intygsgivares opartiskhet</h4>
+    <p class="text">3 kap. 3 § andra stycket bostadsrättslagen samt 4 kap. 4 § andra stycket lagen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Intygsgivarna bör inte ingå uppdragsavtal eller andra avtal som kan rubba förtroendet för deras opartiskhet.</p>
+    </div>
+
+    <h4 id="BFS2017-7_intygets-utformning">5.2 Intygets utformning</h4>
+    <p class="text">3 kap. 2 §, 5 kap. 3 § och 10 kap. 1 a § bostadsrättslagen, 5 § bostadsrättsförordningen samt 4 kap. 3 § lagen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Av intyget bör framgå föreningens firma och organisationsnummer.</p>
+      <p class="text">Intyget undertecknas av intygsgivaren och bör innehålla namnförtydligande, ort och datum för undertecknandet.</p>
+      <p class="text">Intygsgivaren bör med sin signatur på samtliga sidor i den ekonomiska planen respektive kostnadskalkylen och tillhörande handlingar vidimera att intygsgivaren tagit del av dessa.</p>
+      <p class="text">Vid uppräkningen av handlingar som varit tillgängliga för intygsgivaren bör anges vad handlingarna avser, när de är daterade och vilka som är parterna. Om underlag inhämtats på annat sätt än skriftligen bör detta redovisas i intyget.</p>
+      <p class="text">Intyget bör även utvisa</p>
+      <ul>
+        <li>om intygsgivaren har besökt fastigheten i samband med granskningen av den ekonomiska planen eller kostnadskalkylen.</li>
+        <li>om intyget avser en bedömning av en slutlig kostnad eller en beräknad kostnad och</li>
+        <li>att lägenheterna kan upplåtas med hänsyn till ortens bostadsmarknad.</li>
+      </ul>
+      <p class="text">Om intygsgivaren bedömer att någon uppgift i planen saknar saklig grund bör intygsgivaren inte intyga planens hållbarhet.</p>
+      <p class="text">Det bör noteras i intyget om intygsgivaren omfattas av en ansvarsförsäkring.</p>
+    </div>
+
+    <h4 id="BFS2017-7_behorighet-som-intygsgivare">5.3 Behörighet som intygsgivare</h4>
+    <p class="text">10 § första stycket bostadsrättsförordningen samt 8 § första stycket förordningen om kooperativ hyresrätt</p>
+    <div class="allmanna-rad">
+      <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+      <p class="text">Sökanden bör visa att han eller hon har nödvändig utbildning i fastighetsrätt samt i företags- eller fastighetsekonomi omfattande</p>
+      <ul>
+        <li>grundläggande kunskaper om köp, hyra och arrende av fastigheter, överlåtelser och upplåtelser av fastigheter, fastighetsbildning och fastighetsindelning, samfälligheter, servitut, plan- och byggbestämmelser och om verkan av skyddsbestämmelser för natur- och riksintresseområden enligt miljöbalken,</li>
+        <li>allmänna ekonomiska samband omfattande jämvikt och prisbildning på marknader, kapital- och kreditmarknaden samt räntebildning och inflation, ekonomisk kalkylering inklusive investeringsbedömning och livscykelbedömningar, och</li>
+        <li>bokföring samt redovisning inklusive räkenskaps- och kassaflödesanalys.</li>
+      </ul>
+      <p class="text">Sökande bör även visa att han eller hon har nödvändiga kunskaper om byggverksamhet omfattande entreprenadjuridik och byggteknik och kunskaper om förvaltning av fastigheter omfattande ekonomisk och teknisk förvaltning. Kunskaperna bör bygga på aktuell erfarenhet inom de olika verksamhetsområdena.</p>
+    </div>
+  </div>
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <p class="text">Dessa allmänna råd gäller från och med den 1 oktober 2017, då Boverkets allmänna råd 1995:6 ändrad genom 2007:2, om ekonomiska planer för bostadsrättsföreningar, ska upphöra att gälla.</p>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">ANDERS SJELVGREN</p>
+    <p class="text">Tiia Torekull</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

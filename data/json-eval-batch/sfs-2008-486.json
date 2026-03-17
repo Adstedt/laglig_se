@@ -1,0 +1,1321 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Marknadsföringslag (2008:486)",
+  "documentNumber": "2008:486",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "sections": [
+        {
+          "number": "1",
+          "heading": "Inledande bestämmelse",
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Denna lag har till syfte att främja konsumenternas och näringslivets intressen i samband med marknadsföring av produkter och att motverka marknadsföring som är otillbörlig mot konsumenter och näringsidkare.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Lagens tillämpningsområde",
+          "lastAmendment": "2020:874",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Lagen tillämpas",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "1. när näringsidkare marknadsför eller själva efterfrågar produkter i sin näringsverksamhet, 2. på tv-sändningar, beställ-tv och videodelningsplattformar som omfattas av radio- och tv- 3. när Konsumentombudsmannen fullgör sina skyldigheter enligt Europaparlamentets och rådets förordning (EU) 2017/2394 av den 12 december 2017 om samarbete mellan de nationella myndigheter som har tillsynsansvar för konsumentskyddslagstiftningen och om upphävande av förordning (EG) nr 2006/2004, och 4. när behörig myndighet fullgör sina skyldigheter enligt Europaparlamentets och rådets direktiv 2006/123/EG av den 12 december 2006 om tjänster på den inre marknaden.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Bestämmelserna om garantier i 22 § tillämpas inte i fråga om en tjänst som tillhandahålls av en näringsidkare som är etablerad i en annan stat än Sverige inom Europeiska ekonomiska samarbetsområdet (EES). Detsamma gäller 4 § tredje stycket och 7 § när en näringsidkare, som är etablerad i en annan stat än Sverige inom EES, riktar marknadsföring mot en annan näringsidkare.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Definitioner",
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "I denna lag avses med affärsbeslut: ett beslut som fattas av en konsument eller en näringsidkare om huruvida, hur och under vilka förutsättningar en produkt ska köpas, om hela eller delar av köpesumman ska betalas, om produkten ska behållas eller överlåtas, eller om en avtalsenlig rättighet i samband med produkten ska utnyttjas, oavsett om konsumenten eller näringsidkaren beslutar att handla eller att avstå från att handla, digitalt innehåll: data som framställs och tillhandahålls i digital form, digital tjänst: en tjänst som gör det möjligt för konsumenten att skapa, bearbeta, lagra eller få tillgång till uppgifter i digital form, eller att utbyta uppgifter eller interagera på annat sätt med uppgifter i digital form som laddas upp eller skapas av konsumenten eller av andra användare av tjänsten, driftskompatibilitet: förmåga att fungera med annan hårdvara eller programvara än sådan som normalt används med samma typ av varor med digitala delar, digitalt innehåll eller digitala tjänster, elektronisk post: ett adresserat eller på något annat sätt individualiserat elektroniskt meddelande i form av text, röst, ljud eller bild som sänds via ett allmänt elektroniskt kommunikationsnät och som kan lagras i nätet eller i mottagarens terminalutrustning tills mottagaren hämtar det, god marknadsföringssed: god affärssed eller andra vedertagna normer som syftar till att skydda konsumenter och näringsidkare vid marknadsföring av produkter, kompatibilitet: förmåga att utan konvertering fungera med sådan hårdvara eller programvara som normalt används med samma typ av varor med digitala delar, digitalt innehåll eller digitala tjänster, konsument: en fysisk person som handlar huvudsakligen för ändamål som faller utanför näringsverksamhet, marknadsföring: reklam och andra åtgärder i näringsverksamhet som är ägnade att främja avsättningen av och tillgången till produkter inbegripet en näringsidkares handlande, underlåtenhet eller någon annan åtgärd eller beteende i övrigt före, under eller efter försäljning eller leverans av produkter till konsumenter eller näringsidkare, marknadsplats online: en tjänst som använder programvara, inbegripet en webbplats, en del av en webbplats eller en applikation, som administreras av en näringsidkare eller för dennes räkning och som gör det möjligt för konsumenten att ingå distansavtal med andra näringsidkare eller konsumenter, näringsidkare: en fysisk eller juridisk person som handlar för ändamål som har samband med den egna näringsverksamheten, produkter: alla typer av varor och tjänster, även digitala tjänster, digitalt innehåll, fast egendom och rättigheter och skyldigheter, rankning: den relativa position som en näringsidkare tilldelar produkter så som de presenteras, organiseras eller vidarebefordras, oberoende av vilka tekniska medel som används för sådan presentation, organisation eller vidarebefordran, vara: lös sak, med eller utan digitala delar, vara med digitala delar: lös sak som är integrerad eller sammankopplad med ett digitalt innehåll eller en digital tjänst på ett sådant sätt att avsaknaden av det digitala innehållet eller den digitala tjänsten gör att varan inte kan användas på det sätt som är avsett.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Direktivbilagan",
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Bilaga I till Europaparlamentets och rådets direktiv 2005/29/EG av den 11 maj 2005 om otillbörliga affärsmetoder som tillämpas av näringsidkare gentemot konsumenter på den inre marknaden och om ändring av rådets direktiv 84/450/EEG och Europaparlamentets och rådets direktiv 97/7/EG, 98/27/EG och 2002/65/EG samt Europaparlamentets och rådets förordning (EG) nr 2006/2004 ska gälla som lag i Sverige. Regeringen tillkännager den aktuella bilagan i Svensk författningssamling.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Vid en prövning enligt någon av bestämmelserna i bilaga I till direktivet ska denna lag tillämpas.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Bestämmelserna i punkterna 1-31 i bilaga I till direktivet ska tillämpas även om marknadsföringen riktas till näringsidkare.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "Bestämmelsen i punkt 14 i bilaga I till direktivet ska tillämpas på åtgärder som skett i strid med denna punkt om inte åtgärden omfattas av",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "God marknadsföringssed",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Marknadsföring ska stämma överens med god marknadsföringssed.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Marknadsföring som strider mot god marknadsföringssed enligt 5 § är att anse som otillbörlig om den i märkbar mån påverkar eller sannolikt påverkar mottagarens förmåga att fatta ett välgrundat affärsbeslut.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": "Aggressiv marknadsföring",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får inte använda sig av aggressiv marknadsföring.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Marknadsföringen är att anse som aggressiv om den innefattar trakasserier, tvång, fysiskt våld, hot eller annat aggressivt påtryckningsmedel.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Aggressiv marknadsföring är att anse som otillbörlig om den i märkbar mån påverkar eller sannolikt påverkar mottagarens förmåga att fatta ett välgrundat affärsbeslut.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "Sådan aggressiv marknadsföring som anges i punkterna 24-31 i bilaga I till direktiv 2005/29/EG är alltid att anse som otillbörlig.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "7a",
+          "heading": null,
+          "lastAmendment": "2016:22",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid bedömningen av om marknadsföringen är aggressiv ska dess art samt tidpunkten, varaktigheten och platsen för marknadsföringen särskilt beaktas. Det ska också särskilt beaktas om näringsidkaren",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "1. använder ett hotfullt eller kränkande språk eller beteende, 2. utnyttjar ett speciellt missöde eller omständigheter, som näringsidkaren känner till och som är av sådan vikt att de försämrar konsumentens omdöme, för att påverka konsumentens 3. använder betungande eller oproportionerliga hinder som inte följer av avtalet när en konsument vill utöva sina rättigheter enligt avtalet, inbegripet rätten att häva ett avtal eller att byta till en annan produkt eller en annan näringsidkare, eller 4. uppger sig komma att vidta åtgärder som inte lagligen kan genomföras.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": "Vilseledande marknadsföring",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Marknadsföring som är vilseledande enligt någon av bestämmelserna i 9, 10 eller 12-17 §§ är att anse som otillbörlig om den påverkar eller sannolikt påverkar mottagarens förmåga att fatta ett välgrundat affärsbeslut.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Sådan vilseledande marknadsföring som anges i punkterna 1-23 i bilaga I till direktiv 2005/29/EG är alltid att anse som otillbörlig.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": "Reklamidentifiering",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "All marknadsföring ska utformas och presenteras så att det tydligt framgår att det är fråga om marknadsföring.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Det ska också tydligt framgå vem som svarar för marknadsföringen. Detta gäller dock inte framställningar vars enda syfte är att skapa uppmärksamhet inför uppföljande framställningar.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": "Förbud mot vilseledande marknadsföring",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får vid marknadsföringen inte använda sig av felaktiga påståenden eller andra framställningar som är vilseledande i fråga om näringsidkarens egen eller någon annans näringsverksamhet.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket gäller särskilt framställningar som rör 1. produktens förekomst, art, mängd, kvalitet och andra utmärkande egenskaper, 2. produktens ursprung, användning och risker såsom inverkan på hälsa och miljö, 3. kundservice, reklamationshantering samt metod och datum för tillverkning eller tillhandahållande, 4. produktens pris, grunderna för prisberäkningen, särskilda prisfördelar och betalningsvillkoren, 5. näringsidkarens egna eller andra näringsidkares kvalifikationer, ställning på marknaden, åtaganden, varumärken, varunamn, kännetecken och andra rättigheter, 6. belöningar och utmärkelser som har tilldelats näringsidkaren, 7. leveransvillkor för produkten, 8. behovet av service, reservdelar, byte eller reparation, 9. näringsidkarens åtagande att följa uppförandekoder, och 10. konsumentens rättigheter enligt lag eller annan författning.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "En näringsidkare får inte heller utelämna väsentlig information i marknadsföringen av sin egen eller någon annans näringsverksamhet. Med vilseledande utelämnande avses även sådana fall när den väsentliga informationen ges på ett oklart, obegripligt, tvetydigt eller annat olämpligt sätt.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": "Begränsningar i kommunikationsmediet m.m.",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid bedömningen av om en framställning är vilseledande enligt 10 § tredje stycket, får beaktas det använda kommunikationsmediets begränsningar i tid och utrymme samt de åtgärder som näringsidkaren har vidtagit för att på något annat sätt lämna informationen.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": "Köperbjudanden",
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Marknadsföringen är vilseledande om näringsidkaren i en framställning erbjuder konsumenter en bestämd produkt med en prisangivelse utan att följande väsentliga information framgår: 1. produktens utmärkande egenskaper i den omfattning som är lämplig för mediet och produkten, 2. pris och jämförpris angivet på det sätt som framgår av 7- 3. näringsidkarens identitet och geografiska adress, 4. villkor för betalning, leverans och fullgörande om de avviker från vad som är normalt för branschen eller produkten i fråga, 5. information om ångerrätt eller rätt att häva ett köp som ska lämnas till konsumenten enligt lag.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Marknadsföringen är också vilseledande om näringsidkaren i en framställning erbjuder konsumenter flera bestämda produkter med en uppgift om ett gemensamt pris, utan att erbjudandet innehåller väsentlig information enligt punkterna 1-5 i första stycket.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "12a",
+          "heading": null,
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om en konsument i en framställning på en marknadsplats online erbjuds en bestämd produkt med en prisangivelse eller flera bestämda produkter med en uppgift om ett gemensamt pris, ska den näringsidkare som tillhandahåller marknadsplatsen informera konsumenten om huruvida den som erbjuder produkten är näringsidkare eller inte, baserat på den uppgift om det som denne lämnat. Informationen ska anses vara väsentlig enligt 10 § tredje stycket.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "12b",
+          "heading": "Rankning av produkter",
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare som ger konsumenter möjlighet att söka digitalt efter produkter ska informera om de kriterier som främst bestämmer rankningen av produkter som presenteras och deras betydelse jämfört med andra kriterier. Informationen ska ges i ett särskilt avsnitt i onlinegränssnittet och vara direkt och lätt tillgängligt från den plats där sökresultaten presenteras.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Informationen ska anses vara väsentlig enligt 10 § tredje stycket.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Information om hur rankningen går till behöver inte lämnas av leverantörer av sökmotorer enligt artikel 2.6 i Europaparlamentets och rådets förordning (EU) 2019/1150 av den 20 juni 2019 om främjande av rättvisa villkor och transparens för företagsanvändare av onlinebaserade förmedlingstjänster.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "12c",
+          "heading": "Konsumentrecensioner",
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare som ger tillgång till konsumentrecensioner av produkter ska informera om huruvida näringsidkaren säkerställer att recensionerna kommer från konsumenter som har använt eller köpt produkterna och i så fall på vilket sätt det görs. Informationen ska anses vara väsentlig enligt 10 § tredje stycket.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": "Vilseledande förpackningsstorlekar",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får vid marknadsföringen inte använda förpackningar som genom sin storlek eller yttre utformning i övrigt är vilseledande i fråga om produktens mängd, storlek eller form.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": "Vilseledande efterbildningar",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får vid marknadsföringen inte använda efterbildningar som är vilseledande genom att de lätt kan förväxlas med någon annan näringsidkares kända och särpräglade produkter. Detta gäller dock inte efterbildningar vilkas utformning huvudsakligen tjänar till att göra produkten funktionell.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "14a",
+          "heading": "Marknadsföring av varor som identiska",
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får vid marknadsföring av en vara inte framställa den som identisk med en vara som marknadsförs i andra medlemsstater i Europeiska unionen, om varornas sammansättning eller egenskaper väsentligt skiljer sig åt och det inte är motiverat av legitima och objektiva skäl.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": "Konkursutförsäljningar",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får vid marknadsföringen använda uttrycket \"konkurs\", ensamt eller i förening med något annat uttryck, bara om produkterna bjuds ut av konkursboet eller för dess räkning.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": "Utförsäljningar",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får vid marknadsföring av produkter använda uttrycken \"slutförsäljning\", \"utförsäljning\" eller något annat uttryck med motsvarande innebörd bara om 1. det är fråga om en slutförsäljning av näringsidkarens hela varulager eller en klart avgränsad del av det, 2. försäljningen sker under en begränsad tid, och 3. priserna är väsentligt lägre än näringsidkarens normala priser för motsvarande produkter.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": "Realisationer",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får vid marknadsföring av produkter använda uttrycket \"realisation\" eller något annat uttryck med motsvarande innebörd bara om 1. försäljningen avser produkter som ingår i näringsidkarens ordinarie sortiment, 2. försäljningen sker under en begränsad tid, och 3. priserna är väsentligt lägre än näringsidkarens normala priser för motsvarande produkter.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": "Jämförande reklam",
+          "lastAmendment": "2018:1684",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får i sin reklam direkt eller indirekt peka ut en annan näringsidkare eller dennes produkter bara om jämförelsen 1. inte är vilseledande, 2. avser produkter som svarar mot samma behov eller är avsedda för samma ändamål, 3. på ett objektivt sätt avser väsentliga, relevanta, kontrollerbara och utmärkande egenskaper hos produkterna, 4. inte medför förväxling mellan näringsidkaren och en annan näringsidkare eller mellan deras produkter, varumärken, företagsnamn eller andra kännetecken, 5. inte misskrediterar eller är nedsättande för en annan näringsidkares verksamhet, förhållanden, produkter, varumärken, företagsnamn eller andra kännetecken, 6. i fråga om varor med ursprungsbeteckning alltid avser varor med samma beteckning, 7. inte drar otillbörlig fördel av en annan näringsidkares renommé som är förknippat med näringsidkarens varumärke, företagsnamn eller andra kännetecken eller varans ursprungsbeteckning, och 8. inte framställer en produkt som en imitation eller kopia av en produkt som har ett skyddat varumärke eller företagsnamn.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "19",
+          "heading": "Obeställd reklam",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får vid marknadsföring till en fysisk person använda elektronisk post, telefax eller sådana uppringningsautomater eller andra liknande automatiska system för individuell kommunikation som inte betjänas av någon enskild, bara om den fysiska personen har samtyckt till det på förhand.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Har näringsidkaren fått den fysiska personens uppgifter om elektronisk adress för elektronisk post i samband med försäljning av en produkt till personen, gäller inte kravet på samtycke enligt första stycket om, 1. den fysiska personen inte motsatt sig att uppgiften om elektronisk adress används i marknadsföringssyfte med användande av elektronisk post, 2. marknadsföringen avser näringsidkarens egna, likartade produkter och 3. den fysiska personen klart och tydligt ges möjlighet att kostnadsfritt och enkelt motsätta sig att uppgiften används i marknadsföringssyfte när den samlas in och vid varje följande marknadsföringsmeddelande.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "20",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid marknadsföring med elektronisk post ska meddelandet alltid innehålla en giltig adress till vilken mottagaren kan sända en begäran om att marknadsföringen ska upphöra. Detta gäller även vid marknadsföring till en juridisk person.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "20a",
+          "heading": null,
+          "lastAmendment": "2011:591",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid marknadsföring av informationssamhällets tjänster med elektronisk post får mottagaren inte uppmanas att besöka webbplatser vars marknadsföring strider mot 9 § eller 10 § tredje stycket.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "21",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får använda andra metoder för individuell kommunikation på distans än sådana som avses i 19 §, om inte den fysiska personen tydligt motsatt sig att metoden används.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "22",
+          "heading": "Information om garantier",
+          "lastAmendment": "2022:264",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare, som vid marknadsföringen erbjuder sig att genom en garanti eller liknande utfästelse under en viss tid svara för en produkt eller del därav eller för en egenskap hos produkten, ska lämna köparen klar och begriplig information om näringsidkarens namn och adress, produktens beteckning, utfästelsens villkor och hur köparen kan göra utfästelsen gällande. Information ska även lämnas om att köparens rättigheter enligt lag inte påverkas av utfästelsen.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Utfästelsen och informationen ska lämnas vid försäljningen och senast vid avlämnandet av produkten. Dessa ska lämnas i en handling eller i någon annan läsbar och varaktig form som är tillgänglig för köparen.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "22a",
+          "heading": "Information innan ett konsumentavtal ingås",
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid andra avtal än distansavtal och avtal utanför affärslokaler enligt om distansavtal och avtal utanför affärslokaler ska näringsidkaren innan avtalet ingås ge konsumenten klar och begriplig information om 1. sitt namn och telefonnummer samt sin gatuadress och e- postadress, 2. produktens huvudsakliga egenskaper i den omfattning som är lämplig med hänsyn till produkten och till hur informationen ges, 3. produktens pris, inbegripet skatter och avgifter, eller, om priset inte kan anges i förväg, hur priset beräknas, 4. kostnader för leverans eller porto och andra tillkommande kostnader, 5. villkorden för betalning samt för leverans eller fullgörande på något annat sätt och tidpunkt för leverans eller fullgörande, 6. den rätt som konsumenten har att reklamera enligt lag och hur reklamation kan göras, 7. åtaganden från näringsidkaren eller tillverkaren om att, utöver vad som följer av lag, betala tillbaka det som betalats för produkten, byta ut eller reparera den eller utföra någon form av service på den, ifall produkten inte överensstämmer med uppgifter som lämnats i utfästelser eller marknadsföring eller om det finns andra avvikelser från uppgifter som lämnats på ett sådant sätt, 8. den assistans och service som gäller efter försäljningen, 9. avtalets löptid, 10. villkoren för att säga upp avtalet, om det gäller tills vidare eller förnyas automatiskt, 11. funktionen hos en vara med digitala delar, digitalt innehåll eller en digital tjänst, inbegripet tekniska skyddsåtgärder, och 12. kompatibilitet och driftskompatibilitet mellan varor med digitala delar, digitalt innehåll och digitala tjänster, i den utsträckning näringsidkaren känner till eller borde känna till det.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Informationsskyldigheten enligt första stycket gäller inte, om informationen framgår av sammanhanget. Informationsskyldigheten gäller inte heller i fråga om 1. avtal som inte innebär en betalningsförpliktelse för konsumenten eller, i fråga om avtal om digitalt innehåll som levereras på något annat sätt än på ett fysiskt medium eller digitala tjänster, att konsumenten ska tillhandahålla personuppgifter på det sätt som anges i 2 kap. 1 § andra stycket lagen om distansavtal och avtal utanför affärslokaler, 2. vardagliga avtal som fullgörs omedelbart, 3. andra avtal om fast egendom än sådana som avser uthyrning av fast egendom, eller 4. avtal som anges i 2 kap. 1 a § första stycket 1, 2 och 6-8 samt andra stycket och i 3 kap. lagen om distansavtal och avtal utanför affärslokaler.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "23",
+          "heading": "Förbud mot viss marknadsföring",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare vars marknadsföring är otillbörlig får förbjudas att fortsätta med denna eller med någon annan liknande åtgärd.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Ett förbud enligt första stycket får meddelas också 1. en anställd hos näringsidkaren, 2. någon annan som handlar på näringsidkarens vägnar, och 3. var och en som i övrigt väsentligt har bidragit till marknadsföringen.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "24",
+          "heading": "Åläggande att lämna information",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare som vid sin marknadsföring låter bli att lämna väsentlig information får åläggas att lämna sådan information.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Ett sådant åläggande får meddelas också 1. en anställd hos näringsidkaren, och 2. någon annan som handlar på näringsidkarens vägnar.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Ett åläggande enligt första stycket får innehålla en skyldighet att lämna informationen 1. i annonser eller andra framställningar som näringsidkaren använder vid marknadsföringen, 2. genom märkning på varan eller i någon annan form på säljstället, eller 3. i viss form till konsumenter som begär det.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "25",
+          "heading": "Åläggande att tillhandahålla tekniska hjälpmedel",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En tjänsteleverantör enligt om elektronisk handel och andra informationssamhällets tjänster som i strid med 10 § i den lagen låter bli att tillhandahålla sådana tekniska hjälpmedel som avses där får åläggas att tillhandahålla hjälpmedlen.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "26",
+          "heading": "Vite",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Ett förbud enligt 23 § och ett åläggande enligt 24 eller 25 § ska förenas med vite, om det inte av särskilda skäl är obehövligt.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "27",
+          "heading": "Interimistiska beslut",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Rätten får meddela förbud enligt 23 § eller åläggande enligt 24 eller 25 § att gälla tills vidare om 1. käranden visar sannolika skäl för sin talan, och 2. det skäligen kan befaras att svaranden genom att vidta eller låta bli att vidta en viss handling minskar betydelsen av ett förbud eller åläggande.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "I fråga om beslut enligt första stycket tillämpas 15 kap. 5 § andra-fjärde styckena samt 6 och 8 §§ rättegångsbalken.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Beslutet får verkställas genast.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "28",
+          "heading": "Förelägganden",
+          "lastAmendment": "2016:793",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "I fall som inte är av större vikt får Konsumentombudsmannen meddela föreläggande om 1. förbud som avses i 23 § (förbudsföreläggande), 2. åläggande som avses i 24 § (informationsföreläggande), eller 3. åläggande som avses i 25 §.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Ett föreläggande ska förenas med vite, om det inte av särskilda skäl är obehövligt.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Konsumentombudsmannen får bestämma att ett föreläggande ska gälla omedelbart.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "29",
+          "heading": "Förutsättningar för avgift",
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En näringsidkare får åläggas att betala en särskild avgift (marknadsstörningsavgift) om näringsidkaren, eller någon som handlar på näringsidkarens vägnar, uppsåtligen eller av oaktsamhet har brutit mot någon bestämmelse i denna lag eller i bilaga I till direktiv 2005/29/EG.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Vid överträdelser av 5 § får marknadsstörningsavgift åläggas endast om överträdelsen omfattas av ett beslut om förbud eller åläggande enligt denna lag som har fått laga kraft.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Det som anges i första och andra styckena gäller också en näringsidkare som uppsåtligen eller av oaktsamhet väsentligt har bidragit till överträdelsen.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "Avgiften tillfaller staten.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "29a",
+          "heading": null,
+          "lastAmendment": "2016:793",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid prövningen av om marknadsstörningsavgift ska åläggas ska det beaktas hur allvarlig överträdelsen är. Särskild hänsyn ska tas till överträdelsens art, varaktighet, omfattning och spridning.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "30",
+          "heading": null,
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Talan om att påföra en marknadsstörningsavgift för en överträdelse får inte tas upp till prövning, om överträdelsen omfattas av ett förbud eller ett åläggande som har förenats med vite enligt denna lag och talan om utdömande av vitet har väckts.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "31",
+          "heading": "Avgiftens storlek",
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Marknadsstörningsavgiften ska fastställas till lägst tio tusen kronor och högst fyra procent av näringsidkarens omsättning räkenskapsåret innan överträdelsen upphörde eller när näringsidkaren delgavs stämningsansökan, om den inte har upphört dessförinnan.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Om överträdelsen har inträffat under näringsidkarens första verksamhetsår eller om uppgifter om årsomsättningen annars saknas eller är bristfälliga, får årsomsättningen uppskattas. Avgiften får i ett sådant fall fastställas till ett belopp i kronor motsvarande högst två miljoner euro.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Riktas talan mot flera näringsidkare ska avgiften fastställas särskilt för var och en av dem.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "32",
+          "heading": null,
+          "lastAmendment": "2022:656",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "När marknadsstörningsavgiften fastställs ska domstolen ta hänsyn till 1. överträdelsens allvar med beaktande särskilt av dess art, varaktighet och omfattning, 2. åtgärder som näringsidkaren har vidtagit för att lindra eller avhjälpa den skada som en konsument eller en annan näringsidkare har lidit, 3. tidigare överträdelser som näringsidkaren har gjort sig skyldig till, 4. i den utsträckning det framgår, den vinst som näringsidkaren har gjort eller förlust som undvikits genom överträdelsen, 5. i gränsöverskridande fall, sanktioner som har påförts näringsidkaren för samma överträdelse i andra medlemsstater i Europeiska unionen, ifall information om sådana sanktioner finns tillgänglig via den mekanism som inrättats genom Europaparlamentets och rådets förordning (EU) 2017/2394 av den 12 december 2017 om samarbete mellan de nationella myndigheter som har tillsynsansvar för konsumentskyddslagstiftningen och om upphävande av förordning (EG) nr 2006/2004, och 6. försvårande eller förmildrande omständigheter utöver dem i 1-5.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Näringsidkaren får befrias från att betala avgiften om det finns synnerliga skäl för det.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "33",
+          "heading": "Betalning av avgiften",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Marknadsstörningsavgift ska betalas till Kammarkollegiet inom trettio dagar efter det att domen har vunnit laga kraft eller den längre tid som anges i domen.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Om avgiften inte betalas inom den tid som anges i första stycket ska Kammarkollegiet lämna den obetalda avgiften för indrivning. Bestämmelser om indrivning finns i om indrivning av statliga fordringar m.m.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "34",
+          "heading": "Preskription",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En marknadsstörningsavgift får dömas ut bara om stämningsansökan har delgetts den som anspråket riktar sig mot inom fem år från det att överträdelsen upphörde.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "35",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En marknadsstörningsavgift faller bort om domen inte har kunnat verkställas inom fem år från det att den vann laga kraft.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "36",
+          "heading": "Kvarstad",
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "För att säkerställa ett anspråk på marknadsstörningsavgift får domstolen besluta om kvarstad. I ett sådant fall tillämpas bestämmelserna i 15 kap. rättegångsbalken.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "37",
+          "heading": "Skadestånd",
+          "lastAmendment": "2014:16",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Den som uppsåtligen eller av oaktsamhet bryter mot ett förbud eller ett åläggande som har meddelats med stöd av 23, 24 eller 25 §, eller mot 7 §, eller mot 8 § och någon av bestämmelserna i 9, 10, 12-17 §§, eller mot någon av bestämmelserna i 18-22 a §§, eller mot någon av punkterna i bilaga I till direktiv 2005/29/EG, ska ersätta den skada som därigenom uppkommer för en konsument eller någon annan näringsidkare.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "När ersättningen till näringsidkare bestäms får hänsyn tas även till omständigheter av annan än ekonomisk art.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "38",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Rätten till skadestånd faller bort om talan inte väcks inom fem år från det att skadan uppkom.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "39",
+          "heading": "Utplånande m.m. av vilseledande framställningar",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid överträdelse av ett vitesförbud enligt 23 §, eller av 8 § och någon av bestämmelserna i 9, 10, 12-17 §§, eller av 18 §, eller av någon av punkterna 1-23 i bilaga I till direktiv 2005/29/EG, får rätten efter vad som är skäligt besluta att en vilseledande framställning som finns på en vara, förpackning, trycksak, affärshandling eller liknande ska utplånas eller ändras så att den inte längre är vilseledande. Om detta syfte inte kan uppnås på något annat sätt får rätten besluta att egendomen ska förstöras.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "40",
+          "heading": "Säkerhetsåtgärder",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om käranden visar sannolika skäl för bifall till ett yrkande enligt 39 § och det skäligen kan befaras att svaranden genom att vidta eller att låta bli att vidta en viss handling minskar betydelsen av ett beslut om utplånande, får rätten besluta om lämplig åtgärd att gälla tills vidare. I fråga om en sådan åtgärd gäller 15 kap. 3 § andra stycket, 5 § andra-fjärde styckena samt 6 och 8 §§ rättegångsbalken. Beslutet får verkställas genast.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Framställs ett yrkande enligt 39 § i ett mål om utdömande av vite som har förelagts med stöd av denna lag gäller i stället för bestämmelserna i första stycket att egendomen får tas i beslag. I sådant fall tillämpas föreskrifterna i 27 kap. rättegångsbalken om beslag i brottmål. Beslutet får verkställas genast.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "41",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Beslut att utplåna vilseledande framställningar enligt 39 § och beslut om säkerhetsåtgärd enligt 40 § meddelas på yrkande av part av den domstol där en rättegång om förbud enligt 23 §, marknadsstörningsavgift enligt 29 § eller skadestånd enligt 37 § pågår.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Beslut att utplåna framställningar på grund av överträdelse av ett vitesförbud enligt 23 och 26 §§ får meddelas på yrkande av part av den domstol där en rättegång om utdömande av vitet pågår.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "41a",
+          "heading": "Varningsmeddelande",
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om en näringsidkares marknadsföring på internet är otillbörlig och inga andra effektiva medel är tillgängliga, får Konsumentombudsmannen förelägga näringsidkaren, en värdtjänstleverantör eller en internetleverantör att upprätta ett varningsmeddelande som tydligt visas i samband med besök på webbplatsen.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Ett föreläggande som avses i första stycket får bara meddelas om 1. överträdelsens allvar motiverar det, och 2. webbplatsen inte omfattas av tryckfrihetsförordningens eller yttrandefrihetsgrundlagens skydd.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Varningsmeddelandet ska ange i vilket avseende marknadsföringen är otillbörlig och i övrigt vara utformat på ändamålsenligt sätt.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 4,
+              "text": "Ett föreläggande ska förenas med vite, om det inte av särskilda skäl är obehövligt.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "41b",
+          "heading": null,
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "När ändrade förhållanden föranleder det, ska Konsumentombudsmannen besluta att en skyldighet att upprätta ett varningsmeddelande inte längre ska gälla.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "42",
+          "heading": "Tillsynsbefogenheter",
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Konsumentombudsmannen får förelägga 1. var och en att yttra sig, lämna upplysningar och tillhandahålla de handlingar som behövs i ett ärende om tillämpningen av denna lag, 2. en näringsidkare att tillhandahålla de varuprover och liknande som kan ha betydelse för utredningen i ett ärende där beslut om förbud eller åläggande enligt 23, 24 eller 25 § kan antas komma i fråga.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "43",
+          "heading": null,
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Konsumentombudsmannen får förelägga den som har meddelats ett förbud eller åläggande enligt 23, 24 eller 25 § att tillhandahålla de upplysningar, handlingar, varuprover och liknande som behövs för tillsynen över att förbudet eller åläggandet följs.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "44",
+          "heading": null,
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om det behövs för tillsynen i ett ärende som avses i 42 eller 43 §, får Konsumentombudsmannen förelägga näringsidkaren att hålla de lokaler eller motsvarande utrymmen där näringsverksamheten utövas tillgängliga för inspektion.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "I samband med inspektionen får Konsumentombudsmannen ta del av de handlingar som behövs för tillsynen och begära nödvändiga upplysningar på platsen.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "44a",
+          "heading": null,
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om det är nödvändigt för tillsynen enligt denna lag, får Konsumentombudsmannen köpa produkter under dold identitet (testköp).",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Näringsidkaren ska underrättas om testköpet så snart det kan ske utan att åtgärden förlorar sin betydelse.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "Om det inte är oskäligt, får Konsumentombudsmannen besluta att näringsidkaren ska ersätta ombudsmannen för vad som har betalats för produkten vid testköpet. Konsumentombudsmannen ska i så fall erbjuda näringsidkaren att ta tillbaka produkten.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "45",
+          "heading": null,
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Ett föreläggande enligt 42, 43 eller 44 § får förenas med vite.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "45a",
+          "heading": null,
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Konsumentombudsmannen får bestämma att ett beslut om föreläggande enligt 41 a, 42, 43 eller 44 § ska gälla omedelbart.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "46",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Konsumentombudsmannen får lämna ersättning för sådana varuprover och liknande som avses i 42 och 43 §§ om det finns särskilda skäl för det.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om skyldighet för en näringsidkare att ersätta Konsumentombudsmannens kostnader för provtagning och undersökning av prov i fall som avses i 43 §.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "46a",
+          "heading": "Behörig domstol",
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Patent- och marknadsdomstolen är rätt domstol i mål om 1. förbud som avses i 23 §, 2. åläggande som avses i 24 eller 25 §, 3. marknadsstörningsavgift enligt 29 §, 4. kvarstad enligt 36 §, 5. skadestånd enligt 37 §, 6. utdömande av vite enligt 49 §, 7. kvarstad enligt 50 §, och 8. oriktig eller vilseledande ursprungsbeteckning enligt 66 §.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "47",
+          "heading": "Förbud och ålägganden",
+          "lastAmendment": "2016:223",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En talan om förbud eller åläggande enligt 23, 24 eller 25 § får väckas av 1. Konsumentombudsmannen, 2. en näringsidkare som berörs av marknadsföringen, eller 3. en sammanslutning av konsumenter, näringsidkare eller löntagare.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "48",
+          "heading": "Marknadsstörningsavgift",
+          "lastAmendment": "2016:223",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En talan om marknadsstörningsavgift enligt 29 § väcks av Konsumentombudsmannen.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Om Konsumentombudsmannen i ett visst fall beslutar att inte föra talan om marknadsstörningsavgift, får en enskild näringsidkare som berörs av marknadsföringen eller en sammanslutning av näringsidkare väcka en sådan talan.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "49",
+          "heading": "Utdömande av vite",
+          "lastAmendment": "2016:223",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En talan om utdömande av vite får väckas av den som har begärt vitesföreläggandet och av Konsumentombudsmannen.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "50",
+          "heading": "Kvarstad vid utdömande av vite",
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "För att säkerställa ett anspråk på vite som beslutats med stöd av 26, 28 eller 45 § får domstolen besluta om kvarstad i mål om utdömande av vitet. I ett sådant fall tillämpas bestämmelserna i 15 kap. rättegångsbalken.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "51",
+          "heading": "Överklagande av vissa beslut",
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Konsumentombudsmannens beslut enligt 28, 41 a och 41 b §§ får överklagas till Patent- och marknadsdomstolen.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "Konsumentombudsmannens beslut om föreläggande enligt 42, 43 och 44 §§ får överklagas till Patent- och marknadsdomstolen. Detsamma gäller beslut om ersättning enligt 44 a § tredje stycket och beslut om ersättning enligt 46 § eller enligt föreskrifter som meddelats med stöd av 46 §.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "52",
+          "heading": null,
+          "lastAmendment": "2016:223",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Beslut under rättegången i frågor som avses i 27 § och 40 § första stycket får överklagas särskilt. Besluten ska vid handläggningen i Patent- och marknadsöverdomstolen anses röra en åtgärd enligt 15 kap. rättegångsbalken.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "53",
+          "heading": "Rättskraft",
+          "lastAmendment": "2016:793",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En dom eller ett beslut om föreläggande där frågan om förbud enligt 23 § eller åläggande enligt 24 eller 25 § har prövats, hindrar att sådana frågor prövas på nytt med anledning av marknadsföringen. En dom eller ett beslut hindrar dock inte att samma fråga prövas på nytt när ändrade förhållanden föranleder det.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "54",
+          "heading": null,
+          "lastAmendment": null,
+          "status": "repealed",
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom lag (2016:223)",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "55",
+          "heading": null,
+          "lastAmendment": null,
+          "status": "repealed",
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom lag (2016:223)",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "56",
+          "heading": null,
+          "lastAmendment": null,
+          "status": "repealed",
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom lag (2016:223)",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "57",
+          "heading": null,
+          "lastAmendment": null,
+          "status": "repealed",
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom lag (2016:223)",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "58",
+          "heading": null,
+          "lastAmendment": null,
+          "status": "repealed",
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom lag (2016:223)",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "59",
+          "heading": "Handläggningen i domstolen",
+          "lastAmendment": "2016:223",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i rättegångsbalken om tvistemål där förlikning om saken inte är tillåten tillämpas på mål om förbud eller åläggande enligt 23, 24 eller 25 § och mål om marknadsstörningsavgift enligt 29 §.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "I mål om skadestånd enligt 37 § tillämpas bestämmelserna i rättegångsbalken om tvistemål där förlikning om saken är tillåten.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "60",
+          "heading": null,
+          "lastAmendment": null,
+          "status": "repealed",
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom lag (2016:223)",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "61",
+          "heading": null,
+          "lastAmendment": "2016:223",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om en talan enligt denna lag har väckts av någon annan än Konsumentombudsmannen ska rätten underrätta ombudsmannen om rättegången.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "62",
+          "heading": null,
+          "lastAmendment": null,
+          "status": "repealed",
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom lag (2016:223)",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "63",
+          "heading": "Intervention",
+          "lastAmendment": "2020:338",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "I mål om förbud eller åläggande enligt 23, 24 eller 25 § har den som har talerätt enligt 47 § rätt att delta i rättegången som intervenient enligt 14 kap. rättegångsbalken.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "64",
+          "heading": "Rättegångskostnader",
+          "lastAmendment": "2016:793",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "I mål enligt denna lag gäller i fråga om rättegångskostnader 18 kap. rättegångsbalken. Bestämmelsen i 18 kap. 16 § rättegångsbalken ska dock inte tillämpas i mål om förbud enligt 23 § eller åläggande enligt 24 eller 25 §. I sådana mål får rätten bestämma att var och en av parterna ska svara för sina rättegångskostnader.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "I ärenden enligt 51 § första stycket tillämpas i fråga om rättegångskostnader 31 kap. rättegångsbalken.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "65",
+          "heading": "Utevaro",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "För Konsumentombudsmannen som part i mål och ärenden enligt denna lag gäller, i fråga om föreläggande för part och parts utevaro, vad som i rättegångsbalken är föreskrivet för åklagare.",
+              "role": "CONTENT"
+            }
+          ]
+        },
+        {
+          "number": "66",
+          "heading": "Övriga bestämmelser",
+          "lastAmendment": "2016:223",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen får med avseende på en främmande stat bestämma att följande ska gälla.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 2,
+              "text": "I fråga om en vara som är försedd med en oriktig eller vilseledande ursprungsbeteckning, genom vilken varan direkt eller indirekt anges vara frambragd eller tillverkad i den främmande staten eller i en region eller ort i den främmande staten, får åtgärd enligt 39 § beslutas även i andra fall än som avses där. Detta gäller dock inte om beteckningen enligt handelsbruk endast tjänar till att märka ut varans art eller om den åtföljs av en uppgift som tydligt anger att varan inte har frambragts eller tillverkats i den angivna staten eller på den angivna orten.",
+              "role": "CONTENT"
+            },
+            {
+              "number": 3,
+              "text": "En talan om en åtgärd enligt andra stycket väcks av Konsumentombudsmannen eller, om denne har beslutat att inte väcka talan, av någon som driver rörelse med varor av samma slag som den vara som talan avser.",
+              "role": "CONTENT"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "2008:486 - 1. Denna lag träder i kraft den 1 juli 2008, då ska upphöra att gälla samt om ändring i ska utgå. 2. Bestämmelserna i 4-22 och 29-36 §§ tillämpas också på marknadsföring som har vidtagits före ikraftträdandet, om inte åtgärden var tillåten enligt äldre föreskrifter. 3. Förbud och ålägganden samt förbuds- och informationsförelägganden som har meddelats enligt äldre föreskrifter ska fortfarande gälla. 4. Bestämmelserna om skadestånd i tillämpas fortfarande i fråga om överträdelser som skett före den nya lagens ikraftträdande. 5. Bestämmelserna i 49 § tillämpas också i fråga om utdömande av vite som förelagts med stöd av",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2016:223 - 1. Denna lag träder i kraft den 1 september 2016. 2. Mål och ärenden som har inletts i tingsrätt eller hovrätt före ikraftträdandet ska överlämnas till Patent- och marknadsdomstolen respektive Patent- och marknadsöverdomstolen. 3. Om huvudförhandling har inletts före ikraftträdandet ska handläggningen i tingsrätten eller hovrätten dock slutföras enligt äldre bestämmelser.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2016:793 - 1. Denna lag träder i kraft den 1 oktober 2016. 2. För marknadsföring som har vidtagits före ikraftträdandet gäller äldre föreskrifter.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2020:1035 - 1. Denna lag träder i kraft den 1 januari 2021. 2. Äldre bestämmelser gäller dock fortfarande för aktiebolag och ekonomiska föreningar som omfattas av punkt 2 och 3 i ikraftträdande- och övergångsbestämmelserna till lagen (2020:1026) om upphävande av om inlåningsverksamhet.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2022:656 - 1. Denna lag träder i kraft den 1 september 2022. 2. Äldre bestämmelser gäller för marknadsföring som har vidtagits före ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "2008:486",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

@@ -1,0 +1,959 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (2018:218) med kompletterande bestämmelser till EU:s dataskyddsförordning",
+  "documentNumber": "2018:218",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Inledande bestämmelser",
+      "sections": [
+        {
+          "number": "1",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Denna lag kompletterar Europaparlamentets och rådets förordning (EU) 2016/679 av den 27 april 2016 om skydd för fysiska personer med avseende på behandling av personuppgifter och om det fria flödet av sådana uppgifter och om upphävande av direktiv 95/46/EG (allmän dataskyddsförordning), här benämnd EU:s dataskyddsförordning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Termer och uttryck i denna lag har samma betydelse som i EU:s dataskyddsförordning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Utvidgad tillämpning av bestämmelserna i EU:s dataskyddsförordning",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i EU:s dataskyddsförordning, i den ursprungliga lydelsen, och denna lag ska gälla även vid behandling av personuppgifter som utgör ett led i en verksamhet som inte omfattas av unionsrätten och i verksamhet som omfattas av avdelning V kapitel 2 i fördraget om Europeiska unionen.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "lastAmendment": "2021:1174",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i 2 § gäller inte i verksamhet som omfattas av",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "1. om behandling av personuppgifter vid Försvarsmakten,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "2. om behandling av personuppgifter vid Försvarets radioanstalt, eller",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 4,
+              "text": "3. om Säkerhetspolisens behandling av personuppgifter.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "lastAmendment": "2022:444",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Artiklarna 33 och 34 i EU:s dataskyddsförordning tillämpas inte i fråga om personuppgiftsincidenter som ska rapporteras enligt",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": ", anmälas enligt",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "om säkerhetsskydd i riksdagen och dess myndigheter, eller rapporteras eller anmälas enligt föreskrifter som har meddelats i anslutning till de lagarna.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Lagens territoriella tillämpningsområde",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Denna lag gäller vid behandling av personuppgifter som utförs inom ramen för verksamhet som bedrivs vid personuppgiftsansvarigas eller personuppgiftsbiträdens verksamhetsställen i Sverige. Lagen gäller även vid behandling av personuppgifter som utförs av personuppgiftsansvariga som inte är etablerade i Sverige, men på en plats där svensk rätt gäller enligt folkrätten.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Lagen gäller också vid behandling av personuppgifter som utförs av personuppgiftsansvariga eller personuppgiftsbiträden som endast är etablerade i tredjeland, om behandlingen avser registrerade som befinner sig i Sverige och har anknytning till",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "1. utbjudande av varor eller tjänster till sådana registrerade, eller",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 4,
+              "text": "2. övervakning av deras beteende i Sverige.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 5,
+              "text": "Bestämmelsen i 2 kap. 4 § gäller vid behandling av personuppgifter som avser barn som bor i Sverige, oavsett var de personuppgiftsansvariga eller personuppgiftsbiträdena är etablerade.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Avvikande bestämmelser i annan författning",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om en annan lag eller en förordning innehåller någon bestämmelse som avviker från denna lag, tillämpas den bestämmelsen.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": "Förhållandet till tryck- och yttrandefriheten",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "EU:s dataskyddsförordning och denna lag ska inte tillämpas i den utsträckning det skulle strida mot tryckfrihetsförordningen eller yttrandefrihetsgrundlagen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Artiklarna 5-30 och 35-50 i EU:s dataskyddsförordning samt 2-5 kap. denna lag ska inte tillämpas vid behandling av personuppgifter som sker för journalistiska ändamål eller för akademiskt, konstnärligt eller litterärt skapande.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": "Tystnadsplikt för dataskyddsombud",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Den som fullgör uppgift som dataskyddsombud enligt artikel 37 i EU:s dataskyddsförordning får inte obehörigen röja det som han eller hon vid fullgörandet av sin uppgift har fått kännedom om.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "I det allmännas verksamhet tillämpas offentlighets- och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "i stället för första stycket.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Rättslig grund för behandling av personuppgifter",
+      "sections": [
+        {
+          "number": "1",
+          "heading": "Rättslig förpliktelse",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgifter får behandlas med stöd av artikel 6.1 c i EU:s data-skyddsförordning, om behandlingen är nödvändig för att den personuppgiftsansvarige ska kunna fullgöra en rättslig förpliktelse som följer av lag eller annan författning, av kollektivavtal eller av beslut som har meddelats med stöd av lag eller annan författning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Uppgift av allmänt intresse och myndighetsutövning",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgifter får behandlas med stöd av artikel 6.1 e i EU:s dataskyddsförordning, om behandlingen är nödvändig",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "1. för att utföra en uppgift av allmänt intresse som följer av lag eller annan författning, av kollektivavtal eller av beslut som har meddelats med stöd av lag eller annan författning, eller",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "2. som ett led i den personuppgiftsansvariges myndighetsutövning enligt lag eller annan författning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Enskilda arkiv",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att personuppgiftsansvariga som inte omfattas av föreskrifter om arkiv får behandla personuppgifter för arkivändamål av allmänt intresse.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Den myndighet som regeringen bestämmer får i enskilda fall besluta att sådana personuppgiftsansvariga får behandla personuppgifter för arkivändamål av allmänt intresse. Ett beslut får förenas med villkor.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Barns samtycke",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid erbjudande av informationssamhällets tjänster direkt till ett barn som bor i Sverige ska behandling av personuppgifter vara tillåten med stöd av barnets samtycke, om barnet är minst 13 år. Om barnet är under 13 år, ska sådan behandling vara tillåten endast om samtycke ges eller godkänns av den som har föräldraansvar för barnet.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Möjlighet för enskilda att lämna uppgifter till brottsbekämpande myndigheter",
+          "lastAmendment": "2025:187",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Enskilda får behandla personuppgifter för att lämna uppgifter som har begärts av Ekobrottsmyndigheten, Kustbevakningen, Polismyndigheten, Skatteverket, Säkerhetspolisen, Tullverket och Åklagarmyndigheten för att förebygga, förhindra eller upptäcka brottslig verksamhet eller för att utreda eller lagföra brott.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Behandling av vissa kategorier av personuppgifter",
+      "sections": [
+        {
+          "number": "1",
+          "heading": "Känsliga personuppgifter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Med känsliga personuppgifter avses i denna lag sådana uppgifter som avses i artikel 9.1 i EU:s dataskyddsförordning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Arbetsrätt, social trygghet och socialt skydd",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Känsliga personuppgifter får behandlas med stöd av artikel 9.2 b i EU:s dataskyddsförordning, om behandlingen är nödvändig för att den personuppgiftsansvarige eller den registrerade ska kunna fullgöra sina skyldigheter och utöva sina särskilda rättigheter inom arbetsrätten och inom områdena social trygghet och socialt skydd.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Personuppgifter som behandlas med stöd av första stycket får lämnas ut till tredje part endast om det inom arbetsrätten eller inom områdena social trygghet och socialt skydd finns en skyldighet för den personuppgiftsansvarige att göra det eller om den registrerade uttryckligen har samtyckt till utlämnandet.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Viktigt allmänt intresse",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Känsliga personuppgifter får behandlas av en myndighet med stöd av artikel 9.2 g i EU:s dataskyddsförordning",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "1. om uppgifterna har lämnats till myndigheten och behandlingen krävs enligt lag,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "2. om behandlingen är nödvändig för handläggningen av ett ärende, eller",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 4,
+              "text": "3. i annat fall, om behandlingen är nödvändig med hänsyn till ett viktigt allmänt intresse och inte innebär ett otillbörligt intrång i den registrerades personliga integritet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 5,
+              "text": "Vid behandling som sker enbart med stöd av första stycket är det förbjudet att utföra sökningar i syfte att få fram ett urval av personer grundat på känsliga personuppgifter.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 6,
+              "text": "Vid tillämpningen av första stycket 1 ska andra än myndigheter jämställas med myndigheter, i den utsträckning bestämmelserna om allmänna handlingar och sekretess i tryckfrihetsförordningen och offentlighets- och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 7,
+              "text": "gäller i deras verksamhet.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen får meddela ytterligare föreskrifter om sådan behandling av känsliga personuppgifter som är nödvändig med hänsyn till ett viktigt allmänt intresse.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Hälso- och sjukvård och social omsorg",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Känsliga personuppgifter får behandlas med stöd av artikel 9.2 h i EU:s dataskyddsförordning, om behandlingen är nödvändig för",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "1. förebyggande hälso- och sjukvård och yrkesmedicin,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "2. bedömningen av en arbetstagares arbetskapacitet,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 4,
+              "text": "3. medicinska diagnoser,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 5,
+              "text": "4. tillhandahållande av hälso- och sjukvård eller behandling,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 6,
+              "text": "5. social omsorg, eller",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 7,
+              "text": "6. förvaltning av hälso- och sjukvårdstjänster, social omsorg samt deras system.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 8,
+              "text": "Behandling enligt första stycket får ske under förutsättning att kravet på tystnadsplikt i artikel 9.3 i EU:s dataskyddsförordning är uppfyllt.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Arkiv",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Känsliga personuppgifter får behandlas för arkivändamål av allmänt intresse med stöd av artikel 9.2 j i EU:s dataskyddsförordning, om behandlingen är nödvändig för att den personuppgiftsansvarige ska kunna följa föreskrifter om arkiv.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om att personuppgiftsansvariga som inte omfattas av föreskrifter om arkiv får behandla känsliga personuppgifter för arkivändamål av allmänt intresse.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "Den myndighet som regeringen bestämmer får i enskilda fall besluta att sådana personuppgiftsansvariga får behandla känsliga personuppgifter för arkivändamål av allmänt intresse. Ett beslut får förenas med villkor.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": "Statistik",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Känsliga personuppgifter får behandlas med stöd av artikel 9.2 j i EU:s dataskyddsförordning, om behandlingen är nödvändig för statistiska ändamål och samhällsintresset av det statistikprojekt där behandlingen ingår klart väger över den risk för otillbörligt intrång i enskildas personliga integritet som behandlingen kan innebära.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": "Personuppgifter som rör lagöverträdelser",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som avses i artikel 10 i EU:s dataskyddsförordning får behandlas av myndigheter.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Även andra än myndigheter får behandla sådana personuppgifter, om behandlingen är nödvändig för att den personuppgiftsansvarige ska kunna följa föreskrifter om arkiv.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela ytterligare föreskrifter om i vilka fall andra än myndigheter får behandla sådana personuppgifter som avses i artikel 10 i EU:s dataskyddsförordning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Den myndighet som regeringen bestämmer får i enskilda fall besluta att andra än myndigheter får behandla sådana uppgifter. Ett beslut får förenas med villkor.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": "Personnummer och samordningsnummer",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personnummer och samordningsnummer får behandlas utan samtycke endast när det är klart motiverat med hänsyn till ändamålet med behandlingen, vikten av en säker identifiering eller något annat beaktansvärt skäl.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen får meddela ytterligare föreskrifter om i vilka fall behandling av personnummer och samordningsnummer är tillåten.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Användningsbegränsningar",
+      "sections": [
+        {
+          "number": "1",
+          "heading": "Arkiv",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som behandlas enbart för arkivändamål av allmänt intresse får användas för att vidta åtgärder i fråga om den registrerade endast om det finns synnerliga skäl med hänsyn till den registrerades vitala intressen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket hindrar inte myndigheter från att använda personuppgifter som finns i allmänna handlingar.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "Vid tillämpningen av andra stycket ska andra än myndigheter jämställas med myndigheter, i den utsträckning bestämmelserna om allmänna handlingar och sekretess i tryckfrihetsförordningen och offentlighets- och",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 4,
+              "text": "gäller i deras verksamhet.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Statistik",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som behandlas enbart för statistiska ändamål får användas för att vidta åtgärder i fråga om den registrerade endast om det finns synnerliga skäl med hänsyn till den registrerades vitala intressen.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Forskning",
+          "lastAmendment": "2018:2002",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som behandlas enbart för forskningsändamål får användas för att vidta åtgärder i fråga om den registrerade endast om det finns synnerliga skäl med hänsyn till den registrerades vitala intressen.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "5",
+      "title": "Begränsningar av vissa rättigheter och skyldigheter",
+      "sections": [
+        {
+          "number": "1",
+          "heading": "Information och tillgång till personuppgifter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Artiklarna 13-15 i EU:s dataskyddsförordning om information och rätt att få tillgång till personuppgifter gäller inte sådana uppgifter som den personuppgiftsansvarige inte får lämna ut till den registrerade enligt lag eller annan författning eller enligt beslut som har meddelats med stöd av författning.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Om den personuppgiftsansvarige inte är en myndighet, gäller undantaget i första stycket även för uppgifter som hos en myndighet skulle ha varit sekretessbelagda enligt offentlighets- och",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Artikel 15 i EU:s dataskyddsförordning gäller inte personuppgifter i löpande text som inte har fått sin slutliga utformning när begäran gjordes eller som utgör minnesanteckning eller liknande.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Undantaget i första stycket gäller inte om personuppgifterna",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "1. har lämnats ut till tredje part,",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 4,
+              "text": "2. behandlas enbart för arkivändamål av allmänt intresse eller statistiska ändamål, eller",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 5,
+              "text": "3. har behandlats under längre tid än ett år i löpande text som inte har fått sin slutliga utformning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Bemyndigande",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen får meddela ytterligare föreskrifter om begränsningar enligt artiklarna 23, 89.2 och 89.3 i EU:s dataskyddsförordning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "6",
+      "title": "Tillsynsmyndighetens handläggning och beslut",
+      "sections": [
+        {
+          "number": "1",
+          "heading": "Befogenheter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "De befogenheter som tillsynsmyndigheten har enligt artikel 58.1, 58.2 och 58.3 i EU:s dataskyddsförordning gäller vid tillsyn över att bestämmelserna i denna lag och andra föreskrifter som kompletterar EU:s dataskyddsförordning följs.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Första stycket innebär inte att tillsynsmyndigheten får ta ut sanktionsavgifter vid andra överträdelser än de som avses i artikel 83 i EU:s dataskyddsförordning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Sanktionsavgifter",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndigheten får ta ut en sanktionsavgift av en myndighet vid överträdelser som avses i artikel 83.4, 83.5 och 83.6 i EU:s dataskyddsförordning, i den ursprungliga lydelsen. Då ska artikel 83.1, 83.2 och 83.3 i förordningen tillämpas.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Sanktionsavgiften ska bestämmas till högst 5 000 000 kronor vid överträdelser som avses i artikel 83.4 i EU:s dataskyddsförordning och till högst 10 000 000 kronor vid överträdelser som avses i artikel 83.5 och 83.6 i förordningen.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndigheten får ta ut en sanktionsavgift vid överträdelser av artikel 10 i EU:s dataskyddsförordning, i den ursprungliga lydelsen. Då ska artikel 83.1, 83.2 och 83.3 i förordningen tillämpas. Avgiftens storlek ska bestämmas med tillämpning av artikel 83.5 i förordningen.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En sanktionsavgift får inte beslutas om den som avgiften ska tas ut av inte har fått tillfälle att yttra sig inom fem år från den dag då överträdelsen ägde rum.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Ett beslut om sanktionsavgift ska delges.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En sanktionsavgift tillfaller staten.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En sanktionsavgift ska betalas till den myndighet som regeringen bestämmer inom 30 dagar från det att beslutet om att ta ut avgiften har fått laga kraft eller inom den längre tid som anges i beslutet.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Om sanktionsavgiften inte betalas inom den tid som anges i första stycket, ska myndigheten lämna den obetalda avgiften för indrivning. Bestämmelser om indrivning finns i",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "om indrivning av statliga fordringar m.m. Vid indrivning får verkställighet ske enligt utsökningsbalken.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen får meddela ytterligare föreskrifter om sanktionsavgifter enligt EU:s dataskyddsförordning och denna lag.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": "Besked om handläggningen av ett klagomål",
+          "lastAmendment": "2025:256",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om tillsynsmyndigheten inte inom tre månader från den dag då ett klagomål kom in till myndigheten har tagit ställning till om tillsyn ska inledas med anledning av klagomålet, ska myndigheten efter skriftlig begäran av den registrerade lämna besked i frågan. Om tillsynsmyndigheten inte kan lämna besked i frågan ska den i ett särskilt beslut avslå begäran.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Tillsynsmyndigheten ska lämna ett besked eller meddela ett beslut inom två veckor från den dag då begäran kom in till myndigheten. Om så inte har skett ska begäran anses ha avslagits.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "Om tillsynsmyndigheten har avslagit en begäran får den registrerade lämna in en ny begäran tidigast tre månader därefter.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "7",
+      "title": "Skadestånd och överklagande",
+      "sections": [
+        {
+          "number": "1",
+          "heading": "Skadestånd",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Rätten till ersättning från den personuppgiftsansvarige eller personuppgiftsbiträdet enligt artikel 82 i EU:s dataskyddsförordning gäller vid överträdelser av bestämmelser i denna lag och andra föreskrifter som kompletterar EU:s dataskyddsförordning.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Överklagande av personuppgiftsansvariga myndigheters beslut",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Beslut enligt artiklarna 12.5 och 15-21 i EU:s dataskyddsförordning som har meddelats av en myndighet i egenskap av personuppgiftsansvarig får överklagas till allmän förvaltningsdomstol.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 3,
+              "text": "Första stycket gäller inte beslut av regeringen, Högsta domstolen, Högsta förvaltningsdomstolen eller Riksdagens ombudsmän.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Överklagande av tillsynsmyndighetens beslut",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndighetens beslut enligt EU:s dataskyddsförordning och enligt 6 kap. 2 och 3 §§ denna lag får överklagas till allmän förvaltningsdomstol. När ett beslut överklagas, är tillsynsmyndigheten motpart i domstolen.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "3a",
+          "heading": null,
+          "lastAmendment": "2025:256",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Tillsynsmyndighetens beslut att avslå en begäran enligt 6 kap. 8 § första stycket får överklagas till allmän förvaltningsdomstol. Detsamma gäller en begäran som anses ha avslagits enligt 6 kap. 8 § andra stycket.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Överklagande av vissa andra beslut",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Beslut enligt 2 kap. 3 § andra stycket, 3 kap. 6 § tredje stycket och 3 kap. 9 § andra stycket denna lag får överklagas till allmän förvaltningsdomstol.",
+              "role": "PARAGRAPH"
+            },
+            {
+              "number": 2,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Överklagandeförbud",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Andra beslut enligt EU:s dataskyddsförordning eller denna lag än de som avses i 2-4 §§ får inte överklagas.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Föreläggande när handläggningen av ett klagomål har försenats",
+          "lastAmendment": "2025:256",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om domstolen bifaller ett överklagande som avses i 3 a §, ska den förelägga tillsynsmyndigheten att snarast lämna den registrerade besked i frågan om huruvida tillsyn kommer att inledas.",
+              "role": "PARAGRAPH"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "2018:218 - 1. Denna lag träder i kraft den 25 maj 2018.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:218 - 2. Genom lagen upphävs",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:218 - 3. Har upphävts genom lag (2021:1174)",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:218 - 4. Har upphävts genom lag (2018:1248)",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:218 - 5. Den upphävda lagen gäller fortfarande i den utsträckning som det i en annan lag eller en förordning finns bestämmelser som innehåller hänvisningar till den lagen.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:218 - 6. Den upphävda lagen gäller fortfarande för överklagande av beslut som har meddelats med stöd av den lagen.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:218 - 7. Bestämmelsen i 49 § den upphävda lagen gäller fortfarande för överträdelser som har skett före ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:218 - 8. Beslut som har meddelats med stöd av 21 § fjärde stycket den upphävda lagen gäller fortfarande.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:1248 - Denna lag träder i kraft den 1 april 2019 i fråga om 1 kap. 4 § och i övrigt den 1 augusti 2018.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "2018:218",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

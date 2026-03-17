@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Förordning (1971:703) om redovisning av pengar som har \ndeponerats hos länsstyrelse enligt 8 kap. 12 a § eller 12 kap. \n21 jordabalken",
+  "documentNumber": "SFS 1971:703",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": []
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "1971:703",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna kungörelse träder i krft den 1 januari 1972, då kungörelsen\n(1940:930) angående redovisning av penningar, som jämlikt 3 kap. 22 §\nlagen om nyttjanderätt till fast egendom nedsatts i allmänt förvar skall upphöra att gälla. Den upphävda kungörelsen gäller dock fort farande i fråga om pengar som nedsatts enligt äldre bestämmelser.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1981:1010",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna förordning träder i kraft den 1 januari 1982. I ärende som handläggs av överexekutor efter ikraftträdandet gäller kungörelsen i dess äldre lydelse.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1971:703",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

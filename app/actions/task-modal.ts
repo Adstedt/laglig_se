@@ -12,6 +12,8 @@ import { z } from 'zod'
 import type { TaskPriority } from '@prisma/client'
 import { invalidateListItemTasksCache } from './legal-document-modal'
 import { logActivity } from '@/lib/services/activity-logger'
+import { createTaskNotification } from '@/lib/notifications/task-notifications'
+import { NotificationType } from '@prisma/client'
 
 // ============================================================================
 // Action Result Type
@@ -529,6 +531,26 @@ export async function updateTaskStatusColumn(
       )
 
       revalidatePath('/tasks')
+
+      // Story 6.11: Send STATUS_CHANGED notification to task creator
+      const actor = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
+      })
+      createTaskNotification(
+        NotificationType.STATUS_CHANGED,
+        {
+          taskId: validated.taskId,
+          workspaceId,
+          actorUserId: userId,
+          taskTitle: task.title,
+          actorName: actor?.name ?? actor?.email ?? 'Okänd',
+        },
+        { newColumnName: column.name }
+      ).catch((error) => {
+        console.error('updateTaskStatusColumn notification error:', error)
+      })
+
       return { success: true }
     })
   } catch (error) {
@@ -601,6 +623,24 @@ export async function updateTaskAssignee(
         )
 
         revalidatePath('/tasks')
+
+        // Story 6.11: Send TASK_ASSIGNED notification when assignee changes
+        if (validated.userId) {
+          const actor = await prisma.user.findUnique({
+            where: { id: currentUserId },
+            select: { name: true, email: true },
+          })
+          createTaskNotification(NotificationType.TASK_ASSIGNED, {
+            taskId: validated.taskId,
+            workspaceId,
+            actorUserId: currentUserId,
+            taskTitle: task.title ?? '',
+            actorName: actor?.name ?? actor?.email ?? 'Okänd',
+          }).catch((error) => {
+            console.error('updateTaskAssignee notification error:', error)
+          })
+        }
+
         return { success: true }
       }
     )
@@ -881,6 +921,36 @@ export async function createComment(
       )
 
       revalidatePath('/tasks')
+
+      // Story 6.11: Send COMMENT_ADDED notification to task creator + assignee
+      const actorName = comment.author.name ?? comment.author.email
+      createTaskNotification(NotificationType.COMMENT_ADDED, {
+        taskId: validated.taskId,
+        workspaceId,
+        actorUserId: userId,
+        taskTitle: task.title,
+        actorName,
+      }).catch((error) => {
+        console.error('createComment COMMENT_ADDED notification error:', error)
+      })
+
+      // Story 6.11: Send MENTION notification for each mentioned user
+      if (mentions.length > 0) {
+        createTaskNotification(
+          NotificationType.MENTION,
+          {
+            taskId: validated.taskId,
+            workspaceId,
+            actorUserId: userId,
+            taskTitle: task.title,
+            actorName,
+          },
+          { mentionedUserIds: mentions }
+        ).catch((error) => {
+          console.error('createComment MENTION notification error:', error)
+        })
+      }
+
       return { success: true, data: comment as unknown as TaskComment }
     })
   } catch (error) {

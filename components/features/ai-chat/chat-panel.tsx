@@ -6,7 +6,7 @@
  */
 
 import { useRef, useEffect, useMemo, useCallback, ReactNode } from 'react'
-import { X } from 'lucide-react'
+import { X, Download } from 'lucide-react'
 import { LexaIcon } from '@/components/ui/lexa-icon'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from './chat-message-list'
@@ -22,6 +22,18 @@ import {
 } from '@/lib/hooks/use-chat-interface'
 import { track } from '@vercel/analytics'
 import { cn } from '@/lib/utils'
+import { getChatHistory, type ChatMessageData } from '@/app/actions/ai-chat'
+import {
+  formatConversationAsText,
+  getExportFilename,
+  downloadTextFile,
+} from '@/lib/utils/format-conversation-export'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface ChatPanelProps {
   /** Context type determines how messages are processed */
@@ -75,18 +87,68 @@ export function ChatPanel({
 }: ChatPanelProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  const { messages, sendMessage, status, error, retryAfter, handleRetry } =
-    useChatInterface({
-      contextType,
-      contextId,
-      initialContext,
-      initialMessage,
-    })
+  const {
+    messages,
+    sendMessage,
+    status,
+    error,
+    retryAfter,
+    handleRetry,
+    loadMore,
+    isLoadingMore,
+    hasMore,
+  } = useChatInterface({
+    contextType,
+    contextId,
+    initialContext,
+    initialMessage,
+  })
 
   const isStreaming = status === 'streaming'
   const isSubmitted = status === 'submitted'
   const hasError = status === 'error' && error !== null
   const isLoading = isStreaming || isSubmitted
+
+  const handleExport = useCallback(async () => {
+    try {
+      const prismaContextType = contextType.toUpperCase() as
+        | 'GLOBAL'
+        | 'TASK'
+        | 'LAW'
+        | 'CHANGE'
+      const result = await getChatHistory({
+        contextType: prismaContextType,
+        contextId,
+        limit: 100,
+      })
+      if (result.success && result.data) {
+        let allMessages: ChatMessageData[] = result.data.messages
+        let cursor = result.data.nextCursor
+        while (cursor) {
+          const page = await getChatHistory({
+            contextType: prismaContextType,
+            contextId,
+            limit: 100,
+            cursor,
+          })
+          if (page.success && page.data) {
+            allMessages = [...page.data.messages, ...allMessages]
+            cursor = page.data.nextCursor
+          } else {
+            break
+          }
+        }
+        allMessages.sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )
+        const text = formatConversationAsText(allMessages)
+        downloadTextFile(text, getExportFilename())
+      }
+    } catch {
+      console.error('Failed to export conversation')
+    }
+  }, [contextType, contextId])
 
   // Track panel open
   useEffect(() => {
@@ -158,15 +220,35 @@ export function ChatPanel({
                 </div>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0 shrink-0"
-              aria-label="Stäng"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1 shrink-0">
+              {messages.length > 0 && (
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleExport}
+                        className="h-8 w-8 p-0"
+                        aria-label="Exportera konversation"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Exportera konversation</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-8 w-8 p-0"
+                aria-label="Stäng"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ))}
 
@@ -191,6 +273,9 @@ export function ChatPanel({
           <ChatMessageList
             messages={messages}
             isStreaming={isLoading}
+            onLoadMore={loadMore}
+            isLoadingMore={isLoadingMore}
+            hasMore={hasMore}
             footer={
               <>
                 {inlineAssessment}

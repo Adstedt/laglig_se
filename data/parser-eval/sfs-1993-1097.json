@@ -1,0 +1,686 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Fiskeförordning (1993:1097)",
+  "documentNumber": "SFS 1993:1097",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna förordning innehåller bestämmelser om fiske inom Sveriges sjöterritorium och inom Sveriges ekonomiska zon samt om fiske från svenska fartyg utanför zonen.\nFörordningen skall inte tillämpas i de fall den strider mot bestämmelserna i kungörelsen (1971:1018) om tillämpning av stadgan för fisket inom Torne älvs fiskeområde.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna förordning innehåller bestämmelser om fiske inom Sveriges sjöterritorium och inom Sveriges ekonomiska zon samt om fiske från svenska fartyg utanför zonen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Förordningen skall inte tillämpas i de fall den strider mot bestämmelserna i kungörelsen (1971:1018) om tillämpning av stadgan för fisket inom Torne älvs fiskeområde.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Rätten till fiske",
+          "content": "Länsstyrelsen prövar frågor om tillstånd att sätta ut eller sträcka ut fasta redskap.\nTillstånd får endast beviljas fiskare som bedriver yrkesmässigt fiske, om inte annat följer av\neller särskilda skäl föranleder annat.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Länsstyrelsen prövar frågor om tillstånd att sätta ut eller sträcka ut fasta redskap.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Tillstånd får endast beviljas fiskare som bedriver yrkesmässigt fiske, om inte annat följer av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "eller särskilda skäl föranleder annat.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Sådana föreskrifter om utländska medborgares fiske i Sveriges territorialhav och i Sveriges ekonomiska zon som är grundade på internationella överenskommelser meddelas av Fiskeriverket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sådana föreskrifter om utländska medborgares fiske i Sveriges territorialhav och i Sveriges ekonomiska zon som är grundade på internationella överenskommelser meddelas av Fiskeriverket.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Sådant tillstånd till fiske för utländska medborgare som avses i\noch som avser annat fiske än yrkesmässigt fiske meddelas av länsstyrelsen.\nTillstånd kan förenas med villkor att fisk som har fångats vid sådant fiske inte får säljas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sådant tillstånd till fiske för utländska medborgare som avses i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "och som avser annat fiske än yrkesmässigt fiske meddelas av länsstyrelsen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Tillstånd kan förenas med villkor att fisk som har fångats vid sådant fiske inte får säljas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Föreskrifter för fisket",
+          "content": "Det är förbjudet att fiska mal och flodpärlmussla.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det är förbjudet att fiska mal och flodpärlmussla.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Fiske får inte bedrivas med sprängämnen, bedövande eller dödande ämnen, elektrisk ström, skjutvapen eller sådana redskap som fisken kan spetsas med. Fiske med ålsax, vars tänder är högst sex millimeter, är dock tillåtet. Huggkrok får användas för att bärga fisk som har fångats med andra redskap.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fiske får inte bedrivas med sprängämnen, bedövande eller dödande ämnen, elektrisk ström, skjutvapen eller sådana redskap som fisken kan spetsas med. Fiske med ålsax, vars tänder är högst sex millimeter, är dock tillåtet. Huggkrok får användas för att bärga fisk som har fångats med andra redskap.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Hummer eller krabba får inte fångas vid dykning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Hummer eller krabba får inte fångas vid dykning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "För fisket i havet och längs kusterna samt i Vänern, Vättern, Mälaren, Hjälmaren och Storsjön i Jämtland, till första definitiva vandringshindret, får Fiskeriverket meddela föreskrifter för fiskevården som förbjuder eller begränsar\n1. användningen av fiskemetoder eller fiskeredskap,\n2. fiske inom vissa områden, efter vissa fiskarter eller för vissa ändamål,\n3. fångst av fisk som inte har en viss minsta storlek.\nFiskeriverket får föreskriva att yrkesmässigt fiske inom ett område med användande av en viss fiskemetod får bedrivas endast efter tillstånd av verket.\nOm det behövs, får Fiskeriverket föreskriva att kräftfiske på allmänt vatten i Vänern, Vättern, Hjälmaren och Storsjön i Jämtland får bedrivas endast efter tillstånd av verket eller av länsstyrelsen. Tillstånd skall i första hand lämnas den som ägnar sig åt yrkesmässigt fiske.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För fisket i havet och längs kusterna samt i Vänern, Vättern, Mälaren, Hjälmaren och Storsjön i Jämtland, till första definitiva vandringshindret, får Fiskeriverket meddela föreskrifter för fiskevården som förbjuder eller begränsar",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. användningen av fiskemetoder eller fiskeredskap,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. fiske inom vissa områden, efter vissa fiskarter eller för vissa ändamål,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. fångst av fisk som inte har en viss minsta storlek.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Fiskeriverket får föreskriva att yrkesmässigt fiske inom ett område med användande av en viss fiskemetod får bedrivas endast efter tillstånd av verket.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Om det behövs, får Fiskeriverket föreskriva att kräftfiske på allmänt vatten i Vänern, Vättern, Hjälmaren och Storsjön i Jämtland får bedrivas endast efter tillstånd av verket eller av länsstyrelsen. Tillstånd skall i första hand lämnas den som ägnar sig åt yrkesmässigt fiske.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Fisk, som inte håller föreskrivet minimimått eller som det är förbjudet att fiska eller som har fångats med otillåten fiskemetod eller otillåtet fiskeredskap, får inte behållas, föras in i den ekonomiska zonen eller i landet eller landas här eller saluhållas här.\nFiskeriverket får meddela föreskrifter om undantag från första stycket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fisk, som inte håller föreskrivet minimimått eller som det är förbjudet att fiska eller som har fångats med otillåten fiskemetod eller otillåtet fiskeredskap, får inte behållas, föras in i den ekonomiska zonen eller i landet eller landas här eller saluhållas här.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Fiskeriverket får meddela föreskrifter om undantag från första stycket.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": "Kräftpest",
+          "content": "Det är förbjudet\n1. att utan föregående desinfektering använda redskap för kräftfiske i ett vatten om redskapet tidigare använts för fiske i ett annat vatten,\n2. att förvara eller kasta kräftor eller delar av kräftor i annat vatten än det där de fångats, och\n3. att i ett vatten rengöra eller kasta emballage i vilket kräftor från ett annat vatten har förvarats.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det är förbjudet",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. att utan föregående desinfektering använda redskap för kräftfiske i ett vatten om redskapet tidigare använts för fiske i ett annat vatten,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. att förvara eller kasta kräftor eller delar av kräftor i annat vatten än det där de fångats, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. att i ett vatten rengöra eller kasta emballage i vilket kräftor från ett annat vatten har förvarats.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "För att hindra spridningen av kräftpest får länsstyrelsen besluta att ett visst område skall anses kräftpestsmittat.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att hindra spridningen av kräftpest får länsstyrelsen besluta att ett visst område skall anses kräftpestsmittat.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "Inom ett område som har förklarats kräftpestsmittat är det förbjudet att\n1. fånga kräftor,\n2. saluhålla, sälja, köpa eller transportera okokta kräftor,\n3. använda fisk som betesfisk i ett annat vatten än det där den fångats.\nFiskeredskap, båtar, maskiner eller andra föremål som har använts i ett vatten inom ett område som har förklarats kräftpestsmittat får inte transporteras till någon annan sjö eller något annat vattendrag inom området eller föras ut ur området utan föregående desinfektering.\nLänsstyrelsen får föreskriva sådana undantag från bestämmelserna i första och andra styckena som inte ökar risken för smittspridning eller som behövs av vetenskapliga skäl.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Inom ett område som har förklarats kräftpestsmittat är det förbjudet att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. fånga kräftor,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. saluhålla, sälja, köpa eller transportera okokta kräftor,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. använda fisk som betesfisk i ett annat vatten än det där den fångats.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Fiskeredskap, båtar, maskiner eller andra föremål som har använts i ett vatten inom ett område som har förklarats kräftpestsmittat får inte transporteras till någon annan sjö eller något annat vattendrag inom området eller föras ut ur området utan föregående desinfektering.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Länsstyrelsen får föreskriva sådana undantag från bestämmelserna i första och andra styckena som inte ökar risken för smittspridning eller som behövs av vetenskapliga skäl.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": "Hänsyn till naturvården",
+          "content": "Fiskeriverket meddelar föreskrifter om vilken hänsyn som vid fiske skall tas till naturvårdens intressen.\nI ärenden enligt\nfår Fiskeriverket besluta att miljökonsekvensbeskrivningar skall upprättas som gör det möjligt att bedöma vilken inverkan en fiskemetod eller utsättande av en fiskart har på miljön. Fiskeriverket skall begära in yttrande över en miljökonsekvensbeskrivning från Statens naturvårdsverk och berörd länsstyrelse.\nFiskeriverket får besluta att den som skall använda metoden eller sätta ut fiskarten skall upprätta och bekosta miljökonsekvensbeskrivningen. När en beskrivning upprättas av Fiskeriverket, får verket besluta att den som skall använda den nya metoden eller sätta ut fisken skall betala en avgift som helt eller delvis motsvarar kostnaden för beskrivningen. Vid bedömningen av om den enskilde skall svara för upprättandet av eller kostnaderna för miljökonsekvensbeskrivningen skall hänsyn tas till omfattningen av dennes verksamhet. Förordning (1994:543).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fiskeriverket meddelar föreskrifter om vilken hänsyn som vid fiske skall tas till naturvårdens intressen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "I ärenden enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "får Fiskeriverket besluta att miljökonsekvensbeskrivningar skall upprättas som gör det möjligt att bedöma vilken inverkan en fiskemetod eller utsättande av en fiskart har på miljön. Fiskeriverket skall begära in yttrande över en miljökonsekvensbeskrivning från Statens naturvårdsverk och berörd länsstyrelse.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Fiskeriverket får besluta att den som skall använda metoden eller sätta ut fiskarten skall upprätta och bekosta miljökonsekvensbeskrivningen. När en beskrivning upprättas av Fiskeriverket, får verket besluta att den som skall använda den nya metoden eller sätta ut fisken skall betala en avgift som helt eller delvis motsvarar kostnaden för beskrivningen. Vid bedömningen av om den enskilde skall svara för upprättandet av eller kostnaderna för miljökonsekvensbeskrivningen skall hänsyn tas till omfattningen av dennes verksamhet. Förordning (1994:543).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": "Redskapsbegränsningar för fritidsfisket",
+          "content": "Den som fiskar med rörliga redskap i vatten där fisket är fritt för var och en får endast använda nät, långrev, ryssja, bur, handredskap och håv.\nVid fiske med nät, långrev, ryssjor och burar får sammanlagt högst sex redskap användas samtidigt. Vid hummerfiske får därutöver högst fjorton burar (hummertinor) användas. En långrev får vara försedd med högst 100 krokar. Nätens sammanlagda längd får inte överstiga 180 meter.\nFörsta och andra styckena gäller inte den som fiskar yrkesmässigt, innehar fisket med äganderätt eller har rätt till fisket på grund av nyttjanderätt som omfattar även annat fiske än det som är fritt för var och en.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den som fiskar med rörliga redskap i vatten där fisket är fritt för var och en får endast använda nät, långrev, ryssja, bur, handredskap och håv.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vid fiske med nät, långrev, ryssjor och burar får sammanlagt högst sex redskap användas samtidigt. Vid hummerfiske får därutöver högst fjorton burar (hummertinor) användas. En långrev får vara försedd med högst 100 krokar. Nätens sammanlagda längd får inte överstiga 180 meter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Första och andra styckena gäller inte den som fiskar yrkesmässigt, innehar fisket med äganderätt eller har rätt till fisket på grund av nyttjanderätt som omfattar även annat fiske än det som är fritt för var och en.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": "Märkning och utmärkning av fiskeredskap",
+          "content": "Redskap som används vid fiske skall märkas enligt föreskrifter som meddelas av Fiskeriverket. Genom märkningen skall det framgå vem som använder redskapet, om användaren är yrkesfiskare eller fritidsfiskare och om användaren fiskar med enskild fiskerätt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Redskap som används vid fiske skall märkas enligt föreskrifter som meddelas av Fiskeriverket. Genom märkningen skall det framgå vem som använder redskapet, om användaren är yrkesfiskare eller fritidsfiskare och om användaren fiskar med enskild fiskerätt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": null,
+          "content": "Föreskrifter som behövs för utmärkning av fiskeredskap och vattenbruksanläggningar meddelas av Fiskeriverket.\nUtplantering av fisk m. m.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Föreskrifter som behövs för utmärkning av fiskeredskap och vattenbruksanläggningar meddelas av Fiskeriverket.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Utplantering av fisk m. m.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": null,
+          "content": "För att sätta ut fisk eller flytta fisk från ett vattenområde till ett annat eller för att anlägga och driva en fiskodling krävs tillstånd av länsstyrelsen. Ett tillstånd får förenas med villkor.\nTillstånd till fiskodling får meddelas för viss tid.\nTillstånd får inte ges för sådana fiskarter eller fiskstammar som är olämpliga med hänsyn till vattenområdets särart. Tillstånd får inte heller ges om det finns risk för spridning av smittsamma sjukdomar.\nOm någon i en dom eller ett beslut enligt\neller motsvarande äldre bestämmelser är ålagd att vidta en åtgärd som kräver tillstånd enligt första stycket, skall tillståndsprövningen endast omfatta de villkor som behövs för att förebygga spridning av smittsamma sjukdomar.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att sätta ut fisk eller flytta fisk från ett vattenområde till ett annat eller för att anlägga och driva en fiskodling krävs tillstånd av länsstyrelsen. Ett tillstånd får förenas med villkor.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Tillstånd till fiskodling får meddelas för viss tid.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Tillstånd får inte ges för sådana fiskarter eller fiskstammar som är olämpliga med hänsyn till vattenområdets särart. Tillstånd får inte heller ges om det finns risk för spridning av smittsamma sjukdomar.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Om någon i en dom eller ett beslut enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "eller motsvarande äldre bestämmelser är ålagd att vidta en åtgärd som kräver tillstånd enligt första stycket, skall tillståndsprövningen endast omfatta de villkor som behövs för att förebygga spridning av smittsamma sjukdomar.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": null,
+          "content": "Ett tillstånd att bedriva fiskodling får återkallas om de villkor som gäller för tillståndet inte uppfylls.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ett tillstånd att bedriva fiskodling får återkallas om de villkor som gäller för tillståndet inte uppfylls.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "19",
+          "heading": null,
+          "content": "Ytterligare föreskrifter om utsättning och flyttning av fisk samt om fiskodling och slakt av odlad fisk får meddelas av Fiskeriverket efter samråd med berörda myndigheter.\nYrkesfiskelicens m. m.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ytterligare föreskrifter om utsättning och flyttning av fisk samt om fiskodling och slakt av odlad fisk får meddelas av Fiskeriverket efter samråd med berörda myndigheter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Yrkesfiskelicens m. m.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "20",
+          "heading": null,
+          "content": "Frågor om yrkesfiskelicens prövas av Fiskeriverket.\nFiskeriverket meddelar föreskrifter om sådana avvikelser från kravet enligt\nför yrkesfiskelicens som under ett övergångsskede kan föranledas av att någon vid lagens ikraftträdande utövar ett mer omfattande fiske än vad föreskrifter enligt 21 § fiskelagen medger.\nFiskeriverket får meddela föreskrifter om krav på särskilt tillstånd för användning av fartyg för yrkesmässigt fiske. Förordning (1994:543).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Frågor om yrkesfiskelicens prövas av Fiskeriverket.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Fiskeriverket meddelar föreskrifter om sådana avvikelser från kravet enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "för yrkesfiskelicens som under ett övergångsskede kan föranledas av att någon vid lagens ikraftträdande utövar ett mer omfattande fiske än vad föreskrifter enligt 21 § fiskelagen medger.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Fiskeriverket får meddela föreskrifter om krav på särskilt tillstånd för användning av fartyg för yrkesmässigt fiske. Förordning (1994:543).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "21",
+          "heading": null,
+          "content": "Fiskare med yrkesfiskelicens skall lämna uppgifter om fisket enligt föreskrifter som meddelas av Fiskeriverket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fiskare med yrkesfiskelicens skall lämna uppgifter om fisket enligt föreskrifter som meddelas av Fiskeriverket.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "22",
+          "heading": "Internationell fiskekontroll",
+          "content": "Föreskrifter om inspektion av fiskefartyg och om kontroll av redskap som är grundade på internationella överenskommelser och rekommendationer meddelas av Fiskeriverket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Föreskrifter om inspektion av fiskefartyg och om kontroll av redskap som är grundade på internationella överenskommelser och rekommendationer meddelas av Fiskeriverket.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "23",
+          "heading": "Tillsyn",
+          "content": "En fisketillsynsman förordnas av länsstyrelsen.\nBefattningshavare vid Kustbevakningen och vid Tullverkets gränsbevakning är skyldig att ta emot förordnande som fisketillsynsman inom sitt tjänstgöringsområde.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En fisketillsynsman förordnas av länsstyrelsen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Befattningshavare vid Kustbevakningen och vid Tullverkets gränsbevakning är skyldig att ta emot förordnande som fisketillsynsman inom sitt tjänstgöringsområde.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "24",
+          "heading": null,
+          "content": "Fiskeriverket och länsstyrelsen får meddela sådana förelägganden och förbud som avses i",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fiskeriverket och länsstyrelsen får meddela sådana förelägganden och förbud som avses i",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "25",
+          "heading": "Fiske från svenska fartyg i utländskt område",
+          "content": "En ansökan hos utländsk myndighet om tillstånd att från ett svenskt fartyg fiska i utländsk ekonomisk zon eller fiskezon skall godkännas av Fiskeriverket.\nEndast den som innehar yrkesfiskelicens kan få sin ansökan godkänd.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En ansökan hos utländsk myndighet om tillstånd att från ett svenskt fartyg fiska i utländsk ekonomisk zon eller fiskezon skall godkännas av Fiskeriverket.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Endast den som innehar yrkesfiskelicens kan få sin ansökan godkänd.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "26",
+          "heading": "Dispenser",
+          "content": "Om det finns vetenskapliga eller andra särskilda skäl, får undantag medges från bestämmelserna i 5--7 §§ och 14 § första och andra styckena. Gäller undantaget bara bestämmelserna i 5--7 §§ prövas frågan av länsstyrelsen och i annat fall av Fiskeriverket.\nOm fiske bedrivs på uppdrag av Fiskeriverket, får verket föreskriva eller i enskilda fall medge undantag från bestämmelserna i 2, 4--7 §§, 12 § första och andra styckena, 14 § första och andra styckena och 17 §. Förordning (1994:160).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det finns vetenskapliga eller andra särskilda skäl, får undantag medges från bestämmelserna i 5--7 §§ och 14 § första och andra styckena. Gäller undantaget bara bestämmelserna i 5--7 §§ prövas frågan av länsstyrelsen och i annat fall av Fiskeriverket.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Om fiske bedrivs på uppdrag av Fiskeriverket, får verket föreskriva eller i enskilda fall medge undantag från bestämmelserna i 2, 4--7 §§, 12 § första och andra styckena, 14 § första och andra styckena och 17 §. Förordning (1994:160).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "27",
+          "heading": "Avgifter",
+          "content": "I ärenden enligt\noch denna förordning får ansökningsavgift tas ut enligt föreskrifter som meddelas av Fiskeriverket för\nyrkesfiskelicens,\ngodkännande av ansökan om tillstånd att fiska i utländsk zon,\ntillstånd för visst fiske,\ntillstånd att bedriva fiskodling, och\ntillstånd att flytta eller sätta ut fisk.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I ärenden enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "och denna förordning får ansökningsavgift tas ut enligt föreskrifter som meddelas av Fiskeriverket för",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "yrkesfiskelicens,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "godkännande av ansökan om tillstånd att fiska i utländsk zon,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "tillstånd för visst fiske,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 6,
+              "text": "tillstånd att bedriva fiskodling, och",
+              "role": "STYCKE"
+            },
+            {
+              "number": 7,
+              "text": "tillstånd att flytta eller sätta ut fisk.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "28",
+          "heading": "Fiskevårdsområden",
+          "content": "Länsstyrelsen skall föra register över sina beslut enligt\nom fiskevårdsområden. Ytterligare föreskrifter om verkställigheten av lagen om fiskevårdsområden får meddelas av Fiskeriverket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Länsstyrelsen skall föra register över sina beslut enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om fiskevårdsområden. Ytterligare föreskrifter om verkställigheten av lagen om fiskevårdsområden får meddelas av Fiskeriverket.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "29",
+          "heading": "Verkställighetsföreskrifter",
+          "content": "Fiskeriverket får meddela de ytterligare föreskrifter som behövs för verkställigheten av denna förordning",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fiskeriverket får meddela de ytterligare föreskrifter som behövs för verkställigheten av denna förordning",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "1993:1097",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna förordning träder i kraft den 1 januari 1994.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Genom förordningen upphävs",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Kungl. Maj: ts skrivelse (1898:50 s. 2) till befallningshavanden i Blekinge län angående rätt att vid länets kust idka ålfiske med fast fiskeredskap,",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. brevet den 7 oktober 1955 angående tillstånd för Domänstyrelsen att i viss utsträckning utplantera fisk i kronans vatten,",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "3. brevet den 16 juni 1966 angående tillstånd för statens fiskeritjänstemän m. fl. att vid fångst av fisk och skaldjur för fiskeriundersökningar eller fiskodlingsändamål använda förbjudet redskap, m.m.,",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "4.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "5.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "6.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "om internationell fiskekontroll,",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "7.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "med vissa bestämmelser om torskfisket i Östersjön nordost om Bornholm, och",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "8.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "om licens för yrkesfiske.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1993:1097",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

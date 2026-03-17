@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Statens räddningsverks föreskrifter om provning, certifiering och kontroll av komponenter till skyddsrum",
+  "documentNumber": "SRVFS 1993:6",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Komponenter som anges i bilaga till denna författning och som är avsedda för installation i skyddsrum skall vara provade av ett ackrediterat laboratorium och certifierade av ett ackrediterat certifieringsorgan.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Komponenter som anges i bilaga till denna författning och som är avsedda för installation i skyddsrum skall vara provade av ett ackrediterat laboratorium och certifierade av ett ackrediterat certifieringsorgan.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Komponenterna skall genom en beständig märkning, om detta är möjligt, förses med certifieringsnummer och certifieringsmärke samt information om tillverkare, tillverkningsort, tillverkningsår och tillverkningsnummer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Komponenterna skall genom en beständig märkning, om detta är möjligt, förses med certifieringsnummer och certifieringsmärke samt information om tillverkare, tillverkningsort, tillverkningsår och tillverkningsnummer.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Tillverkningskontroll skall ske av ett ackrediterat besiktningsorgan i den omfattning som bestäms av certifieringsorganet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tillverkningskontroll skall ske av ett ackrediterat besiktningsorgan i den omfattning som bestäms av certifieringsorganet.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "Denna författning träder i kraft den 1 januari 1994.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Komponenter, som godkänts enligt bestämmelser som utfärdats med stöd av lagen (1939:174) om tillverkning, införsel och försäljning av gasskyddsmateriel, får installeras i skyddsrum fram till utgången av 1994.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Intill dess att det i Sverige har ackrediterats organ för verksamhet enligt denna författning får Statens räddningsverk godkänna laboratorier och besiktningsorgan för verksamheten. Certifikat får utfärdas av Räddningsverket eller det organ som Räddningsverket bestämmer.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SRVFS 1993:6",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

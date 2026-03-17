@@ -4,3 +4,6 @@ competitor-analysis/
 docs/
 .bmad-core/
 .claude/
+tmp_*.ts
+scripts/tmp-*.ts
+scripts/tmp-*.mjs

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assessment Quality Simulation — Laglig.se</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface-2: #1a1a26;
+      --border: #2a2a3a;
+      --text: #e4e4ef;
+      --text-muted: #8888a0;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --notisum: #f59e0b;
+      --laglig: #6366f1;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .page-header {
+      border-bottom: 1px solid var(--border);
+      padding: 2rem 2rem 1.5rem;
+      background: var(--surface);
+    }
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .page-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      max-width: 700px;
+    }
+    .page-header .meta {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .page-header .meta span {
+      background: var(--surface-2);
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    .scenarios { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+
+    .scenario {
+      margin-bottom: 3rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .scenario-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .scenario-number {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .scenario-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .stats {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+      flex-wrap: wrap;
+    }
+    .stat {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      background: var(--bg);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .stat.error { color: var(--red); border-color: var(--red); }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    @media (max-width: 900px) {
+      .comparison { grid-template-columns: 1fr; }
+    }
+
+    .column {
+      padding: 0;
+      border-right: 1px solid var(--border);
+    }
+    .column:last-child { border-right: none; }
+
+    .column-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .column-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+    .notisum-icon { background: var(--notisum); color: #000; }
+    .laglig-icon { background: var(--laglig); color: #fff; }
+    .column-header h3 { font-size: 0.9rem; font-weight: 600; }
+    .column-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+    .column-body { padding: 1.25rem; }
+
+    .notisum-text {
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      line-height: 1.7;
+    }
+    .verdict {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border-left: 3px solid;
+    }
+    .notisum-verdict {
+      color: var(--notisum);
+      border-color: var(--notisum);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .tool-trace {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.75rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .tool-trace-header {
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .tool-call { margin-bottom: 0.35rem; line-height: 1.5; }
+    .tool-name { color: var(--accent-light); font-weight: 600; }
+    .tool-args { color: var(--text-muted); margin-left: 0.25rem; }
+    .tool-result { display: block; color: var(--green); margin-left: 1rem; font-size: 0.7rem; }
+
+    .agent-response {
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+    .agent-response h2 { font-size: 1.05rem; margin: 1.25rem 0 0.5rem; color: var(--text); font-weight: 600; }
+    .agent-response h3 { font-size: 0.95rem; margin: 1rem 0 0.4rem; color: var(--text); }
+    .agent-response p { margin: 0.5rem 0; }
+    .agent-response ul, .agent-response ol { padding-left: 1.5rem; margin: 0.4rem 0; }
+    .agent-response li { margin: 0.2rem 0; }
+    .agent-response strong { color: #fff; }
+    .agent-response blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 0.5rem 1rem;
+      margin: 0.75rem 0;
+      background: rgba(99, 102, 241, 0.08);
+      border-radius: 0 6px 6px 0;
+      font-size: 0.85rem;
+    }
+    .agent-response code {
+      background: var(--bg);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.82rem;
+    }
+
+    .error-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--red);
+      border-radius: 8px;
+      padding: 1rem;
+      color: var(--red);
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .company-context {
+      padding: 1rem 1.25rem;
+      background: var(--surface-2);
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+    .company-context h4 {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .company-context ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .company-context li { color: var(--text-muted); }
+    .company-context strong { color: var(--text); }
+
+    .summary {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .summary-card h3 { font-size: 0.9rem; margin-bottom: 0.75rem; }
+    .summary-card .big-number { font-size: 2rem; font-weight: 700; color: var(--accent-light); }
+    .summary-card p { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <h1>Assessment Quality Simulation</h1>
+    <p>
+      Comparison between Notisum's static notification and Laglig.se's agentic change assessment.
+      Each scenario uses <strong>real change events</strong> from the database,
+      <strong>real vector search</strong> over embedded law text, and the
+      <strong>full system prompt</strong> with assessment workflow.
+    </p>
+    <div class="meta">
+      <span>claude-sonnet-4-6</span>
+      <span>4 scenarios</span>
+      <span>2026-03-10T19:33</span>
+      <span>Total: 156s</span>
+    </div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-grid">
+      <div class="summary-card">
+        <h3>Avg. Tool Calls</h3>
+        <div class="big-number">2.8</div>
+        <p>Search, context fetch, change details — the agent gathers facts before responding</p>
+      </div>
+      <div class="summary-card">
+        <h3>Avg. Response Length</h3>
+        <div class="big-number">3260</div>
+        <p>Characters of structured analysis vs Notisum's ~200 char notification</p>
+      </div>
+      <div class="summary-card">
+        <h3>Avg. Response Time</h3>
+        <div class="big-number">39.0s</div>
+        <p>End-to-end including all tool calls and LLM inference</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scenarios">
+    
+    <div class="scenario" id="scenario-0">
+      <div class="scenario-header">
+        <span class="scenario-number">1</span>
+        <div>
+          <h2>Vårdföretag + Hälso- och sjukvårdslagen</h2>
+          <div class="stats">
+            <span class="stat">3 steg</span>
+            <span class="stat">4 verktygsanrop</span>
+            <span class="stat">53.2s</span>
+            <span class="stat">4183 tecken</span>
+            
+          </div>
+        </div>
+      </div>
+
+      <div class="comparison">
+        <!-- Notisum column -->
+        <div class="column notisum">
+          <div class="column-header">
+            <div class="column-icon notisum-icon">N</div>
+            <div>
+              <h3>Notisum</h3>
+              <p class="column-sub">Vad kunden får idag</p>
+            </div>
+          </div>
+          <div class="column-body">
+            <pre class="notisum-text">Hälso- och sjukvårdslag (2017:30) har nu uppdateringsinformationen SFS 2026:214
+Senaste ändring: Lag (2026:214) om ändring i hälso- och sjukvårdslagen (2017:30)
+ändr. 6 kap. 2 §, 8 kap. 4, 9 §§, 14 kap. 1 §
+Ikraftträdande: [datum saknas]</pre>
+            <div class="verdict notisum-verdict">
+              <strong>Ger:</strong> Ren faktainformation. Användaren måste själv avgöra relevans,
+              hitta lagtext, tolka konsekvenser, och bestämma åtgärder.
+            </div>
+          </div>
+        </div>
+
+        <!-- Laglig column -->
+        <div class="column laglig">
+          <div class="column-header">
+            <div class="column-icon laglig-icon">L</div>
+            <div>
+              <h3>Laglig.se</h3>
+              <p class="column-sub">Agentic assessment flow</p>
+            </div>
+          </div>
+          <div class="column-body">
+            <div class="tool-trace">
+                <div class="tool-trace-header">Verktygsanrop</div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">get_company_context</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">search_laws</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">search_laws</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">search_laws</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+              </div>
+            <div class="agent-response" id="response-0"></div>
+            
+          </div>
+        </div>
+      </div>
+
+      <!-- Company context sidebar -->
+      <div class="company-context">
+        <h4>Simulerat företag</h4>
+        <ul>
+          <li><strong>Norrlands Vårdcentral AB</strong></li>
+          <li>Bransch: Allmän öppenvård</li>
+          <li>SNI: 86210</li>
+          <li>Anställda: RANGE_50_249</li>
+          <li>Certifieringar: ISO 9001</li>
+          <li>Mognad: DEVELOPING</li>
+        </ul>
+      </div>
+    </div>
+  
+    <div class="scenario" id="scenario-1">
+      <div class="scenario-header">
+        <span class="scenario-number">2</span>
+        <div>
+          <h2>IT-konsultbolag + Värdepappersmarknadsförordningen</h2>
+          <div class="stats">
+            <span class="stat">2 steg</span>
+            <span class="stat">2 verktygsanrop</span>
+            <span class="stat">32.2s</span>
+            <span class="stat">2897 tecken</span>
+            
+          </div>
+        </div>
+      </div>
+
+      <div class="comparison">
+        <!-- Notisum column -->
+        <div class="column notisum">
+          <div class="column-header">
+            <div class="column-icon notisum-icon">N</div>
+            <div>
+              <h3>Notisum</h3>
+              <p class="column-sub">Vad kunden får idag</p>
+            </div>
+          </div>
+          <div class="column-body">
+            <pre class="notisum-text">Förordning (2007:572) om värdepappersmarknaden har nu uppdateringsinformationen SFS 2026:208
+Senaste ändring: Förordning (2026:208) om ändring i förordningen (2007:572) om värdepappersmarknaden
+Ikraftträdande: [datum saknas]</pre>
+            <div class="verdict notisum-verdict">
+              <strong>Ger:</strong> Ren faktainformation. Användaren måste själv avgöra relevans,
+              hitta lagtext, tolka konsekvenser, och bestämma åtgärder.
+            </div>
+          </div>
+        </div>
+
+        <!-- Laglig column -->
+        <div class="column laglig">
+          <div class="column-header">
+            <div class="column-icon laglig-icon">L</div>
+            <div>
+              <h3>Laglig.se</h3>
+              <p class="column-sub">Agentic assessment flow</p>
+            </div>
+          </div>
+          <div class="column-body">
+            <div class="tool-trace">
+                <div class="tool-trace-header">Verktygsanrop</div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">get_company_context</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">search_laws</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+              </div>
+            <div class="agent-response" id="response-1"></div>
+            
+          </div>
+        </div>
+      </div>
+
+      <!-- Company context sidebar -->
+      <div class="company-context">
+        <h4>Simulerat företag</h4>
+        <ul>
+          <li><strong>CodeNorth AB</strong></li>
+          <li>Bransch: Dataprogrammering</li>
+          <li>SNI: 62010</li>
+          <li>Anställda: RANGE_10_49</li>
+          <li>Certifieringar: Inga</li>
+          <li>Mognad: BASIC</li>
+        </ul>
+      </div>
+    </div>
+  
+    <div class="scenario" id="scenario-2">
+      <div class="scenario-header">
+        <span class="scenario-number">3</span>
+        <div>
+          <h2>Restaurangföretag + Patientlagen</h2>
+          <div class="stats">
+            <span class="stat">2 steg</span>
+            <span class="stat">2 verktygsanrop</span>
+            <span class="stat">27.3s</span>
+            <span class="stat">2372 tecken</span>
+            
+          </div>
+        </div>
+      </div>
+
+      <div class="comparison">
+        <!-- Notisum column -->
+        <div class="column notisum">
+          <div class="column-header">
+            <div class="column-icon notisum-icon">N</div>
+            <div>
+              <h3>Notisum</h3>
+              <p class="column-sub">Vad kunden får idag</p>
+            </div>
+          </div>
+          <div class="column-body">
+            <pre class="notisum-text">Patientlag (2014:821) har nu uppdateringsinformationen SFS 2026:213
+Senaste ändring: Lag (2026:213) om ändring i patientlagen (2014:821)
+Ikraftträdande: [datum saknas]</pre>
+            <div class="verdict notisum-verdict">
+              <strong>Ger:</strong> Ren faktainformation. Användaren måste själv avgöra relevans,
+              hitta lagtext, tolka konsekvenser, och bestämma åtgärder.
+            </div>
+          </div>
+        </div>
+
+        <!-- Laglig column -->
+        <div class="column laglig">
+          <div class="column-header">
+            <div class="column-icon laglig-icon">L</div>
+            <div>
+              <h3>Laglig.se</h3>
+              <p class="column-sub">Agentic assessment flow</p>
+            </div>
+          </div>
+          <div class="column-body">
+            <div class="tool-trace">
+                <div class="tool-trace-header">Verktygsanrop</div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">get_company_context</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">search_laws</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+              </div>
+            <div class="agent-response" id="response-2"></div>
+            
+          </div>
+        </div>
+      </div>
+
+      <!-- Company context sidebar -->
+      <div class="company-context">
+        <h4>Simulerat företag</h4>
+        <ul>
+          <li><strong>Smakfull Restaurang AB</strong></li>
+          <li>Bransch: Restaurangverksamhet</li>
+          <li>SNI: 56100</li>
+          <li>Anställda: RANGE_10_49</li>
+          <li>Certifieringar: Inga</li>
+          <li>Mognad: BASIC</li>
+        </ul>
+      </div>
+    </div>
+  
+    <div class="scenario" id="scenario-3">
+      <div class="scenario-header">
+        <span class="scenario-number">4</span>
+        <div>
+          <h2>Transportbolag + Hållbarhetskriterier för bränslen</h2>
+          <div class="stats">
+            <span class="stat">3 steg</span>
+            <span class="stat">3 verktygsanrop</span>
+            <span class="stat">43.1s</span>
+            <span class="stat">3589 tecken</span>
+            
+          </div>
+        </div>
+      </div>
+
+      <div class="comparison">
+        <!-- Notisum column -->
+        <div class="column notisum">
+          <div class="column-header">
+            <div class="column-icon notisum-icon">N</div>
+            <div>
+              <h3>Notisum</h3>
+              <p class="column-sub">Vad kunden får idag</p>
+            </div>
+          </div>
+          <div class="column-body">
+            <pre class="notisum-text">Förordning (2025:588) om hållbarhetskriterier för vissa bränslen har nu uppdateringsinformationen SFS 2026:216
+Senaste ändring: Förordning (2026:216) om ändring i förordningen (2025:588)
+Ikraftträdande: [datum saknas]</pre>
+            <div class="verdict notisum-verdict">
+              <strong>Ger:</strong> Ren faktainformation. Användaren måste själv avgöra relevans,
+              hitta lagtext, tolka konsekvenser, och bestämma åtgärder.
+            </div>
+          </div>
+        </div>
+
+        <!-- Laglig column -->
+        <div class="column laglig">
+          <div class="column-header">
+            <div class="column-icon laglig-icon">L</div>
+            <div>
+              <h3>Laglig.se</h3>
+              <p class="column-sub">Agentic assessment flow</p>
+            </div>
+          </div>
+          <div class="column-body">
+            <div class="tool-trace">
+                <div class="tool-trace-header">Verktygsanrop</div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">get_company_context</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">search_laws</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+                  <div class="tool-call">
+                    <span class="tool-name">search_laws</span>
+                    <span class="tool-args">{}</span>
+                    <span class="tool-result">→ (empty result)</span>
+                  </div>
+                
+              </div>
+            <div class="agent-response" id="response-3"></div>
+            
+          </div>
+        </div>
+      </div>
+
+      <!-- Company context sidebar -->
+      <div class="company-context">
+        <h4>Simulerat företag</h4>
+        <ul>
+          <li><strong>NordTrans Logistik AB</strong></li>
+          <li>Bransch: Vägtransport av gods</li>
+          <li>SNI: 49410</li>
+          <li>Anställda: RANGE_250_PLUS</li>
+          <li>Certifieringar: ISO 14001, ISO 9001</li>
+          <li>Mognad: ESTABLISHED</li>
+        </ul>
+      </div>
+    </div>
+  
+  </div>
+
+  <script>
+    const responses = ["Tack för att ni vill granska denna ändring. Jag noterar att er företagsprofil (Medea AB) inte är fullständigt ifylld i systemet, men kontext-inställningarna för denna bedömning anger att ni är **Norrlands Vårdcentral AB** inom **allmän öppenvård (SNI 86210)** med 50–249 anställda — det är den profilen jag utgår från.\n\nHär är min fullständiga bedömning av **SFS 2026:214**, som ändrar **Hälso- och sjukvårdslagen (2017:30)** med ikraftträdande **1 juli 2026**.\n\n---\n\n## Sammanfattning av ändringarna\n\nÄndringen innehåller flera separata reformer. De viktigaste för er verksamhet är:\n\n### 1. Verksamhetschefens nya skyldighet att utse fast vårdkontakt (6 kap. 2 a § — ny)\nDet tillkommer en explicit lagreglerad skyldighet för verksamhetschefen:\n\n> *\"Verksamhetschefen ska utse en fast vårdkontakt enligt vad som anges i 6 kap. 2 § patientlagen (2014:821).\"*\n\nDetta är en formalisering och förstärkning av ett redan existerande krav. Tidigare var skyldigheten att utse fast vårdkontakt kopplad till om patienten begärde det eller om behovet förelåg [Källa: SFS 2014:821, Kap 6, 2 §]. Nu lagregleras verksamhetschefens personliga ansvar direkt i HSL.\n\n### 2. Utökat grunduppdrag för primärvården (13 a kap. 1 § — ändrad)\nPrimärvårdens grunduppdrag utvidgas på ett konkret sätt:\n\n- **\"vanligt förekommande vårdbehov\"** ändras till **\"vanligt förekommande *fysiska och psykiska* vårdbehov\"** — psykisk hälsa skrivs explicit in i uppdraget.\n- Samordningsuppdraget preciseras: samordning ska ske *\"i de fall det är mest ändamålsenligt att samordningen sker inom primärvården\"* [Källa: SFS 2017:30, Kap 13, 1 §].\n\n### 3. Övriga ändringar (lägre direkt relevans för er)\n- Regionen ska erbjuda läkarbedömning dygnet runt för patienter i kommunal vård (8 kap. 2 a §)\n- Kommunen ska erbjuda sjukskötersebedömning dygnet runt för samma grupp (12 kap. 3 a §)\n- Termen \"hemsjukvård\" tas bort och ersätts med \"hälso- och sjukvård i hemmet\" i flera paragrafer\n- Samverkansbestämmelserna uppdateras så att kommuner och regioner explicit nämns (8 kap. 7 §, 11 kap. 3 §)\n\n---\n\n## Bedömning av påverkan på er verksamhet\n\nSom **allmän öppenvårdsmottagning** med primärvårdsuppdrag berörs ni direkt av två av förändringarna:\n\n**Hög relevans — Fast vårdkontakt (6 kap. 2 a §)**\nNi behöver säkerställa att er verksamhetschef har tydliga rutiner och dokumenterade processer för att utse fasta vårdkontakter. Eftersom detta nu är ett explicit lagkrav (inte enbart ett behovsbaserat krav) ökar förväntningarna på systematik och spårbarhet. Kontrollera att era interna rutiner, journalsystem och patientadministration stödjer detta krav.\n\n**Medel relevans — Psykisk hälsa i primärvårdsuppdraget (13 a kap. 1 §)**\nAtt psykiska vårdbehov nu skrivs in explicit i grunduppdraget kan påverka hur resurser fördelas och vilka kompetenser ni förväntas ha tillgängliga. Det kan även inverka på regionens avtal med er och på hur ni dokumenterar ert uppdragsutförande.\n\n---\n\n## Rekommenderade åtgärder\n\n1. **Granska era rutiner** för utseende av fast vårdkontakt — säkerställ att verksamhetschefen har dokumenterade processer och att dessa är kända i organisationen. Tidsfrist: **före 1 juli 2026**.\n2. **Se över kompetensförsörjning** kopplat till psykisk hälsa i primärvårdsuppdraget — identifiera eventuella gap mot det utvidgade uppdraget.\n3. **Kontrollera regionens avtalstext** — det utvidgade grunduppdraget kan medföra att befintliga uppdragsbeskrivningar behöver revideras i samråd med regionen.\n4. **Informera verksamhetschefen** specifikt om det nya personliga ansvaret i 6 kap. 2 a §.\n\n---\n\n## Rekommendation för bedömning\n\n| Parameter | Bedömning |\n|---|---|\n| **Påverkansnivå** | 🟠 **Medel** |\n| **Status** | Åtgärd krävs |\n| **Tidsfrist** | 1 juli 2026 |\n\nÄndringen är direkt relevant för er som öppenvårdsmottagning. Den kräver inga omfattande systemförändringar, men väl konkreta åtgärder kring rutiner för fast vårdkontakt och en översyn av hur psykisk hälsa hanteras inom grunduppdraget.\n\nVill ni att jag skapar en uppgift för att följa upp rutinerna kring fast vårdkontakt, eller sparar ni bedömningen direkt?\n\n---\n\n*Jag ger vägledning baserat på lagtext, men detta ersätter inte juridisk rådgivning.*","## Bedömning: SFS 2026:208 — Ändring i Förordning (2007:572) om värdepappersmarknaden\n\n### Vad ändringen innebär\n\nÄndringen via **SFS 2026:208** är en omfattande omarbetning av **Förordning (2007:572) om värdepappersmarknaden**. Baserat på diff-data är det i praktiken en fullständig ersättning av förordningens text — från en kortfattad version till en detaljerad och strukturerad förordning med sex kapitel. De nya kapitlen reglerar bland annat:\n\n- **Kap. 2** – Register över värdepappersbolag, utländska värdepappersföretag och leverantörer av datarapporteringstjänster (Finansinspektionens registerföring och rapportering till ESMA)\n- **Kap. 3** – Registrering av anknutna ombud hos Bolagsverket, inklusive anmälningsförfarande, registerkrav och avgifter (1 300 kr per ärende)\n- **Kap. 4** – Krav på lagringsfunktioner för finansiell information samt handläggning av förvärvstillstånd\n- **Kap. 5** – Underrättelseskyldigheter för Finansinspektionen gentemot europeiska myndigheter (EBA, ESMA)\n- **Kap. 6** – Bemyndiganden för Finansinspektionen att meddela föreskrifter på en lång rad områden (ersättningssystem, produktgodkännande, kundskydd m.m.)\n\n---\n\n### Relevans för er verksamhet\n\nErt företag, **Medea AB**, är registrerat med SNI-kod **62010 (Dataprogrammering)**. Tyvärr saknar er profil flera uppgifter — organisationsnummer, antal anställda och compliance-mognad är inte ifyllda.\n\nBaserat på er SNI-kod och verksamhetsbeskrivning är bedömningen:\n\n> Förordning (2007:572) om värdepappersmarknaden riktar sig till **värdepappersbolag, reglerade marknader, börser, anknutna ombud och leverantörer av datarapporteringstjänster** — det vill säga aktörer som är tillståndspliktiga under **Lag (2007:528) om värdepappersmarknaden**.[Källa: SFS 2007:528, Kap 3, 1 §]\n\nSom ett IT-bolag inom dataprogrammering faller ni normalt **utanför** tillämpningsområdet för denna förordning, om ni inte:\n\n- Har tillstånd att driva värdepappersrörelse\n- Agerar som anknutet ombud åt ett värdepappersinstitut\n- Tillhandahåller datarapporteringstjänster i lagens mening (OBS: detta avser specifikt reglerade rapporteringstjänster under MiFID II — inte IT-tjänster generellt)\n\n---\n\n### Rekommendation\n\n| | |\n|---|---|\n| **Påverkansnivå** | 🟢 Ingen / Låg |\n| **Bedömning** | Ej tillämplig för er nuvarande verksamhet |\n\nÄndringen bedöms **inte beröra er verksamhet** som IT-bolag inom dataprogrammering. Ni behöver inte vidta några åtgärder med anledning av denna förordningsändring.\n\n---\n\n### ⚠️ Notering om er företagsprofil\n\nEr profil är inte fullständigt ifylld — bland annat saknas organisationsnummer, antal anställda och verksamhetsbeskrivning. Det begränsar möjligheten att ge precis rådgivning. Vill ni fylla i profilen under **Inställningar** för att säkerställa att ni inte missar relevanta lagändringar?\n\n---\n\n*Jag ger vägledning baserat på lagtext, men detta ersätter inte juridisk rådgivning.*","## Bedömning: SFS 2026:213 – Ändring i Patientlag (2014:821)\n\n---\n\n## Vad ändringen innebär\n\nÄndringen via **SFS 2026:213** avser en reformattering och strukturell uppdatering av **Patientlagen (SFS 2014:821)**. Baserat på diff-data är förändringen i huvudsak av **redaktionell och teknisk karaktär** — lagtextens innehåll är densamma, men den har strukturerats om med tydligare formatering, kapitelindelning och paragrafuppställning. Ingen ny materiell skyldighet eller rättighet tycks ha tillkommit eller tagits bort jämfört med den tidigare lydelsen.\n\nPatientlagen reglerar patientens ställning inom hälso- och sjukvårdsverksamhet, inklusive tillgänglighet, information, samtycke, delaktighet och klagomålshantering [Källa: SFS 2014:821, Kap 1, 1 §].\n\n---\n\n## Relevans för Medea AB\n\nHär behöver jag vara tydlig: er företagsprofil är **inte fullständigt ifylld**, vilket gör det svårt att göra en precis bedömning. Följande saknas:\n\n- Organisationsnummer\n- Antal anställda\n- Branschbeskrivning (trots SNI-kod 62010 som pekar mot **IT- och programvaruutveckling**)\n- Verksamhetsområden\n\n**SNI-kod 62010 avser dataprogrammering** — det vill säga IT-tjänster, inte hälso- och sjukvårdsverksamhet. Patientlagen riktar sig till vårdgivare och de som bedriver hälso- och sjukvårdsverksamhet [Källa: SFS 2014:821, Kap 1, 5 §].\n\n### Min bedömning: Ej tillämplig — med ett viktigt förbehåll\n\nOm Medea AB är ett **renodlat IT-företag** utan koppling till vård är Patientlagen inte direkt tillämplig på er verksamhet. Ändringen kräver inga åtgärder.\n\nOm ni däremot levererar **IT-system, journalsystem eller digitala tjänster till hälso- och sjukvården** kan lagen vara indirekt relevant — inte som skyldigheter för er som arbetsgivare, men som krav ni behöver förstå för att stödja era kunder i deras efterlevnad.\n\n---\n\n## Rekommendation\n\n| | |\n|---|---|\n| **Påverkansnivå** | Ingen / Låg |\n| **Rekommenderad åtgärd** | Ej tillämplig (om ren IT-verksamhet) |\n\n**För att jag ska kunna ge en mer träffsäker bedömning rekommenderar jag att ni:**\n\n1. Fyller i er företagsprofil under **Inställningar** (bransch, storlek, verksamhetsområden).\n2. Bekräftar om ni levererar tjänster till hälso- och sjukvårdssektorn.\n\nVill ni att jag sparar en bedömning, eller justerar ni hellre profilen först?\n\n---\n\n_Jag ger vägledning baserat på lagtext, men detta ersätter inte juridisk rådgivning._","Tack, jag har nu granskat lagändringen och hämtat relevant kontext. Här är min bedömning:\n\n---\n\n## Lagändring: SFS 2026:216 — Ändring i förordning (2025:588) om hållbarhetskriterier för vissa bränslen\n\n### Vad ändringen innebär\n\nDen aktuella ändringen (**SFS 2026:216**) är en uppdatering av **förordning (2025:588) om hållbarhetskriterier för vissa bränslen**, som i sig trädde i kraft den 1 juli 2025 och ersatte den äldre förordningen om hållbarhetskriterier för biodrivmedel och biobränslen (SFS 2011:1088).\n\nDen nya förordningen innebär i korthet att regelverket nu:\n\n- Utvidgar tillämpningsområdet till att även omfatta **förnybara bränslen av icke-biologiskt ursprung** (t.ex. vätgas och e-bränslen), utöver traditionella biodrivmedel.\n- Inför en **ny tröskel för rapporteringsskyldighet** för förnybara bränslen av icke-biologiskt ursprung på **2 gigawattimmar per år** [Källa: SFS 2025:588, 19 §].\n- Behåller tröskeln för flytande biobränslen på **200 kubikmeter per år** i genomsnitt under de senaste tre åren [Källa: SFS 2025:588, 19 §].\n- Kräver **kontrollsystem** med riskbedömning, massbalans och spårbarhet för den som är rapporteringsskyldig.\n- Ställer krav på **årlig rapportering senast 1 april** året efter kalenderåret [Källa: SFS 2025:588, 44–45 §§].\n- Inför krav på att spara underlag i **sju år** [Källa: SFS 2025:588, 38 §].\n\n---\n\n### Relevans för NordTrans Logistik AB\n\n> ⚠️ **OBS:** Jag noterar att systemet visar er profil som \"Medea AB\" med ofullständig information, men kontexten anger att ni är **NordTrans Logistik AB** (SNI 49410 – Vägtransport av gods, 250+ anställda). Jag baserar bedömningen på den informationen.\n\nSom **godsåkeri med stor fordonsflotta** är den centrala frågan: *använder ni biodrivmedel (t.ex. HVO100 eller B100) i er yrkesmässiga verksamhet?*\n\n**Sannolikt berörd om:**\n- Ni tankar HVO100 eller inblandad diesel i er flotta och er förbrukning överstiger **200 kubikmeter flytande biobränsle per år** — vilket är mycket troligt för en flotta på 250+ fordon. För referens: 200 m³ motsvarar ca 200 000 liter, vilket är en relativt låg tröskel för ett större åkeri.\n- Ni framöver planerar att använda vätgas eller e-bränslen och förbrukar mer än 2 GWh/år.\n\n**Skyldigheter som kan aktualiseras:**\n- Upprätta och underhålla ett **kontrollsystem** med massbalans och spårbarhet [Källa: SFS 2025:588, 22–24 §§].\n- **Årlig rapportering** till Statens energimyndighet senast 1 april [Källa: SFS 2025:588, 44–45 §§].\n- Spara underlag i **sju år** [Källa: SFS 2025:588, 38 §].\n- Oberoende granskning av kontrollsystemet vid behov.\n\n---\n\n### Rekommendation\n\n| Parameter | Bedömning |\n|---|---|\n| **Påverkansnivå** | Medel–Hög |\n| **Rekommendation** | Åtgärd krävs |\n| **Prioritet** | Hög — regelverket gäller från 1 juli 2025 |\n\n**Konkreta åtgärder att vidta:**\n\n1. **Kartlägg bränsleanvändningen** — ta fram exakta volymer biodrivmedel (HVO, FAME etc.) per år för att avgöra om ni överstiger 200 m³-tröskeln och därmed är rapporteringsskyldiga.\n2. **Kontrollsystem** — om tröskeln överskrids, se till att ett dokumenterat kontrollsystem med massbalans och stickprovsrutiner finns på plats.\n3. **Utse ansvarig** — eftersom ni saknar complianceansvarig bör ni utse en person som äger denna rapporteringsprocess.\n4. **Förbered för 2027 års rapportering** — uppgifter för kalenderår 2026 ska rapporteras senast 1 april 2027.\n\n---\n\nVill ni att jag skapar en uppgift för kartläggningen av bränsleanvändningen, eller sparar en bedömning kopplad till denna lagändring?\n\n_Jag ger vägledning baserat på lagtext, men detta ersätter inte juridisk rådgivning._"];
+    responses.forEach((md, i) => {
+      const el = document.getElementById('response-' + i);
+      if (el && md) {
+        el.innerHTML = marked.parse(md);
+      } else if (el) {
+        el.innerHTML = '<em style="color: var(--text-muted)">Inget svar genererat</em>';
+      }
+    });
+  </script>
+</body>
+</html>

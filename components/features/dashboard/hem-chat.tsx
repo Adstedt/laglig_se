@@ -8,7 +8,7 @@
 
 import { useRef, useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
-import { SquarePen, History } from 'lucide-react'
+import { SquarePen, History, Download } from 'lucide-react'
 import { useChatInterface } from '@/lib/hooks/use-chat-interface'
 import { ChatMessageList } from '@/components/features/ai-chat/chat-message-list'
 import { ChatInputModern } from '@/components/features/ai-chat/chat-input-modern'
@@ -20,7 +20,18 @@ import {
 import { ChangePicker } from '@/components/features/dashboard/change-picker'
 import { ConversationHistory } from '@/components/features/dashboard/conversation-history'
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
-import { archiveConversation, loadConversation } from '@/app/actions/ai-chat'
+import {
+  archiveConversation,
+  loadConversation,
+  deleteChatMessage,
+  getChatHistory,
+  type ChatMessageData,
+} from '@/app/actions/ai-chat'
+import {
+  formatConversationAsText,
+  getExportFilename,
+  downloadTextFile,
+} from '@/lib/utils/format-conversation-export'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -73,6 +84,9 @@ export function HemChat({
     handleRetry,
     clearHistory,
     replaceMessages,
+    loadMore,
+    isLoadingMore,
+    hasMore,
   } = useChatInterface({
     contextType: 'global',
   })
@@ -137,6 +151,62 @@ export function HemChat({
     [hasMessages, replaceMessages]
   )
 
+  const handleExport = useCallback(async () => {
+    try {
+      // Fetch all messages for the current conversation
+      const result = await getChatHistory({
+        contextType: 'GLOBAL',
+        limit: 100,
+      })
+      if (result.success && result.data) {
+        let allMessages: ChatMessageData[] = result.data.messages
+        // Fetch remaining pages if any
+        let cursor = result.data.nextCursor
+        while (cursor) {
+          const page = await getChatHistory({
+            contextType: 'GLOBAL',
+            limit: 100,
+            cursor,
+          })
+          if (page.success && page.data) {
+            allMessages = [...page.data.messages, ...allMessages]
+            cursor = page.data.nextCursor
+          } else {
+            break
+          }
+        }
+
+        // Sort chronologically (oldest first) — pages come oldest-first but we
+        // prepended while paginating backwards
+        allMessages.sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        )
+
+        const text = formatConversationAsText(allMessages)
+        downloadTextFile(text, getExportFilename())
+      }
+    } catch {
+      toast.error('Kunde inte exportera konversationen.')
+    }
+  }, [])
+
+  const handleDeleteMessage = useCallback(
+    async (messageId: string) => {
+      // Optimistic: remove from UI immediately
+      const prevMessages = [...messages]
+      replaceMessages(messages.filter((m) => m.id !== messageId))
+
+      const result = await deleteChatMessage(messageId)
+      if (!result.success) {
+        // Roll back on failure
+        replaceMessages(prevMessages)
+        toast.error('Kunde inte ta bort meddelandet.')
+      }
+    },
+    [messages, replaceMessages]
+  )
+
   // Listen for logo click to reset chat when already on /dashboard
   useEffect(() => {
     const handler = () => handleNewConversation()
@@ -180,7 +250,14 @@ export function HemChat({
                 />
               </div>
             ) : (
-              <ChatMessageList messages={messages} isStreaming={isLoading} />
+              <ChatMessageList
+                messages={messages}
+                isStreaming={isLoading}
+                onLoadMore={loadMore}
+                isLoadingMore={isLoadingMore}
+                hasMore={hasMore}
+                onDeleteMessage={handleDeleteMessage}
+              />
             )
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
@@ -232,6 +309,20 @@ export function HemChat({
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-foreground/60 hover:text-foreground"
+                  onClick={handleExport}
+                  aria-label="Exportera konversation"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Exportera konversation</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-foreground/60 hover:text-foreground"
                   onClick={() => setViewState('history')}
                 >
                   <History className="h-4 w-4" />
@@ -268,7 +359,14 @@ export function HemChat({
           ) : (
             <div className="flex-1 overflow-y-auto">
               <div className="mx-auto max-w-3xl">
-                <ChatMessageList messages={messages} isStreaming={isLoading} />
+                <ChatMessageList
+                  messages={messages}
+                  isStreaming={isLoading}
+                  onLoadMore={loadMore}
+                  isLoadingMore={isLoadingMore}
+                  hasMore={hasMore}
+                  onDeleteMessage={handleDeleteMessage}
+                />
               </div>
             </div>
           )}

@@ -45,6 +45,8 @@ export async function GET(request: NextRequest) {
           if (changeEvent?.document?.slug) {
             link_url = `/dokument/${changeEvent.document.slug}`
           }
+        } else if (n.entity_type === 'task' && n.entity_id) {
+          link_url = `/tasks?task=${n.entity_id}`
         }
 
         return { ...n, link_url }

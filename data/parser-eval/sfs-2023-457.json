@@ -1,0 +1,400 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (2023:457) om behandling av personuppgifter vid Utbetalningsmyndigheten",
+  "documentNumber": "SFS 2023:457",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Allmänna bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna lag innehåller bestämmelser om Utbetalningsmyndighetens behandling av personuppgifter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag innehåller bestämmelser om Utbetalningsmyndighetens behandling av personuppgifter.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Lagens tillämpningsområde",
+          "content": "Denna lag tillämpas vid behandlingen av personuppgifter vid Utbetalningsmyndigheten i dess verksamhet med att administrera systemet med transaktionskonto och att förebygga, förhindra och upptäcka felaktiga utbetalningar från välfärdssystemen.\nLagen gäller endast om behandlingen är helt eller delvis automatiserad eller om personuppgifterna ingår i eller kommer att ingå i ett register.\nBestämmelserna i 6-8, 10 och 11 §§ samt 2-4 kap. gäller även vid behandling av uppgifter om avlidna.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag tillämpas vid behandlingen av personuppgifter vid Utbetalningsmyndigheten i dess verksamhet med att administrera systemet med transaktionskonto och att förebygga, förhindra och upptäcka felaktiga utbetalningar från välfärdssystemen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Lagen gäller endast om behandlingen är helt eller delvis automatiserad eller om personuppgifterna ingår i eller kommer att ingå i ett register.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Bestämmelserna i 6-8, 10 och 11 §§ samt 2-4 kap. gäller även vid behandling av uppgifter om avlidna.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Förhållandet till annan reglering",
+          "content": "Denna lag kompletterar Europaparlamentets och rådets förordning (EU) 2016/679 av den 27 april 2016 om skydd för fysiska personer med avseende på behandling av personuppgifter och om det fria flödet av sådana uppgifter och om upphävande av direktiv 95/46/EG (allmän dataskyddsförordning), här benämnd EU:s dataskyddsförordning.\nVid behandlingen av personuppgifter enligt denna lag gäller\nmed kompletterande bestämmelser till EU:s dataskyddsförordning och föreskrifter som har meddelats i anslutning till den lagen, om inte annat följer av denna lag eller föreskrifter som har meddelats i anslutning till lagen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag kompletterar Europaparlamentets och rådets förordning (EU) 2016/679 av den 27 april 2016 om skydd för fysiska personer med avseende på behandling av personuppgifter och om det fria flödet av sådana uppgifter och om upphävande av direktiv 95/46/EG (allmän dataskyddsförordning), här benämnd EU:s dataskyddsförordning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vid behandlingen av personuppgifter enligt denna lag gäller",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "med kompletterande bestämmelser till EU:s dataskyddsförordning och föreskrifter som har meddelats i anslutning till den lagen, om inte annat följer av denna lag eller föreskrifter som har meddelats i anslutning till lagen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Rätten att göra invändningar",
+          "content": "Artikel 21.1 i EU:s dataskyddsförordning om rätten att göra invändningar gäller inte vid sådan behandling som är tillåten enligt denna lag eller föreskrifter som har meddelats i anslutning till lagen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Artikel 21.1 i EU:s dataskyddsförordning om rätten att göra invändningar gäller inte vid sådan behandling som är tillåten enligt denna lag eller föreskrifter som har meddelats i anslutning till lagen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Personuppgiftsansvar",
+          "content": "Utbetalningsmyndigheten är personuppgiftsansvarig för den behandling av personuppgifter som myndigheten utför enligt denna lag.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utbetalningsmyndigheten är personuppgiftsansvarig för den behandling av personuppgifter som myndigheten utför enligt denna lag.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Ändamål",
+          "content": "Utbetalningsmyndigheten får behandla personuppgifter om det är nödvändigt för att kunna utföra sina uppgifter att\n1. administrera ett system med transaktionskonto, och\n2. förebygga, förhindra och upptäcka felaktiga utbetalningar från välfärdssystemen.\nRegeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om begränsningar av ändamålen i första stycket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utbetalningsmyndigheten får behandla personuppgifter om det är nödvändigt för att kunna utföra sina uppgifter att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. administrera ett system med transaktionskonto, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. förebygga, förhindra och upptäcka felaktiga utbetalningar från välfärdssystemen.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om begränsningar av ändamålen i första stycket.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Personuppgifter som behandlas enligt 6 § får också behandlas för att fullgöra uppgiftslämnande som sker i överensstämmelse med lag eller förordning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som behandlas enligt 6 § får också behandlas för att fullgöra uppgiftslämnande som sker i överensstämmelse med lag eller förordning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Personuppgifter som behandlas enligt 6 § får behandlas även för andra ändamål, under förutsättning att uppgifterna inte behandlas på ett sätt som är oförenligt med de ändamål som uppgifterna samlades in för.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som behandlas enligt 6 § får behandlas även för andra ändamål, under förutsättning att uppgifterna inte behandlas på ett sätt som är oförenligt med de ändamål som uppgifterna samlades in för.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": "Känsliga personuppgifter",
+          "content": "Personuppgifter som avses i artikel 9.1 i EU:s dataskyddsförordning (känsliga personuppgifter) får behandlas, om det är nödvändigt med hänsyn till ändamålet med behandlingen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som avses i artikel 9.1 i EU:s dataskyddsförordning (känsliga personuppgifter) får behandlas, om det är nödvändigt med hänsyn till ändamålet med behandlingen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": "Sökbegränsningar",
+          "content": "Det är förbjudet att utföra sökningar i syfte att få fram ett urval av personer grundat på känsliga personuppgifter eller personuppgifter som avses i artikel 10 i EU:s dataskyddsförordning (fällande domar i brottmål och lagöverträdelser som innefattar brott).\nFörbudet omfattar inte sökningar i syfte att få fram ett urval grundat på sådan uppgift om hälsa som hänför sig till en förmån eller ett stöd. Det omfattar inte heller sökningar i en viss handling.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det är förbjudet att utföra sökningar i syfte att få fram ett urval av personer grundat på känsliga personuppgifter eller personuppgifter som avses i artikel 10 i EU:s dataskyddsförordning (fällande domar i brottmål och lagöverträdelser som innefattar brott).",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Förbudet omfattar inte sökningar i syfte att få fram ett urval grundat på sådan uppgift om hälsa som hänför sig till en förmån eller ett stöd. Det omfattar inte heller sökningar i en viss handling.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": "Tillgång till personuppgifter",
+          "content": "Tillgången till personuppgifter ska begränsas till det som var och en behöver för att kunna fullgöra sina arbetsuppgifter.\nÅtkomsten till personuppgifter ska kontrolleras och följas upp regelbundet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tillgången till personuppgifter ska begränsas till det som var och en behöver för att kunna fullgöra sina arbetsuppgifter.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Åtkomsten till personuppgifter ska kontrolleras och följas upp regelbundet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": "Elektroniskt utlämnande av personuppgifter",
+          "content": "Personuppgifter får lämnas ut elektroniskt, dock inte genom direktåtkomst.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter får lämnas ut elektroniskt, dock inte genom direktåtkomst.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Transaktionskontoregistret",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "För att administrera systemet med transaktionskonto ska det finnas en uppgiftssamling, benämnd transaktionskontoregistret.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att administrera systemet med transaktionskonto ska det finnas en uppgiftssamling, benämnd transaktionskontoregistret.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "I transaktionskontoregistret får sådana uppgifter behandlas som behövs för att administrera systemet med transaktionskonto.\nRegeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om vilka uppgifter som får behandlas i registret.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I transaktionskontoregistret får sådana uppgifter behandlas som behövs för att administrera systemet med transaktionskonto.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om vilka uppgifter som får behandlas i registret.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Uppgiftssamlingen för dataanalyser och urval",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "För att göra dataanalyser och urval, i syfte att förebygga, förhindra och upptäcka felaktiga utbetalningar från välfärdssystemen, ska det vid Utbetalningsmyndigheten finnas en uppgiftssamling, benämnd uppgiftssamlingen för dataanalyser och urval.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "För att göra dataanalyser och urval, i syfte att förebygga, förhindra och upptäcka felaktiga utbetalningar från välfärdssystemen, ska det vid Utbetalningsmyndigheten finnas en uppgiftssamling, benämnd uppgiftssamlingen för dataanalyser och urval.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Endast de personuppgifter som behövs för att göra dataanalyser och urval får behandlas i uppgiftssamlingen. Personuppgifterna som behandlas för att göra dataanalyser och urval får inte behandlas någon annanstans än i uppgiftssamlingen.\nRegeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om vilka uppgifter som får behandlas i uppgiftssamlingen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Endast de personuppgifter som behövs för att göra dataanalyser och urval får behandlas i uppgiftssamlingen. Personuppgifterna som behandlas för att göra dataanalyser och urval får inte behandlas någon annanstans än i uppgiftssamlingen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om vilka uppgifter som får behandlas i uppgiftssamlingen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Sökning och annan behandling i uppgiftssamlingen för dataanalyser och urval ska genomföras med respekt för enskildas personliga integritet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sökning och annan behandling i uppgiftssamlingen för dataanalyser och urval ska genomföras med respekt för enskildas personliga integritet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Metoder för att ta fram urval och de sökbegrepp som används vid sökningar i uppgiftssamlingen ska dokumenteras på ett sådant sätt att de kan kontrolleras i efterhand. Utbetalningsmyndigheten ska regelbundet följa upp de sökningar som har gjorts i uppgiftssamlingen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Metoder för att ta fram urval och de sökbegrepp som används vid sökningar i uppgiftssamlingen ska dokumenteras på ett sådant sätt att de kan kontrolleras i efterhand. Utbetalningsmyndigheten ska regelbundet följa upp de sökningar som har gjorts i uppgiftssamlingen.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Längsta tid som personuppgifter får behandlas",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Personuppgifter får inte behandlas under längre tid än vad som behövs med hänsyn till ändamålet med behandlingen, dock som längst den tid som följer av 2 och 3 §§.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter får inte behandlas under längre tid än vad som behövs med hänsyn till ändamålet med behandlingen, dock som längst den tid som följer av 2 och 3 §§.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Uppgifter i transaktionskontoregistret",
+          "content": "Personuppgifter som behandlas i transaktionskontoregistret får inte behandlas längre än tio år efter utgången av det år då betalningsuppdraget för den utbetalning som uppgifterna hänför sig till registrerades.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som behandlas i transaktionskontoregistret får inte behandlas längre än tio år efter utgången av det år då betalningsuppdraget för den utbetalning som uppgifterna hänför sig till registrerades.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Uppgifter för fördjupad granskning",
+          "content": "Personuppgifter som behandlas vid en fördjupad granskning enligt\nom Utbetalningsmyndighetens granskning av utbetalningar får inte behandlas längre än två år efter utgången av det år då den fördjupade granskningen avslutades.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som behandlas vid en fördjupad granskning enligt",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om Utbetalningsmyndighetens granskning av utbetalningar får inte behandlas längre än två år efter utgången av det år då den fördjupade granskningen avslutades.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": "Rätt att meddela föreskrifter och beslut",
+          "content": "Regeringen eller den myndighet som regeringen bestämmer kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om att personuppgifter som avses i 1-3 §§ får behandlas under viss tid eller att sådana uppgifter får fortsätta att behandlas för arkivändamål av allmänt intresse, vetenskapliga eller historiska forskningsändamål eller statistiska ändamål.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om att personuppgifter som avses i 1-3 §§ får behandlas under viss tid eller att sådana uppgifter får fortsätta att behandlas för arkivändamål av allmänt intresse, vetenskapliga eller historiska forskningsändamål eller statistiska ändamål.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Den myndighet som regeringen bestämmer får också i det enskilda fallet besluta om sådan behandling som avses i 4 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den myndighet som regeringen bestämmer får också i det enskilda fallet besluta om sådan behandling som avses i 4 §.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 2023:457",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

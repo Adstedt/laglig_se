@@ -15,9 +15,12 @@ export function createGetCompanyContextTool(workspaceId: string) {
     description: `Hämta företagets profil och efterlevnadsstatus (compliance posture).
 
 Använd detta verktyg när du behöver förstå vem användaren är och hur deras efterlevnadsläge ser ut.
-Det returnerar: företagsprofil (namn, org.nummer, SNI-kod, bransch, storlek), en sammanfattning av
-deras bevakningslistor med antal lagar, fördelning av efterlevnadsstatus, och antal väntande
-lagändringar som inte har hanterats.
+Det returnerar: företagsprofil (namn, org.nummer, SNI-kod, bransch, storlek, verksamhetsbeskrivning),
+skattestatus (F-skatt, moms, arbetsgivare), utlandsägande, FI-reglering, pågående förfaranden,
+en sammanfattning av bevakningslistor med antal lagar, fördelning av efterlevnadsstatus,
+och antal väntande lagändringar som inte har hanterats.
+
+dataSource anger datakällan: "bolagsapi" (auktoritativ från Bolagsverket) eller "manual" (användarinmatad).
 
 Verktyget tar inga parametrar — arbetsytan (workspace) bestäms automatiskt.
 
@@ -97,6 +100,16 @@ Returnerar alltid data även om vissa fält är tomma — använd det som finns.
           certifications: profile.certifications ?? [],
           profileCompleteness: profile.profile_completeness ?? 0,
           profileComplete,
+          businessDescription: profile.business_description ?? null,
+          taxStatus: profile.tax_status ?? null,
+          foreignOwned: profile.foreign_owned,
+          parentCompanyName: profile.parent_company_name ?? null,
+          fiRegulated: profile.fi_regulated,
+          ongoingProcedures: profile.ongoing_procedures ?? null,
+          activeStatus: profile.active_status ?? null,
+          registeredDate: profile.registered_date?.toISOString() ?? null,
+          dataSource: profile.data_source ?? null,
+          lastEnrichedAt: profile.last_enriched_at?.toISOString() ?? null,
           lawLists: lawLists.map((list) => ({
             name: list.name,
             itemCount: list._count.items,

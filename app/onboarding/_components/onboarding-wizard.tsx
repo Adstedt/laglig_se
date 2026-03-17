@@ -71,6 +71,28 @@ export function OnboardingWizard({
       if (data.employeeCount && data.employeeCount !== '')
         fd.append('employeeCount', data.employeeCount)
 
+      // Enrichment fields from BolagsAPI auto-fill
+      if (data.municipality) fd.append('municipality', data.municipality)
+      if (data.industryLabel) fd.append('industryLabel', data.industryLabel)
+      if (data.foundedYear) fd.append('foundedYear', data.foundedYear)
+      if (data.websiteUrl) fd.append('websiteUrl', data.websiteUrl)
+      if (data.businessDescription)
+        fd.append('businessDescription', data.businessDescription)
+      if (data.taxStatus) fd.append('taxStatus', data.taxStatus)
+      if (data.foreignOwned !== undefined)
+        fd.append('foreignOwned', String(data.foreignOwned))
+      if (data.parentCompanyName)
+        fd.append('parentCompanyName', data.parentCompanyName)
+      if (data.parentCompanyOrgnr)
+        fd.append('parentCompanyOrgnr', data.parentCompanyOrgnr)
+      if (data.fiRegulated !== undefined)
+        fd.append('fiRegulated', String(data.fiRegulated))
+      if (data.activeStatus) fd.append('activeStatus', data.activeStatus)
+      if (data.ongoingProcedures)
+        fd.append('ongoingProcedures', data.ongoingProcedures)
+      if (data.registeredDate) fd.append('registeredDate', data.registeredDate)
+      if (data.dataSource) fd.append('dataSource', data.dataSource)
+
       const result = await createWorkspace(fd)
 
       if (!result.success) {

@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2016:12</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2016-12">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2016:12</p>
+      <p class="text">Boverkets föreskrifter och allmänna råd om fastställande av byggnadens energianvändning vid normalt brukande och ett normalår</p>
+    </h1>
+  </div>
+  <div class="body">
+    <section class="kapitel" id="BFS2016-12_K1">
+      <h2 class="kapitel-rubrik">1 kap. Inledning</h2>
+
+      <h3 id="BFS2016-12_allmant">Allmänt</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K1_P1" name="BFS2016-12_K1_P1">1 §</a>
+      </h3>
+      <p class="text">Denna författning innehåller föreskrifter och allmänna råd till 3 kap. 14 § och 15 § första stycket plan- och byggförordningen (2011:338) och tillhörande författningar och 7 § förordning (2006:1592) om energideklaration för byggnader och tillhörande författningar.</p>
+      <p class="text">Författningen innehåller föreskrifter om fastställande av byggnadens energianvändning knutet till normalt brukande och för ett normalår, dels vid beräkning, dels utifrån uppmätt energianvändning.</p>
+      <p class="text">Termer som inte särskilt förklaras i Boverkets byggregler (2011:6) – föreskrifter och allmänna råd, BBR, avsnitt 9, lagen (2006:985) om energideklaration för byggnader och tillhörande författningar, eller i denna författning, har den betydelse som anges i Terminologicentrums publikation Plan- och byggtermer 1994, TNC 95.</p>
+
+      <h3 id="BFS2016-12_tillampningsomrade">Tillämpningsområde</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K1_P2" name="BFS2016-12_K1_P2">2 §</a>
+      </h3>
+      <p class="text">Föreskriften ska tillämpas vid verifiering av byggnadens specifika energianvändning enligt avsnitt 9 Boverkets byggregler (2011:6) – föreskrifter och allmänna råd, BBR, och vid fastställande en byggnads energiprestanda och energiklass enligt Boverkets föreskrifter och allmänna råd (2007:4) om energideklaration för byggnader, BED.</p>
+
+      <h3 id="BFS2016-12_allmanna-rad">Allmänna råd</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K1_P3" name="BFS2016-12_K1_P3">3 §</a>
+      </h3>
+      <p class="text">De allmänna råden innehåller generella rekommendationer om tillämpningen av föreskrifterna i denna författning och anger hur någon lämpligen kan eller bör handla för att uppfylla föreskrifterna.</p>
+      <p class="text">De allmänna råden kan även innehålla vissa förklarande eller redaktionella upplysningar.</p>
+      <p class="text">De allmänna råden föregås av texten Allmänt råd och är tryckta med mindre och indragen text.</p>
+
+      <h3 id="BFS2016-12_definitioner">Definitioner</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K1_P4" name="BFS2016-12_K1_P4">4 §</a>
+      </h3>
+      <p class="text">I denna författning avses med:</p>
+      <dl>
+        <dt><strong>Dynamisk energiberäkning</strong></dt>
+        <dd>Beräkning av byggnadens energianvändning med korta beräkningssteg, typiskt en timme, som tar hänsyn till värme som lagras i och avges från byggnadens massa.</dd>
+        <dt><strong>Internlast</strong></dt>
+        <dd>Värme som genereras inom byggnaden från andra värmekällor än tekniska system avsedda för uppvärmning. Exempel på detta är värme från personer och från användning av hushållsenergi och verksamhetsenergi.</dd>
+        <dt><strong>Lokal</strong></dt>
+        <dd>Kontor, byggnader för parti- och detaljhandel, restaurang, lager, undervisningslokaler, laboratorium, idrottsanläggningar, vårdlokaler samt andra lokalbyggnader.</dd>
+        <dt><strong>Normalisering</strong></dt>
+        <dd>Korrigering av uppmätt energi vid fastställande av byggnadens energianvändning knuten till normalt brukande och för ett normalår.</dd>
+        <dt><strong>Normalt brukande</strong></dt>
+        <dd>Användning av en byggnad som avspeglar antingen ett standardiserat brukande eller för lokaler den verksamhet som byggnaden är avsedd för.</dd>
+      </dl>
+    </section>
+
+    <section class="kapitel" id="BFS2016-12_K2">
+      <h2 class="kapitel-rubrik">2 kap. Fastställande av byggnadens energianvändning genom beräkning</h2>
+
+      <h3 id="BFS2016-12_allmant-2">Allmänt</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K2_P1" name="BFS2016-12_K2_P1">1 §</a>
+      </h3>
+      <p class="text">Fastställande av byggnadens energianvändning genom beräkning ska avspegla den uppmätta och normaliserade energianvändningen. Indata i energiberäkningen ska överensstämma med byggnadens och installationernas egenskaper i den färdiga byggnaden, och åtminstone beakta de faktorer som anges i 3–5 §§ och brukarindata i 6–7 §§.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Vid beräkning av byggnadens energianvändning för verifiering av byggnadens specifika energianvändning enligt Boverkets byggregler (2011:6) – föreskrifter och allmänna råd, BBR, bör lämpliga säkerhetsmarginaler tillämpas så att kravet uppfylls även vid uppmätt och normaliserad energianvändning.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K2_P2" name="BFS2016-12_K2_P2">2 §</a>
+      </h3>
+      <p class="text">För småhus och flerbostadshus får byggnadens energianvändning fastställas genom energiberäkning med beräkningssteg på högst en månad. För lokaler ska byggnadens energianvändning fastställas genom dynamisk energiberäkning med beräkningssteg på högst en timme.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">SS-EN ISO 13790:2008 beskriver olika beräkningsmetoder.</p>
+        <p class="text">När ett dynamiskt energiberäkningsverktyg används bör dess lämplighet påvisas. Dynamiska energiberäkningsverktyg kan valideras enligt till exempel SS-EN 15265:2007.</p>
+        <p class="text">För lokaler bör indata i energiberäkningen delas upp i olika tidsscheman om byggnaden har intermittent verksamhet.</p>
+        <p class="text">Om utrymmen i byggnaden har olika inomhusklimat kan byggnaden behöva delas in i zoner vid energiberäkningen för att korrekt avspegla uppmätt energi i den färdigställda byggnaden. En indelning i zoner kan till exempel grunda sig på att utrymmen har olika innetemperaturer, betjänas av olika system för värme, komfortkyla eller luftbehandling, eller uppvisar skillnader i internlaster.</p>
+      </div>
+
+      <h3 id="BFS2016-12_byggnadens-och-installationernas-egenskaper">Byggnadens och installationernas egenskaper</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K2_P3" name="BFS2016-12_K2_P3">3 §</a>
+      </h3>
+      <p class="text">Vid beräkning av byggnadens energianvändning ska byggnadens utformning, placering och orientering beaktas, inklusive utomhusklimat och passiv solinstrålning. Data för utomhusklimatet ska vara representativt för ett normalår för den ort där byggnaden är belägen.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K2_P4" name="BFS2016-12_K2_P4">4 §</a>
+      </h3>
+      <p class="text">Vid beräkning av byggnadens energianvändning ska åtminstone följande termiska egenskaper hos byggnaden beaktas</p>
+      <ul>
+        <li>värmegenomgångskoefficient (U-värde) för tak, väggar, golv, fönster och ytterdörrar,</li>
+        <li>köldbryggor, och</li>
+        <li>klimatskärmens luftläckage.</li>
+      </ul>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Om byggnadens värmekapacitet bedöms ha en inverkan av betydelse för byggnadens energianvändning bör även denna faktor beaktas i energiberäkningen.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K2_P5" name="BFS2016-12_K2_P5">5 §</a>
+      </h3>
+      <p class="text">Vid beräkning av byggnadens energianvändning ska åtminstone följande tekniska byggnadssystem beaktas, inklusive faktiska driftförhållanden och reglerförluster</p>
+      <ul>
+        <li>värmeanläggningar och varmvattenförsörjning, inbegripet deras isoleringsegenskaper samt varmvattencirkulation,</li>
+        <li>luftkonditionering,</li>
+        <li>ventilation,</li>
+        <li>fast belysning i allmänna utrymmen och driftsutrymmen, och</li>
+        <li>övrig energianvändning som ingår i byggnadens fastighetsenergi till exempel till värmekablar, pumpar, fläktar, motorer, styr- och övervakningsutrustning och dylikt.</li>
+      </ul>
+      <p class="text">Byggnadens energianvändning får reduceras med energin från solfångare eller solceller placerade på huvudbyggnad, uthus eller byggnadens tomt, i den omfattning byggnaden kan tillgodogöra sig energin för uppvärmning, komfortkyla, tappvarmvatten och byggnadens fastighetsenergi.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">För energi till tappvarmvatten ska ett standardiserat värde användas i energiberäkningen enligt 6 och 7 §§. Det standardiserade värdet får reduceras med energi från solfångare och solceller i den omfattning byggnaden kan tillgodogöra sig energin för produktion av tappvarmvatten.</p>
+      </div>
+
+      <h3 id="BFS2016-12_brukarindata">Brukarindata</h3>
+
+      <h4 id="BFS2016-12_bostader">Bostäder</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K2_P6" name="BFS2016-12_K2_P6">6 §</a>
+      </h3>
+      <p class="text">Vid beräkning av byggnadens energianvändning ska brukarindata som anges i tabell 2:1 för småhus och tabell 2:2 för flerbostadshus användas.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:1 Brukarindata för nya småhus</caption>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Delparameter</th>
+            <th>Delparameter</th>
+            <th>Värden</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Innetemperatur</td>
+            <td>Uppvärmningssäsong (°C)</td>
+            <td>Utrymmen för bostadsändamål</td>
+            <td>21</td>
+          </tr>
+          <tr>
+            <td rowspan="2">Luftflöden</td>
+            <td>Behovsstyrda flöden (min/dygn)</td>
+            <td>Forcering i kök</td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>Vädringspåslag (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+            <td>Energipåslag</td>
+            <td>4/η<sub>uppv</sub><sup>1)</sup></td>
+          </tr>
+          <tr>
+            <td>Solavskärmning</td>
+            <td>Avskärmningsfaktor</td>
+            <td>Total<br>Fast och rörlig</td>
+            <td>0,5<br>0,71 och 0,71</td>
+          </tr>
+          <tr>
+            <td>Tappvarmvatten</td>
+            <td>Energi (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+            <td></td>
+            <td>20/η<sub>tvv</sub><sup>2)</sup></td>
+          </tr>
+          <tr>
+            <td rowspan="2">Hushållsenergi</td>
+            <td>Energi (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+            <td></td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>Internlast (%)</td>
+            <td>Möjlig att tillgodogöras</td>
+            <td>70</td>
+          </tr>
+          <tr>
+            <td rowspan="3">Personvärme</td>
+            <td>Antal personer</td>
+            <td></td>
+            <td>Enligt tabell 2:3</td>
+          </tr>
+          <tr>
+            <td>Tid (h/d/v)<sup>3)</sup></td>
+            <td></td>
+            <td>14/7/52</td>
+          </tr>
+          <tr>
+            <td>Effektavgivning (W/person)</td>
+            <td></td>
+            <td>80</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text"><sup>1)</sup> η<sub>uppv</sub> är årsverkningsgraden för uppvärmningssystemet.</p>
+      <p class="text"><sup>2)</sup> η<sub>tvv</sub> är årsverkningsgraden för produktion av tappvarmvatten i byggnaden.</p>
+      <p class="text"><sup>3)</sup> Timme per dygn/dygn per vecka/veckor per år.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:2 Brukarindata för nya flerbostadshus</caption>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Delparameter</th>
+            <th>Delparameter</th>
+            <th>Värden</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Innetemperatur</td>
+            <td>Uppvärmningssäsong (°C)</td>
+            <td>Utrymmen för bostadsändamål i äldreboende/övriga</td>
+            <td>22</td>
+          </tr>
+          <tr>
+            <td rowspan="2">Luftflöden</td>
+            <td>Behovsstyrda flöden (min/dygn)</td>
+            <td>Forcering i kök</td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>Vädringspåslag (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+            <td>Energipåslag</td>
+            <td>4/η<sub>uppv</sub><sup>1)</sup></td>
+          </tr>
+          <tr>
+            <td>Solavskärmning</td>
+            <td>Avskärmningsfaktor</td>
+            <td>Total<br>Fast och rörlig</td>
+            <td>0,5<br>0,71 och 0,71</td>
+          </tr>
+          <tr>
+            <td>Tappvarmvatten</td>
+            <td>Energi (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+            <td></td>
+            <td>25/η<sub>tvv</sub><sup>2)</sup></td>
+          </tr>
+          <tr>
+            <td rowspan="2">Hushållsenergi</td>
+            <td>Energi (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+            <td></td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>Internlast (%)</td>
+            <td>Möjlig att tillgodogöras</td>
+            <td>70</td>
+          </tr>
+          <tr>
+            <td rowspan="3">Personvärme</td>
+            <td>Antal personer</td>
+            <td></td>
+            <td>Enligt tabell 2:3</td>
+          </tr>
+          <tr>
+            <td>Tid (h/d/v)<sup>3)</sup></td>
+            <td></td>
+            <td>14/7/52</td>
+          </tr>
+          <tr>
+            <td>Effektavgivning (W/person)</td>
+            <td></td>
+            <td>80</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text"><sup>1)</sup> η<sub>uppv</sub> är årsverkningsgraden för uppvärmningssystemet.</p>
+      <p class="text"><sup>2)</sup> η<sub>tvv</sub> är årsverkningsgraden för produktion av tappvarmvatten i byggnaden.</p>
+      <p class="text"><sup>3)</sup> Timme per dygn/dygn per vecka/veckor per år.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 2:3 Värden för beräkning av antal personer i bostäder</caption>
+        <thead>
+          <tr>
+            <th>Antal rum och kök</th>
+            <th>1<sup>a)</sup></th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5+</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Antal personer</td>
+            <td>1,42</td>
+            <td>1,63</td>
+            <td>2,18</td>
+            <td>2,79</td>
+            <td>3,51</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text"><sup>a)</sup> Inklusive 1 rum och kokvrå</p>
+
+      <p class="text">Energi för tappvarmvatten enligt tabell 2:1 och tabell 2:2 får korrigeras för installationsteknisk lösning som kan påvisas medföra en besparing av energi till tappvarmvatten.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Exempel på installationsteknisk lösning som kan påvisas medföra en besparing av energi till tappvarmvatten är värmeväxlare för spillvatten eller energieffektiva tvättställs- och köksblandare. Vid korrigering för energieffektiva sanitetsarmaturer bör åtminstone merparten av byggnadens tvättställs- och köksblandare uppfylla energiklass A enligt SS 820000:2010.</p>
+        <p class="text">Om värdet för energi till tappvarmvatten enligt tabell 2:1 och tabell 2:2 korrigeras på grund av energieffektiva sanitetsarmaturer bör korrigeringen maximalt uppgå till 10 procent.</p>
+        <p class="text">Brukarindata angivna i tabell 2:1 för småhus och tabell 2:2 för flerbostadshus kan även användas vid beräkning av byggnadens energianvändning i andra bostadsbyggnader än vid uppförande av ny byggnad.</p>
+      </div>
+
+      <h4 id="BFS2016-12_lokaler">Lokaler</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K2_P7" name="BFS2016-12_K2_P7">7 §</a>
+      </h3>
+      <p class="text">Vid beräkning av byggnadens energianvändning för lokaler ska brukarindata väljas utifrån den verksamhet som är avsedd att bedrivas i lokalen. Energi till tappvarmvatten exklusive förluster för varmvattencirkulation ska dock antas till 2 kWh/m<sup>2</sup>A<sub>temp</sub> och år för samtliga lokalkategorier.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">När det inte går att få fram uppgifter om brukarindata för avsedd verksamhet till exempel för andra byggnader än vid uppförande av ny byggnad får standardiserade värden användas. Exempel på brukarindata som kan användas för kontorslokaler anges i tabell 2:4 och för undervisningslokaler i tabell 2:5–2:7.</p>
+
+        <table class="legal-table">
+          <caption>Tabell 2:4 Brukarindata för kontorslokaler</caption>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Delparameter</th>
+              <th>Delparameter</th>
+              <th>Värden</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="2">Innetemperatur</td>
+              <td>Värme (°C)</td>
+              <td></td>
+              <td>min 21</td>
+            </tr>
+            <tr>
+              <td>Kyla</td>
+              <td></td>
+              <td>min 23</td>
+            </tr>
+            <tr>
+              <td>Luftflöden</td>
+              <td>Verksamhetsberoende flöden (l/m<sup>2</sup> A<sub>temp</sub> s)</td>
+              <td>Kontor</td>
+              <td>1,3</td>
+            </tr>
+            <tr>
+              <td>Solavskärmning</td>
+              <td>Avskärmningsfaktor</td>
+              <td>Total<br>Fast och rörlig</td>
+              <td>0,5<br>0,71 och 0,71</td>
+            </tr>
+            <tr>
+              <td>Tappvarmvatten</td>
+              <td>Energi (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td></td>
+              <td>2/η<sub>tvv</sub><sup>1)</sup></td>
+            </tr>
+            <tr>
+              <td rowspan="2">Verksamhetsenergi</td>
+              <td>Energi (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>Årsschablon</td>
+              <td>50</td>
+            </tr>
+            <tr>
+              <td>Internlast (%)</td>
+              <td>Möjlig att tillgodogöras</td>
+              <td>100</td>
+            </tr>
+            <tr>
+              <td rowspan="3">Personvärme</td>
+              <td>Antal personer (m<sup>2</sup> A<sub>temp</sub>/person)</td>
+              <td></td>
+              <td>20</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td></td>
+              <td>9/5/47</td>
+            </tr>
+            <tr>
+              <td>Effektavgivning (W/person)</td>
+              <td></td>
+              <td>108</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text"><sup>1)</sup> η<sub>tvv</sub> är årsverkningsgraden för produktion av tappvarmvatten i byggnaden.</p>
+        <p class="text"><sup>2)</sup> Timme per dygn/dygn per vecka/veckor per år.</p>
+
+        <table class="legal-table">
+          <caption>Tabell 2:5 Brukarindata för förskolor</caption>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Delparameter</th>
+              <th>Kök</th>
+              <th>Avdelningar och övrigt<sup>1)</sup></th>
+              <th>Övriga utr., teknikrum, förråd m.m.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="2">Innetemperatur, börvärde</td>
+              <td>Lägsta lufttemperatur (°C)</td>
+              <td>22</td>
+              <td>22</td>
+              <td>18</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>24/7/52</td>
+              <td>24/7/52</td>
+              <td>24/7/52</td>
+            </tr>
+            <tr>
+              <td rowspan="2">Luftflöden</td>
+              <td>Grund/forcerade (l/m<sup>2</sup> A<sub>temp</sub> s)</td>
+              <td>2,0/4,0</td>
+              <td>2,5/-</td>
+              <td>0,35/-</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)/(h/d/v)<sup>2)</sup></td>
+              <td>(6/5/47)/(6/5/47)</td>
+              <td>12/5/47</td>
+              <td>12/5/47</td>
+            </tr>
+            <tr>
+              <td>Solavskärmning</td>
+              <td>Beteendestyrd avskärmning</td>
+              <td>0,65</td>
+              <td>0,65</td>
+              <td>0,65</td>
+            </tr>
+            <tr>
+              <td>Tappvarmvatten (exkl. förluster för varmvattencirkulation)</td>
+              <td>Energi (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+            </tr>
+            <tr>
+              <td rowspan="5">Verksamhetsenergi</td>
+              <td>Årsschablon (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>24</td>
+              <td>14</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Belysning (W/m<sup>2</sup> A<sub>temp</sub>)</td>
+              <td>5,0</td>
+              <td>4,0</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>10/5/47</td>
+              <td>10/5/47</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>Utrustning (W/m<sup>2</sup> A<sub>temp</sub>)</td>
+              <td>5,0</td>
+              <td>2,0</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>10/5/47</td>
+              <td>10/5/47</td>
+              <td>10/5/47</td>
+            </tr>
+            <tr>
+              <td rowspan="3">Personvärme</td>
+              <td>Persontäthet (person/m<sup>2</sup> A<sub>temp</sub>)</td>
+              <td>0,067</td>
+              <td>0,067</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>6/5/47</td>
+              <td>6/5/47</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Effektavgivning (W/person)</td>
+              <td>70</td>
+              <td>80</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>Vädringspåslag</td>
+              <td>Energipåslag (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text"><sup>1)</sup> Kategorin "avdelningar och övrigt" inkluderar alla utrymmen som hör till förskolan förutom köksutrymmen samt teknikrum, förråd etc., där personer normalt ej vistas.</p>
+        <p class="text"><sup>2)</sup> Timme per dygn/dygn per vecka/veckor per år.</p>
+        <p class="text"><sup>3)</sup> η<sub>tvv</sub> är årsverkningsgraden för produktion av tappvarmvatten i byggnaden.</p>
+        <p class="text"><sup>4)</sup> η<sub>uppv</sub> är årsverkningsgraden för uppvärmningssystemet.</p>
+
+        <table class="legal-table">
+          <caption>Tabell 2:6 Brukarindata för grund- och gymnasieskolor</caption>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Delparameter</th>
+              <th>Kök och matsal</th>
+              <th>Idrott, dusch m.m.</th>
+              <th>Klassrum, grupprum m.m.<sup>1)</sup></th>
+              <th>Övriga utr., teknikrum, förråd m.m.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="2">Innetemperatur, börvärde</td>
+              <td>Lägsta lufttemperatur (°C)</td>
+              <td>22</td>
+              <td>22</td>
+              <td>22</td>
+              <td>18</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>24/7/52</td>
+              <td>24/7/52</td>
+              <td>24/7/52</td>
+              <td>24/7/52</td>
+            </tr>
+            <tr>
+              <td rowspan="2">Luftflöden</td>
+              <td>Grund/forcerade (l/m<sup>2</sup> A<sub>temp</sub> s)</td>
+              <td>2,0/4,0</td>
+              <td>2,0/4,0</td>
+              <td>3,0/-</td>
+              <td>0,35/-</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)/(h/d/v)<sup>2)</sup></td>
+              <td>(5/5/44)/(5/5/44)</td>
+              <td>(5/5/44)/(5/5/44)</td>
+              <td>(10/5/44)/-</td>
+              <td>(10/5/44)/-</td>
+            </tr>
+            <tr>
+              <td>Solavskärmning</td>
+              <td>Beteendestyrd avskärmning</td>
+              <td>0,65</td>
+              <td>0,65</td>
+              <td>0,65</td>
+              <td>0,65</td>
+            </tr>
+            <tr>
+              <td>Tappvarmvatten (exkl. förluster för varmvattencirkulation)</td>
+              <td>Typvärde som ingår i byggnadens energianvändning (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+            </tr>
+            <tr>
+              <td rowspan="5">Verksamhetsenergi</td>
+              <td>Årsschablon (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>22</td>
+              <td>22</td>
+              <td>22</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Belysning (W/m<sup>2</sup> A<sub>temp</sub>)</td>
+              <td>5,0</td>
+              <td>5,0</td>
+              <td>5,0</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>10/5/44</td>
+              <td>10/5/44</td>
+              <td>10/5/44</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>Utrustning (W/m<sup>2</sup> A<sub>temp</sub>)</td>
+              <td>5,0</td>
+              <td>5,0</td>
+              <td>5,0</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>10/5/44</td>
+              <td>10/5/44</td>
+              <td>10/5/44</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td rowspan="3">Personvärme</td>
+              <td>Persontäthet (person/m<sup>2</sup> A<sub>temp</sub>)</td>
+              <td>0,067</td>
+              <td>0,067</td>
+              <td>0,067</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>6/5/44</td>
+              <td>6/5/44</td>
+              <td>6/5/44</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>Effektavgivning (W/person)</td>
+              <td>80</td>
+              <td>80</td>
+              <td>80</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>Vädringspåslag</td>
+              <td>Energipåslag (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text"><sup>1)</sup> Kategorin "klassrum, grupprum mm" är tänkt att inkludera samtliga ytor utrymmen som inte hamnar i de övriga kategorierna.</p>
+        <p class="text"><sup>2)</sup> Timme per dygn/dygn per vecka/veckor per år.</p>
+        <p class="text"><sup>3)</sup> η<sub>tvv</sub> är årsverkningsgraden för produktion av tappvarmvatten i byggnaden.</p>
+        <p class="text"><sup>4)</sup> η<sub>uppv</sub> är årsverkningsgraden för uppvärmningssystemet.</p>
+
+        <table class="legal-table">
+          <caption>Tabell 2:7 Brukarindata för högskolor och universitet</caption>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Delparameter</th>
+              <th>Undervisning och tillhörande utrymmen<sup>1)</sup></th>
+              <th>Kontor och dylikt</th>
+              <th>Övriga utr., teknikrum, förråd m.m.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="3">Innetemperatur, börvärde inom/utanför drifttid</td>
+              <td>Lägsta lufttemperatur (°C)</td>
+              <td>22/20</td>
+              <td>21/20</td>
+              <td>18</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>15/5/52</td>
+              <td>15/5/52</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>Högsta lufttemperatur (°C)</td>
+              <td>24</td>
+              <td>24</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td rowspan="2">Luftflöden</td>
+              <td>Grund (l/m<sup>2</sup> A<sub>temp</sub> s)</td>
+              <td>2,0</td>
+              <td>1,3</td>
+              <td>0,35</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>15/5/52</td>
+              <td>10/5/52</td>
+              <td>15/5/52</td>
+            </tr>
+            <tr>
+              <td>Solavskärmning</td>
+              <td>Beteendestyrd avskärmning</td>
+              <td>0,65</td>
+              <td>0,65</td>
+              <td>0,65</td>
+            </tr>
+            <tr>
+              <td>Tappvarmvatten (exkl. förluster för varmvattencirkulation)</td>
+              <td>Typvärde som ingår i byggnadens energianvändning (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+              <td>2/η<sub>tvv</sub><sup>3)</sup></td>
+            </tr>
+            <tr>
+              <td rowspan="5">Verksamhetsenergi</td>
+              <td>Årsschablon (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>47</td>
+              <td>50</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Belysning (W/m<sup>2</sup> A<sub>temp</sub>)</td>
+              <td>15,0</td>
+              <td>11,4</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>9/5/52</td>
+              <td>9/5/52</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>Utrustning (W/m<sup>2</sup> A<sub>temp</sub>)</td>
+              <td>5,0</td>
+              <td>10</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>9/5/52</td>
+              <td>9/5/52</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td rowspan="3">Personvärme</td>
+              <td>Persontäthet (person/m<sup>2</sup> A<sub>temp</sub>)</td>
+              <td>0,067</td>
+              <td>0,05</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>Tid (h/d/v)<sup>2)</sup></td>
+              <td>9/5/52</td>
+              <td>9/5/52</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>Effektavgivning (W/person)</td>
+              <td>108</td>
+              <td>108</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td>Vädringspåslag</td>
+              <td>Energipåslag (kWh/m<sup>2</sup> A<sub>temp</sub> år)</td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+              <td>4/η<sub>uppv</sub><sup>4)</sup></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text"><sup>1)</sup> Kategorin "undervisning och tillhörande utrymmen" utgör här de utrymmen som inte klassas som kontor eller teknik, förråd etc.</p>
+        <p class="text"><sup>2)</sup> Timme per dygn/dygn per vecka/veckor per år.</p>
+        <p class="text"><sup>3)</sup> η<sub>tvv</sub> är årsverkningsgraden för produktion av tappvarmvatten i byggnaden.</p>
+        <p class="text"><sup>4)</sup> η<sub>uppv</sub> är årsverkningsgraden för uppvärmningssystemet.</p>
+      </div>
+    </section>
+
+    <section class="kapitel" id="BFS2016-12_K3">
+      <h2 class="kapitel-rubrik">3 kap. Fastställande av byggnadens energianvändning genom mätning och normalisering</h2>
+
+      <h3 id="BFS2016-12_allmant-3">Allmänt</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P1" name="BFS2016-12_K3_P1">1 §</a>
+      </h3>
+      <p class="text">Fastställande av byggnadens energianvändning genom mätning och normalisering ska göras på grundval av uppmätt energi.</p>
+      <p class="text">Den uppmätta energin ska normaliseras antingen stegvis enligt 3–6 §§ för bostäder, enligt 7–10 §§ för lokaler, eller genom dynamisk energiberäkning enligt 11 §. För byggnader som innehåller både bostäder och lokaler ska normalisering genomföras med hänsyn taget till respektive byggnadskategori.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">De uppgifter som finns tillgängliga om uppmätt energi kan skilja sig åt beroende på om byggnadens energianvändning ska fastställas vid uppförande av ny byggnad eller för annan byggnad. Vid uppförande av ny byggnad bör energianvändningen för uppvärmning, komfortkyla, tappvarmvatten och byggnadens fastighetsenergi ha mätts separat åtminstone för flerbostadshus och lokaler. Vid uppförande av nya flerbostadshus och lokaler bör därför uppmätta värden inte behöva bearbetas före normalisering. I avsnitt 9:7 Boverkets byggregler (2011:6) – föreskrifter och allmänna råd, BBR, anges de krav som ställs på mätsystem vid uppförande av ny byggnad.</p>
+        <p class="text">Vid fastställande av byggnadens energianvändning för andra byggnader kan uppmätt energi behöva bearbetas före normaliseringen om energianvändningen för uppvärmning, komfortkyla, tappvarmvatten och byggnadens fastighetsenergi inte har mätts separat. I dessa fall får energin för dessa användningsområden bestämmas på grundval av de mätuppgifter som finns tillgängliga.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P2" name="BFS2016-12_K3_P2">2 §</a>
+      </h3>
+      <p class="text">Före normalisering ska hänsyn tas till mätningens omfattning i byggnaden. Om energi till uppvärmning, komfortkyla, tappvarmvatten och byggnadens fastighetsenergi inte har mätts separat ska den uppmätta energin fördelas i den utsträckning som behövs för att genomföra normaliseringen. Om uppmätt energi utgår från en gemensam mätpunkt för flera byggnader ska energianvändningen fördelas på de ingående byggnaderna genom en bedömning av respektive byggnads energianvändning.</p>
+      <p class="text">Om mätvärdena innehåller energianvändning för apparater och installationer som inte ingår i byggnadens energianvändning ska denna energi tas bort före normalisering. Om mätvärdena inte innehåller energianvändning för apparater och installationer som ingår i byggnadens energianvändning ska denna energi läggas till före normalisering.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Vid hantering av mätvärden bör hänsyn tas till särskilda händelser som har påverkat byggnadens energianvändning på ett icke försumbart sätt under mätperioden. Exempel på sådan händelse är ombyggnad, tillfälligt ändrad verksamhet, eller värme- och ventilationssystem som har varit ur drift under del av året. I dessa fall bör den levererade energin till byggnaden korrigeras för att avspegla den årliga energianvändningen under normala förhållanden.</p>
+        <p class="text">För energislag som inte erhålls direkt i kWh, t.ex. olja och biobränsle, kan uppmätta volymer av bränslet omräknas till kWh med hjälp av bränsletypernas effektiva värmevärde.</p>
+      </div>
+
+      <h3 id="BFS2016-12_normalisering-av-energianvandningen-i-bostadsbyggnader">Normalisering av energianvändningen i bostadsbyggnader</h3>
+
+      <h4 id="BFS2016-12_normalisering-av-energi-till-tappvarmvatten">Normalisering av energi till tappvarmvatten</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P3" name="BFS2016-12_K3_P3">3 §</a>
+      </h3>
+      <p class="text">Levererad energi till tappvarmvatten exklusive förluster för varmvattencirkulation ska ersättas med värde bestämt enligt tabell 3:1.</p>
+
+      <table class="legal-table">
+        <caption>Tabell 3:1 Normaliserat värde för energi till tappvarmvatten i bostäder där η<sub>tvv</sub> är årsverkningsgraden för produktion av tappvarmvatten i byggnaden</caption>
+        <thead>
+          <tr>
+            <th>Småhus (kWh/år)</th>
+            <th>Flerbostadshus (kWh/år)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>20 × A<sub>temp</sub> / η<sub>tvv</sub></td>
+            <td>25 × A<sub>temp</sub> / η<sub>tvv</sub></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="text">Det normaliserade värdet enligt tabell 3:1 får reduceras med energi från solfångare och solceller i den omfattning energin tillgodogörs för produktion av tappvarmvatten i byggnaden. Det normaliserade värdet får även korrigeras för annan installationsteknisk lösning som kan påvisas medföra en besparing av energi till tappvarmvatten.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Om det inte går att få fram uppgifter om årsverkningsgraden kan värden enligt tabell 3:2 användas vid fastställande av normaliserat värde för energi till tappvarmvatten.</p>
+
+        <table class="legal-table">
+          <caption>Tabell 3:2 Vägledande årsverkningsgrad för produktion av tappvarmvatten uppdelat på olika värmekällor</caption>
+          <thead>
+            <tr>
+              <th>Värmekälla</th>
+              <th>Årsverkningsgrad, η<sub>tvv</sub></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Fjärrvärme</td>
+              <td>1,0</td>
+            </tr>
+            <tr>
+              <td>El (direktverkande och elpanna)</td>
+              <td>1,0</td>
+            </tr>
+            <tr>
+              <td>El, frånluftsvärmepump</td>
+              <td>1,7</td>
+            </tr>
+            <tr>
+              <td>El, uteluft-vattenvärmepump</td>
+              <td>2,0</td>
+            </tr>
+            <tr>
+              <td>El, markvärmepump (berg, mark, sjö)</td>
+              <td>2,5</td>
+            </tr>
+            <tr>
+              <td>Biobränslepanna (pellets, ved, flis mm)</td>
+              <td>0,75</td>
+            </tr>
+            <tr>
+              <td>Olja</td>
+              <td>0,85</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="text">Om energi till tappvarmvatten inte har mätts separat behöver denna energianvändning bestämmas före normalisering. Om energi till tappvarmvatten som inkluderar förluster för varmvattencirkulation är känd, kan levererad energi till tappvarmvatten beräknas enligt,</p>
+        <p class="text">E<sub>tvv,lev</sub> = 0,75 × E<sub>tvv + vvc</sub></p>
+        <p class="text">där</p>
+        <dl>
+          <dt>E<sub>tvv,lev</sub></dt>
+          <dd>Levererad energi till tappvarmvatten under året (kWh/år).</dd>
+          <dt>E<sub>tvv + vvc</sub></dt>
+          <dd>Uppmätt energi till tappvarmvatten och förluster för varmvattencirkulation (kWh/år).</dd>
+        </dl>
+        <p class="text">Förlusterna för varmvattencirkulation inkluderas i byggnadens energianvändning för uppvärmning.</p>
+        <p class="text">Om energi till tappvarmvatten och förluster för varmvattencirkulation är okänd men tappvarmvattenvolymen är känd, kan levererad energi till tappvarmvatten beräknas enligt,</p>
+        <p class="text">E<sub>tvv,lev</sub> = (V<sub>tvv</sub> × 55) / η<sub>tvv</sub></p>
+        <p class="text">där</p>
+        <dl>
+          <dt>E<sub>tvv,lev</sub></dt>
+          <dd>Levererad energi till tappvarmvatten under året (kWh/år).</dd>
+          <dt>V<sub>tvv</sub></dt>
+          <dd>Uppmätt tappvarmvattenvolym (m<sup>3</sup>/år).</dd>
+          <dt>η<sub>tvv</sub></dt>
+          <dd>Årsverkningsgrad för beredning av tappvarmvatten.</dd>
+        </dl>
+        <p class="text">Om energi till tappvarmvatten och förluster för varmvattencirkulation är okänd och om tappvarmvattenvolymen är okänd men kallvattenvolymen är känd, kan levererad energi till tappvarmvatten beräknas enligt,</p>
+        <p class="text">E<sub>tvv,lev</sub> = 0,35 × (V<sub>kv</sub> × 55) / η<sub>tvv</sub></p>
+        <p class="text">där</p>
+        <dl>
+          <dt>E<sub>tvv,lev</sub></dt>
+          <dd>Levererad energi till tappvarmvatten under året (kWh/år).</dd>
+          <dt>V<sub>kv</sub></dt>
+          <dd>Uppmätt kallvattenvolym (m<sup>3</sup>/år).</dd>
+          <dt>η<sub>tvv</sub></dt>
+          <dd>Årsverkningsgrad för beredning av tappvarmvatten.</dd>
+        </dl>
+        <p class="text">Exempel på installationsteknisk lösning som kan påvisas medföra en besparing av energi till tappvarmvatten är värmeväxlare för spillvatten eller energieffektiva tvättställs- och köksblandare. Vid korrigering för energieffektiva sanitetsarmaturer bör åtminstone merparten av byggnadens tvättställs- och köksblandare uppfylla energiklass A enligt SS 820000:2010.</p>
+        <p class="text">Om det normaliserade värdet enligt tabell 3:1 korrigeras på grund av energieffektiva sanitetsarmaturer bör korrigeringen maximalt uppgå till 10 procent.</p>
+      </div>
+
+      <h4 id="BFS2016-12_normalisering-av-energianvandningen-pa-grund-av-avvikelser-i-innetemperatur">Normalisering av energianvändningen på grund av avvikelser i innetemperatur</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P4" name="BFS2016-12_K3_P4">4 §</a>
+      </h3>
+      <p class="text">Normal innetemperatur i utrymmen för bostadsändamål i småhus ska antas till 21 °C och i flerbostadshus till 22 °C. Om den genomsnittliga lufttemperaturen under uppvärmningssäsongen avvikit från normal innetemperatur med mer än en grad, och avvikelsen inte beror på installationstekniska brister, ska energi för uppvärmning korrigeras med 5 procent per grad för den area som har haft en avvikande lufttemperatur.</p>
+      <p class="text">Vid verifiering av byggnadens specifika energianvändning enligt avsnitt 9 Boverkets byggregler (2011:6) – föreskrifter och allmänna råd, BBR, ska normalisering på grund av avvikelser i innetemperatur baseras på mätning av genomsnittlig lufttemperatur under uppvärmningssäsongen.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Installationstekniska brister som kan innebära att den avsedda innetemperaturen inte hålls kan till exempel vara bristande injustering av värmesystem.</p>
+        <p class="text">Vid upprättande av energideklaration i enlighet med Boverkets föreskrifter och allmänna råd (2007:4) om energideklaration för byggnader, BED, bör normalisering på grund av avvikelser i innetemperatur baseras på mätning av lufttemperatur.</p>
+      </div>
+
+      <h4 id="BFS2016-12_normalisering-av-energianvandningen-pa-grund-av-avvikelser-i-internlaster">Normalisering av energianvändningen på grund av avvikelser i internlaster</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P5" name="BFS2016-12_K3_P5">5 §</a>
+      </h3>
+      <p class="text">Energi för uppvärmning och komfortkyla får korrigeras för internlaster som har avvikit från det normala och som har gett upphov till en icke försumbar påverkan på levererad energi till byggnaden.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">En icke försumbar påverkan innebär att byggnadens energianvändning för uppvärmning och komfortkyla har påverkats mer än 3 kWh/m<sup>2</sup> och år.</p>
+        <p class="text">Normal användning av hushållsenergi anges i tabell 3:3 och kan användas som grund för normalisering av uppvärmningsenergi vid avvikande användning av hushållsenergi enligt</p>
+        <p class="text">E<sub>korr</sub> = (E<sub>h,avv</sub> × I<sub>h</sub> × A<sub>temp</sub>) / η<sub>uppv</sub></p>
+        <p class="text">där</p>
+        <dl>
+          <dt>E<sub>korr</sub></dt>
+          <dd>Korrigering av energi till uppvärmning (kWh/år).</dd>
+          <dt>E<sub>h,avv</sub></dt>
+          <dd>Positiv eller negativ skillnad mellan uppmätt värde och normal användning av hushållsenergi (kWh/m<sup>2</sup>år).</dd>
+          <dt>I<sub>h</sub></dt>
+          <dd>Andel av hushållsenergin som kommer byggnaden tillgodo som värme.</dd>
+          <dt>η<sub>uppv</sub></dt>
+          <dd>Årsverkningsgrad för byggnadens uppvärmningssystem.</dd>
+        </dl>
+
+        <table class="legal-table">
+          <caption>Tabell 3:3 Normal användning av hushållsenergi i bostadsbyggnader</caption>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Normal användning (kWh/m<sup>2</sup>år)</th>
+              <th>Icke försumbar avvikelse från normal användning<sup>1)</sup> (kWh/m<sup>2</sup>år)</th>
+              <th>Andel som kan tillgodogöras byggnaden som värme (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Hushållsenergi</td>
+              <td>30</td>
+              <td>&gt; ± 4</td>
+              <td>70</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text"><sup>1)</sup> Den avvikelse som krävs för att byggnadens energianvändning ska påverkas mer än 3 kWh/m<sup>2</sup> A<sub>temp</sub> år när 70 procent kommer byggnaden tillgodo som värme och när värmekällan har en årsverkningsgrad nära 100 procent.</p>
+      </div>
+
+      <h4 id="BFS2016-12_normalarskorrigering">Normalårskorrigering</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P6" name="BFS2016-12_K3_P6">6 §</a>
+      </h3>
+      <p class="text">Energi för byggnadens klimatberoende energianvändning knuten till normalt brukande ska normalårskorrigeras.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Energi för uppvärmning kan normalårskorrigeras med SMHI Energiindex (1981–2010).</p>
+        <p class="text">Vid upprättande av energideklaration i enlighet med Boverkets föreskrifter och allmänna råd (2007:4) om energideklaration för byggnader, BED, sker normalårskorrigering enligt SMHI Energiindex i det elektroniska formuläret.</p>
+      </div>
+
+      <h3 id="BFS2016-12_normalisering-av-energianvandningen-i-lokalbyggnader">Normalisering av energianvändningen i lokalbyggnader</h3>
+
+      <h4 id="BFS2016-12_normalisering-av-energi-till-tappvarmvatten-2">Normalisering av energi till tappvarmvatten</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P7" name="BFS2016-12_K3_P7">7 §</a>
+      </h3>
+      <p class="text">Levererad energi till tappvarmvatten exklusive förluster för varmvattencirkulation ska ersättas med normaliserat värde enligt</p>
+      <p class="text">(2 × A<sub>temp</sub>) / η<sub>tvv</sub></p>
+      <p class="text">där</p>
+      <dl>
+        <dt>η<sub>tvv</sub></dt>
+        <dd>Årsverkningsgrad för beredning av tappvarmvatten.</dd>
+      </dl>
+      <p class="text">Normaliserat värde för energi till tappvarmvatten får reduceras med energi från solfångare och solceller i den omfattning energin tillgodogörs för produktion av tappvarmvatten i byggnaden. Det normaliserade värdet får även korrigeras för annan installationsteknisk lösning som kan påvisas medföra en besparing av energi till tappvarmvatten.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Om det inte går att få fram uppgifter om årsverkningsgraden kan värden enligt tabell 3:4 användas vid fastställande av normaliserat värde för energi till tappvarmvatten.</p>
+
+        <table class="legal-table">
+          <caption>Tabell 3:4 Vägledande årsverkningsgrad för produktion av tappvarmvatten uppdelat på olika värmekällor</caption>
+          <thead>
+            <tr>
+              <th>Värmekälla</th>
+              <th>Årsverkningsgrad, η<sub>tvv</sub></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Fjärrvärme</td>
+              <td>1,0</td>
+            </tr>
+            <tr>
+              <td>El (direktverkande och elpanna)</td>
+              <td>1,0</td>
+            </tr>
+            <tr>
+              <td>El, frånluftsvärmepump</td>
+              <td>1,7</td>
+            </tr>
+            <tr>
+              <td>El, uteluft-vattenvärmepump</td>
+              <td>2,0</td>
+            </tr>
+            <tr>
+              <td>El, markvärmepump (berg, mark, sjö)</td>
+              <td>2,5</td>
+            </tr>
+            <tr>
+              <td>Biobränslepanna (pellets, ved, flis mm)</td>
+              <td>0,75</td>
+            </tr>
+            <tr>
+              <td>Olja</td>
+              <td>0,85</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="text">Om energi till tappvarmvatten inte har mätts separat behöver denna energianvändning bestämmas före normalisering. Om energi till tappvarmvatten som inkluderar förluster för varmvattencirkulation är känd och om förlusterna beräknas så att energi till tappvarmvatten kan fastställas, bör förlusterna för varmvattencirkulation inkluderas i byggnadens energianvändning för uppvärmning.</p>
+        <p class="text">Om energi till tappvarmvatten och förluster för varmvattencirkulation är okänd men tappvarmvattenvolymen är känd, kan levererad energi till tappvarmvatten beräknas enligt,</p>
+        <p class="text">E<sub>tvv,lev</sub> = (V<sub>tvv</sub> × 55) / η<sub>tvv</sub></p>
+        <p class="text">där</p>
+        <dl>
+          <dt>E<sub>tvv,lev</sub></dt>
+          <dd>Levererad energi till tappvarmvatten under året (kWh/år).</dd>
+          <dt>V<sub>tvv</sub></dt>
+          <dd>Uppmätt tappvarmvattenvolym (m<sup>3</sup>/år).</dd>
+          <dt>η<sub>tvv</sub></dt>
+          <dd>Årsverkningsgrad för beredning av tappvarmvatten.</dd>
+        </dl>
+        <p class="text">Om tappvarmvattenvolymen är okänd kan denna bedömas utifrån kallvattenvolym och andel tappvarmvatten för den aktuella verksamhetstypen.</p>
+        <p class="text">Exempel på installationsteknisk lösning som kan påvisas medföra en besparing av energi till tappvarmvatten är värmeväxlare för spillvatten eller energieffektiva tvättställs- och köksblandare. Vid korrigering för energieffektiva sanitetsarmaturer bör åtminstone merparten av byggnadens tvättställs- och köksblandare uppfylla energiklass A enligt SS 820000:2010.</p>
+        <p class="text">Om det normaliserade värdet för energi till tappvarmvatten korrigeras på grund av energieffektiva sanitetsarmaturer bör korrigeringen maximalt uppgå till 10 procent.</p>
+      </div>
+
+      <h4 id="BFS2016-12_normalisering-av-energianvandningen-pa-grund-av-avvikelser-i-innetemperatur-2">Normalisering av energianvändningen på grund av avvikelser i innetemperatur</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P8" name="BFS2016-12_K3_P8">8 §</a>
+      </h3>
+      <p class="text">Om den genomsnittliga lufttemperaturen under uppvärmningssäsongen avviker från avsedd innetemperatur med mer än en grad, och avvikelsen inte beror på installationstekniska brister, får energi för uppvärmning korrigeras med 5 procent per grad för den area som har haft en avvikande lufttemperatur.</p>
+      <p class="text">Vid verifiering av byggnadens specifika energianvändning enligt avsnitt 9 Boverkets byggregler (2011:6) – föreskrifter och allmänna råd, BBR, ska normalisering på grund av avvikelser i innetemperatur baseras på mätning av genomsnittlig lufttemperatur under uppvärmningssäsongen.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Avsedd innetemperatur kan vara den innetemperatur lokalbyggnaden är projekterad för att hålla. Avsedd innetemperatur kan även bedömas utifrån normal innetemperatur för den verksamhetstyp som bedrivs i lokalbyggnaden.</p>
+        <p class="text">Installationstekniska brister som kan innebära att den avsedda innetemperaturen inte hålls kan till exempel vara bristande injustering av värmesystem.</p>
+        <p class="text">Vid upprättande av energideklaration i enlighet med Boverkets föreskrifter och allmänna råd (2007:4) om energideklaration för byggnader, BED, bör normalisering på grund av avvikelser i innetemperatur baseras på mätning av lufttemperatur.</p>
+      </div>
+
+      <h4 id="BFS2016-12_normalisering-av-energianvandningen-pa-grund-av-avvikelser-i-internlaster-2">Normalisering av energianvändningen på grund av avvikelser i internlaster</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P9" name="BFS2016-12_K3_P9">9 §</a>
+      </h3>
+      <p class="text">Energi för uppvärmning och komfortkyla får korrigeras för internlaster som avvikit från det normala för den avsedda verksamheten, och som har gett upphov till en icke försumbar påverkan på levererad energi till byggnaden.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Vad som är normalt för den avsedda verksamheten kan bedömas med utgångspunkt i projekterad verksamhet eller i den verksamhetstyp som bedrivs i lokalbyggnaden. De faktiska internlaster som ligger till grund för normaliseringen bör kunna verifieras.</p>
+        <p class="text">En icke försumbar påverkan bör innebära att energi för uppvärmning och komfortkyla har påverkats mer än 3 kWh/m<sup>2</sup> och år.</p>
+      </div>
+
+      <h4 id="BFS2016-12_normalarskorrigering-2">Normalårskorrigering</h4>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P10" name="BFS2016-12_K3_P10">10 §</a>
+      </h3>
+      <p class="text">Energi för byggnadens klimatberoende energianvändning knuten till normalt brukande ska normalårskorrigeras.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Energi för uppvärmning kan normalårskorrigeras med SMHI Energiindex (1981–2010).</p>
+        <p class="text">Vid upprättande av energideklaration i enlighet med Boverkets föreskrifter och allmänna råd (2007:4) om energideklaration för byggnader, BED, sker normalårskorrigering enligt SMHI Energiindex i det elektroniska formuläret.</p>
+      </div>
+
+      <h3 id="BFS2016-12_normalisering-av-energianvandning-i-bostads-och-lokalbyggnader-genom-dynamisk-energiberakning">Normalisering av energianvändning i bostads- och lokalbyggnader genom dynamisk energiberäkning</h3>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2016-12_K3_P11" name="BFS2016-12_K3_P11">11 §</a>
+      </h3>
+      <p class="text">Vid normalisering genom dynamisk energiberäkning ska uppmätt energi till byggnaden korrigeras utifrån förhållandet mellan byggnadens beräknade energianvändning vid normalt brukande och för ett normalår, och byggnadens beräknade energianvändning vid faktiskt brukande och utomhusklimat under mätåret. Korrigering av uppmätt energi ska åtminstone ske för energi till tappvarmvatten och på grund av avvikelser i innetemperatur och internlaster.</p>
+      <p class="text">Energiberäkningen för normalt brukande av byggnaden och för ett normalår ska ske på samma sätt som energiberäkningen vid faktiskt brukande och utomhusklimat under mätåret. Indata för byggnadsrelaterade parametrar ska avse den färdiga byggnaden och hållas oförändrade i de dynamiska energiberäkningar som ligger till grund för normaliseringen.</p>
+      <p class="text">Normalisering genom dynamisk energiberäkning får enbart ske om faktiskt brukande av byggnaden kan verifieras.</p>
+
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Verifiering av faktiskt brukande av byggnaden under ett år kan ske genom mätning av brukarrelaterade parametrar i byggnaden och genom undersökningar bland brukarna.</p>
+      </div>
+    </section>
+  </div>
+  <footer class="back">
+    <p class="text">Denna författning träder i kraft den 15 december 2016.</p>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">JANNA VALIK</p>
+    <p class="text">Mikael Näslund</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

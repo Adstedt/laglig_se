@@ -1,0 +1,699 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (2016:1109) om stöd till partigrupperna för riksdagsledamöternas arbete i riksdagen",
+  "documentNumber": "SFS 2016:1109",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Inledande bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna lag syftar till att riksdagsledamöterna och partigrupperna ska få det stöd de behöver för att det parlamentariska arbetet ska fungera väl. I lagen finns bestämmelser om\n- basstöd till partigrupper (2 kap.),\n- stöd till partigrupper för politiska sekreterare till riksdagsledamöter och andra arbetstagare hos partigruppernas kanslier (3 kap.),\n- stöd till partigrupper för kostnader för riksdagsledamöters utrikes resor (4 kap.),\n- stöd till partigrupper för kostnader för riksdagsledamöters språkutbildning (5 kap.),\n- stöd till en enskild ledamot som har blivit invald i riksdagen utan att tillhöra en partigrupp (6 kap.),\n- redovisning av stöden (7 kap.), och\n- återbetalning av vissa stöd (8 kap).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag syftar till att riksdagsledamöterna och partigrupperna ska få det stöd de behöver för att det parlamentariska arbetet ska fungera väl. I lagen finns bestämmelser om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "- basstöd till partigrupper (2 kap.),",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "- stöd till partigrupper för politiska sekreterare till riksdagsledamöter och andra arbetstagare hos partigruppernas kanslier (3 kap.),",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "- stöd till partigrupper för kostnader för riksdagsledamöters utrikes resor (4 kap.),",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "- stöd till partigrupper för kostnader för riksdagsledamöters språkutbildning (5 kap.),",
+              "role": "STYCKE"
+            },
+            {
+              "number": 6,
+              "text": "- stöd till en enskild ledamot som har blivit invald i riksdagen utan att tillhöra en partigrupp (6 kap.),",
+              "role": "STYCKE"
+            },
+            {
+              "number": 7,
+              "text": "- redovisning av stöden (7 kap.), och",
+              "role": "STYCKE"
+            },
+            {
+              "number": 8,
+              "text": "- återbetalning av vissa stöd (8 kap).",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Stöd",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Riksdagsförvaltningen ska enligt bestämmelserna i denna lag till partigrupperna i riksdagen lämna basstöd, stöd för politiska sekreterare till riksdagsledamöter och för andra som arbetar i partigruppernas kanslier, stöd till kostnader för riksdagsledamöters utrikes resor och stöd till kostnader för riksdagsledamöters språkutbildning.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Riksdagsförvaltningen ska enligt bestämmelserna i denna lag till partigrupperna i riksdagen lämna basstöd, stöd för politiska sekreterare till riksdagsledamöter och för andra som arbetar i partigruppernas kanslier, stöd till kostnader för riksdagsledamöters utrikes resor och stöd till kostnader för riksdagsledamöters språkutbildning.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Riksdagsförvaltningen ska enligt bestämmelserna i 6 kap. lämna stöd till en enskild riksdagsledamot som blivit invald utan att tillhöra en partigrupp.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Riksdagsförvaltningen ska enligt bestämmelserna i 6 kap. lämna stöd till en enskild riksdagsledamot som blivit invald utan att tillhöra en partigrupp.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Partigrupp",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Som partigrupp räknas varje grupp av riksdagsledamöter för ett parti som har fått minst 4 procent av rösterna i hela riket vid ett riksdagsval.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Som partigrupp räknas varje grupp av riksdagsledamöter för ett parti som har fått minst 4 procent av rösterna i hela riket vid ett riksdagsval.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Utbetalning av stöd",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Ekonomiskt stöd enligt denna lag ska betalas ut förskottsvis per kvartal.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Ekonomiskt stöd enligt denna lag ska betalas ut förskottsvis per kvartal.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Bemyndigande",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Riksdagsförvaltningen får meddela tillämpningsföreskrifter till denna lag.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Riksdagsförvaltningen får meddela tillämpningsföreskrifter till denna lag.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Allmänna råd",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Riksdagsförvaltningen meddelar allmänna råd till lagen.",
+          "amendedBy": "Lag (2022:347)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Riksdagsförvaltningen meddelar allmänna råd till lagen.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Basstöd till partigrupper",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Basstödet består av grundbelopp och tilläggsbelopp. Grundbeloppet är 2 400 000 kronor per år och tilläggsbeloppet är 79 000 kronor per år.",
+          "amendedBy": "Lag (2023:924)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Basstödet består av grundbelopp och tilläggsbelopp. Grundbeloppet är 2 400 000 kronor per år och tilläggsbeloppet är 79 000 kronor per år.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "En partigrupp har rätt till basstöd från och med den månad då riksdagsval hålls till och med den månad då riksdagen samlas efter nästa riksdagsval.\nHar en partigrupp rätt till stöd med skilda belopp före och efter ett riksdagsval, lämnas stödet med det högre beloppet för den månad då riksdagsval hålls och för den månad då en nyvald riksdag samlas.\nFör den månad då en partigrupp blir eller upphör att vara företrädd i regeringen har gruppen rätt till det grundbelopp som gäller för en partigrupp som inte företräder ett regeringsparti.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En partigrupp har rätt till basstöd från och med den månad då riksdagsval hålls till och med den månad då riksdagen samlas efter nästa riksdagsval.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Har en partigrupp rätt till stöd med skilda belopp före och efter ett riksdagsval, lämnas stödet med det högre beloppet för den månad då riksdagsval hålls och för den månad då en nyvald riksdag samlas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "För den månad då en partigrupp blir eller upphör att vara företrädd i regeringen har gruppen rätt till det grundbelopp som gäller för en partigrupp som inte företräder ett regeringsparti.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Grundbelopp",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "En partigrupp som företräder ett regeringsparti har rätt till ett grundbelopp. Var och en av övriga partigrupper har rätt till två grundbelopp.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En partigrupp som företräder ett regeringsparti har rätt till ett grundbelopp. Var och en av övriga partigrupper har rätt till två grundbelopp.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Tilläggsbelopp",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "En partigrupp har rätt till ett tilläggsbelopp för varje mandat som partiet fick vid det senaste riksdagsvalet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En partigrupp har rätt till ett tilläggsbelopp för varje mandat som partiet fick vid det senaste riksdagsvalet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Avvecklingsstöd",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Partigruppen för ett parti som inte återkommer till riksdagen efter ett val har, sedan rätt till basstöd har upphört, rätt till avvecklingsstöd under sex månader. Avvecklingsstödet uppgår till det belopp per månad för basstöd partigruppen hade rätt till närmast före valet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Partigruppen för ett parti som inte återkommer till riksdagen efter ett val har, sedan rätt till basstöd har upphört, rätt till avvecklingsstöd under sex månader. Avvecklingsstödet uppgår till det belopp per månad för basstöd partigruppen hade rätt till närmast före valet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Till partigruppen för ett parti som efter ett val till riksdagen återkommer med färre ledamöter än tidigare och som varken före eller efter valet är ett regeringsparti ska lämnas\n1. det stöd som tillkommer gruppen enligt 2-4 §§ och\n2. avvecklingsstöd under tolv månader från utgången av den månad då den nyvalda riksdagen samlas med 50 procent av skillnaden mellan det nya stödet och det stöd som partigruppen hade rätt till närmast före valet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Till partigruppen för ett parti som efter ett val till riksdagen återkommer med färre ledamöter än tidigare och som varken före eller efter valet är ett regeringsparti ska lämnas",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. det stöd som tillkommer gruppen enligt 2-4 §§ och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. avvecklingsstöd under tolv månader från utgången av den månad då den nyvalda riksdagen samlas med 50 procent av skillnaden mellan det nya stödet och det stöd som partigruppen hade rätt till närmast före valet.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Stöd till partigrupper för politiska sekreterare till  riksdagsledamöter och för andra som arbetar i partigruppernas",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Med politisk sekreterare till riksdagsledamot avses en person som arbetar i en partigrupps kansli och som finansieras enligt 2-5 §§.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Med politisk sekreterare till riksdagsledamot avses en person som arbetar i en partigrupps kansli och som finansieras enligt 2-5 §§.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Stöd till kostnader för politiska sekreterare",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Riksdagsförvaltningen ska lämna stöd till kostnader för politiska sekreterare. Stödet ska lämnas till partigrupperna med ett belopp som förvaltningen bestämmer.\nStödet ska motsvara kostnaden för en sekreterare per riksdagsledamot.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Riksdagsförvaltningen ska lämna stöd till kostnader för politiska sekreterare. Stödet ska lämnas till partigrupperna med ett belopp som förvaltningen bestämmer.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Stödet ska motsvara kostnaden för en sekreterare per riksdagsledamot.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "En partigrupp har rätt till stöd från och med den månad då riksdagsval hålls till och med den månad då riksdagen samlas efter nästa riksdagsval. Stödet beräknas efter antalet ledamöter i gruppen vid kvartalets ingång.\nHar en partigrupp före och efter ett riksdagsval rätt till stöd med skilda belopp, ska stödet lämnas med det högre beloppet för den månad då riksdagsval hålls och den månad då en nyvald riksdag samlas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En partigrupp har rätt till stöd från och med den månad då riksdagsval hålls till och med den månad då riksdagen samlas efter nästa riksdagsval. Stödet beräknas efter antalet ledamöter i gruppen vid kvartalets ingång.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Har en partigrupp före och efter ett riksdagsval rätt till stöd med skilda belopp, ska stödet lämnas med det högre beloppet för den månad då riksdagsval hålls och den månad då en nyvald riksdag samlas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Avvecklingsstöd till kostnader för politiska sekreterare",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Partigruppen för ett parti som inte återkommer efter ett val till riksdagen har, sedan rätten till stöd för kostnader för politisk sekreterare upphört, rätt till avvecklingsstöd under ytterligare fyra månader.\nAvvecklingsstödet ska uppgå till det stödbelopp per månad som partigruppen hade rätt till närmast före valet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Partigruppen för ett parti som inte återkommer efter ett val till riksdagen har, sedan rätten till stöd för kostnader för politisk sekreterare upphört, rätt till avvecklingsstöd under ytterligare fyra månader.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Avvecklingsstödet ska uppgå till det stödbelopp per månad som partigruppen hade rätt till närmast före valet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Partigruppen för ett parti som efter ett val till riksdagen återkommer med färre mandat än tidigare har, under ytterligare fyra månader räknat från utgången av den månad då den nyvalda riksdagen samlas, rätt till avvecklingsstöd.\nAvvecklingsstödet ska uppgå till det stödbelopp per månad som partigruppen hade rätt till närmast före valet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Partigruppen för ett parti som efter ett val till riksdagen återkommer med färre mandat än tidigare har, under ytterligare fyra månader räknat från utgången av den månad då den nyvalda riksdagen samlas, rätt till avvecklingsstöd.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Avvecklingsstödet ska uppgå till det stödbelopp per månad som partigruppen hade rätt till närmast före valet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Rätt att inrätta ett kansli",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Varje partigrupp har rätt att inrätta ett kansli i riksdagens lokaler.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Varje partigrupp har rätt att inrätta ett kansli i riksdagens lokaler.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Arbetsplatser till politiska sekreterare och partigruppens  kansliledning",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Varje partigrupp har rätt till arbetsplatser i riksdagens lokaler för\n1. de politiska sekreterare som har sitt tjänsteställe i riksdagen, dock högst så många arbetsplatser som motsvarar det antal mandat som partiet fick vid det senaste riksdagsvalet, och\n2. partigruppens kansliledning med det antal rum som Riksdagsförvaltningen bestämmer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Varje partigrupp har rätt till arbetsplatser i riksdagens lokaler för",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. de politiska sekreterare som har sitt tjänsteställe i riksdagen, dock högst så många arbetsplatser som motsvarar det antal mandat som partiet fick vid det senaste riksdagsvalet, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. partigruppens kansliledning med det antal rum som Riksdagsförvaltningen bestämmer.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "Rätten för politiska sekreterare och andra som arbetar i en  partigrupp att använda riksdagens lokaler, it-miljö och  resebyrå",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Politiska sekreterare som har sitt tjänsteställe i riksdagen och andra som arbetar i en partigrupps kansliledning har rätt att\na) få tillträde till riksdagens lokaler,\nb) ta emot besök i riksdagens lokaler,\nc) disponera en arbetsplats i en partigrupps kansli,\nd) ha ett it-konto i Riksdagsförvaltningens it-miljö, och\ne) anlita den resebyrå som Riksdagsförvaltningen anlitar.\nVad som föreskrivs i första stycket gäller också vikarier för föräldralediga, tjänstlediga och sjukskrivna arbetstagare.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Politiska sekreterare som har sitt tjänsteställe i riksdagen och andra som arbetar i en partigrupps kansliledning har rätt att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "a) få tillträde till riksdagens lokaler,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "b) ta emot besök i riksdagens lokaler,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "c) disponera en arbetsplats i en partigrupps kansli,",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "d) ha ett it-konto i Riksdagsförvaltningens it-miljö, och",
+              "role": "STYCKE"
+            },
+            {
+              "number": 6,
+              "text": "e) anlita den resebyrå som Riksdagsförvaltningen anlitar.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 7,
+              "text": "Vad som föreskrivs i första stycket gäller också vikarier för föräldralediga, tjänstlediga och sjukskrivna arbetstagare.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Samråd",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Innan ett ärende av betydelse för arbetstagare i partigruppernas kanslier avgörs ska riksdagsdirektören bereda ärendet i en samrådsgrupp med representanter för kanslierna och Riksdagsförvaltningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Innan ett ärende av betydelse för arbetstagare i partigruppernas kanslier avgörs ska riksdagsdirektören bereda ärendet i en samrådsgrupp med representanter för kanslierna och Riksdagsförvaltningen.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Stöd till partigrupper för kostnader för  riksdagsledamöters utrikes resor",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Riksdagsförvaltningen ska lämna stöd till kostnader för riksdagsledamöters utrikes resor på uppdrag av partigruppen till länder inom Europeiska ekonomiska samarbetsområdet, länder som har ansökt om medlemskap i Europeiska unionen och potentiella kandidatländer. Stödet ska betalas till partigrupperna med det belopp som Riksdagsförvaltningen bestämmer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Riksdagsförvaltningen ska lämna stöd till kostnader för riksdagsledamöters utrikes resor på uppdrag av partigruppen till länder inom Europeiska ekonomiska samarbetsområdet, länder som har ansökt om medlemskap i Europeiska unionen och potentiella kandidatländer. Stödet ska betalas till partigrupperna med det belopp som Riksdagsförvaltningen bestämmer.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Riksdagsförvaltningen ska lämna stöd till kostnader för riksdagsledamöters resor på uppdrag av partigruppen för deltagande i internationella konferenser utomlands och andra utrikes resor. Stödet ska betalas till partigrupperna med det belopp som Riksdagsförvaltningen bestämmer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Riksdagsförvaltningen ska lämna stöd till kostnader för riksdagsledamöters resor på uppdrag av partigruppen för deltagande i internationella konferenser utomlands och andra utrikes resor. Stödet ska betalas till partigrupperna med det belopp som Riksdagsförvaltningen bestämmer.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "En partigrupp får inte bevilja en ledamot stöd till andra kostnader för en utrikes resa än sådana kostnader som Riksdagsförvaltningen skulle ha svarat för när en anställd i förvaltningen hade deltagit i en motsvarande resa.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En partigrupp får inte bevilja en ledamot stöd till andra kostnader för en utrikes resa än sådana kostnader som Riksdagsförvaltningen skulle ha svarat för när en anställd i förvaltningen hade deltagit i en motsvarande resa.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Det finns bestämmelser om utrikes tjänsteresa i\nom ersättning till riksdagens ledamöter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det finns bestämmelser om utrikes tjänsteresa i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om ersättning till riksdagens ledamöter.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "5",
+      "title": "Stöd till partigrupper för kostnader för  riksdagsledamöters språkutbildning",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Riksdagsförvaltningen ska lämna stöd till partigrupperna för riksdagsledamöternas språkutbildning med det belopp som förvaltningen bestämmer.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Riksdagsförvaltningen ska lämna stöd till partigrupperna för riksdagsledamöternas språkutbildning med det belopp som förvaltningen bestämmer.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Det finns bestämmelser om stöd till vidareutbildning för riksdagsledamöterna i\nom ersättning till riksdagens ledamöter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Det finns bestämmelser om stöd till vidareutbildning för riksdagsledamöterna i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "om ersättning till riksdagens ledamöter.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "6",
+      "title": "Stöd till en enskild ledamot som har blivit invald  utan att tillhöra en partigrupp",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Till en ledamot som har blivit invald i riksdagen genom att partiet har fått minst tolv procent av rösterna i den egna valkretsen ska Riksdagsförvaltningen lämna stöd, med tillämpning i övrigt av bestämmelserna i denna lag, i form av\n1. basstöd till partigrupp med en niondel av vad som ska tillkomma ett parti som inte är regeringsparti,\n2. stöd enligt 3 kap. 2 §, och\n3. stöd enligt 4 kap. 2 § för ett mandat.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Till en ledamot som har blivit invald i riksdagen genom att partiet har fått minst tolv procent av rösterna i den egna valkretsen ska Riksdagsförvaltningen lämna stöd, med tillämpning i övrigt av bestämmelserna i denna lag, i form av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. basstöd till partigrupp med en niondel av vad som ska tillkomma ett parti som inte är regeringsparti,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. stöd enligt 3 kap. 2 §, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. stöd enligt 4 kap. 2 § för ett mandat.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "7",
+      "title": "Redovisning av stöden",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Var och en av partigrupperna ska för varje räkenskapsår lämna en redovisning till Riksdagsförvaltningen av hur partigruppen har använt det stöd som den har tagit emot enligt bestämmelser i denna lag. Detsamma gäller en ledamot som fått stöd enligt 6 kap.\nRedovisningen ska lämnas senast den 1 juli året efter räkenskapsårets slut.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Var och en av partigrupperna ska för varje räkenskapsår lämna en redovisning till Riksdagsförvaltningen av hur partigruppen har använt det stöd som den har tagit emot enligt bestämmelser i denna lag. Detsamma gäller en ledamot som fått stöd enligt 6 kap.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Redovisningen ska lämnas senast den 1 juli året efter räkenskapsårets slut.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "8",
+      "title": "Återbetalning av stöd",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Medel som en partigrupp mottagit under en valperiod enligt 4 kap. 1-2 §§ och 5 kap. 1 §, som inte har förbrukats under valperioden, ska betalas tillbaka till Riksdagsförvaltningen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Medel som en partigrupp mottagit under en valperiod enligt 4 kap. 1-2 §§ och 5 kap. 1 §, som inte har förbrukats under valperioden, ska betalas tillbaka till Riksdagsförvaltningen.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "2016:1109",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 januari 2017 då lagen \n(1999:1209) om stöd till riksdagsledamöternas och  partigruppernas arbete i riksdagen ska upphöra att gälla.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Bestämmelserna om återbetalningsskyldighet i 8 kap. 1 §  gäller endast stöd som lämnas efter det att lagen trätt  ikraft.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 2016:1109",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

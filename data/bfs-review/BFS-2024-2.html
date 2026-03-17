@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2024:2</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2024-2">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2024:2</p>
+      <p class="text">Boverkets föreskrifter om översiktsplan</p>
+    </h1>
+    <p class="text">Utkom från trycket den 5 september 2024</p>
+    <p class="text">beslutade den 3 september 2024.</p>
+    <p class="text">Boverket föreskriver<sup class="footnote-ref" data-note="1" title="Se Europaparlamentets och rådets direktiv (EU) 2015/1535 av den 9 september 2015 om ett informationsförfarande beträffande tekniska föreskrifter och beträffande föreskrifter för informationssamhällets tjänster (kodifiering). EUT L 241, 17.9.2015, s. 1–15, Celex 32015L1535.">1</sup> följande med stöd av 10 kap. 31 § plan- och byggförordningen (2011:338).</p>
+  </div>
+  <div class="body">
+    <section class="kapitel" id="BFS2024-2_K1">
+      <h2 class="kapitel-rubrik">1 kap. Innehåll och definitioner</h2>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K1_P1" name="BFS2024-2_K1_P1">1 §</a>
+      </h3>
+      <p class="text">Författningen innehåller föreskrifter om digital identifikation av översiktsplanens information.</p>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K1_P2" name="BFS2024-2_K1_P2">2 §</a>
+      </h3>
+      <p class="text">Författningen gäller för översiktsplan och ändring av en sådan plan.</p>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K1_P3" name="BFS2024-2_K1_P3">3 §</a>
+      </h3>
+      <p class="text">I denna författning avses med</p>
+      <dl>
+        <dt><strong>digital information:</strong></dt>
+        <dd>översiktsplanens uppgifter i digitalt format, och</dd>
+        <dt><strong>lägesbestämd:</strong></dt>
+        <dd>koordinatsatt geometri som punkt, linje, yta eller volym.</dd>
+      </dl>
+    </section>
+
+    <section class="kapitel" id="BFS2024-2_K2">
+      <h2 class="kapitel-rubrik">2 kap. Övergripande bestämmelser</h2>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K2_P1" name="BFS2024-2_K2_P1">1 §</a>
+      </h3>
+      <p class="text">Översiktsplanen ska vara lägesbestämd.</p>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K2_P2" name="BFS2024-2_K2_P2">2 §</a>
+      </h3>
+      <p class="text">För översiktsplanen ska följande information redovisas</p>
+      <ol type="1">
+        <li>kommunens namn,</li>
+        <li>antagandebeslutets diarienummer, och</li>
+        <li>datum när antagandebeslutet fick laga kraft.</li>
+      </ol>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K2_P3" name="BFS2024-2_K2_P3">3 §</a>
+      </h3>
+      <p class="text">Skyldigheterna enligt 2 kap. 5 c § plan- och byggförordningen (2011:338) gäller inte för sådan lägesbestämd digital information i översiktsplanen som aggregerad kan äventyra rikets säkerhet.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-2_K3">
+      <h2 class="kapitel-rubrik">3 kap. Identifikation av översiktsplanens innehåll</h2>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K3_P1" name="BFS2024-2_K3_P1">1 §</a>
+      </h3>
+      <p class="text">Information som ska framgå av en översiktsplan ska identifieras enligt tabellerna i 2–7 §§.</p>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K3_P2" name="BFS2024-2_K3_P2">2 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabell 1 kolumn 2 ska identifieras enligt kolumn 1.</p>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 1</strong> Utvecklingsinriktning</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Utvecklingsinriktning</td>
+            <td>Kommunens viljeinriktning för den långsiktiga utvecklingen av den fysiska miljön på en övergripande nivå.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K3_P3" name="BFS2024-2_K3_P3">3 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabell 2 kolumn 2 ska identifieras enligt kolumn 1. Annan mark- och vattenanvändning får endast användas när tillämpbar beskrivning saknas.</p>
+      <p class="text">Information om mark- och vattenanvändningen ska vara lägesbestämd till den del av kommunen som användningen berör.</p>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 2</strong> Mark- och vattenanvändning</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Landsbygd</td>
+            <td>Område med mindre samhällen och/eller spridd bebyggelse där landskapet präglas av till exempel jordbruk, skogsbruk, renskötsel och/eller fiske.</td>
+          </tr>
+          <tr>
+            <td>Vatten</td>
+            <td>Öppet vatten. Inslag av verksamheter och anläggningar kan förekomma.</td>
+          </tr>
+          <tr>
+            <td>Funktionsblandad bebyggelse</td>
+            <td>Område för en blandning av exempelvis bostäder, service, grönområden och verksamheter.</td>
+          </tr>
+          <tr>
+            <td>Bostadsbebyggelse</td>
+            <td>Område för bostäder.</td>
+          </tr>
+          <tr>
+            <td>Service</td>
+            <td>Område för samhällsservice.</td>
+          </tr>
+          <tr>
+            <td>Verksamheter</td>
+            <td>Område för verksamheter och/eller industrier.</td>
+          </tr>
+          <tr>
+            <td>Teknisk infrastruktur</td>
+            <td>Område för teknisk infrastruktur som försörjer samhället med exempelvis energi, vatten, elektronisk kommunikation samt skyddsåtgärder.</td>
+          </tr>
+          <tr>
+            <td>Energiproduktion</td>
+            <td>Område för energiproduktion som exempelvis värmeverk, vindkraft, solcellsanläggning och vågkraft.</td>
+          </tr>
+          <tr>
+            <td>Jordbruk</td>
+            <td>Område för jordbruk och djurhållning.</td>
+          </tr>
+          <tr>
+            <td>Renskötsel</td>
+            <td>Område för renskötselns behov som exempelvis betesmarker, flyttleder och anläggningar.</td>
+          </tr>
+          <tr>
+            <td>Skogsbruk</td>
+            <td>Område för skogsbruk.</td>
+          </tr>
+          <tr>
+            <td>Vattenbruk</td>
+            <td>Område för odling av djur och/eller växter i vatten.</td>
+          </tr>
+          <tr>
+            <td>Fiske</td>
+            <td>Område för yrkesfiske som inkluderar exempelvis hamnar, fångstområden, vandringsstråk samt lek- och uppväxtområden för kommersiellt viktiga arter.</td>
+          </tr>
+          <tr>
+            <td>Natur- och kulturlandskap</td>
+            <td>Område med höga natur- och/eller kulturmiljövärden.</td>
+          </tr>
+          <tr>
+            <td>Friluftsliv och rekreation</td>
+            <td>Område för rörligt friluftsliv och rekreation med tillhörande anläggningar.</td>
+          </tr>
+          <tr>
+            <td>Grönområde</td>
+            <td>Område med olika värden och funktioner för exempelvis lek och rekreation, hantering av dagvatten och temperaturreglering samt biologisk mångfald.</td>
+          </tr>
+          <tr>
+            <td>Sjöfart</td>
+            <td>Farleder och hamnar för gods- och persontrafik med tillhörande anläggningar.</td>
+          </tr>
+          <tr>
+            <td>Luftfart</td>
+            <td>Område för luftfart med tillhörande anläggningar.</td>
+          </tr>
+          <tr>
+            <td>Järnväg</td>
+            <td>Område för person- och godstrafik på järn- eller spårväg inklusive tillhörande anläggningar samt spårreservat.</td>
+          </tr>
+          <tr>
+            <td>Vägtrafik</td>
+            <td>Område för person- och godstrafik på väg med tillhörande anläggningar samt vägreservat.</td>
+          </tr>
+          <tr>
+            <td>Annan mark- och vattenanvändning</td>
+            <td>Område där mark- och vattenanvändningen inte motsvaras av annan angiven beskrivning i föreskrifterna.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K3_P4" name="BFS2024-2_K3_P4">4 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i kolumn 2 i tabellerna 3–5 ska identifieras enligt kolumn 1.</p>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 3</strong> Riksintressen enligt 3 kap. 5–9 §§ och 4 kap. 2–8 §§ miljöbalken</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rennäring</td>
+            <td>Mark- och vattenområde som är av riksintresse för rennäringen enligt 3 kap. 5 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Yrkesfiske</td>
+            <td>Mark- och vattenområde som är av riksintresse för yrkesfisket enligt 3 kap. 5 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Naturvård</td>
+            <td>Mark- och vattenområde samt fysisk miljö i övrigt som är av riksintresse för naturvård enligt 3 kap. 6 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Kulturmiljövård</td>
+            <td>Mark- och vattenområde samt fysisk miljö i övrigt som är av riksintresse för kulturmiljövård enligt 3 kap. 6 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Friluftsliv</td>
+            <td>Mark- och vattenområde samt fysisk miljö i övrigt som är av riksintresse för friluftslivet enligt 3 kap. 6 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Fyndighet av ämnen eller material</td>
+            <td>Område som innehåller fyndigheter av ämnen eller material som är av riksintresse enligt 3 kap. 7 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för industriell produktion</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för industriell produktion enligt 3 kap. 8 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för energiproduktion</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för energiproduktion enligt 3 kap. 8 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för energidistribution</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för energidistribution enligt 3 kap. 8 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för kommunikation, elektronisk</td>
+            <td>Mark- och vattenområde som är särskilt lämplig för anläggning för elektronisk kommunikation enligt 3 kap. 8 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för kommunikation, trafikslagen</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för kommunikation gällande trafikslagen enligt 3 kap. 8 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för vattenförsörjning</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för vattenförsörjning enligt 3 kap. 8 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för avfallshantering</td>
+            <td>Mark- och vattenområde som är särskilt lämplig för anläggning för avfallshantering enligt 3 kap. 8 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för slutlig förvaring av använt kärnbränsle och kärnavfall</td>
+            <td>Mark- och vattenområde som är särskilt lämpligt för anläggning för slutlig förvaring av använt kärnbränsle och kärnavfall enligt 3 kap. 8 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Anläggning för totalförsvaret</td>
+            <td>Mark- och vattenområde som är av riksintresse för totalförsvarets anläggningar enligt 3 kap. 9 § miljöbalken och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Turism och rörligt friluftsliv</td>
+            <td>Område enligt 4 kap. 2 § miljöbalken, där turismen och det rörliga friluftslivets intressen särskilt ska beaktas vid bedömningen av tillåtligheten av exploateringsföretag och andra ingrepp i miljön, och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Obruten kust</td>
+            <td>Kustområde och skärgård enligt 4 kap. 3 § miljöbalken, där vissa anläggningar inte får komma till stånd, och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Högexploaterad kust</td>
+            <td>Kustområde och skärgård enligt 4 kap. 4 § miljöbalken, där fritidsbebyggelse endast får komma till stånd i form av kompletteringar till befintlig bebyggelse, och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Obrutet fjäll</td>
+            <td>Fjällområde enligt 4 kap. 5 § miljöbalken, där bebyggelse och anläggningar får komma till stånd endast om det behövs för rennäringen, den bofasta befolkningen, den vetenskapliga forskningen eller det rörliga friluftslivet, och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Skyddat vattendrag</td>
+            <td>Vattendrag enligt 4 kap. 6 § miljöbalken, där vattenkraftverk samt vattenreglering eller vattenöverledning för kraftändamål inte får utföras, och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Nationalstadspark</td>
+            <td>Område enligt 4 kap. 7 § miljöbalken, där ny bebyggelse och nya anläggningar endast får komma till stånd och andra åtgärder vidtas om det kan ske utan intrång i parklandskap eller naturmiljö och utan att det historiska landskapets natur- och kulturvärden i övrigt skadas, och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Natura 2000, vilda fåglar</td>
+            <td>Område enligt 4 kap. 8 § miljöbalken, som har förtecknats som särskilt skyddsområde för bevarande av vilda fåglar och kräver tillstånd för verksamheter eller åtgärder, och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+          <tr>
+            <td>Natura 2000, vilda djur och växter</td>
+            <td>Område enligt 4 kap. 8 § miljöbalken, som har förtecknats som särskilt bevarandeområde för bevarande av livsmiljöer samt vilda djur och växter och kräver tillstånd för verksamheter eller åtgärder, och hur kommunen avser att tillgodose riksintresset.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 4</strong> Miljökvalitetsnormer enligt 5 kap. miljöbalken</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fisk- och musselvatten</td>
+            <td>Hur kommunen anser att miljökvalitetsnorm enligt förordning (2001:554) om miljökvalitetsnormer för fisk och musselvatten ska följas.</td>
+          </tr>
+          <tr>
+            <td>Havsmiljö</td>
+            <td>Hur kommunen anser att miljökvalitetsnorm enligt havsmiljöförordning (2010:1341) ska följas.</td>
+          </tr>
+          <tr>
+            <td>Omgivningsbuller</td>
+            <td>Hur kommunen anser att miljökvalitetsnorm enligt förordning (2004:675) om omgivningsbuller ska följas.</td>
+          </tr>
+          <tr>
+            <td>Utomhusluft</td>
+            <td>Hur kommunen anser att miljökvalitetsnorm enligt förordning (2001:527) om miljökvalitetsnormer för utomhusluft ska följas.</td>
+          </tr>
+          <tr>
+            <td>Vattenkvalitet</td>
+            <td>Hur kommunen anser att miljökvalitetsnorm enligt vattenförvaltningsförordning (2004:660) ska följas.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 5</strong> Övriga förhållanden av väsentlig betydelse</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Övriga förhållanden av väsentlig betydelse</td>
+            <td>Hur kommunen anser att övriga förhållanden av väsentlig betydelse ska beaktas när det gäller beslut om användningen av mark- och vattenområden och hur den byggda miljön ska användas, utvecklas och bevaras.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K3_P5" name="BFS2024-2_K3_P5">5 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i kolumn 2 i tabellerna 6–11 ska identifieras enligt kolumn 1.</p>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 6</strong> Bostadsförsörjning</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bostadsförsörjning</td>
+            <td>Hur kommunen avser att tillgodose det långsiktiga behovet av bostäder.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 7</strong> Mål, planer och program</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nationella mål, planer och program</td>
+            <td>Hur kommunen i den fysiska planeringen avser att ta hänsyn till och samordna översiktsplanen med relevanta nationella mål, planer och program av betydelse för en hållbar utveckling inom kommunen.</td>
+          </tr>
+          <tr>
+            <td>Regionala mål, planer och program</td>
+            <td>Hur kommunen i den fysiska planeringen avser att ta hänsyn till och samordna översiktsplanen med relevanta regionala mål, planer och program av betydelse för en hållbar utveckling inom kommunen.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 8</strong> Landsbygdsutveckling i strandnära lägen</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>LIS</td>
+            <td>Sådana områden för landsbygdsutveckling i strandnära lägen som avses i 7 kap. 18 e § första stycket miljöbalken.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 9</strong> Klimatrelaterade risker</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Risk för översvämning</td>
+            <td>Kommunens syn på risken för skador på den byggda miljön som kan följa av översvämning som är klimatrelaterad samt hur sådan risk kan minska eller upphöra.</td>
+          </tr>
+          <tr>
+            <td>Risk för ras</td>
+            <td>Kommunens syn på risken för skador på den byggda miljön som kan följa av ras som är klimatrelaterat samt hur sådan risk kan minska eller upphöra.</td>
+          </tr>
+          <tr>
+            <td>Risk för skred</td>
+            <td>Kommunens syn på risken för skador på den byggda miljön som kan följa av skred som är klimatrelaterat samt hur sådan risk kan minska eller upphöra.</td>
+          </tr>
+          <tr>
+            <td>Risk för erosion</td>
+            <td>Kommunens syn på risken för skador på den byggda miljön som kan följa av erosion som är klimatrelaterad samt hur sådan risk kan minska eller upphöra.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 10</strong> Avvikelse från regionplan</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Avvikelse från regionplan</td>
+            <td>Om översiktsplanen avviker från en regionplan för länet, på vilket sätt den avviker och skälen för avvikelsen.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 11</strong> Mellankommunala och regionala intressen</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mellankommunala och regionala intressen</td>
+            <td>Sådana områden och verksamheter som angår två eller flera kommuner eller är av regional betydelse.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K3_P6" name="BFS2024-2_K3_P6">6 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabell 12 kolumn 2 ska identifieras enligt kolumn 1.</p>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 12</strong> Invändningar i länsstyrelsens granskningsyttrande</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Invändning riksintresse</td>
+            <td>Förslaget tillgodoser inte ett riksintresse enligt 3 eller 4 kap. miljöbalken.</td>
+          </tr>
+          <tr>
+            <td>Invändning miljökvalitetsnorm</td>
+            <td>Förslaget kan medverka till att en miljökvalitetsnorm enligt 5 kap. miljöbalken inte följs.</td>
+          </tr>
+          <tr>
+            <td>Invändning LIS</td>
+            <td>Redovisningen av områden för landsbygdsutveckling i strandnära lägen är inte förenlig med 7 kap. 18 e § första stycket miljöbalken.</td>
+          </tr>
+          <tr>
+            <td>Invändning mellankommunala frågor</td>
+            <td>Frågor om användningen av mark- och vattenområden som angår två eller flera kommuner samordnas inte på ett lämpligt sätt.</td>
+          </tr>
+          <tr>
+            <td>Invändning hälsa och säkerhet</td>
+            <td>En bebyggelse blir olämplig eller ett byggnadsverk olämpligt med hänsyn till människors hälsa eller säkerhet eller till risken för olyckor, översvämning eller erosion.</td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-2_K3_P7" name="BFS2024-2_K3_P7">7 §</a>
+      </h3>
+      <p class="text">Information enligt beskrivningen i tabell 13 kolumn 2 ska identifieras enligt kolumn 1.</p>
+      
+      <table class="legal-table">
+        <caption><strong>Tabell 13</strong> Konsekvenser</caption>
+        <thead>
+          <tr>
+            <th>Identifikation</th>
+            <th>Beskrivning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Planens väsentliga konsekvenser</td>
+            <td>Planens väsentliga konsekvenser enligt 3 kap. 6 a § plan- och bygglagen (2010:900).</td>
+          </tr>
+          <tr>
+            <td>Miljökonsekvenser</td>
+            <td>Redovisning av miljökonsekvenser enligt 3 kap. 6 b § plan- och bygglagen (2010:900).</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <ol type="1">
+      <li>Denna författning träder i kraft den 1 november 2024.</li>
+      <li>Författningen ska tillämpas på översiktsplaner som påbörjas efter den 31 december 2026.</li>
+    </ol>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">ANDERS SJELVGREN</p>
+    <p class="text">Amelie Fasth</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

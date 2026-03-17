@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>AFS 2023:1 — Canonical Review</title>
+  <style>
+    :root { --bg: #f8f9fa; --card: #fff; --border: #dee2e6; --accent: #0d6efd; --pass: #198754; --fail: #dc3545; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: #212529; padding: 2rem; line-height: 1.6; }
+    h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .meta { color: #6c757d; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .meta span { display: inline-block; margin-right: 1.5rem; }
+    .badge { display: inline-block; padding: 0.15em 0.5em; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: #fff; }
+    .badge-pass { background: var(--pass); }
+    .badge-fail { background: var(--fail); }
+    .badge-type { background: var(--accent); }
+    .badge-norm { background: #6f42c1; }
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0; }
+    .tab { padding: 0.6rem 1.2rem; cursor: pointer; border: 2px solid transparent; border-bottom: none; background: none; font-size: 0.95rem; font-weight: 500; color: #6c757d; border-radius: 6px 6px 0 0; }
+    .tab:hover { color: #212529; background: #e9ecef; }
+    .tab.active { color: var(--accent); border-color: var(--border); border-bottom-color: var(--card); background: var(--card); margin-bottom: -2px; }
+    .panel { display: none; background: var(--card); border: 2px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; padding: 1.5rem; overflow: auto; }
+    .panel.active { display: block; }
+    pre { white-space: pre-wrap; word-wrap: break-word; font-size: 0.85rem; font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace; line-height: 1.5; }
+    .rendered { padding: 1rem; }
+    .rendered h1, .rendered h2, .rendered h3 { margin-top: 1em; margin-bottom: 0.3em; }
+    .rendered p { margin: 0.4em 0; }
+    .rendered table { border-collapse: collapse; margin: 1em 0; }
+    .rendered th, .rendered td { border: 1px solid var(--border); padding: 0.4em 0.8em; text-align: left; }
+    .rendered th { background: #f1f3f5; font-weight: 600; }
+    .diff-label { font-size: 0.8rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .side-by-side > div { overflow: auto; max-height: 600px; border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
+    .errors { background: #fff5f5; border: 1px solid var(--fail); border-radius: 6px; padding: 1rem; margin-top: 1rem; }
+    .errors li { color: var(--fail); margin-left: 1.5rem; }
+    @media (max-width: 900px) { .side-by-side { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>AFS 2023:1 — Systematiskt arbetsmiljöarbete</h1>
+  <div class="meta">
+    <span class="badge badge-type">AGENCY_REGULATION</span>
+    <span class="badge badge-pass">VALID</span>
+    <span class="badge" style="background:#6c757d">ALREADY CANONICAL</span>
+    <span>HTML: 21 908 chars</span>
+    <span>JSON: 307 chars</span>
+    <span>MD: 16 809 chars</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab(event, 'rendered')">Rendered HTML</button>
+    <button class="tab" onclick="showTab(event, 'html-source')">HTML Source</button>
+    <button class="tab" onclick="showTab(event, 'json')">Derived JSON</button>
+    <button class="tab" onclick="showTab(event, 'markdown')">Derived Markdown</button>
+    
+  </div>
+
+  <div id="rendered" class="panel active">
+    <div class="rendered">
+      <article class="sfs" id="AFS2023-1">
+  <div class="lovhead">
+    <h1>
+      <p class="text">AFS 2023:1</p>
+      <p class="text">Systematiskt arbetsmiljöarbete</p>
+    </h1>
+  </div>
+  <div class="preamble">
+    <p>Arbetsmiljöverket föreskriver<sup class="footnote-ref" data-note="1" title="">1</sup> följande med stöd av <a href="/lagar/arbetsmiljoforordning-19771166-1977-1166#P18" class="legal-ref" title="Arbetsmiljöförordning (1977:1166)" target="_blank" rel="noopener">18&nbsp;§ arbetsmiljöförordningen (1977:1166)</a> och beslutar följande allmänna råd.</p><p></p>
+  </div>
+  <div class="body">
+    <h2 id="varforforeskrifternafinns" data-menu="true">Varför föreskrifterna finns</h2><a class="paragraf" id="varforforeskrifternafinns1§" name="varforforeskrifternafinns1§">1 §</a><p>&nbsp;Syftet med dessa föreskrifter är att arbetsgivare ska arbeta systematiskt genom att organisera, genomföra och följa upp sitt arbetsmiljöarbete, för att förebygga risker för ohälsa och olycksfall i arbetet samt uppnå en tillfredsställande arbetsmiljö.</p><h2 id="systematisktarbetsmiljoarbeteochandraforeskrifter" data-menu="true">Systematiskt arbetsmiljöarbete och andra föreskrifter</h2><a class="paragraf" id="systematisktarbetsmiljoarbeteochandraforeskrifter2§" name="systematisktarbetsmiljoarbeteochandraforeskrifter2§">2 §</a><p>&nbsp;I <a href="/lagar/arbetsmiljolag-19771160-1977-1160" class="legal-ref" title="Arbetsmiljölag (1977:1160)" target="_blank" rel="noopener">arbetsmiljölagen (1977:1160)</a> och i dessa föreskrifter om det systematiska arbetsmiljöarbetet finns grundläggande bestämmelser om hur arbetsgivaren ska organisera, genomföra och följa upp sitt arbetsmiljöarbete för att förebygga risker för ohälsa och olycksfall i arbetet samt uppnå en tillfredsställande arbetsmiljö.</p><p>Arbetsmiljöförhållanden som regleras genom Arbetsmiljöverkets övriga föreskrifter som vänder sig till arbetsgivare, ska beaktas och hanteras i det systematiska arbetsmiljöarbetet. I de föreskrifterna finns bestämmelser med preciserade krav för det systematiska arbetsmiljöarbetet som kan gälla undersökningar av arbetsmiljön, bedömningar av risker och åtgärder som ska vidtas. Där finns också preciseringar som kan gälla särskilda krav på kunskaper eller hur vissa arbetsmiljöuppgifter ska fördelas.</p><h2 id="dagallerforeskrifterna" data-menu="true">Då gäller föreskrifterna</h2><a class="paragraf" id="dagallerforeskrifterna3§" name="dagallerforeskrifterna3§">3 §</a><p>&nbsp;Bestämmelserna i dessa föreskrifter reglerar all verksamhet där arbetstagare utför arbete för arbetsgivares räkning.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Det systematiska arbetsmiljöarbetet omfattar hela verksamheten, oavsett om den bedrivs på samma ställe hela tiden, är spridd på flera ställen eller är rörlig. Det gäller också vid distansarbete, till exempel när arbetstagaren utför arbete i sitt eget hem. Det systematiska arbetsmiljöarbetet omfattar inte bara det som påverkar majoriteten av arbetstagarna, utan även det som endast påverkar en eller några få.</p></div><h2 id="vemforeskrifternariktarsigtill" data-menu="true">Vem föreskrifterna riktar sig till</h2><a class="paragraf" id="vemforeskrifternariktarsigtill4§" name="vemforeskrifternariktarsigtill4§">4 §</a><p>&nbsp;Arbetsgivaren ansvarar för att bestämmelserna i dessa föreskrifter följs. Med arbetsgivare likställs den som hyr in arbetskraft.</p><p>Av 1 och 3&nbsp;kap. <a href="/lagar/arbetsmiljolag-19771160-1977-1160" class="legal-ref" title="Arbetsmiljölag (1977:1160)" target="_blank" rel="noopener">arbetsmiljölagen (1977:1160)</a> följer att bestämmelserna i dessa föreskrifter under vissa omständigheter kan medföra skyldigheter även för andra än arbetsgivare. </p><h2 id="endelavdendagligaverksamheten" data-menu="true">En del av den dagliga verksamheten</h2><a class="paragraf" id="endelavdendagligaverksamheten5§" name="endelavdendagligaverksamheten5§">5 §</a><p>&nbsp;Arbetsgivaren ska se till att det systematiska arbetsmiljöarbetet bedrivs som en del av den dagliga verksamheten. Det ska omfatta alla fysiska, organisatoriska och sociala förhållanden som har betydelse för arbetsmiljön.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Att arbetsmiljöarbetet bedrivs som en del av den dagliga verksamheten, innebär att arbetsmiljöfrågorna behöver integreras i verksamheten på samma sätt som frågor gällande produktion, ekonomi och kvalitet.</p><p>Arbetsmiljöarbetet behöver bedrivas både under löpande drift och vid ändringar i verksamheten.</p></div><h2 id="medverkan" data-menu="true">Medverkan</h2><a class="paragraf" id="medverkan6§" name="medverkan6§">6 §</a><p>&nbsp;Arbetsgivaren ska ge arbetstagarna, skyddsombuden alternativt arbetsmiljöombuden, studerandeskyddsombuden och elevskyddsombuden möjlighet att medverka i det systematiska arbetsmiljöarbetet.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Det är väsentligt att arbetsgivaren, arbetstagarna, skyddsombuden, studerandeskyddsombuden och elevskyddsombuden tillsammans avgör hur man samverkar i det systematiska arbetsmiljöarbetet. Arbetsgivaren har alltid kvar sitt ansvar för arbetsmiljön. Samverkan är dock i praktiken en förutsättning för ett effektivt arbetsmiljöarbete.</p><p>Det är viktigt att hjälpas åt i det systematiska arbetsmiljöarbetet. Det systematiska arbetsmiljöarbetet bör bedrivas utifrån risker för ohälsa och olycksfall och arbetstagarnas förutsättningar. Genom att arbetstagarna och ombuden medverkar får arbetsgivaren del av deras kunskaper och erfarenheter.</p><p>Arbetsgivaren kan behöva ordna olika former för medverkan för skilda grupper. Hur medverkan mer i detalj ska gå till kan man behöva komma överens om, liksom hur mycket tid och vilken information de som medverkar behöver.</p></div><h2 id="arbetsmiljopolicy" data-menu="true">Arbetsmiljöpolicy</h2><a class="paragraf" id="arbetsmiljopolicy7§" name="arbetsmiljopolicy7§">7 §</a><p>&nbsp;Arbetsgivaren ska se till att det finns en arbetsmiljöpolicy som beskriver hur arbetsmiljöförhållandena ska vara i arbetsgivarens verksamhet, för att förebygga ohälsa och olycksfall i arbetet samt uppnå en tillfredsställande arbetsmiljö.</p><p>Arbetsmiljöpolicyn ska vara skriftlig om det finns tio eller fler arbetstagare i verksamheten.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Arbetsmiljöpolicyn bör beskriva det långsiktiga arbetet med arbetsmiljön. De risker som finns i arbetsmiljön är en viktig utgångspunkt när arbetsmiljöpolicyn ska formuleras. För att arbetsmiljöpolicyn ska kunna följas upp, och därmed vara användbar i styrningen av arbetsmiljöarbetet, bör den vara tydlig och konkret.</p></div><h2 id="rutiner" data-menu="true">Rutiner</h2><a class="paragraf" id="rutiner8§" name="rutiner8§">8 §</a><p>&nbsp;Arbetsgivaren ska se till att det finns rutiner som beskriver hur det systematiska arbetsmiljöarbetet ska gå till. Av rutinen ska framgå</p><ol type="1"><li><p>när och hur arbetsmiljöarbetet ska genomföras,</p></li><li><p>vem som ska se till att det genomförs, och</p></li><li><p>vilka som ska medverka.</p></li></ol><p>Rutinerna ska vara skriftliga om det finns tio eller fler arbetstagare i verksamheten.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Det är viktigt att rutinerna fungerar väl ihop med den verksamhet som bedrivs. Ofta finns det redan rutiner för verksamheten som rutinerna för arbetsmiljöarbetet kan samordnas med.</p><p>Det är viktigt att rutinerna hålls aktuella och är kända av alla som berörs.</p></div><h2 id="uppgiftsfordelning" data-menu="true">Uppgiftsfördelning</h2><a class="paragraf" id="uppgiftsfordelning9§" name="uppgiftsfordelning9§">9 §</a><p>&nbsp;Arbetsgivaren ska fördela uppgifterna i det systematiska arbetsmiljöarbetet till en eller flera chefer, arbetsledare eller andra arbetstagare i verksamheten.</p><p>Arbetsgivaren ska se till att de som får dessa uppgifter</p><ol type="1"><li><p>är tillräckligt många för att kunna utföra de uppgifter som behövs,</p></li><li><p>har de befogenheter och resurser som behövs, och </p></li><li><p>har tillräckliga kunskaper om</p><ol type="a"><li><p>bestämmelserna som har betydelse för arbetsmiljön,</p></li><li><p>fysiska, organisatoriska och sociala förhållanden i arbetsmiljön som innebär risker för ohälsa eller olycksfall, och</p></li><li><p>åtgärder för att förebygga ohälsa och olycksfall samt uppnå en tillfredsställande arbetsmiljö.</p></li></ol></li></ol><p>Arbetsgivaren ska se till att de som får uppgifter har tillräcklig kompetens för att bedriva ett väl fungerande systematiskt arbetsmiljöarbete.</p><p>Dessutom ska kraven i bilaga&nbsp;1 uppfyllas.</p><p>Uppgiftsfördelningen ska vara skriftlig om det finns tio eller fler arbetstagare i verksamheten.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Arbetsgivaren har alltid kvar ansvaret för arbetsmiljön, även när uppgifter i arbetsmiljöarbetet har fördelats till arbetstagare.</p><p>Uppgifterna bör beskrivas så tydligt som möjligt, och alla berörda bör alltid veta vem som ska göra vad i arbetsmiljöarbetet.</p><p>När en uppgift fördelas, är det viktigt att det är klart och tydligt</p><ol type="1"><li><p>vilka befogenheter som följer med uppgiften, det vill säga rätten att fatta beslut och vidta åtgärder, och</p></li><li><p>vilka resurser som följer med uppgiften, till exempel ekonomiska medel eller tillgång till personal, utrustning, lokaler, tid och kunskaper.</p></li></ol><p>Om en arbetstagares befogenheter eller resurser inte räcker för en tilldelad uppgift i arbetsmiljöarbetet, är det viktigt att den som fått uppgiften har möjlighet att vända sig till sin chef och begära en förändring eller att frånsäga sig uppgiften.</p></div><h2 id="arbetstagareskunskaper" data-menu="true">Arbetstagares kunskaper</h2><a class="paragraf" id="arbetstagareskunskaper10§" name="arbetstagareskunskaper10§">10 §</a><p>&nbsp;Arbetsgivaren ska se till att alla arbetstagare har tillräckliga kunskaper om arbetet, och riskerna i arbetet, för att ohälsa och olycksfall ska kunna förebyggas och en tillfredsställande arbetsmiljö uppnås.</p><p>Om det finns allvarliga risker i arbetet, ska det finnas skriftliga instruktioner för hur arbetet ska utföras säkert. Instruktionerna ska vara anpassade efter målgrupp och hållas aktuella.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Arbetsgivaren kan ge arbetstagarna kunskaper om arbetsmiljön genom att erbjuda utbildningar och genom att låta dem delta i arbetsmiljöarbetet. Ofta behöver arbetstagarna få ny kunskap vid ändringar av arbetsuppgifter, arbetsutrustning, arbetsmetoder, verksamhet, organisation eller efter lång frånvaro från arbetet.</p><p>Arbetsgivaren bör ge arbetstagarna kunskaper om arbetet så tidigt som möjligt. En introduktion bör ge arbetstagarna förståelse för</p><ol type="1"><li><p>det systematiska arbetsmiljöarbetet på arbetsplatsen,</p></li><li><p>egna arbetsuppgifter, och hur de har samband med andras arbetsuppgifter,</p></li><li><p>de risker som finns i verksamheten, och</p></li><li><p>vem arbetstagarna kan vända sig till när det gäller arbetsmiljöfrågor.</p></li></ol><p>Skriftliga instruktioner vid allvarliga risker kan behöva kombineras med muntliga instruktioner. Arbetsgivaren bör se till att arbetstagaren har förstått instruktionerna. Det är angeläget att instruktionerna finns tillgängliga på arbetsplatsen.</p><p>Introduktioner och instruktioner bör anpassas till arbetstagarnas förutsättningar, till exempel ålder, erfarenhet, språkkunskaper, och eventuell funktionsnedsättning.</p></div><h2 id="undersokningochriskbedomning" data-menu="true">Undersökning och riskbedömning</h2><a class="paragraf" id="undersokningochriskbedomning11§" name="undersokningochriskbedomning11§">11 §</a><p>&nbsp;Arbetsgivaren ska regelbundet undersöka arbetsmiljöförhållandena, för att bedöma risker för ohälsa och olycksfall i arbetet.</p><p>När ändringar i verksamheten planeras, ska arbetsgivaren undersöka om ändringarna medför risker för ohälsa eller olycksfall och bedöma dessa.</p><p>Riskbedömningar ska alltid dokumenteras skriftligt. Av dokumentationen ska det framgå vilka riskerna är, och om de är allvarliga.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Dagliga undersökningar, planerade skyddsronder, mätningar, intervjuer och andra inventeringar av problem är exempel på hur undersökningar och riskbedömningar kan göras regelbundet. Varningssignaler som kan betyda att det finns risker i arbetsmiljön är till exempel tillbud, felhandlingar, vantrivsel och ökad korttidsfrånvaro. Hur ofta undersökningar behöver göras beror på vilka risker som finns i verksamheten.</p><p>En risk kan beskrivas som sannolikheten för att ohälsa eller olycksfall i arbetet uppstår och följderna av detta. Risker i arbetet kan leda till skada eller sjukdom på både kort och lång sikt. Hur allvarlig risken är måste avgöras från fall till fall.</p><p>Vid undersökning och bedömning av risker kan det vara till hjälp att inhämta information från exempelvis sammanställningar av ohälsa, olycksfall och tillbud och av genomförda arbetsanpassnings- och rehabiliteringsåtgärder. Information kan också hämtas från forskning på området och från officiell statistik. Kvinnor och män kan utsättas för olika risker i arbetet. Det är därför viktigt att synliggöra och beakta detta vid undersökning och bedömning av riskerna.</p></div><h2 id="utredningavohalsaellerolycksfallochallvarligatillbud" data-menu="true">Utredning av ohälsa eller olycksfall och allvarliga tillbud</h2><a class="paragraf" id="utredningavohalsaellerolycksfallochallvarligatillbud12§" name="utredningavohalsaellerolycksfallochallvarligatillbud12§">12 §</a><p>&nbsp;Om någon arbetstagare råkar ut för ohälsa eller olycksfall i arbetet, eller om något allvarligt tillbud inträffar i arbetet, ska arbetsgivaren utreda orsakerna så att risker för ohälsa och olycksfall kan förebyggas.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Syftet med att utreda en händelse är att komma fram till vilka åtgärder som behöver vidtas för att det inte ska hända igen. Det är viktigt att klarlägga bakomliggande orsaker i arbetsmiljön och inte fokusera på individuella faktorer eller på skuldfrågan.</p><p>Skyldigheten att utreda gäller om det finns ett samband mellan det som har hänt och förhållandena i arbetet. Det kan vara värdefullt att även utreda tillbud som inte är allvarliga.</p><p>Sjukfrånvaro kan bero på ohälsa eller olycksfall som orsakats av förhållanden i arbetsmiljön. Det är därför viktigt att ta reda på om frånvaron har samband med arbetsförhållandena.</p></div><h2 id="atgarder" data-menu="true">Åtgärder</h2><a class="paragraf" id="atgarder13§" name="atgarder13§">13 §</a><p>&nbsp;Arbetsgivaren ska omedelbart, eller så snart det är praktiskt möjligt, genomföra de åtgärder som behövs för att förebygga ohälsa och olycksfall i verksamheten samt för att även i övrigt uppnå en tillfredsställande arbetsmiljö.</p><p>Åtgärder som inte genomförs omedelbart ska dokumenteras skriftligt i en handlingsplan, där det framgår när varje åtgärd ska vara genomförd och vem som ska se till att den genomförs. Genomförda åtgärder ska kontrolleras.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Resultatet av undersökningen och riskbedömningen är utgångspunkten vid val av åtgärder. Det kan finnas skäl att prioritera bland åtgärderna så att de allvarligare riskerna åtgärdas först.</p><p>I första hand bör en åtgärd syfta till att få bort eller minska risken redan vid källan. Om en risk inte helt kan undvikas är det viktigt att arbetstagarna skyddas på annat sätt, till exempel genom instruktioner, stöd och handledning, eller personlig skyddsutrustning.</p><p>I handlingsplanen kan det vara praktiskt att beskriva de risker som åtgärderna är kopplade till. </p><p>Åtgärder kan behöva kontrolleras omedelbart eller så snart det är praktiskt möjligt, beroende på typ av åtgärd. Om kontrollen visar att åtgärderna inte varit tillräckliga eller skapat nya risker kan andra eller kompletterande åtgärder behöva vidtas.</p></div><h2 id="arliguppfoljning" data-menu="true">Årlig uppföljning</h2><a class="paragraf" id="arliguppfoljning14§" name="arliguppfoljning14§">14 §</a><p>&nbsp;Arbetsgivaren ska varje år följa upp det systematiska arbetsmiljöarbetet. Den årliga uppföljningen ska visa om arbetsmiljöarbetet bedrivs enligt bestämmelserna i dessa föreskrifter och om det fungerar.</p><p>Om uppföljningen visar att det finns brister i arbetsmiljöarbetet ska arbetsgivaren vidta förbättrande åtgärder.</p><p>Resultatet av uppföljningen ska dokumenteras skriftligt om det finns tio eller fler arbetstagare i verksamheten.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Det kan finnas skäl för fler uppföljningar än en om året, till exempel efter en omorganisation, ett olycksfall eller ett allvarligt tillbud.</p></div><h2 id="anlitaforetagshalsovardellermotsvarande" data-menu="true">Anlita företagshälsovård eller motsvarande</h2><a class="paragraf" id="anlitaforetagshalsovardellermotsvarande15§" name="anlitaforetagshalsovardellermotsvarande15§">15 §</a><p>&nbsp;Arbetsgivaren ska anlita företagshälsovård, eller motsvarande sakkunnig hjälp utifrån, om det inte finns tillräcklig kompetens inom den egna verksamheten för det systematiska arbetsmiljöarbetet, eller för arbetet med arbetsanpassning och rehabilitering.</p><p>När företagshälsovård, eller motsvarande sakkunnig hjälp anlitas, ska den vara av tillräcklig omfattning, ha tillräcklig kompetens och tillräckliga resurser för detta arbete.</p><div class="allmanna-rad"><p class="allmanna-rad-heading"><strong>Allmänna råd</strong></p><p>Enligt 3 kap. 2&nbsp;c&nbsp;§ <a href="/lagar/arbetsmiljolag-19771160-1977-1160" class="legal-ref" title="Arbetsmiljölag (1977:1160)" target="_blank" rel="noopener">arbetsmiljölagen (1977:1160)</a> avses med företagshälsovård en oberoende expertresurs inom områdena arbetsmiljö och rehabilitering. Det är viktigt att företagshälsovården har kompetens att identifiera och beskriva sambanden mellan arbetsmiljö, organisation, produktivitet och hälsa.</p><p>Det är viktigt att arbetsgivaren samverkar med företagshälsovården. Arbetsgivaren har dock alltid kvar sitt ansvar för arbetsmiljön.</p></div><h2 id="geinformationtillforetagshalsovardellermotsvarande" data-menu="true">Ge information till företagshälsovård eller motsvarande</h2><a class="paragraf" id="geinformationtillforetagshalsovardellermotsvarande16§" name="geinformationtillforetagshalsovardellermotsvarande16§">16 §</a><p>&nbsp;Arbetsgivaren ska ge information till företagshälsovården, eller till den motsvarande sakkunniga hjälp som anlitas utifrån, om vilka faktorer som påverkar, eller misstänks påverka, arbetstagarnas hälsa och säkerhet.</p><p>Företagshälsovården, eller motsvarande sakkunnig hjälp utifrån, ska också ha tillgång till information om</p><ol type="1"><li><p>aktuella arbetsmiljörisker,</p></li><li><p>förebyggande åtgärder, och</p></li><li><p>vilka åtgärder som har genomförts för att utse, utbilda och utrusta de arbetstagare som behövs för att genomföra första hjälpen, brandbekämpning och utrymning.</p></li></ol><p>Informationen ska gälla både verksamheten i stort och varje enskild arbetsplats eller varje enskilt arbete.</p>
+  </div>
+  <div class="appendices">
+    <h2 id="bilaga1arbetstagaremeduppgifterenligt9§" data-menu="true">Bilaga&nbsp;1 Arbetstagare med uppgifter enligt 9&nbsp;§</h2><p>Arbetsgivaren ska se till att de som får uppgifter enligt 9&nbsp;§</p><ol type="1"><li><p>får tillgång till eventuella anmälda arbetsskador till Försäkringskassan enligt socialförsäkringsbalken (2010:110),</p></li><li><p>får tillgång till information om de förebyggande arbetsmiljöåtgärderna i verksamheten,</p></li><li><p>känner till eventuella krav på åtgärder från Arbetsmiljöverket, och</p></li><li><p>får lämna synpunkter till arbetsgivaren om</p><ol type="a"><li><p>valet av andra arbetstagare som har uppgifter i arbetsmiljöarbetet,</p></li><li><p>valet av de arbetstagare som behövs för att genomföra första hjälpen, brandbekämpning och utrymning,</p></li><li><p>att anlita företagshälsovård eller motsvarande sakkunnig hjälp utifrån,</p></li><li><p>uppläggningen av arbetsmiljöarbetet,</p></li><li><p>riskbedömningar,</p></li><li><p>åtgärder för att förebygga ohälsa och olycksfall,</p></li><li><p>personlig skyddsutrustning som kan behövas,</p></li><li><p>anmälningar om arbetsskador,</p></li><li><p>vilken information de behöver få tillgång till om förebyggande arbetsmiljöåtgärder i verksamheten och om åtgärdskrav från Arbetsmiljöverket, samt</p></li><li><p>hur informationen i dessa frågor ska utformas.</p></li></ol></li></ol>
+  </div>
+  <footer class="back">
+    <h2 id="overgangsbestammelser" data-menu="true">Övergångsbestämmelser</h2><ol type="1"><li><p>Denna författning träder i kraft den 1&nbsp;januari&nbsp;2025.</p></li><li><p>Genom denna författning upphävs Arbetsmiljöverkets föreskrifter (AFS&nbsp;2001:1) om systematiskt arbetsmiljöarbete med tillhörande allmänna råd och kommentarer.</p></li><li><p>Tillstånd, godkännanden, undantag, dispenser, villkor, förelägganden, förbud, avgiftsförelägganden, anmälningar, registreringar, rapporter, intyg, journaler och annan dokumentation, samt andra beslut eller åtgärder i enskilda fall enligt de upphävda föreskrifterna, fortsätter att gälla enligt motsvarande bestämmelser i de nya föreskrifterna.</p></li></ol><p><strong>ERNA ZELMIN</strong></p><p><strong>Eva Nilsson</strong></p>
+  </footer>
+</article>
+    </div>
+  </div>
+
+  <div id="html-source" class="panel">
+    <pre>&lt;article class="sfs" id="AFS2023-1"&gt;
+  &lt;div class="lovhead"&gt;
+    &lt;h1&gt;
+      &lt;p class="text"&gt;AFS 2023:1&lt;/p&gt;
+      &lt;p class="text"&gt;Systematiskt arbetsmiljöarbete&lt;/p&gt;
+    &lt;/h1&gt;
+  &lt;/div&gt;
+  &lt;div class="preamble"&gt;
+    &lt;p&gt;Arbetsmiljöverket föreskriver&lt;sup class="footnote-ref" data-note="1" title=""&gt;1&lt;/sup&gt; följande med stöd av &lt;a href="/lagar/arbetsmiljoforordning-19771166-1977-1166#P18" class="legal-ref" title="Arbetsmiljöförordning (1977:1166)" target="_blank" rel="noopener"&gt;18&amp;nbsp;§ arbetsmiljöförordningen (1977:1166)&lt;/a&gt; och beslutar följande allmänna råd.&lt;/p&gt;&lt;p&gt;&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class="body"&gt;
+    &lt;h2 id="varforforeskrifternafinns" data-menu="true"&gt;Varför föreskrifterna finns&lt;/h2&gt;&lt;a class="paragraf" id="varforforeskrifternafinns1§" name="varforforeskrifternafinns1§"&gt;1 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Syftet med dessa föreskrifter är att arbetsgivare ska arbeta systematiskt genom att organisera, genomföra och följa upp sitt arbetsmiljöarbete, för att förebygga risker för ohälsa och olycksfall i arbetet samt uppnå en tillfredsställande arbetsmiljö.&lt;/p&gt;&lt;h2 id="systematisktarbetsmiljoarbeteochandraforeskrifter" data-menu="true"&gt;Systematiskt arbetsmiljöarbete och andra föreskrifter&lt;/h2&gt;&lt;a class="paragraf" id="systematisktarbetsmiljoarbeteochandraforeskrifter2§" name="systematisktarbetsmiljoarbeteochandraforeskrifter2§"&gt;2 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;I &lt;a href="/lagar/arbetsmiljolag-19771160-1977-1160" class="legal-ref" title="Arbetsmiljölag (1977:1160)" target="_blank" rel="noopener"&gt;arbetsmiljölagen (1977:1160)&lt;/a&gt; och i dessa föreskrifter om det systematiska arbetsmiljöarbetet finns grundläggande bestämmelser om hur arbetsgivaren ska organisera, genomföra och följa upp sitt arbetsmiljöarbete för att förebygga risker för ohälsa och olycksfall i arbetet samt uppnå en tillfredsställande arbetsmiljö.&lt;/p&gt;&lt;p&gt;Arbetsmiljöförhållanden som regleras genom Arbetsmiljöverkets övriga föreskrifter som vänder sig till arbetsgivare, ska beaktas och hanteras i det systematiska arbetsmiljöarbetet. I de föreskrifterna finns bestämmelser med preciserade krav för det systematiska arbetsmiljöarbetet som kan gälla undersökningar av arbetsmiljön, bedömningar av risker och åtgärder som ska vidtas. Där finns också preciseringar som kan gälla särskilda krav på kunskaper eller hur vissa arbetsmiljöuppgifter ska fördelas.&lt;/p&gt;&lt;h2 id="dagallerforeskrifterna" data-menu="true"&gt;Då gäller föreskrifterna&lt;/h2&gt;&lt;a class="paragraf" id="dagallerforeskrifterna3§" name="dagallerforeskrifterna3§"&gt;3 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Bestämmelserna i dessa föreskrifter reglerar all verksamhet där arbetstagare utför arbete för arbetsgivares räkning.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Det systematiska arbetsmiljöarbetet omfattar hela verksamheten, oavsett om den bedrivs på samma ställe hela tiden, är spridd på flera ställen eller är rörlig. Det gäller också vid distansarbete, till exempel när arbetstagaren utför arbete i sitt eget hem. Det systematiska arbetsmiljöarbetet omfattar inte bara det som påverkar majoriteten av arbetstagarna, utan även det som endast påverkar en eller några få.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="vemforeskrifternariktarsigtill" data-menu="true"&gt;Vem föreskrifterna riktar sig till&lt;/h2&gt;&lt;a class="paragraf" id="vemforeskrifternariktarsigtill4§" name="vemforeskrifternariktarsigtill4§"&gt;4 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ansvarar för att bestämmelserna i dessa föreskrifter följs. Med arbetsgivare likställs den som hyr in arbetskraft.&lt;/p&gt;&lt;p&gt;Av 1 och 3&amp;nbsp;kap. &lt;a href="/lagar/arbetsmiljolag-19771160-1977-1160" class="legal-ref" title="Arbetsmiljölag (1977:1160)" target="_blank" rel="noopener"&gt;arbetsmiljölagen (1977:1160)&lt;/a&gt; följer att bestämmelserna i dessa föreskrifter under vissa omständigheter kan medföra skyldigheter även för andra än arbetsgivare. &lt;/p&gt;&lt;h2 id="endelavdendagligaverksamheten" data-menu="true"&gt;En del av den dagliga verksamheten&lt;/h2&gt;&lt;a class="paragraf" id="endelavdendagligaverksamheten5§" name="endelavdendagligaverksamheten5§"&gt;5 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska se till att det systematiska arbetsmiljöarbetet bedrivs som en del av den dagliga verksamheten. Det ska omfatta alla fysiska, organisatoriska och sociala förhållanden som har betydelse för arbetsmiljön.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Att arbetsmiljöarbetet bedrivs som en del av den dagliga verksamheten, innebär att arbetsmiljöfrågorna behöver integreras i verksamheten på samma sätt som frågor gällande produktion, ekonomi och kvalitet.&lt;/p&gt;&lt;p&gt;Arbetsmiljöarbetet behöver bedrivas både under löpande drift och vid ändringar i verksamheten.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="medverkan" data-menu="true"&gt;Medverkan&lt;/h2&gt;&lt;a class="paragraf" id="medverkan6§" name="medverkan6§"&gt;6 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska ge arbetstagarna, skyddsombuden alternativt arbetsmiljöombuden, studerandeskyddsombuden och elevskyddsombuden möjlighet att medverka i det systematiska arbetsmiljöarbetet.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Det är väsentligt att arbetsgivaren, arbetstagarna, skyddsombuden, studerandeskyddsombuden och elevskyddsombuden tillsammans avgör hur man samverkar i det systematiska arbetsmiljöarbetet. Arbetsgivaren har alltid kvar sitt ansvar för arbetsmiljön. Samverkan är dock i praktiken en förutsättning för ett effektivt arbetsmiljöarbete.&lt;/p&gt;&lt;p&gt;Det är viktigt att hjälpas åt i det systematiska arbetsmiljöarbetet. Det systematiska arbetsmiljöarbetet bör bedrivas utifrån risker för ohälsa och olycksfall och arbetstagarnas förutsättningar. Genom att arbetstagarna och ombuden medverkar får arbetsgivaren del av deras kunskaper och erfarenheter.&lt;/p&gt;&lt;p&gt;Arbetsgivaren kan behöva ordna olika former för medverkan för skilda grupper. Hur medverkan mer i detalj ska gå till kan man behöva komma överens om, liksom hur mycket tid och vilken information de som medverkar behöver.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="arbetsmiljopolicy" data-menu="true"&gt;Arbetsmiljöpolicy&lt;/h2&gt;&lt;a class="paragraf" id="arbetsmiljopolicy7§" name="arbetsmiljopolicy7§"&gt;7 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska se till att det finns en arbetsmiljöpolicy som beskriver hur arbetsmiljöförhållandena ska vara i arbetsgivarens verksamhet, för att förebygga ohälsa och olycksfall i arbetet samt uppnå en tillfredsställande arbetsmiljö.&lt;/p&gt;&lt;p&gt;Arbetsmiljöpolicyn ska vara skriftlig om det finns tio eller fler arbetstagare i verksamheten.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Arbetsmiljöpolicyn bör beskriva det långsiktiga arbetet med arbetsmiljön. De risker som finns i arbetsmiljön är en viktig utgångspunkt när arbetsmiljöpolicyn ska formuleras. För att arbetsmiljöpolicyn ska kunna följas upp, och därmed vara användbar i styrningen av arbetsmiljöarbetet, bör den vara tydlig och konkret.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="rutiner" data-menu="true"&gt;Rutiner&lt;/h2&gt;&lt;a class="paragraf" id="rutiner8§" name="rutiner8§"&gt;8 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska se till att det finns rutiner som beskriver hur det systematiska arbetsmiljöarbetet ska gå till. Av rutinen ska framgå&lt;/p&gt;&lt;ol type="1"&gt;&lt;li&gt;&lt;p&gt;när och hur arbetsmiljöarbetet ska genomföras,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;vem som ska se till att det genomförs, och&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;vilka som ska medverka.&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;Rutinerna ska vara skriftliga om det finns tio eller fler arbetstagare i verksamheten.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Det är viktigt att rutinerna fungerar väl ihop med den verksamhet som bedrivs. Ofta finns det redan rutiner för verksamheten som rutinerna för arbetsmiljöarbetet kan samordnas med.&lt;/p&gt;&lt;p&gt;Det är viktigt att rutinerna hålls aktuella och är kända av alla som berörs.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="uppgiftsfordelning" data-menu="true"&gt;Uppgiftsfördelning&lt;/h2&gt;&lt;a class="paragraf" id="uppgiftsfordelning9§" name="uppgiftsfordelning9§"&gt;9 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska fördela uppgifterna i det systematiska arbetsmiljöarbetet till en eller flera chefer, arbetsledare eller andra arbetstagare i verksamheten.&lt;/p&gt;&lt;p&gt;Arbetsgivaren ska se till att de som får dessa uppgifter&lt;/p&gt;&lt;ol type="1"&gt;&lt;li&gt;&lt;p&gt;är tillräckligt många för att kunna utföra de uppgifter som behövs,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;har de befogenheter och resurser som behövs, och &lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;har tillräckliga kunskaper om&lt;/p&gt;&lt;ol type="a"&gt;&lt;li&gt;&lt;p&gt;bestämmelserna som har betydelse för arbetsmiljön,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;fysiska, organisatoriska och sociala förhållanden i arbetsmiljön som innebär risker för ohälsa eller olycksfall, och&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;åtgärder för att förebygga ohälsa och olycksfall samt uppnå en tillfredsställande arbetsmiljö.&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;Arbetsgivaren ska se till att de som får uppgifter har tillräcklig kompetens för att bedriva ett väl fungerande systematiskt arbetsmiljöarbete.&lt;/p&gt;&lt;p&gt;Dessutom ska kraven i bilaga&amp;nbsp;1 uppfyllas.&lt;/p&gt;&lt;p&gt;Uppgiftsfördelningen ska vara skriftlig om det finns tio eller fler arbetstagare i verksamheten.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Arbetsgivaren har alltid kvar ansvaret för arbetsmiljön, även när uppgifter i arbetsmiljöarbetet har fördelats till arbetstagare.&lt;/p&gt;&lt;p&gt;Uppgifterna bör beskrivas så tydligt som möjligt, och alla berörda bör alltid veta vem som ska göra vad i arbetsmiljöarbetet.&lt;/p&gt;&lt;p&gt;När en uppgift fördelas, är det viktigt att det är klart och tydligt&lt;/p&gt;&lt;ol type="1"&gt;&lt;li&gt;&lt;p&gt;vilka befogenheter som följer med uppgiften, det vill säga rätten att fatta beslut och vidta åtgärder, och&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;vilka resurser som följer med uppgiften, till exempel ekonomiska medel eller tillgång till personal, utrustning, lokaler, tid och kunskaper.&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;Om en arbetstagares befogenheter eller resurser inte räcker för en tilldelad uppgift i arbetsmiljöarbetet, är det viktigt att den som fått uppgiften har möjlighet att vända sig till sin chef och begära en förändring eller att frånsäga sig uppgiften.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="arbetstagareskunskaper" data-menu="true"&gt;Arbetstagares kunskaper&lt;/h2&gt;&lt;a class="paragraf" id="arbetstagareskunskaper10§" name="arbetstagareskunskaper10§"&gt;10 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska se till att alla arbetstagare har tillräckliga kunskaper om arbetet, och riskerna i arbetet, för att ohälsa och olycksfall ska kunna förebyggas och en tillfredsställande arbetsmiljö uppnås.&lt;/p&gt;&lt;p&gt;Om det finns allvarliga risker i arbetet, ska det finnas skriftliga instruktioner för hur arbetet ska utföras säkert. Instruktionerna ska vara anpassade efter målgrupp och hållas aktuella.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Arbetsgivaren kan ge arbetstagarna kunskaper om arbetsmiljön genom att erbjuda utbildningar och genom att låta dem delta i arbetsmiljöarbetet. Ofta behöver arbetstagarna få ny kunskap vid ändringar av arbetsuppgifter, arbetsutrustning, arbetsmetoder, verksamhet, organisation eller efter lång frånvaro från arbetet.&lt;/p&gt;&lt;p&gt;Arbetsgivaren bör ge arbetstagarna kunskaper om arbetet så tidigt som möjligt. En introduktion bör ge arbetstagarna förståelse för&lt;/p&gt;&lt;ol type="1"&gt;&lt;li&gt;&lt;p&gt;det systematiska arbetsmiljöarbetet på arbetsplatsen,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;egna arbetsuppgifter, och hur de har samband med andras arbetsuppgifter,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;de risker som finns i verksamheten, och&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;vem arbetstagarna kan vända sig till när det gäller arbetsmiljöfrågor.&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;Skriftliga instruktioner vid allvarliga risker kan behöva kombineras med muntliga instruktioner. Arbetsgivaren bör se till att arbetstagaren har förstått instruktionerna. Det är angeläget att instruktionerna finns tillgängliga på arbetsplatsen.&lt;/p&gt;&lt;p&gt;Introduktioner och instruktioner bör anpassas till arbetstagarnas förutsättningar, till exempel ålder, erfarenhet, språkkunskaper, och eventuell funktionsnedsättning.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="undersokningochriskbedomning" data-menu="true"&gt;Undersökning och riskbedömning&lt;/h2&gt;&lt;a class="paragraf" id="undersokningochriskbedomning11§" name="undersokningochriskbedomning11§"&gt;11 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska regelbundet undersöka arbetsmiljöförhållandena, för att bedöma risker för ohälsa och olycksfall i arbetet.&lt;/p&gt;&lt;p&gt;När ändringar i verksamheten planeras, ska arbetsgivaren undersöka om ändringarna medför risker för ohälsa eller olycksfall och bedöma dessa.&lt;/p&gt;&lt;p&gt;Riskbedömningar ska alltid dokumenteras skriftligt. Av dokumentationen ska det framgå vilka riskerna är, och om de är allvarliga.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Dagliga undersökningar, planerade skyddsronder, mätningar, intervjuer och andra inventeringar av problem är exempel på hur undersökningar och riskbedömningar kan göras regelbundet. Varningssignaler som kan betyda att det finns risker i arbetsmiljön är till exempel tillbud, felhandlingar, vantrivsel och ökad korttidsfrånvaro. Hur ofta undersökningar behöver göras beror på vilka risker som finns i verksamheten.&lt;/p&gt;&lt;p&gt;En risk kan beskrivas som sannolikheten för att ohälsa eller olycksfall i arbetet uppstår och följderna av detta. Risker i arbetet kan leda till skada eller sjukdom på både kort och lång sikt. Hur allvarlig risken är måste avgöras från fall till fall.&lt;/p&gt;&lt;p&gt;Vid undersökning och bedömning av risker kan det vara till hjälp att inhämta information från exempelvis sammanställningar av ohälsa, olycksfall och tillbud och av genomförda arbetsanpassnings- och rehabiliteringsåtgärder. Information kan också hämtas från forskning på området och från officiell statistik. Kvinnor och män kan utsättas för olika risker i arbetet. Det är därför viktigt att synliggöra och beakta detta vid undersökning och bedömning av riskerna.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="utredningavohalsaellerolycksfallochallvarligatillbud" data-menu="true"&gt;Utredning av ohälsa eller olycksfall och allvarliga tillbud&lt;/h2&gt;&lt;a class="paragraf" id="utredningavohalsaellerolycksfallochallvarligatillbud12§" name="utredningavohalsaellerolycksfallochallvarligatillbud12§"&gt;12 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Om någon arbetstagare råkar ut för ohälsa eller olycksfall i arbetet, eller om något allvarligt tillbud inträffar i arbetet, ska arbetsgivaren utreda orsakerna så att risker för ohälsa och olycksfall kan förebyggas.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Syftet med att utreda en händelse är att komma fram till vilka åtgärder som behöver vidtas för att det inte ska hända igen. Det är viktigt att klarlägga bakomliggande orsaker i arbetsmiljön och inte fokusera på individuella faktorer eller på skuldfrågan.&lt;/p&gt;&lt;p&gt;Skyldigheten att utreda gäller om det finns ett samband mellan det som har hänt och förhållandena i arbetet. Det kan vara värdefullt att även utreda tillbud som inte är allvarliga.&lt;/p&gt;&lt;p&gt;Sjukfrånvaro kan bero på ohälsa eller olycksfall som orsakats av förhållanden i arbetsmiljön. Det är därför viktigt att ta reda på om frånvaron har samband med arbetsförhållandena.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="atgarder" data-menu="true"&gt;Åtgärder&lt;/h2&gt;&lt;a class="paragraf" id="atgarder13§" name="atgarder13§"&gt;13 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska omedelbart, eller så snart det är praktiskt möjligt, genomföra de åtgärder som behövs för att förebygga ohälsa och olycksfall i verksamheten samt för att även i övrigt uppnå en tillfredsställande arbetsmiljö.&lt;/p&gt;&lt;p&gt;Åtgärder som inte genomförs omedelbart ska dokumenteras skriftligt i en handlingsplan, där det framgår när varje åtgärd ska vara genomförd och vem som ska se till att den genomförs. Genomförda åtgärder ska kontrolleras.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Resultatet av undersökningen och riskbedömningen är utgångspunkten vid val av åtgärder. Det kan finnas skäl att prioritera bland åtgärderna så att de allvarligare riskerna åtgärdas först.&lt;/p&gt;&lt;p&gt;I första hand bör en åtgärd syfta till att få bort eller minska risken redan vid källan. Om en risk inte helt kan undvikas är det viktigt att arbetstagarna skyddas på annat sätt, till exempel genom instruktioner, stöd och handledning, eller personlig skyddsutrustning.&lt;/p&gt;&lt;p&gt;I handlingsplanen kan det vara praktiskt att beskriva de risker som åtgärderna är kopplade till. &lt;/p&gt;&lt;p&gt;Åtgärder kan behöva kontrolleras omedelbart eller så snart det är praktiskt möjligt, beroende på typ av åtgärd. Om kontrollen visar att åtgärderna inte varit tillräckliga eller skapat nya risker kan andra eller kompletterande åtgärder behöva vidtas.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="arliguppfoljning" data-menu="true"&gt;Årlig uppföljning&lt;/h2&gt;&lt;a class="paragraf" id="arliguppfoljning14§" name="arliguppfoljning14§"&gt;14 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska varje år följa upp det systematiska arbetsmiljöarbetet. Den årliga uppföljningen ska visa om arbetsmiljöarbetet bedrivs enligt bestämmelserna i dessa föreskrifter och om det fungerar.&lt;/p&gt;&lt;p&gt;Om uppföljningen visar att det finns brister i arbetsmiljöarbetet ska arbetsgivaren vidta förbättrande åtgärder.&lt;/p&gt;&lt;p&gt;Resultatet av uppföljningen ska dokumenteras skriftligt om det finns tio eller fler arbetstagare i verksamheten.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Det kan finnas skäl för fler uppföljningar än en om året, till exempel efter en omorganisation, ett olycksfall eller ett allvarligt tillbud.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="anlitaforetagshalsovardellermotsvarande" data-menu="true"&gt;Anlita företagshälsovård eller motsvarande&lt;/h2&gt;&lt;a class="paragraf" id="anlitaforetagshalsovardellermotsvarande15§" name="anlitaforetagshalsovardellermotsvarande15§"&gt;15 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska anlita företagshälsovård, eller motsvarande sakkunnig hjälp utifrån, om det inte finns tillräcklig kompetens inom den egna verksamheten för det systematiska arbetsmiljöarbetet, eller för arbetet med arbetsanpassning och rehabilitering.&lt;/p&gt;&lt;p&gt;När företagshälsovård, eller motsvarande sakkunnig hjälp anlitas, ska den vara av tillräcklig omfattning, ha tillräcklig kompetens och tillräckliga resurser för detta arbete.&lt;/p&gt;&lt;div class="allmanna-rad"&gt;&lt;p class="allmanna-rad-heading"&gt;&lt;strong&gt;Allmänna råd&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;Enligt 3 kap. 2&amp;nbsp;c&amp;nbsp;§ &lt;a href="/lagar/arbetsmiljolag-19771160-1977-1160" class="legal-ref" title="Arbetsmiljölag (1977:1160)" target="_blank" rel="noopener"&gt;arbetsmiljölagen (1977:1160)&lt;/a&gt; avses med företagshälsovård en oberoende expertresurs inom områdena arbetsmiljö och rehabilitering. Det är viktigt att företagshälsovården har kompetens att identifiera och beskriva sambanden mellan arbetsmiljö, organisation, produktivitet och hälsa.&lt;/p&gt;&lt;p&gt;Det är viktigt att arbetsgivaren samverkar med företagshälsovården. Arbetsgivaren har dock alltid kvar sitt ansvar för arbetsmiljön.&lt;/p&gt;&lt;/div&gt;&lt;h2 id="geinformationtillforetagshalsovardellermotsvarande" data-menu="true"&gt;Ge information till företagshälsovård eller motsvarande&lt;/h2&gt;&lt;a class="paragraf" id="geinformationtillforetagshalsovardellermotsvarande16§" name="geinformationtillforetagshalsovardellermotsvarande16§"&gt;16 §&lt;/a&gt;&lt;p&gt;&amp;nbsp;Arbetsgivaren ska ge information till företagshälsovården, eller till den motsvarande sakkunniga hjälp som anlitas utifrån, om vilka faktorer som påverkar, eller misstänks påverka, arbetstagarnas hälsa och säkerhet.&lt;/p&gt;&lt;p&gt;Företagshälsovården, eller motsvarande sakkunnig hjälp utifrån, ska också ha tillgång till information om&lt;/p&gt;&lt;ol type="1"&gt;&lt;li&gt;&lt;p&gt;aktuella arbetsmiljörisker,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;förebyggande åtgärder, och&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;vilka åtgärder som har genomförts för att utse, utbilda och utrusta de arbetstagare som behövs för att genomföra första hjälpen, brandbekämpning och utrymning.&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;Informationen ska gälla både verksamheten i stort och varje enskild arbetsplats eller varje enskilt arbete.&lt;/p&gt;
+  &lt;/div&gt;
+  &lt;div class="appendices"&gt;
+    &lt;h2 id="bilaga1arbetstagaremeduppgifterenligt9§" data-menu="true"&gt;Bilaga&amp;nbsp;1 Arbetstagare med uppgifter enligt 9&amp;nbsp;§&lt;/h2&gt;&lt;p&gt;Arbetsgivaren ska se till att de som får uppgifter enligt 9&amp;nbsp;§&lt;/p&gt;&lt;ol type="1"&gt;&lt;li&gt;&lt;p&gt;får tillgång till eventuella anmälda arbetsskador till Försäkringskassan enligt socialförsäkringsbalken (2010:110),&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;får tillgång till information om de förebyggande arbetsmiljöåtgärderna i verksamheten,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;känner till eventuella krav på åtgärder från Arbetsmiljöverket, och&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;får lämna synpunkter till arbetsgivaren om&lt;/p&gt;&lt;ol type="a"&gt;&lt;li&gt;&lt;p&gt;valet av andra arbetstagare som har uppgifter i arbetsmiljöarbetet,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;valet av de arbetstagare som behövs för att genomföra första hjälpen, brandbekämpning och utrymning,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;att anlita företagshälsovård eller motsvarande sakkunnig hjälp utifrån,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;uppläggningen av arbetsmiljöarbetet,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;riskbedömningar,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;åtgärder för att förebygga ohälsa och olycksfall,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;personlig skyddsutrustning som kan behövas,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;anmälningar om arbetsskador,&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;vilken information de behöver få tillgång till om förebyggande arbetsmiljöåtgärder i verksamheten och om åtgärdskrav från Arbetsmiljöverket, samt&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;hur informationen i dessa frågor ska utformas.&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;/li&gt;&lt;/ol&gt;
+  &lt;/div&gt;
+  &lt;footer class="back"&gt;
+    &lt;h2 id="overgangsbestammelser" data-menu="true"&gt;Övergångsbestämmelser&lt;/h2&gt;&lt;ol type="1"&gt;&lt;li&gt;&lt;p&gt;Denna författning träder i kraft den 1&amp;nbsp;januari&amp;nbsp;2025.&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;Genom denna författning upphävs Arbetsmiljöverkets föreskrifter (AFS&amp;nbsp;2001:1) om systematiskt arbetsmiljöarbete med tillhörande allmänna råd och kommentarer.&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;Tillstånd, godkännanden, undantag, dispenser, villkor, förelägganden, förbud, avgiftsförelägganden, anmälningar, registreringar, rapporter, intyg, journaler och annan dokumentation, samt andra beslut eller åtgärder i enskilda fall enligt de upphävda föreskrifterna, fortsätter att gälla enligt motsvarande bestämmelser i de nya föreskrifterna.&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;&lt;strong&gt;ERNA ZELMIN&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&lt;strong&gt;Eva Nilsson&lt;/strong&gt;&lt;/p&gt;
+  &lt;/footer&gt;
+&lt;/article&gt;</pre>
+  </div>
+
+  <div id="json" class="panel">
+    <pre>{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": null,
+  "documentNumber": null,
+  "divisions": null,
+  "chapters": [],
+  "preamble": null,
+  "transitionProvisions": null,
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": null,
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}</pre>
+    
+  </div>
+
+  <div id="markdown" class="panel">
+    <pre># AFS 2023:1
+
+Systematiskt arbetsmiljöarbete
+
+Arbetsmiljöverket föreskriver[^1] följande med stöd av [18 § arbetsmiljöförordningen (1977:1166)](/lagar/arbetsmiljoforordning-19771166-1977-1166#P18 "Arbetsmiljöförordning (1977:1166)") och beslutar följande allmänna råd.
+
+## Varför föreskrifterna finns
+
+1 §
+
+Syftet med dessa föreskrifter är att arbetsgivare ska arbeta systematiskt genom att organisera, genomföra och följa upp sitt arbetsmiljöarbete, för att förebygga risker för ohälsa och olycksfall i arbetet samt uppnå en tillfredsställande arbetsmiljö.
+
+## Systematiskt arbetsmiljöarbete och andra föreskrifter
+
+2 §
+
+I [arbetsmiljölagen (1977:1160)](/lagar/arbetsmiljolag-19771160-1977-1160 "Arbetsmiljölag (1977:1160)") och i dessa föreskrifter om det systematiska arbetsmiljöarbetet finns grundläggande bestämmelser om hur arbetsgivaren ska organisera, genomföra och följa upp sitt arbetsmiljöarbete för att förebygga risker för ohälsa och olycksfall i arbetet samt uppnå en tillfredsställande arbetsmiljö.
+
+Arbetsmiljöförhållanden som regleras genom Arbetsmiljöverkets övriga föreskrifter som vänder sig till arbetsgivare, ska beaktas och hanteras i det systematiska arbetsmiljöarbetet. I de föreskrifterna finns bestämmelser med preciserade krav för det systematiska arbetsmiljöarbetet som kan gälla undersökningar av arbetsmiljön, bedömningar av risker och åtgärder som ska vidtas. Där finns också preciseringar som kan gälla särskilda krav på kunskaper eller hur vissa arbetsmiljöuppgifter ska fördelas.
+
+## Då gäller föreskrifterna
+
+3 §
+
+Bestämmelserna i dessa föreskrifter reglerar all verksamhet där arbetstagare utför arbete för arbetsgivares räkning.
+
+**Allmänna råd**
+
+Det systematiska arbetsmiljöarbetet omfattar hela verksamheten, oavsett om den bedrivs på samma ställe hela tiden, är spridd på flera ställen eller är rörlig. Det gäller också vid distansarbete, till exempel när arbetstagaren utför arbete i sitt eget hem. Det systematiska arbetsmiljöarbetet omfattar inte bara det som påverkar majoriteten av arbetstagarna, utan även det som endast påverkar en eller några få.
+
+## Vem föreskrifterna riktar sig till
+
+4 §
+
+Arbetsgivaren ansvarar för att bestämmelserna i dessa föreskrifter följs. Med arbetsgivare likställs den som hyr in arbetskraft.
+
+Av 1 och 3 kap. [arbetsmiljölagen (1977:1160)](/lagar/arbetsmiljolag-19771160-1977-1160 "Arbetsmiljölag (1977:1160)") följer att bestämmelserna i dessa föreskrifter under vissa omständigheter kan medföra skyldigheter även för andra än arbetsgivare.
+
+## En del av den dagliga verksamheten
+
+5 §
+
+Arbetsgivaren ska se till att det systematiska arbetsmiljöarbetet bedrivs som en del av den dagliga verksamheten. Det ska omfatta alla fysiska, organisatoriska och sociala förhållanden som har betydelse för arbetsmiljön.
+
+**Allmänna råd**
+
+Att arbetsmiljöarbetet bedrivs som en del av den dagliga verksamheten, innebär att arbetsmiljöfrågorna behöver integreras i verksamheten på samma sätt som frågor gällande produktion, ekonomi och kvalitet.
+
+Arbetsmiljöarbetet behöver bedrivas både under löpande drift och vid ändringar i verksamheten.
+
+## Medverkan
+
+6 §
+
+Arbetsgivaren ska ge arbetstagarna, skyddsombuden alternativt arbetsmiljöombuden, studerandeskyddsombuden och elevskyddsombuden möjlighet att medverka i det systematiska arbetsmiljöarbetet.
+
+**Allmänna råd**
+
+Det är väsentligt att arbetsgivaren, arbetstagarna, skyddsombuden, studerandeskyddsombuden och elevskyddsombuden tillsammans avgör hur man samverkar i det systematiska arbetsmiljöarbetet. Arbetsgivaren har alltid kvar sitt ansvar för arbetsmiljön. Samverkan är dock i praktiken en förutsättning för ett effektivt arbetsmiljöarbete.
+
+Det är viktigt att hjälpas åt i det systematiska arbetsmiljöarbetet. Det systematiska arbetsmiljöarbetet bör bedrivas utifrån risker för ohälsa och olycksfall och arbetstagarnas förutsättningar. Genom att arbetstagarna och ombuden medverkar får arbetsgivaren del av deras kunskaper och erfarenheter.
+
+Arbetsgivaren kan behöva ordna olika former för medverkan för skilda grupper. Hur medverkan mer i detalj ska gå till kan man behöva komma överens om, liksom hur mycket tid och vilken information de som medverkar behöver.
+
+## Arbetsmiljöpolicy
+
+7 §
+
+Arbetsgivaren ska se till att det finns en arbetsmiljöpolicy som beskriver hur arbetsmiljöförhållandena ska vara i arbetsgivarens verksamhet, för att förebygga ohälsa och olycksfall i arbetet samt uppnå en tillfredsställande arbetsmiljö.
+
+Arbetsmiljöpolicyn ska vara skriftlig om det finns tio eller fler arbetstagare i verksamheten.
+
+**Allmänna råd**
+
+Arbetsmiljöpolicyn bör beskriva det långsiktiga arbetet med arbetsmiljön. De risker som finns i arbetsmiljön är en viktig utgångspunkt när arbetsmiljöpolicyn ska formuleras. För att arbetsmiljöpolicyn ska kunna följas upp, och därmed vara användbar i styrningen av arbetsmiljöarbetet, bör den vara tydlig och konkret.
+
+## Rutiner
+
+8 §
+
+Arbetsgivaren ska se till att det finns rutiner som beskriver hur det systematiska arbetsmiljöarbetet ska gå till. Av rutinen ska framgå
+
+1. när och hur arbetsmiljöarbetet ska genomföras,
+2. vem som ska se till att det genomförs, och
+3. vilka som ska medverka.
+
+Rutinerna ska vara skriftliga om det finns tio eller fler arbetstagare i verksamheten.
+
+**Allmänna råd**
+
+Det är viktigt att rutinerna fungerar väl ihop med den verksamhet som bedrivs. Ofta finns det redan rutiner för verksamheten som rutinerna för arbetsmiljöarbetet kan samordnas med.
+
+Det är viktigt att rutinerna hålls aktuella och är kända av alla som berörs.
+
+## Uppgiftsfördelning
+
+9 §
+
+Arbetsgivaren ska fördela uppgifterna i det systematiska arbetsmiljöarbetet till en eller flera chefer, arbetsledare eller andra arbetstagare i verksamheten.
+
+Arbetsgivaren ska se till att de som får dessa uppgifter
+
+1. är tillräckligt många för att kunna utföra de uppgifter som behövs,
+2. har de befogenheter och resurser som behövs, och
+3. har tillräckliga kunskaper om
+
+  1. bestämmelserna som har betydelse för arbetsmiljön,
+  2. fysiska, organisatoriska och sociala förhållanden i arbetsmiljön som innebär risker för ohälsa eller olycksfall, och
+  3. åtgärder för att förebygga ohälsa och olycksfall samt uppnå en tillfredsställande arbetsmiljö.
+
+Arbetsgivaren ska se till att de som får uppgifter har tillräcklig kompetens för att bedriva ett väl fungerande systematiskt arbetsmiljöarbete.
+
+Dessutom ska kraven i bilaga 1 uppfyllas.
+
+Uppgiftsfördelningen ska vara skriftlig om det finns tio eller fler arbetstagare i verksamheten.
+
+**Allmänna råd**
+
+Arbetsgivaren har alltid kvar ansvaret för arbetsmiljön, även när uppgifter i arbetsmiljöarbetet har fördelats till arbetstagare.
+
+Uppgifterna bör beskrivas så tydligt som möjligt, och alla berörda bör alltid veta vem som ska göra vad i arbetsmiljöarbetet.
+
+När en uppgift fördelas, är det viktigt att det är klart och tydligt
+
+1. vilka befogenheter som följer med uppgiften, det vill säga rätten att fatta beslut och vidta åtgärder, och
+2. vilka resurser som följer med uppgiften, till exempel ekonomiska medel eller tillgång till personal, utrustning, lokaler, tid och kunskaper.
+
+Om en arbetstagares befogenheter eller resurser inte räcker för en tilldelad uppgift i arbetsmiljöarbetet, är det viktigt att den som fått uppgiften har möjlighet att vända sig till sin chef och begära en förändring eller att frånsäga sig uppgiften.
+
+## Arbetstagares kunskaper
+
+10 §
+
+Arbetsgivaren ska se till att alla arbetstagare har tillräckliga kunskaper om arbetet, och riskerna i arbetet, för att ohälsa och olycksfall ska kunna förebyggas och en tillfredsställande arbetsmiljö uppnås.
+
+Om det finns allvarliga risker i arbetet, ska det finnas skriftliga instruktioner för hur arbetet ska utföras säkert. Instruktionerna ska vara anpassade efter målgrupp och hållas aktuella.
+
+**Allmänna råd**
+
+Arbetsgivaren kan ge arbetstagarna kunskaper om arbetsmiljön genom att erbjuda utbildningar och genom att låta dem delta i arbetsmiljöarbetet. Ofta behöver arbetstagarna få ny kunskap vid ändringar av arbetsuppgifter, arbetsutrustning, arbetsmetoder, verksamhet, organisation eller efter lång frånvaro från arbetet.
+
+Arbetsgivaren bör ge arbetstagarna kunskaper om arbetet så tidigt som möjligt. En introduktion bör ge arbetstagarna förståelse för
+
+1. det systematiska arbetsmiljöarbetet på arbetsplatsen,
+2. egna arbetsuppgifter, och hur de har samband med andras arbetsuppgifter,
+3. de risker som finns i verksamheten, och
+4. vem arbetstagarna kan vända sig till när det gäller arbetsmiljöfrågor.
+
+Skriftliga instruktioner vid allvarliga risker kan behöva kombineras med muntliga instruktioner. Arbetsgivaren bör se till att arbetstagaren har förstått instruktionerna. Det är angeläget att instruktionerna finns tillgängliga på arbetsplatsen.
+
+Introduktioner och instruktioner bör anpassas till arbetstagarnas förutsättningar, till exempel ålder, erfarenhet, språkkunskaper, och eventuell funktionsnedsättning.
+
+## Undersökning och riskbedömning
+
+11 §
+
+Arbetsgivaren ska regelbundet undersöka arbetsmiljöförhållandena, för att bedöma risker för ohälsa och olycksfall i arbetet.
+
+När ändringar i verksamheten planeras, ska arbetsgivaren undersöka om ändringarna medför risker för ohälsa eller olycksfall och bedöma dessa.
+
+Riskbedömningar ska alltid dokumenteras skriftligt. Av dokumentationen ska det framgå vilka riskerna är, och om de är allvarliga.
+
+**Allmänna råd**
+
+Dagliga undersökningar, planerade skyddsronder, mätningar, intervjuer och andra inventeringar av problem är exempel på hur undersökningar och riskbedömningar kan göras regelbundet. Varningssignaler som kan betyda att det finns risker i arbetsmiljön är till exempel tillbud, felhandlingar, vantrivsel och ökad korttidsfrånvaro. Hur ofta undersökningar behöver göras beror på vilka risker som finns i verksamheten.
+
+En risk kan beskrivas som sannolikheten för att ohälsa eller olycksfall i arbetet uppstår och följderna av detta. Risker i arbetet kan leda till skada eller sjukdom på både kort och lång sikt. Hur allvarlig risken är måste avgöras från fall till fall.
+
+Vid undersökning och bedömning av risker kan det vara till hjälp att inhämta information från exempelvis sammanställningar av ohälsa, olycksfall och tillbud och av genomförda arbetsanpassnings- och rehabiliteringsåtgärder. Information kan också hämtas från forskning på området och från officiell statistik. Kvinnor och män kan utsättas för olika risker i arbetet. Det är därför viktigt att synliggöra och beakta detta vid undersökning och bedömning av riskerna.
+
+## Utredning av ohälsa eller olycksfall och allvarliga tillbud
+
+12 §
+
+Om någon arbetstagare råkar ut för ohälsa eller olycksfall i arbetet, eller om något allvarligt tillbud inträffar i arbetet, ska arbetsgivaren utreda orsakerna så att risker för ohälsa och olycksfall kan förebyggas.
+
+**Allmänna råd**
+
+Syftet med att utreda en händelse är att komma fram till vilka åtgärder som behöver vidtas för att det inte ska hända igen. Det är viktigt att klarlägga bakomliggande orsaker i arbetsmiljön och inte fokusera på individuella faktorer eller på skuldfrågan.
+
+Skyldigheten att utreda gäller om det finns ett samband mellan det som har hänt och förhållandena i arbetet. Det kan vara värdefullt att även utreda tillbud som inte är allvarliga.
+
+Sjukfrånvaro kan bero på ohälsa eller olycksfall som orsakats av förhållanden i arbetsmiljön. Det är därför viktigt att ta reda på om frånvaron har samband med arbetsförhållandena.
+
+## Åtgärder
+
+13 §
+
+Arbetsgivaren ska omedelbart, eller så snart det är praktiskt möjligt, genomföra de åtgärder som behövs för att förebygga ohälsa och olycksfall i verksamheten samt för att även i övrigt uppnå en tillfredsställande arbetsmiljö.
+
+Åtgärder som inte genomförs omedelbart ska dokumenteras skriftligt i en handlingsplan, där det framgår när varje åtgärd ska vara genomförd och vem som ska se till att den genomförs. Genomförda åtgärder ska kontrolleras.
+
+**Allmänna råd**
+
+Resultatet av undersökningen och riskbedömningen är utgångspunkten vid val av åtgärder. Det kan finnas skäl att prioritera bland åtgärderna så att de allvarligare riskerna åtgärdas först.
+
+I första hand bör en åtgärd syfta till att få bort eller minska risken redan vid källan. Om en risk inte helt kan undvikas är det viktigt att arbetstagarna skyddas på annat sätt, till exempel genom instruktioner, stöd och handledning, eller personlig skyddsutrustning.
+
+I handlingsplanen kan det vara praktiskt att beskriva de risker som åtgärderna är kopplade till.
+
+Åtgärder kan behöva kontrolleras omedelbart eller så snart det är praktiskt möjligt, beroende på typ av åtgärd. Om kontrollen visar att åtgärderna inte varit tillräckliga eller skapat nya risker kan andra eller kompletterande åtgärder behöva vidtas.
+
+## Årlig uppföljning
+
+14 §
+
+Arbetsgivaren ska varje år följa upp det systematiska arbetsmiljöarbetet. Den årliga uppföljningen ska visa om arbetsmiljöarbetet bedrivs enligt bestämmelserna i dessa föreskrifter och om det fungerar.
+
+Om uppföljningen visar att det finns brister i arbetsmiljöarbetet ska arbetsgivaren vidta förbättrande åtgärder.
+
+Resultatet av uppföljningen ska dokumenteras skriftligt om det finns tio eller fler arbetstagare i verksamheten.
+
+**Allmänna råd**
+
+Det kan finnas skäl för fler uppföljningar än en om året, till exempel efter en omorganisation, ett olycksfall eller ett allvarligt tillbud.
+
+## Anlita företagshälsovård eller motsvarande
+
+15 §
+
+Arbetsgivaren ska anlita företagshälsovård, eller motsvarande sakkunnig hjälp utifrån, om det inte finns tillräcklig kompetens inom den egna verksamheten för det systematiska arbetsmiljöarbetet, eller för arbetet med arbetsanpassning och rehabilitering.
+
+När företagshälsovård, eller motsvarande sakkunnig hjälp anlitas, ska den vara av tillräcklig omfattning, ha tillräcklig kompetens och tillräckliga resurser för detta arbete.
+
+**Allmänna råd**
+
+Enligt 3 kap. 2 c § [arbetsmiljölagen (1977:1160)](/lagar/arbetsmiljolag-19771160-1977-1160 "Arbetsmiljölag (1977:1160)") avses med företagshälsovård en oberoende expertresurs inom områdena arbetsmiljö och rehabilitering. Det är viktigt att företagshälsovården har kompetens att identifiera och beskriva sambanden mellan arbetsmiljö, organisation, produktivitet och hälsa.
+
+Det är viktigt att arbetsgivaren samverkar med företagshälsovården. Arbetsgivaren har dock alltid kvar sitt ansvar för arbetsmiljön.
+
+## Ge information till företagshälsovård eller motsvarande
+
+16 §
+
+Arbetsgivaren ska ge information till företagshälsovården, eller till den motsvarande sakkunniga hjälp som anlitas utifrån, om vilka faktorer som påverkar, eller misstänks påverka, arbetstagarnas hälsa och säkerhet.
+
+Företagshälsovården, eller motsvarande sakkunnig hjälp utifrån, ska också ha tillgång till information om
+
+1. aktuella arbetsmiljörisker,
+2. förebyggande åtgärder, och
+3. vilka åtgärder som har genomförts för att utse, utbilda och utrusta de arbetstagare som behövs för att genomföra första hjälpen, brandbekämpning och utrymning.
+
+Informationen ska gälla både verksamheten i stort och varje enskild arbetsplats eller varje enskilt arbete.
+
+## Bilaga 1 Arbetstagare med uppgifter enligt 9 §
+
+Arbetsgivaren ska se till att de som får uppgifter enligt 9 §
+
+1. får tillgång till eventuella anmälda arbetsskador till Försäkringskassan enligt socialförsäkringsbalken (2010:110),
+2. får tillgång till information om de förebyggande arbetsmiljöåtgärderna i verksamheten,
+3. känner till eventuella krav på åtgärder från Arbetsmiljöverket, och
+4. får lämna synpunkter till arbetsgivaren om
+
+  1. valet av andra arbetstagare som har uppgifter i arbetsmiljöarbetet,
+  2. valet av de arbetstagare som behövs för att genomföra första hjälpen, brandbekämpning och utrymning,
+  3. att anlita företagshälsovård eller motsvarande sakkunnig hjälp utifrån,
+  4. uppläggningen av arbetsmiljöarbetet,
+  5. riskbedömningar,
+  6. åtgärder för att förebygga ohälsa och olycksfall,
+  7. personlig skyddsutrustning som kan behövas,
+  8. anmälningar om arbetsskador,
+  9. vilken information de behöver få tillgång till om förebyggande arbetsmiljöåtgärder i verksamheten och om åtgärdskrav från Arbetsmiljöverket, samt
+  10. hur informationen i dessa frågor ska utformas.
+
+## Övergångsbestämmelser
+
+1. Denna författning träder i kraft den 1 januari 2025.
+2. Genom denna författning upphävs Arbetsmiljöverkets föreskrifter (AFS 2001:1) om systematiskt arbetsmiljöarbete med tillhörande allmänna råd och kommentarer.
+3. Tillstånd, godkännanden, undantag, dispenser, villkor, förelägganden, förbud, avgiftsförelägganden, anmälningar, registreringar, rapporter, intyg, journaler och annan dokumentation, samt andra beslut eller åtgärder i enskilda fall enligt de upphävda föreskrifterna, fortsätter att gälla enligt motsvarande bestämmelser i de nya föreskrifterna.
+
+**ERNA ZELMIN**
+
+**Eva Nilsson**
+</pre>
+  </div>
+
+  
+
+  <script>
+    function showTab(e, id) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      e.target.classList.add('active');
+      document.getElementById(id).classList.add('active');
+    }
+  </script>
+</body>
+</html>

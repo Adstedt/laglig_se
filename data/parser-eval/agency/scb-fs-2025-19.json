@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Statistiska centralbyråns föreskrifter om uppgifter till statistik över företags miljöskyddskostnader",
+  "documentNumber": "SCB-FS 2025:19",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Dessa föreskrifter innehåller kompletterande bestämmelser till Europaparlamentets och rådets förordning (EU) nr 691/2011 av den 6 juli 2011 om europeiska miljöräkenskaper, i dess lydelse enligt Kommissionens delegerade förordning (EU) 2025/1131 av den 26 mars 2025 om ändring av Europaparlamentets och rådets förordning (EU) nr 691/2011 vad gäller investeringar för begränsning av klimatförändringar och införande av klassifikationen av miljöändamål.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Dessa föreskrifter innehåller kompletterande bestämmelser till Europaparlamentets och rådets förordning (EU) nr 691/2011 av den 6 juli 2011 om europeiska miljöräkenskaper, i dess lydelse enligt Kommissionens delegerade förordning (EU) 2025/1131 av den 26 mars 2025 om ändring av Europaparlamentets och rådets förordning (EU) nr 691/2011 vad gäller investeringar för begränsning av klimatförändringar och införande av klassifikationen av miljöändamål.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Uppgifter till statistik över företags miljöskyddskostnader ska på begäran lämnas till SCB senast den 26 april eller den senare tidpunkt som SCB bestämmer.\nUppgifterna ska lämnas av företag som utvalts med statistisk metod. Samordnat urval (SAMU) görs bland företag inom branscherna gruv- och mineralindustri, tillverkningsindustri samt el-, gas-, hetvattenförsörjning och vattenförsörjning (SNI 10-41, exklusive SNI 37).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Uppgifter till statistik över företags miljöskyddskostnader ska på begäran lämnas till SCB senast den 26 april eller den senare tidpunkt som SCB bestämmer.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Uppgifterna ska lämnas av företag som utvalts med statistisk metod. Samordnat urval (SAMU) görs bland företag inom branscherna gruv- och mineralindustri, tillverkningsindustri samt el-, gas-, hetvattenförsörjning och vattenförsörjning (SNI 10-41, exklusive SNI 37).",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "De uppgifter som ska lämnas avser\nInvesteringar vars syfte huvudsakligen är miljöskydd, fördelat på utsläppsbehandlande samt utsläppsförebyggande investeringar,\n      Löpande kostnader för miljöskydd, fördelat på interna kostnader samt köpta tjänster.\nMiljöskyddsinvesteringar och löpande kostnader för miljöskydd ska redovisas uppdelade på sju miljöområden (Luft, Vatten, Avfall, Biodiversitet och landskap, Mark och grundvatten, Buller samt Övrigt) utifrån den internationella CEP-klassificeringen.\nHur uppgifterna ska redovisas framgår närmare av bilagan.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "De uppgifter som ska lämnas avser",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Investeringar vars syfte huvudsakligen är miljöskydd, fördelat på utsläppsbehandlande samt utsläppsförebyggande investeringar,\n      Löpande kostnader för miljöskydd, fördelat på interna kostnader samt köpta tjänster.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n      <li>Investeringar vars syfte huvudsakligen är miljöskydd, fördelat på utsläppsbehandlande samt utsläppsförebyggande investeringar,</li>\n      <li>Löpande kostnader för miljöskydd, fördelat på interna kostnader samt köpta tjänster.</li>\n    </ol>"
+            },
+            {
+              "number": 3,
+              "text": "Miljöskyddsinvesteringar och löpande kostnader för miljöskydd ska redovisas uppdelade på sju miljöområden (Luft, Vatten, Avfall, Biodiversitet och landskap, Mark och grundvatten, Buller samt Övrigt) utifrån den internationella CEP-klassificeringen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Hur uppgifterna ska redovisas framgår närmare av bilagan.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Uppgifter om miljöskyddsinvesteringar och löpande kostnader för miljöskydd ska lämnas varje år och avse föregående år.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Uppgifter om miljöskyddsinvesteringar och löpande kostnader för miljöskydd ska lämnas varje år och avse föregående år.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "Denna författning träder i kraft den 1 februari 2026, då Statistiska centralbyråns föreskrifter (SCB-FS 2024:25) om uppgifter till statistik över företags miljöskyddskostnader upphör att gälla.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "På Statistiska centralbyråns vägnar",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Magnus Sjöström(Biträdande generaldirektör)",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Frida Olsson(Ekonomisk statistik och analys)",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SCB-FS 2025:19",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

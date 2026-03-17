@@ -23,6 +23,7 @@ import {
   X,
   Loader2,
   Brain,
+  Trash2,
 } from 'lucide-react'
 import { Streamdown } from 'streamdown'
 import { code } from '@streamdown/code'
@@ -30,6 +31,18 @@ import { LexaIcon } from '@/components/ui/lexa-icon'
 import { CitationPillInline } from './citation-pill'
 import { CitationSourceProvider } from '@/lib/ai/citation-context'
 import { rehypeCitationPills } from '@/lib/ai/rehype-citation-pills'
+import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { MessageActions } from './message-actions'
 import {
   hasCitationMarkers,
@@ -117,12 +130,14 @@ interface ChatMessageProps {
   message: UIMessage
   showActions?: boolean
   isStreaming?: boolean
+  onDelete?: ((_messageId: string) => void) | undefined
 }
 
 export function ChatMessage({
   message,
   showActions = true,
   isStreaming = false,
+  onDelete,
 }: ChatMessageProps) {
   const isUser = message.role === 'user'
 
@@ -136,7 +151,7 @@ export function ChatMessage({
   if (isUser) {
     const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
     return (
-      <div className="flex items-start gap-3 flex-row-reverse">
+      <div className="group flex items-start gap-3 flex-row-reverse">
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <User className="h-3.5 w-3.5" />
         </div>
@@ -152,6 +167,9 @@ export function ChatMessage({
             </div>
           ))}
         </div>
+        {onDelete && (
+          <DeleteMessageButton onConfirm={() => onDelete(message.id)} />
+        )}
       </div>
     )
   }
@@ -168,7 +186,7 @@ export function ChatMessage({
 
   return (
     <CitationSourceProvider sourceMap={sourceMap}>
-      <div className="flex items-start gap-3">
+      <div className="group flex items-start gap-3">
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted border border-border">
           <LexaIcon size={14} />
         </div>
@@ -221,9 +239,14 @@ export function ChatMessage({
             return null
           })}
 
-          {showActions && fullText.trim() && !isActive && (
-            <MessageActions messageId={message.id} content={fullText} />
-          )}
+          <div className="flex items-center gap-1">
+            {showActions && fullText.trim() && !isActive && (
+              <MessageActions messageId={message.id} content={fullText} />
+            )}
+            {onDelete && !isActive && (
+              <DeleteMessageButton onConfirm={() => onDelete(message.id)} />
+            )}
+          </div>
         </div>
       </div>
     </CitationSourceProvider>
@@ -374,6 +397,39 @@ function ToolCallRow({
         </span>
       )}
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// DeleteMessageButton — hover-revealed delete with confirmation dialog
+// ---------------------------------------------------------------------------
+
+function DeleteMessageButton({ onConfirm }: { onConfirm: () => void }) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive shrink-0"
+          aria-label="Ta bort meddelande"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Ta bort meddelande?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Meddelandet kommer att tas bort permanent. Detta kan inte ångras.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Avbryt</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Ta bort</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 

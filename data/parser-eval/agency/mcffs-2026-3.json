@@ -1,0 +1,241 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "AGENCY_REGULATION",
+  "title": "Myndigheten för civilt försvars föreskrifter om tillstånd till överföring, import och export av explosiva varor",
+  "documentNumber": "MCFFS 2026:3",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Inledande bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna författning innehåller bestämmelser om tillstånd till överföring, import och export av explosiva varor.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna författning innehåller bestämmelser om tillstånd till överföring, import och export av explosiva varor.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Definitioner och förkortningar",
+          "content": "De begrepp som finns definierade i lagen (2010:1011) eller förordningen (2010:1075) om brandfarliga och explosiva varor används med samma innebörd i denna författning.\nI denna författning avses med",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "De begrepp som finns definierade i lagen (2010:1011) eller förordningen (2010:1075) om brandfarliga och explosiva varor används med samma innebörd i denna författning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "I denna författning avses med",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Undantag från tillståndsplikt",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Bestämmelser om tillståndsplikt för överföring, import och export av explosiva varor finns i 16 § lagen (2010:1011) om brandfarliga och explosiva varor.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om tillståndsplikt för överföring, import och export av explosiva varor finns i 16 § lagen (2010:1011) om brandfarliga och explosiva varor.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Tillstånd behövs inte till överföring av\nexplosiva varor som är avsedda för användning av Försvarsmakten, Försvarets materielverk, Försvarets radioanstalt, Totalförsvarets forskningsinstitut, Fortifikationsverket, Polismyndigheten eller Säkerhetspolisen,\n        pyrotekniska artiklar som omfattas av Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2015:6) om tillhandahållande av pyrotekniska artiklar och ammunition, och som mottagaren har rätt att hantera, eller\n        ammunition som omfattas av vapenlagen (1996:67) samt tändhattar eller andra tändmedel till sådan ammunition.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tillstånd behövs inte till överföring av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "explosiva varor som är avsedda för användning av Försvarsmakten, Försvarets materielverk, Försvarets radioanstalt, Totalförsvarets forskningsinstitut, Fortifikationsverket, Polismyndigheten eller Säkerhetspolisen,\n        pyrotekniska artiklar som omfattas av Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2015:6) om tillhandahållande av pyrotekniska artiklar och ammunition, och som mottagaren har rätt att hantera, eller\n        ammunition som omfattas av vapenlagen (1996:67) samt tändhattar eller andra tändmedel till sådan ammunition.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>explosiva varor som är avsedda för användning av Försvarsmakten, Försvarets materielverk, Försvarets radioanstalt, Totalförsvarets forskningsinstitut, Fortifikationsverket, Polismyndigheten eller Säkerhetspolisen,</li>\n        <li>pyrotekniska artiklar som omfattas av Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2015:6) om tillhandahållande av pyrotekniska artiklar och ammunition, och som mottagaren har rätt att hantera, eller</li>\n        <li>ammunition som omfattas av <a href=\"/lagar/vapenlag-199667-1996-67\" class=\"legal-ref\" title=\"Vapenlag (1996:67)\" target=\"_blank\" rel=\"noopener\">vapenlagen (1996:67)</a> samt tändhattar eller andra tändmedel till sådan ammunition.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "En tillsynsmyndighet enligt lagen (2010:1011) om brandfarliga och explosiva varor behöver inte ha tillstånd till överföring av explosiva varor inom Sverige som sker som ett led i tillsynen.\nPolismyndigheten och Säkerhetspolisen behöver inte ha tillstånd till överföring av explosiva varor inom Sverige.\nTullverket och Kustbevakningen behöver inte ha tillstånd till överföring av explosiva varor inom Sverige som sker i samband med beslag av sådana varor.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En tillsynsmyndighet enligt lagen (2010:1011) om brandfarliga och explosiva varor behöver inte ha tillstånd till överföring av explosiva varor inom Sverige som sker som ett led i tillsynen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Polismyndigheten och Säkerhetspolisen behöver inte ha tillstånd till överföring av explosiva varor inom Sverige.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Tullverket och Kustbevakningen behöver inte ha tillstånd till överföring av explosiva varor inom Sverige som sker i samband med beslag av sådana varor.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Tillstånd behövs inte för en användare som inom Sverige överför sammanlagt högst 5 kg krut för att för eget bruk\nhandladda ammunition till de skjutvapen som användaren har tillstånd att inneha enligt vapenlagen (1996:67),\n        ladda de skjutvapen som användaren har tillstånd att inneha enligt vapenlagen (1996:67), eller\n        ladda egna tillståndsfria skjutvapen under förutsättning att användaren även har tillstånd att inneha tillståndspliktiga vapen enligt vapenlagen (1996:67).",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tillstånd behövs inte för en användare som inom Sverige överför sammanlagt högst 5 kg krut för att för eget bruk",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "handladda ammunition till de skjutvapen som användaren har tillstånd att inneha enligt vapenlagen (1996:67),\n        ladda de skjutvapen som användaren har tillstånd att inneha enligt vapenlagen (1996:67), eller\n        ladda egna tillståndsfria skjutvapen under förutsättning att användaren även har tillstånd att inneha tillståndspliktiga vapen enligt vapenlagen (1996:67).",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>handladda ammunition till de skjutvapen som användaren har tillstånd att inneha enligt <a href=\"/lagar/vapenlag-199667-1996-67\" class=\"legal-ref\" title=\"Vapenlag (1996:67)\" target=\"_blank\" rel=\"noopener\">vapenlagen (1996:67)</a>,</li>\n        <li>ladda de skjutvapen som användaren har tillstånd att inneha enligt <a href=\"/lagar/vapenlag-199667-1996-67\" class=\"legal-ref\" title=\"Vapenlag (1996:67)\" target=\"_blank\" rel=\"noopener\">vapenlagen (1996:67)</a>, eller</li>\n        <li>ladda egna tillståndsfria skjutvapen under förutsättning att användaren även har tillstånd att inneha tillståndspliktiga vapen enligt <a href=\"/lagar/vapenlag-199667-1996-67\" class=\"legal-ref\" title=\"Vapenlag (1996:67)\" target=\"_blank\" rel=\"noopener\">vapenlagen (1996:67)</a>.</li>\n      </ol>"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Tillstånd behövs inte till import av ammunition som omfattas av vapenlagen (1996:67) samt tändhattar eller andra tändmedel till sådan ammunition.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tillstånd behövs inte till import av ammunition som omfattas av vapenlagen (1996:67) samt tändhattar eller andra tändmedel till sådan ammunition.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Tillstånd behövs inte till export av\nexplosiva varor som är avsedda för användning av försvarsmakt eller polis,\n        pyrotekniska artiklar som omfattas av Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2015:6) om tillhandahållande av pyrotekniska artiklar och ammunition, eller\n        ammunition.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Tillstånd behövs inte till export av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "explosiva varor som är avsedda för användning av försvarsmakt eller polis,\n        pyrotekniska artiklar som omfattas av Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2015:6) om tillhandahållande av pyrotekniska artiklar och ammunition, eller\n        ammunition.",
+              "role": "STYCKE",
+              "htmlContent": "<ol type=\"1\">\n        <li>explosiva varor som är avsedda för användning av försvarsmakt eller polis,</li>\n        <li>pyrotekniska artiklar som omfattas av Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2015:6) om tillhandahållande av pyrotekniska artiklar och ammunition, eller</li>\n        <li>ammunition.</li>\n      </ol>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Tillstånd till överföring av explosiva varor för civilt bruk",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Vid överföring av explosiva varor är det mottagaren av varorna som ska ha tillstånd till överföring.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid överföring av explosiva varor är det mottagaren av varorna som ska ha tillstånd till överföring.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "En ansökan om tillstånd till gränsöverskridande överföring av explosiva varor ska lämnas på ett särskilt dokument som tillhandahålls av Myndigheten för civilt försvar. Dokumentet ska upprättas i tre exemplar.\nTillståndet ska medfölja de explosiva varorna tills de når den angivna destinationen. Mottagaren ska behålla ett exemplar av tillståndet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En ansökan om tillstånd till gränsöverskridande överföring av explosiva varor ska lämnas på ett särskilt dokument som tillhandahålls av Myndigheten för civilt försvar. Dokumentet ska upprättas i tre exemplar.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Tillståndet ska medfölja de explosiva varorna tills de når den angivna destinationen. Mottagaren ska behålla ett exemplar av tillståndet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Vid överföring av explosiva varor som enbart sker inom Sverige ska en kopia av tillståndet medfölja de explosiva varorna tills de når den angivna destinationen. Kopian får medföras i digital form.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid överföring av explosiva varor som enbart sker inom Sverige ska en kopia av tillståndet medfölja de explosiva varorna tills de når den angivna destinationen. Kopian får medföras i digital form.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Undantag i enskilda fall",
+      "paragrafer": [
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Myndigheten för civilt försvar får i enskilda fall och om särskilda skäl föreligger medge undantag från denna författning. Undantag får medges endast om det är förenligt med direktiv 2014/28/EU.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Myndigheten för civilt försvar får i enskilda fall och om särskilda skäl föreligger medge undantag från denna författning. Undantag får medges endast om det är förenligt med direktiv 2014/28/EU.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "Denna författning träder i kraft den 1 mars 2026, då Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2016:4) om tillstånd för överföring, import och export av explosiva varor samt föreskrifter (MSBFS 2019:2) om ändring i Myndigheten för samhällsskydd och beredskaps föreskrifter (MSBFS 2016:4) om tillstånd för överföring, import och export av explosiva varor ska upphöra att gälla.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "MCFFS 2026:3",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

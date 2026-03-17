@@ -1,0 +1,781 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (2018:1697) om åklagarväsendets behandling av personuppgifter inom brottsdatalagens område",
+  "documentNumber": "SFS 2018:1697",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Allmänna bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Denna lag gäller utöver\nnär Åklagar-myndigheten eller Ekobrottsmyndigheten i egenskap av behörig myndighet behandlar personuppgifter i åklagarverksamhet i syfte att\n1. förebygga eller förhindra brottslig verksamhet,\n2. utreda eller lagföra brott,\n3. handlägga frågor om ändring eller verkställighet av straffrättsliga påföljder, eller\n4. handlägga frågor som rör upprätthållande av allmän ordning och säkerhet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Denna lag gäller utöver",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "när Åklagar-myndigheten eller Ekobrottsmyndigheten i egenskap av behörig myndighet behandlar personuppgifter i åklagarverksamhet i syfte att",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. förebygga eller förhindra brottslig verksamhet,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. utreda eller lagföra brott,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. handlägga frågor om ändring eller verkställighet av straffrättsliga påföljder, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. handlägga frågor som rör upprätthållande av allmän ordning och säkerhet.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "Personuppgiftsansvar",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Åklagarmyndigheten är personuppgiftsansvarig för den behandling av personuppgifter som myndigheten utför.\nEkobrottsmyndigheten är personuppgiftsansvarig för den behandling av personuppgifter som myndigheten utför.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagarmyndigheten är personuppgiftsansvarig för den behandling av personuppgifter som myndigheten utför.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ekobrottsmyndigheten är personuppgiftsansvarig för den behandling av personuppgifter som myndigheten utför.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Behandling av uppgifter om juridiska personer",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Bestämmelserna om personuppgifter i följande paragrafer gäller också vid behandling av uppgifter om juridiska personer:\n1. 2 § om personuppgiftsansvar,\n2. 2 kap. 1 § om rättsliga grunder för behandling av personuppgifter,\n3. 3 kap. 2 § om gemensamt tillgängliga uppgifter, och\n4. 4 kap. 1, 2 och 4 §§ om längsta tid som personuppgifter får behandlas.\nBestämmelserna om personuppgifter i följande paragrafer i brottsdata-\ngäller också vid sådan behandling:\n1. 2 kap. 2 § om diarieföring och handläggning i vissa fall,\n2. 2 kap. 3 § andra stycket om ändamålet med behandlingen,\n3. 2 kap. 17 § om längsta tid som personuppgifter får behandlas,\n4. 2 kap. 4 och 22 §§ om behandling för nya ändamål, och\n5. 3 kap. 6 § om tillgången till personuppgifter.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna om personuppgifter i följande paragrafer gäller också vid behandling av uppgifter om juridiska personer:",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. 2 § om personuppgiftsansvar,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. 2 kap. 1 § om rättsliga grunder för behandling av personuppgifter,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. 3 kap. 2 § om gemensamt tillgängliga uppgifter, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. 4 kap. 1, 2 och 4 §§ om längsta tid som personuppgifter får behandlas.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Bestämmelserna om personuppgifter i följande paragrafer i brottsdata-",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "gäller också vid sådan behandling:",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. 2 kap. 2 § om diarieföring och handläggning i vissa fall,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. 2 kap. 3 § andra stycket om ändamålet med behandlingen,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. 2 kap. 17 § om längsta tid som personuppgifter får behandlas,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. 2 kap. 4 och 22 §§ om behandling för nya ändamål, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. 3 kap. 6 § om tillgången till personuppgifter.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Grundläggande bestämmelser om behandling",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Personuppgifter får behandlas om det är nödvändigt för att Åklagar-myndigheten eller Ekobrottsmyndigheten ska kunna utföra följande uppgifter:\n1. förebygga eller förhindra brottslig verksamhet,\n2. utreda eller lagföra brott,\n3. handlägga frågor om ändring eller verkställighet av straffrättsliga påföljder,\n4. handlägga frågor som rör upprätthållande av allmän ordning och säkerhet, eller\n5. fullgöra förpliktelser som följer av internationella åtaganden.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter får behandlas om det är nödvändigt för att Åklagar-myndigheten eller Ekobrottsmyndigheten ska kunna utföra följande uppgifter:",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. förebygga eller förhindra brottslig verksamhet,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. utreda eller lagföra brott,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. handlägga frågor om ändring eller verkställighet av straffrättsliga påföljder,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. handlägga frågor som rör upprätthållande av allmän ordning och säkerhet, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. fullgöra förpliktelser som följer av internationella åtaganden.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": null,
+              "text": "Behandling för nya ändamål",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Förutsättningarna för att behandla personuppgifter som behandlas med stöd av 1 § för nya ändamål regleras i 2 kap. 4 och",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Förutsättningarna för att behandla personuppgifter som behandlas med stöd av 1 § för nya ändamål regleras i 2 kap. 4 och",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Särskilda upplysningar",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Bestämmelserna om särskilda upplysningar i 2 kap. 3 § andra stycket, 9 och\ngäller endast vid behandling av personuppgifter som har gjorts gemensamt tillgängliga med stöd av 3 kap. 2 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna om särskilda upplysningar i 2 kap. 3 § andra stycket, 9 och",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "gäller endast vid behandling av personuppgifter som har gjorts gemensamt tillgängliga med stöd av 3 kap. 2 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Känsliga personuppgifter",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Sökförbudet i\nhindrar inte att brottsrubriceringar eller uppgifter som beskriver en persons utseende används som sökbegrepp.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Sökförbudet i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "hindrar inte att brottsrubriceringar eller uppgifter som beskriver en persons utseende används som sökbegrepp.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Utlämnande av personuppgifter",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Om det är förenligt med svenska intressen får personuppgifter lämnas ut till\n1. Eurojust,\n2. Interpol,\n3. Europol, eller\n4. en polismyndighet eller åklagarmyndighet i en stat som är ansluten till Interpol.\nPersonuppgifter får lämnas ut enligt första stycket endast om mottagaren behöver uppgifterna för att utföra en uppgift som avses i 1 §.\nPersonuppgifter får vidare lämnas ut till en utländsk myndighet eller mellanfolklig organisation, om utlämnandet följer av en internationell överenskommelse som Sverige har tillträtt efter riksdagens godkännande.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om det är förenligt med svenska intressen får personuppgifter lämnas ut till",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. Eurojust,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. Interpol,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. Europol, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. en polismyndighet eller åklagarmyndighet i en stat som är ansluten till Interpol.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Personuppgifter får lämnas ut enligt första stycket endast om mottagaren behöver uppgifterna för att utföra en uppgift som avses i 1 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Personuppgifter får vidare lämnas ut till en utländsk myndighet eller mellanfolklig organisation, om utlämnandet följer av en internationell överenskommelse som Sverige har tillträtt efter riksdagens godkännande.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Åklagarmyndigheten, Ekobrottsmyndigheten, Polismyndigheten, Säkerhetspolisen, Tullverket, Kustbevakningen och Skatteverket har, trots sekretess enligt 21 kap. 3 § första stycket och 35 kap. 1 § offentlighets- och\n, rätt att ta del av personuppgifter som har gjorts gemensamt tillgängliga med stöd av 3 kap. 2 §, om den mottagande myndigheten behöver uppgifterna för ett syfte som anges i\nEuropeiska åklagarmyndigheten har enligt 4 § lagen (2024:461) om Sveriges deltagande i Europeiska åklagarmyndigheten rätt att ta del av uppgifterna enligt första stycket. Denna rätt inskränks inte av vad som anges i 18 kap. 1 och 17 §§ offentlighets- och sekretesslagen.",
+          "amendedBy": "Lag (2024:470)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagarmyndigheten, Ekobrottsmyndigheten, Polismyndigheten, Säkerhetspolisen, Tullverket, Kustbevakningen och Skatteverket har, trots sekretess enligt 21 kap. 3 § första stycket och 35 kap. 1 § offentlighets- och",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": ", rätt att ta del av personuppgifter som har gjorts gemensamt tillgängliga med stöd av 3 kap. 2 §, om den mottagande myndigheten behöver uppgifterna för ett syfte som anges i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Europeiska åklagarmyndigheten har enligt 4 § lagen (2024:461) om Sveriges deltagande i Europeiska åklagarmyndigheten rätt att ta del av uppgifterna enligt första stycket. Denna rätt inskränks inte av vad som anges i 18 kap. 1 och 17 §§ offentlighets- och sekretesslagen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Personuppgifter får lämnas ut elektroniskt på annat sätt än genom direktåtkomst om det inte är olämpligt.\nElektroniskt utlämnande genom direktåtkomst är tillåtet bara i den utsträckning som anges i 3 kap. 5 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter får lämnas ut elektroniskt på annat sätt än genom direktåtkomst om det inte är olämpligt.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Elektroniskt utlämnande genom direktåtkomst är tillåtet bara i den utsträckning som anges i 3 kap. 5 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Rätt att meddela föreskrifter",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Regeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om\n1. att personuppgifter får lämnas ut i andra fall än som anges i 5 och 6 §§, och\n2. begränsning av möjligheten att lämna ut personuppgifter elektroniskt enligt 7 § första stycket.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. att personuppgifter får lämnas ut i andra fall än som anges i 5 och 6 §§, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. begränsning av möjligheten att lämna ut personuppgifter elektroniskt enligt 7 § första stycket.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Gemensamt tillgängliga uppgifter",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Detta kapitel innehåller särskilda bestämmelser för behandling av personuppgifter som görs eller har gjorts gemensamt tillgängliga med stöd av 2 §. Uppgifter som endast ett fåtal personer har rätt att ta del av anses inte som gemensamt tillgängliga.\nDetta kapitel gäller inte när personuppgifter behandlas med stöd av",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Detta kapitel innehåller särskilda bestämmelser för behandling av personuppgifter som görs eller har gjorts gemensamt tillgängliga med stöd av 2 §. Uppgifter som endast ett fåtal personer har rätt att ta del av anses inte som gemensamt tillgängliga.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Detta kapitel gäller inte när personuppgifter behandlas med stöd av",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Personuppgifter som får göras gemensamt tillgängliga",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Alla personuppgifter som behandlas för syften som omfattas av denna lags tillämpningsområde får göras gemensamt tillgängliga.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Alla personuppgifter som behandlas för syften som omfattas av denna lags tillämpningsområde får göras gemensamt tillgängliga.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Sökning",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Vid sökning i automatiserade behandlingssystem på namn, person-nummer, samordningsnummer eller andra liknande identitetsbeteckningar i uppgifter som har gjorts gemensamt tillgängliga, får endast sådana uppgifter tas fram som anger att den sökta personen\n1. är anmäld för brott,\n2. är eller har varit misstänkt för brott,\n3. är misstänkt för att ha utövat eller komma att utöva brottslig verksamhet,\n4. har anmält ett brott,\n5. är målsägande i ett ärende som rör ansvar för brott,\n6. är sökande, motpart eller annan part eller kan jämställas med part i ett ärende,\n7. förekommer i ett ärende som vittne eller annan som lämnar eller har lämnat uppgifter eller yttrande,\n8. är eller har varit åklagare i ett ärende eller är eller har varit offentlig försvarare eller målsägandebiträde eller kan jämställas med sådana, eller\n9. har gett in eller tillhandahållits en handling.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vid sökning i automatiserade behandlingssystem på namn, person-nummer, samordningsnummer eller andra liknande identitetsbeteckningar i uppgifter som har gjorts gemensamt tillgängliga, får endast sådana uppgifter tas fram som anger att den sökta personen",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. är anmäld för brott,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. är eller har varit misstänkt för brott,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. är misstänkt för att ha utövat eller komma att utöva brottslig verksamhet,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 4,
+              "text": "4. har anmält ett brott,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 5,
+              "text": "5. är målsägande i ett ärende som rör ansvar för brott,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 6,
+              "text": "6. är sökande, motpart eller annan part eller kan jämställas med part i ett ärende,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 7,
+              "text": "7. förekommer i ett ärende som vittne eller annan som lämnar eller har lämnat uppgifter eller yttrande,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 8,
+              "text": "8. är eller har varit åklagare i ett ärende eller är eller har varit offentlig försvarare eller målsägandebiträde eller kan jämställas med sådana, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 9,
+              "text": "9. har gett in eller tillhandahållits en handling.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Bestämmelserna i 3 § gäller inte vid sökning i en viss handling eller i ett visst ärende.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelserna i 3 § gäller inte vid sökning i en viss handling eller i ett visst ärende.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Direktåtkomst",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Åklagarmyndigheten, Ekobrottsmyndigheten, Polismyndigheten, Säkerhetspolisen, Tullverket, Kustbevakningen och Skatteverket får för ett syfte som anges i\nmedges direkt-åtkomst till personuppgifter som har gjorts gemensamt tillgängliga med stöd av 2 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Åklagarmyndigheten, Ekobrottsmyndigheten, Polismyndigheten, Säkerhetspolisen, Tullverket, Kustbevakningen och Skatteverket får för ett syfte som anges i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "medges direkt-åtkomst till personuppgifter som har gjorts gemensamt tillgängliga med stöd av 2 §.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Rätt att meddela föreskrifter",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Regeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om ytterligare undantag från 3 §, utöver vad som framgår av 4 §.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om ytterligare undantag från 3 §, utöver vad som framgår av 4 §.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om\n1. gemensamt tillgängliga uppgifter, och\n2. omfattningen av direktåtkomst enligt 5 § och om behörighet och säkerhet vid sådan åtkomst.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. gemensamt tillgängliga uppgifter, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. omfattningen av direktåtkomst enligt 5 § och om behörighet och säkerhet vid sådan åtkomst.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Längsta tid som personuppgifter får behandlas",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Detta kapitel gäller bara för automatiserad behandling.\nAv\nframgår det att personuppgifter inte får behandlas under längre tid än vad som är nödvändigt med hänsyn till ändamålet med behandlingen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Detta kapitel gäller bara för automatiserad behandling.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Av",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "framgår det att personuppgifter inte får behandlas under längre tid än vad som är nödvändigt med hänsyn till ändamålet med behandlingen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Personuppgifter i ärenden",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Personuppgifter i ett ärende får inte behandlas för ändamål inom denna lags tillämpningsområde längre än fem år efter utgången av det kalenderår då ärendet avslutades av åklagaren eller, om frågan prövats av domstol, från utgången av det kalenderår då domstolens avgörande fick laga kraft.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter i ett ärende får inte behandlas för ändamål inom denna lags tillämpningsområde längre än fem år efter utgången av det kalenderår då ärendet avslutades av åklagaren eller, om frågan prövats av domstol, från utgången av det kalenderår då domstolens avgörande fick laga kraft.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Om en förundersökning mot en person inte har inletts eller har lagts ner, om ett åtal har lagts ner eller om en frikännande dom har fått laga kraft, får personen inte längre vara sökbar som misstänkt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om en förundersökning mot en person inte har inletts eller har lagts ner, om ett åtal har lagts ner eller om en frikännande dom har fått laga kraft, får personen inte längre vara sökbar som misstänkt.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Övriga personuppgifter",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Personuppgifter som inte kan hänföras till ett ärende får inte behandlas längre än ett år efter utgången av det kalenderår då de behandlades automatiserat första gången.\nBestämmelsen i\ngäller inte vid tillämpningen av denna paragraf.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Personuppgifter som inte kan hänföras till ett ärende får inte behandlas längre än ett år efter utgången av det kalenderår då de behandlades automatiserat första gången.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Bestämmelsen i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "gäller inte vid tillämpningen av denna paragraf.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Rätt att meddela föreskrifter",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Regeringen eller den myndighet som regeringen bestämmer kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om\n1. att uppgifter i vissa ärendetyper eller vissa kategorier av person-uppgifter får fortsätta att behandlas för ändamål inom denna lags tillämpningsområde under längre tid än vad som anges i 2 §,\n2. att personuppgifter får behandlas för arkivändamål av allmänt intresse eller vetenskapliga, statistiska eller historiska ändamål under längre tid än vad som anges i 4 §, och\n3. begränsning av behandlingen av personuppgifter för ändamål inom denna lags tillämpningsområde vid digital arkivering.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer kan med stöd av 8 kap. 7 § regeringsformen meddela föreskrifter om",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. att uppgifter i vissa ärendetyper eller vissa kategorier av person-uppgifter får fortsätta att behandlas för ändamål inom denna lags tillämpningsområde under längre tid än vad som anges i 2 §,",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. att personuppgifter får behandlas för arkivändamål av allmänt intresse eller vetenskapliga, statistiska eller historiska ändamål under längre tid än vad som anges i 4 §, och",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 3,
+              "text": "3. begränsning av behandlingen av personuppgifter för ändamål inom denna lags tillämpningsområde vid digital arkivering.",
+              "role": "LIST_ITEM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "5",
+      "title": "Övriga bestämmelser",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "En sanktionsavgift får tas ut av den personuppgiftsansvarige vid överträdelse av bestämmelserna i\n1. 2 kap. 1 § om rättsliga grunder för behandling av personuppgifter, eller\n2. 4 kap. 2 eller 4 § om den längsta tid som personuppgifter får behandlas.\nSanktionsavgiften ska bestämmas till högst 10 000 000 kronor.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "En sanktionsavgift får tas ut av den personuppgiftsansvarige vid överträdelse av bestämmelserna i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 1,
+              "text": "1. 2 kap. 1 § om rättsliga grunder för behandling av personuppgifter, eller",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "2. 4 kap. 2 eller 4 § om den längsta tid som personuppgifter får behandlas.",
+              "role": "LIST_ITEM"
+            },
+            {
+              "number": 2,
+              "text": "Sanktionsavgiften ska bestämmas till högst 10 000 000 kronor.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Skadestånd",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Bestämmelsen om skadestånd i\nska tillämpas vid behandling av personuppgifter i strid med denna lag eller föreskrifter som har meddelats i anslutning till den.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelsen om skadestånd i",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "ska tillämpas vid behandling av personuppgifter i strid med denna lag eller föreskrifter som har meddelats i anslutning till den.",
+              "role": "STYCKE"
+            },
+            {
+              "number": null,
+              "text": "Överklagande",
+              "role": "HEADING"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Bestämmelser om överklagande finns i 7 kap.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Bestämmelser om överklagande finns i 7 kap.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "2018:1697",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 januari 2019.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Genom lagen upphävs",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "3. En sanktionsavgift enligt 5 kap. 1 § får beslutas endast  för överträdelser som har skett efter ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 2018:1697",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

@@ -336,6 +336,7 @@ export function TaskWorkspace({
             workspaceMembers={workspaceMembers}
             onTaskClick={handleTaskClick}
             onTaskCreated={handleTaskCreated}
+            onTaskDelete={(id) => handleTasksDelete([id])}
           />
         )}
         {currentTab === 'lista' && (
@@ -380,6 +381,7 @@ export function TaskWorkspace({
         workspaceMembers={workspaceMembers}
         columns={columns}
         onTaskUpdate={handleTaskUpdate}
+        onTaskDelete={(id) => handleTasksDelete([id])}
         onOpenListItem={handleOpenListItem}
       />
 

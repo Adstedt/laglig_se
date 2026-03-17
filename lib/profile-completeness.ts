@@ -45,6 +45,8 @@ export function calculateProfileCompleteness(
     | 'has_collective_agreement'
     | 'website_url'
     | 'collective_agreement_name'
+    | 'business_description'
+    | 'tax_status'
   >
 ): number {
   let score = 0
@@ -56,7 +58,7 @@ export function calculateProfileCompleteness(
   if (profile.employee_count_range) score += 10
   if (profile.municipality) score += 10
 
-  // Extended fields — 5% each (50% total)
+  // Extended fields — 5% each (55% total, clamped to 100)
   if (profile.sni_code) score += 5
 
   if (profile.activity_flags) {
@@ -73,6 +75,13 @@ export function calculateProfileCompleteness(
   if (profile.has_collective_agreement) score += 5
   if (profile.website_url) score += 5
   if (profile.collective_agreement_name) score += 5
+  if (profile.business_description) score += 5
 
-  return score
+  if (profile.tax_status) {
+    const ts = profile.tax_status as Record<string, boolean>
+    const hasAnyValue = Object.keys(ts).length > 0
+    if (hasAnyValue) score += 5
+  }
+
+  return Math.min(score, 100)
 }

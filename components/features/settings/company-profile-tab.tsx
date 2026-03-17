@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { Loader2, X, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
@@ -130,6 +131,8 @@ const formSchema = z.object({
   collective_agreement_name: z.string().max(200).optional().or(z.literal('')),
   workforce_composition: z.string().optional().or(z.literal('')),
   revenue_range: z.string().optional().or(z.literal('')),
+  // Enrichment
+  business_description: z.string().max(1000).optional().or(z.literal('')),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -187,6 +190,213 @@ function getCompletionNudge(
 }
 
 // ============================================================================
+// Bolagsverket Data Card
+// ============================================================================
+
+interface TaxStatus {
+  f_tax?: boolean
+  vat?: boolean
+  employer?: boolean
+}
+
+interface OngoingProcedures {
+  liquidation?: boolean
+  restructuring?: boolean
+}
+
+function parseTaxStatus(raw: unknown): TaxStatus {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw))
+    return raw as TaxStatus
+  return {}
+}
+
+function parseOngoingProcedures(raw: unknown): OngoingProcedures {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw))
+    return raw as OngoingProcedures
+  return {}
+}
+
+function formatEnrichmentDate(date: Date | string | null | undefined): string {
+  if (!date) return ''
+  const d = typeof date === 'string' ? new Date(date) : date
+  return d.toLocaleDateString('sv-SE')
+}
+
+interface BolagsverketDataCardProps {
+  companyProfile: CompanyProfile
+  form: ReturnType<typeof useForm<FormData>>
+}
+
+function BolagsverketDataCard({
+  companyProfile,
+  form,
+}: BolagsverketDataCardProps) {
+  const taxStatus = parseTaxStatus(companyProfile.tax_status)
+  const procedures = parseOngoingProcedures(companyProfile.ongoing_procedures)
+  const hasParent =
+    companyProfile.parent_company_name || companyProfile.parent_company_orgnr
+  const hasProcedures = procedures.liquidation || procedures.restructuring
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Bolagsverket-data</CardTitle>
+            <CardDescription>
+              Automatiskt hamtad foretagsinformation
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              Hamtat fran Bolagsverket
+            </Badge>
+            {companyProfile.last_enriched_at && (
+              <span className="text-xs text-muted-foreground">
+                {formatEnrichmentDate(companyProfile.last_enriched_at)}
+              </span>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Active status */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Status</Label>
+            <p
+              className={
+                companyProfile.active_status === 'deregistered'
+                  ? 'text-sm font-medium text-amber-600'
+                  : 'text-sm font-medium text-green-600'
+              }
+            >
+              {companyProfile.active_status === 'deregistered'
+                ? 'Avregistrerad'
+                : 'Aktiv'}
+            </p>
+          </div>
+
+          {/* Registered date */}
+          {companyProfile.registered_date && (
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                Registreringsdatum
+              </Label>
+              <p className="text-sm">
+                {formatEnrichmentDate(companyProfile.registered_date)}
+              </p>
+            </div>
+          )}
+
+          {/* Tax status badges */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">
+              Skattestatus
+            </Label>
+            <div className="flex flex-wrap gap-1">
+              <Badge
+                variant={taxStatus.f_tax ? 'default' : 'outline'}
+                className="text-xs"
+              >
+                F-skatt
+              </Badge>
+              <Badge
+                variant={taxStatus.vat ? 'default' : 'outline'}
+                className="text-xs"
+              >
+                Moms
+              </Badge>
+              <Badge
+                variant={taxStatus.employer ? 'default' : 'outline'}
+                className="text-xs"
+              >
+                Arbetsgivare
+              </Badge>
+            </div>
+          </div>
+
+          {/* Foreign owned */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Utlandsagt</Label>
+            <p className="text-sm">
+              {companyProfile.foreign_owned ? 'Ja' : 'Nej'}
+            </p>
+          </div>
+
+          {/* Parent company */}
+          {hasParent && (
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">
+                Moderbolag
+              </Label>
+              <p className="text-sm">
+                {companyProfile.parent_company_name}
+                {companyProfile.parent_company_orgnr && (
+                  <span className="text-muted-foreground">
+                    {' '}
+                    ({companyProfile.parent_company_orgnr})
+                  </span>
+                )}
+              </p>
+            </div>
+          )}
+
+          {/* FI regulated */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">FI-reglerad</Label>
+            <p className="text-sm">
+              {companyProfile.fi_regulated ? 'Ja, FI-reglerat' : 'Nej'}
+            </p>
+          </div>
+
+          {/* Ongoing procedures */}
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">
+              Pagaende arenden
+            </Label>
+            {hasProcedures ? (
+              <div className="flex gap-1">
+                {procedures.liquidation && (
+                  <Badge variant="destructive" className="text-xs">
+                    Likvidation
+                  </Badge>
+                )}
+                {procedures.restructuring && (
+                  <Badge variant="destructive" className="text-xs">
+                    Rekonstruktion
+                  </Badge>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Inga pagaende arenden
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Editable business description */}
+        <div className="mt-6 space-y-2 border-t pt-4">
+          <Label htmlFor="business_description">Verksamhetsbeskrivning</Label>
+          <Textarea
+            id="business_description"
+            {...form.register('business_description')}
+            placeholder="Beskriv er verksamhet (anvands av AI-agenten for battre radgivning)"
+            rows={3}
+            className="resize-none"
+          />
+          <p className="text-xs text-muted-foreground">
+            Redigera fritt — beskrivningen anvands av AI-agenten for att ge
+            battre anpassade rekommendationer.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// ============================================================================
 // Component
 // ============================================================================
 
@@ -233,6 +443,7 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
       collective_agreement_name: companyProfile.collective_agreement_name ?? '',
       workforce_composition: companyProfile.workforce_composition ?? '',
       revenue_range: companyProfile.revenue_range ?? '',
+      business_description: companyProfile.business_description ?? '',
     },
   })
 
@@ -306,6 +517,7 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
         revenue_range: data.revenue_range
           ? (data.revenue_range as CompanyProfile['revenue_range'])
           : null,
+        business_description: data.business_description || null,
       })
 
       if (result.success) {
@@ -344,6 +556,11 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Bolagsverket-data card — only shown when data_source is "bolagsapi" */}
+        {companyProfile.data_source === 'bolagsapi' && (
+          <BolagsverketDataCard companyProfile={companyProfile} form={form} />
+        )}
+
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Top-left: Företagsinformation */}
           <Card>

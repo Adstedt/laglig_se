@@ -1,0 +1,765 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (1915:218) om avtal och andra rättshandlingar på förmögenhetsrättens område",
+  "documentNumber": "SFS 1915:218",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": "1",
+      "title": "Om slutande av avtal",
+      "paragrafer": [
+        {
+          "number": "1",
+          "heading": null,
+          "content": "Anbud om slutande av avtal och svar å sådant anbud vare, efter ty här nedan i 2-9 §§ sägs, bindande för den, som avgivit anbudet eller svaret.\nVad i nämnda paragrafer stadgas skall lända till efterrättelse, så vitt ej annat följer av anbudet eller svaret eller av handelsbruk eller annan sedvänja.\nI fråga om avtal, för vars giltighet enligt lag fordras iakttagande av viss form, gälle vad särskilt är stadgat.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Anbud om slutande av avtal och svar å sådant anbud vare, efter ty här nedan i 2-9 §§ sägs, bindande för den, som avgivit anbudet eller svaret.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vad i nämnda paragrafer stadgas skall lända till efterrättelse, så vitt ej annat följer av anbudet eller svaret eller av handelsbruk eller annan sedvänja.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "I fråga om avtal, för vars giltighet enligt lag fordras iakttagande av viss form, gälle vad särskilt är stadgat.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": null,
+          "content": "Har anbudsgivaren bestämt viss tid för svar, skall han anses hava föreskrivit, att svaret skall inom den tid komma honom till handa.\nÄr i brev eller telegram, vari anbud göres, viss tidrymd utsatt för svaret, skall denna räknas från den dag brevet är dagtecknat eller den tid på dagen telegrammet är inlämnat för befordran.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har anbudsgivaren bestämt viss tid för svar, skall han anses hava föreskrivit, att svaret skall inom den tid komma honom till handa.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Är i brev eller telegram, vari anbud göres, viss tidrymd utsatt för svaret, skall denna räknas från den dag brevet är dagtecknat eller den tid på dagen telegrammet är inlämnat för befordran.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": null,
+          "content": "Göres anbud i brev eller telegram utan att tid för svar däri utsättes, måste antagande svar komma anbudsgivaren till handa inom den tid, som vid anbudets avgivande skäligen kunde av honom beräknas åtgå.\nVid beräkningen av nämnda tid äge anbudsgivaren, där ej annat föranledes av omständigheterna, förutsätta, att anbudet framkommer i rätt tid samt att svaret avsändes utan uppskov efter det anbudstagaren åtnjutit skälig betänketid och icke varder under vägen försenat; är anbudet gjort i telegram, äge anbudsgivaren tillika förutsätta att svaret befordras på enahanda sätt eller annorledes kommer honom lika tidigt till handa.\nAnbud, som göres muntligen utan att anstånd med svaret medgives, måste omedelbart antagas.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Göres anbud i brev eller telegram utan att tid för svar däri utsättes, måste antagande svar komma anbudsgivaren till handa inom den tid, som vid anbudets avgivande skäligen kunde av honom beräknas åtgå.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vid beräkningen av nämnda tid äge anbudsgivaren, där ej annat föranledes av omständigheterna, förutsätta, att anbudet framkommer i rätt tid samt att svaret avsändes utan uppskov efter det anbudstagaren åtnjutit skälig betänketid och icke varder under vägen försenat; är anbudet gjort i telegram, äge anbudsgivaren tillika förutsätta att svaret befordras på enahanda sätt eller annorledes kommer honom lika tidigt till handa.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Anbud, som göres muntligen utan att anstånd med svaret medgives, måste omedelbart antagas.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "content": "Antagande svar, som för sent kommer anbudsgivaren till handa, skall gälla såsom nytt anbud.\nVad nu är sagt äge dock icke tillämpning, där den, som avsänt svaret, utgår från att det framkommit i rätt tid och mottagaren måste inse detta. I ty fall åligger det denne, om han icke vill godtaga svaret, att utan oskäligt uppehåll giva avsändaren meddelande därom; underlåter han det, anses avtal hava genom svaret kommit till stånd.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Antagande svar, som för sent kommer anbudsgivaren till handa, skall gälla såsom nytt anbud.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vad nu är sagt äge dock icke tillämpning, där den, som avsänt svaret, utgår från att det framkommit i rätt tid och mottagaren måste inse detta. I ty fall åligger det denne, om han icke vill godtaga svaret, att utan oskäligt uppehåll giva avsändaren meddelande därom; underlåter han det, anses avtal hava genom svaret kommit till stånd.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": null,
+          "content": "Avslås anbud, vare det förfallet, ändå att den tid, varunder det eljest skolat gälla, ej gått till ända.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Avslås anbud, vare det förfallet, ändå att den tid, varunder det eljest skolat gälla, ej gått till ända.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": null,
+          "content": "Svar, som innehåller, att anbud antages, men som på grund av tillägg, inskränkning eller förbehåll icke överensstämmer med anbudet, skall gälla såsom avslag i förening med nytt anbud.\nVad nu är sagt äge dock icke tillämpning, där den, som avgav svaret, anser det överensstämma med anbudet och mottagaren måste inse detta. I ty fall åligger det denne, om han icke vill godtaga svaret, att utan oskäligt uppehåll giva meddelande därom; underlåter han det, skall avtal i enlighet med svarets innehåll anses hava kommit till stånd.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Svar, som innehåller, att anbud antages, men som på grund av tillägg, inskränkning eller förbehåll icke överensstämmer med anbudet, skall gälla såsom avslag i förening med nytt anbud.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vad nu är sagt äge dock icke tillämpning, där den, som avgav svaret, anser det överensstämma med anbudet och mottagaren måste inse detta. I ty fall åligger det denne, om han icke vill godtaga svaret, att utan oskäligt uppehåll giva meddelande därom; underlåter han det, skall avtal i enlighet med svarets innehåll anses hava kommit till stånd.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": null,
+          "content": "Anbud eller svar, som återkallas, vare ej gällande, där återkallelsen kommer den, till vilken anbudet eller svaret är riktat, till handa innan han tager del av detta eller samtidigt därmed.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Anbud eller svar, som återkallas, vare ej gällande, där återkallelsen kommer den, till vilken anbudet eller svaret är riktat, till handa innan han tager del av detta eller samtidigt därmed.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "content": "Har den, som avgivit anbud, förklarat sig icke påfordra uttryckligt svar därå, eller utvisa omständigheterna, att han ej förväntar sådant, vare anbudstagaren ändock pliktig att på förfrågan giva besked, om han vill antaga anbudet; underlåter han det, anses anbudet förfallet.\nAngående vissa fall, då underlåtenhet att avböja anbud anses såsom antagande, är särskilt stadgat.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har den, som avgivit anbud, förklarat sig icke påfordra uttryckligt svar därå, eller utvisa omständigheterna, att han ej förväntar sådant, vare anbudstagaren ändock pliktig att på förfrågan giva besked, om han vill antaga anbudet; underlåter han det, anses anbudet förfallet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Angående vissa fall, då underlåtenhet att avböja anbud anses såsom antagande, är särskilt stadgat.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "content": "Där någon i meddelande, som eljest vore att anse såsom anbud, använt orden \"utan förbindelse\", \"utan obligo\" eller liknande uttryck, anses meddelandet allenast såsom uppfordran att avgiva anbud av det innehåll meddelandet giver vid handen. Inkommer sådant anbud inom rimlig tid därefter från någon, vilken blivit sålunda uppfordrad att avgiva anbud, och måste mottagaren inse, att anbudet framkallats genom hans uppfordran, åligger det honom, där han icke vill antaga detsamma, att utan oskäligt uppehåll giva meddelande därom till anbudsgivaren; underlåter han det, skall han anses hava antagit anbudet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Där någon i meddelande, som eljest vore att anse såsom anbud, använt orden \"utan förbindelse\", \"utan obligo\" eller liknande uttryck, anses meddelandet allenast såsom uppfordran att avgiva anbud av det innehåll meddelandet giver vid handen. Inkommer sådant anbud inom rimlig tid därefter från någon, vilken blivit sålunda uppfordrad att avgiva anbud, och måste mottagaren inse, att anbudet framkallats genom hans uppfordran, åligger det honom, där han icke vill antaga detsamma, att utan oskäligt uppehåll giva meddelande därom till anbudsgivaren; underlåter han det, skall han anses hava antagit anbudet.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "Om fullmakt",
+      "paragrafer": [
+        {
+          "number": "10",
+          "heading": null,
+          "content": "Den, som åt annan givit fullmakt att sluta avtal eller eljest företaga rättshandlingar, varder omedelbart berättigad och förpliktad i förhållande till tredje man genom rättshandling, som fullmäktigen inom fullmaktens gränser företager i fullmaktsgivarens namn.\nDär någon såsom anställd i annans tjänst eller eljest i följd av avtal med annan intager en ställning, varmed enligt lag eller sedvänja följer viss behörighet att handla å dennes vägnar, anses han hava fullmakt att företaga rättshandlingar, som falla inom gränserna för denna behörighet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den, som åt annan givit fullmakt att sluta avtal eller eljest företaga rättshandlingar, varder omedelbart berättigad och förpliktad i förhållande till tredje man genom rättshandling, som fullmäktigen inom fullmaktens gränser företager i fullmaktsgivarens namn.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Där någon såsom anställd i annans tjänst eller eljest i följd av avtal med annan intager en ställning, varmed enligt lag eller sedvänja följer viss behörighet att handla å dennes vägnar, anses han hava fullmakt att företaga rättshandlingar, som falla inom gränserna för denna behörighet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "content": "Har fullmäktigen vid företagande av rättshandling handlat i strid mot särskilda inskränkande föreskrifter av fullmaktsgivaren, vare rättshandlingen ej gällande mot denne, såframt tredje man insåg eller bort inse, att fullmäktigen sålunda överskred sin befogenhet.\nÄr fullmakten av sådan beskaffenhet, som i 18 § avses, vare rättshandling, som fullmäktigen med överskridande av sin befogenhet företagit, icke gällande mot fullmaktsgivaren, ändå att tredje man var i god tro.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har fullmäktigen vid företagande av rättshandling handlat i strid mot särskilda inskränkande föreskrifter av fullmaktsgivaren, vare rättshandlingen ej gällande mot denne, såframt tredje man insåg eller bort inse, att fullmäktigen sålunda överskred sin befogenhet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Är fullmakten av sådan beskaffenhet, som i 18 § avses, vare rättshandling, som fullmäktigen med överskridande av sin befogenhet företagit, icke gällande mot fullmaktsgivaren, ändå att tredje man var i god tro.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "content": "Vill fullmaktsgivaren återkalla fullmakt, som avses i 13-16 §§, åligger det honom, även om han meddelat fullmäktigen, att han icke längre vill låta fullmakten gälla, att iakttaga vad i nämnda paragrafer för varje fall föreskrives; äro flera av dessa föreskrifter var för sig tillämpliga å samma fullmakt, skola de alla iakttagas.\nTredje man, hos vilken en fullmakt återkallats på det i 13 § angivna sätt, äge dock icke åberopa, att återkallelse ej skett på annat sätt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vill fullmaktsgivaren återkalla fullmakt, som avses i 13-16 §§, åligger det honom, även om han meddelat fullmäktigen, att han icke längre vill låta fullmakten gälla, att iakttaga vad i nämnda paragrafer för varje fall föreskrives; äro flera av dessa föreskrifter var för sig tillämpliga å samma fullmakt, skola de alla iakttagas.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Tredje man, hos vilken en fullmakt återkallats på det i 13 § angivna sätt, äge dock icke åberopa, att återkallelse ej skett på annat sätt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": null,
+          "content": "Fullmakt, som bragts till tredje mans kännedom genom ett till honom särskilt riktat meddelande från fullmaktsgivaren, är återkallad, när särskilt meddelande från fullmaktsgivaren, att fullmakten icke vidare skall gälla, kommit tredje man till handa.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fullmakt, som bragts till tredje mans kännedom genom ett till honom särskilt riktat meddelande från fullmaktsgivaren, är återkallad, när särskilt meddelande från fullmaktsgivaren, att fullmakten icke vidare skall gälla, kommit tredje man till handa.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": null,
+          "content": "Fullmakt, som blivit av fullmaktsgivaren i tidning eller annorledes allmänneligen kungjord, återkallas genom tillkännagivande, som kungöres i enahanda ordning.\nMöter hinder häremot, skall återkallelsen på annat lika verksamt sätt tillkännagivas. Fullmaktsgivaren äge, där han det äskar, hos myndighet, som i 17 § sägs, erhålla anvisning, huru han i sådant avseende har att förfara.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fullmakt, som blivit av fullmaktsgivaren i tidning eller annorledes allmänneligen kungjord, återkallas genom tillkännagivande, som kungöres i enahanda ordning.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Möter hinder häremot, skall återkallelsen på annat lika verksamt sätt tillkännagivas. Fullmaktsgivaren äge, där han det äskar, hos myndighet, som i 17 § sägs, erhålla anvisning, huru han i sådant avseende har att förfara.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": null,
+          "content": "Fullmakt, som avses i 10 § andra stycket, återkallas därigenom att fullmäktigen avlägsnas från tjänst eller annan ställning, i kraft varav han varit befullmäktigad.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fullmakt, som avses i 10 § andra stycket, återkallas därigenom att fullmäktigen avlägsnas från tjänst eller annan ställning, i kraft varav han varit befullmäktigad.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": null,
+          "content": "Fullmakt, vilken innefattas i sådan skriftlig handling, som utgives till fullmäktigen för att av honom innehavas och företes för tredje man, återkallas därigenom att fullmaktsgivaren återtager eller låter förstöra handlingen.\nFullmäktigen är pliktig att på begäran av fullmaktsgivaren återställa fullmaktshandlingen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fullmakt, vilken innefattas i sådan skriftlig handling, som utgives till fullmäktigen för att av honom innehavas och företes för tredje man, återkallas därigenom att fullmaktsgivaren återtager eller låter förstöra handlingen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Fullmäktigen är pliktig att på begäran av fullmaktsgivaren återställa fullmaktshandlingen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": null,
+          "content": "Visar fullmaktsgivaren sannolika skäl, att handling, som i 16 § omförmäles, förkommit eller att han av annan orsak icke utan dröjsmål kan få den åter, må handlingen, efter ty här nedan sägs, förklaras kraftlös.\nAnsökan härom göres hos tingsrätten i den ort, inom vilken fullmaktsgivaren bor. Finnes ansökningen kunna bifallas, skall tingsrätten utfärda och sökanden låta i Post- och Inrikes Tidningar införa kungörelse, att handlingen efter utgången av viss tid, som må bestämmas till högst fjorton dagar efter kungörelsens införande, skall vara kraftlös. Kungörelsen skall jämväl, där tingsrätten det föreskriver, införas i annan tidning, en eller flera gånger, innan den införes i Post- och Inrikes Tidningar.",
+          "amendedBy": "Lag (1981:799)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Visar fullmaktsgivaren sannolika skäl, att handling, som i 16 § omförmäles, förkommit eller att han av annan orsak icke utan dröjsmål kan få den åter, må handlingen, efter ty här nedan sägs, förklaras kraftlös.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ansökan härom göres hos tingsrätten i den ort, inom vilken fullmaktsgivaren bor. Finnes ansökningen kunna bifallas, skall tingsrätten utfärda och sökanden låta i Post- och Inrikes Tidningar införa kungörelse, att handlingen efter utgången av viss tid, som må bestämmas till högst fjorton dagar efter kungörelsens införande, skall vara kraftlös. Kungörelsen skall jämväl, där tingsrätten det föreskriver, införas i annan tidning, en eller flera gånger, innan den införes i Post- och Inrikes Tidningar.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": null,
+          "content": "Fullmakt, som grundar sig allenast å fullmaktsgivarens meddelande till fullmäktigen, är återkallad, när meddelande från fullmaktsgivaren, att fullmakten icke vidare skall gälla, kommit fullmäktigen till handa.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Fullmakt, som grundar sig allenast å fullmaktsgivarens meddelande till fullmäktigen, är återkallad, när meddelande från fullmaktsgivaren, att fullmakten icke vidare skall gälla, kommit fullmäktigen till handa.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "19",
+          "heading": null,
+          "content": "I fall, då fullmaktsgivaren har särskild anledning att befara, att fullmäktigen, oaktat fullmakten återkallats eller fullmaktshandlingen förklarats kraftlös, kommer att på grund av fullmakten företaga rättshandling gent emot viss man, vilken kan antagas sakna vetskap om dess upphörande, åligger det honom att, där så ske kan, giva denne meddelande, att fullmakten icke vidare skall gälla. Underlåter han det, må han, såframt den, gent emot vilken rättshandlingen företagits, var i god tro, icke mot denne åberopa fullmaktens upphörande.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I fall, då fullmaktsgivaren har särskild anledning att befara, att fullmäktigen, oaktat fullmakten återkallats eller fullmaktshandlingen förklarats kraftlös, kommer att på grund av fullmakten företaga rättshandling gent emot viss man, vilken kan antagas sakna vetskap om dess upphörande, åligger det honom att, där så ske kan, giva denne meddelande, att fullmakten icke vidare skall gälla. Underlåter han det, må han, såframt den, gent emot vilken rättshandlingen företagits, var i god tro, icke mot denne åberopa fullmaktens upphörande.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "20",
+          "heading": null,
+          "content": "Har fullmaktsgivaren utan att i ovan stadgad ordning bringa fullmakten till upphörande tillsagt fullmäktigen att icke göra bruk av fullmakten eller annorledes givit till känna sin vilja, att fullmakten icke vidare skall gälla, vare rättshandling, som fullmäktigen företager, icke gällande mot fullmaktsgivaren, såframt tredje man ägde eller bort äga kännedom om förhållandet.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har fullmaktsgivaren utan att i ovan stadgad ordning bringa fullmakten till upphörande tillsagt fullmäktigen att icke göra bruk av fullmakten eller annorledes givit till känna sin vilja, att fullmakten icke vidare skall gälla, vare rättshandling, som fullmäktigen företager, icke gällande mot fullmaktsgivaren, såframt tredje man ägde eller bort äga kännedom om förhållandet.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "21",
+          "heading": null,
+          "content": "Dör fullmaktsgivaren, vare fullmakten ändock gällande, för så vitt ej särskilda omständigheter föranleda, att den skall vara förfallen.\nÄndå att sådana omständigheter äro för handen, vare dock rättshandling, som fullmäktigen företager, gällande mot dödsboet, där tredje man varken ägde eller bort äga vetskap om dödsfallet och dess betydelse för fullmäktigens behörighet att företaga rättshandlingen; är fullmakten sådan, som i 18 § avses, erfordras för rättshandlingens giltighet, att ej heller fullmäktigen ägde eller bort äga sådan vetskap, då han företog rättshandlingen.\nRättshandling, som, efter vad nu sagts, är gällande mot dödsboet, äge, där den dödes egendom varder avträdd till konkurs, icke mot borgenärerna större verkan än den skulle haft, om den företagits av stärbhusdelägarne.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Dör fullmaktsgivaren, vare fullmakten ändock gällande, för så vitt ej särskilda omständigheter föranleda, att den skall vara förfallen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Ändå att sådana omständigheter äro för handen, vare dock rättshandling, som fullmäktigen företager, gällande mot dödsboet, där tredje man varken ägde eller bort äga vetskap om dödsfallet och dess betydelse för fullmäktigens behörighet att företaga rättshandlingen; är fullmakten sådan, som i 18 § avses, erfordras för rättshandlingens giltighet, att ej heller fullmäktigen ägde eller bort äga sådan vetskap, då han företog rättshandlingen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Rättshandling, som, efter vad nu sagts, är gällande mot dödsboet, äge, där den dödes egendom varder avträdd till konkurs, icke mot borgenärerna större verkan än den skulle haft, om den företagits av stärbhusdelägarne.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "22",
+          "heading": null,
+          "content": "Om fullmaktsgivaren får en förvaltare enligt föräldrabalken, har en rättshandling som fullmäktigen företar och som omfattas av förvaltarens uppdrag inte större verkan än den skulle ha haft, om fullmaktsgivaren själv hade företagit rättshandlingen.",
+          "amendedBy": "Lag (1988:1264)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Om fullmaktsgivaren får en förvaltare enligt föräldrabalken, har en rättshandling som fullmäktigen företar och som omfattas av förvaltarens uppdrag inte större verkan än den skulle ha haft, om fullmaktsgivaren själv hade företagit rättshandlingen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "23",
+          "heading": null,
+          "content": "Varder fullmaktsgivarens egendom avträdd till konkurs, har rättshandling, som fullmäktigen företager, icke större verkan mot konkursboet än den skulle haft, om fullmaktsgivaren själv företagit den.\nÄr fullmakten sådan som avses i 18 §, kan rättshandlingen ej göras gällande mot boet, om fullmäktigen ägde eller bort äga kännedom om konkursen när han företog rättshandlingen.",
+          "amendedBy": "Lag (1975:246)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Varder fullmaktsgivarens egendom avträdd till konkurs, har rättshandling, som fullmäktigen företager, icke större verkan mot konkursboet än den skulle haft, om fullmaktsgivaren själv företagit den.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Är fullmakten sådan som avses i 18 §, kan rättshandlingen ej göras gällande mot boet, om fullmäktigen ägde eller bort äga kännedom om konkursen när han företog rättshandlingen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "24",
+          "heading": null,
+          "content": "Utan hinder därav att fullmaktsgivaren icke vidare råder över sig och sitt gods, må fullmäktigen, intill dess erforderliga åtgärder kunna vidtagas av den, som enligt lag äger handla å fullmaktsgivarens vägnar, i kraft av fullmakten företaga sådana rättshandlingar, som äro nödiga för att skydda fullmaktsgivaren eller hans konkursbo mot förlust.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Utan hinder därav att fullmaktsgivaren icke vidare råder över sig och sitt gods, må fullmäktigen, intill dess erforderliga åtgärder kunna vidtagas av den, som enligt lag äger handla å fullmaktsgivarens vägnar, i kraft av fullmakten företaga sådana rättshandlingar, som äro nödiga för att skydda fullmaktsgivaren eller hans konkursbo mot förlust.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "25",
+          "heading": null,
+          "content": "Den, som uppträder såsom fullmäktig för annan, ansvarar för att han har erforderlig fullmakt och är förty, där han ej förmår styrka, att han handlat efter fullmakt eller att den rättshandling, varom fråga är, blivit godkänd av den uppgivne huvudmannen eller ändock är gällande mot honom, pliktig att ersätta tredje man all skada, som denne lider därigenom att han icke kan göra rättshandlingen gällande mot huvudmannen.\nVad sålunda är stadgat skall dock icke äga tillämpning, där tredje man insåg eller bort inse, att fullmakt ej förefanns eller att förefintlig fullmakt överskreds; ej heller där den, som företog rättshandlingen, handlade på grund av fullmakt, vilken i följd av någon särskild omständighet, varom han icke ägde kunskap och varom tredje man ej heller kunde med fog förutsätta, att han skulle hava kännedom, icke kan göras gällande mot huvudmannen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den, som uppträder såsom fullmäktig för annan, ansvarar för att han har erforderlig fullmakt och är förty, där han ej förmår styrka, att han handlat efter fullmakt eller att den rättshandling, varom fråga är, blivit godkänd av den uppgivne huvudmannen eller ändock är gällande mot honom, pliktig att ersätta tredje man all skada, som denne lider därigenom att han icke kan göra rättshandlingen gällande mot huvudmannen.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vad sålunda är stadgat skall dock icke äga tillämpning, där tredje man insåg eller bort inse, att fullmakt ej förefanns eller att förefintlig fullmakt överskreds; ej heller där den, som företog rättshandlingen, handlade på grund av fullmakt, vilken i följd av någon särskild omständighet, varom han icke ägde kunskap och varom tredje man ej heller kunde med fog förutsätta, att han skulle hava kännedom, icke kan göras gällande mot huvudmannen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "26",
+          "heading": null,
+          "content": "Vad här ovan i detta kapitel är stadgat om fullmakt att företaga rättshandlingar skall äga motsvarande tillämpning i fråga om fullmakt att företräda fullmaktsgivaren vid rättshandlingar, som företagas gentemot honom.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Vad här ovan i detta kapitel är stadgat om fullmakt att företaga rättshandlingar skall äga motsvarande tillämpning i fråga om fullmakt att företräda fullmaktsgivaren vid rättshandlingar, som företagas gentemot honom.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "27",
+          "heading": null,
+          "content": "I fråga om återkallelse av prokura, som blivit till handelsregistret anmäld, skall vad i 13 och\när stadgat lända till efterrättelse. Har återkallelsen blivit införd i handelsregistret och kungjord i Post- och Inrikes Tidningar, är firmans innehavare icke pliktig att jämväl på annat sätt återkalla fullmakten.\nFullmakt att sluta avtal om köp, byte eller gåva av fast egendom skall vara skriftlig. Har sådan fullmakt blivit, efter ty i 16 och 17 §§ sägs, återkallad eller för kraftlös förklarad, vare fullmakten utan verkan.\nGenom vad här ovan i detta kapitel stadgas därom, att rättshandling av fullmäktigen i vissa fall icke är gällande mot fullmaktsgivaren, sker ej ändring i vad 18 kap. 3 § handelsbalken innehåller angående verkan därav att vad som genom sådan rättshandling åtkommits blivit använt till fullmaktsgivarens nytta.",
+          "amendedBy": "Lag (1977:672)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "I fråga om återkallelse av prokura, som blivit till handelsregistret anmäld, skall vad i 13 och",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "är stadgat lända till efterrättelse. Har återkallelsen blivit införd i handelsregistret och kungjord i Post- och Inrikes Tidningar, är firmans innehavare icke pliktig att jämväl på annat sätt återkalla fullmakten.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Fullmakt att sluta avtal om köp, byte eller gåva av fast egendom skall vara skriftlig. Har sådan fullmakt blivit, efter ty i 16 och 17 §§ sägs, återkallad eller för kraftlös förklarad, vare fullmakten utan verkan.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "Genom vad här ovan i detta kapitel stadgas därom, att rättshandling av fullmäktigen i vissa fall icke är gällande mot fullmaktsgivaren, sker ej ändring i vad 18 kap. 3 § handelsbalken innehåller angående verkan därav att vad som genom sådan rättshandling åtkommits blivit använt till fullmaktsgivarens nytta.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "Om rättshandlingars ogiltighet",
+      "paragrafer": [
+        {
+          "number": "28",
+          "heading": null,
+          "content": "Rättshandling, den någon blivit rättsstridigt tvungen att företaga, vare, där tvånget utövats genom våld å person eller genom hot, som innebär trängande fara, icke gällande mot den tvungne.\nHar tvånget utövats av annan än den, gent emot vilken rättshandlingen företogs, och var denne i god tro, åligger det dock den tvungne, där han vill mot honom åberopa tvånget, att utan oskäligt uppehåll efter det tvånget upphörde giva honom meddelande därom vid äventyr, om sådant underlåtes, att rättshandlingen varder gällande.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Rättshandling, den någon blivit rättsstridigt tvungen att företaga, vare, där tvånget utövats genom våld å person eller genom hot, som innebär trängande fara, icke gällande mot den tvungne.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Har tvånget utövats av annan än den, gent emot vilken rättshandlingen företogs, och var denne i god tro, åligger det dock den tvungne, där han vill mot honom åberopa tvånget, att utan oskäligt uppehåll efter det tvånget upphörde giva honom meddelande därom vid äventyr, om sådant underlåtes, att rättshandlingen varder gällande.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "29",
+          "heading": null,
+          "content": "Rättshandling, den någon utan användande av sådana tvångsmedel, som i 28 § avses, rättsstridigt tvungit en annan att företaga, vare ej gällande mot den tvungne, där den, gentemot vilken rättshandlingen företogs, själv utövat tvånget eller ock insett eller bort inse, att rättshandlingen framkallats genom rättsstridigt tvång från annans sida.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Rättshandling, den någon utan användande av sådana tvångsmedel, som i 28 § avses, rättsstridigt tvungit en annan att företaga, vare ej gällande mot den tvungne, där den, gentemot vilken rättshandlingen företogs, själv utövat tvånget eller ock insett eller bort inse, att rättshandlingen framkallats genom rättsstridigt tvång från annans sida.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "30",
+          "heading": null,
+          "content": "Där den, gent emot vilken en rättshandling företagits, framkallat densamma genom svikligt förledande eller ock insett eller bort inse, att den, som företog rättshandlingen, blivit svikligen förledd därtill av annan, vare rättshandlingen icke gällande mot den förledde.\nHar den, gentemot vilken rättshandlingen företogs, svikligen uppgivit eller förtegat omständigheter, som kunna antagas vara av betydelse för rättshandlingen, skall han anses hava därigenom framkallat densamma, såframt det ej visas, att det svikliga förfarandet icke inverkat å rättshandlingen.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Där den, gent emot vilken en rättshandling företagits, framkallat densamma genom svikligt förledande eller ock insett eller bort inse, att den, som företog rättshandlingen, blivit svikligen förledd därtill av annan, vare rättshandlingen icke gällande mot den förledde.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Har den, gentemot vilken rättshandlingen företogs, svikligen uppgivit eller förtegat omständigheter, som kunna antagas vara av betydelse för rättshandlingen, skall han anses hava därigenom framkallat densamma, såframt det ej visas, att det svikliga förfarandet icke inverkat å rättshandlingen.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "31",
+          "heading": null,
+          "content": "Har någon begagnat sig av annans trångmål, oförstånd, lättsinne eller beroende ställning till att taga eller betinga sig förmåner, vilka stå i uppenbart missförhållande till det vederlag, som må hava blivit erlagt eller utfäst, eller för vilka något vederlag icke skall utgå, vare rättshandling, som sålunda tillkommit, icke gällande mot den förfördelade.\nLag samma vare, där sådant otillbörligt förfarande, som i första stycket avses, ligger annan till last än den, gent emot vilken rättshandlingen företogs, och denne ägde eller bort äga kunskap därom.\nOm avtal rörande bärgning gälle vad särskilt är stadgat.",
+          "amendedBy": "Lag (1987:329)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har någon begagnat sig av annans trångmål, oförstånd, lättsinne eller beroende ställning till att taga eller betinga sig förmåner, vilka stå i uppenbart missförhållande till det vederlag, som må hava blivit erlagt eller utfäst, eller för vilka något vederlag icke skall utgå, vare rättshandling, som sålunda tillkommit, icke gällande mot den förfördelade.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Lag samma vare, där sådant otillbörligt förfarande, som i första stycket avses, ligger annan till last än den, gent emot vilken rättshandlingen företogs, och denne ägde eller bort äga kunskap därom.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Om avtal rörande bärgning gälle vad särskilt är stadgat.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "32",
+          "heading": null,
+          "content": "Den, som avgivit en viljeförklaring, vilken i följd av felskrivning eller annat misstag å hans sida fått annat innehåll än åsyftat varit, vare icke bunden av viljeförklaringens innehåll, där den, till vilken förklaringen är riktad, insåg eller bort inse misstaget.\nVarder en avgiven viljeförklaring, som befordras genom telegram eller framföres muntligen genom bud, till följd av fel vid telegraferingen eller oriktigt återgivande genom budet till innehållet förvanskad, vare avsändaren, ändå att mottagaren var i god tro, icke bunden av förklaringen i det skick den framkommit. Vill avsändaren av anledning som nu sagts icke låta förklaringen gälla, åligger det honom dock att giva mottagaren meddelande därom utan oskäligt uppehåll efter det förvanskningen kommit till hans kunskap; underlåter han det, och var mottagaren i god tro, vare förklaringen gällande sådan den framkommit.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Den, som avgivit en viljeförklaring, vilken i följd av felskrivning eller annat misstag å hans sida fått annat innehåll än åsyftat varit, vare icke bunden av viljeförklaringens innehåll, där den, till vilken förklaringen är riktad, insåg eller bort inse misstaget.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Varder en avgiven viljeförklaring, som befordras genom telegram eller framföres muntligen genom bud, till följd av fel vid telegraferingen eller oriktigt återgivande genom budet till innehållet förvanskad, vare avsändaren, ändå att mottagaren var i god tro, icke bunden av förklaringen i det skick den framkommit. Vill avsändaren av anledning som nu sagts icke låta förklaringen gälla, åligger det honom dock att giva mottagaren meddelande därom utan oskäligt uppehåll efter det förvanskningen kommit till hans kunskap; underlåter han det, och var mottagaren i god tro, vare förklaringen gällande sådan den framkommit.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "33",
+          "heading": null,
+          "content": "Rättshandling, som eljest vore att såsom giltig anse, må ej göras gällande, där omständigheterna vid dess tillkomst voro sådana, att det skulle strida mot tro och heder att med vetskap om dem åberopa rättshandlingen, och den, gentemot vilken rättshandlingen företogs, måste antagas hava ägt sådan vetskap.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Rättshandling, som eljest vore att såsom giltig anse, må ej göras gällande, där omständigheterna vid dess tillkomst voro sådana, att det skulle strida mot tro och heder att med vetskap om dem åberopa rättshandlingen, och den, gentemot vilken rättshandlingen företogs, måste antagas hava ägt sådan vetskap.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "34",
+          "heading": null,
+          "content": "Har skuldebrev, kontrakt eller annan skriftlig handling upprättats för skens skull, må utan hinder därav fordran eller rättighet, som den enligt handlingens innehåll berättigade på grund av densamma överlåtit å annan, göras gällande av förvärvaren, såframt denne var i god tro vid sitt förvärv.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har skuldebrev, kontrakt eller annan skriftlig handling upprättats för skens skull, må utan hinder därav fordran eller rättighet, som den enligt handlingens innehåll berättigade på grund av densamma överlåtit å annan, göras gällande av förvärvaren, såframt denne var i god tro vid sitt förvärv.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "35",
+          "heading": null,
+          "content": "Har någon underskrivit skuldebrev eller annan handling, som är gällande i innehavarens hand eller eljest av löpande beskaffenhet, vare handlingen, ändå att den utan hans vilja kommit ur hans besittning, gällande mot honom, där den efter överlåtelse förvärvats av någon, som därvid var i god tro.\nÄr kvitto å ett penningbelopp utan borgenärens vilja kommet ur hans besittning, vare utan hinder därav betalning, som gäldenären, när fordringen är förfallen, i god tro erlägger mot bekommande av kvittot, gällande mot borgenären.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har någon underskrivit skuldebrev eller annan handling, som är gällande i innehavarens hand eller eljest av löpande beskaffenhet, vare handlingen, ändå att den utan hans vilja kommit ur hans besittning, gällande mot honom, där den efter överlåtelse förvärvats av någon, som därvid var i god tro.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Är kvitto å ett penningbelopp utan borgenärens vilja kommet ur hans besittning, vare utan hinder därav betalning, som gäldenären, när fordringen är förfallen, i god tro erlägger mot bekommande av kvittot, gällande mot borgenären.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "36",
+          "heading": null,
+          "content": "Avtalsvillkor får jämkas eller lämnas utan avseende, om villkoret är oskäligt med hänsyn till avtalets innehåll, omständigheterna vid avtalets tillkomst, senare inträffade förhållanden och omständigheterna i övrigt. Har villkoret sådan betydelse för avtalet att det icke skäligen kan krävas att detta i övrigt skall gälla med oförändrat innehåll, får avtalet jämkas även i annat hänseende eller i sin helhet lämnas utan avseende.\nVid prövning enligt första stycket skall särskild hänsyn tagas till behovet av skydd för den som i egenskap av konsument eller eljest intager en underlägsen ställning i avtalsförhållandet.\nFörsta och andra styckena äga motsvarande tillämpning i fråga om villkor vid annan rättshandling än avtal.\nI fråga om jämkning av vissa avtalsvillkor i konsumentförhållanden gäller dessutom\nom avtalsvillkor i konsumentförhållanden.",
+          "amendedBy": "Lag (1994:1513)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Avtalsvillkor får jämkas eller lämnas utan avseende, om villkoret är oskäligt med hänsyn till avtalets innehåll, omständigheterna vid avtalets tillkomst, senare inträffade förhållanden och omständigheterna i övrigt. Har villkoret sådan betydelse för avtalet att det icke skäligen kan krävas att detta i övrigt skall gälla med oförändrat innehåll, får avtalet jämkas även i annat hänseende eller i sin helhet lämnas utan avseende.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "Vid prövning enligt första stycket skall särskild hänsyn tagas till behovet av skydd för den som i egenskap av konsument eller eljest intager en underlägsen ställning i avtalsförhållandet.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 3,
+              "text": "Första och andra styckena äga motsvarande tillämpning i fråga om villkor vid annan rättshandling än avtal.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 4,
+              "text": "I fråga om jämkning av vissa avtalsvillkor i konsumentförhållanden gäller dessutom",
+              "role": "STYCKE"
+            },
+            {
+              "number": 5,
+              "text": "om avtalsvillkor i konsumentförhållanden.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "37",
+          "heading": null,
+          "content": "Förbehåll att pant eller annan säkerhet skall vara förverkad, om den förpliktelse för vars fullgörande säkerheten ställts icke rätteligen fullgöres, är utan verkan.",
+          "amendedBy": "Lag (1976:185)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Förbehåll att pant eller annan säkerhet skall vara förverkad, om den förpliktelse för vars fullgörande säkerheten ställts icke rätteligen fullgöres, är utan verkan.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "38",
+          "heading": null,
+          "content": "Har någon för att förebygga konkurrens betingat sig av annan att denne icke skall bedriva verksamhet av visst slag eller icke taga anställning hos någon som bedriver sådan verksamhet, är den som gjort utfästelsen icke bunden därav i den mån utfästelsen sträcker sig längre än vad som kan anses skäligt.",
+          "amendedBy": "Lag (1976:185)",
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Har någon för att förebygga konkurrens betingat sig av annan att denne icke skall bedriva verksamhet av visst slag eller icke taga anställning hos någon som bedriver sådan verksamhet, är den som gjort utfästelsen icke bunden därav i den mån utfästelsen sträcker sig längre än vad som kan anses skäligt.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "Allmänna bestämmelser",
+      "paragrafer": [
+        {
+          "number": "39",
+          "heading": null,
+          "content": "Är enligt denna lag giltigheten av avtal eller annan rättshandling beroende därav att den, gentemot vilken rättshandlingen företogs, icke ägde eller bort äga vetskap om visst förhållande eller eljest var i god tro, skall hänsyn tagas till vad han insåg eller bort inse vid den tidpunkt, då rättshandlingen blev honom kunnig. Dock må, där särskilda omständigheter sådant föranleda, hänsyn jämväl tagas till den insikt han vunnit eller bort vinna efter nämnda tidpunkt, men innan rättshandlingen inverkat bestämmande på hans handlingssätt.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Är enligt denna lag giltigheten av avtal eller annan rättshandling beroende därav att den, gentemot vilken rättshandlingen företogs, icke ägde eller bort äga vetskap om visst förhållande eller eljest var i god tro, skall hänsyn tagas till vad han insåg eller bort inse vid den tidpunkt, då rättshandlingen blev honom kunnig. Dock må, där särskilda omständigheter sådant föranleda, hänsyn jämväl tagas till den insikt han vunnit eller bort vinna efter nämnda tidpunkt, men innan rättshandlingen inverkat bestämmande på hans handlingssätt.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "40",
+          "heading": null,
+          "content": "Skall någon enligt denna lag giva annan ett meddelande, vid äventyr att eljest avtal anses slutet eller anbud antaget eller rättshandling, som av honom eller å hans vägnar företagits, bliver mot honom gällande, och varder sådant meddelande inlämnat för befordran med post eller telegraf eller eljest på ändamålsenligt sätt avsänt, må ej den omständigheten, att meddelandet försenas eller icke kommer fram, föranleda därtill att avsändaren icke anses hava fullgjort vad honom åligger.\nI fråga om återkallelse av anbud eller svar eller av fullmakt gäller vad i 7, 13 och 18 §§ är stadgat.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Skall någon enligt denna lag giva annan ett meddelande, vid äventyr att eljest avtal anses slutet eller anbud antaget eller rättshandling, som av honom eller å hans vägnar företagits, bliver mot honom gällande, och varder sådant meddelande inlämnat för befordran med post eller telegraf eller eljest på ändamålsenligt sätt avsänt, må ej den omständigheten, att meddelandet försenas eller icke kommer fram, föranleda därtill att avsändaren icke anses hava fullgjort vad honom åligger.",
+              "role": "STYCKE"
+            },
+            {
+              "number": 2,
+              "text": "I fråga om återkallelse av anbud eller svar eller av fullmakt gäller vad i 7, 13 och 18 §§ är stadgat.",
+              "role": "STYCKE"
+            }
+          ]
+        },
+        {
+          "number": "41",
+          "heading": null,
+          "content": "Genom denna lag upphävas 1 kap. 1 § och 9 kap. 9 § handelsbalken, 2 och 3 §§ i lagen d. 14 juni 1901 angående ocker samt vad i övrigt finnes i lag eller särskild författning stadgat stridande mot här ovan givna bestämmelser.",
+          "amendedBy": null,
+          "stycken": [
+            {
+              "number": 1,
+              "text": "Genom denna lag upphävas 1 kap. 1 § och 9 kap. 9 § handelsbalken, 2 och 3 §§ i lagen d. 14 juni 1901 angående ocker samt vad i övrigt finnes i lag eller särskild författning stadgat stridande mot här ovan givna bestämmelser.",
+              "role": "STYCKE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "1987:329",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "Denna lag träder i kraft den 1 juli 1987. Har en rättshandling tillkommit före ikraftträdandet tillämpas 31 § i dess äldre lydelse.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1994:1513",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "1. Denna lag träder i kraft den 1 januari 1995.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2. Den nya bestämmelsen tillämpas även på rättshandlingar som har företagits före ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "3. Mål som vid ikraftträdandet är anhängigt vid domstol prövas enligt äldre bestämmelser.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "SFS 1915:218",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

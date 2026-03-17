@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2024:13</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2024-13">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2024:13</p>
+      <p class="text">Boverkets föreskrifter om krav på tomter m.m.</p>
+    </h1>
+  </div>
+  <div class="body">
+    <p class="text">beslutade den 19 november 2024.</p>
+    <p class="text">Boverket föreskriver<sup class="footnote-ref" data-note="1" title="Se Europaparlamentets och rådets direktiv (EU) 2015/1535 av den 9 september 2015 om ett informationsförfarande beträffande tekniska föreskrifter och beträffande föreskrifter för informationssamhällets tjänster (kodifiering).">1</sup> följande med stöd av 10 kap. 3 § 4, 9 § och 24 § 1 plan- och byggförordningen (2011:338).</p>
+
+    <section class="kapitel" id="BFS2024-13_K1">
+      <h2 class="kapitel-rubrik">1 kap. Övergripande bestämmelser</h2>
+
+      <h3 id="BFS2024-13_forfattningens-innehall">Författningens innehåll</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P1" name="BFS2024-13_K1_P1">1 §</a>
+      </h3>
+      <p class="text">Denna författning innehåller föreskrifter till</p>
+      <ol type="1">
+        <li>krav på obebyggda tomter som ska bebyggas enligt 8 kap. 9 § första stycket 3, 5 och 6 plan- och bygglagen (2010:900), och</li>
+        <li>tekniska egenskapskrav avseende säkerhet vid användning enligt 3 kap. 10 § plan- och byggförordningen (2011:338).</li>
+      </ol>
+      <p class="text">Författningen innehåller också föreskrifter om kontroll enligt 10 kap. 5 § plan- och bygglagen.</p>
+
+      <h3 id="BFS2024-13_foreskrifternas-tillampningsomrade">Föreskrifternas tillämpningsområde</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P2" name="BFS2024-13_K1_P2">2 §</a>
+      </h3>
+      <p class="text">Föreskrifterna i 4–7 §§ och 2–4 kap. gäller för en obebyggd tomt som ska bebyggas.</p>
+      <p class="text">Föreskrifterna i 3–14 §§ och 5 kap. gäller för uppförande av vissa andra anläggningar än byggnader på en tomt.</p>
+
+      <h3 id="BFS2024-13_mindre-avvikelse-fran-foreskrifterna-i-denna-forfattning">Mindre avvikelse från föreskrifterna i denna författning</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P3" name="BFS2024-13_K1_P3">3 §</a>
+      </h3>
+      <p class="text">Mindre avvikelse får göras från föreskrifterna i 6–14 §§ och 5 kap. i denna författning i enskilda fall om</p>
+      <ol type="1">
+        <li>det finns särskilda skäl,</li>
+        <li>anläggningen ändå kan antas bli tekniskt tillfredsställande, och</li>
+        <li>det inte finns någon avsevärd olägenhet från annan synpunkt.</li>
+      </ol>
+      <p class="text">Om mindre avvikelse enligt första stycket tillämpas ska skälen för detta dokumenteras i samband med den projektering som regleras i 8 §.</p>
+
+      <h3 id="BFS2024-13_definitioner">Definitioner</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P4" name="BFS2024-13_K1_P4">4 §</a>
+      </h3>
+      <p class="text">Termer och uttryck i denna författning har samma betydelse som i plan- och bygglagen (2010:900) och plan- och byggförordningen (2011:338).</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P5" name="BFS2024-13_K1_P5">5 §</a>
+      </h3>
+      <p class="text">I denna författning avses med</p>
+      <dl>
+        <dt><strong>angreppspunkt:</strong></dt>
+        <dd>byggnaders entréer eller andra ingångar som är avsedda att användas av räddningstjänsten,</dd>
+        <dt><strong>angöringsplats:</strong></dt>
+        <dd>en plats för kortare tillfällig uppställning av bil eller annat fordon för på- och avstigning eller i- och urlastning,</dd>
+        <dt><strong>avfallsanordning:</strong></dt>
+        <dd>fast anordning för hantering av avfall, och</dd>
+        <dt><strong>tillgänglig och användbar:</strong></dt>
+        <dd>tillgänglig och användbar för personer med nedsatt rörelse- eller orienteringsförmåga.</dd>
+      </dl>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P6" name="BFS2024-13_K1_P6">6 §</a>
+      </h3>
+      <p class="text">Med byggprodukter med förhandsbedömda egenskaper avses i denna författning produkter som tillverkats för att permanent ingå i byggnadsverk och som antingen</p>
+      <ol type="1">
+        <li>är CE-märkta,</li>
+        <li>är typgodkända eller tillverkningskontrollerade enligt bestämmelserna i 8 kap. 22–23 §§ plan- och bygglagen (2010:900),</li>
+        <li>har certifierats av ett certifieringsorgan som ackrediterats för uppgiften och för produkten i fråga enligt Europaparlamentets och rådets förordning (EG) nr 765/2008 av den 9 juli 2008 om krav för ackreditering och upphävande av förordning (EEG) nr 339/93, eller</li>
+        <li>har tillverkats i en fabrik vars tillverkning och produktionskontroll och utfallet därav för byggprodukten fortlöpande övervakas, bedöms och godkänns av ett certifieringsorgan som ackrediterats för uppgiften och för produkten i fråga enligt förordning (EG) nr 765/2008.</li>
+      </ol>
+      <p class="text">Såsom bedömning i enlighet med alternativ 3 eller 4 godtas även en bedömning utfärdad av ett organ inom Europeiska ekonomiska samarbetsområdet eller i Turkiet om organet på annat sätt än genom ackreditering för uppgiften enligt förordning (EG) nr 765/2008, erbjuder motsvarande garantier i fråga om teknisk och yrkesmässig kompetens samt garantier om oberoende.</p>
+
+      <h3 id="BFS2024-13_byggprodukter-och-material">Byggprodukter och material</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P7" name="BFS2024-13_K1_P7">7 §</a>
+      </h3>
+      <p class="text">Byggprodukter och material ska ha kända och dokumenterade egenskaper i de avseenden som har betydelse för byggnadsverkets förmåga att uppfylla kraven i denna författning.</p>
+      <p class="text">Byggprodukter med förhandsbedömda egenskaper ska anses ha kända och dokumenterade egenskaper i de avseenden som de är förhandsbedömda.</p>
+      <p class="text">Egenskaper hos andra byggprodukter än byggprodukter med förhandsbedömda egenskaper ska provas eller bedömas genom annan vedertagen metod. Inom Europeiska unionen vedertagen metod ska användas där sådan finns.</p>
+
+      <h3 id="BFS2024-13_projektering-och-utforande">Projektering och utförande</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P8" name="BFS2024-13_K1_P8">8 §</a>
+      </h3>
+      <p class="text">Sådana anläggningar som avses i 5 kap. ska projekteras</p>
+      <ol type="1">
+        <li>på ett fackmässigt sätt,</li>
+        <li>så att arbetet kan utföras på ett sådant sätt att kraven i denna författning uppfylls, och</li>
+        <li>så att förutsatt underhåll kan ske.</li>
+      </ol>
+      <p class="text">Projekteringen ska dokumenteras.</p>
+      <p class="text">Första och andra styckena gäller inte om det är obehövligt.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P9" name="BFS2024-13_K1_P9">9 §</a>
+      </h3>
+      <p class="text">Sådana anläggningar som avses i 5 kap. ska utföras</p>
+      <ol type="1">
+        <li>på ett fackmässigt sätt, och</li>
+        <li>enligt gällande handlingar.</li>
+      </ol>
+
+      <h3 id="BFS2024-13_kontroll">Kontroll</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P10" name="BFS2024-13_K1_P10">10 §</a>
+      </h3>
+      <p class="text">Kontroll av att kraven i 5 kap. uppfylls ska göras</p>
+      <ol type="1">
+        <li>under projektering och utförande enligt 11–13 §§,</li>
+        <li>i den färdiga anläggningen enligt 14 §, eller</li>
+        <li>med en kombination av punkt 1 och 2.</li>
+      </ol>
+      <p class="text">Kontroll ska utföras fackmässigt.</p>
+      <p class="text">Resultatet av kontrollen ska dokumenteras.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P11" name="BFS2024-13_K1_P11">11 §</a>
+      </h3>
+      <p class="text">Vid kontroll under projektering ska det kontrolleras att dimensionerande förutsättningar, projekteringsmetoder, provningsmetoder och beräkningar är relevanta och redovisade i handlingarna.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P12" name="BFS2024-13_K1_P12">12 §</a>
+      </h3>
+      <p class="text">Vid kontroll under utförande ska det kontrolleras att arbetet utförs enligt gällande handlingar.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P13" name="BFS2024-13_K1_P13">13 §</a>
+      </h3>
+      <p class="text">Byggprodukter och material ska kontrolleras när de tas emot på byggarbetsplatsen. Kontroll ska göras av att byggprodukter och material har förutsatta egenskaper.</p>
+      <p class="text">För byggprodukter med förhandsbedömda egenskaper kan kontrollen inskränkas till identifiering, kontroll av märkning och granskning av dokumentationen av de förhandsbedömda egenskaperna.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K1_P14" name="BFS2024-13_K1_P14">14 §</a>
+      </h3>
+      <p class="text">Vid kontroll av den färdiga anläggningen ska kontroll göras genom provning, mätning eller besiktning.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-13_K2">
+      <h2 class="kapitel-rubrik">2 kap. Tillgänglighet och användbarhet</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K2_P1" name="BFS2024-13_K2_P1">1 §</a>
+      </h3>
+      <p class="text">När det i detta kapitel ställs krav på tillgänglighet och användbarhet för personer med nedsatt rörelseförmåga är följande mått dimensionerande:</p>
+      <ol type="1">
+        <li>planmåttet för en rullstol 0,70 x 1,30 meter,</li>
+        <li>vändmåttet av en cirkel med diametern 1,50 meter, och</li>
+        <li>öppningsmåttet för fri passage minst 0,90 meter.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K2_P2" name="BFS2024-13_K2_P2">2 §</a>
+      </h3>
+      <p class="text">En tomt som ska vara tillgänglig och användbar, ska ha gångvägar mellan tillgängliga och användbara entréer till byggnader på tomten och andra tillgängliga och användbara målpunkter på eller i direkt anslutning till tomten.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K2_P3" name="BFS2024-13_K2_P3">3 §</a>
+      </h3>
+      <p class="text">Gångvägar som avses i 2 § ska</p>
+      <ol type="1">
+        <li>utformas med hänsyn till den avsedda användningen,</li>
+        <li>vara jämna och fasta,</li>
+        <li>luta högst 1:12, och</li>
+        <li>vara lätta att upptäcka och följa.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K2_P4" name="BFS2024-13_K2_P4">4 §</a>
+      </h3>
+      <p class="text">När gångvägar som avses i 3 § har vilplan för att vara tillgängliga och användbara ska vilplanets längd minst medge plats för en rullstol som manövreras av en hjälpare.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K2_P5" name="BFS2024-13_K2_P5">5 §</a>
+      </h3>
+      <p class="text">På eller i nära anslutning till en tomt som ska vara tillgänglig och användbar, ska det finnas minst en angöringsplats för fordon inom 25 meters gångavstånd från en tillgänglig och användbar entré.</p>
+      <p class="text">Angöringsplatsen ska utformas och placeras så att det är möjligt för personer med nedsatt rörelse- eller orienteringsförmåga att använda angöringsplatsen.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K2_P6" name="BFS2024-13_K2_P6">6 §</a>
+      </h3>
+      <p class="text">På eller i nära anslutning till en tomt som ska vara tillgänglig och användbar, ska det kunna ordnas minst en tillgänglig och användbar parkeringsplats för fordon.</p>
+      <p class="text">Parkeringsplatsen ska utformas och placeras så att det är möjligt för personer med nedsatt rörelse- eller orienteringsförmåga att självständigt använda parkeringsplatsen.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-13_K3">
+      <h2 class="kapitel-rubrik">3 kap. Framkomlighet för räddningsfordon</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K3_P1" name="BFS2024-13_K3_P1">1 §</a>
+      </h3>
+      <p class="text">Avståndet från uppställningsplats för räddningsfordon till en byggnads angreppspunkter ska vara längst 50 meter.</p>
+      <p class="text">Om särskilda skäl föreligger får ett längre avstånd än 50 meter tillämpas. Med särskilda skäl avses skäl som beror på behovet av räddningsinsats utifrån byggnadens ändamål eller svårigheter att komma fram till byggnaden på tomten med räddningsfordon utifrån de geografiska förutsättningarna.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K3_P2" name="BFS2024-13_K3_P2">2 §</a>
+      </h3>
+      <p class="text">En räddningsväg ska anordnas om ett avstånd på längst 50 meter enligt 1 § första stycket inte är möjligt att uppnå genom uppställningsplats för räddningsfordon inom gatunätet eller motsvarande.</p>
+      <p class="text">Om ett längre avstånd än 50 meter tillämpas enligt 1 § andra stycket, ska vid behov en räddningsväg anordnas om avståndet inte är möjligt att uppnå genom uppställningsplats för räddningsfordon inom gatunätet eller motsvarande.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K3_P3" name="BFS2024-13_K3_P3">3 §</a>
+      </h3>
+      <p class="text">Räddningsväg enligt 2 §, inklusive in- och utfart och uppställningsplats för räddningsfordon, ska utformas och dimensioneras så att god framkomlighet uppnås.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-13_K4">
+      <h2 class="kapitel-rubrik">4 kap. Skydd mot olyckor</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K4_P1" name="BFS2024-13_K4_P1">1 §</a>
+      </h3>
+      <p class="text">Gångvägar mellan entré till byggnad och parkerings- och angöringsplatser ska utformas och dimensioneras för den avsedda användningen så att det går att använda dem på ett säkert sätt.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K4_P2" name="BFS2024-13_K4_P2">2 §</a>
+      </h3>
+      <p class="text">Trappor och ramper på en tomt ska ha balansstöd i form av ledstång, om det behövs för att skydda mot fall.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K4_P3" name="BFS2024-13_K4_P3">3 §</a>
+      </h3>
+      <p class="text">Öppningar i mark på en tomt ska ha hållfasta anordningar som skyddar mot fall. På en tomt där det med hänsyn till den avsedda användningen kan förväntas att yngre barn vistas utan ständig tillsyn av vuxna, ska anordningarna utformas så att yngre barn inte kan öppna, lyfta eller på annat sätt ta sig förbi dem.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-13_K5">
+      <h2 class="kapitel-rubrik">5 kap. Säkerhet vid användning vid uppförande av vissa andra anläggningar än byggnader</h2>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K5_P1" name="BFS2024-13_K5_P1">1 §</a>
+      </h3>
+      <p class="text">Öppningar i avfallsanordningar på en tomt ska ha skyddsanordningar. På en tomt där det med hänsyn till den avsedda användningen kan förväntas att yngre barn vistas utan ständig tillsyn av vuxna, ska skyddsanordningarna utformas så att yngre barn inte kan ta sig förbi dem.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K5_P2" name="BFS2024-13_K5_P2">2 §</a>
+      </h3>
+      <p class="text">Fasta lekredskap på en tomt ska utformas och placeras så att risken för personskador begränsas.</p>
+      <p class="text">Underlaget till fasta lekredskap som kan innebära risk för fall ska vara stötdämpande och i övrigt så utformat att risken för personskador begränsas.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K5_P3" name="BFS2024-13_K5_P3">3 §</a>
+      </h3>
+      <p class="text">Fasta bassänger, avsedda för bad eller simning, på en tomt ska ha skydd mot drunkning. Skydden ska utformas så att yngre barn inte kan ta sig förbi dem.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K5_P4" name="BFS2024-13_K5_P4">4 §</a>
+      </h3>
+      <p class="text">Öppningar för utlopp i fasta bassänger, avsedda för bad eller simning, på en tomt ska utformas så att risken för personskador begränsas.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K5_P5" name="BFS2024-13_K5_P5">5 §</a>
+      </h3>
+      <p class="text">Dammar, fasta brunnar och fasta behållare på en tomt, som inte är slutna och där vätska förvaras, ska ha skydd som begränsar risken för drunkning. Skydden ska utformas så att de begränsar risken att yngre barn drunknar.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-13_K5_P6" name="BFS2024-13_K5_P6">6 §</a>
+      </h3>
+      <p class="text">Skydd i form av lock och galler på brunnar och fasta behållare ska</p>
+      <ol type="1">
+        <li>ha betryggande hållfasthet, och</li>
+        <li>utformas så att de begränsar risken för olyckor för yngre barn.</li>
+      </ol>
+    </section>
+  </div>
+
+  <footer class="back">
+    <h2>Ikraftträdande- och övergångsbestämmelser</h2>
+    <ol type="1">
+      <li>Denna författning träder i kraft den 1 juli 2025.</li>
+      <li>Äldre bestämmelser i Boverkets byggregler (2011:6) – föreskrifter och allmänna råd får dock tillämpas i den utsträckning som framgår av punkten 3 i övergångsbestämmelserna till Boverkets föreskrifter (2024:14) om ändring i Boverkets byggregler (2011:6) – föreskrifter och allmänna råd.</li>
+    </ol>
+    <p class="text">På Boverkets vägnar</p>
+    <p class="text">ANDERS SJELVGREN</p>
+    <p class="text">Emma Rosenblom</p>
+  </footer>
+</article></body></html>
+</body>
+</html>

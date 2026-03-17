@@ -1,0 +1,1080 @@
+{
+  "schemaVersion": "1.0",
+  "documentType": "SFS_LAW",
+  "title": "Lag (2003:460) om etikprövning av forskning som avser människor",
+  "documentNumber": "2003:460",
+  "divisions": null,
+  "chapters": [
+    {
+      "number": null,
+      "title": null,
+      "sections": [
+        {
+          "number": "1",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Denna lag innehåller bestämmelser om etikprövning av forskning som avser människor och biologiskt material från människor. Den innehåller också bestämmelser om samtycke till sådan forskning.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Syftet med lagen är att skydda den enskilda människan och respekten för människovärdet vid forskning.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "2",
+          "heading": "Definitioner",
+          "lastAmendment": "2019:1144",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "I denna lag avses med",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "forskning: vetenskapligt experimentellt eller teoretiskt arbete eller vetenskapliga studier genom observation, om arbetet eller studierna görs för att hämta in ny kunskap, och utvecklingsarbete på vetenskaplig grund, dock inte sådant arbete eller sådana studier som utförs endast inom ramen för högskoleutbildning på grundnivå eller på avancerad nivå,",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "forskningshuvudman: en statlig myndighet eller en fysisk eller juridisk person i vars verksamhet forskningen utförs,",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "forskningsperson: en levande människa som forskningen avser, och",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "behandling av personuppgifter: sådan behandling som anges i artikel 4.2 i Europaparlamentets och rådets förordning (EU) 2016/679 av den 27 april 2016 om skydd för fysiska personer med avseende på behandling av per-sonuppgifter och om det fria flödet av sådana uppgifter och om upphävande av direktiv 95/46/EG (allmän dataskyddsförordning), här benämnd EU:s dataskyddsförordning.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "3",
+          "heading": "Tillämpningsområde",
+          "lastAmendment": "2018:1999",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Denna lag ska tillämpas på forskning som innefattar behandling av",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "1. personuppgifter som avses i artikel 9.1 i EU:s dataskyddsförordning (känsliga personuppgifter), eller",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "2. personuppgifter om lagöverträdelser som innefattar brott, domar i brottmål, straffprocessuella tvångsmedel eller administrativa frihetsberövanden.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "4",
+          "heading": null,
+          "lastAmendment": "2008:192",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Utöver vad som följer av 3 § ska lagen tillämpas på forskning som",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "1. innebär ett fysiskt ingrepp på en forskningsperson,",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "2. utförs enligt en metod som syftar till att påverka forskningspersonen fysiskt eller psykiskt eller som innebär en uppenbar risk att skada forskningspersonen fysiskt eller psykiskt,",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "3. avser studier på biologiskt material som har tagits från en levande människa och kan härledas till denna människa,",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "4. innebär ett fysiskt ingrepp på en avliden människa, eller",
+              "role": "BODY"
+            },
+            {
+              "number": 6,
+              "text": "5. avser studier på biologiskt material som har tagits för medicinskt ändamål från en avliden människa och kan härledas till denna människa.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "4a",
+          "heading": null,
+          "lastAmendment": "2024:232",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Lagen ska inte tillämpas på",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "1. kliniska prövningar som kräver en ansökan eller en anmälan enligt artikel 70, 74 eller 75 i Europaparlamentets och rådets förordning (EU) 2017/745 av den 5 april 2017 om medicintekniska produkter, om ändring av direktiv 2001/83/EG, förordning (EG) nr 178/2002 och förordning (EG) nr 1223/2009 och om upphävande av rådets direktiv 90/385/EEG och 93/42/EEG,",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "2. kliniska prövningar som kräver en ansökan eller en anmälan enligt",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "med kompletterande bestämmelser till EU:s förordningar om medicintekniska produkter eller föreskrifter som har meddelats med stöd av den lagen, eller",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "3. prestandastudier som kräver en ansökan eller en anmälan enligt artikel 66, 70 eller 71 i Europaparlamentets och rådets förordning (EU) 2017/746 av den 5 april 2017 om medicintekniska produkter för in vitro-diagnostik och om upphävande av direktiv 98/79/EG och kommissionens beslut 2010/227/EU.",
+              "role": "BODY"
+            },
+            {
+              "number": 6,
+              "text": "Bestämmelser om etisk granskning av sådana prövningar och studier som avses i första stycket finns i",
+              "role": "BODY"
+            },
+            {
+              "number": 7,
+              "text": "med kompletterande bestämmelser om etisk granskning till EU:s förordningar om medicintekniska produkter.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "4b",
+          "heading": null,
+          "lastAmendment": "2021:611",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Lagen ska inte tillämpas på kliniska prövningar av humanläkemedel. Bestämmelser om etisk granskning av sådana prövningar finns i",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "med kompletterande bestämmelser om etisk granskning till EU:s förordning om kliniska prövningar av humanläkemedel.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "5",
+          "heading": "Geografiskt tillämpningsområde",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Denna lag skall tillämpas på forskning som skall utföras i Sverige.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "6",
+          "heading": "Godkännande",
+          "lastAmendment": "2019:1144",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskning som avses i 3-5 §§ får utföras bara om den har godkänts vid en etikprövning. Ett godkännande får förenas med villkor. Ett godkännande ska avse ett visst projekt eller en del av ett projekt eller en på något liknande sätt bestämd forskning. Forskningen får innefatta behandling av sådana per- sonuppgifter som avses i 3 § bara om behandlingen har godkänts vid etikprövningen.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "En forskningshuvudman ska vidta åtgärder för att förebygga att forskning i den egna verksamheten utförs i strid med första stycket eller i strid med ett villkor som har meddelats med stöd av första stycket.",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "Ett godkännande upphör att gälla, om inte forskningen har börjat utföras senast två år efter det att beslutet om godkännande vann laga kraft.",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "Ett godkännande enligt denna lag medför inte att forskningen får utföras, om den strider mot någon annan författning.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "7",
+          "heading": "Utgångspunkter för etikprövningen",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskning får godkännas bara om den kan utföras med respekt för människovärdet.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "8",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Mänskliga rättigheter och grundläggande friheter skall alltid beaktas vid etikprövningen samtidigt som hänsyn skall tas till intresset av att ny kunskap kan utvecklas genom forskning. Människors välfärd skall ges företräde framför samhällets och vetenskapens behov.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "9",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskning får godkännas bara om de risker som den kan medföra för forskningspersoners hälsa, säkerhet och personliga integritet uppvägs av dess vetenskapliga värde.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "10",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskning får inte godkännas, om det förväntade resultatet kan uppnås på ett annat sätt som innebär mindre risker för forskningspersoners hälsa, säkerhet och personliga integritet.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Behandling av personuppgifter som avses i 3 § får godkännas bara om den är nödvändig för att forskningen skall kunna utföras.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "11",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskning får godkännas bara om den skall utföras av eller under överinseende av en forskare som har den vetenskapliga kompetens som behövs.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "11a",
+          "heading": null,
+          "lastAmendment": "2018:1092",
+          "status": "repealed",
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom lag (2018:1092)",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "12",
+          "heading": null,
+          "lastAmendment": "2018:1999",
+          "status": "repealed",
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Har upphävts genom lag (2018:1999)",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "13",
+          "heading": "Information och samtycke",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid forskning som avses i 4 § 1-3 skall bestämmelserna i 16-22 §§ om information och samtycke tillämpas. För forskning som avses i 4 § 3 gäller dock i vissa fall särskilda bestämmelser i 15 §. Om det i någon annan författning finns särskilda föreskrifter om information och samtycke vid forskning som avses i 4 § 1-3, skall de föreskrifterna gälla i stället för bestämmelserna i den här lagen.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Vid forskning som avses i 4 § 4 och 5 skall bestämmelserna om information och samtycke i",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "om transplantation m.m. respektive",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "om obduktion m.m. tillämpas i stället för bestämmelserna i den här lagen.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "14",
+          "heading": "Särskilda förutsättningar för godkännande",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskning som avses i 4 § får godkännas bara om det kan förutsättas att tillämpliga bestämmelser om information och samtycke kommer att följas eller om förutsättningarna för forskning utan samtycke i 20-22 §§ är uppfyllda.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Om en forskningsperson står i ett beroendeförhållande till forskningshuvudmannen eller en forskare eller om forskningspersonen kan antas ha särskilda svårigheter att ta till vara sin rätt, skall frågor om information och samtycke ägnas särskild uppmärksamhet vid etikprövningen.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "15",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om forskning avser studier på biologiskt material som tidigare har tagits från en levande människa, skall det vid ett godkännande bestämmas vilka krav som skall gälla i fråga om information och samtycke för användning av materialet.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "16",
+          "heading": "Information",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskningspersonen skall informeras om",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "- den övergripande planen för forskningen,",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "- syftet med forskningen,",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "- de metoder som kommer att användas,",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "- de följder och risker som forskningen kan medföra,",
+              "role": "BODY"
+            },
+            {
+              "number": 6,
+              "text": "- vem som är forskningshuvudman,",
+              "role": "BODY"
+            },
+            {
+              "number": 7,
+              "text": "- att deltagande i forskningen är frivilligt, och",
+              "role": "BODY"
+            },
+            {
+              "number": 8,
+              "text": "- forskningspersonens rätt att när som helst avbryta sin medverkan.",
+              "role": "BODY"
+            },
+            {
+              "number": 9,
+              "text": "Om forskningspersonen inte har fyllt 18 år gäller vad som sägs i 18 §.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "17",
+          "heading": "Samtycke",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskning får utföras bara om forskningspersonen har samtyckt till den forskning som avser henne eller honom. Ett samtycke gäller bara om forskningspersonen dessförinnan har fått information om forskningen enligt 16 §. Samtycket skall vara frivilligt, uttryckligt och preciserat till viss forskning. Samtycket skall dokumenteras.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Om forskningspersonen inte har fyllt 18 år gäller vad som sägs i 18 §.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "18",
+          "heading": "Forskningspersoner under 18 år",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om forskningspersonen har fyllt 15 år men inte 18 år och inser vad forskningen innebär för hans eller hennes del, skall han eller hon själv informeras om och samtycka till forskningen på det sätt som anges i 16 och 17 §§.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "I andra fall när forskningspersonen inte har fyllt 18 år, skall vårdnadshavarna informeras om och samtycka till forskningen på det sätt som anges i 16 och 17 §§. Forskningspersonen själv skall dock så långt möjligt informeras om forskningen. Trots vårdnadshavarnas samtycke får forskningen inte utföras om en forskningsperson som är under 15 år inser vad den innebär för hans eller hennes del och motsätter sig att den utförs.",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "I fråga om en forskningsperson som är gift tillämpas vad som föreskrivs för den som har fyllt 18 år.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "19",
+          "heading": "Återtagande av samtycke",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Ett samtycke får när som helst tas tillbaka med omedelbar verkan. De data som har hämtats in dessförinnan får dock användas i forskningen.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "20",
+          "heading": "Forskning utan samtycke",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskning får utföras utan samtycke, om sjukdom, psykisk störning, försvagat hälsotillstånd eller något annat liknande förhållande hos forskningspersonen hindrar att hans eller hennes mening inhämtas. Forskningen får dock utföras bara under de förutsättningar som anges i 21 och 22 §§.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "21",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Forskning avseende en forskningsperson som sägs i 20 § får utföras om",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "1. forskningen kan förväntas ge en kunskap som inte är möjlig att få genom forskning med samtycke, och",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "2. forskningen kan förväntas leda till direkt nytta för forskningspersonen.",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "Även om villkoret i första stycket 2 inte är uppfyllt får forskningen utföras om",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "1. syftet är att bidra till ett resultat som kan vara till nytta för forskningspersonen eller någon annan som lider av samma eller liknande sjukdom eller störning, och",
+              "role": "BODY"
+            },
+            {
+              "number": 6,
+              "text": "2. forskningen innebär en obetydlig risk för skada och ett obetydligt obehag för forskningspersonen.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "22",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En forskningsperson som sägs i 20 § skall så långt möjligt informeras personligen om forskningen. Samråd skall ske med forskningspersonens närmaste anhöriga. Samråd skall ske också med god man eller förvaltare enligt 11 kap. föräldrabalken, om frågan ingår i dennes uppdrag. Forskningen får inte utföras om forskningspersonen i någon form ger uttryck för att inte vilja delta eller om någon av dem som samråd har skett med motsätter sig utförandet.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "23",
+          "heading": "Ansökan",
+          "lastAmendment": "2019:1144",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Ansökan om etikprövning av forskning ska göras av forskningshuvudmannen.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "När flera forskningshuvudmän medverkar i ett och samma forskningsprojekt ska de gemensamt uppdra åt en av dem att ansöka om etikprövning av projektet för allas räkning och att informera de övriga om Etikprövningsmyndighetens beslut.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "24",
+          "heading": "Etikprövningsmyndigheten",
+          "lastAmendment": "2023:39",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Etikprövningsmyndigheten ska pröva ansökningar som anges i 23 §.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Myndigheten ska även pröva vissa frågor i samband med insamling, bevarande och användning av prover enligt",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "24a",
+          "heading": null,
+          "lastAmendment": "2021:612",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Etikprövningsmyndigheten ska också lämna",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "- sådana yttranden som anges i",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "med kompletterande bestämmelser om etisk granskning till EU:s förordning om kliniska prövningar av humanläkemedel, och",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "- sådana yttranden som anges i",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "med kompletterande bestämmelser om etisk granskning till EU:s förordningar om medicintekniska produkter och fatta sådana beslut som anges i 5 § samma lag.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "25",
+          "heading": "Verksamhetsregioner och avdelningar",
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Etikprövningsmyndigheten ska vara indelad i verksamhetsregioner. Varje verksamhetsregion ska ha en eller flera avdelningar. En avdelning ska pröva ärenden inom vissa forskningsområden.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "En avdelning ska bestå av en ordförande och femton övriga ledamöter. Av de övriga ledamöterna ska tio ha vetenskaplig kompetens och fem företräda allmänna intressen. Det får utses ersättare för ledamöterna. Ordföranden och ersättare för ordföranden ska vara eller ha varit ordinarie domare.",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "Ordföranden och ersättare för ordföranden ska utses av regeringen. Övriga ledamöter och ersättare ska utses av Etikprövningsmyndigheten. Samtliga ledamöter och ersättare ska utses för en bestämd tid.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "25a",
+          "heading": null,
+          "lastAmendment": "2021:612",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid de avdelningar som utför etisk granskning enligt",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "med kompletterande bestämmelser om etisk granskning till EU:s",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "förordningar om medicintekniska produkter ska minst en av de ledamöter som företräder allmänna intressen representera en eller flera patientorganisationer.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "25b",
+          "heading": null,
+          "lastAmendment": "2021:611",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Vid de avdelningar som utför etisk granskning enligt",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "med kompletterande bestämmelser om etisk granskning till EU:s förordning om kliniska prövningar av humanläkemedel ska minst en av de ledamöter som företräder allmänna intressen representera en eller flera patientorganisationer.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "26",
+          "heading": "Beslutsförhet",
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En avdelning inom Etikprövningsmyndigheten är beslutsför, när ordföranden och minst åtta övriga ledamöter är närvarande. Av de övriga ledamöterna ska minst fem ha vetenskaplig kompetens och minst två företräda allmänna intressen. Ledamöter med vetenskaplig kompetens ska alltid vara i flertal, när ett ärende avgörs.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "27",
+          "heading": null,
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "En avdelning är beslutsför med ordföranden ensam vid",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "- förberedande åtgärd,",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "- rättelse av skrivfel och liknande,",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "- annat beslut som inte innebär något slutligt avgörande av ett ärende, och",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "- prövning av fråga om avvisning eller avskrivning av ärende.",
+              "role": "BODY"
+            },
+            {
+              "number": 6,
+              "text": "Ordföranden får lämna över sådana uppgifter som avses i första stycket till en föredragande vid avdelningen.",
+              "role": "BODY"
+            },
+            {
+              "number": 7,
+              "text": "En avdelning får lämna över till ordföranden eller någon annan ledamot att efter prövning i sak avgöra ett visst ärende eller ärenden som är sådana att tidigare vägledande avgöranden kan tillämpas eller som annars är av sådant slag att de inte behöver avgöras av avdelningen.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "28",
+          "heading": "Remiss",
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om Etikprövningsmyndigheten finner att forskningen ger upphov till etiska frågor av ny och principiell karaktär, bör myndigheten inhämta yttranden från Vetenskapsrådet och andra berörda myndigheter.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "29",
+          "heading": "Överlämnande",
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Om en avdelning inom Etikprövningsmyndigheten är oenig om utgången av etikprövningen, ska myndigheten lämna över ärendet för avgörande av den nämnd som avses i 31 §. Detta gäller dock bara om minst tre ledamöter begär att ärendet ska lämnas över. Om endast nio ledamöter deltar i prövningen, ska ärendet dock lämnas över, om minst två ledamöter begär det.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "När Etikprövningsmyndigheten lämnar över ett ärende till nämnden ska den bifoga ett eget yttrande.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "30",
+          "heading": "Beslut",
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Ett beslut av Etikprövningsmyndigheten gäller omedelbart, om inte myndigheten beslutar något annat.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "31",
+          "heading": "Överklagandenämnden för etikprövning",
+          "lastAmendment": "2023:39",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Överklagandenämnden för etikprövning ska pröva överklaganden av",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "- sådana beslut av Etikprövningsmyndigheten som anges i 36 §, och",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "- sådana beslut av Etikprövningsmyndigheten som anges i",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "med kompletterande bestämmelser om etisk granskning till EU:s förordningar om medicintekniska produkter.",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "Nämnden ska även pröva ärenden som Etikprövningsmyndigheten har lämnat över enligt 29 § och utöva tillsyn enligt 34 och 35 §§. Nämnden har också till uppgift att pröva vissa frågor i samband med insamling, bevarande och användning av prover enligt",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "32",
+          "heading": "Sammansättning",
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Överklagandenämnden för etikprövning ska bestå av en ordförande och sex övriga ledamöter. Av de övriga ledamöterna ska fyra ha vetenskaplig kompetens och två företräda allmänna intressen. Det får utses ersättare för ledamöterna. Ordföranden och ersättare för ordföranden ska vara eller ha varit ordinarie domare.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Alla ledamöter och ersättare ska utses av regeringen för en bestämd tid.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "33",
+          "heading": "Beslutsförhet",
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Överklagandenämnden för etikprövning är beslutsför, när ordföranden och minst tre ledamöter med vetenskaplig kompetens och minst en företrädare för allmänna intressen är närvarande. Ledamöterna med vetenskaplig kompetens ska alltid vara i flertal, när ett ärende avgörs.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Nämnden är beslutsför med ordföranden ensam vid",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "- förberedande åtgärd,",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "- rättelse av skrivfel och liknande,",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "- annat beslut som inte innebär något slutligt avgörande av ett ärende, och",
+              "role": "BODY"
+            },
+            {
+              "number": 6,
+              "text": "- prövning av fråga om avvisning eller avskrivning av ett ärende.",
+              "role": "BODY"
+            },
+            {
+              "number": 7,
+              "text": "Ordföranden får lämna över sådana uppgifter som avses i andra stycket till en föredragande vid nämnden.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "34",
+          "heading": "Tillsyn",
+          "lastAmendment": "2019:1144",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Överklagandenämnden för etikprövning har tillsyn över att denna lag, föreskrifter som har meddelats med stöd av lagen och villkor som har meddelats i samband med godkännande vid etikprövning följs.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Överklagandenämnden för etikprövning får bestämma att ett tillsynsbeslut ska gälla omedelbart.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "35",
+          "heading": null,
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Överklagandenämnden för etikprövning har rätt att på begäran få de upplysningar och handlingar som behövs för tillsynen samt få tillträde till de lokaler som används vid forskningen. Forskningshuvudmannen ska på begäran ge nämnden den hjälp som behövs för att tillsynen ska kunna utföras.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Nämnden får meddela de förelägganden och förbud som behövs för att denna lag och föreskrifter som har meddelats med stöd av lagen ska följas. Nämnden får utfärda förelägganden också när upplysningar eller handlingar inte lämnas eller när tillträde eller hjälp vägras. Ett föreläggande eller ett förbud får förenas med vite. Ett sådant föreläggande eller förbud kan riktas även mot staten som forskningshuvudman.",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "Nämnden är skyldig att göra en åtalsanmälan, om det finns skälig misstanke om brott som avses i 38 §.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "36",
+          "heading": "Överklagande",
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Etikprövningsmyndighetens beslut i ett ärende om etikprövning får överklagas till Överklagandenämnden för etikprövning av forskningshuvudmannen, om Etikprövningsmyndigheten har avgjort ärendet och beslutet har gått huvudmannen emot. Andra beslut av Etikprövningsmyndigheten i ärenden om etikprövning får inte överklagas.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "37",
+          "heading": null,
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Beslut av Överklagandenämnden för etikprövning i ärenden om etikprövning får inte överklagas.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Beslut av nämnden om föreläggande eller förbud enligt 35 § får överklagas till allmän förvaltningsdomstol. Andra beslut i tillsynsärenden får inte överklagas.",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "Prövningstillstånd krävs vid överklagande till kammarrätten.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "38",
+          "heading": "Straff",
+          "lastAmendment": "2019:1144",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Den som med uppsåt bryter mot 6 § första stycket eller mot ett villkor som har meddelats med stöd av 6 § första stycket döms till böter eller fängelse i högst två år.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Detsamma gäller den som med uppsåt låter bli att vidta de åtgärder som skäligen kunnat krävas enligt 6 § andra stycket, om forskning i den egna verksamheten utförs i strid med 6 § första stycket eller ett villkor som har meddelats med stöd av 6 § första stycket.",
+              "role": "BODY"
+            },
+            {
+              "number": 3,
+              "text": "Om gärningen enligt första eller andra stycket begås av grov oaktsamhet döms till böter eller fängelse i högst sex månader.",
+              "role": "BODY"
+            },
+            {
+              "number": 4,
+              "text": "I ringa fall döms det inte till ansvar.",
+              "role": "BODY"
+            },
+            {
+              "number": 5,
+              "text": "Den som har överträtt ett vitesföreläggande enligt 35 § får inte dömas till ansvar för en gärning som omfattas av föreläggandet.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "39",
+          "heading": "Bemyndiganden",
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får meddela föreskrifter om avgift för etikprövning enligt denna lag.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "40",
+          "heading": null,
+          "lastAmendment": null,
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer får föreskriva om undantag från kravet på godkännande vid etikprövning för forskning eller av behandling av personuppgifter, där det står klart att forskningen inte innebär någon beaktansvärd risk för enskilds hälsa eller säkerhet eller för intrång i enskilds personliga integritet.",
+              "role": "BODY"
+            }
+          ]
+        },
+        {
+          "number": "41",
+          "heading": "Upplysning om närmare föreskrifter",
+          "lastAmendment": "2018:147",
+          "status": null,
+          "paragraphs": [
+            {
+              "number": 1,
+              "text": "Regeringen kan med stöd av 8 kap. 7 § regeringsformen meddela närmare föreskrifter om Etikprövningsmyndigheten och Överklagandenämnden för etikprövning.",
+              "role": "BODY"
+            },
+            {
+              "number": 2,
+              "text": "Regeringen eller den myndighet som regeringen bestämmer kan med stöd av 8 kap. 7 § regeringsformen meddela närmare föreskrifter om etikprövning.",
+              "role": "BODY"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "preamble": null,
+  "transitionProvisions": [
+    {
+      "number": null,
+      "text": "2003:460 Denna lag träder i kraft den 1 januari 2004. Lagen skall dock inte tillämpas på forskning som före ikraftträdandet har etikgranskats av en statlig myndighet eller vars utförande har påbörjats.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:147 1. Denna lag träder i kraft den 1 januari 2019. 2. Ett godkännande som har beslutats enligt 24 § i den äldre  lydelsen gäller fortfarande. 3. En ordförande, övrig ledamot eller ersättare som har  utsetts med stöd av 25 § i den äldre lydelsen kvarstår som  ordförande, övrig ledamot eller ersättare under den tid som  han eller hon är utsedd för. 4. När fråga uppkommer om entledigande av en ledamot eller  ersättare som har utsetts med stöd av 25 § i den äldre  lydelsen ska beslut i frågan fattas av  Etikprövningsmyndigheten. Beslut om entledigande av  ordföranden eller dennes ersättare ska fattas av  regeringen.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2018:1092 1. Denna lag träder i kraft den dag som regeringen bestämmer. 2. Regeringen får meddela de övergångsbestämmelser som  behövs.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2019:1144 1. Denna lag träder i kraft den 1 januari 2020. 2. Lagen tillämpas inte på forskning som har utförts före  ikraftträdandet.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2021:611 1. Denna lag träder i kraft den dag som regeringen bestämmer. 2. Regeringen får meddela de övergångsbestämmelser som behövs.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2022:48 1. Denna förordning träder i kraft den 31 januari 2022. 2. Äldre föreskrifter ska dock fortsätta att gälla fram till  och med den 31 januari 2025 för ansökningar om tillstånd till  en klinisk läkemedelsprövning som har lämnats in före  ikraftträdandet. 3. Äldre föreskrifter gäller för en klinisk läkemedelsprövning  fram till och med den 31 januari 2025 i det fall ansökan om  tillstånd till den kliniska läkemedelsprövningen har lämnats  in efter ikraftträdandet men före den 31 januari 2023, och om  sponsorn har begärt att ansökan ska handläggas enligt äldre  föreskrifter.",
+      "role": "TRANSITION_PROVISION"
+    },
+    {
+      "number": null,
+      "text": "2022:49 1. Denna förordning träder i kraft den 31 januari 2022. 2. Äldre föreskrifter ska dock fortsätta att gälla fram till  och med den 31 januari 2025 för ansökningar om tillstånd till  en klinisk läkemedelsprövning som har lämnats in före  ikraftträdandet. 3. Äldre föreskrifter gäller för en klinisk läkemedelsprövning  fram till och med den 31 januari 2025 i det fall ansökan om  tillstånd till den kliniska läkemedelsprövningen har lämnats  in efter ikraftträdandet men före den 31 januari 2023, och om  sponsorn har begärt att ansökan ska handläggas enligt äldre  föreskrifter.",
+      "role": "TRANSITION_PROVISION"
+    }
+  ],
+  "appendices": null,
+  "metadata": {
+    "sfsNumber": "2003:460",
+    "baseLawSfs": null,
+    "effectiveDate": null
+  }
+}

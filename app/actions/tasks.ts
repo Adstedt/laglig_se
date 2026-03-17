@@ -16,6 +16,8 @@ import {
   invalidateTaskLinkedListItemsCache,
   invalidateListItemTasksCache,
 } from './legal-document-modal'
+import { createTaskNotification } from '@/lib/notifications/task-notifications'
+import { NotificationType } from '@prisma/client'
 
 // ============================================================================
 // Action Result Type
@@ -1260,6 +1262,21 @@ export async function createTask(data: {
       })
 
       revalidatePath('/tasks')
+
+      // Story 6.11: Send TASK_ASSIGNED notification when assignee is set
+      if (data.assigneeId && fullTask) {
+        const creator = fullTask.creator
+        createTaskNotification(NotificationType.TASK_ASSIGNED, {
+          taskId: fullTask.id,
+          workspaceId,
+          actorUserId: userId,
+          taskTitle: fullTask.title,
+          actorName: creator.name ?? creator.email,
+        }).catch((error) => {
+          console.error('createTask notification error:', error)
+        })
+      }
+
       return { success: true, data: fullTask as TaskWithRelations }
     })
   } catch (error) {

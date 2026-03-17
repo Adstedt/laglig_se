@@ -50,6 +50,14 @@
       "schedule": "15 17 * * *"
     },
     {
+      "path": "/api/cron/notify-task-deadlines",
+      "schedule": "10 7 * * *"
+    },
+    {
+      "path": "/api/cron/notify-weekly-digest",
+      "schedule": "0 16 * * 0"
+    },
+    {
       "path": "/api/cron/daily-ops-digest",
       "schedule": "0 21 * * *"
     }

@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>BFS 2024:7</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; border-bottom: 2px solid #333; padding-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin-top: 2rem; color: #222; }
+    h3 { font-size: 1.1rem; margin-top: 1.5rem; color: #333; }
+    a.paragraf { font-weight: bold; display: block; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e0e0e0; }
+    .allmanna-rad { background: #f9f6f0; border-left: 3px solid #c9a96e; padding: 0.5rem 1rem; margin: 0.5rem 0; }
+    .allmanna-rad-heading { font-weight: bold; margin: 0; }
+    table.legal-table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    table.legal-table th, table.legal-table td { border: 1px solid #ccc; padding: 0.4rem 0.8rem; text-align: left; }
+    table.legal-table th { background: #f5f5f5; }
+    sup.footnote-ref { color: #0066cc; cursor: help; }
+    footer.back { border-top: 2px solid #999; margin-top: 2rem; padding-top: 1rem; color: #666; }
+    .appendices { border-top: 1px dashed #999; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+<html><head></head><body><article class="sfs" id="BFS2024-7">
+  <div class="lovhead">
+    <h1>
+      <p class="text">BFS 2024:7</p>
+      <p class="text">Boverkets föreskrifter och allmänna råd om säkerhet i händelse av brand i byggnader</p>
+    </h1>
+  </div>
+  <div class="body">
+    <p class="text">Utkom från trycket den 20 november 2024</p>
+    <p class="text">beslutade den 19 november 2024.</p>
+    <p class="text">Boverket föreskriver<sup class="footnote-ref" data-note="1" title="Se Europaparlamentets och rådets direktiv (EU) 2015/1535 av den 9 september 2015 om ett informationsförfarande beträffande tekniska föreskrifter och beträffande föreskrifter för informationssamhällets tjänster (kodifiering).">1</sup> följande med stöd av 10 kap. 3 § 2, 8 § och 24 § 1 plan- och byggförordningen (2011:338).</p>
+
+    <h3 id="BFS2024-7_avdelning-i-overgripande-bestammelser">AVDELNING I. ÖVERGRIPANDE BESTÄMMELSER</h3>
+
+    <section class="kapitel" id="BFS2024-7_K1">
+      <h2 class="kapitel-rubrik">1 kap. Allmänt</h2>
+
+      <h3 id="BFS2024-7_forfattningens-innehall">Författningens innehåll</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P1" name="BFS2024-7_K1_P1">1 §</a>
+      </h3>
+      <p class="text">Denna författning innehåller föreskrifter och allmänna råd till tekniska egenskapskrav avseende säkerhet i händelse av brand enligt 3 kap. 8 § plan- och byggförordningen (2011:338).</p>
+      <p class="text">Författningen innehåller också föreskrifter om anpassning av de tekniska egenskapskraven vid ändring av byggnader enligt 8 kap. 7 § plan- och bygglagen (2010:900) och om kontroll enligt 10 kap. 5 § samma lag.</p>
+      <p class="text">De allmänna råden innehåller generella rekommendationer om tillämpningen av föreskrifterna i denna författning. De allmänna råden föregås av texten Allmänt råd och är tryckta med mindre och indragen text.</p>
+
+      <h3 id="BFS2024-7_foreskrifternas-tillampningsomrade">Föreskrifternas tillämpningsområde</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P2" name="BFS2024-7_K1_P2">2 §</a>
+      </h3>
+      <p class="text">Föreskrifterna i 1 och 2 kap. gäller vid uppförande av nya byggnader och vid ändring av byggnader för den ändrade delen.</p>
+      <p class="text">Föreskrifterna i 3–8 kap. gäller vid uppförande av nya byggnader.</p>
+      <p class="text">Föreskrifterna i 9 och 10 kap. gäller vid ändring av byggnader.</p>
+
+      <h3 id="BFS2024-7_definitioner">Definitioner</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P3" name="BFS2024-7_K1_P3">3 §</a>
+      </h3>
+      <p class="text">Termer och uttryck i denna författning har samma betydelse som i plan- och bygglagen (2010:900) och plan- och byggförordningen (2011:338).</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P4" name="BFS2024-7_K1_P4">4 §</a>
+      </h3>
+      <p class="text">I denna författning avses med</p>
+      <dl>
+        <dt><strong>alternativ utrymningsdörr</strong></dt>
+        <dd>dörr som leder till annan brandcell inom vilken tillgång till utrymningsdörr finns i samma plan,</dd>
+        <dt><strong>angreppspunkt</strong></dt>
+        <dd>byggnaders entréer eller andra ingångar som är avsedda att användas av räddningstjänsten,</dd>
+        <dt><strong>boendeenhet</strong></dt>
+        <dd>del av en bostad som är upplåten för enskilt bruk i bostäder där vissa bostadsfunktioner delas,</dd>
+        <dt><strong>brandavskiljning</strong></dt>
+        <dd>konstruktion – inklusive genomföringar och liknande samt anslutningar till angränsande byggnadsdelar – med i huvudsak brandavskiljande förmåga,</dd>
+        <dt><strong>brandcell</strong></dt>
+        <dd>del av byggnad avgränsad med brandcellsgränser och brandavskiljningar i en sådan omfattning att en brand kan utvecklas under ett helt eller en del av ett brandförlopp utan att sprida sig till byggnaden i övrigt,</dd>
+        <dt><strong>brandcellsgräns</strong></dt>
+        <dd>konstruktion – inklusive genomföringar och liknande samt anslutningar till angränsande byggnadsdelar – med brandavskiljande förmåga som motstår ett helt eller en del av ett brandförlopp,</dd>
+        <dt><strong>brandsektion</strong></dt>
+        <dd>del av byggnad avgränsad med brandsektionsgränser och brandavskiljningar i en sådan omfattning att en brand kan utvecklas under ett helt eller en del av ett brandförlopp med säkerhetsmarginal utan att sprida sig till byggnaden i övrigt,</dd>
+        <dt><strong>brandsektionsgräns</strong></dt>
+        <dd>konstruktion – inklusive genomföringar och liknande samt anslutningar till angränsande byggnadsdelar – med brandavskiljande förmåga som med säkerhetsmarginal motstår ett helt eller en del av ett brandförlopp,</dd>
+        <dt><strong>brännbara byggnadsdelar</strong></dt>
+        <dd>byggnadsdelar eller byggprodukter med lägre brandteknisk klass än A2-s1,d0, A2L-s1,d0 eller A2fl-s1,</dd>
+        <dt><strong>bärverk</strong></dt>
+        <dd>ordnad kombination av sammanfogade delar dimensionerad för att bära laster och ge tillräcklig styvhet,</dd>
+        <dt><strong>eldstad</strong></dt>
+        <dd>fast anordning för förbränning av fast, flytande eller gasformigt bränsle,</dd>
+        <dt><strong>frångänglig</strong></dt>
+        <dd>tillgänglig och användbar i händelse av brand för personer med nedsatt rörelseförmåga,</dd>
+        <dt><strong>insatstid</strong></dt>
+        <dd>tiden från att larmning har skett av kommunens räddningstjänst till dess att de resurser som krävs befinner sig på plats och räddningsarbetet kan påbörjas,</dd>
+        <dt><strong>obrännbart material</strong></dt>
+        <dd>material eller byggprodukt i lägst brandteknisk klass A2-s1,d0, A2L-s1,d0 eller A2fl-s1,</dd>
+        <dt><strong>publik lokal</strong></dt>
+        <dd>en lokal dit allmänheten har tillträde,</dd>
+        <dt><strong>säker plats</strong></dt>
+        <dd>plats i det fria där brand och brandgaser inte kan påverka utrymmande personer och varifrån gata eller motsvarande kan nås,</dd>
+        <dt><strong>tillträdesväg</strong></dt>
+        <dd>dörr, fönster, lucka eller motsvarande samt förbindelseväg såsom korridor, trapphus eller loftgång avsedd att ge åtkomst för räddningspersonalen vid en räddningsinsats,</dd>
+        <dt><strong>tändskyddande beklädnad</strong></dt>
+        <dd>beklädnad i lägst brandteknisk klass K210 och lägst brandteknisk klass B-s1,d0,</dd>
+        <dt><strong>utrymningsdörr</strong></dt>
+        <dd>dörr som leder till säker plats eller till utrymningspassage,</dd>
+        <dt><strong>utrymningspassage</strong></dt>
+        <dd>förbindelseväg såsom korridor, trapphus eller loftgång som leder till säker plats, och</dd>
+        <dt><strong>väg för utrymning</strong></dt>
+        <dd>väg till utrymningsdörr, alternativ utrymningsdörr, fönster eller motsvarande för utrymning.</dd>
+      </dl>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P5" name="BFS2024-7_K1_P5">5 §</a>
+      </h3>
+      <p class="text">Med byggprodukter med förhandsbedömda egenskaper avses i denna författning produkter som tillverkats för att permanent ingå i byggnadsverk och som antingen</p>
+      <ol type="1">
+        <li>är CE-märkta,</li>
+        <li>är typgodkända eller tillverkningskontrollerade enligt bestämmelserna i 8 kap. 22–23 §§ plan- och bygglagen (2010:900),</li>
+        <li>har certifierats av ett certifieringsorgan som ackrediterats för uppgiften och för produkten i fråga enligt Europaparlamentets och rådets förordning (EG) nr 765/2008 av den 9 juli 2008 om krav för ackreditering och upphävande av förordning (EEG) nr 339/93, eller</li>
+        <li>har tillverkats i en fabrik vars tillverkning och produktionskontroll och utfallet därav för byggprodukten fortlöpande övervakas, bedöms och godkänns av ett certifieringsorgan som ackrediterats för uppgiften och för produkten i fråga enligt förordningen (EG) nr 765/2008.</li>
+      </ol>
+      <p class="text">Såsom bedömning i enlighet med alternativ 3 eller 4 godtas även en bedömning utfärdad av ett organ inom Europeiska ekonomiska samarbetsområdet eller i Turkiet om organet på annat sätt än genom ackreditering för uppgiften enligt förordningen (EG) nr 765/2008, erbjuder motsvarande garantier i fråga om teknisk och yrkesmässig kompetens samt garantier om oberoende.</p>
+
+      <h3 id="BFS2024-7_brandtekniska-klasser">Brandtekniska klasser</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P6" name="BFS2024-7_K1_P6">6 §</a>
+      </h3>
+      <p class="text">Brandtekniska klasser i denna författning har den betydelse som följer av</p>
+      <ol type="1">
+        <li>Kommissionens delegerade förordning (EU) 2024/1681 av den 6 mars 2024 om komplettering av Europaparlamentets och rådets förordning (EU) nr 305/2011 genom fastställande av prestandaklasser med avseende på byggprodukters brandmotstånd,</li>
+        <li>Kommissionens delegerade förordning (EU) 2016/364 av den 1 juli 2015 om klassificering av byggprodukters reaktion vid brandpåverkan enligt Europaparlamentets och rådets förordning (EU) nr 305/2011, och</li>
+        <li>2000/553/EG: Kommissionens beslut av den 6 september 2000 om genomförande av rådets direktiv 89/106/EEG beträffande prestanda vid utvändig brandpåverkan hos taktäckningsmaterial.</li>
+      </ol>
+      <p class="text">Med klassificeringsperiod avses i denna författning brandmotståndstiden i minuter för de brandtekniska klasserna R, E, I och W. De klassificeringsperioder som finns är 10, 15, 20, 30, 45, 60, 90, 120, 180, 240 och 360.</p>
+      <p class="text">Trots första stycket får dörrar med krav på brandteknisk klass EI2 för en viss brandmotståndstid vara utformade i brandteknisk klass EI2 15 i kombination med brandteknisk klass EW för hela brandmotståndstiden.</p>
+      <p class="text">Trots första stycket får kravet på isolering (I), anses vara uppfyllt för dörrar av obrännbart material om temperaturstegringen på den från branden vända sidan är högst 280 °C i genomsnitt och högst 330 °C i enstaka punkter.</p>
+      <p class="text">Trots första stycket får brandavskiljande förmåga för hissdörrar vara verifierad på alternativt sätt.</p>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Med alternativt sätt i femte stycket avses hissdörrar med brandavskiljande förmåga verifierad genom SS-EN 81-58:2018 om hisschaktet är försett med automatisk brandgasventilation eller system för trycksättning.</p>
+      </div>
+
+      <h3 id="BFS2024-7_byggprodukter-och-material">Byggprodukter och material</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P7" name="BFS2024-7_K1_P7">7 §</a>
+      </h3>
+      <p class="text">Byggprodukter och material ska ha kända och dokumenterade egenskaper i de avseenden som har betydelse för byggnadens förmåga att uppfylla kraven i denna författning.</p>
+      <p class="text">Byggprodukter med förhandsbedömda egenskaper ska anses ha kända och dokumenterade egenskaper i de avseenden som de är förhandsbedömda.</p>
+      <p class="text">Egenskaper hos andra byggprodukter än byggprodukter med förhandsbedömda egenskaper ska provas eller bedömas genom annan vedertagen metod. Inom Europeiska unionen vedertagen metod ska användas där sådan finns.</p>
+
+      <h3 id="BFS2024-7_projektering-och-utforande">Projektering och utförande</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P8" name="BFS2024-7_K1_P8">8 §</a>
+      </h3>
+      <p class="text">Byggnader ska projekteras</p>
+      <ol type="1">
+        <li>på ett fackmässigt sätt,</li>
+        <li>så att arbetet kan utföras på ett sådant sätt att kraven i denna författning uppfylls, och</li>
+        <li>så att förutsatt underhåll kan ske.</li>
+      </ol>
+      <p class="text">Om olika personer utför olika delar av projekteringen ska projekteringen samordnas.</p>
+      <p class="text">Första och andra styckena gäller inte om det är obehövligt.</p>
+      <p class="text">Vid ändring av en byggnad får erfarenheter från den befintliga byggnaden användas.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P9" name="BFS2024-7_K1_P9">9 §</a>
+      </h3>
+      <p class="text">Projekteringen av byggnader ska dokumenteras om det inte är obehövligt. Av dokumentationen ska förutsättningarna för brandskyddet och projekterad utformning av brandskyddet framgå.</p>
+      <p class="text">Om hela eller delar av brandskyddet verifieras genom analytisk dimensionering, ska det av dokumentationen även framgå</p>
+      <ol type="1">
+        <li>vilka delar av brandskyddet som verifierats genom analytisk dimensionering,</li>
+        <li>dokumentation av genomförd identifiering av verifieringsbehovet,</li>
+        <li>dimensionerande förutsättningar och antaganden,</li>
+        <li>beskrivning och motivering av använda metoder och modeller,</li>
+        <li>redovisning av analysen i sådan omfattning att den kan följas, och</li>
+        <li>slutsatser grundade på den analytiska dimensioneringen.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P10" name="BFS2024-7_K1_P10">10 §</a>
+      </h3>
+      <p class="text">Byggnader ska utföras</p>
+      <ol type="1">
+        <li>på ett fackmässigt sätt, och</li>
+        <li>enligt gällande handlingar.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P11" name="BFS2024-7_K1_P11">11 §</a>
+      </h3>
+      <p class="text">Om flera bestämmelser i denna författning är tillämpliga på samma del av byggnaden ska byggnaden projekteras och vara utförd så att samtliga krav uppfylls.</p>
+
+      <h3 id="BFS2024-7_analytisk-dimensionering">Analytisk dimensionering</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P12" name="BFS2024-7_K1_P12">12 §</a>
+      </h3>
+      <p class="text">Analytisk dimensionering innebär att byggherren uppfyller ett eller flera av funktionskraven i denna författning genom en funktionsbaserad utformning.</p>
+      <p class="text">Vid analytisk dimensionering ska det ingå</p>
+      <ol type="1">
+        <li>en identifiering av verifieringsbehovet, och</li>
+        <li>en verifiering som visar att funktionskraven är uppfyllda.</li>
+      </ol>
+      <p class="text">Identifieringen av verifieringsbehovet ska klargöra vilket eller vilka funktionskrav som ska verifieras, i vilken utsträckning preciserade krav kan tillämpas och innehålla en riskidentifiering av utformningen.</p>
+      <p class="text">Verifiering av ett funktionskrav ska genomföras genom en absolut analys eller genom en jämförande analys. En absolut analys ska visa att utformningen uppfyller relevanta acceptanskriterier för dimensionerande påfrestningar. En jämförande analys ska visa att minst samma säkerhetsnivå som följer av de preciserade kraven uppnås.</p>
+      <p class="text">Verifieringsmetod ska väljas för det specifika objektet med hänsyn till hur komplext brandskyddet är och utifrån om den valda utformningens effekt på brandsäkerheten är väl känd.</p>
+      <p class="text">En funktionsbaserad utformning ska vara verifierad utan att räddningstjänstens förmåga utgör en förutsättning för brandskyddet i större utsträckning än vad som medges i de preciserade kraven.</p>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Vid absolut analys bör acceptanskriterier och dimensionerande påfrestningar enligt SIS/TS 24837:2024 tillämpas.</p>
+      </div>
+
+      <h3 id="BFS2024-7_sarskilt-om-andring-av-byggnader">Särskilt om ändring av byggnader</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P13" name="BFS2024-7_K1_P13">13 §</a>
+      </h3>
+      <p class="text">Vid ändring av en byggnad ska det klarläggas om</p>
+      <ol type="1">
+        <li>byggnaden har sådana brister avseende kraven på säkerhet i händelse av brand som kan åtgärdas inom ramen för den planerade åtgärden,</li>
+        <li>den planerade åtgärden kan medföra en försämring av egenskaperna avseende säkerhet i händelse av brand i den befintliga byggnaden, och</li>
+        <li>ändringen kommer att medföra en negativ påverkan på byggnadens kulturvärden och hur en sådan negativ påverkan kan undvikas.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P14" name="BFS2024-7_K1_P14">14 §</a>
+      </h3>
+      <p class="text">Om anpassning enligt 9 kap. 1 § görs ska en riskbedömning göras. Riskbedömningen ska innehålla</p>
+      <ol type="1">
+        <li>en redovisning av anpassningen i förhållande till kraven i 3–8 kap.,</li>
+        <li>skälen för anpassningen,</li>
+        <li>en redogörelse för konsekvenserna av anpassningen, och</li>
+        <li>en redogörelse för vilka åtgärder som vidtagits för att säkerheten i händelse av brand ska bli godtagbar.</li>
+      </ol>
+      <p class="text">Riskbedömningen ska dokumenteras.</p>
+
+      <h3 id="BFS2024-7_kontroll">Kontroll</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P15" name="BFS2024-7_K1_P15">15 §</a>
+      </h3>
+      <p class="text">Kontroll av att kraven på säkerhet i händelse av brand i byggnader uppfylls ska göras</p>
+      <ol type="1">
+        <li>under projektering och utförande enligt 16–18 §§,</li>
+        <li>i den färdiga byggnaden enligt 19 §, eller</li>
+        <li>med en kombination av punkt 1 och 2.</li>
+      </ol>
+      <p class="text">Kontroll ska utföras fackmässigt.</p>
+      <p class="text">Resultatet av kontrollen ska dokumenteras.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P16" name="BFS2024-7_K1_P16">16 §</a>
+      </h3>
+      <p class="text">Vid kontroll under projektering ska det kontrolleras att dimensionerande förutsättningar, projekteringsmetoder, provningsmetoder och beräkningar är relevanta och redovisade i handlingarna.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P17" name="BFS2024-7_K1_P17">17 §</a>
+      </h3>
+      <p class="text">Vid kontroll under utförande ska det kontrolleras att arbetet utförs enligt gällande handlingar.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P18" name="BFS2024-7_K1_P18">18 §</a>
+      </h3>
+      <p class="text">Byggprodukter och material ska kontrolleras när de tas emot på byggarbetsplatsen. Kontroll ska göras av att byggprodukter och material har förutsatta egenskaper.</p>
+      <p class="text">För byggprodukter med förhandsbedömda egenskaper kan kontrollen inskränkas till identifiering, kontroll av märkning och granskning av dokumentationen av de förhandsbedömda egenskaperna.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P19" name="BFS2024-7_K1_P19">19 §</a>
+      </h3>
+      <p class="text">Vid kontroll i den färdiga byggnaden ska kontroll göras genom provning, mätning eller besiktning.</p>
+
+      <h3 id="BFS2024-7_brandskyddsdokumentation">Brandskyddsdokumentation</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P20" name="BFS2024-7_K1_P20">20 §</a>
+      </h3>
+      <p class="text">En brandskyddsdokumentation ska upprättas och minst omfatta följande</p>
+      <ol type="1">
+        <li>förutsättningarna för brandskyddet,</li>
+        <li>utformningen av brandskyddet, och</li>
+        <li>vilka delar av brandskyddet som verifierats genom analytisk dimensionering.</li>
+      </ol>
+      <p class="text">Första stycket gäller om åtgärden kräver lov eller anmälan och det inte är obehövligt.</p>
+
+      <h3 id="BFS2024-7_drift-och-underhallsinstruktioner">Drift- och underhållsinstruktioner</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K1_P21" name="BFS2024-7_K1_P21">21 §</a>
+      </h3>
+      <p class="text">Drift- och underhållsinstruktioner ska upprättas så att byggnaden i drift kan uppfylla kraven i denna författning.</p>
+      <p class="text">Första stycket gäller om åtgärden kräver lov eller anmälan och det inte är obehövligt.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-7_K2">
+      <h2 class="kapitel-rubrik">2 kap. Dimensionerande förutsättningar, tekniska system och övriga anordningar</h2>
+
+      <h3 id="BFS2024-7_dimensionerande-forutsattningar">Dimensionerande förutsättningar</h3>
+
+      <h4 id="BFS2024-7_brandbelastning">Brandbelastning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P1" name="BFS2024-7_K2_P1">1 §</a>
+      </h3>
+      <p class="text">Dimensionerande brandbelastning för en brandcell ska bestämmas genom summan av permanent brandbelastning och variabel brandbelastning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P2" name="BFS2024-7_K2_P2">2 §</a>
+      </h3>
+      <p class="text">Permanent brandbelastning ska utgöras av brandenergi per golvarea i byggnadsdelar, fast inredning och fasta installationer som inte är skyddade på ett sådant sätt att det är låg sannolikhet för att de involveras i ett fullständigt brandförlopp inklusive avsvalningsfasen.</p>
+      <p class="text">Trots första stycket får permanent brandbelastning ansättas till 200 MJ/m² i följande fall:</p>
+      <ol type="1">
+        <li>Om stommen är skyddad av automatisk vattensprinkleranläggning under förutsättning att variabel brandbelastning är högst 600 MJ/m² och byggnaden har högst åtta plan ovan mark.</li>
+        <li>Om stommen är skyddad av beklädnad av obrännbart material i brandteknisk klass K260 och variabel brandbelastning är högst 600 MJ/m².</li>
+        <li>Om stommens brandenergi inte kan bidra till eller påverka brandförloppet i mer än begränsad omfattning.</li>
+        <li>Om byggnaden har högst fyra plan ovan mark.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P3" name="BFS2024-7_K2_P3">3 §</a>
+      </h3>
+      <p class="text">Variabel brandbelastning ska utgöras av brandenergi per golvarea motsvarande 80:e percentilen i ett för användningen representativt statistiskt underlag.</p>
+      <p class="text">Trots första stycket får variabel brandbelastning ansättas</p>
+      <ol type="1">
+        <li>till 1 600 MJ/m² i arkiv, bibliotek, lager och liknande användning med jämförbar variabel brandbelastning,</li>
+        <li>till 1 200 MJ/m² i gallerior, shoppingcenter och liknande användning med jämförbar variabel brandbelastning,</li>
+        <li>till 600 MJ/m² i biografer, bostäder, förskolor, hotell, kontor, livsmedelsbutiker, lägenhetsförråd, personbilsgarage, restauranger, skolor, teater, vårdlokaler och liknande användning med jämförbar variabel brandbelastning, och</li>
+        <li>till 50 MJ/m² i djurstallar, betongvaruindustri, bryggerier och liknande användning med jämförbar variabel brandbelastning.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_personantal">Personantal</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P4" name="BFS2024-7_K2_P4">4 §</a>
+      </h3>
+      <p class="text">När ett personantal anges i författningen avses det dimensionerande personantalet för ett utrymme. Det dimensionerande personantalet ska bestämmas som det maximala antalet personer som kan förväntas befinna sig i utrymmet med hänsyn till den avsedda användningen och utrymmets storlek. Om det maximala antalet personer inte är känt ska dimensionerande personantal beräknas enligt följande:</p>
+      <ol type="1">
+        <li>Affärslokal: 0,5 personer/m².</li>
+        <li>Pub/bar: 3 personer/m².</li>
+        <li>Samlingslokal: 2,5 personer/m².</li>
+      </ol>
+
+      <h4 id="BFS2024-7_byggnadsklasser">Byggnadsklasser</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P5" name="BFS2024-7_K2_P5">5 §</a>
+      </h3>
+      <p class="text">Med byggnadsklass 0 avses en byggnad med mycket stort skyddsbehov.</p>
+      <p class="text">Byggnader som omfattas av första stycket är följande:</p>
+      <ol type="1">
+        <li>Byggnader i fler än tjugo plan ovan mark.</li>
+        <li>Byggnader i fler än två plan under mark.</li>
+      </ol>
+      <p class="text">Trots andra stycket behöver det översta planet ovan mark inte inräknas i antalet plan om personer inte vistas där varaktigt.</p>
+      <p class="text">Trots andra stycket behöver entresolplan inte inräknas i antalet plan om det utgör högst 50 procent av underliggande plan och högst 100 m².</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P6" name="BFS2024-7_K2_P6">6 §</a>
+      </h3>
+      <p class="text">Med byggnadsklass 1 avses byggnader med stort skyddsbehov.</p>
+      <p class="text">Byggnader som omfattas av första stycket är byggnader i tre till tjugo plan ovan mark, förutom byggnader i tre plan ovan mark som är en- eller tvåbostadshus eller komplementbyggnader.</p>
+      <p class="text">Trots andra stycket behöver det översta planet ovan mark inte inräknas i antalet plan om personer inte vistas där varaktigt.</p>
+      <p class="text">Trots andra stycket behöver entresolplan inte inräknas i antalet plan om det utgör högst 50 procent av underliggande plan och högst 100 m².</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P7" name="BFS2024-7_K2_P7">7 §</a>
+      </h3>
+      <p class="text">Med byggnadsklass 2 avses byggnader med måttligt skyddsbehov.</p>
+      <p class="text">Byggnader som omfattas av första stycket är följande:</p>
+      <ol type="1">
+        <li>Byggnader i två plan ovan mark med en byggnadsarea större än 200 m².</li>
+        <li>Byggnader i tre plan ovan mark som är en- eller tvåbostadshus eller komplementbyggnader.</li>
+      </ol>
+      <p class="text">Trots andra stycket behöver det översta planet ovan mark inte inräknas i antalet plan om personer inte vistas där varaktigt.</p>
+      <p class="text">Trots andra stycket behöver entresolplan inte inräknas i antalet plan om det utgör högst 50 procent av underliggande plan och högst 100 m².</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P8" name="BFS2024-7_K2_P8">8 §</a>
+      </h3>
+      <p class="text">Med byggnadsklass 3 avses byggnader med litet skyddsbehov.</p>
+      <p class="text">Byggnader som omfattas av första stycket är följande:</p>
+      <ol type="1">
+        <li>Byggnader i högst ett plan ovan mark.</li>
+        <li>Byggnader i två plan ovan mark med högst 200 m² byggnadsarea.</li>
+        <li>Byggnader i två plan ovan mark som är en- och tvåbostadshus eller komplementbyggnader.</li>
+      </ol>
+      <p class="text">Trots andra stycket behöver det översta planet ovan mark inte inräknas i antalet plan om personer inte vistas där varaktigt.</p>
+      <p class="text">Trots andra stycket behöver entresolplan inte inräknas i antalet plan om det utgör högst 50 procent av underliggande plan och högst 500 m² i lager och industrier eller högst 200 m² för övriga ändamål.</p>
+
+      <h4 id="BFS2024-7_verksamhetsklasser">Verksamhetsklasser</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P9" name="BFS2024-7_K2_P9">9 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 0 avses utrymmen i verksamheter där utrymningsförloppet kan vara förenat med stora svårigheter.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är:</p>
+      <ol type="1">
+        <li>Utrymmen i verksamheter med fler än 1 200 personer som inte kan förväntas ha god lokalkännedom.</li>
+        <li>Utrymmen i verksamheter med fler än 600 personer som inte kan förväntas ha god lokalkännedom och där alkohol serveras i mer än begränsad omfattning.</li>
+        <li>Utrymmen där personer hålls inlåsta.</li>
+        <li>Utrymmen i verksamheter med fler än 150 personer som kan förväntas ha begränsade, eller inga, förutsättningar att själva sätta sig i säkerhet.</li>
+        <li>Utrymmen inom hälso- och sjukvård för personer som kan förväntas ha begränsade, eller inga, förutsättningar att själva sätta sig i säkerhet och verksamheten utgörs av mer än en funktionell enhet eller där utrymning inte kan påbörjas utan fördröjning oavsett antalet funktionella enheter.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P10" name="BFS2024-7_K2_P10">10 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 1 avses utrymmen för personer som kan förväntas ha god lokalkännedom, som har förutsättningar att själva sätta sig i säkerhet och som kan förväntas vara vakna.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är industrier, kontor, lägenhetsförråd och andra utrymmen där personer har liknande förutsättningar att utrymma.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P11" name="BFS2024-7_K2_P11">11 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 2A avses utrymmen för personer som inte kan förväntas ha god lokalkännedom, som har förutsättningar att själva sätta sig i säkerhet och som kan förväntas vara vakna i verksamheter med högst 150 personer.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är utrymmen avsedda för elever i skolor, butiksutrymmen, mottagning på vårdcentraler, samlingslokaler, serveringsutrymmen i restauranger, publika delar av reseterminaler, sporthallar och andra utrymmen där personer har liknande förutsättningar att utrymma.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P12" name="BFS2024-7_K2_P12">12 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 2B avses utrymmen för personer som inte kan förväntas ha god lokalkännedom, som har förutsättningar att själva sätta sig i säkerhet och som kan förväntas vara vakna i verksamheter med fler än 150 personer.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är utrymmen avsedda för elever i skolor, butiksutrymmen, mottagning på vårdcentraler, samlingslokaler, serveringsutrymmen i restauranger, publika delar av reseterminaler, sporthallar och andra utrymmen där personer har liknande förutsättningar att utrymma.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P13" name="BFS2024-7_K2_P13">13 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 2C avses utrymmen för personer som inte kan förväntas ha god lokalkännedom, som har förutsättningar att själva sätta sig i säkerhet, som kan förväntas vara vakna och där alkohol serveras i mer än begränsad omfattning i verksamheter med fler än 150 personer.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är utrymmen i större pubar, nattklubbar och andra utrymmen där personer har liknande förutsättningar att utrymma.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P14" name="BFS2024-7_K2_P14">14 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 3A avses bostäder för personer som kan förväntas ha god lokalkännedom, som har förutsättningar att själva sätta sig i säkerhet och som inte kan förväntas vara vakna.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är bostäder i flerbostadshus, bostäder i en- och tvåbostadshus, familjedaghem och andra utrymmen där personer har liknande förutsättningar att utrymma.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P15" name="BFS2024-7_K2_P15">15 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 3B avses bostäder med boendeenheter för personer som kan förväntas ha god lokalkännedom, som har förutsättningar att själva sätta sig i säkerhet och som inte kan förväntas vara vakna.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är boendeenheter och tillhörande gemensamhetsutrymmen och andra utrymmen där personer har liknande förutsättningar att utrymma.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P16" name="BFS2024-7_K2_P16">16 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 3C avses bostäder för personer som kan förväntas ha god lokalkännedom, som kan ha svårigheter att sätta sig själv i säkerhet och som inte kan förväntas vara vakna.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är bostäder i behovsprövade trygghetsboenden och andra boenden avsedda för personer som kan förväntas behöva stöd eller vård delar av dygnet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P17" name="BFS2024-7_K2_P17">17 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 4 avses utrymmen för personer som inte kan förväntas ha god lokalkännedom, som har förutsättningar att själva sätta sig i säkerhet och som inte kan förväntas vara vakna.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är gästrum, sovsal och liknande i hotell, vandrarhem, bed and breakfast, andra typer av tillfälligt boende och andra utrymmen där personer har liknande förutsättningar att utrymma.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P18" name="BFS2024-7_K2_P18">18 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 5A avses utrymmen för personer som kan förväntas ha begränsade, eller inga, förutsättningar att själva sätta sig i säkerhet.</p>
+      <p class="text">Utrymmen som omfattas av första stycket är förskolor, lokaler för dagverksamhet och andra utrymmen där personer har liknande förutsättningar att utrymma.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P19" name="BFS2024-7_K2_P19">19 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 5B avses bostäder och gemensamhetsutrymmen i behovsprövade särskilda boenden för personer som kan förväntas ha begränsade, eller inga, förutsättningar att själva sätta sig i säkerhet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P20" name="BFS2024-7_K2_P20">20 §</a>
+      </h3>
+      <p class="text">Med verksamhetsklass 5C avses utrymmen för hälso- och sjukvård där det vistas personer som kan förväntas ha begränsade, eller inga, förutsättningar att själva sätta sig i säkerhet under förutsättning att verksamheten utgörs av endast en funktionell enhet och att förflyttning kan påbörjas utan fördröjning.</p>
+
+      <h3 id="BFS2024-7_tekniska-system-och-ovriga-anordningar">Tekniska system och övriga anordningar</h3>
+
+      <h4 id="BFS2024-7_dorrstangare">Dörrstängare</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P21" name="BFS2024-7_K2_P21">21 §</a>
+      </h3>
+      <p class="text">Dörrar med dörrstängare ska vara utformade med dörrstängare i någon av klasserna C1–C5.</p>
+
+      <h4 id="BFS2024-7_brandsluss">Brandsluss</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P22" name="BFS2024-7_K2_P22">22 §</a>
+      </h3>
+      <p class="text">Brandslussar ska vara utformade som egen brandcell i ett plan och vara tillräckligt stora för att kunna passeras med endast en dörr i taget öppen.</p>
+      <p class="text">Dörrar mot de utrymmen som en brandsluss syftar att skydda mot spridning av brand eller brandgaser till eller från ska vara utformade enligt följande:</p>
+      <ol type="1">
+        <li>I lägst samma brandtekniska klass som den brandavskiljande konstruktion de sitter i.</li>
+        <li>Med brandgastäthet S200.</li>
+        <li>Försedda med dörrstängare.</li>
+      </ol>
+      <p class="text">Trots andra stycket 2 får en av dörrarna vara utformad med brandgastäthet Sa3.</p>
+
+      <h4 id="BFS2024-7_trapphus-tr1">Trapphus Tr1</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P23" name="BFS2024-7_K2_P23">23 §</a>
+      </h3>
+      <p class="text">Trapphus Tr1 ska vara utformade så att trapphuset</p>
+      <ol type="1">
+        <li>endast står i förbindelse med andra utrymmen genom brandsluss följt av utrymme utformat som egen brandcell i ett plan,</li>
+        <li>är försett med system för trycksättning, och</li>
+        <li>leder direkt till säker plats.</li>
+      </ol>
+      <p class="text">Trots första stycket 1 får bostäder, kontor och utrymmen i översta planet där personer inte vistas varaktigt stå i förbindelse med trapphuset genom brandsluss.</p>
+      <p class="text">Trots första stycket 1 får hisschakt, utrymningspassage, tillträdesväg och liknande stå i direkt förbindelse med trapphuset.</p>
+
+      <h4 id="BFS2024-7_trapphus-tr2">Trapphus Tr2</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P24" name="BFS2024-7_K2_P24">24 §</a>
+      </h3>
+      <p class="text">Trapphus Tr2 ska vara utformade så att trapphuset</p>
+      <ol type="1">
+        <li>endast står i förbindelse med andra utrymmen genom brandsluss, och</li>
+        <li>leder direkt till säker plats.</li>
+      </ol>
+      <p class="text">Dörr till trapphuset ska vara utformad i lägst samma brandtekniska klass som den brandavskiljande konstruktion den sitter i.</p>
+      <p class="text">Trots första stycket 1 får bostäder och kontor stå i förbindelse med trapphuset genom utrymme utformat som egen brandcell i ett plan.</p>
+      <p class="text">Trots första stycket 1 får utrymmen i översta planet där personer inte vistas varaktigt samt hisschakt, utrymningspassage, tillträdesväg och liknande stå i direkt förbindelse med trapphuset.</p>
+
+      <h4 id="BFS2024-7_fasadbrandprovning">Fasadbrandprovning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P25" name="BFS2024-7_K2_P25">25 §</a>
+      </h3>
+      <p class="text">Fasadbrandprovning ska vara genomförd som fullskalig fasadbrandprovning.</p>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Fullskalig fasadbrandprovning bör vara genomförd enligt SP FIRE 105 utgåva 5 och uppfylla de kriterier som anges i bilagan till provningsmetoden.</p>
+      </div>
+
+      <h4 id="BFS2024-7_fonster-eller-motsvarande-for-utrymning">Fönster eller motsvarande för utrymning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P26" name="BFS2024-7_K2_P26">26 §</a>
+      </h3>
+      <p class="text">Fönster eller motsvarande för utrymning ska</p>
+      <ol type="1">
+        <li>vara öppningsbara utan nyckel eller annat redskap,</li>
+        <li>stanna i öppet läge efter öppning,</li>
+        <li>ha en fri öppning med minst 0,50 meter bredd,</li>
+        <li>ha en fri öppning med minst 0,60 meter höjd,</li>
+        <li>ha en summa av bredd och höjd som är minst 1,50 meter, och</li>
+        <li>ha ett avstånd från underkant till golv, plattform eller liknande på högst 1,20 meter.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_utrymningsbeslag">Utrymningsbeslag</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P27" name="BFS2024-7_K2_P27">27 §</a>
+      </h3>
+      <p class="text">Nödutrymningsbeslag med trycke ska</p>
+      <ol type="1">
+        <li>kunna manövreras med ett (1) handgrepp,</li>
+        <li>vara minst 120 mm långt,</li>
+        <li>vara utformade så att öppningskraften är högst 70 N, och</li>
+        <li>ha hög tillförlitlighet för avsedd funktion.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P28" name="BFS2024-7_K2_P28">28 §</a>
+      </h3>
+      <p class="text">Nödutrymningsbeslag med tryckplatta ska</p>
+      <ol type="1">
+        <li>kunna manövreras med ett (1) handgrepp,</li>
+        <li>vara utformade så att öppningskraften är högst 150 N, och</li>
+        <li>ha hög tillförlitlighet för avsedd funktion.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P29" name="BFS2024-7_K2_P29">29 §</a>
+      </h3>
+      <p class="text">Panikutrymningsbeslag med horisontell tryckstång ska</p>
+      <ol type="1">
+        <li>kunna manövreras med ett (1) handgrepp,</li>
+        <li>ha en bredd som utgör minst 60 procent av bredden på dörren,</li>
+        <li>vara utformade så att öppningskraften är högst 80 N,</li>
+        <li>vara utformade så att öppningskraften är högst 220 N vid tryck mot dörren, och</li>
+        <li>ha hög tillförlitlighet för avsedd funktion.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_vagledande-markering">Vägledande markering</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P30" name="BFS2024-7_K2_P30">30 §</a>
+      </h3>
+      <p class="text">Vägledande markeringar ska</p>
+      <ol type="1">
+        <li>finnas i sådan utsträckning att utrymning inte hindras eller fördröjs av svårigheter att orientera sig i byggnaden,</li>
+        <li>vara utformade som en skylt eller liknande,</li>
+        <li>vara utformade med en grön skiva med tydliga vita symboler,</li>
+        <li>kompletteras med symbol för personer med nedsatt rörelseförmåga om de visar väg till utrymningsplats eller utrymningsdörr som är frångänglig hela vägen till säker plats,</li>
+        <li>ha en skylthöjd som motsvarar minst 0,50 procent av betraktningsavståndet, dock lägst 0,10 meter,</li>
+        <li>vara belysta eller genomlysta med belysningskälla i armaturen,</li>
+        <li>ha en sådan luminans att de tydligt syns under aktuella belysningsförhållanden, och</li>
+        <li>vid strömbortfall upprätthålla sin funktion under 60 minuter.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_nodbelysning">Nödbelysning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P31" name="BFS2024-7_K2_P31">31 §</a>
+      </h3>
+      <p class="text">Nödbelysning ska</p>
+      <ol type="1">
+        <li>vid strömbortfall upprätthålla sin funktion under 60 minuter,</li>
+        <li>nå 50 procent av krävd belysningsstyrka inom 5 sekunder och den belysningsstyrka som krävs inom 60 sekunder,</li>
+        <li>ge en belysningsstyrka på minst 1 lux längs med utrymningspassagers centrumlinje,</li>
+        <li>ge en belysningsstyrka på minst 5 lux i gånglinjen i trappor eller andra passager där risk för snubbling föreligger, och</li>
+        <li>ge en belysningsstyrka på minst 0,5 lux på öppna ytor med undantag för 0,5 meter från kanten av den belysta ytan.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_utrymningsplats">Utrymningsplats</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P32" name="BFS2024-7_K2_P32">32 §</a>
+      </h3>
+      <p class="text">Utrymningsplatser ska vara</p>
+      <ol type="1">
+        <li>tillgängliga och användbara för personer med nedsatt rörelseförmåga,</li>
+        <li>försedda med ett kommunikationssystem för talad tvåvägskommunikation,</li>
+        <li>markerade med skylt,</li>
+        <li>försedda med nödbelysning, och</li>
+        <li>dimensionerade för minst en rullstol.</li>
+      </ol>
+      <p class="text">Dimensionerande mått för rullstol är följande:</p>
+      <ol type="1">
+        <li>Planmått: 0,70 x 1,30 meter.</li>
+        <li>Vändmått: En cirkel med diametern 1,50 meter.</li>
+        <li>Öppningsmått för fri passage: minst 0,80 meter.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_utrymningsplan">Utrymningsplan</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P33" name="BFS2024-7_K2_P33">33 §</a>
+      </h3>
+      <p class="text">Utrymningsplaner ska</p>
+      <ol type="1">
+        <li>beskriva vad betraktaren förväntas göra i händelse av brand,</li>
+        <li>vara försedda med en ritning som visar var betraktaren befinner sig, placering av larmknappar, utrymningsvägar och återsamlingsplats, och</li>
+        <li>vara utformade så att informationen i 1 och 2 är tydligt framställd.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_brandvarnare">Brandvarnare</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P34" name="BFS2024-7_K2_P34">34 §</a>
+      </h3>
+      <p class="text">Brandvarnare ska vara utformade så att de med hög tillförlitlighet har förmåga att snabbt detektera och effektivt varna i händelse av brand.</p>
+      <p class="text">Brandvarnare ska ha säkerställd prestanda och vara anpassade för att upprätthålla sin funktion i aktuell användningsmiljö.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P35" name="BFS2024-7_K2_P35">35 §</a>
+      </h3>
+      <p class="text">Brandvarnare ska vara placerade så att de möjliggör effektiv detektering och varning i händelse av brand. Antalet brandvarnare och deras placering ska innebära följande:</p>
+      <ol type="1">
+        <li>Brandvarnare är placerade på en fri yta av innertaket på ett avstånd av minst 0,5 meter från väggar.</li>
+        <li>En brandvarnare täcker högst 60 m².</li>
+        <li>Minst en brandvarnare är placerad på varje plan.</li>
+        <li>Brandvarnare är placerade i, eller utanför, varje rum avsett för sömn.</li>
+        <li>Brandvarnare är placerade direkt ovanför trappa som leder till annat plan.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_brandlarm">Brandlarm</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P36" name="BFS2024-7_K2_P36">36 §</a>
+      </h3>
+      <p class="text">Brandlarm ska vara utformade så att de med hög tillförlitlighet uppnår avsedd funktion. Med hänsyn till brandlarmets användningsområde och utrymmets miljö ska följande särskilt beaktas:</p>
+      <ol type="1">
+        <li>Material i komponenter.</li>
+        <li>Skydd och övervakning av systemet.</li>
+        <li>Funktion vid strömbortfall i byggnaden.</li>
+        <li>Funktion vid brand i byggnaden.</li>
+        <li>Hanteringen av fel i anläggningen.</li>
+      </ol>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Tillförlitlighet för brandlarm bör vara verifierad enligt Brandskyddsföreningens Regler för brandlarm, SBF 110:8.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P37" name="BFS2024-7_K2_P37">37 §</a>
+      </h3>
+      <p class="text">Brandlarm ska vara utformade så att de med hög effektivitet har förmåga att detektera brand och brandgaser vid brand i de delar av byggnaden som skyddas, samt aktivera de funktioner som är beroende av brandlarmet. Med hänsyn till brandlarmets användningsområde, utrymmets användning och utrymmets miljö ska följande särskilt beaktas:</p>
+      <ol type="1">
+        <li>Typ av detektor.</li>
+        <li>Detektorplacering.</li>
+        <li>Täckningsgrad.</li>
+        <li>Tid för aktivering av styrfunktioner.</li>
+        <li>Möjligheten till manuell aktivering.</li>
+        <li>Stöd vid räddningsinsats.</li>
+      </ol>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Förmåga för brandlarm bör vara verifierad enligt Brandskyddsföreningens Regler för brandlarm, SBF 110:8.</p>
+      </div>
+
+      <h4 id="BFS2024-7_utrymningslarm">Utrymningslarm</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P38" name="BFS2024-7_K2_P38">38 §</a>
+      </h3>
+      <p class="text">Utrymningslarm ska vara utformade så att de fungerar med hög tillförlitlighet. Med hänsyn till utrymningslarmets användningsområde ska följande särskilt beaktas:</p>
+      <ol type="1">
+        <li>Material i komponenter.</li>
+        <li>Skydd och övervakning av systemet.</li>
+        <li>Funktion vid strömbortfall i byggnaden.</li>
+        <li>Funktion vid brand i byggnaden.</li>
+      </ol>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Tillförlitlighet för utrymningslarm bör vara verifierad enligt Brandskyddsföreningens Regler för brandlarm, SBF 110:8.</p>
+        <p class="text">Tillförlitlighet för utrymningslarm med talat meddelande bör vara verifierad enligt Brandskyddsföreningens Regler för utrymningslarm med talat meddelande, SBF 502:1.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P39" name="BFS2024-7_K2_P39">39 §</a>
+      </h3>
+      <p class="text">Utrymningslarm ska vara utformade med sådan förmåga att berörda personer som vistas i byggnaden på ett effektivt sätt kan nås av information om lämpliga åtgärder vid utrymning. Med hänsyn till utrymmets användning ska följande särskilt beaktas:</p>
+      <ol type="1">
+        <li>Aktivering av larmet.</li>
+        <li>Typ av larmdon och larmsignal.</li>
+        <li>Placering och skyltning av larmdon.</li>
+        <li>Möjligheten att uppfatta larmet.</li>
+        <li>Möjligheten till manuell aktivering.</li>
+        <li>Möjlighet till effektiv räddningsinsats.</li>
+      </ol>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Förmåga för utrymningslarm bör vara verifierad enligt Brandskyddsföreningens Regler för brandlarm, SBF 110:8.</p>
+        <p class="text">Förmåga för utrymningslarm med talat meddelande bör vara verifierad enligt Brandskyddsföreningens Regler för utrymningslarm med talat meddelande, SBF 502:1.</p>
+      </div>
+
+      <h4 id="BFS2024-7_automatiska-slacksystem">Automatiska släcksystem</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P40" name="BFS2024-7_K2_P40">40 §</a>
+      </h3>
+      <p class="text">Automatiska vattensprinkleranläggningar och boendesprinklersystem ska vara utformade så att de fungerar med hög tillförlitlighet.</p>
+      <p class="text">Automatiska vattensprinkleranläggningar ska vara utformade med förbättrad tillförlitlighet om stora delar av brandskyddet riskerar att slås ut på grund av fel i systemet.</p>
+      <p class="text">Med hänsyn till anläggningens användningsområde ska följande särskilt beaktas:</p>
+      <ol type="1">
+        <li>Material i komponenter.</li>
+        <li>Skydd och övervakning av systemet.</li>
+        <li>Funktion vid strömbortfall i byggnaden.</li>
+        <li>Funktion vid brand i byggnaden.</li>
+        <li>Hantering av fel i anläggningen.</li>
+        <li>Tillgång till vattenkälla.</li>
+        <li>Möjlighet till effektiv räddningsinsats.</li>
+      </ol>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Tillförlitlighet för automatiska vattensprinkleranläggningar bör vara verifierad enligt SS-EN 12845:2015. Stora delar av brandskyddet bör anses kunna slås ut om systemet tillgodoräknas för att uppfylla fler än två krav i denna författning. Med förbättrad tillförlitlighet avses system med vattenkälla som utgörs av förbättrat enkelt, dubblerat eller kombinerat vattentillopp.</p>
+        <p class="text">Tillförlitlighet för boendesprinklersystem bör vara verifierad enligt SS-EN 16925:2018.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P41" name="BFS2024-7_K2_P41">41 §</a>
+      </h3>
+      <p class="text">Automatiska vattensprinkleranläggningar och boendesprinklersystem ska vara utformade så att de har förmåga att effektivt släcka eller kontrollera en brand i de delar av byggnaden som de skyddar. Med hänsyn till typ av byggnad, dess användning och syftet med systemet ska följande särskilt beaktas:</p>
+      <ol type="1">
+        <li>Varaktighet, tryck och flöde i vattenkälla.</li>
+        <li>Typ av sprinklerhuvuden avseende snabbhet, utlösningsmekanism och täckningsyta.</li>
+        <li>Dimensionerande antal sprinklerhuvuden.</li>
+        <li>Placering av sprinklerhuvuden.</li>
+      </ol>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Förmåga för automatiska vattensprinkleranläggningar bör vara verifierad enligt SS-EN 12845:2015. I system för personskydd bör sprinklerhuvuden av typen quick response användas.</p>
+        <p class="text">Förmåga för boendesprinklersystem bör vara verifierad enligt SS-EN 16925:2018.</p>
+        <p class="text">Boendesprinklersystem bör vara utformade enligt följande:</p>
+        <ol type="1">
+          <li>Typ 1 för byggnader med högst två plan ovan mark.</li>
+          <li>Typ 2 för byggnader med fler än två och högst åtta plan ovan mark.</li>
+          <li>Typ 3 för byggnader med fler än åtta plan ovan mark.</li>
+          <li>Typ 3 för utrymmen med personer som kan förväntas ha begränsade, eller inga, förutsättningar att själva sätta sig i säkerhet.</li>
+        </ol>
+        <p class="text">För boendesprinklersystem bör nominell aktiveringstemperatur för sprinklerhuvuden vid normala förhållanden vara högst 68 °C.</p>
+        <p class="text">För boendesprinklersystem av typ 3 bör antalet dimensionerande sprinklerhuvuden vara 4 och lägsta dimensionerande vattentäthet vara 4,1 mm/min.</p>
+      </div>
+
+      <h4 id="BFS2024-7_stigarledning">Stigarledning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P42" name="BFS2024-7_K2_P42">42 §</a>
+      </h3>
+      <p class="text">Stigarledningar ska</p>
+      <ol type="1">
+        <li>vara utformade med hög tillförlitlighet och förmåga att tillhandahålla säker tillgång till brandvatten,</li>
+        <li>vara försedda med intagsarmatur i samma plan som ingång till tillträdesväg,</li>
+        <li>vara försedda med två uttagsarmaturer per plan i trapphus som utgör tillträdesväg från och med andra planet efter intagsarmaturen och i minst vartannat efterföljande plan som tillträdesvägen betjänar, och</li>
+        <li>vara utformade så att de medger ett arbetstryck mellan 0,8 MPa och 1,2 MPa vid uttagsarmatur.</li>
+      </ol>
+      <p class="text">Icke trycksatta stigarledningar ska vara utformade så att de medger uttag av brandvatten med ett flöde på minst 600 liter per minut.</p>
+      <p class="text">Trycksatta stigarledningar ska vara utformade så att de medger uttag av brandvatten med ett flöde på minst 900 liter per minut.</p>
+      <p class="text">Trycksatta stigarledningar ska vid strömbortfall upprätthålla sin funktion under två timmar.</p>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Tillförlitlighet och förmåga för icke trycksatta stigarledningar bör vara verifierad enligt SS 3112, utgåva 1.</p>
+        <p class="text">Tillförlitlighet och förmåga för trycksatta stigarledningar bör vara verifierad enligt Brandskyddsföreningens Regler för trycksatt stigarledning, SBF 504:1. Allmän vattenledning som tillhandahåller erforderligt flöde kan utgöra vattenkälla utan krav på hög tillförlitlighet. Därtill kan ett flöde på 600 liter per minut användas vid bestämning av volym för tank eller vattenmagasin.</p>
+      </div>
+
+      <h4 id="BFS2024-7_raddningshiss">Räddningshiss</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P43" name="BFS2024-7_K2_P43">43 §</a>
+      </h3>
+      <p class="text">Räddningshissar ska vara utformade med hög tillförlitlighet och förmåga att transportera räddningspersonal och deras utrustning.</p>
+      <p class="text">Hisskorg i räddningshiss ska ha ett fritt mått på minst 1,1 x 2,1 meter.</p>
+      <p class="text">Hisschakt för räddningshiss ska vara utformade som egen brandcell och endast stå i direkt förbindelse med insatsutrymmen.</p>
+      <p class="text">Hisschakt för räddningshiss ska vara försedda med system för trycksättning om något insatsutrymme står i direkt förbindelse med annat utrymme än utrymningspassage, tillträdesväg, brandsluss och hisschakt och dörr mellan hisschakt och insatsutrymme inte är utformad med brandgastäthet S200 och försedd med dörrstängare. System för trycksättning ska kunna manövreras av räddningspersonalen.</p>
+      <p class="text">Insatsutrymmen ska vara utformade som egen brandcell i ett plan, ha ett fritt mått på minst 1,1 x 1,4 meter och stå i direkt förbindelse med trapphus med uttagsarmatur från stigarledning.</p>
+      <p class="text">Dörrar i brandcellsgräns mot ett insatsutrymme, förutom mot ett hisschakt, ska vara utformade i lägst brandteknisk klass EI2 60, vara utformade med brandgastäthet S200 och vara försedda med dörrstängare.</p>
+      <p class="text">I tillträdesvägar där nivåskillnaden mellan angreppspunkt och det mest avlägsna planet är högst 50 meter ska räddningshissar vid strömbortfall kunna återgå till det plan där angreppspunkten är belägen och öppna dörrarna.</p>
+      <p class="text">I tillträdesvägar där nivåskillnaden mellan angreppspunkt och det mest avlägsna planet är större än 50 meter ska räddningshissar vid strömbortfall upprätthålla sin funktion för drift med märklast i 90 minuter eller 45 resor mellan det plan där angreppspunkten är belägen och det mest avlägsna planet.</p>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Tillförlitlighet och förmåga för räddningshissar bör vara verifierad enligt SS-EN 81-72:2020.</p>
+      </div>
+
+      <h4 id="BFS2024-7_trycksattning">Trycksättning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P44" name="BFS2024-7_K2_P44">44 §</a>
+      </h3>
+      <p class="text">System för trycksättning ska vara utformade så att de fungerar med hög tillförlitlighet. Med hänsyn till byggnadens förutsättningar och systemets användningsområde ska följande särskilt beaktas:</p>
+      <ol type="1">
+        <li>Material i komponenter.</li>
+        <li>Skydd, övervakning och behov av manuell styrning av systemet.</li>
+        <li>Hantering och konsekvenser av fel i anläggningen.</li>
+        <li>Snö- och vindlaster.</li>
+        <li>Temperaturer.</li>
+      </ol>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Tillförlitlighet för system för trycksättning bör vara verifierad enligt SS-EN 12101-13:2022.</p>
+      </div>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P45" name="BFS2024-7_K2_P45">45 §</a>
+      </h3>
+      <p class="text">System för trycksättning ska vara utformade så att de har förmåga att effektivt begränsa spridningen av brandgaser till det trycksatta utrymmet. Med hänsyn till typ av byggnad, dess användning och syftet med systemet ska följande särskilt beaktas:</p>
+      <ol type="1">
+        <li>Tryckskillnad över öppningar.</li>
+        <li>Maximala dörröppningskrafter vid drift.</li>
+        <li>Luftflöden genom öppningar vid utrymning och räddningsinsats.</li>
+      </ol>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Förmåga för system för trycksättning bör vara verifierad enligt SS-EN 12101-13:2022 och utformade i klass 2. Om de brandceller som står i förbindelse med ett utrymme som är försett med system för trycksättning är skyddade av automatisk vattensprinkleranläggning för personskydd får system för trycksättning vara utformade i klass 1.</p>
+      </div>
+
+      <h4 id="BFS2024-7_brandgasventilation">Brandgasventilation</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P46" name="BFS2024-7_K2_P46">46 §</a>
+      </h3>
+      <p class="text">Brandgasventilation ska vara utformad med hänsyn till snö- och vindlaster samt de temperaturer som de kan förväntas utsättas för.</p>
+      <p class="text">Automatisk brandgasventilation ska ha tillräckligt snabb aktiveringstid och tillräcklig kapacitet för att säkerställa att systemet med hög tillförlitlighet kan kontrollera brandgaser under avsedd tid.</p>
+
+      <h4 id="BFS2024-7_brandkarsnyckel">Brandkårsnyckel</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K2_P47" name="BFS2024-7_K2_P47">47 §</a>
+      </h3>
+      <p class="text">Med brandkårsnyckel avses en nyckel som räddningstjänsten kan förutsättas ha tillgång till och vars syfte är att ge åtkomst till eller möjliggöra manövrering av fasta installationer och anordningar för räddningsinsats.</p>
+      <div class="allmanna-rad">
+        <p class="allmanna-rad-heading"><strong>Allmänt råd</strong></p>
+        <p class="text">Mått för brandkårsnyckel bör följa SS 3654:2022.</p>
+      </div>
+    </section>
+
+    <h3 id="BFS2024-7_avdelning-ii-uppforande-av-nya-byggnader">AVDELNING II. UPPFÖRANDE AV NYA BYGGNADER</h3>
+
+    <section class="kapitel" id="BFS2024-7_K3">
+      <h2 class="kapitel-rubrik">3 kap. Bärförmåga vid brand</h2>
+
+      <h3 id="BFS2024-7_funktionskrav-3">Funktionskrav</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P1" name="BFS2024-7_K3_P1">1 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att bärverk uppnår tillräcklig säkerhet mot brott och instabilitet för dimensionerande laster vid brand.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till följande:</p>
+      <ol type="1">
+        <li>Egenskaper hos material vid brandpåverkan.</li>
+        <li>Beteenden hos byggnadsdelar vid brandpåverkan.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P2" name="BFS2024-7_K3_P2">2 §</a>
+      </h3>
+      <p class="text">Bärverk ska vara utformade med tillräckligt skydd mot den termiska påfrestning och de förhållanden som de kan förväntas utsättas för under ett brandförlopp.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till följande:</p>
+      <ol type="1">
+        <li>Förekommande brandenergi.</li>
+        <li>Att brandförloppet bestäms för fullt utvecklad brand, om det inte kan visas att särskilda förhållanden föreligger.</li>
+        <li>Att enbart tekniska system som påverkar brandförloppet tillgodoräknas.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P3" name="BFS2024-7_K3_P3">3 §</a>
+      </h3>
+      <p class="text">Bärverk med stort skyddsbehov ska vara utformade så att de upprätthåller sin bärförmåga vid brand under ett fullständigt brandförlopp inklusive avsvalningsfasen och med en säkerhetsmarginal som står i proportion till skyddsbehovet.</p>
+      <p class="text">Bärverk utan stort skyddsbehov ska vara utformade så att de upprätthåller sin bärförmåga vid brand för en del av ett brandförlopp som står i proportion till skyddsbehovet.</p>
+      <p class="text">Bestämningen av skyddsbehovet ska ta särskild hänsyn till följande:</p>
+      <ol type="1">
+        <li>Risken för personskador på utrymmande och räddningspersonal som vistas i eller utanför byggnaden.</li>
+        <li>Sekundära effekter som kan uppstå vid kollaps.</li>
+        <li>Storleken på de befarade konsekvenserna.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P4" name="BFS2024-7_K3_P4">4 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade med betryggande robusthet så att hela eller stora delar av bärförmågan vid brand inte slås ut av enskilda händelser eller påfrestningar.</p>
+      <p class="text">Aktivering och styrning av brandtekniska installationer ska ske med hög tillförlitlighet och tillräcklig snabbhet.</p>
+
+      <h3 id="BFS2024-7_verifiering-3">Verifiering</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P5" name="BFS2024-7_K3_P5">5 §</a>
+      </h3>
+      <p class="text">Kraven i 1–4 §§ ska uppfyllas genom något av följande alternativ:</p>
+      <ol type="1">
+        <li>Utformning enligt de preciserade krav som framgår av 6–20 §§ om de är tillämpliga.</li>
+        <li>Utformning verifierad genom analytisk dimensionering.</li>
+      </ol>
+      <p class="text">Första stycket 1 får endast tillämpas för verksamhetsklass 1–5 och byggnadsklass 1–3.</p>
+
+      <h3 id="BFS2024-7_preciserade-krav-3">Preciserade krav</h3>
+
+      <h4 id="BFS2024-7_tillforlitlighet-i-tekniska-system-3">Tillförlitlighet i tekniska system</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P6" name="BFS2024-7_K3_P6">6 §</a>
+      </h3>
+      <p class="text">Tekniska system som är av betydelse för byggnadens bärförmåga vid brand ska ha skydd mot strömbortfall på grund av brand så att avsedd funktion kan upprätthållas.</p>
+      <p class="text">Kommunikationssystem och styrningar av brandtekniska installationer ska ha skydd mot felfunktion på grund av brand till dess att avsedd funktion har uppnåtts.</p>
+
+      <h4 id="BFS2024-7_krav-pa-sakerhet-mot-brott-och-instabilitet">Krav på säkerhet mot brott och instabilitet</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P7" name="BFS2024-7_K3_P7">7 §</a>
+      </h3>
+      <p class="text">Bärverk ska vara utformade så att de uppnår tillräcklig säkerhet mot brott och instabilitet i brottgränstillståndet vid brand, där brand betraktas som känd olyckshändelse enligt Boverkets föreskrifter och allmänna råd (2024:6) om bärförmåga, stadga och beständighet i byggnader m.m.</p>
+
+      <h4 id="BFS2024-7_brandavskiljande-konstruktioner">Brandavskiljande konstruktioner</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P8" name="BFS2024-7_K3_P8">8 §</a>
+      </h3>
+      <p class="text">Bärverk som krävs för att upprätthålla funktionen hos en brandavskiljande konstruktion ska vara utformade med sådan bärförmåga vid brand att brandmotståndstiden för den brandavskiljande konstruktionen erhålls.</p>
+      <p class="text">Trots första stycket är det där 9 § andra stycket eller 16 § andra stycket har tillämpats tillräckligt med brandteknisk klass R 15 för att upprätthålla funktionen hos en brandcellsgräns i brandteknisk klass EI 30.</p>
+
+      <h4 id="BFS2024-7_krav-pa-barverk-utifran-byggnadens-skyddsbehov">Krav på bärverk utifrån byggnadens skyddsbehov</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P9" name="BFS2024-7_K3_P9">9 §</a>
+      </h3>
+      <p class="text">Bärverk som tillhör huvudsystemet i byggnadsklass 2 ska vara utformade i lägst brandteknisk klass R 30.</p>
+      <p class="text">Trots första stycket får bärverk vara utformade i brandteknisk klass R 15 om de skyddas med automatisk vattensprinkleranläggning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P10" name="BFS2024-7_K3_P10">10 §</a>
+      </h3>
+      <p class="text">Bärverk som tillhör huvudsystemet i byggnadsklass 1 med högst fyra plan ovan mark ska vara utformade i lägst brandteknisk klass R 60.</p>
+      <p class="text">Bärverk som tillhör huvudsystemet i byggnadsklass 1 med fler än fyra plan ovan mark ska vara utformade i lägst brandteknisk klass R 90.</p>
+      <p class="text">Trots andra stycket får bjälklag och ej stomstabiliserande horisontella bärverk vara utformade i brandteknisk klass R 60 i byggnader med högst åtta plan ovan mark.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P11" name="BFS2024-7_K3_P11">11 §</a>
+      </h3>
+      <p class="text">Bärverk som tillhör huvudsystemet och som är belägna under översta planet under mark ska vara utformade i lägst brandteknisk klass R 90.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P12" name="BFS2024-7_K3_P12">12 §</a>
+      </h3>
+      <p class="text">Den brandmotståndstid som följer av 10 och 11 §§ ska ökas enligt följande:</p>
+      <ol type="1">
+        <li>Två klassificeringsperioder om dimensionerande brandbelastning är större än 800 MJ/m² och högst 1 600 MJ/m².</li>
+        <li>Tre klassificeringsperioder om dimensionerande brandbelastning är större än 1 600 MJ/m².</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P13" name="BFS2024-7_K3_P13">13 §</a>
+      </h3>
+      <p class="text">Den brandmotståndstid som följer av 10 och 11 §§ i kombination med 12 § får minskas med en klassificeringsperiod, dock lägst till brandteknisk klass R 60, om bärverket skyddas med automatisk vattensprinkleranläggning och automatisk vattensprinkleranläggning inte har tillgodoräknats vid bestämmande av permanent brandbelastning enligt 2 kap. 2 §.</p>
+
+      <h4 id="BFS2024-7_krav-pa-barverk-utifran-verksamhetens-skyddsbehov">Krav på bärverk utifrån verksamhetens skyddsbehov</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P14" name="BFS2024-7_K3_P14">14 §</a>
+      </h3>
+      <p class="text">Bärverk som tillhör huvudsystemet i verksamhetsklass 3A, 3B, 3C, 4 och 5A ska vara utformade i lägst brandteknisk klass R 15.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P15" name="BFS2024-7_K3_P15">15 §</a>
+      </h3>
+      <p class="text">Bärverk som tillhör huvudsystemet i verksamhetsklass 5B och 5C ska vara utformade i lägst brandteknisk klass R 30.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P16" name="BFS2024-7_K3_P16">16 §</a>
+      </h3>
+      <p class="text">Bärverk som tillhör huvudsystemet i verksamhetsklass 2B och 2C belägna i första planet ovan mark ska vara utformade i lägst brandteknisk klass R 30.</p>
+      <p class="text">Trots första stycket får bärverk vara utformade i brandteknisk klass R 15 om bärverket skyddas med automatisk vattensprinkleranläggning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P17" name="BFS2024-7_K3_P17">17 §</a>
+      </h3>
+      <p class="text">Bärverk som tillhör huvudsystemet i verksamhetsklass 2B och 2C som är beläget i annat plan än första planet ovan mark ska vara utformade i lägst brandteknisk klass R 60.</p>
+      <p class="text">Trots första stycket får bärverk vara utformade i brandteknisk klass R 30 om bärverket skyddas med automatisk vattensprinkleranläggning.</p>
+
+      <h4 id="BFS2024-7_krav-pa-vissa-barverk">Krav på vissa bärverk</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P18" name="BFS2024-7_K3_P18">18 §</a>
+      </h3>
+      <p class="text">I byggnadsklass 1 ska trapplan, trapplopp, loftgångar och motsvarade i utrymningspassager och tillträdesvägar samt balkonger vara utformade i lägst brandteknisk klass R 30, eller som alternativ lägst brandteknisk klass R 30-ef om utomhusliknande förhållanden råder där bärverket är beläget.</p>
+      <p class="text">Gemensamma bärverk för flera av byggnadsdelarna i första stycket för vilka ett ökat skyddsbehov föreligger ska vara utformade i lägst brandteknisk klass R 60, eller som alternativ lägst brandteknisk klass R 60-ef om utomhusliknande förhållanden råder där bärverket är beläget.</p>
+      <p class="text">Trots första stycket får bärverk vara utformade i brandteknisk klass R 15 om bärverket skyddas med automatisk vattensprinkleranläggning.</p>
+      <p class="text">Trots andra stycket får bärverk vara utformade i brandteknisk klass R 30 om bärverket skyddas med automatisk vattensprinkleranläggning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P19" name="BFS2024-7_K3_P19">19 §</a>
+      </h3>
+      <p class="text">I byggnadsklass 2 och 3 ska trapplan, trapplopp och motsvarade i utrymningspassager och tillträdesvägar som betjänar plan under översta planet under mark vara utformade i lägst brandteknisk klass R 30.</p>
+
+      <h4 id="BFS2024-7_undantag-for-vissa-barverk">Undantag för vissa bärverk</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K3_P20" name="BFS2024-7_K3_P20">20 §</a>
+      </h3>
+      <p class="text">Trots 9 och 16 §§ får bärverk i verksamhetsklass 1, 2A, 2B och 2C vara utformade utan brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>Bärverk som i huvudsak tar last från en takkonstruktion och som vid en kollaps inte leder till en total kollapsad area större än 300 m² i verksamhetsklass 1 eller en total kollapsad area större än 150 m² i verksamhetsklass 2A, 2B och 2C.</li>
+        <li>Takstolar, takbalkar eller motsvarande horisontalbärverk i takkonstruktioner med en spännvidd ≤ 30 meter i verksamhetsklass 1 och med en spännvidd ≤ 15 meter i verksamhetsklass 2A, 2B och 2C.</li>
+        <li>Sekundärbärverk i takkonstruktioner som har en stomstabiliserande funktion under förutsättning att byggnaden förblir stabil även när takplåt, takåsar eller dylikt förutsätts ha kollapsat i två intilliggande fack på en sträcka av halva takfallet, dock högst 15 meter.</li>
+      </ol>
+    </section>
+
+    <section class="kapitel" id="BFS2024-7_K4">
+      <h2 class="kapitel-rubrik">4 kap. Skydd mot uppkomst av brand</h2>
+
+      <h3 id="BFS2024-7_funktionskrav-4">Funktionskrav</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P1" name="BFS2024-7_K4_P1">1 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att temperaturen på byggnadsdelar och fast inredning orsakad av fasta installationer inte blir så hög att ingående material kan antända.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till följande:</p>
+      <ol type="1">
+        <li>Förväntad temperatur på fasta installationer.</li>
+        <li>Materialegenskaper för byggnadsdelar och fast inredning.</li>
+        <li>Skyddsavstånd till byggnadsdelar och fast inredning.</li>
+        <li>Effekten av långvarig drift.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P2" name="BFS2024-7_K4_P2">2 §</a>
+      </h3>
+      <p class="text">Fasta installationer med hög sannolikhet för uppkomst av brand ska vara utformade så att brandrisken begränsas.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P3" name="BFS2024-7_K4_P3">3 §</a>
+      </h3>
+      <p class="text">Förbränningsanordningar och tillhörande kanaler för avledning av förbränningsgaser ska vara utformade så att sannolikheten för uppkomst av brand begränsas.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till följande:</p>
+      <ol type="1">
+        <li>Risken för läckage av förbränningsgaser.</li>
+        <li>Förekommande belastningar och termisk påverkan.</li>
+        <li>Behovet av och tillgång till förbränningsluft.</li>
+        <li>Risken för antändning av byggnadsdelar, fast inredning eller bränsleförråd.</li>
+        <li>Behovet av rensning och inspektion.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P4" name="BFS2024-7_K4_P4">4 §</a>
+      </h3>
+      <p class="text">Fasta installationer i utrymmen med förhöjd sannolikhet för förekomst av brännbara gaser eller lättantändligt damm ska vara utformade så att sannolikheten för explosion och brand begränsas.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P5" name="BFS2024-7_K4_P5">5 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade med betryggande robusthet så att hela eller stora delar av skyddet mot uppkomst av brand inte slås ut av enskilda händelser eller påfrestningar.</p>
+      <p class="text">Aktivering och styrning av brandtekniska installationer ska ske med hög tillförlitlighet och tillräcklig snabbhet.</p>
+
+      <h3 id="BFS2024-7_verifiering-4">Verifiering</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P6" name="BFS2024-7_K4_P6">6 §</a>
+      </h3>
+      <p class="text">Kraven i 1–5 §§ ska uppfyllas genom något av följande alternativ:</p>
+      <ol type="1">
+        <li>Utformning enligt de preciserade krav som framgår av 7–25 §§ om de är tillämpliga.</li>
+        <li>Utformning verifierad genom analytisk dimensionering.</li>
+      </ol>
+      <p class="text">Första stycket 1 får endast tillämpas för verksamhetsklass 1–5 och byggnadsklass 1–3.</p>
+
+      <h3 id="BFS2024-7_preciserade-krav-4">Preciserade krav</h3>
+
+      <h4 id="BFS2024-7_tillforlitlighet-i-tekniska-system-4">Tillförlitlighet i tekniska system</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P7" name="BFS2024-7_K4_P7">7 §</a>
+      </h3>
+      <p class="text">Tekniska system som är av betydelse för skydd mot uppkomst av brand ska ha skydd mot strömbortfall på grund av brand så att avsedd funktion kan upprätthållas.</p>
+      <p class="text">Kommunikationssystem och styrningar av brandtekniska installationer ska ha skydd mot felfunktion på grund av brand till dess att avsedd funktion har uppnåtts.</p>
+
+      <h4 id="BFS2024-7_antandning-av-byggnadsdelar">Antändning av byggnadsdelar</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P8" name="BFS2024-7_K4_P8">8 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att temperaturen på ytan av brännbara byggnadsdelar, fast inredning och fasta installationer inte överstiger 85 °C vid normal drift.</p>
+      <p class="text">Byggnadsdelar, fast inredning och fasta installationer ska vara utformade så att deras väsentliga egenskaper inte förbrukas eller försämras med hänsyn till de förhållanden de förväntas utsättas för vid långvarig drift.</p>
+
+      <h4 id="BFS2024-7_tillgang-till-forbrannningsluft">Tillgång till förbränningsluft</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P9" name="BFS2024-7_K4_P9">9 §</a>
+      </h3>
+      <p class="text">Eldstäder ska vara utformade så att de tillförs tillräckligt med förbränningsluft för att ge en effektiv förbränning för avsett bränsleslag och bränslemängd.</p>
+      <p class="text">Tillgången till förbränningsluft får inte negativt påverkas av byggnadens ventilationssystem under normala driftförhållanden.</p>
+
+      <h4 id="BFS2024-7_eldstadsplan">Eldstadsplan</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P10" name="BFS2024-7_K4_P10">10 §</a>
+      </h3>
+      <p class="text">Eldstäder för fast eller flytande bränsle ska vara försedda med eldstadsplan i obrännbart material.</p>
+      <p class="text">Eldstadsplan i avskilda pannrum ska täcka hela golvytan.</p>
+      <p class="text">Eldstadsplan för slutna eldstäder ska täcka minst 0,30 meter framför eldstaden och minst 0,10 meter på vardera sidan om eldstaden alternativt minst 0,20 meter utanför vardera sida av öppningen.</p>
+      <p class="text">Eldstadsplan för öppna eldstäder ska vara utformade så att det horisontella avståndet från bakre delen av eldstaden till brännbara byggnadsdelar, fast inredning eller fasta installationer är minst 1,0 meter. Om eldstaden är placerad mer än 0,6 meter över golvet ska det horisontella avståndet i stället vara minst 1,2 meter.</p>
+      <p class="text">Eldstadsplanet ska även täcka fri luftad volym under eldstaden.</p>
+
+      <h4 id="BFS2024-7_eldningsapparat">Eldningsapparat</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P11" name="BFS2024-7_K4_P11">11 §</a>
+      </h3>
+      <p class="text">Eldningsapparater med automatisk matning ska vara utformade med åtgärder för att förhindra brandspridning bakåt till bränsleförrådet.</p>
+
+      <h4 id="BFS2024-7_anslutning-till-rok-och-avgaskanal">Anslutning till rök- och avgaskanal</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P12" name="BFS2024-7_K4_P12">12 §</a>
+      </h3>
+      <p class="text">Förbränningsgas från eldstäder för gasformigt bränsle ska avledas genom avgaskanal eller rökkanal. Förbränningsgas från eldstäder för flytande bränslen och eldstäder för fasta bränslen ska avledas genom rökkanal.</p>
+      <p class="text">Kanalens egenskaper ska vara anpassade till ansluten eldstad, temperatur på förbränningsgaser samt ta hänsyn till beständigheten vid långvarig drift.</p>
+      <p class="text">Om flera eldstäder ansluts till samma kanal ska kanalen vara utformad så att riskerna för kondensering, brandspridning och inrykning genom annan eldstad begränsas.</p>
+      <p class="text">Trots första stycket får eldstäder för gasformigt eller flytande bränsle vara utformade utan anslutning till rök- eller avgaskanal om de är avsedda för matlagning eller har en märkeffekt på högst 6 kW och installeras i ett utrymme där ventilationen är tillräcklig.</p>
+
+      <h4 id="BFS2024-7_belastningar">Belastningar</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P13" name="BFS2024-7_K4_P13">13 §</a>
+      </h3>
+      <p class="text">Eldstäder, skorstenar samt rök- och avgaskanaler ska vara placerade på underlag med sådan bärförmåga att otätheter på grund av sättningar inte uppkommer.</p>
+      <p class="text">Skorstenar samt rök- och avgaskanaler ska vara utformade så att otätheter på grund av yttre belastning i form av snö- och vindlast inte uppkommer.</p>
+
+      <h4 id="BFS2024-7_skydd-mot-antandning">Skydd mot antändning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P14" name="BFS2024-7_K4_P14">14 §</a>
+      </h3>
+      <p class="text">Skorstenar samt rök- och avgaskanaler utanför det utrymme där eldstaden är placerad, ska vara utformade så att yttemperaturen inte överstiger 100 °C när eldstaden drivs med högsta dimensionerande effekt.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P15" name="BFS2024-7_K4_P15">15 §</a>
+      </h3>
+      <p class="text">Eldstäder får inte placeras i garage, verkstäder eller andra utrymmen med förhöjd sannolikhet för förekomst av brännbara gaser eller lättantändligt damm om inte särskilda åtgärder vidtas.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P16" name="BFS2024-7_K4_P16">16 §</a>
+      </h3>
+      <p class="text">Skorstenar och rökkanaler ska mynna minst 1,0 meter över taktäckningen.</p>
+
+      <h4 id="BFS2024-7_tathet">Täthet</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P17" name="BFS2024-7_K4_P17">17 §</a>
+      </h3>
+      <p class="text">Skorstenar samt rök- och avgaskanaler ska ha tillfredställande täthet mot läckage av förbränningsgaser. Om skorsten, rök- eller avgaskanal avviker från vertikalriktning ska effekten av värmerörelser särskilt beaktas.</p>
+
+      <h4 id="BFS2024-7_genomstromning">Genomströmning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P18" name="BFS2024-7_K4_P18">18 §</a>
+      </h3>
+      <p class="text">Rökkanaler ska vara utformade för erforderlig genomströmning så att risken för sotbrand i kanalen begränsas.</p>
+      <p class="text">Rökkanaler med naturligt drag ska vara utformade med en tvärsnittsarea som är dimensionerad med hänsyn till ansluten eldstad, eldstadens effekt, bränsleslag samt kanalens höjd och längd.</p>
+
+      <h4 id="BFS2024-7_sotbrand">Sotbrand</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P19" name="BFS2024-7_K4_P19">19 §</a>
+      </h3>
+      <p class="text">Rökkanaler och tillhörande anslutningar, luckor och liknande, ska</p>
+      <ol type="1">
+        <li>vara utformade i brandteknisk klass G(x) med erforderligt skyddsavstånd x till brännbara byggnadsdelar, fast inredning och fasta installationer, eller</li>
+        <li>omges av ett skorstensschakt av obrännbart material i lägst brandteknisk klass EI 60 i byggnadsklass 1 och lägst brandteknisk klass EI 30 i byggnadsklass 2 och 3.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_material-och-bestandighet">Material och beständighet</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P20" name="BFS2024-7_K4_P20">20 §</a>
+      </h3>
+      <p class="text">Skorstenar samt rök- och avgaskanaler ska vara utformade så att deras funktion upprätthålls med hänsyn till förväntade temperaturvariationer, fukt och slitage från sotningsredskap.</p>
+      <p class="text">Skorstenar samt rök- och avgaskanaler ska vara korrosionsbeständiga i de delar som kan antas utsättas för korrosiva förhållanden.</p>
+      <p class="text">Skorstenar samt rök- och avgaskanaler ska vara frostbeständiga i de delar som kan antas utsättas för minusgrader.</p>
+
+      <h4 id="BFS2024-7_rensning-och-inspektion">Rensning och inspektion</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P21" name="BFS2024-7_K4_P21">21 §</a>
+      </h3>
+      <p class="text">Eldstäder, skorstenar samt rök- och avgaskanaler ska vara utformade så att de är åtkomliga för rensning, kontroll och inspektion utan olägenhet.</p>
+      <p class="text">Rensluckor ska vara utformade av obrännbart material, tåla förkommande temperaturvariationer och motstå korrosion.</p>
+      <p class="text">Rensluckor ska vara utformade så att de inte öppnar på grund av övertryck i kanalen.</p>
+
+      <h4 id="BFS2024-7_imkanal">Imkanal</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P22" name="BFS2024-7_K4_P22">22 §</a>
+      </h3>
+      <p class="text">Imkanaler som betjänar matlagningsanordningar i bostäder, kontor och andra utrymmen med hushållspis och som medför en begränsad mängd brännbara avsättningar i kanalen ska vara utformade i lägst brandteknisk klass EI 15.</p>
+      <p class="text">Trots första stycket får imkanaler vara utformade i lägst brandteknisk klass E 15 och utan skyddsavstånd till fast inredning inom betjänat utrymme.</p>
+      <p class="text">Trots första stycket får anslutningsdon vara utformade utan brandavskiljande förmåga och med material i lägst brandteknisk klass E.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P23" name="BFS2024-7_K4_P23">23 §</a>
+      </h3>
+      <p class="text">Imkanaler som betjänar matlagningsanordningar i storkök ska vara utformade i lägst brandteknisk klass EI 60 i byggnadsklass 1 och lägst brandteknisk klass EI 30 i byggnadsklass 2 och 3.</p>
+      <p class="text">Trots första stycket får del av imkanal vara utformad utan isolerande förmåga (I) i följande fall:</p>
+      <ol type="1">
+        <li>Inom betjänat utrymme där skyddsavståndet är minst 0,10 meter till brännbara byggnadsdelar, fast inredning och fasta installationer.</li>
+        <li>Utomhus där skyddsavståndet är minst 0,5 meter till brännbara byggnadsdelar och fasta installationer.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P24" name="BFS2024-7_K4_P24">24 §</a>
+      </h3>
+      <p class="text">Imkanaler som betjänar matlagningsanordningar i storkök och som medför stora mängder brännbara avsättningar i kanalen ska vara utformade med ett säkerställt motstånd mot brand i kanalen.</p>
+      <p class="text">Trots första stycket får imkanaler vara utformade utan säkerställt motstånd mot brand om kanalen är försedd med ett system som begränsar mängden brännbara avsättningar.</p>
+
+      <h4 id="BFS2024-7_spisvakt">Spisvakt</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K4_P25" name="BFS2024-7_K4_P25">25 §</a>
+      </h3>
+      <p class="text">Matlagningsanordningar avsedda att användas av boende i verksamhetsklass 3B och 3C ska vara försedda med spisvakt med överhettningsskydd.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-7_K5">
+      <h2 class="kapitel-rubrik">5 kap. Skydd mot utveckling och spridning av brand och brandgaser inom byggnad</h2>
+
+      <h3 id="BFS2024-7_funktionskrav-5">Funktionskrav</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P1" name="BFS2024-7_K5_P1">1 §</a>
+      </h3>
+      <p class="text">Invändiga byggnadsdelar, fasta installationer och fast inredning ska ha sådana egenskaper eller ingå i byggnaden på ett sådant sätt att utveckling av brand och brandgaser begränsas i tillräcklig utsträckning för att konsekvenserna på grund av brand ska bli begränsade.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till följande:</p>
+      <ol type="1">
+        <li>Antändlighet.</li>
+        <li>Smältning och droppar utanför brandhärdens omedelbara närhet.</li>
+        <li>Bidrag till brandspridning och övertändning.</li>
+        <li>Produktion av värme och brandgaser.</li>
+        <li>Risken för personskador på utrymmande vid nedfall.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P2" name="BFS2024-7_K5_P2">2 §</a>
+      </h3>
+      <p class="text">Utvändiga byggnadsdelar och fasta installationer ska ha sådana egenskaper eller ingå i byggnaden så att utveckling av brand och brandgaser begränsas i tillräcklig utsträckning för att konsekvenserna på grund av brand ska bli begränsade.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till följande:</p>
+      <ol type="1">
+        <li>Antändlighet.</li>
+        <li>Bidrag till brandspridning.</li>
+        <li>Produktion av värme och brandgaser.</li>
+        <li>Risken för personskador på utrymmande och räddningspersonal vid nedfall.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P3" name="BFS2024-7_K5_P3">3 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att spridning av brand och brandgaser inom byggnaden begränsas i tillräcklig utsträckning för att konsekvenserna på grund av brand ska bli begränsade.</p>
+      <p class="text">Byggnader med stort skyddsbehov ska i huvudsak vara utformade på ett sådant sätt att spridning av brand och brandgaser inom byggnaden begränsas under ett fullständigt brandförlopp inklusive avsvalningsfasen.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P4" name="BFS2024-7_K5_P4">4 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att omfattande brandspridning inom byggnaden begränsas i tillräcklig utsträckning för att konsekvenserna på grund av brand ska bli begränsade.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P5" name="BFS2024-7_K5_P5">5 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade med betryggande robusthet så att hela eller stora delar av skyddet mot utveckling och spridning av brand och brandgaser inom byggnad inte slås ut av enskilda händelser eller påfrestningar.</p>
+      <p class="text">Aktivering och styrning av brandtekniska installationer ska ske med hög tillförlitlighet och tillräcklig snabbhet.</p>
+
+      <h3 id="BFS2024-7_verifiering-5">Verifiering</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P6" name="BFS2024-7_K5_P6">6 §</a>
+      </h3>
+      <p class="text">Kraven i 1–5 §§ ska uppfyllas genom något av följande alternativ:</p>
+      <ol type="1">
+        <li>Utformning enligt de preciserade krav som framgår av 7–50 §§ om de är tillämpliga.</li>
+        <li>Utformning verifierad genom analytisk dimensionering.</li>
+      </ol>
+      <p class="text">Första stycket 1 får endast tillämpas för verksamhetsklass 1–5 och byggnadsklass 1–3.</p>
+
+      <h3 id="BFS2024-7_preciserade-krav-5">Preciserade krav</h3>
+
+      <h4 id="BFS2024-7_tillforlitlighet-i-tekniska-system-5">Tillförlitlighet i tekniska system</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P7" name="BFS2024-7_K5_P7">7 §</a>
+      </h3>
+      <p class="text">Tekniska system som är av betydelse för skyddet mot utveckling och spridning av brand och brandgaser ska ha skydd mot strömbortfall på grund av brand så att avsedd funktion kan upprätthållas.</p>
+      <p class="text">Kommunikationssystem och styrningar av brandtekniska installationer ska ha skydd mot felfunktion på grund av brand till dess att avsedd funktion har uppnåtts.</p>
+
+      <h4 id="BFS2024-7_krav-pa-byggnadsdelar">Krav på byggnadsdelar</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P8" name="BFS2024-7_K5_P8">8 §</a>
+      </h3>
+      <p class="text">Invändiga byggnadsdelar, fasta installationer och fast inredning som vid nedfall kan utgöra en risk för personskada för utrymmande ska vara utformade med skydd mot nedfall vid brandpåverkan under brandens tidiga skede.</p>
+      <p class="text">Utvändiga byggnadsdelar och fasta installationer som vid nedfall kan förväntas utgöra en risk för personskada för utrymmande eller räddningspersonal ska vara utformade med skydd mot nedfall vid brandpåverkan.</p>
+      <p class="text">Trots andra stycket får byggnadsdelar och fasta installationer, som är så belägna att de lätt kan identifieras och observeras utifrån, i byggnader upp till och med fyra plan vara utformade utan skydd mot nedfall vid brandpåverkan.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P9" name="BFS2024-7_K5_P9">9 §</a>
+      </h3>
+      <p class="text">Byggnadsdelar, fast inredning och fasta installationer, förutom rörisolering, kablar, golvbeläggning och fasadbeklädnader, som kan bidra till en brands utveckling i mer än försumbar utsträckning ska vara utformade i lägst brandteknisk klass D-s2,d0.</p>
+      <p class="text">Trots första stycket får byggnadsdelar vara utformade i lägre brandteknisk klass i följande fall:</p>
+      <ol type="1">
+        <li>Om byggnadsdelar är skyddade av tändskyddande beklädnad i brandceller innehållande verksamhetsklass 3A, 3B, 3C, 4, 5A, 5B och 5C.</li>
+        <li>Om byggnadsdelar är skyddade i lägst brandteknisk klass D-s2,d0 i brandceller som innehåller verksamhetsklass 1, 2A, 2B och 2C.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_krav-pa-ytskikt-utifran-byggnadens-skyddsbehov">Krav på ytskikt utifrån byggnadens skyddsbehov</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P10" name="BFS2024-7_K5_P10">10 §</a>
+      </h3>
+      <p class="text">I byggnadsklass 1 ska ytor vara utformade med ytskikt i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>Tak: B-s1,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+        <li>Vägg: C-s2,d0.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P11" name="BFS2024-7_K5_P11">11 §</a>
+      </h3>
+      <p class="text">I byggnadsklass 2 ska ytor i tak vara utformade med ytskikt i lägst brandteknisk klass C-s2,d0 fäst på obrännbart material eller tändskyddande beklädnad.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P12" name="BFS2024-7_K5_P12">12 §</a>
+      </h3>
+      <p class="text">I byggnadsklass 1 och 2 ska ytor i utrymningspassager, tillträdesvägar och brandslussar vara utformade med ytskikt i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>Tak: B-s1,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+        <li>Vägg: B-s1,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+        <li>Golv: Cfl-s1.</li>
+      </ol>
+      <p class="text">Trots första stycket får väggytor i utvändiga utrymningspassager och utvändiga tillträdesvägar vara utformade enligt kraven för fasadbeklädnader i 48 och 49 §§.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P13" name="BFS2024-7_K5_P13">13 §</a>
+      </h3>
+      <p class="text">I byggnadsklass 3 ska ytor i utrymningspassager, tillträdesvägar och brandslussar vara utformade med ytskikt i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>Tak: B-s1,d0.</li>
+        <li>Vägg: C-s2,d0.</li>
+        <li>Golv: Dfl-s1.</li>
+      </ol>
+      <p class="text">Trots första stycket får väggytor i utvändiga utrymningspassager och utvändiga tillträdesvägar vara utformade enligt kraven för fasadbeklädnader i 48 eller 49 §§.</p>
+
+      <h4 id="BFS2024-7_krav-pa-ytskikt-utifran-verksamhetens-skyddsbehov">Krav på ytskikt utifrån verksamhetens skyddsbehov</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P14" name="BFS2024-7_K5_P14">14 §</a>
+      </h3>
+      <p class="text">Ytor i brandceller med verksamhetsklass 2B och 2C ska vara utformade med ytskikt i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>Tak: B-s1,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+        <li>Vägg: B-s1,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+        <li>Golv: Dfl-s1.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P15" name="BFS2024-7_K5_P15">15 §</a>
+      </h3>
+      <p class="text">Ytor i brandceller med verksamhetsklass 5A, 5B och 5C ska vara utformade med ytskikt i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>Tak: B-s1,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+        <li>Vägg: C-s2,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P16" name="BFS2024-7_K5_P16">16 §</a>
+      </h3>
+      <p class="text">Ytor i garage i brandceller större än 100 m² och i andra utrymmen med förhöjd sannolikhet för uppkomst av brand ska vara utformade med ytskikt i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>Tak: B-s1,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+        <li>Vägg: B-s1,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+        <li>Golv: Cfl-s1.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P17" name="BFS2024-7_K5_P17">17 §</a>
+      </h3>
+      <p class="text">Ytor i storkök ska vara utformade med ytskikt i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>Tak: B-s1,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+        <li>Vägg: C-s2,d0 fäst på obrännbart material eller tändskyddande beklädnad.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_undantag-for-vissa-ytor">Undantag för vissa ytor</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P18" name="BFS2024-7_K5_P18">18 §</a>
+      </h3>
+      <p class="text">Trots 9–17 §§ får ytor vara utformade med ytskikt i brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>Ytor där ytskiktet enbart kan förväntas bidra till brandförloppet i begränsad omfattning: D-s2,d0.</li>
+        <li>Ytor i utrymmen där ytskiktet inte påverkar utrymningssäkerheten: D-s2,d0.</li>
+        <li>Vägg i hisskorg: C-s2,d1.</li>
+        <li>Tak i hisskorg: C-s2,d0.</li>
+        <li>Golv i hisskorg: Cfl-s2.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P19" name="BFS2024-7_K5_P19">19 §</a>
+      </h3>
+      <p class="text">Trots 9–11 §§ får tältduk i tältbyggnader med ett enkelt skikt dukmaterial och som endast inrymmer verksamhetsklass 1 och 2A vara utformade med ytskikt i brandteknisk klass E.</p>
+
+      <h4 id="BFS2024-7_krav-pa-vissa-installationer">Krav på vissa installationer</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P20" name="BFS2024-7_K5_P20">20 §</a>
+      </h3>
+      <p class="text">Imkanaler och spiskåpor i storkök ska vara utformade av obrännbart material.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P21" name="BFS2024-7_K5_P21">21 §</a>
+      </h3>
+      <p class="text">Trots 9–16 §§ får följande delar av luftbehandlingsinstallationer vara utformade i brandteknisk klass E:</p>
+      <ol type="1">
+        <li>Kanaler i en- eller tvåbostadshus och komplementbyggnader.</li>
+        <li>Kanaler i aggregatrum utformat som egen brandcell.</li>
+        <li>Luftdon.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P22" name="BFS2024-7_K5_P22">22 §</a>
+      </h3>
+      <p class="text">Rörisolering ska vara utformad i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>BL-s1,d0 där omgivande ytor har kravet B-s1,d0.</li>
+        <li>CL-s3,d0 där omgivande ytor har kravet C-s2,d0.</li>
+        <li>DL-s3,d0 där omgivande ytor har kravet D-s2,d0.</li>
+      </ol>
+      <p class="text">Rörisolering i invändiga utrymningspassager vars sammanlagda exponerade omslutningsarea motsvarar mer än 20 procent av takytan ska vara utformad av obrännbart material eller uppfylla första stycket och skyddas med en automatisk vattensprinkleranläggning för personskydd.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P23" name="BFS2024-7_K5_P23">23 §</a>
+      </h3>
+      <p class="text">Kablar i byggnadsklass 1 och 2 ska vara utformade i lägst brandteknisk klass Dca-s2,d2.</p>
+      <p class="text">Kablar i byggnadsklass 3 ska vara utformade i lägst brandteknisk klass Eca.</p>
+      <p class="text">Kablar i invändiga utrymningspassager vars sammanlagda exponerade omslutningsarea motsvarar mer än 10 procent av takytan ska vara utformade i lägst brandteknisk klass Cca-s1,d1 eller lägst brandteknisk klass Dca-s2,d2 om kablarna skyddas med en automatisk vattensprinkleranläggning för personskydd.</p>
+      <p class="text">Upphängningsanordningar för kablar i invändiga utrymningspassager ska vara utformade av obrännbart material.</p>
+      <p class="text">Trots första stycket får kablar som skyddas med automatisk vattensprinkleranläggning för personskydd vara utformade i brandteknisk klass Eca.</p>
+      <p class="text">Trots första, andra och tredje styckena får kablar som kommer utifrån och in i en byggnad vara utformade utan brandteknisk klass fram till närmaste inkopplingspunkt, dock högst i 20 meter.</p>
+
+      <h4 id="BFS2024-7_brandcellsindelning">Brandcellsindelning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P24" name="BFS2024-7_K5_P24">24 §</a>
+      </h3>
+      <p class="text">En brandcell ska omfatta högst två plan.</p>
+      <p class="text">Trots första stycket får brandceller som endast innehåller verksamhetsklass 3A, trapphus, schakt och öppna garage omfatta fler än två plan.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P25" name="BFS2024-7_K5_P25">25 §</a>
+      </h3>
+      <p class="text">Följande utrymmen ska vara utformade som egen brandcell:</p>
+      <ol type="1">
+        <li>Invändig utrymningspassage eller tillträdesväg inklusive eventuellt hisschakt.</li>
+        <li>Utrymmen tillhörande samma verksamhet.</li>
+        <li>Bostad i verksamhetsklass 3A.</li>
+        <li>Grupp av boendeenheter i verksamhetsklass 3B sammanlagt avsedd för högst sex personer inklusive tillhörande gemensamhetsutrymme.</li>
+        <li>Bostad i verksamhetsklass 3C.</li>
+        <li>Boendeenhet i verksamhetsklass 3B om inte gruppen av boendeenheter inklusive tillhörande gemensamhetsutrymmen skyddas med automatisk vattensprinkleranläggning för personskydd eller boendesprinklersystem.</li>
+        <li>Gästrum, sovsal och liknande i verksamhetsklass 4.</li>
+        <li>Högst två funktionella enheter i verksamhetsklass 5A.</li>
+        <li>Bostad och boendeenhet i verksamhetsklass 5B.</li>
+        <li>Funktionell enhet i verksamhetsklass 5C.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P26" name="BFS2024-7_K5_P26">26 §</a>
+      </h3>
+      <p class="text">Energilager med batterier med en kapacitet större än 20 kWh, storkök med särskild brandrisk, utrymme för förvaring av sot och aska, slutna garage och andra utrymmen med förhöjd sannolikhet för uppkomst av brand och där en brand kan få ett snabbt förlopp ska vara utformade som egen brandcell.</p>
+      <p class="text">Trots första stycket får sådana utrymmen vara belägna i brandcell med annan användning om en brand endast kan förväntas få begränsade konsekvenser för utrymningssäkerheten.</p>
+      <p class="text">Trots första stycket behöver storkök med särskild brandrisk inte vara utformade som egen brandcell om brandrisken begränsas av ett automatiskt släcksystem.</p>
+
+      <h4 id="BFS2024-7_skydd-mot-omfattande-brandspridning">Skydd mot omfattande brandspridning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P27" name="BFS2024-7_K5_P27">27 §</a>
+      </h3>
+      <p class="text">Brandceller ska vara utformade så att ingen brandcell har en nettoarea större än</p>
+      <ol type="1">
+        <li>4 000 m² om dimensionerande brandbelastning är högst 250 MJ/m²,</li>
+        <li>1 250 m² om dimensionerande brandbelastning är större än 250 MJ/m² och högst 800 MJ/m², och</li>
+        <li>625 m² om dimensionerande brandbelastning är större än 800 MJ/m².</li>
+      </ol>
+      <p class="text">Trots första stycket får nettoarean dubbleras om en brandcell är utformad som brandsektion.</p>
+      <p class="text">Trots första stycket får nettoarean ökas fyra gånger om en brandcell är utformad som brandsektion som övervakas av brandlarm med vidarekoppling.</p>
+      <p class="text">Trots första stycket får nettoarean vara obegränsad om en brandcell är utformad som brandsektion som skyddas med automatisk vattensprinkleranläggning.</p>
+
+      <h4 id="BFS2024-7_krav-pa-brandcellsgranser-utifran-byggnadens-skyddsbehov">Krav på brandcellsgränser utifrån byggnadens skyddsbehov</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P28" name="BFS2024-7_K5_P28">28 §</a>
+      </h3>
+      <p class="text">Brandcellsgränser i byggnadsklass 1 ska vara utformade i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>EI 60 där dimensionerande brandbelastning är högst 800 MJ/m².</li>
+        <li>EI 120 där dimensionerande brandbelastning är större än 800 MJ/m² och högst 1 600 MJ/m².</li>
+        <li>EI 180 där dimensionerande brandbelastning är större än 1 600 MJ/m².</li>
+      </ol>
+      <p class="text">Den brandmotståndstid som följer av första stycket får minskas med två klassificeringsperioder, dock lägst till brandteknisk klass EI 60, om brandcellen skyddas med automatisk vattensprinkleranläggning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P29" name="BFS2024-7_K5_P29">29 §</a>
+      </h3>
+      <p class="text">Brandcellsgränser i byggnadsklass 2 och 3 ska vara utformade i lägst brandteknisk klass EI 30.</p>
+
+      <h4 id="BFS2024-7_krav-pa-brandcellsgranser-utifran-verksamhetens-skyddsbehov">Krav på brandcellsgränser utifrån verksamhetens skyddsbehov</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P30" name="BFS2024-7_K5_P30">30 §</a>
+      </h3>
+      <p class="text">Brandcellsgränser ska vara utformade i lägst brandteknisk klass EI 60 i följande fall:</p>
+      <ol type="1">
+        <li>Bostad i verksamhetsklass 3A.</li>
+        <li>Grupp av boendeenheter i verksamhetsklass 3B.</li>
+        <li>Bostad i verksamhetsklass 3C.</li>
+        <li>Gästrum, sovsal och liknande i verksamhetsklass 4.</li>
+        <li>Bostad och boendeenhet i verksamhetsklass 5B.</li>
+      </ol>
+      <p class="text">Trots 28 § får brandcellsgränser i boendeenheter i verksamhetsklass 3B vara utformade i brandteknisk klass EI 30.</p>
+
+      <h4 id="BFS2024-7_utformning-av-brandsektionsgranser">Utformning av brandsektionsgränser</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P31" name="BFS2024-7_K5_P31">31 §</a>
+      </h3>
+      <p class="text">Brandsektionsgränser ska vara utformade i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>EI 90-M om dimensionerande brandbelastning är högst 800 MJ/m².</li>
+        <li>EI 180-M om dimensionerande brandbelastning är större än 800 MJ/m² och högst 1 600 MJ/m².</li>
+        <li>EI 240-M om dimensionerande brandbelastning är större än 1 600 MJ/m².</li>
+      </ol>
+      <p class="text">Trots första stycket får brandmotståndstiden minskas med två klassificeringsperioder i byggnadsklass 2 och 3, dock lägst till brandteknisk klass EI 60-M.</p>
+      <p class="text">Trots första och andra styckena får horisontella brandsektionsgränser vara utformade utan krav på skydd mot mekanisk påverkan (M).</p>
+
+      <h4 id="BFS2024-7_brandavskiljningar">Brandavskiljningar</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P32" name="BFS2024-7_K5_P32">32 §</a>
+      </h3>
+      <p class="text">Ytterväggar ska vara utformade som brandavskiljningar i sådan utsträckning att oklassade ytor i skilda brandceller är åtskilda med följande avstånd:</p>
+      <ol type="1">
+        <li>Minst 5,0 meter där den horisontella vinkeln mellan ytorna är mindre än 60°.</li>
+        <li>Minst 2,0 meter där den horisontella vinkeln mellan ytorna är mellan 60° och 135°.</li>
+        <li>Minst 1,2 meter mellan ovanförliggande ytor.</li>
+      </ol>
+      <p class="text">Brandavskiljningen ska vara utformad i lägst halva den brandtekniska klass som följer av 28–30 §§ och utan krav på isolering (I), dock lägst i brandteknisk klass E 30.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P33" name="BFS2024-7_K5_P33">33 §</a>
+      </h3>
+      <p class="text">Takfötter ska vara utformade som brandavskiljningar där risk finns för spridning av brand och brandgaser</p>
+      <ol type="1">
+        <li>mellan brandceller via takfoten, eller</li>
+        <li>från en brandcell till ett utrymme som inte tillhör någon brandcell.</li>
+      </ol>
+      <p class="text">Brandavskiljningen ska vara utformad i lägst brandteknisk klass EI 30 om angränsande utrymme utgör annan brandcell, annars ska brandavskiljningen vara utformad så att risken för brandspridning är begränsad.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P34" name="BFS2024-7_K5_P34">34 §</a>
+      </h3>
+      <p class="text">Yttertak i en brandcell ska vara utformat som brandavskiljning inom minst 8 meter från ovanförliggande yttervägg i annan brandcell. Brandavskiljning ska vara utformad i den brandtekniska klass som följer av 28–30 §§.</p>
+      <p class="text">Trots första stycket får yttertak vara utformat utan brandavskiljning om ovanförliggande yttervägg är utformad som brandavskiljning i brandteknisk klass EW 30 upp till minst 5 meter ovanför yttertak i lägre belägen brandcell.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P35" name="BFS2024-7_K5_P35">35 §</a>
+      </h3>
+      <p class="text">Utvändiga utrymningspassager som inte är inglasade ska vara avskilda med brandavskiljning i lägst brandteknisk klass EI 30.</p>
+      <p class="text">Trots första stycket krävs inte brandavskiljning mot övriga delar av byggnaden där avstånd från oklassad yta är mer än 5,0 meter vid mätning horisontellt intill 135° vinkel från ytan.</p>
+      <p class="text">Trots första stycket krävs inte brandavskiljning mot övriga delar av byggnaden där utvändig utrymningspassage utgör gemensam del av i övrigt skilda utrymningspassager.</p>
+      <p class="text">Trots första stycket krävs inte brandavskiljning mot övriga delar av byggnaden där räddningstjänstassisterad utrymning har tillgodoräknats i anslutande utrymmen.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P36" name="BFS2024-7_K5_P36">36 §</a>
+      </h3>
+      <p class="text">Utvändiga utrymningspassager som är inglasade ska vara avskilda med brandavskiljning i lägst brandteknisk klass EI 30.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P37" name="BFS2024-7_K5_P37">37 §</a>
+      </h3>
+      <p class="text">Sammanbyggda uterum tillhörande olika brandceller ska vara avskilda med brandavskiljning i lägst brandteknisk klass E 30. Uterum sammanbyggda med yttervägg i annan brandcell ska vara avskilda med brandavskiljning i lägst brandteknisk klass E 30.</p>
+      <p class="text">Ytor i uterum där vinkel till yta i uterum tillhörande annan brandcell eller till yttervägg mot annan brandcell är mindre än 60° ska vara utformade som brandavskiljning i lägst brandteknisk klass E 30 i en av ytorna.</p>
+      <p class="text">Trots andra stycket krävs inte brandavskiljning där skyddsavstånd mellan horisontella ytor är 3 meter eller där skyddsavstånd mellan vertikala ytor är 0,5 meter.</p>
+
+      <h4 id="BFS2024-7_sarskilt-skydd-mot-spridning-av-brand-och-brandgaser">Särskilt skydd mot spridning av brand och brandgaser</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P38" name="BFS2024-7_K5_P38">38 §</a>
+      </h3>
+      <p class="text">Energilager med batterier med en kapacitet större än 20 kWh, storkök med särskild brandrisk, garage och andra utrymmen med förhöjd sannolikhet för uppkomst av brand och där en brand kan få ett snabbt förlopp, som står i förbindelse med en invändig utrymningspassage som betjänar ett annat utrymme, ska vara utformade med brandsluss mot utrymningspassagen.</p>
+      <p class="text">Trots första stycket får utformning utan brandsluss ske i följande fall:</p>
+      <ol type="1">
+        <li>Om personer inte vistas varaktigt i det anslutande utrymmet till utrymningspassagen.</li>
+        <li>Garage vars brandcell skyddas med automatisk vattensprinkleranläggning.</li>
+        <li>Storkök med särskild brandrisk om brandrisken begränsas av ett automatiskt släcksystem.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P39" name="BFS2024-7_K5_P39">39 §</a>
+      </h3>
+      <p class="text">Industrier och lager där brand kan förväntas få snabb spridning och stor intensitet ska vara försedda med inomhusbrandposter för manuell brandsläckning eller skyddas med automatisk vattensprinkleranläggning.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P40" name="BFS2024-7_K5_P40">40 §</a>
+      </h3>
+      <p class="text">Trapphus högre än 16 plan ovan mark ska vara utformade som trapphus Tr2 eller trapphus Tr1.</p>
+      <p class="text">Utrymmen belägna högre upp än 8 plan ovan mark ska ha tillgång till ett trapphus Tr2.</p>
+      <p class="text">Utrymmen belägna högre upp än 16 plan ovan mark ska ha tillgång till ett trapphus Tr1.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P41" name="BFS2024-7_K5_P41">41 §</a>
+      </h3>
+      <p class="text">Invändiga utrymningspassager, som inte utgör trapphus, ska vara utformade i enheter om högst 60 meter avskilda från varandra med brandcellsgräns. Trots 28 och 29 §§ får brandcellsgränsen vara utförd i lägst brandteknisk klass E 15.</p>
+      <p class="text">Invändiga utrymningspassager som utgör gemensam del av i övrigt skilda utrymningspassager ska vara avskilda med brandcellsgräns mot utrymningspassage som utgör trapphus.</p>
+      <p class="text">Utvändiga utrymningspassager som utgör gemensam del av i övrigt skilda utrymningspassager ska vara avskilda med brandavskiljning i lägst brandteknisk klass E 15 mot utrymningspassage som utgör trapphus i fler än två plan.</p>
+
+      <h4 id="BFS2024-7_installationer-med-mera-i-brandavskiljande-konstruktioner">Installationer med mera i brandavskiljande konstruktioner</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P42" name="BFS2024-7_K5_P42">42 §</a>
+      </h3>
+      <p class="text">Byggnadsdelar och fasta installationer vars funktion är nödvändiga för att upprätthålla funktionen i brandavskiljande konstruktioner ska vara utformade enligt följande:</p>
+      <ol type="1">
+        <li>Så att de med hög tillförlitlighet upprätthåller den brandavskiljande konstruktionens funktion.</li>
+        <li>Så att den brandavskiljande förmågan inte med enkelhet kan sättas ur spel.</li>
+        <li>Så att de vid behov med tillräcklig snabbhet aktiveras genom lämpligt placerad rökdetektor eller genom brandlarm som övervakar aktuella utrymmen i tillräcklig omfattning.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P43" name="BFS2024-7_K5_P43">43 §</a>
+      </h3>
+      <p class="text">Dörrar i brandavskiljande konstruktion ska vara försedda med dörrstängare.</p>
+      <p class="text">Trots första stycket krävs inte dörrstängare på dörrar i följande fall:</p>
+      <ol type="1">
+        <li>Dörr till bostad i verksamhetsklass 3A.</li>
+        <li>Dörr till bostad och boendeenhet i verksamhetsklass 3B.</li>
+        <li>Dörr till bostad i verksamhetsklass 3C.</li>
+        <li>Dörr till bostad och boendeenhet i verksamhetsklass 5B om totalt högst åtta boendeenheter ansluter till samma gemensamhetsutrymme.</li>
+        <li>Dörr till teknikutrymme och liknande som kan förväntas vara stängd.</li>
+        <li>Dörr i brandavskiljning som inte angränsar mot utvändig utrymningspassage.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P44" name="BFS2024-7_K5_P44">44 §</a>
+      </h3>
+      <p class="text">Trots 28–30 §§ får dörrar i brandcellsgränser vara utformade i</p>
+      <ol type="1">
+        <li>halva brandmotståndstiden, dock lägst i brandteknisk klass EI2 30, om den ansluter mot tillträdesväg,</li>
+        <li>halva brandmotståndstiden och utan krav på isolering (I), dock lägst i brandteknisk klass E 30, om angränsande brandceller utgörs av utrymningspassage eller tillträdesväg, eller</li>
+        <li>halva brandmotståndstiden och utan krav på isolering (I), dock lägst i brandteknisk klass E 30, om angränsande brandceller skyddas med automatisk vattensprinkleranläggning.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P45" name="BFS2024-7_K5_P45">45 §</a>
+      </h3>
+      <p class="text">Dörrar i brandcellsgränser och brandsektionsgränser som ansluter mot utrymningspassager ska vara utformade med lägst brandgastäthet Sa3.</p>
+      <p class="text">Dörrar i brandcellsgränser och brandsektionsgränser som ansluter mot trapphus och hisschakt ska vara utformade med brandgastäthet S200.</p>
+      <p class="text">Trots första och andra styckena får hissdörrar vara utformade utan brandgastäthet om hisschaktet är försett med automatisk brandgasventilation eller system för trycksättning.</p>
+
+      <h4 id="BFS2024-7_dolda-utrymmen">Dolda utrymmen</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P46" name="BFS2024-7_K5_P46">46 §</a>
+      </h3>
+      <p class="text">Dolda utrymmen, förutom vindsutrymmen och dolda utrymmen i fasader, i byggnader i byggnadsklass 1 och i byggnader innehållande bostäder ska vara utformade så att brandspridning inom utrymmet förbi brandavskiljande konstruktion begränsas.</p>
+      <p class="text">Trots första stycket krävs inget skydd mot brandspridning i dolda utrymmen i följande fall:</p>
+      <ol type="1">
+        <li>Dolda utrymmen som ingår i endast en brandcell.</li>
+        <li>Dolda utrymmen som endast innehåller brännbara byggnadsdelar i begränsad omfattning.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_vindsutrymmen">Vindsutrymmen</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P47" name="BFS2024-7_K5_P47">47 §</a>
+      </h3>
+      <p class="text">Vindsutrymmen ska vara utformade så att brandspridning förbi brandavskiljande konstruktion begränsas eller så att brandspridning till andra delar av byggnaden begränsas.</p>
+      <p class="text">Vindsutrymmen ska vara uppdelade i delar om högst 400 m² avskilda i lägst brandteknisk klass EI 30 och i byggnadsklass 1 därutöver i delar om högst 1 200 m² avskilda i lägst brandteknisk klass EI 60.</p>
+      <p class="text">Trots första och andra styckena krävs inget skydd mot brandspridning i vindsutrymmen i följande fall:</p>
+      <ol type="1">
+        <li>Vindsutrymmen som ingår i nedanförliggande brandcell.</li>
+        <li>Vindsutrymmen som endast innehåller brännbara byggnadsdelar i begränsad omfattning.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_fasader">Fasader</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P48" name="BFS2024-7_K5_P48">48 §</a>
+      </h3>
+      <p class="text">Byggnadsdelar i och på fasader i byggnadsklass 1 ska vara utformade av obrännbart material.</p>
+      <p class="text">I byggnadsklass 1 ska mängden nedfallande delar från fasader samt deras storlek vara begränsad vid brand.</p>
+      <p class="text">Trots första stycket får fasader vara utformade med material utan brandteknisk klass om de saknar betydelse för brandspridningen.</p>
+      <p class="text">Trots första stycket får fasader vara utformade med brännbara byggnadsdelar om fasaden är utformad så att brandspridning förbi brandavskiljande konstruktion begränsas.</p>
+      <p class="text">Trots första stycket får fasadbeklädnad vara utformad i brandteknisk klass D-s2,d2 i följande fall:</p>
+      <ol type="1">
+        <li>Om byggnaden har högst åtta plan, skyddas av automatisk vattensprinkleranläggning eller boendesprinklersystem och åtgärder vidtas för att förhindra brandspridning längs med fasaden på grund av brand på utsidan av byggnaden.</li>
+        <li>Om byggnaden har högst åtta plan och beklädnaden endast täcker en begränsad del av fasadytan och är placerad och utformad på ett sådant sätt att brandspridning längs med fasadytan begränsas.</li>
+        <li>Om beklädnaden endast täcker byggnadens första plan ovan mark.</li>
+      </ol>
+      <p class="text">Trots första och andra styckena får brännbara byggnadsdelar och nedfallande delar förekomma i byggnader med högst 16 plan ovan mark om fasadbrandprovning har visat att utformningen innebär en begränsad risk.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P49" name="BFS2024-7_K5_P49">49 §</a>
+      </h3>
+      <p class="text">Fasadbeklädnad i byggnadsklass 2 och 3 ska vara utformad i lägst brandteknisk klass D-s2,d2.</p>
+      <p class="text">Trots första stycket får tältduk i tältbyggnader med ett enkelt skikt dukmaterial och som endast inrymmer verksamhetsklass 1 och 2A vara utformade i brandteknisk klass E.</p>
+
+      <h4 id="BFS2024-7_taktackning">Taktäckning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K5_P50" name="BFS2024-7_K5_P50">50 §</a>
+      </h3>
+      <p class="text">Taktäckning ska vara utformad av obrännbart material.</p>
+      <p class="text">Trots första stycket får taktäckning vara utformad i enligt följande:</p>
+      <ol type="1">
+        <li>Brandteknisk klass BROOF(t2) på ett för den brandtekniska klassen godkänt underliggande material.</li>
+        <li>Lägst brandteknisk klass E på mindre tak över uteplats, skärmtak över entré eller liknande.</li>
+        <li>Lägst brandteknisk klass E om taktäckning utgörs av ett enkelt skikt dukmaterial i tältbyggnader som endast innehåller verksamhetsklass 1 och 2A.</li>
+      </ol>
+    </section>
+
+    <section class="kapitel" id="BFS2024-7_K6">
+      <h2 class="kapitel-rubrik">6 kap. Skydd mot brandspridning mellan byggnader</h2>
+
+      <h3 id="BFS2024-7_funktionskrav-6">Funktionskrav</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P1" name="BFS2024-7_K6_P1">1 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att de uppnår ett tillfredställande skydd mot brandspridning till och från närliggande byggnader.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P2" name="BFS2024-7_K6_P2">2 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade med betryggande robusthet så att hela eller stora delar av skyddet mot brandspridning mellan byggnader inte slås ut av enskilda händelser eller påfrestningar.</p>
+      <p class="text">Aktivering och styrning av brandtekniska installationer ska ske med hög tillförlitlighet och tillräcklig snabbhet.</p>
+
+      <h3 id="BFS2024-7_verifiering-6">Verifiering</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P3" name="BFS2024-7_K6_P3">3 §</a>
+      </h3>
+      <p class="text">Kraven i 1 och 2 §§ ska uppfyllas genom något av följande alternativ:</p>
+      <ol type="1">
+        <li>Utformning enligt de preciserade krav som framgår av 4–11 §§ om de är tillämpliga.</li>
+        <li>Utformning verifierad genom analytisk dimensionering.</li>
+      </ol>
+      <p class="text">Första stycket 1 får endast tillämpas för verksamhetsklass 1–5 och byggnadsklass 1–3.</p>
+
+      <h3 id="BFS2024-7_preciserade-krav-6">Preciserade krav</h3>
+
+      <h4 id="BFS2024-7_tillforlitlighet-i-tekniska-system-6">Tillförlitlighet i tekniska system</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P4" name="BFS2024-7_K6_P4">4 §</a>
+      </h3>
+      <p class="text">Tekniska system som är av betydelse för skyddet mot brandspridning mellan byggnader ska ha skydd mot strömbortfall på grund av brand så att avsedd funktion kan upprätthållas.</p>
+      <p class="text">Kommunikationssystem och styrningar av brandtekniska installationer ska ha skydd mot felfunktion på grund av brand till dess att avsedd funktion har uppnåtts.</p>
+
+      <h4 id="BFS2024-7_krav-pa-skydd-mot-brandspridning-mellan-byggnader">Krav på skydd mot brandspridning mellan byggnader</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P5" name="BFS2024-7_K6_P5">5 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade med skyddsavstånd till andra byggnader på 8 meter eller utformade med brandavskiljning i motstående delar inom detta avstånd.</p>
+      <p class="text">Brandavskiljning ska vara utformad med lägst motsvarande brandavskiljande förmåga som angränsande brandceller i någon av byggnaderna enligt 5 kap. 28–31 §§.</p>
+      <p class="text">Trots första stycket krävs inte något skyddsavstånd eller någon brandavskiljning i byggnaden om närliggande byggnader är utformade med brandavskiljning som uppfyller andra stycket.</p>
+
+      <h4 id="BFS2024-7_byggnadsklass-1">Byggnadsklass 1</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P6" name="BFS2024-7_K6_P6">6 §</a>
+      </h3>
+      <p class="text">Byggnadsklass 1 som är sammanbyggd med annan byggnad ska vara avskild med brandvägg där de är sammanbyggda.</p>
+      <p class="text">Brandvägg som är gemensam för flera byggnader ska vara utformad med sådan stabilitet och bärförmåga att byggnader på endera sidan kan störta samman utan att brandväggens egenskaper avsevärt försämras.</p>
+      <p class="text">Brandvägg ska vara utformad så att den enkelt kan lokaliseras av räddningstjänsten och så att byggnadsdelar, fasta installationer och anslutningar som placeras på, intill eller i brandväggen inte försämrar dess funktion vid brand.</p>
+      <p class="text">Brandvägg ska vara utformad i lägst brandteknisk klass enligt följande:</p>
+      <ol type="1">
+        <li>EI 90-M om dimensionerande brandbelastning är högst 800 MJ/m².</li>
+        <li>EI 180-M om dimensionerande brandbelastning är större än 800 MJ/m² och högst 1 600 MJ/m².</li>
+        <li>EI 240-M om dimensionerande brandbelastning är större än 1 600 MJ/m².</li>
+      </ol>
+
+      <h4 id="BFS2024-7_byggnadsklass-2-och-3">Byggnadsklass 2 och 3</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P7" name="BFS2024-7_K6_P7">7 §</a>
+      </h3>
+      <p class="text">Trots 5 § får den brandtekniska klassen i brandavskiljning i motstående ytterväggar i byggnadsklass 2 och 3 vara jämnt fördelad i vardera ytterväggen utan krav på M-klass, dock inte lägre än brandteknisk klass EI 30 i någon av ytterväggarna. Brandavskiljning får vara utformad med ytor utan brandteknisk klass i följande storlek:</p>
+      <ol type="1">
+        <li>Högst 1 m² där avståndet mellan byggnaderna är 2 meter till 5 meter.</li>
+        <li>Högst 4 m² där avståndet mellan byggnaderna är 5 meter till 8 meter.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P8" name="BFS2024-7_K6_P8">8 §</a>
+      </h3>
+      <p class="text">Trots 5 § får byggnader i byggnadsklass 2 och 3 vara utformade utan skydd mot brandspridning mellan varandra om de endast innehåller utrymmen som tillåts ingå i samma brandcell enligt 5 kap.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P9" name="BFS2024-7_K6_P9">9 §</a>
+      </h3>
+      <p class="text">Trots 5 § får kravet på skydd mot brandspridning för uterum i byggnadsklass 2 och 3 uppfyllas genom 5 kap. 37 §.</p>
+
+      <h4 id="BFS2024-7_komplementbyggnader">Komplementbyggnader</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P10" name="BFS2024-7_K6_P10">10 §</a>
+      </h3>
+      <p class="text">Trots 5 § krävs inte skydd mot brandspridning till och från komplementbyggnader med en byggnadsarea på högst 15 m².</p>
+
+      <h4 id="BFS2024-7_taktackning-i-byggnadsklass-1-och-2">Taktäckning i byggnadsklass 1 och 2</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K6_P11" name="BFS2024-7_K6_P11">11 §</a>
+      </h3>
+      <p class="text">Underlag till taktäckning i brandteknisk klass BROOF(t2) ska vara utformat av obrännbart material i byggnadsklass 1 och 2 om avståndet till annan byggnad understiger 8 meter.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-7_K7">
+      <h2 class="kapitel-rubrik">7 kap. Möjlighet till utrymning vid brand</h2>
+
+      <h3 id="BFS2024-7_funktionskrav-7">Funktionskrav</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P1" name="BFS2024-7_K7_P1">1 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att personer kan bli varse en brand och påbörja utrymning i den utsträckning som krävs för att utrymma eller räddas på annat sätt med tillfredställande säkerhet.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till följande:</p>
+      <ol type="1">
+        <li>Om personer kan förväntas upptäcka en brand i ett tidigt skede.</li>
+        <li>Om personer kan förväntas vara vakna.</li>
+        <li>Om personer kan förväntas ha god lokalkännedom.</li>
+        <li>Om personer kan förväntas utrymma på egen hand.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P2" name="BFS2024-7_K7_P2">2 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att risken för att personer blir instängda på grund av brand eller brandgaser begränsas i brandens tidiga skede i den utsträckning som krävs för att utrymma eller räddas på annat sätt med tillfredställande säkerhet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P3" name="BFS2024-7_K7_P3">3 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att det är möjligt att orientera sig i den utsträckning som krävs för att utrymma eller räddas på annat sätt med tillfredställande säkerhet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P4" name="BFS2024-7_K7_P4">4 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att personer kan förflytta sig säkert i den utsträckning som krävs för att utrymma eller räddas på annat sätt med tillfredställande säkerhet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P5" name="BFS2024-7_K7_P5">5 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att personer inte utsätts för kritiska förhållanden i den utsträckning som krävs för att utrymma eller räddas på annat sätt med tillfredställande säkerhet.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till om personer kan förväntas utsättas för följande:</p>
+      <ol type="1">
+        <li>Höga temperaturer.</li>
+        <li>Hög värmestrålning.</li>
+        <li>Giftiga brandgaser.</li>
+        <li>Dålig sikt.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P6" name="BFS2024-7_K7_P6">6 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade med betryggande robusthet så att hela eller stora delar av möjligheterna att utrymma eller räddas på annat sätt inte slås ut av enskilda händelser eller påfrestningar.</p>
+      <p class="text">Aktivering och styrning av brandtekniska installationer ska ske med hög tillförlitlighet och tillräcklig snabbhet.</p>
+
+      <h3 id="BFS2024-7_verifiering-7">Verifiering</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P7" name="BFS2024-7_K7_P7">7 §</a>
+      </h3>
+      <p class="text">Kraven i 1–6 §§ ska uppfyllas genom något av följande:</p>
+      <ol type="1">
+        <li>Utformning enligt de preciserade krav som framgår av 8–48 §§ om de är tillämpliga.</li>
+        <li>Utformning som verifieras genom analytisk dimensionering.</li>
+      </ol>
+      <p class="text">Första stycket 1 får endast tillämpas för verksamhetsklass 1–5 och byggnadsklass 1–3.</p>
+
+      <h3 id="BFS2024-7_preciserade-krav-7">Preciserade krav</h3>
+
+      <h4 id="BFS2024-7_tillforlitlighet-i-tekniska-system-7">Tillförlitlighet i tekniska system</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P8" name="BFS2024-7_K7_P8">8 §</a>
+      </h3>
+      <p class="text">Tekniska system som är av betydelse för möjligheten till utrymning vid brand ska upprätthålla avsedd funktion vid strömbortfall.</p>
+      <p class="text">Kommunikationssystem och styrningar av brandtekniska installationer ska ha skydd mot felfunktion på grund av brand till dess att avsedd funktion har uppnåtts.</p>
+      <p class="text">Trots första stycket får följande vara utformat utan att upprätthålla avsedd funktion vid strömbortfall:</p>
+      <ol type="1">
+        <li>Dörröppningsautomatik om denna är utformad med skydd mot strömbortfall på grund av brand och dörren ändå kan öppnas manuellt.</li>
+        <li>Allmänbelysning.</li>
+        <li>Hiss som vid strömbortfall går till närmaste stannplan varifrån utrymning kan ske.</li>
+        <li>Anordning som gör det möjligt att återvända efter passage enligt 35 § om denna är utformad med skydd mot strömbortfall på grund av brand.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_antal-utrymningsdorrar">Antal utrymningsdörrar</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P9" name="BFS2024-7_K7_P9">9 §</a>
+      </h3>
+      <p class="text">Personer som vistas i byggnader ska ha tillgång till oberoende utrymningsdörrar inom verksamheten enligt följande:</p>
+      <ol type="1">
+        <li>Två utrymningsdörrar i bostäder i verksamhetsklass 3A.</li>
+        <li>Två utrymningsdörrar i en grupp av boendeenheter i verksamhetsklass 3B sammanlagt avsedd för högst sex personer inklusive tillhörande gemensamhetsutrymme.</li>
+        <li>Två utrymningsdörrar i bostäder i verksamhetsklass 3C.</li>
+        <li>Två utrymningsdörrar i gästrum, sovsal och liknande i verksamhetsklass 4.</li>
+        <li>Två utrymningsdörrar i en grupp av boendeenheter eller bostäder i verksamhetsklass 5B.</li>
+        <li>Två utrymningsdörrar i verksamheter med högst 600 personer.</li>
+        <li>Tre utrymningsdörrar i verksamheter med fler än 600 personer och högst 1 000 personer.</li>
+        <li>Fyra utrymningsdörrar i verksamheter med fler än 1 000 personer.</li>
+      </ol>
+      <p class="text">Byggnader ska vara utformade så att avståndet mellan oberoende utrymningsdörrar är minst 5 meter.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P10" name="BFS2024-7_K7_P10">10 §</a>
+      </h3>
+      <p class="text">Trots 9 § får en av utrymningsdörrarna finnas tillgänglig i samma plan i angränsande verksamhet.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P11" name="BFS2024-7_K7_P11">11 §</a>
+      </h3>
+      <p class="text">Trots 9 § får personer ha tillgång till endast en utrymningsdörr inom verksamheten i följande fall:</p>
+      <ol type="1">
+        <li>I verksamhetsklass 2A, 4, 5A, 5B och 5C där utrymningsdörren utgörs av dörr till säker plats och betjänar högst 30 personer.</li>
+        <li>I verksamhetsklass 1, 3A, 3B och 3C där utrymningsdörren utgörs av dörr till säker plats och betjänar högst 50 personer.</li>
+        <li>I verksamhetsklass 1 om utrymningsdörren betjänar högst 50 personer och leder till ett trapphus Tr1 som står i förbindelse med högst 16 plan ovan mark.</li>
+        <li>I verksamhetsklass 3A, 3B och 3C om utrymningsdörren betjänar högst 50 personer och leder till ett trapphus Tr1 som står i förbindelse med högst 20 plan ovan mark.</li>
+        <li>I verksamhetsklass 1 i byggnader om utrymningsdörren betjänar högst 50 personer och leder till ett trapphus Tr2 som står i förbindelse med högst 8 plan ovan mark.</li>
+        <li>I verksamhetsklass 3A, 3B och 3C om utrymningsdörren betjänar högst 50 personer och leder till trapphus Tr2 som står i förbindelse med högst 16 plan ovan mark.</li>
+        <li>Där personer inte vistas varaktigt.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P12" name="BFS2024-7_K7_P12">12 §</a>
+      </h3>
+      <p class="text">Trots 9 § får personer ha tillgång till endast en utrymningsdörr inom verksamheten om utrymningsdörren leder till en utrymningspassage i ett plan som utgör gemensam del av i övrigt skilda utrymningspassager och högst 150 personer har denna utrymningspassage som enda vägen till säker plats i följande fall:</p>
+      <ol type="1">
+        <li>I verksamhetsklass 2A, 4, 5A, 5B och 5C där utrymningsdörren betjänar högst 30 personer.</li>
+        <li>I verksamhetsklass 1, 3A, 3B och 3C där utrymningsdörren betjänar högst 50 personer.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P13" name="BFS2024-7_K7_P13">13 §</a>
+      </h3>
+      <p class="text">Trots 9 § får personer i verksamhetsklass 1, 3A, 3B och 3C ha tillgång till endast en utrymningsdörr inom verksamheten om det finns möjlighet till utrymning via fönster eller motsvarande. Utrymning via fönster eller motsvarande är möjligt om följande är uppfyllt:</p>
+      <ol type="1">
+        <li>Fönstret leder till säker plats.</li>
+        <li>Fönstrets underkant är högst 2,0 meter ovan utanförliggande marknivå.</li>
+        <li>Högst 50 personer i respektive verksamhet förväntas utrymma på detta sätt.</li>
+        <li>Högst 30 personer utrymmer per fönster.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P14" name="BFS2024-7_K7_P14">14 §</a>
+      </h3>
+      <p class="text">Trots 9 § får personer i verksamhetsklass 3A i byggnadsklass 2 och 3 ha tillgång till endast en utrymningsdörr inom verksamheten om det finns möjlighet till utrymning via fönster eller motsvarande. Utrymning via fönster eller motsvarande är möjlig om följande är uppfyllt:</p>
+      <ol type="1">
+        <li>Fönstret leder till säker plats.</li>
+        <li>Utrymmet med fönstret är avskilt i samma plan som fönstret.</li>
+        <li>Fönstrets underkant är belägen högst 5,0 meter ovan utanförliggande marknivå eller som alternativ högst 8,0 meter om fast stege finns.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P15" name="BFS2024-7_K7_P15">15 §</a>
+      </h3>
+      <p class="text">Trots 9 § får personer i verksamhetsklass 1, 3A, 3B och 3C i byggnadsklass 1 ha tillgång till endast en utrymningsdörr inom verksamheten om det finns möjlighet till räddningstjänstassisterad utrymning via fönster eller motsvarande. Räddningstjänstassisterad utrymning via fönster eller motsvarande är möjlig om följande är uppfyllt:</p>
+      <ol type="1">
+        <li>Räddningstjänsten har tillräcklig utrustning och förmåga.</li>
+        <li>Högst 15 personer i respektive verksamhet förväntas utrymma på detta sätt.</li>
+        <li>Storleken på brandcellen är högst 200 m².</li>
+        <li>Insatstiden är högst 10 minuter alternativt högst 20 minuter i verksamhetsklass 1, 3A och 3B om byggnaden skyddas med automatisk vattensprinkleranläggning eller boendesprinklersystem.</li>
+        <li>Fönstret är åtkomligt från uppställningsplats med avsedd utrustning.</li>
+        <li>Fönstrets underkant är placerad högst 23 meter ovanför uppställningsplats.</li>
+        <li>Uppställningsplats är belägen högst 9 meter från byggnaden.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_tillgang-till-utrymningsdorr-i-samma-plan">Tillgång till utrymningsdörr i samma plan</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P16" name="BFS2024-7_K7_P16">16 §</a>
+      </h3>
+      <p class="text">Plan större än 25 m² ska vara utformade så att personer som vistas där har tillgång till utrymningsdörr i samma plan.</p>
+      <p class="text">Plan som är 25 m² eller mindre ska vara utformade så att personer som vistas där har tillgång till utrymningsdörr i samma plan eller närmast angränsande plan.</p>
+      <p class="text">Trots första stycket får plan vara utformade med tillgång till ett fönster eller motsvarande för utrymning i samma plan om utrymning via fönster eller motsvarande får tillämpas enligt 13 § eller 14 §.</p>
+      <p class="text">Trots första stycket får plan där personer inte vistas varaktigt vara utformat utan tillgång till utrymningsdörr i samma plan.</p>
+
+      <h4 id="BFS2024-7_alternativ-utrymningsdorr">Alternativ utrymningsdörr</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P17" name="BFS2024-7_K7_P17">17 §</a>
+      </h3>
+      <p class="text">I verksamhetsklass 2B och 2C ska alternativ utrymningsdörr leda till huvudentrén eller motsvarande.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P18" name="BFS2024-7_K7_P18">18 §</a>
+      </h3>
+      <p class="text">I verksamhetsklass 5C ska tillgång till två oberoende alternativa utrymningsdörrar finnas om det är en förutsättning för utrymningsstrategin.</p>
+
+      <h4 id="BFS2024-7_avstand-for-utrymning">Avstånd för utrymning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P19" name="BFS2024-7_K7_P19">19 §</a>
+      </h3>
+      <p class="text">Avstånd till en utrymningsdörr ska vara högst följande:</p>
+      <ol type="1">
+        <li>Verksamhetsklass 1, 3A, 3B, 3C och 5B: 45 meter.</li>
+        <li>Verksamhetsklass 2A, 2B, 4, 5A och 5C: 30 meter.</li>
+        <li>Verksamhetsklass 2C: 15 meter.</li>
+      </ol>
+      <p class="text">Avståndet ska minskas med en tredjedel om mycket snabb initial brandspridning kan förväntas.</p>
+      <p class="text">Trots första stycket får avståndet räknas till fönster eller motsvarande för utrymning om det är högst 15 meter och utrymning via fönster eller motsvarande accepteras enligt 13 eller 14 §§.</p>
+      <p class="text">Trots första stycket får avståndet vara 45 meter i garage med god överblickbarhet i verksamhetsklass 2A och 2B.</p>
+      <p class="text">Trots första stycket får avstånd mätas till alternativ utrymningsdörr om utrymningsdörr finns tillgänglig inom brandcellen.</p>
+      <p class="text">Avståndet ska mätas så att riktningsförändringarna är rätvinkliga.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P20" name="BFS2024-7_K7_P20">20 §</a>
+      </h3>
+      <p class="text">Avstånd i sammanfallande väg för utrymning ska vara högst följande:</p>
+      <ol type="1">
+        <li>Verksamhetsklass 1, 3A, 3B, 3C och 5B: 30 meter.</li>
+        <li>Verksamhetsklass 2A, 2B, 4, 5A och 5C: 15 meter.</li>
+        <li>Verksamhetsklass 2C: 7,5 meter.</li>
+      </ol>
+      <p class="text">Avståndet ska minskas med en tredjedel om mycket snabb initial brandspridning kan förväntas.</p>
+      <p class="text">Trots första stycket får sammanfallande väg för utrymning vara 30 meter i garage med god överblickbarhet i verksamhetsklass 2A och 2B.</p>
+      <p class="text">Väg för utrymning ska betraktas som sammanfallande väg för utrymning fram till en utrymningsdörr eller alternativ utrymningsdörr eller så länge den inte måste förgrenas till oberoende utrymningsdörrar eller alternativa utrymningsdörrar.</p>
+      <p class="text">Avstånd ska mätas så att riktningsförändringarna är rätvinkliga.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P21" name="BFS2024-7_K7_P21">21 §</a>
+      </h3>
+      <p class="text">Trots 19 och 20 §§ får längre avstånd för utrymning förekomma om brandcellen skyddas med automatisk vattensprinkleranläggning för personskydd eller boendesprinklersystem. Avstånden enligt 19 och 20 §§ får då utökas med en tredjedel, förutom i verksamhetsklass 2C där avstånden får dubbleras.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P22" name="BFS2024-7_K7_P22">22 §</a>
+      </h3>
+      <p class="text">Avstånden som följer av 19–21 §§ ska minskas med fyra gånger nivåskillnaden i väg för utrymning.</p>
+      <p class="text">Trots första stycket behöver avståndet inte minskas för nivåskillnader som ingår i väg för utrymning från utrymmen där personer inte vistas varaktigt och för trappor på läktare och gradänger.</p>
+
+      <h4 id="BFS2024-7_avstand-inom-utrymningspassager">Avstånd inom utrymningspassager</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P23" name="BFS2024-7_K7_P23">23 §</a>
+      </h3>
+      <p class="text">Avstånd inom utrymningspassager, som utgör trapphus, till trapplopp ska vara högst 10 meter.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P24" name="BFS2024-7_K7_P24">24 §</a>
+      </h3>
+      <p class="text">Avstånd inom utrymningspassager, som inte utgör trapphus och som inte utgör den enda vägen till säker plats, ska vara högst 30 meter.</p>
+      <p class="text">Avståndet ska mätas till utrymningsdörr som leder till säker plats eller till trappa som leder till säker plats.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P25" name="BFS2024-7_K7_P25">25 §</a>
+      </h3>
+      <p class="text">Avstånd inom utrymningspassager, som inte utgör trapphus och som utgör den enda vägen till säker plats, ska högst vara följande:</p>
+      <ol type="1">
+        <li>10 meter i invändiga utrymningspassager där utrymning endast kan ske i en riktning inom utrymningspassagen.</li>
+        <li>15 meter i utvändiga utrymningspassager där utrymning endast kan ske i en riktning inom utrymningspassagen.</li>
+        <li>30 meter där utrymning kan ske i två riktningar inom utrymningspassagen.</li>
+      </ol>
+      <p class="text">Avståndet ska mätas till utrymningsdörr som leder till säker plats eller till trappa som leder till säker plats.</p>
+
+      <h4 id="BFS2024-7_framkomlighet-i-utrymningspassager">Framkomlighet i utrymningspassager</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P26" name="BFS2024-7_K7_P26">26 §</a>
+      </h3>
+      <p class="text">Fri bredd och framkomlighet i utrymningspassager ska vara anpassad efter det antal personer som samtidigt förväntas använda utrymningspassagen.</p>
+      <p class="text">Trappor i utrymningspassager ska vara utformade med konstant stegdjup över trappans bredd i följande fall:</p>
+      <ol type="1">
+        <li>I utrymningspassage som betjänar fler än 150 personer i verksamhetsklass 2B och 2C.</li>
+        <li>I utrymningspassage som betjänar verksamhetsklass 5B och 5C.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_utrymningsbredd">Utrymningsbredd</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P27" name="BFS2024-7_K7_P27">27 §</a>
+      </h3>
+      <p class="text">Utrymningsdörrar och alternativa utrymningsdörrar ska vara utformade enligt följande:</p>
+      <ol type="1">
+        <li>Fri bredd ska vara minst 0,80 meter om de betjänar högst 150 personer.</li>
+        <li>Fri bredd ska vara minst 1,15 meter om de betjänar fler än 150 personer.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P28" name="BFS2024-7_K7_P28">28 §</a>
+      </h3>
+      <p class="text">Utrymningspassager ska vara utformade enligt följande:</p>
+      <ol type="1">
+        <li>Fri bredd ska vara minst 0,90 meter om de betjänar högst 150 personer.</li>
+        <li>Fri bredd ska vara minst 1,20 meter om de betjänar fler än 150 personer.</li>
+      </ol>
+      <p class="text">Trots första stycket får ledstänger inkräkta på den fria bredden med 0,10 meter per sida.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P29" name="BFS2024-7_K7_P29">29 §</a>
+      </h3>
+      <p class="text">Utrymningsdörrar och alternativa utrymningsdörrar ska vara utformade med total fri bredd som motsvarar minst 1,00 meter per 150 personer som dörren betjänar. När en utrymningsdörr eller alternativ utrymningsdörr antas vara blockerad ska resterande dörrar vara utformade med total fri bredd som motsvarar minst 1,00 meter per 300 personer.</p>
+
+      <h4 id="BFS2024-7_vag-for-utrymning">Väg för utrymning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P30" name="BFS2024-7_K7_P30">30 §</a>
+      </h3>
+      <p class="text">Väg för utrymning ska vara utformad enligt de krav som anges avseende antalet utrymningsdörrar samt utformning av utrymningsdörr, alternativ utrymningsdörr och utrymningspassage i den utsträckning som krävs för att inte försvåra möjligheten till utrymning.</p>
+
+      <h4 id="BFS2024-7_frangaglighet">Frångänglighet</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P31" name="BFS2024-7_K7_P31">31 §</a>
+      </h3>
+      <p class="text">Utrymmen som ska vara tillgängliga och användbara enligt Boverkets föreskrifter (2024:12) om byggnaders tillgänglighet och användbarhet för personer med nedsatt rörelse- eller orienteringsförmåga och som inte skyddas med automatisk vattensprinkleranläggning för personskydd eller boendesprinklersystem ska vara frångängliga i sådan utsträckning att personer med nedsatt rörelseförmåga har möjlighet att förflytta sig från den brandcell som påverkas i brandens tidiga skede.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P32" name="BFS2024-7_K7_P32">32 §</a>
+      </h3>
+      <p class="text">Utrymmen som ska vara tillgängliga och användbara i publika lokaler enligt Boverkets föreskrifter (2024:12) om byggnaders tillgänglighet och användbarhet för personer med nedsatt rörelse- eller orienteringsförmåga och som inte skyddas med automatisk vattensprinkleranläggning för personskydd eller boendesprinklersystem ska vara frångängliga i sådan utsträckning att personer med nedsatt rörelseförmåga har tillgång till två av varandra oberoende utrymningsplatser eller utrymningsdörrar som är frångängliga hela vägen till säker plats.</p>
+      <p class="text">I verksamhetsklass 2B och 2C ska utrymningsplatser rymma det antal rullstolar som motsvarar minst 1 procent av antalet personer, med hänsyn tagen till att en utrymningsplats kan antas vara blockerad vid brand.</p>
+      <p class="text">Utrymningsplatser ska vara placerade i utrymningspassage eller i omedelbar anslutning till en utrymningsdörr.</p>
+      <p class="text">Trots första stycket får personer med nedsatt rörelseförmåga ha tillgång till endast en utrymningsdörr direkt till säker plats eller en utrymningsplats i annan brandcell om utrymmet enligt 11 eller 12 §§ har en enda utrymningsdörr.</p>
+
+      <h4 id="BFS2024-7_typ-av-dorr-och-slagriktning">Typ av dörr och slagriktning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P33" name="BFS2024-7_K7_P33">33 §</a>
+      </h3>
+      <p class="text">Utrymningsdörrar och alternativa utrymningsdörrar ska vara utformade enligt något av följande alternativ:</p>
+      <ol type="1">
+        <li>Slagdörr som öppnar i utrymningsriktningen.</li>
+        <li>Automatisk skjutdörr.</li>
+        <li>Slagdörr som öppnar mot utrymningsriktningen om högst 30 personer förväntas nyttja den samtidigt.</li>
+        <li>Manuell skjutdörr om högst 30 personer förväntas nyttja den samtidigt.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_beslagning">Beslagning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P34" name="BFS2024-7_K7_P34">34 §</a>
+      </h3>
+      <p class="text">Utrymningsdörrar och alternativa utrymningsdörrar ska vara utformade så att</p>
+      <ol type="1">
+        <li>de kan öppnas genom ett trycke som trycks nedåt eller att dörren trycks utåt,</li>
+        <li>de kan nyttjas för utrymning utan fördröjning,</li>
+        <li>de öppningsbeslag som krävs för att öppna dörren är placerade med centrum mellan 0,80 meter och 1,20 meter ovan golv,</li>
+        <li>den vertikala kraften för att manövrera trycke eller liknande är högst 70 N,</li>
+        <li>kraften för att trycka upp eller dra upp dörren är högst 150 N, och</li>
+        <li>det är lätt att manövrera de anordningar som krävs för att öppna dörren och lätt att förstå hur detta ska göras.</li>
+      </ol>
+      <p class="text">Trots första stycket 1 får nyckel eller motsvarande användas för att låsa upp en annars låst utrymningsdörr och alternativ utrymningsdörr i verksamhetsklass 1, 3A, 3B och 3C i brandceller avsedda för högst 10 personer om samtliga personer förväntas ha tillgång till nyckel eller motsvarande.</p>
+      <p class="text">Trots första stycket 1 får fast monterat vred eller motsvarande användas för att låsa upp en annars låst utrymningsdörr och alternativ utrymningsdörr i brandceller avsedda för högst 50 personer.</p>
+      <p class="text">Utrymningsdörrar och alternativa utrymningsdörrar som betjänar verksamhetsklass 2B och 2C ska vara utformade enligt följande:</p>
+      <ol type="1">
+        <li>Med nödutrymningsbeslag med trycke eller nödutrymningsbeslag med tryckplatta i verksamheter med högst 1 000 personer.</li>
+        <li>Med panikutrymningsbeslag med horisontell tryckstång i verksamheter med fler än 1 000 personer.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_atervandande-vid-utrymning">Återvändande vid utrymning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P35" name="BFS2024-7_K7_P35">35 §</a>
+      </h3>
+      <p class="text">Utrymningsdörrar och alternativa utrymningsdörrar ska vara utformade med anordning som gör det möjligt att återvända efter passage. I verksamhetsklass 1, 3A, 3B och 3C kan sådan anordning utgöras av nyckel eller motsvarande som personer kan förväntas ha tillgång till.</p>
+      <p class="text">Trots första stycket får utrymningsdörrar vara utformade utan sådan anordning i följande fall:</p>
+      <ol type="1">
+        <li>Utrymningsdörr som leder till säker plats.</li>
+        <li>Utrymningsdörr som leder till utrymningspassage som är överblickbar hela vägen till säker plats.</li>
+        <li>Utrymningsdörr som leder till utrymningspassage varifrån utrymning via två oberoende utrymningsdörrar är möjlig.</li>
+        <li>Utrymningsdörr från utrymmen där personer inte vistas varaktigt.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P36" name="BFS2024-7_K7_P36">36 §</a>
+      </h3>
+      <p class="text">Utrymningsdörrar och alternativa utrymningsdörrar som betjänar verksamhetsklass 5A, 5B och 5C ska vara utformade med anordningar som gör det möjligt att återvända efter passage.</p>
+
+      <h4 id="BFS2024-7_forregling-mot-vasentlig-funktion">Förregling mot väsentlig funktion</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P37" name="BFS2024-7_K7_P37">37 §</a>
+      </h3>
+      <p class="text">Utrymningsdörrar och alternativa utrymningsdörrar som kan vara låsta eller blockerade på ett sådant sätt att de inte går att använda för utrymning när personer kan behöva nyttja dem ska vara försedda med förregling mot en funktion som är väsentlig för utrymmets användning.</p>
+
+      <h4 id="BFS2024-7_allmanbelysning-for-utrymning">Allmänbelysning för utrymning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P38" name="BFS2024-7_K7_P38">38 §</a>
+      </h3>
+      <p class="text">Allmänbelysning ska finnas i följande utrymmen:</p>
+      <ol type="1">
+        <li>Utrymningspassager.</li>
+        <li>Verksamhetsklass 2B och 2C, tillhörande utrymningspassager och omedelbart utanför utrymningsdörr till säker plats.</li>
+      </ol>
+      <p class="text">Allmänbelysningen ska uppfylla kraven på belysning i Boverkets föreskrifter (2024:9) om säkerhet vid användning av byggnader.</p>
+      <p class="text">Allmänbelysningen i utrymningspassager som är längre än 30 meter och i utrymningspassager som betjänar fler än två plan ska vara utformad så att två efter varandra följande ljuspunkter inte slocknar till följd av samma fel.</p>
+      <p class="text">Allmänbelysningen ska tändas automatiskt vid aktiverat utrymningslarm i verksamhetsklass 2B och 2C som kan förväntas ha svag eller släckt allmänbelysning.</p>
+
+      <h4 id="BFS2024-7_vagledande-markering">Vägledande markering</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P39" name="BFS2024-7_K7_P39">39 §</a>
+      </h3>
+      <p class="text">Vägledande markeringar ska finnas i följande utrymmen:</p>
+      <ol type="1">
+        <li>Verksamhetsklass 2A, 2B och 2C och tillhörande utrymningspassager.</li>
+        <li>Utrymningspassager som betjänar verksamhetsklass 4.</li>
+        <li>Verksamhetsklass 5C och tillhörande utrymningspassager.</li>
+        <li>Utrymmen som är svårorienterade oberoende av verksamhetsklass.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_nodbelysning-for-utrymning">Nödbelysning för utrymning</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P40" name="BFS2024-7_K7_P40">40 §</a>
+      </h3>
+      <p class="text">Nödbelysning ska finnas i följande utrymmen:</p>
+      <ol type="1">
+        <li>Verksamhetsklass 2B och 2C, tillhörande utrymningspassager och omedelbart utanför utrymningsdörr till säker plats.</li>
+        <li>Väg för utrymning i gemensamhetsutrymmen i verksamhetsklass 3B.</li>
+        <li>Utrymningspassager som betjänar verksamhetsklass 4.</li>
+        <li>Verksamhetsklass 5A och tillhörande utrymningspassager.</li>
+        <li>Väg för utrymning i gemensamhetsutrymmen i verksamhetsklass 5B och tillhörande utrymningspassager.</li>
+        <li>Utrymningspassager som betjänar verksamhetsklass 5C.</li>
+        <li>Trapphus Tr1 och trapphus Tr2.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_skyltning-av-personantal">Skyltning av personantal</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P41" name="BFS2024-7_K7_P41">41 §</a>
+      </h3>
+      <p class="text">Skylt som anger dimensionerande personantal ska finnas och vara placerad väl synlig i följande fall:</p>
+      <ol type="1">
+        <li>Verksamhetsklass 2A om det inte är obehövligt.</li>
+        <li>Verksamhetsklass 2B och 2C.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_utrymningsplan">Utrymningsplan</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P42" name="BFS2024-7_K7_P42">42 §</a>
+      </h3>
+      <p class="text">Utrymningsplan ska finnas och vara placerad väl synlig i gästrum, sovsal och liknande i verksamhetsklass 4.</p>
+
+      <h4 id="BFS2024-7_brand-och-utrymningslarm">Brand- och utrymningslarm</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P43" name="BFS2024-7_K7_P43">43 §</a>
+      </h3>
+      <p class="text">Hörbarhet från utrymningslarm med akustisk signal ska finnas i följande utrymmen och tillhörande utrymningspassager:</p>
+      <ol type="1">
+        <li>Verksamhetsklass 2B i verksamheter med högst 600 personer.</li>
+        <li>Verksamhetsklass 3B.</li>
+        <li>Verksamhetsklass 4 i byggnader med minst nio gäster eller minst fem gästrum.</li>
+        <li>Verksamhetsklass 5A.</li>
+        <li>Verksamhetsklass 5B.</li>
+      </ol>
+      <p class="text">Utrymningslarm ska kunna aktiveras manuellt och av ett brandlarm utan fördröjning.</p>
+      <p class="text">I publika lokaler där personer kan vistas utan direktkontakt med andra ska utrymningslarm kompletteras med optiska larmdon.</p>
+      <p class="text">Trots första och andra styckena får utrymningslarm i verksamhetsklass 5B vara anpassat efter förutsättningarna för personalingripanden och de boendes förmåga att uppfatta larmsignaler.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P44" name="BFS2024-7_K7_P44">44 §</a>
+      </h3>
+      <p class="text">Hörbarhet från utrymningslarm med talat meddelande ska finnas i följande utrymmen och tillhörande utrymningspassager:</p>
+      <ol type="1">
+        <li>Verksamhetsklass 2B i verksamheter med fler än 600 personer.</li>
+        <li>Verksamhetsklass 2C.</li>
+      </ol>
+      <p class="text">Utrymningslarm ska kunna aktiveras manuellt och av ett brandlarm utan fördröjning.</p>
+      <p class="text">I publika lokaler där personer med hörselnedsättning kan förväntas vistas utan direktkontakt med andra ska utrymningslarm kompletteras med optiska larmdon.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P45" name="BFS2024-7_K7_P45">45 §</a>
+      </h3>
+      <p class="text">Hörbarhet från utrymningslarm ska finnas i följande utrymmen om enda väg för utrymning till utrymningsdörr eller alternativ utrymningsdörr passerar genom ett annat utrymme:</p>
+      <ol type="1">
+        <li>Utrymmen avsedda för fler än 30 personer.</li>
+        <li>Utrymmen avsedda för fler än 10 personer om avståndet i väg för utrymning i utanförliggande utrymme är större än 10 meter.</li>
+      </ol>
+      <p class="text">Utrymningslarmet ska aktiveras av ett brandlarm utan fördröjning som övervakar väg för utrymning i tillräcklig omfattning.</p>
+      <p class="text">Trots första stycket krävs inte hörbarhet från utrymningslarm om fönster eller motsvarande för utrymning finns i utrymmet och accepteras enligt 13 eller 14 §§.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P46" name="BFS2024-7_K7_P46">46 §</a>
+      </h3>
+      <p class="text">Brandlarm ska övervaka brandceller innehållande följande utrymmen och tillhörande utrymningspassager:</p>
+      <ol type="1">
+        <li>Verksamhetsklass 2B.</li>
+        <li>Verksamhetsklass 2C.</li>
+        <li>Verksamhetsklass 3B.</li>
+        <li>Verksamhetsklass 4 i byggnader med minst nio gäster eller minst fem gästrum.</li>
+        <li>Verksamhetsklass 5A.</li>
+        <li>Verksamhetsklass 5B.</li>
+        <li>Verksamhetsklass 5C.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_brandvarnare">Brandvarnare</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P47" name="BFS2024-7_K7_P47">47 §</a>
+      </h3>
+      <p class="text">Brandvarnare ska övervaka följande utrymmen:</p>
+      <ol type="1">
+        <li>Verksamhetsklass 3A.</li>
+        <li>Verksamhetsklass 3C.</li>
+        <li>Gästrum, sovsal och liknande i verksamhetsklass 4 och tillhörande utrymningspassager i byggnader med färre än nio gäster och färre än fem gästrum.</li>
+      </ol>
+
+      <h4 id="BFS2024-7_automatiska-slacksystem">Automatiska släcksystem</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K7_P48" name="BFS2024-7_K7_P48">48 §</a>
+      </h3>
+      <p class="text">Automatisk vattensprinkleranläggning för personskydd eller boendesprinklersystem ska skydda byggnader med verksamhetsklass 3C.</p>
+      <p class="text">Automatisk vattensprinkleranläggning för personskydd eller boendesprinklersystem ska skydda brandceller med verksamhetsklass 5B.</p>
+      <p class="text">Automatisk vattensprinkleranläggning för personskydd med förbättrad tillförlitlighet ska skydda brandceller med verksamhetsklass 5C.</p>
+    </section>
+
+    <section class="kapitel" id="BFS2024-7_K8">
+      <h2 class="kapitel-rubrik">8 kap. Räddningspersonalens säkerhet vid brand</h2>
+
+      <h3 id="BFS2024-7_funktionskrav-8">Funktionskrav</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K8_P1" name="BFS2024-7_K8_P1">1 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att det finns förutsättningar för räddningspersonal att få tillgång till byggnaden och förflytta sig inom byggnaden i den utsträckning som krävs för att genomföra räddningsinsatser med tillfredställande säkerhet.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till:</p>
+      <ol type="1">
+        <li>Räddningspersonalens arbetsmetod.</li>
+        <li>Räddningspersonalens utrustning.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K8_P2" name="BFS2024-7_K8_P2">2 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att det finns förutsättningar för räddningspersonal att få tillgång till släckmedel i den utsträckning som krävs för att genomföra räddningsinsatser med tillfredställande säkerhet.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till:</p>
+      <ol type="1">
+        <li>Räddningspersonalens arbetsmetod.</li>
+        <li>Räddningspersonalens utrustning.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K8_P3" name="BFS2024-7_K8_P3">3 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade så att det finns förutsättningar för räddningspersonal att ventilera ut brandgaser i den utsträckning som krävs för att genomföra räddningsinsatser med tillfredställande säkerhet.</p>
+      <p class="text">Utformningen ska ta särskild hänsyn till:</p>
+      <ol type="1">
+        <li>Räddningspersonalens arbetsmetod.</li>
+        <li>Räddningspersonalens utrustning.</li>
+      </ol>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K8_P4" name="BFS2024-7_K8_P4">4 §</a>
+      </h3>
+      <p class="text">Byggnader ska vara utformade med betryggande robusthet så att hela eller stora delar av möjligheten att genomföra räddningsinsatser inte slås ut av enskilda händelser eller påfrestningar.</p>
+      <p class="text">Aktivering och styrning av brandtekniska installationer ska ske med hög tillförlitlighet och tillräcklig snabbhet.</p>
+
+      <h3 id="BFS2024-7_verifiering-8">Verifiering</h3>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K8_P5" name="BFS2024-7_K8_P5">5 §</a>
+      </h3>
+      <p class="text">Kraven i 1–4 §§ ska uppfyllas genom något av följande alternativ.</p>
+      <ol type="1">
+        <li>Utformning enligt de preciserade krav som framgår av 6–15 §§ om de är tillämpliga.</li>
+        <li>Utformning verifierad genom analytisk dimensionering.</li>
+      </ol>
+      <p class="text">Första stycket 1 får endast tillämpas för verksamhetsklass 1–5 och byggnadsklass 1–3.</p>
+
+      <h3 id="BFS2024-7_preciserade-krav-8">Preciserade krav</h3>
+
+      <h4 id="BFS2024-7_tillforlitlighet-i-tekniska-system-8">Tillförlitlighet i tekniska system</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K8_P6" name="BFS2024-7_K8_P6">6 §</a>
+      </h3>
+      <p class="text">Tekniska system som är av betydelse för räddningspersonalens säkerhet vid brand ska ha skydd mot strömbortfall på grund av brand så att avsedd funktion kan upprätthållas.</p>
+      <p class="text">Kommunikationssystem och styrningar av brandtekniska installationer ska ha skydd mot felfunktion på grund av brand till dess att avsedd funktion har uppnåtts.</p>
+
+      <h4 id="BFS2024-7_atkomlighet-och-framkomlighet">Åtkomlighet och framkomlighet</h4>
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K8_P7" name="BFS2024-7_K8_P7">7 §</a>
+      </h3>
+      <p class="text">Verksamheter ska vara åtkomliga från angreppspunkt.</p>
+
+      <h3 class="paragraph">
+        <a class="paragraf" id="BFS2024-7_K8_P8" name="BFS2024-7_K8_P8">8 §</a>
+      </h3>
+      <p class="text">Utrymmen i en verksamhet ska vara åtkomliga från tillträdesväg som ansluter till verksamheten. Tillträdesväg ska vara belägen i samma plan eller närmast angränsande plan.</p>
+      </section></div></article></body></html>
+</body>
+</html>

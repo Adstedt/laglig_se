@@ -1,0 +1,47 @@
+schema: 1
+story: '6.11'
+story_title: 'Task Notifications'
+gate: PASS
+status_reason: 'All 20 ACs implemented with 47 passing tests. QA-001 resolved: email templates now auto-built by service via buildEmailElement(). QA-003 resolved: cron offset applied. QA-004 resolved: 3 email-sending tests added. Only QA-002 (low, cron duplication) remains as accepted future tech debt.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-16T13:25:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'QA-002'
+    severity: low
+    finding: 'Cron routes duplicate notification creation logic (dedup, preference check, logging) instead of reusing createTaskNotification service'
+    suggested_action: 'Consider refactoring cron routes to use the notification service in a future story'
+    suggested_owner: dev
+
+quality_score: 100
+
+expires: '2026-03-30T13:25:00Z'
+
+evidence:
+  tests_reviewed: 47
+  risks_identified: 1
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Cron auth guards present, workspace isolation maintained, Zod validation on inputs.'
+  performance:
+    status: PASS
+    notes: 'Fire-and-forget dispatch, cron timeout guards, acceptable N+1 for small recipient sets.'
+  reliability:
+    status: PASS
+    notes: 'Error handling throughout, admin summary emails, 30-day retention cleanup.'
+  maintainability:
+    status: PASS
+    notes: 'Email templates now wired via buildEmailElement() — no longer dead code. Cron logic duplication remains as low-priority future refactor.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Extract shared cron notification logic into reusable service'
+      refs: ['app/api/cron/notify-task-deadlines/route.ts', 'app/api/cron/notify-weekly-digest/route.ts']

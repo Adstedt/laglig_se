@@ -164,8 +164,50 @@
 
 ---
 
-**Total Estimated Stories:** 100-118 across 13 epics
+## Epic 14: Compliance Agent
 
-**Estimated Timeline:** 22-24 weeks - updated to include Epics 11, 12, and 13
+**Goal:** Build an AI compliance partner that provides contextual, cited legal guidance through conversational interaction with company-aware tooling.
+
+**Delivers:** Agent system prompt, tool suite (search_laws, get_company_context, etc.), streaming chat UI, change assessment flow, conversational onboarding
+
+**Requirements covered:** FR4, FR5, FR6, NFR2, NFR3, NFR9, NFR24
+
+**Estimated stories:** 14
+
+---
+
+## Epic 15: BolagsAPI Integration & Company Data Enrichment
+
+**Goal:** Integrate BolagsAPI to automatically fetch and populate company data during onboarding, enrich the CompanyProfile with authoritative signals from Bolagsverket/SCB, build an SNI reference data system, and improve the compliance agent's company context.
+
+**Delivers:** BolagsAPI client service, onboarding auto-fill (org number → API → populate form), SNI code reference system (lookup, search, validation), enriched agent company context
+
+**Requirements covered:** FR2 (onboarding), FR3 (personalization), FR20 (company profiling)
+
+**Estimated stories:** 4
+
+**Note:** Supersedes Story 2.9 (SNI Code Discovery) ACs 6-8 and Story 4.2 (Bolagsverket API). BolagsAPI replaces direct Bolagsverket access. Story 2.9's law list mapping, discovery UI, and analytics remain in backlog as future work.
+
+---
+
+## Epic 16: Conversion Funnel & First-Value Optimization
+
+**Goal:** Transform the signup-to-value journey into a seamless experience where users see personalized compliance value within 90 seconds. Introduces headless agent skills — the same AI brain as the chat agent, running server-side to auto-generate personalized law lists.
+
+**Delivers:** Frictionless signup (auto-login, delayed verification), landing page company preview (org number + URL → regulatory areas), contextual onboarding questions (activity flags), headless agent skill for auto-generated personalized law list (40-80 laws with commentary)
+
+**Requirements covered:** FR2, FR3, FR20, FR21, FR23, FR30, NFR4, NFR5
+
+**Estimated stories:** 4
+
+**Dependencies:** Epic 15 (BolagsAPI - Done), Epic 14 (Agent tools - Done), Epic 12 (Templates - Done), Epic 10 (Onboarding - Done)
+
+**Priority:** High — directly impacts activation rate, time-to-value, and trial-to-paid conversion.
+
+---
+
+**Total Estimated Stories:** 122-140 across 16 epics
+
+**Estimated Timeline:** 28-30 weeks - updated to include Epic 16
 
 ---
