@@ -1,8 +1,8 @@
 /**
  * Weekly Task Digest Cron Job (Story 6.11)
  *
- * Runs Sunday at 16:00 UTC (18:00 CET).
- * Sends a weekly summary of upcoming tasks per user.
+ * Runs Monday at 07:00 UTC (08:00 CET/Stockholm).
+ * Sends a weekly summary of upcoming tasks (Mon–Sun) per user.
  */
 
 /* eslint-disable no-console */
@@ -96,23 +96,19 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Calculate this week: Monday through Sunday
+    // Calculate this week: today (Monday) through Sunday
     const now = new Date()
-    const dayOfWeek = now.getUTCDay() // 0=Sun, 1=Mon...
-    const monday = new Date(now)
-    monday.setUTCDate(
-      now.getUTCDate() + (dayOfWeek === 0 ? 1 : 1 + ((7 - dayOfWeek) % 7))
-    )
-    monday.setUTCHours(0, 0, 0, 0)
-    const sunday = new Date(monday)
-    sunday.setUTCDate(monday.getUTCDate() + 6)
+    const today = new Date(now)
+    today.setUTCHours(0, 0, 0, 0)
+    const sunday = new Date(today)
+    sunday.setUTCDate(today.getUTCDate() + 6)
     sunday.setUTCHours(23, 59, 59, 999)
 
-    // Find all tasks with due dates in the coming week, grouped by assignee
+    // Find all tasks with due dates this week, grouped by assignee
     const tasks = await prisma.task.findMany({
       where: {
         due_date: {
-          gte: monday,
+          gte: today,
           lte: sunday,
         },
         completed_at: null,
@@ -191,8 +187,8 @@ export async function GET(request: Request) {
           user_id: userBatch.userId,
           workspace_id: userBatch.workspaceId,
           type: NotificationType.WEEKLY_DIGEST,
-          title: 'Veckans uppgifter',
-          body: `Du har ${userBatch.tasks.length} uppgifter att slutföra denna vecka`,
+          title: 'Kommande veckan',
+          body: `Du har ${userBatch.tasks.length} ${userBatch.tasks.length === 1 ? 'uppgift' : 'uppgifter'} att slutföra denna vecka`,
           entity_type: 'task',
           entity_id: null,
         },
@@ -219,7 +215,7 @@ export async function GET(request: Request) {
         taskUrl: `${APP_URL}/tasks?task=${t.id}`,
       }))
 
-      const weekLabel = `vecka ${getISOWeek(monday)}`
+      const weekLabel = `vecka ${getISOWeek(today)}`
 
       const result = await sendEmail({
         to: userBatch.email,
