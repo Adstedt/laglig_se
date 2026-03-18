@@ -75,6 +75,17 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     instrumented: true,
   },
   {
+    name: 'process-chunks',
+    displayName: 'Chunk-bearbetning',
+    description:
+      'Chunkar och embeddar nya/uppdaterade dokument för RAG-sökning',
+    schedule: '0 14,18 * * *',
+    scheduleHuman: 'Dagligen kl. 14:00 + 18:00 UTC',
+    endpoint: '/api/cron/process-chunks',
+    authHeader: 'CRON_SECRET',
+    instrumented: true,
+  },
+  {
     name: 'prewarm-cache',
     displayName: 'Cache-förladdning',
     description: 'Förladdar browse-cache efter synkroniseringsjobb',

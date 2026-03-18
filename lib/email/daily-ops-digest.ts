@@ -21,6 +21,9 @@ export interface IngestionSummary {
   changeEvents: number
   summariesGenerated: number
   sfsRange: { min: string | null; max: string | null }
+  /** Chunk processing stats (Story 14.14) */
+  chunksCreated: number
+  docsNeedingChunks: number
 }
 
 export interface GapDetectionResult {
@@ -53,12 +56,24 @@ export interface AmendmentPipelineStatus {
   topFailures: Array<{ sfsNumber: string; error: string }>
 }
 
+export interface ChunkHealthStatus {
+  totalChunks: number
+  withPrefix: number
+  withoutPrefix: number
+  withEmbedding: number
+  withoutEmbedding: number
+  chunksCreated24h: number
+  docsNeedingChunks: number
+  stuckDocs: Array<{ documentNumber: string; updatedAt: Date }>
+}
+
 export interface DigestData {
   ingestion: IngestionSummary | null
   gaps: GapDetectionResult | null
   jobHealth: JobHealthEntry[]
   backlog: NotificationBacklog | null
   pipeline: AmendmentPipelineStatus | null
+  chunkHealth: ChunkHealthStatus | null
 }
 
 // ---------------------------------------------------------------------------
@@ -68,32 +83,60 @@ export interface DigestData {
 export async function gatherIngestionSummary(
   cutoff: Date
 ): Promise<IngestionSummary> {
-  const [amendments, newLaws, changeEvents, summaries, sfsRange] =
-    await Promise.all([
-      prisma.amendmentDocument.count({
-        where: { created_at: { gte: cutoff } },
-      }),
-      prisma.legalDocument.count({
-        where: {
-          content_type: ContentType.SFS_LAW,
-          created_at: { gte: cutoff },
-        },
-      }),
-      prisma.changeEvent.count({
-        where: { detected_at: { gte: cutoff } },
-      }),
-      prisma.changeEvent.count({
-        where: {
-          ai_summary_generated_at: { gte: cutoff },
-          ai_summary: { not: null },
-        },
-      }),
-      prisma.amendmentDocument.aggregate({
-        where: { created_at: { gte: cutoff } },
-        _min: { sfs_number: true },
-        _max: { sfs_number: true },
-      }),
-    ])
+  const [
+    amendments,
+    newLaws,
+    changeEvents,
+    summaries,
+    sfsRange,
+    chunksCreated,
+    docsNeedingChunks,
+  ] = await Promise.all([
+    prisma.amendmentDocument.count({
+      where: { created_at: { gte: cutoff } },
+    }),
+    prisma.legalDocument.count({
+      where: {
+        content_type: ContentType.SFS_LAW,
+        created_at: { gte: cutoff },
+      },
+    }),
+    prisma.changeEvent.count({
+      where: { detected_at: { gte: cutoff } },
+    }),
+    prisma.changeEvent.count({
+      where: {
+        ai_summary_generated_at: { gte: cutoff },
+        ai_summary: { not: null },
+      },
+    }),
+    prisma.amendmentDocument.aggregate({
+      where: { created_at: { gte: cutoff } },
+      _min: { sfs_number: true },
+      _max: { sfs_number: true },
+    }),
+    // Story 14.14: Chunks created in the last 24h
+    prisma.contentChunk.count({
+      where: {
+        source_type: 'LEGAL_DOCUMENT',
+        created_at: { gte: cutoff },
+      },
+    }),
+    // Story 14.14: Documents still needing chunks
+    prisma.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*)::bigint as count
+        FROM legal_documents ld
+        LEFT JOIN (
+          SELECT source_id, MAX(created_at) as max_chunk_created
+          FROM content_chunks
+          WHERE source_type = 'LEGAL_DOCUMENT'
+          GROUP BY source_id
+        ) cc ON cc.source_id = ld.id
+        WHERE ld.content_type IN ('SFS_LAW', 'AGENCY_REGULATION')
+          AND (ld.html_content IS NOT NULL OR ld.json_content IS NOT NULL OR ld.markdown_content IS NOT NULL)
+          AND (cc.max_chunk_created IS NULL OR ld.updated_at > cc.max_chunk_created)
+      `.then((rows) => Number(rows[0]?.count ?? 0)),
+  ])
 
   return {
     amendments,
@@ -104,6 +147,8 @@ export async function gatherIngestionSummary(
       min: sfsRange._min.sfs_number,
       max: sfsRange._max.sfs_number,
     },
+    chunksCreated,
+    docsNeedingChunks,
   }
 }
 
@@ -264,6 +309,77 @@ export async function gatherAmendmentPipeline(
   }
 }
 
+export async function gatherChunkHealth(
+  cutoff: Date
+): Promise<ChunkHealthStatus> {
+  const [totals, created24h, docsNeeding, stuckDocs] = await Promise.all([
+    prisma.$queryRaw<
+      [{ total: bigint; with_prefix: bigint; with_embedding: bigint }]
+    >`
+      SELECT
+        COUNT(*)::bigint as total,
+        COUNT(context_prefix)::bigint as with_prefix,
+        COUNT(embedding)::bigint as with_embedding
+      FROM content_chunks
+      WHERE source_type = 'LEGAL_DOCUMENT'
+    `,
+    prisma.contentChunk.count({
+      where: {
+        source_type: 'LEGAL_DOCUMENT',
+        created_at: { gte: cutoff },
+      },
+    }),
+    prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(*)::bigint as count
+      FROM legal_documents ld
+      LEFT JOIN (
+        SELECT source_id, MAX(created_at) as max_chunk_created
+        FROM content_chunks
+        WHERE source_type = 'LEGAL_DOCUMENT'
+        GROUP BY source_id
+      ) cc ON cc.source_id = ld.id
+      WHERE ld.content_type IN ('SFS_LAW', 'AGENCY_REGULATION')
+        AND (ld.html_content IS NOT NULL OR ld.json_content IS NOT NULL OR ld.markdown_content IS NOT NULL)
+        AND (cc.max_chunk_created IS NULL OR ld.updated_at > cc.max_chunk_created)
+    `.then((rows) => Number(rows[0]?.count ?? 0)),
+    // Stuck docs: needing chunks for >24h (updated before cutoff but still no fresh chunks)
+    prisma.$queryRaw<Array<{ document_number: string; updated_at: Date }>>`
+      SELECT ld.document_number, ld.updated_at
+      FROM legal_documents ld
+      LEFT JOIN (
+        SELECT source_id, MAX(created_at) as max_chunk_created
+        FROM content_chunks
+        WHERE source_type = 'LEGAL_DOCUMENT'
+        GROUP BY source_id
+      ) cc ON cc.source_id = ld.id
+      WHERE ld.content_type IN ('SFS_LAW', 'AGENCY_REGULATION')
+        AND (ld.html_content IS NOT NULL OR ld.json_content IS NOT NULL OR ld.markdown_content IS NOT NULL)
+        AND (cc.max_chunk_created IS NULL OR ld.updated_at > cc.max_chunk_created)
+        AND ld.updated_at < ${cutoff}
+      ORDER BY ld.updated_at ASC
+      LIMIT 5
+    `,
+  ])
+
+  const total = Number(totals[0]?.total ?? 0)
+  const withPrefix = Number(totals[0]?.with_prefix ?? 0)
+  const withEmbedding = Number(totals[0]?.with_embedding ?? 0)
+
+  return {
+    totalChunks: total,
+    withPrefix,
+    withoutPrefix: total - withPrefix,
+    withEmbedding,
+    withoutEmbedding: total - withEmbedding,
+    chunksCreated24h: created24h,
+    docsNeedingChunks: docsNeeding,
+    stuckDocs: stuckDocs.map((d) => ({
+      documentNumber: d.document_number,
+      updatedAt: d.updated_at,
+    })),
+  }
+}
+
 // ---------------------------------------------------------------------------
 // HTML Builder
 // ---------------------------------------------------------------------------
@@ -335,6 +451,9 @@ export function buildDigestEmailHtml(data: DigestData): string {
   // Section 5: Amendment Pipeline
   sections.push(buildPipelineSection(data.pipeline))
 
+  // Section 6: Chunk Health
+  sections.push(buildChunkHealthSection(data.chunkHealth))
+
   return `
     <!DOCTYPE html>
     <html>
@@ -389,6 +508,14 @@ function buildIngestionSection(
         <tr>
           <td style="${STYLES.td}">SFS-intervall</td>
           <td style="${STYLES.tdRight}">${rangeStr}</td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">Chunks skapade (24h)</td>
+          <td style="${STYLES.tdRight}">${ingestion.chunksCreated}</td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">Dokument utan chunks</td>
+          <td style="${STYLES.tdRight}${ingestion.docsNeedingChunks > 0 ? '; ' + STYLES.red : ''}">${ingestion.docsNeedingChunks}</td>
         </tr>
       </table>
     </div>
@@ -568,6 +695,93 @@ function buildPipelineSection(
   `
 }
 
+function buildChunkHealthSection(
+  chunkHealth: ChunkHealthStatus | null
+): string {
+  if (!chunkHealth) {
+    return `<div style="${STYLES.section}"><h2 style="${STYLES.h2}">6. Chunk-hälsa</h2><p style="${STYLES.red}">Data unavailable</p></div>`
+  }
+
+  const prefixPct =
+    chunkHealth.totalChunks > 0
+      ? ((chunkHealth.withPrefix / chunkHealth.totalChunks) * 100).toFixed(1)
+      : '0'
+  const embedPct =
+    chunkHealth.totalChunks > 0
+      ? ((chunkHealth.withEmbedding / chunkHealth.totalChunks) * 100).toFixed(1)
+      : '0'
+
+  const prefixStyle =
+    chunkHealth.withoutPrefix > 0 ? `; ${STYLES.red}` : `; ${STYLES.green}`
+  const embedStyle =
+    chunkHealth.withoutEmbedding > 0 ? `; ${STYLES.red}` : `; ${STYLES.green}`
+  const stuckStyle = chunkHealth.stuckDocs.length > 0 ? `; ${STYLES.red}` : ''
+
+  let stuckList = ''
+  if (chunkHealth.stuckDocs.length > 0) {
+    stuckList = `
+      <h3 style="${STYLES.h3}; margin-top: 12px;">Fastnade dokument (>24h utan chunks):</h3>
+      <table style="${STYLES.table}">
+        <thead>
+          <tr>
+            <th style="${STYLES.th}">Dokument</th>
+            <th style="${STYLES.th}; text-align: right;">Uppdaterad</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${chunkHealth.stuckDocs
+            .map(
+              (d) => `
+            <tr>
+              <td style="${STYLES.td}">${escapeHtml(d.documentNumber)}</td>
+              <td style="${STYLES.tdRight}">${formatDate(d.updatedAt)}</td>
+            </tr>
+          `
+            )
+            .join('')}
+        </tbody>
+      </table>
+    `
+  }
+
+  return `
+    <div style="${STYLES.section}">
+      <h2 style="${STYLES.h2}">6. Chunk-hälsa (RAG-pipeline)</h2>
+      <table style="${STYLES.table}">
+        <tr>
+          <td style="${STYLES.td}">Totalt chunks</td>
+          <td style="${STYLES.tdRight}">${chunkHealth.totalChunks.toLocaleString('sv-SE')}</td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">Chunks skapade (24h)</td>
+          <td style="${STYLES.tdRight}">${chunkHealth.chunksCreated24h}</td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">Med context_prefix</td>
+          <td style="${STYLES.tdRight}${prefixStyle}">${chunkHealth.withPrefix.toLocaleString('sv-SE')} (${prefixPct}%)</td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">Utan context_prefix</td>
+          <td style="${STYLES.tdRight}${prefixStyle}"><strong>${chunkHealth.withoutPrefix.toLocaleString('sv-SE')}</strong></td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">Med embedding</td>
+          <td style="${STYLES.tdRight}${embedStyle}">${chunkHealth.withEmbedding.toLocaleString('sv-SE')} (${embedPct}%)</td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">Utan embedding</td>
+          <td style="${STYLES.tdRight}${embedStyle}"><strong>${chunkHealth.withoutEmbedding.toLocaleString('sv-SE')}</strong></td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">Dokument utan chunks</td>
+          <td style="${STYLES.tdRight}${stuckStyle}">${chunkHealth.docsNeedingChunks}</td>
+        </tr>
+      </table>
+      ${stuckList}
+    </div>
+  `
+}
+
 // ---------------------------------------------------------------------------
 // Subject builder
 // ---------------------------------------------------------------------------
@@ -578,7 +792,8 @@ export function buildDigestSubject(data: DigestData): string {
   const hasIssues =
     (data.gaps && (data.gaps.missing.length > 0 || data.gaps.error)) ||
     (data.backlog && data.backlog.unnotifiedCount > 0) ||
-    data.jobHealth.some((j) => j.status === 'FAILED' || j.isStale)
+    data.jobHealth.some((j) => j.status === 'FAILED' || j.isStale) ||
+    (data.chunkHealth && data.chunkHealth.stuckDocs.length > 0)
 
   const prefix = hasIssues ? '\u26A0\uFE0F' : '\u2705'
   return `${prefix} Daglig driftöversikt — ${dateStr}`

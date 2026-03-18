@@ -17,6 +17,7 @@ import {
   gatherJobHealth,
   gatherNotificationBacklog,
   gatherAmendmentPipeline,
+  gatherChunkHealth,
   buildDigestEmailHtml,
   buildDigestSubject,
   type DigestData,
@@ -61,6 +62,7 @@ export async function GET(request: Request) {
       jobHealthResult,
       backlogResult,
       pipelineResult,
+      chunkHealthResult,
     ] = await Promise.allSettled([
       gatherIngestionSummary(cutoff),
       gatherGapDetection(year),
@@ -68,6 +70,7 @@ export async function GET(request: Request) {
       gatherJobHealth(),
       gatherNotificationBacklog(),
       gatherAmendmentPipeline(year),
+      gatherChunkHealth(cutoff),
     ])
 
     // Log any rejected promises for visibility
@@ -78,6 +81,7 @@ export async function GET(request: Request) {
       { name: 'jobHealth', result: jobHealthResult },
       { name: 'backlog', result: backlogResult },
       { name: 'pipeline', result: pipelineResult },
+      { name: 'chunkHealth', result: chunkHealthResult },
     ]
     for (const { name, result } of allResults) {
       if (result.status === 'rejected') {
@@ -98,6 +102,10 @@ export async function GET(request: Request) {
         backlogResult.status === 'fulfilled' ? backlogResult.value : null,
       pipeline:
         pipelineResult.status === 'fulfilled' ? pipelineResult.value : null,
+      chunkHealth:
+        chunkHealthResult.status === 'fulfilled'
+          ? chunkHealthResult.value
+          : null,
     }
 
     // Merge previous year gaps if applicable
