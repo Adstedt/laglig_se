@@ -24,6 +24,9 @@ export interface IngestionSummary {
   /** Chunk processing stats (Story 14.14) */
   chunksCreated: number
   docsNeedingChunks: number
+  /** Amendment summary stats (Story 8.8) */
+  summariesGenerated24h: number
+  amendmentsNeedingSummary: number
 }
 
 export interface GapDetectionResult {
@@ -91,6 +94,8 @@ export async function gatherIngestionSummary(
     sfsRange,
     chunksCreated,
     docsNeedingChunks,
+    summariesGenerated24h,
+    amendmentsNeedingSummary,
   ] = await Promise.all([
     prisma.amendmentDocument.count({
       where: { created_at: { gte: cutoff } },
@@ -136,6 +141,23 @@ export async function gatherIngestionSummary(
           AND (ld.html_content IS NOT NULL OR ld.json_content IS NOT NULL OR ld.markdown_content IS NOT NULL)
           AND (cc.max_chunk_created IS NULL OR ld.updated_at > cc.max_chunk_created)
       `.then((rows) => Number(rows[0]?.count ?? 0)),
+    // Story 8.8: Amendment summaries generated in the last 24h
+    prisma.changeEvent.count({
+      where: {
+        ai_summary_generated_at: { gte: cutoff },
+        ai_summary: { not: null },
+      },
+    }),
+    // Story 8.8: Amendments still needing summaries
+    prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT COUNT(DISTINCT ce.amendment_sfs)::bigint as count
+      FROM change_events ce
+      JOIN amendment_documents ad ON ad.sfs_number = REPLACE(ce.amendment_sfs, 'SFS ', '')
+      WHERE ce.ai_summary IS NULL
+        AND ce.amendment_sfs IS NOT NULL
+        AND ad.parse_status = 'COMPLETED'
+        AND ad.markdown_content IS NOT NULL
+    `.then((rows) => Number(rows[0]?.count ?? 0)),
   ])
 
   return {
@@ -149,6 +171,8 @@ export async function gatherIngestionSummary(
     },
     chunksCreated,
     docsNeedingChunks,
+    summariesGenerated24h,
+    amendmentsNeedingSummary,
   }
 }
 
@@ -516,6 +540,14 @@ function buildIngestionSection(
         <tr>
           <td style="${STYLES.td}">Dokument utan chunks</td>
           <td style="${STYLES.tdRight}${ingestion.docsNeedingChunks > 0 ? '; ' + STYLES.red : ''}">${ingestion.docsNeedingChunks}</td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">AI-sammanfattningar (24h)</td>
+          <td style="${STYLES.tdRight}">${ingestion.summariesGenerated24h}</td>
+        </tr>
+        <tr>
+          <td style="${STYLES.td}">Ändringar utan sammanfattning</td>
+          <td style="${STYLES.tdRight}${ingestion.amendmentsNeedingSummary > 0 ? '; ' + STYLES.red : ''}">${ingestion.amendmentsNeedingSummary}</td>
         </tr>
       </table>
     </div>
