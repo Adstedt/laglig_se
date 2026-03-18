@@ -74,6 +74,10 @@ export function HemChat({
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const [viewState, setViewState] = useState<ViewState>('chat')
   const [showChangePicker, setShowChangePicker] = useState(false)
+  // Full mode: track whether user has actively engaged (sent message or loaded conversation)
+  // Prevents leftover history from previous sessions hijacking the home view
+  const [userEngaged, setUserEngaged] = useState(false)
+  const mountArchivedRef = useRef(false)
 
   const {
     messages,
@@ -91,16 +95,30 @@ export function HemChat({
     contextType: 'global',
   })
 
+  // Full mode: archive leftover active messages from previous session on mount
+  useEffect(() => {
+    if (mode !== 'full') return
+    if (mountArchivedRef.current) return
+    mountArchivedRef.current = true
+
+    archiveConversation()
+      .then(() => replaceMessages([]))
+      .catch(() => {})
+  }, [mode, replaceMessages])
+
   const isStreaming = status === 'streaming'
   const isSubmitted = status === 'submitted'
   const hasError = status === 'error' && error !== null
   const isLoading = isStreaming || isSubmitted
 
   const hasMessages = messages.length > 0
-  const isHomeState = !hasMessages
+  // Full mode: only show conversation when user has explicitly engaged
+  // Panel mode: show conversation whenever there are messages (existing behavior)
+  const isHomeState = mode === 'full' ? !userEngaged : !hasMessages
 
   const handleSend = useCallback(
     (content: string) => {
+      setUserEngaged(true)
       sendMessage(content)
     },
     [sendMessage]
@@ -108,6 +126,7 @@ export function HemChat({
 
   const handlePromptClick = useCallback(
     (prompt: string) => {
+      setUserEngaged(true)
       sendMessage(prompt)
     },
     [sendMessage]
@@ -119,6 +138,7 @@ export function HemChat({
         await archiveConversation()
         await clearHistory()
       }
+      setUserEngaged(false)
       setViewState('chat')
     } catch {
       toast.error('Kunde inte spara konversationen. Försök igen.')
@@ -146,6 +166,7 @@ export function HemChat({
         }))
         replaceMessages(uiMessages)
       }
+      setUserEngaged(true)
       setViewState('chat')
     },
     [hasMessages, replaceMessages]
