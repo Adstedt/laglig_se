@@ -163,6 +163,14 @@ function getActivityFlags(profile: CompanyProfile): ActivityFlags {
   return {}
 }
 
+function inferEmployeeRange(count: number | null): string | null {
+  if (count === null || count === undefined) return null
+  if (count <= 9) return 'RANGE_1_9'
+  if (count <= 49) return 'RANGE_10_49'
+  if (count <= 249) return 'RANGE_50_249'
+  return 'RANGE_250_PLUS'
+}
+
 function getCompletionNudge(
   values: FormData,
   certifications: string[]
@@ -244,12 +252,12 @@ function BolagsverketDataCard({
           <div>
             <CardTitle>Bolagsverket-data</CardTitle>
             <CardDescription>
-              Automatiskt hamtad foretagsinformation
+              Automatiskt hämtad företagsinformation
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="text-xs">
-              Hamtat fran Bolagsverket
+              Hämtat från Bolagsverket
             </Badge>
             {companyProfile.last_enriched_at && (
               <span className="text-xs text-muted-foreground">
@@ -318,7 +326,7 @@ function BolagsverketDataCard({
 
           {/* Foreign owned */}
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Utlandsagt</Label>
+            <Label className="text-xs text-muted-foreground">Utlandsägt</Label>
             <p className="text-sm">
               {companyProfile.foreign_owned ? 'Ja' : 'Nej'}
             </p>
@@ -353,7 +361,7 @@ function BolagsverketDataCard({
           {/* Ongoing procedures */}
           <div className="space-y-1">
             <Label className="text-xs text-muted-foreground">
-              Pagaende arenden
+              Pågående ärenden
             </Label>
             {hasProcedures ? (
               <div className="flex gap-1">
@@ -370,7 +378,7 @@ function BolagsverketDataCard({
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Inga pagaende arenden
+                Inga pågående ärenden
               </p>
             )}
           </div>
@@ -382,13 +390,13 @@ function BolagsverketDataCard({
           <Textarea
             id="business_description"
             {...form.register('business_description')}
-            placeholder="Beskriv er verksamhet (anvands av AI-agenten for battre radgivning)"
+            placeholder="Beskriv er verksamhet"
             rows={3}
             className="resize-none"
           />
           <p className="text-xs text-muted-foreground">
-            Redigera fritt — beskrivningen anvands av AI-agenten for att ge
-            battre anpassade rekommendationer.
+            Redigera fritt — beskrivningen används för att ge bättre anpassade
+            rekommendationer.
           </p>
         </div>
       </CardContent>
@@ -424,7 +432,10 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
       organization_type: companyProfile.organization_type ?? '',
       sni_code: companyProfile.sni_code ?? '',
       industry_label: companyProfile.industry_label ?? '',
-      employee_count_range: companyProfile.employee_count_range ?? '',
+      employee_count_range:
+        companyProfile.employee_count_range ??
+        inferEmployeeRange(companyProfile.employee_count) ??
+        '',
       compliance_maturity: companyProfile.compliance_maturity ?? '',
       has_compliance_officer: companyProfile.has_compliance_officer,
       chemicals: flags.chemicals ?? false,
@@ -443,7 +454,9 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
       collective_agreement_name: companyProfile.collective_agreement_name ?? '',
       workforce_composition: companyProfile.workforce_composition ?? '',
       revenue_range: companyProfile.revenue_range ?? '',
-      business_description: companyProfile.business_description ?? '',
+      business_description:
+        companyProfile.business_description?.replace(/\r\n/g, '\n').trim() ??
+        '',
     },
   })
 
@@ -537,10 +550,10 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
       <div className="flex gap-3 rounded-lg border border-border/60 bg-muted/40 p-4">
         <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div className="space-y-1 text-sm">
-          <p className="font-medium">Er företagsprofil styr AI-rådgivningen</p>
+          <p className="font-medium">Er profil förbättrar rekommendationerna</p>
           <p className="text-muted-foreground">
-            Ju mer vi vet om ert företag, desto bättre kan vår AI identifiera
-            relevanta lagar och ge er skräddarsydda rekommendationer.
+            Ju mer vi vet om ert företag, desto bättre kan Laglig identifiera
+            relevanta regelverk och anpassa rådgivningen.
           </p>
         </div>
       </div>
@@ -765,7 +778,7 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
             <CardHeader>
               <CardTitle>Verksamhet</CardTitle>
               <CardDescription>
-                Hjälper AI:n filtrera lagar efter era verksamhetsrisker
+                Hjälper filtrera lagar efter era verksamhetsrisker
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -791,7 +804,7 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
                 ))}
                 {!anyFlagSelected && (
                   <p className="text-xs text-muted-foreground italic">
-                    Inga verksamhetstyper valda — AI:n utgår från generella
+                    Inga verksamhetstyper valda — Laglig utgår från generella
                     regler.
                   </p>
                 )}
@@ -893,7 +906,7 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
               <div className="space-y-2">
                 <Label htmlFor="compliance_maturity">Compliance-mognad</Label>
                 <p className="text-xs text-muted-foreground">
-                  Påverkar hur detaljerade rekommendationer AI:n ger.
+                  Påverkar hur detaljerade rekommendationer du får.
                 </p>
                 <Select
                   value={form.watch('compliance_maturity') ?? ''}

@@ -15,6 +15,7 @@ import { useMediaQuery } from '@/lib/hooks/use-media-query'
 
 interface WorkspaceShellProps {
   user: {
+    id?: string
     name?: string | null
     email?: string | null
     image?: string | null

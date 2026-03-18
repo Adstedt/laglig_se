@@ -28,10 +28,7 @@ export function ConfirmStep({
   trialEndDate.setDate(trialEndDate.getDate() + 14)
   const formattedTrialEnd = trialEndDate.toISOString().split('T')[0]
 
-  const addressParts = [data.streetAddress, data.postalCode, data.city].filter(
-    Boolean
-  )
-  const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : null
+  const hasAddress = data.streetAddress || data.postalCode || data.city
 
   return (
     <div className="space-y-5">
@@ -48,7 +45,21 @@ export function ConfirmStep({
       <dl className="space-y-3 rounded-lg border p-4">
         <SummaryRow label="Företagsnamn" value={data.companyName} />
         <SummaryRow label="Organisationsnummer" value={data.orgNumber} />
-        {fullAddress && <SummaryRow label="Adress" value={fullAddress} />}
+        {hasAddress && (
+          <div className="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-4">
+            <dt className="text-sm text-muted-foreground">Adress</dt>
+            <dd className="text-sm font-medium text-foreground sm:text-right">
+              {data.streetAddress && (
+                <span className="block">{data.streetAddress}</span>
+              )}
+              {(data.postalCode || data.city) && (
+                <span className="block">
+                  {[data.postalCode, data.city].filter(Boolean).join(' ')}
+                </span>
+              )}
+            </dd>
+          </div>
+        )}
         {data.sniCode && (
           <SummaryRow label="Bransch / SNI-kod" value={data.sniCode} />
         )}

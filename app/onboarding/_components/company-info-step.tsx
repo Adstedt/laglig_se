@@ -138,10 +138,10 @@ export function CompanyInfoStep({
     <form onSubmit={handleSubmit(onNext)} className="space-y-5" noValidate>
       <div>
         <h2 className="font-safiro text-2xl font-semibold tracking-tight">
-          Foretagsinformation
+          Företagsinformation
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Fyll i uppgifterna om ditt foretag.
+          Fyll i uppgifterna om ditt företag.
         </p>
       </div>
 
@@ -150,17 +150,17 @@ export function CompanyInfoStep({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Label htmlFor="companyName">
-              Foretagsnamn <span className="text-destructive">*</span>
+              Företagsnamn <span className="text-destructive">*</span>
             </Label>
             {showBadge && isAutoFilled && (
               <Badge variant="secondary" className="text-xs" role="status">
-                Hamtat fran Bolagsverket
+                Hämtat från Bolagsverket
               </Badge>
             )}
           </div>
           <Input
             id="companyName"
-            placeholder="t.ex. Mitt Foretag AB"
+            placeholder="t.ex. Mitt Företag AB"
             autoComplete="organization"
             className={
               isAutoFilled && showBadge ? 'transition-opacity duration-300' : ''
@@ -198,23 +198,23 @@ export function CompanyInfoStep({
             {isLoading && (
               <Loader2
                 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground"
-                aria-label="Soker foretagsinfo"
+                aria-label="Söker företagsinfo"
               />
             )}
           </div>
           {isLoading && (
             <p className="text-sm text-muted-foreground" aria-live="polite">
-              Hamtar foretagsinfo...
+              Hämtar företagsinfo...
             </p>
           )}
           {error === 'not_found' && (
             <p id="orgNumber-notfound" className="text-sm text-destructive">
-              Inget foretag hittades med detta organisationsnummer
+              Inget företag hittades med detta organisationsnummer
             </p>
           )}
           {isDeregistered && (
             <p className="text-sm text-amber-600">
-              Detta foretag ar avregistrerat hos Bolagsverket
+              Detta företag är avregistrerat hos Bolagsverket
             </p>
           )}
           {errors.orgNumber && (
@@ -295,7 +295,7 @@ export function CompanyInfoStep({
             }
           >
             <SelectTrigger id="legalForm">
-              <SelectValue placeholder="Valj juridisk form" />
+              <SelectValue placeholder="Välj juridisk form" />
             </SelectTrigger>
             <SelectContent>
               {LEGAL_FORM_OPTIONS.map((form) => (
@@ -309,7 +309,7 @@ export function CompanyInfoStep({
 
         {/* Antal anstallda — optional */}
         <div className="space-y-2">
-          <Label htmlFor="employeeCount">Antal anstallda</Label>
+          <Label htmlFor="employeeCount">Antal anställda</Label>
           <Input
             id="employeeCount"
             type="number"
@@ -324,7 +324,7 @@ export function CompanyInfoStep({
         type="submit"
         className="w-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
       >
-        Nasta
+        Nästa
       </Button>
     </form>
   )
