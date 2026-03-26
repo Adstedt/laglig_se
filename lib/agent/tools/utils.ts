@@ -26,7 +26,7 @@ function buildMeta(
     tool,
     executionTimeMs: Date.now() - startTime,
     resultCount,
-    sidebarHint,
+    ...(sidebarHint != null && { sidebarHint }),
   }
 }
 

@@ -79,7 +79,11 @@ export function AssessmentResolution({
   lawListItemId,
   onComplete,
 }: AssessmentResolutionProps) {
-  const form = useAssessmentForm({ changeEventId, lawListItemId, onComplete })
+  const form = useAssessmentForm({
+    changeEventId,
+    lawListItemId,
+    ...(onComplete && { onComplete }),
+  })
 
   // ----- Completion state -----
   if (form.isCompleted && form.assessment) {

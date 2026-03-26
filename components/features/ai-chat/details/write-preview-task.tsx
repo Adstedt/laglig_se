@@ -73,9 +73,9 @@ export function WritePreviewTask({ data }: WritePreviewTaskProps) {
     try {
       const result = await createTask({
         title: title.trim(),
-        description: description.trim() || undefined,
+        ...(description.trim() && { description: description.trim() }),
         priority,
-        linkedListItemIds,
+        ...(linkedListItemIds && { linkedListItemIds }),
       })
       if (result.success && result.data) {
         setCreatedTaskId(result.data.id)
