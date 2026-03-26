@@ -41,6 +41,8 @@ import {
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { ChatDetailProvider } from '@/lib/ai/chat-detail-context'
+import { ChatDetailSidebar } from '@/components/features/ai-chat/chat-detail-sidebar'
 
 const SUGGESTED_PROMPTS = [
   'Visa en översikt av min efterlevnad',
@@ -317,95 +319,103 @@ export function HemChat({
 
   // Full mode — two states: home and conversation
 
-  // Conversation state — centered column like Claude.ai
+  // Conversation state — centered column with detail sidebar
   if (!isHomeState) {
     return (
-      <div className="flex h-full flex-col">
-        {/* Chat actions */}
-        <TooltipProvider delayDuration={300}>
-          <div className="mx-auto w-full max-w-3xl flex items-center justify-end gap-1 px-4 py-2 shrink-0">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-foreground/60 hover:text-foreground"
-                  onClick={handleExport}
-                  aria-label="Exportera konversation"
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Exportera konversation</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-foreground/60 hover:text-foreground"
-                  onClick={() => setViewState('history')}
-                >
-                  <History className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Tidigare konversationer</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-foreground/60 hover:text-foreground"
-                  onClick={handleNewConversation}
-                  aria-label="Ny konversation"
-                >
-                  <SquarePen className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Ny konversation</TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
+      <ChatDetailProvider>
+        <div className="flex h-full flex-row">
+          {/* Chat area */}
+          <div className="flex-1 min-w-0 flex flex-col h-full">
+            {/* Chat actions */}
+            <TooltipProvider delayDuration={300}>
+              <div className="mx-auto w-full max-w-3xl flex items-center justify-end gap-1 px-4 py-2 shrink-0">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-foreground/60 hover:text-foreground"
+                      onClick={handleExport}
+                      aria-label="Exportera konversation"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Exportera konversation</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-foreground/60 hover:text-foreground"
+                      onClick={() => setViewState('history')}
+                    >
+                      <History className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Tidigare konversationer</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-foreground/60 hover:text-foreground"
+                      onClick={handleNewConversation}
+                      aria-label="Ny konversation"
+                    >
+                      <SquarePen className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Ny konversation</TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
 
-        <div className="flex-1 flex flex-col min-h-0">
-          {hasError ? (
-            <div className="flex-1 flex items-center justify-center p-4">
-              <ChatError
-                error={error}
-                onRetry={handleRetry}
-                retryAfter={retryAfter}
+            <div className="flex-1 flex flex-col min-h-0">
+              {hasError ? (
+                <div className="flex-1 flex items-center justify-center p-4">
+                  <ChatError
+                    error={error}
+                    onRetry={handleRetry}
+                    retryAfter={retryAfter}
+                  />
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto">
+                  <div className="mx-auto max-w-3xl">
+                    <ChatMessageList
+                      messages={messages}
+                      isStreaming={isLoading}
+                      onLoadMore={loadMore}
+                      isLoadingMore={isLoadingMore}
+                      hasMore={hasMore}
+                      onDeleteMessage={handleDeleteMessage}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="shrink-0 mx-auto w-full max-w-3xl px-4 pb-4">
+              <ChatInputModern
+                ref={inputRef}
+                onSend={handleSend}
+                disabled={hasError}
+                isLoading={isLoading}
+                showModelSelector={false}
+                showAttach={false}
+                showQuickActions={false}
+                placeholder="Svara..."
+                className="border-none bg-transparent p-0"
               />
             </div>
-          ) : (
-            <div className="flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-3xl">
-                <ChatMessageList
-                  messages={messages}
-                  isStreaming={isLoading}
-                  onLoadMore={loadMore}
-                  isLoadingMore={isLoadingMore}
-                  hasMore={hasMore}
-                  onDeleteMessage={handleDeleteMessage}
-                />
-              </div>
-            </div>
-          )}
+          </div>
+
+          {/* Detail sidebar */}
+          <ChatDetailSidebar />
         </div>
-        <div className="shrink-0 mx-auto w-full max-w-3xl px-4 pb-4">
-          <ChatInputModern
-            ref={inputRef}
-            onSend={handleSend}
-            disabled={hasError}
-            isLoading={isLoading}
-            showModelSelector={false}
-            showAttach={false}
-            showQuickActions={false}
-            placeholder="Svara..."
-            className="border-none bg-transparent p-0"
-          />
-        </div>
-      </div>
+      </ChatDetailProvider>
     )
   }
 

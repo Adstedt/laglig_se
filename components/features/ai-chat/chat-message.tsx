@@ -6,7 +6,7 @@
  * iterate message.parts in order, render each part type with its own component.
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useStreamingText } from '@/lib/hooks/use-streaming-text'
 import type { UIMessage } from 'ai'
 import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
@@ -24,6 +24,7 @@ import {
   Loader2,
   Brain,
   Trash2,
+  Eye,
 } from 'lucide-react'
 import { Streamdown } from 'streamdown'
 import { code } from '@streamdown/code'
@@ -50,6 +51,12 @@ import {
   type ChatMessageMetadata,
 } from '@/lib/ai/citations'
 import { cn } from '@/lib/utils'
+import {
+  useChatDetailSafe,
+  type ChatDetailItem,
+  type AssessmentDetailData,
+} from '@/lib/ai/chat-detail-context'
+import type { ToolMeta, WriteToolResponse } from '@/lib/agent/tools/types'
 
 // ---------------------------------------------------------------------------
 // Tool display configuration
@@ -107,6 +114,81 @@ const TOOL_CONFIG: Record<
   },
 }
 
+// ---------------------------------------------------------------------------
+// Tool part info extraction helper
+// ---------------------------------------------------------------------------
+
+interface ToolPartInfo {
+  toolName: string
+  input: Record<string, unknown> | undefined
+  toolCallId: string
+  toolOutput: unknown
+  state: string
+}
+
+function extractToolPartInfo(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  part: any,
+  fallbackIndex: number
+): ToolPartInfo {
+  const toolName: string =
+    'toolName' in part ? part.toolName : part.type.replace('tool-', '')
+  const input: Record<string, unknown> | undefined =
+    'input' in part ? part.input : undefined
+  const toolCallId: string =
+    'toolInvocationId' in part ? part.toolInvocationId : `tool-${fallbackIndex}`
+  const toolOutput: unknown = 'output' in part ? part.output : undefined
+  const state: string = part.state ?? 'streaming'
+  return { toolName, input, toolCallId, toolOutput, state }
+}
+
+// ---------------------------------------------------------------------------
+// Part grouping — consecutive search_laws tool calls become a single group
+// ---------------------------------------------------------------------------
+
+type RenderItem =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { kind: 'part'; part: any; index: number }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { kind: 'search-group'; items: Array<{ part: any; index: number }> }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function groupSearchParts(parts: any[]): RenderItem[] {
+  const result: RenderItem[] = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let currentGroup: Array<{ part: any; index: number }> = []
+
+  const flushGroup = () => {
+    if (currentGroup.length > 1) {
+      result.push({ kind: 'search-group', items: [...currentGroup] })
+    } else if (currentGroup.length === 1) {
+      result.push({
+        kind: 'part',
+        part: currentGroup[0]!.part,
+        index: currentGroup[0]!.index,
+      })
+    }
+    currentGroup = []
+  }
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i]
+    const isSearch =
+      isToolUIPart(part) &&
+      ('toolName' in part ? part.toolName : part.type.replace('tool-', '')) ===
+        'search_laws'
+
+    if (isSearch) {
+      currentGroup.push({ part, index: i })
+    } else {
+      flushGroup()
+      result.push({ kind: 'part', part, index: i })
+    }
+  }
+  flushGroup()
+  return result
+}
+
 const streamdownPlugins = { code }
 
 // Rehype plugins array — stable reference to avoid Streamdown re-renders
@@ -148,6 +230,10 @@ export function ChatMessage({
     [metadata?.citationSources]
   )
 
+  // All hooks must be called before any early return (rules-of-hooks)
+  const parts = useMemo(() => message.parts ?? [], [message.parts])
+  const renderItems = useMemo(() => groupSearchParts(parts), [parts])
+
   if (isUser) {
     const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
     return (
@@ -175,7 +261,6 @@ export function ChatMessage({
   }
 
   // Assistant message — render parts in order per SDK best practice
-  const parts = message.parts ?? []
   const isActive = isStreaming
 
   // Collect all text for copy action
@@ -192,7 +277,17 @@ export function ChatMessage({
         </div>
 
         <div className="flex-1 overflow-hidden text-left space-y-3">
-          {parts.map((part, index) => {
+          {renderItems.map((item) => {
+            if (item.kind === 'search-group') {
+              return (
+                <SearchToolGroup
+                  key={`search-group-${item.items[0]!.index}`}
+                  toolParts={item.items}
+                />
+              )
+            }
+
+            const { part, index } = item
             if (part.type === 'step-start') return null
 
             if (isReasoningUIPart(part)) {
@@ -206,22 +301,18 @@ export function ChatMessage({
             }
 
             if (isToolUIPart(part)) {
-              const toolName =
-                'toolName' in part
-                  ? (part as { toolName: string }).toolName
-                  : part.type.replace('tool-', '')
+              const { toolName, input, toolCallId, toolOutput } =
+                extractToolPartInfo(part, index)
               const config = TOOL_CONFIG[toolName]
               if (config?.hidden) return null
-              const input =
-                'input' in part
-                  ? (part as { input?: Record<string, unknown> }).input
-                  : undefined
               return (
                 <ToolCallRow
                   key={`tool-${index}`}
+                  toolCallId={toolCallId}
                   toolName={toolName}
                   state={part.state}
                   detail={getToolDetail(toolName, input)}
+                  output={toolOutput}
                 />
               )
             }
@@ -302,6 +393,148 @@ function ReasoningBlock({
 }
 
 // ---------------------------------------------------------------------------
+// SearchToolGroup — collapsed group for parallel search_laws calls
+// ---------------------------------------------------------------------------
+
+function SearchToolGroup({
+  toolParts,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  toolParts: Array<{ part: any; index: number }>
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const chatDetail = useChatDetailSafe()
+
+  const infos = useMemo(
+    () => toolParts.map((tp) => extractToolPartInfo(tp.part, tp.index)),
+    [toolParts]
+  )
+
+  const allDone = infos.every((i) => i.state === 'output-available')
+  const anyError = infos.some((i) => i.state === 'output-error')
+  const anyRunning = !allDone && !anyError
+
+  const isClickable = allDone && chatDetail !== null
+
+  // Build merged data for the sidebar (array of ToolResponse payloads)
+  const mergedData = useMemo(() => {
+    if (!allDone) return null
+    return infos
+      .map((i) => i.toolOutput)
+      .filter(
+        (o): o is Record<string, unknown> => o != null && typeof o === 'object'
+      )
+  }, [allDone, infos])
+
+  const groupId = `search-group-${toolParts[0]!.index}`
+
+  const isActiveInSidebar =
+    isClickable && chatDetail?.activeDetail?.id === groupId
+
+  const handleClick = useCallback(() => {
+    if (!isClickable || !chatDetail || !mergedData) return
+    chatDetail.openDetail({
+      type: 'tool-result',
+      id: groupId,
+      toolName: 'search_laws',
+      data: mergedData,
+    })
+  }, [isClickable, chatDetail, mergedData, groupId])
+
+  const queries = infos
+    .map((i) => (typeof i.input?.query === 'string' ? i.input.query : null))
+    .filter(Boolean) as string[]
+
+  const count = toolParts.length
+
+  return (
+    <div className="space-y-1">
+      {/* Main collapsed row */}
+      {isClickable ? (
+        <button
+          type="button"
+          className={cn(
+            'flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0',
+            'cursor-pointer hover:bg-muted/50 transition-colors',
+            isActiveInSidebar && 'ring-2 ring-primary/40'
+          )}
+          onClick={handleClick}
+        >
+          <div className="flex items-center justify-center h-5 w-5 rounded-full shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <Check className="h-3 w-3" />
+          </div>
+          <Search className="h-3 w-3 text-muted-foreground shrink-0" />
+          <span className="text-xs text-muted-foreground">
+            Sökte i lagdatabasen
+          </span>
+          <span className="text-xs text-muted-foreground/70">
+            — {count} sökningar
+          </span>
+        </button>
+      ) : (
+        <div className="flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0">
+          <div
+            className={cn(
+              'flex items-center justify-center h-5 w-5 rounded-full shrink-0',
+              anyRunning &&
+                'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+              anyError && 'bg-destructive/10 text-destructive'
+            )}
+          >
+            {anyRunning ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <X className="h-3 w-3" />
+            )}
+          </div>
+          <Search className="h-3 w-3 text-muted-foreground shrink-0" />
+          <span
+            className={cn(
+              'text-xs',
+              anyRunning ? 'text-foreground' : 'text-destructive'
+            )}
+          >
+            {anyRunning ? 'Söker i lagdatabasen' : 'Sökning misslyckades'}
+          </span>
+          <span className="text-xs text-muted-foreground/70">
+            — {count} sökningar
+          </span>
+        </div>
+      )}
+
+      {/* Expand toggle to show individual queries */}
+      {queries.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="inline-flex items-center gap-1 text-[11px] text-muted-foreground/70 hover:text-muted-foreground transition-colors ml-3"
+        >
+          {expanded ? (
+            <ChevronDown className="h-3 w-3" />
+          ) : (
+            <ChevronRight className="h-3 w-3" />
+          )}
+          {expanded ? 'Dölj sökfrågor' : 'Visa sökfrågor'}
+        </button>
+      )}
+
+      {expanded && queries.length > 0 && (
+        <div className="ml-3 pl-3 border-l border-border/40 space-y-0.5">
+          {queries.map((q, i) => (
+            <p
+              key={i}
+              className="text-[11px] text-muted-foreground/70 truncate"
+            >
+              &ldquo;{q}&rdquo;
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // ToolCallRow — inline tool call status
 // ---------------------------------------------------------------------------
 
@@ -337,21 +570,99 @@ function getToolDetail(
   }
 }
 
+/**
+ * Build the ChatDetailItem for a tool result based on sidebarHint routing.
+ * - save_assessment → 'assessment' detail type
+ * - other write tools (confirmation_required) → 'write-preview'
+ * - everything else → 'tool-result'
+ */
+function buildDetailItem(
+  toolCallId: string,
+  toolName: string,
+  output: unknown
+): ChatDetailItem {
+  const isWritePreview =
+    output &&
+    typeof output === 'object' &&
+    'confirmation_required' in output &&
+    (output as { confirmation_required: boolean }).confirmation_required
+
+  if (isWritePreview) {
+    if (toolName === 'save_assessment') {
+      // Route to assessment detail — extract data from the write tool response
+      const writeResp = output as WriteToolResponse<unknown>
+      const params = writeResp.params ?? {}
+      const assessmentData: AssessmentDetailData = {
+        changeEventId: (params.changeEventId as string) ?? '',
+        lawListItemId: (params.lawListItemId as string) ?? '',
+        amendmentSfs: (params.amendmentSfs as string) ?? '',
+        changeType: (params.changeType as string) ?? '',
+        affectedSections: (params.affectedSections as string[]) ?? [],
+        effectiveDate: params.effectiveDate
+          ? new Date(params.effectiveDate as string)
+          : null,
+        existingAssessment: params.existingAssessment
+          ? (params.existingAssessment as AssessmentDetailData['existingAssessment'])
+          : null,
+        documentTitle: (params.documentTitle as string) ?? '',
+        documentNumber: (params.documentNumber as string) ?? '',
+      }
+      return {
+        type: 'assessment' as const,
+        id: toolCallId,
+        data: assessmentData,
+      }
+    }
+    return {
+      type: 'write-preview',
+      id: toolCallId,
+      toolName,
+      data: output as WriteToolResponse<unknown>,
+    }
+  }
+
+  return { type: 'tool-result', id: toolCallId, toolName, data: output }
+}
+
 function ToolCallRow({
+  toolCallId,
   toolName,
   state,
   detail,
+  output,
 }: {
+  toolCallId: string
   toolName: string
   state: string
   detail?: string | undefined
+  output?: unknown
 }) {
   const config = TOOL_CONFIG[toolName]
   const Icon = config?.icon ?? Search
+  const chatDetail = useChatDetailSafe()
+  const autoOpenedRef = useRef(false)
 
   const isDone = state === 'output-available'
   const isError = state === 'output-error'
   const isRunning = !isDone && !isError
+  const isClickable = isDone && output !== undefined && chatDetail !== null
+
+  const meta = isDone
+    ? (output as { _meta?: ToolMeta } | null)?._meta
+    : undefined
+  const sidebarHint = meta?.sidebarHint
+
+  // Auto-open sidebar for sidebarHint === 'open' (write previews)
+  useEffect(() => {
+    if (!isDone || !chatDetail || autoOpenedRef.current) return
+    if (sidebarHint !== 'open' || !output) return
+    // Debounce by 100ms to avoid layout flicker during streaming
+    const timer = setTimeout(() => {
+      autoOpenedRef.current = true
+      chatDetail.openDetail(buildDetailItem(toolCallId, toolName, output))
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [isDone, sidebarHint, chatDetail, toolCallId, toolName, output])
 
   const label = isDone
     ? (config?.doneLabel ?? toolName)
@@ -359,42 +670,98 @@ function ToolCallRow({
       ? `${config?.label ?? toolName} misslyckades`
       : (config?.label ?? toolName)
 
-  return (
-    <div className="flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0">
-      <div
-        className={cn(
-          'flex items-center justify-center h-5 w-5 rounded-full shrink-0',
-          isDone && 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-          isError && 'bg-destructive/10 text-destructive',
-          isRunning && 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-        )}
-      >
-        {isRunning ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : isDone ? (
-          <Check className="h-3 w-3" />
-        ) : (
-          <X className="h-3 w-3" />
-        )}
-      </div>
+  const handleClick = (e: React.MouseEvent<HTMLElement>) => {
+    if (!isClickable || !chatDetail) return
+    chatDetail.openDetail(
+      buildDetailItem(toolCallId, toolName, output),
+      e.currentTarget
+    )
+  }
 
-      <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
-      <span
-        className={cn(
-          'text-xs',
-          isDone
-            ? 'text-muted-foreground'
-            : isRunning
-              ? 'text-foreground'
-              : 'text-destructive'
-        )}
-      >
-        {label}
-      </span>
-      {detail && (
-        <span className="text-xs text-muted-foreground/70 truncate">
-          — {detail}
+  const handleSuggestClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!chatDetail || !output) return
+    chatDetail.openDetail(
+      buildDetailItem(toolCallId, toolName, output),
+      e.currentTarget
+    )
+  }
+
+  const isActiveInSidebar =
+    isClickable && chatDetail?.activeDetail?.id === toolCallId
+
+  function renderToolRowContent() {
+    return (
+      <>
+        <div
+          className={cn(
+            'flex items-center justify-center h-5 w-5 rounded-full shrink-0',
+            isDone &&
+              'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+            isError && 'bg-destructive/10 text-destructive',
+            isRunning && 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+          )}
+        >
+          {isRunning ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : isDone ? (
+            <Check className="h-3 w-3" />
+          ) : (
+            <X className="h-3 w-3" />
+          )}
+        </div>
+
+        <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
+        <span
+          className={cn(
+            'text-xs',
+            isDone
+              ? 'text-muted-foreground'
+              : isRunning
+                ? 'text-foreground'
+                : 'text-destructive'
+          )}
+        >
+          {label}
         </span>
+        {detail && (
+          <span className="text-xs text-muted-foreground/70 truncate">
+            — {detail}
+          </span>
+        )}
+      </>
+    )
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {isClickable ? (
+        <button
+          type="button"
+          className={cn(
+            'flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0',
+            'cursor-pointer hover:bg-muted/50 transition-colors',
+            isActiveInSidebar && 'ring-2 ring-primary/40'
+          )}
+          onClick={handleClick}
+        >
+          {renderToolRowContent()}
+        </button>
+      ) : (
+        <div className="flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0">
+          {renderToolRowContent()}
+        </div>
+      )}
+
+      {/* "Visa detaljer" chip for sidebarHint === 'suggest' */}
+      {isDone && sidebarHint === 'suggest' && chatDetail && (
+        <button
+          type="button"
+          onClick={handleSuggestClick}
+          className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors ml-3"
+        >
+          <Eye className="h-3 w-3" />
+          Visa detaljer
+        </button>
       )}
     </div>
   )

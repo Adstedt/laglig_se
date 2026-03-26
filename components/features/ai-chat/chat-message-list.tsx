@@ -18,6 +18,8 @@ import {
   groupMessagesByDate,
   type DateGroup,
 } from '@/lib/utils/group-messages-by-date'
+import { useChatDetailSafe } from '@/lib/ai/chat-detail-context'
+import { SystemMessage } from './system-message'
 
 interface ChatMessageListProps {
   messages: UIMessage[]
@@ -113,6 +115,10 @@ export function ChatMessageList({
   // Group messages by date for date separator headers
   const dateGroups: DateGroup[] = groupMessagesByDate(messages)
 
+  // System messages from ChatDetailContext (ephemeral, not persisted)
+  const chatDetail = useChatDetailSafe()
+  const systemMessages = chatDetail?.systemMessages ?? []
+
   return (
     <ScrollArea className={cn('flex-1', className)} ref={scrollRef}>
       <div className="px-4 py-4 space-y-4">
@@ -173,6 +179,11 @@ export function ChatMessageList({
             </div>
           </div>
         )}
+
+        {/* Ephemeral system messages */}
+        {systemMessages.map((sysMsg) => (
+          <SystemMessage key={sysMsg.id} message={sysMsg} />
+        ))}
 
         {/* Inline footer (e.g. assessment resolution) */}
         {footer}

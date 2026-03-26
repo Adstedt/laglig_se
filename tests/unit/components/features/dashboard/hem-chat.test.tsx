@@ -121,6 +121,15 @@ vi.mock('@/components/features/dashboard/conversation-history', () => ({
   ),
 }))
 
+// Mock sidebar components for 14.15a integration
+vi.mock('@/lib/hooks/use-media-query', () => ({
+  useMediaQuery: vi.fn(() => true),
+}))
+
+vi.mock('@/components/features/ai-chat/chat-detail-sidebar', () => ({
+  ChatDetailSidebar: () => <div data-testid="chat-detail-sidebar" />,
+}))
+
 // ============================================================================
 // Import after mocks
 // ============================================================================

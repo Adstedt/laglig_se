@@ -259,7 +259,8 @@
       "WebFetch(domain:via.tt.se)",
       "WebFetch(domain:api.bolagsapi.se)",
       "Bash(npm run:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(xargs -I {} basename {})"
     ],
     "deny": [],
     "ask": []

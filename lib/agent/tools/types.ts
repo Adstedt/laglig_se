@@ -7,6 +7,8 @@ export interface ToolMeta {
   tool: string
   executionTimeMs: number
   resultCount: number
+  /** Hint for the sidebar behavior when this tool result arrives */
+  sidebarHint?: 'open' | 'suggest' | 'none'
 }
 
 export interface ToolResponse<T> {

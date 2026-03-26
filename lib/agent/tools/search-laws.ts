@@ -6,6 +6,7 @@
 import { tool, zodSchema } from 'ai'
 import { z } from 'zod/v4'
 import { retrieveContext } from '@/lib/agent/retrieval'
+import { chunkCitationKey } from '@/lib/ai/citations'
 import { wrapToolResponse, wrapToolError } from './utils'
 
 const searchLawsSchema = z.object({
@@ -36,7 +37,7 @@ Example queries:
 - "regler för kemikaliehantering"
 - "GDPR-krav för personuppgifter"
 
-Returns up to {limit} results ranked by relevance. Each result includes the passage text, document number, and a relevance score (0-1).
+Returns up to {limit} results ranked by relevance. Each result includes the passage text, document number, and a relevance score (0-1). Each result includes a \`citationKey\` — use this exact string in [Källa: ...] citations.
 
 If no results are found, try rephrasing the query or broadening the search (e.g., remove contentType filter).`,
     inputSchema: zodSchema(searchLawsSchema),
@@ -66,6 +67,9 @@ If no results are found, try rephrasing the query or broadening the search (e.g.
           relevanceScore: Math.round(r.relevanceScore * 1000) / 1000,
           path: r.path,
           snippet: r.content,
+          citationKey: r.documentNumber
+            ? (chunkCitationKey(r.documentNumber, r.path) ?? r.documentNumber)
+            : null,
         }))
 
         return wrapToolResponse('search_laws', results, startTime)

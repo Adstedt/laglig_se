@@ -15,7 +15,13 @@ import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import { useCitationSources } from '@/lib/ai/citation-context'
-import { resolveSource } from '@/lib/ai/citations'
+import { useChatDetailSafe } from '@/lib/ai/chat-detail-context'
+import {
+  resolveSource,
+  formatChunkPath,
+  parseCitationLabel,
+  anchorIdFromPath,
+} from '@/lib/ai/citations'
 import {
   InlineCitation,
   InlineCitationCard,
@@ -69,12 +75,66 @@ export function CitationPillInline({
         ? children.map((c) => (typeof c === 'string' ? c : '')).join('')
         : ''
 
-  if (!label) return null
+  // All hooks must be called before any early return (rules-of-hooks)
+  const chatDetail = useChatDetailSafe()
+  const pillRef = useRef<HTMLElement | null>(null)
 
-  const displayLabel = label.length > 35 ? label.slice(0, 33) + '\u2026' : label
+  const displayLabel = label
+    ? label.length > 35
+      ? label.slice(0, 33) + '\u2026'
+      : label
+    : ''
 
   // Resolve source: try chunk path match first, then document number
-  const source = resolveSource(label, sourceMap)
+  const source = label ? resolveSource(label, sourceMap) : null
+
+  // Parse the label to extract section info even when source falls back to document-level
+  const parsed = label ? parseCitationLabel(label) : null
+  const resolvedPath = source?.path ?? parsed?.path ?? null
+  const resolvedAnchor =
+    source?.anchorId ?? (parsed?.path ? anchorIdFromPath(parsed.path) : null)
+  const isChunkResolved = !!source?.path
+
+  const citationId = source
+    ? `citation-${source.documentNumber}-${resolvedAnchor ?? 'doc'}`
+    : ''
+  const isActive =
+    chatDetail?.activeDetail?.type === 'citation' &&
+    chatDetail.activeDetail.id === citationId
+
+  const handleClick = useCallback(() => {
+    if (!chatDetail || !source) return
+    chatDetail.openDetail(
+      {
+        type: 'citation' as const,
+        id: citationId,
+        data: {
+          title: source.title || '',
+          snippet: isChunkResolved ? source.snippet || '' : '',
+          documentNumber: source.documentNumber || '',
+          slug: source.slug || '',
+          ...(resolvedAnchor ? { anchorId: resolvedAnchor } : {}),
+          ...(resolvedPath
+            ? { path: formatChunkPath(resolvedPath) ?? resolvedPath }
+            : {}),
+        },
+      },
+      pillRef.current ?? undefined
+    )
+  }, [
+    chatDetail,
+    citationId,
+    source,
+    isChunkResolved,
+    resolvedAnchor,
+    resolvedPath,
+  ])
+
+  const triggerCallbackRef = useCallback((node: HTMLElement | null) => {
+    pillRef.current = node
+  }, [])
+
+  if (!label) return null
 
   // Unresolved source: plain muted pill without hover card
   if (!source) {
@@ -91,7 +151,6 @@ export function CitationPillInline({
     : null
 
   // Chunk-level source has path — show its snippet.
-  // Document-level fallback (no path) — don't show the generic summary as if it's section text.
   const isChunkLevel = !!source.path
   const description = isChunkLevel ? source.snippet : null
 
@@ -99,9 +158,12 @@ export function CitationPillInline({
     <InlineCitation>
       <InlineCitationCard open={open}>
         <InlineCitationCardTrigger
+          ref={triggerCallbackRef}
           label={displayLabel}
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
+          onClick={handleClick}
+          className={isActive ? 'ring-2 ring-primary bg-primary/10' : undefined}
         />
         <InlineCitationCardBody
           onMouseEnter={handleEnter}

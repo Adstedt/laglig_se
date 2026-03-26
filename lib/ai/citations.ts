@@ -74,6 +74,7 @@ export function extractSourcesFromToolResult(
             snippet?: string
             slug?: string
             path?: string
+            citationKey?: string
           }>
         | undefined
 
@@ -89,7 +90,7 @@ export function extractSourcesFromToolResult(
           const chunkInfo: SourceInfo = {
             documentNumber: item.documentNumber,
             title,
-            snippet: item.snippet ? truncate(item.snippet, 150) : null,
+            snippet: item.snippet ?? null,
             slug: item.slug ?? null,
             path: item.path ?? null,
             anchorId,
@@ -98,6 +99,11 @@ export function extractSourcesFromToolResult(
           // Path-based key for chunk-level lookup
           if (item.path) {
             set(`${item.documentNumber}::${item.path}`, chunkInfo)
+          }
+
+          // Citation key for direct label → source resolution
+          if (item.citationKey) {
+            set(item.citationKey, chunkInfo)
           }
 
           // Document-level fallback (no chunk-specific fields)
@@ -116,6 +122,7 @@ export function extractSourcesFromToolResult(
             slug?: string
             summary?: string
             markdownContent?: string
+            citationKeys?: string[]
           }
         | undefined
 
@@ -124,7 +131,7 @@ export function extractSourcesFromToolResult(
         set(data.documentNumber, {
           documentNumber: data.documentNumber,
           title: data.title ?? null,
-          snippet: data.summary ? truncate(data.summary, 150) : null,
+          snippet: data.summary ?? null,
           slug: data.slug ?? null,
           path: null,
           anchorId: null,
@@ -139,6 +146,32 @@ export function extractSourcesFromToolResult(
             data.markdownContent,
             set
           )
+        }
+
+        // Register citationKey entries for direct label → source resolution
+        if (Array.isArray(data.citationKeys)) {
+          for (const key of data.citationKeys) {
+            const parsed = parseCitationLabel(key)
+            if (parsed) {
+              const pathKey = `${data.documentNumber}::${parsed.path}`
+              // Use existing path-based entry if available (has snippet),
+              // otherwise create a document-level entry with anchor
+              const existing = sources[pathKey]
+              if (existing) {
+                set(key, existing)
+              } else {
+                const aid = anchorIdFromPath(parsed.path)
+                set(key, {
+                  documentNumber: data.documentNumber,
+                  title: data.title ?? null,
+                  snippet: data.summary ?? null,
+                  slug: data.slug ?? null,
+                  path: parsed.path,
+                  anchorId: aid,
+                })
+              }
+            }
+          }
         }
       }
     } else if (toolName === 'get_change_details') {
@@ -350,7 +383,7 @@ function extractSectionsFromMarkdown(
       set(`${documentNumber}::${path}`, {
         documentNumber,
         title,
-        snippet: snippet ? truncate(snippet, 150) : null,
+        snippet: snippet || null,
         slug,
         path,
         anchorId,
@@ -359,9 +392,16 @@ function extractSectionsFromMarkdown(
   }
 }
 
-function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text
-  return text.slice(0, maxLength).trim() + '...'
+/**
+ * Format internal chunk path (e.g. "kap3.§1a") to human-readable (e.g. "Kap 3, 1a §").
+ * Returns null if the path doesn't match the expected format.
+ */
+export function formatChunkPath(path: string): string | null {
+  const match = path.match(/^kap(\w+)\.§(\w+)$/)
+  if (!match) return null
+  const [, chapter, section] = match
+  if (chapter === '0') return `${section} §`
+  return `Kap ${chapter}, ${section} §`
 }
 
 function parseTitle(contextualHeader: string): string {

@@ -217,6 +217,102 @@ describe('extractSourcesFromToolResult', () => {
     expect(sources['SFS 1977:1160']).toBeDefined()
   })
 
+  it('registers entries by citationKey from search_laws results', () => {
+    const result = {
+      data: [
+        {
+          documentNumber: 'SFS 1977:1160',
+          contextualHeader: 'AML > Kap 3 > 2a §',
+          snippet: 'Arbetsgivaren ska planera...',
+          slug: 'sfs-1977-1160',
+          path: 'kap3.§2a',
+          citationKey: 'SFS 1977:1160, Kap 3, 2a §',
+        },
+        {
+          documentNumber: 'SFS 1982:80',
+          contextualHeader: 'LAS > 7 §',
+          snippet: 'Uppsägning...',
+          slug: 'sfs-1982-80',
+          path: 'kap0.§7',
+          citationKey: 'SFS 1982:80, 7 §',
+        },
+      ],
+      _meta: { tool: 'search_laws', executionTimeMs: 100, resultCount: 2 },
+    }
+
+    const sources = extractSourcesFromToolResult('search_laws', result)
+
+    // citationKey-based entries
+    const byKey1 = sources['SFS 1977:1160, Kap 3, 2a §']
+    expect(byKey1).toBeDefined()
+    expect(byKey1!.snippet).toBe('Arbetsgivaren ska planera...')
+    expect(byKey1!.anchorId).toBe('K3P2a')
+
+    const byKey2 = sources['SFS 1982:80, 7 §']
+    expect(byKey2).toBeDefined()
+    expect(byKey2!.snippet).toBe('Uppsägning...')
+
+    // Path-based and doc-level entries still exist
+    expect(sources['SFS 1977:1160::kap3.§2a']).toBeDefined()
+    expect(sources['SFS 1977:1160']).toBeDefined()
+  })
+
+  it('registers citationKey entries from get_document_details citationKeys array', () => {
+    const result = {
+      data: {
+        documentNumber: 'SFS 1977:1160',
+        title: 'Arbetsmiljölag',
+        slug: 'sfs-1977-1160',
+        summary: 'Lag om arbetsmiljö',
+        markdownContent: [
+          '## 3 kap. Allmänna skyldigheter',
+          '',
+          '### 2a §',
+          'Arbetsgivaren ska systematiskt planera.',
+        ].join('\n'),
+        citationKeys: [
+          'SFS 1977:1160, Kap 3, 2a §',
+          'SFS 1977:1160, Kap 3, 3 §',
+        ],
+      },
+    }
+
+    const sources = extractSourcesFromToolResult('get_document_details', result)
+
+    // citationKey entry that matches a markdown-extracted section gets its snippet
+    const key2a = sources['SFS 1977:1160, Kap 3, 2a §']
+    expect(key2a).toBeDefined()
+    expect(key2a!.snippet).toContain('systematiskt planera')
+    expect(key2a!.anchorId).toBe('K3P2a')
+
+    // citationKey entry without a markdown-extracted section still gets registered
+    const key3 = sources['SFS 1977:1160, Kap 3, 3 §']
+    expect(key3).toBeDefined()
+    expect(key3!.path).toBe('kap3.§3')
+    expect(key3!.anchorId).toBe('K3P3')
+  })
+
+  it('handles search_laws results without citationKey gracefully', () => {
+    const result = {
+      data: [
+        {
+          documentNumber: 'SFS 1977:1160',
+          contextualHeader: 'AML > Övergångsbestämmelser',
+          snippet: 'Text...',
+          slug: 'sfs-1977-1160',
+          path: 'overgangsbest',
+          // No citationKey
+        },
+      ],
+    }
+
+    const sources = extractSourcesFromToolResult('search_laws', result)
+    // Should still have doc-level fallback
+    expect(sources['SFS 1977:1160']).toBeDefined()
+    // No citationKey entry
+    expect(Object.keys(sources)).not.toContain('SFS 1977:1160, Kap')
+  })
+
   it('returns empty for unknown tool', () => {
     const sources = extractSourcesFromToolResult('unknown', { data: {} })
     expect(Object.keys(sources)).toHaveLength(0)
@@ -276,6 +372,30 @@ describe('resolveSource', () => {
   it('resolves bare document number', () => {
     const source = resolveSource('SFS 1977:1160', buildMap())
     expect(source?.snippet).toBe('Document summary')
+  })
+
+  it('resolves via citationKey entry in source map', () => {
+    const map = new Map<string, SourceInfo>([
+      ...buildMap(),
+      [
+        'SFS 1977:1160, Kap 3, 2a §',
+        {
+          documentNumber: 'SFS 1977:1160',
+          title: 'Arbetsmiljölagen',
+          snippet: 'Chunk text about 2a §',
+          slug: 'sfs-1977-1160',
+          path: 'kap3.§2a',
+          anchorId: 'K3P2a',
+        },
+      ],
+    ])
+
+    // resolveSource parses the label to a path, finds the path-based entry,
+    // but the citationKey entry should also be available for direct lookup
+    const source = resolveSource('SFS 1977:1160, Kap 3, 2a §', map)
+    expect(source).toBeDefined()
+    expect(source?.snippet).toBe('Chunk text about 2a §')
+    expect(source?.anchorId).toBe('K3P2a')
   })
 
   it('returns null for unknown document', () => {
