@@ -166,7 +166,7 @@ export function ViewMenu({
                   onCheckedChange={(checked) =>
                     handleColumnToggle(col.id, !!checked)
                   }
-                  disabled={col.mandatory}
+                  disabled={col.mandatory ?? false}
                   onSelect={(e) => e.preventDefault()}
                 >
                   {col.label}
