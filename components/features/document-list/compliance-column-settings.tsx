@@ -14,7 +14,7 @@ import type { VisibilityState } from '@tanstack/react-table'
 
 // Column definitions with Swedish labels
 // mandatory: true means the column cannot be hidden
-const COMPLIANCE_COLUMN_OPTIONS: ColumnOption[] = [
+export const COMPLIANCE_COLUMN_OPTIONS: ColumnOption[] = [
   { id: 'contentType', label: 'Typ', defaultVisible: true, mandatory: true },
   { id: 'title', label: 'Dokument', defaultVisible: true, mandatory: true },
   {
