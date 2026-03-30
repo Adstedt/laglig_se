@@ -13,6 +13,7 @@ import {
   getUnacknowledgedChangeCount,
   getUnacknowledgedChangeById,
 } from '@/app/actions/change-events'
+import { prisma } from '@/lib/prisma'
 import { HemPage } from '@/components/features/dashboard/hem-page'
 import type { DashboardCardData } from '@/components/features/dashboard/context-cards'
 
@@ -61,11 +62,24 @@ export default async function DashboardPage({
 
   const firstName = user?.name?.split(' ')[0] ?? undefined
 
+  // Story 16.4: Check law list generation status
+  let generationStatus: string | null = null
+  try {
+    const ws = await prisma.workspace.findUnique({
+      where: { id: context.workspaceId },
+      select: { law_list_generation_status: true },
+    })
+    generationStatus = ws?.law_list_generation_status ?? null
+  } catch {
+    // Non-critical — progress card simply won't show
+  }
+
   return (
     <HemPage
       dashboardData={dashboardData}
       userName={firstName}
       initialChange={initialChange}
+      generationStatus={generationStatus}
     />
   )
 }

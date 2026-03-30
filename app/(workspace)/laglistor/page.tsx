@@ -18,6 +18,7 @@ import {
 import { DocumentListPageContent } from '@/components/features/document-list/document-list-page-content'
 import { DocumentListPageSkeleton } from '@/components/features/document-list/document-list-skeleton'
 import { LawListTabs } from '@/components/features/changes/law-list-tabs'
+import { RegenerateLawListButton } from '@/components/features/document-list/regenerate-law-list-button'
 
 // Force dynamic rendering since this page requires authentication
 export const dynamic = 'force-dynamic'
@@ -54,11 +55,14 @@ export default async function DocumentListsPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Mina listor</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Hantera dina listor och håll koll på relevanta rättsliga krav.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Mina listor</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Hantera dina listor och håll koll på relevanta rättsliga krav.
+          </p>
+        </div>
+        <RegenerateLawListButton />
       </div>
 
       <LawListTabs

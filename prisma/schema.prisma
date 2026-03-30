@@ -107,6 +107,11 @@ model Workspace {
   // Story 14.10: Change assessments
   change_assessments ChangeAssessment[]
 
+  // Story 16.4: Law list generation
+  law_list_generation_status   String?
+  law_list_generation_error    String?
+  law_list_generation_progress Json?
+
   @@index([owner_id])
   @@index([org_number])
   @@index([status])

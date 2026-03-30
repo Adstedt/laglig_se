@@ -83,7 +83,9 @@ export function ChangePicker({
                 <FileWarning className="h-4 w-4 text-amber-500 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">
-                    {change.documentTitle}
+                    {change.amendmentSfs
+                      ? `${change.amendmentSfs} — Ändring i ${change.documentTitle}`
+                      : change.documentTitle}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-xs text-muted-foreground">

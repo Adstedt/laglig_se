@@ -11,6 +11,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { HemChat } from '@/components/features/dashboard/hem-chat'
 import { ChangeAssessmentView } from '@/components/features/dashboard/change-assessment-view'
+import { LawListGenerationProgress } from '@/components/features/dashboard/law-list-generation-progress'
 import type { DashboardCardData } from '@/components/features/dashboard/context-cards'
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
 
@@ -19,12 +20,15 @@ interface HemPageProps {
   userName?: string | undefined
   /** Pre-fetched change for deep-link from email notifications */
   initialChange?: UnacknowledgedChange | null
+  /** Story 16.4: Law list generation status */
+  generationStatus?: string | null
 }
 
 export function HemPage({
   dashboardData,
   userName,
   initialChange,
+  generationStatus,
 }: HemPageProps) {
   const [activeChange, setActiveChange] = useState<UnacknowledgedChange | null>(
     initialChange ?? null
@@ -45,8 +49,19 @@ export function HemPage({
     setActiveChange(null)
   }, [])
 
+  const showGenerationProgress =
+    generationStatus === 'pending' ||
+    generationStatus === 'in_progress' ||
+    generationStatus === 'completed' ||
+    generationStatus === 'failed'
+
   return (
     <div className="-m-4 md:-m-6 flex flex-col h-[calc(100vh-60px)]">
+      {showGenerationProgress && (
+        <div className="px-4 md:px-6 pt-4 md:pt-6">
+          <LawListGenerationProgress initialStatus={generationStatus ?? null} />
+        </div>
+      )}
       {activeChange ? (
         <ChangeAssessmentView change={activeChange} onBack={handleBack} />
       ) : (
