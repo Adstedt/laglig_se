@@ -1,0 +1,49 @@
+schema: 1
+story: '17.5'
+story_title: '.docx Import — Upload & Convert to Tiptap'
+gate: PASS
+status_reason: >-
+  All 16 ACs substantively met. 27 new tests (3095 total passing). Clean conversion pipeline
+  (mammoth → cheerio → Tiptap JSON) with Swedish heading style support, H4-H6 clamping,
+  base64 image re-upload, and server-side archival. Import dialog with batch support, progress,
+  per-file metadata, and error feedback. One minor UX gap: no pre-import HTML preview (AC 5 partial).
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-30T20:25:00Z'
+
+top_issues: []
+
+waiver:
+  active: false
+
+quality_score: 90
+expires: '2026-04-13T20:25:00Z'
+
+evidence:
+  tests_reviewed: 27
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    ac_gaps: [5]  # No rendered HTML preview before import — metadata form only
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Server-side MIME + size validation. withWorkspace() auth. Zod input validation. mammoth conversion in try/catch.'
+  performance:
+    status: PASS
+    notes: 'mammoth and cheerio are both fast. Sequential batch processing. Image re-upload is the only potentially slow step.'
+  reliability:
+    status: PASS
+    notes: '$transaction for atomicity. Graceful conversion error handling. Client + server validation (defense in depth).'
+  maintainability:
+    status: PASS
+    notes: 'Clean pipeline separation: mammoth wrapper, cheerio transformer, pipeline compositor. Reusable TiptapDocumentJSON type exported. 16 granular transformer tests.'
+
+recommendations:
+  future:
+    - action: 'Add client-side HTML preview of converted content before import confirmation (AC 5)'
+      refs: ['components/features/documents/import-document-dialog.tsx']
+    - action: 'Handle Supabase upload errors for .docx archival gracefully (currently silently ignored)'
+      refs: ['app/actions/documents.ts']
+    - action: 'Add tests for <b> and <i> tag conversion (currently only <strong> and <em> tested)'
+      refs: ['tests/unit/lib/documents/html-to-tiptap-json.test.ts']

@@ -10,6 +10,7 @@ import {
   Scale,
   BookOpen,
   CheckSquare,
+  FileText,
   FolderOpen,
   Users,
   Bell,
@@ -111,6 +112,11 @@ const workItems: NavItem[] = [
     title: 'Uppgifter',
     icon: CheckSquare,
     href: '/tasks',
+  },
+  {
+    title: 'Dokument',
+    icon: FileText,
+    href: '/workspace/documents',
   },
   {
     title: 'Mina filer',

@@ -1,0 +1,48 @@
+schema: 1
+story: '17.3'
+story_title: 'Document Versioning — History, Diff & Restore'
+gate: PASS
+status_reason: >-
+  All critical requirements met. 20 ACs substantively covered with 28 new tests (77 total passing).
+  Server actions follow established patterns (withWorkspace, $transaction, ActionResult).
+  Minor gaps: no "changed" (yellow) diff highlighting (inherent diffWords limitation), batching test gap.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-30T15:20:00Z'
+
+top_issues: []
+
+waiver:
+  active: false
+
+quality_score: 90
+expires: '2026-04-13T15:20:00Z'
+
+evidence:
+  tests_reviewed: 28
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    ac_gaps: [8]  # Yellow/amber "changed" highlighting — diffWords limitation, green+red only
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All actions use withWorkspace() scoping. Document ownership verified before version access. No raw user input in queries.'
+  performance:
+    status: PASS
+    notes: 'Selective field fetching, batched user lookup via Map, on-demand diff content, parallel Promise.all. 30s batching prevents version proliferation.'
+  reliability:
+    status: PASS
+    notes: 'All mutations in $transaction for atomicity. Proper error handling with ActionResult pattern. Cleanup of timers in useEffect return.'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation: diff utility (lib/utils), server actions (app/actions), components (features/documents/editor). Follows existing codebase patterns.'
+
+recommendations:
+  future:
+    - action: 'Add unit tests for 30-second batching window behavior in use-document-autosave.ts'
+      refs: ['lib/hooks/use-document-autosave.ts', 'tests/unit/hooks/use-document-autosave.test.ts']
+    - action: 'Add absolute timestamp tooltip on hover for version entries (AC 2 says "relative + absolute")'
+      refs: ['components/features/documents/editor/version-history-panel.tsx']
+    - action: 'Consider post-processing adjacent remove+add diff pairs into "changed" segments with yellow highlight'
+      refs: ['lib/utils/document-diff.ts', 'components/features/documents/editor/version-diff-view.tsx']

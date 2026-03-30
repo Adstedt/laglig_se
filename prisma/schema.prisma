@@ -59,6 +59,12 @@ model User {
   change_assessments      ChangeAssessment[]    @relation("ChangeAssessmentAssessor")
   compliance_status_logs  ComplianceStatusLog[] @relation("ComplianceStatusLogChanger")
 
+  // Epic 17: Document management relations
+  workspace_documents_created    WorkspaceDocument[]             @relation("WsDocCreator")
+  workspace_documents_approved   WorkspaceDocument[]             @relation("WsDocApprover")
+  workspace_doc_task_links       WorkspaceDocumentTaskLink[]     @relation("WsDocTaskLinkUser")
+  workspace_doc_list_item_links  WorkspaceDocumentListItemLink[] @relation("WsDocListItemLinkUser")
+
   @@index([email])
   @@map("users")
 }
@@ -111,6 +117,9 @@ model Workspace {
   law_list_generation_status   String?
   law_list_generation_error    String?
   law_list_generation_progress Json?
+
+  // Epic 17: Document management
+  workspace_documents WorkspaceDocument[]
 
   @@index([owner_id])
   @@index([org_number])
@@ -315,6 +324,9 @@ model LawListItem {
   // Story 14.10: Change assessments and compliance status logs
   change_assessments  ChangeAssessment[]
   compliance_status_logs ComplianceStatusLog[]
+
+  // Epic 17: Document management
+  workspace_document_links WorkspaceDocumentListItemLink[]
 
   @@unique([law_list_id, document_id])
   @@index([law_list_id])
@@ -992,6 +1004,9 @@ model Task {
   comments        Comment[]
   file_links      FileTaskLink[]
 
+  // Epic 17: Document management
+  workspace_document_links WorkspaceDocumentTaskLink[]
+
   @@index([workspace_id])
   @@index([column_id])
   @@index([assignee_id])
@@ -1440,6 +1455,7 @@ enum SourceType {
   USER_FILE
   CONVERSATION
   ASSESSMENT
+  WORKSPACE_DOCUMENT
 }
 
 enum ContentRole {
@@ -1529,4 +1545,151 @@ model ComplianceStatusLog {
   @@index([changed_by])
   @@index([change_assessment_id])
   @@map("compliance_status_logs")
+}
+
+// ============================================================================
+// EPIC 17: DOCUMENT MANAGEMENT SYSTEM
+// WorkspaceDocument* models — prefixed to avoid collision with existing
+// DocumentVersion/DocumentStatus used by LegalDocument/SFS system
+// ============================================================================
+
+enum WorkspaceDocumentType {
+  POLICY
+  RISK_ASSESSMENT
+  ACTION_PLAN
+  PROCEDURE
+  INSTRUCTION
+  CHECKLIST
+  REPORT
+  OTHER
+}
+
+enum WorkspaceDocumentStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  SUPERSEDED
+  ARCHIVED
+}
+
+enum WorkspaceDocumentVersionSource {
+  TIPTAP
+  IMPORT
+  AGENT
+}
+
+model WorkspaceDocument {
+  id                     String                  @id @default(uuid())
+  workspace_id           String
+  title                  String
+  document_type          WorkspaceDocumentType   @default(OTHER)
+  status                 WorkspaceDocumentStatus @default(DRAFT)
+  document_number        String?
+
+  // Version tracking
+  current_version_id     String?                 @unique
+  current_version_number Int                     @default(0)
+
+  // Template reference
+  template_id            String?
+
+  // Lifecycle / compliance
+  approved_by            String?
+  approved_at            DateTime?
+  review_date            DateTime?
+  retention_until        DateTime?
+
+  // Ownership
+  created_by             String
+  created_at             DateTime                @default(now())
+  updated_at             DateTime                @updatedAt
+
+  // Relations
+  workspace       Workspace                    @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  creator         User                         @relation("WsDocCreator", fields: [created_by], references: [id])
+  approver        User?                        @relation("WsDocApprover", fields: [approved_by], references: [id])
+  current_version WorkspaceDocumentVersion?    @relation("WorkspaceDocumentCurrentVersion", fields: [current_version_id], references: [id])
+  versions        WorkspaceDocumentVersion[]   @relation("WorkspaceDocumentVersions")
+  template        WorkspaceDocumentTemplate?   @relation(fields: [template_id], references: [id])
+  task_links      WorkspaceDocumentTaskLink[]
+  list_item_links WorkspaceDocumentListItemLink[]
+
+  @@index([workspace_id, status])
+  @@index([workspace_id, document_type])
+  @@index([workspace_id, created_at])
+  @@map("workspace_documents")
+}
+
+model WorkspaceDocumentVersion {
+  id             String                       @id @default(uuid())
+  document_id    String
+  version_number Int
+  source         WorkspaceDocumentVersionSource @default(TIPTAP)
+
+  // Content (Tiptap JSON is source of truth)
+  content_json   Json
+  content_html   String                       @db.Text
+  extracted_text String?                      @db.Text
+
+  // Import source file
+  storage_path   String?
+
+  // Change tracking
+  change_summary String?
+  created_by     String // User ID or "agent" — no FK, resolve display at query time
+  created_at     DateTime                     @default(now())
+
+  // Relations
+  document    WorkspaceDocument  @relation("WorkspaceDocumentVersions", fields: [document_id], references: [id], onDelete: Cascade)
+  current_for WorkspaceDocument? @relation("WorkspaceDocumentCurrentVersion")
+
+  @@unique([document_id, version_number])
+  @@index([document_id, created_at])
+  @@map("workspace_document_versions")
+}
+
+model WorkspaceDocumentTemplate {
+  id            String              @id @default(uuid())
+  name          String
+  description   String?
+  document_type WorkspaceDocumentType
+  content_json  Json
+  is_active     Boolean             @default(true)
+  sort_order    Int                 @default(0)
+  created_at    DateTime            @default(now())
+  updated_at    DateTime            @updatedAt
+
+  documents WorkspaceDocument[]
+
+  @@map("workspace_document_templates")
+}
+
+model WorkspaceDocumentTaskLink {
+  id          String   @id @default(uuid())
+  document_id String
+  task_id     String
+  linked_at   DateTime @default(now())
+  linked_by   String
+
+  document WorkspaceDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  task     Task              @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  linker   User              @relation("WsDocTaskLinkUser", fields: [linked_by], references: [id])
+
+  @@unique([document_id, task_id])
+  @@map("workspace_document_task_links")
+}
+
+model WorkspaceDocumentListItemLink {
+  id           String      @id @default(uuid())
+  document_id  String
+  list_item_id String
+  linked_at    DateTime    @default(now())
+  linked_by    String
+
+  document  WorkspaceDocument @relation(fields: [document_id], references: [id], onDelete: Cascade)
+  list_item LawListItem       @relation(fields: [list_item_id], references: [id], onDelete: Cascade)
+  linker    User              @relation("WsDocListItemLinkUser", fields: [linked_by], references: [id])
+
+  @@unique([document_id, list_item_id])
+  @@map("workspace_document_list_item_links")
 }
