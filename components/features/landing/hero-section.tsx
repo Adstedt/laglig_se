@@ -1,15 +1,8 @@
 import Link from 'next/link'
-import {
-  ArrowRight,
-  Check,
-  Play,
-  Bell,
-  FileText,
-  CheckSquare,
-} from 'lucide-react'
+import { ArrowRight, Check, Play } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { HeroPreview } from './hero-preview'
 
 export function HeroSection() {
   return (
@@ -91,110 +84,23 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Right column - Product preview */}
+          {/* Right column - Interactive company preview */}
           <div className="animate-fade-up-delay-2 relative">
             {/* Layered glow effect */}
             <div className="absolute -inset-8 rounded-3xl bg-gradient-to-br from-amber-200/40 via-orange-100/20 to-rose-100/30 blur-3xl" />
             <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-amber-100/60 to-transparent blur-2xl" />
 
-            {/* Main card - Premium shadow stack */}
-            <div className="relative rounded-2xl border border-border/50 bg-card shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.08),0_20px_25px_-5px_rgba(0,0,0,0.05)] transition-all duration-500 hover:shadow-[0_4px_6px_-1px_rgba(0,0,0,0.07),0_10px_15px_-3px_rgba(0,0,0,0.1),0_25px_50px_-12px_rgba(0,0,0,0.15)] hover:-translate-y-1">
-              {/* Browser chrome */}
-              <div className="flex items-center gap-2 border-b px-4 py-3">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-400" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-400" />
-                  <div className="h-3 w-3 rounded-full bg-green-400" />
-                </div>
-                <div className="ml-4 flex-1">
-                  <div className="mx-auto max-w-sm rounded-md bg-muted px-4 py-1 text-xs text-muted-foreground">
-                    app.laglig.se/dashboard
-                  </div>
-                </div>
+            {/* Main card */}
+            <div className="relative rounded-2xl border border-border/50 bg-card p-6 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_10px_15px_-3px_rgba(0,0,0,0.08),0_20px_25px_-5px_rgba(0,0,0,0.05)]">
+              <div className="mb-4">
+                <h3 className="font-semibold">
+                  Vilka regler gäller ditt företag?
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Skriv in ditt organisationsnummer och se direkt.
+                </p>
               </div>
-
-              {/* Dashboard preview - Stacked cards */}
-              <div className="p-5">
-                {/* Dashboard header */}
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">Din laglista</h3>
-                    <p className="text-sm text-muted-foreground">
-                      23 lagar gäller ditt företag
-                    </p>
-                  </div>
-                  <Badge variant="secondary" className="gap-1">
-                    <Bell className="h-3 w-3" />1 ny ändring
-                  </Badge>
-                </div>
-
-                {/* Stacked cards - Core value flow */}
-                <div className="space-y-3">
-                  {/* Card 1 - Law List */}
-                  <div className="rounded-xl border bg-card p-4">
-                    <div className="mb-2 flex items-center gap-2">
-                      <div className="rounded-lg bg-primary/10 p-1.5">
-                        <FileText className="h-4 w-4 text-primary" />
-                      </div>
-                      <span className="text-sm font-medium">Laglista</span>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-1.5 text-sm">
-                        <span>Arbetsmiljölagen</span>
-                        <Check className="h-4 w-4 text-amber-600" />
-                      </div>
-                      <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-1.5 text-sm">
-                        <span>GDPR</span>
-                        <Check className="h-4 w-4 text-amber-600" />
-                      </div>
-                      <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-1.5 text-sm">
-                        <span>Bokföringslagen</span>
-                        <Check className="h-4 w-4 text-amber-600" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 2 - Change notification */}
-                  <div className="rounded-xl border bg-gradient-to-br from-amber-50 to-orange-50/50 p-4 dark:from-amber-950/20 dark:to-orange-950/10">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="rounded-lg bg-amber-500/10 p-1.5">
-                          <Bell className="h-4 w-4 text-amber-600" />
-                        </div>
-                        <span className="text-sm font-medium">
-                          Notis vid ändring
-                        </span>
-                      </div>
-                      <span className="text-xs font-medium text-amber-600">
-                        Ny
-                      </span>
-                    </div>
-                    <p className="text-sm">
-                      AFS 2024:1 träder i kraft 1 mars 2025
-                    </p>
-                  </div>
-
-                  {/* Card 3 - Task created */}
-                  <div className="rounded-xl border bg-gradient-to-br from-stone-50 to-stone-100/50 p-4 dark:from-stone-950/20 dark:to-stone-900/10">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="rounded-lg bg-stone-500/10 p-1.5">
-                          <CheckSquare className="h-4 w-4 text-stone-600" />
-                        </div>
-                        <span className="text-sm font-medium">
-                          Uppgift skapas
-                        </span>
-                      </div>
-                      <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-700 dark:bg-stone-900/30 dark:text-stone-400">
-                        Auto
-                      </span>
-                    </div>
-                    <p className="text-sm">
-                      Uppdatera säkerhetsrutin • Deadline 1 mars
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <HeroPreview />
             </div>
           </div>
         </div>

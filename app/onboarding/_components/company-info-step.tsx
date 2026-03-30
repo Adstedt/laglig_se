@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -9,6 +9,10 @@ import {
   type WorkspaceOnboardingData,
 } from '@/lib/validation/workspace'
 import { useCompanyLookup } from '@/lib/hooks/use-company-lookup'
+import {
+  getOnboardingData,
+  saveOnboardingData,
+} from '@/lib/onboarding/onboarding-store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -55,8 +59,36 @@ export function CompanyInfoStep({
   const orgNumberValue = watch('orgNumber')
   const companyNameValue = watch('companyName')
 
+  // Pre-fill from OnboardingStore (localStorage bridge from signup)
+  const storedData = useRef(getOnboardingData())
+
+  useEffect(() => {
+    const stored = storedData.current
+    if (!stored) return
+
+    if (stored.orgNumber) setValue('orgNumber', stored.orgNumber)
+    if (stored.companyName) setValue('companyName', stored.companyName)
+    if (stored.legalForm)
+      setValue(
+        'legalForm',
+        stored.legalForm as WorkspaceOnboardingData['legalForm'],
+        {
+          shouldValidate: true,
+        }
+      )
+    if (stored.streetAddress) setValue('streetAddress', stored.streetAddress)
+    if (stored.postalCode) setValue('postalCode', stored.postalCode)
+    if (stored.city) setValue('city', stored.city)
+    if (stored.sniCode) setValue('sniCode', stored.sniCode)
+    if (stored.industryLabel) setValue('industryLabel', stored.industryLabel)
+    if (stored.websiteUrl) setValue('websiteUrl', stored.websiteUrl)
+  }, [setValue])
+
   const { data, isLoading, error, isAutoFilled } =
     useCompanyLookup(orgNumberValue)
+
+  // Track whether BolagsAPI lookup has completed (for companySummary override)
+  const [lookupComplete, setLookupComplete] = useState(false)
 
   // Track whether the badge should show (auto-filled and user hasn't edited companyName)
   const [showBadge, setShowBadge] = useState(false)
@@ -121,7 +153,58 @@ export function CompanyInfoStep({
       )
     }
     setValue('dataSource', 'bolagsapi')
+    setLookupComplete(true)
   }, [data, setValue])
+
+  // Override businessDescription with stored companySummary AFTER BolagsAPI auto-fill
+  // If no stored summary (direct signup), call analyzer as fallback
+  useEffect(() => {
+    if (!lookupComplete) return
+
+    if (storedData.current?.companySummary) {
+      setValue('businessDescription', storedData.current.companySummary)
+      return
+    }
+
+    // Fallback: call LLM analyzer for direct-signup users
+    const profile = data?.profile
+    if (!profile?.company_name) return
+
+    const analyzeController = new AbortController()
+
+    async function runAnalysis() {
+      try {
+        const res = await fetch('/api/company/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: analyzeController.signal,
+          body: JSON.stringify({
+            name: profile!.company_name,
+            sniCode: profile!.sni_code,
+            sniDescription: profile!.industry_label,
+            businessDescription: profile!.business_description,
+            websiteUrl: profile!.website_url,
+          }),
+        })
+
+        if (!res.ok) return
+
+        const result = await res.json()
+        if (result.summary) {
+          setValue('businessDescription', result.summary)
+        }
+        if (result.activityFlags) {
+          saveOnboardingData({ inferredFlags: result.activityFlags })
+        }
+      } catch {
+        // Silent failure — keep BolagsAPI description
+      }
+    }
+
+    runAnalysis()
+
+    return () => analyzeController.abort()
+  }, [lookupComplete, data, setValue])
 
   // Remove badge if user manually edits companyName
   useEffect(() => {

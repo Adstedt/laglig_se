@@ -1,0 +1,68 @@
+schema: 1
+story: '16.2'
+story_title: 'Landing Page Company Preview'
+gate: PASS
+status_reason: >
+  All 28 acceptance criteria met. 55 story tests passing. Strong implementation with comprehensive
+  SSRF mitigations (DNS check, IP blocklist, redirect limit with per-hop IP re-check, size limit,
+  Content-Type validation). The previous CONCERNS gate issue (AC 6.4 activityFlags not persisted in
+  onboarding fallback) has been resolved — flags now saved to OnboardingStore via saveOnboardingData().
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-30T13:10:00Z'
+
+top_issues: []
+
+waiver: { active: false }
+
+quality_score: 90
+expires: '2026-04-13T13:10:00Z'
+
+evidence:
+  tests_reviewed: 55
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >
+      SSRF mitigations comprehensive: DNS resolution check for private IPs, protocol whitelist,
+      redirect limit (2 hops with IP re-check per hop), streaming size limit (100KB), Content-Type
+      validation. Rate limiting on public endpoint (10 req/min/IP). LLM prompt injection guard
+      with adversarial input warning. Auth required on /api/company/analyze. Known limitation:
+      DNS rebinding window — acceptable for threat model.
+  performance:
+    status: PASS
+    notes: >
+      Redis caching (30-min TTL) avoids redundant BolagsAPI + LLM calls. maxOutputTokens: 500
+      bounds LLM output cost. Streaming reader with abort prevents memory issues on large pages.
+      maxDuration: 30 appropriate for LLM round-trip. Cost target ~$0.01-0.02/call met.
+  reliability:
+    status: PASS
+    notes: >
+      All external calls wrapped in try/catch. LLM failures are silent with graceful fallback
+      (empty flags, null summary). AbortController cleanup on component unmount. Response shape
+      validation in hero component prevents crash on malformed data. Error responses (404, 503)
+      are NOT cached.
+  maintainability:
+    status: PASS
+    notes: >
+      Clean shared utility pattern: company-analyzer.ts reused by public endpoint and onboarding
+      fallback; regulatory-area-mapper.ts ready for Story 16.3 reuse. Well-typed interfaces with
+      explicit CompanyAnalysisInput/CompanyAnalysis types. Module boundaries clear and testable.
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add component-level integration test for onboarding fallback analysis flow'
+      refs: ['tests/unit/components/features/onboarding/']
+
+history:
+  - at: '2026-03-30T13:00:00Z'
+    gate: CONCERNS
+    note: 'Review 1 — AC 6.4 gap: activityFlags not persisted in onboarding fallback. SSRF redirect limit fixed.'
+  - at: '2026-03-30T13:10:00Z'
+    gate: PASS
+    note: 'Review 2 — AC 6.4 resolved: activityFlags now saved to OnboardingStore. All ACs met.'

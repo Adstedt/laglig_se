@@ -24,7 +24,7 @@ function getApiKey(): string | undefined {
   return process.env.BOLAGSAPI_API_KEY
 }
 
-async function fetchWithTimeout(
+export async function fetchWithTimeout(
   url: string,
   options: RequestInit,
   timeoutMs: number
