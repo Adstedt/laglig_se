@@ -38,6 +38,9 @@
 - **8.11** Notification Preferences UI — `docs/stories/8.11.change-notification-preferences.md`
 - **8.9** Amendment Timeline — `docs/stories/8.9.amendment-timeline-visualization.md`
 
+### Data Integrity
+- **8.21** ChangeEvent Deduplication & Unique Constraint — `docs/stories/8.21.change-event-deduplication-cleanup.md`
+
 ### Superseded
 - ~~**8.8**~~ AI Change Summaries — superseded by Story 12.3
 - ~~**8.12**~~ Performance Optimization — deferred, operational
