@@ -60,6 +60,20 @@ vi.mock('@/lib/onboarding/onboarding-store', () => ({
   clearOnboardingData: () => mockClearOnboardingData(),
 }))
 
+// Mock question selector
+vi.mock('@/lib/onboarding/question-selector', () => ({
+  selectQuestions: () => [
+    {
+      id: 'personalData',
+      label: 'Test question',
+      description: 'Test',
+      flagKey: 'personalData',
+      defaultValue: false,
+      inferredFromWebsite: false,
+    },
+  ],
+}))
+
 // Mock workspace validation
 vi.mock('@/lib/validation/workspace', () => ({
   WorkspaceOnboardingSchema: {
@@ -193,17 +207,21 @@ describe('OnboardingWizard cleanup', () => {
 
     render(<OnboardingWizard />)
 
-    // Step 1: Click "Nästa" on CompanyInfoStep to advance to ConfirmStep
+    // Step 1: Click "Nästa" on CompanyInfoStep to advance to ActivityQuestionsStep
     const nextButton = screen.getByRole('button', { name: /nästa/i })
     fireEvent.click(nextButton)
 
-    // Step 2: Now on ConfirmStep — click "Skapa workspace" to trigger submit
+    // Step 2: Click "Nästa" on ActivityQuestionsStep to advance to ConfirmStep
+    const activityNext = await screen.findByRole('button', { name: /nästa/i })
+    fireEvent.click(activityNext)
+
+    // Step 3: Now on ConfirmStep — click "Skapa workspace" to trigger submit
     const submitButton = await screen.findByRole('button', {
       name: /skapa workspace/i,
     })
     fireEvent.click(submitButton)
 
-    // Step 3: Verify cleanup was called after successful workspace creation
+    // Step 4: Verify cleanup was called after successful workspace creation
     await waitFor(() => {
       expect(mockCreateWorkspace).toHaveBeenCalled()
       expect(mockClearOnboardingData).toHaveBeenCalled()

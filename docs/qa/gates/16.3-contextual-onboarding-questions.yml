@@ -1,0 +1,54 @@
+schema: 1
+story: '16.3'
+story_title: 'Contextual Onboarding Questions'
+gate: PASS
+status_reason: >
+  All 15 acceptance criteria met. 25 new tests passing (17 selector + 8 component).
+  Clean pure-function architecture for question selection, proper dual persistence
+  (activity_flags JSON + has_collective_agreement boolean), accessible Switch toggles
+  with aria-describedby, and correct wizard integration with step labels.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-30T14:35:00Z'
+
+top_issues: []
+
+waiver: { active: false }
+
+quality_score: 90
+expires: '2026-04-13T14:35:00Z'
+
+evidence:
+  tests_reviewed: 25
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >
+      No new endpoints or auth changes. Activity flags are user-provided booleans
+      persisted to existing JSON column. Safe JSON.parse with try/catch in createWorkspace.
+  performance:
+    status: PASS
+    notes: >
+      Question selector is O(n) over 9-element pool. No new API calls.
+      No impact on existing flows.
+  reliability:
+    status: PASS
+    notes: >
+      Skip button sends all-false flags (AC 12 compliant). Wizard handleBack
+      navigates correctly through 3-step flow. Existing tests updated and passing.
+  maintainability:
+    status: PASS
+    notes: >
+      Pure function question selector is trivially extensible — adding a flag
+      is one entry in QUESTION_POOL array. activity_flags is a Json? column
+      accepting arbitrary keys without migration.
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Pass employerStatus (from BolagsAPI tax_status.employer) to selectQuestions for fuller trigger coverage'
+      refs: ['app/onboarding/_components/onboarding-wizard.tsx']

@@ -116,6 +116,10 @@ export async function createWorkspace(formData: FormData): Promise<{
     const ongoingProcedures = formData.get('ongoingProcedures') as string | null
     const registeredDate = formData.get('registeredDate') as string | null
     const dataSource = formData.get('dataSource') as string | null
+    const activityFlagsRaw = formData.get('activityFlags') as string | null
+    const hasCollectiveAgreementRaw = formData.get('hasCollectiveAgreement') as
+      | string
+      | null
 
     // Server-side validation of optional company fields
     if (rawOrgNumber && !/^\d{6}-?\d{4}$/.test(rawOrgNumber)) {
@@ -217,6 +221,14 @@ export async function createWorkspace(formData: FormData): Promise<{
             /* ignore */
           }
         }
+        let parsedActivityFlags: object | null = null
+        if (activityFlagsRaw) {
+          try {
+            parsedActivityFlags = JSON.parse(activityFlagsRaw)
+          } catch {
+            /* ignore */
+          }
+        }
 
         const parsedFoundedYear = foundedYear ? parseInt(foundedYear, 10) : null
 
@@ -254,6 +266,11 @@ export async function createWorkspace(formData: FormData): Promise<{
         if (registeredDate)
           profileData.registered_date = new Date(registeredDate)
         if (isAutoFilled) profileData.last_enriched_at = new Date()
+        if (parsedActivityFlags)
+          profileData.activity_flags = parsedActivityFlags
+        if (hasCollectiveAgreementRaw)
+          profileData.has_collective_agreement =
+            hasCollectiveAgreementRaw === 'true'
 
         await tx.companyProfile.create({ data: profileData as never })
       }

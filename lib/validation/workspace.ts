@@ -54,6 +54,9 @@ export const WorkspaceOnboardingSchema = z.object({
   ongoingProcedures: z.string().optional(),
   registeredDate: z.string().optional(),
   dataSource: z.enum(['bolagsapi', 'manual']).optional(),
+  // Activity flags from onboarding questions (Story 16.3)
+  activityFlags: z.string().optional(), // JSON-stringified object
+  hasCollectiveAgreement: z.boolean().optional(),
 })
 
 export type WorkspaceOnboardingData = z.infer<typeof WorkspaceOnboardingSchema>
