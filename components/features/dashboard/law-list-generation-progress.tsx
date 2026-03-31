@@ -6,9 +6,16 @@
  * Polls generation status every 3 seconds, shows step-by-step progress.
  */
 
-import { useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import useSWR from 'swr'
-import { Check, Circle, Loader2, AlertTriangle, ListChecks } from 'lucide-react'
+import {
+  Check,
+  Circle,
+  Loader2,
+  AlertTriangle,
+  ListChecks,
+  X,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -143,13 +150,24 @@ function CompletedCard({
   itemCount: number
   groups?: GroupSummary[] | undefined
 }) {
+  const [dismissed, setDismissed] = useState(false)
+
+  if (dismissed) return null
+
   const groupText =
     groups && groups.length > 0
       ? groups.map((g) => `${g.count} ${g.name}`).join(', ')
       : null
 
   return (
-    <Card className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30">
+    <Card className="relative border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30">
+      <button
+        onClick={() => setDismissed(true)}
+        className="absolute top-3 right-3 p-1 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+        aria-label="Stäng"
+      >
+        <X className="h-4 w-4" />
+      </button>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <ListChecks className="h-4 w-4 text-green-600 dark:text-green-400" />
