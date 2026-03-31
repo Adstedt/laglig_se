@@ -97,6 +97,9 @@ export function ChangePicker({
                     >
                       {CHANGE_TYPE_LABELS[change.changeType]}
                     </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {change.listName}
+                    </span>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-foreground shrink-0" />

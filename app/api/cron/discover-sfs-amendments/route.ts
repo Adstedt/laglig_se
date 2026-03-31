@@ -19,6 +19,7 @@ import {
   ContentType,
   ChangeType,
   ParseStatus,
+  Prisma,
   SectionChangeType,
 } from '@prisma/client'
 import { fetchAndStorePdf } from '@/lib/sfs'
@@ -311,17 +312,32 @@ export async function GET(request: Request) {
         ? classifyDocument(record.title) === 'repeal'
         : false
 
-      await prisma.changeEvent.create({
-        data: {
-          document_id: baseLawDoc.id,
-          content_type: ContentType.SFS_LAW,
-          change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
-          amendment_sfs: `SFS ${record.sfs_number}`,
-          notification_sent: false,
-        },
-      })
-      backfilled++
-      stats.changeEventsCreated++
+      // Story 8.21: Catch unique constraint violation from partial index
+      // (document_id, amendment_sfs) WHERE amendment_sfs IS NOT NULL
+      try {
+        await prisma.changeEvent.create({
+          data: {
+            document_id: baseLawDoc.id,
+            content_type: ContentType.SFS_LAW,
+            change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
+            amendment_sfs: `SFS ${record.sfs_number}`,
+            notification_sent: false,
+          },
+        })
+        backfilled++
+        stats.changeEventsCreated++
+      } catch (e) {
+        if (
+          e instanceof Prisma.PrismaClientKnownRequestError &&
+          e.code === 'P2002'
+        ) {
+          console.log(
+            `[DISCOVER-SFS] Phase 3: ChangeEvent already exists for ${record.sfs_number}, skipping`
+          )
+          continue
+        }
+        throw e
+      }
     }
 
     if (backfilled > 0) {
@@ -662,6 +678,13 @@ async function processAmendmentRecord(
           console.log(
             `[DISCOVER-SFS]   ChangeEvent created for base law ${record.base_law_sfs}`
           )
+        } else {
+          // Story 8.21: Re-trigger notification pipeline if sync-sfs-updates
+          // created this event first — discover is the authoritative source
+          await tx.changeEvent.update({
+            where: { id: existingEvent.id },
+            data: { notification_sent: false },
+          })
         }
       } else {
         console.log(

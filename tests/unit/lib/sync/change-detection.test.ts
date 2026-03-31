@@ -513,6 +513,26 @@ describe('Change Event Creation (DB-writing functions)', () => {
       expect(tx.changeEvent.create).toHaveBeenCalled()
     })
 
+    it('creates separate events for different amendmentSfs on same document', async () => {
+      const tx = createMockTx()
+      // findFirst returns null — no existing event for this amendment
+      tx.changeEvent.findFirst.mockResolvedValue(null)
+
+      await detectChanges(tx as never, {
+        documentId: DOC_ID,
+        contentType: ContentType.SFS_LAW,
+        oldFullText: 'Old text content',
+        newFullText: 'New text content that is different',
+        amendmentSfs: 'SFS 2026:200',
+      })
+
+      expect(tx.changeEvent.findFirst).toHaveBeenCalledWith({
+        where: { document_id: DOC_ID, amendment_sfs: 'SFS 2026:200' },
+        select: { id: true },
+      })
+      expect(tx.changeEvent.create).toHaveBeenCalled()
+    })
+
     it('is idempotent — same params produce same field values', async () => {
       const tx1 = createMockTx()
       const tx2 = createMockTx()
