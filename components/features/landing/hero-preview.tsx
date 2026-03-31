@@ -43,7 +43,7 @@ export function HeroPreview() {
   const [websiteUrl, setWebsiteUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [preview, setPreview] = useState<PreviewResponse | null>(null)
-  const [error, setError] = useState<'not_found' | null>(null)
+  const [error, setError] = useState<'not_found' | 'unavailable' | null>(null)
   const previewRef = useRef<HTMLDivElement>(null)
 
   const handleSubmit = useCallback(
@@ -76,7 +76,7 @@ export function HeroPreview() {
         }
 
         if (!res.ok) {
-          // 503 or other error — silent degradation (AC 23)
+          setError('unavailable')
           return
         }
 
@@ -91,7 +91,7 @@ export function HeroPreview() {
           setPreview(data as PreviewResponse)
         }
       } catch {
-        // Network error — silent degradation (AC 23)
+        setError('unavailable')
       } finally {
         setIsLoading(false)
       }
@@ -142,6 +142,11 @@ export function HeroPreview() {
           {error === 'not_found' && (
             <p className="text-sm text-destructive">
               Inget företag hittades med detta organisationsnummer
+            </p>
+          )}
+          {error === 'unavailable' && (
+            <p className="text-sm text-destructive">
+              Tjänsten är tillfälligt otillgänglig. Försök igen om en stund.
             </p>
           )}
         </div>

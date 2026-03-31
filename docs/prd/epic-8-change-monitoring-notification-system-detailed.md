@@ -39,7 +39,8 @@
 - **8.9** Amendment Timeline — `docs/stories/8.9.amendment-timeline-visualization.md`
 
 ### Data Integrity
-- **8.21** ChangeEvent Deduplication & Unique Constraint — `docs/stories/8.21.change-event-deduplication-cleanup.md`
+- **8.21** ChangeEvent Deduplication & Unique Constraint — `docs/stories/completed/8.21.change-event-deduplication-cleanup.md`
+- **8.22** Use SectionChange Table for AI Context — `docs/stories/8.22.section-changes-in-system-prompt.md`
 
 ### Superseded
 - ~~**8.8**~~ AI Change Summaries — superseded by Story 12.3
