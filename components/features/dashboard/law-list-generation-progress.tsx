@@ -19,7 +19,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
 
 interface ProgressStep {
   label: string
@@ -92,6 +91,16 @@ export function LawListGenerationProgress({
     return null
   }
 
+  // Show only the current active step (or last completed if none active)
+  const currentStep =
+    progress && progress.length > 0
+      ? (progress.findLast((s) => s.status === 'active') ??
+        progress.findLast((s) => s.status === 'done'))
+      : null
+  const doneCount = progress
+    ? progress.filter((s) => s.status === 'done').length
+    : 0
+
   return (
     <Card className="border-primary/20 bg-primary/5">
       <CardHeader className="pb-3">
@@ -99,29 +108,29 @@ export function LawListGenerationProgress({
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
           Vi skapar er personliga laglista...
         </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Detta kan ta upp till 5 minuter. Du kan navigera fritt under tiden.
+        </p>
       </CardHeader>
       <CardContent>
-        {progress && progress.length > 0 ? (
-          <ul className="space-y-2">
-            {progress.map((step, i) => (
-              <li key={i} className="flex items-center gap-2 text-sm">
-                <StepIcon status={step.status} />
-                <span
-                  className={cn(
-                    step.status === 'done' && 'text-muted-foreground',
-                    step.status === 'active' && 'text-foreground font-medium'
-                  )}
-                >
-                  {step.label}
-                </span>
-                {step.detail && (
-                  <span className="text-muted-foreground text-xs">
-                    {step.detail}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
+        {currentStep ? (
+          <div className="flex items-center gap-2 text-sm">
+            <StepIcon status={currentStep.status} />
+            <span className="text-foreground font-medium">
+              {currentStep.label}
+            </span>
+            {currentStep.detail && (
+              <span className="text-muted-foreground text-xs">
+                {currentStep.detail}
+              </span>
+            )}
+            {doneCount > 0 && (
+              <span className="text-muted-foreground/50 text-xs ml-auto">
+                Steg {doneCount + (currentStep.status === 'active' ? 0 : 0)}/
+                {progress?.length ?? 0}
+              </span>
+            )}
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground">Förbereder...</p>
         )}

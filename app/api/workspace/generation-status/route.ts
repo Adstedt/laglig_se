@@ -34,6 +34,7 @@ export async function GET() {
         law_list_generation_status: true,
         law_list_generation_error: true,
         law_list_generation_progress: true,
+        updated_at: true,
       },
     })
 
@@ -42,6 +43,29 @@ export async function GET() {
         { error: 'Workspace not found' },
         { status: 404 }
       )
+    }
+
+    // Stale detection: if in_progress for over 6 minutes, auto-recover to failed
+    // This handles Vercel function timeouts where the catch block never runs
+    const STALE_THRESHOLD_MS = 6 * 60 * 1000
+    if (
+      workspace.law_list_generation_status === 'in_progress' &&
+      workspace.updated_at.getTime() < Date.now() - STALE_THRESHOLD_MS
+    ) {
+      await prisma.workspace.update({
+        where: { id: workspaceId },
+        data: {
+          law_list_generation_status: 'failed',
+          law_list_generation_error:
+            'Genereringen tog för lång tid. Försök igen eller skapa listan manuellt.',
+        },
+      })
+      return NextResponse.json({
+        status: 'failed',
+        progress: workspace.law_list_generation_progress ?? null,
+        error:
+          'Genereringen tog för lång tid. Försök igen eller skapa listan manuellt.',
+      })
     }
 
     // Get item count and groups if completed

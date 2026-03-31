@@ -31,6 +31,7 @@ const TOOL_STEP_LABELS: Record<string, string> = {
   get_company_context: 'Analyserar ert företag',
   get_template_laws: 'Kontrollerar regelområde',
   search_laws: 'Söker branschspecifika regler',
+  get_document_details: 'Hämtar dokumentdetaljer',
   add_laws_to_list: 'Lägger till lagar i er lista',
 }
 

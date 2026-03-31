@@ -13,7 +13,7 @@ import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { prisma } from '@/lib/prisma'
 import { generateLawList } from '@/lib/agent/skills/generate-law-list'
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 export async function POST() {
   try {
