@@ -23,15 +23,25 @@ import {
 import type { TaskColumnWithCount } from '@/app/actions/tasks'
 import type { WorkspaceMember } from './index'
 import { cn } from '@/lib/utils'
+import { DueDateFilterPopover } from './due-date-filter-popover'
 
 // ============================================================================
 // Types
 // ============================================================================
 
+export type DueDatePreset =
+  | 'overdue'
+  | 'today'
+  | 'thisWeek'
+  | 'thisMonth'
+  | 'noDueDate'
+  | null
+
 export interface TaskFilterState {
   statusFilter: string[]
   priorityFilter: string[]
   assigneeFilter: string | null
+  dueDateFilter: DueDatePreset
 }
 
 interface TaskFilterBarProps {
@@ -67,13 +77,15 @@ export function TaskFilterBar({
   const hasActiveFilters =
     filters.statusFilter.length > 0 ||
     filters.priorityFilter.length > 0 ||
-    filters.assigneeFilter !== null
+    filters.assigneeFilter !== null ||
+    filters.dueDateFilter !== null
 
   const clearAllFilters = () => {
     onFiltersChange({
       statusFilter: [],
       priorityFilter: [],
       assigneeFilter: null,
+      dueDateFilter: null,
     })
   }
 
@@ -136,6 +148,14 @@ export function TaskFilterBar({
         options={PRIORITY_FILTER_OPTIONS}
         selected={filters.priorityFilter}
         onToggle={handlePriorityToggle}
+      />
+
+      {/* Due date filter */}
+      <DueDateFilterPopover
+        value={filters.dueDateFilter}
+        onChange={(preset) =>
+          onFiltersChange({ ...filters, dueDateFilter: preset })
+        }
       />
 
       {/* Assignee filter */}

@@ -32,7 +32,7 @@ import type { WorkspaceMember } from './index'
 // ============================================================================
 
 interface CalendarTabProps {
-  initialTasks: TaskWithRelations[]
+  filteredTasks: TaskWithRelations[]
   workspaceMembers: WorkspaceMember[]
   onTaskClick?: (_taskId: string) => void
 }
@@ -41,13 +41,13 @@ interface CalendarTabProps {
 // Main Component
 // ============================================================================
 
-export function CalendarTab({ initialTasks, onTaskClick }: CalendarTabProps) {
+export function CalendarTab({ filteredTasks, onTaskClick }: CalendarTabProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
 
-  // Get tasks with due dates
+  // Get tasks with due dates (parent handles all other filtering)
   const tasksWithDueDates = useMemo(
-    () => initialTasks.filter((task) => task.due_date !== null),
-    [initialTasks]
+    () => filteredTasks.filter((task) => task.due_date !== null),
+    [filteredTasks]
   )
 
   // Get calendar days

@@ -10,7 +10,6 @@ import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  getFilteredRowModel,
   flexRender,
   type ColumnDef,
   type SortingState,
@@ -29,19 +28,10 @@ import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Search,
   CheckCircle2,
   Clock,
   Circle,
@@ -63,7 +53,8 @@ import type { WorkspaceMember } from './index'
 // ============================================================================
 
 interface AllWorkTabProps {
-  initialTasks: TaskWithRelations[]
+  filteredTasks: TaskWithRelations[]
+  allTasksCount: number
   initialColumns: TaskColumnWithCount[]
   workspaceMembers: WorkspaceMember[]
   onTaskClick?: (_taskId: string) => void
@@ -105,7 +96,8 @@ function StatusIcon({
 // ============================================================================
 
 export function AllWorkTab({
-  initialTasks,
+  filteredTasks,
+  allTasksCount,
   initialColumns: _initialColumns,
   workspaceMembers: _workspaceMembers,
   onTaskClick,
@@ -115,8 +107,6 @@ export function AllWorkTab({
   ])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isExporting, setIsExporting] = useState(false)
 
   // Handle CSV export
@@ -135,7 +125,7 @@ export function AllWorkTab({
         link.click()
         URL.revokeObjectURL(link.href)
         toast.success('Export klar', {
-          description: `${initialTasks.length} uppgifter exporterade`,
+          description: `${filteredTasks.length} uppgifter exporterade`,
         })
       } else {
         toast.error('Kunde inte exportera', {
@@ -154,19 +144,6 @@ export function AllWorkTab({
     if (!task.due_date || task.column.is_done) return false
     return new Date(task.due_date) < new Date()
   }, [])
-
-  // Filter tasks
-  const filteredTasks = useMemo(() => {
-    let result = initialTasks
-
-    if (statusFilter === 'done') {
-      result = result.filter((t) => t.column.is_done)
-    } else if (statusFilter === 'active') {
-      result = result.filter((t) => !t.column.is_done)
-    }
-
-    return result
-  }, [initialTasks, statusFilter])
 
   // Column definitions
   const columns: ColumnDef<TaskWithRelations>[] = useMemo(
@@ -357,24 +334,21 @@ export function AllWorkTab({
       sorting,
       columnVisibility,
       columnOrder,
-      globalFilter,
     },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     onColumnOrderChange: setColumnOrder,
-    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getRowId: (row) => row.id,
   })
 
   // Stats
   const stats = useMemo(() => {
-    const done = initialTasks.filter((t) => t.column.is_done).length
-    const active = initialTasks.length - done
-    return { total: initialTasks.length, done, active }
-  }, [initialTasks])
+    const done = filteredTasks.filter((t) => t.column.is_done).length
+    const active = filteredTasks.length - done
+    return { total: allTasksCount, showing: filteredTasks.length, done, active }
+  }, [filteredTasks, allTasksCount])
 
   return (
     <div className="flex flex-col gap-4">
@@ -383,56 +357,28 @@ export function AllWorkTab({
         <div className="flex items-center gap-2">
           <Archive className="h-5 w-5 text-muted-foreground" />
           <h3 className="font-medium">Alla uppgifter</h3>
-          <Badge variant="secondary">{stats.total}</Badge>
+          <Badge variant="secondary">{stats.showing}</Badge>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>{stats.active} aktiva</span>
           <span>·</span>
           <span>{stats.done} avslutade</span>
+          <span>·</span>
+          {/* Export button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            Exportera CSV
+          </Button>
         </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex items-center gap-4">
-        {/* Search */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Sök i alla uppgifter..."
-            value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-
-        {/* Status filter */}
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alla</SelectItem>
-            <SelectItem value="active">Aktiva</SelectItem>
-            <SelectItem value="done">Avslutade</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <div className="flex-1" />
-
-        {/* Export button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleExport}
-          disabled={isExporting}
-        >
-          {isExporting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Download className="mr-2 h-4 w-4" />
-          )}
-          Exportera CSV
-        </Button>
       </div>
 
       {/* Table */}

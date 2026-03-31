@@ -206,8 +206,26 @@
 
 ---
 
-**Total Estimated Stories:** 122-140 across 16 epics
+## Epic 17: Document Management System (DMS)
 
-**Estimated Timeline:** 28-30 weeks - updated to include Epic 16
+**Goal:** Provide a complete in-app document management system where users create, edit, version, and export compliance documents (policies, risk assessments, action plans) using a Tiptap rich text editor — and where the AI compliance agent can read, search, create, and update those documents as a first-class participant.
+
+**Delivers:** Tiptap-based rich text editor with Word-like UX, Document & DocumentVersion data models with full version control, document lifecycle management (DRAFT → APPROVED → ARCHIVED), .docx import/export and PDF export, compliance document templates, text extraction from uploaded files, workspace document embedding into RAG pipeline, 5 new agent tools for document interaction
+
+**Requirements covered:** FR7 (compliance workspace), FR25 (audit trail), FR27 (evidence/documentation)
+
+**Estimated stories:** 13
+
+**Dependencies:** Epic 6 (WorkspaceFile — Done), Epic 14 (Agent tools — Done), Story 14.14 (Chunk/embed pipeline — Done)
+
+**Priority:** High — closes the documentation gap in the compliance workflow. Users track obligations and execute tasks but cannot create the actual documents auditors ask for. Also the largest remaining blocker for full agent usefulness (agent currently blind to workspace documentation).
+
+**Note:** Designed for future Office 365 integration (Microsoft Graph API + WOPI) as an additive phase — not included in this epic.
+
+---
+
+**Total Estimated Stories:** 135-153 across 17 epics
+
+**Estimated Timeline:** 32-34 weeks - updated to include Epic 17
 
 ---

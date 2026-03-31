@@ -11,6 +11,7 @@
 
 import { Suspense, useState, useCallback, useMemo, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { startOfDay, endOfDay, addDays, endOfMonth } from 'date-fns'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -183,6 +184,7 @@ export function TaskWorkspace({
     statusFilter: initialFilters.statusFilter,
     priorityFilter: initialFilters.priorityFilter,
     assigneeFilter: initialFilters.assigneeFilter,
+    dueDateFilter: initialFilters.dueDateFilter,
   })
 
   // Sync filter changes to URL
@@ -248,6 +250,54 @@ export function TaskWorkspace({
       }
     }
 
+    if (filterState.dueDateFilter) {
+      const now = new Date()
+      const todayStart = startOfDay(now)
+      const todayEnd = endOfDay(now)
+
+      switch (filterState.dueDateFilter) {
+        case 'overdue':
+          result = result.filter(
+            (task) =>
+              task.due_date &&
+              new Date(task.due_date) < todayStart &&
+              !task.column.is_done
+          )
+          break
+        case 'today':
+          result = result.filter(
+            (task) =>
+              task.due_date &&
+              new Date(task.due_date) >= todayStart &&
+              new Date(task.due_date) <= todayEnd
+          )
+          break
+        case 'thisWeek': {
+          const weekEnd = addDays(todayStart, 7)
+          result = result.filter(
+            (task) =>
+              task.due_date &&
+              new Date(task.due_date) >= todayStart &&
+              new Date(task.due_date) < weekEnd
+          )
+          break
+        }
+        case 'thisMonth': {
+          const monthEnd = endOfMonth(now)
+          result = result.filter(
+            (task) =>
+              task.due_date &&
+              new Date(task.due_date) >= todayStart &&
+              new Date(task.due_date) <= monthEnd
+          )
+          break
+        }
+        case 'noDueDate':
+          result = result.filter((task) => task.due_date === null)
+          break
+      }
+    }
+
     return result
   }, [tasks, searchQuery, filterState])
 
@@ -278,10 +328,12 @@ export function TaskWorkspace({
     </Button>
   )
 
+  const showFilters = currentTab !== 'sammanfattning'
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Toolbar: complex for lista tab, standard for others */}
-      {isListTab ? (
+      {/* Toolbar: complex with filters for all tabs except summary */}
+      {showFilters ? (
         <UnifiedToolbar
           layout="complex"
           contextSelector={tabNavigation}
@@ -291,6 +343,7 @@ export function TaskWorkspace({
               initialValue={searchQuery}
               onSearch={handleSearchChange}
               placeholder="Sök uppgifter..."
+              className="h-8"
             />
           }
           filterDropdowns={
@@ -302,11 +355,13 @@ export function TaskWorkspace({
             />
           }
           columnSettings={
-            <ColumnSettings
-              columnOptions={TASK_COLUMN_OPTIONS}
-              columnVisibility={columnVisibility}
-              onColumnVisibilityChange={setColumnVisibility}
-            />
+            isListTab ? (
+              <ColumnSettings
+                columnOptions={TASK_COLUMN_OPTIONS}
+                columnVisibility={columnVisibility}
+                onColumnVisibilityChange={setColumnVisibility}
+              />
+            ) : undefined
           }
           betweenRows={
             <ToolbarItemCount
@@ -327,12 +382,13 @@ export function TaskWorkspace({
       {/* Tab Content */}
       <Suspense fallback={<WorkspaceSkeleton tab={currentTab} />}>
         {currentTab === 'sammanfattning' && (
-          <SummaryTab initialStats={initialStats} />
+          <SummaryTab initialStats={initialStats} columns={columns} />
         )}
         {currentTab === 'aktiva' && (
           <KanbanTab
-            initialTasks={tasks}
+            filteredTasks={filteredTasks}
             initialColumns={columns}
+            activeStatusFilter={filterState.statusFilter}
             workspaceMembers={workspaceMembers}
             onTaskClick={handleTaskClick}
             onTaskCreated={handleTaskCreated}
@@ -358,14 +414,15 @@ export function TaskWorkspace({
         )}
         {currentTab === 'kalender' && (
           <CalendarTab
-            initialTasks={tasks}
+            filteredTasks={filteredTasks}
             workspaceMembers={workspaceMembers}
             onTaskClick={handleTaskClick}
           />
         )}
         {currentTab === 'alla' && (
           <AllWorkTab
-            initialTasks={tasks}
+            filteredTasks={filteredTasks}
+            allTasksCount={tasks.length}
             initialColumns={columns}
             workspaceMembers={workspaceMembers}
             onTaskClick={handleTaskClick}

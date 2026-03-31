@@ -19,6 +19,7 @@ describe('Task Filter URL Params', () => {
         statusFilter: [],
         priorityFilter: [],
         assigneeFilter: null,
+        dueDateFilter: null,
       })
     })
 
@@ -64,9 +65,39 @@ describe('Task Filter URL Params', () => {
       expect(result.assigneeFilter).toBe('unassigned')
     })
 
+    it('should parse due date preset', () => {
+      const params = new URLSearchParams('dueDate=overdue')
+      const result = parseTaskFiltersFromUrl(params)
+
+      expect(result.dueDateFilter).toBe('overdue')
+    })
+
+    it('should parse all valid due date presets', () => {
+      const presets = ['overdue', 'today', 'thisWeek', 'thisMonth', 'noDueDate']
+      for (const preset of presets) {
+        const params = new URLSearchParams(`dueDate=${preset}`)
+        const result = parseTaskFiltersFromUrl(params)
+        expect(result.dueDateFilter).toBe(preset)
+      }
+    })
+
+    it('should return null for invalid due date preset', () => {
+      const params = new URLSearchParams('dueDate=invalid')
+      const result = parseTaskFiltersFromUrl(params)
+
+      expect(result.dueDateFilter).toBeNull()
+    })
+
+    it('should return null for empty due date param', () => {
+      const params = new URLSearchParams('dueDate=')
+      const result = parseTaskFiltersFromUrl(params)
+
+      expect(result.dueDateFilter).toBeNull()
+    })
+
     it('should parse all params together', () => {
       const params = new URLSearchParams(
-        'q=fix&status=Pågående&priority=HIGH&assignee=user-1'
+        'q=fix&status=Pågående&priority=HIGH&assignee=user-1&dueDate=thisWeek'
       )
       const result = parseTaskFiltersFromUrl(params)
 
@@ -74,6 +105,7 @@ describe('Task Filter URL Params', () => {
       expect(result.statusFilter).toEqual(['Pågående'])
       expect(result.priorityFilter).toEqual(['HIGH'])
       expect(result.assigneeFilter).toBe('user-1')
+      expect(result.dueDateFilter).toBe('thisWeek')
     })
 
     it('should return null assignee for empty string', () => {
@@ -93,6 +125,7 @@ describe('Task Filter URL Params', () => {
           statusFilter: [],
           priorityFilter: [],
           assigneeFilter: null,
+          dueDateFilter: null,
         },
         existing
       )
@@ -107,6 +140,7 @@ describe('Task Filter URL Params', () => {
           statusFilter: [],
           priorityFilter: [],
           assigneeFilter: null,
+          dueDateFilter: null,
         },
         new URLSearchParams()
       )
@@ -121,6 +155,7 @@ describe('Task Filter URL Params', () => {
           statusFilter: ['Att göra', 'Pågående'],
           priorityFilter: [],
           assigneeFilter: null,
+          dueDateFilter: null,
         },
         new URLSearchParams()
       )
@@ -135,6 +170,7 @@ describe('Task Filter URL Params', () => {
           statusFilter: [],
           priorityFilter: ['HIGH', 'CRITICAL'],
           assigneeFilter: null,
+          dueDateFilter: null,
         },
         new URLSearchParams()
       )
@@ -149,6 +185,7 @@ describe('Task Filter URL Params', () => {
           statusFilter: [],
           priorityFilter: [],
           assigneeFilter: 'user-123',
+          dueDateFilter: null,
         },
         new URLSearchParams()
       )
@@ -156,9 +193,24 @@ describe('Task Filter URL Params', () => {
       expect(result.get('assignee')).toBe('user-123')
     })
 
+    it('should serialize due date filter', () => {
+      const result = serializeTaskFiltersToUrl(
+        {
+          searchQuery: '',
+          statusFilter: [],
+          priorityFilter: [],
+          assigneeFilter: null,
+          dueDateFilter: 'overdue',
+        },
+        new URLSearchParams()
+      )
+
+      expect(result.get('dueDate')).toBe('overdue')
+    })
+
     it('should remove params when filters are cleared', () => {
       const existing = new URLSearchParams(
-        'q=old&status=Klar&priority=LOW&assignee=user-1'
+        'q=old&status=Klar&priority=LOW&assignee=user-1&dueDate=overdue'
       )
       const result = serializeTaskFiltersToUrl(
         {
@@ -166,6 +218,7 @@ describe('Task Filter URL Params', () => {
           statusFilter: [],
           priorityFilter: [],
           assigneeFilter: null,
+          dueDateFilter: null,
         },
         existing
       )
@@ -174,6 +227,7 @@ describe('Task Filter URL Params', () => {
       expect(result.has('status')).toBe(false)
       expect(result.has('priority')).toBe(false)
       expect(result.has('assignee')).toBe(false)
+      expect(result.has('dueDate')).toBe(false)
     })
 
     it('should preserve existing non-filter params', () => {
@@ -184,6 +238,7 @@ describe('Task Filter URL Params', () => {
           statusFilter: [],
           priorityFilter: [],
           assigneeFilter: null,
+          dueDateFilter: null,
         },
         existing
       )
@@ -199,6 +254,25 @@ describe('Task Filter URL Params', () => {
         statusFilter: ['Att göra', 'Pågående'],
         priorityFilter: ['HIGH', 'CRITICAL'],
         assigneeFilter: 'user-42',
+        dueDateFilter: 'thisWeek' as const,
+      }
+
+      const serialized = serializeTaskFiltersToUrl(
+        original,
+        new URLSearchParams()
+      )
+      const parsed = parseTaskFiltersFromUrl(serialized)
+
+      expect(parsed).toEqual(original)
+    })
+
+    it('should round-trip with null due date filter', () => {
+      const original = {
+        searchQuery: '',
+        statusFilter: [],
+        priorityFilter: [],
+        assigneeFilter: null,
+        dueDateFilter: null,
       }
 
       const serialized = serializeTaskFiltersToUrl(
