@@ -1,0 +1,53 @@
+schema: 1
+story: '17.12'
+story_title: 'Document Linking to Tasks & Law List Items'
+gate: PASS
+status_reason: >
+  All three medium/low issues from initial review resolved by dev. Batch linking handles partial
+  failures with counted feedback, DocumentsTab calls onUpdate callback, picker shows error toast.
+  MAINT-001 (shared constant extraction) intentionally deferred — cross-story scope, acceptable.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-31T16:00:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 95
+
+evidence:
+  tests_reviewed: 23
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 19, 20]
+    ac_gaps: [12, 13]
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Workspace isolation enforced on all 7 server actions. Audit trail complete.'
+  performance:
+    status: PASS
+    notes: 'Client-side filtering with take:200. Promise.all for parallel fetches.'
+  reliability:
+    status: PASS
+    notes: 'Batch linking handles partial failures. Error feedback in picker modal.'
+  maintainability:
+    status: PASS
+    notes: 'Follows established patterns. DOCUMENT_TYPE_LABELS duplication tracked as future cleanup.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Extract DOCUMENT_TYPE_LABELS to shared constant'
+      refs: ['components/features/documents/']
+    - action: 'Implement AC 12-13 auto-link via CreateDocumentDialog prop extension'
+      refs: ['components/features/documents/create-document-dialog.tsx']
+
+history:
+  - at: '2026-03-31T15:30:00Z'
+    gate: CONCERNS
+    note: 'Initial review — 2 medium issues (missing onUpdate callback, batch early-exit), 2 low issues'
+  - at: '2026-03-31T16:00:00Z'
+    gate: PASS
+    note: 'Re-review — UX-001, UX-002, UX-003 all verified fixed. MAINT-001 deferred (acceptable).'

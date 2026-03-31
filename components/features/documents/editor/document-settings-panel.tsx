@@ -32,6 +32,7 @@ import { WorkspaceDocumentType } from '@prisma/client'
 import { getReviewDateStatus } from '@/lib/utils/review-date-status'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { DocumentLinksSection } from './document-links-section'
 
 const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   POLICY: 'Policy',
@@ -185,6 +186,11 @@ export function DocumentSettingsPanel({
               <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 Granskning inom 30 dagar
+                {/* Linked items */}
+                <DocumentLinksSection
+                  documentId={documentId}
+                  readOnly={readOnly}
+                />
               </p>
             )}
           </div>
