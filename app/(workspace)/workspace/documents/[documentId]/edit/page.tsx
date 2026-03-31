@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import { getDocument } from '@/app/actions/documents'
+import { getDocument, getLatestStatusComment } from '@/app/actions/documents'
 import { DocumentEditor } from '@/components/features/documents/editor/document-editor'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Suspense } from 'react'
@@ -43,7 +43,10 @@ function EditorSkeleton() {
 }
 
 async function DocumentEditorLoader({ documentId }: { documentId: string }) {
-  const result = await getDocument(documentId)
+  const [result, latestComment] = await Promise.all([
+    getDocument(documentId),
+    getLatestStatusComment(documentId),
+  ])
 
   if (!result.success || !result.data) {
     notFound()
@@ -57,7 +60,6 @@ async function DocumentEditorLoader({ documentId }: { documentId: string }) {
     document_number: string | null
     document_type: string
     review_date: string | null
-    retention_until: string | null
     current_version: {
       content_json: Record<string, unknown>
       created_at: string
@@ -81,8 +83,8 @@ async function DocumentEditorLoader({ documentId }: { documentId: string }) {
         authorName={doc.creator?.name ?? doc.creator?.email ?? 'Okänd'}
         documentNumber={doc.document_number}
         reviewDate={doc.review_date}
-        retentionUntil={doc.retention_until}
         documentType={doc.document_type}
+        latestComment={latestComment}
       />
     </div>
   )

@@ -25,6 +25,10 @@ export const getWorkspaceDocumentsSchema = z.object({
   search: z.string().max(255).optional(),
   cursor: z.string().uuid().optional(),
   take: z.number().int().min(1).max(100).default(25),
+  sortBy: z
+    .enum(['title', 'updated_at', 'created_at', 'review_date'])
+    .optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
 })
 
 export type CreateDocumentInput = z.infer<typeof createDocumentSchema>

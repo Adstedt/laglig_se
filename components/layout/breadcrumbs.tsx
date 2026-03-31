@@ -53,7 +53,11 @@ const showAsLink = new Set([
 ])
 
 // Get a user-friendly label for a segment (truncate long slugs)
-function getSegmentLabel(segment: string): string {
+function getSegmentLabel(segment: string, prevSegment?: string): string {
+  // /workspace/documents = "Dokument", /documents = "Mina filer"
+  if (segment === 'documents' && prevSegment === 'workspace') {
+    return 'Dokument'
+  }
   if (routeLabels[segment]) {
     return routeLabels[segment]
   }
@@ -94,7 +98,10 @@ export function Breadcrumbs() {
       // Skip 'browse' in the breadcrumb display but keep in path
       if (segment === 'browse') continue
 
-      const label = getSegmentLabel(segment)
+      const label = getSegmentLabel(
+        segment,
+        i > 0 ? segments[i - 1] : undefined
+      )
 
       if (isLast) {
         // Last segment is current page (no link)

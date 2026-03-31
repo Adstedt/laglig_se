@@ -19,19 +19,6 @@ import {
   type GetWorkspaceDocumentsInput,
 } from '@/lib/validation/documents'
 import { WorkspaceDocumentStatus } from '@prisma/client'
-import { generateHTML } from '@tiptap/core'
-import StarterKit from '@tiptap/starter-kit'
-import { Table } from '@tiptap/extension-table'
-import { TableRow } from '@tiptap/extension-table-row'
-import { TableCell } from '@tiptap/extension-table-cell'
-import { TableHeader } from '@tiptap/extension-table-header'
-import ImageExtension from '@tiptap/extension-image'
-import TextAlign from '@tiptap/extension-text-align'
-import UnderlineExtension from '@tiptap/extension-underline'
-import LinkExtension from '@tiptap/extension-link'
-import Color from '@tiptap/extension-color'
-import { TextStyle } from '@tiptap/extension-text-style'
-import Highlight from '@tiptap/extension-highlight'
 import { getStorageClient } from '@/lib/supabase/storage'
 
 // ============================================================================
@@ -50,21 +37,13 @@ const EMPTY_TIPTAP_DOC = {
   content: [{ type: 'paragraph' }],
 }
 
-// Tiptap extensions for server-side HTML generation — must mirror editor extensions
-const SERVER_EXTENSIONS = [
-  StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
-  Table.configure({ resizable: true }),
-  TableRow,
-  TableCell,
-  TableHeader,
-  ImageExtension.configure({ inline: true }),
-  TextAlign.configure({ types: ['heading', 'paragraph'] }),
-  UnderlineExtension,
-  LinkExtension,
-  Color,
-  TextStyle,
-  Highlight.configure({ multicolor: true }),
-]
+// Helper to extract plaintext from HTML
+function extractPlaintext(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
 const BUCKET_NAME = 'workspace-files'
 
@@ -319,13 +298,16 @@ export async function getWorkspaceDocuments(
         where.title = { contains: validated.search, mode: 'insensitive' }
       }
 
+      const sortField = validated.sortBy ?? 'updated_at'
+      const sortDirection = validated.sortOrder ?? 'desc'
+
       const documents = await prisma.workspaceDocument.findMany({
         where,
         take: validated.take + 1, // Fetch one extra to check hasMore
         ...(validated.cursor
           ? { cursor: { id: validated.cursor }, skip: 1 }
           : {}),
-        orderBy: { updated_at: 'desc' },
+        orderBy: { [sortField]: sortDirection },
         select: {
           id: true,
           title: true,
@@ -440,18 +422,127 @@ export async function updateDocumentStatus(
 }
 
 // ============================================================================
+// Get Latest Status Change Comment
+// ============================================================================
+
+export async function getLatestStatusComment(documentId: string): Promise<{
+  comment: string
+  userName: string
+  fromStatus: string
+  toStatus: string
+  createdAt: string
+} | null> {
+  try {
+    const entry = await prisma.activityLog.findFirst({
+      where: {
+        entity_type: 'workspace_document',
+        entity_id: documentId,
+        action: 'document_status_changed',
+      },
+      orderBy: { created_at: 'desc' },
+      include: {
+        user: { select: { name: true, email: true } },
+      },
+    })
+
+    if (!entry) return null
+
+    const newValue = entry.new_value as Record<string, unknown> | null
+    const oldValue = entry.old_value as Record<string, unknown> | null
+    const comment = (newValue?.comment as string) ?? ''
+
+    if (!comment) return null
+
+    return {
+      comment,
+      userName:
+        (entry.user?.name as string) ??
+        (entry.user?.email as string) ??
+        'Okänd',
+      fromStatus: (oldValue?.status as string) ?? '',
+      toStatus: (newValue?.status as string) ?? '',
+      createdAt: entry.created_at.toISOString(),
+    }
+  } catch {
+    return null
+  }
+}
+
+// ============================================================================
 // Story 17.2: Save Document Version
 // ============================================================================
 
+/**
+ * Autosave: updates the current version in place (no new version number).
+ */
+export async function autosaveDocument(
+  documentId: string,
+  contentJson: object,
+  title?: string,
+  contentHtml?: string
+): Promise<ActionResult<{ id: string; versionNumber: number }>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      const document = await prisma.workspaceDocument.findFirst({
+        where: { id: documentId, workspace_id: workspaceId },
+        select: {
+          id: true,
+          current_version_id: true,
+          current_version_number: true,
+        },
+      })
+
+      if (!document || !document.current_version_id) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      const html = contentHtml ?? ''
+      const extractedText = extractPlaintext(html)
+
+      await prisma.workspaceDocumentVersion.update({
+        where: { id: document.current_version_id },
+        data: {
+          content_json: contentJson as never,
+          content_html: html,
+          extracted_text: extractedText,
+        },
+      })
+
+      if (title !== undefined) {
+        await prisma.workspaceDocument.update({
+          where: { id: document.id },
+          data: { title },
+        })
+      }
+
+      return {
+        success: true,
+        data: {
+          id: document.current_version_id,
+          versionNumber: document.current_version_number,
+        },
+      }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+/**
+ * Explicit save: creates a new version with incremented version number.
+ */
 export async function saveDocumentVersion(
   documentId: string,
   contentJson: object,
   changeSummary?: string,
-  title?: string
+  title?: string,
+  contentHtml?: string
 ): Promise<ActionResult<{ id: string; versionNumber: number }>> {
   try {
     return await withWorkspace(async ({ workspaceId, userId }) => {
-      // Verify document belongs to workspace
       const document = await prisma.workspaceDocument.findFirst({
         where: { id: documentId, workspace_id: workspaceId },
         select: { id: true, current_version_number: true, workspace_id: true },
@@ -461,19 +552,11 @@ export async function saveDocumentVersion(
         return { success: false, error: 'Dokument hittades inte' }
       }
 
-      // Generate HTML and plaintext server-side
-      const contentHtml = generateHTML(
-        contentJson as Record<string, unknown>,
-        SERVER_EXTENSIONS
-      )
-      const extractedText = contentHtml
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
+      const html = contentHtml ?? ''
+      const extractedText = extractPlaintext(html)
 
       const newVersionNumber = document.current_version_number + 1
 
-      // Create version and update document in a transaction
       const version = await prisma.$transaction(async (tx) => {
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
@@ -481,7 +564,7 @@ export async function saveDocumentVersion(
             version_number: newVersionNumber,
             source: 'TIPTAP',
             content_json: contentJson as never,
-            content_html: contentHtml,
+            content_html: html,
             extracted_text: extractedText,
             change_summary: changeSummary ?? null,
             created_by: userId,
@@ -594,25 +677,19 @@ export async function restoreDocumentVersion(
         return { success: false, error: 'Dokument hittades inte' }
       }
 
-      // Fetch the old version's content
+      // Fetch the old version's content and HTML
       const oldVersion = await prisma.workspaceDocumentVersion.findFirst({
         where: { document_id: documentId, version_number: versionNumber },
-        select: { content_json: true },
+        select: { content_json: true, content_html: true },
       })
 
       if (!oldVersion) {
         return { success: false, error: 'Version hittades inte' }
       }
 
-      // Generate HTML and plaintext from old version's content
-      const contentHtml = generateHTML(
-        oldVersion.content_json as Record<string, unknown>,
-        SERVER_EXTENSIONS
-      )
-      const extractedText = contentHtml
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
+      // Reuse stored HTML from the old version
+      const contentHtml = oldVersion.content_html ?? ''
+      const extractedText = extractPlaintext(contentHtml)
 
       const newVersionNumber = document.current_version_number + 1
       const changeSummary = `Återställning från version ${versionNumber}`
@@ -688,7 +765,7 @@ export async function createDraftFromApproved(
           current_version_number: true,
           workspace_id: true,
           current_version: {
-            select: { content_json: true },
+            select: { content_json: true, content_html: true },
           },
         },
       })
@@ -707,15 +784,9 @@ export async function createDraftFromApproved(
       const contentJson =
         document.current_version?.content_json ?? EMPTY_TIPTAP_DOC
 
-      // Generate HTML and plaintext from current content
-      const contentHtml = generateHTML(
-        contentJson as Record<string, unknown>,
-        SERVER_EXTENSIONS
-      )
-      const extractedText = contentHtml
-        .replace(/<[^>]*>/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
+      // Reuse stored HTML from the current version
+      const contentHtml = document.current_version?.content_html ?? ''
+      const extractedText = extractPlaintext(contentHtml)
 
       const newVersionNumber = document.current_version_number + 1
 
@@ -820,6 +891,36 @@ export async function updateDocumentMetadata(
       })
 
       return { success: true, data: { id: document.id } }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Story 17.7: Get Document Templates
+// ============================================================================
+
+export async function getDocumentTemplates(): Promise<ActionResult<unknown>> {
+  try {
+    return await withWorkspace(async () => {
+      const templates = await prisma.workspaceDocumentTemplate.findMany({
+        where: { is_active: true },
+        orderBy: { sort_order: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          document_type: true,
+          content_json: true,
+          sort_order: true,
+        },
+      })
+
+      return { success: true, data: templates }
     })
   } catch (error) {
     if (error instanceof Error) {
@@ -971,6 +1072,388 @@ export async function importDocxDocument(
           title: document.title,
           versionNumber: 1,
         },
+      }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Story 17.12: Document Linking
+// ============================================================================
+
+export async function linkDocumentToTask(
+  documentId: string,
+  taskId: string
+): Promise<ActionResult> {
+  try {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      // Verify document belongs to workspace
+      const document = await prisma.workspaceDocument.findFirst({
+        where: { id: documentId, workspace_id: workspaceId },
+        select: { id: true, title: true, workspace_id: true },
+      })
+      if (!document) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      // Verify task belongs to workspace
+      const task = await prisma.task.findFirst({
+        where: { id: taskId, workspace_id: workspaceId },
+        select: { id: true, title: true },
+      })
+      if (!task) {
+        return { success: false, error: 'Uppgift hittades inte' }
+      }
+
+      await prisma.workspaceDocumentTaskLink.create({
+        data: {
+          document_id: documentId,
+          task_id: taskId,
+          linked_by: userId,
+        },
+      })
+
+      // ActivityLog
+      await prisma.activityLog.create({
+        data: {
+          workspace_id: document.workspace_id,
+          user_id: userId,
+          entity_type: 'workspace_document',
+          entity_id: documentId,
+          action: 'document_linked_to_task',
+          new_value: { task_id: taskId, task_title: task.title },
+        },
+      })
+
+      return { success: true }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('Unique constraint')) {
+        return {
+          success: false,
+          error: 'Dokumentet är redan länkat till denna uppgift',
+        }
+      }
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+export async function linkDocumentToListItem(
+  documentId: string,
+  listItemId: string
+): Promise<ActionResult> {
+  try {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      const document = await prisma.workspaceDocument.findFirst({
+        where: { id: documentId, workspace_id: workspaceId },
+        select: { id: true, title: true, workspace_id: true },
+      })
+      if (!document) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      const listItem = await prisma.lawListItem.findFirst({
+        where: { id: listItemId, law_list: { workspace_id: workspaceId } },
+        select: { id: true, document: { select: { title: true } } },
+      })
+      if (!listItem) {
+        return { success: false, error: 'Lagkrav hittades inte' }
+      }
+
+      await prisma.workspaceDocumentListItemLink.create({
+        data: {
+          document_id: documentId,
+          list_item_id: listItemId,
+          linked_by: userId,
+        },
+      })
+
+      await prisma.activityLog.create({
+        data: {
+          workspace_id: document.workspace_id,
+          user_id: userId,
+          entity_type: 'workspace_document',
+          entity_id: documentId,
+          action: 'document_linked_to_list_item',
+          new_value: {
+            list_item_id: listItemId,
+            list_item_title: listItem.document?.title ?? null,
+          },
+        },
+      })
+
+      return { success: true }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message.includes('Unique constraint')) {
+        return {
+          success: false,
+          error: 'Dokumentet är redan länkat till detta lagkrav',
+        }
+      }
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+export async function unlinkDocumentFromTask(
+  documentId: string,
+  taskId: string
+): Promise<ActionResult> {
+  try {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      const document = await prisma.workspaceDocument.findFirst({
+        where: { id: documentId, workspace_id: workspaceId },
+        select: { id: true, workspace_id: true },
+      })
+      if (!document) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      await prisma.workspaceDocumentTaskLink.deleteMany({
+        where: { document_id: documentId, task_id: taskId },
+      })
+
+      await prisma.activityLog.create({
+        data: {
+          workspace_id: document.workspace_id,
+          user_id: userId,
+          entity_type: 'workspace_document',
+          entity_id: documentId,
+          action: 'document_unlinked_from_task',
+          new_value: { task_id: taskId },
+        },
+      })
+
+      return { success: true }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+export async function unlinkDocumentFromListItem(
+  documentId: string,
+  listItemId: string
+): Promise<ActionResult> {
+  try {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      const document = await prisma.workspaceDocument.findFirst({
+        where: { id: documentId, workspace_id: workspaceId },
+        select: { id: true, workspace_id: true },
+      })
+      if (!document) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      await prisma.workspaceDocumentListItemLink.deleteMany({
+        where: { document_id: documentId, list_item_id: listItemId },
+      })
+
+      await prisma.activityLog.create({
+        data: {
+          workspace_id: document.workspace_id,
+          user_id: userId,
+          entity_type: 'workspace_document',
+          entity_id: documentId,
+          action: 'document_unlinked_from_list_item',
+          new_value: { list_item_id: listItemId },
+        },
+      })
+
+      return { success: true }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+export async function getDocumentLinks(documentId: string): Promise<
+  ActionResult<{
+    tasks: Array<{ id: string; title: string; linkId: string }>
+    listItems: Array<{
+      id: string
+      title: string
+      documentNumber: string | null
+      linkId: string
+    }>
+  }>
+> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      const document = await prisma.workspaceDocument.findFirst({
+        where: { id: documentId, workspace_id: workspaceId },
+        select: { id: true },
+      })
+      if (!document) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      const [taskLinks, listItemLinks] = await Promise.all([
+        prisma.workspaceDocumentTaskLink.findMany({
+          where: { document_id: documentId },
+          include: {
+            task: { select: { id: true, title: true } },
+          },
+        }),
+        prisma.workspaceDocumentListItemLink.findMany({
+          where: { document_id: documentId },
+          include: {
+            list_item: {
+              select: {
+                id: true,
+                document: { select: { title: true, document_number: true } },
+              },
+            },
+          },
+        }),
+      ])
+
+      return {
+        success: true,
+        data: {
+          tasks: taskLinks.map((l) => ({
+            id: l.task.id,
+            title: l.task.title,
+            linkId: l.id,
+          })),
+          listItems: listItemLinks.map((l) => ({
+            id: l.list_item.id,
+            title: l.list_item.document?.title ?? 'Okänt lagkrav',
+            documentNumber: l.list_item.document?.document_number ?? null,
+            linkId: l.id,
+          })),
+        },
+      }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+export async function getDocumentsForTask(taskId: string): Promise<
+  ActionResult<
+    Array<{
+      id: string
+      title: string
+      documentType: string
+      status: string
+      versionNumber: number
+      linkId: string
+    }>
+  >
+> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      const task = await prisma.task.findFirst({
+        where: { id: taskId, workspace_id: workspaceId },
+        select: { id: true },
+      })
+      if (!task) {
+        return { success: false, error: 'Uppgift hittades inte' }
+      }
+
+      const links = await prisma.workspaceDocumentTaskLink.findMany({
+        where: { task_id: taskId },
+        include: {
+          document: {
+            select: {
+              id: true,
+              title: true,
+              document_type: true,
+              status: true,
+              current_version_number: true,
+            },
+          },
+        },
+      })
+
+      return {
+        success: true,
+        data: links.map((l) => ({
+          id: l.document.id,
+          title: l.document.title,
+          documentType: l.document.document_type,
+          status: l.document.status,
+          versionNumber: l.document.current_version_number,
+          linkId: l.id,
+        })),
+      }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+export async function getDocumentsForListItem(listItemId: string): Promise<
+  ActionResult<
+    Array<{
+      id: string
+      title: string
+      documentType: string
+      status: string
+      versionNumber: number
+      linkId: string
+    }>
+  >
+> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      const listItem = await prisma.lawListItem.findFirst({
+        where: { id: listItemId, law_list: { workspace_id: workspaceId } },
+        select: { id: true },
+      })
+      if (!listItem) {
+        return { success: false, error: 'Lagkrav hittades inte' }
+      }
+
+      const links = await prisma.workspaceDocumentListItemLink.findMany({
+        where: { list_item_id: listItemId },
+        include: {
+          document: {
+            select: {
+              id: true,
+              title: true,
+              document_type: true,
+              status: true,
+              current_version_number: true,
+            },
+          },
+        },
+      })
+
+      return {
+        success: true,
+        data: links.map((l) => ({
+          id: l.document.id,
+          title: l.document.title,
+          documentType: l.document.document_type,
+          status: l.document.status,
+          versionNumber: l.document.current_version_number,
+          linkId: l.id,
+        })),
       }
     })
   } catch (error) {

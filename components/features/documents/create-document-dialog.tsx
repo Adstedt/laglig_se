@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { FileText, Loader2 } from 'lucide-react'
+import { FileText, Loader2, LayoutTemplate, File } from 'lucide-react'
 import { WorkspaceDocumentType } from '@prisma/client'
 import {
   Dialog,
@@ -25,7 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { createDocument } from '@/app/actions/documents'
+import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { toast } from 'sonner'
+import { createDocument, getDocumentTemplates } from '@/app/actions/documents'
+import { cn } from '@/lib/utils'
 
 const DOCUMENT_TYPE_LABELS: Record<WorkspaceDocumentType, string> = {
   POLICY: 'Policy',
@@ -36,6 +40,15 @@ const DOCUMENT_TYPE_LABELS: Record<WorkspaceDocumentType, string> = {
   CHECKLIST: 'Checklista',
   REPORT: 'Rapport',
   OTHER: 'Övrigt',
+}
+
+interface TemplateItem {
+  id: string
+  name: string
+  description: string | null
+  document_type: string
+  content_json: unknown
+  sort_order: number
 }
 
 const formSchema = z.object({
@@ -50,6 +63,20 @@ interface CreateDocumentDialogProps {
   onOpenChange: (_open: boolean) => void
 }
 
+/**
+ * Extract heading texts from Tiptap JSON for template preview.
+ */
+function extractHeadings(contentJson: unknown): string[] {
+  const doc = contentJson as {
+    content?: Array<{ type: string; content?: Array<{ text?: string }> }>
+  }
+  if (!doc?.content) return []
+  return doc.content
+    .filter((n) => n.type === 'heading')
+    .map((n) => n.content?.map((c) => c.text ?? '').join('') ?? '')
+    .filter(Boolean)
+}
+
 export function CreateDocumentDialog({
   open,
   onOpenChange,
@@ -57,6 +84,11 @@ export function CreateDocumentDialog({
   const router = useRouter()
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [templates, setTemplates] = useState<TemplateItem[]>([])
+  const [loadingTemplates, setLoadingTemplates] = useState(false)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
+    null
+  )
 
   const {
     register,
@@ -72,6 +104,38 @@ export function CreateDocumentDialog({
     },
   })
 
+  // Fetch templates when dialog opens
+  useEffect(() => {
+    if (!open) return
+    const fetchTemplates = async () => {
+      setLoadingTemplates(true)
+      const result = await getDocumentTemplates()
+      if (result.success && result.data) {
+        setTemplates(result.data as TemplateItem[])
+      }
+      setLoadingTemplates(false)
+    }
+    fetchTemplates()
+  }, [open])
+
+  const handleTemplateSelect = useCallback(
+    (template: TemplateItem | null) => {
+      if (template) {
+        setSelectedTemplateId(template.id)
+        setValue(
+          'documentType',
+          template.document_type as WorkspaceDocumentType
+        )
+      } else {
+        setSelectedTemplateId(null)
+        setValue('documentType', WorkspaceDocumentType.OTHER)
+      }
+    },
+    [setValue]
+  )
+
+  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId)
+
   const onSubmit = async (data: FormValues) => {
     setError('')
     setIsLoading(true)
@@ -80,37 +144,132 @@ export function CreateDocumentDialog({
       const result = await createDocument({
         title: data.title,
         documentType: data.documentType,
+        templateId: selectedTemplateId,
       })
 
       if (!result.success) {
         setError(result.error ?? 'Kunde inte skapa dokument')
+        toast.error(result.error ?? 'Kunde inte skapa dokument')
         return
       }
 
       reset()
+      setSelectedTemplateId(null)
       onOpenChange(false)
       router.push(`/workspace/documents/${result.data!.id}/edit`)
     } catch {
       setError('Ett oväntat fel uppstod')
+      toast.error('Ett oväntat fel uppstod')
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleClose = useCallback(() => {
+    reset()
+    setSelectedTemplateId(null)
+    setError('')
+    onOpenChange(false)
+  }, [onOpenChange, reset])
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Nytt dokument
           </DialogTitle>
           <DialogDescription>
-            Skapa ett nytt dokument i din arbetsplats.
+            Välj en mall eller skapa ett tomt dokument.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Template selection */}
+          <div className="space-y-2">
+            <Label>Välj en mall</Label>
+            <ScrollArea className="max-h-[200px]">
+              <div className="space-y-1">
+                {/* Empty document option */}
+                <button
+                  type="button"
+                  onClick={() => handleTemplateSelect(null)}
+                  className={cn(
+                    'w-full rounded-md border p-3 text-left transition-colors',
+                    !selectedTemplateId
+                      ? 'border-primary bg-primary/5'
+                      : 'hover:bg-muted/50'
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <File className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">Tomt dokument</span>
+                  </div>
+                </button>
+
+                {loadingTemplates ? (
+                  <div className="py-4 text-center text-sm text-muted-foreground">
+                    Laddar mallar...
+                  </div>
+                ) : (
+                  templates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => handleTemplateSelect(template)}
+                      className={cn(
+                        'w-full rounded-md border p-3 text-left transition-colors',
+                        selectedTemplateId === template.id
+                          ? 'border-primary bg-primary/5'
+                          : 'hover:bg-muted/50'
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">
+                          {template.name}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0"
+                        >
+                          {DOCUMENT_TYPE_LABELS[
+                            template.document_type as WorkspaceDocumentType
+                          ] ?? template.document_type}
+                        </Badge>
+                      </div>
+                      {template.description && (
+                        <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
+                          {template.description}
+                        </p>
+                      )}
+                    </button>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+
+          {/* Template preview */}
+          {selectedTemplate && (
+            <div className="rounded-md border bg-muted/30 p-3">
+              <p className="text-xs font-medium text-muted-foreground mb-1">
+                Förhandsgranskning
+              </p>
+              <div className="space-y-0.5">
+                {extractHeadings(selectedTemplate.content_json).map(
+                  (heading, i) => (
+                    <p key={i} className="text-xs text-foreground">
+                      {heading}
+                    </p>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title">Titel</Label>
             <Input
@@ -124,14 +283,17 @@ export function CreateDocumentDialog({
             )}
           </div>
 
+          {/* Document type */}
           <div className="space-y-2">
             <Label htmlFor="documentType">Dokumenttyp</Label>
             <Select
-              defaultValue={WorkspaceDocumentType.OTHER}
+              {...(selectedTemplate
+                ? { value: selectedTemplate.document_type as string }
+                : { defaultValue: WorkspaceDocumentType.OTHER })}
               onValueChange={(value) =>
                 setValue('documentType', value as WorkspaceDocumentType)
               }
-              disabled={isLoading}
+              disabled={isLoading || !!selectedTemplate}
             >
               <SelectTrigger id="documentType">
                 <SelectValue placeholder="Välj dokumenttyp" />
@@ -146,15 +308,13 @@ export function CreateDocumentDialog({
             </Select>
           </div>
 
-          {/* Template selection — Story 17.7 will populate templates */}
-
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={handleClose}
               disabled={isLoading}
             >
               Avbryt

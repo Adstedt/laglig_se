@@ -19,31 +19,146 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ChevronDown } from 'lucide-react'
+import {
+  MoreHorizontal,
+  Send,
+  CheckCircle2,
+  FilePlus,
+  Archive,
+  Undo2,
+  ArrowRightLeft,
+} from 'lucide-react'
 import { updateDocumentStatus } from '@/app/actions/documents'
-import { getValidNextStatuses } from '@/lib/validation/documents'
 import { STATUS_CONFIG } from '@/components/features/documents/document-status-badge'
 import { WorkspaceDocumentStatus } from '@prisma/client'
+import { cn } from '@/lib/utils'
+
+// ---------------------------------------------------------------------------
+// Config: maps each status to its primary action + overflow actions
+// ---------------------------------------------------------------------------
+
+interface PrimaryActionConfig {
+  targetStatus?: WorkspaceDocumentStatus
+  label: string
+  loadingLabel: string
+  variant: 'default' | 'outline'
+  className?: string
+  icon: React.ElementType
+  isCreateDraft?: boolean
+}
+
+interface OverflowActionConfig {
+  targetStatus: WorkspaceDocumentStatus
+  label: string
+  icon: React.ElementType
+}
+
+interface SecondaryActionConfig {
+  targetStatus: WorkspaceDocumentStatus
+  label: string
+  icon: React.ElementType
+}
+
+const STATUS_ACTION_CONFIG: Partial<
+  Record<
+    WorkspaceDocumentStatus,
+    {
+      primary?: PrimaryActionConfig | undefined
+      secondary?: SecondaryActionConfig | undefined
+      overflow: OverflowActionConfig[]
+    }
+  >
+> = {
+  DRAFT: {
+    primary: {
+      targetStatus: WorkspaceDocumentStatus.IN_REVIEW,
+      label: 'Skicka till granskning',
+      loadingLabel: 'Skickar...',
+      variant: 'default',
+      icon: Send,
+    },
+    overflow: [
+      {
+        targetStatus: WorkspaceDocumentStatus.ARCHIVED,
+        label: 'Arkivera',
+        icon: Archive,
+      },
+    ],
+  },
+  IN_REVIEW: {
+    primary: {
+      targetStatus: WorkspaceDocumentStatus.APPROVED,
+      label: 'Godkänn',
+      loadingLabel: 'Godkänner...',
+      variant: 'default',
+      className: 'bg-green-600 hover:bg-green-700 text-white',
+      icon: CheckCircle2,
+    },
+    secondary: {
+      targetStatus: WorkspaceDocumentStatus.DRAFT,
+      label: 'Neka',
+      icon: Undo2,
+    },
+    overflow: [],
+  },
+  APPROVED: {
+    primary: {
+      label: 'Skapa ny version',
+      loadingLabel: 'Skapar...',
+      variant: 'outline',
+      icon: FilePlus,
+      isCreateDraft: true,
+    },
+    overflow: [
+      {
+        targetStatus: WorkspaceDocumentStatus.SUPERSEDED,
+        label: 'Ersätt',
+        icon: ArrowRightLeft,
+      },
+      {
+        targetStatus: WorkspaceDocumentStatus.ARCHIVED,
+        label: 'Arkivera',
+        icon: Archive,
+      },
+    ],
+  },
+  SUPERSEDED: {
+    primary: undefined,
+    overflow: [
+      {
+        targetStatus: WorkspaceDocumentStatus.ARCHIVED,
+        label: 'Arkivera',
+        icon: Archive,
+      },
+    ],
+  },
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 interface StatusTransitionControlsProps {
   documentId: string
   currentStatus: string
-  onStatusChange: () => void
+  onStatusChange: (_newStatus?: string) => void
+  onCreateDraft?: () => Promise<void>
+  creatingDraft?: boolean
 }
 
 export function StatusTransitionControls({
   documentId,
   currentStatus,
   onStatusChange,
+  onCreateDraft,
+  creatingDraft,
 }: StatusTransitionControlsProps) {
   const [pendingStatus, setPendingStatus] =
     useState<WorkspaceDocumentStatus | null>(null)
   const [comment, setComment] = useState('')
   const [updating, setUpdating] = useState(false)
 
-  const validNextStatuses = getValidNextStatuses(
-    currentStatus as WorkspaceDocumentStatus
-  )
+  const config = STATUS_ACTION_CONFIG[currentStatus as WorkspaceDocumentStatus]
 
   const handleConfirm = useCallback(async () => {
     if (!pendingStatus) return
@@ -57,38 +172,95 @@ export function StatusTransitionControls({
     setPendingStatus(null)
     setComment('')
     if (result.success) {
-      onStatusChange()
+      onStatusChange(pendingStatus)
     }
   }, [documentId, pendingStatus, comment, onStatusChange])
 
-  if (validNextStatuses.length === 0) return null
+  const handlePrimaryClick = useCallback(() => {
+    if (!config?.primary) return
 
-  const pendingConfig = pendingStatus ? STATUS_CONFIG[pendingStatus] : null
+    if (config.primary.isCreateDraft && onCreateDraft) {
+      onCreateDraft()
+      return
+    }
+
+    if (config.primary.targetStatus) {
+      setPendingStatus(config.primary.targetStatus)
+    }
+  }, [config, onCreateDraft])
+
+  // Nothing to show for ARCHIVED or unknown statuses
+  if (
+    !config ||
+    (!config.primary && !config.secondary && config.overflow.length === 0)
+  ) {
+    return null
+  }
+
+  const pendingLabel = pendingStatus ? STATUS_CONFIG[pendingStatus]?.label : ''
+  const primaryLoading = config.primary?.isCreateDraft
+    ? creatingDraft
+    : updating
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1">
-            Ändra status
-            <ChevronDown className="h-3 w-3" />
+      <div className="flex items-center gap-1">
+        {/* Primary action button */}
+        {config.primary && (
+          <Button
+            size="sm"
+            variant={config.primary.variant}
+            className={cn(config.primary.className)}
+            onClick={handlePrimaryClick}
+            disabled={primaryLoading}
+          >
+            <config.primary.icon className="mr-1 h-4 w-4" />
+            {primaryLoading
+              ? config.primary.loadingLabel
+              : config.primary.label}
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          {validNextStatuses.map((nextStatus) => {
-            const config = STATUS_CONFIG[nextStatus]
-            return (
-              <DropdownMenuItem
-                key={nextStatus}
-                onClick={() => setPendingStatus(nextStatus)}
-              >
-                {config?.label ?? nextStatus}
-              </DropdownMenuItem>
-            )
-          })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        )}
 
+        {/* Secondary action button (visible, not in overflow) */}
+        {config.secondary && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setPendingStatus(config.secondary!.targetStatus)}
+            disabled={updating}
+          >
+            <config.secondary.icon className="mr-1 h-4 w-4" />
+            {config.secondary.label}
+          </Button>
+        )}
+
+        {/* Overflow menu for tertiary actions */}
+        {config.overflow.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {config.overflow.map((action) => {
+                const Icon = action.icon
+                return (
+                  <DropdownMenuItem
+                    key={action.targetStatus}
+                    onClick={() => setPendingStatus(action.targetStatus)}
+                  >
+                    <Icon className="mr-2 h-4 w-4" />
+                    {action.label}
+                  </DropdownMenuItem>
+                )
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+
+      {/* Confirmation dialog — shared by primary + overflow status transitions */}
       <AlertDialog
         open={!!pendingStatus}
         onOpenChange={(open) => {
@@ -102,7 +274,7 @@ export function StatusTransitionControls({
           <AlertDialogHeader>
             <AlertDialogTitle>Ändra status</AlertDialogTitle>
             <AlertDialogDescription>
-              Ändra status till &quot;{pendingConfig?.label}&quot;?
+              Ändra status till &quot;{pendingLabel}&quot;?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">

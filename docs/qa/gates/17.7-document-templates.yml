@@ -1,0 +1,45 @@
+schema: 1
+story: '17.7'
+story_title: 'Document Templates'
+gate: PASS
+status_reason: >-
+  All 18 ACs met. 15 new tests (3141 total passing). Clean template content module with DRY
+  helper functions, idempotent seed script with deterministic UUIDs, getDocumentTemplates server
+  action with withWorkspace auth. Creation dialog properly enhanced with template grid, preview,
+  and templateId flow leveraging existing createDocument() server-side handling.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-31T10:58:00Z'
+
+top_issues: []
+
+waiver:
+  active: false
+
+quality_score: 95
+expires: '2026-04-14T10:58:00Z'
+
+evidence:
+  tests_reviewed: 15
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'withWorkspace() auth on getDocumentTemplates. Templates are read-only. Seed script uses PrismaClient directly (offline).'
+  performance:
+    status: PASS
+    notes: 'Small dataset (5 templates). Single query on dialog open. No N+1.'
+  reliability:
+    status: PASS
+    notes: 'Deterministic UUIDs ensure idempotent seeding. Seed script has --dry-run safety. Error handling in server action and dialog.'
+  maintainability:
+    status: PASS
+    notes: 'DRY helper functions for Tiptap JSON. TemplateDefinition type exported for reuse. TEMPLATE_IDS const for seed/test reference. Clean separation: content, seed, action, UI.'
+
+recommendations:
+  future:
+    - action: 'Add component test for create-document-dialog template selection'
+      refs: ['tests/unit/components/features/documents/create-document-dialog.test.tsx']

@@ -48,16 +48,16 @@ interface DocumentSettingsPanelProps {
   documentId: string
   initialDocumentNumber: string | null
   initialReviewDate: string | null
-  initialRetentionUntil: string | null
   initialDocumentType: string | null
+  readOnly?: boolean
 }
 
 export function DocumentSettingsPanel({
   documentId,
   initialDocumentNumber,
   initialReviewDate,
-  initialRetentionUntil,
   initialDocumentType,
+  readOnly,
 }: DocumentSettingsPanelProps) {
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -66,9 +66,6 @@ export function DocumentSettingsPanel({
   )
   const [reviewDate, setReviewDate] = useState<Date | undefined>(
     initialReviewDate ? new Date(initialReviewDate) : undefined
-  )
-  const [retentionUntil, setRetentionUntil] = useState<Date | undefined>(
-    initialRetentionUntil ? new Date(initialRetentionUntil) : undefined
   )
   const [documentType, setDocumentType] = useState(
     initialDocumentType ?? 'OTHER'
@@ -80,7 +77,6 @@ export function DocumentSettingsPanel({
       documentId,
       documentNumber: documentNumber || null,
       reviewDate: reviewDate ? reviewDate.toISOString() : null,
-      retentionUntil: retentionUntil ? retentionUntil.toISOString() : null,
       documentType: documentType as WorkspaceDocumentType,
     })
     setSaving(false)
@@ -89,7 +85,7 @@ export function DocumentSettingsPanel({
     } else {
       toast.error(result.error ?? 'Kunde inte spara inställningar')
     }
-  }, [documentId, documentNumber, reviewDate, retentionUntil, documentType])
+  }, [documentId, documentNumber, reviewDate, documentType])
 
   const reviewStatus = getReviewDateStatus(reviewDate ?? null)
 
@@ -119,6 +115,7 @@ export function DocumentSettingsPanel({
               onChange={(e) => setDocumentNumber(e.target.value)}
               placeholder="T.ex. POL-2026-001"
               maxLength={50}
+              disabled={readOnly}
             />
           </div>
 
@@ -127,7 +124,11 @@ export function DocumentSettingsPanel({
             <span className="text-sm font-medium mb-1.5 block">
               Dokumenttyp
             </span>
-            <Select value={documentType} onValueChange={setDocumentType}>
+            <Select
+              value={documentType}
+              onValueChange={setDocumentType}
+              disabled={!!readOnly}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -147,9 +148,10 @@ export function DocumentSettingsPanel({
               Granskningsdatum
             </span>
             <Popover>
-              <PopoverTrigger asChild>
+              <PopoverTrigger asChild disabled={readOnly}>
                 <Button
                   variant="outline"
+                  disabled={readOnly}
                   className={cn(
                     'w-full justify-start text-left font-normal',
                     !reviewDate && 'text-muted-foreground',
@@ -187,41 +189,12 @@ export function DocumentSettingsPanel({
             )}
           </div>
 
-          {/* Retention until */}
-          <div>
-            <span className="text-sm font-medium mb-1.5 block">
-              Bevaras till
-            </span>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !retentionUntil && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {retentionUntil
-                    ? format(retentionUntil, 'PPP', { locale: sv })
-                    : 'Välj datum...'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={retentionUntil}
-                  onSelect={setRetentionUntil}
-                  locale={sv}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Save button */}
-          <Button onClick={handleSave} disabled={saving} className="w-full">
-            {saving ? 'Sparar...' : 'Spara inställningar'}
-          </Button>
+          {/* Save button — hidden when read-only */}
+          {!readOnly && (
+            <Button onClick={handleSave} disabled={saving} className="w-full">
+              {saving ? 'Sparar...' : 'Spara inställningar'}
+            </Button>
+          )}
         </div>
       </SheetContent>
     </Sheet>
