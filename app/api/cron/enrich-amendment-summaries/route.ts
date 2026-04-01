@@ -2,8 +2,8 @@
  * Enrich Amendment Summaries Cron Job
  *
  * Story 8.8: Generates brief AI summaries for amendments that lack them.
- * Runs at 06:30 UTC — after discover-sfs-amendments (10:00-13:00 previous day),
- * before notify-amendment-changes (07:00) sends emails.
+ * Runs hourly at :30 — catches newly discovered amendments within ~30 min.
+ * Always runs before notify-amendment-changes (07:00) sends emails.
  *
  * Populates ChangeEvent.ai_summary + amendment LegalDocument.summary
  * so notification emails show meaningful content instead of fallback text.

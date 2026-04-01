@@ -37,8 +37,8 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     displayName: 'AI-sammanfattning av ändringar',
     description:
       'Genererar AI-sammanfattningar för ändringsförfattningar som saknar ai_summary',
-    schedule: '30 6 * * *',
-    scheduleHuman: 'Dagligen kl. 06:30 UTC',
+    schedule: '30 * * * *',
+    scheduleHuman: 'Varje timme vid :30',
     endpoint: '/api/cron/enrich-amendment-summaries',
     authHeader: 'CRON_SECRET',
     instrumented: true,
