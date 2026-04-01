@@ -126,8 +126,7 @@ export function LawListGenerationProgress({
             )}
             {doneCount > 0 && (
               <span className="text-muted-foreground/50 text-xs ml-auto">
-                Steg {doneCount + (currentStep.status === 'active' ? 0 : 0)}/
-                {progress?.length ?? 0}
+                Steg {doneCount}
               </span>
             )}
           </div>

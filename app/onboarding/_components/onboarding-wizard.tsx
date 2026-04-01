@@ -209,6 +209,7 @@ export function OnboardingWizard({
             {stepId === 'activity-questions' && (
               <ActivityQuestionsStep
                 questions={questions}
+                savedFlags={activityFlags}
                 onNext={handleActivityQuestionsNext}
                 onBack={handleBack}
               />

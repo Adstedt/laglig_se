@@ -13,19 +13,25 @@ export interface ActivityFlags {
 
 interface ActivityQuestionsStepProps {
   questions: Question[]
+  savedFlags?: ActivityFlags | undefined
   onNext: (_flags: ActivityFlags) => void
   onBack: () => void
 }
 
 export function ActivityQuestionsStep({
   questions,
+  savedFlags,
   onNext,
   onBack,
 }: ActivityQuestionsStepProps) {
   const [flags, setFlags] = useState<ActivityFlags>(() => {
     const initial: ActivityFlags = {}
     for (const q of questions) {
-      initial[q.flagKey] = q.defaultValue
+      // Use saved flags (from previous visit) if available, otherwise default
+      initial[q.flagKey] =
+        savedFlags && q.flagKey in savedFlags
+          ? savedFlags[q.flagKey]!
+          : q.defaultValue
     }
     return initial
   })
