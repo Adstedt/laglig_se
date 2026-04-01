@@ -8,17 +8,15 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronsUpDown, Check, Loader2, Plus } from 'lucide-react'
+import { ChevronsUpDown, Check, Loader2 } from 'lucide-react'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { useWorkspace } from '@/lib/hooks/use-workspace'
-import { CreateWorkspaceModal } from '@/components/features/workspace/create-workspace-modal'
 import { useDocumentListStore } from '@/lib/stores/document-list-store'
 import type { WorkspaceRole } from '@prisma/client'
 
@@ -59,7 +57,6 @@ export function WorkspaceSwitcher({
   } = useWorkspace()
   const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
-  const [createModalOpen, setCreateModalOpen] = useState(false)
   const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([])
   const [loading, setLoading] = useState(false)
   const [switching, setSwitching] = useState<string | null>(null)
@@ -118,19 +115,6 @@ export function WorkspaceSwitcher({
       console.error('Failed to switch workspace:', error)
     } finally {
       setSwitching(null)
-    }
-  }
-
-  const handleCreateWorkspace = () => {
-    setOpen(false)
-    setCreateModalOpen(true)
-  }
-
-  const handleCreateModalClose = (open: boolean) => {
-    setCreateModalOpen(open)
-    if (!open) {
-      // Refetch workspaces when modal closes (in case new one was created)
-      setWorkspaces([])
     }
   }
 
@@ -236,26 +220,8 @@ export function WorkspaceSwitcher({
                 ))}
               </div>
             )}
-            <Separator className="my-1" />
-            <button
-              onClick={handleCreateWorkspace}
-              className={cn(
-                'flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors',
-                'hover:bg-accent hover:text-accent-foreground text-muted-foreground'
-              )}
-            >
-              <div className="flex h-7 w-7 items-center justify-center rounded-full border border-dashed border-muted-foreground/50 shrink-0">
-                <Plus className="h-3.5 w-3.5" />
-              </div>
-              <span className="font-medium">Skapa ny arbetsplats</span>
-            </button>
           </PopoverContent>
         </Popover>
-
-        <CreateWorkspaceModal
-          open={createModalOpen}
-          onOpenChange={handleCreateModalClose}
-        />
       </>
     )
   }
@@ -373,28 +339,8 @@ export function WorkspaceSwitcher({
               })}
             </div>
           )}
-
-          {/* Divider and Create button */}
-          <Separator className="my-1" />
-          <button
-            onClick={handleCreateWorkspace}
-            className={cn(
-              'flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors',
-              'hover:bg-accent hover:text-accent-foreground text-muted-foreground'
-            )}
-          >
-            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-dashed border-muted-foreground/50 shrink-0">
-              <Plus className="h-3.5 w-3.5" />
-            </div>
-            <span className="font-medium">Skapa ny arbetsplats</span>
-          </button>
         </PopoverContent>
       </Popover>
-
-      <CreateWorkspaceModal
-        open={createModalOpen}
-        onOpenChange={handleCreateModalClose}
-      />
     </>
   )
 }
