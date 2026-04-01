@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'service_unavailable' }, { status: 503 })
   }
 
-  if (response.status === 404) {
+  if (response.status === 404 || response.status === 400) {
     return NextResponse.json({ error: 'company_not_found' }, { status: 404 })
   }
 
