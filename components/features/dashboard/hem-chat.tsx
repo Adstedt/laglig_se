@@ -64,6 +64,8 @@ interface HemChatProps {
   userName?: string | undefined
   /** Callback when a change is selected for assessment (Story 14.10) */
   onSelectChange?: (_change: UnacknowledgedChange) => void
+  /** Story 8.23: Auto-open amendments picker on mount */
+  initialView?: 'amendments' | undefined
 }
 
 export function HemChat({
@@ -72,10 +74,19 @@ export function HemChat({
   dashboardLoading = false,
   userName,
   onSelectChange,
+  initialView,
 }: HemChatProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const [viewState, setViewState] = useState<ViewState>('chat')
   const [showChangePicker, setShowChangePicker] = useState(false)
+
+  // Story 8.23: Auto-open amendments picker from deep-link
+  useEffect(() => {
+    if (initialView === 'amendments') {
+      setShowChangePicker(true)
+    }
+  }, [initialView])
+
   // Full mode: track whether user has actively engaged (sent message or loaded conversation)
   // Prevents leftover history from previous sessions hijacking the home view
   const [userEngaged, setUserEngaged] = useState(false)

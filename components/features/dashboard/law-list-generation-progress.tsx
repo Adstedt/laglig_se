@@ -160,6 +160,14 @@ function CompletedCard({
 }) {
   const [dismissed, setDismissed] = useState(false)
 
+  const handleDismiss = () => {
+    setDismissed(true)
+    // Clear the status in DB so banner doesn't reappear on navigation
+    fetch('/api/workspace/generation-status', { method: 'DELETE' }).catch(
+      () => {}
+    )
+  }
+
   if (dismissed) return null
 
   const groupText =
@@ -170,7 +178,7 @@ function CompletedCard({
   return (
     <Card className="relative border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/30">
       <button
-        onClick={() => setDismissed(true)}
+        onClick={handleDismiss}
         className="absolute top-3 right-3 p-1 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
         aria-label="Stäng"
       >

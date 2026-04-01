@@ -392,7 +392,7 @@ export async function GET(request: Request) {
           sectionChanges: ev.sectionChanges,
           lawUrl: `${APP_URL}/lagar/${ev.lawSlug}`,
           pdfUrl: ev.pdfUrl,
-          assessUrl: `${APP_URL}/dashboard?changeId=${ev.id}`,
+          assessUrl: `${APP_URL}/dashboard?view=amendments`,
         }))
 
         // Determine notification type from the primary change

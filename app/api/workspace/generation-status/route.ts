@@ -3,6 +3,9 @@
  * Story 16.4, Task 6.1 (AC: 21)
  *
  * Returns law list generation status for polling.
+ *
+ * DELETE /api/workspace/generation-status
+ * Clears the generation status so the completed/failed banner doesn't reappear.
  */
 
 import { NextResponse } from 'next/server'
@@ -96,6 +99,29 @@ export async function GET() {
       groups,
       error: workspace.law_list_generation_error ?? null,
     })
+  } catch {
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE() {
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const ctx = await getWorkspaceContext()
+
+    await prisma.workspace.update({
+      where: { id: ctx.workspaceId },
+      data: { law_list_generation_status: null },
+    })
+
+    return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json(
       { error: 'Internal server error' },

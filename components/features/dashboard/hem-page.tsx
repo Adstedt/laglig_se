@@ -20,6 +20,8 @@ interface HemPageProps {
   userName?: string | undefined
   /** Pre-fetched change for deep-link from email notifications */
   initialChange?: UnacknowledgedChange | null
+  /** Story 8.23: Auto-open amendments picker from deep-link */
+  initialView?: 'amendments' | undefined
   /** Story 16.4: Law list generation status */
   generationStatus?: string | null
 }
@@ -28,6 +30,7 @@ export function HemPage({
   dashboardData,
   userName,
   initialChange,
+  initialView,
   generationStatus,
 }: HemPageProps) {
   const [activeChange, setActiveChange] = useState<UnacknowledgedChange | null>(
@@ -36,10 +39,18 @@ export function HemPage({
 
   // Clean the URL after consuming the deep-link param
   useEffect(() => {
-    if (initialChange) {
+    if (initialChange || initialView) {
       window.history.replaceState({}, '', '/dashboard')
     }
-  }, [initialChange])
+  }, [initialChange, initialView])
+
+  // Story 8.23: Clear assessment view when navigating back via ?view=amendments
+  // (e.g., clicking a notification while inside an assessment)
+  useEffect(() => {
+    if (initialView === 'amendments') {
+      setActiveChange(null)
+    }
+  }, [initialView])
 
   const handleSelectChange = useCallback((change: UnacknowledgedChange) => {
     setActiveChange(change)
@@ -70,6 +81,7 @@ export function HemPage({
           dashboardData={dashboardData}
           userName={userName}
           onSelectChange={handleSelectChange}
+          initialView={initialView}
         />
       )}
     </div>

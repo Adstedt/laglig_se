@@ -97,7 +97,7 @@ describe('GET /api/notifications', () => {
     expect(body[0].link_url).toBeNull()
   })
 
-  it('enriches change_event notifications with link_url', async () => {
+  it('enriches change_event notifications with amendments view link', async () => {
     mockGetWorkspaceContext.mockResolvedValue(mockCtx)
 
     mockFindMany.mockResolvedValue([
@@ -112,14 +112,12 @@ describe('GET /api/notifications', () => {
       },
     ] as never)
 
-    mockChangeEventFindUnique.mockResolvedValue({
-      document: { slug: 'sfs-1977-1160' },
-    } as never)
-
     const res = await GET(createRequest())
     const body = await res.json()
 
-    expect(body[0].link_url).toBe('/dokument/sfs-1977-1160')
+    expect(body[0].link_url).toBe('/dashboard?view=amendments')
+    // Should NOT query changeEvent for slug anymore
+    expect(mockChangeEventFindUnique).not.toHaveBeenCalled()
   })
 
   it('respects limit query param', async () => {

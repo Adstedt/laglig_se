@@ -32,26 +32,18 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Enrich change_event notifications with link_url
-    const enriched = await Promise.all(
-      notifications.map(async (n) => {
-        let link_url: string | null = null
+    // Enrich notifications with link_url based on entity type
+    const enriched = notifications.map((n) => {
+      let link_url: string | null = null
 
-        if (n.entity_type === 'change_event' && n.entity_id) {
-          const changeEvent = await prisma.changeEvent.findUnique({
-            where: { id: n.entity_id },
-            select: { document: { select: { slug: true } } },
-          })
-          if (changeEvent?.document?.slug) {
-            link_url = `/dokument/${changeEvent.document.slug}`
-          }
-        } else if (n.entity_type === 'task' && n.entity_id) {
-          link_url = `/tasks?task=${n.entity_id}`
-        }
+      if (n.entity_type === 'change_event' && n.entity_id) {
+        link_url = '/dashboard?view=amendments'
+      } else if (n.entity_type === 'task' && n.entity_id) {
+        link_url = `/tasks?task=${n.entity_id}`
+      }
 
-        return { ...n, link_url }
-      })
-    )
+      return { ...n, link_url }
+    })
 
     return NextResponse.json(enriched)
   } catch (error) {

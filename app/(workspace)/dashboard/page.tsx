@@ -18,7 +18,7 @@ import { HemPage } from '@/components/features/dashboard/hem-page'
 import type { DashboardCardData } from '@/components/features/dashboard/context-cards'
 
 interface DashboardPageProps {
-  searchParams: Promise<{ changeId?: string }>
+  searchParams: Promise<{ changeId?: string; view?: string }>
 }
 
 export default async function DashboardPage({
@@ -79,6 +79,7 @@ export default async function DashboardPage({
       dashboardData={dashboardData}
       userName={firstName}
       initialChange={initialChange}
+      initialView={params.view === 'amendments' ? 'amendments' : undefined}
       generationStatus={generationStatus}
     />
   )
