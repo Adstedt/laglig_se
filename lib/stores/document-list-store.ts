@@ -236,7 +236,7 @@ const initialState = {
   itemsByList: new Map<string, ListCacheEntry>(),
   contentTypeFilter: null,
   page: 1,
-  limit: 50,
+  limit: 100,
   total: 0,
   hasMore: false,
   // Story 4.12: Table view state

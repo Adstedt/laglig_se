@@ -121,7 +121,7 @@ Följande grundläggande lagar har redan lagts till automatiskt: Aktiebolagslage
 
 ## Regler
 - Lägg INTE till lagar som tydligt inte gäller — kvalitet framför kvantitet
-- Använd ALLTID svenska gruppnamn: "Arbetsrätt", "Bolagsrätt", "Skatt & Redovisning", "Miljö & Kemikalier", "Dataskydd", etc.
+- Använd ALLTID svenska gruppnamn: "Arbetsrätt", "Bolagsrätt", "Skatt & Redovisning", "Miljö & Kemikalier", "Dataskydd", "Arbetsmiljö", "Konsumenträtt", "Byggrätt", etc. Skapa INTE överlappande grupper — t.ex. använd "Skatt & Redovisning" istället för separata "Skatt" och "Redovisning".
 - **KRITISKT: Använd ENBART documentId som returneras av get_template_laws eller search_laws. Konstruera ALDRIG egna ID:n. Ogiltiga ID:n filtreras bort automatiskt.**
 - Målintervall: 40-80 lagar beroende på företagets komplexitet
 - Om en lag redan finns i listan hoppas den över automatiskt
@@ -162,19 +162,19 @@ const UNIVERSAL_AB_LAWS: Array<{
   },
   {
     documentId: 'f4cd631b-8c7c-4708-afc4-c863974f4d16', // IL
-    group: 'Skatt',
+    group: 'Skatt & Redovisning',
     businessContext:
       'Inkomstskattelagen reglerar bolagsskatt, tjänstebeskattning och kapitalinkomster. Berör bolagets skatteplanering och deklaration.',
   },
   {
     documentId: 'b3301284-c87e-4c1f-bf69-3c642fc8249b', // SFL
-    group: 'Skatt',
+    group: 'Skatt & Redovisning',
     businessContext:
       'Skatteförfarandelagen reglerar deklarationsskyldighet, arbetsgivaravgifter, skatteavdrag och Skatteverkets kontroller.',
   },
   {
     documentId: '620d076d-8095-4963-92d2-43ff542513cb', // ML
-    group: 'Skatt',
+    group: 'Skatt & Redovisning',
     businessContext:
       'Mervärdesskattelagen reglerar moms på varor och tjänster. Berör fakturering, momsredovisning och avdragsrätt.',
   },
