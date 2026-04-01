@@ -50,7 +50,11 @@ const showAsLink = new Set([
   'version',
   'laglistor',
   'mallar',
+  'documents',
 ])
+
+// Segments that should be hidden from the breadcrumb trail
+const hiddenSegments = new Set(['edit', 'workspace'])
 
 // Get a user-friendly label for a segment (truncate long slugs)
 function getSegmentLabel(segment: string, prevSegment?: string): string {
@@ -95,8 +99,8 @@ export function Breadcrumbs() {
       currentPath += `/${segment}`
       const isLast = i === segments.length - 1
 
-      // Skip 'browse' in the breadcrumb display but keep in path
-      if (segment === 'browse') continue
+      // Skip segments that should be hidden from breadcrumbs
+      if (segment === 'browse' || hiddenSegments.has(segment)) continue
 
       const label = getSegmentLabel(
         segment,

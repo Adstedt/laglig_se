@@ -190,7 +190,8 @@ export function VersionHistoryPanel({
                       className={cn(
                         'rounded-md border p-3 transition-colors',
                         isCurrent && 'border-primary/50 bg-primary/5',
-                        isSelectedForCompare && 'ring-2 ring-blue-500'
+                        isSelectedForCompare &&
+                          'ring-2 ring-inset ring-blue-500'
                       )}
                     >
                       <div className="flex items-start justify-between gap-2">

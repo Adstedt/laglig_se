@@ -186,14 +186,12 @@ export function DocumentSettingsPanel({
               <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 Granskning inom 30 dagar
-                {/* Linked items */}
-                <DocumentLinksSection
-                  documentId={documentId}
-                  readOnly={readOnly}
-                />
               </p>
             )}
           </div>
+
+          {/* Linked items */}
+          <DocumentLinksSection documentId={documentId} readOnly={readOnly} />
 
           {/* Save button — hidden when read-only */}
           {!readOnly && (

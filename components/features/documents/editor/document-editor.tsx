@@ -136,6 +136,13 @@ export function DocumentEditor({
     immediatelyRender: false,
   })
 
+  // Sync editable state when status changes (e.g. APPROVED → DRAFT via "new version")
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(editable)
+    }
+  }, [editor, editable])
+
   // Shared helper: generate HTML + prepare plain JSON for server actions
   const prepareContent = useCallback((contentJson: object) => {
     const contentHtml = generateHTML(contentJson as Record<string, unknown>, [
