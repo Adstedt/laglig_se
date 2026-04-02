@@ -91,10 +91,10 @@ export function AssessmentResolution({
   if (form.isCompleted && form.assessment) {
     return (
       <div className="rounded-lg border bg-card mx-1 mt-4 overflow-hidden">
-        <div className="flex items-center gap-2 px-4 py-3 bg-muted/30 border-b">
-          <ShieldCheck className="h-4 w-4 text-emerald-500" />
+        <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 dark:bg-emerald-950/20 border-b">
+          <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           <span className="text-sm font-medium">Bedömning sparad</span>
-          <span className="text-xs text-muted-foreground ml-auto">
+          <span className="text-[11px] text-muted-foreground ml-auto">
             {new Date(form.assessment.assessedAt).toLocaleDateString('sv-SE', {
               day: 'numeric',
               month: 'short',
@@ -105,15 +105,19 @@ export function AssessmentResolution({
           </span>
         </div>
         <div className="px-4 py-3 space-y-3">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Status:</span>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <span className="text-[11px] text-muted-foreground block mb-1">
+                Status
+              </span>
               <Badge variant={STATUS_VARIANT[form.assessment.status]}>
                 {STATUS_LABELS[form.assessment.status]}
               </Badge>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-muted-foreground">Påverkan:</span>
+            <div>
+              <span className="text-[11px] text-muted-foreground block mb-1">
+                Påverkan
+              </span>
               <span className="text-sm font-medium">
                 {IMPACT_LABELS[form.assessment.impactLevel]}
               </span>
@@ -124,18 +128,22 @@ export function AssessmentResolution({
               {form.assessment.userNotes}
             </p>
           )}
-          <div className="flex items-center gap-2 pt-0.5">
+          <div className="flex gap-2 pt-1">
             <Button
               variant="outline"
               size="sm"
               onClick={form.startEditing}
-              className="gap-1.5 h-9"
+              className="gap-1.5 h-9 flex-1"
             >
               <Pencil className="h-3.5 w-3.5" />
-              Ändra bedömning
+              Ändra
             </Button>
             {onClose && (
-              <Button size="sm" onClick={onClose} className="gap-1.5 h-9">
+              <Button
+                size="sm"
+                onClick={onClose}
+                className="gap-1.5 h-9 flex-1"
+              >
                 <Check className="h-3.5 w-3.5" />
                 Klar
               </Button>
