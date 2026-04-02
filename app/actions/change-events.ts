@@ -74,6 +74,7 @@ export async function getUnacknowledgedChanges(): Promise<
             lli.last_change_acknowledged_at IS NULL
             OR ce.detected_at > lli.last_change_acknowledged_at
           )
+          AND NOT (ce.change_type = 'NEW_LAW' AND ce.amendment_sfs IS NULL)
       `
 
       // Derive priority and sort
