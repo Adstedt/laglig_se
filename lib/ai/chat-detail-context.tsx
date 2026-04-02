@@ -69,6 +69,8 @@ export interface AssessmentDetailData {
   } | null
   documentTitle: string
   documentNumber: string
+  /** Called when the user clicks "Klar" — navigates back to the parent view */
+  onComplete?: () => void
 }
 
 /** Subset of LegalDocument Prisma model */

@@ -72,12 +72,14 @@ interface AssessmentResolutionProps {
   changeEventId: string
   lawListItemId: string
   onComplete?: (() => void) | undefined
+  onClose?: (() => void) | undefined
 }
 
 export function AssessmentResolution({
   changeEventId,
   lawListItemId,
   onComplete,
+  onClose,
 }: AssessmentResolutionProps) {
   const form = useAssessmentForm({
     changeEventId,
@@ -102,8 +104,8 @@ export function AssessmentResolution({
             })}
           </span>
         </div>
-        <div className="px-4 py-3 space-y-2">
-          <div className="flex items-center gap-3">
+        <div className="px-4 py-3 space-y-3">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">
               <span className="text-xs text-muted-foreground">Status:</span>
               <Badge variant={STATUS_VARIANT[form.assessment.status]}>
@@ -118,19 +120,27 @@ export function AssessmentResolution({
             </div>
           </div>
           {form.assessment.userNotes && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {form.assessment.userNotes}
             </p>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={form.startEditing}
-            className="gap-1.5 -ml-2"
-          >
-            <Pencil className="h-3 w-3" />
-            Ändra bedömning
-          </Button>
+          <div className="flex items-center gap-2 pt-0.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={form.startEditing}
+              className="gap-1.5 h-9"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Ändra bedömning
+            </Button>
+            {onClose && (
+              <Button size="sm" onClick={onClose} className="gap-1.5 h-9">
+                <Check className="h-3.5 w-3.5" />
+                Klar
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     )

@@ -10,7 +10,7 @@
  */
 
 import { useRef, useEffect, useCallback } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from '@/components/features/ai-chat/chat-message-list'
@@ -109,6 +109,7 @@ function ChangeAssessmentViewInner({
       existingAssessment: null,
       documentTitle: change.documentTitle,
       documentNumber: change.documentNumber,
+      onComplete: onBack,
     }
     openDetail({
       type: 'assessment',
@@ -152,6 +153,15 @@ function ChangeAssessmentViewInner({
               </p>
             </div>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="shrink-0 h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Stäng</span>
+          </Button>
         </div>
 
         {/* Chat area */}
