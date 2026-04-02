@@ -1,0 +1,40 @@
+schema: 1
+story: '8.24'
+story_title: 'Enrich Amendments with Proposition Context from Riksdagen API'
+gate: PASS
+status_reason: 'Well-structured implementation with thorough error handling. 44 tests pass. External API integration is non-blocking and fault-tolerant. All 7 ACs met.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-02T14:22:00Z'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-04-16T14:22:00Z'
+
+evidence:
+  tests_reviewed: 44
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Public API, no auth, no user-controlled input to API URLs. Prop ref extracted from own stored data.'
+  performance:
+    status: PASS
+    notes: '~1s per amendment during ingestion (2 API calls). Zero prompt-time latency (DB read). Backfill rate-limited with caching.'
+  reliability:
+    status: PASS
+    notes: 'Every failure path returns null. API fetch outside transaction prevents DB lock issues. Amendment ingestion never blocked by proposition fetch failure.'
+  maintainability:
+    status: PASS
+    notes: 'Self-contained lib/riksdagen/ module. Clean interfaces. 16 unit tests for the utility alone.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add proposition_id index if future queries filter by it'
+      refs: ['prisma/schema.prisma']

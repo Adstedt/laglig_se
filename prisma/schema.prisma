@@ -336,6 +336,7 @@ model LegalDocument {
   slug             String                       @unique
   summary          String?                      @db.Text // Summering — neutral description of what the law regulates
   kommentar        String?                      @db.Text // Kommentar — actionable compliance commentary ("Vi ska..." voice)
+  applicability_hint String?                    @db.Text // LLM-optimized: "Gäller [who]. [Threshold]. Reglerar [what]."
   summering_generated_by String?                       // Model identifier for summary generation (e.g., "claude-opus-4-6")
   kommentar_generated_by String?                       // Model identifier for kommentar generation (e.g., "claude-opus-4-6")
   full_text        String?                      @db.Text // Plain text for RAG, search, embeddings
@@ -807,6 +808,13 @@ model AmendmentDocument {
 
   // Markdown content for RAG
   markdown_content String? @db.Text
+
+  // Proposition context (from riksdagen.se API)
+  proposition_id      String?   // "2024/25:205"
+  proposition_title   String?   // "Myndigheten för civilt försvar – ett nytt namn..."
+  proposition_summary String?   @db.Text // Huvudsakligt innehåll section
+  proposition_organ   String?   // "Försvarsdepartementet"
+  proposition_datum   DateTime? // When proposition was submitted
 
   // Processing status
   parse_status ParseStatus @default(PENDING)

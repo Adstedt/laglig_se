@@ -43,6 +43,10 @@ import {
   classifyDocument,
   crawlDocumentPage,
 } from '@/lib/sfs/sfs-amendment-crawler'
+import {
+  extractPropositionRef,
+  fetchPropositionContext,
+} from '@/lib/riksdagen/proposition-fetcher'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -558,6 +562,24 @@ async function processAmendmentRecord(
     ? new Date(canonicalJson.metadata.effectiveDate)
     : null
 
+  // Step C.5: Fetch proposition context from riksdagen.se (non-blocking)
+  let propositionData: {
+    id: string
+    title: string
+    summary: string | null
+    organ: string | null
+    datum: Date | null
+  } | null = null
+  const propRef = extractPropositionRef(plainText)
+  if (propRef) {
+    propositionData = await fetchPropositionContext(propRef)
+    if (propositionData) {
+      console.log(
+        `[DISCOVER-SFS]   Proposition: ${propositionData.title} (${propRef})`
+      )
+    }
+  }
+
   // Step D: Update all records in a transaction
   const defaultChangeType = isRepeal
     ? SectionChangeType.REPEALED
@@ -607,7 +629,7 @@ async function processAmendmentRecord(
       }
     }
 
-    // Update AmendmentDocument to COMPLETED
+    // Update AmendmentDocument to COMPLETED (with proposition context if available)
     const updatedAmendment = await tx.amendmentDocument.update({
       where: { id: record.id },
       data: {
@@ -620,6 +642,13 @@ async function processAmendmentRecord(
         parsed_at: new Date(),
         parse_error: null,
         confidence: validation.metrics.paragraphCount > 0 ? 0.9 : 0.5,
+        ...(propositionData && {
+          proposition_id: propositionData.id,
+          proposition_title: propositionData.title,
+          proposition_summary: propositionData.summary,
+          proposition_organ: propositionData.organ,
+          proposition_datum: propositionData.datum,
+        }),
       },
     })
 
