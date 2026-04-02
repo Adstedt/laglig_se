@@ -47,6 +47,7 @@ import {
   extractPropositionRef,
   fetchPropositionContext,
 } from '@/lib/riksdagen/proposition-fetcher'
+import { extractEffectiveDate } from '@/lib/external/pdf-parser'
 
 /** Ensure SFS number has "SFS " prefix (idempotent) */
 function ensureSfsPrefix(sfsNumber: string): string {
@@ -563,9 +564,17 @@ async function processAmendmentRecord(
     ensureSfsPrefix(record.sfs_number)
   ).html
 
-  const effectiveDate = canonicalJson.metadata.effectiveDate
+  // Extract effective date: canonical JSON first, then fallback to plain text parsing
+  let effectiveDate = canonicalJson.metadata.effectiveDate
     ? new Date(canonicalJson.metadata.effectiveDate)
     : null
+  if (!effectiveDate) {
+    const extracted = extractEffectiveDate(plainText)
+    if (extracted) {
+      effectiveDate = new Date(extracted)
+      if (isNaN(effectiveDate.getTime())) effectiveDate = null
+    }
+  }
 
   // Step C.5: Fetch proposition context from riksdagen.se (non-blocking)
   let propositionData: {
