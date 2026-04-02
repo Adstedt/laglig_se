@@ -552,7 +552,7 @@ function getToolDetail(
     case 'get_document_details':
       return (input.documentNumber as string) ?? undefined
     case 'get_change_details':
-      return (input.changeEventId as string) ?? undefined
+      return undefined // Hide cuid — label is self-explanatory
     case 'create_task':
       return (input.title as string) ?? undefined
     case 'update_compliance_status':
@@ -692,23 +692,13 @@ function ToolCallRow({
   function renderToolRowContent() {
     return (
       <>
-        <div
-          className={cn(
-            'flex items-center justify-center h-5 w-5 rounded-full shrink-0',
-            isDone &&
-              'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-            isError && 'bg-destructive/10 text-destructive',
-            isRunning && 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-          )}
-        >
-          {isRunning ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : isDone ? (
-            <Check className="h-3 w-3" />
-          ) : (
-            <X className="h-3 w-3" />
-          )}
-        </div>
+        {isRunning ? (
+          <Loader2 className="h-3 w-3 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
+        ) : isDone ? (
+          <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+        ) : (
+          <X className="h-3 w-3 text-destructive shrink-0" />
+        )}
 
         <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
         <span
@@ -724,7 +714,7 @@ function ToolCallRow({
           {label}
         </span>
         {detail && (
-          <span className="text-xs text-muted-foreground/70 truncate">
+          <span className="text-xs text-muted-foreground/60 truncate min-w-0">
             — {detail}
           </span>
         )}
@@ -732,24 +722,29 @@ function ToolCallRow({
     )
   }
 
+  const rowClasses = cn(
+    'flex items-center gap-1.5 py-1 px-2.5 rounded-md min-w-0 overflow-hidden',
+    isDone && 'bg-muted/15',
+    isRunning && 'bg-muted/25',
+    isError && 'bg-destructive/5'
+  )
+
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1 ml-px">
       {isClickable ? (
         <button
           type="button"
           className={cn(
-            'flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0',
-            'cursor-pointer hover:bg-muted/50 transition-colors',
-            isActiveInSidebar && 'ring-2 ring-primary/40'
+            rowClasses,
+            'cursor-pointer hover:bg-muted/35 transition-colors',
+            isActiveInSidebar && 'ring-1 ring-primary/30'
           )}
           onClick={handleClick}
         >
           {renderToolRowContent()}
         </button>
       ) : (
-        <div className="flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0">
-          {renderToolRowContent()}
-        </div>
+        <div className={rowClasses}>{renderToolRowContent()}</div>
       )}
 
       {/* "Visa detaljer" chip for sidebarHint === 'suggest' */}
@@ -757,7 +752,7 @@ function ToolCallRow({
         <button
           type="button"
           onClick={handleSuggestClick}
-          className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors ml-3"
+          className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors ml-2.5"
         >
           <Eye className="h-3 w-3" />
           Visa detaljer
