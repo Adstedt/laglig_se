@@ -263,83 +263,94 @@ function EditingState({
   form: ReturnType<typeof useAssessmentForm>
 }) {
   return (
-    <div className="space-y-3">
-      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
-        Din bedömning
-      </p>
-
-      <div className="space-y-3">
-        <div>
-          <span className="text-xs text-muted-foreground mb-1 block">
-            Status
-          </span>
-          <Select
-            value={form.status}
-            onValueChange={(v) => form.setStatus(v as AssessmentStatus)}
-          >
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <span className="text-xs text-muted-foreground mb-1 block">
-            Påverkan på verksamheten
-          </span>
-          <Select
-            value={form.impactLevel}
-            onValueChange={(v) => form.setImpactLevel(v as ImpactLevel)}
-          >
-            <SelectTrigger className="h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {IMPACT_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="rounded-lg border bg-card overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 bg-muted/30 border-b">
+        <Pencil className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-medium">Din bedömning</span>
       </div>
+      <div className="px-4 py-3 space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <span className="text-[11px] text-muted-foreground block mb-1">
+              Status
+            </span>
+            <Select
+              value={form.status}
+              onValueChange={(v) => form.setStatus(v as AssessmentStatus)}
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div>
-        <span className="text-xs text-muted-foreground mb-1 block">
-          Anteckningar
-        </span>
+          <div>
+            <span className="text-[11px] text-muted-foreground block mb-1">
+              Påverkan
+            </span>
+            <Select
+              value={form.impactLevel}
+              onValueChange={(v) => form.setImpactLevel(v as ImpactLevel)}
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {IMPACT_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <Textarea
-          placeholder="Beskriv hur ändringen påverkar er, vilka åtgärder som behövs..."
+          placeholder="Anteckningar (valfritt)..."
           value={form.userNotes}
           onChange={(e) => form.setUserNotes(e.target.value)}
-          className="text-sm min-h-[100px] resize-none"
+          className="text-sm min-h-[80px] resize-none"
         />
-      </div>
 
-      <Button
-        size="sm"
-        onClick={form.save}
-        disabled={form.saving}
-        className="w-full"
-      >
-        {form.saving ? (
-          <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-        ) : (
-          <Check className="h-4 w-4 mr-1.5" />
+        <div className="flex gap-2 pt-1">
+          {form.isEditing && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => form.startEditing()}
+              className="h-9 flex-1"
+            >
+              Avbryt
+            </Button>
+          )}
+          <Button
+            size="sm"
+            onClick={form.save}
+            disabled={form.saving}
+            className="gap-1.5 h-9 flex-1"
+          >
+            {form.saving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Check className="h-3.5 w-3.5" />
+            )}
+            Spara bedömning
+          </Button>
+        </div>
+        {form.saveError && (
+          <p className="text-xs text-destructive text-center">
+            {form.saveError}
+          </p>
         )}
-        Spara bedömning
-      </Button>
-      {form.saveError && (
-        <p className="text-xs text-destructive text-center">{form.saveError}</p>
-      )}
+      </div>
     </div>
   )
 }

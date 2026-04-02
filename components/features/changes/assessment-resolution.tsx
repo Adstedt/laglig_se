@@ -156,78 +156,92 @@ export function AssessmentResolution({
 
   // ----- Editing / new state -----
   return (
-    <div className="rounded-lg border bg-card mx-1 mt-4 px-4 py-3 space-y-3">
-      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        Bedömning
-      </p>
-
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <span className="text-xs text-muted-foreground mb-1 block">
-            Status
-          </span>
-          <Select
-            value={form.status}
-            onValueChange={(v) => form.setStatus(v as AssessmentStatus)}
-          >
-            <SelectTrigger className="h-8 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex-1">
-          <span className="text-xs text-muted-foreground mb-1 block">
-            Påverkan
-          </span>
-          <Select
-            value={form.impactLevel}
-            onValueChange={(v) => form.setImpactLevel(v as ImpactLevel)}
-          >
-            <SelectTrigger className="h-8 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {IMPACT_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="rounded-lg border bg-card mx-1 mt-4 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 bg-muted/30 border-b">
+        <Pencil className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-medium">Din bedömning</span>
       </div>
+      <div className="px-4 py-3 space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <span className="text-[11px] text-muted-foreground block mb-1">
+              Status
+            </span>
+            <Select
+              value={form.status}
+              onValueChange={(v) => form.setStatus(v as AssessmentStatus)}
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <Textarea
-        placeholder="Anteckningar (valfritt)..."
-        value={form.userNotes}
-        onChange={(e) => form.setUserNotes(e.target.value)}
-        className="text-sm min-h-[60px] resize-none"
-      />
+          <div>
+            <span className="text-[11px] text-muted-foreground block mb-1">
+              Påverkan
+            </span>
+            <Select
+              value={form.impactLevel}
+              onValueChange={(v) => form.setImpactLevel(v as ImpactLevel)}
+            >
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {IMPACT_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
-      <div className="flex items-center gap-2">
-        <Button size="sm" onClick={form.save} disabled={form.saving}>
-          {form.saving ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-1" />
-          ) : (
-            <Check className="h-4 w-4 mr-1" />
+        <Textarea
+          placeholder="Anteckningar (valfritt)..."
+          value={form.userNotes}
+          onChange={(e) => form.setUserNotes(e.target.value)}
+          className="text-sm min-h-[60px] resize-none"
+        />
+
+        <div className="flex gap-2 pt-1">
+          {form.isEditing && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => form.startEditing()}
+              className="h-9 flex-1"
+            >
+              Avbryt
+            </Button>
           )}
-          Spara bedömning
-        </Button>
-        {form.isEditing && (
-          <Button variant="ghost" size="sm" onClick={() => form.startEditing()}>
-            Avbryt
+          <Button
+            size="sm"
+            onClick={form.save}
+            disabled={form.saving}
+            className="gap-1.5 h-9 flex-1"
+          >
+            {form.saving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Check className="h-3.5 w-3.5" />
+            )}
+            Spara bedömning
           </Button>
-        )}
+        </div>
         {form.saveError && (
-          <span className="text-xs text-destructive">{form.saveError}</span>
+          <p className="text-xs text-destructive text-center">
+            {form.saveError}
+          </p>
         )}
       </div>
     </div>
