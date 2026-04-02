@@ -10,19 +10,23 @@ import { wrapToolResponse, wrapToolError } from './utils'
 import { extractCompactDiff } from '@/lib/agent/system-prompt'
 
 const changeDetailsSchema = z.object({
-  changeEventId: z.string().describe('The ID of the change event to look up'),
+  changeEventId: z
+    .string()
+    .describe(
+      'The unique database ID (cuid) of the change event — NOT an SFS number. This ID is provided in the change_context section of your system prompt as the context identifier.'
+    ),
 })
 
 type ChangeDetailsInput = z.infer<typeof changeDetailsSchema>
 
 export function createGetChangeDetailsTool() {
   return tool({
-    description: `Retrieve details about a specific legal change event, including what changed, which amendment caused it, and which sections were affected.
-Use this tool when you need to explain a specific change to a law — for example when the user asks "what changed in SFS 2026:145?" or when exploring a change notification.
+    description: `Retrieve detailed section-level changes for a change event, including old and new text for each affected paragraph.
+Use this tool when you need the exact old/new wording of amended sections — for example to compare what changed in specific paragraphs.
 
-Returns the change type, amendment SFS number, AI-generated summary of the change, detection date, affected sections (with old/new text), and information about the base law that was changed.
+Returns affected sections with chapter, section number, change type, description, old text, and new text.
 
-Requires a changeEventId (available from change notifications or dashboard).`,
+The changeEventId is the context ID from your system prompt (a cuid like "cmizrtihf007ti904accp48p8"), NOT an SFS number.`,
     inputSchema: zodSchema(changeDetailsSchema),
     execute: async ({ changeEventId }: ChangeDetailsInput) => {
       const startTime = Date.now()

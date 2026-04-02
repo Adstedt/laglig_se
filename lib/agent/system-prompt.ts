@@ -253,6 +253,7 @@ async function loadChangeContext(
 
   const lines: string[] = []
   lines.push('## Lagändring som användaren vill granska')
+  lines.push(`- Händelse-ID: ${ce.id}`)
   lines.push(`- Typ: ${ce.change_type}`)
   if (ce.amendment_sfs) {
     lines.push(`- Ändrings-SFS: ${ce.amendment_sfs}`)
@@ -438,7 +439,7 @@ Du guidar användaren genom en strukturerad granskning av lagändringen ovan.
 Anropa följande verktyg i en fas innan du skriver din text:
 1. **get_company_context** — Hämta företagets profil
 2. **search_laws** — Sök relevant lagtext för kontext
-3. **get_change_details** — Hämta detaljerade sektionsändringar med gammal och ny lydelse, om du behöver jämföra exakt vad som ändrats i varje paragraf
+3. **get_change_details** — Hämta detaljerade sektionsändringar med gammal och ny lydelse. Använd Händelse-ID från ovan som changeEventId (inte SFS-numret)
 4. **suggest_followups** — Föreslå 2–3 uppföljningsfrågor baserat på ändringen och företaget. Frågorna ska vara specifika (inte generiska), handlingsinriktade eller fördjupande, och varierade i kategori. Undantag: anropa INTE suggest_followups om du behöver ställa en direkt fråga till användaren.
 
 Du kan anropa steg 1–3 parallellt. Anropa suggest_followups när du har tillräcklig kontext (efter steg 1–3).
