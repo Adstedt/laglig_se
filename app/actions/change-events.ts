@@ -69,7 +69,11 @@ export async function getUnacknowledgedChanges(): Promise<
         JOIN legal_documents ld ON ld.id = ce.document_id
         JOIN law_list_items lli ON lli.document_id = ce.document_id
         JOIN law_lists ll ON ll.id = lli.law_list_id
+        LEFT JOIN change_assessments ca
+          ON ca.change_event_id = ce.id
+          AND ca.law_list_item_id = lli.id
         WHERE ll.workspace_id = ${ctx.workspaceId}
+          AND ca.id IS NULL
           AND (
             lli.last_change_acknowledged_at IS NULL
             OR ce.detected_at > lli.last_change_acknowledged_at
@@ -129,7 +133,11 @@ export async function getUnacknowledgedChangeCount(): Promise<
         FROM change_events ce
         JOIN law_list_items lli ON lli.document_id = ce.document_id
         JOIN law_lists ll ON ll.id = lli.law_list_id
+        LEFT JOIN change_assessments ca
+          ON ca.change_event_id = ce.id
+          AND ca.law_list_item_id = lli.id
         WHERE ll.workspace_id = ${ctx.workspaceId}
+          AND ca.id IS NULL
           AND (
             lli.last_change_acknowledged_at IS NULL
             OR ce.detected_at > lli.last_change_acknowledged_at
@@ -236,7 +244,11 @@ export async function getUnacknowledgedChangeCountByDocument(): Promise<
         FROM change_events ce
         JOIN law_list_items lli ON lli.document_id = ce.document_id
         JOIN law_lists ll ON ll.id = lli.law_list_id
+        LEFT JOIN change_assessments ca
+          ON ca.change_event_id = ce.id
+          AND ca.law_list_item_id = lli.id
         WHERE ll.workspace_id = ${ctx.workspaceId}
+          AND ca.id IS NULL
           AND (
             lli.last_change_acknowledged_at IS NULL
             OR ce.detected_at > lli.last_change_acknowledged_at

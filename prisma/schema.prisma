@@ -293,7 +293,10 @@ model LawListItem {
   added_at   DateTime          @default(now())
   updated_at DateTime          @updatedAt
 
-  // Change tracking
+  // Change tracking — onboarding floor (set when law is first added to list).
+  // Changes detected before this timestamp are considered pre-existing.
+  // Individual assessment tracking uses ChangeAssessment records, not this field.
+  // TODO: Rename to changes_tracked_from for clarity.
   last_change_acknowledged_at DateTime?
   last_change_acknowledged_by String?
 

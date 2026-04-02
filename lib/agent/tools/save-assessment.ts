@@ -94,14 +94,9 @@ Sätt execute=false först för att visa förhandsgranskning, sedan execute=true
           },
         })
 
-        // Update acknowledgement timestamp
-        await prisma.lawListItem.update({
-          where: { id: input.lawListItemId },
-          data: {
-            last_change_acknowledged_at: now,
-            last_change_acknowledged_by: userId,
-          },
-        })
+        // Note: last_change_acknowledged_at is NOT updated here.
+        // It serves as an immutable onboarding floor (set in add-laws-to-list.ts).
+        // Individual assessments are tracked via ChangeAssessment records.
 
         return {
           confirmation_required: false as const,
