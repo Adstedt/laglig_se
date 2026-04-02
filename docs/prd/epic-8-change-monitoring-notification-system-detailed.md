@@ -40,8 +40,8 @@
 
 ### Data Integrity & AI Context
 - **8.21** ChangeEvent Deduplication & Unique Constraint — `docs/stories/completed/8.21.change-event-deduplication-cleanup.md`
-- **8.22** Use SectionChange Table for AI Context — `docs/stories/8.22.section-changes-in-system-prompt.md`
-- **8.24** Enrich Amendments with Proposition Context — `docs/stories/8.24.proposition-context-enrichment.md`
+- **8.22** Use SectionChange Table for AI Context — `docs/stories/completed/8.22.section-changes-in-system-prompt.md`
+- **8.24** Enrich Amendments with Proposition Context — `docs/stories/completed/8.24.proposition-context-enrichment.md`
 - **8.25** Improve Assessment Search Strategy — `docs/stories/8.25.assessment-search-strategy.md`
 
 ### Superseded
