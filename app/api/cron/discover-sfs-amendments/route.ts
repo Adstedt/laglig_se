@@ -48,6 +48,11 @@ import {
   fetchPropositionContext,
 } from '@/lib/riksdagen/proposition-fetcher'
 
+/** Ensure SFS number has "SFS " prefix (idempotent) */
+function ensureSfsPrefix(sfsNumber: string): string {
+  return sfsNumber.startsWith('SFS ') ? sfsNumber : `SFS ${sfsNumber}`
+}
+
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
 
@@ -296,7 +301,7 @@ export async function GET(request: Request) {
 
     let backfilled = 0
     for (const record of completedWithoutEvents) {
-      const baseLawDocNumber = `SFS ${record.base_law_sfs}`
+      const baseLawDocNumber = ensureSfsPrefix(record.base_law_sfs ?? '')
       const baseLawDoc = await prisma.legalDocument.findUnique({
         where: { document_number: baseLawDocNumber },
         select: { id: true },
@@ -306,7 +311,7 @@ export async function GET(request: Request) {
       const existingEvent = await prisma.changeEvent.findFirst({
         where: {
           document_id: baseLawDoc.id,
-          amendment_sfs: `SFS ${record.sfs_number}`,
+          amendment_sfs: ensureSfsPrefix(record.sfs_number),
         },
         select: { id: true },
       })
@@ -324,7 +329,7 @@ export async function GET(request: Request) {
             document_id: baseLawDoc.id,
             content_type: ContentType.SFS_LAW,
             change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
-            amendment_sfs: `SFS ${record.sfs_number}`,
+            amendment_sfs: ensureSfsPrefix(record.sfs_number),
             notification_sent: false,
           },
         })
@@ -539,8 +544,8 @@ async function processAmendmentRecord(
 
   // Step C: Normalize → derive content
   const normalizedHtml = normalizeSfsAmendment(rawHtml, {
-    documentNumber: `SFS ${record.sfs_number}`,
-    title: record.title ?? `SFS ${record.sfs_number}`,
+    documentNumber: ensureSfsPrefix(record.sfs_number),
+    title: record.title ?? ensureSfsPrefix(record.sfs_number),
   })
 
   const canonicalJson = parseCanonicalHtml(normalizedHtml, {
@@ -555,7 +560,7 @@ async function processAmendmentRecord(
   const linkifiedHtml = linkifyHtmlContent(
     normalizedHtml,
     slugMap,
-    `SFS ${record.sfs_number}`
+    ensureSfsPrefix(record.sfs_number)
   ).html
 
   const effectiveDate = canonicalJson.metadata.effectiveDate
@@ -634,7 +639,9 @@ async function processAmendmentRecord(
       where: { id: record.id },
       data: {
         title:
-          canonicalJson.title || record.title || `SFS ${record.sfs_number}`,
+          canonicalJson.title ||
+          record.title ||
+          ensureSfsPrefix(record.sfs_number),
         effective_date: effectiveDate,
         full_text: plainText,
         markdown_content: markdownContent,
@@ -678,7 +685,7 @@ async function processAmendmentRecord(
 
     // Create ChangeEvent if base law exists in DB (dedup: check first)
     if (record.base_law_sfs) {
-      const baseLawDocNumber = `SFS ${record.base_law_sfs}`
+      const baseLawDocNumber = ensureSfsPrefix(record.base_law_sfs ?? '')
       const baseLawDoc = await tx.legalDocument.findUnique({
         where: { document_number: baseLawDocNumber },
         select: { id: true },
@@ -688,7 +695,7 @@ async function processAmendmentRecord(
         const existingEvent = await tx.changeEvent.findFirst({
           where: {
             document_id: baseLawDoc.id,
-            amendment_sfs: `SFS ${record.sfs_number}`,
+            amendment_sfs: ensureSfsPrefix(record.sfs_number),
           },
           select: { id: true },
         })
@@ -699,7 +706,7 @@ async function processAmendmentRecord(
               document_id: baseLawDoc.id,
               content_type: ContentType.SFS_LAW,
               change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
-              amendment_sfs: `SFS ${record.sfs_number}`,
+              amendment_sfs: ensureSfsPrefix(record.sfs_number),
               notification_sent: false,
             },
           })
