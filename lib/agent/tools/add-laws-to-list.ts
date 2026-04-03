@@ -81,7 +81,10 @@ Verktyget kör direkt utan bekräftelse — detta är en bakgrundsoperation.`,
 
           // Validate documentIds exist in LegalDocument table
           const validDocs = await tx.legalDocument.findMany({
-            where: { id: { in: laws.map((l) => l.documentId) } },
+            where: {
+              id: { in: laws.map((l) => l.documentId) },
+              status: { not: 'REPEALED' },
+            },
             select: { id: true },
           })
           const validDocIds = new Set(validDocs.map((d) => d.id))

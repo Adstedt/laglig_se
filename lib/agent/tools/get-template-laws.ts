@@ -59,6 +59,9 @@ Verktyget tar en parameter: area (regelområde som sökterm).`,
                     id: true,
                     title: true,
                     document_number: true,
+                    applicability_hint: true,
+                    summary: true,
+                    kommentar: true,
                   },
                 },
               },
@@ -88,8 +91,10 @@ Verktyget tar en parameter: area (regelområde som sökterm).`,
           documentId: item.document_id,
           title: item.document.title,
           sfsNumber: item.document.document_number,
-          description: item.compliance_summary ?? null,
-          expertNote: item.expert_commentary ?? null,
+          applicability: item.document.applicability_hint ?? null,
+          description:
+            item.compliance_summary ?? item.document.kommentar ?? null,
+          expertNote: item.expert_commentary ?? item.document.summary ?? null,
         }))
 
         return wrapToolResponse(
