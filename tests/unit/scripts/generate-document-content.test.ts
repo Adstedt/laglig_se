@@ -572,11 +572,11 @@ describe('Story 12.3: Cost tracking', () => {
     // Generation: 1M * $7.50/MTok + 100K * $37.50/MTok = $7.50 + $3.75 = $11.25
     expect(costs.generationCost).toBeCloseTo(11.25, 2)
 
-    // Validation: 500K * $0.40/MTok + 50K * $2.00/MTok = $0.20 + $0.10 = $0.30
-    expect(costs.validationCost).toBeCloseTo(0.3, 2)
+    // Validation (Sonnet 4.6 Batch): 500K * $1.50/MTok + 50K * $10.00/MTok = $0.75 + $0.50 = $1.25
+    expect(costs.validationCost).toBeCloseTo(1.25, 2)
 
-    // Total: $11.55
-    expect(costs.totalCost).toBeCloseTo(11.55, 2)
+    // Total: $11.25 + $1.25 = $12.50
+    expect(costs.totalCost).toBeCloseTo(12.5, 2)
   })
 
   it('starts at zero', () => {
