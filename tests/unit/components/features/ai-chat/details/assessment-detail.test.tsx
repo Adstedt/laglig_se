@@ -95,7 +95,7 @@ describe('AssessmentDetail', () => {
 
     expect(screen.getByText('Din bedömning')).toBeDefined()
     expect(screen.getByText('Status')).toBeDefined()
-    expect(screen.getByText('Påverkan på verksamheten')).toBeDefined()
+    expect(screen.getByText('Påverkan')).toBeDefined()
     expect(screen.getByText('Spara bedömning')).toBeDefined()
   })
 

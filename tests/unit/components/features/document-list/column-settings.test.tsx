@@ -166,7 +166,7 @@ describe('ColumnSettings', () => {
       title: true,
       complianceStatus: true,
       priority: true,
-      dueDate: true,
+      dueDate: false,
       assignee: false,
       responsiblePerson: false,
       taskProgress: false,
