@@ -9,12 +9,14 @@ import { useState, useCallback, useEffect, memo } from 'react'
 import { useDebounce } from 'use-debounce'
 import { Input } from '@/components/ui/input'
 import { Search, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface SearchInputProps {
   initialValue?: string
   onSearch: (_query: string) => void
   placeholder?: string
   debounceMs?: number
+  className?: string
 }
 
 export const SearchInput = memo(function SearchInput({
@@ -22,6 +24,7 @@ export const SearchInput = memo(function SearchInput({
   onSearch,
   placeholder = 'Sök...',
   debounceMs = 300,
+  className: inputClassName,
 }: SearchInputProps) {
   const [value, setValue] = useState(initialValue)
   const [debouncedValue] = useDebounce(value, debounceMs)
@@ -52,7 +55,7 @@ export const SearchInput = memo(function SearchInput({
         placeholder={placeholder}
         value={value}
         onChange={handleChange}
-        className="h-8 w-[160px] pl-8 pr-8 text-sm"
+        className={cn('h-9 w-[160px] pl-8 pr-8 text-sm', inputClassName)}
       />
       {value && (
         <button

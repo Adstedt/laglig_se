@@ -39,16 +39,16 @@ const prisma = new PrismaClient()
 
 const GENERATION_MODEL =
   process.env.CONTENT_GENERATION_MODEL || 'claude-opus-4-6'
-const VALIDATION_MODEL = 'claude-haiku-4-5-20251001'
+const VALIDATION_MODEL = 'claude-sonnet-4-6'
 const MAX_TOKENS = 2048
 const POLL_INTERVAL_MS = 30_000
 
 // Batch API pricing (50% of standard rates)
 // Opus 4.6 Batch: $7.50/MTok input, $37.50/MTok output
-// Haiku 4.5 Batch: $0.40/MTok input, $2.00/MTok output
+// Sonnet 4.6 Batch: $1.50/MTok input, $10.00/MTok output
 const PRICING = {
   generation: { input: 7.5 / 1_000_000, output: 37.5 / 1_000_000 },
-  validation: { input: 0.4 / 1_000_000, output: 2.0 / 1_000_000 },
+  validation: { input: 1.5 / 1_000_000, output: 10.0 / 1_000_000 },
 }
 
 export interface Config {
@@ -294,10 +294,14 @@ async function fetchDocuments(config: Config) {
     where.template_items = { some: {} }
   }
 
-  // Skip documents where both summary and kommentar already exist (unless --force)
+  // Skip documents where all three fields already exist (unless --force)
   if (!config.force) {
     where.NOT = {
-      AND: [{ summary: { not: null } }, { kommentar: { not: null } }],
+      AND: [
+        { summary: { not: null } },
+        { kommentar: { not: null } },
+        { applicability_hint: { not: null } },
+      ],
     }
   }
 
@@ -412,6 +416,7 @@ export function stripMarkdownCodeBlock(text: string): string {
 export interface ParsedContent {
   summering: string
   kommentar: string
+  applicability: string
 }
 
 export function parseGeneratedContent(text: string): ParsedContent | null {
@@ -429,6 +434,8 @@ export function parseGeneratedContent(text: string): ParsedContent | null {
     return {
       summering: parsed.summering,
       kommentar: parsed.kommentar,
+      applicability:
+        typeof parsed.applicability === 'string' ? parsed.applicability : '',
     }
   } catch {
     return null
@@ -491,6 +498,7 @@ interface ProcessedResult {
   documentId: string
   summering: string
   kommentar: string
+  applicability: string
   inputTokens: number
   outputTokens: number
 }
@@ -526,6 +534,7 @@ async function processResults(
         documentId: item.custom_id,
         summering: parsed.summering,
         kommentar: parsed.kommentar,
+        applicability: parsed.applicability,
         inputTokens: usage.input_tokens,
         outputTokens: usage.output_tokens,
       })
@@ -581,7 +590,8 @@ async function runHallucinationValidation(
             content: buildHallucinationCheckUserMessage(
               result.summering,
               result.kommentar,
-              sourceText
+              sourceText,
+              result.applicability
             ),
           },
         ],
@@ -656,6 +666,7 @@ async function updateDocuments(
           data: {
             summary: result.summering,
             kommentar: result.kommentar,
+            applicability_hint: result.applicability || null,
             summering_generated_by: model,
             kommentar_generated_by: model,
           },

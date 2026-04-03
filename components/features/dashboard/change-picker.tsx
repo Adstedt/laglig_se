@@ -83,7 +83,9 @@ export function ChangePicker({
                 <FileWarning className="h-4 w-4 text-amber-500 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">
-                    {change.documentTitle}
+                    {change.amendmentSfs
+                      ? `${change.amendmentSfs} — Ändring i ${change.documentTitle}`
+                      : change.documentTitle}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-xs text-muted-foreground">
@@ -95,6 +97,9 @@ export function ChangePicker({
                     >
                       {CHANGE_TYPE_LABELS[change.changeType]}
                     </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {change.listName}
+                    </span>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-foreground shrink-0" />

@@ -11,6 +11,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from '@/lib/auth/session'
@@ -116,6 +117,10 @@ export async function createWorkspace(formData: FormData): Promise<{
     const ongoingProcedures = formData.get('ongoingProcedures') as string | null
     const registeredDate = formData.get('registeredDate') as string | null
     const dataSource = formData.get('dataSource') as string | null
+    const activityFlagsRaw = formData.get('activityFlags') as string | null
+    const hasCollectiveAgreementRaw = formData.get('hasCollectiveAgreement') as
+      | string
+      | null
 
     // Server-side validation of optional company fields
     if (rawOrgNumber && !/^\d{6}-?\d{4}$/.test(rawOrgNumber)) {
@@ -172,6 +177,7 @@ export async function createWorkspace(formData: FormData): Promise<{
           subscription_tier: 'TRIAL',
           trial_ends_at: trialEndsAt,
           status: 'ACTIVE',
+          law_list_generation_status: 'pending',
           ...(orgNumber && { org_number: orgNumber }),
           ...(orgNumber && { company_legal_name: result.data.name }),
           ...(sniCode && { sni_code: sniCode }),
@@ -217,6 +223,14 @@ export async function createWorkspace(formData: FormData): Promise<{
             /* ignore */
           }
         }
+        let parsedActivityFlags: object | null = null
+        if (activityFlagsRaw) {
+          try {
+            parsedActivityFlags = JSON.parse(activityFlagsRaw)
+          } catch {
+            /* ignore */
+          }
+        }
 
         const parsedFoundedYear = foundedYear ? parseInt(foundedYear, 10) : null
 
@@ -254,6 +268,11 @@ export async function createWorkspace(formData: FormData): Promise<{
         if (registeredDate)
           profileData.registered_date = new Date(registeredDate)
         if (isAutoFilled) profileData.last_enriched_at = new Date()
+        if (parsedActivityFlags)
+          profileData.activity_flags = parsedActivityFlags
+        if (hasCollectiveAgreementRaw)
+          profileData.has_collective_agreement =
+            hasCollectiveAgreementRaw === 'true'
 
         await tx.companyProfile.create({ data: profileData as never })
       }
@@ -266,6 +285,25 @@ export async function createWorkspace(formData: FormData): Promise<{
 
     // Invalidate user cache to refresh workspace list
     await invalidateUserCache(user.id, ['context'])
+
+    // Story 16.4: Trigger law list generation (fire-and-forget)
+    try {
+      const headersList = await headers()
+      const protocol = headersList.get('x-forwarded-proto') ?? 'http'
+      const host = headersList.get('host') ?? 'localhost:3000'
+      const cookie = headersList.get('cookie') ?? ''
+      const baseUrl = `${protocol}://${host}`
+
+      fetch(`${baseUrl}/api/workspace/generate-law-list`, {
+        method: 'POST',
+        headers: { cookie },
+      }).catch(() => {
+        // Fire-and-forget — failure doesn't block workspace creation.
+        // Dashboard retry logic (AC 22) will pick up 'pending' status.
+      })
+    } catch {
+      // If fetch itself fails to fire, status remains 'pending'
+    }
 
     revalidatePath('/')
 
@@ -438,6 +476,84 @@ export async function removeWorkspaceMember(
   } catch (error) {
     console.error('Error removing member:', error)
     return { success: false, error: 'Failed to remove member' }
+  }
+}
+
+/**
+ * Story 16.4: Archive current default law list and re-trigger generation
+ */
+export async function regenerateLawList(): Promise<{
+  success: boolean
+  error?: string
+}> {
+  try {
+    const session = await getServerSession()
+    if (!session?.user?.email) {
+      return { success: false, error: 'Du måste vara inloggad' }
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    })
+    if (!user) {
+      return { success: false, error: 'Användare hittades inte' }
+    }
+
+    // Get active workspace from context
+    const { getWorkspaceContext } = await import('@/lib/auth/workspace-context')
+    const ctx = await getWorkspaceContext()
+    const workspaceId = ctx.workspaceId
+
+    // Archive current default list
+    const currentDefault = await prisma.lawList.findFirst({
+      where: { workspace_id: workspaceId, is_default: true },
+    })
+
+    if (currentDefault) {
+      const now = new Date()
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+      await prisma.lawList.update({
+        where: { id: currentDefault.id },
+        data: {
+          name: `Er laglista (arkiverad ${dateStr})`,
+          is_default: false,
+        },
+      })
+    }
+
+    // Reset status to pending
+    await prisma.workspace.update({
+      where: { id: workspaceId },
+      data: {
+        law_list_generation_status: 'pending',
+        law_list_generation_error: null,
+        law_list_generation_progress: Prisma.DbNull,
+      },
+    })
+
+    // Trigger generation
+    try {
+      const headersList = await headers()
+      const protocol = headersList.get('x-forwarded-proto') ?? 'http'
+      const host = headersList.get('host') ?? 'localhost:3000'
+      const cookie = headersList.get('cookie') ?? ''
+      const baseUrl = `${protocol}://${host}`
+
+      fetch(`${baseUrl}/api/workspace/generate-law-list`, {
+        method: 'POST',
+        headers: { cookie },
+      }).catch(() => {})
+    } catch {
+      // Status remains 'pending' — dashboard retry will pick it up
+    }
+
+    revalidatePath('/laglistor')
+    revalidatePath('/dashboard')
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error regenerating law list:', error)
+    return { success: false, error: 'Något gick fel. Försök igen.' }
   }
 }
 

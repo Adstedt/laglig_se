@@ -1,4 +1,9 @@
-export { fetchCompany, validateOrgNumber, BolagsApiError } from './client'
+export {
+  fetchCompany,
+  fetchWithTimeout,
+  validateOrgNumber,
+  BolagsApiError,
+} from './client'
 export { mapBolagsApiToProfile } from './mapper'
 export type {
   BolagsApiCompany,

@@ -107,6 +107,11 @@ model Workspace {
   // Story 14.10: Change assessments
   change_assessments ChangeAssessment[]
 
+  // Story 16.4: Law list generation
+  law_list_generation_status   String?
+  law_list_generation_error    String?
+  law_list_generation_progress Json?
+
   @@index([owner_id])
   @@index([org_number])
   @@index([status])
@@ -288,7 +293,10 @@ model LawListItem {
   added_at   DateTime          @default(now())
   updated_at DateTime          @updatedAt
 
-  // Change tracking
+  // Change tracking — onboarding floor (set when law is first added to list).
+  // Changes detected before this timestamp are considered pre-existing.
+  // Individual assessment tracking uses ChangeAssessment records, not this field.
+  // TODO: Rename to changes_tracked_from for clarity.
   last_change_acknowledged_at DateTime?
   last_change_acknowledged_by String?
 
@@ -331,6 +339,7 @@ model LegalDocument {
   slug             String                       @unique
   summary          String?                      @db.Text // Summering — neutral description of what the law regulates
   kommentar        String?                      @db.Text // Kommentar — actionable compliance commentary ("Vi ska..." voice)
+  applicability_hint String?                    @db.Text // LLM-optimized: "Gäller [who]. [Threshold]. Reglerar [what]."
   summering_generated_by String?                       // Model identifier for summary generation (e.g., "claude-opus-4-6")
   kommentar_generated_by String?                       // Model identifier for kommentar generation (e.g., "claude-opus-4-6")
   full_text        String?                      @db.Text // Plain text for RAG, search, embeddings
@@ -802,6 +811,13 @@ model AmendmentDocument {
 
   // Markdown content for RAG
   markdown_content String? @db.Text
+
+  // Proposition context (from riksdagen.se API)
+  proposition_id      String?   // "2024/25:205"
+  proposition_title   String?   // "Myndigheten för civilt försvar – ett nytt namn..."
+  proposition_summary String?   @db.Text // Huvudsakligt innehåll section
+  proposition_organ   String?   // "Försvarsdepartementet"
+  proposition_datum   DateTime? // When proposition was submitted
 
   // Processing status
   parse_status ParseStatus @default(PENDING)

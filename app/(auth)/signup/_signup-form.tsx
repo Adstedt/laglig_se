@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle } from 'lucide-react'
 import { SignupSchema } from '@/lib/validation/auth'
@@ -9,15 +10,39 @@ import { signupAction } from '@/app/actions/auth'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import {
+  saveOnboardingData,
+  getOnboardingData,
+  parseFlags,
+} from '@/lib/onboarding/onboarding-store'
 import type { z } from 'zod'
 
 type SignupFormData = z.infer<typeof SignupSchema>
 
 export function SignupForm() {
+  const searchParams = useSearchParams()
   const [error, setError] = useState<string>('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [hasStoredData, setHasStoredData] = useState(false)
+
+  // Bridge: save query params from landing page CTA to localStorage
+  useEffect(() => {
+    const org = searchParams.get('org')
+    if (org) {
+      const url = searchParams.get('url')
+      const flags = parseFlags(searchParams.get('flags'))
+      const summary = searchParams.get('summary')
+      saveOnboardingData({
+        orgNumber: org,
+        ...(url ? { websiteUrl: url } : {}),
+        ...(flags ? { inferredFlags: flags } : {}),
+        ...(summary ? { companySummary: summary } : {}),
+      })
+    }
+    setHasStoredData(getOnboardingData() !== null)
+  }, [searchParams])
 
   const {
     register,
@@ -228,6 +253,16 @@ export function SignupForm() {
         >
           {isLoading ? 'Skapar konto...' : 'Skapa konto'}
         </Button>
+
+        {hasStoredData && (
+          <div className="flex items-center gap-2 rounded-md bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+            <CheckCircle className="h-4 w-4 shrink-0" />
+            <span>
+              Vi har din företagsinformation redo — den fylls i automatiskt
+              efter registrering
+            </span>
+          </div>
+        )}
       </form>
     </div>
   )

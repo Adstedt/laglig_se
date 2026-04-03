@@ -33,6 +33,17 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     instrumented: true,
   },
   {
+    name: 'enrich-amendment-summaries',
+    displayName: 'AI-sammanfattning av ändringar',
+    description:
+      'Genererar AI-sammanfattningar för ändringsförfattningar som saknar ai_summary',
+    schedule: '30 * * * *',
+    scheduleHuman: 'Varje timme vid :30',
+    endpoint: '/api/cron/enrich-amendment-summaries',
+    authHeader: 'CRON_SECRET',
+    instrumented: true,
+  },
+  {
     name: 'notify-amendment-changes',
     displayName: 'Daglig ändringsavisering',
     description:
@@ -71,6 +82,17 @@ export const JOB_REGISTRY: CronJobDefinition[] = [
     schedule: '0 16 * * *',
     scheduleHuman: 'Dagligen kl. 16:00 UTC',
     endpoint: '/api/cron/sync-sfs',
+    authHeader: 'CRON_SECRET',
+    instrumented: true,
+  },
+  {
+    name: 'process-chunks',
+    displayName: 'Chunk-bearbetning',
+    description:
+      'Chunkar och embeddar nya/uppdaterade dokument för RAG-sökning',
+    schedule: '0 14,18 * * *',
+    scheduleHuman: 'Dagligen kl. 14:00 + 18:00 UTC',
+    endpoint: '/api/cron/process-chunks',
     authHeader: 'CRON_SECRET',
     instrumented: true,
   },

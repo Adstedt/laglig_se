@@ -10,15 +10,23 @@ import type {
   ToolMeta,
 } from './types'
 
+/** Tools whose read results should show a "Visa detaljer" chip */
+const SUGGEST_SIDEBAR_TOOLS = new Set([
+  'get_document_details',
+  'get_change_details',
+])
+
 function buildMeta(
   tool: string,
   startTime: number,
-  resultCount: number
+  resultCount: number,
+  sidebarHint?: 'open' | 'suggest' | 'none'
 ): ToolMeta {
   return {
     tool,
     executionTimeMs: Date.now() - startTime,
     resultCount,
+    ...(sidebarHint != null && { sidebarHint }),
   }
 }
 
@@ -29,9 +37,12 @@ export function wrapToolResponse<T>(
   resultCount?: number
 ): ToolResponse<T> {
   const count = resultCount ?? (Array.isArray(data) ? data.length : 1)
+  const hint = SUGGEST_SIDEBAR_TOOLS.has(tool)
+    ? ('suggest' as const)
+    : undefined
   return {
     data,
-    _meta: buildMeta(tool, startTime, count),
+    _meta: buildMeta(tool, startTime, count, hint),
   }
 }
 
@@ -47,7 +58,7 @@ export function wrapWriteToolResponse<T>(
     action,
     params,
     preview,
-    _meta: buildMeta(tool, startTime, 0),
+    _meta: buildMeta(tool, startTime, 0, 'open'),
   }
 }
 

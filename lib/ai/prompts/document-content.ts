@@ -1,9 +1,10 @@
 /**
  * Document Content Generation Prompts
  *
- * Story 12.3: Summering + Kommentar generation for LegalDocuments.
+ * Story 12.3: Summering + Kommentar + Tillämpningsområde generation for LegalDocuments.
  * Summering = neutral description of what the law regulates.
  * Kommentar = actionable compliance commentary ("Vi ska..." voice).
+ * Tillämpningsområde = LLM-optimized applicability hint for law list generation filtering.
  */
 
 // ============================================================================
@@ -94,7 +95,43 @@ const KOMMENTAR_FEW_SHOT_EXAMPLES = [
 ]
 
 // ============================================================================
-// System prompt — combined for both Summering and Kommentar
+// Few-shot examples — Tillämpningsområde (applicability hint, LLM-optimized)
+// Format: "Gäller [who]. [Threshold]. Reglerar [what]."
+// ============================================================================
+
+const APPLICABILITY_FEW_SHOT_EXAMPLES = [
+  {
+    document: 'Arbetsmiljölag (1977:1160)',
+    text: 'Gäller alla arbetsgivare och den som hyr in arbetskraft. Reglerar det övergripande ansvaret för arbetsmiljön, skyldighet att förebygga ohälsa och olycksfall samt att bedriva systematiskt arbetsmiljöarbete.',
+  },
+  {
+    document: 'Systematiskt arbetsmiljöarbete, AFS 2023:1',
+    text: 'Gäller alla arbetsgivare oavsett storlek eller bransch. Skriftlig dokumentation krävs vid 10 eller fler arbetstagare. Reglerar hur arbetsmiljöarbetet ska organiseras: policy, riskbedömningar, handlingsplaner och årlig uppföljning.',
+  },
+  {
+    document: 'EU:s dataskyddsförordning, (EU) 2016/679',
+    text: 'Gäller alla organisationer som behandlar personuppgifter om personer i EU, oavsett var organisationen är etablerad. Reglerar insamling, lagring, delning och radering av personuppgifter samt de registrerades rättigheter.',
+  },
+  {
+    document: 'Diskrimineringslag (2008:567)',
+    text: 'Gäller alla arbetsgivare, utbildningsanordnare och verksamheter som tillhandahåller varor och tjänster. Aktiva åtgärder och lönekartläggning årligen; dokumentationskrav vid 25 eller fler anställda. Reglerar förbud mot diskriminering och krav på förebyggande arbete.',
+  },
+  {
+    document: 'Lag (2010:1011) om brandfarliga och explosiva varor',
+    text: 'Gäller den som hanterar, överför, importerar eller exporterar brandfarliga eller explosiva varor. Tillståndsplikt för hantering över vissa mängder. Reglerar säkerhetskrav, kompetens och föreståndaransvar vid hantering av brandfarliga och explosiva varor.',
+  },
+  {
+    document: 'Lag (1992:1534) om CE-märkning',
+    text: 'Gäller företag som tillverkar, importerar eller distribuerar produkter som omfattas av EU:s harmoniserade produktlagstiftning. Reglerar CE-märkning, försäkran om överensstämmelse och teknisk dokumentation för produkter som släpps ut på den inre marknaden.',
+  },
+  {
+    document: 'Avfallsförordning (2020:614)',
+    text: 'Gäller alla verksamheter som producerar, transporterar eller behandlar avfall. Särskilt relevant för bygg-, rivnings-, tillverknings- och industriföretag som genererar bygg- och rivningsavfall, farligt avfall eller stora avfallsvolymer. Tillståndsplikt för yrkesmässig avfallstransport; anmälningsplikt vid farligt avfall över 100 kg eller 100 liter per kalenderår. Reglerar klassificering, utsortering, spårbarhet av farligt avfall och rapportering till Naturvårdsverkets avfallsregister.',
+  },
+]
+
+// ============================================================================
+// System prompt — combined for Summering, Kommentar and Tillämpningsområde
 // ============================================================================
 
 export function buildSystemPrompt(): string {
@@ -106,10 +143,15 @@ export function buildSystemPrompt(): string {
     (ex, i) => `  Exempel ${i + 1} (${ex.document}):\n  "${ex.text}"`
   ).join('\n\n')
 
-  return `Du är en juridisk expert på svensk lagstiftning och svenska myndighetsföreskrifter. Din uppgift är att producera två texter för ett givet juridiskt dokument:
+  const applicabilityExamples = APPLICABILITY_FEW_SHOT_EXAMPLES.map(
+    (ex, i) => `  Exempel ${i + 1} (${ex.document}):\n  "${ex.text}"`
+  ).join('\n\n')
+
+  return `Du är en juridisk expert på svensk lagstiftning och svenska myndighetsföreskrifter. Din uppgift är att producera tre texter för ett givet juridiskt dokument:
 
 1. **Summering** — en neutral, saklig beskrivning av vad lagen/dokumentet reglerar.
 2. **Kommentar** — en handlingsinriktad efterlevnadskommentar som beskriver vad organisationen måste göra.
+3. **Tillämpningsområde** — en kort, LLM-optimerad text som beskriver vilka företag/verksamheter lagen gäller för.
 
 ## Summering-instruktioner
 
@@ -150,24 +192,52 @@ Stilregler för Kommentar:
 Stilexempel för Kommentar:
 ${kommentarExamples}
 
+## Tillämpningsområde-instruktioner
+
+Skriv en kort text som beskriver vilka företag eller verksamheter lagen gäller för. Denna text används av ett AI-system för att avgöra om en lag ska inkluderas i ett specifikt företags laglista — den måste därför vara precis och matchbar mot företagsprofiler.
+
+Texten ska följa denna struktur:
+- Mening 1: "Gäller [vem/vilka]." — kärnmålgruppen
+- Mening 2 (om relevant): Tröskelvärden, villkor eller särskild relevans för specifika branscher/aktiviteter
+- Mening 3: "Reglerar [vad — kort]." — vad lagen handlar om
+
+Stilregler för Tillämpningsområde:
+- Max 2–4 meningar, under 80 ord
+- Första meningen börjar ALLTID med "Gäller"
+- Deklarativ ton — beskriv *när* lagen gäller, inte *vad organisationen ska göra*
+- Nämn konkreta branscher, aktiviteter, produkttyper eller företagsegenskaper som avgör tillämplighet
+- Inkludera storlekströsklar om lagen definierar sådana (t.ex. "vid 10+ anställda", "vid 25+ anställda")
+- Om lagen gäller alla/de flesta verksamheter men har SÄRSKILD relevans för vissa branscher eller verksamhetstyper, lägg till: "Särskilt relevant för [bransch/aktivitet]." — detta hjälper AI-systemet att prioritera lagen för rätt företag
+- Aldrig "Vi ska..." — detta är INTE en skyldighetstext
+
+Stilexempel för Tillämpningsområde:
+${applicabilityExamples}
+
 ## DO (mönster att följa)
 - Gruppera efter sakinnehåll, inte myndighet
 - Använd aktiv röst, presens
-- Nämn ALLTID konkreta numeriska tröskelvärden (anställningsgränser, belopp, tidsfrister) som definieras i källtexten — dessa är kritiska för efterlevnadsbeslut och ska framgå tydligt i BÅDA texterna
+- Nämn ALLTID konkreta numeriska tröskelvärden (anställningsgränser, belopp, tidsfrister) som definieras i källtexten — dessa är kritiska för efterlevnadsbeslut och ska framgå tydligt i ALLA tre texterna
 - Allt innehåll ska vara egenformulerat — kopiera aldrig text från källdokumentet
 
 ## DON'T (antimönster att undvika)
-- Blanda ALDRIG ihop rösterna: Summering = neutral, Kommentar = "Vi ska..."
-- Skriv inte fler än 5 meningar per text
+- Blanda ALDRIG ihop rösterna: Summering = neutral, Kommentar = "Vi ska...", Tillämpningsområde = "Gäller..."
+- Skriv inte fler än 5 meningar per Summering/Kommentar, eller 3 meningar per Tillämpningsområde
 - Kopiera aldrig direkt från lagtexten
 - Använd aldrig passiv form ("Det ska säkerställas att...") — använd aktiv form ("Vi ska säkerställa att...")
 - Inkludera aldrig påståenden som inte stöds av källtexten
+
+## PRECISION (vanliga misstag att undvika)
+- **Krav vs rekommendation**: Skilj ALLTID mellan "ska" (krav) och "bör" (rekommendation/allmänt råd). Formulera ALDRIG en rekommendation som en skyldighet — om källtexten säger "bör", skriv "bör", inte "ska"
+- **Undantag och villkor**: Utelämna ALDRIG väsentliga undantag eller villkor. Om ett krav har ett "om inte"-villkor, ett tidsvillkor, eller gäller under begränsade omständigheter — inkludera villkoret
+- **Numerisk precision**: Förenkla ALDRIG numeriska gränsvärden, trösklar eller intervall om det ändrar innebörden. Om källtexten anger olika värden för olika kategorier, slå inte ihop dem
+- **Kategorisering**: Blanda ALDRIG ihop vilka regler som gäller för vilka kategorier. Om olika krav gäller för t.ex. hög- och lågspänning, eller yrkesmässig och icke-yrkesmässig verksamhet — håll dem åtskilda
+- **Omfattning**: Lägg ALDRIG till kvalificerare som "alla", "varje", "samtliga" om källtexten inte explicit använder dem — de kan bredda tillämpningsområdet felaktigt
 
 ## Output-format
 
 Svara ENBART med ett JSON-objekt. Ingen markdown, inga kodblock, ingen inledande text.
 
-{"summering": "...", "kommentar": "..."}`
+{"summering": "...", "kommentar": "...", "applicability": "..."}`
 }
 
 // ============================================================================
@@ -276,7 +346,7 @@ export function buildDocumentContext(ctx: DocumentContext): string {
 // ============================================================================
 
 export function buildHallucinationCheckPrompt(): string {
-  return `Du är en faktagranskare. Du får en genererad Summering och Kommentar samt källtexten de baseras på.
+  return `Du är en faktagranskare. Du får en genererad Summering, Kommentar och Tillämpningsområde samt källtexten de baseras på.
 
 Din uppgift: Identifiera om den genererade texten innehåller påståenden som INTE stöds av källtexten.
 
@@ -287,13 +357,15 @@ Svara ENBART med ett JSON-objekt:
 export function buildHallucinationCheckUserMessage(
   summering: string,
   kommentar: string,
-  sourceText: string
+  sourceText: string,
+  applicability?: string
 ): string {
   return `## Genererad Summering
 ${summering}
 
 ## Genererad Kommentar
 ${kommentar}
+${applicability ? `\n## Genererat Tillämpningsområde\n${applicability}` : ''}
 
 ## Källtext
 ${sourceText}`

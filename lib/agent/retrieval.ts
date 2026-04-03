@@ -166,6 +166,7 @@ export async function retrieveContext(
         AND (cc.workspace_id IS NULL OR cc.workspace_id = ${workspaceId})
         AND (${sourceType}::text IS NULL OR cc.source_type = ${sourceType}::"SourceType")
         AND (${contentType}::text IS NULL OR ld.content_type = ${contentType}::"ContentType")
+        AND (cc.source_type != 'LEGAL_DOCUMENT' OR ld.status != 'REPEALED')
       ORDER BY cc.embedding <=> ${queryVectorStr}::vector ASC
       LIMIT ${fetchLimit}
     `

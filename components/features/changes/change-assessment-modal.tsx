@@ -8,7 +8,9 @@
 
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { DialogTitle } from '@/components/ui/dialog'
+import { X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { ChatPanel } from '@/components/features/ai-chat/chat-panel'
 import { cn } from '@/lib/utils'
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
@@ -83,6 +85,16 @@ export function ChangeAssessmentModal({
                     {change.documentNumber}
                   </p>
                 </div>
+                <DialogPrimitive.Close asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-8 w-8"
+                  >
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Stäng</span>
+                  </Button>
+                </DialogPrimitive.Close>
               </div>
 
               {/* Chat + Assessment */}

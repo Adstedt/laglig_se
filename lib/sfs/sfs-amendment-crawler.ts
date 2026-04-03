@@ -371,7 +371,7 @@ export function parseIndexPageRows(html: string, year: number): IndexPageRow[] {
     if (!title) continue
 
     rows.push({
-      sfsNumber: `${sfsYear}:${sfsNum}`,
+      sfsNumber: `SFS ${sfsYear}:${sfsNum}`,
       title,
       publishedDate,
       numericPart,
@@ -498,7 +498,7 @@ export async function crawlCurrentYearIndex(
       await delay(requestDelayMs)
     }
 
-    const sfsNumber = `${year}:${num}`
+    const sfsNumber = `SFS ${year}:${num}`
     const docUrl = `${BASE_URL}/doc/${year}${num}.html`
 
     try {

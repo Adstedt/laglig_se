@@ -13,12 +13,12 @@ import {
 import type { VisibilityState } from '@tanstack/react-table'
 
 // Column definitions with Swedish labels
-const COLUMN_OPTIONS: ColumnOption[] = [
+export const COLUMN_OPTIONS: ColumnOption[] = [
   { id: 'type', label: 'Typ', defaultVisible: true },
   { id: 'title', label: 'Dokument', defaultVisible: true },
   { id: 'complianceStatus', label: 'Efterlevnad', defaultVisible: true },
   { id: 'priority', label: 'Prioritet', defaultVisible: true },
-  { id: 'dueDate', label: 'Deadline', defaultVisible: true },
+  { id: 'dueDate', label: 'Deadline', defaultVisible: false },
   { id: 'assignee', label: 'Tilldelad', defaultVisible: false },
   { id: 'responsiblePerson', label: 'Ansvarig', defaultVisible: false },
   { id: 'taskProgress', label: 'Uppgifter', defaultVisible: false },

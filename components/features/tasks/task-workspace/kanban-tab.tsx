@@ -62,7 +62,6 @@ import {
 } from '@/app/actions/tasks'
 import { Input } from '@/components/ui/input'
 import type { WorkspaceMember } from './index'
-import { TaskFilters } from './task-filters'
 import { TaskDeleteDialog } from '../task-delete-dialog'
 import { toast } from 'sonner'
 
@@ -71,8 +70,9 @@ import { toast } from 'sonner'
 // ============================================================================
 
 interface KanbanTabProps {
-  initialTasks: TaskWithRelations[]
+  filteredTasks: TaskWithRelations[]
   initialColumns: TaskColumnWithCount[]
+  activeStatusFilter: string[]
   workspaceMembers: WorkspaceMember[]
   onTaskClick?: (_taskId: string) => void
   onTaskCreated?: (_task: TaskWithRelations) => void
@@ -95,25 +95,22 @@ const PRIORITY_COLORS = {
 // ============================================================================
 
 export function KanbanTab({
-  initialTasks,
+  filteredTasks,
   initialColumns,
-  workspaceMembers,
+  activeStatusFilter,
+  workspaceMembers: _workspaceMembers,
   onTaskClick,
   onTaskCreated,
   onTaskDelete,
 }: KanbanTabProps) {
-  const [tasks, setTasks] = useState(initialTasks)
+  const [tasks, setTasks] = useState(filteredTasks)
   const [columns] = useState(initialColumns)
 
-  // Sync local state when parent's tasks change (e.g., from modal updates)
+  // Sync local state when parent's filtered tasks change
   useEffect(() => {
-    setTasks(initialTasks)
-  }, [initialTasks])
+    setTasks(filteredTasks)
+  }, [filteredTasks])
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string[]>([])
-  const [priorityFilter, setPriorityFilter] = useState<string[]>([])
-  const [assigneeFilter, setAssigneeFilter] = useState<string | null>(null)
 
   // Sensors for drag-and-drop
   const sensors = useSensors(
@@ -125,35 +122,14 @@ export function KanbanTab({
     })
   )
 
-  // Get tasks for a column
+  // Get tasks for a column (parent already handles all filtering)
   const getColumnTasks = useCallback(
     (columnId: string) => {
-      let result = tasks.filter((task) => task.column_id === columnId)
-
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
-        result = result.filter(
-          (task) =>
-            task.title.toLowerCase().includes(query) ||
-            task.description?.toLowerCase().includes(query)
-        )
-      }
-
-      if (priorityFilter.length > 0) {
-        result = result.filter((task) => priorityFilter.includes(task.priority))
-      }
-
-      if (assigneeFilter) {
-        if (assigneeFilter === 'unassigned') {
-          result = result.filter((task) => task.assignee_id === null)
-        } else {
-          result = result.filter((task) => task.assignee_id === assigneeFilter)
-        }
-      }
-
-      return result.sort((a, b) => a.position - b.position)
+      return tasks
+        .filter((task) => task.column_id === columnId)
+        .sort((a, b) => a.position - b.position)
     },
-    [tasks, searchQuery, priorityFilter, assigneeFilter]
+    [tasks]
   )
 
   // Drag handlers
@@ -222,8 +198,8 @@ export function KanbanTab({
         toast.error('Kunde inte flytta uppgift', {
           description: result.error,
         })
-        // Revert optimistic update by restoring initial tasks
-        setTasks(initialTasks)
+        // Revert optimistic update by restoring filtered tasks
+        setTasks(filteredTasks)
       }
     }
 
@@ -232,20 +208,6 @@ export function KanbanTab({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Filters */}
-      <TaskFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        priorityFilter={priorityFilter}
-        onPriorityFilterChange={setPriorityFilter}
-        assigneeFilter={assigneeFilter}
-        onAssigneeFilterChange={setAssigneeFilter}
-        columns={columns}
-        workspaceMembers={workspaceMembers}
-      />
-
       {/* Kanban Board */}
       <DndContext
         sensors={sensors}
@@ -258,7 +220,8 @@ export function KanbanTab({
           {columns
             .filter(
               (column) =>
-                statusFilter.length === 0 || statusFilter.includes(column.name)
+                activeStatusFilter.length === 0 ||
+                activeStatusFilter.includes(column.name)
             )
             .map((column) => (
               <KanbanColumn

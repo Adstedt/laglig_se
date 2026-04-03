@@ -15,7 +15,7 @@ import {
   TrendingUp,
   Calendar,
 } from 'lucide-react'
-import type { TaskSummaryStats } from '@/app/actions/tasks'
+import type { TaskSummaryStats, TaskColumnWithCount } from '@/app/actions/tasks'
 
 // ============================================================================
 // Props
@@ -23,13 +23,14 @@ import type { TaskSummaryStats } from '@/app/actions/tasks'
 
 interface SummaryTabProps {
   initialStats: TaskSummaryStats
+  columns: TaskColumnWithCount[]
 }
 
 // ============================================================================
 // Main Component
 // ============================================================================
 
-export function SummaryTab({ initialStats }: SummaryTabProps) {
+export function SummaryTab({ initialStats, columns }: SummaryTabProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -204,21 +205,28 @@ export function SummaryTab({ initialStats }: SummaryTabProps) {
               label="Visa försenade"
               count={initialStats.overdue}
               variant="destructive"
-              onClick={() => navigateWithFilter('overdue', 'true')}
+              onClick={() => navigateWithFilter('dueDate', 'overdue')}
             />
             <QuickActionButton
               icon={<Clock className="h-4 w-4" />}
               label="Visa pågående"
               count={initialStats.byStatus.inProgress}
               variant="default"
-              onClick={() => navigateWithFilter('status', 'in_progress')}
+              onClick={() => {
+                const inProgressColumns = columns
+                  .filter((c) => !c.is_done && c.position > 0)
+                  .map((c) => c.name)
+                if (inProgressColumns.length > 0) {
+                  navigateWithFilter('status', inProgressColumns.join(','))
+                }
+              }}
             />
             <QuickActionButton
               icon={<Calendar className="h-4 w-4" />}
               label="Denna vecka"
               count={initialStats.dueThisWeek}
               variant="outline"
-              onClick={() => navigateWithFilter('dueWeek', 'true')}
+              onClick={() => navigateWithFilter('dueDate', 'thisWeek')}
             />
           </div>
         </CardContent>

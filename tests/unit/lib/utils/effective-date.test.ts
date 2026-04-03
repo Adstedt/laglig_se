@@ -71,7 +71,7 @@ describe('resolveEffectiveDate', () => {
 
     expect(result).toEqual(date)
     expect(mockAmendmentFindFirst).toHaveBeenCalledWith({
-      where: { sfs_number: '2026:100' },
+      where: { sfs_number: 'SFS 2026:100' },
       select: { effective_date: true },
     })
   })

@@ -4,17 +4,25 @@
  * Story 14.10: Change Assessment View for Hem page
  * Focused chat view for reviewing a single change.
  * Replaces the home state when a change is selected from the picker.
+ *
+ * Story 14.15b: Wraps in ChatDetailProvider, routes assessment to sidebar
+ * when assistant has replied (instead of footer).
  */
 
 import { useRef, useEffect, useCallback } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from '@/components/features/ai-chat/chat-message-list'
 import { ChatInputModern } from '@/components/features/ai-chat/chat-input-modern'
 import { ChatError } from '@/components/features/ai-chat/chat-error'
-import { AssessmentResolution } from '@/components/features/changes/assessment-resolution'
+import { ChatDetailSidebar } from '@/components/features/ai-chat/chat-detail-sidebar'
 import { FollowupChips } from '@/components/features/ai-chat/followup-chips'
+import {
+  ChatDetailProvider,
+  useChatDetail,
+  type AssessmentDetailData,
+} from '@/lib/ai/chat-detail-context'
 import { useChatInterface } from '@/lib/hooks/use-chat-interface'
 import { useFollowupChips } from '@/lib/hooks/use-followup-chips'
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
@@ -36,11 +44,20 @@ interface ChangeAssessmentViewProps {
   onBack: () => void
 }
 
-export function ChangeAssessmentView({
+export function ChangeAssessmentView(props: ChangeAssessmentViewProps) {
+  return (
+    <ChatDetailProvider>
+      <ChangeAssessmentViewInner {...props} />
+    </ChatDetailProvider>
+  )
+}
+
+function ChangeAssessmentViewInner({
   change,
   onBack,
 }: ChangeAssessmentViewProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const { openDetail } = useChatDetail()
 
   const { messages, sendMessage, status, error, retryAfter, handleRetry } =
     useChatInterface({
@@ -79,86 +96,115 @@ export function ChangeAssessmentView({
     setTimeout(() => inputRef.current?.focus(), 100)
   }, [])
 
-  const assessmentFooter = hasCompletedReply ? (
-    <>
-      <AssessmentResolution
-        changeEventId={change.id}
-        lawListItemId={change.lawListItemId}
+  // Open assessment detail in sidebar when first reply completes
+  useEffect(() => {
+    if (!hasCompletedReply) return
+    const assessmentData: AssessmentDetailData = {
+      changeEventId: change.id,
+      lawListItemId: change.lawListItemId,
+      amendmentSfs: change.amendmentSfs ?? '',
+      changeType: change.changeType,
+      affectedSections: [],
+      effectiveDate: null,
+      existingAssessment: null,
+      documentTitle: change.documentTitle,
+      documentNumber: change.documentNumber,
+      onComplete: onBack,
+    }
+    openDetail({
+      type: 'assessment',
+      id: `assessment-${change.id}`,
+      data: assessmentData,
+    })
+  }, [hasCompletedReply]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const followupFooter =
+    hasCompletedReply && followupQuestions ? (
+      <FollowupChips
+        questions={followupQuestions}
+        onSelect={handleFollowupClick}
       />
-      {followupQuestions && (
-        <FollowupChips
-          questions={followupQuestions}
-          onSelect={handleFollowupClick}
-        />
-      )}
-    </>
-  ) : undefined
+    ) : undefined
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Header with back button + change info */}
-      <div className="mx-auto w-full max-w-3xl flex items-center gap-3 px-4 py-3 shrink-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="gap-1.5 shrink-0"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Tillbaka
-        </Button>
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Badge variant="default" className="shrink-0">
-            {CHANGE_TYPE_LABELS[change.changeType]}
-          </Badge>
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate">
-              {change.documentTitle}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {change.documentNumber}
-            </p>
+    <div className="flex h-full">
+      <div className="flex flex-1 flex-col min-w-0">
+        {/* Header with back button + change info */}
+        <div className="mx-auto w-full max-w-3xl flex items-center gap-3 px-4 py-3 shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onBack}
+            className="gap-1.5 shrink-0"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Tillbaka
+          </Button>
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Badge variant="default" className="shrink-0">
+              {CHANGE_TYPE_LABELS[change.changeType]}
+            </Badge>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">
+                {change.documentTitle}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {change.documentNumber}
+              </p>
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="shrink-0 h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Stäng</span>
+          </Button>
+        </div>
+
+        {/* Chat area */}
+        <div className="flex-1 flex flex-col min-h-0">
+          {hasError ? (
+            <div className="flex-1 flex items-center justify-center p-4">
+              <ChatError
+                error={error}
+                onRetry={handleRetry}
+                retryAfter={retryAfter}
+              />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto">
+              <div className="mx-auto max-w-3xl">
+                <ChatMessageList
+                  messages={messages}
+                  isStreaming={isLoading}
+                  footer={followupFooter}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div className="shrink-0 mx-auto w-full max-w-3xl px-4 pb-4">
+          <ChatInputModern
+            ref={inputRef}
+            onSend={handleSendMessage}
+            disabled={hasError}
+            isLoading={isLoading}
+            showModelSelector={false}
+            showAttach={false}
+            showQuickActions={false}
+            placeholder="Fråga om ändringen..."
+            className="border-none bg-transparent p-0"
+          />
         </div>
       </div>
 
-      {/* Chat area */}
-      <div className="flex-1 flex flex-col min-h-0">
-        {hasError ? (
-          <div className="flex-1 flex items-center justify-center p-4">
-            <ChatError
-              error={error}
-              onRetry={handleRetry}
-              retryAfter={retryAfter}
-            />
-          </div>
-        ) : (
-          <div className="flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-3xl">
-              <ChatMessageList
-                messages={messages}
-                isStreaming={isLoading}
-                footer={assessmentFooter}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Input */}
-      <div className="shrink-0 mx-auto w-full max-w-3xl px-4 pb-4">
-        <ChatInputModern
-          ref={inputRef}
-          onSend={handleSendMessage}
-          disabled={hasError}
-          isLoading={isLoading}
-          showModelSelector={false}
-          showAttach={false}
-          showQuickActions={false}
-          placeholder="Fråga om ändringen..."
-          className="border-none bg-transparent p-0"
-        />
-      </div>
+      {/* Sidebar */}
+      <ChatDetailSidebar />
     </div>
   )
 }

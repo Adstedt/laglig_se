@@ -41,6 +41,8 @@ import {
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { ChatDetailProvider } from '@/lib/ai/chat-detail-context'
+import { ChatDetailSidebar } from '@/components/features/ai-chat/chat-detail-sidebar'
 
 const SUGGESTED_PROMPTS = [
   'Visa en översikt av min efterlevnad',
@@ -62,6 +64,8 @@ interface HemChatProps {
   userName?: string | undefined
   /** Callback when a change is selected for assessment (Story 14.10) */
   onSelectChange?: (_change: UnacknowledgedChange) => void
+  /** Story 8.23: Auto-open amendments picker on mount */
+  initialView?: 'amendments' | undefined
 }
 
 export function HemChat({
@@ -70,10 +74,23 @@ export function HemChat({
   dashboardLoading = false,
   userName,
   onSelectChange,
+  initialView,
 }: HemChatProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const [viewState, setViewState] = useState<ViewState>('chat')
   const [showChangePicker, setShowChangePicker] = useState(false)
+
+  // Story 8.23: Auto-open amendments picker from deep-link
+  useEffect(() => {
+    if (initialView === 'amendments') {
+      setShowChangePicker(true)
+    }
+  }, [initialView])
+
+  // Full mode: track whether user has actively engaged (sent message or loaded conversation)
+  // Prevents leftover history from previous sessions hijacking the home view
+  const [userEngaged, setUserEngaged] = useState(false)
+  const mountArchivedRef = useRef(false)
 
   const {
     messages,
@@ -91,16 +108,30 @@ export function HemChat({
     contextType: 'global',
   })
 
+  // Full mode: archive leftover active messages from previous session on mount
+  useEffect(() => {
+    if (mode !== 'full') return
+    if (mountArchivedRef.current) return
+    mountArchivedRef.current = true
+
+    archiveConversation()
+      .then(() => replaceMessages([]))
+      .catch(() => {})
+  }, [mode, replaceMessages])
+
   const isStreaming = status === 'streaming'
   const isSubmitted = status === 'submitted'
   const hasError = status === 'error' && error !== null
   const isLoading = isStreaming || isSubmitted
 
   const hasMessages = messages.length > 0
-  const isHomeState = !hasMessages
+  // Full mode: only show conversation when user has explicitly engaged
+  // Panel mode: show conversation whenever there are messages (existing behavior)
+  const isHomeState = mode === 'full' ? !userEngaged : !hasMessages
 
   const handleSend = useCallback(
     (content: string) => {
+      setUserEngaged(true)
       sendMessage(content)
     },
     [sendMessage]
@@ -108,6 +139,7 @@ export function HemChat({
 
   const handlePromptClick = useCallback(
     (prompt: string) => {
+      setUserEngaged(true)
       sendMessage(prompt)
     },
     [sendMessage]
@@ -119,6 +151,7 @@ export function HemChat({
         await archiveConversation()
         await clearHistory()
       }
+      setUserEngaged(false)
       setViewState('chat')
     } catch {
       toast.error('Kunde inte spara konversationen. Försök igen.')
@@ -146,6 +179,7 @@ export function HemChat({
         }))
         replaceMessages(uiMessages)
       }
+      setUserEngaged(true)
       setViewState('chat')
     },
     [hasMessages, replaceMessages]
@@ -296,95 +330,103 @@ export function HemChat({
 
   // Full mode — two states: home and conversation
 
-  // Conversation state — centered column like Claude.ai
+  // Conversation state — centered column with detail sidebar
   if (!isHomeState) {
     return (
-      <div className="flex h-full flex-col">
-        {/* Chat actions */}
-        <TooltipProvider delayDuration={300}>
-          <div className="mx-auto w-full max-w-3xl flex items-center justify-end gap-1 px-4 py-2 shrink-0">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-foreground/60 hover:text-foreground"
-                  onClick={handleExport}
-                  aria-label="Exportera konversation"
-                >
-                  <Download className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Exportera konversation</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-foreground/60 hover:text-foreground"
-                  onClick={() => setViewState('history')}
-                >
-                  <History className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Tidigare konversationer</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-foreground/60 hover:text-foreground"
-                  onClick={handleNewConversation}
-                  aria-label="Ny konversation"
-                >
-                  <SquarePen className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Ny konversation</TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
+      <ChatDetailProvider>
+        <div className="flex h-full flex-row">
+          {/* Chat area */}
+          <div className="flex-1 min-w-0 flex flex-col h-full">
+            {/* Chat actions */}
+            <TooltipProvider delayDuration={300}>
+              <div className="mx-auto w-full max-w-3xl flex items-center justify-end gap-1 px-4 py-2 shrink-0">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-foreground/60 hover:text-foreground"
+                      onClick={handleExport}
+                      aria-label="Exportera konversation"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Exportera konversation</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-foreground/60 hover:text-foreground"
+                      onClick={() => setViewState('history')}
+                    >
+                      <History className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Tidigare konversationer</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-foreground/60 hover:text-foreground"
+                      onClick={handleNewConversation}
+                      aria-label="Ny konversation"
+                    >
+                      <SquarePen className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Ny konversation</TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
 
-        <div className="flex-1 flex flex-col min-h-0">
-          {hasError ? (
-            <div className="flex-1 flex items-center justify-center p-4">
-              <ChatError
-                error={error}
-                onRetry={handleRetry}
-                retryAfter={retryAfter}
+            <div className="flex-1 flex flex-col min-h-0">
+              {hasError ? (
+                <div className="flex-1 flex items-center justify-center p-4">
+                  <ChatError
+                    error={error}
+                    onRetry={handleRetry}
+                    retryAfter={retryAfter}
+                  />
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto">
+                  <div className="mx-auto max-w-3xl">
+                    <ChatMessageList
+                      messages={messages}
+                      isStreaming={isLoading}
+                      onLoadMore={loadMore}
+                      isLoadingMore={isLoadingMore}
+                      hasMore={hasMore}
+                      onDeleteMessage={handleDeleteMessage}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="shrink-0 mx-auto w-full max-w-3xl px-4 pb-4">
+              <ChatInputModern
+                ref={inputRef}
+                onSend={handleSend}
+                disabled={hasError}
+                isLoading={isLoading}
+                showModelSelector={false}
+                showAttach={false}
+                showQuickActions={false}
+                placeholder="Svara..."
+                className="border-none bg-transparent p-0"
               />
             </div>
-          ) : (
-            <div className="flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-3xl">
-                <ChatMessageList
-                  messages={messages}
-                  isStreaming={isLoading}
-                  onLoadMore={loadMore}
-                  isLoadingMore={isLoadingMore}
-                  hasMore={hasMore}
-                  onDeleteMessage={handleDeleteMessage}
-                />
-              </div>
-            </div>
-          )}
+          </div>
+
+          {/* Detail sidebar */}
+          <ChatDetailSidebar />
         </div>
-        <div className="shrink-0 mx-auto w-full max-w-3xl px-4 pb-4">
-          <ChatInputModern
-            ref={inputRef}
-            onSend={handleSend}
-            disabled={hasError}
-            isLoading={isLoading}
-            showModelSelector={false}
-            showAttach={false}
-            showQuickActions={false}
-            placeholder="Svara..."
-            className="border-none bg-transparent p-0"
-          />
-        </div>
-      </div>
+      </ChatDetailProvider>
     )
   }
 

@@ -61,18 +61,12 @@ export async function resolveEffectiveDate(
 ): Promise<Date | null> {
   // Try AmendmentDocument first (via amendment_sfs)
   if (changeEvent.amendment_sfs) {
-    // Extract SFS number from "SFS YYYY:NNN" format
-    const sfsMatch = changeEvent.amendment_sfs.match(/^SFS\s+(.+)$/)
-    const sfsNumber = sfsMatch?.[1] ?? changeEvent.amendment_sfs
-
-    if (sfsNumber) {
-      const amendment = await prisma.amendmentDocument.findFirst({
-        where: { sfs_number: sfsNumber },
-        select: { effective_date: true },
-      })
-      if (amendment?.effective_date) {
-        return amendment.effective_date
-      }
+    const amendment = await prisma.amendmentDocument.findFirst({
+      where: { sfs_number: changeEvent.amendment_sfs },
+      select: { effective_date: true },
+    })
+    if (amendment?.effective_date) {
+      return amendment.effective_date
     }
   }
 

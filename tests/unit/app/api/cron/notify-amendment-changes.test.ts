@@ -299,7 +299,7 @@ describe('notify-amendment-changes cron', () => {
       assessUrl: string
     }>
     expect(changes[0]!.assessUrl).toBe(
-      'https://laglig.se/dashboard?changeId=ce-1'
+      'https://laglig.se/dashboard?view=amendments'
     )
   })
 

@@ -253,6 +253,7 @@ async function loadChangeContext(
 
   const lines: string[] = []
   lines.push('## Lagändring som användaren vill granska')
+  lines.push(`- Händelse-ID: ${ce.id}`)
   lines.push(`- Typ: ${ce.change_type}`)
   if (ce.amendment_sfs) {
     lines.push(`- Ändrings-SFS: ${ce.amendment_sfs}`)
@@ -265,9 +266,67 @@ async function loadChangeContext(
     lines.push(`- AI-sammanfattning: ${ce.ai_summary}`)
   }
 
-  const changedSections = ce.changed_sections as string[] | null
-  if (changedSections && changedSections.length > 0) {
-    lines.push(`- Berörda paragrafer: ${changedSections.join(', ')}`)
+  // Query structured section changes and amendment full text from SectionChange table (via AmendmentDocument)
+  let hasAmendmentText = false
+  if (ce.amendment_sfs) {
+    const amendmentDoc = await prisma.amendmentDocument.findFirst({
+      where: { sfs_number: ce.amendment_sfs },
+      select: {
+        id: true,
+        full_text: true,
+        proposition_title: true,
+        proposition_summary: true,
+        proposition_organ: true,
+      },
+    })
+    if (amendmentDoc) {
+      const sections = await prisma.sectionChange.findMany({
+        where: { amendment_id: amendmentDoc.id },
+        orderBy: { sort_order: 'asc' },
+        select: { chapter: true, section: true, change_type: true },
+      })
+      if (sections.length > 0) {
+        const changeTypeLabels: Record<string, string> = {
+          AMENDED: 'ändrad',
+          REPEALED: 'upphävd',
+          NEW: 'ny',
+          RENUMBERED: 'omnumrerad',
+        }
+        const formatted = sections
+          .map((s) => {
+            const label = changeTypeLabels[s.change_type] ?? s.change_type
+            const prefix = s.chapter ? `Kap ${s.chapter} ` : ''
+            return `${prefix}§ ${s.section} (${label})`
+          })
+          .join(', ')
+        lines.push(`- Berörda paragrafer: ${formatted}`)
+      }
+
+      // Include the amendment's own full text (authoritative, typically 2-5K chars)
+      if (amendmentDoc.full_text) {
+        hasAmendmentText = true
+        lines.push('')
+        lines.push('## Ändringstext (från den publicerade författningen)')
+        lines.push(
+          'Nedan visas den fullständiga ändringstexten såsom den publicerats i Svensk författningssamling. Basera din sammanfattning på denna text.'
+        )
+        lines.push('')
+        lines.push(amendmentDoc.full_text)
+      }
+
+      // Include proposition context if available (Story 8.24)
+      if (amendmentDoc.proposition_title) {
+        lines.push('')
+        lines.push('## Bakgrund (från propositionen)')
+        const organSuffix = amendmentDoc.proposition_organ
+          ? ` (${amendmentDoc.proposition_organ})`
+          : ''
+        lines.push(`**${amendmentDoc.proposition_title}**${organSuffix}`)
+        if (amendmentDoc.proposition_summary) {
+          lines.push(amendmentDoc.proposition_summary)
+        }
+      }
+    }
   }
 
   // Resolve effective date
@@ -277,8 +336,8 @@ async function loadChangeContext(
     lines.push(`- Ikraftträdande: ${badge.text}`)
   }
 
-  // Include amendment diff so the agent can see exactly what changed
-  if (ce.diff_summary) {
+  // Fall back to diff_summary only when no amendment full text is available
+  if (!hasAmendmentText && ce.diff_summary) {
     const compactDiff = extractCompactDiff(ce.diff_summary)
     if (compactDiff) {
       lines.push('')
@@ -380,15 +439,16 @@ Du guidar användaren genom en strukturerad granskning av lagändringen ovan.
 Anropa följande verktyg i en fas innan du skriver din text:
 1. **get_company_context** — Hämta företagets profil
 2. **search_laws** — Sök relevant lagtext för kontext
-3. **suggest_followups** — Föreslå 2–3 uppföljningsfrågor baserat på ändringen och företaget. Frågorna ska vara specifika (inte generiska), handlingsinriktade eller fördjupande, och varierade i kategori. Undantag: anropa INTE suggest_followups om du behöver ställa en direkt fråga till användaren.
+3. **get_change_details** — Hämta detaljerade sektionsändringar med gammal och ny lydelse. Använd Händelse-ID från ovan som changeEventId (inte SFS-numret)
+4. **suggest_followups** — Föreslå 2–3 uppföljningsfrågor baserat på ändringen och företaget. Frågorna ska vara specifika (inte generiska), handlingsinriktade eller fördjupande, och varierade i kategori. Undantag: anropa INTE suggest_followups om du behöver ställa en direkt fråga till användaren.
 
-Du kan anropa steg 1–2 parallellt. Anropa suggest_followups när du har tillräcklig kontext (efter steg 1–2).
+Du kan anropa steg 1–3 parallellt. Anropa suggest_followups när du har tillräcklig kontext (efter steg 1–3).
 
 ### Bedömningstext (skriv EFTER att alla verktygsanrop är klara)
 
 Strukturera din text enligt:
 
-**Sammanfatta ändringen** — Beskriv vad som faktiskt ändras. Diff-data finns i change_context — använd dem för att beskriva skillnaden i konkreta termer.
+**Sammanfatta ändringen** — Beskriv vad som faktiskt ändras. Ändringstexten i change_context visar exakt vad riksdagen beslutade — basera din sammanfattning på denna text, inte på andra ändringar i baslagen.
 
 **Bedöm relevans** — Analysera om ändringen berör verksamheten baserat på bransch, storlek, certifieringar och verksamhetsområden. Var specifik — "detta berör er eftersom ni har minderåriga anställda" är bättre än "detta kan beröra arbetsgivare".
 
@@ -403,7 +463,7 @@ Strukturera din text enligt:
 Ange även rekommenderad påverkansnivå (Hög/Medel/Låg/Ingen).
 
 ### Beteenderegler
-- Du har diff-data med de faktiska ändringarna i change_context — använd dem som primär källa. Komplettera med search_laws för omgivande kontext vid behov.
+- Du har ändringstexten (den publicerade författningen) i change_context — använd den som primär källa. Komplettera med get_change_details för gammal/ny lydelse och search_laws för omgivande kontext vid behov.
 - Var proaktiv: vänta inte på att användaren ställer alla frågor. Driv bedömningen framåt.
 - Om du saknar information för att göra en fullständig bedömning, säg vilken information som behövs.
 - Användaren ser ett bedömningsformulär efter ditt första svar. Dina rekommendationer hjälper dem fylla i det.

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -9,6 +9,10 @@ import {
   type WorkspaceOnboardingData,
 } from '@/lib/validation/workspace'
 import { useCompanyLookup } from '@/lib/hooks/use-company-lookup'
+import {
+  getOnboardingData,
+  saveOnboardingData,
+} from '@/lib/onboarding/onboarding-store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -55,8 +59,36 @@ export function CompanyInfoStep({
   const orgNumberValue = watch('orgNumber')
   const companyNameValue = watch('companyName')
 
+  // Pre-fill from OnboardingStore (localStorage bridge from signup)
+  const storedData = useRef(getOnboardingData())
+
+  useEffect(() => {
+    const stored = storedData.current
+    if (!stored) return
+
+    if (stored.orgNumber) setValue('orgNumber', stored.orgNumber)
+    if (stored.companyName) setValue('companyName', stored.companyName)
+    if (stored.legalForm)
+      setValue(
+        'legalForm',
+        stored.legalForm as WorkspaceOnboardingData['legalForm'],
+        {
+          shouldValidate: true,
+        }
+      )
+    if (stored.streetAddress) setValue('streetAddress', stored.streetAddress)
+    if (stored.postalCode) setValue('postalCode', stored.postalCode)
+    if (stored.city) setValue('city', stored.city)
+    if (stored.sniCode) setValue('sniCode', stored.sniCode)
+    if (stored.industryLabel) setValue('industryLabel', stored.industryLabel)
+    if (stored.websiteUrl) setValue('websiteUrl', stored.websiteUrl)
+  }, [setValue])
+
   const { data, isLoading, error, isAutoFilled } =
     useCompanyLookup(orgNumberValue)
+
+  // Track whether BolagsAPI lookup has completed (for companySummary override)
+  const [lookupComplete, setLookupComplete] = useState(false)
 
   // Track whether the badge should show (auto-filled and user hasn't edited companyName)
   const [showBadge, setShowBadge] = useState(false)
@@ -121,7 +153,58 @@ export function CompanyInfoStep({
       )
     }
     setValue('dataSource', 'bolagsapi')
+    setLookupComplete(true)
   }, [data, setValue])
+
+  // Override businessDescription with stored companySummary AFTER BolagsAPI auto-fill
+  // If no stored summary (direct signup), call analyzer as fallback
+  useEffect(() => {
+    if (!lookupComplete) return
+
+    if (storedData.current?.companySummary) {
+      setValue('businessDescription', storedData.current.companySummary)
+      return
+    }
+
+    // Fallback: call LLM analyzer for direct-signup users
+    const profile = data?.profile
+    if (!profile?.company_name) return
+
+    const analyzeController = new AbortController()
+
+    async function runAnalysis() {
+      try {
+        const res = await fetch('/api/company/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: analyzeController.signal,
+          body: JSON.stringify({
+            name: profile!.company_name,
+            sniCode: profile!.sni_code,
+            sniDescription: profile!.industry_label,
+            businessDescription: profile!.business_description,
+            websiteUrl: profile!.website_url,
+          }),
+        })
+
+        if (!res.ok) return
+
+        const result = await res.json()
+        if (result.summary) {
+          setValue('businessDescription', result.summary)
+        }
+        if (result.activityFlags) {
+          saveOnboardingData({ inferredFlags: result.activityFlags })
+        }
+      } catch {
+        // Silent failure — keep BolagsAPI description
+      }
+    }
+
+    runAnalysis()
+
+    return () => analyzeController.abort()
+  }, [lookupComplete, data, setValue])
 
   // Remove badge if user manually edits companyName
   useEffect(() => {
@@ -138,10 +221,10 @@ export function CompanyInfoStep({
     <form onSubmit={handleSubmit(onNext)} className="space-y-5" noValidate>
       <div>
         <h2 className="font-safiro text-2xl font-semibold tracking-tight">
-          Foretagsinformation
+          Företagsinformation
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Fyll i uppgifterna om ditt foretag.
+          Fyll i uppgifterna om ditt företag.
         </p>
       </div>
 
@@ -150,17 +233,17 @@ export function CompanyInfoStep({
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Label htmlFor="companyName">
-              Foretagsnamn <span className="text-destructive">*</span>
+              Företagsnamn <span className="text-destructive">*</span>
             </Label>
             {showBadge && isAutoFilled && (
               <Badge variant="secondary" className="text-xs" role="status">
-                Hamtat fran Bolagsverket
+                Hämtat från Bolagsverket
               </Badge>
             )}
           </div>
           <Input
             id="companyName"
-            placeholder="t.ex. Mitt Foretag AB"
+            placeholder="t.ex. Mitt Företag AB"
             autoComplete="organization"
             className={
               isAutoFilled && showBadge ? 'transition-opacity duration-300' : ''
@@ -198,23 +281,23 @@ export function CompanyInfoStep({
             {isLoading && (
               <Loader2
                 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground"
-                aria-label="Soker foretagsinfo"
+                aria-label="Söker företagsinfo"
               />
             )}
           </div>
           {isLoading && (
             <p className="text-sm text-muted-foreground" aria-live="polite">
-              Hamtar foretagsinfo...
+              Hämtar företagsinfo...
             </p>
           )}
           {error === 'not_found' && (
             <p id="orgNumber-notfound" className="text-sm text-destructive">
-              Inget foretag hittades med detta organisationsnummer
+              Inget företag hittades med detta organisationsnummer
             </p>
           )}
           {isDeregistered && (
             <p className="text-sm text-amber-600">
-              Detta foretag ar avregistrerat hos Bolagsverket
+              Detta företag är avregistrerat hos Bolagsverket
             </p>
           )}
           {errors.orgNumber && (
@@ -295,7 +378,7 @@ export function CompanyInfoStep({
             }
           >
             <SelectTrigger id="legalForm">
-              <SelectValue placeholder="Valj juridisk form" />
+              <SelectValue placeholder="Välj juridisk form" />
             </SelectTrigger>
             <SelectContent>
               {LEGAL_FORM_OPTIONS.map((form) => (
@@ -309,7 +392,7 @@ export function CompanyInfoStep({
 
         {/* Antal anstallda — optional */}
         <div className="space-y-2">
-          <Label htmlFor="employeeCount">Antal anstallda</Label>
+          <Label htmlFor="employeeCount">Antal anställda</Label>
           <Input
             id="employeeCount"
             type="number"
@@ -324,7 +407,7 @@ export function CompanyInfoStep({
         type="submit"
         className="w-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
       >
-        Nasta
+        Nästa
       </Button>
     </form>
   )

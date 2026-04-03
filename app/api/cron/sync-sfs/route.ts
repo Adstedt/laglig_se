@@ -42,6 +42,8 @@ import {
 import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 import { normalizeSfsLaw } from '@/lib/transforms/normalizers/sfs-law-normalizer'
 import { linkifyHtmlContent, type SlugMap } from '@/lib/linkify'
+import { parseCanonicalHtml } from '@/lib/transforms/canonical-html-parser'
+import { htmlToMarkdown } from '@/lib/transforms/html-to-markdown'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -360,6 +362,24 @@ export async function GET(request: Request) {
             })
           }
 
+          // Story 14.14: Derive json_content + markdown_content from normalized HTML
+          let jsonContent = null
+          let markdownContent = null
+          if (processedHtml) {
+            try {
+              jsonContent = parseCanonicalHtml(processedHtml, {
+                sfsNumber: doc.beteckning,
+                documentType: 'SFS_LAW',
+              })
+              markdownContent = htmlToMarkdown(processedHtml)
+            } catch (err) {
+              console.error(
+                `[SYNC-SFS] Failed to derive json/markdown for ${sfsNumber}:`,
+                err
+              )
+            }
+          }
+
           // Story 2.29: Linkify HTML content before DB write
           const linkifiedHtml = processedHtml
             ? linkifyHtmlContent(processedHtml, slugMap, sfsNumber).html
@@ -374,6 +394,10 @@ export async function GET(request: Request) {
                 content_type: ContentType.SFS_LAW,
                 full_text: fullText,
                 html_content: linkifiedHtml,
+                json_content: jsonContent
+                  ? JSON.parse(JSON.stringify(jsonContent))
+                  : undefined,
+                markdown_content: markdownContent,
                 publication_date: doc.datum ? new Date(doc.datum) : null,
                 status: DocumentStatus.ACTIVE,
                 source_url: `https://data.riksdagen.se/dokument/${doc.dok_id}`,

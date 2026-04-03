@@ -1,0 +1,40 @@
+schema: 1
+story: '8.22'
+story_title: 'Use SectionChange Table for AI Context Instead of changed_sections JSON'
+gate: PASS
+status_reason: 'Clean implementation following established patterns. All 6 ACs met with adequate test coverage across 3 scenarios. No security, performance, or maintainability concerns.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-02T12:27:00Z'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-04-16T12:27:00Z'
+
+evidence:
+  tests_reviewed: 25
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No new endpoints, no user input handling. Internal data source swap within authenticated context.'
+  performance:
+    status: PASS
+    notes: 'Two additional indexed DB queries per assessment prompt. Acceptable for single-event context.'
+  reliability:
+    status: PASS
+    notes: 'Graceful null handling at every level — no amendment_sfs, no AmendmentDocument, empty SectionChange array.'
+  maintainability:
+    status: PASS
+    notes: 'Follows exact same query pattern as get-change-details.ts. Consistent, readable code.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add explicit changedSections assertion in get-change-details.test.ts'
+      refs: ['tests/unit/agent/tools/get-change-details.test.ts']

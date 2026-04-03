@@ -19,6 +19,7 @@ import {
   ContentType,
   ChangeType,
   ParseStatus,
+  Prisma,
   SectionChangeType,
 } from '@prisma/client'
 import { fetchAndStorePdf } from '@/lib/sfs'
@@ -42,6 +43,16 @@ import {
   classifyDocument,
   crawlDocumentPage,
 } from '@/lib/sfs/sfs-amendment-crawler'
+import {
+  extractPropositionRef,
+  fetchPropositionContext,
+} from '@/lib/riksdagen/proposition-fetcher'
+import { extractEffectiveDate } from '@/lib/external/pdf-parser'
+
+/** Ensure SFS number has "SFS " prefix (idempotent) */
+function ensureSfsPrefix(sfsNumber: string): string {
+  return sfsNumber.startsWith('SFS ') ? sfsNumber : `SFS ${sfsNumber}`
+}
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -291,7 +302,7 @@ export async function GET(request: Request) {
 
     let backfilled = 0
     for (const record of completedWithoutEvents) {
-      const baseLawDocNumber = `SFS ${record.base_law_sfs}`
+      const baseLawDocNumber = ensureSfsPrefix(record.base_law_sfs ?? '')
       const baseLawDoc = await prisma.legalDocument.findUnique({
         where: { document_number: baseLawDocNumber },
         select: { id: true },
@@ -301,7 +312,7 @@ export async function GET(request: Request) {
       const existingEvent = await prisma.changeEvent.findFirst({
         where: {
           document_id: baseLawDoc.id,
-          amendment_sfs: `SFS ${record.sfs_number}`,
+          amendment_sfs: ensureSfsPrefix(record.sfs_number),
         },
         select: { id: true },
       })
@@ -311,17 +322,32 @@ export async function GET(request: Request) {
         ? classifyDocument(record.title) === 'repeal'
         : false
 
-      await prisma.changeEvent.create({
-        data: {
-          document_id: baseLawDoc.id,
-          content_type: ContentType.SFS_LAW,
-          change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
-          amendment_sfs: `SFS ${record.sfs_number}`,
-          notification_sent: false,
-        },
-      })
-      backfilled++
-      stats.changeEventsCreated++
+      // Story 8.21: Catch unique constraint violation from partial index
+      // (document_id, amendment_sfs) WHERE amendment_sfs IS NOT NULL
+      try {
+        await prisma.changeEvent.create({
+          data: {
+            document_id: baseLawDoc.id,
+            content_type: ContentType.SFS_LAW,
+            change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
+            amendment_sfs: ensureSfsPrefix(record.sfs_number),
+            notification_sent: false,
+          },
+        })
+        backfilled++
+        stats.changeEventsCreated++
+      } catch (e) {
+        if (
+          e instanceof Prisma.PrismaClientKnownRequestError &&
+          e.code === 'P2002'
+        ) {
+          console.log(
+            `[DISCOVER-SFS] Phase 3: ChangeEvent already exists for ${record.sfs_number}, skipping`
+          )
+          continue
+        }
+        throw e
+      }
     }
 
     if (backfilled > 0) {
@@ -519,8 +545,8 @@ async function processAmendmentRecord(
 
   // Step C: Normalize → derive content
   const normalizedHtml = normalizeSfsAmendment(rawHtml, {
-    documentNumber: `SFS ${record.sfs_number}`,
-    title: record.title ?? `SFS ${record.sfs_number}`,
+    documentNumber: ensureSfsPrefix(record.sfs_number),
+    title: record.title ?? ensureSfsPrefix(record.sfs_number),
   })
 
   const canonicalJson = parseCanonicalHtml(normalizedHtml, {
@@ -535,12 +561,38 @@ async function processAmendmentRecord(
   const linkifiedHtml = linkifyHtmlContent(
     normalizedHtml,
     slugMap,
-    `SFS ${record.sfs_number}`
+    ensureSfsPrefix(record.sfs_number)
   ).html
 
-  const effectiveDate = canonicalJson.metadata.effectiveDate
+  // Extract effective date: canonical JSON first, then fallback to plain text parsing
+  let effectiveDate = canonicalJson.metadata.effectiveDate
     ? new Date(canonicalJson.metadata.effectiveDate)
     : null
+  if (!effectiveDate) {
+    const extracted = extractEffectiveDate(plainText)
+    if (extracted) {
+      effectiveDate = new Date(extracted)
+      if (isNaN(effectiveDate.getTime())) effectiveDate = null
+    }
+  }
+
+  // Step C.5: Fetch proposition context from riksdagen.se (non-blocking)
+  let propositionData: {
+    id: string
+    title: string
+    summary: string | null
+    organ: string | null
+    datum: Date | null
+  } | null = null
+  const propRef = extractPropositionRef(plainText)
+  if (propRef) {
+    propositionData = await fetchPropositionContext(propRef)
+    if (propositionData) {
+      console.log(
+        `[DISCOVER-SFS]   Proposition: ${propositionData.title} (${propRef})`
+      )
+    }
+  }
 
   // Step D: Update all records in a transaction
   const defaultChangeType = isRepeal
@@ -591,12 +643,14 @@ async function processAmendmentRecord(
       }
     }
 
-    // Update AmendmentDocument to COMPLETED
+    // Update AmendmentDocument to COMPLETED (with proposition context if available)
     const updatedAmendment = await tx.amendmentDocument.update({
       where: { id: record.id },
       data: {
         title:
-          canonicalJson.title || record.title || `SFS ${record.sfs_number}`,
+          canonicalJson.title ||
+          record.title ||
+          ensureSfsPrefix(record.sfs_number),
         effective_date: effectiveDate,
         full_text: plainText,
         markdown_content: markdownContent,
@@ -604,6 +658,13 @@ async function processAmendmentRecord(
         parsed_at: new Date(),
         parse_error: null,
         confidence: validation.metrics.paragraphCount > 0 ? 0.9 : 0.5,
+        ...(propositionData && {
+          proposition_id: propositionData.id,
+          proposition_title: propositionData.title,
+          proposition_summary: propositionData.summary,
+          proposition_organ: propositionData.organ,
+          proposition_datum: propositionData.datum,
+        }),
       },
     })
 
@@ -633,7 +694,7 @@ async function processAmendmentRecord(
 
     // Create ChangeEvent if base law exists in DB (dedup: check first)
     if (record.base_law_sfs) {
-      const baseLawDocNumber = `SFS ${record.base_law_sfs}`
+      const baseLawDocNumber = ensureSfsPrefix(record.base_law_sfs ?? '')
       const baseLawDoc = await tx.legalDocument.findUnique({
         where: { document_number: baseLawDocNumber },
         select: { id: true },
@@ -643,7 +704,7 @@ async function processAmendmentRecord(
         const existingEvent = await tx.changeEvent.findFirst({
           where: {
             document_id: baseLawDoc.id,
-            amendment_sfs: `SFS ${record.sfs_number}`,
+            amendment_sfs: ensureSfsPrefix(record.sfs_number),
           },
           select: { id: true },
         })
@@ -654,7 +715,7 @@ async function processAmendmentRecord(
               document_id: baseLawDoc.id,
               content_type: ContentType.SFS_LAW,
               change_type: isRepeal ? ChangeType.REPEAL : ChangeType.AMENDMENT,
-              amendment_sfs: `SFS ${record.sfs_number}`,
+              amendment_sfs: ensureSfsPrefix(record.sfs_number),
               notification_sent: false,
             },
           })
@@ -662,6 +723,13 @@ async function processAmendmentRecord(
           console.log(
             `[DISCOVER-SFS]   ChangeEvent created for base law ${record.base_law_sfs}`
           )
+        } else {
+          // Story 8.21: Re-trigger notification pipeline if sync-sfs-updates
+          // created this event first — discover is the authoritative source
+          await tx.changeEvent.update({
+            where: { id: existingEvent.id },
+            data: { notification_sent: false },
+          })
         }
       } else {
         console.log(

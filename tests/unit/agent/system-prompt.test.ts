@@ -5,6 +5,7 @@ vi.mock('@/lib/prisma', () => ({
   prisma: {
     changeEvent: { findUnique: vi.fn() },
     amendmentDocument: { findFirst: vi.fn() },
+    sectionChange: { findMany: vi.fn() },
     legalDocument: { findUnique: vi.fn() },
   },
 }))
@@ -195,7 +196,7 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('suggest_followups')
   })
 
-  it('includes change context for contextType=change', async () => {
+  it('includes section changes from SectionChange table in change context', async () => {
     const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
     mockFindUnique.mockResolvedValue({
       id: 'ce-1',
@@ -211,6 +212,16 @@ describe('buildSystemPrompt', () => {
       },
     } as never)
 
+    const mockFindFirst = vi.mocked(prisma.amendmentDocument.findFirst)
+    mockFindFirst.mockResolvedValue({ id: 'amd-1' } as never)
+
+    const mockFindMany = vi.mocked(prisma.sectionChange.findMany)
+    mockFindMany.mockResolvedValue([
+      { chapter: '2', section: '3', change_type: 'AMENDED' },
+      { chapter: null, section: '5', change_type: 'NEW' },
+      { chapter: '4', section: '1', change_type: 'REPEALED' },
+    ] as never)
+
     const prompt = await buildSystemPrompt({
       contextType: 'change',
       contextId: 'ce-1',
@@ -221,7 +232,189 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('SFS 2026:100')
     expect(prompt).toContain('Arbetsmiljölagen')
     expect(prompt).toContain('Ändring av 3 §')
-    expect(prompt).toContain('3 §, 5 §')
+    expect(prompt).toContain(
+      'Kap 2 § 3 (ändrad), § 5 (ny), Kap 4 § 1 (upphävd)'
+    )
+  })
+
+  it('includes amendment full text instead of diff when available', async () => {
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-5',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: 'SFS 2026:500',
+      ai_summary: null,
+      changed_sections: null,
+      diff_summary: '--- old\n+++ new\n@@ -1,3 +1,3 @@\n-gammal text\n+ny text',
+      document: {
+        title: 'Testlagen',
+        document_number: 'SFS 2020:1',
+        effective_date: null,
+      },
+    } as never)
+
+    const mockFindFirst = vi.mocked(prisma.amendmentDocument.findFirst)
+    mockFindFirst.mockResolvedValue({
+      id: 'amd-5',
+      full_text:
+        'Lag om ändring i testlagen\n\n1 § ska ha följande lydelse.\n\n1 § Ny lydelse av paragrafen.',
+    } as never)
+
+    const mockFindMany = vi.mocked(prisma.sectionChange.findMany)
+    mockFindMany.mockResolvedValue([
+      { chapter: null, section: '1', change_type: 'AMENDED' },
+    ] as never)
+
+    const prompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-5',
+    })
+
+    // Should include amendment full text
+    expect(prompt).toContain(
+      'Ändringstext (från den publicerade författningen)'
+    )
+    expect(prompt).toContain('Lag om ändring i testlagen')
+    expect(prompt).toContain('1 § ska ha följande lydelse')
+
+    // Should NOT include diff when amendment text is present
+    expect(prompt).not.toContain('Ändringar (diff)')
+    expect(prompt).not.toContain('gammal text')
+  })
+
+  it('includes proposition context when available', async () => {
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-6',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: 'SFS 2026:600',
+      ai_summary: null,
+      changed_sections: null,
+      document: {
+        title: 'Testlagen',
+        document_number: 'SFS 2020:1',
+        effective_date: null,
+      },
+    } as never)
+
+    const mockFindFirst = vi.mocked(prisma.amendmentDocument.findFirst)
+    mockFindFirst.mockResolvedValue({
+      id: 'amd-6',
+      full_text: 'Lag om ändring...',
+      proposition_title: 'Begränsad tillgång till lustgas',
+      proposition_summary: 'I propositionen föreslås en ny lag om lustgas.',
+      proposition_organ: 'Socialdepartementet',
+    } as never)
+
+    const mockFindMany = vi.mocked(prisma.sectionChange.findMany)
+    mockFindMany.mockResolvedValue([] as never)
+
+    const prompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-6',
+    })
+
+    expect(prompt).toContain('Bakgrund (från propositionen)')
+    expect(prompt).toContain('Begränsad tillgång till lustgas')
+    expect(prompt).toContain('Socialdepartementet')
+    expect(prompt).toContain('ny lag om lustgas')
+  })
+
+  it('omits proposition section when not available', async () => {
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-7',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: 'SFS 2026:700',
+      ai_summary: null,
+      changed_sections: null,
+      document: {
+        title: 'Förordningen',
+        document_number: 'SFS 2020:3',
+        effective_date: null,
+      },
+    } as never)
+
+    const mockFindFirst = vi.mocked(prisma.amendmentDocument.findFirst)
+    mockFindFirst.mockResolvedValue({
+      id: 'amd-7',
+      full_text: 'Regeringen föreskriver...',
+      proposition_title: null,
+      proposition_summary: null,
+      proposition_organ: null,
+    } as never)
+
+    const mockFindMany = vi.mocked(prisma.sectionChange.findMany)
+    mockFindMany.mockResolvedValue([] as never)
+
+    const prompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-7',
+    })
+
+    expect(prompt).not.toContain('Bakgrund (från propositionen)')
+  })
+
+  it('omits section line when no SectionChange records exist', async () => {
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-3',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: 'SFS 2026:200',
+      ai_summary: null,
+      changed_sections: null,
+      document: {
+        title: 'Testlagen',
+        document_number: 'SFS 2020:1',
+        effective_date: null,
+      },
+    } as never)
+
+    const mockFindFirst = vi.mocked(prisma.amendmentDocument.findFirst)
+    mockFindFirst.mockResolvedValue({ id: 'amd-2' } as never)
+
+    const mockFindMany = vi.mocked(prisma.sectionChange.findMany)
+    mockFindMany.mockResolvedValue([] as never)
+
+    const prompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-3',
+    })
+
+    expect(prompt).toContain('<change_context>')
+    expect(prompt).not.toContain('Berörda paragrafer')
+  })
+
+  it('omits section line when no AmendmentDocument matches', async () => {
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-4',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: 'SFS 2026:999',
+      ai_summary: null,
+      changed_sections: null,
+      document: {
+        title: 'Okänd lag',
+        document_number: 'SFS 2020:2',
+        effective_date: null,
+      },
+    } as never)
+
+    const mockFindFirst = vi.mocked(prisma.amendmentDocument.findFirst)
+    mockFindFirst.mockResolvedValue(null)
+
+    const prompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-4',
+    })
+
+    expect(prompt).toContain('<change_context>')
+    expect(prompt).not.toContain('Berörda paragrafer')
   })
 
   it('stays within approximate token budget (~2000-4000 tokens)', async () => {

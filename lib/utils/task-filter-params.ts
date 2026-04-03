@@ -3,7 +3,18 @@
  * Parse and serialize task filter state to/from URL search params
  */
 
-import type { TaskFilterState } from '@/components/features/tasks/task-workspace/task-filters-toolbar'
+import type {
+  TaskFilterState,
+  DueDatePreset,
+} from '@/components/features/tasks/task-workspace/task-filters-toolbar'
+
+const VALID_DUE_DATE_PRESETS = [
+  'overdue',
+  'today',
+  'thisWeek',
+  'thisMonth',
+  'noDueDate',
+] as const
 
 /**
  * Parse task filters from URL search params
@@ -15,12 +26,18 @@ export function parseTaskFiltersFromUrl(
   const statusParam = searchParams.get('status')
   const priorityParam = searchParams.get('priority')
   const assigneeParam = searchParams.get('assignee')
+  const dueDateParam = searchParams.get('dueDate')
 
   return {
     searchQuery: qParam ?? '',
     statusFilter: statusParam ? statusParam.split(',') : [],
     priorityFilter: priorityParam ? priorityParam.split(',') : [],
     assigneeFilter: assigneeParam || null,
+    dueDateFilter:
+      dueDateParam &&
+      (VALID_DUE_DATE_PRESETS as readonly string[]).includes(dueDateParam)
+        ? (dueDateParam as DueDatePreset)
+        : null,
   }
 }
 
@@ -56,6 +73,12 @@ export function serializeTaskFiltersToUrl(
     params.set('assignee', filters.assigneeFilter)
   } else {
     params.delete('assignee')
+  }
+
+  if (filters.dueDateFilter) {
+    params.set('dueDate', filters.dueDateFilter)
+  } else {
+    params.delete('dueDate')
   }
 
   return params

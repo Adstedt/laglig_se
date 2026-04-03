@@ -184,7 +184,7 @@ export function NotificationsTab() {
                     id={toggle.key}
                     checked={preferences?.[toggle.key] ?? true}
                     onCheckedChange={(v) => handleToggle(toggle.key, v)}
-                    disabled={isPending}
+                    disabled={isPending || !preferences?.email_enabled}
                   />
                 </div>
               ))}
@@ -212,7 +212,7 @@ export function NotificationsTab() {
                     id={toggle.key}
                     checked={preferences?.[toggle.key] ?? true}
                     onCheckedChange={(v) => handleToggle(toggle.key, v)}
-                    disabled={isPending}
+                    disabled={isPending || !preferences?.email_enabled}
                   />
                 </div>
               ))}

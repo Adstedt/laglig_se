@@ -250,14 +250,14 @@ describe('parseIndexPageRows', () => {
     expect(rows).toHaveLength(2)
 
     expect(rows[0]).toEqual({
-      sfsNumber: '2026:124',
+      sfsNumber: 'SFS 2026:124',
       title: 'Lag om ändring i lagen (2023:875) om tilläggsskatt',
       publishedDate: '2026-03-03',
       numericPart: 124,
     })
 
     expect(rows[1]).toEqual({
-      sfsNumber: '2026:123',
+      sfsNumber: 'SFS 2026:123',
       title: 'Förordning om statsbidrag',
       publishedDate: '2026-03-02',
       numericPart: 123,
@@ -267,7 +267,7 @@ describe('parseIndexPageRows', () => {
   it('filters by year', () => {
     const rows2025 = parseIndexPageRows(sampleIndexHtml, 2025)
     expect(rows2025).toHaveLength(1)
-    expect(rows2025[0]!.sfsNumber).toBe('2025:1400')
+    expect(rows2025[0]!.sfsNumber).toBe('SFS 2025:1400')
   })
 
   it('returns empty array for non-matching year', () => {

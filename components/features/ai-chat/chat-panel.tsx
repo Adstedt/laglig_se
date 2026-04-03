@@ -192,6 +192,7 @@ export function ChatPanel({
       <AssessmentResolution
         changeEventId={contextId}
         lawListItemId={lawListItemId}
+        onClose={onClose}
       />
     )
   }, [hasCompletedReply, contextType, contextId, lawListItemId])

@@ -28,12 +28,8 @@ import { ComplianceDetailTable } from './compliance-detail-table'
 // Story 6.18: Grouped compliance table (same accordion structure as table view)
 import { GroupedComplianceTable } from './grouped-compliance-table'
 import { GroupManager } from './group-manager'
-import { GroupFilterChip } from './group-filter-chip'
-import { ContentTypeFilter } from './content-type-filter'
 import { AddDocumentModal, type DocumentInfoForAdd } from './add-document-modal'
 import { ManageListModal } from './manage-list-modal'
-import { ExportDropdown } from './export-dropdown'
-import { ViewToggle } from './view-toggle'
 // Story 6.3: Legal Document Modal
 import { LegalDocumentModal } from './legal-document-modal'
 // Story 6.15: Task Modal for bidirectional linking
@@ -41,22 +37,19 @@ import { TaskModal } from '@/components/features/tasks/task-modal'
 import type { InitialListItemData } from '@/lib/hooks/use-list-item-details'
 // Story 6.2: Compliance filters and search
 import {
-  ComplianceFilters,
   parseFiltersFromUrl,
   hasActiveFilters as checkHasActiveFilters,
   type ComplianceFiltersState,
 } from './compliance-filters'
 import { FilterEmptyState } from './filter-empty-state'
 import { SearchInput } from './search-input'
-import { ColumnSettings } from './column-settings'
-import { ComplianceColumnSettings } from './compliance-column-settings'
 import { Button } from '@/components/ui/button'
-import {
-  UnifiedToolbar,
-  ToolbarItemCount,
-} from '@/components/ui/unified-toolbar'
-import Link from 'next/link'
-import { Plus, Settings, FolderPlus, Library } from 'lucide-react'
+import { ToolbarItemCount } from '@/components/ui/unified-toolbar'
+import { Plus, Settings } from 'lucide-react'
+// Toolbar redesign
+import { LawListToolbar } from './law-list-toolbar'
+import { ViewMenu } from './view-menu'
+import { FilterBar } from './filter-bar'
 import type {
   DocumentListSummary,
   WorkspaceMemberOption,
@@ -105,6 +98,9 @@ export function DocumentListPageContent({
   const [focusField, setFocusField] = useState<
     'businessContext' | 'complianceActions' | null
   >(null)
+
+  // Toolbar redesign: filter bar visibility
+  const [isFilterBarOpen, setIsFilterBarOpen] = useState(false)
 
   // Story 6.15: SWR config for invalidating task cache when task is updated
   const { mutate: globalMutate } = useSWRConfig()
@@ -341,6 +337,10 @@ export function DocumentListPageContent({
     setComplianceFilters(urlFilters)
     const urlSearch = searchParams.get('q') ?? ''
     setSearchQuery(urlSearch)
+    // Auto-open filter bar if URL has active filters
+    if (checkHasActiveFilters(urlFilters)) {
+      setIsFilterBarOpen(true)
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Story 6.2: Client-side filtering of items (filters + search)
@@ -406,6 +406,17 @@ export function DocumentListPageContent({
     [complianceFilters, searchQuery]
   )
 
+  // Active filter count for the filter bar badge
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (contentTypeFilter && contentTypeFilter.length > 0) count++
+    count += complianceFilters.complianceStatus.length
+    count += complianceFilters.category.length
+    if (complianceFilters.responsibleUserId) count++
+    if (activeGroupFilter) count++
+    return count
+  }, [contentTypeFilter, complianceFilters, activeGroupFilter])
+
   // Story 6.3 Performance: Get selected item data for instant modal display
   const selectedItemInitialData = useMemo((): InitialListItemData | null => {
     if (!selectedListItemId) return null
@@ -449,6 +460,22 @@ export function DocumentListPageContent({
     })),
     { enabled: !isLoadingItems, delay: 800 }
   )
+
+  // Clear all filters (for filter bar "Rensa" button)
+  const clearAllFilters = useCallback(() => {
+    setComplianceFilters({
+      complianceStatus: [],
+      category: [],
+      responsibleUserId: null,
+    })
+    setContentTypeGroupFilter(null)
+    clearGroupFilter()
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('status')
+    params.delete('category')
+    params.delete('responsible')
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }, [searchParams, router, setContentTypeGroupFilter, clearGroupFilter])
 
   // Story 6.2: Clear all filters and search
   const clearAllFiltersAndSearch = useCallback(() => {
@@ -684,11 +711,9 @@ export function DocumentListPageContent({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Unified Toolbar - Complex layout with two rows */}
-      <UnifiedToolbar
-        layout="complex"
-        // Zone A: Context
-        contextSelector={
+      {/* Toolbar redesign: single-row toolbar + collapsible filter bar */}
+      <LawListToolbar
+        listSwitcher={
           <DocumentListSwitcher
             lists={lists}
             activeListId={activeListId}
@@ -697,84 +722,33 @@ export function DocumentListPageContent({
             isLoading={isLoadingLists}
           />
         }
-        // Zone B: Filters
-        filterChips={
-          <ContentTypeFilter
-            activeFilter={contentTypeFilter}
-            onFilterChange={setContentTypeGroupFilter}
-          />
-        }
-        activeFilters={
-          activeGroupFilterInfo && (
-            <GroupFilterChip
-              groupName={activeGroupFilterInfo.name}
-              onClear={handleClearGroupFilter}
-            />
-          )
-        }
         search={
           <SearchInput
             initialValue={searchParams.get('q') ?? ''}
             onSearch={handleSearch}
-            placeholder="Sök..."
+            placeholder="Sök dokument..."
+            className="w-full"
           />
         }
-        filterDropdowns={
-          <ComplianceFilters
-            filters={complianceFilters}
-            onFiltersChange={setComplianceFilters}
-            workspaceMembers={workspaceMembers}
-            categories={categories}
+        filterCount={activeFilterCount}
+        isFilterBarOpen={isFilterBarOpen}
+        onToggleFilterBar={() => setIsFilterBarOpen((o) => !o)}
+        viewMenu={
+          <ViewMenu
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            columnVisibility={columnVisibility}
+            onColumnVisibilityChange={setColumnVisibility}
+            complianceColumnVisibility={complianceColumnVisibility}
+            onComplianceColumnVisibilityChange={setComplianceColumnVisibility}
+            hasGroups={groups.length > 0}
+            onOpenGroupManager={() => setIsGroupManagerOpen(true)}
+            onExpandAll={expandAllGroups}
+            onCollapseAll={collapseAllGroups}
+            listId={activeListId}
+            listName={activeList?.name ?? 'lista'}
+            exportDisabled={!activeListId || listItems.length === 0}
           />
-        }
-        // Zone C: View Controls
-        viewToggle={<ViewToggle value={viewMode} onChange={setViewMode} />}
-        columnSettings={
-          viewMode === 'table' ? (
-            <ColumnSettings
-              columnVisibility={columnVisibility}
-              onColumnVisibilityChange={setColumnVisibility}
-            />
-          ) : viewMode === 'compliance' ? (
-            <ComplianceColumnSettings
-              columnVisibility={complianceColumnVisibility}
-              onColumnVisibilityChange={setComplianceColumnVisibility}
-            />
-          ) : null
-        }
-        // Zone D: Actions
-        primaryAction={
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            disabled={!activeListId}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Lägg till dokument
-          </Button>
-        }
-        secondaryActions={
-          <>
-            <Button variant="outline" asChild>
-              <Link href="/laglistor/mallar">
-                <Library className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Utforska mallar</span>
-              </Link>
-            </Button>
-            <ExportDropdown
-              listId={activeListId}
-              listName={activeList?.name ?? 'lista'}
-              disabled={!activeListId || listItems.length === 0}
-            />
-            <Button
-              variant="outline"
-              onClick={() => setIsGroupManagerOpen(true)}
-              disabled={!activeListId}
-              title="Hantera grupper"
-            >
-              <FolderPlus className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">Grupper</span>
-            </Button>
-          </>
         }
         settingsAction={
           <Button
@@ -787,10 +761,18 @@ export function DocumentListPageContent({
             <Settings className="h-4 w-4" />
           </Button>
         }
-        // Between rows: Document count for flat table view
-        betweenRows={
+        primaryAction={
+          <Button
+            onClick={() => setIsAddModalOpen(true)}
+            disabled={!activeListId}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Lägg till dokument
+          </Button>
+        }
+        itemCount={
           viewMode === 'table' &&
-          (groups.length === 0 || hasFiltersOrSearch || activeGroupFilter) && (
+          (groups.length === 0 || hasFiltersOrSearch || activeGroupFilter) ? (
             <ToolbarItemCount
               showing={
                 hasFiltersOrSearch
@@ -802,8 +784,22 @@ export function DocumentListPageContent({
               total={total}
               label="dokument"
             />
-          )
+          ) : undefined
         }
+      />
+
+      <FilterBar
+        isOpen={isFilterBarOpen}
+        contentTypeFilter={contentTypeFilter}
+        onContentTypeChange={setContentTypeGroupFilter}
+        complianceFilters={complianceFilters}
+        onComplianceFiltersChange={setComplianceFilters}
+        workspaceMembers={workspaceMembers}
+        categories={categories}
+        activeGroupFilterInfo={activeGroupFilterInfo}
+        onClearGroupFilter={handleClearGroupFilter}
+        activeFilterCount={activeFilterCount}
+        onClearAll={clearAllFilters}
       />
 
       {/* Error message */}

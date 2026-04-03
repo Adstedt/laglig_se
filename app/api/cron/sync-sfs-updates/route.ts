@@ -23,6 +23,8 @@ import { invalidateLawCaches } from '@/lib/cache/invalidation'
 import { classifyLawType, classificationToMetadata } from '@/lib/sfs'
 import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 import { normalizeSfsLaw } from '@/lib/transforms/normalizers/sfs-law-normalizer'
+import { parseCanonicalHtml } from '@/lib/transforms/canonical-html-parser'
+import { htmlToMarkdown } from '@/lib/transforms/html-to-markdown'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -260,11 +262,33 @@ export async function GET(request: Request) {
               })
             }
 
+            // Story 14.14: Derive json_content + markdown_content from normalized HTML
+            let jsonContent = null
+            let markdownContent = null
+            if (normalizedHtml) {
+              try {
+                jsonContent = parseCanonicalHtml(normalizedHtml, {
+                  sfsNumber: doc.beteckning,
+                  documentType: 'SFS_LAW',
+                })
+                markdownContent = htmlToMarkdown(normalizedHtml)
+              } catch (err) {
+                console.error(
+                  `[SYNC-SFS-UPDATES] Failed to derive json/markdown for ${sfsNumber}:`,
+                  err
+                )
+              }
+            }
+
             await tx.legalDocument.update({
               where: { id: existing.id },
               data: {
                 full_text: newFullText,
                 html_content: normalizedHtml,
+                json_content: jsonContent
+                  ? JSON.parse(JSON.stringify(jsonContent))
+                  : undefined,
+                markdown_content: markdownContent,
                 updated_at: new Date(),
                 metadata: {
                   ...((existing.metadata as object) || {}),
