@@ -115,7 +115,7 @@ describe('ChatDetailSidebar', () => {
     fireEvent.click(screen.getByTestId('open-tool'))
 
     // Search results detail should render
-    expect(screen.getByText('1 resultat')).toBeInTheDocument()
+    expect(screen.getByText('1 resultat i 1 dokument')).toBeInTheDocument()
   })
 
   it('closes on Escape key', () => {

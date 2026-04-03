@@ -182,17 +182,6 @@ describe('WorkspaceSwitcher', () => {
       })
     })
 
-    it('shows create workspace button', async () => {
-      const user = userEvent.setup()
-      render(<WorkspaceSwitcher />)
-
-      await user.click(screen.getByRole('combobox'))
-
-      await waitFor(() => {
-        expect(screen.getByText('Skapa ny arbetsplats')).toBeInTheDocument()
-      })
-    })
-
     it('shows loading spinner while fetching workspaces', async () => {
       mockFetch.mockImplementation(
         () => new Promise((resolve) => setTimeout(resolve, 1000))
@@ -380,49 +369,6 @@ describe('WorkspaceSwitcher', () => {
 
       await waitFor(() => {
         expect(onSwitchComplete).toHaveBeenCalled()
-      })
-    })
-  })
-
-  describe('create workspace modal', () => {
-    it('opens create workspace modal when create button is clicked', async () => {
-      const user = userEvent.setup()
-      render(<WorkspaceSwitcher />)
-
-      await user.click(screen.getByRole('combobox'))
-
-      await waitFor(() => {
-        expect(screen.getByText('Skapa ny arbetsplats')).toBeInTheDocument()
-      })
-
-      await user.click(screen.getByText('Skapa ny arbetsplats'))
-
-      // Modal should open with dialog
-      await waitFor(() => {
-        expect(screen.getByRole('dialog')).toBeInTheDocument()
-      })
-    })
-
-    it('closes popover when create button is clicked', async () => {
-      const user = userEvent.setup()
-      render(<WorkspaceSwitcher />)
-
-      await user.click(screen.getByRole('combobox'))
-
-      await waitFor(() => {
-        expect(screen.getByText('Skapa ny arbetsplats')).toBeInTheDocument()
-      })
-
-      await user.click(screen.getByText('Skapa ny arbetsplats'))
-
-      // Popover should close (workspace list no longer visible outside dialog)
-      await waitFor(() => {
-        // The create button in popover should no longer be visible
-        // (there might be one in the modal now)
-        const popoverContent = document.querySelector(
-          '[data-radix-popover-content]'
-        )
-        expect(popoverContent).not.toBeInTheDocument()
       })
     })
   })

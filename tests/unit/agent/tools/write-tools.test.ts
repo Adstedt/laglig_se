@@ -353,14 +353,10 @@ describe('save_assessment tool', () => {
       toolOpts
     )
 
-    // Verify lawListItem update uses the authenticated userId
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          last_change_acknowledged_by: 'user-1',
-        }),
-      })
-    )
+    // Verify lawListItem acknowledgement is NOT updated
+    // (last_change_acknowledged_at is an immutable onboarding floor —
+    // individual assessments are tracked via ChangeAssessment records)
+    expect(mockUpdate).not.toHaveBeenCalled()
   })
 })
 

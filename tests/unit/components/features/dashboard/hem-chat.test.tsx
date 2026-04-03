@@ -332,7 +332,9 @@ describe('HemChat', () => {
   })
 
   // --- Test 10: Conversation state shows messages ---
-  it('shows conversation state when messages exist', () => {
+  it('shows conversation state when user engages', async () => {
+    const user = userEvent.setup()
+
     mockMessages = [
       {
         id: '1',
@@ -350,6 +352,9 @@ describe('HemChat', () => {
 
     render(<HemChat mode="full" />)
 
+    // Full mode starts in home state until user engages — click a prompt to engage
+    await user.click(screen.getByText('Visa en översikt av min efterlevnad'))
+
     // Should show message list, not greeting or logo
     expect(screen.getByTestId('chat-message-list')).toBeInTheDocument()
     expect(
@@ -359,7 +364,9 @@ describe('HemChat', () => {
   })
 
   // --- Test 11: "Ny konversation" button in conversation state ---
-  it('shows "Ny konversation" button during active conversation', () => {
+  it('shows "Ny konversation" button during active conversation', async () => {
+    const user = userEvent.setup()
+
     mockMessages = [
       {
         id: '1',
@@ -370,6 +377,9 @@ describe('HemChat', () => {
     ]
 
     render(<HemChat mode="full" />)
+
+    // Full mode starts in home state — engage via suggested prompt
+    await user.click(screen.getByText('Visa en översikt av min efterlevnad'))
 
     expect(
       screen.getByRole('button', { name: 'Ny konversation' })
@@ -391,6 +401,9 @@ describe('HemChat', () => {
 
     render(<HemChat mode="full" />)
 
+    // Engage first so conversation state renders
+    await user.click(screen.getByText('Visa en översikt av min efterlevnad'))
+
     await user.click(screen.getByRole('button', { name: 'Ny konversation' }))
 
     expect(mockArchiveConversation).toHaveBeenCalled()
@@ -401,7 +414,6 @@ describe('HemChat', () => {
   it('shows error toast when archiving fails', async () => {
     const user = userEvent.setup()
     const { toast } = await import('sonner')
-    mockArchiveConversation.mockRejectedValueOnce(new Error('Network error'))
 
     mockMessages = [
       {
@@ -413,6 +425,12 @@ describe('HemChat', () => {
     ]
 
     render(<HemChat mode="full" />)
+
+    // Engage first so conversation state renders
+    await user.click(screen.getByText('Visa en översikt av min efterlevnad'))
+
+    // Set up archive failure AFTER engagement (mount effect also calls archiveConversation)
+    mockArchiveConversation.mockRejectedValueOnce(new Error('Network error'))
 
     await user.click(screen.getByRole('button', { name: 'Ny konversation' }))
 
