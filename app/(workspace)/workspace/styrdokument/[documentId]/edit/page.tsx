@@ -68,7 +68,10 @@ async function DocumentEditorLoader({ documentId }: { documentId: string }) {
   }
 
   return (
-    <div data-document-id={doc.id} className="h-full">
+    <div
+      data-document-id={doc.id}
+      className="h-full -mx-4 -mb-4 md:-mx-6 md:-mb-6"
+    >
       <DocumentEditor
         documentId={doc.id}
         initialTitle={doc.title}

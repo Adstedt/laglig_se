@@ -303,10 +303,9 @@ export function DocumentEditor({
             Tillbaka
           </Button>
           <DocumentStatusBadge status={currentStatus} />
-          <span className="text-sm text-muted-foreground">
-            v{currentVersionNumber}
+          <span className="text-xs text-muted-foreground/60">
+            v{currentVersionNumber} &middot; {authorName}
           </span>
-          <span className="text-sm text-muted-foreground">{authorName}</span>
         </div>
         <div className="flex items-center gap-3">
           {editor && (
