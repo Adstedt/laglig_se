@@ -40,11 +40,15 @@ export interface DocumentFilters {
 interface DocumentFiltersProps {
   filters: DocumentFilters
   onFiltersChange: (_filters: DocumentFilters) => void
+  hideStatusFilter?: boolean
+  excludeStatuses?: string[] | undefined
 }
 
 export function DocumentFilterControls({
   filters,
   onFiltersChange,
+  hideStatusFilter,
+  excludeStatuses,
 }: DocumentFiltersProps) {
   const [searchInput, setSearchInput] = useState(filters.search)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -139,37 +143,43 @@ export function DocumentFilterControls({
       </Popover>
 
       {/* Status multi-select */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-9 gap-1">
-            <Filter className="h-3.5 w-3.5" />
-            Status
-            {filters.statuses.length > 0 && (
-              <span className="ml-1 rounded-full bg-primary px-1.5 py-0 text-[10px] text-primary-foreground">
-                {filters.statuses.length}
-              </span>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-48 p-3" align="start">
-          <div className="space-y-2">
-            {Object.values(WorkspaceDocumentStatus).map((status) => (
-              <label
-                key={status}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <Checkbox
-                  checked={filters.statuses.includes(status)}
-                  onCheckedChange={(checked) => toggleStatus(status, !!checked)}
-                />
-                <span className="text-sm">
-                  {STATUS_LABELS[status] ?? status}
+      {!hideStatusFilter && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-9 gap-1">
+              <Filter className="h-3.5 w-3.5" />
+              Status
+              {filters.statuses.length > 0 && (
+                <span className="ml-1 rounded-full bg-primary px-1.5 py-0 text-[10px] text-primary-foreground">
+                  {filters.statuses.length}
                 </span>
-              </label>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-48 p-3" align="start">
+            <div className="space-y-2">
+              {Object.values(WorkspaceDocumentStatus)
+                .filter((s) => !excludeStatuses?.includes(s))
+                .map((status) => (
+                  <label
+                    key={status}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Checkbox
+                      checked={filters.statuses.includes(status)}
+                      onCheckedChange={(checked) =>
+                        toggleStatus(status, !!checked)
+                      }
+                    />
+                    <span className="text-sm">
+                      {STATUS_LABELS[status] ?? status}
+                    </span>
+                  </label>
+                ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
 
       {/* Clear filters */}
       {hasActiveFilters && (

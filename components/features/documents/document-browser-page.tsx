@@ -14,7 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { FilePlus, Upload, FileText, Loader2 } from 'lucide-react'
+import { FilePlus, Upload, FileText, Archive, Loader2 } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast } from 'sonner'
 import {
   getWorkspaceDocuments,
@@ -37,14 +38,19 @@ export function DocumentBrowserPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'aktiva' | 'arkiverade'>(
+    (searchParams.get('tab') as 'aktiva' | 'arkiverade') ?? 'aktiva'
+  )
+
   // Dialog state
   const [createOpen, setCreateOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [archiveTarget, setArchiveTarget] = useState<string | null>(null)
   const [archiving, setArchiving] = useState(false)
 
-  // Data state
-  const [documents, setDocuments] = useState<DocumentItem[]>([])
+  // Data state — allDocuments holds the raw fetch, documents is tab-filtered
+  const [allDocuments, setAllDocuments] = useState<DocumentItem[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
@@ -67,6 +73,7 @@ export function DocumentBrowserPage() {
   const syncToUrl = useCallback(
     (f: DocumentFilters, sb: SortField, so: 'asc' | 'desc') => {
       const params = new URLSearchParams()
+      if (activeTab === 'arkiverade') params.set('tab', 'arkiverade')
       if (f.search) params.set('search', f.search)
       for (const t of f.types) params.append('type', t)
       for (const s of f.statuses) params.append('status', s)
@@ -123,9 +130,9 @@ export function DocumentBrowserPage() {
         }
 
         if (isLoadMore) {
-          setDocuments((prev) => [...prev, ...items])
+          setAllDocuments((prev) => [...prev, ...items])
         } else {
-          setDocuments(items)
+          setAllDocuments(items)
         }
         setHasMore(data.hasMore)
         setNextCursor(data.nextCursor)
@@ -137,11 +144,34 @@ export function DocumentBrowserPage() {
     [filters, sortBy, sortOrder]
   )
 
+  // Derive documents from tab
+  const documents =
+    activeTab === 'arkiverade'
+      ? allDocuments.filter((d) => d.status === 'ARCHIVED')
+      : allDocuments.filter((d) => d.status !== 'ARCHIVED')
+
   // Re-fetch on filter/sort change
   useEffect(() => {
     fetchDocuments()
     syncToUrl(filters, sortBy, sortOrder)
   }, [fetchDocuments, syncToUrl, filters, sortBy, sortOrder])
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      setActiveTab(value as 'aktiva' | 'arkiverade')
+      const params = new URLSearchParams(searchParams.toString())
+      if (value === 'aktiva') {
+        params.delete('tab')
+      } else {
+        params.set('tab', value)
+      }
+      const qs = params.toString()
+      router.replace(`/workspace/styrdokument${qs ? `?${qs}` : ''}`, {
+        scroll: false,
+      })
+    },
+    [router, searchParams]
+  )
 
   const handleFiltersChange = useCallback((newFilters: DocumentFilters) => {
     setFilters(newFilters)
@@ -207,10 +237,26 @@ export function DocumentBrowserPage() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList className="h-auto p-1 bg-muted/50">
+          <TabsTrigger value="aktiva" className="gap-2">
+            <FileText className="h-4 w-4" />
+            Aktiva
+          </TabsTrigger>
+          <TabsTrigger value="arkiverade" className="gap-2">
+            <Archive className="h-4 w-4" />
+            Arkiverade
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* Filters */}
       <DocumentFilterControls
         filters={filters}
         onFiltersChange={handleFiltersChange}
+        hideStatusFilter={activeTab === 'arkiverade'}
+        excludeStatuses={activeTab === 'aktiva' ? ['ARCHIVED'] : undefined}
       />
 
       {/* Content */}
@@ -222,36 +268,50 @@ export function DocumentBrowserPage() {
         </div>
       ) : documents.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
-          <h2 className="text-lg font-medium mb-1">
-            {filters.search ||
-            filters.types.length > 0 ||
-            filters.statuses.length > 0
-              ? 'Inga dokument hittades'
-              : 'Skapa ditt första dokument'}
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            {filters.search ||
-            filters.types.length > 0 ||
-            filters.statuses.length > 0
-              ? 'Ändra dina filter för att hitta dokument.'
-              : 'Kom igång genom att skapa ett nytt dokument eller importera ett befintligt.'}
-          </p>
-          {!(
-            filters.search ||
-            filters.types.length > 0 ||
-            filters.statuses.length > 0
-          ) && (
-            <div className="flex gap-2">
-              <Button onClick={() => setCreateOpen(true)}>
-                <FilePlus className="mr-2 h-4 w-4" />
-                Nytt dokument
-              </Button>
-              <Button variant="outline" onClick={() => setImportOpen(true)}>
-                <Upload className="mr-2 h-4 w-4" />
-                Importera
-              </Button>
-            </div>
+          {activeTab === 'arkiverade' ? (
+            <>
+              <Archive className="h-12 w-12 text-muted-foreground/50 mb-4" />
+              <h2 className="text-lg font-medium mb-1">
+                Inga arkiverade dokument
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Dokument som arkiveras hamnar här.
+              </p>
+            </>
+          ) : (
+            <>
+              <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
+              <h2 className="text-lg font-medium mb-1">
+                {filters.search ||
+                filters.types.length > 0 ||
+                filters.statuses.length > 0
+                  ? 'Inga dokument hittades'
+                  : 'Inga styrdokument ännu'}
+              </h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                {filters.search ||
+                filters.types.length > 0 ||
+                filters.statuses.length > 0
+                  ? 'Ändra dina filter för att hitta dokument.'
+                  : 'Kom igång genom att skapa ett nytt styrdokument eller importera ett befintligt.'}
+              </p>
+              {!(
+                filters.search ||
+                filters.types.length > 0 ||
+                filters.statuses.length > 0
+              ) && (
+                <div className="flex gap-2">
+                  <Button onClick={() => setCreateOpen(true)}>
+                    <FilePlus className="mr-2 h-4 w-4" />
+                    Nytt dokument
+                  </Button>
+                  <Button variant="outline" onClick={() => setImportOpen(true)}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Importera
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       ) : (
