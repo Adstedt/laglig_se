@@ -513,7 +513,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-2 py-3">
+        <nav className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2 py-3">
           {/* Platform Section — hide AI Chat toggle on /dashboard (Hem IS the chat) */}
           <div className="space-y-0.5">
             {platformItems
