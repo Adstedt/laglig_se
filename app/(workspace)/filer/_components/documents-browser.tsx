@@ -192,7 +192,7 @@ export default function DocumentsBrowser({
 
       // Build URL path
       if (folderId === null) {
-        router.push('/documents')
+        router.push('/filer')
       } else {
         // Find path to folder from breadcrumbs or folder tree
         const segment = breadcrumbs.find((b) => b.id === folderId)
@@ -217,7 +217,7 @@ export default function DocumentsBrowser({
             }
             return null
           }
-          const folderPath = findFolderPath(folderTree, folderId, '/documents')
+          const folderPath = findFolderPath(folderTree, folderId, '/filer')
           if (folderPath) {
             router.push(folderPath)
           }
@@ -426,8 +426,7 @@ export default function DocumentsBrowser({
   // Double-click folder to navigate
   const handleFolderDoubleClick = (folder: FolderInfo) => {
     // Build new path
-    const currentPath =
-      breadcrumbs[breadcrumbs.length - 1]?.path || '/documents'
+    const currentPath = breadcrumbs[breadcrumbs.length - 1]?.path || '/filer'
     const newPath = `${currentPath}/${encodeURIComponent(folder.filename)}`
     router.push(newPath)
     setCurrentFolderId(folder.id)
@@ -438,7 +437,7 @@ export default function DocumentsBrowser({
       {/* Header - matching tasks page layout */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Mina filer</h1>
+          <h1 className="text-2xl font-semibold">Filer</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Hantera och organisera filer för din organisation.
           </p>
@@ -464,12 +463,12 @@ export default function DocumentsBrowser({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Sök filer..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="h-9 pl-9 text-sm"
           />
         </div>
 

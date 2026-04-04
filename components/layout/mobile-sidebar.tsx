@@ -85,9 +85,9 @@ const workItems = [
     href: '/tasks',
   },
   {
-    title: 'Mina filer',
+    title: 'Filer',
     icon: FolderOpen,
-    href: '/documents',
+    href: '/filer',
   },
   {
     title: 'HR',

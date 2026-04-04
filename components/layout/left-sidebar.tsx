@@ -114,14 +114,14 @@ const workItems: NavItem[] = [
     href: '/tasks',
   },
   {
-    title: 'Dokument',
+    title: 'Styrdokument',
     icon: FileText,
-    href: '/workspace/documents',
+    href: '/workspace/styrdokument',
   },
   {
-    title: 'Mina filer',
+    title: 'Filer',
     icon: FolderOpen,
-    href: '/documents',
+    href: '/filer',
   },
   {
     title: 'HR',

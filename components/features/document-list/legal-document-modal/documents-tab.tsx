@@ -145,7 +145,7 @@ export function DocumentsTab({ listItemId, onUpdate }: DocumentsTabProps) {
               >
                 <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <Link
-                  href={`/workspace/documents/${doc.id}/edit`}
+                  href={`/workspace/styrdokument/${doc.id}/edit`}
                   className="flex-1 min-w-0 truncate text-sm hover:underline"
                 >
                   {doc.title}

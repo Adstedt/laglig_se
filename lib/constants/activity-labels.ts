@@ -43,5 +43,5 @@ export const ENTITY_TYPE_LABELS: Record<string, string> = {
   task: 'Uppgift',
   comment: 'Kommentar',
   evidence: 'Bevis',
-  workspace_document: 'Dokument',
+  workspace_document: 'Styrdokument',
 }

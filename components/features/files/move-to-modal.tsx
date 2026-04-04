@@ -248,7 +248,7 @@ export function MoveToModal({
 
   const targetName =
     selectedFolderId === null
-      ? 'Mina filer'
+      ? 'Filer'
       : folders
           .flatMap((f) => [f, ...flattenNodes(f.children)])
           .find((f) => f.id === selectedFolderId)?.name || 'vald mapp'

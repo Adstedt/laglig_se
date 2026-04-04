@@ -21,7 +21,8 @@ const routeLabels: Record<string, string> = {
   'ai-chat': 'AI Chat',
   kanban: 'Uppgifter',
   tasks: 'Uppgifter',
-  documents: 'Mina filer',
+  styrdokument: 'Styrdokument',
+  filer: 'Filer',
   hr: 'HR',
   employees: 'Anställda',
   compliance: 'Efterlevnad',
@@ -50,18 +51,15 @@ const showAsLink = new Set([
   'version',
   'laglistor',
   'mallar',
-  'documents',
+  'filer',
+  'styrdokument',
 ])
 
 // Segments that should be hidden from the breadcrumb trail
 const hiddenSegments = new Set(['edit', 'workspace'])
 
 // Get a user-friendly label for a segment (truncate long slugs)
-function getSegmentLabel(segment: string, prevSegment?: string): string {
-  // /workspace/documents = "Dokument", /documents = "Mina filer"
-  if (segment === 'documents' && prevSegment === 'workspace') {
-    return 'Dokument'
-  }
+function getSegmentLabel(segment: string, _prevSegment?: string): string {
   if (routeLabels[segment]) {
     return routeLabels[segment]
   }

@@ -297,7 +297,7 @@ export function DocumentEditor({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push('/workspace/documents')}
+            onClick={() => router.push('/workspace/styrdokument')}
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
             Tillbaka

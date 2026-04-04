@@ -341,7 +341,7 @@ export async function uploadFile(
         },
       })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return { success: true, data: workspaceFile as WorkspaceFileWithLinks }
     })
   } catch (error) {
@@ -394,7 +394,7 @@ export async function uploadFileAndLinkToTask(
       }
 
       revalidatePath('/tasks')
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return { success: true, data: file.data }
     })
   } catch (error) {
@@ -449,7 +449,7 @@ export async function uploadFileAndLinkToListItem(
       }
 
       revalidatePath('/laglistor')
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return { success: true, data: file.data }
     })
   } catch (error) {
@@ -697,7 +697,7 @@ export async function updateFile(
         },
       })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return { success: true, data: updatedFile as WorkspaceFileWithLinks }
     })
   } catch (error) {
@@ -760,7 +760,7 @@ export async function deleteFile(fileId: string): Promise<ActionResult> {
       // Delete from database (cascades to links)
       await prisma.workspaceFile.delete({ where: { id: fileId } })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       revalidatePath('/tasks')
       revalidatePath('/laglistor')
       return { success: true }
@@ -811,7 +811,7 @@ export async function linkFileToTask(
         update: {},
       })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       revalidatePath('/tasks')
       return { success: true }
     })
@@ -867,7 +867,7 @@ export async function linkFileToListItem(
         update: {},
       })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       revalidatePath('/laglistor')
       return { success: true }
     })
@@ -911,7 +911,7 @@ export async function unlinkFile(
         revalidatePath('/laglistor')
       }
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return { success: true }
     })
   } catch (error) {
@@ -959,7 +959,7 @@ export async function linkFilesToTask(
         })
       }
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       revalidatePath('/tasks')
       return { success: true }
     })
@@ -1017,7 +1017,7 @@ export async function linkFilesToListItem(
         })
       }
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       revalidatePath('/laglistor')
       return { success: true }
     })
@@ -1126,7 +1126,7 @@ export async function deleteFilesBulk(
         where: { id: { in: files.map((f) => f.id) } },
       })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       revalidatePath('/tasks')
       revalidatePath('/laglistor')
       return { success: true, data: { deleted: deleteResult.count } }
@@ -1161,7 +1161,7 @@ export async function updateFilesCategoryBulk(
         data: { category },
       })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return { success: true, data: { updated: result.count } }
     })
   } catch (error) {
@@ -1275,7 +1275,7 @@ export async function createFolder(data: {
         },
       })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return {
         success: true,
         data: {
@@ -1354,7 +1354,7 @@ export async function renameFolder(data: {
         data: { filename: validated.newName },
       })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return {
         success: true,
         data: {
@@ -1466,7 +1466,7 @@ export async function moveItem(data: {
         data: { parent_folder_id: validated.targetFolderId },
       })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return { success: true }
     })
   } catch (error) {
@@ -1552,7 +1552,7 @@ export async function deleteFolder(
       // Delete folder (cascade deletes children)
       await prisma.workspaceFile.delete({ where: { id: folderId } })
 
-      revalidatePath('/documents')
+      revalidatePath('/filer')
       return {
         success: true,
         data: { deletedCount: allDescendants.length + 1 },
@@ -1824,7 +1824,7 @@ export async function getFolderPath(
   try {
     return await withWorkspace(async ({ workspaceId }) => {
       const segments: BreadcrumbSegment[] = [
-        { id: null, name: 'Mina filer', path: '/documents' },
+        { id: null, name: 'Filer', path: '/filer' },
       ]
 
       if (!folderId) {
@@ -1859,7 +1859,7 @@ export async function getFolderPath(
       }
 
       // Build path URLs
-      let currentPath = '/documents'
+      let currentPath = '/filer'
       for (const seg of pathSegments) {
         currentPath += `/${encodeURIComponent(seg.name)}`
         segments.push({ id: seg.id, name: seg.name, path: currentPath })

@@ -169,7 +169,9 @@ export function DocumentTable({
           <TableRow
             key={doc.id}
             className="cursor-pointer"
-            onClick={() => router.push(`/workspace/documents/${doc.id}/edit`)}
+            onClick={() =>
+              router.push(`/workspace/styrdokument/${doc.id}/edit`)
+            }
           >
             <TableCell className="font-medium">{doc.title}</TableCell>
             <TableCell className="text-muted-foreground text-sm">
@@ -214,7 +216,7 @@ export function DocumentTable({
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation()
-                      router.push(`/workspace/documents/${doc.id}/edit`)
+                      router.push(`/workspace/styrdokument/${doc.id}/edit`)
                     }}
                   >
                     <ExternalLink className="mr-2 h-4 w-4" />

@@ -154,7 +154,7 @@ export function ImportDocumentDialog({
     // Single file → navigate to editor; multiple → stay for summary
     if (files.length === 1 && importResults[0]?.id) {
       onOpenChange(false)
-      router.push(`/workspace/documents/${importResults[0].id}/edit`)
+      router.push(`/workspace/styrdokument/${importResults[0].id}/edit`)
     }
   }, [files, onOpenChange, router])
 

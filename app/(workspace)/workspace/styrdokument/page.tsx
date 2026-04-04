@@ -6,7 +6,7 @@ import { DocumentBrowserPage } from '@/components/features/documents/document-br
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Dokument | Laglig',
+  title: 'Styrdokument | Laglig',
 }
 
 function BrowserSkeleton() {

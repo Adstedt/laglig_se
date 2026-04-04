@@ -322,7 +322,7 @@ describe('Breadcrumb Path Generation', () => {
     folderId: string | null
   ): Array<{ id: string | null; name: string; path: string }> {
     const segments: Array<{ id: string | null; name: string; path: string }> = [
-      { id: null, name: 'Mina filer', path: '/documents' },
+      { id: null, name: 'Filer', path: '/filer' },
     ]
 
     if (!folderId) {
@@ -341,7 +341,7 @@ describe('Breadcrumb Path Generation', () => {
     }
 
     // Build path URLs
-    let currentPath = '/documents'
+    let currentPath = '/filer'
     for (const seg of pathSegments) {
       currentPath += `/${encodeURIComponent(seg.name)}`
       segments.push({ id: seg.id, name: seg.name, path: currentPath })
@@ -375,8 +375,8 @@ describe('Breadcrumb Path Generation', () => {
     expect(result).toHaveLength(1)
     expect(result[0]).toEqual({
       id: null,
-      name: 'Mina filer',
-      path: '/documents',
+      name: 'Filer',
+      path: '/filer',
     })
   })
 
@@ -385,13 +385,13 @@ describe('Breadcrumb Path Generation', () => {
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual({
       id: null,
-      name: 'Mina filer',
-      path: '/documents',
+      name: 'Filer',
+      path: '/filer',
     })
     expect(result[1]).toEqual({
       id: 'folder-1',
       name: 'Projects',
-      path: '/documents/Projects',
+      path: '/filer/Projects',
     })
   })
 
@@ -400,23 +400,23 @@ describe('Breadcrumb Path Generation', () => {
     expect(result).toHaveLength(4)
     expect(result[0]).toEqual({
       id: null,
-      name: 'Mina filer',
-      path: '/documents',
+      name: 'Filer',
+      path: '/filer',
     })
     expect(result[1]).toEqual({
       id: 'folder-1',
       name: 'Projects',
-      path: '/documents/Projects',
+      path: '/filer/Projects',
     })
     expect(result[2]).toEqual({
       id: 'folder-2',
       name: '2024',
-      path: '/documents/Projects/2024',
+      path: '/filer/Projects/2024',
     })
     expect(result[3]).toEqual({
       id: 'folder-3',
       name: 'January Reports',
-      path: '/documents/Projects/2024/January%20Reports',
+      path: '/filer/Projects/2024/January%20Reports',
     })
   })
 
@@ -432,7 +432,7 @@ describe('Breadcrumb Path Generation', () => {
       foldersWithSpecialChars,
       'folder-special'
     )
-    expect(result[1]?.path).toBe('/documents/Docs%20%26%20Files')
+    expect(result[1]?.path).toBe('/filer/Docs%20%26%20Files')
   })
 })
 

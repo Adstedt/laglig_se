@@ -156,7 +156,7 @@ export function CreateDocumentDialog({
       reset()
       setSelectedTemplateId(null)
       onOpenChange(false)
-      router.push(`/workspace/documents/${result.data!.id}/edit`)
+      router.push(`/workspace/styrdokument/${result.data!.id}/edit`)
     } catch {
       setError('Ett oväntat fel uppstod')
       toast.error('Ett oväntat fel uppstod')

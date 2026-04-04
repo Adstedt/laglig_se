@@ -148,7 +148,7 @@ export function LinkedDocumentsBox({
                 >
                   <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <Link
-                    href={`/workspace/documents/${doc.id}/edit`}
+                    href={`/workspace/styrdokument/${doc.id}/edit`}
                     className="flex-1 min-w-0 truncate hover:underline"
                   >
                     {doc.title}

@@ -73,7 +73,7 @@ export function DocumentBrowserPage() {
       if (sb !== 'updated_at') params.set('sortBy', sb)
       if (so !== 'desc') params.set('sortOrder', so)
       const qs = params.toString()
-      router.replace(`/workspace/documents${qs ? `?${qs}` : ''}`, {
+      router.replace(`/workspace/styrdokument${qs ? `?${qs}` : ''}`, {
         scroll: false,
       })
     },
@@ -190,9 +190,9 @@ export function DocumentBrowserPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Dokument</h1>
+          <h1 className="text-2xl font-semibold">Styrdokument</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Hantera arbetsplatsens compliance-dokument
+            Policyer, rutiner och instruktioner med versionshistorik
           </p>
         </div>
         <div className="flex items-center gap-2">
