@@ -20,35 +20,35 @@ describe('getEffectiveDateBadge', () => {
     expect(badge.text).toContain('okänt')
   })
 
-  it('returns amber variant for future date', () => {
+  it('returns amber variant for future date with formatted date', () => {
     const future = new Date()
     future.setDate(future.getDate() + 30)
     const badge = getEffectiveDateBadge(future)
     expect(badge.variant).toBe('amber')
-    expect(badge.text).toContain('Träder i kraft om')
-    expect(badge.text).toContain('dagar')
+    expect(badge.text).toContain('Träder i kraft')
+    expect(badge.text).not.toContain('okänt')
   })
 
-  it('returns red variant for today', () => {
+  it('returns red variant for today with date', () => {
     const badge = getEffectiveDateBadge(new Date())
     expect(badge.variant).toBe('red')
-    expect(badge.text).toBe('Träder i kraft idag')
+    expect(badge.text).toContain('Träder i kraft idag')
   })
 
-  it('returns green variant for past date', () => {
+  it('returns green variant for past date with formatted date', () => {
     const past = new Date()
     past.setDate(past.getDate() - 10)
     const badge = getEffectiveDateBadge(past)
     expect(badge.variant).toBe('green')
-    expect(badge.text).toBe('Trädde i kraft')
+    expect(badge.text).toContain('I kraft sedan')
   })
 
-  it('returns 1 day for tomorrow', () => {
+  it('returns amber for tomorrow with formatted date', () => {
     const tomorrow = new Date()
     tomorrow.setDate(tomorrow.getDate() + 1)
     const badge = getEffectiveDateBadge(tomorrow)
     expect(badge.variant).toBe('amber')
-    expect(badge.text).toContain('1 dagar')
+    expect(badge.text).toContain('Träder i kraft')
   })
 })
 

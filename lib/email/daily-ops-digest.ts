@@ -152,7 +152,7 @@ export async function gatherIngestionSummary(
     prisma.$queryRaw<[{ count: bigint }]>`
       SELECT COUNT(DISTINCT ce.amendment_sfs)::bigint as count
       FROM change_events ce
-      JOIN amendment_documents ad ON ad.sfs_number = REPLACE(ce.amendment_sfs, 'SFS ', '')
+      JOIN amendment_documents ad ON ad.sfs_number = ce.amendment_sfs
       WHERE ce.ai_summary IS NULL
         AND ce.amendment_sfs IS NOT NULL
         AND ad.parse_status = 'COMPLETED'
@@ -191,7 +191,7 @@ export async function gatherGapDetection(
 
     // Get all amendment_documents SFS numbers for the year
     const amendments = await prisma.amendmentDocument.findMany({
-      where: { sfs_number: { startsWith: `${year}:` } },
+      where: { sfs_number: { startsWith: `SFS ${year}:` } },
       select: { sfs_number: true },
     })
 
@@ -203,16 +203,13 @@ export async function gatherGapDetection(
       select: { document_number: true },
     })
 
+    // Both sides use "SFS YYYY:X" format — direct comparison
     const dbSfsNumbers = new Set<string>()
     for (const a of amendments) {
       dbSfsNumbers.add(a.sfs_number)
     }
     for (const d of legalDocs) {
-      // "SFS 2026:123" -> "2026:123" (robust: handle missing space)
-      const match = d.document_number.match(/(\d{4}:\d+)/)
-      if (match?.[1]) {
-        dbSfsNumbers.add(match[1])
-      }
+      dbSfsNumbers.add(d.document_number)
     }
 
     const missing = [...indexSfsNumbers].filter((sfs) => !dbSfsNumbers.has(sfs))
@@ -305,7 +302,7 @@ export async function gatherAmendmentPipeline(
 ): Promise<AmendmentPipelineStatus> {
   const statuses = await prisma.amendmentDocument.groupBy({
     by: ['parse_status'],
-    where: { sfs_number: { startsWith: `${year}:` } },
+    where: { sfs_number: { startsWith: `SFS ${year}:` } },
     _count: true,
   })
 
@@ -316,7 +313,7 @@ export async function gatherAmendmentPipeline(
 
   const failures = await prisma.amendmentDocument.findMany({
     where: {
-      sfs_number: { startsWith: `${year}:` },
+      sfs_number: { startsWith: `SFS ${year}:` },
       parse_status: ParseStatus.FAILED,
     },
     select: { sfs_number: true, parse_error: true },

@@ -7,6 +7,7 @@
 
 import { PrismaClient, ContentType, DocumentStatus } from '@prisma/client'
 import { generateAmendmentSlug, generateAmendmentTitle } from './amendment-slug'
+import { ensureSfsPrefix } from './ensure-prefix'
 
 type PrismaTransaction = Omit<
   PrismaClient,
@@ -66,7 +67,7 @@ export async function createLegalDocumentFromAmendment(
   )
 
   // Find base law for linking
-  const baseLawDocNumber = `SFS ${amendment.base_law_sfs}`
+  const baseLawDocNumber = ensureSfsPrefix(amendment.base_law_sfs)
   const baseLaw = await tx.legalDocument.findUnique({
     where: { document_number: baseLawDocNumber },
     select: { id: true, slug: true },

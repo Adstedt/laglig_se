@@ -105,7 +105,7 @@ function ChangeAssessmentViewInner({
       amendmentSfs: change.amendmentSfs ?? '',
       changeType: change.changeType,
       affectedSections: [],
-      effectiveDate: null,
+      effectiveDate: change.effectiveDate ?? null,
       existingAssessment: null,
       documentTitle: change.documentTitle,
       documentNumber: change.documentNumber,

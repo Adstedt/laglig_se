@@ -48,11 +48,7 @@ import {
   fetchPropositionContext,
 } from '@/lib/riksdagen/proposition-fetcher'
 import { extractEffectiveDate } from '@/lib/external/pdf-parser'
-
-/** Ensure SFS number has "SFS " prefix (idempotent) */
-function ensureSfsPrefix(sfsNumber: string): string {
-  return sfsNumber.startsWith('SFS ') ? sfsNumber : `SFS ${sfsNumber}`
-}
+import { ensureSfsPrefix } from '@/lib/sfs/ensure-prefix'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -184,7 +180,9 @@ export async function GET(request: Request) {
           sfs_number: doc.sfsNumber,
           storage_path: constructStoragePath(doc.sfsNumber),
           original_url: doc.pdfUrl,
-          base_law_sfs: doc.baseLawSfs ?? 'unknown',
+          base_law_sfs: doc.baseLawSfs
+            ? ensureSfsPrefix(doc.baseLawSfs)
+            : 'unknown',
           title: doc.title,
           publication_date: new Date(doc.publishedDate),
           parse_status: ParseStatus.PENDING,
@@ -208,7 +206,7 @@ export async function GET(request: Request) {
 
     const unknownRecords = await prisma.amendmentDocument.findMany({
       where: {
-        sfs_number: { startsWith: `${year}:` },
+        sfs_number: { startsWith: `SFS ${year}:` },
         base_law_sfs: 'unknown',
       },
       select: { id: true, sfs_number: true, title: true },
@@ -223,7 +221,7 @@ export async function GET(request: Request) {
         if (resolved) {
           await prisma.amendmentDocument.update({
             where: { id: rec.id },
-            data: { base_law_sfs: resolved },
+            data: { base_law_sfs: ensureSfsPrefix(resolved) },
           })
           console.log(
             `[DISCOVER-SFS] Resolved ${rec.sfs_number}: unknown → ${resolved}`
@@ -240,7 +238,7 @@ export async function GET(request: Request) {
 
     const toProcess = await prisma.amendmentDocument.findMany({
       where: {
-        sfs_number: { startsWith: `${year}:` },
+        sfs_number: { startsWith: `SFS ${year}:` },
         parse_status: { in: [ParseStatus.PENDING, ParseStatus.FAILED] },
         base_law_sfs: { not: 'unknown' },
       },
@@ -293,7 +291,7 @@ export async function GET(request: Request) {
 
     const completedWithoutEvents = await prisma.amendmentDocument.findMany({
       where: {
-        sfs_number: { startsWith: `${year}:` },
+        sfs_number: { startsWith: `SFS ${year}:` },
         parse_status: ParseStatus.COMPLETED,
         base_law_sfs: { not: 'unknown' },
       },
@@ -423,7 +421,7 @@ export async function GET(request: Request) {
 async function computeWatermark(year: number): Promise<number | null> {
   const amendments = await prisma.amendmentDocument.findMany({
     where: {
-      sfs_number: { startsWith: `${year}:` },
+      sfs_number: { startsWith: `SFS ${year}:` },
     },
     select: { sfs_number: true },
   })

@@ -37,14 +37,20 @@ export function getEffectiveDateBadge(date: Date | null): EffectiveDateBadge {
   const diffMs = target.getTime() - today.getTime()
   const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24))
 
+  const dateStr = target.toLocaleDateString('sv-SE', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+
   if (diffDays > 0) {
-    return { text: `Träder i kraft om ${diffDays} dagar`, variant: 'amber' }
+    return { text: `Träder i kraft ${dateStr}`, variant: 'amber' }
   }
   if (diffDays === 0) {
-    return { text: 'Träder i kraft idag', variant: 'red' }
+    return { text: `Träder i kraft idag (${dateStr})`, variant: 'red' }
   }
   // Past
-  return { text: 'Trädde i kraft', variant: 'green' }
+  return { text: `I kraft sedan ${dateStr}`, variant: 'green' }
 }
 
 // ---------------------------------------------------------------------------

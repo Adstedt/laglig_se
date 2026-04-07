@@ -280,9 +280,8 @@ export async function GET(request: Request) {
 
       if (ce.amendment_sfs) {
         // Look up AmendmentDocument for effective_date, PDF URL, section changes
-        const sfsNumber = ce.amendment_sfs.replace('SFS ', '')
         const amendmentDoc = await prisma.amendmentDocument.findUnique({
-          where: { sfs_number: sfsNumber },
+          where: { sfs_number: ce.amendment_sfs },
           select: {
             effective_date: true,
             original_url: true,
