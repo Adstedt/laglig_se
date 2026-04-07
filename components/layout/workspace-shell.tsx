@@ -77,7 +77,7 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
 
   return (
     <WorkspaceProvider>
-      <Toaster position="top-right" richColors />
+      <Toaster position="bottom-center" />
       {/* Row-first layout: sidebar | column(header + content) */}
       <div className="flex h-screen overflow-hidden">
         {/* Left Sidebar - full height, desktop only */}
