@@ -15,6 +15,7 @@ import { unstable_cache } from 'next/cache'
 import { prisma, withRetry } from '@/lib/prisma'
 import { ContentType } from '@prisma/client'
 import { parseSfsFromSlug } from '@/lib/sfs/amendment-slug'
+import { ensureSfsPrefix } from '@/lib/sfs/ensure-prefix'
 import { getCachedDocument } from '@/lib/services/document-cache'
 
 /**
@@ -230,7 +231,7 @@ export const getCachedAmendment = unstable_cache(
     // Get detailed amendment info from AmendmentDocument
     const amendmentDoc = await withRetry(() =>
       prisma.amendmentDocument.findUnique({
-        where: { sfs_number: sfsNumber },
+        where: { sfs_number: ensureSfsPrefix(sfsNumber) },
         include: {
           section_changes: {
             orderBy: { sort_order: 'asc' },
@@ -244,7 +245,9 @@ export const getCachedAmendment = unstable_cache(
     if (amendmentDoc?.base_law_sfs) {
       baseLaw = await withRetry(() =>
         prisma.legalDocument.findUnique({
-          where: { document_number: `SFS ${amendmentDoc.base_law_sfs}` },
+          where: {
+            document_number: ensureSfsPrefix(amendmentDoc.base_law_sfs),
+          },
           select: {
             id: true,
             slug: true,

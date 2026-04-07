@@ -790,7 +790,7 @@ model LawSection {
 // Stores the amendment document (PDF) itself - one row per SFS amendment number
 model AmendmentDocument {
   id         String @id @default(cuid())
-  sfs_number String @unique // "2022:1109"
+  sfs_number String @unique // "SFS 2022:1109"
 
   // Storage
   storage_path String // Supabase: "2022/SFS2022-1109.pdf"
@@ -798,7 +798,7 @@ model AmendmentDocument {
   file_size    Int? // Bytes
 
   // Base law reference
-  base_law_sfs  String // "1977:1160" - the law being amended
+  base_law_sfs  String // "SFS 1977:1160" - the law being amended
   base_law_name String? // "arbetsmiljölagen"
 
   // Document metadata

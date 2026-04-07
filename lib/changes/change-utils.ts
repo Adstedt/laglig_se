@@ -23,6 +23,8 @@ export interface UnacknowledgedChange {
   listName: string
   /** LawListItem ID — the entity that gets acknowledged in Story 8.3 */
   lawListItemId: string
+  /** Effective date from AmendmentDocument (null = unknown) */
+  effectiveDate?: Date | null
   /** Story 14.10: Assessment status (null = unassessed) */
   assessmentStatus?: AssessmentStatus | null
 }

@@ -9,6 +9,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { HemChat } from '@/components/features/dashboard/hem-chat'
 import { ChangeAssessmentView } from '@/components/features/dashboard/change-assessment-view'
 import { LawListGenerationProgress } from '@/components/features/dashboard/law-list-generation-progress'
@@ -33,6 +34,7 @@ export function HemPage({
   initialView,
   generationStatus,
 }: HemPageProps) {
+  const router = useRouter()
   const [activeChange, setActiveChange] = useState<UnacknowledgedChange | null>(
     initialChange ?? null
   )
@@ -58,7 +60,8 @@ export function HemPage({
 
   const handleBack = useCallback(() => {
     setActiveChange(null)
-  }, [])
+    router.refresh()
+  }, [router])
 
   const showGenerationProgress =
     generationStatus === 'pending' ||

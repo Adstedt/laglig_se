@@ -64,10 +64,16 @@ function getEffectiveDateBadge(date: Date | null): {
   const diffDays = Math.round(
     (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   )
+  const dateStr = target.toLocaleDateString('sv-SE', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
   if (diffDays > 0)
-    return { text: `Träder i kraft om ${diffDays} dagar`, variant: 'amber' }
-  if (diffDays === 0) return { text: 'Träder i kraft idag', variant: 'red' }
-  return { text: 'Trädde i kraft', variant: 'green' }
+    return { text: `Träder i kraft ${dateStr}`, variant: 'amber' }
+  if (diffDays === 0)
+    return { text: `Träder i kraft idag (${dateStr})`, variant: 'red' }
+  return { text: `I kraft sedan ${dateStr}`, variant: 'green' }
 }
 
 const EFFECTIVE_DATE_COLORS: Record<string, string> = {

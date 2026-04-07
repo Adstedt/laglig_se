@@ -47,6 +47,7 @@ export async function getUnacknowledgedChanges(): Promise<
           amendment_sfs: string | null
           ai_summary: string | null
           detected_at: Date
+          effective_date: Date | null
           list_id: string
           list_name: string
           law_list_item_id: string
@@ -62,6 +63,7 @@ export async function getUnacknowledgedChanges(): Promise<
           ce.amendment_sfs,
           ce.ai_summary,
           ce.detected_at,
+          ad.effective_date,
           ll.id as list_id,
           ll.name as list_name,
           lli.id as law_list_item_id
@@ -69,6 +71,7 @@ export async function getUnacknowledgedChanges(): Promise<
         JOIN legal_documents ld ON ld.id = ce.document_id
         JOIN law_list_items lli ON lli.document_id = ce.document_id
         JOIN law_lists ll ON ll.id = lli.law_list_id
+        LEFT JOIN amendment_documents ad ON ad.sfs_number = ce.amendment_sfs
         LEFT JOIN change_assessments ca
           ON ca.change_event_id = ce.id
           AND ca.law_list_item_id = lli.id
@@ -92,6 +95,7 @@ export async function getUnacknowledgedChanges(): Promise<
         amendmentSfs: ce.amendment_sfs,
         aiSummary: ce.ai_summary,
         detectedAt: ce.detected_at,
+        effectiveDate: ce.effective_date ?? null,
         priority: derivePriority(ce.change_type),
         listId: ce.list_id,
         listName: ce.list_name,
@@ -172,6 +176,7 @@ export async function getUnacknowledgedChangeById(
           amendment_sfs: string | null
           ai_summary: string | null
           detected_at: Date
+          effective_date: Date | null
           list_id: string
           list_name: string
           law_list_item_id: string
@@ -187,6 +192,7 @@ export async function getUnacknowledgedChangeById(
           ce.amendment_sfs,
           ce.ai_summary,
           ce.detected_at,
+          ad.effective_date,
           ll.id as list_id,
           ll.name as list_name,
           lli.id as law_list_item_id
@@ -194,6 +200,7 @@ export async function getUnacknowledgedChangeById(
         JOIN legal_documents ld ON ld.id = ce.document_id
         JOIN law_list_items lli ON lli.document_id = ce.document_id
         JOIN law_lists ll ON ll.id = lli.law_list_id
+        LEFT JOIN amendment_documents ad ON ad.sfs_number = ce.amendment_sfs
         WHERE ce.id = ${changeEventId}
           AND ll.workspace_id = ${ctx.workspaceId}
         LIMIT 1
@@ -214,6 +221,7 @@ export async function getUnacknowledgedChangeById(
         amendmentSfs: ce.amendment_sfs,
         aiSummary: ce.ai_summary,
         detectedAt: ce.detected_at,
+        effectiveDate: ce.effective_date ?? null,
         priority: derivePriority(ce.change_type),
         listId: ce.list_id,
         listName: ce.list_name,

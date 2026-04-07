@@ -25,6 +25,7 @@ import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 import { normalizeSfsLaw } from '@/lib/transforms/normalizers/sfs-law-normalizer'
 import { parseCanonicalHtml } from '@/lib/transforms/canonical-html-parser'
 import { htmlToMarkdown } from '@/lib/transforms/html-to-markdown'
+import { ensureSfsPrefix } from '@/lib/sfs/ensure-prefix'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -148,14 +149,14 @@ export async function GET(request: Request) {
         if (!latestAmendment) {
           const latestKnown = await prisma.amendmentDocument.findFirst({
             where: {
-              base_law_sfs: doc.beteckning,
+              base_law_sfs: ensureSfsPrefix(doc.beteckning),
               parse_status: 'COMPLETED',
             },
             orderBy: { sfs_number: 'desc' },
             select: { sfs_number: true },
           })
           if (latestKnown) {
-            latestAmendment = `SFS ${latestKnown.sfs_number}`
+            latestAmendment = latestKnown.sfs_number
             console.log(
               `[SYNC-SFS-UPDATES] ${sfsNumber} undertitel empty, using own data: ${latestAmendment}`
             )

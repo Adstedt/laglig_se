@@ -98,7 +98,7 @@ export async function GET(request: Request) {
         MIN(ald.id) as amendment_legal_doc_id
       FROM change_events ce
       JOIN legal_documents bl ON bl.id = ce.document_id
-      JOIN amendment_documents ad ON ad.sfs_number = REPLACE(ce.amendment_sfs, 'SFS ', '')
+      JOIN amendment_documents ad ON ad.sfs_number = ce.amendment_sfs
       LEFT JOIN legal_documents ald ON ald.document_number = ce.amendment_sfs AND ald.content_type = 'SFS_AMENDMENT'
       WHERE ce.ai_summary IS NULL
         AND ce.amendment_sfs IS NOT NULL
