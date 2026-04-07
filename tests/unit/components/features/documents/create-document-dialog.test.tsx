@@ -20,6 +20,10 @@ vi.mock('@/app/actions/documents', () => ({
     success: true,
     data: { id: 'doc-1', title: 'Test', versionNumber: 1 },
   }),
+  getDocumentTemplates: vi.fn().mockResolvedValue({
+    success: true,
+    data: [],
+  }),
 }))
 
 // Mock sonner toast
