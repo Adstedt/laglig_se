@@ -146,6 +146,7 @@ export async function getUnacknowledgedChangeCount(): Promise<
             lli.last_change_acknowledged_at IS NULL
             OR ce.detected_at > lli.last_change_acknowledged_at
           )
+          AND NOT (ce.change_type = 'NEW_LAW' AND ce.amendment_sfs IS NULL)
       `
 
       return { success: true, data: Number(result[0]?.count ?? 0) }
@@ -261,6 +262,7 @@ export async function getUnacknowledgedChangeCountByDocument(): Promise<
             lli.last_change_acknowledged_at IS NULL
             OR ce.detected_at > lli.last_change_acknowledged_at
           )
+          AND NOT (ce.change_type = 'NEW_LAW' AND ce.amendment_sfs IS NULL)
         GROUP BY ce.document_id
       `
 
