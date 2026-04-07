@@ -28,10 +28,10 @@ C4Container
     Container_Boundary(backend, "Backend Services") {
         Container(auth, "Authentication Service", "NextAuth.js", "User authentication and session management")
         Container(onboarding, "Onboarding Service", "Server Actions", "Company data fetch and law list generation")
-        Container(rag, "RAG Service", "Langchain, OpenAI", "Vector search and AI chat responses")
+        Container(rag, "AI Agent Service", "Vercel AI SDK, Anthropic Claude", "Agent tools, RAG search, and chat responses")
         Container(ingestion, "Ingestion Service", "Background Jobs", "Fetch legal content from external APIs")
         Container(hr, "HR Service", "Server Actions", "Employee management and Fortnox sync")
-        Container(notifications, "Notification Service", "Resend, Firebase", "Email and push notifications")
+        Container(notifications, "Notification Service", "Resend", "Email notifications and in-app notification bell")
     }
 
     Container_Boundary(data, "Data Layer") {
@@ -42,9 +42,10 @@ C4Container
 
     System_Ext(riksdagen, "Riksdagen API", "SFS laws")
     System_Ext(domstolsverket, "Domstolsverket API", "Court cases")
-    System_Ext(fortnox, "Fortnox API", "Employee data")
+    System_Ext(bolagsapi, "BolagsAPI", "Company data")
     System_Ext(stripe, "Stripe API", "Payments")
-    System_Ext(openai, "OpenAI API", "GPT-4, Embeddings")
+    System_Ext(anthropic, "Anthropic API", "Claude LLM")
+    System_Ext(openai, "OpenAI API", "Embeddings")
 
     Rel(user, webapp, "Uses", "HTTPS")
     Rel(webapp, auth, "Authenticates via", "Server Actions")
@@ -517,7 +518,73 @@ const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat(
 
 ---
 
-### 6.3.9 Additional UI Components
+### 6.3.9 Document Management Components (Epic 17)
+
+**Responsibility:** Rich text document editor, document lifecycle management, and document browsing
+
+**Key Components:**
+
+**Document Editor (`components/features/documents/editor/`):**
+
+- `<DocumentEditor />` - Tiptap-based rich text editor with Word-like UX
+- `<EditorToolbar />` - Formatting toolbar (text align, color, highlight, tables, links)
+- `<SlashCommand />` - Slash command menu for quick block insertion
+- `<DocumentSettingsPanel />` - Document metadata and type configuration
+- `<StatusTransitionControls />` - Lifecycle buttons (DRAFT → APPROVED → ARCHIVED)
+
+**Document Browser (`components/features/documents/`):**
+
+- `<CreateDocumentDialog />` - New document creation with template selection
+- `<DocumentFilters />` - Filter by status, type, author
+- `<DocumentStatusBadge />` - Visual status indicator
+
+**Document Processing (`lib/documents/`):**
+
+- `docx-to-tiptap.ts` - Import .docx files via mammoth → Tiptap JSON
+- `tiptap-to-docx.ts` - Export Tiptap content to .docx via docx library
+- `tiptap-to-pdf.ts` - Render HTML to PDF via puppeteer-core + @sparticuz/chromium
+
+**Technology:** Tiptap v3.21 (headless ProseMirror wrapper) with 19 extensions including text-align, color, highlight, character-count, tables, mentions, and slash commands.
+
+**Location:** `components/features/documents/`, `lib/documents/`
+
+---
+
+### 6.3.10 Admin Backoffice Components (Epic 11)
+
+**Responsibility:** Internal admin dashboard for platform operations
+
+**Key Components:**
+
+- Admin dashboard with customer overview metrics
+- Workspace management table (view, edit, impersonate)
+- User management with search and role display
+- User impersonation with `AdminAuditLog` tracking
+- Cron job dashboard with execution status and logs
+- Job execution log viewer with error details
+
+**Auth:** Separate admin auth via `ADMIN_EMAILS` environment variable. Not user-facing.
+
+**Location:** `app/admin/`, `components/features/admin/`
+
+---
+
+### 6.3.11 Template Catalog Components (Epic 12)
+
+**Responsibility:** Browsable template library for law list creation
+
+**Key Components:**
+
+- Template catalog with browse and search
+- Template detail preview with section breakdown
+- Template adoption flow (adopt into workspace law list)
+- Admin template management (CRUD, content editing, cross-list overlap viewer)
+
+**Location:** `components/features/templates/`
+
+---
+
+### 6.3.12 Additional UI Components
 
 **Responsibility:** Reusable UI components used across multiple features
 

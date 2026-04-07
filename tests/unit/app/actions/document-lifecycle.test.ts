@@ -84,12 +84,10 @@ describe('updateDocumentStatus (with comment + ActivityLog)', () => {
       async (fn: (_tx: unknown) => Promise<unknown>) => {
         const tx = {
           workspaceDocument: {
-            update: vi
-              .fn()
-              .mockResolvedValue({
-                id: '550e8400-e29b-41d4-a716-446655440000',
-                status: 'IN_REVIEW',
-              }),
+            update: vi.fn().mockResolvedValue({
+              id: '550e8400-e29b-41d4-a716-446655440000',
+              status: 'IN_REVIEW',
+            }),
           },
           activityLog: {
             create: vi
@@ -138,12 +136,10 @@ describe('updateDocumentStatus (with comment + ActivityLog)', () => {
       async (fn: (_tx: unknown) => Promise<unknown>) => {
         const tx = {
           workspaceDocument: {
-            update: vi
-              .fn()
-              .mockResolvedValue({
-                id: '550e8400-e29b-41d4-a716-446655440000',
-                status: 'IN_REVIEW',
-              }),
+            update: vi.fn().mockResolvedValue({
+              id: '550e8400-e29b-41d4-a716-446655440000',
+              status: 'IN_REVIEW',
+            }),
           },
           activityLog: {
             create: vi

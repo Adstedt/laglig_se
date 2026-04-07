@@ -124,22 +124,26 @@ describe('saveDocumentVersion', () => {
     expect(result.error).toBe('Dokument hittades inte')
   })
 
-  it('generates HTML from content JSON server-side', async () => {
-    const { generateHTML } = await import('@tiptap/core')
-
+  it('uses provided contentHtml instead of generating server-side', async () => {
     mockFindFirst.mockResolvedValue({
       id: 'doc-1',
       current_version_number: 1,
       workspace_id: MOCK_WORKSPACE_ID,
     })
 
+    let capturedHtml: string | undefined
     mockTransaction.mockImplementation(
       async (fn: (_tx: unknown) => Promise<unknown>) => {
         const tx = {
           workspaceDocumentVersion: {
             create: vi
               .fn()
-              .mockResolvedValue({ id: 'ver-2', version_number: 2 }),
+              .mockImplementation(
+                (args: { data: { content_html: string } }) => {
+                  capturedHtml = args.data.content_html
+                  return { id: 'ver-2', version_number: 2 }
+                }
+              ),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: { create: vi.fn().mockResolvedValue({}) },
@@ -150,9 +154,15 @@ describe('saveDocumentVersion', () => {
 
     const { saveDocumentVersion } = await import('@/app/actions/documents')
 
-    await saveDocumentVersion('doc-1', { type: 'doc', content: [] })
+    await saveDocumentVersion(
+      'doc-1',
+      { type: 'doc', content: [] },
+      undefined,
+      undefined,
+      '<p>Client HTML</p>'
+    )
 
-    expect(generateHTML).toHaveBeenCalled()
+    expect(capturedHtml).toBe('<p>Client HTML</p>')
   })
 
   it('includes title update when title is provided', async () => {

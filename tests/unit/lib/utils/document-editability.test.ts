@@ -6,8 +6,8 @@ describe('isDocumentEditable', () => {
     expect(isDocumentEditable('DRAFT')).toBe(true)
   })
 
-  it('returns true for IN_REVIEW', () => {
-    expect(isDocumentEditable('IN_REVIEW')).toBe(true)
+  it('returns false for IN_REVIEW', () => {
+    expect(isDocumentEditable('IN_REVIEW')).toBe(false)
   })
 
   it('returns false for APPROVED', () => {

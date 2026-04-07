@@ -11,6 +11,7 @@ vi.mock('@/app/actions/documents', () => ({
   getDocumentVersions: (...args: unknown[]) => mockGetDocumentVersions(...args),
   restoreDocumentVersion: (...args: unknown[]) =>
     mockRestoreDocumentVersion(...args),
+  getDocumentTemplates: vi.fn().mockResolvedValue({ success: true, data: [] }),
 }))
 
 const MOCK_VERSIONS = [

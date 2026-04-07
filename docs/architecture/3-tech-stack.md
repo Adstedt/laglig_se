@@ -55,6 +55,11 @@
 | **SEO**                        | Next.js Metadata API                 | Built-in (Next.js 16)                         | Meta tags, Open Graph, structured data                       | Server-side metadata generation, dynamic OG images, sitemap.xml generation for 170K pages, robots.txt.                                                                                                                                                                                                                                  |
 | **Accessibility Testing**      | axe DevTools + pa11y CI              | axe 4.8+, pa11y 7.1+                          | Automated accessibility audits                               | axe: Browser extension for manual testing. pa11y: CI integration, fails build on WCAG violations, tests all 170K pages.                                                                                                                                                                                                                 |
 | **Rate Limiting**              | Upstash Ratelimit                    | @upstash/ratelimit 1.0+                       | API rate limiting, abuse prevention                          | Distributed rate limiting (Redis-backed), multiple algorithms (sliding window, token bucket), NFR8 requirement (10 req/min per IP), integrates with Upstash Redis.                                                                                                                                                                      |
+| **Rich Text Editor**           | Tiptap                               | 3.21+ (@tiptap/core + 19 extensions)          | Document editor for compliance documents (Epic 17)           | Headless, extensible ProseMirror wrapper. Extensions: text-align, color, text-style, highlight, character-count, typography, underline, image, link, mention, placeholder, table (+ cell/header/row), suggestion, starter-kit, pm, react. |
+| **Document Import**            | mammoth                              | 1.12+                                         | Convert .docx files to HTML/Tiptap JSON                      | Word document import for document management. Extracts text and structure from uploaded .docx files. |
+| **Document Export (Word)**     | docx                                 | 9.6+                                          | Generate .docx files from Tiptap content                     | Programmatic Word document generation for compliance document export. |
+| **Document Export (PDF)**      | puppeteer-core + @sparticuz/chromium  | puppeteer-core 24.40+, chromium 143+          | Render HTML to PDF for document export                       | Headless Chrome PDF rendering. @sparticuz/chromium provides serverless-compatible Chromium binary for Vercel. |
+| **Markdown Streaming**         | @streamdown/core + @streamdown/code  | 1.0+                                          | Stream markdown rendering for AI chat responses              | Replaced react-markdown. Supports `mode="streaming"` for active streams and `mode="static"` for history. Code highlighting via @streamdown/code. |
 | **PDF Processing**             | pdf-parse                            | 1.1+                                          | Extract text from PDF files                                  | Parses kollektivavtal PDFs (PRD Story 3.6), extracts text for RAG indexing, Node.js compatible, handles Swedish characters (UTF-8).                                                                                                                                                                                                     |
 | **Drag & Drop**                | @dnd-kit/core + @dnd-kit/sortable    | 6.1+                                          | Kanban board drag-and-drop interactions                      | Accessible drag-and-drop (keyboard support), touch-friendly (mobile), collision detection, smooth animations, PRD Epic 6 requirement.                                                                                                                                                                                                   |
 | **Date/Time Formatting**       | date-fns                             | 3.3+                                          | Swedish locale date formatting                               | Format dates as "3 timmar sedan", "igår", Swedish month names, timezone handling, tree-shakeable (only import needed functions), smaller bundle than moment.js.                                                                                                                                                                         |
@@ -108,20 +113,13 @@
 - tRPC rejected: App Router Server Actions provide similar benefits without library overhead
 - GraphQL rejected: Overkill for CRUD operations, adds complexity
 
-**Why LLM Model is TBD (OpenAI vs Anthropic)?**
+**Why Anthropic Claude (decided)?**
 
-- **Decision pending testing** - Both OpenAI GPT-4 and Anthropic Claude are viable options
-- AI SDK 5.0 provides provider abstraction - can switch models via environment variable
-- Key evaluation criteria:
-  - Swedish language quality (legal terminology accuracy)
-  - Citation accuracy (zero-hallucination requirement)
-  - Streaming performance
-  - Cost per query at scale
-- Options under consideration:
-  - OpenAI GPT-4 Turbo: 128K context, function calling, $0.01/1K input
-  - Anthropic Claude Sonnet 4: Competitive Swedish support, $0.003/1K input
-  - Anthropic Claude Opus 4: Premium quality, higher cost
-- Final decision after A/B testing with 100 Swedish legal queries
+- **Decision made:** Anthropic Claude selected as primary LLM after extensive testing
+- AI SDK 5.0 provider abstraction allows model switching via environment variable
+- Claude Sonnet 4.6 used for agent chat (cost-effective, strong Swedish legal terminology)
+- Claude Opus 4.6 used for batch processing and complex analysis
+- Key factors: Superior Swedish language quality, reliable citation accuracy, excellent tool-use support for agentic workflows
 
 **Why text-embedding-3-small (not text-embedding-3-large)?**
 
@@ -323,7 +321,7 @@ SENTRY_AUTH_TOKEN="..."
 | Supabase      | AWS RDS + Cognito                       | Higher complexity (5+ services), slower setup (weeks vs. days), no pgvector in RDS                                                                    |
 | Upstash Redis | Redis Labs, AWS ElastiCache             | Redis Labs: $5/mo minimum + TCP (not Edge compatible). ElastiCache: Requires VPC, no serverless                                                       |
 | Zustand       | Redux Toolkit, Jotai, Recoil            | Redux: 15KB bundle (7x larger), boilerplate. Jotai: Atom API complexity. Recoil: Meta-owned, uncertain future                                         |
-| OpenAI GPT-4  | Claude Sonnet 3.5, Gemini Pro           | Claude: Slightly worse Swedish. Gemini: No function calling (citations). Open-source: Hallucination risk                                              |
+| Anthropic Claude | OpenAI GPT-4, Gemini Pro             | Claude selected. OpenAI: Weaker Swedish legal terminology. Gemini: Less reliable tool-use. Open-source: Hallucination risk                            |
 | Vercel        | AWS Amplify, Netlify, Railway           | AWS Amplify: Slower deploys, worse DX. Netlify: No Edge Functions. Railway: Less mature, no preview deploys                                           |
 | Playwright    | Cypress, Selenium                       | Cypress: No Safari testing, slower. Selenium: Complex setup, flaky tests, maintenance burden                                                          |
 | Prisma        | Drizzle, TypeORM, Kysely                | Drizzle: Less mature, manual migrations. TypeORM: Decorator hell, ActiveRecord pattern not ideal. Kysely: SQL-first (prefer schema-first)             |
@@ -393,7 +391,7 @@ If a critical library uses LGPL (e.g., some PDF parsers):
 
 **Current Status:**
 
-✅ All 56 production dependencies audited (January 2025)
+✅ All production dependencies audited
 ✅ 100% use MIT, Apache 2.0, or BSD licenses
 ✅ No GPL/AGPL violations detected
 ✅ CI enforcement active in `.github/workflows/license-check.yml`

@@ -2,17 +2,19 @@
 
 ## Epic 1: Foundation & Core Infrastructure
 
+**Status:** Done (10 stories completed)
+
 **Goal:** Establish project foundation while delivering initial 100 public law pages to validate SEO strategy.
 
 **Delivers:** Next.js app, database, auth, CI/CD, 100 law pages, monitoring, security
 
 **Requirements covered:** NFR1, FR29, NFR6, NFR13, NFR22, NFR23
 
-**Estimated stories:** 8-10
-
 ---
 
 ## Epic 2: Legal Content Foundation
+
+**Status:** Done (14 stories completed, 12 in backlog for future expansion)
 
 **Goal:** Build comprehensive multi-source legal content database with 170,000+ public SEO-optimized pages covering Swedish laws, court precedent, and EU legislation. Provide category structure, search/discovery features, and begin recording law change history.
 
@@ -20,11 +22,11 @@
 
 **Requirements covered:** FR1, FR4, FR8, FR24, FR35, FR36, FR37, NFR1
 
-**Estimated stories:** 11
-
 ## **Note:** Expanded from single-source (SFS laws only) to multi-content-type architecture based on competitive analysis. Court cases and EU legislation critical for SEO coverage.
 
 ## Epic 3: RAG-Powered AI Chat Interface
+
+**Status:** Partial (5 completed, 4 backlog — drag-and-drop context building deferred; core chat superseded by Epic 14)
 
 **Goal:** Implement zero-hallucination AI chatbot with drag-and-drop context building and citation-first responses.
 
@@ -32,11 +34,11 @@
 
 **Requirements covered:** FR4, FR5, FR6, NFR2, NFR3, NFR9, NFR20, NFR24
 
-**Estimated stories:** 10-12
-
 ---
 
 ## Epic 4: Dynamic Onboarding & Personalized Law Lists
+
+**Status:** Done (11 completed, 1 backlog)
 
 **Goal:** Create conversion engine that transforms homepage visitors into trial users through AI-driven conversational onboarding, dynamic questioning, and two-phase comprehensive law list generation (60-80 laws).
 
@@ -44,11 +46,11 @@
 
 **Requirements covered:** FR2, FR3, FR21, FR23, FR30, NFR4, NFR5
 
-**Estimated stories:** 12
-
 ---
 
 ## Epic 5: Workspace Management & Team Collaboration
+
+**Status:** Partial (5 completed, 1 backlog — Stripe billing, usage limits, team invites not started)
 
 **Goal:** Enable multi-user workspaces with subscription tiers, team invites, role-based access, and billing integration.
 
@@ -56,11 +58,11 @@
 
 **Requirements covered:** FR17, FR18, FR19, FR20, FR22, FR32, FR33, FR34, NFR18
 
-**Estimated stories:** 10-12
-
 ---
 
 ## Epic 6: Compliance Workspace (Kanban + Dashboard)
+
+**Status:** Done (22 completed, 1 backlog — significantly exceeded original estimate)
 
 **Goal:** Provide Jira-inspired Kanban board for visual compliance tracking and summary dashboard.
 
@@ -68,11 +70,11 @@
 
 **Requirements covered:** FR7, FR27, FR28, FR25
 
-**Estimated stories:** 8-10
-
 ---
 
 ## Epic 7: HR Module (Employee Management)
+
+**Status:** Not Started (0 completed, 12 in backlog)
 
 **Goal:** Connect employees to laws for context-aware HR compliance, improving AI chatbot value.
 
@@ -80,11 +82,11 @@
 
 **Requirements covered:** FR13, FR14, FR15, FR16, FR41, NFR4
 
-**Estimated stories:** 10-12
-
 ---
 
 ## Epic 8: Change Monitoring & Notification System
+
+**Status:** Done (12 completed, 6 backlog — core pipeline operational, optimization and digests remaining)
 
 **Goal:** Implement retention engine that automatically detects law changes and notifies users.
 
@@ -92,11 +94,11 @@
 
 **Requirements covered:** FR8, FR9, FR10, FR11, FR12, FR38, FR39, FR40, NFR10, NFR11, NFR26
 
-**Estimated stories:** 10-12
-
 ---
 
 ## Epic 9: Legal Intelligence & AI Enrichment
+
+**Status:** Partial (4 completed, 1 backlog — agency regulation ingestion done, parliamentary context deferred)
 
 **Goal:** Enrich raw legal content with AI-generated contextual analysis using parliamentary documents (propositions, committee reports) to provide genuine legal insight beyond raw text.
 
@@ -104,19 +106,17 @@
 
 **Requirements covered:** FR4 (enhanced), NFR9, NFR24
 
-**Estimated stories:** 5-7
-
 ---
 
 ## Epic 10: Workspace Onboarding & Invitation Flow
+
+**Status:** Done (3/3 completed)
 
 **Goal:** Fix broken new-user experience (crash on first login due to missing workspace) by implementing a multi-step workspace creation wizard and invitation acceptance flow, ensuring every authenticated user has a clear path to a functional workspace.
 
 **Delivers:** Post-auth workspace guard with redirect to onboarding, multi-step workspace creation wizard (company info aligned to Bolagsverket data model, review & confirm), WorkspaceInvitation model with token-based acceptance flow for invited users
 
 **Requirements covered:** FR17 (workspace creation), FR18 (team invites - acceptance side), FR20 (onboarding)
-
-**Estimated stories:** 3
 
 **Note:** Brownfield enhancement. Tier selection, Stripe billing, Bolagsverket API lookup, and law list generator step explicitly deferred. All new workspaces start as TRIAL. Wizard architecture supports future step insertion (law list generator). Story 5.3 (Team Invite System) depends on the invitation model created here.
 
@@ -126,11 +126,11 @@
 
 ## Epic 11: Admin Backoffice
 
+**Status:** Done (7/7 completed)
+
 **Goal:** Provide an internal admin backoffice at `/admin` for the Laglig team to monitor the platform, manage customers and subscriptions, debug issues via user impersonation, and operate/monitor cron jobs with detailed execution logs.
 
 **Delivers:** Admin auth, admin shell layout, customer overview dashboard, workspace/user management, user impersonation with audit trail, cron job dashboard, job execution log persistence
-
-**Estimated stories:** 7
 
 **Note:** Brownfield enhancement. Internal tooling, not user-facing. Separate admin auth via `ADMIN_EMAILS` env var.
 
@@ -138,13 +138,13 @@
 
 ## Epic 12: Law List Templates & Standard Regulatory Packages
 
+**Status:** Done (12 completed, 2 backlog)
+
 **Goal:** Create a curated library of expert-quality law list templates that serve as both a browsable product catalog for users and the structured foundation for AI-assisted law list generation. Phase 1: 3 gold-standard domains (Arbetsmiljö, Arb. tjänsteföretag, Miljö) with 265 documents.
 
 **Delivers:** Template data model (LawListTemplate, TemplateSection, TemplateItem), ~130 agency regulation stub records, AI-generated compliance summaries and expert commentary, admin template management UI, authenticated template catalog with browse/preview/adopt, refactored AI onboarding drawing from templates
 
 **Requirements covered:** FR2 (enhanced), FR3 (enhanced), FR4 (enhanced)
-
-**Estimated stories:** 12
 
 **Note:** Derived from Notisum competitive analysis (data/notisum-amnesfokus/analysis/). Stub records for agency regulations (AFS, BFS, NFS, etc.) unblock templates; full ingestion deferred to Epic 9. Tjänsteföretag variants modeled as filtered views. Depends on Epic 11 for admin shell.
 
@@ -154,11 +154,11 @@
 
 ## Epic 13: ELI Structured Data & Legislation Interoperability
 
+**Status:** Not Started (no stories scoped yet)
+
 **Goal:** Adopt the European Legislation Identifier (ELI) standard across all public document pages to enhance SEO with rich structured data, provide machine-readable ELI URIs for European interoperability, and enable automated legislation discovery via sitemaps and Atom feeds.
 
 **Delivers:** Enhanced JSON-LD with ELI ontology properties on all 4 document page types, ELI-compliant URI routes with HTTP 303 redirects, legislation-specific sitemaps and Atom feeds (Pillar 4)
-
-**Estimated stories:** 3
 
 **Note:** Brownfield enhancement. Sweden has not officially implemented ELI — Laglig.se would be the first Swedish legal information source with ELI compliance. Three of four public page types already have basic schema.org JSON-LD; this epic enhances and extends it. No database schema changes required. See `docs/stories/backlog/epic-eli-structured-data.md` for full epic.
 
@@ -166,17 +166,19 @@
 
 ## Epic 14: Compliance Agent
 
+**Status:** Done (18 completed, 3 backlog — exceeded original 14-story estimate)
+
 **Goal:** Build an AI compliance partner that provides contextual, cited legal guidance through conversational interaction with company-aware tooling.
 
 **Delivers:** Agent system prompt, tool suite (search_laws, get_company_context, etc.), streaming chat UI, change assessment flow, conversational onboarding
 
 **Requirements covered:** FR4, FR5, FR6, NFR2, NFR3, NFR9, NFR24
 
-**Estimated stories:** 14
-
 ---
 
 ## Epic 15: BolagsAPI Integration & Company Data Enrichment
+
+**Status:** Mostly Done (3/4 completed — SNI reference system remaining)
 
 **Goal:** Integrate BolagsAPI to automatically fetch and populate company data during onboarding, enrich the CompanyProfile with authoritative signals from Bolagsverket/SCB, build an SNI reference data system, and improve the compliance agent's company context.
 
@@ -184,21 +186,19 @@
 
 **Requirements covered:** FR2 (onboarding), FR3 (personalization), FR20 (company profiling)
 
-**Estimated stories:** 4
-
 **Note:** Supersedes Story 2.9 (SNI Code Discovery) ACs 6-8 and Story 4.2 (Bolagsverket API). BolagsAPI replaces direct Bolagsverket access. Story 2.9's law list mapping, discovery UI, and analytics remain in backlog as future work.
 
 ---
 
 ## Epic 16: Conversion Funnel & First-Value Optimization
 
+**Status:** Done (4/4 completed)
+
 **Goal:** Transform the signup-to-value journey into a seamless experience where users see personalized compliance value within 90 seconds. Introduces headless agent skills — the same AI brain as the chat agent, running server-side to auto-generate personalized law lists.
 
 **Delivers:** Frictionless signup (auto-login, delayed verification), landing page company preview (org number + URL → regulatory areas), contextual onboarding questions (activity flags), headless agent skill for auto-generated personalized law list (40-80 laws with commentary)
 
 **Requirements covered:** FR2, FR3, FR20, FR21, FR23, FR30, NFR4, NFR5
-
-**Estimated stories:** 4
 
 **Dependencies:** Epic 15 (BolagsAPI - Done), Epic 14 (Agent tools - Done), Epic 12 (Templates - Done), Epic 10 (Onboarding - Done)
 
@@ -208,13 +208,13 @@
 
 ## Epic 17: Document Management System (DMS)
 
+**Status:** Partial (9 completed — core DMS operational, advanced features remaining)
+
 **Goal:** Provide a complete in-app document management system where users create, edit, version, and export compliance documents (policies, risk assessments, action plans) using a Tiptap rich text editor — and where the AI compliance agent can read, search, create, and update those documents as a first-class participant.
 
 **Delivers:** Tiptap-based rich text editor with Word-like UX, Document & DocumentVersion data models with full version control, document lifecycle management (DRAFT → APPROVED → ARCHIVED), .docx import/export and PDF export, compliance document templates, text extraction from uploaded files, workspace document embedding into RAG pipeline, 5 new agent tools for document interaction
 
 **Requirements covered:** FR7 (compliance workspace), FR25 (audit trail), FR27 (evidence/documentation)
-
-**Estimated stories:** 13
 
 **Dependencies:** Epic 6 (WorkspaceFile — Done), Epic 14 (Agent tools — Done), Story 14.14 (Chunk/embed pipeline — Done)
 
@@ -224,8 +224,10 @@
 
 ---
 
-**Total Estimated Stories:** 135-153 across 17 epics
+**Total Stories Tracked:** ~200 across 17 epics (~153 completed, ~47 backlog)
 
-**Estimated Timeline:** 32-34 weeks - updated to include Epic 17
+**Epic Status:** 11 Done, 4 Partial, 2 Not Started
+
+**Last updated:** 2026-04-07
 
 ---

@@ -1,6 +1,8 @@
 # Post-MVP Roadmap (Out of Scope)
 
-The following features are **explicitly NOT included in the MVP** and are planned for post-MVP phases based on user feedback and business traction:
+> **Note (2026-04-07):** The MVP scope has expanded since the original PRD (v1.0, 8 epics). Epics 9–17 were added as brownfield enhancements and are now part of the core product. The roadmap below reflects features that remain explicitly deferred beyond the current 17-epic scope. See [epic-list.md](./epic-list.md) for current status of all epics.
+
+The following features are **explicitly NOT included in the current epic set** and are planned for post-MVP phases based on user feedback and business traction:
 
 ## Phase 2: Integration & Automation (Months 7-9)
 

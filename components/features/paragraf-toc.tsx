@@ -45,6 +45,7 @@ export function StickyDocNav({
   const [topBound, setTopBound] = useState(0)
   const rafRef = useRef<number>(0)
   const activatedRef = useRef(false)
+  const elementMapRef = useRef<Map<string, Element>>(new Map())
 
   // Flat list of all IDs in DOM order, for scrollspy
   const allIds = useRef<string[]>([])
@@ -137,6 +138,7 @@ export function StickyDocNav({
 
       for (const id of allIds.current) {
         const el =
+          elementMapRef.current.get(id) ||
           container.querySelector(`#${CSS.escape(id)}`) ||
           container.querySelector(`[name="${CSS.escape(id)}"]`)
         if (!el) continue
@@ -175,27 +177,46 @@ export function StickyDocNav({
     if (!container) return
 
     const timer = setTimeout(() => {
+      // Dedup helper: generates unique IDs and stores element references
+      const elementMap = new Map<string, Element>()
+      const seenIds = new Map<string, number>()
+
+      function trackElement(el: Element, rawId: string): string {
+        const count = seenIds.get(rawId) || 0
+        seenIds.set(rawId, count + 1)
+        const uniqueId = count === 0 ? rawId : `${rawId}--${count + 1}`
+        elementMap.set(uniqueId, el)
+        return uniqueId
+      }
+
+      function commitMap() {
+        elementMapRef.current = elementMap
+      }
+
       // Strategy 0: Chapter-based hierarchy (h2 chapters with h3 sections nested)
       const chapterSections = container.querySelectorAll('section.kapitel')
       if (chapterSections.length >= 2) {
         const tree: TocEntry[] = []
         chapterSections.forEach((section) => {
           const h2 = section.querySelector('h2')
-          const sectionId = section.getAttribute('id') || ''
+          const rawSectionId = section.getAttribute('id') || ''
           const label = h2?.textContent?.trim() || ''
-          if (!sectionId || !label) return
+          if (!rawSectionId || !label) return
 
+          const sectionId = trackElement(section, rawSectionId)
           const children: TocEntry[] = []
           section.querySelectorAll('h3[id]').forEach((h3) => {
-            const id = h3.getAttribute('id') || ''
+            const rawId = h3.getAttribute('id') || ''
             const text = h3.textContent?.trim() || ''
-            if (id && text) children.push({ id, label: text })
+            if (!rawId || !text) return
+            children.push({ id: trackElement(h3, rawId), label: text })
           })
 
           tree.push({ id: sectionId, label, children })
         })
 
         if (tree.length >= 2) {
+          commitMap()
           setEntries(tree)
           return
         }
@@ -206,11 +227,12 @@ export function StickyDocNav({
       if (flatH2s.length >= 2) {
         const tree: TocEntry[] = []
         flatH2s.forEach((h2) => {
-          const id = h2.getAttribute('id') || ''
+          const rawId = h2.getAttribute('id') || ''
           const label = h2.textContent?.trim() || ''
-          if (id && label) tree.push({ id, label })
+          if (rawId && label) tree.push({ id: trackElement(h2, rawId), label })
         })
         if (tree.length >= 2) {
+          commitMap()
           setEntries(tree)
           return
         }
@@ -230,16 +252,28 @@ export function StickyDocNav({
         }[] = []
 
         h3s.forEach((el) => {
-          const id = getHeadingId(el)
+          const rawId = getHeadingId(el)
           const label = el.textContent?.trim() || ''
-          if (id && label) allHeadings.push({ level: 3, id, label, el })
+          if (rawId && label)
+            allHeadings.push({
+              level: 3,
+              id: trackElement(el, rawId),
+              label,
+              el,
+            })
         })
 
         if (h4s.length >= 1) {
           h4s.forEach((el) => {
-            const id = getHeadingId(el)
+            const rawId = getHeadingId(el)
             const label = el.textContent?.trim() || ''
-            if (id && label) allHeadings.push({ level: 4, id, label, el })
+            if (rawId && label)
+              allHeadings.push({
+                level: 4,
+                id: trackElement(el, rawId),
+                label,
+                el,
+              })
           })
         }
 
@@ -268,6 +302,7 @@ export function StickyDocNav({
         }
 
         if (tree.length >= 2) {
+          commitMap()
           setEntries(tree)
           return
         }
@@ -277,11 +312,13 @@ export function StickyDocNav({
       if (h4s.length >= 2 && h4s.length <= 25) {
         const found: TocEntry[] = []
         h4s.forEach((el) => {
-          const id = getHeadingId(el)
+          const rawId = getHeadingId(el)
           const text = el.textContent?.trim() || ''
-          if (id && text) found.push({ id, label: text })
+          if (rawId && text)
+            found.push({ id: trackElement(el, rawId), label: text })
         })
         if (found.length >= 2) {
+          commitMap()
           setEntries(found)
           return
         }
@@ -292,32 +329,28 @@ export function StickyDocNav({
       if (anchors.length >= 2 && anchors.length <= 25) {
         const found: TocEntry[] = []
         anchors.forEach((el) => {
-          const id = el.getAttribute('id') || el.getAttribute('name')
+          const rawId = el.getAttribute('id') || el.getAttribute('name')
           const text = el.textContent?.trim() || ''
-          if (id && text) found.push({ id, label: text })
+          if (rawId && text)
+            found.push({ id: trackElement(el, rawId), label: text })
         })
+        commitMap()
         setEntries(found)
         return
       }
 
+      commitMap()
       setEntries([])
     }, 150)
 
     return () => clearTimeout(timer)
   }, [containerRef])
 
-  const handleClick = useCallback(
-    (id: string) => {
-      const container = containerRef.current
-      if (!container) return
-      const el =
-        container.querySelector(`#${CSS.escape(id)}`) ||
-        container.querySelector(`[name="${CSS.escape(id)}"]`)
-      if (!el) return
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    },
-    [containerRef]
-  )
+  const handleClick = useCallback((id: string) => {
+    const el = elementMapRef.current.get(id)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [])
 
   // Determine which parent chapter is active (for expanding children)
   const activeParentId = (() => {

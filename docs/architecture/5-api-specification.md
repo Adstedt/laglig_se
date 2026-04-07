@@ -91,7 +91,7 @@ type ActionResult<T> =
    - `sendAIChatMessageAction(input)` - Send message + stream AI response
    - `getChatHistoryAction(workspaceId)` - Retrieve conversation history
 
-7. **HR Module** (`app/actions/hr.ts`)
+7. **HR Module** (`app/actions/hr.ts`) — _Epic 7, Not Started_
    - `createEmployeeAction(input)` - Add new employee
    - `updateEmployeeAction(input)` - Update employee data
    - `syncFortnoxEmployeesAction(workspaceId)` - Sync from Fortnox API
@@ -101,6 +101,39 @@ type ActionResult<T> =
    - `createWorkspaceAction(input)` - Create new workspace
    - `inviteMemberAction(input)` - Send workspace invitation
    - `updateMemberRoleAction(input)` - Change member permissions
+
+9. **Admin** (`app/actions/admin-*.ts`) — _Epic 11_
+   - `admin-auth.ts` - Admin authentication and session management
+   - `admin-cron.ts` - Cron job management and monitoring
+   - `admin-impersonate.ts` - User impersonation with audit trail
+   - `admin-templates.ts` - Template CRUD management
+   - `admin-workspaces.ts` - Workspace management and oversight
+
+10. **Change Assessment** (`app/actions/change-assessment.ts`, `change-events.ts`) — _Epic 14_
+    - Change assessment creation and management
+    - Change event queries and filtering
+
+11. **Documents** (`app/actions/documents.ts`, `document-list.ts`) — _Epic 17_
+    - Document CRUD, versioning, lifecycle transitions
+    - Document list queries with filtering
+
+12. **Templates** (`app/actions/template-adoption.ts`) — _Epic 12_
+    - Template adoption into workspace law lists
+
+13. **Browse & Legal** (`app/actions/browse.ts`, `legal-document-modal.ts`, `cross-references.ts`, `prefetch-documents.ts`)
+    - Public law browsing and search
+    - Legal document modal data loading
+    - Cross-reference navigation
+    - Document prefetch for performance
+
+14. **Company Profile** (`app/actions/company-profile.ts`) — _Epic 15_
+    - BolagsAPI-powered company data management
+
+15. **Invitations** (`app/actions/invitations.ts`) — _Epic 10_
+    - Workspace invitation acceptance flow
+
+16. **Additional** (`app/actions/files.ts`, `task-modal.ts`, `tasks.ts`, `track-visit.ts`, `workspace-activity.ts`, `workspace-settings.ts`)
+    - File management, task operations, visit tracking, workspace activity log, workspace settings
 
 **See Section 5.2 subsections in full document for complete TypeScript implementations.**
 
