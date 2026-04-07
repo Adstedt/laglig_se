@@ -240,7 +240,7 @@ const initialState = {
   total: 0,
   hasMore: false,
   // Story 4.12: Table view state
-  viewMode: 'card' as ViewMode,
+  viewMode: 'table' as ViewMode,
   columnVisibility: DEFAULT_COLUMN_VISIBILITY,
   columnSizing: {} as ColumnSizingState,
   columnOrder: [] as ColumnOrderState,
