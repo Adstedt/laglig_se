@@ -10,6 +10,7 @@ import {
   Scale,
   BookOpen,
   CheckSquare,
+  FileText,
   FolderOpen,
   Users,
   Bell,
@@ -113,9 +114,14 @@ const workItems: NavItem[] = [
     href: '/tasks',
   },
   {
-    title: 'Mina filer',
+    title: 'Styrdokument',
+    icon: FileText,
+    href: '/workspace/styrdokument',
+  },
+  {
+    title: 'Filer',
     icon: FolderOpen,
-    href: '/documents',
+    href: '/filer',
   },
   {
     title: 'HR',
@@ -507,7 +513,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-2 py-3">
+        <nav className="flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-2 py-3">
           {/* Platform Section — hide AI Chat toggle on /dashboard (Hem IS the chat) */}
           <div className="space-y-0.5">
             {platformItems

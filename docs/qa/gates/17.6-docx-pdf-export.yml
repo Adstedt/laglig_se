@@ -1,0 +1,49 @@
+schema: 1
+story: '17.6'
+story_title: '.docx & PDF Export'
+gate: PASS
+status_reason: >-
+  All 17 ACs substantively met. 22 new tests (3119 total passing). Clean export pipeline:
+  docx package for Word, puppeteer-core + @sparticuz/chromium for PDF (Vercel-compatible).
+  API route with Zod validation, getWorkspaceContext auth, proper error handling. One known
+  limitation: Word images as placeholder text instead of embedded (AC 15 partial).
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-30T21:50:00Z'
+
+top_issues: []
+
+waiver:
+  active: false
+
+quality_score: 90
+expires: '2026-04-13T21:50:00Z'
+
+evidence:
+  tests_reviewed: 22
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17]
+    ac_gaps: [15]  # Word images rendered as placeholder text, not embedded as ImageRun
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'getWorkspaceContext() auth. WorkspaceAccessError handling. Zod query param validation. HTML escaping in PDF metadata. sanitizeFilename prevents path traversal.'
+  performance:
+    status: PASS
+    notes: 'maxDuration=30 for PDF. Packer.toBuffer is fast in-memory. Browser cleanup in finally block.'
+  reliability:
+    status: PASS
+    notes: 'Browser.close in finally block prevents leaks. Graceful 400/404/500 error responses. Zod validation catches invalid params.'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation: sanitize utility, docx generator, pdf generator, API route, UI dropdown. Shared DocumentExportMetadata type. sanitizeFilename extracted to reusable utility.'
+
+recommendations:
+  future:
+    - action: 'Embed images in Word export via async ImageRun fetch (currently placeholder text)'
+      refs: ['lib/documents/tiptap-to-docx.ts']
+    - action: 'Add format selection to version history export button (currently hardcoded to docx)'
+      refs: ['components/features/documents/editor/version-history-panel.tsx']
+    - action: 'Add API route integration test'
+      refs: ['tests/unit/app/api/document-export.test.ts']

@@ -74,7 +74,7 @@ const folderPathFetcher = async (
   folderId: string | null
 ): Promise<BreadcrumbSegment[]> => {
   if (folderId === null) {
-    return [{ id: null, name: 'Mina filer', path: '/documents' }]
+    return [{ id: null, name: 'Filer', path: '/filer' }]
   }
   const result = await getFolderPath(folderId)
   if (result.success && result.data) {
@@ -168,7 +168,7 @@ function buildBreadcrumbsFromTree(
   targetId: string | null
 ): BreadcrumbSegment[] | null {
   if (targetId === null) {
-    return [{ id: null, name: 'Mina filer', path: '/documents' }]
+    return [{ id: null, name: 'Filer', path: '/filer' }]
   }
 
   // Recursively find path to target folder
@@ -203,10 +203,10 @@ function buildBreadcrumbsFromTree(
 
   const root: BreadcrumbSegment = {
     id: null,
-    name: 'Mina filer',
-    path: '/documents',
+    name: 'Filer',
+    path: '/filer',
   }
-  const path = findPath(folderTree, targetId, '/documents', [root])
+  const path = findPath(folderTree, targetId, '/filer', [root])
   return path
 }
 
@@ -221,7 +221,7 @@ export function useFolderPath(
   // Build optimistic breadcrumbs from folder tree
   const optimisticBreadcrumbs = buildBreadcrumbsFromTree(folderTree, folderId)
   const defaultBreadcrumbs: BreadcrumbSegment[] = [
-    { id: null, name: 'Mina filer', path: '/documents' },
+    { id: null, name: 'Filer', path: '/filer' },
   ]
 
   const { data, error, isLoading } = useSWR<BreadcrumbSegment[]>(

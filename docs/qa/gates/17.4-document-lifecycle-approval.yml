@@ -1,0 +1,49 @@
+schema: 1
+story: '17.4'
+story_title: 'Document Lifecycle — Status Workflow & Approval'
+gate: PASS
+status_reason: >-
+  All 16 ACs met. 30 new tests (3068 total passing). Server actions follow established patterns
+  (withWorkspace, $transaction, ActivityLog). Clean integration with existing 17.1 transition/approval
+  logic — no duplication. Read-only mode, "Skapa ny version", metadata settings, review date indicators
+  all implemented correctly.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-30T15:58:00Z'
+
+top_issues: []
+
+waiver:
+  active: false
+
+quality_score: 95
+expires: '2026-04-13T15:58:00Z'
+
+evidence:
+  tests_reviewed: 30
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All actions use withWorkspace() scoping. Status transitions server-side enforced. Zod validates all inputs. createDraftFromApproved verifies APPROVED status.'
+  performance:
+    status: PASS
+    notes: '$transaction for atomicity. Selective field updates in updateDocumentMetadata. No N+1 queries.'
+  reliability:
+    status: PASS
+    notes: 'Proper error handling with ActionResult pattern. Transaction rollback on failure. Calendar/Popover use established shadcn patterns.'
+  maintainability:
+    status: PASS
+    notes: 'Reusable DocumentStatusBadge + STATUS_CONFIG exported. Utilities extracted (isDocumentEditable, getReviewDateStatus, getValidNextStatuses). Clean separation of concerns.'
+
+recommendations:
+  future:
+    - action: 'Add error toast/feedback when updateDocumentMetadata or createDraftFromApproved fails'
+      refs: ['components/features/documents/editor/document-settings-panel.tsx', 'components/features/documents/editor/document-editor.tsx']
+    - action: 'Make title input readOnly when document is not editable'
+      refs: ['components/features/documents/editor/document-editor.tsx']
+    - action: 'Apply getReviewDateStatus coloring to documents listing page when created'
+      refs: ['lib/utils/review-date-status.ts']

@@ -21,7 +21,8 @@ const routeLabels: Record<string, string> = {
   'ai-chat': 'AI Chat',
   kanban: 'Uppgifter',
   tasks: 'Uppgifter',
-  documents: 'Mina filer',
+  styrdokument: 'Styrdokument',
+  filer: 'Filer',
   hr: 'HR',
   employees: 'Anställda',
   compliance: 'Efterlevnad',
@@ -50,10 +51,15 @@ const showAsLink = new Set([
   'version',
   'laglistor',
   'mallar',
+  'filer',
+  'styrdokument',
 ])
 
+// Segments that should be hidden from the breadcrumb trail
+const hiddenSegments = new Set(['edit', 'workspace'])
+
 // Get a user-friendly label for a segment (truncate long slugs)
-function getSegmentLabel(segment: string): string {
+function getSegmentLabel(segment: string, _prevSegment?: string): string {
   if (routeLabels[segment]) {
     return routeLabels[segment]
   }
@@ -91,10 +97,13 @@ export function Breadcrumbs() {
       currentPath += `/${segment}`
       const isLast = i === segments.length - 1
 
-      // Skip 'browse' in the breadcrumb display but keep in path
-      if (segment === 'browse') continue
+      // Skip segments that should be hidden from breadcrumbs
+      if (segment === 'browse' || hiddenSegments.has(segment)) continue
 
-      const label = getSegmentLabel(segment)
+      const label = getSegmentLabel(
+        segment,
+        i > 0 ? segments[i - 1] : undefined
+      )
 
       if (isLast) {
         // Last segment is current page (no link)

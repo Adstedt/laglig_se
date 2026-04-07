@@ -1,0 +1,47 @@
+schema: 1
+story: '17.13'
+story_title: 'Document Browser & Manager UI'
+gate: PASS
+status_reason: >-
+  All 20 ACs met (AC 13 optional, not implemented). 12 new tests (3153 total passing).
+  Clean UI assembly properly reusing all infrastructure from 17.1-17.7 (DocumentStatusBadge,
+  CreateDocumentDialog, ImportDocumentDialog, getReviewDateStatus, export API, updateDocumentStatus).
+  Sortable table, multi-select filters, URL-synced state, cursor pagination, row-level actions.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-31T11:30:00Z'
+
+top_issues: []
+
+waiver:
+  active: false
+
+quality_score: 95
+expires: '2026-04-14T11:30:00Z'
+
+evidence:
+  tests_reviewed: 12
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20]
+    ac_gaps: [13]  # Optional overdue review count badge — not implemented
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'withWorkspace() auth on all server actions. Archive validates transition server-side. Export uses authenticated API route.'
+  performance:
+    status: PASS
+    notes: 'Cursor-based pagination. Debounced search (300ms). Client-side multi-filter on 25-item pages. Skeleton loading states.'
+  reliability:
+    status: PASS
+    notes: 'URL-synced filters for bookmarkable state. Archive confirmation dialog prevents accidental actions. Error toast on failures.'
+  maintainability:
+    status: PASS
+    notes: 'Clean component separation: page → browser → table + filters. Reuses 6 existing components/utilities. Consistent Swedish localization.'
+
+recommendations:
+  future:
+    - action: 'Add filter controls test file for search debounce and multi-select toggle'
+      refs: ['tests/unit/components/features/documents/document-filters.test.tsx']
+    - action: 'Extract DOCUMENT_TYPE_LABELS to shared constant (duplicated in 4+ files)'
+      refs: ['lib/constants/document-labels.ts']

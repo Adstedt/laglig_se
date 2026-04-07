@@ -209,6 +209,32 @@ const nextConfig = {
       },
     ]
   },
+  async redirects() {
+    return [
+      // Workspace documents renamed to styrdokument
+      {
+        source: '/workspace/documents',
+        destination: '/workspace/styrdokument',
+        permanent: true,
+      },
+      {
+        source: '/workspace/documents/:path*',
+        destination: '/workspace/styrdokument/:path*',
+        permanent: true,
+      },
+      // File browser renamed from /documents to /filer
+      {
+        source: '/documents',
+        destination: '/filer',
+        permanent: true,
+      },
+      {
+        source: '/documents/:path*',
+        destination: '/filer/:path*',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 // Story P.4: Wrap with bundle analyzer, then Sentry

@@ -30,6 +30,12 @@ export const ACTION_LABELS: Record<string, string> = {
   law_linked: 'länkade en lag',
   law_unlinked: 'tog bort en lag-länk',
   deleted: 'raderade',
+  // Document actions (Epic 17)
+  document_created: 'skapade dokument',
+  document_version_saved: 'sparade en ny version',
+  document_version_restored: 'återställde version',
+  document_status_changed: 'ändrade dokumentstatus',
+  document_imported: 'importerade dokument',
 }
 
 export const ENTITY_TYPE_LABELS: Record<string, string> = {
@@ -37,4 +43,5 @@ export const ENTITY_TYPE_LABELS: Record<string, string> = {
   task: 'Uppgift',
   comment: 'Kommentar',
   evidence: 'Bevis',
+  workspace_document: 'Styrdokument',
 }

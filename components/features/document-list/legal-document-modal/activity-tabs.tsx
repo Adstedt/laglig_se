@@ -11,6 +11,7 @@ import { CommentsTab } from './comments-tab'
 import { TasksTab } from './tasks-tab'
 import { EvidenceTab } from './evidence-tab'
 import { HistoryTab } from './history-tab'
+import { DocumentsTab } from './documents-tab'
 
 interface ActivityTabsProps {
   listItemId: string
@@ -53,6 +54,13 @@ export function ActivityTabs({ listItemId, currentUserId }: ActivityTabsProps) {
             Bevis
           </TabsTrigger>
           <TabsTrigger
+            id="activity-tab-dokument"
+            value="dokument"
+            className="whitespace-nowrap px-3 py-1.5 text-sm data-[state=active]:bg-background"
+          >
+            Dokument
+          </TabsTrigger>
+          <TabsTrigger
             id="activity-tab-historik"
             value="historik"
             className="whitespace-nowrap px-3 py-1.5 text-sm data-[state=active]:bg-background"
@@ -87,6 +95,13 @@ export function ActivityTabs({ listItemId, currentUserId }: ActivityTabsProps) {
           className="mt-4 max-h-[400px] overflow-y-auto"
         >
           <EvidenceTab listItemId={listItemId} />
+        </TabsContent>
+
+        <TabsContent
+          value="dokument"
+          className="mt-4 max-h-[400px] overflow-y-auto"
+        >
+          <DocumentsTab listItemId={listItemId} />
         </TabsContent>
 
         <TabsContent

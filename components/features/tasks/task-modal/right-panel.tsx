@@ -10,6 +10,7 @@ import { DetailsBox } from './details-box'
 import { QuickLinksBox } from './quick-links-box'
 import { LinkedLawsBox } from './linked-laws-box'
 import { LabelsBox } from './labels-box'
+import { LinkedDocumentsBox } from './linked-documents-box'
 import { ModalFooter } from './modal-footer'
 import type { TaskDetails } from '@/app/actions/task-modal'
 import type { WorkspaceMember } from '../task-workspace'
@@ -82,6 +83,9 @@ export function RightPanel({
             labels={task.labels}
             onUpdate={onUpdate}
           />
+
+          {/* Linked Documents Box */}
+          <LinkedDocumentsBox taskId={task.id} onUpdate={onUpdate} />
         </div>
       </ScrollArea>
 

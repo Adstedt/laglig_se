@@ -1,0 +1,51 @@
+schema: 1
+story: '17.1'
+story_title: 'Document & DocumentVersion Data Models'
+gate: PASS
+status_reason: 'All 17 ACs met. 36 unit tests passing. Clean schema design with proper naming collision avoidance, correct cascade behavior, and data-driven status transitions. No security, performance, or reliability concerns.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-03-30T13:37:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 95
+expires: '2026-04-13T00:00:00Z'
+
+evidence:
+  tests_reviewed: 36
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'All actions behind withWorkspace(), workspace isolation enforced, Zod validation on inputs, Prisma ORM prevents injection'
+  performance:
+    status: PASS
+    notes: 'Three composite indexes on primary query patterns, cursor-based pagination, select for field limiting'
+  reliability:
+    status: PASS
+    notes: 'Transaction for atomic doc+version creation, exhaustive status transition validation, consistent error handling'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation (validation/actions/schema), data-driven transition map, follows existing codebase patterns exactly'
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 0 }
+  recommendations:
+    must_fix: []
+    monitor: []
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add explicit return types to getDocument/getDocumentVersions/getWorkspaceDocuments instead of ActionResult<unknown>'
+      refs: ['app/actions/documents.ts']
+    - action: 'Add Tiptap JSON structure validation to contentJson when editor is built'
+      refs: ['lib/validation/documents.ts']
+    - action: 'Add UUID validation on documentId parameter for getDocument/getDocumentVersions for consistency'
+      refs: ['app/actions/documents.ts']
