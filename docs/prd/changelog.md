@@ -1,5 +1,40 @@
 # Changelog
 
+## Version 1.5 (2026-04-07)
+
+**Post-Epic 17 Documentation Alignment — Brownfield Epics 9–17**
+
+**Major Changes:**
+
+- **Epic 9 — Legal Intelligence & AI Enrichment (Partial):** Agency regulation ingestion complete (AFS, BFS, NFS via HTML scraping pipeline). 187 entries verified. Parliamentary context enrichment deferred.
+- **Epic 11 — Admin Backoffice (Done):** Full internal admin system at `/admin`. Customer dashboard, workspace/user management, user impersonation with audit trail, cron job dashboard with execution logs. 7 stories completed.
+- **Epic 12 — Law List Templates & Standard Packages (Done):** Curated template library with 265 documents across 3 domains (Arbetsmiljö, Tjänsteföretag, Miljö). Template data model, admin management UI, authenticated catalog with browse/preview/adopt. 12 stories completed.
+- **Epic 13 — ELI Structured Data (Added to backlog):** European Legislation Identifier standard. Not yet scoped into stories. Low priority, post-launch.
+- **Epic 14 — Compliance Agent (Done):** Full agentic AI compliance partner replacing Epic 3's original RAG approach. System prompt, 8+ agent tools (search_laws, get_company_context, etc.), headless skills, streaming chat UI with reasoning display, change assessment flow. 18 stories completed — exceeded 14-story estimate.
+- **Epic 15 — BolagsAPI Integration (Mostly Done):** Company data enrichment via BolagsAPI. Onboarding auto-fill, enriched agent context. 3 of 4 stories complete. SNI reference system remaining.
+- **Epic 16 — Conversion Funnel & First-Value Optimization (Done):** Frictionless signup, landing page company preview, contextual onboarding questions, headless agent skill for personalized law list generation. 4 stories completed.
+- **Epic 17 — Document Management System (Partial, PR #40 merged):** Tiptap rich text editor, WorkspaceDocument/Version/Template models, document lifecycle (DRAFT → APPROVED → ARCHIVED), .docx import/export, PDF export, compliance templates. 9 of 13 estimated stories complete. Advanced features remaining.
+
+**Scope Changes:**
+
+- Total tracked stories increased from ~89 (v1.0) to ~200 across 17 epics
+- Epic 3 (RAG Chat) largely superseded by Epic 14's agentic architecture — drag-and-drop context building stories remain in backlog
+- Epic 5 (Workspace Management) remains partial — Stripe billing, usage limits, and team invites not started
+- Epic 7 (HR Module) and Epic 13 (ELI) not started — decision needed on MVP inclusion
+
+**Technical Additions:**
+
+- Tiptap v3.21 rich text editor stack (20 packages)
+- Document processing pipeline: mammoth (Word import), docx (Word export), puppeteer-core + chromium (PDF export)
+- Streamdown markdown streaming renderer (replaced react-markdown)
+- AI agent tool-use architecture with Vercel AI SDK
+- Agency regulation HTML scraping pipeline (lib/agency/)
+- BolagsAPI integration (lib/bolagsapi/)
+- Admin backoffice with impersonation and audit logging
+- 13 cron jobs for content sync, notifications, and maintenance
+
+---
+
 ## Version 1.4 (2026-01-30)
 
 **Workspace Onboarding & Invitation Flow (Epic 10)**

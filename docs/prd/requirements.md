@@ -30,7 +30,7 @@
 
 **FR14:** The system SHALL support CSV import of employee data with GPT-4 fuzzy role matching (e.g., "Builder" → "construction_worker"), user-selected date format, and skip-invalid-rows-with-warnings behavior.
 
-**FR15:** The system SHALL allow users to upload kollektivavtal PDFs, automatically chunk and embed them into the RAG database, and assign them to employee groups (arbetare vs. tjänstemän).
+**FR15:** [Deferred — depends on Epic 7, not started] The system SHALL allow users to upload kollektivavtal PDFs, automatically chunk and embed them into the RAG database, and assign them to employee groups (arbetare vs. tjänstemän).
 
 **FR16:** The system SHALL calculate employee compliance status (Compliant, Needs Attention, Non-Compliant) based on document completeness, data quality, and kollektivavtal assignment.
 
@@ -46,7 +46,7 @@
 
 **FR22:** The system SHALL support team invites via email, with pending invitation status visible to Owner/Admin and ability to re-send invites.
 
-**FR23:** The system SHALL integrate with Bolagsverket API during signup to auto-fill company name, address, SNI code, and legal form based on org-number.
+**FR23:** [Superseded by Epic 15 — BolagsAPI replaces direct Bolagsverket access] The system SHALL integrate with BolagsAPI during signup to auto-fill company name, address, SNI code, and legal form based on org-number.
 
 **FR24:** The system SHALL provide individual legal document pages (laws, court cases, EU legislation) with content-type-appropriate tabs: Overview (AI summary, key sections), Content (full SFS text), Change History (for laws: amendment timeline; for court cases: citation history; for EU: implementation status), Notes (team collaboration with @mentions).
 
@@ -122,7 +122,7 @@
 
 **NFR17:** The system SHALL optimize vector database storage costs by using PostgreSQL pgvector for MVP (avoiding Pinecone subscription), with migration path to Pinecone if query volume exceeds 100,000/day.
 
-**NFR18 (CRITICAL):** The system MUST track unit economics per active user: AI API costs (OpenAI/Anthropic), vector query costs, storage costs, with target gross margin >80% across all tiers, reported weekly to founder for business model validation.
+**NFR18 (CRITICAL):** [Deferred — depends on Epic 5 billing integration] The system MUST track unit economics per active user: AI API costs (Anthropic), vector query costs, storage costs, with target gross margin >80% across all tiers, reported weekly to founder for business model validation.
 
 **NFR19:** The system SHALL implement feature flags for gradual rollout of new features (e.g., kollektivavtal compliance checking, advanced team collaboration) to subset of users for validation.
 
@@ -138,7 +138,7 @@
 
 **NFR25:** The system SHALL provide graceful error messages for users, avoiding technical jargon (e.g., "We couldn't load that law right now" vs. "500 Internal Server Error").
 
-**NFR26:** The system SHALL implement email marketing automation for:
+**NFR26:** [Partially implemented — basic transactional emails via Resend are live; full marketing automation deferred] The system SHALL implement email marketing automation for:
 
 - **Trial nurturing:** Day 1 welcome, Day 7 feature tips, Day 12 conversion reminder
 - **Newsletter signups:** Weekly legal updates, industry insights, product announcements for non-customers

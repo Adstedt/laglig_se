@@ -2,7 +2,7 @@
 
 ## 7.1 External API Strategy Overview
 
-Laglig.se integrates with 6 critical external APIs to provide comprehensive legal compliance coverage. Our strategy emphasizes:
+Laglig.se integrates with external APIs to provide comprehensive legal compliance coverage. Our strategy emphasizes:
 
 1. **Resilience** - Graceful degradation when APIs are unavailable
 2. **Performance** - Aggressive caching to minimize API calls
@@ -12,9 +12,16 @@ Laglig.se integrates with 6 critical external APIs to provide comprehensive lega
 
 **API Priority Tiers:**
 
-- **Tier 1 (MVP Critical):** Riksdagen, Domstolsverket - Core legal content
-- **Tier 2 (MVP Important):** Bolagsverket, Stripe - Business operations
-- **Tier 3 (Post-MVP):** Fortnox, EUR-Lex - Enhancement features
+- **Tier 1 (MVP Critical):** Riksdagen, Domstolsverket, Anthropic Claude — Core legal content and AI
+- **Tier 2 (MVP Important):** BolagsAPI, Stripe, Resend — Business operations and communications
+- **Tier 3 (Implemented):** Arbetsmiljöverket (av.se) — Agency regulation scraping (Epic 9)
+- **Tier 4 (Post-MVP):** Fortnox, EUR-Lex — Enhancement features
+
+> **Post-Epic 17 additions (2026-04-07):**
+>
+> - **BolagsAPI** (`lib/bolagsapi/`) — Company data enrichment. Fetches company details by org number for onboarding auto-fill and agent company context. Supersedes direct Bolagsverket access.
+> - **Arbetsmiljöverket (av.se)** (`lib/agency/afs-scraper.ts`) — HTML scraping of AFS regulations from `av.se` publication pages. Extracts `div.provision` content, transforms to Laglig schema.
+> - **Anthropic Claude API** — Primary LLM for compliance agent chat, amendment analysis, and headless skills. Claude Sonnet 4.6 for chat, Opus 4.6 for batch processing. Accessed via Vercel AI SDK provider abstraction.
 
 ---
 

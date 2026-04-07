@@ -37,8 +37,8 @@ The Laglig.se backend leverages **Vercel's serverless infrastructure** with **Ne
 ┌─────────────────────────────────────────────────────────────┐
 │                    Data Layer                                │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
-│  │  Supabase    │  │  Upstash     │  │   OpenAI     │     │
-│  │  PostgreSQL  │  │   Redis      │  │   GPT-4      │     │
+│  │  Supabase    │  │  Upstash     │  │  Anthropic   │     │
+│  │  PostgreSQL  │  │   Redis      │  │   Claude     │     │
 │  └──────────────┘  └──────────────┘  └──────────────┘     │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -980,5 +980,80 @@ export async function POST(req: Request) {
   return new StreamingTextResponse(stream)
 }
 ```
+
+---
+
+## 11.8 AI Compliance Agent Architecture (Epic 14)
+
+> **Added 2026-04-07.** The compliance agent is the core AI system powering chat, change assessments, and headless law list generation.
+
+### 11.8.1 Agent Components
+
+- **System Prompt:** `lib/agent/system-prompt.ts` — comprehensive instructions defining agent behavior, Swedish legal context, citation requirements, and tool-use guidelines
+- **Tools:** `lib/agent/tools/` — 8+ tools the agent can invoke:
+  - `search_laws` — RAG-powered legal document search
+  - `get_company_context` — workspace company profile and activity flags
+  - `get_template_laws` — retrieve template-based law recommendations
+  - `add_laws_to_list` — add laws to user's law list
+  - `get_change_details` — fetch amendment/change event details
+  - `get_law_list` — retrieve current workspace law list
+  - Additional tools for document interaction (Epic 17)
+- **Skills:** `lib/agent/skills/` — headless agent capabilities (e.g., `generate-law-list.ts` for server-side law list generation without chat UI)
+- **Retrieval Pipeline:** ContentChunk model + pgvector embedding search for RAG context assembly
+
+### 11.8.2 Chat API Route
+
+- **Location:** `app/api/chat/route.ts`
+- **Streaming:** `smoothStream({ chunking: 'word' })` for word-boundary buffered output
+- **Reasoning:** `sendReasoning: true` exposes thinking steps to UI
+- **Safety:** `stopWhen: stepCountIs(10)` limits agentic loops
+- **Model:** Anthropic Claude Sonnet 4.6 (configurable via env)
+- **Max duration:** 60s for multi-step tool use
+
+### 11.8.3 Embedding Pipeline
+
+- **Model:** OpenAI `text-embedding-3-small` (1536 dimensions)
+- **Storage:** `ContentChunk` table with pgvector `embedding` column
+- **Chunking:** Context-aware splitting with `contextual_header` for retrieval quality
+- **Cron:** `process-chunks` runs hourly to embed new/changed content
+
+---
+
+## 11.9 Cron Job Architecture
+
+> **Added 2026-04-07.** 13 cron endpoints in `app/api/cron/`.
+
+### Active Cron Jobs
+
+| Cron Job | Schedule | Purpose |
+|----------|----------|---------|
+| `sync-sfs` | Daily | Sync newly published SFS laws from Riksdagen |
+| `sync-sfs-updates` | Daily | Process amendments to existing laws |
+| `discover-amendments` | Daily | Discover new amendment documents |
+| `process-chunks` | Hourly | Embed new content chunks for RAG |
+| `enrich-amendment-summaries` | Hourly | AI-generate amendment summaries |
+| `cleanup-workspaces` | Daily | Clean up expired trials and orphaned data |
+| `send-change-notifications` | Daily | Email notifications for law changes |
+
+### Cron Pattern
+
+All cron routes use `maxDuration = 300` (5 min Vercel limit) with a 30-second buffer timeout pattern to ensure graceful shutdown before the hard limit.
+
+---
+
+## 11.10 Agency Regulation Ingestion (Epic 9)
+
+> **Added 2026-04-07.** HTML scraping pipeline for AFS/BFS/NFS regulations.
+
+### Pipeline Components
+
+- **Scraper:** `lib/agency/afs-scraper.ts` — fetches from av.se, extracts `div.provision` content
+- **Transformer:** `lib/agency/afs-html-transformer.ts` — maps av.se CSS classes to Laglig schema
+- **Splitter:** `lib/agency/afs-chapter-splitter.ts` — splits large documents at chapter boundaries
+- **Orchestrator:** `scripts/ingest-afs-regulations-v2.ts` — scrape → transform → split → upsert
+
+### Key Design Decision
+
+Tables in av.se are wrapped in `div.provision__dialog-wrapper` (same class as footnote popups). The transformer extracts tables before removing wrappers to preserve data integrity.
 
 ---

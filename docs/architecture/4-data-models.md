@@ -1,14 +1,22 @@
 # 4. Data Models
 
-**This section defines ALL core business entities that power Laglig.se.** These models support multi-tenancy, RAG-powered AI, employee compliance tracking, task-centric compliance workflows, and legal content management across 170,000+ documents.
+**This section defines ALL core business entities that power Laglig.se.** These models support multi-tenancy, RAG-powered AI, employee compliance tracking, task-centric compliance workflows, document management, and legal content management across 170,000+ documents.
 
-**Total Entities:** 35 (including 5 join tables, 2 deprecated)
+**Total Entities:** ~50 (including join tables)
 
 > **Epic 6 Revision (2026-01-08):** Data model updated to support task-centric compliance workflow. Key changes:
 >
 > - Enhanced `LawListItem` (4.13) as compliance tracking unit
 > - Deprecated `LawInWorkspace` (4.14) and `LawTask` (4.15) - superseded by new model
 > - Added: Task (4.30), TaskColumn (4.31), TaskListItemLink (4.32), Comment (4.33), Evidence (4.34), Notification (4.35), NotificationPreference (4.36)
+>
+> **Post-Epic 17 Revision (2026-04-07):** Additional models from Epics 9–17:
+>
+> - **Epic 12:** LawListTemplate, TemplateSection, TemplateItem (template catalog)
+> - **Epic 14:** ContentChunk (RAG embedding pipeline), ChangeAssessment, ComplianceStatusLog (amendment assessment), ChatSession, AICostLog
+> - **Epic 10:** WorkspaceInvitation (invitation acceptance flow)
+> - **Epic 11:** AdminAuditLog (admin impersonation audit trail)
+> - **Epic 17:** WorkspaceDocument, WorkspaceDocumentVersion, WorkspaceDocumentTemplate, WorkspaceDocumentTaskLink, WorkspaceDocumentListItemLink (document management system)
 
 **Data Model Architecture:**
 

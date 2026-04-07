@@ -56,33 +56,37 @@ laglig_se/
 │   │   └── reset-password/
 │   │       └── page.tsx
 │   │
-│   ├── (app)/                  # Protected app routes
-│   │   ├── layout.tsx          # App shell with sidebar
+│   ├── (workspace)/             # Protected workspace routes (auth required)
+│   │   ├── layout.tsx           # Workspace shell with sidebar
 │   │   ├── dashboard/
-│   │   │   ├── page.tsx
-│   │   │   └── loading.tsx
-│   │   ├── onboarding/         # Dynamic onboarding flow
-│   │   │   ├── page.tsx
-│   │   │   ├── company-lookup.tsx
-│   │   │   ├── question-flow.tsx
-│   │   │   └── law-generation.tsx
-│   │   ├── kanban/
 │   │   │   └── page.tsx
-│   │   ├── ai-chat/
+│   │   ├── onboarding/          # Dynamic onboarding flow
 │   │   │   └── page.tsx
-│   │   ├── hr/
-│   │   │   ├── employees/
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── [id]/
-│   │   │   │       └── page.tsx
-│   │   │   └── compliance/
+│   │   ├── browse/              # Law browsing and catalogue
+│   │   │   └── ...
+│   │   ├── filer/               # File management
+│   │   │   └── ...
+│   │   ├── workspace/           # Workspace-scoped features
+│   │   │   ├── styrdokument/    # Document management (Epic 17)
+│   │   │   │   └── [documentId]/
+│   │   │   │       └── edit/
+│   │   │   │           └── page.tsx
+│   │   │   ├── settings/
+│   │   │   │   └── page.tsx
+│   │   │   └── ...
+│   │   └── ...
+│   │
+│   ├── admin/                   # Admin backoffice (Epic 11)
+│   │   ├── (dashboard)/
+│   │   │   ├── dashboard/
+│   │   │   │   └── page.tsx
+│   │   │   ├── workspaces/
+│   │   │   │   └── page.tsx
+│   │   │   ├── users/
+│   │   │   │   └── page.tsx
+│   │   │   └── cron/
 │   │   │       └── page.tsx
-│   │   └── settings/
-│   │       ├── page.tsx
-│   │       ├── workspace/
-│   │       │   └── page.tsx
-│   │       └── billing/
-│   │           └── page.tsx
+│   │   └── layout.tsx
 │   │
 │   ├── api/                    # API routes
 │   │   ├── webhooks/
@@ -101,13 +105,18 @@ laglig_se/
 │   │       └── health/
 │   │           └── route.ts
 │   │
-│   ├── actions/                # Server Actions
+│   ├── actions/                # Server Actions (27 files)
 │   │   ├── auth.ts
-│   │   ├── law.ts
-│   │   ├── employee.ts
-│   │   ├── kanban.ts
+│   │   ├── admin-*.ts          # Admin actions (5 files, Epic 11)
+│   │   ├── browse.ts
+│   │   ├── change-assessment.ts # Epic 14
+│   │   ├── change-events.ts    # Epic 14
+│   │   ├── company-profile.ts  # Epic 15
+│   │   ├── documents.ts        # Epic 17
+│   │   ├── document-list.ts    # Epic 17
 │   │   ├── workspace.ts
-│   │   └── ai-chat.ts
+│   │   ├── ai-chat.ts
+│   │   └── ...                 # See 5-api-specification.md for full list
 │   │
 │   ├── layout.tsx              # Root layout
 │   ├── global-error.tsx       # Global error boundary
@@ -127,34 +136,28 @@ laglig_se/
 │   │
 │   ├── features/               # Feature-specific components
 │   │   ├── onboarding/
-│   │   │   ├── onboarding-wizard.tsx
-│   │   │   ├── company-lookup.tsx
-│   │   │   ├── dynamic-questions.tsx
-│   │   │   └── law-preview.tsx
-│   │   ├── kanban/
-│   │   │   ├── kanban-board.tsx
-│   │   │   ├── kanban-column.tsx
-│   │   │   ├── kanban-card.tsx
-│   │   │   └── task-detail-modal.tsx
-│   │   ├── ai-chat/
-│   │   │   ├── chat-interface.tsx
-│   │   │   ├── message-list.tsx
-│   │   │   ├── message-bubble.tsx
-│   │   │   ├── context-panel.tsx
-│   │   │   └── suggested-questions.tsx
-│   │   ├── law-list/
-│   │   │   ├── law-grid.tsx
-│   │   │   ├── law-card.tsx
-│   │   │   ├── law-filters.tsx
-│   │   │   └── law-search.tsx
-│   │   ├── employee/
-│   │   │   ├── employee-table.tsx
-│   │   │   ├── employee-form.tsx
-│   │   │   └── compliance-matrix.tsx
+│   │   │   └── ...
+│   │   ├── ai-chat/            # Chat UI with streaming + reasoning
+│   │   │   └── ...
+│   │   ├── document-list/      # Law list management
+│   │   │   └── ...
+│   │   ├── documents/          # Document management (Epic 17)
+│   │   │   ├── editor/         # Tiptap editor components
+│   │   │   │   ├── document-editor.tsx
+│   │   │   │   ├── editor-toolbar.tsx
+│   │   │   │   ├── slash-command.tsx
+│   │   │   │   └── ...
+│   │   │   ├── document-filters.tsx
+│   │   │   ├── document-status-badge.tsx
+│   │   │   └── create-document-dialog.tsx
+│   │   ├── compliance/         # Compliance workspace
+│   │   │   └── ...
+│   │   ├── templates/          # Template catalog (Epic 12)
+│   │   │   └── ...
+│   │   ├── admin/              # Admin backoffice (Epic 11)
+│   │   │   └── ...
 │   │   └── workspace/
-│   │       ├── workspace-switcher.tsx
-│   │       ├── member-list.tsx
-│   │       └── invite-modal.tsx
+│   │       └── ...
 │   │
 │   ├── shared/                 # Shared components
 │   │   ├── navigation/
@@ -184,13 +187,23 @@ laglig_se/
 │   │       ├── workspace.ts
 │   │       └── employee.ts
 │   │
-│   ├── ai/
-│   │   ├── openai.ts          # OpenAI client
-│   │   ├── embeddings.ts      # Embedding generation
-│   │   ├── rag.ts             # RAG pipeline
-│   │   └── prompts/
-│   │       ├── system.ts
-│   │       └── templates.ts
+│   ├── agent/                  # AI Compliance Agent (Epic 14)
+│   │   ├── system-prompt.ts   # Agent instructions
+│   │   ├── tools/             # 8+ agent tools
+│   │   └── skills/            # Headless agent skills
+│   │
+│   ├── agency/                 # Agency regulation ingestion (Epic 9)
+│   │   ├── afs-scraper.ts
+│   │   ├── afs-html-transformer.ts
+│   │   └── afs-chapter-splitter.ts
+│   │
+│   ├── bolagsapi/              # BolagsAPI integration (Epic 15)
+│   │   └── ...
+│   │
+│   ├── documents/              # Document processing (Epic 17)
+│   │   ├── docx-to-tiptap.ts
+│   │   ├── tiptap-to-docx.ts
+│   │   └── tiptap-to-pdf.ts
 │   │
 │   ├── auth/
 │   │   ├── auth-options.ts    # NextAuth config
