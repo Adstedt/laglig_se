@@ -12,6 +12,7 @@ const mockGetWorkspaceDocuments = vi.fn()
 vi.mock('@/app/actions/documents', () => ({
   getWorkspaceDocuments: (...args: unknown[]) =>
     mockGetWorkspaceDocuments(...args),
+  getDocumentTemplates: vi.fn().mockResolvedValue({ success: true, data: [] }),
 }))
 
 const MOCK_DOCUMENTS = [
