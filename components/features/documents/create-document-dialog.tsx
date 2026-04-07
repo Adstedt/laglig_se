@@ -25,8 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from 'sonner'
 import { createDocument, getDocumentTemplates } from '@/app/actions/documents'
 import { cn } from '@/lib/utils'
@@ -174,7 +172,7 @@ export function CreateDocumentDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
@@ -186,69 +184,65 @@ export function CreateDocumentDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Template selection */}
-          <div className="space-y-2">
-            <Label>Välj en mall</Label>
-            <ScrollArea className="max-h-[200px]">
-              <div className="space-y-1">
-                {/* Empty document option */}
-                <button
-                  type="button"
-                  onClick={() => handleTemplateSelect(null)}
-                  className={cn(
-                    'w-full rounded-md border p-3 text-left transition-colors',
-                    !selectedTemplateId
-                      ? 'border-primary bg-primary/5'
-                      : 'hover:bg-muted/50'
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <File className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">Tomt dokument</span>
-                  </div>
-                </button>
+          {/* Empty document option */}
+          <button
+            type="button"
+            onClick={() => handleTemplateSelect(null)}
+            className={cn(
+              'w-full rounded-md border p-3 text-left transition-colors',
+              !selectedTemplateId
+                ? 'border-primary bg-primary/5'
+                : 'hover:bg-muted/50'
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <File className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Tomt dokument</span>
+            </div>
+          </button>
 
-                {loadingTemplates ? (
-                  <div className="py-4 text-center text-sm text-muted-foreground">
-                    Laddar mallar...
-                  </div>
-                ) : (
-                  templates.map((template) => (
-                    <button
-                      key={template.id}
-                      type="button"
-                      onClick={() => handleTemplateSelect(template)}
-                      className={cn(
-                        'w-full rounded-md border p-3 text-left transition-colors',
-                        selectedTemplateId === template.id
-                          ? 'border-primary bg-primary/5'
-                          : 'hover:bg-muted/50'
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">
-                          {template.name}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] px-1.5 py-0"
-                        >
-                          {DOCUMENT_TYPE_LABELS[
-                            template.document_type as WorkspaceDocumentType
-                          ] ?? template.document_type}
-                        </Badge>
-                      </div>
-                      {template.description && (
-                        <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
-                          {template.description}
-                        </p>
-                      )}
-                    </button>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
+          {/* Templates */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">
+                eller välj en mall
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+            <div className="max-h-[200px] overflow-y-auto rounded-md space-y-1">
+              {loadingTemplates ? (
+                <div className="py-4 text-center text-sm text-muted-foreground">
+                  Laddar mallar...
+                </div>
+              ) : (
+                templates.map((template) => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => handleTemplateSelect(template)}
+                    className={cn(
+                      'w-full rounded-md border p-3 text-left transition-colors',
+                      selectedTemplateId === template.id
+                        ? 'border-primary bg-primary/5'
+                        : 'hover:bg-muted/50'
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">
+                        {template.name}
+                      </span>
+                    </div>
+                    {template.description && (
+                      <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
+                        {template.description}
+                      </p>
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
           </div>
 
           {/* Template preview */}
