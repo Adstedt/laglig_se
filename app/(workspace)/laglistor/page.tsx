@@ -19,6 +19,8 @@ import { DocumentListPageContent } from '@/components/features/document-list/doc
 import { DocumentListPageSkeleton } from '@/components/features/document-list/document-list-skeleton'
 import { LawListTabs } from '@/components/features/changes/law-list-tabs'
 import { RegenerateLawListButton } from '@/components/features/document-list/regenerate-law-list-button'
+import { getWorkspaceContext } from '@/lib/auth/workspace-context'
+import { hasPermission } from '@/lib/auth/permissions'
 
 // Force dynamic rendering since this page requires authentication
 export const dynamic = 'force-dynamic'
@@ -31,12 +33,14 @@ export const metadata: Metadata = {
 export default async function DocumentListsPage() {
   // Fetch initial data server-side
   const [
+    ctx,
     listsResult,
     defaultListResult,
     publishedTemplates,
     changesResult,
     changeCountResult,
   ] = await Promise.all([
+    getWorkspaceContext(),
     getDocumentLists(),
     getOrCreateDefaultList(),
     getPublishedTemplates(),
@@ -52,6 +56,10 @@ export default async function DocumentListsPage() {
   const initialChangeCount = changeCountResult.success
     ? (changeCountResult.data ?? 0)
     : 0
+
+  // Story 17.16: Gate compliance (kravpunkter + kommentar) edits by the tasks:edit permission.
+  // AUDITORs lack this — they should see read-only UI instead of clicking buttons that 500.
+  const complianceReadOnly = !hasPermission(ctx.role, 'tasks:edit')
 
   return (
     <div className="space-y-4">
@@ -74,6 +82,7 @@ export default async function DocumentListsPage() {
             initialLists={lists}
             defaultListId={defaultListId}
             publishedTemplates={publishedTemplates}
+            complianceReadOnly={complianceReadOnly}
           />
         </Suspense>
       </LawListTabs>

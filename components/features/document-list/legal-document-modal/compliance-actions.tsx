@@ -1,10 +1,9 @@
 'use client'
 
 /**
- * Story 6.18: Compliance Actions
- * Rich text editor accordion item for describing how we comply with the law
- * Uses Jira-style click-to-edit with Save/Cancel workflow
- * Pattern copied from business-context.tsx
+ * Story 6.18 + 17.16: Compliance accordion
+ * - Top sub-section: KravpunkterChecklist (structured checklist — Story 17.16)
+ * - Bottom sub-section: "Kommentar" free-text rich editor (Story 6.18, unchanged logic)
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -19,10 +18,15 @@ import {
   RichTextDisplay,
 } from '@/components/ui/rich-text-editor'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { Loader2, Check, ClipboardCheck, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { updateListItemComplianceActions } from '@/app/actions/legal-document-modal'
 import { toast } from 'sonner'
+import {
+  KravpunkterChecklist,
+  type KravpunkterProgress,
+} from './kravpunkter-checklist'
 
 interface ComplianceActionsProps {
   listItemId: string
@@ -33,6 +37,10 @@ interface ComplianceActionsProps {
   onContentChange?: ((_content: string | null) => void) | undefined
   /** Story 6.18: Auto-start in edit mode (from "Lägg till" click) */
   autoEdit?: boolean | undefined
+  /** Story 17.16: Read-only disables all kravpunkter mutations + commentary edit */
+  readOnly?: boolean | undefined
+  /** Story 17.16: Notify parent of kravpunkter progress for DetailsBox status suggestion */
+  onProgressChange?: ((_progress: KravpunkterProgress) => void) | undefined
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved'
@@ -44,12 +52,26 @@ export function ComplianceActions({
   updatedByName,
   onContentChange,
   autoEdit = false,
+  readOnly = false,
+  onProgressChange,
 }: ComplianceActionsProps) {
   const [content, setContent] = useState(initialContent ?? '')
   const [editedContent, setEditedContent] = useState(initialContent ?? '')
   const [isEditing, setIsEditing] = useState(autoEdit)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const lastSavedRef = useRef(initialContent ?? '')
+  const [progress, setProgress] = useState<KravpunkterProgress>({
+    fulfilled: 0,
+    total: 0,
+  })
+
+  const handleProgressChange = useCallback(
+    (next: KravpunkterProgress) => {
+      setProgress(next)
+      onProgressChange?.(next)
+    },
+    [onProgressChange]
+  )
 
   // Update local state when initialContent changes
   useEffect(() => {
@@ -166,89 +188,130 @@ export function ComplianceActions({
       className="border rounded-lg border-border/60"
     >
       <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
-        <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+        <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
           <ClipboardCheck className="h-4 w-4" />
-          <span>Hur efterlever vi kraven?</span>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent className="px-4 pb-4">
-        {isEditing ? (
-          <div className="space-y-3">
-            <SaveStatusIndicator status={saveStatus} align="end" />
-
-            <RichTextEditor
-              content={editedContent}
-              onChange={setEditedContent}
-              placeholder="Beskriv hur ni efterlever lagens krav..."
-            />
-
-            {/* Save/Cancel buttons */}
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                onClick={handleSave}
-                disabled={saveStatus === 'saving'}
-              >
-                {saveStatus === 'saving' ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                    Sparar...
-                  </>
-                ) : (
-                  'Spara'
-                )}
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleCancel}
-                disabled={saveStatus === 'saving'}
-              >
-                Avbryt
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <SaveStatusIndicator status={saveStatus} align="end" />
-
-            {/* Clickable display area */}
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={handleStartEdit}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  handleStartEdit()
-                }
-              }}
-              className={cn(
-                'cursor-pointer rounded-md border border-transparent',
-                'hover:border-input hover:bg-muted/30 transition-colors',
-                'p-3',
-                'group relative'
-              )}
-            >
-              <RichTextDisplay content={content} />
-
-              {/* Edit hint on hover */}
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="flex items-center gap-1 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
-                  <Pencil className="h-3 w-3" />
-                  Klicka för att redigera
-                </div>
+          <span>Kravpunkter</span>
+          {progress.total > 0 && (
+            <div className="flex items-center gap-2 ml-auto mr-2 font-normal">
+              <span className="text-xs text-muted-foreground tabular-nums">
+                {progress.fulfilled}/{progress.total} uppfyllda
+              </span>
+              <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-green-500 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${
+                      progress.total > 0
+                        ? Math.round(
+                            (progress.fulfilled / progress.total) * 100
+                          )
+                        : 0
+                    }%`,
+                  }}
+                />
               </div>
             </div>
+          )}
+        </div>
+      </AccordionTrigger>
+      <AccordionContent className="px-4 pb-4 space-y-4">
+        {/* Story 17.16: Structured checklist */}
+        <KravpunkterChecklist
+          listItemId={listItemId}
+          readOnly={readOnly}
+          onProgressChange={handleProgressChange}
+        />
 
-            {/* Metadata display */}
-            {formatMetadata() && (
-              <p className="text-xs text-muted-foreground mt-2">
-                {formatMetadata()}
-              </p>
-            )}
-          </div>
-        )}
+        <Separator />
+
+        {/* Story 6.18: Kommentar (free-text rich editor, unchanged) */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-muted-foreground">
+            Kommentar
+          </h4>
+          {isEditing ? (
+            <div className="space-y-3">
+              <SaveStatusIndicator status={saveStatus} align="end" />
+
+              <RichTextEditor
+                content={editedContent}
+                onChange={setEditedContent}
+                placeholder="Beskriv hur ni efterlever lagens krav..."
+              />
+
+              {/* Save/Cancel buttons */}
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={saveStatus === 'saving'}
+                >
+                  {saveStatus === 'saving' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      Sparar...
+                    </>
+                  ) : (
+                    'Spara'
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleCancel}
+                  disabled={saveStatus === 'saving'}
+                >
+                  Avbryt
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <SaveStatusIndicator status={saveStatus} align="end" />
+
+              {/* Clickable display area (disabled when readOnly) */}
+              <div
+                role={readOnly ? undefined : 'button'}
+                tabIndex={readOnly ? undefined : 0}
+                onClick={readOnly ? undefined : handleStartEdit}
+                onKeyDown={
+                  readOnly
+                    ? undefined
+                    : (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleStartEdit()
+                        }
+                      }
+                }
+                className={cn(
+                  'rounded-md border border-transparent p-3 group relative',
+                  !readOnly &&
+                    'cursor-pointer hover:border-input hover:bg-muted/30 transition-colors'
+                )}
+              >
+                <RichTextDisplay content={content} />
+
+                {/* Edit hint on hover — hidden in readOnly */}
+                {!readOnly && (
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded">
+                      <Pencil className="h-3 w-3" />
+                      Klicka för att redigera
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Metadata display */}
+              {formatMetadata() && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {formatMetadata()}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </AccordionContent>
     </AccordionItem>
   )

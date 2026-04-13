@@ -38,6 +38,8 @@ interface RightPanelProps {
         responsibleUserId?: string | null
       }) => void)
     | undefined
+  /** Story 17.16: Kravpunkter progress — powers the DetailsBox status suggestion tooltip */
+  requirementProgress?: { fulfilled: number; total: number } | undefined
 }
 
 export function RightPanel({
@@ -49,6 +51,7 @@ export function RightPanel({
   onAiChatToggle,
   onOptimisticChange,
   onListItemChange,
+  requirementProgress,
 }: RightPanelProps) {
   return (
     <div className="border-l bg-muted/30 max-md:border-t max-md:border-l-0">
@@ -61,6 +64,7 @@ export function RightPanel({
             onUpdate={onUpdate}
             onOptimisticChange={onOptimisticChange}
             onListItemChange={onListItemChange}
+            requirementProgress={requirementProgress}
           />
 
           {/* Quick Links Box */}

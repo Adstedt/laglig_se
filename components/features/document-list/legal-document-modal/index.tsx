@@ -57,6 +57,8 @@ interface LegalDocumentModalProps {
     | undefined
   /** Story 6.18: Field to focus when modal opens (from "Lägg till" click) */
   focusField?: 'businessContext' | 'complianceActions' | null | undefined
+  /** Story 17.16: Disable compliance (kravpunkter + kommentar) editing when the current user lacks permission */
+  complianceReadOnly?: boolean | undefined
 }
 
 export function LegalDocumentModal({
@@ -69,6 +71,7 @@ export function LegalDocumentModal({
   taskColumns = [],
   onListItemChange,
   focusField,
+  complianceReadOnly,
 }: LegalDocumentModalProps) {
   const [aiChatOpen, setAiChatOpen] = useState(false)
 
@@ -77,6 +80,13 @@ export function LegalDocumentModal({
     complianceStatus?: ComplianceStatus
     priority?: 'LOW' | 'MEDIUM' | 'HIGH'
   }>({})
+
+  // Story 17.16: Kravpunkter progress lifted from KravpunkterChecklist so DetailsBox
+  // can render a status-suggestion tooltip next to the Efterlevnad dropdown.
+  const [requirementProgress, setRequirementProgress] = useState<{
+    fulfilled: number
+    total: number
+  }>({ fulfilled: 0, total: 0 })
 
   // Reset overrides when switching to a different list item
   useEffect(() => {
@@ -297,6 +307,8 @@ export function LegalDocumentModal({
                       onBusinessContextChange={handleBusinessContextChange}
                       onComplianceActionsChange={handleComplianceActionsChange}
                       focusField={focusField}
+                      complianceReadOnly={complianceReadOnly}
+                      onKravpunkterProgressChange={setRequirementProgress}
                     />
                   </ScrollArea>
 
@@ -310,6 +322,7 @@ export function LegalDocumentModal({
                     onAiChatToggle={() => setAiChatOpen(!aiChatOpen)}
                     onOptimisticChange={handleOptimisticChange}
                     onListItemChange={handleListItemChange}
+                    requirementProgress={requirementProgress}
                   />
                 </div>
               </div>

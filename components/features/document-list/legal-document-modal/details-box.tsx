@@ -57,6 +57,18 @@ interface DetailsBoxProps {
         responsibleUserId?: string | null
       }) => void)
     | undefined
+  /** Story 17.16: Kravpunkter progress — powers the status-suggestion tooltip */
+  requirementProgress?: { fulfilled: number; total: number } | undefined
+}
+
+/** Story 17.16: Derive a compliance status suggestion from checklist progress. */
+function suggestStatusFromRequirements(
+  fulfilled: number,
+  total: number
+): ComplianceStatus {
+  if (total === 0 || fulfilled === 0) return 'EJ_PABORJAD'
+  if (fulfilled === total) return 'UPPFYLLD'
+  return 'PAGAENDE'
 }
 
 // Status configuration - aligned with law list column dropdowns
@@ -144,6 +156,7 @@ export function DetailsBox({
   onUpdate,
   onOptimisticChange,
   onListItemChange,
+  requirementProgress,
 }: DetailsBoxProps) {
   // Local state for optimistic UI - persists user selection immediately
   const [localStatus, setLocalStatus] = useState(listItem.complianceStatus)
@@ -215,63 +228,98 @@ export function DetailsBox({
 
           {/* Efterlevnad (Compliance Status) - Editable with optimistic UI */}
           {/* Story 6.16: Added info tooltip for column context */}
+          {/* Story 17.16: Status suggestion tooltip based on kravpunkter progress */}
           <DetailRow
             label="Efterlevnad"
             interactive
             infoTooltip={EFTERLEVNAD_INFO_CONTENT}
           >
-            <Select
-              value={localStatus}
-              onValueChange={(v) => handleStatusChange(v as ComplianceStatus)}
-              disabled={isStatusLoading}
-            >
-              <SelectTrigger
-                className={cn(
-                  '!h-auto !p-0 !border-0 !shadow-none !bg-transparent hover:!bg-transparent focus:!ring-0 !w-auto gap-1.5 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-70',
-                  isStatusLoading && 'opacity-50'
-                )}
-              >
-                {isStatusLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <SelectValue>
-                    <span
-                      className={cn(
-                        'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                        statusConfig.className,
-                        statusConfig.strikethrough && 'line-through'
-                      )}
-                    >
-                      {statusConfig.label}
-                    </span>
-                  </SelectValue>
-                )}
-              </SelectTrigger>
-              <SelectContent align="end">
-                <TooltipProvider delayDuration={300}>
-                  {Object.entries(STATUS_CONFIG).map(([value, config]) => (
-                    <Tooltip key={value}>
-                      <TooltipTrigger asChild>
-                        <SelectItem value={value}>
-                          <span
-                            className={cn(
-                              'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                              config.className,
-                              config.strikethrough && 'line-through'
-                            )}
-                          >
-                            {config.label}
-                          </span>
-                        </SelectItem>
-                      </TooltipTrigger>
-                      <TooltipContent side="left" className="max-w-[220px]">
-                        <p>{config.tooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
+            <div className="flex items-center gap-1.5">
+              {requirementProgress && requirementProgress.total > 0 && (
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="rounded p-0.5 hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring"
+                        aria-label="Förslag baserat på kravpunkter"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Info className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-[240px]">
+                      <p className="text-xs">
+                        Baserat på kravpunkter: {requirementProgress.fulfilled}/
+                        {requirementProgress.total} uppfyllda — föreslår{' '}
+                        <span className="font-medium">
+                          {
+                            STATUS_CONFIG[
+                              suggestStatusFromRequirements(
+                                requirementProgress.fulfilled,
+                                requirementProgress.total
+                              )
+                            ].label
+                          }
+                        </span>
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
                 </TooltipProvider>
-              </SelectContent>
-            </Select>
+              )}
+              <Select
+                value={localStatus}
+                onValueChange={(v) => handleStatusChange(v as ComplianceStatus)}
+                disabled={isStatusLoading}
+              >
+                <SelectTrigger
+                  className={cn(
+                    '!h-auto !p-0 !border-0 !shadow-none !bg-transparent hover:!bg-transparent focus:!ring-0 !w-auto gap-1.5 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-70',
+                    isStatusLoading && 'opacity-50'
+                  )}
+                >
+                  {isStatusLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <SelectValue>
+                      <span
+                        className={cn(
+                          'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                          statusConfig.className,
+                          statusConfig.strikethrough && 'line-through'
+                        )}
+                      >
+                        {statusConfig.label}
+                      </span>
+                    </SelectValue>
+                  )}
+                </SelectTrigger>
+                <SelectContent align="end">
+                  <TooltipProvider delayDuration={300}>
+                    {Object.entries(STATUS_CONFIG).map(([value, config]) => (
+                      <Tooltip key={value}>
+                        <TooltipTrigger asChild>
+                          <SelectItem value={value}>
+                            <span
+                              className={cn(
+                                'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
+                                config.className,
+                                config.strikethrough && 'line-through'
+                              )}
+                            >
+                              {config.label}
+                            </span>
+                          </SelectItem>
+                        </TooltipTrigger>
+                        <TooltipContent side="left" className="max-w-[220px]">
+                          <p>{config.tooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </TooltipProvider>
+                </SelectContent>
+              </Select>
+            </div>
           </DetailRow>
 
           {/* Priority - Editable with optimistic UI */}

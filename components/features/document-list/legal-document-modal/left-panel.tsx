@@ -11,6 +11,7 @@ import { LawHeader } from './law-header'
 import { LagtextSection } from './lagtext-section'
 import { BusinessContext } from './business-context'
 import { ComplianceActions } from './compliance-actions'
+import type { KravpunkterProgress } from './kravpunkter-checklist'
 import { TasksAccordion } from './tasks-accordion'
 import { ActivityTabs } from './activity-tabs'
 import type {
@@ -38,6 +39,12 @@ interface LeftPanelProps {
   onComplianceActionsChange?: ((_content: string | null) => void) | undefined
   /** Story 6.18: Field to focus/edit when modal opens (from "Lägg till" click) */
   focusField?: 'businessContext' | 'complianceActions' | null | undefined
+  /** Story 17.16: Read-only compliance editing when user lacks permission */
+  complianceReadOnly?: boolean | undefined
+  /** Story 17.16: Bubble kravpunkter progress up to modal for DetailsBox */
+  onKravpunkterProgressChange?:
+    | ((_progress: KravpunkterProgress) => void)
+    | undefined
 }
 
 export function LeftPanel({
@@ -53,6 +60,8 @@ export function LeftPanel({
   onBusinessContextChange,
   onComplianceActionsChange,
   focusField,
+  complianceReadOnly,
+  onKravpunkterProgressChange,
 }: LeftPanelProps) {
   return (
     <div className="p-6 space-y-4 overflow-hidden">
@@ -88,7 +97,7 @@ export function LeftPanel({
           autoEdit={focusField === 'businessContext'}
         />
 
-        {/* Story 6.18: Compliance Actions */}
+        {/* Story 6.18 + 17.16: Compliance accordion (Kravpunkter + Kommentar) */}
         <ComplianceActions
           listItemId={listItem.id}
           initialContent={listItem.complianceActions}
@@ -96,6 +105,8 @@ export function LeftPanel({
           updatedByName={complianceActionsUpdatedByName}
           onContentChange={onComplianceActionsChange}
           autoEdit={focusField === 'complianceActions'}
+          readOnly={complianceReadOnly}
+          onProgressChange={onKravpunkterProgressChange}
         />
 
         {/* Story 6.15: Tasks Accordion */}

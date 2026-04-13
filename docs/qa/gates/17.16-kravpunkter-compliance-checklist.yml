@@ -1,0 +1,117 @@
+schema: 1
+story: '17.16'
+story_title: 'Kravpunkter — Structured Compliance Checklist per Law List Item'
+gate: CONCERNS
+status_reason: 'All 3 actionable CONCERNS from the prior review are resolved: `complianceReadOnly` wired end-to-end, dead Escape branches removed, AlertDialog tests added. 3 items remain, all deferred or externally blocked — AC22 blocked on Story 6.10, PERF-001 architecturally sound, A11Y-001 is follow-up polish. Score 80/100. Recommend WAIVER or PO decision to promote to PASS if AC22 is accepted as external-dependency debt.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-13T20:25:00Z'
+
+waiver: { active: false }
+
+quality_score: 80
+
+history:
+  - at: '2026-04-13T18:35:00Z'
+    gate: CONCERNS
+    note: 'Initial review after dev self-QA pass. 6 top_issues: 2 medium (AC10, AC22), 4 low (CODE, TEST, PERF, A11Y). Score 70.'
+  - at: '2026-04-13T20:25:00Z'
+    gate: CONCERNS
+    note: 'Re-gate after apply-qa-fixes v1.3. Resolved: AC10-001 (wired complianceReadOnly server→5 components), CODE-001 (removed dead Escape branches + unused handleCancel), TEST-001 (added AlertDialog cancel/confirm tests). 47/47 tests pass. Remaining items are deferred or externally blocked. Score 80.'
+
+top_issues:
+  - id: 'AC22-001'
+    severity: medium
+    finding: 'AC #22 (Activity tab shows kravpunkter events) cannot be visually verified because `components/features/document-list/legal-document-modal/activity-feed.tsx` is a UI placeholder originally scheduled for Story 6.10 (never built). The `logActivity()` calls from this story DO write rows correctly — verified by unit tests with mock assertions.'
+    suggested_action: 'Track AC #22 as blocked on Story 6.10 (activity feed implementation). When that story is built, kravpunkter events will appear automatically since `entity_type` is free-form String. Alternatively: open a small follow-up to surface basic kravpunkter events even if Story 6.10 is delayed. Candidate for WAIVER with PO approval.'
+    suggested_owner: po
+    refs: ['components/features/document-list/legal-document-modal/activity-feed.tsx']
+
+  - id: 'PERF-001'
+    severity: low
+    finding: 'AC #30 (modal with 20+ kravpunkter, 3 evidence links each, loads in <1s) was not benchmarked. Architecture supports it (single SQL query with nested includes, indexed `[list_item_id, position]`, SWR caching) but no measurement exists.'
+    suggested_action: 'Add a skipped-by-default integration test that seeds 20 kravpunkter × 3 evidence links and asserts query duration. Or accept the architectural assessment as sufficient for MVP.'
+    suggested_owner: dev
+    refs: ['app/actions/law-list-item-requirements.ts:408-483']
+
+  - id: 'A11Y-001'
+    severity: low
+    finding: 'Two minor accessibility concerns: (1) `text-muted-foreground` on fulfilled kravpunkt rows may not meet WCAG AA contrast in all themes; (2) inline-edit affordance has no visible cue until hover, so keyboard-only users may not discover it.'
+    suggested_action: 'Run axe-core on the modal with kravpunkter; consider adding a focus-style edit hint or a small pencil icon.'
+    suggested_owner: dev
+    refs: ['components/features/document-list/legal-document-modal/kravpunkter-checklist.tsx:412']
+
+resolved_issues:
+  - id: 'AC10-001'
+    severity: medium
+    resolved_at: '2026-04-13T20:20:00Z'
+    resolution: 'Server component `app/(workspace)/laglistor/page.tsx` now computes `complianceReadOnly = !hasPermission(ctx.role, "tasks:edit")` via `getWorkspaceContext()` and forwards through 5 components: DocumentListPageContent → LegalDocumentModal → LeftPanel → ComplianceActions → KravpunkterChecklist. AUDITORs now see read-only UI.'
+    refs:
+      - 'app/(workspace)/laglistor/page.tsx:33-85'
+      - 'components/features/document-list/document-list-page-content.tsx:67-83'
+      - 'components/features/document-list/legal-document-modal/index.tsx:60-76'
+
+  - id: 'CODE-001'
+    severity: low
+    resolved_at: '2026-04-13T20:15:00Z'
+    resolution: 'Removed unreachable `onKeyDown` Escape branches in both Inputs (add + edit). The `useEffect` window-capture listener consumes Escape before React synthetic events fire. Also removed now-unused `handleCancel` helper.'
+    refs: ['components/features/document-list/legal-document-modal/kravpunkter-checklist.tsx:209-225']
+
+  - id: 'TEST-001'
+    severity: low
+    resolved_at: '2026-04-13T20:20:00Z'
+    resolution: 'Added 2 component tests for the AlertDialog delete flow: (1) click X → Avbryt keeps row + does not call deleteRequirement; (2) click X → Ta bort fires deleteRequirement("req-1"). 47/47 tests now pass (previously 45).'
+    refs: ['tests/unit/components/features/document-list/legal-document-modal/kravpunkter-checklist.test.tsx:311-360']
+
+evidence:
+  tests_reviewed: 47
+  risks_identified: 3
+  trace:
+    ac_covered:
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 29]
+    ac_partial: [22, 30]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Workspace isolation via getRequirementWorkspaceContext join helper; XOR Zod refinement prevents dual-link state; server-side workspace verification on linked file/document IDs; P2002 mapped to friendly Swedish error; correct permission gates. AC10 fix means AUDITOR UX now matches the server-side permission gate — consistent defense in depth.'
+  performance:
+    status: CONCERNS
+    notes: 'AC #30 still not benchmarked. Architecturally sound (SWR + indexed query + optimistic updates). revalidatePath calls trigger Next.js segment refresh on every mutation but measurable cost is still unquantified.'
+  reliability:
+    status: PASS
+    notes: 'Optimistic state with rollback on server failure; cache invalidation guarded by try/catch; cascade deletes correctly configured; XOR enforcement at app layer compensates for NULL-distinct unique index limitation. AlertDialog removes the race condition that plagued the earlier sonner-undo pattern.'
+  maintainability:
+    status: PASS
+    notes: 'Previously CONCERNS due to dead onKeyDown Escape branches; now cleaned up. Strong adherence to existing patterns (legal-document-modal.ts for actions, tasks-accordion.tsx for UI). complianceReadOnly prop chain is 5 hops but each hop is explicit and typed. Tests pass 47/47.'
+  accessibility:
+    status: CONCERNS
+    notes: 'Bug #2 CommandDialog fix is a major improvement across the app. Aria-labels, Radix primitives, focus management correct. Open: text-muted-foreground contrast on fulfilled rows; inline-edit discoverability for keyboard-only users. Worth an axe-core pass in follow-up.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider WAIVER for AC22-001 with PO approval — activity feed implementation is a Story 6.10 dependency, not a defect of Story 17.16'
+      refs: ['components/features/document-list/legal-document-modal/activity-feed.tsx']
+    - action: 'Implement activity-feed.tsx (Story 6.10 scope) so AC #22 can be visually verified'
+      refs: ['components/features/document-list/legal-document-modal/activity-feed.tsx']
+    - action: 'Benchmark 20-kravpunkter / 60-evidence-links scenario for AC #30'
+      refs: ['app/actions/law-list-item-requirements.ts:408']
+    - action: 'Run axe-core against the kravpunkter UI and address any contrast / discoverability failures'
+      refs: ['components/features/document-list/legal-document-modal/kravpunkter-checklist.tsx']
+    - action: 'Consider whether AC #16 (reorder) needs a drag-and-drop UI in this story or a follow-up — server action exists and is tested but unused'
+      refs: ['app/actions/law-list-item-requirements.ts:347-402']
+
+bug_fixes_validated:
+  - bug: 'Bug #1 — Escape closed parent modal during inline edit/add'
+    fix: 'window-capture useEffect listener (kept); dead onKeyDown branches removed in v1.3'
+    verified: 'E2E confirmed + tests pass'
+  - bug: 'Bug #2 — File / Document picker closed parent modal'
+    fix: 'Added sr-only DialogTitle + DialogDescription to CommandDialog (components/ui/command.tsx) — fixes globally for every cmdk picker'
+    verified: 'E2E confirmed in browser'
+  - bug: 'Bug #3 — Undo delete didn''t restore'
+    fix: 'Replaced sonner action.onClick undo with shadcn AlertDialog confirmation — appropriate for compliance data. Now covered by 2 component tests.'
+    verified: 'E2E + 2 unit tests in v1.3'
+  - bug: 'Bug #4 — Activity feed shows "Ingen aktivitet ännu"'
+    fix: 'Out of scope — activity-feed.tsx is pre-existing placeholder for Story 6.10 (never built). Logs ARE written.'
+    verified: 'Mock assertions in unit tests confirm logActivity called with correct entity_type/action'
