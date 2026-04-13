@@ -41,8 +41,9 @@ export function getStorageClient(): SupabaseClient {
  * Pattern: YYYY/SFSYYYY-NNNN.pdf
  */
 export function getStoragePath(sfsNumber: string): string {
-  // sfsNumber format: "2025:1461"
-  const [year, num] = sfsNumber.split(':')
+  // Accept both "2025:1461" and "SFS 2025:1461" — strip prefix if present
+  const clean = sfsNumber.replace(/^SFS\s*/i, '').trim()
+  const [year, num] = clean.split(':')
   return `${year}/SFS${year}-${num}.pdf`
 }
 

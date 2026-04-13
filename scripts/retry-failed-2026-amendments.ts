@@ -253,7 +253,7 @@ async function main() {
   // ---- Phase 1: Find FAILED/PENDING AmendmentDocuments ----
   const failedAmendments = await prisma.amendmentDocument.findMany({
     where: {
-      sfs_number: { startsWith: `${year}:` },
+      sfs_number: { startsWith: `SFS ${year}:` },
       parse_status: { in: [ParseStatus.FAILED, ParseStatus.PENDING] },
     },
     select: {
@@ -270,7 +270,7 @@ async function main() {
 
   // ---- Phase 2: Find missing SFS numbers ----
   const allExisting = await prisma.amendmentDocument.findMany({
-    where: { sfs_number: { startsWith: `${year}:` } },
+    where: { sfs_number: { startsWith: `SFS ${year}:` } },
     select: { sfs_number: true },
   })
   const existingNums = new Set(
@@ -356,8 +356,11 @@ async function main() {
     })
   }
 
-  // Sort by SFS number
-  queue.sort((a, b) => a.sfsNum - b.sfsNum)
+  // Retries first (verify fixes), then discovers. Within each group, ascending.
+  queue.sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'retry' ? -1 : 1
+    return a.sfsNum - b.sfsNum
+  })
 
   const total = LIMIT > 0 ? Math.min(queue.length, LIMIT) : queue.length
   console.log(
