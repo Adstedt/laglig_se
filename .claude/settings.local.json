@@ -269,7 +269,9 @@
       "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''name:'''', d.get\\(''''name''''\\)\\); print\\(''''version:'''', d.get\\(''''version''''\\)\\); print\\(''''license:'''', d.get\\(''''license''''\\)\\); api = d.get\\(''''exports'''', d.get\\(''''main'''', ''''N/A''''\\)\\); print\\(''''main:'''', api\\)\")",
       "Bash(webbplats\" badge. Dual persistence: activity_flags as JSON + has_collective_agreement:*)",
       "Bash(node -e \":*)",
-      "WebFetch(domain:openai.com)"
+      "WebFetch(domain:openai.com)",
+      "WebFetch(domain:elements.ai-sdk.dev)",
+      "WebFetch(domain:www.npmjs.com)"
     ],
     "deny": [],
     "ask": []

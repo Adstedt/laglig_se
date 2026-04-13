@@ -8,23 +8,32 @@
 
 import { useRef, useEffect, useCallback } from 'react'
 import type { UIMessage } from 'ai'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { StickToBottom, useStickToBottomContext } from 'use-stick-to-bottom'
 import { ChatMessage } from './chat-message'
 import { StreamingIndicator } from './streaming-indicator'
 import { LexaIcon } from '@/components/ui/lexa-icon'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ArrowDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   groupMessagesByDate,
   type DateGroup,
 } from '@/lib/utils/group-messages-by-date'
-import { useChatDetailSafe } from '@/lib/ai/chat-detail-context'
+import {
+  useChatDetailSafe,
+  type SystemMessageItem,
+} from '@/lib/ai/chat-detail-context'
 import { SystemMessage } from './system-message'
 
 interface ChatMessageListProps {
   messages: UIMessage[]
   isStreaming?: boolean
   className?: string
+  /**
+   * Optional className applied to the inner content container (inside the
+   * scrolling viewport). Use this to center/constrain the message column
+   * while keeping the scrollbar at the full-width edge of the viewport.
+   */
+  contentClassName?: string
   /** Optional inline content rendered after all messages (e.g. assessment UI) */
   footer?: React.ReactNode
   /** Called when user scrolls to top to load older messages */
@@ -41,66 +50,13 @@ export function ChatMessageList({
   messages,
   isStreaming = false,
   className,
+  contentClassName,
   footer,
   onLoadMore,
   isLoadingMore = false,
   hasMore,
   onDeleteMessage,
 }: ChatMessageListProps) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const sentinelRef = useRef<HTMLDivElement>(null)
-  const prevScrollHeightRef = useRef<number>(0)
-  const isRestoringScrollRef = useRef(false)
-
-  // Auto-scroll to bottom when new messages arrive (but not when prepending older)
-  useEffect(() => {
-    if (isRestoringScrollRef.current) return
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isStreaming])
-
-  // Preserve scroll position when older messages are prepended
-  useEffect(() => {
-    if (!isRestoringScrollRef.current) return
-    const viewport = scrollRef.current?.querySelector<HTMLElement>(
-      '[data-radix-scroll-area-viewport]'
-    )
-    if (!viewport) return
-    requestAnimationFrame(() => {
-      viewport.scrollTop = viewport.scrollHeight - prevScrollHeightRef.current
-      isRestoringScrollRef.current = false
-    })
-  }, [messages])
-
-  // IntersectionObserver on sentinel to trigger loadMore
-  const handleLoadMore = useCallback(async () => {
-    if (!onLoadMore || isLoadingMore || hasMore === false) return
-    const viewport = scrollRef.current?.querySelector<HTMLElement>(
-      '[data-radix-scroll-area-viewport]'
-    )
-    if (viewport) {
-      prevScrollHeightRef.current = viewport.scrollHeight
-      isRestoringScrollRef.current = true
-    }
-    await onLoadMore()
-  }, [onLoadMore, isLoadingMore, hasMore])
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel || !onLoadMore) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting && hasMore !== false && !isLoadingMore) {
-          handleLoadMore()
-        }
-      },
-      { threshold: 0.1 }
-    )
-    observer.observe(sentinel)
-    return () => observer.disconnect()
-  }, [onLoadMore, hasMore, isLoadingMore, handleLoadMore])
-
   // Only mark the last assistant message as streaming, and only if it's
   // actually the newest message (not a previous response before a new user message)
   const lastAssistantIndex = messages.findLastIndex(
@@ -120,8 +76,109 @@ export function ChatMessageList({
   const systemMessages = chatDetail?.systemMessages ?? []
 
   return (
-    <ScrollArea className={cn('flex-1', className)} ref={scrollRef}>
-      <div className="px-4 py-4 space-y-4">
+    <StickToBottom
+      resize="instant"
+      initial="instant"
+      role="log"
+      className={cn('relative flex-1 overflow-y-hidden', className)}
+    >
+      <StickToBottomContent
+        messages={messages}
+        isStreaming={isStreaming}
+        isLoadingMore={isLoadingMore}
+        hasMore={hasMore}
+        onLoadMore={onLoadMore}
+        onDeleteMessage={onDeleteMessage}
+        footer={footer}
+        dateGroups={dateGroups}
+        lastAssistantIndex={lastAssistantIndex}
+        isLastAssistantTheNewest={isLastAssistantTheNewest}
+        systemMessages={systemMessages}
+        contentClassName={contentClassName}
+      />
+    </StickToBottom>
+  )
+}
+
+interface ContentProps {
+  messages: UIMessage[]
+  isStreaming: boolean
+  isLoadingMore: boolean
+  hasMore: boolean | null | undefined
+  onLoadMore: (() => Promise<unknown>) | undefined
+  onDeleteMessage: ((_messageId: string) => void) | undefined
+  footer: React.ReactNode | undefined
+  dateGroups: DateGroup[]
+  lastAssistantIndex: number
+  isLastAssistantTheNewest: boolean
+  systemMessages: SystemMessageItem[]
+  contentClassName: string | undefined
+}
+
+function StickToBottomContent({
+  messages,
+  isStreaming,
+  isLoadingMore,
+  hasMore,
+  onLoadMore,
+  onDeleteMessage,
+  footer,
+  dateGroups,
+  lastAssistantIndex,
+  isLastAssistantTheNewest,
+  systemMessages,
+  contentClassName,
+}: ContentProps) {
+  const { scrollRef, isAtBottom, scrollToBottom } = useStickToBottomContext()
+
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const prevScrollHeightRef = useRef<number>(0)
+  const isRestoringScrollRef = useRef(false)
+
+  // Preserve scroll position when older messages are prepended via loadMore.
+  // The library's stick-to-bottom only auto-follows when the user is near the
+  // bottom; during pagination the user is at the top, so it leaves us alone.
+  useEffect(() => {
+    if (!isRestoringScrollRef.current) return
+    const viewport = scrollRef.current
+    if (!viewport) return
+    requestAnimationFrame(() => {
+      viewport.scrollTop = viewport.scrollHeight - prevScrollHeightRef.current
+      isRestoringScrollRef.current = false
+    })
+  }, [messages, scrollRef])
+
+  const handleLoadMore = useCallback(async () => {
+    if (!onLoadMore || isLoadingMore || hasMore === false) return
+    const viewport = scrollRef.current
+    if (viewport) {
+      prevScrollHeightRef.current = viewport.scrollHeight
+      isRestoringScrollRef.current = true
+    }
+    await onLoadMore()
+  }, [onLoadMore, isLoadingMore, hasMore, scrollRef])
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel || !onLoadMore) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore !== false && !isLoadingMore) {
+          handleLoadMore()
+        }
+      },
+      { threshold: 0.1 }
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [onLoadMore, hasMore, isLoadingMore, handleLoadMore])
+
+  return (
+    <>
+      <StickToBottom.Content
+        className={cn('px-4 py-4 space-y-4', contentClassName)}
+      >
         {/* Sentinel for infinite scroll — triggers loadMore when visible */}
         <div ref={sentinelRef} className="h-1" aria-hidden="true" />
 
@@ -187,10 +244,18 @@ export function ChatMessageList({
 
         {/* Inline footer (e.g. assessment resolution) */}
         {footer}
+      </StickToBottom.Content>
 
-        {/* Scroll anchor */}
-        <div ref={bottomRef} />
-      </div>
-    </ScrollArea>
+      {!isAtBottom && messages.length > 0 && (
+        <button
+          type="button"
+          onClick={() => scrollToBottom()}
+          aria-label="Gå till senaste meddelandet"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background shadow-md hover:bg-muted transition-colors animate-in fade-in-0 zoom-in-95 duration-150"
+        >
+          <ArrowDown className="h-4 w-4" />
+        </button>
+      )}
+    </>
   )
 }
