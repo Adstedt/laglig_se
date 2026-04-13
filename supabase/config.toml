@@ -204,6 +204,10 @@ otp_expiry = 3600
 subject = "Verifiera din e-post — Laglig.se"
 content_path = "./supabase/templates/confirmation.html"
 
+[auth.email.template.recovery]
+subject = "Återställ ditt lösenord — Laglig.se"
+content_path = "./supabase/templates/recovery.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true
