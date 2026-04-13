@@ -27,6 +27,16 @@ vi.mock('swr', () => ({
   mutate: vi.fn(),
 }))
 
+// Story 17.16: Stub the new KravpunkterChecklist so compliance-actions tests focus on Kommentar.
+vi.mock(
+  '@/components/features/document-list/legal-document-modal/kravpunkter-checklist',
+  () => ({
+    KravpunkterChecklist: () => (
+      <div data-testid="kravpunkter-checklist-stub" />
+    ),
+  })
+)
+
 // Mock RichTextEditor and RichTextDisplay
 vi.mock('@/components/ui/rich-text-editor', () => ({
   RichTextEditor: ({
@@ -69,10 +79,16 @@ describe('ComplianceActions', () => {
     vi.clearAllMocks()
   })
 
-  it('renders accordion with correct title', () => {
+  it('renders accordion with correct title (Story 17.16 rename)', () => {
     renderInAccordion(<ComplianceActions {...defaultProps} />)
 
-    expect(screen.getByText('Hur efterlever vi kraven?')).toBeInTheDocument()
+    expect(screen.getByText('Kravpunkter')).toBeInTheDocument()
+  })
+
+  it('renders the KravpunkterChecklist inside the accordion', () => {
+    renderInAccordion(<ComplianceActions {...defaultProps} />)
+
+    expect(screen.getByTestId('kravpunkter-checklist-stub')).toBeInTheDocument()
   })
 
   it('renders in display mode by default when content exists', () => {

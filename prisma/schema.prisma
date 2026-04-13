@@ -65,6 +65,10 @@ model User {
   workspace_doc_task_links       WorkspaceDocumentTaskLink[]     @relation("WsDocTaskLinkUser")
   workspace_doc_list_item_links  WorkspaceDocumentListItemLink[] @relation("WsDocListItemLinkUser")
 
+  // Story 17.16: Kravpunkter relations
+  created_requirements         LawListItemRequirement[]  @relation("RequirementCreator")
+  requirement_evidence_links   RequirementEvidenceLink[] @relation("RequirementEvidenceLinkUser")
+
   @@index([email])
   @@map("users")
 }
@@ -328,6 +332,9 @@ model LawListItem {
   // Epic 17: Document management
   workspace_document_links WorkspaceDocumentListItemLink[]
 
+  // Story 17.16: Kravpunkter (structured compliance checklist)
+  requirements LawListItemRequirement[]
+
   @@unique([law_list_id, document_id])
   @@index([law_list_id])
   @@index([document_id])
@@ -337,6 +344,51 @@ model LawListItem {
   @@index([compliance_status]) // Epic 6: Fast compliance queries
   @@index([responsible_user_id]) // Epic 6: Fast responsible person queries
   @@map("law_list_items")
+}
+
+// ============================================================================
+// STORY 17.16: KRAVPUNKTER — Structured compliance checklist per LawListItem
+// ============================================================================
+
+model LawListItemRequirement {
+  id           String   @id @default(uuid())
+  list_item_id String
+  text         String   @db.Text
+  is_fulfilled Boolean  @default(false)
+  position     Float    @default(0) // Float + no unique constraint → fractional midpoint reorder (mirrors LawListItem.position)
+  created_by   String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  list_item      LawListItem               @relation(fields: [list_item_id], references: [id], onDelete: Cascade)
+  creator        User                      @relation("RequirementCreator", fields: [created_by], references: [id])
+  evidence_links RequirementEvidenceLink[]
+
+  @@index([list_item_id, position])
+  @@index([created_by])
+  @@map("law_list_item_requirements")
+}
+
+model RequirementEvidenceLink {
+  id                    String   @id @default(uuid())
+  requirement_id        String
+  file_id               String?  // FK → WorkspaceFile (nullable — XOR with workspace_document_id)
+  workspace_document_id String?  // FK → WorkspaceDocument (nullable — XOR with file_id, prefixed per Epic 17 collision rule)
+  linked_at             DateTime @default(now())
+  linked_by             String
+
+  requirement        LawListItemRequirement @relation(fields: [requirement_id], references: [id], onDelete: Cascade)
+  file               WorkspaceFile?         @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  workspace_document WorkspaceDocument?     @relation(fields: [workspace_document_id], references: [id], onDelete: Cascade)
+  linker             User                   @relation("RequirementEvidenceLinkUser", fields: [linked_by], references: [id])
+
+  // XOR enforced at application layer via Zod (.refine). Unique constraints prevent duplicate links.
+  @@unique([requirement_id, file_id])
+  @@unique([requirement_id, workspace_document_id])
+  @@index([requirement_id])
+  @@index([file_id])
+  @@index([workspace_document_id])
+  @@map("requirement_evidence_links")
 }
 
 // ============================================================================
@@ -1102,6 +1154,9 @@ model WorkspaceFile {
   task_links      FileTaskLink[]
   list_item_links FileListItemLink[]
 
+  // Story 17.16: Kravpunkter evidence links
+  requirement_evidence_links RequirementEvidenceLink[]
+
   // Story 6.7b: Unique filename within same folder
   @@unique([workspace_id, parent_folder_id, filename], name: "unique_filename_in_folder")
   @@index([workspace_id])
@@ -1613,6 +1668,9 @@ model WorkspaceDocument {
   template        WorkspaceDocumentTemplate?   @relation(fields: [template_id], references: [id])
   task_links      WorkspaceDocumentTaskLink[]
   list_item_links WorkspaceDocumentListItemLink[]
+
+  // Story 17.16: Kravpunkter evidence links
+  requirement_evidence_links RequirementEvidenceLink[]
 
   @@index([workspace_id, status])
   @@index([workspace_id, document_type])

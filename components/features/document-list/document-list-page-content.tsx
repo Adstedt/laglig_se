@@ -68,12 +68,15 @@ interface DocumentListPageContentProps {
   initialLists: DocumentListSummary[]
   defaultListId: string | null
   publishedTemplates?: PublishedTemplate[] | undefined
+  /** Story 17.16: Server-derived permission flag — disables kravpunkter + kommentar edits for users lacking `tasks:edit` */
+  complianceReadOnly?: boolean
 }
 
 export function DocumentListPageContent({
   initialLists,
   defaultListId,
   publishedTemplates,
+  complianceReadOnly,
 }: DocumentListPageContentProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
@@ -1059,6 +1062,7 @@ export function DocumentListPageContent({
         taskColumns={taskColumns}
         onListItemChange={handleListItemChange}
         focusField={focusField}
+        complianceReadOnly={complianceReadOnly}
       />
 
       {/* Story 6.15: Task modal for bidirectional linking */}
