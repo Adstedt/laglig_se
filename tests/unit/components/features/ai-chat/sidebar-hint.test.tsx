@@ -4,11 +4,6 @@ import { ChatDetailProvider } from '@/lib/ai/chat-detail-context'
 import { ChatMessage } from '@/components/features/ai-chat/chat-message'
 import type { UIMessage } from 'ai'
 
-// Mock streaming text hook to pass through
-vi.mock('@/lib/hooks/use-streaming-text', () => ({
-  useStreamingText: ({ text }: { text: string }) => text,
-}))
-
 // Mock streamdown to render plain text
 vi.mock('streamdown', () => ({
   Streamdown: ({ children }: { children: string }) => <span>{children}</span>,

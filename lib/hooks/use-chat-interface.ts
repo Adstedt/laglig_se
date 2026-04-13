@@ -132,8 +132,9 @@ export function useChatInterface(
   } = useChat({
     id: chatId,
     transport,
-    // Batch UI updates every 50ms to avoid per-token re-renders
-    experimental_throttle: 50,
+    // One frame at 60fps — aligns UI updates to vsync so server-paced word
+    // chunks surface smoothly instead of in batched stutters.
+    experimental_throttle: 16,
     onFinish: ({ message }) => {
       // Track response completion
       const duration = Date.now() - startTimeRef.current

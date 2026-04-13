@@ -6,8 +6,7 @@
  * iterate message.parts in order, render each part type with its own component.
  */
 
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
-import { useStreamingText } from '@/lib/hooks/use-streaming-text'
+import { useState, useMemo, useEffect, useId } from 'react'
 import type { UIMessage } from 'ai'
 import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
 import {
@@ -143,24 +142,26 @@ function extractToolPartInfo(
 }
 
 // ---------------------------------------------------------------------------
-// Part grouping — consecutive search_laws tool calls become a single group
+// Part grouping — contiguous runs of completed (`output-available`) tool calls
+// collapse into a single summary row via `CollapsedToolGroup`. Running,
+// errored, non-tool, and hidden-tool parts flush the current group.
 // ---------------------------------------------------------------------------
 
 type RenderItem =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | { kind: 'part'; part: any; index: number }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | { kind: 'search-group'; items: Array<{ part: any; index: number }> }
+  | { kind: 'tool-group'; items: Array<{ part: any; index: number }> }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function groupSearchParts(parts: any[]): RenderItem[] {
+function groupCompletedToolParts(parts: any[]): RenderItem[] {
   const result: RenderItem[] = []
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let currentGroup: Array<{ part: any; index: number }> = []
 
   const flushGroup = () => {
-    if (currentGroup.length > 1) {
-      result.push({ kind: 'search-group', items: [...currentGroup] })
+    if (currentGroup.length >= 2) {
+      result.push({ kind: 'tool-group', items: [...currentGroup] })
     } else if (currentGroup.length === 1) {
       result.push({
         kind: 'part',
@@ -173,12 +174,21 @@ function groupSearchParts(parts: any[]): RenderItem[] {
 
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
-    const isSearch =
-      isToolUIPart(part) &&
-      ('toolName' in part ? part.toolName : part.type.replace('tool-', '')) ===
-        'search_laws'
+    // step-start parts are structural markers between multi-step tool calls.
+    // They render as null and must not break a contiguous tool-group run.
+    if (part?.type === 'step-start') continue
+    if (!isToolUIPart(part)) {
+      flushGroup()
+      result.push({ kind: 'part', part, index: i })
+      continue
+    }
+    const toolName =
+      'toolName' in part ? part.toolName : part.type.replace('tool-', '')
+    // Hidden tools (e.g. suggest_followups) are skipped entirely — they do not
+    // appear in render and do not break a grouping run.
+    if (TOOL_CONFIG[toolName]?.hidden) continue
 
-    if (isSearch) {
+    if (part.state === 'output-available') {
       currentGroup.push({ part, index: i })
     } else {
       flushGroup()
@@ -187,6 +197,19 @@ function groupSearchParts(parts: any[]): RenderItem[] {
   }
   flushGroup()
   return result
+}
+
+// Module-level dedup set for sidebar auto-open — keyed by toolCallId so that
+// a tool call that transitions standalone → grouped mid-stream does not
+// auto-open the sidebar twice. Bounded by tool call IDs per page lifetime.
+const autoOpenedToolCallIds = new Set<string>()
+
+/**
+ * Test-only helper to reset the auto-open dedup set between test cases.
+ * Prefixed with `__` to signal internal/test-only usage.
+ */
+export function __resetAutoOpenedForTests(): void {
+  autoOpenedToolCallIds.clear()
 }
 
 const streamdownPlugins = { code }
@@ -232,7 +255,7 @@ export function ChatMessage({
 
   // All hooks must be called before any early return (rules-of-hooks)
   const parts = useMemo(() => message.parts ?? [], [message.parts])
-  const renderItems = useMemo(() => groupSearchParts(parts), [parts])
+  const renderItems = useMemo(() => groupCompletedToolParts(parts), [parts])
 
   if (isUser) {
     const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
@@ -278,11 +301,11 @@ export function ChatMessage({
 
         <div className="flex-1 overflow-hidden text-left space-y-3">
           {renderItems.map((item) => {
-            if (item.kind === 'search-group') {
+            if (item.kind === 'tool-group') {
               return (
-                <SearchToolGroup
-                  key={`search-group-${item.items[0]!.index}`}
-                  toolParts={item.items}
+                <CollapsedToolGroup
+                  key={`tool-group-${item.items[0]!.index}`}
+                  items={item.items}
                 />
               )
             }
@@ -393,145 +416,258 @@ function ReasoningBlock({
 }
 
 // ---------------------------------------------------------------------------
-// SearchToolGroup — collapsed group for parallel search_laws calls
+// CollapsedToolGroup — summary row for contiguous runs of completed tool
+// calls. Runs of the same tool coalesce into "Label (N)". Individual labels
+// are clickable into the sidebar when the tool exposes a sidebarHint.
 // ---------------------------------------------------------------------------
 
-function SearchToolGroup({
-  toolParts,
+interface CoalescedRun {
+  toolName: string
+  count: number
+  toolCallIds: string[]
+  outputs: unknown[]
+  firstIndex: number
+}
+
+function CollapsedToolGroup({
+  items,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  toolParts: Array<{ part: any; index: number }>
+  items: Array<{ part: any; index: number }>
 }) {
-  const [expanded, setExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const contentId = useId()
   const chatDetail = useChatDetailSafe()
 
   const infos = useMemo(
-    () => toolParts.map((tp) => extractToolPartInfo(tp.part, tp.index)),
-    [toolParts]
+    () => items.map((it) => extractToolPartInfo(it.part, it.index)),
+    [items]
   )
 
-  const allDone = infos.every((i) => i.state === 'output-available')
-  const anyError = infos.some((i) => i.state === 'output-error')
-  const anyRunning = !allDone && !anyError
+  // Coalesce consecutive runs of the same tool name into one labelled chip.
+  const runs = useMemo<CoalescedRun[]>(() => {
+    const out: CoalescedRun[] = []
+    for (let i = 0; i < infos.length; i++) {
+      const info = infos[i]!
+      const idx = items[i]!.index
+      const last = out[out.length - 1]
+      if (last && last.toolName === info.toolName) {
+        last.count += 1
+        last.toolCallIds.push(info.toolCallId)
+        last.outputs.push(info.toolOutput)
+      } else {
+        out.push({
+          toolName: info.toolName,
+          count: 1,
+          toolCallIds: [info.toolCallId],
+          outputs: [info.toolOutput],
+          firstIndex: idx,
+        })
+      }
+    }
+    return out
+  }, [infos, items])
 
-  const isClickable = allDone && chatDetail !== null
+  const getRunDetailId = (run: CoalescedRun): string => {
+    // Preserve the existing SearchToolGroup id format for backwards compat.
+    if (run.toolName === 'search_laws') return `search-group-${run.firstIndex}`
+    if (run.count >= 2) return `tool-group-${run.firstIndex}-${run.toolName}`
+    return run.toolCallIds[0]!
+  }
 
-  // Build merged data for the sidebar (array of ToolResponse payloads)
-  const mergedData = useMemo(() => {
-    if (!allDone) return null
-    return infos
-      .map((i) => i.toolOutput)
-      .filter(
+  const isRunClickable = (run: CoalescedRun): boolean => {
+    if (!chatDetail) return false
+    const firstOutput = run.outputs[0]
+    if (!firstOutput || typeof firstOutput !== 'object') return false
+    const meta = (firstOutput as { _meta?: ToolMeta })._meta
+    const hint = meta?.sidebarHint
+    return hint === 'open' || hint === 'suggest'
+  }
+
+  const handleRunClick = (run: CoalescedRun) => {
+    if (!chatDetail) return
+    if (run.toolName === 'search_laws') {
+      const mergedData = run.outputs.filter(
         (o): o is Record<string, unknown> => o != null && typeof o === 'object'
       )
-  }, [allDone, infos])
-
-  const groupId = `search-group-${toolParts[0]!.index}`
-
-  const isActiveInSidebar =
-    isClickable && chatDetail?.activeDetail?.id === groupId
-
-  const handleClick = useCallback(() => {
-    if (!isClickable || !chatDetail || !mergedData) return
-    chatDetail.openDetail({
-      type: 'tool-result',
-      id: groupId,
-      toolName: 'search_laws',
-      data: mergedData,
-    })
-  }, [isClickable, chatDetail, mergedData, groupId])
-
-  const queries = infos
-    .map((i) => (typeof i.input?.query === 'string' ? i.input.query : null))
-    .filter(Boolean) as string[]
-
-  const count = toolParts.length
+      chatDetail.openDetail({
+        type: 'tool-result',
+        id: getRunDetailId(run),
+        toolName: 'search_laws',
+        data: mergedData,
+      })
+      return
+    }
+    if (run.count >= 2) {
+      const mergedData = run.outputs.filter(
+        (o): o is Record<string, unknown> => o != null && typeof o === 'object'
+      )
+      chatDetail.openDetail({
+        type: 'tool-result',
+        id: getRunDetailId(run),
+        toolName: run.toolName,
+        data: mergedData,
+      })
+      return
+    }
+    chatDetail.openDetail(
+      buildDetailItem(run.toolCallIds[0]!, run.toolName, run.outputs[0])
+    )
+  }
 
   return (
-    <div className="space-y-1">
-      {/* Main collapsed row */}
-      {isClickable ? (
-        <button
-          type="button"
-          className={cn(
-            'flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0',
-            'cursor-pointer hover:bg-muted/50 transition-colors',
-            isActiveInSidebar && 'ring-2 ring-primary/40'
-          )}
-          onClick={handleClick}
-        >
-          <div className="flex items-center justify-center h-5 w-5 rounded-full shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-            <Check className="h-3 w-3" />
-          </div>
-          <Search className="h-3 w-3 text-muted-foreground shrink-0" />
-          <span className="text-xs text-muted-foreground">
-            Sökte i lagdatabasen
-          </span>
-          <span className="text-xs text-muted-foreground/70">
-            — {count} sökningar
-          </span>
-        </button>
-      ) : (
-        <div className="flex items-center gap-2 py-1 px-3 rounded-lg border border-border/60 bg-muted/30 min-w-0">
-          <div
-            className={cn(
-              'flex items-center justify-center h-5 w-5 rounded-full shrink-0',
-              anyRunning &&
-                'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-              anyError && 'bg-destructive/10 text-destructive'
-            )}
-          >
-            {anyRunning ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <X className="h-3 w-3" />
-            )}
-          </div>
-          <Search className="h-3 w-3 text-muted-foreground shrink-0" />
-          <span
-            className={cn(
-              'text-xs',
-              anyRunning ? 'text-foreground' : 'text-destructive'
-            )}
-          >
-            {anyRunning ? 'Söker i lagdatabasen' : 'Sökning misslyckades'}
-          </span>
-          <span className="text-xs text-muted-foreground/70">
-            — {count} sökningar
-          </span>
+    <div className="space-y-0">
+      {/* Headless auto-openers for items with sidebarHint === 'open'. These
+          render nothing but fire the debounced openDetail on mount, guarded
+          by the module-level autoOpenedToolCallIds dedup set. */}
+      {infos.map((info) => {
+        const output = info.toolOutput
+        const meta =
+          output && typeof output === 'object'
+            ? (output as { _meta?: ToolMeta })._meta
+            : undefined
+        if (meta?.sidebarHint !== 'open') return null
+        return (
+          <ToolAutoOpener
+            key={`auto-${info.toolCallId}`}
+            toolCallId={info.toolCallId}
+            toolName={info.toolName}
+            output={output}
+          />
+        )
+      })}
+
+      {/* Single cohesive summary row: check · labels · chevron on right */}
+      <div className="flex items-center gap-2 py-1.5 px-2.5 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors min-w-0">
+        <Check
+          strokeWidth={2.5}
+          className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0"
+        />
+
+        <div className="flex items-center gap-x-1.5 gap-y-0 flex-1 min-w-0 flex-wrap text-left">
+          {runs.flatMap((run, i) => {
+            const label =
+              (TOOL_CONFIG[run.toolName]?.doneLabel ?? run.toolName) +
+              (run.count > 1 ? ` (${run.count})` : '')
+            const clickable = isRunClickable(run)
+            const detailId = getRunDetailId(run)
+            const isActive =
+              clickable && chatDetail?.activeDetail?.id === detailId
+            const doneLabel =
+              TOOL_CONFIG[run.toolName]?.doneLabel ?? run.toolName
+
+            const nodes: React.ReactNode[] = []
+            if (i > 0) {
+              nodes.push(
+                <span
+                  key={`sep-${run.firstIndex}-${run.toolName}`}
+                  className="text-muted-foreground/40 text-xs select-none"
+                  aria-hidden="true"
+                >
+                  ·
+                </span>
+              )
+            }
+            if (clickable) {
+              nodes.push(
+                <button
+                  key={`run-${run.firstIndex}-${run.toolName}`}
+                  type="button"
+                  onClick={() => handleRunClick(run)}
+                  aria-label={`Visa resultat: ${doneLabel}`}
+                  className={cn(
+                    'text-xs font-medium text-muted-foreground hover:text-foreground transition-colors rounded-sm -mx-0.5 px-0.5',
+                    isActive && 'text-foreground bg-primary/10'
+                  )}
+                >
+                  {label}
+                </button>
+              )
+            } else {
+              nodes.push(
+                <span
+                  key={`run-${run.firstIndex}-${run.toolName}`}
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  {label}
+                </span>
+              )
+            }
+            return nodes
+          })}
         </div>
-      )}
 
-      {/* Expand toggle to show individual queries */}
-      {queries.length > 0 && (
         <button
           type="button"
-          onClick={() => setExpanded(!expanded)}
-          className="inline-flex items-center gap-1 text-[11px] text-muted-foreground/70 hover:text-muted-foreground transition-colors ml-3"
+          onClick={() => setIsExpanded(!isExpanded)}
+          aria-expanded={isExpanded}
+          aria-controls={contentId}
+          aria-label={isExpanded ? 'Dölj detaljer' : 'Visa detaljer'}
+          className="shrink-0 p-1 -mr-1 rounded text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/70 transition-colors"
         >
-          {expanded ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
-          {expanded ? 'Dölj sökfrågor' : 'Visa sökfrågor'}
+          <ChevronRight
+            className={cn(
+              'h-3 w-3 transition-transform duration-200 ease-out',
+              isExpanded && 'rotate-90'
+            )}
+          />
         </button>
-      )}
+      </div>
 
-      {expanded && queries.length > 0 && (
-        <div className="ml-3 pl-3 border-l border-border/40 space-y-0.5">
-          {queries.map((q, i) => (
-            <p
-              key={i}
-              className="text-[11px] text-muted-foreground/70 truncate"
-            >
-              &ldquo;{q}&rdquo;
-            </p>
+      {/* Expanded per-call rows — indented with hairline tree connector */}
+      {isExpanded && (
+        <div
+          id={contentId}
+          className="ml-4 pl-3 border-l border-border/50 space-y-0 mt-0.5 py-1 animate-in fade-in-0 slide-in-from-top-1 duration-150"
+        >
+          {infos.map((info) => (
+            <ToolCallRow
+              key={`expanded-${info.toolCallId}`}
+              toolCallId={info.toolCallId}
+              toolName={info.toolName}
+              state={info.state}
+              detail={getToolDetail(info.toolName, info.input)}
+              output={info.toolOutput}
+              autoOpen={false}
+              compact={true}
+            />
           ))}
         </div>
       )}
     </div>
   )
+}
+
+// ---------------------------------------------------------------------------
+// ToolAutoOpener — headless component that fires the debounced sidebar
+// auto-open for a completed tool call, independent of whether the tool's
+// visible row is mounted (collapsed group case). Dedups across remounts via
+// the module-level `autoOpenedToolCallIds` Set.
+// ---------------------------------------------------------------------------
+
+function ToolAutoOpener({
+  toolCallId,
+  toolName,
+  output,
+}: {
+  toolCallId: string
+  toolName: string
+  output: unknown
+}) {
+  const chatDetail = useChatDetailSafe()
+
+  useEffect(() => {
+    if (!chatDetail || !output) return
+    if (autoOpenedToolCallIds.has(toolCallId)) return
+    const timer = setTimeout(() => {
+      if (autoOpenedToolCallIds.has(toolCallId)) return
+      autoOpenedToolCallIds.add(toolCallId)
+      chatDetail.openDetail(buildDetailItem(toolCallId, toolName, output))
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [chatDetail, output, toolCallId, toolName])
+
+  return null
 }
 
 // ---------------------------------------------------------------------------
@@ -630,17 +766,26 @@ function ToolCallRow({
   state,
   detail,
   output,
+  autoOpen = true,
+  compact = false,
 }: {
   toolCallId: string
   toolName: string
   state: string
   detail?: string | undefined
   output?: unknown
+  autoOpen?: boolean
+  /**
+   * Visual variant used when the row is rendered inside an expanded
+   * `CollapsedToolGroup`. Drops the persistent row background and the
+   * redundant "Visa detaljer" suggest-chip (the parent summary handles the
+   * interaction affordance).
+   */
+  compact?: boolean
 }) {
   const config = TOOL_CONFIG[toolName]
   const Icon = config?.icon ?? Search
   const chatDetail = useChatDetailSafe()
-  const autoOpenedRef = useRef(false)
 
   const isDone = state === 'output-available'
   const isError = state === 'output-error'
@@ -652,17 +797,23 @@ function ToolCallRow({
     : undefined
   const sidebarHint = meta?.sidebarHint
 
-  // Auto-open sidebar for sidebarHint === 'open' (write previews)
+  // Auto-open sidebar for sidebarHint === 'open' (write previews). Deduped
+  // via the module-level autoOpenedToolCallIds Set so a tool that transitions
+  // standalone → grouped does not fire twice. `autoOpen={false}` is passed by
+  // CollapsedToolGroup to the expanded rows because the dedicated
+  // ToolAutoOpener handles the side-effect for grouped items.
   useEffect(() => {
-    if (!isDone || !chatDetail || autoOpenedRef.current) return
+    if (!autoOpen) return
+    if (!isDone || !chatDetail) return
     if (sidebarHint !== 'open' || !output) return
-    // Debounce by 100ms to avoid layout flicker during streaming
+    if (autoOpenedToolCallIds.has(toolCallId)) return
     const timer = setTimeout(() => {
-      autoOpenedRef.current = true
+      if (autoOpenedToolCallIds.has(toolCallId)) return
+      autoOpenedToolCallIds.add(toolCallId)
       chatDetail.openDetail(buildDetailItem(toolCallId, toolName, output))
     }, 100)
     return () => clearTimeout(timer)
-  }, [isDone, sidebarHint, chatDetail, toolCallId, toolName, output])
+  }, [autoOpen, isDone, sidebarHint, chatDetail, toolCallId, toolName, output])
 
   const label = isDone
     ? (config?.doneLabel ?? toolName)
@@ -723,10 +874,15 @@ function ToolCallRow({
   }
 
   const rowClasses = cn(
-    'flex items-center gap-1.5 py-1 px-2.5 rounded-md min-w-0 overflow-hidden',
-    isDone && 'bg-muted/15',
-    isRunning && 'bg-muted/25',
-    isError && 'bg-destructive/5'
+    'flex items-center gap-1.5 rounded-md min-w-0 overflow-hidden transition-colors',
+    compact
+      ? 'py-0.5 px-1.5 hover:bg-muted/40'
+      : cn(
+          'py-1 px-2.5',
+          isDone && 'bg-muted/15',
+          isRunning && 'bg-muted/25',
+          isError && 'bg-destructive/5'
+        )
   )
 
   return (
@@ -747,8 +903,10 @@ function ToolCallRow({
         <div className={rowClasses}>{renderToolRowContent()}</div>
       )}
 
-      {/* "Visa detaljer" chip for sidebarHint === 'suggest' */}
-      {isDone && sidebarHint === 'suggest' && chatDetail && (
+      {/* "Visa detaljer" chip for sidebarHint === 'suggest' (standalone only —
+          the parent summary row in a CollapsedToolGroup already exposes the
+          sidebar affordance via the clickable label). */}
+      {isDone && sidebarHint === 'suggest' && chatDetail && !compact && (
         <button
           type="button"
           onClick={handleSuggestClick}
@@ -806,16 +964,13 @@ function TextBlock({
   text: string
   isStreaming: boolean
 }) {
-  if (isStreaming) {
-    return <StreamingTextBlock text={text} />
-  }
-
   const hasCitations = hasCitationMarkers(text)
 
   return (
     <div className={PROSE_CLASSES}>
       <Streamdown
-        mode="static"
+        mode={isStreaming ? 'streaming' : 'static'}
+        isAnimating={isStreaming}
         plugins={streamdownPlugins}
         rehypePlugins={
           hasCitations ? citationRehypePlugins : emptyRehypePlugins
@@ -824,33 +979,6 @@ function TextBlock({
         className="streamdown"
       >
         {text}
-      </Streamdown>
-    </div>
-  )
-}
-
-/**
- * Streaming text block — citations are rendered inline via rehype plugin
- * as they appear. The plugin handles partial markers gracefully (only
- * complete [Källa: ...] brackets get transformed).
- */
-function StreamingTextBlock({ text }: { text: string }) {
-  const displayText = useStreamingText({ text, isStreaming: true, speed: 7 })
-  const hasCitations = hasCitationMarkers(displayText)
-
-  return (
-    <div className={PROSE_CLASSES}>
-      <Streamdown
-        mode="streaming"
-        isAnimating
-        plugins={streamdownPlugins}
-        rehypePlugins={
-          hasCitations ? citationRehypePlugins : emptyRehypePlugins
-        }
-        components={hasCitations ? citationComponents : emptyComponents}
-        className="streamdown"
-      >
-        {displayText}
       </Streamdown>
     </div>
   )

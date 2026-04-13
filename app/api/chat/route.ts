@@ -174,7 +174,10 @@ export async function POST(req: Request) {
       })),
       tools,
       stopWhen: stepCountIs(10),
-      experimental_transform: smoothStream({ chunking: 'word' }),
+      experimental_transform: smoothStream({
+        chunking: /[\s\S]/,
+        delayInMs: 8,
+      }),
     })
 
     // Accumulate citation sources from tool results, send as message metadata.
