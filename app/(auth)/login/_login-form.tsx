@@ -38,10 +38,11 @@ export function LoginForm() {
     formState: { errors },
   } = useForm<LoginFormData>()
 
-  // Check for error or success messages from URL parameters
+  // Check for error or success messages and email prefill from URL parameters
   useEffect(() => {
     const errorParam = searchParams?.get('error')
     const messageParam = searchParams?.get('message')
+    const emailParam = searchParams?.get('email')
 
     if (errorParam && ERROR_MESSAGES[errorParam]) {
       setError(ERROR_MESSAGES[errorParam])
@@ -50,7 +51,12 @@ export function LoginForm() {
     if (messageParam) {
       setSuccessMessage(messageParam)
     }
-  }, [searchParams])
+
+    // Prefill email from URL (e.g. after email verification)
+    if (emailParam) {
+      setValue('email', emailParam)
+    }
+  }, [searchParams, setValue])
 
   // Load remembered email on mount
   useEffect(() => {
