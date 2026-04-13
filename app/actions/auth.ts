@@ -10,7 +10,6 @@ import {
   type ValidationResult,
 } from '@/lib/validation/api-error'
 import { z } from 'zod'
-import { headers } from 'next/headers'
 
 /**
  * Server Action for user signup with server-side Zod validation
@@ -31,16 +30,10 @@ export async function signupAction(
   try {
     const supabase = await createServerSupabaseClient()
 
-    // Get the origin for email redirect
-    const headersList = await headers()
-    const origin =
-      headersList.get('origin') || process.env.NEXT_PUBLIC_APP_URL || ''
-
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${origin}/auth/callback`,
         data: {
           name,
         },

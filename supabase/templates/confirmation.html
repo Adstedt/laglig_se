@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Verifiera din e-post</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; }
+    a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
+
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; margin: auto !important; }
+      .fluid { max-width: 100% !important; height: auto !important; margin-left: auto !important; margin-right: auto !important; }
+      .stack-column { display: block !important; width: 100% !important; max-width: 100% !important; }
+      .mobile-padding { padding-left: 24px !important; padding-right: 24px !important; }
+    }
+  </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f5f3ee; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+
+  <!-- Preheader text (hidden, shows in inbox preview) -->
+  <div style="display: none; font-size: 1px; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all;">
+    Verifiera din e-postadress för att aktivera ditt Laglig.se-konto.
+  </div>
+
+  <!-- Full-width wrapper -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f3ee;">
+    <tr>
+      <td style="padding: 40px 16px;">
+
+        <!-- Email container -->
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="520" align="center" class="email-container" style="margin: auto;">
+
+          <!-- Logo -->
+          <tr>
+            <td style="padding: 0 0 32px 0; text-align: center;">
+              <img src="{{ .SiteURL }}/images/logo-final.png" width="140" alt="Laglig.se" style="display: inline-block; height: auto; filter: invert(1);" />
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(28, 26, 23, 0.06), 0 8px 24px rgba(28, 26, 23, 0.04);">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+
+                <!-- Top accent line -->
+                <tr>
+                  <td style="height: 3px; background: linear-gradient(90deg, #231f1a 0%, #3d362e 50%, #231f1a 100%); border-radius: 12px 12px 0 0; font-size: 0; line-height: 0;">&nbsp;</td>
+                </tr>
+
+                <!-- Icon + heading -->
+                <tr>
+                  <td style="padding: 40px 40px 0 40px; text-align: center;" class="mobile-padding">
+                    <!-- Checkmark circle -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                      <tr>
+                        <td style="width: 56px; height: 56px; background-color: #edf5f0; border-radius: 50%; text-align: center; vertical-align: middle;">
+                          <img src="https://img.icons8.com/fluency-systems-filled/48/1c1a17/checkmark.png" width="24" height="24" alt="" style="display: inline-block; vertical-align: middle;" />
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Headline -->
+                <tr>
+                  <td style="padding: 20px 40px 0 40px; text-align: center;" class="mobile-padding">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #1c1a17; letter-spacing: -0.3px; line-height: 1.3;">
+                      Verifiera din e-post
+                    </h1>
+                  </td>
+                </tr>
+
+                <!-- Body text -->
+                <tr>
+                  <td style="padding: 12px 40px 0 40px; text-align: center;" class="mobile-padding">
+                    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #7a7470;">
+                      Tack för att du registrerade dig på Laglig.se! Klicka på knappen nedan för att verifiera din e-postadress och aktivera ditt konto.
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- CTA Button -->
+                <tr>
+                  <td style="padding: 28px 40px 0 40px; text-align: center;" class="mobile-padding">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                      <tr>
+                        <td style="border-radius: 8px; background-color: #231f1a;">
+                          <a href="{{ .SiteURL }}/auth/verify?token_hash={{ .TokenHash }}&type=signup&email={{ .Email }}" target="_blank" style="display: inline-block; padding: 14px 36px; font-size: 15px; font-weight: 600; color: #faf9f7; text-decoration: none; border-radius: 8px; background-color: #231f1a; letter-spacing: 0.2px;">
+                            Verifiera e-postadress
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Fallback link -->
+                <tr>
+                  <td style="padding: 20px 40px 0 40px; text-align: center;" class="mobile-padding">
+                    <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #a09a94;">
+                      Fungerar inte knappen? Kopiera och klistra in denna l&auml;nk i din webbl&auml;sare:
+                    </p>
+                    <p style="margin: 6px 0 0 0; font-size: 12px; line-height: 1.5; color: #a09a94; word-break: break-all;">
+                      <a href="{{ .SiteURL }}/auth/verify?token_hash={{ .TokenHash }}&type=signup&email={{ .Email }}" style="color: #7a7470; text-decoration: underline;">{{ .SiteURL }}/auth/verify?token_hash={{ .TokenHash }}&type=signup&email={{ .Email }}</a>
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Divider -->
+                <tr>
+                  <td style="padding: 32px 40px 0 40px;" class="mobile-padding">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="height: 1px; background-color: #e8e5e0; font-size: 0; line-height: 0;">&nbsp;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Security note -->
+                <tr>
+                  <td style="padding: 20px 40px 36px 40px; text-align: center;" class="mobile-padding">
+                    <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #a09a94;">
+                      Om du inte skapade ett konto p&aring; Laglig.se kan du ignorera detta mejl.
+                    </p>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 28px 16px 0 16px; text-align: center;">
+              <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #a09a94;">
+                &copy; {{ .SiteURL }} &mdash; Laglig.se
+              </p>
+              <p style="margin: 6px 0 0 0; font-size: 12px; line-height: 1.5; color: #bdb8b2;">
+                Smartare regelefterlevnad f&ouml;r svenska f&ouml;retag
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
