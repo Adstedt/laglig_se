@@ -1,0 +1,96 @@
+schema: 1
+story: '8.8'
+story_title: 'AI Amendment Summaries for Notifications'
+gate: CONCERNS
+status_reason: 'Solid implementation with 27/27 tests passing and all but one AC covered in code. Two CONCERNS block a PASS: (1) LLM output not validated against its own prompt contract — bad summaries (e.g. "Vi ska..." wording or >60 word overruns) would flow straight into user emails; (2) implementation-vs-spec drift on AC #1 — actual cron runs hourly at :30, story still says daily at 06:30 UTC. Task 3.3 manual verification on real amendments deliberately deferred and should run before first production fire.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-13T21:00:00Z'
+
+waiver: { active: false }
+
+quality_score: 80
+
+top_issues:
+  - id: 'REL-001'
+    severity: medium
+    finding: 'LLM output is written directly to `ChangeEvent.ai_summary` and `LegalDocument.summary` without post-generation validation. The system prompt tells the LLM to keep it under 60 words, avoid "Vi ska", avoid JSON, avoid headings — but there is no hard guardrail. If Sonnet ever ignores any of these, the bad summary ships to the user email verbatim via `emails/amendment-digest.tsx`.'
+    suggested_action: 'Add a 10-line validator between the LLM response and the DB write in `route.ts` around line 188. Reject responses that exceed ~80 words, start with "Vi ska" (or other common compliance-voice openings), or contain `{`/`#`. On rejection, treat like empty response (log + skip).'
+    suggested_owner: dev
+    refs:
+      - 'app/api/cron/enrich-amendment-summaries/route.ts:188-220'
+
+  - id: 'SPEC-001'
+    severity: medium
+    finding: 'Spec-vs-code drift on AC #1. Story/AC/Change Log v3.1 say "runs daily at 06:30 UTC (30 6 * * *)"; actual cron in vercel.json + job-registry is `30 * * * *` (hourly). Route.ts comment says "Runs hourly at :30 — catches newly discovered amendments within ~30 min" — a reasonable rationale, but the story was not updated. Currently self-contradicting.'
+    suggested_action: 'Either (a) update AC #1 + Change Log to match implementation (hourly is probably the better design — amendments reach emails within ~30 min instead of up to 24h) OR (b) revert vercel.json + job-registry to `30 6 * * *`. The former requires Sarah (PO) to re-approve.'
+    suggested_owner: po
+    refs:
+      - 'vercel.json:17-19'
+      - 'lib/admin/job-registry.ts:40'
+      - 'docs/stories/8.8.ai-change-summaries.md:37'
+
+  - id: 'TEST-001'
+    severity: low
+    finding: 'Task 3.3 (manual verification against 5 real 2026 amendments) deliberately deferred — the dev noted it requires `ANTHROPIC_API_KEY` + live data. This is the most important single test because unit tests cannot catch prompt-drift or subtle Sonnet behavior changes.'
+    suggested_action: 'Before the first production cron fires: trigger the cron locally against 5 real 2026 amendments (use `x-triggered-by: manual-verification` header), inspect each summary for quality: word count, no "Vi ska", correct §§ mentioned, no hallucinated numbers. Document outcomes in story Completion Notes.'
+    suggested_owner: dev
+    refs: ['docs/stories/8.8.ai-change-summaries.md:110']
+
+  - id: 'OPS-001'
+    severity: low
+    finding: 'No daily cost or volume cap. If a schema change or migration ever wipes `ai_summary` across the corpus, the cron would chew through $0.002 × N amendments per day until the pool drains. At current scale (~34k amendments) that would be ~$68 one-off if the entire pool resets.'
+    suggested_action: 'Optional: add a daily amendments-enriched cap (e.g. hard stop at 200/day) or a single-migration kill switch via env var. Current scale makes this low priority.'
+    suggested_owner: dev
+    refs: ['app/api/cron/enrich-amendment-summaries/route.ts:27']
+
+  - id: 'DOC-001'
+    severity: low
+    finding: 'Timing Budget section in Dev Notes assumes daily cadence (30 amendments × 5s = 150s). Now that the schedule is hourly, typical runs will process 0–2 amendments and the math no longer reflects reality.'
+    suggested_action: 'Update Dev Notes once AC #1 is reconciled. Bundle with SPEC-001 resolution.'
+    suggested_owner: dev
+    refs: ['docs/stories/8.8.ai-change-summaries.md:213-219']
+
+  - id: 'TEST-002'
+    severity: low
+    finding: 'No test asserts the prompt contains its anti-hallucination instructions or "no Vi ska" clause. A future refactor could silently weaken the prompt and no unit test would catch it.'
+    suggested_action: 'Add 2 lines to `amendment-summary.test.ts`: `expect(buildAmendmentSummaryPrompt()).toContain("anti-hallucination")` and `expect(...).toContain(\'INTE "Vi ska"\')`.'
+    suggested_owner: dev
+    refs: ['tests/unit/lib/ai/prompts/amendment-summary.test.ts']
+
+evidence:
+  tests_reviewed: 27
+  risks_identified: 6
+  trace:
+    ac_covered: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    ac_partial: [1]  # schedule drift: implementation is hourly, AC says daily
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'CRON_SECRET bearer auth; no user input in raw SQL; no PII in prompt (amendment text is public SFS); truncated error messages in logs (no secret leak); model name hardcoded.'
+  performance:
+    status: PASS
+    notes: 'Batch-limited, timeout-protected, single $queryRaw avoids N+1, empty-pool runs fail fast. Hourly cadence means ~24 mostly-empty queries/day — negligible cost at current scale.'
+  reliability:
+    status: CONCERNS
+    notes: 'Per-amendment isolation and retry-once-on-failure are solid, but LLM output is not validated before storage. Bad summaries (>60 words, "Vi ska" wording, JSON, etc.) would ship directly to production emails. No cost/volume kill switch.'
+  maintainability:
+    status: PASS
+    notes: 'Prompt and context assembly cleanly separated from cron orchestration. Types exported for reuse. Good logging structure. Minor: story-vs-code spec drift on schedule.'
+
+recommendations:
+  immediate:
+    - action: 'Add LLM output validator (reject >80 words, "Vi ska" prefix, JSON/heading patterns) before DB write'
+      refs: ['app/api/cron/enrich-amendment-summaries/route.ts:188-220']
+    - action: 'Reconcile AC #1 with actual hourly schedule (update story OR revert cron)'
+      refs: ['vercel.json:17-19', 'docs/stories/8.8.ai-change-summaries.md:37']
+    - action: 'Complete Task 3.3 manual verification on 5 real 2026 amendments before first prod cron'
+      refs: ['docs/stories/8.8.ai-change-summaries.md:110']
+  future:
+    - action: 'Add daily volume/cost cap to guard against NULL-pool explosion after migrations'
+      refs: ['app/api/cron/enrich-amendment-summaries/route.ts:27']
+    - action: 'Add 2 prompt-contract regression tests (anti-hallucination + no "Vi ska" substring assertions)'
+      refs: ['tests/unit/lib/ai/prompts/amendment-summary.test.ts']
+    - action: 'Update stale Timing Budget section in Dev Notes once schedule is locked in'
+      refs: ['docs/stories/8.8.ai-change-summaries.md:213-219']

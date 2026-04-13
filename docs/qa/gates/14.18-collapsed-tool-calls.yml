@@ -1,0 +1,72 @@
+schema: 1
+story: '14.18'
+story_title: 'Claude-Style Collapsed Tool Call Display'
+gate: PASS
+status_reason: 'Implementation is focused, well-tested, and traces cleanly to all 23 acceptance criteria. Minor visual deviation from spec on AC 13 (bg-primary/10 vs ring-1 ring-primary/30) and pending manual QA (Task 6) are advisory — not blocking.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-13T22:30:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'UI-001'
+    severity: low
+    finding: 'Active-state chip styling uses `text-foreground bg-primary/10` instead of the spec''s `ring-1 ring-primary/30` (AC 13, Task 2.6).'
+    suggested_action: 'Accept as design-refinement OR align to spec. If accepted as-is, note the deviation in the story change log so design decisions remain traceable.'
+    suggested_owner: 'dev'
+  - id: 'TEST-001'
+    severity: low
+    finding: 'No explicit assertion that coalesced `search_laws` runs produce the backwards-compatible detail id `search-group-{firstIndex}` (AC 13 backcompat claim). SearchToolGroup was not exported, so external breakage risk is minimal, but the contract is untested.'
+    suggested_action: 'Add a single assertion to test 5.8 or 5.9 verifying the id format in the `openDetail` call argument.'
+    suggested_owner: 'dev'
+  - id: 'QA-001'
+    severity: low
+    finding: 'Task 4.3 + Task 6 (manual QA in pnpm dev / assessment flow) were deferred by the dev agent and remain unchecked.'
+    suggested_action: 'Story owner runs the manual QA checklist before flipping status to Done. Automation is not a reasonable substitute for streaming-transition smoke testing.'
+    suggested_owner: 'po'
+  - id: 'MAINT-001'
+    severity: low
+    finding: 'Module-level `autoOpenedToolCallIds` Set grows for the lifetime of the page. Bounded by tool call count (dozens per session) so practically a non-issue, but there is no production-side reset.'
+    suggested_action: 'Accept as-is for MVP. If memory pressure is ever observed, tie reset to chat-session boundary (e.g., clear when navigating away from a chat).'
+    suggested_owner: 'dev'
+
+quality_score: 90
+expires: '2026-04-27T22:30:00Z'
+
+evidence:
+  tests_reviewed: 11
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+    ac_gaps: [13]
+    # AC 13 is partially covered (active-state is exercised but via bg-primary/10 not ring);
+    # the backcompat id format claim is also untested (see TEST-001).
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Pure UI refactor. No auth, data, or boundary changes.'
+  performance:
+    status: PASS
+    notes: 'useMemo on parts and group-coalesce runs. 100ms debounce preserved. No new network or compute costs.'
+  reliability:
+    status: PASS
+    notes: 'All tool states (running/done/error) handled. Hidden tools skipped cleanly without breaking groups. Dedup Set prevents double-fire on standalone→grouped transition.'
+  maintainability:
+    status: CONCERNS
+    notes: 'Module-level singleton state (autoOpenedToolCallIds) and the undocumented `compact` prop addition to ToolCallRow are minor debt. `__resetAutoOpenedForTests` export is test-only but lives alongside production code — acceptable.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Align active-state chip visual to AC 13 spec (ring-1 ring-primary/30) OR document the bg-primary/10 choice in story change log.'
+      refs: ['components/features/ai-chat/chat-message.tsx:577']
+    - action: 'Add test coverage for the `search-group-{firstIndex}` backcompat id format on coalesced search_laws runs.'
+      refs: ['tests/unit/components/features/ai-chat/collapsed-tool-group.test.tsx']
+    - action: 'Run Task 4.3 + Task 6 manual QA (streaming transition, write-preview auto-open, errored call regression, single-call non-collapse) before flipping story to Done.'
+      refs: ['docs/stories/14.18.collapsed-tool-calls.md']
+
+history:
+  - at: '2026-04-13T22:30:00Z'
+    gate: PASS
+    note: 'Initial review: 81/81 tests pass, tsc + eslint clean, 23 ACs traced. Four low-severity advisories logged.'

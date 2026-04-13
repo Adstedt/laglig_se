@@ -224,10 +224,26 @@
 
 ---
 
-**Total Stories Tracked:** ~200 across 17 epics (~153 completed, ~47 backlog)
+## Epic 18: Mobile UX Optimization
 
-**Epic Status:** 11 Done, 4 Partial, 2 Not Started
+**Status:** Planned (0 completed — rolling epic, stories added during mobile review passes)
 
-**Last updated:** 2026-04-07
+**Goal:** Optimize both public-facing SEO pages (`/lagar/[id]`, `/alla-lagar`, `/rattskallor`, `/eu/*`, `/foreskrifter/*`) and the authenticated workspace UI (`/dashboard`, `/laglistor`, `/browse/*`, `/tasks`, `/settings`) for mobile devices so all core flows — discovering, reading, browsing, and managing compliance — work cleanly on phones and tablets without regressing desktop.
+
+**Delivers:** Responsive layouts, touch-friendly interactions, and mobile-specific components (bottom sheets, drawers) across public and workspace surfaces. CSS/component-level changes only — no API or schema changes.
+
+**Requirements covered:** NFR4 (usability), NFR5 (responsive design)
+
+**Note:** Brownfield enhancement. Rolling/umbrella epic — story scope emerges via page-by-page mobile review. If Story Index grows past ~8–10 stories, split into sibling epics (public-pages vs. workspace). See `docs/prd/epic-18-mobile-ux-optimization.md`.
+
+**Priority:** High — SEO moat (170,000+ public pages) is actively harmed by poor mobile UX on organic-search landings.
+
+---
+
+**Total Stories Tracked:** ~200+ across 18 epics (~153 completed, ~47 backlog; Epic 18 stories TBD)
+
+**Epic Status:** 11 Done, 4 Partial, 3 Not Started / Planned
+
+**Last updated:** 2026-04-13
 
 ---
