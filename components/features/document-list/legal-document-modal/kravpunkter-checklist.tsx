@@ -651,7 +651,7 @@ function EvidenceList({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setDocPickerOpen(true)}>
               <FileText className="h-4 w-4 mr-2" />
-              Dokument
+              Styrdokument
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

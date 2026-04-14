@@ -55,7 +55,7 @@ interface ComplianceGroupSectionProps {
   onAddContent?:
     | ((
         _listItemId: string,
-        _field: 'businessContext' | 'complianceActions'
+        _field: 'businessContext' | 'complianceActions' | 'kravpunkter'
       ) => void)
     | undefined
   workspaceMembers: WorkspaceMemberOption[]
@@ -65,6 +65,8 @@ interface ComplianceGroupSectionProps {
     | undefined
   isUngrouped?: boolean | undefined
   isDropTarget?: boolean | undefined
+  /** Story 17.17: passed through to inline kravpunkter editor in row expansion */
+  complianceReadOnly?: boolean | undefined
 }
 
 export const ComplianceGroupSection = memo(function ComplianceGroupSection({
@@ -90,6 +92,7 @@ export const ComplianceGroupSection = memo(function ComplianceGroupSection({
   onColumnSizingChange,
   columnOrder,
   onColumnOrderChange,
+  complianceReadOnly,
 }: ComplianceGroupSectionProps) {
   // Local state for instant toggle response, synced with prop
   const [localExpanded, setLocalExpanded] = useState(isExpanded)
@@ -236,6 +239,7 @@ export const ComplianceGroupSection = memo(function ComplianceGroupSection({
                 groups={groups}
                 hideGroupColumn
                 disableDndContext
+                complianceReadOnly={complianceReadOnly}
               />
             )}
           </div>

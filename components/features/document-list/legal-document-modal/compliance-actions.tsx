@@ -35,8 +35,18 @@ interface ComplianceActionsProps {
   updatedByName?: string | null | undefined
   /** Story 6.18: Callback to optimistically update list view */
   onContentChange?: ((_content: string | null) => void) | undefined
-  /** Story 6.18: Auto-start in edit mode (from "Lägg till" click) */
-  autoEdit?: boolean | undefined
+  /**
+   * Story 6.18 + 17.18: Focus intent from "Lägg till" click in the list view.
+   * - 'complianceActions' → auto-start editing the Kommentar field + scroll header into view
+   * - 'kravpunkter'       → scroll header into view (section already open by default)
+   * - anything else        → no-op
+   */
+  focusField?:
+    | 'businessContext'
+    | 'complianceActions'
+    | 'kravpunkter'
+    | null
+    | undefined
   /** Story 17.16: Read-only disables all kravpunkter mutations + commentary edit */
   readOnly?: boolean | undefined
   /** Story 17.16: Notify parent of kravpunkter progress for DetailsBox status suggestion */
@@ -51,15 +61,16 @@ export function ComplianceActions({
   updatedAt,
   updatedByName,
   onContentChange,
-  autoEdit = false,
+  focusField,
   readOnly = false,
   onProgressChange,
 }: ComplianceActionsProps) {
   const [content, setContent] = useState(initialContent ?? '')
   const [editedContent, setEditedContent] = useState(initialContent ?? '')
-  const [isEditing, setIsEditing] = useState(autoEdit)
+  const [isEditing, setIsEditing] = useState(focusField === 'complianceActions')
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const lastSavedRef = useRef(initialContent ?? '')
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const [progress, setProgress] = useState<KravpunkterProgress>({
     fulfilled: 0,
     total: 0,
@@ -80,12 +91,27 @@ export function ComplianceActions({
     lastSavedRef.current = initialContent ?? ''
   }, [initialContent])
 
-  // Story 6.18: Auto-start editing when autoEdit prop is true
+  // Story 6.18: Auto-start editing when focus targets the Kommentar field
   useEffect(() => {
-    if (autoEdit) {
+    if (focusField === 'complianceActions') {
       setIsEditing(true)
     }
-  }, [autoEdit])
+  }, [focusField])
+
+  // Story 17.18: Scroll the accordion header into view when the caller signals
+  // focus on this section. Delay slightly to let modal-open animations settle.
+  useEffect(() => {
+    if (focusField !== 'complianceActions' && focusField !== 'kravpunkter') {
+      return
+    }
+    const timer = setTimeout(() => {
+      triggerRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [focusField])
 
   const handleSave = useCallback(async () => {
     // Strip HTML tags for comparison and check if empty
@@ -187,7 +213,10 @@ export function ComplianceActions({
       value="compliance-actions"
       className="border rounded-lg border-border/60"
     >
-      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
+      <AccordionTrigger
+        ref={triggerRef}
+        className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg"
+      >
         <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
           <ClipboardCheck className="h-4 w-4" />
           <span>Kravpunkter</span>

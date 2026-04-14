@@ -4,7 +4,8 @@
  * tooltip display, and column size configuration.
  */
 
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import * as React from 'react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ComplianceDetailTable } from '@/components/features/document-list/compliance-detail-table'
@@ -12,6 +13,39 @@ import type {
   DocumentListItem,
   WorkspaceMemberOption,
 } from '@/app/actions/document-list'
+import type { RequirementWithEvidence } from '@/app/actions/law-list-item-requirements'
+
+// Story 17.18: SWR mock state for KravpunkterCountCell — tests set this before
+// rendering. Key is `list-item-requirements:${listItemId}`.
+const mockSwrData = new Map<string, RequirementWithEvidence[]>()
+
+vi.mock('swr', () => ({
+  default: (key: string | null) => {
+    if (!key || typeof key !== 'string') {
+      return { data: undefined, isLoading: false, error: null, mutate: vi.fn() }
+    }
+    const data = mockSwrData.get(key)
+    return {
+      data,
+      isLoading: false,
+      error: null,
+      mutate: vi.fn(),
+    }
+  },
+  mutate: vi.fn(),
+}))
+
+// Mock RichTextDisplay used by the expansion's Kommentar subsection (Story 17.18)
+vi.mock('@/components/ui/rich-text-editor', () => ({
+  RichTextDisplay: ({ content }: { content: string }) => (
+    <div data-testid="rich-text-display">{content}</div>
+  ),
+}))
+
+// Stub the server action (SWR mock short-circuits it, but import must resolve)
+vi.mock('@/app/actions/law-list-item-requirements', () => ({
+  getRequirementsForListItem: vi.fn(),
+}))
 
 // Mock next/navigation (needed by ChangeIndicator rendered inside rows)
 vi.mock('next/navigation', () => ({
@@ -70,6 +104,39 @@ vi.mock('@dnd-kit/modifiers', () => ({
 vi.mock('use-debounce', () => ({
   useDebouncedCallback: (fn: (..._args: unknown[]) => unknown) => fn,
 }))
+
+// Story 17.17 + 17.18: stub the kravpunkter editor to a div that surfaces its
+// props via data-* attributes and invokes onProgressChange on mount from a
+// test-controlled variable (default fulfilled=0 / total=0, i.e. no kravpunkter).
+let mockKravpunkterProgress = { fulfilled: 0, total: 0 }
+vi.mock(
+  '@/components/features/document-list/legal-document-modal/kravpunkter-checklist',
+  () => ({
+    KravpunkterChecklist: ({
+      listItemId,
+      readOnly,
+      onProgressChange,
+    }: {
+      listItemId: string
+      readOnly?: boolean
+      onProgressChange?: (_progress: {
+        fulfilled: number
+        total: number
+      }) => void
+    }) => {
+      React.useEffect(() => {
+        onProgressChange?.(mockKravpunkterProgress)
+      }, [onProgressChange])
+      return (
+        <div
+          data-testid="kravpunkter-stub"
+          data-list-item-id={listItemId}
+          data-read-only={readOnly ?? false}
+        />
+      )
+    },
+  })
+)
 
 // Mock content-type utils
 vi.mock('@/lib/utils/content-type', () => ({
@@ -212,16 +279,9 @@ describe('ComplianceDetailTable', () => {
       ).toBeInTheDocument()
     })
 
-    it('renders truncated compliance actions text (HTML stripped)', () => {
-      const item = createMockItem({
-        complianceActions: '<p>Vi har rutiner på plats.</p>',
-      })
-      render(
-        <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
-      )
-
-      expect(screen.getByText('Vi har rutiner på plats.')).toBeInTheDocument()
-    })
+    // Story 17.18: complianceActions no longer shown in the Kravpunkter column
+    // cell (the column now shows a KravpunkterCountCell). The text is surfaced
+    // as "Kommentar" in the expansion (tested under expansion tests).
   })
 
   describe('Empty field states (AC 7)', () => {
@@ -253,10 +313,11 @@ describe('ComplianceDetailTable', () => {
       expect(addButtons.length).toBeGreaterThanOrEqual(1)
     })
 
-    it('shows "Lägg till" button for empty compliance actions', () => {
+    it('shows "Lägg till" button in the Kravpunkter column when no requirements exist', () => {
+      // Story 17.18: KravpunkterCountCell falls back to "+ Lägg till" when the
+      // SWR cache resolves with zero requirements for the row.
       const item = createMockItem({
         businessContext: '<p>Has content</p>',
-        complianceActions: null,
       })
       render(
         <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
@@ -313,12 +374,24 @@ describe('ComplianceDetailTable', () => {
       const expandButton = screen.getByLabelText('Expandera')
       await user.click(expandButton)
 
-      // Expanded row shows section headers (also present in column headers, so use getAllByText)
-      const businessHeaders = screen.getAllByText('Hur påverkar denna lag oss?')
-      const complianceHeaders = screen.getAllByText('Hur efterlever vi kraven?')
-      // At least 2: one in column header, one in expanded row
-      expect(businessHeaders.length).toBeGreaterThanOrEqual(2)
-      expect(complianceHeaders.length).toBeGreaterThanOrEqual(2)
+      // Story 17.18: "Hur påverkar denna lag oss?" appears in BOTH the column
+      // header and the expansion's business-context subsection. "Kravpunkter"
+      // appears in BOTH the column header and the expansion's right section.
+      expect(
+        screen.getAllByText('Hur påverkar denna lag oss?').length
+      ).toBeGreaterThanOrEqual(2)
+      expect(screen.getAllByText('Kravpunkter').length).toBeGreaterThanOrEqual(
+        2
+      )
+      // The "Hur efterlever vi kraven?" label is retired in Story 17.18.
+      expect(
+        screen.queryByText('Hur efterlever vi kraven?')
+      ).not.toBeInTheDocument()
+      // Business context text appears in the expansion.
+      expect(
+        screen.getAllByText('Full business context text').length
+      ).toBeGreaterThanOrEqual(1)
+      expect(screen.getByTestId('kravpunkter-stub')).toBeInTheDocument()
     })
 
     it('toggles expand button label after expanding', async () => {
@@ -367,7 +440,7 @@ describe('ComplianceDetailTable', () => {
       ).toBeInTheDocument()
     })
 
-    it('only expands one row at a time (accordion)', async () => {
+    it('allows multiple rows to be expanded simultaneously', async () => {
       const user = userEvent.setup()
       const item1 = createMockItem({
         id: 'item-1',
@@ -406,21 +479,22 @@ describe('ComplianceDetailTable', () => {
         />
       )
 
-      // Expand first row
+      // Expand first row → 1 collapse button, 1 expand button
       const expandButtons = screen.getAllByLabelText('Expandera')
       await user.click(expandButtons[0]!)
-
-      // Should have one collapse and one expand button
-      expect(screen.getByLabelText('Fäll ihop')).toBeInTheDocument()
-      expect(screen.getByLabelText('Expandera')).toBeInTheDocument()
-
-      // Expand second row (should collapse first)
-      const expandButton2 = screen.getByLabelText('Expandera')
-      await user.click(expandButton2)
-
-      // Still only one expanded
+      expect(screen.getAllByLabelText('Fäll ihop')).toHaveLength(1)
       expect(screen.getAllByLabelText('Expandera')).toHaveLength(1)
-      expect(screen.getByLabelText('Fäll ihop')).toBeInTheDocument()
+
+      // Expand second row → both now expanded (no collapse of first)
+      await user.click(screen.getByLabelText('Expandera'))
+      expect(screen.getAllByLabelText('Fäll ihop')).toHaveLength(2)
+      expect(screen.queryAllByLabelText('Expandera')).toHaveLength(0)
+
+      // Collapse first row → second still expanded
+      const collapseButtons = screen.getAllByLabelText('Fäll ihop')
+      await user.click(collapseButtons[0]!)
+      expect(screen.getAllByLabelText('Fäll ihop')).toHaveLength(1)
+      expect(screen.getAllByLabelText('Expandera')).toHaveLength(1)
     })
   })
 
@@ -506,6 +580,252 @@ describe('ComplianceDetailTable', () => {
       )
 
       expect(screen.getByText('Ansvarig')).toBeInTheDocument()
+    })
+  })
+
+  // Story 17.17 + 17.18: inline kravpunkter editor mounted in row expansion
+  describe('Inline kravpunkter editor (Story 17.17)', () => {
+    beforeEach(() => {
+      mockSwrData.clear()
+      mockKravpunkterProgress = { fulfilled: 0, total: 0 }
+    })
+
+    it('renders <KravpunkterChecklist> with correct listItemId when row is expanded', async () => {
+      const user = userEvent.setup()
+      const item = createMockItem({ id: 'li-42', complianceActions: null })
+      render(
+        <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
+      )
+
+      await user.click(screen.getByLabelText('Expandera'))
+
+      const stub = screen.getByTestId('kravpunkter-stub')
+      expect(stub).toBeInTheDocument()
+      expect(stub).toHaveAttribute('data-list-item-id', 'li-42')
+      expect(stub).toHaveAttribute('data-read-only', 'false')
+    })
+
+    it('passes readOnly=true to KravpunkterChecklist when complianceReadOnly is set', async () => {
+      const user = userEvent.setup()
+      const item = createMockItem({ complianceActions: null })
+      render(
+        <ComplianceDetailTable
+          {...defaultProps}
+          items={[item]}
+          total={1}
+          complianceReadOnly
+        />
+      )
+
+      await user.click(screen.getByLabelText('Expandera'))
+
+      expect(screen.getByTestId('kravpunkter-stub')).toHaveAttribute(
+        'data-read-only',
+        'true'
+      )
+    })
+  })
+
+  // Story 17.18: Kommentar subsection replaces the legacy dismissable banner
+  describe('Kommentar subsection (Story 17.18)', () => {
+    it('renders Kommentar subsection with RichTextDisplay when compliance_actions is set', async () => {
+      const user = userEvent.setup()
+      const item = createMockItem({
+        complianceActions: '<p>Vi har rutiner på plats.</p>',
+      })
+      render(
+        <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
+      )
+
+      await user.click(screen.getByLabelText('Expandera'))
+
+      expect(screen.getByText('Kommentar')).toBeInTheDocument()
+      const display = screen.getByTestId('rich-text-display')
+      expect(display).toBeInTheDocument()
+      expect(display.textContent).toContain('Vi har rutiner på plats.')
+    })
+
+    it('shows "Ingen kommentar tillagd." when compliance_actions is empty', async () => {
+      const user = userEvent.setup()
+      const item = createMockItem({ complianceActions: null })
+      render(
+        <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
+      )
+
+      await user.click(screen.getByLabelText('Expandera'))
+
+      expect(screen.getByText('Kommentar')).toBeInTheDocument()
+      expect(screen.getByText('Ingen kommentar tillagd.')).toBeInTheDocument()
+      expect(screen.queryByTestId('rich-text-display')).not.toBeInTheDocument()
+    })
+  })
+
+  // Story 17.18: column header rename + new count cell
+  describe('Kravpunkter column (Story 17.18)', () => {
+    beforeEach(() => {
+      mockSwrData.clear()
+    })
+
+    it('renders column header as "Kravpunkter" (not the old label)', () => {
+      const item = createMockItem()
+      render(
+        <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
+      )
+
+      expect(screen.getByText('Kravpunkter')).toBeInTheDocument()
+      expect(
+        screen.queryByText('Hur efterlever vi kraven?')
+      ).not.toBeInTheDocument()
+    })
+
+    it('renders "+ Lägg till" in the cell when no requirements exist', async () => {
+      const user = userEvent.setup()
+      const onAddContent = vi.fn()
+      const item = createMockItem({ id: 'li-99' })
+      mockSwrData.set('list-item-requirements:li-99', [])
+
+      render(
+        <ComplianceDetailTable
+          {...defaultProps}
+          items={[item]}
+          total={1}
+          onAddContent={onAddContent}
+        />
+      )
+
+      const addButtons = screen.getAllByText('Lägg till')
+      expect(addButtons.length).toBeGreaterThanOrEqual(1)
+
+      // Find and click the Kravpunkter-column "Lägg till" (last one — BusinessContext
+      // column has its own). The cell wires click to onAddContent with 'kravpunkter'.
+      const kravpunkterAddButton = addButtons[addButtons.length - 1]
+      if (kravpunkterAddButton) {
+        await user.click(kravpunkterAddButton)
+        expect(onAddContent).toHaveBeenCalledWith('li-99', 'kravpunkter')
+      }
+    })
+
+    it('renders "N/M uppfyllda" count pill when requirements exist', async () => {
+      const user = userEvent.setup()
+      const onAddContent = vi.fn()
+      const item = createMockItem({ id: 'li-100' })
+      mockSwrData.set('list-item-requirements:li-100', [
+        {
+          id: 'r1',
+          text: 'Krav 1',
+          isFulfilled: true,
+          position: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          evidence: [],
+        },
+        {
+          id: 'r2',
+          text: 'Krav 2',
+          isFulfilled: true,
+          position: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          evidence: [],
+        },
+        {
+          id: 'r3',
+          text: 'Krav 3',
+          isFulfilled: false,
+          position: 2,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          evidence: [],
+        },
+      ] as RequirementWithEvidence[])
+
+      render(
+        <ComplianceDetailTable
+          {...defaultProps}
+          items={[item]}
+          total={1}
+          onAddContent={onAddContent}
+        />
+      )
+
+      expect(screen.getByText('2/3 uppfyllda')).toBeInTheDocument()
+
+      await user.click(screen.getByText('2/3 uppfyllda'))
+      expect(onAddContent).toHaveBeenCalledWith('li-100', 'kravpunkter')
+    })
+
+    it('renders count pill as non-interactive when complianceReadOnly is set', () => {
+      const onAddContent = vi.fn()
+      const item = createMockItem({ id: 'li-ro' })
+      mockSwrData.set('list-item-requirements:li-ro', [
+        {
+          id: 'r1',
+          text: 'Krav 1',
+          isFulfilled: true,
+          position: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          evidence: [],
+        },
+      ] as RequirementWithEvidence[])
+
+      render(
+        <ComplianceDetailTable
+          {...defaultProps}
+          items={[item]}
+          total={1}
+          onAddContent={onAddContent}
+          complianceReadOnly
+        />
+      )
+
+      const pill = screen.getByText('1/1 uppfyllda')
+      expect(pill).toBeInTheDocument()
+      // Not wrapped in a button — parent is plain div
+      expect(pill.closest('button')).toBeNull()
+    })
+
+    it('shows dash in the Kravpunkter cell when status is EJ_TILLAMPLIG', () => {
+      const item = createMockItem({ complianceStatus: 'EJ_TILLAMPLIG' })
+      render(
+        <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
+      )
+
+      // Both businessContext + kravpunkter cells render "—"
+      expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(2)
+    })
+  })
+
+  // Story 17.18: progress tracker in expansion header
+  describe('Expansion progress tracker (Story 17.18)', () => {
+    beforeEach(() => {
+      mockKravpunkterProgress = { fulfilled: 0, total: 0 }
+    })
+
+    it('renders N/M uppfyllda in expansion header when kravpunkter exist', async () => {
+      const user = userEvent.setup()
+      mockKravpunkterProgress = { fulfilled: 2, total: 3 }
+      const item = createMockItem()
+      render(
+        <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
+      )
+
+      await user.click(screen.getByLabelText('Expandera'))
+
+      expect(screen.getByText('2/3 uppfyllda')).toBeInTheDocument()
+    })
+
+    it('hides progress tracker in expansion when no kravpunkter exist', async () => {
+      const user = userEvent.setup()
+      mockKravpunkterProgress = { fulfilled: 0, total: 0 }
+      const item = createMockItem()
+      render(
+        <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
+      )
+
+      await user.click(screen.getByLabelText('Expandera'))
+
+      expect(screen.queryByText(/uppfyllda/)).not.toBeInTheDocument()
     })
   })
 })

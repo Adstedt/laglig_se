@@ -86,12 +86,21 @@ export function DocumentPickerModal({
   const loadDocuments = async () => {
     setIsLoading(true)
     try {
+      // take: 100 is the schema's max (`getWorkspaceDocumentsSchema`). The
+      // previous value of 200 silently failed Zod validation and left the
+      // list empty. If a workspace has >100 documents, the user searches to
+      // narrow — the picker isn't meant to be an infinite browser.
       const result = await getWorkspaceDocuments(
-        searchQuery ? { search: searchQuery, take: 200 } : { take: 200 }
+        searchQuery ? { search: searchQuery, take: 100 } : { take: 100 }
       )
 
+      if (!result.success) {
+        console.error('Failed to load documents:', result.error)
+        toast.error(result.error ?? 'Kunde inte ladda dokument')
+        return
+      }
+
       if (
-        result.success &&
         result.data &&
         typeof result.data === 'object' &&
         'items' in result.data

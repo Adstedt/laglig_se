@@ -295,6 +295,10 @@ model LawListItem {
   ai_commentary       String?          @db.Text // AI-generated analysis
   category            String? // Custom categorization
 
+  // Story 17.18: Business context update attribution (mirrors compliance_actions pattern)
+  business_context_updated_at DateTime? // Last update timestamp
+  business_context_updated_by String? // User ID who last updated
+
   // Story 6.18: Compliance actions - how we comply with requirements
   compliance_actions            String?   @db.Text // "Hur efterlever vi kraven?" content
   compliance_actions_updated_at DateTime? // Last update timestamp

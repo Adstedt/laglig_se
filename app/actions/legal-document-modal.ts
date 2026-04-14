@@ -437,7 +437,13 @@ export async function updateListItemBusinessContext(
 
       await prisma.lawListItem.update({
         where: { id: listItemId },
-        data: { business_context: content || null },
+        data: {
+          business_context: content || null,
+          // Story 17.18: denormalized attribution for the expansion's
+          // "Senast uppdaterad … av {name}" footer
+          business_context_updated_at: new Date(),
+          business_context_updated_by: ctx.userId,
+        },
       })
 
       await logActivity(

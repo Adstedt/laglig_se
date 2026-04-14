@@ -115,14 +115,18 @@ describe('ComplianceActions', () => {
     expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument()
   })
 
-  it('starts in edit mode when autoEdit is true', () => {
-    renderInAccordion(<ComplianceActions {...defaultProps} autoEdit={true} />)
+  it('starts in edit mode when focusField is complianceActions', () => {
+    renderInAccordion(
+      <ComplianceActions {...defaultProps} focusField="complianceActions" />
+    )
 
     expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument()
   })
 
   it('shows Save and Cancel buttons in edit mode', () => {
-    renderInAccordion(<ComplianceActions {...defaultProps} autoEdit={true} />)
+    renderInAccordion(
+      <ComplianceActions {...defaultProps} focusField="complianceActions" />
+    )
 
     expect(screen.getByText('Spara')).toBeInTheDocument()
     expect(screen.getByText('Avbryt')).toBeInTheDocument()
@@ -134,7 +138,7 @@ describe('ComplianceActions', () => {
       <ComplianceActions
         {...defaultProps}
         initialContent="Existing content"
-        autoEdit={true}
+        focusField="complianceActions"
       />
     )
 
@@ -150,7 +154,9 @@ describe('ComplianceActions', () => {
       '@/app/actions/legal-document-modal'
     )
 
-    renderInAccordion(<ComplianceActions {...defaultProps} autoEdit={true} />)
+    renderInAccordion(
+      <ComplianceActions {...defaultProps} focusField="complianceActions" />
+    )
 
     const editor = screen.getByTestId('rich-text-editor')
     await user.clear(editor)
@@ -178,7 +184,9 @@ describe('ComplianceActions', () => {
       error: 'Server error',
     })
 
-    renderInAccordion(<ComplianceActions {...defaultProps} autoEdit={true} />)
+    renderInAccordion(
+      <ComplianceActions {...defaultProps} focusField="complianceActions" />
+    )
 
     const editor = screen.getByTestId('rich-text-editor')
     await user.clear(editor)
@@ -208,7 +216,9 @@ describe('ComplianceActions', () => {
   })
 
   it('shows placeholder text in editor', () => {
-    renderInAccordion(<ComplianceActions {...defaultProps} autoEdit={true} />)
+    renderInAccordion(
+      <ComplianceActions {...defaultProps} focusField="complianceActions" />
+    )
 
     expect(
       screen.getByPlaceholderText(/beskriv hur ni efterlever/i)
@@ -222,7 +232,7 @@ describe('ComplianceActions', () => {
     renderInAccordion(
       <ComplianceActions
         {...defaultProps}
-        autoEdit={true}
+        focusField="complianceActions"
         onContentChange={onContentChange}
       />
     )

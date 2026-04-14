@@ -79,10 +79,12 @@ interface GroupedComplianceTableProps {
   onRowClick?: ((_itemId: string) => void) | undefined
   onAddContent?: (
     _listItemId: string,
-    _field: 'businessContext' | 'complianceActions'
+    _field: 'businessContext' | 'complianceActions' | 'kravpunkter'
   ) => void
   workspaceMembers: WorkspaceMemberOption[]
   emptyMessage?: string | undefined
+  /** Story 17.17: passed through to inline kravpunkter editor in row expansions */
+  complianceReadOnly?: boolean | undefined
 }
 
 export function GroupedComplianceTable({
@@ -112,6 +114,7 @@ export function GroupedComplianceTable({
   onAddContent,
   workspaceMembers,
   emptyMessage = 'Inga dokument i listan.',
+  complianceReadOnly,
 }: GroupedComplianceTableProps) {
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -417,6 +420,7 @@ export function GroupedComplianceTable({
                   workspaceMembers={workspaceMembers}
                   groups={groups}
                   isDropTarget={overGroupId === group.id}
+                  complianceReadOnly={complianceReadOnly}
                 />
               )
             })}
@@ -449,6 +453,7 @@ export function GroupedComplianceTable({
                 groups={groups}
                 isUngrouped
                 isDropTarget={overGroupId === UNGROUPED_ID}
+                complianceReadOnly={complianceReadOnly}
               />
             )}
           </div>

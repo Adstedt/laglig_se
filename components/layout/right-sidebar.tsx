@@ -50,7 +50,7 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
         <button
           onClick={onToggle}
           className="hidden lg:flex fixed right-0 top-1/2 z-40 h-14 w-8 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 bg-primary text-primary-foreground shadow-lg transition-all hover:w-10 hover:bg-primary/90"
-          aria-label="Öppna AI Chat"
+          aria-label="Öppna assistent"
         >
           <LexaIcon size={16} className="invert-0" />
         </button>
@@ -117,7 +117,7 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
               className="h-8 w-8 text-muted-foreground hover:text-foreground"
             >
               <X className="h-4 w-4" />
-              <span className="sr-only">Stäng AI Chat</span>
+              <span className="sr-only">Stäng assistent</span>
             </Button>
           </div>
         </div>
