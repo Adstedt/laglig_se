@@ -63,9 +63,9 @@ const VIEW_OPTIONS: Array<{
   label: string
   icon: typeof Table
 }> = [
-  { value: 'card', label: 'Kortvy', icon: LayoutGrid },
-  { value: 'table', label: 'Tabellvy', icon: Table },
   { value: 'compliance', label: 'Efterlevnad', icon: ClipboardList },
+  { value: 'table', label: 'Tabellvy', icon: Table },
+  { value: 'card', label: 'Kortvy', icon: LayoutGrid },
 ]
 
 export function ViewMenu({
