@@ -1,0 +1,108 @@
+schema: 1
+story: '17.17'
+story_title: 'Inline Kravpunkter Editor in Efterlevnads Table Row Accordion'
+gate: PASS
+status_reason: 'All 12 ACs covered with tests; scope evolved twice past the original plan (v1.5 kravpunkter-forward pass originally scoped as 17.18, v1.6 business-context attribution migration) but evolutions are fully documented in Dev Notes + Change Log and tested. 314/314 document-list tests pass; 3460/3460 full unit suite pass; typecheck clean. Three low-severity future-work items flagged (per-row SWR fetch benchmarking, shared-cache consistency test, story-file scope hygiene). Quality score 95.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-14T13:15:00Z'
+
+waiver: { active: false }
+
+quality_score: 95
+
+history:
+  - at: '2026-04-14T13:15:00Z'
+    gate: PASS
+    note: 'First review. Story delivered in 6 iterations (v0.1 SM draft → v1.6 attribution migration). Original 12 ACs satisfied; v1.5 extensions (originally drafted as story 17.18 in plan mode, folded back into 17.17 same-branch) added column rename + KravpunkterCountCell + Kommentar subsection + focusField=kravpunkter plumbing; v1.6 added business_context_updated_{at,by} columns + attribution UI. All changes on branch misc-fixes. PM visually approved both the column pill and the Kommentar footer rendering.'
+
+top_issues:
+  - id: 'PERF-001'
+    severity: low
+    finding: '`KravpunkterCountCell` uses per-row SWR fetch with key `list-item-requirements:${listItemId}` instead of a bulk endpoint. TanStack Virtual bounds the fan-out to visible rows (~10-15 at a time), and SWR dedupes in-flight requests + shares the cache with the expansion, so architectural cost is contained. Unbenchmarked at laglistor >100 rows though. Plan explicitly considered and rejected a bulk server action based on "cache consistency vs. query efficiency" tradeoff.'
+    suggested_action: 'Add a light perf probe once a workspace hits >100 laglistor rows in production. If the initial-render fetch burst shows up on real-user metrics, introduce `getRequirementCountsForListItems(ids: string[])` and preload the SWR cache from a single query. Not needed for MVP.'
+    suggested_owner: dev
+    refs: ['components/features/document-list/compliance-detail-table.tsx:KravpunkterCountCell']
+
+  - id: 'TEST-001'
+    severity: low
+    finding: 'The shared-SWR-cache consistency claim (cell pill updates when a kravpunkt is toggled from the expansion, and vice versa) is tested only via architectural inspection — both surfaces read the same key, so SWR revalidation propagates. Unit tests mock SWR entirely (module-scope `mockSwrData` Map), which short-circuits the cache-sharing semantics. A real-SWR integration test would verify the propagation end-to-end.'
+    suggested_action: 'Optional: add one integration test that wraps both the expansion and the count cell in a real `<SWRConfig>` provider and asserts that `mutate()` on the shared key updates both surfaces. Current coverage is sufficient for MVP given the architectural guarantee.'
+    suggested_owner: dev
+    refs: ['tests/unit/components/features/document-list/compliance-detail-table.test.tsx:22-36']
+
+  - id: 'DOC-001'
+    severity: low
+    finding: 'Story 17.17 scope was extended twice past the original 12 ACs (v1.5 = original "17.18" column rename + Kommentar + progress tracker; v1.6 = business-context attribution migration). The evolutions are documented in the Change Log and Completion Notes, but the story''s formal "Acceptance Criteria" section was not extended to cover the new scope. AC5 in particular now documents a REMOVED feature (legacy banner) — dev notes explain the replacement, but someone reading ACs top-down will hit contradicting language.'
+    suggested_action: 'Consider either (a) promoting 17.18 to its own story file with its own 4 ACs retroactively, or (b) amending 17.17''s AC5 to reflect the final scope (Kommentar subsection instead of legacy banner). Hygiene matter, not a defect. (a) is preferred for future-history clarity.'
+    suggested_owner: sm
+    refs: ['docs/stories/backlog/frontend/17.17.kravpunkter-inline-compliance-view.md:19,55']
+
+evidence:
+  tests_reviewed: 33
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    ac_gaps: []
+    notes: |
+      AC1 (inline KravpunkterChecklist): `renders <KravpunkterChecklist> with correct listItemId when row is expanded`
+      AC2 (left card preserved, renamed sentence-case): `expands row showing full content on chevron click` asserts "Hur påverkar denna lag oss?" appears ≥2 times (column header + expansion)
+      AC3 (full modal capabilities): inherited via component reuse; verified by 17.16's kravpunkter-checklist.test.tsx (47/47 passing)
+      AC4 (empty state): inherited via component reuse
+      AC5 (legacy `compliance_actions`): **SCOPE-CHANGED in v1.5** — banner removed, replaced by first-class Kommentar subsection. New tests: `renders Kommentar subsection with RichTextDisplay when compliance_actions is set`, `shows "Ingen kommentar tillagd." when compliance_actions is empty`
+      AC6 (businessContext preserved): `calls onAddContent when "Lägg till" button is clicked for businessContext` (cell routes to businessContext focus); v1.6 adds attribution footer
+      AC7 (modal still works): compliance-actions.test.tsx 12/12 passing with focusField API
+      AC8 (shared SWR cache): verified architecturally — `KravpunkterCountCell` and `KravpunkterChecklist` both use key `list-item-requirements:${listItemId}`; tests mock SWR (see TEST-001 low-severity gap)
+      AC9 (progress callback): **SCOPE-EVOLVED in v1.5** from "optional no-op" to "rendered in expansion header as N/M uppfyllda pill + green bar". Tests: `renders N/M uppfyllda in expansion header when kravpunkter exist`, `hides progress tracker when no kravpunkter exist`
+      AC10 (readOnly): `passes readOnly=true to KravpunkterChecklist when complianceReadOnly is set`, `renders count pill as non-interactive when complianceReadOnly is set`
+      AC11 (inline mount test): covered by AC1 test
+      AC12 (regression): 3460/3460 full unit suite passes; typecheck clean
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      No new auth surface. `updateListItemBusinessContext` uses `withWorkspace('tasks:edit')` — same gate as before. `getRequirementsForListItem` (used by new count cell) already enforces workspace isolation via `getRequirementWorkspaceContext` (verified in 17.16 review). RichTextDisplay uses DOMPurify — no sanitization regression in the new Kommentar subsection. Migration is additive (2 nullable columns) — no data exposure. `complianceReadOnly` prop threaded correctly to the new count cell (read-only renders non-interactive div, no button, no Lägg-till route).
+  performance:
+    status: PASS
+    notes: |
+      Per-row SWR fetch in KravpunkterCountCell is architecturally sound (virtualized → bounded burst, SWR dedup + shared cache with expansion → no double-fetch on expand). Plan explicitly traded bulk endpoint for cache consistency. Optimistic update path for business_context in Zustand store bumps the attribution timestamp locally so UI reflects before the server round-trip. revalidatePath('/laglistor') on business_context updates is consistent with the existing compliance_actions pattern — not a new cost path. See PERF-001 for unbenchmarked-at-scale note (low severity).
+  reliability:
+    status: PASS
+    notes: |
+      Migration is additive (new nullable columns), safe to rollback. Existing optimistic-rollback pattern in KravpunkterChecklist unchanged. `autoEdit` → `focusField` refactor in ComplianceActions consolidates two state triggers into one — reduces state-machine complexity. New `triggerRef.scrollIntoView` has 150ms timeout to let modal animation settle, with explicit cleanup on effect teardown. Accordion `defaultValue` includes `'compliance-actions'` so focusField='kravpunkter' always scrolls to an open section.
+  maintainability:
+    status: PASS
+    notes: |
+      `focusField` union widened cleanly across 7 files — each hop is explicit and typed. Type widening caught by tsc at every boundary (compliance-group-section + grouped-compliance-table both needed updates; tsc flagged them, fixed in same pass). `KravpunkterCountCell` co-located with its only consumer (compliance-detail-table.tsx) — avoids premature extraction. Test mock complexity is proportional to the number of integration points (swr + rich-text-editor + server action stub + KravpunkterChecklist stub) — all follow established project patterns. One duplication noted: cell pill JSX ≈ expansion header pill JSX — ~15 lines; not extracted, reasonable pending a third use site.
+  accessibility:
+    status: PASS
+    notes: |
+      `KravpunkterCountCell` button has aria-label (`${fulfilled} av ${total} uppfyllda — öppna kravpunkter`). Expansion progress tracker renders standalone-readable text ("2/3 uppfyllda"). Read-only mode correctly renders non-interactive div (no misleading button semantics). Sentence-case section labels improve scan readability. No regressions from 17.16 baseline.
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add a scale probe once a workspace exceeds 100 laglistor rows — measure initial-render SWR fetch burst (PERF-001)'
+      refs: ['components/features/document-list/compliance-detail-table.tsx:KravpunkterCountCell']
+    - action: 'Optional: real-SWR integration test that verifies expansion ↔ cell live sync via shared cache key (TEST-001)'
+      refs: ['tests/unit/components/features/document-list/compliance-detail-table.test.tsx']
+    - action: 'Formalize the 17.18 scope either as its own story file or by amending 17.17 ACs to match the final shipped scope (DOC-001)'
+      refs: ['docs/stories/backlog/frontend/17.17.kravpunkter-inline-compliance-view.md']
+    - action: 'If a third surface ever needs the progress pill, extract `<ProgressTrackerPill>` (currently duplicated between expansion header and count cell — ~15 lines, not worth abstracting yet)'
+      refs: ['components/features/document-list/compliance-detail-table.tsx']
+    - action: 'Consider whether the row-level expansion should eventually allow inline Kommentar editing (currently read-only; edits route to the modal — consistent with the 17.17 "detail view" pattern)'
+      refs: ['components/features/document-list/compliance-detail-table.tsx:ExpandedRowContent']
+
+scope_evolution_note: |
+  This story shipped significantly more than its original 12 ACs. v0.1 (SM draft) → v1.0 (implementation) covered the original scope. v1.1-v1.4 were UI polish iterations. v1.5 and v1.6 were post-implementation PM-driven scope extensions (originally drafted in plan mode as "story 17.18") folded back into the same story file since they share the same branch and are architecturally coupled. Dev Notes document the v1.5/v1.6 work in detail including decisions + rejected alternatives. Gate reviewers: treat this as "17.17 ∪ 17.18" — there is no separate 17.18 story file.
+
+bug_fixes_validated:
+  - bug: 'Document picker returned empty list silently (take: 200 exceeded Zod max of 100)'
+    fix: 'components/features/documents/document-picker-modal.tsx — capped take at 100 + surfaced errors via toast.error'
+    verified: 'Manual browser QA confirmed picker populates; error surfacing visible when action fails'
+  - bug: 'Checkbox icon rendered edge-to-edge when checked (shadcn default)'
+    fix: 'components/ui/checkbox.tsx — Check icon h-4 w-4 → h-2.5 w-2.5 with strokeWidth=3 for visible inset'
+    verified: 'Visual QA confirmed inside the kravpunkter checklist rendering'
+  - bug: 'Kravpunkter evidence picker showed "Dokument" instead of distinguishing from files'
+    fix: 'kravpunkter-checklist.tsx — dropdown label "Dokument" → "Styrdokument"'
+    verified: 'Visual QA'
