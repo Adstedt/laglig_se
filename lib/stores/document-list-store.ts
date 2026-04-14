@@ -240,7 +240,10 @@ const initialState = {
   total: 0,
   hasMore: false,
   // Story 4.12: Table view state
-  viewMode: 'table' as ViewMode,
+  // Efterlevnad (compliance) is the primary working view — covers the status,
+  // kravpunkter, and attribution columns that matter day-to-day. Kort / Tabell
+  // are alternative lenses.
+  viewMode: 'compliance' as ViewMode,
   columnVisibility: DEFAULT_COLUMN_VISIBILITY,
   columnSizing: {} as ColumnSizingState,
   columnOrder: [] as ColumnOrderState,
@@ -1245,21 +1248,25 @@ export const useDocumentListStore = create<DocumentListState>()(
       name: 'document-list-storage',
       // Bump when changing defaults that are also persisted so existing users
       // pick up the new behavior on next load.
-      version: 1,
+      version: 2,
       migrate: (persistedState, version) => {
+        let next = persistedState as Record<string, unknown> | null
+        if (!next || typeof next !== 'object') return persistedState
+
         // v0 → v1: reset expandedGroups so the new "collapsed by default"
         // behavior applies; users can re-expand as needed.
-        if (
-          version < 1 &&
-          persistedState &&
-          typeof persistedState === 'object'
-        ) {
-          return {
-            ...(persistedState as Record<string, unknown>),
-            expandedGroups: {},
-          }
+        if (version < 1) {
+          next = { ...next, expandedGroups: {} }
         }
-        return persistedState
+
+        // v1 → v2: promote users still on the legacy 'card' default to the
+        // new primary view 'compliance'. Users who deliberately chose 'table'
+        // keep it. Users already on 'compliance' keep it.
+        if (version < 2 && next.viewMode === 'card') {
+          next = { ...next, viewMode: 'compliance' }
+        }
+
+        return next
       },
       partialize: (state) => ({
         activeListId: state.activeListId,
