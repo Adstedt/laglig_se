@@ -49,7 +49,7 @@ export function MessageActions({
   }
 
   return (
-    <div className={cn('flex items-center gap-1 mt-2', className)}>
+    <div className={cn('flex items-center gap-1', className)}>
       {/* Copy button */}
       <button
         onClick={handleCopy}
