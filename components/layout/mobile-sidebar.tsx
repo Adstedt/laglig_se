@@ -93,12 +93,7 @@ const workItems = [
     title: 'HR',
     icon: Users,
     href: '#',
-    isAccordion: true,
     disabled: true,
-    subItems: [
-      { title: 'Anställda', href: '/hr/employees' },
-      { title: 'Efterlevnad', href: '/hr/compliance' },
-    ],
   },
   {
     title: 'Ändringsbevakning',

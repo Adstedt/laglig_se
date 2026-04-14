@@ -123,22 +123,16 @@ export function WorkspaceSwitcher({
     return name.charAt(0).toUpperCase()
   }
 
-  // Collapsed: same row layout as expanded, text clipped by sidebar overflow-hidden
+  // Collapsed: centered square button with just the avatar
   if (collapsed) {
     if (!mounted) {
       return (
-        <button className="flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent">
+        <button className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-accent">
           <Avatar className="h-7 w-7 rounded-full shrink-0">
             <AvatarFallback className="rounded-full bg-primary text-primary-foreground text-xs font-semibold">
               {workspaceName ? getWorkspaceInitial(workspaceName) : 'A'}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="font-medium truncate">
-              {workspaceName || 'Arbetsplats'}
-            </p>
-          </div>
-          <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         </button>
       )
     }
@@ -152,19 +146,13 @@ export function WorkspaceSwitcher({
               aria-expanded={open}
               aria-controls="workspace-switcher-collapsed"
               aria-label="Byt arbetsplats"
-              className="flex w-full items-center gap-3 overflow-hidden rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent"
+              className="mx-auto flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-accent"
             >
               <Avatar className="h-7 w-7 rounded-full shrink-0">
                 <AvatarFallback className="rounded-full bg-primary text-primary-foreground text-xs font-semibold">
                   {workspaceName ? getWorkspaceInitial(workspaceName) : 'A'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="font-medium truncate">
-                  {workspaceName || 'Arbetsplats'}
-                </p>
-              </div>
-              <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             </button>
           </PopoverTrigger>
           <PopoverContent
