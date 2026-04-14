@@ -12,6 +12,7 @@ import { useEffect, useState, useCallback, useMemo, useTransition } from 'react'
 import { useSWRConfig } from 'swr'
 import { usePrefetchDocuments } from '@/lib/hooks/use-prefetch-documents'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useShallow } from 'zustand/react/shallow'
 import {
   useDocumentListStore,
   selectActiveList,
@@ -310,10 +311,15 @@ export function DocumentListPageContent({
   } = useDocumentListStore()
 
   const activeList = useDocumentListStore(selectActiveList)
+  // These selectors return a fresh object/array per call; wrap in useShallow
+  // so React 19's useSyncExternalStore sees stable references and doesn't
+  // loop. (React 19 is stricter about getSnapshot caching than 18.)
   const activeGroupFilterInfo = useDocumentListStore(
-    selectActiveGroupFilterInfo
+    useShallow(selectActiveGroupFilterInfo)
   )
-  const filteredItems = useDocumentListStore(selectFilteredByGroupItems)
+  const filteredItems = useDocumentListStore(
+    useShallow(selectFilteredByGroupItems)
+  )
 
   // Handle list item change from modal - optimistically update document list table
   const handleListItemChange = useCallback(

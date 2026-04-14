@@ -421,7 +421,7 @@ export function GroupedDocumentListTable({
             {/* Render group sections */}
             {groups.map((group) => {
               const groupItems = groupedItems[group.id] || []
-              const isExpanded = expandedGroups[group.id] ?? true
+              const isExpanded = expandedGroups[group.id] ?? false
 
               return (
                 <GroupTableSection
@@ -467,7 +467,7 @@ export function GroupedDocumentListTable({
                 groupId={UNGROUPED_ID}
                 name="Ogrupperade"
                 itemCount={ungroupedItems.length}
-                isExpanded={expandedGroups[UNGROUPED_ID] ?? true}
+                isExpanded={expandedGroups[UNGROUPED_ID] ?? false}
                 onToggle={() => onToggleGroup(UNGROUPED_ID)}
                 onFilter={
                   onFilterByGroup

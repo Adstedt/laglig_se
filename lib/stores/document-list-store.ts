@@ -975,12 +975,14 @@ export const useDocumentListStore = create<DocumentListState>()(
         try {
           const result = await getListGroups(activeListId)
           if (result.success && result.data) {
-            // Initialize expansion state for new groups (default expanded)
+            // Initialize expansion state for new groups (default collapsed —
+            // reduces initial render cost when a list has many groups with
+            // many items; user can expand as needed).
             const currentExpanded = get().expandedGroups
             const newExpandedState = { ...currentExpanded }
             result.data.forEach((group) => {
               if (newExpandedState[group.id] === undefined) {
-                newExpandedState[group.id] = true // Default to expanded
+                newExpandedState[group.id] = false
               }
             })
 
@@ -1233,6 +1235,24 @@ export const useDocumentListStore = create<DocumentListState>()(
     }),
     {
       name: 'document-list-storage',
+      // Bump when changing defaults that are also persisted so existing users
+      // pick up the new behavior on next load.
+      version: 1,
+      migrate: (persistedState, version) => {
+        // v0 → v1: reset expandedGroups so the new "collapsed by default"
+        // behavior applies; users can re-expand as needed.
+        if (
+          version < 1 &&
+          persistedState &&
+          typeof persistedState === 'object'
+        ) {
+          return {
+            ...(persistedState as Record<string, unknown>),
+            expandedGroups: {},
+          }
+        }
+        return persistedState
+      },
       partialize: (state) => ({
         activeListId: state.activeListId,
         // Story 4.12: Persist view preferences
@@ -1304,7 +1324,7 @@ export const selectUngroupedItemCount = (state: DocumentListState) =>
 
 export const selectIsGroupExpanded =
   (groupId: string) => (state: DocumentListState) =>
-    state.expandedGroups[groupId] ?? true // Default to expanded
+    state.expandedGroups[groupId] ?? false // Default to collapsed
 
 // Story 4.13 Task 11: Get active group filter info
 export const selectActiveGroupFilterInfo = (state: DocumentListState) => {

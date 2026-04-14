@@ -908,14 +908,14 @@ describe('Document List Store', () => {
         ).toBe(true)
       })
 
-      it('should default to expanded for undefined group', () => {
+      it('should default to collapsed for undefined group', () => {
         useDocumentListStore.setState({
           expandedGroups: {},
         })
 
         expect(
           selectIsGroupExpanded('group-1')(useDocumentListStore.getState())
-        ).toBe(true)
+        ).toBe(false)
       })
     })
 
