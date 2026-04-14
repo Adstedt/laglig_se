@@ -353,7 +353,7 @@ export function ChatMessage({
             return null
           })}
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 mt-2">
             {showActions && fullText.trim() && !isActive && (
               <MessageActions messageId={message.id} content={fullText} />
             )}
