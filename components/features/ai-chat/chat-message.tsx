@@ -10,7 +10,6 @@ import { useState, useMemo, useEffect, useId } from 'react'
 import type { UIMessage } from 'ai'
 import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
 import {
-  User,
   ChevronDown,
   ChevronRight,
   Search,
@@ -27,7 +26,6 @@ import {
 } from 'lucide-react'
 import { Streamdown } from 'streamdown'
 import { code } from '@streamdown/code'
-import { LexaIcon } from '@/components/ui/lexa-icon'
 import { CitationPillInline } from './citation-pill'
 import { CitationSourceProvider } from '@/lib/ai/citation-context'
 import { rehypeCitationPills } from '@/lib/ai/rehype-citation-pills'
@@ -260,10 +258,7 @@ export function ChatMessage({
   if (isUser) {
     const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
     return (
-      <div className="group flex items-start gap-3 flex-row-reverse">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <User className="h-3.5 w-3.5" />
-        </div>
+      <div className="group flex items-start gap-2 flex-row-reverse">
         <div className="flex-1 overflow-hidden text-right">
           {textParts.map((part, index) => (
             <div
@@ -294,73 +289,67 @@ export function ChatMessage({
 
   return (
     <CitationSourceProvider sourceMap={sourceMap}>
-      <div className="group flex items-start gap-3">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted border border-border">
-          <LexaIcon size={14} />
-        </div>
+      <div className="group overflow-hidden text-left space-y-3">
+        {renderItems.map((item) => {
+          if (item.kind === 'tool-group') {
+            return (
+              <CollapsedToolGroup
+                key={`tool-group-${item.items[0]!.index}`}
+                items={item.items}
+              />
+            )
+          }
 
-        <div className="flex-1 overflow-hidden text-left space-y-3">
-          {renderItems.map((item) => {
-            if (item.kind === 'tool-group') {
-              return (
-                <CollapsedToolGroup
-                  key={`tool-group-${item.items[0]!.index}`}
-                  items={item.items}
-                />
-              )
-            }
+          const { part, index } = item
+          if (part.type === 'step-start') return null
 
-            const { part, index } = item
-            if (part.type === 'step-start') return null
+          if (isReasoningUIPart(part)) {
+            return (
+              <ReasoningBlock
+                key={`reasoning-${index}`}
+                text={part.text}
+                state={part.state}
+              />
+            )
+          }
 
-            if (isReasoningUIPart(part)) {
-              return (
-                <ReasoningBlock
-                  key={`reasoning-${index}`}
-                  text={part.text}
-                  state={part.state}
-                />
-              )
-            }
+          if (isToolUIPart(part)) {
+            const { toolName, input, toolCallId, toolOutput } =
+              extractToolPartInfo(part, index)
+            const config = TOOL_CONFIG[toolName]
+            if (config?.hidden) return null
+            return (
+              <ToolCallRow
+                key={`tool-${index}`}
+                toolCallId={toolCallId}
+                toolName={toolName}
+                state={part.state}
+                detail={getToolDetail(toolName, input)}
+                output={toolOutput}
+              />
+            )
+          }
 
-            if (isToolUIPart(part)) {
-              const { toolName, input, toolCallId, toolOutput } =
-                extractToolPartInfo(part, index)
-              const config = TOOL_CONFIG[toolName]
-              if (config?.hidden) return null
-              return (
-                <ToolCallRow
-                  key={`tool-${index}`}
-                  toolCallId={toolCallId}
-                  toolName={toolName}
-                  state={part.state}
-                  detail={getToolDetail(toolName, input)}
-                  output={toolOutput}
-                />
-              )
-            }
+          if (isTextUIPart(part)) {
+            return (
+              <TextBlock
+                key={`text-${index}`}
+                text={part.text}
+                isStreaming={isActive && index === parts.length - 1}
+              />
+            )
+          }
 
-            if (isTextUIPart(part)) {
-              return (
-                <TextBlock
-                  key={`text-${index}`}
-                  text={part.text}
-                  isStreaming={isActive && index === parts.length - 1}
-                />
-              )
-            }
+          return null
+        })}
 
-            return null
-          })}
-
-          <div className="flex items-center gap-1 mt-2">
-            {showActions && fullText.trim() && !isActive && (
-              <MessageActions messageId={message.id} content={fullText} />
-            )}
-            {onDelete && !isActive && (
-              <DeleteMessageButton onConfirm={() => onDelete(message.id)} />
-            )}
-          </div>
+        <div className="flex items-center gap-1 mt-2">
+          {showActions && fullText.trim() && !isActive && (
+            <MessageActions messageId={message.id} content={fullText} />
+          )}
+          {onDelete && !isActive && (
+            <DeleteMessageButton onConfirm={() => onDelete(message.id)} />
+          )}
         </div>
       </div>
     </CitationSourceProvider>
