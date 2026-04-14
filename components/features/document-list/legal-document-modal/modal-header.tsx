@@ -78,7 +78,7 @@ export function ModalHeader({
           {listName}
         </span>
         <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-        <span className="font-medium font-mono">{documentNumber}</span>
+        <span className="font-medium">{documentNumber}</span>
       </nav>
 
       {/* Action buttons */}
