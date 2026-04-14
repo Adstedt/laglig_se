@@ -1,0 +1,99 @@
+schema: 1
+story: '17.18'
+story_title: 'Linked Artifacts Consolidation & Bevis-Required Semantics'
+gate: PASS
+status_reason: 'All 28 ACs satisfied (with two documented v2.1 scope evolutions). Implementation is production-quality with strong workspace isolation, comprehensive test coverage (47 new/extended tests), and disciplined polish iteration. Four optional future-work items identified, none blocking.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-14T22:00:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'PERF-001'
+    severity: medium
+    finding: 'getLinkedArtifactsForListItem does a single Prisma findFirst with 5 nested relation includes (3 levels deep on the task path). Performance unbenchmarked on outlier laws with >50 task links.'
+    suggested_action: 'Run a scale probe post-GA on workspaces with the longest task lists. If response time exceeds 100ms on representative outliers, consider splitting the task-path query OR adding pagination to task_links.'
+    refs: ['app/actions/linked-artifacts.ts:80-173']
+    suggested_owner: dev
+  - id: 'TECH-001'
+    severity: low
+    finding: 'Cache key string `list-item-details:v3:${id}` is constructed inline at 5 sites across 3 files. Future schema bumps require a 5-site grep + edit.'
+    suggested_action: 'Extract to a shared helper, e.g. `export const listItemDetailsCacheKey = (id: string) => ...` in lib/cache/keys.ts. Single source of truth for future bumps.'
+    refs:
+      - 'app/actions/legal-document-modal.ts:220'
+      - 'app/actions/law-list-item-requirements.ts:104'
+      - 'app/actions/prefetch-documents.ts:62,113'
+    suggested_owner: dev
+  - id: 'DEBT-001'
+    severity: low
+    finding: 'EvidenceSummary type + evidence field on getListItemDetails return shape are dead code post v2.0 (the consumer EvidenceSummaryBox was deleted). Deferred cleanup per Completion Notes.'
+    suggested_action: 'Schedule a follow-up cleanup story to remove the type, the field, and the corresponding pathway in lib/hooks/use-list-item-details.ts. Estimated 30 min.'
+    refs:
+      - 'app/actions/legal-document-modal.ts'
+      - 'lib/hooks/use-list-item-details.ts'
+    suggested_owner: dev
+  - id: 'DEBT-002'
+    severity: low
+    finding: 'tasksWithoutAttachmentCount is computed server-side in linked-artifacts.ts but no longer consumed (the corresponding widget row was removed in v2.1).'
+    suggested_action: 'Either drop the field from LinkedArtifactsResult (saves a small computation) OR add an attachment_required flag on tasks (parallel to bevis_required) to revive the widget signal as a meaningful gap indicator.'
+    refs: ['app/actions/linked-artifacts.ts:263-269,289']
+    suggested_owner: po
+
+quality_score: 90
+
+evidence:
+  tests_reviewed: 47
+  risks_identified: 4
+  trace:
+    ac_covered:
+      [
+        1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 18, 20, 21, 23, 25, 26, 27, 28,
+      ]
+    ac_gaps_acceptable: [4, 12, 14, 19, 22, 24]
+    notes: 'AC4 (accordion mount) verified by code review — trivial markup. AC12 scope-evolved in v2.1 (footer position swap). AC14 (migration) is manual file presence. AC19 (replace EvidenceSummaryBox) verified by file deletion. AC22 (visual styling) verified by code review. AC24 (EvidenceSummary deprecation) explicitly deferred per Completion Notes.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Workspace isolation enforced at law-list and task-link levels. No new auth surface. PDF link uses target=_blank rel=noopener noreferrer.'
+  performance:
+    status: CONCERNS
+    notes: 'Single Prisma findFirst with 5 nested includes is unbenchmarked on outlier laws (>50 task links). SWR + Redis caching mitigates repeated reads. AmendmentDocument lookup uncached but single indexed query. See PERF-001.'
+  reliability:
+    status: PASS
+    notes: 'Optimistic updates with toast-rollback consistently applied. Graceful degradation for AmendmentDocument lookup misses (plain text vs broken link). Try/catch on server action with friendly Swedish error.'
+  maintainability:
+    status: PASS
+    notes: 'Comprehensive JSDoc on server action explaining design choices (incl. denormalized vs derived approach trade-off). Helper functions appropriately named. Story dev notes capture all deviations and tech debt. Cache key bump pattern slightly fragile — see TECH-001.'
+
+risk_summary:
+  totals:
+    critical: 0
+    high: 0
+    medium: 1
+    low: 3
+  recommendations:
+    must_fix: []
+    monitor:
+      - 'PERF-001: scale probe at >50 task links per law'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Benchmark getLinkedArtifactsForListItem on outlier laws with many task links'
+      refs: ['app/actions/linked-artifacts.ts']
+    - action: 'Extract cache key to shared constant for future bumps'
+      refs:
+        [
+          'app/actions/legal-document-modal.ts',
+          'app/actions/law-list-item-requirements.ts',
+          'app/actions/prefetch-documents.ts',
+        ]
+    - action: 'Cleanup deprecated EvidenceSummary type + evidence field'
+      refs:
+        [
+          'app/actions/legal-document-modal.ts',
+          'lib/hooks/use-list-item-details.ts',
+        ]
+    - action: 'Decide on tasksWithoutAttachmentCount fate (drop OR revive with attachment_required flag)'
+      refs: ['app/actions/linked-artifacts.ts']
