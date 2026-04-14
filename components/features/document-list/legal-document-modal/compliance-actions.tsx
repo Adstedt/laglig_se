@@ -18,7 +18,6 @@ import {
   RichTextDisplay,
 } from '@/components/ui/rich-text-editor'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { Loader2, Check, ClipboardCheck, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { updateListItemComplianceActions } from '@/app/actions/legal-document-modal'
@@ -75,6 +74,17 @@ export function ComplianceActions({
     fulfilled: 0,
     total: 0,
   })
+  const [kravpunkterHighlighted, setKravpunkterHighlighted] = useState(false)
+
+  useEffect(() => {
+    const handler = () => {
+      setKravpunkterHighlighted(true)
+      const t = window.setTimeout(() => setKravpunkterHighlighted(false), 1500)
+      return () => window.clearTimeout(t)
+    }
+    window.addEventListener('laglig:focus-kravpunkter', handler)
+    return () => window.removeEventListener('laglig:focus-kravpunkter', handler)
+  }, [])
 
   const handleProgressChange = useCallback(
     (next: KravpunkterProgress) => {
@@ -211,7 +221,11 @@ export function ComplianceActions({
   return (
     <AccordionItem
       value="compliance-actions"
-      className="border rounded-lg border-border/60"
+      id="kravpunkter-accordion"
+      className={cn(
+        'border rounded-lg border-border/60 scroll-mt-4 transition-shadow duration-500',
+        kravpunkterHighlighted && 'ring-2 ring-amber-400/70 shadow-lg'
+      )}
     >
       <AccordionTrigger
         ref={triggerRef}
@@ -243,15 +257,13 @@ export function ComplianceActions({
           )}
         </div>
       </AccordionTrigger>
-      <AccordionContent className="px-4 pb-4 space-y-4">
+      <AccordionContent className="px-4 pb-4 space-y-3">
         {/* Story 17.16: Structured checklist */}
         <KravpunkterChecklist
           listItemId={listItemId}
           readOnly={readOnly}
           onProgressChange={handleProgressChange}
         />
-
-        <Separator />
 
         {/* Story 6.18: Kommentar (free-text rich editor, unchanged) */}
         <div className="space-y-2">

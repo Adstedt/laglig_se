@@ -355,14 +355,15 @@ model LawListItem {
 // ============================================================================
 
 model LawListItemRequirement {
-  id           String   @id @default(uuid())
-  list_item_id String
-  text         String   @db.Text
-  is_fulfilled Boolean  @default(false)
-  position     Float    @default(0) // Float + no unique constraint → fractional midpoint reorder (mirrors LawListItem.position)
-  created_by   String
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  id              String   @id @default(uuid())
+  list_item_id    String
+  text            String   @db.Text
+  is_fulfilled    Boolean  @default(false)
+  bevis_required  Boolean  @default(false)
+  position        Float    @default(0) // Float + no unique constraint → fractional midpoint reorder (mirrors LawListItem.position)
+  created_by      String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   list_item      LawListItem               @relation(fields: [list_item_id], references: [id], onDelete: Cascade)
   creator        User                      @relation("RequirementCreator", fields: [created_by], references: [id])

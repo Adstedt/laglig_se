@@ -56,6 +56,15 @@ export interface ListItemDetails {
     email: string
     avatarUrl: string | null
   } | null
+  // Story 17.18: Latest tracked change on the underlying LegalDocument.
+  // `originalUrl` is null when the change was tracked via a path that didn't
+  // produce an AmendmentDocument (e.g., REPEAL) — UI degrades to plain text.
+  latestAmendment: {
+    sfsNumber: string
+    changedAt: Date
+    originalUrl: string | null
+  } | null
+  lastChangeAcknowledgedAt: Date | null
 }
 
 export interface TaskSummary {
@@ -178,6 +187,39 @@ const UpdatePrioritySchema = z.object({
 // ============================================================================
 
 /**
+ * Story 17.18: Resolve the latest amendment for a base law by querying
+ * AmendmentDocument directly (`base_law_sfs` indexed lookup, ordered by
+ * publication date desc). Returns null when no amendment exists for the law.
+ *
+ * Earlier draft used the denormalized `LegalDocument.last_change_*` fields
+ * (Story 8.16 SSOT) but coverage was only ~9% of laws. AmendmentDocument is
+ * populated for every ingested amendment, so this gives near-full coverage.
+ */
+async function resolveLatestAmendment(
+  documentNumber: string | null | undefined
+): Promise<ListItemDetails['latestAmendment']> {
+  if (!documentNumber) return null
+  const amendment = await prisma.amendmentDocument.findFirst({
+    where: {
+      base_law_sfs: documentNumber,
+      publication_date: { not: null },
+    },
+    orderBy: { publication_date: 'desc' },
+    select: {
+      sfs_number: true,
+      publication_date: true,
+      original_url: true,
+    },
+  })
+  if (!amendment || !amendment.publication_date) return null
+  return {
+    sfsNumber: amendment.sfs_number,
+    changedAt: amendment.publication_date,
+    originalUrl: amendment.original_url,
+  }
+}
+
+/**
  * Internal function to fetch list item details from database
  */
 async function fetchListItemDetailsInternal(
@@ -185,7 +227,7 @@ async function fetchListItemDetailsInternal(
   workspaceId: string
 ): Promise<ListItemDetails | null> {
   // Try Redis cache first (shared across all workspaces for the same item)
-  const cacheKey = `list-item-details:${listItemId}`
+  const cacheKey = `list-item-details:v3:${listItemId}`
   // Cache check for key: ${cacheKey}
 
   try {
@@ -203,6 +245,11 @@ async function fetchListItemDetailsInternal(
         // Get HTML content from centralized document cache
         const cachedDoc = await getCachedDocument(parsed.document.id)
         const htmlContent = cachedDoc?.htmlContent || null
+
+        // Story 17.18: resolve the latest amendment via AmendmentDocument lookup.
+        const latestAmendment = await resolveLatestAmendment(
+          parsed.document.document_number
+        )
 
         // Transform to expected format
         return {
@@ -248,6 +295,10 @@ async function fetchListItemDetailsInternal(
                 email: parsed.responsible_user.email,
                 avatarUrl: parsed.responsible_user.avatar_url,
               }
+            : null,
+          latestAmendment,
+          lastChangeAcknowledgedAt: parsed.last_change_acknowledged_at
+            ? new Date(parsed.last_change_acknowledged_at)
             : null,
         }
       }
@@ -309,6 +360,11 @@ async function fetchListItemDetailsInternal(
   const cachedDoc = await getCachedDocument(item.document.id)
   const htmlContent = cachedDoc?.htmlContent || null
 
+  // Story 17.18: resolve the latest amendment via AmendmentDocument lookup.
+  const latestAmendment = await resolveLatestAmendment(
+    item.document.document_number
+  )
+
   // Cache the item for future requests (1 hour TTL)
   // Note: We cache the item WITHOUT the HTML content to save space
   // The HTML is cached separately in the document cache
@@ -364,6 +420,8 @@ async function fetchListItemDetailsInternal(
           avatarUrl: item.responsible_user.avatar_url,
         }
       : null,
+    latestAmendment,
+    lastChangeAcknowledgedAt: item.last_change_acknowledged_at,
   }
 }
 
@@ -458,7 +516,7 @@ export async function updateListItemBusinessContext(
 
       // Invalidate Redis cache for this list item
       try {
-        await redis.del(`list-item-details:${listItemId}`)
+        await redis.del(`list-item-details:v3:${listItemId}`)
       } catch {
         // Cache invalidation error - non-critical
       }
@@ -527,7 +585,7 @@ export async function updateListItemComplianceActions(
 
       // Invalidate Redis cache for this list item
       try {
-        await redis.del(`list-item-details:${listItemId}`)
+        await redis.del(`list-item-details:v3:${listItemId}`)
       } catch {
         // Cache invalidation error - non-critical
       }
@@ -592,7 +650,7 @@ export async function updateListItemComplianceStatus(
 
       // Invalidate Redis cache for this list item
       try {
-        await redis.del(`list-item-details:${listItemId}`)
+        await redis.del(`list-item-details:v3:${listItemId}`)
       } catch {
         // Cache invalidation error - non-critical
       }
@@ -654,7 +712,7 @@ export async function updateListItemPriority(
 
       // Invalidate Redis cache for this list item
       try {
-        await redis.del(`list-item-details:${listItemId}`)
+        await redis.del(`list-item-details:v3:${listItemId}`)
       } catch {
         // Cache invalidation error - non-critical
       }
@@ -733,7 +791,7 @@ export async function updateListItemResponsible(
 
       // Invalidate Redis cache for this list item
       try {
-        await redis.del(`list-item-details:${listItemId}`)
+        await redis.del(`list-item-details:v3:${listItemId}`)
       } catch {
         // Cache invalidation error - non-critical
       }

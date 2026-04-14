@@ -114,11 +114,11 @@ const VIRTUAL_TABLE_MAX_HEIGHT = 600
 /** Tooltip delay in ms (AC specifies 200-300ms) */
 const TOOLTIP_DELAY = 250
 
-/** Tooltip content for "Hur påverkar denna lag oss?" column header */
+/** Tooltip content for "Hur påverkar detta oss?" column header */
 const HUR_PAVERKAR_TOOLTIP_CONTENT = {
-  title: 'Hur påverkar denna lag oss?',
+  title: 'Hur påverkar detta oss?',
   lines: [
-    'Beskriver varför lagen är relevant för er verksamhet.',
+    'Beskriver varför författningen är relevant för er verksamhet.',
     'Förklarar vilka processer, avdelningar eller produkter som berörs.',
     'Ger kontext vid revisioner och underlättar intern kommunikation.',
   ],
@@ -378,11 +378,11 @@ function ExpandedRowContent({
       <div className="px-6 py-6 lg:px-8">
         <div className={cn(cardShellClass, 'p-6 lg:p-8')}>
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-y-8 md:gap-y-0">
-            {/* Hur påverkar denna lag oss? — business context + Kommentar (read-only detail view) */}
+            {/* Hur påverkar detta oss? — business context + Kommentar (read-only detail view) */}
             <section className="md:pr-8 space-y-6">
               <div>
                 <h4 className={sectionLabelClass}>
-                  <span>Hur påverkar denna lag oss?</span>
+                  <span>Hur påverkar detta oss?</span>
                 </h4>
                 {businessContextText ? (
                   <div className="space-y-2">
@@ -805,7 +805,7 @@ export function ComplianceDetailTable({
         id: 'businessContext',
         header: () => (
           <HeaderWithTooltip
-            label="Hur påverkar denna lag oss?"
+            label="Hur påverkar detta oss?"
             tooltipContent={HUR_PAVERKAR_TOOLTIP_CONTENT}
           />
         ),
@@ -813,7 +813,7 @@ export function ComplianceDetailTable({
           <CellErrorBoundary>
             <TruncatedTextCell
               content={row.original.businessContext}
-              title="Hur påverkar denna lag oss?"
+              title="Hur påverkar detta oss?"
               updatedAt={row.original.updatedAt}
               isNotApplicable={
                 row.original.complianceStatus === 'EJ_TILLAMPLIG'

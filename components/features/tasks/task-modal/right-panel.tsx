@@ -2,15 +2,15 @@
 
 /**
  * Story 6.6: Task Modal Right Panel
- * Static right panel with details, quick links, linked laws, evidence, labels
+ * Static right panel with details, quick links, linked laws.
+ * Styrdokument linkage lives at the law-list-item level (Story 17.18) — tasks
+ * hold execution artifacts via the Bilagor accordion, not policy documents.
  */
 
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { DetailsBox } from './details-box'
 import { QuickLinksBox } from './quick-links-box'
 import { LinkedLawsBox } from './linked-laws-box'
-import { LabelsBox } from './labels-box'
-import { LinkedDocumentsBox } from './linked-documents-box'
 import { ModalFooter } from './modal-footer'
 import type { TaskDetails } from '@/app/actions/task-modal'
 import type { WorkspaceMember } from '../task-workspace'
@@ -76,16 +76,6 @@ export function RightPanel({
             onOptimisticUpdate={onOptimisticLinksChange}
             onOpenListItem={onOpenListItem}
           />
-
-          {/* Labels Box */}
-          <LabelsBox
-            taskId={task.id}
-            labels={task.labels}
-            onUpdate={onUpdate}
-          />
-
-          {/* Linked Documents Box */}
-          <LinkedDocumentsBox taskId={task.id} onUpdate={onUpdate} />
         </div>
       </ScrollArea>
 

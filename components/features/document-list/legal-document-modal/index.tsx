@@ -102,7 +102,6 @@ export function LegalDocumentModal({
   const {
     listItem: rawListItem,
     taskProgress,
-    evidence,
     workspaceMembers,
     isLoading,
     isLoadingContent,
@@ -179,12 +178,23 @@ export function LegalDocumentModal({
     [listItemId, onListItemChange]
   )
 
-  // Scroll to evidence tab
-  const scrollToEvidenceTab = useCallback(() => {
-    const evidenceTab = document.getElementById('activity-tab-bevis')
-    if (evidenceTab) {
-      evidenceTab.click()
+  // Scroll to the consolidated linked-artifacts accordion in the left panel,
+  // and pulse a brief amber highlight so the user gets feedback even when
+  // the panel was already in view.
+  const scrollToLinkedArtifacts = useCallback(() => {
+    const target = document.getElementById('linked-artifacts-accordion')
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+    window.dispatchEvent(new CustomEvent('laglig:focus-linked-artifacts'))
+  }, [])
+
+  const scrollToKravpunkter = useCallback(() => {
+    const target = document.getElementById('kravpunkter-accordion')
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+    window.dispatchEvent(new CustomEvent('laglig:focus-kravpunkter'))
   }, [])
 
   const isOpen = listItemId !== null
@@ -320,10 +330,10 @@ export function LegalDocumentModal({
                   {/* Right panel - sticky on desktop, below on mobile */}
                   <RightPanel
                     listItem={listItem}
-                    evidence={evidence}
                     workspaceMembers={workspaceMembers}
                     onUpdate={handleDataUpdate}
-                    onEvidenceClick={scrollToEvidenceTab}
+                    onLinkedArtifactsClick={scrollToLinkedArtifacts}
+                    onKravpunkterGapClick={scrollToKravpunkter}
                     onAiChatToggle={() => setAiChatOpen(!aiChatOpen)}
                     onOptimisticChange={handleOptimisticChange}
                     onListItemChange={handleListItemChange}

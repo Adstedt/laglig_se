@@ -70,12 +70,12 @@ export function LeftPanel({
           className="border rounded-lg border-border/60"
         >
           <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
-            <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+            <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
               <FileText className="h-4 w-4" />
               <span>Beskrivning</span>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-4 pb-4">
+          <AccordionContent className="px-4 pb-4 space-y-3">
             <DescriptionEditor
               taskId={task.id}
               initialDescription={task.description}
@@ -93,17 +93,17 @@ export function LeftPanel({
           className="border rounded-lg border-border/60"
         >
           <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
-            <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+            <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
               <Paperclip className="h-4 w-4" />
               <span>Bilagor</span>
               {attachmentCount > 0 && (
-                <span className="text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+                <span className="ml-auto mr-2 text-xs text-muted-foreground tabular-nums font-normal">
                   {attachmentCount}
                 </span>
               )}
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-4 pb-4">
+          <AccordionContent className="px-4 pb-4 space-y-3">
             <EvidenceAccordion
               taskId={task.id}
               evidence={task.evidence}

@@ -125,7 +125,7 @@ export function LinkedLawsBox({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base font-semibold text-foreground">
-            Länkade dokument
+            Länkade författningar
           </CardTitle>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -154,10 +154,12 @@ export function LinkedLawsBox({
       </CardHeader>
       <CardContent>
         {links.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-4 text-center">
-            <Scale className="h-8 w-8 text-muted-foreground/50 mb-2" />
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+              <Scale className="h-5 w-5 text-muted-foreground/50" />
+            </div>
             <p className="text-sm text-muted-foreground">
-              Inga länkade dokument
+              Inga länkade författningar
             </p>
             <Button
               variant="link"
@@ -193,8 +195,8 @@ export function LinkedLawsBox({
                         <div
                           key={link.id || link.law_list_item.id}
                           className={cn(
-                            'flex items-center gap-2 p-2 rounded-md overflow-hidden',
-                            'bg-muted/50 hover:bg-muted transition-colors group',
+                            'flex items-center gap-2 py-2 px-2.5 rounded-md overflow-hidden',
+                            'hover:bg-muted/50 transition-colors group',
                             onOpenListItem && !isUnlinking && 'cursor-pointer',
                             isUnlinking && 'opacity-50'
                           )}

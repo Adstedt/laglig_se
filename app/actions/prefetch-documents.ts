@@ -59,7 +59,7 @@ export async function prefetchListItemDetails(listItemIds: string[]) {
 
   try {
     // 1. Batch check cache (1 MGET)
-    const cacheKeys = validListItemIds.map((id) => `list-item-details:${id}`)
+    const cacheKeys = validListItemIds.map((id) => `list-item-details:v3:${id}`)
     const cached = await batchGetCacheValues(cacheKeys)
 
     // Collect missed IDs
@@ -110,7 +110,7 @@ export async function prefetchListItemDetails(listItemIds: string[]) {
 
       // 3. Batch write to cache (1 pipeline)
       const toCache = items.map((item) => ({
-        key: `list-item-details:${item.id}`,
+        key: `list-item-details:v3:${item.id}`,
         value: {
           id: item.id,
           position: item.position,

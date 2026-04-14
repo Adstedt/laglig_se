@@ -374,11 +374,11 @@ describe('ComplianceDetailTable', () => {
       const expandButton = screen.getByLabelText('Expandera')
       await user.click(expandButton)
 
-      // Story 17.18: "Hur påverkar denna lag oss?" appears in BOTH the column
+      // Story 17.18: "Hur påverkar detta oss?" appears in BOTH the column
       // header and the expansion's business-context subsection. "Kravpunkter"
       // appears in BOTH the column header and the expansion's right section.
       expect(
-        screen.getAllByText('Hur påverkar denna lag oss?').length
+        screen.getAllByText('Hur påverkar detta oss?').length
       ).toBeGreaterThanOrEqual(2)
       expect(screen.getAllByText('Kravpunkter').length).toBeGreaterThanOrEqual(
         2

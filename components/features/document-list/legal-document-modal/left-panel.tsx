@@ -13,6 +13,7 @@ import { BusinessContext } from './business-context'
 import { ComplianceActions } from './compliance-actions'
 import type { KravpunkterProgress } from './kravpunkter-checklist'
 import { TasksAccordion } from './tasks-accordion'
+import { LinkedArtifactsPanel } from './linked-artifacts-panel'
 import { ActivityTabs } from './activity-tabs'
 import type {
   ListItemDetails,
@@ -81,7 +82,12 @@ export function LeftPanel({
       {/* Lagtext, Business Context, and Tasks Accordions */}
       <Accordion
         type="multiple"
-        defaultValue={['business-context', 'compliance-actions', 'tasks']}
+        defaultValue={[
+          'business-context',
+          'compliance-actions',
+          'tasks',
+          'linked-artifacts',
+        ]}
         className="space-y-2"
       >
         {/* Lagtext Section */}
@@ -126,6 +132,12 @@ export function LeftPanel({
             columns={taskColumns}
           />
         )}
+
+        {/* Story 17.18: Consolidated linked artifacts panel */}
+        <LinkedArtifactsPanel
+          listItemId={listItem.id}
+          readOnly={complianceReadOnly}
+        />
       </Accordion>
 
       {/* Activity Tabs */}

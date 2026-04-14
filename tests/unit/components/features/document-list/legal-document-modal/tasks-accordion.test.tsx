@@ -153,7 +153,7 @@ describe('TasksAccordion', () => {
 
     it('displays progress indicator with task count', () => {
       renderTasksAccordion({ taskProgress: taskProgressWithTasks })
-      expect(screen.getByText('1/3')).toBeInTheDocument()
+      expect(screen.getByText('1/3 klara')).toBeInTheDocument()
     })
 
     it('renders tasks grouped by column', () => {
