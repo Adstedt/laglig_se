@@ -221,7 +221,7 @@ export function DetailsBox({
         <div className="space-y-0">
           {/* Document Number - Read only */}
           <DetailRow label="Dokumentnummer">
-            <span className="text-sm font-mono text-foreground">
+            <span className="text-sm text-foreground">
               {listItem.legalDocument.documentNumber}
             </span>
           </DetailRow>
