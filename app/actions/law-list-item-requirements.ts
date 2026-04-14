@@ -43,6 +43,7 @@ export interface RequirementWithEvidence {
   id: string
   text: string
   isFulfilled: boolean
+  bevisRequired: boolean
   position: number
   createdAt: Date
   updatedAt: Date
@@ -64,10 +65,15 @@ const UpdateRequirementSchema = z
     requirementId: z.string().uuid(),
     text: z.string().min(1).max(500).optional(),
     isFulfilled: z.boolean().optional(),
+    bevisRequired: z.boolean().optional(),
   })
-  .refine((data) => data.text !== undefined || data.isFulfilled !== undefined, {
-    message: 'Minst ett fält måste uppdateras',
-  })
+  .refine(
+    (data) =>
+      data.text !== undefined ||
+      data.isFulfilled !== undefined ||
+      data.bevisRequired !== undefined,
+    { message: 'Minst ett fält måste uppdateras' }
+  )
 
 const ReorderRequirementsSchema = z.object({
   listItemId: z.string().uuid(),
@@ -95,8 +101,9 @@ const EvidenceInputSchema = z
 async function invalidateCaches(listItemId: string): Promise<void> {
   try {
     await Promise.all([
-      redis.del(`list-item-details:${listItemId}`),
+      redis.del(`list-item-details:v3:${listItemId}`),
       redis.del(`list-item-requirements:${listItemId}`),
+      redis.del(`linked-artifacts:${listItemId}`),
     ])
   } catch {
     // Cache invalidation is non-critical
@@ -197,6 +204,7 @@ export async function createRequirement(
           id: created.id,
           text: created.text,
           isFulfilled: created.is_fulfilled,
+          bevisRequired: created.bevis_required,
           position: created.position,
           createdAt: created.created_at,
           updatedAt: created.updated_at,
@@ -217,12 +225,13 @@ export async function createRequirement(
 
 export async function updateRequirement(
   requirementId: string,
-  updates: { text?: string; isFulfilled?: boolean }
+  updates: { text?: string; isFulfilled?: boolean; bevisRequired?: boolean }
 ): Promise<ActionResult> {
   const parsed = UpdateRequirementSchema.safeParse({
     requirementId,
     text: updates.text,
     isFulfilled: updates.isFulfilled,
+    bevisRequired: updates.bevisRequired,
   })
   if (!parsed.success) {
     return {
@@ -240,16 +249,22 @@ export async function updateRequirement(
 
       const existing = await prisma.lawListItemRequirement.findUnique({
         where: { id: requirementId },
-        select: { text: true, is_fulfilled: true },
+        select: { text: true, is_fulfilled: true, bevis_required: true },
       })
       if (!existing) {
         return { success: false, error: 'Kravpunkt hittades inte' }
       }
 
-      const nextData: { text?: string; is_fulfilled?: boolean } = {}
+      const nextData: {
+        text?: string
+        is_fulfilled?: boolean
+        bevis_required?: boolean
+      } = {}
       if (parsed.data.text !== undefined) nextData.text = parsed.data.text
       if (parsed.data.isFulfilled !== undefined)
         nextData.is_fulfilled = parsed.data.isFulfilled
+      if (parsed.data.bevisRequired !== undefined)
+        nextData.bevis_required = parsed.data.bevisRequired
 
       await prisma.lawListItemRequirement.update({
         where: { id: requirementId },
@@ -258,11 +273,16 @@ export async function updateRequirement(
 
       // Pick a descriptive action string so the activity feed can render nice labels.
       const action =
-        parsed.data.isFulfilled !== undefined
-          ? parsed.data.isFulfilled
-            ? 'requirement_marked_fulfilled'
-            : 'requirement_marked_unfulfilled'
-          : 'requirement_text_updated'
+        parsed.data.bevisRequired !== undefined &&
+        parsed.data.bevisRequired !== existing.bevis_required
+          ? parsed.data.bevisRequired
+            ? 'requirement_marked_bevis_required'
+            : 'requirement_marked_bevis_optional'
+          : parsed.data.isFulfilled !== undefined
+            ? parsed.data.isFulfilled
+              ? 'requirement_marked_fulfilled'
+              : 'requirement_marked_unfulfilled'
+            : 'requirement_text_updated'
 
       await logActivity(
         ctx.workspaceId,
@@ -273,10 +293,12 @@ export async function updateRequirement(
         {
           text: truncate(existing.text),
           is_fulfilled: existing.is_fulfilled,
+          bevis_required: existing.bevis_required,
         },
         {
           text: truncate(parsed.data.text ?? existing.text),
           is_fulfilled: parsed.data.isFulfilled ?? existing.is_fulfilled,
+          bevis_required: parsed.data.bevisRequired ?? existing.bevis_required,
         }
       )
 
@@ -447,6 +469,7 @@ export async function getRequirementsForListItem(
         id: r.id,
         text: r.text,
         isFulfilled: r.is_fulfilled,
+        bevisRequired: r.bevis_required,
         position: r.position,
         createdAt: r.created_at,
         updatedAt: r.updated_at,

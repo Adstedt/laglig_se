@@ -1,17 +1,16 @@
 'use client'
 
 /**
- * Story 6.3: Activity Tabs
- * Tabbed activity section with Alla, Kommentarer, Uppgifter, Bevis, Historik
+ * Activity pane — logs only (Alla / Kommentarer / Historik).
+ * Content-list tabs (Uppgifter, Bevis, Dokument) were removed in Story 17.18:
+ *   - Uppgifter is surfaced via <TasksAccordion> in left-panel.tsx
+ *   - Bevis + Dokument are consolidated into <LinkedArtifactsPanel>
  */
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ActivityFeed } from './activity-feed'
 import { CommentsTab } from './comments-tab'
-import { TasksTab } from './tasks-tab'
-import { EvidenceTab } from './evidence-tab'
 import { HistoryTab } from './history-tab'
-import { DocumentsTab } from './documents-tab'
 
 interface ActivityTabsProps {
   listItemId: string
@@ -40,27 +39,6 @@ export function ActivityTabs({ listItemId, currentUserId }: ActivityTabsProps) {
             Kommentarer
           </TabsTrigger>
           <TabsTrigger
-            id="activity-tab-uppgifter"
-            value="uppgifter"
-            className="whitespace-nowrap px-3 py-1.5 text-sm data-[state=active]:bg-background"
-          >
-            Uppgifter
-          </TabsTrigger>
-          <TabsTrigger
-            id="activity-tab-bevis"
-            value="bevis"
-            className="whitespace-nowrap px-3 py-1.5 text-sm data-[state=active]:bg-background"
-          >
-            Bevis
-          </TabsTrigger>
-          <TabsTrigger
-            id="activity-tab-dokument"
-            value="dokument"
-            className="whitespace-nowrap px-3 py-1.5 text-sm data-[state=active]:bg-background"
-          >
-            Dokument
-          </TabsTrigger>
-          <TabsTrigger
             id="activity-tab-historik"
             value="historik"
             className="whitespace-nowrap px-3 py-1.5 text-sm data-[state=active]:bg-background"
@@ -81,27 +59,6 @@ export function ActivityTabs({ listItemId, currentUserId }: ActivityTabsProps) {
           className="mt-4 max-h-[400px] overflow-y-auto"
         >
           <CommentsTab listItemId={listItemId} currentUserId={currentUserId} />
-        </TabsContent>
-
-        <TabsContent
-          value="uppgifter"
-          className="mt-4 max-h-[400px] overflow-y-auto"
-        >
-          <TasksTab listItemId={listItemId} />
-        </TabsContent>
-
-        <TabsContent
-          value="bevis"
-          className="mt-4 max-h-[400px] overflow-y-auto"
-        >
-          <EvidenceTab listItemId={listItemId} />
-        </TabsContent>
-
-        <TabsContent
-          value="dokument"
-          className="mt-4 max-h-[400px] overflow-y-auto"
-        >
-          <DocumentsTab listItemId={listItemId} />
         </TabsContent>
 
         <TabsContent

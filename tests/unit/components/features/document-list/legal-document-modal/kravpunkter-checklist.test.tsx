@@ -62,6 +62,7 @@ function mockRequirements(
     id: string
     text: string
     isFulfilled?: boolean
+    bevisRequired?: boolean
     position?: number
     evidence?: unknown[]
   }>
@@ -72,6 +73,7 @@ function mockRequirements(
       id: r.id,
       text: r.text,
       isFulfilled: r.isFulfilled ?? false,
+      bevisRequired: r.bevisRequired ?? false,
       position: r.position ?? (i + 1) * 1000,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -352,5 +354,144 @@ describe('KravpunkterChecklist', () => {
     // Note: optimistic DOM removal is not asserted here because `globalMutate` from swr
     // writes to the module-level cache, not the SWRConfig-scoped test cache. The server
     // action firing is what this test gates.
+  })
+
+  // ==========================================================================
+  // Story 17.18: bevis_required toggle + gap indicator
+  // ==========================================================================
+
+  it('bevis_required toggle persists via updateRequirement', async () => {
+    mockRequirements([
+      {
+        id: 'req-1',
+        text: 'Skyddsutrustning',
+        bevisRequired: false,
+      },
+    ])
+    ;(updateRequirement as unknown as Mock).mockResolvedValue({ success: true })
+
+    const user = userEvent.setup()
+    renderFresh(<KravpunkterChecklist listItemId={LIST_ITEM_ID} />)
+
+    await waitFor(() =>
+      expect(screen.getByText('Skyddsutrustning')).toBeInTheDocument()
+    )
+
+    // Expand the row
+    await user.click(screen.getByRole('button', { name: /visa bevis/i }))
+
+    const toggle = await screen.findByRole('switch', {
+      name: /Markera om denna kravpunkt kräver bevis/i,
+    })
+    expect(toggle).toHaveAttribute('data-state', 'unchecked')
+
+    await user.click(toggle)
+
+    await waitFor(() =>
+      expect(updateRequirement).toHaveBeenCalledWith('req-1', {
+        bevisRequired: true,
+      })
+    )
+  })
+
+  it('bevis_required toggle: server failure triggers rollback + toast', async () => {
+    mockRequirements([
+      {
+        id: 'req-1',
+        text: 'Skyddsutrustning',
+        bevisRequired: false,
+      },
+    ])
+    ;(updateRequirement as unknown as Mock).mockResolvedValue({
+      success: false,
+      error: 'Kunde inte uppdatera',
+    })
+
+    const { toast } = await import('sonner')
+
+    const user = userEvent.setup()
+    renderFresh(<KravpunkterChecklist listItemId={LIST_ITEM_ID} />)
+
+    await waitFor(() =>
+      expect(screen.getByText('Skyddsutrustning')).toBeInTheDocument()
+    )
+
+    await user.click(screen.getByRole('button', { name: /visa bevis/i }))
+    const toggle = await screen.findByRole('switch')
+    await user.click(toggle)
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalled())
+  })
+
+  it('gap indicator appears only when bevis_required && evidence is empty', async () => {
+    mockRequirements([
+      {
+        id: 'req-gap',
+        text: 'Kräver bevis men har inga',
+        bevisRequired: true,
+        evidence: [],
+      },
+      {
+        id: 'req-optional',
+        text: 'Behöver inga bevis',
+        bevisRequired: false,
+        evidence: [],
+      },
+    ])
+
+    renderFresh(<KravpunkterChecklist listItemId={LIST_ITEM_ID} />)
+
+    await waitFor(() =>
+      expect(screen.getByText('Kräver bevis men har inga')).toBeInTheDocument()
+    )
+
+    // Gap indicator visible only for the first row
+    expect(screen.getByText('Saknar bevis')).toBeInTheDocument()
+    expect(screen.getAllByText('Saknar bevis')).toHaveLength(1)
+  })
+
+  it('gap indicator does NOT appear when evidence exists even if bevis_required=true', async () => {
+    mockRequirements([
+      {
+        id: 'req-1',
+        text: 'Har bevis',
+        bevisRequired: true,
+        evidence: [
+          {
+            id: 'e-1',
+            linkedAt: new Date(),
+            file: {
+              id: 'f-1',
+              filename: 'bevis.pdf',
+              mimeType: 'application/pdf',
+            },
+            workspaceDocument: null,
+          },
+        ],
+      },
+    ])
+
+    renderFresh(<KravpunkterChecklist listItemId={LIST_ITEM_ID} />)
+
+    await waitFor(() =>
+      expect(screen.getByText('Har bevis')).toBeInTheDocument()
+    )
+    expect(screen.queryByText('Saknar bevis')).not.toBeInTheDocument()
+    expect(screen.getByText(/1 bevis/)).toBeInTheDocument()
+  })
+
+  it('read-only mode hides the bevis_required toggle', async () => {
+    mockRequirements([{ id: 'req-1', text: 'Read-only', bevisRequired: false }])
+
+    const user = userEvent.setup()
+    renderFresh(<KravpunkterChecklist listItemId={LIST_ITEM_ID} readOnly />)
+
+    await waitFor(() =>
+      expect(screen.getByText('Read-only')).toBeInTheDocument()
+    )
+
+    await user.click(screen.getByRole('button', { name: /visa bevis/i }))
+
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument()
   })
 })

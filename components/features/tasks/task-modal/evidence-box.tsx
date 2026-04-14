@@ -291,8 +291,8 @@ export function EvidenceBox({ taskId, evidence, onUpdate }: EvidenceBoxProps) {
                 <div
                   key={file.id}
                   className={cn(
-                    'flex items-center justify-between gap-2 p-2 rounded-md',
-                    'bg-muted/50 hover:bg-muted transition-colors group'
+                    'flex items-center justify-between gap-2 py-2 px-2.5 rounded-md',
+                    'hover:bg-muted/50 transition-colors group'
                   )}
                 >
                   <div className="flex items-center gap-2 min-w-0">

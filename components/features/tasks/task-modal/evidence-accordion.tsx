@@ -279,16 +279,18 @@ export function EvidenceAccordion({
         </div>
       )}
 
-      {/* Add attachment button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-full text-muted-foreground hover:text-foreground"
-        onClick={() => fileInputRef.current?.click()}
-      >
-        <Plus className="h-4 w-4 mr-1" />
-        Lägg till bilaga
-      </Button>
+      {/* Add attachment footer — canonical ghost-split pattern */}
+      <div className="flex gap-2 pt-3 border-t border-border/50">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex-1 h-9 bg-muted/30 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Plus className="h-4 w-4 mr-1.5" />
+          Lägg till bilaga
+        </Button>
+      </div>
     </div>
   )
 

@@ -14,6 +14,7 @@ import { format, formatDistanceToNow } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -21,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { User, Flag, Loader2, Info } from 'lucide-react'
+import { User, Flag, Loader2, Info, ExternalLink } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
@@ -210,14 +211,23 @@ export function DetailsBox({
   const statusConfig = STATUS_CONFIG[localStatus]
   const priorityConfig = PRIORITY_CONFIG[localPriority]
 
+  // Story 17.18: surface the "Ny" badge when the latest tracked change is more
+  // recent than the user's onboarding floor. A null acknowledgement floor (law
+  // added before tracking, or never tracked) biases toward signaling.
+  const latestAmendment = listItem.latestAmendment
+  const isNewAmendment =
+    latestAmendment !== null &&
+    (listItem.lastChangeAcknowledgedAt === null ||
+      latestAmendment.changedAt > listItem.lastChangeAcknowledgedAt)
+
   return (
-    <Card className="border-border/40 shadow-sm">
-      <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-sm font-semibold text-foreground">
+    <Card className="border-border/60">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold text-foreground">
           Detaljer
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-4 pb-4 pt-1">
+      <CardContent>
         <div className="space-y-0">
           {/* Document Number - Read only */}
           <DetailRow label="Dokumentnummer">
@@ -480,6 +490,37 @@ export function DetailsBox({
               })}
             </span>
           </DetailRow>
+
+          {/* Story 17.18: Latest tracked change with PDF link + Ny badge */}
+          {latestAmendment && (
+            <DetailRow label="Senaste ändring">
+              <div className="inline-flex items-center gap-2">
+                {latestAmendment.originalUrl ? (
+                  <a
+                    href={latestAmendment.originalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-foreground hover:underline"
+                  >
+                    {latestAmendment.sfsNumber}
+                    <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                  </a>
+                ) : (
+                  <span className="text-sm text-foreground">
+                    {latestAmendment.sfsNumber}
+                  </span>
+                )}
+                {isNewAmendment && (
+                  <Badge
+                    variant="secondary"
+                    className="h-5 px-1.5 text-[10px] font-normal bg-amber-50 text-amber-700 border border-amber-200"
+                  >
+                    Ny
+                  </Badge>
+                )}
+              </div>
+            </DetailRow>
+          )}
         </div>
       </CardContent>
     </Card>

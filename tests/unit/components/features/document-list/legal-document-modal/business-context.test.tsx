@@ -81,7 +81,7 @@ describe('BusinessContext', () => {
   it('renders the accordion trigger with title', () => {
     renderBusinessContext()
 
-    expect(screen.getByText(/hur påverkar denna lag oss/i)).toBeInTheDocument()
+    expect(screen.getByText(/hur påverkar detta oss/i)).toBeInTheDocument()
   })
 
   it('renders in view mode by default showing RichTextDisplay', () => {

@@ -89,6 +89,9 @@ function initialDataToListItem(
     complianceActions?: string | null
     complianceActionsUpdatedAt?: Date | null
     complianceActionsUpdatedBy?: string | null
+    // Story 17.18: latest tracked change
+    latestAmendment?: ListItemDetails['latestAmendment']
+    lastChangeAcknowledgedAt?: Date | null
   }
 ): ListItemDetails {
   return {
@@ -121,6 +124,9 @@ function initialDataToListItem(
     },
     lawList: initial.lawList,
     responsibleUser: initial.responsibleUser,
+    // Story 17.18: backfilled by extraData fetch (null until then — row stays hidden)
+    latestAmendment: extraData?.latestAmendment ?? null,
+    lastChangeAcknowledgedAt: extraData?.lastChangeAcknowledgedAt ?? null,
   }
 }
 
@@ -192,6 +198,8 @@ export function useListItemDetails(
           complianceActions: null,
           complianceActionsUpdatedAt: null,
           complianceActionsUpdatedBy: null,
+          latestAmendment: null,
+          lastChangeAcknowledgedAt: null,
         }
       }
       return {
@@ -201,6 +209,9 @@ export function useListItemDetails(
         complianceActions: result.data.complianceActions,
         complianceActionsUpdatedAt: result.data.complianceActionsUpdatedAt,
         complianceActionsUpdatedBy: result.data.complianceActionsUpdatedBy,
+        // Story 17.18: latest tracked change + acknowledgement floor
+        latestAmendment: result.data.latestAmendment,
+        lastChangeAcknowledgedAt: result.data.lastChangeAcknowledgedAt,
       }
     },
     {

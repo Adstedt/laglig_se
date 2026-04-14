@@ -84,12 +84,12 @@ export function HistoryTab({ taskId }: HistoryTabProps) {
 
   if (activities.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-8 text-center">
-        <div className="rounded-full bg-muted p-3 mb-3">
-          <History className="h-6 w-6 text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center py-6 text-center">
+        <div className="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+          <History className="h-5 w-5 text-muted-foreground/50" />
         </div>
         <p className="text-sm text-muted-foreground">Ingen historik ännu</p>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground/60 mt-1">
           Ändringar i uppgiften kommer att visas här
         </p>
       </div>

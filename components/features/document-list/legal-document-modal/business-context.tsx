@@ -133,7 +133,7 @@ export function BusinessContext({
       <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
         <div className="flex items-center gap-2 text-base font-semibold text-foreground">
           <HelpCircle className="h-4 w-4" />
-          <span>Hur påverkar denna lag oss?</span>
+          <span>Hur påverkar detta oss?</span>
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">

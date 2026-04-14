@@ -19,7 +19,7 @@ export const COMPLIANCE_COLUMN_OPTIONS: ColumnOption[] = [
   { id: 'title', label: 'Dokument', defaultVisible: true, mandatory: true },
   {
     id: 'businessContext',
-    label: 'Hur påverkar denna lag oss?',
+    label: 'Hur påverkar detta oss?',
     defaultVisible: true,
     mandatory: true,
   },

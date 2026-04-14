@@ -1449,9 +1449,9 @@ test.describe('Document List Management', () => {
         await titleCell.click()
         await page.waitForTimeout(1000)
 
-        // Modal should show Lagtext section
+        // Modal should show Författningstext section
         const modal = page.getByRole('dialog')
-        await expect(modal.getByText('Lagtext')).toBeVisible()
+        await expect(modal.getByText('Författningstext')).toBeVisible()
 
         // Should have expand button
         const expandButton = modal.getByRole('button', { name: /visa mer/i })
@@ -1488,7 +1488,7 @@ test.describe('Document List Management', () => {
 
         // Modal should show business context section
         const modal = page.getByRole('dialog')
-        await expect(modal.getByText(/hur påverkar denna lag/i)).toBeVisible()
+        await expect(modal.getByText(/hur påverkar detta oss/i)).toBeVisible()
 
         // Should have textarea
         await expect(modal.locator('textarea')).toBeVisible()

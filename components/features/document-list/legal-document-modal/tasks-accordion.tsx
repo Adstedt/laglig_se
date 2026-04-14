@@ -322,7 +322,7 @@ export function TasksAccordion({
       : 0
 
   return (
-    <AccordionItem value="tasks" className="border rounded-lg bg-background">
+    <AccordionItem value="tasks" className="border rounded-lg border-border/60">
       <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
         <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
           <ListTodo className="h-4 w-4" />
@@ -332,7 +332,7 @@ export function TasksAccordion({
           {totalCount > 0 && (
             <div className="flex items-center gap-2 ml-auto mr-2 font-normal">
               <span className="text-xs text-muted-foreground tabular-nums">
-                {totalCount - activeCount}/{totalCount}
+                {totalCount - activeCount}/{totalCount} klara
               </span>
               <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
                 <div
@@ -433,7 +433,7 @@ export function TasksAccordion({
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex-1 h-9 text-muted-foreground hover:text-foreground"
+                className="flex-1 h-9 bg-muted/30 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 onClick={() => setIsFormExpanded(true)}
               >
                 <Plus className="h-4 w-4 mr-1.5" />
@@ -443,7 +443,7 @@ export function TasksAccordion({
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex-1 h-9 text-muted-foreground hover:text-foreground"
+                className="flex-1 h-9 bg-muted/30 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                 onClick={() => setLinkDialogOpen(true)}
               >
                 <Link2 className="h-4 w-4 mr-1.5" />

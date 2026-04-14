@@ -3,26 +3,23 @@
 /**
  * Story 6.3: Right Panel
  * Story 6.15: Tasks moved to left panel accordion
- * Static panel with details, quick links, and evidence summary
+ * Story 17.18: Bevis card replaced by ComplianceHealthBox; evidence prop removed.
  */
 
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { DetailsBox } from './details-box'
 import { QuickLinksBox } from './quick-links-box'
-import { EvidenceSummaryBox } from './evidence-summary-box'
-import type {
-  ListItemDetails,
-  EvidenceSummary,
-} from '@/app/actions/legal-document-modal'
+import { ComplianceHealthBox } from './compliance-health-box'
+import type { ListItemDetails } from '@/app/actions/legal-document-modal'
 import type { WorkspaceMemberOption } from '@/app/actions/document-list'
 import type { ComplianceStatus } from '@prisma/client'
 
 interface RightPanelProps {
   listItem: ListItemDetails
-  evidence: EvidenceSummary[] | null
   workspaceMembers: WorkspaceMemberOption[]
   onUpdate: () => Promise<void>
-  onEvidenceClick: () => void
+  onLinkedArtifactsClick: () => void
+  onKravpunkterGapClick: () => void
   onAiChatToggle?: (() => void) | undefined
   onOptimisticChange?:
     | ((_fields: {
@@ -44,10 +41,10 @@ interface RightPanelProps {
 
 export function RightPanel({
   listItem,
-  evidence,
   workspaceMembers,
   onUpdate,
-  onEvidenceClick,
+  onLinkedArtifactsClick,
+  onKravpunkterGapClick,
   onAiChatToggle,
   onOptimisticChange,
   onListItemChange,
@@ -76,8 +73,12 @@ export function RightPanel({
             onAiChatToggle={onAiChatToggle}
           />
 
-          {/* Evidence Summary Box */}
-          <EvidenceSummaryBox evidence={evidence} onViewAll={onEvidenceClick} />
+          {/* Compliance Health Box */}
+          <ComplianceHealthBox
+            listItemId={listItem.id}
+            onLinkedArtifactsClick={onLinkedArtifactsClick}
+            onKravpunkterGapClick={onKravpunkterGapClick}
+          />
         </div>
       </ScrollArea>
     </div>

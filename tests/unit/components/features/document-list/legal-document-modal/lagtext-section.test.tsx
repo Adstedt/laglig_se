@@ -43,7 +43,7 @@ describe('LagtextSection', () => {
   it('renders with content', () => {
     renderLagtextSection()
 
-    expect(screen.getByText('Lagtext')).toBeInTheDocument()
+    expect(screen.getByText('Författningstext')).toBeInTheDocument()
     expect(screen.getByTestId('law-content')).toBeInTheDocument()
   })
 

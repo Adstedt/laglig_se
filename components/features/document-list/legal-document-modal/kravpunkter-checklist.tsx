@@ -18,10 +18,13 @@ import {
   File as FileIcon,
   Loader2,
   ClipboardCheck,
+  AlertCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
   Collapsible,
@@ -189,6 +192,7 @@ export function KravpunkterChecklist({
             <KravpunktRow
               key={req.id}
               requirement={req}
+              listItemId={listItemId}
               swrKey={swrKey}
               readOnly={readOnly}
             />
@@ -196,9 +200,9 @@ export function KravpunkterChecklist({
         </ul>
       )}
 
-      {/* Add new */}
+      {/* Add new — footer pattern matching TasksAccordion / LinkedArtifactsPanel */}
       {!readOnly && (
-        <div className="pt-1">
+        <div className="flex gap-2 pt-3 border-t border-border/50">
           {isAdding ? (
             <Input
               ref={addInputRef}
@@ -221,7 +225,7 @@ export function KravpunkterChecklist({
             <Button
               variant="ghost"
               size="sm"
-              className="h-9 text-muted-foreground hover:text-foreground"
+              className="flex-1 h-9 bg-muted/30 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
               onClick={() => setIsAdding(true)}
             >
               <Plus className="h-4 w-4 mr-1.5" />
@@ -240,11 +244,17 @@ export function KravpunkterChecklist({
 
 interface KravpunktRowProps {
   requirement: RequirementWithEvidence
+  listItemId: string
   swrKey: string
   readOnly: boolean
 }
 
-function KravpunktRow({ requirement, swrKey, readOnly }: KravpunktRowProps) {
+function KravpunktRow({
+  requirement,
+  listItemId,
+  swrKey,
+  readOnly,
+}: KravpunktRowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState(requirement.text)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -308,6 +318,20 @@ function KravpunktRow({ requirement, swrKey, readOnly }: KravpunktRowProps) {
     [requirement.id, patchRow]
   )
 
+  const handleToggleBevisRequired = useCallback(
+    async (next: boolean) => {
+      patchRow({ bevisRequired: next })
+      const result = await updateRequirement(requirement.id, {
+        bevisRequired: next,
+      })
+      if (!result.success) {
+        patchRow({ bevisRequired: !next })
+        toast.error('Kunde inte uppdatera', { description: result.error })
+      }
+    },
+    [requirement.id, patchRow]
+  )
+
   const handleSaveText = useCallback(async () => {
     const trimmed = editText.trim()
     if (!trimmed || trimmed === requirement.text) {
@@ -356,14 +380,15 @@ function KravpunktRow({ requirement, swrKey, readOnly }: KravpunktRowProps) {
   }, [requirement, swrKey])
 
   const evidenceCount = requirement.evidence.length
+  const missingBevis = requirement.bevisRequired && evidenceCount === 0
 
   return (
     <li className="group">
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <div
           className={cn(
-            'flex items-start gap-2 rounded-md px-2 py-1.5 transition-colors',
-            'hover:bg-muted/40'
+            'flex items-center gap-2.5 rounded-md px-2.5 py-2 transition-colors',
+            'hover:bg-muted/50'
           )}
         >
           {/* Checkbox */}
@@ -371,7 +396,7 @@ function KravpunktRow({ requirement, swrKey, readOnly }: KravpunktRowProps) {
             checked={requirement.isFulfilled}
             onCheckedChange={(next) => handleToggleFulfilled(Boolean(next))}
             disabled={readOnly}
-            className="mt-0.5 shrink-0"
+            className="shrink-0"
             aria-label="Markera som uppfylld"
           />
 
@@ -409,8 +434,8 @@ function KravpunktRow({ requirement, swrKey, readOnly }: KravpunktRowProps) {
             )}
           </div>
 
-          {/* Evidence count badge */}
-          {evidenceCount > 0 && (
+          {/* Evidence count / gap indicator */}
+          {evidenceCount > 0 ? (
             <Badge
               variant="secondary"
               className="shrink-0 h-5 text-xs font-normal"
@@ -418,7 +443,16 @@ function KravpunktRow({ requirement, swrKey, readOnly }: KravpunktRowProps) {
               <Paperclip className="h-3 w-3 mr-1" />
               {evidenceCount} {evidenceCount === 1 ? 'bevis' : 'bevis'}
             </Badge>
-          )}
+          ) : missingBevis ? (
+            <Badge
+              variant="outline"
+              className="shrink-0 h-5 text-xs font-normal border-amber-500/60 text-amber-700 dark:text-amber-400"
+              title="Denna kravpunkt kräver bevis men saknar bifogade filer eller dokument"
+            >
+              <AlertCircle className="h-3 w-3 mr-1" />
+              Saknar bevis
+            </Badge>
+          ) : null}
 
           {/* Expand chevron */}
           <CollapsibleTrigger asChild>
@@ -454,8 +488,25 @@ function KravpunktRow({ requirement, swrKey, readOnly }: KravpunktRowProps) {
         </div>
 
         <CollapsibleContent>
+          {!readOnly && (
+            <div className="flex items-center justify-between gap-2 px-2 pt-1 pb-2">
+              <Label
+                htmlFor={`bevis-required-${requirement.id}`}
+                className="text-xs text-muted-foreground cursor-pointer"
+              >
+                Kräver bevis
+              </Label>
+              <Switch
+                id={`bevis-required-${requirement.id}`}
+                checked={requirement.bevisRequired}
+                onCheckedChange={handleToggleBevisRequired}
+                aria-label="Markera om denna kravpunkt kräver bevis"
+              />
+            </div>
+          )}
           <EvidenceList
             requirementId={requirement.id}
+            listItemId={listItemId}
             swrKey={swrKey}
             evidence={requirement.evidence}
             readOnly={readOnly}
@@ -493,6 +544,7 @@ function KravpunktRow({ requirement, swrKey, readOnly }: KravpunktRowProps) {
 
 interface EvidenceListProps {
   requirementId: string
+  listItemId: string
   swrKey: string
   evidence: RequirementEvidenceSummary[]
   readOnly: boolean
@@ -500,10 +552,12 @@ interface EvidenceListProps {
 
 function EvidenceList({
   requirementId,
+  listItemId,
   swrKey,
   evidence,
   readOnly,
 }: EvidenceListProps) {
+  const linkedArtifactsKey = `linked-artifacts:${listItemId}`
   const [filePickerOpen, setFilePickerOpen] = useState(false)
   const [docPickerOpen, setDocPickerOpen] = useState(false)
 
@@ -538,8 +592,9 @@ function EvidenceList({
       }
       // Revalidate once after the batch finishes so picker reflects truth.
       globalMutate(swrKey)
+      globalMutate(linkedArtifactsKey)
     },
-    [requirementId, swrKey]
+    [requirementId, swrKey, linkedArtifactsKey]
   )
 
   const handleLinkDocuments = useCallback(
@@ -556,8 +611,9 @@ function EvidenceList({
         }
       }
       globalMutate(swrKey)
+      globalMutate(linkedArtifactsKey)
     },
-    [requirementId, swrKey]
+    [requirementId, swrKey, linkedArtifactsKey]
   )
 
   const handleUnlink = useCallback(
@@ -575,9 +631,11 @@ function EvidenceList({
       if (!result.success) {
         patchEvidence((prev) => [...prev, link])
         toast.error('Kunde inte ta bort länk', { description: result.error })
+      } else {
+        globalMutate(linkedArtifactsKey)
       }
     },
-    [requirementId, patchEvidence]
+    [requirementId, patchEvidence, linkedArtifactsKey]
   )
 
   const linkedFileIds = evidence

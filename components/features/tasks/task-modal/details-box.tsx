@@ -164,13 +164,13 @@ export function DetailsBox({
   const priorityConfig = PRIORITY_CONFIG[task.priority]
 
   return (
-    <Card className="border-border/40 shadow-sm">
-      <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-sm font-semibold text-foreground">
+    <Card className="border-border/60">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold text-foreground">
           Detaljer
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-4 pb-4 pt-1">
+      <CardContent>
         <div className="space-y-0">
           {/* Status - Editable */}
           <DetailRow label="Status" interactive>
