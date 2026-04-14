@@ -49,7 +49,7 @@ const platformItems = [
     href: '/dashboard',
   },
   {
-    title: 'AI Chat',
+    title: 'Assistent',
     icon: MessageSquare,
     href: '#',
     isToggle: true,

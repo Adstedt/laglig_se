@@ -98,9 +98,9 @@ export function DocumentListPageContent({
   )
   // Story 6.15: Task modal for bidirectional linking
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
-  // Story 6.18: Field to focus when opening modal from "Lägg till" click
+  // Story 6.18 + 17.18: Field to focus when opening modal from "Lägg till" click
   const [focusField, setFocusField] = useState<
-    'businessContext' | 'complianceActions' | null
+    'businessContext' | 'complianceActions' | 'kravpunkter' | null
   >(null)
 
   // Toolbar redesign: filter bar visibility
@@ -136,11 +136,14 @@ export function DocumentListPageContent({
     window.history.pushState(null, '', `?${params.toString()}`)
   }, [])
 
-  // Story 6.18: Handle opening modal with specific field focused (from "Lägg till" click)
+  // Story 6.18 + 17.18: Handle opening modal with specific field focused (from "Lägg till" click)
   const handleAddContent = useCallback(
-    (listItemId: string, field: 'businessContext' | 'complianceActions') => {
+    (
+      listItemId: string,
+      field: 'businessContext' | 'complianceActions' | 'kravpunkter'
+    ) => {
       setSelectedListItemId(listItemId)
-      setFocusField(field) // Set focus field to trigger edit mode
+      setFocusField(field) // Set focus field to trigger edit mode / scroll
       const params = new URLSearchParams(window.location.search)
       params.set('document', listItemId)
       window.history.pushState(null, '', `?${params.toString()}`)
@@ -907,6 +910,7 @@ export function DocumentListPageContent({
               ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
               : 'Välj eller skapa en lista för att komma igång.'
           }
+          complianceReadOnly={complianceReadOnly}
         />
       ) : viewMode === 'compliance' ? (
         // Story 6.18: Flat compliance view (when no groups, or filters/search active)
@@ -948,6 +952,7 @@ export function DocumentListPageContent({
               ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
               : 'Välj eller skapa en lista för att komma igång.'
           }
+          complianceReadOnly={complianceReadOnly}
         />
       ) : viewMode === 'table' &&
         groups.length > 0 &&

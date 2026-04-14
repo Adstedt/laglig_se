@@ -94,6 +94,9 @@ export interface DocumentListItem {
   category: string | null
   // Story 6.18: Business context and compliance actions for Efterlevnad view
   businessContext: string | null
+  // Story 17.18: Business context update attribution
+  businessContextUpdatedAt: Date | null
+  businessContextUpdatedBy: string | null
   complianceActions: string | null
   complianceActionsUpdatedAt: Date | null
   complianceActionsUpdatedBy: string | null
@@ -510,6 +513,9 @@ export async function getDocumentListItems(
             category: item.category,
             // Story 6.18: Business context and compliance actions for Efterlevnad view
             businessContext: item.business_context,
+            // Story 17.18: Business context update attribution
+            businessContextUpdatedAt: item.business_context_updated_at,
+            businessContextUpdatedBy: item.business_context_updated_by,
             complianceActions: item.compliance_actions,
             complianceActionsUpdatedAt: item.compliance_actions_updated_at,
             complianceActionsUpdatedBy: item.compliance_actions_updated_by,

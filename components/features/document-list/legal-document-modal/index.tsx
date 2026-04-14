@@ -55,8 +55,13 @@ interface LegalDocumentModalProps {
         }
       ) => void)
     | undefined
-  /** Story 6.18: Field to focus when modal opens (from "Lägg till" click) */
-  focusField?: 'businessContext' | 'complianceActions' | null | undefined
+  /** Story 6.18 + 17.18: Field to focus when modal opens (from "Lägg till" click) */
+  focusField?:
+    | 'businessContext'
+    | 'complianceActions'
+    | 'kravpunkter'
+    | null
+    | undefined
   /** Story 17.16: Disable compliance (kravpunkter + kommentar) editing when the current user lacks permission */
   complianceReadOnly?: boolean | undefined
 }

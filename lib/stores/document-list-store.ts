@@ -521,6 +521,9 @@ export const useDocumentListStore = create<DocumentListState>()(
           category: null,
           // Story 6.18: Business context and compliance actions
           businessContext: null,
+          // Story 17.18: Business context update attribution
+          businessContextUpdatedAt: null,
+          businessContextUpdatedBy: null,
           complianceActions: null,
           complianceActionsUpdatedAt: null,
           complianceActionsUpdatedBy: null,
@@ -833,6 +836,11 @@ export const useDocumentListStore = create<DocumentListState>()(
                     updates.businessContext !== undefined
                       ? new Date()
                       : item.updatedAt,
+                  // Story 17.18: optimistic attribution stamp for business context
+                  businessContextUpdatedAt:
+                    updates.businessContext !== undefined
+                      ? new Date()
+                      : item.businessContextUpdatedAt,
                   complianceActionsUpdatedAt:
                     updates.complianceActions !== undefined
                       ? new Date()

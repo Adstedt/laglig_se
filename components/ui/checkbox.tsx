@@ -21,7 +21,11 @@ const Checkbox = React.forwardRef<
     <CheckboxPrimitive.Indicator
       className={cn('grid place-content-center text-current')}
     >
-      <Check className="h-4 w-4" />
+      {/* Icon sized noticeably smaller than the 4×4 box (after 1px border,
+          the fill is 14×14 — a 10×10 icon gives 2px visible inset inside
+          the fill). Avoids the shadcn-default edge-to-edge "filled tile"
+          look. Stroke bumped to 3 to keep the mark crisp at 10px. */}
+      <Check className="h-2.5 w-2.5" strokeWidth={3} />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ))

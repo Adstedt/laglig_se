@@ -18,6 +18,7 @@ import {
   type RowSelectionState,
   type ColumnSizingState,
   type ColumnOrderState,
+  type Row,
 } from '@tanstack/react-table'
 import {
   DndContext,
@@ -65,6 +66,13 @@ import {
   Plus,
   Info,
 } from 'lucide-react'
+import { KravpunkterChecklist } from './legal-document-modal/kravpunkter-checklist'
+import { RichTextDisplay } from '@/components/ui/rich-text-editor'
+import useSWR from 'swr'
+import {
+  getRequirementsForListItem,
+  type RequirementWithEvidence,
+} from '@/app/actions/law-list-item-requirements'
 import { BulkActionBar } from './bulk-action-bar'
 import { ComplianceStatusEditor } from './table-cell-editors/compliance-status-editor'
 import { PriorityEditor } from './table-cell-editors/priority-editor'
@@ -116,13 +124,13 @@ const HUR_PAVERKAR_TOOLTIP_CONTENT = {
   ],
 }
 
-/** Tooltip content for "Hur efterlever vi kraven?" column header */
-const HUR_EFTERLEVER_TOOLTIP_CONTENT = {
-  title: 'Hur efterlever vi kraven?',
+/** Tooltip content for "Kravpunkter" column header (renamed from "Hur efterlever vi kraven?" in 17.18) */
+const KRAVPUNKTER_TOOLTIP_CONTENT = {
+  title: 'Kravpunkter',
   lines: [
-    'Dokumenterar konkreta åtgärder och rutiner som säkerställer efterlevnad.',
-    'Hänvisar till policyer, instruktioner eller systemstöd som används.',
-    'Utgör underlag vid revisioner och internkontroller.',
+    'Strukturerad checklista över konkreta krav denna lag ställer på er.',
+    'Markera som uppfyllda när ni har bevis eller rutiner på plats.',
+    'Länka dokument och filer som bevis per kravpunkt.',
   ],
 }
 
@@ -181,12 +189,14 @@ interface ComplianceDetailTableProps {
   onAddContent?:
     | ((
         _listItemId: string,
-        _field: 'businessContext' | 'complianceActions'
+        _field: 'businessContext' | 'complianceActions' | 'kravpunkter'
       ) => void)
     | undefined
   /** For nested usage in grouped accordion tables */
   hideGroupColumn?: boolean | undefined
   disableDndContext?: boolean | undefined
+  /** Story 17.17: When true, inline kravpunkter editor renders read-only */
+  complianceReadOnly?: boolean | undefined
 }
 
 // ============================================================================
@@ -288,83 +298,274 @@ function TruncatedTextCell({
 // ============================================================================
 
 interface ExpandedRowContentProps {
-  item: DocumentListItem
+  row: Row<DocumentListItem>
+  /** Story 17.17: disables inline kravpunkter editing for users without tasks:edit */
+  complianceReadOnly?: boolean | undefined
+  /** Story 17.18: used to resolve "Senast uppdaterad … av {name}" in the Kommentar subsection */
   workspaceMembers: WorkspaceMemberOption[]
 }
 
+/**
+ * Story 17.17 + 17.18: Expanded row content.
+ *
+ * Design direction (v1.3 "centered detail panel" + 17.18 kravpunkter-forward):
+ * centered card with two sections — "Hur påverkar denna lag oss?" (business
+ * context + Kommentar subsection) on the left, "Kravpunkter" (checklist +
+ * progress tracker in the header) on the right. Sentence-case section labels
+ * match the modal's accordion vocabulary. The legacy `compliance_actions` free
+ * text is now surfaced as a first-class "Kommentar" subsection rather than a
+ * dismissable banner.
+ */
 function ExpandedRowContent({
-  item,
+  row,
+  complianceReadOnly,
   workspaceMembers,
 }: ExpandedRowContentProps) {
+  const item = row.original
   const businessContextText = stripHtml(item.businessContext)
-  const complianceActionsText = stripHtml(item.complianceActions)
+  const hasComplianceActions =
+    !!item.complianceActions && stripHtml(item.complianceActions).length > 0
   const isNotApplicable = item.complianceStatus === 'EJ_TILLAMPLIG'
 
-  const getUserName = (userId: string | null) => {
-    if (!userId) return null
-    const user = workspaceMembers.find((m) => m.id === userId)
-    return user?.name ?? user?.email ?? null
+  const businessContextUpdatedByName = item.businessContextUpdatedBy
+    ? (workspaceMembers.find((m) => m.id === item.businessContextUpdatedBy)
+        ?.name ?? null)
+    : null
+
+  const complianceActionsUpdatedByName = item.complianceActionsUpdatedBy
+    ? (workspaceMembers.find((m) => m.id === item.complianceActionsUpdatedBy)
+        ?.name ?? null)
+    : null
+
+  const [kravpunkterProgress, setKravpunkterProgress] = useState<{
+    fulfilled: number
+    total: number
+  }>({ fulfilled: 0, total: 0 })
+
+  const visibleCells = row.getVisibleCells()
+
+  const outerCellClass = 'bg-muted/30 border-t border-border/60 p-0'
+  const cardShellClass =
+    'mx-auto max-w-6xl rounded-lg border border-border bg-card shadow-sm'
+  // Section headers use sentence-case + a hairline underline — matches the
+  // modal's accordion label treatment ("Kravpunkter" in both places).
+  const sectionLabelClass =
+    'flex items-center gap-2 text-sm font-semibold text-foreground border-b border-border/50 pb-2 mb-3'
+
+  if (isNotApplicable) {
+    return (
+      <TableCell colSpan={visibleCells.length} className={outerCellClass}>
+        <div className="px-6 py-6 lg:px-8">
+          <div className={cn(cardShellClass, 'px-6 py-5')}>
+            <p className="text-sm text-muted-foreground italic">
+              Denna lag är markerad som ej tillämplig för verksamheten.
+            </p>
+          </div>
+        </div>
+      </TableCell>
+    )
+  }
+
+  const progressPercent =
+    kravpunkterProgress.total > 0
+      ? Math.round(
+          (kravpunkterProgress.fulfilled / kravpunkterProgress.total) * 100
+        )
+      : 0
+
+  return (
+    <TableCell colSpan={visibleCells.length} className={outerCellClass}>
+      <div className="px-6 py-6 lg:px-8">
+        <div className={cn(cardShellClass, 'p-6 lg:p-8')}>
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-y-8 md:gap-y-0">
+            {/* Hur påverkar denna lag oss? — business context + Kommentar (read-only detail view) */}
+            <section className="md:pr-8 space-y-6">
+              <div>
+                <h4 className={sectionLabelClass}>
+                  <span>Hur påverkar denna lag oss?</span>
+                </h4>
+                {businessContextText ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                      {businessContextText}
+                    </p>
+                    {item.businessContextUpdatedAt && (
+                      <p className="text-[11px] text-muted-foreground/80">
+                        Senast uppdaterad{' '}
+                        {formatSwedishDate(item.businessContextUpdatedAt)}
+                        {businessContextUpdatedByName &&
+                          ` av ${businessContextUpdatedByName}`}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">
+                    Ingen beskrivning tillagd.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <h4 className={sectionLabelClass}>
+                  <span>Kommentar</span>
+                </h4>
+                {hasComplianceActions ? (
+                  <div className="space-y-2">
+                    <RichTextDisplay
+                      content={item.complianceActions ?? ''}
+                      className="text-sm text-foreground"
+                    />
+                    {item.complianceActionsUpdatedAt && (
+                      <p className="text-[11px] text-muted-foreground/80">
+                        Senast uppdaterad{' '}
+                        {formatSwedishDate(item.complianceActionsUpdatedAt)}
+                        {complianceActionsUpdatedByName &&
+                          ` av ${complianceActionsUpdatedByName}`}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">
+                    Ingen kommentar tillagd.
+                  </p>
+                )}
+              </div>
+            </section>
+
+            {/* Kravpunkter — primary action surface with inline progress tracker */}
+            <section className="md:pl-8 md:border-l md:border-border/50">
+              <h4 className={sectionLabelClass}>
+                <span>Kravpunkter</span>
+                {kravpunkterProgress.total > 0 && (
+                  <div className="flex items-center gap-2 ml-auto font-normal">
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {kravpunkterProgress.fulfilled}/
+                      {kravpunkterProgress.total} uppfyllda
+                    </span>
+                    <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-green-500 rounded-full transition-all duration-300"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </h4>
+              <KravpunkterChecklist
+                listItemId={item.id}
+                readOnly={complianceReadOnly ?? false}
+                onProgressChange={setKravpunkterProgress}
+              />
+            </section>
+          </div>
+        </div>
+      </div>
+    </TableCell>
+  )
+}
+
+// ============================================================================
+// Kravpunkter Count Cell (Story 17.18)
+// ============================================================================
+
+/**
+ * Story 17.18: Table cell for the "Kravpunkter" column. Renders either a live
+ * `N/M uppfyllda` progress pill (when requirements exist) or a "+ Lägg till"
+ * ghost button (when none exist). Uses the SAME SWR cache key as
+ * KravpunkterChecklist so mutations in the expansion/modal auto-update the cell
+ * and vice versa — one source of truth, no double-fetch on expand.
+ */
+interface KravpunkterCountCellProps {
+  listItemId: string
+  isNotApplicable: boolean
+  readOnly: boolean
+  onAddClick: () => void
+}
+
+function KravpunkterCountCell({
+  listItemId,
+  isNotApplicable,
+  readOnly,
+  onAddClick,
+}: KravpunkterCountCellProps) {
+  // Same key as KravpunkterChecklist — shared SWR cache.
+  const { data: requirements, isLoading } = useSWR<RequirementWithEvidence[]>(
+    `list-item-requirements:${listItemId}`,
+    async () => {
+      const result = await getRequirementsForListItem(listItemId)
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? 'Kunde inte hämta kravpunkter')
+      }
+      return result.data
+    },
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  )
+
+  if (isNotApplicable) {
+    return <span className="text-muted-foreground text-sm">—</span>
+  }
+
+  if (isLoading && !requirements) {
+    return <div className="h-5 w-16 rounded-md bg-muted/60 animate-pulse" />
+  }
+
+  const total = requirements?.length ?? 0
+  const fulfilled = requirements?.filter((r) => r.isFulfilled).length ?? 0
+
+  if (total === 0) {
+    if (readOnly) {
+      return <span className="text-muted-foreground text-sm">—</span>
+    }
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          onAddClick()
+        }}
+        className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 px-2 py-1 rounded border border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-primary/5 transition-colors"
+      >
+        <Plus className="h-3 w-3" />
+        Lägg till
+      </button>
+    )
+  }
+
+  const progressPercent = Math.round((fulfilled / total) * 100)
+
+  const pillContent = (
+    <>
+      <span className="text-xs text-muted-foreground tabular-nums">
+        {fulfilled}/{total} uppfyllda
+      </span>
+      <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
+        <div
+          className="h-full bg-green-500 rounded-full transition-all duration-300"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+    </>
+  )
+
+  if (readOnly) {
+    return (
+      <div className="inline-flex items-center gap-2 px-2 py-1">
+        {pillContent}
+      </div>
+    )
   }
 
   return (
-    <div className="px-4 py-4 bg-muted/30 border-t space-y-4">
-      {isNotApplicable ? (
-        <p className="text-sm text-muted-foreground italic">
-          Denna lag är markerad som ej tillämplig för verksamheten.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Business Context */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-foreground">
-              Hur påverkar denna lag oss?
-            </h4>
-            {businessContextText ? (
-              <>
-                <p className="text-sm text-foreground whitespace-pre-wrap">
-                  {businessContextText}
-                </p>
-                {item.updatedAt && (
-                  <p className="text-xs text-muted-foreground">
-                    Senast uppdaterad {formatSwedishDate(item.updatedAt)}
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">
-                Ingen beskrivning tillagd.
-              </p>
-            )}
-          </div>
-
-          {/* Compliance Actions */}
-          <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-foreground">
-              Hur efterlever vi kraven?
-            </h4>
-            {complianceActionsText ? (
-              <>
-                <p className="text-sm text-foreground whitespace-pre-wrap">
-                  {complianceActionsText}
-                </p>
-                {item.complianceActionsUpdatedAt && (
-                  <p className="text-xs text-muted-foreground">
-                    Senast uppdaterad{' '}
-                    {formatSwedishDate(item.complianceActionsUpdatedAt)}
-                    {item.complianceActionsUpdatedBy &&
-                      ` av ${getUserName(item.complianceActionsUpdatedBy)}`}
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">
-                Ingen beskrivning tillagd.
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation()
+        onAddClick()
+      }}
+      className="inline-flex items-center gap-2 px-2 py-1 rounded-md hover:bg-accent transition-colors"
+      aria-label={`${fulfilled} av ${total} uppfyllda — öppna kravpunkter`}
+    >
+      {pillContent}
+    </button>
   )
 }
 
@@ -396,12 +597,15 @@ export function ComplianceDetailTable({
   onAddContent,
   hideGroupColumn: _hideGroupColumn = false,
   disableDndContext = false,
+  complianceReadOnly = false,
 }: ComplianceDetailTableProps) {
   // Local state
   const [sorting, setSorting] = useState<SortingState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
-  const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
+  const [expandedRowIds, setExpandedRowIds] = useState<Set<string>>(
+    () => new Set()
+  )
   const [internalColumnSizing, setInternalColumnSizing] =
     useState<ColumnSizingState>({})
 
@@ -485,9 +689,17 @@ export function ComplianceDetailTable({
     [localItems, debouncedReorder]
   )
 
-  // Toggle row expansion (accordion behavior - only one row at a time)
+  // Toggle row expansion — multiple rows may be expanded simultaneously.
   const handleToggleExpand = useCallback((rowId: string) => {
-    setExpandedRowId((prev) => (prev === rowId ? null : rowId))
+    setExpandedRowIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(rowId)) {
+        next.delete(rowId)
+      } else {
+        next.add(rowId)
+      }
+      return next
+    })
   }, [])
 
   // Column definitions
@@ -617,34 +829,24 @@ export function ComplianceDetailTable({
         maxSize: 500,
         enableResizing: true,
       },
-      // Compliance Actions (truncated)
+      // Kravpunkter (Story 17.18: renamed from "Hur efterlever vi kraven?")
       {
         id: 'complianceActions',
         header: () => (
           <HeaderWithTooltip
-            label="Hur efterlever vi kraven?"
-            tooltipContent={HUR_EFTERLEVER_TOOLTIP_CONTENT}
+            label="Kravpunkter"
+            tooltipContent={KRAVPUNKTER_TOOLTIP_CONTENT}
           />
         ),
         cell: ({ row }) => (
           <CellErrorBoundary>
-            <TruncatedTextCell
-              content={row.original.complianceActions}
-              title="Hur efterlever vi kraven?"
-              updatedAt={row.original.complianceActionsUpdatedAt}
-              updatedByName={
-                row.original.complianceActionsUpdatedBy
-                  ? (workspaceMembers.find(
-                      (m) => m.id === row.original.complianceActionsUpdatedBy
-                    )?.name ?? null)
-                  : null
-              }
+            <KravpunkterCountCell
+              listItemId={row.original.id}
               isNotApplicable={
                 row.original.complianceStatus === 'EJ_TILLAMPLIG'
               }
-              onAddClick={() =>
-                onAddContent?.(row.original.id, 'complianceActions')
-              }
+              readOnly={complianceReadOnly}
+              onAddClick={() => onAddContent?.(row.original.id, 'kravpunkter')}
             />
           </CellErrorBoundary>
         ),
@@ -730,10 +932,10 @@ export function ComplianceDetailTable({
               handleToggleExpand(row.original.id)
             }}
             aria-label={
-              expandedRowId === row.original.id ? 'Fäll ihop' : 'Expandera'
+              expandedRowIds.has(row.original.id) ? 'Fäll ihop' : 'Expandera'
             }
           >
-            {expandedRowId === row.original.id ? (
+            {expandedRowIds.has(row.original.id) ? (
               <ChevronUp className="h-4 w-4" />
             ) : (
               <ChevronDown className="h-4 w-4" />
@@ -751,7 +953,8 @@ export function ComplianceDetailTable({
       onRowClick,
       onAddContent,
       handleToggleExpand,
-      expandedRowId,
+      expandedRowIds,
+      complianceReadOnly,
     ]
   )
 
@@ -960,10 +1163,11 @@ export function ComplianceDetailTable({
                     key={row.id}
                     row={row}
                     virtualItem={virtualItem}
-                    expandedRowId={expandedRowId}
-                    workspaceMembers={workspaceMembers}
+                    expandedRowIds={expandedRowIds}
                     onRowClick={onRowClick}
                     columnOrderKey={columnOrderKey}
+                    complianceReadOnly={complianceReadOnly}
+                    workspaceMembers={workspaceMembers}
                   />
                 )
               })
@@ -972,10 +1176,11 @@ export function ComplianceDetailTable({
                 <ComplianceRow
                   key={row.id}
                   row={row}
-                  expandedRowId={expandedRowId}
-                  workspaceMembers={workspaceMembers}
+                  expandedRowIds={expandedRowIds}
                   onRowClick={onRowClick}
                   columnOrderKey={columnOrderKey}
+                  complianceReadOnly={complianceReadOnly}
+                  workspaceMembers={workspaceMembers}
                 />
               ))
             )
@@ -1136,18 +1341,20 @@ function HeaderWithTooltip({
 
 const ComplianceRow = memo(function ComplianceRow({
   row,
-  expandedRowId,
-  workspaceMembers,
+  expandedRowIds,
   onRowClick,
   columnOrderKey: _columnOrderKey,
+  complianceReadOnly,
+  workspaceMembers,
 }: {
   row: ReturnType<
     ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
   >['rows'][number]
-  expandedRowId: string | null
-  workspaceMembers: WorkspaceMemberOption[]
+  expandedRowIds: Set<string>
   onRowClick?: ((_listItemId: string) => void) | undefined
   columnOrderKey?: string
+  complianceReadOnly?: boolean | undefined
+  workspaceMembers: WorkspaceMemberOption[]
 }) {
   const {
     attributes,
@@ -1164,7 +1371,7 @@ const ComplianceRow = memo(function ComplianceRow({
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const isExpanded = expandedRowId === row.original.id
+  const isExpanded = expandedRowIds.has(row.original.id)
 
   // Handle row click (ignore interactive elements)
   const handleRowClick = useCallback(
@@ -1221,12 +1428,11 @@ const ComplianceRow = memo(function ComplianceRow({
       {/* Expanded content */}
       {isExpanded && (
         <TableRow>
-          <TableCell colSpan={row.getVisibleCells().length} className="p-0">
-            <ExpandedRowContent
-              item={row.original}
-              workspaceMembers={workspaceMembers}
-            />
-          </TableCell>
+          <ExpandedRowContent
+            row={row}
+            complianceReadOnly={complianceReadOnly}
+            workspaceMembers={workspaceMembers}
+          />
         </TableRow>
       )}
     </>
@@ -1240,19 +1446,21 @@ const ComplianceRow = memo(function ComplianceRow({
 const VirtualComplianceRow = memo(function VirtualComplianceRow({
   row,
   virtualItem,
-  expandedRowId,
-  workspaceMembers,
+  expandedRowIds,
   onRowClick,
   columnOrderKey: _columnOrderKey,
+  complianceReadOnly,
+  workspaceMembers,
 }: {
   row: ReturnType<
     ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
   >['rows'][number]
   virtualItem: VirtualItem
-  expandedRowId: string | null
-  workspaceMembers: WorkspaceMemberOption[]
+  expandedRowIds: Set<string>
   onRowClick?: ((_listItemId: string) => void) | undefined
   columnOrderKey?: string
+  complianceReadOnly?: boolean | undefined
+  workspaceMembers: WorkspaceMemberOption[]
 }) {
   const {
     attributes,
@@ -1263,7 +1471,7 @@ const VirtualComplianceRow = memo(function VirtualComplianceRow({
     isDragging,
   } = useSortable({ id: row.id })
 
-  const isExpanded = expandedRowId === row.original.id
+  const isExpanded = expandedRowIds.has(row.original.id)
 
   const style: React.CSSProperties = {
     position: 'absolute',
@@ -1334,12 +1542,11 @@ const VirtualComplianceRow = memo(function VirtualComplianceRow({
       {/* Expanded content */}
       {isExpanded && (
         <TableRow>
-          <TableCell colSpan={row.getVisibleCells().length} className="p-0">
-            <ExpandedRowContent
-              item={row.original}
-              workspaceMembers={workspaceMembers}
-            />
-          </TableCell>
+          <ExpandedRowContent
+            row={row}
+            complianceReadOnly={complianceReadOnly}
+            workspaceMembers={workspaceMembers}
+          />
         </TableRow>
       )}
     </>

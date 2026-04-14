@@ -37,8 +37,13 @@ interface LeftPanelProps {
   onBusinessContextChange?: ((_content: string | null) => void) | undefined
   /** Story 6.18: Callback when compliance actions changes (for optimistic list update) */
   onComplianceActionsChange?: ((_content: string | null) => void) | undefined
-  /** Story 6.18: Field to focus/edit when modal opens (from "Lägg till" click) */
-  focusField?: 'businessContext' | 'complianceActions' | null | undefined
+  /** Story 6.18 + 17.18: Field to focus/edit when modal opens (from "Lägg till" click) */
+  focusField?:
+    | 'businessContext'
+    | 'complianceActions'
+    | 'kravpunkter'
+    | null
+    | undefined
   /** Story 17.16: Read-only compliance editing when user lacks permission */
   complianceReadOnly?: boolean | undefined
   /** Story 17.16: Bubble kravpunkter progress up to modal for DetailsBox */
@@ -97,14 +102,14 @@ export function LeftPanel({
           autoEdit={focusField === 'businessContext'}
         />
 
-        {/* Story 6.18 + 17.16: Compliance accordion (Kravpunkter + Kommentar) */}
+        {/* Story 6.18 + 17.16 + 17.18: Compliance accordion (Kravpunkter + Kommentar) */}
         <ComplianceActions
           listItemId={listItem.id}
           initialContent={listItem.complianceActions}
           updatedAt={listItem.complianceActionsUpdatedAt}
           updatedByName={complianceActionsUpdatedByName}
           onContentChange={onComplianceActionsChange}
-          autoEdit={focusField === 'complianceActions'}
+          focusField={focusField}
           readOnly={complianceReadOnly}
           onProgressChange={onKravpunkterProgressChange}
         />
