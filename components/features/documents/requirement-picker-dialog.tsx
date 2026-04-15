@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   CommandDialog,
   CommandEmpty,
@@ -9,7 +9,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { Separator } from '@/components/ui/separator'
 import {
   ListChecks,
   Loader2,
@@ -26,6 +25,12 @@ import type {
   LawListItemForLinking,
 } from '@/app/actions/tasks'
 import { getRequirementsForListItem } from '@/app/actions/law-list-item-requirements'
+import {
+  CountPill,
+  GroupedItemSections,
+  PickerBreadcrumb,
+  PickerEmpty,
+} from '@/components/features/documents/law-list-item-picker-dialog'
 
 export interface PickedRequirement {
   id: string
@@ -41,7 +46,12 @@ interface RequirementPickerDialogProps {
   onSelect: (_req: PickedRequirement) => void
 }
 
-interface ListItemContext {
+interface SelectedList {
+  id: string
+  name: string
+}
+
+interface SelectedListItem {
   id: string
   title: string
   documentNumber: string | null
@@ -52,6 +62,23 @@ interface RequirementItem {
   text: string
 }
 
+interface ItemGroup {
+  key: string
+  name: string
+  items: LawListItemForLinking[]
+}
+
+function groupItems(items: LawListItemForLinking[]): ItemGroup[] {
+  const map = new Map<string, ItemGroup>()
+  for (const item of items) {
+    const key = item.groupId ?? '__ungrouped__'
+    const name = item.groupName ?? 'Övrigt'
+    if (!map.has(key)) map.set(key, { key, name, items: [] })
+    map.get(key)!.items.push(item)
+  }
+  return Array.from(map.values())
+}
+
 export function RequirementPickerDialog({
   open,
   onOpenChange,
@@ -59,13 +86,14 @@ export function RequirementPickerDialog({
   onSelect,
 }: RequirementPickerDialogProps) {
   const [lawLists, setLawLists] = useState<LawListForLinking[]>([])
-  const [selectedListId, setSelectedListId] = useState<string | null>(null)
+  const [selectedList, setSelectedList] = useState<SelectedList | null>(null)
   const [lawListItems, setLawListItems] = useState<LawListItemForLinking[]>([])
   const [selectedListItem, setSelectedListItem] =
-    useState<ListItemContext | null>(null)
+    useState<SelectedListItem | null>(null)
   const [requirements, setRequirements] = useState<RequirementItem[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
   const loadLawLists = useCallback(async () => {
     setLoading(true)
@@ -79,7 +107,11 @@ export function RequirementPickerDialog({
   const loadLawListItems = useCallback(
     async (listId: string, query: string) => {
       setLoading(true)
-      const result = await getLawListItemsForLinking(listId, query || undefined)
+      const result = await getLawListItemsForLinking(
+        listId,
+        query || undefined,
+        { onlyWithRequirements: true }
+      )
       if (result.success && result.data) {
         setLawListItems(result.data)
       }
@@ -97,26 +129,24 @@ export function RequirementPickerDialog({
     setLoading(false)
   }, [])
 
-  // Reset + fetch lagområden when opened
   useEffect(() => {
     if (!open) {
-      setSelectedListId(null)
+      setSelectedList(null)
       setSelectedListItem(null)
       setLawListItems([])
       setRequirements([])
       setSearchQuery('')
+      setExpandedGroups(new Set())
       return
     }
     loadLawLists()
   }, [open, loadLawLists])
 
-  // Level 2: load list items when a list is chosen
   useEffect(() => {
-    if (!selectedListId || selectedListItem) return
-    loadLawListItems(selectedListId, searchQuery)
-  }, [selectedListId, selectedListItem, searchQuery, loadLawListItems])
+    if (!selectedList || selectedListItem) return
+    loadLawListItems(selectedList.id, searchQuery)
+  }, [selectedList, selectedListItem, searchQuery, loadLawListItems])
 
-  // Level 3: load requirements when a list item is chosen
   useEffect(() => {
     if (!selectedListItem) return
     loadRequirements(selectedListItem.id)
@@ -124,9 +154,44 @@ export function RequirementPickerDialog({
 
   const excludeSet = new Set(excludeIds ?? [])
 
+  const groupedItems = useMemo(() => groupItems(lawListItems), [lawListItems])
+
+  const breadcrumbs: { label: string; onClick?: (() => void) | undefined }[] = [
+    {
+      label: 'Lagområden',
+      onClick:
+        selectedList || selectedListItem
+          ? () => {
+              setSelectedList(null)
+              setSelectedListItem(null)
+              setSearchQuery('')
+              setExpandedGroups(new Set())
+            }
+          : undefined,
+    },
+  ]
+  if (selectedList) {
+    breadcrumbs.push({
+      label: selectedList.name,
+      onClick: selectedListItem
+        ? () => {
+            setSelectedListItem(null)
+            setSearchQuery('')
+          }
+        : undefined,
+    })
+  }
+  if (selectedListItem) {
+    breadcrumbs.push({
+      label: selectedListItem.documentNumber
+        ? `${selectedListItem.documentNumber} — ${selectedListItem.title}`
+        : selectedListItem.title,
+    })
+  }
+
   let placeholder = 'Välj lagområde...'
   if (selectedListItem) placeholder = 'Sök krav...'
-  else if (selectedListId) placeholder = 'Sök författningstext...'
+  else if (selectedList) placeholder = 'Sök författningstext...'
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
@@ -135,53 +200,54 @@ export function RequirementPickerDialog({
         value={searchQuery}
         onValueChange={setSearchQuery}
       />
+      <PickerBreadcrumb segments={breadcrumbs} />
       <CommandList className="max-h-[400px]">
         {loading ? (
-          <div className="flex items-center justify-center py-6">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
-        ) : !selectedListId ? (
+        ) : !selectedList ? (
           <>
-            <CommandEmpty>Inga lagområden hittades</CommandEmpty>
-            <CommandGroup heading="Lagområden">
+            <CommandEmpty>
+              <PickerEmpty label="Inga lagområden hittades" />
+            </CommandEmpty>
+            <CommandGroup>
               {lawLists.map((list) => (
                 <CommandItem
                   key={list.id}
                   value={list.name}
                   onSelect={() => {
-                    setSelectedListId(list.id)
+                    setSelectedList({ id: list.id, name: list.name })
                     setSearchQuery('')
                   }}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex items-center gap-2.5 cursor-pointer py-1 text-[13px]"
                 >
                   <FolderOpen className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <span className="flex-1 truncate">{list.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {list.itemCount} st
-                  </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <CountPill>{list.itemCount}</CountPill>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
                 </CommandItem>
               ))}
             </CommandGroup>
           </>
         ) : !selectedListItem ? (
           <>
-            <CommandEmpty>Inga författningstexter hittades</CommandEmpty>
-            <CommandGroup>
-              <CommandItem
-                value="__back__"
-                onSelect={() => {
-                  setSelectedListId(null)
-                  setSearchQuery('')
-                }}
-                className="text-sm text-muted-foreground cursor-pointer"
-              >
-                ← Tillbaka till lagområden
-              </CommandItem>
-            </CommandGroup>
-            <Separator />
-            <CommandGroup heading="Författningstexter">
-              {lawListItems.map((item) => (
+            <CommandEmpty>
+              <PickerEmpty label="Inga författningstexter med krav" />
+            </CommandEmpty>
+            <GroupedItemSections
+              groups={groupedItems}
+              searching={searchQuery.length > 0}
+              expandedGroups={expandedGroups}
+              onToggleGroup={(key) =>
+                setExpandedGroups((prev) => {
+                  const next = new Set(prev)
+                  if (next.has(key)) next.delete(key)
+                  else next.add(key)
+                  return next
+                })
+              }
+              renderItem={(item) => (
                 <CommandItem
                   key={item.id}
                   value={`${item.documentNumber ?? ''} ${item.documentTitle}`}
@@ -193,36 +259,34 @@ export function RequirementPickerDialog({
                     })
                     setSearchQuery('')
                   }}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex items-center gap-2.5 cursor-pointer py-1 text-[13px]"
                 >
                   <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <span className="flex-1 truncate">
-                    {item.documentNumber
-                      ? `${item.documentNumber} — ${item.documentTitle}`
-                      : item.documentTitle}
+                    {item.documentNumber ? (
+                      <>
+                        <span className="font-medium">
+                          {item.documentNumber}
+                        </span>
+                        {' — '}
+                        {item.documentTitle}
+                      </>
+                    ) : (
+                      item.documentTitle
+                    )}
                   </span>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <CountPill>{item.requirementCount} krav</CountPill>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
                 </CommandItem>
-              ))}
-            </CommandGroup>
+              )}
+            />
           </>
         ) : (
           <>
-            <CommandEmpty>Inga krav hittades</CommandEmpty>
+            <CommandEmpty>
+              <PickerEmpty label="Inga krav hittades" />
+            </CommandEmpty>
             <CommandGroup>
-              <CommandItem
-                value="__back__"
-                onSelect={() => {
-                  setSelectedListItem(null)
-                  setSearchQuery('')
-                }}
-                className="text-sm text-muted-foreground cursor-pointer"
-              >
-                ← Tillbaka till författningstexter
-              </CommandItem>
-            </CommandGroup>
-            <Separator />
-            <CommandGroup heading={selectedListItem.title}>
               {requirements
                 .filter((r) => !excludeSet.has(r.id))
                 .map((req) => (
@@ -237,11 +301,11 @@ export function RequirementPickerDialog({
                         listItemDocumentNumber: selectedListItem.documentNumber,
                       })
                     }
-                    className="flex items-start gap-2 cursor-pointer"
+                    className="flex items-start gap-2.5 cursor-pointer py-1 text-[13px]"
                   >
-                    <ListChecks className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
+                    <ListChecks className="h-4 w-4 shrink-0 text-muted-foreground mt-[2px]" />
                     <span
-                      className="flex-1 text-sm line-clamp-2"
+                      className="flex-1 leading-snug line-clamp-2"
                       title={req.text}
                     >
                       {req.text}
