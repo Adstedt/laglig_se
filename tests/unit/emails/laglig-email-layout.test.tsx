@@ -43,7 +43,7 @@ describe('LagligEmailLayout', () => {
       </LagligEmailLayout>
     )
 
-    expect(html).toContain('Din juridiska plattform')
+    expect(html).toContain('Coolt med koll.')
     expect(html).toContain('Stockholm')
   })
 

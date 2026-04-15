@@ -1,6 +1,12 @@
-import { Button, Section, Text } from '@react-email/components'
-import * as React from 'react'
-import { LagligEmailLayout } from './components/laglig-email-layout'
+import {
+  EmailBody,
+  EmailCta,
+  EmailHeading,
+  EmailIconCircle,
+  EmailSecurityNote,
+  LagligEmailLayout,
+} from './components/laglig-email-layout'
+import { ICON_ENVELOPE } from './components/email-icons'
 
 export interface WorkspaceInvitationEmailProps {
   workspaceName: string
@@ -22,54 +28,20 @@ export function WorkspaceInvitationEmail({
       preview={`${inviterName} har bjudit in dig till ${workspaceName}`}
       unsubscribeUrl={unsubscribeUrl}
     >
-      <Text style={heading}>Du har blivit inbjuden till {workspaceName}</Text>
-
-      <Text style={paragraph}>
+      <EmailIconCircle src={ICON_ENVELOPE} />
+      <EmailHeading>Du har blivit inbjuden till {workspaceName}</EmailHeading>
+      <EmailBody>
         <strong>{inviterName}</strong> har bjudit in dig som{' '}
         <strong>{roleLabel}</strong> till arbetsplatsen{' '}
         <strong>{workspaceName}</strong> på Laglig.se.
-      </Text>
-
-      <Section style={ctaRow}>
-        <Button href={acceptUrl} style={ctaButton}>
-          Acceptera inbjudan
-        </Button>
-      </Section>
-
-      <Text style={paragraph}>
+      </EmailBody>
+      <EmailCta href={acceptUrl}>Acceptera inbjudan</EmailCta>
+      <EmailSecurityNote>
         Inbjudan gäller i 7 dagar. Efter det måste en administratör skicka en ny
         inbjudan.
-      </Text>
+      </EmailSecurityNote>
     </LagligEmailLayout>
   )
-}
-
-const heading: React.CSSProperties = {
-  fontSize: '20px',
-  fontWeight: 600,
-  color: '#1a1a2e',
-  margin: '0 0 16px',
-}
-
-const paragraph: React.CSSProperties = {
-  fontSize: '15px',
-  lineHeight: '24px',
-  color: '#525f7f',
-  margin: '0 0 20px',
-}
-
-const ctaRow: React.CSSProperties = {
-  margin: '16px 0 20px',
-}
-
-const ctaButton: React.CSSProperties = {
-  backgroundColor: '#2563eb',
-  color: '#ffffff',
-  fontSize: '14px',
-  fontWeight: 600,
-  padding: '10px 20px',
-  borderRadius: '6px',
-  textDecoration: 'none',
 }
 
 export default WorkspaceInvitationEmail

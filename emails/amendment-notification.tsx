@@ -1,6 +1,15 @@
-import { Link, Text } from '@react-email/components'
+import { Text } from '@react-email/components'
 import * as React from 'react'
-import { LagligEmailLayout } from './components/laglig-email-layout'
+import {
+  EmailBody,
+  EmailCta,
+  EmailHeading,
+  EmailIconCircle,
+  EmailInfoCard,
+  emailColors,
+  LagligEmailLayout,
+} from './components/laglig-email-layout'
+import { ICON_DOCUMENT } from './components/email-icons'
 
 export interface AmendmentNotificationEmailProps {
   lawTitle: string
@@ -24,77 +33,41 @@ export function AmendmentNotificationEmail({
       preview={`${lawTitle} har ändrats genom ${amendmentSfsNumber}`}
       {...(unsubscribeUrl ? { unsubscribeUrl } : {})}
     >
-      <Text style={heading}>Lagändring upptäckt</Text>
+      <EmailIconCircle src={ICON_DOCUMENT} />
+      <EmailHeading>Lagändring upptäckt</EmailHeading>
+      <EmailBody>
+        En ändring har publicerats som påverkar en lag i din bevakningslista.
+      </EmailBody>
 
-      <div style={card}>
+      <EmailInfoCard>
         <Text style={cardTitle}>{lawTitle}</Text>
         <Text style={cardMeta}>{lawSfsNumber}</Text>
         <Text style={cardBody}>{body}</Text>
-      </div>
+      </EmailInfoCard>
 
-      <Text style={paragraph}>
-        En ändring har publicerats som påverkar en lag i din bevakningslista.
-        Klicka nedan för att se den uppdaterade lagtexten.
-      </Text>
-
-      <Link href={lawUrl} style={ctaButton}>
-        Visa lagändring
-      </Link>
+      <EmailCta href={lawUrl}>Visa lagändring</EmailCta>
     </LagligEmailLayout>
   )
 }
 
-// Styles
-const heading: React.CSSProperties = {
-  fontSize: '20px',
-  fontWeight: 600,
-  color: '#1a1a2e',
-  margin: '0 0 16px',
-}
-
-const card: React.CSSProperties = {
-  backgroundColor: '#f6f9fc',
-  borderRadius: '6px',
-  padding: '16px',
-  margin: '0 0 16px',
-  borderLeft: '4px solid #2563eb',
-}
-
 const cardTitle: React.CSSProperties = {
-  fontSize: '16px',
+  fontSize: '15px',
   fontWeight: 600,
-  color: '#1a1a2e',
-  margin: '0 0 4px',
+  color: emailColors.ink,
+  margin: '0 0 2px 0',
 }
 
 const cardMeta: React.CSSProperties = {
   fontSize: '13px',
-  color: '#8898aa',
-  margin: '0 0 8px',
+  color: emailColors.inkMuted,
+  margin: '0 0 10px 0',
 }
 
 const cardBody: React.CSSProperties = {
   fontSize: '14px',
-  color: '#525f7f',
+  lineHeight: 1.6,
+  color: emailColors.inkSoft,
   margin: 0,
-}
-
-const paragraph: React.CSSProperties = {
-  fontSize: '15px',
-  lineHeight: '24px',
-  color: '#525f7f',
-  margin: '0 0 20px',
-}
-
-const ctaButton: React.CSSProperties = {
-  display: 'inline-block',
-  backgroundColor: '#2563eb',
-  color: '#ffffff',
-  padding: '10px 20px',
-  borderRadius: '6px',
-  textDecoration: 'none',
-  fontSize: '14px',
-  fontWeight: 600,
 }
 
 export default AmendmentNotificationEmail
