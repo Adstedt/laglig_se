@@ -1,89 +1,76 @@
 schema: 1
 story: '5.3'
 story_title: 'Build Team Invite System (Settings UI)'
-gate: CONCERNS
-status_reason: 'Implementation is solid and all 10 ACs trace to code; one broken /logout link was found and fixed during review. Outstanding: NEXT_PUBLIC_APP_URL fallback can leak prod URLs into preview emails, no rate limiting on invite creation, and the /invite/[token] page + InviteMemberModal lack automated test coverage.'
+gate: PASS
+status_reason: 'All seven top_issues from the v1 CONCERNS gate have been resolved and verified: SEC-001 (preview-safe app URL), SEC-002 (per-workspace rate limit), TEST-001 (/invite/[token] page state-machine coverage), TEST-002 (InviteMemberModal RTL tests), TEST-003 (cron auth coverage), CODE-001 (INVITE_TTL_MS extracted), CODE-002 (unused prop removed). Security NFR upgraded from CONCERNS to PASS; all other NFRs unchanged at PASS.'
 reviewer: 'Quinn (Test Architect)'
-updated: '2026-04-15T15:30:00Z'
+updated: '2026-04-15T17:45:00Z'
 
 waiver: { active: false }
 
-quality_score: 90
+quality_score: 100
 expires: '2026-04-29T00:00:00Z'
 
-top_issues:
-  - id: 'SEC-001'
-    severity: medium
-    finding: 'NEXT_PUBLIC_APP_URL fallback chain (?? "https://laglig.se") in route.ts and resend/route.ts can silently send preview-environment emails pointing at production.'
-    suggested_action: 'Prefer process.env.VERCEL_URL when present, else hard-fail in non-prod when NEXT_PUBLIC_APP_URL is missing.'
-    suggested_owner: dev
-  - id: 'SEC-002'
-    severity: low
-    finding: 'No rate limiting on POST /api/workspace/invitations. A compromised admin account could spam invites.'
-    suggested_action: 'Add per-workspace throttling via @upstash/ratelimit (already in stack), e.g. 50 invites/hour.'
-    suggested_owner: dev
-  - id: 'TEST-001'
-    severity: medium
-    finding: '/invite/[token] page state machine has no automated coverage (six branches: PENDING+match, no session, email mismatch, expired, terminal statuses, workspace inactive).'
-    suggested_action: 'Add Vitest tests with mocked Prisma + session covering at least the happy path and one expired-state branch.'
-    suggested_owner: dev
-  - id: 'TEST-002'
-    severity: low
-    finding: 'InviteMemberModal has no React Testing Library coverage (validation, submit, error path).'
-    suggested_action: 'Add 3-4 component tests modeled on existing dialog tests.'
-    suggested_owner: dev
-  - id: 'TEST-003'
-    severity: low
-    finding: 'Cron auth (NODE_ENV === production + CRON_SECRET bearer) is uncovered.'
-    suggested_action: 'Add one test asserting 401 when bearer is missing in production mode.'
-    suggested_owner: dev
-  - id: 'CODE-001'
-    severity: low
-    finding: 'INVITE_TTL_MS duplicated in route.ts and resend/route.ts.'
-    suggested_action: 'Extract to lib/constants/invitations.ts.'
-    suggested_owner: dev
-  - id: 'CODE-002'
-    severity: low
-    finding: 'workspaceSlug prop on InviteActionsClient is unused (renamed _workspaceSlug to silence linter).'
-    suggested_action: 'Either consume it for a /w/${slug} redirect once available, or remove the prop.'
-    suggested_owner: dev
+# All previously-open issues resolved; no new issues identified on re-review.
+top_issues: []
+
+history:
+  - at: '2026-04-15T15:30:00Z'
+    gate: CONCERNS
+    note: 'Initial review. Broken /logout link fixed during review. Seven open issues (2 medium, 5 low) around URL fallback, rate limiting, test coverage, and cleanup.'
+  - at: '2026-04-15T17:45:00Z'
+    gate: PASS
+    note: 'All seven top_issues verified resolved across commits 367b61d (SEC-001 + /logout fix), cd6bdcd (stale members + Option B signup), 6d0e6c8 (SEC-002 + TEST-001/2/3 + CODE-001/2).'
 
 evidence:
-  tests_reviewed: 17
-  risks_identified: 7
+  tests_reviewed: 48
+  risks_identified: 0
   trace:
-    ac_covered: [1, 2, 3, 4, 5, 7, 8, 9, 10]
-    ac_gaps: [6] # /invite/[token] page lacks automated tests (manually traceable but uncovered)
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_gaps: []
+  resolved_issues:
+    - id: 'SEC-001'
+      original_severity: medium
+      resolution: 'lib/utils/app-url.ts — NEXT_PUBLIC_APP_URL → VERCEL_URL → localhost (dev only) → throw in prod. 6 unit tests.'
+    - id: 'SEC-002'
+      original_severity: low
+      resolution: 'app/api/workspace/invitations/route.ts — 50/hr sliding-window per-workspace Ratelimit, 429 + Retry-After, bypass when Redis unconfigured. Covered by dedicated test case.'
+    - id: 'TEST-001'
+      original_severity: medium
+      resolution: 'tests/unit/app/invite/page.test.tsx — 8 tests covering every branch of the /invite/[token] state machine.'
+    - id: 'TEST-002'
+      original_severity: low
+      resolution: 'tests/unit/components/features/settings/invite-member-modal.test.tsx — 6 RTL tests; form noValidate so JS validation owns the UX.'
+    - id: 'TEST-003'
+      original_severity: low
+      resolution: 'tests/unit/api/cron/cleanup-invitations.test.ts — production-mode CRON_SECRET bearer tests (401 missing, 200 matching).'
+    - id: 'CODE-001'
+      original_severity: low
+      resolution: 'lib/constants/invitations.ts — shared INVITE_TTL_MS constant.'
+    - id: 'CODE-002'
+      original_severity: low
+      resolution: 'workspaceSlug prop removed from InviteActionsClient and its call site.'
 
 nfr_validation:
   security:
-    status: CONCERNS
-    notes: 'Token entropy correct (256 bits base64url). Permission gating applied at every endpoint. Two open items: NEXT_PUBLIC_APP_URL fallback risk and missing rate limiting.'
+    status: PASS
+    notes: 'Token entropy 256 bits base64url. Permission gating at every endpoint. Email-mismatch enforced at page and in acceptInvitation. Preview-safe URL resolution (SEC-001). Per-workspace rate limit (SEC-002). No open security issues.'
   performance:
     status: PASS
-    notes: 'No hot-path concerns. SWR with revalidateOnFocus: false. ≤3 indexed Prisma queries per endpoint.'
+    notes: 'No hot-path concerns. SWR with revalidateOnFocus: false. ≤3 indexed Prisma queries per endpoint. Rate limit adds one Redis call per POST (negligible vs email-send).'
   reliability:
     status: PASS
-    notes: 'Comprehensive try/catch + toast feedback. updateMany with explicit workspace scope. Existing Story 10.3 acceptance flow reused (already battle-tested).'
+    notes: 'Comprehensive try/catch + toast feedback. updateMany with explicit workspace scope. Existing Story 10.3 acceptance flow reused. Cache invalidation on accept now works end-to-end (updateTag + revalidatePath + Redis delete).'
   maintainability:
     status: PASS
-    notes: 'Clean separation of concerns. Shared ROLE_LABELS extracted. Documented deviations (no-reply sender). Strong TypeScript hygiene.'
+    notes: 'Clean separation of concerns. Shared constants extracted (INVITE_TTL_MS, ROLE_LABELS, getAppUrl). Documented deviations (no-reply sender). Strong TypeScript hygiene. No unused props.'
 
 recommendations:
-  immediate: # Should fix before customer-facing production use
-    - action: 'Fix NEXT_PUBLIC_APP_URL fallback to prefer VERCEL_URL or hard-fail in non-prod'
+  immediate: [] # nothing blocking
+  future:
+    - action: 'Consider the wider invalidateUserCache / getWorkspaceContext Redis-key namespace drift (workspace:context:* vs auth:context:*) as its own follow-up — outside Story 5.3 scope but worth flagging.'
       refs:
-        - 'app/api/workspace/invitations/route.ts:47-49'
-        - 'app/api/workspace/invitations/[id]/resend/route.ts:18-20'
-    - action: 'Add Vitest coverage for /invite/[token] page (happy path + expired state minimum)'
-      refs:
-        - 'app/invite/[token]/page.tsx'
-  future: # Address when convenient
-    - action: 'Add per-workspace rate limiting on POST /api/workspace/invitations'
-      refs: ['app/api/workspace/invitations/route.ts:51']
-    - action: 'Component tests for InviteMemberModal'
-      refs: ['components/features/settings/invite-member-modal.tsx']
-    - action: 'Extract INVITE_TTL_MS to a shared constant module'
-      refs:
-        - 'app/api/workspace/invitations/route.ts:27'
-        - 'app/api/workspace/invitations/[id]/resend/route.ts:17'
+        - 'lib/cache/workspace-cache.ts:201'
+        - 'lib/auth/workspace-context.ts:64-82'
+    - action: 'If invite-heavy workspaces emerge, consider adding per-user (not just per-workspace) rate limiting so a single malicious admin cannot exhaust the workspace quota without showing up in analytics.'
+      refs: ['app/api/workspace/invitations/route.ts:69-84']
