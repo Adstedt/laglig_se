@@ -3,11 +3,25 @@
 /**
  * Story 5.7: Team Settings Tab
  * Members list, invite, role management.
+ *
+ * Story 5.3: Invite modal, pending-invitations section with revoke/resend.
  */
 
 import { useState, useTransition } from 'react'
+import useSWR from 'swr'
+import { formatDistanceToNow } from 'date-fns'
+import { sv } from 'date-fns/locale'
 import { toast } from 'sonner'
-import { Users, UserPlus, Loader2, MoreHorizontal, Trash2 } from 'lucide-react'
+import {
+  Users,
+  UserPlus,
+  Loader2,
+  MoreHorizontal,
+  Trash2,
+  MailCheck,
+  RefreshCw,
+  Mail,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -48,38 +62,22 @@ import {
   removeMember,
 } from '@/app/actions/workspace-settings'
 import type { MemberData } from './settings-tabs'
-import type { WorkspaceRole } from '@prisma/client'
+import type { WorkspaceRole, InvitationStatus } from '@prisma/client'
+import { ROLE_LABELS, ROLE_COLORS, ASSIGNABLE_ROLES } from './role-labels'
+import { InviteMemberModal } from './invite-member-modal'
 
 // ============================================================================
-// Constants
+// Types
 // ============================================================================
 
-const ROLE_LABELS: Record<WorkspaceRole, string> = {
-  OWNER: 'Ägare',
-  ADMIN: 'Administratör',
-  HR_MANAGER: 'HR-ansvarig',
-  MEMBER: 'Medlem',
-  AUDITOR: 'Granskare',
+interface PendingInvitation {
+  id: string
+  email: string
+  role: WorkspaceRole
+  status: InvitationStatus
+  expires_at: string
+  created_at: string
 }
-
-const ROLE_COLORS: Record<WorkspaceRole, string> = {
-  OWNER:
-    'bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300',
-  ADMIN: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
-  HR_MANAGER:
-    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
-  MEMBER:
-    'bg-slate-100 text-slate-700 dark:bg-slate-900/50 dark:text-slate-300',
-  AUDITOR:
-    'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
-}
-
-const ASSIGNABLE_ROLES: WorkspaceRole[] = [
-  'ADMIN',
-  'HR_MANAGER',
-  'MEMBER',
-  'AUDITOR',
-]
 
 // ============================================================================
 // Helper Functions
@@ -104,6 +102,16 @@ function formatDate(date: Date): string {
   })
 }
 
+async function fetchInvitations(): Promise<{
+  invitations: PendingInvitation[]
+}> {
+  const res = await fetch('/api/workspace/invitations')
+  if (!res.ok) {
+    throw new Error('Kunde inte hämta inbjudningar')
+  }
+  return res.json()
+}
+
 // ============================================================================
 // Component
 // ============================================================================
@@ -112,10 +120,21 @@ interface TeamTabProps {
   members: MemberData[]
 }
 
+const INVITATIONS_SWR_KEY = 'workspace-invitations'
+
 export function TeamTab({ members }: TeamTabProps) {
   const [isPending, startTransition] = useTransition()
   const [pendingMemberId, setPendingMemberId] = useState<string | null>(null)
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null)
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [invitationActionId, setInvitationActionId] = useState<string | null>(
+    null
+  )
+
+  const { data, mutate } = useSWR(INVITATIONS_SWR_KEY, fetchInvitations, {
+    revalidateOnFocus: false,
+  })
+  const invitations = data?.invitations ?? []
 
   const handleRoleChange = (memberId: string, newRole: string) => {
     setPendingMemberId(memberId)
@@ -149,6 +168,46 @@ export function TeamTab({ members }: TeamTabProps) {
     })
   }
 
+  const handleRevokeInvitation = async (id: string) => {
+    setInvitationActionId(id)
+    try {
+      const res = await fetch(`/api/workspace/invitations/${id}`, {
+        method: 'DELETE',
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        toast.error(body?.error || 'Kunde inte återkalla inbjudan')
+        return
+      }
+      toast.success('Inbjudan återkallad')
+      await mutate()
+    } catch {
+      toast.error('Nätverksfel. Försök igen.')
+    } finally {
+      setInvitationActionId(null)
+    }
+  }
+
+  const handleResendInvitation = async (id: string) => {
+    setInvitationActionId(id)
+    try {
+      const res = await fetch(`/api/workspace/invitations/${id}/resend`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        toast.error(body?.error || 'Kunde inte skicka om inbjudan')
+        return
+      }
+      toast.success('Inbjudan skickad igen')
+      await mutate()
+    } catch {
+      toast.error('Nätverksfel. Försök igen.')
+    } finally {
+      setInvitationActionId(null)
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Header Card */}
@@ -168,7 +227,7 @@ export function TeamTab({ members }: TeamTabProps) {
 
           {/* Invite Button */}
           <Can permission="members:invite">
-            <Button disabled size="sm">
+            <Button size="sm" onClick={() => setInviteOpen(true)}>
               <UserPlus className="mr-2 h-4 w-4" />
               Bjud in medlem
             </Button>
@@ -343,6 +402,113 @@ export function TeamTab({ members }: TeamTabProps) {
           </div>
         )}
       </div>
+
+      {/* Pending Invitations */}
+      <Can permission="members:invite">
+        {invitations.length > 0 && (
+          <div className="rounded-xl border bg-card">
+            <div className="flex items-center justify-between border-b px-5 py-3">
+              <div className="flex items-center gap-2">
+                <MailCheck className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-sm font-semibold">Väntande inbjudningar</h3>
+                <span className="text-xs text-muted-foreground">
+                  ({invitations.length})
+                </span>
+              </div>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">E-post</TableHead>
+                  <TableHead className="text-xs">Roll</TableHead>
+                  <TableHead className="text-xs">Skickat</TableHead>
+                  <TableHead className="text-xs">Upphör</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {invitations.map((inv) => {
+                  const expiresAt = new Date(inv.expires_at)
+                  const isExpiredSoon =
+                    expiresAt.getTime() - Date.now() < 24 * 60 * 60 * 1000
+                  return (
+                    <TableRow key={inv.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm">{inv.email}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${ROLE_COLORS[inv.role]}`}
+                        >
+                          {ROLE_LABELS[inv.role]}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {formatDate(new Date(inv.created_at))}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`text-xs ${isExpiredSoon ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}
+                        >
+                          {formatDistanceToNow(expiresAt, {
+                            addSuffix: true,
+                            locale: sv,
+                          })}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              disabled={invitationActionId === inv.id}
+                            >
+                              {invitationActionId === inv.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <MoreHorizontal className="h-4 w-4" />
+                              )}
+                              <span className="sr-only">Öppna meny</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onSelect={() => handleResendInvitation(inv.id)}
+                            >
+                              <RefreshCw className="mr-2 h-4 w-4" />
+                              Skicka igen
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={() => handleRevokeInvitation(inv.id)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Återkalla
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </Can>
+
+      <InviteMemberModal
+        open={inviteOpen}
+        onOpenChange={setInviteOpen}
+        onInvited={() => {
+          void mutate()
+        }}
+      />
     </div>
   )
 }
