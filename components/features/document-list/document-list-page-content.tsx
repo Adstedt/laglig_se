@@ -486,6 +486,10 @@ export function DocumentListPageContent({
     params.delete('status')
     params.delete('category')
     params.delete('responsible')
+    // Must also drop the group param — otherwise the URL→store sync effect
+    // (see groupIdFromUrl useEffect below) re-applies the group filter
+    // immediately after we clear the store.
+    params.delete('group')
     router.replace(`?${params.toString()}`, { scroll: false })
   }, [searchParams, router, setContentTypeGroupFilter, clearGroupFilter])
 
