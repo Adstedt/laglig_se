@@ -134,6 +134,20 @@ export function DocumentEditor({
     content: initialContent,
     editable,
     immediatelyRender: false,
+    editorProps: {
+      // Stop keystrokes from bubbling to global window shortcuts (e.g. "/"
+      // opening the AI chat sidebar). Plain typing — no modifier — belongs
+      // solely to the editor. Cmd/Ctrl-combos (save, toggle chat, etc.) are
+      // allowed through so global shortcuts remain usable from within.
+      handleDOMEvents: {
+        keydown: (_view, event) => {
+          if (!event.metaKey && !event.ctrlKey && !event.altKey) {
+            event.stopPropagation()
+          }
+          return false
+        },
+      },
+    },
   })
 
   // Sync editable state when status changes (e.g. APPROVED → DRAFT via "new version")
