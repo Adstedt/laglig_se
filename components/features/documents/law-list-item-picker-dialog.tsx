@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ChevronDown,
   Inbox,
+  Check,
 } from 'lucide-react'
 import {
   getWorkspaceLawLists,
@@ -115,11 +116,7 @@ export function LawListItemPickerDialog({
 
   const excludeSet = new Set(excludeIds ?? [])
 
-  const groupedItems = useMemo(
-    () => groupItems(lawListItems.filter((i) => !excludeSet.has(i.id))),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [lawListItems, excludeIds?.join(',')]
-  )
+  const groupedItems = useMemo(() => groupItems(lawListItems), [lawListItems])
 
   const breadcrumbs: { label: string; onClick?: (() => void) | undefined }[] = [
     {
@@ -190,39 +187,47 @@ export function LawListItemPickerDialog({
                   return next
                 })
               }
-              renderItem={(item) => (
-                <CommandItem
-                  key={item.id}
-                  value={`${item.documentNumber ?? ''} ${item.documentTitle}`}
-                  onSelect={() =>
-                    onSelect({
-                      id: item.id,
-                      documentId: item.documentId,
-                      documentTitle: item.documentTitle,
-                      documentNumber: item.documentNumber,
-                    })
-                  }
-                  className="flex items-center gap-2.5 cursor-pointer py-1 text-[13px]"
-                >
-                  <Scale className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 truncate">
-                    {item.documentNumber ? (
-                      <>
-                        <span className="font-medium">
-                          {item.documentNumber}
-                        </span>
-                        {' — '}
-                        {item.documentTitle}
-                      </>
+              renderItem={(item) => {
+                const isLinked = excludeSet.has(item.id)
+                return (
+                  <CommandItem
+                    key={item.id}
+                    value={`${item.documentNumber ?? ''} ${item.documentTitle}`}
+                    onSelect={() =>
+                      onSelect({
+                        id: item.id,
+                        documentId: item.documentId,
+                        documentTitle: item.documentTitle,
+                        documentNumber: item.documentNumber,
+                      })
+                    }
+                    disabled={isLinked}
+                    className="flex items-center gap-2.5 cursor-pointer py-1 text-[13px]"
+                  >
+                    <Scale className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="flex-1 truncate">
+                      {item.documentNumber ? (
+                        <>
+                          <span className="font-medium">
+                            {item.documentNumber}
+                          </span>
+                          {' — '}
+                          {item.documentTitle}
+                        </>
+                      ) : (
+                        item.documentTitle
+                      )}
+                    </span>
+                    {isLinked ? (
+                      <Check className="h-3.5 w-3.5 text-muted-foreground" />
                     ) : (
-                      item.documentTitle
+                      item.requirementCount > 0 && (
+                        <CountPill>{item.requirementCount} krav</CountPill>
+                      )
                     )}
-                  </span>
-                  {item.requirementCount > 0 && (
-                    <CountPill>{item.requirementCount} krav</CountPill>
-                  )}
-                </CommandItem>
-              )}
+                  </CommandItem>
+                )
+              }}
             />
           </>
         )}

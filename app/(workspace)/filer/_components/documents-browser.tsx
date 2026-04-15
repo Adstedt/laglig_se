@@ -53,7 +53,6 @@ import {
   categoryLabels,
 } from '@/components/features/files/file-card'
 import { FilePreviewPanel } from '@/components/features/files/file-preview-panel'
-import { FileLinkModal } from '@/components/features/files/file-link-modal'
 import {
   FolderTree,
   FolderTreeSkeleton,
@@ -128,7 +127,6 @@ export default function DocumentsBrowser({
   const [previewFile, setPreviewFile] = useState<WorkspaceFileWithLinks | null>(
     null
   )
-  const [linkFile, setLinkFile] = useState<WorkspaceFileWithLinks | null>(null)
 
   // New folder dialog
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
@@ -846,24 +844,6 @@ export default function DocumentsBrowser({
         onOpenChange={(open) => !open && setPreviewFile(null)}
         onUpdate={refreshAll}
         onDelete={refreshAll}
-        onLinkClick={(file) => {
-          setPreviewFile(null)
-          setLinkFile(file)
-        }}
-      />
-
-      {/* Link Modal */}
-      <FileLinkModal
-        file={linkFile}
-        open={!!linkFile}
-        onOpenChange={(open) => !open && setLinkFile(null)}
-        onUpdate={() => {
-          refreshAll()
-          if (previewFile && linkFile && previewFile.id === linkFile.id) {
-            const updatedFile = files.find((f) => f.id === linkFile.id)
-            if (updatedFile) setPreviewFile(updatedFile)
-          }
-        }}
       />
     </div>
   )
