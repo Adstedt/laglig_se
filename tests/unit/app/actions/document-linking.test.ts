@@ -13,6 +13,7 @@ const mockTaskLinkFindMany = vi.fn()
 const mockListItemLinkCreate = vi.fn()
 const mockListItemLinkDeleteMany = vi.fn()
 const mockListItemLinkFindMany = vi.fn()
+const mockRequirementEvidenceLinkFindMany = vi.fn()
 const mockActivityLogCreate = vi.fn()
 
 vi.mock('@/lib/prisma', () => ({
@@ -35,6 +36,10 @@ vi.mock('@/lib/prisma', () => ({
       create: (...args: unknown[]) => mockListItemLinkCreate(...args),
       deleteMany: (...args: unknown[]) => mockListItemLinkDeleteMany(...args),
       findMany: (...args: unknown[]) => mockListItemLinkFindMany(...args),
+    },
+    requirementEvidenceLink: {
+      findMany: (...args: unknown[]) =>
+        mockRequirementEvidenceLinkFindMany(...args),
     },
     activityLog: {
       create: (...args: unknown[]) => mockActivityLogCreate(...args),
@@ -309,7 +314,7 @@ describe('unlinkDocumentFromListItem', () => {
 })
 
 describe('getDocumentLinks', () => {
-  it('returns linked tasks and list items', async () => {
+  it('returns linked tasks, list items, and requirement evidence', async () => {
     mockDocFindFirst.mockResolvedValue({ id: DOC_ID })
     mockTaskLinkFindMany.mockResolvedValue([
       {
@@ -323,6 +328,21 @@ describe('getDocumentLinks', () => {
         list_item: {
           id: LIST_ITEM_ID,
           document: { title: 'AFS 2001:1', document_number: 'AFS 2001:1' },
+        },
+      },
+    ])
+    mockRequirementEvidenceLinkFindMany.mockResolvedValue([
+      {
+        id: 'evl-1',
+        requirement: {
+          id: 'req-1',
+          text: 'Arbetsgivaren ska dokumentera risker.',
+          list_item: {
+            document: {
+              title: 'AFS 2001:1',
+              document_number: 'AFS 2001:1',
+            },
+          },
         },
       },
     ])
@@ -342,6 +362,14 @@ describe('getDocumentLinks', () => {
       title: 'AFS 2001:1',
       documentNumber: 'AFS 2001:1',
       linkId: 'link-2',
+    })
+    expect(result.data?.requirements).toHaveLength(1)
+    expect(result.data?.requirements[0]).toEqual({
+      id: 'req-1',
+      linkId: 'evl-1',
+      text: 'Arbetsgivaren ska dokumentera risker.',
+      listItemTitle: 'AFS 2001:1',
+      listItemDocumentNumber: 'AFS 2001:1',
     })
   })
 
