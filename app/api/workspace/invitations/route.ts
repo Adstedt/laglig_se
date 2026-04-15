@@ -23,6 +23,7 @@ import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email/email-service'
 import { WorkspaceInvitationEmail } from '@/emails/workspace-invitation'
 import { ROLE_LABELS } from '@/components/features/settings/role-labels'
+import { getAppUrl } from '@/lib/utils/app-url'
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -42,10 +43,6 @@ const InviteBodySchema = z.object({
 
 function generateToken(): string {
   return crypto.randomBytes(32).toString('base64url')
-}
-
-function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? 'https://laglig.se'
 }
 
 export async function POST(request: Request) {

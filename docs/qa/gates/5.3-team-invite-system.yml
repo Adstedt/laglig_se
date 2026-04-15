@@ -1,0 +1,89 @@
+schema: 1
+story: '5.3'
+story_title: 'Build Team Invite System (Settings UI)'
+gate: CONCERNS
+status_reason: 'Implementation is solid and all 10 ACs trace to code; one broken /logout link was found and fixed during review. Outstanding: NEXT_PUBLIC_APP_URL fallback can leak prod URLs into preview emails, no rate limiting on invite creation, and the /invite/[token] page + InviteMemberModal lack automated test coverage.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-15T15:30:00Z'
+
+waiver: { active: false }
+
+quality_score: 90
+expires: '2026-04-29T00:00:00Z'
+
+top_issues:
+  - id: 'SEC-001'
+    severity: medium
+    finding: 'NEXT_PUBLIC_APP_URL fallback chain (?? "https://laglig.se") in route.ts and resend/route.ts can silently send preview-environment emails pointing at production.'
+    suggested_action: 'Prefer process.env.VERCEL_URL when present, else hard-fail in non-prod when NEXT_PUBLIC_APP_URL is missing.'
+    suggested_owner: dev
+  - id: 'SEC-002'
+    severity: low
+    finding: 'No rate limiting on POST /api/workspace/invitations. A compromised admin account could spam invites.'
+    suggested_action: 'Add per-workspace throttling via @upstash/ratelimit (already in stack), e.g. 50 invites/hour.'
+    suggested_owner: dev
+  - id: 'TEST-001'
+    severity: medium
+    finding: '/invite/[token] page state machine has no automated coverage (six branches: PENDING+match, no session, email mismatch, expired, terminal statuses, workspace inactive).'
+    suggested_action: 'Add Vitest tests with mocked Prisma + session covering at least the happy path and one expired-state branch.'
+    suggested_owner: dev
+  - id: 'TEST-002'
+    severity: low
+    finding: 'InviteMemberModal has no React Testing Library coverage (validation, submit, error path).'
+    suggested_action: 'Add 3-4 component tests modeled on existing dialog tests.'
+    suggested_owner: dev
+  - id: 'TEST-003'
+    severity: low
+    finding: 'Cron auth (NODE_ENV === production + CRON_SECRET bearer) is uncovered.'
+    suggested_action: 'Add one test asserting 401 when bearer is missing in production mode.'
+    suggested_owner: dev
+  - id: 'CODE-001'
+    severity: low
+    finding: 'INVITE_TTL_MS duplicated in route.ts and resend/route.ts.'
+    suggested_action: 'Extract to lib/constants/invitations.ts.'
+    suggested_owner: dev
+  - id: 'CODE-002'
+    severity: low
+    finding: 'workspaceSlug prop on InviteActionsClient is unused (renamed _workspaceSlug to silence linter).'
+    suggested_action: 'Either consume it for a /w/${slug} redirect once available, or remove the prop.'
+    suggested_owner: dev
+
+evidence:
+  tests_reviewed: 17
+  risks_identified: 7
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 7, 8, 9, 10]
+    ac_gaps: [6] # /invite/[token] page lacks automated tests (manually traceable but uncovered)
+
+nfr_validation:
+  security:
+    status: CONCERNS
+    notes: 'Token entropy correct (256 bits base64url). Permission gating applied at every endpoint. Two open items: NEXT_PUBLIC_APP_URL fallback risk and missing rate limiting.'
+  performance:
+    status: PASS
+    notes: 'No hot-path concerns. SWR with revalidateOnFocus: false. ≤3 indexed Prisma queries per endpoint.'
+  reliability:
+    status: PASS
+    notes: 'Comprehensive try/catch + toast feedback. updateMany with explicit workspace scope. Existing Story 10.3 acceptance flow reused (already battle-tested).'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation of concerns. Shared ROLE_LABELS extracted. Documented deviations (no-reply sender). Strong TypeScript hygiene.'
+
+recommendations:
+  immediate: # Should fix before customer-facing production use
+    - action: 'Fix NEXT_PUBLIC_APP_URL fallback to prefer VERCEL_URL or hard-fail in non-prod'
+      refs:
+        - 'app/api/workspace/invitations/route.ts:47-49'
+        - 'app/api/workspace/invitations/[id]/resend/route.ts:18-20'
+    - action: 'Add Vitest coverage for /invite/[token] page (happy path + expired state minimum)'
+      refs:
+        - 'app/invite/[token]/page.tsx'
+  future: # Address when convenient
+    - action: 'Add per-workspace rate limiting on POST /api/workspace/invitations'
+      refs: ['app/api/workspace/invitations/route.ts:51']
+    - action: 'Component tests for InviteMemberModal'
+      refs: ['components/features/settings/invite-member-modal.tsx']
+    - action: 'Extract INVITE_TTL_MS to a shared constant module'
+      refs:
+        - 'app/api/workspace/invitations/route.ts:27'
+        - 'app/api/workspace/invitations/[id]/resend/route.ts:17'

@@ -17,6 +17,7 @@ import { getServerSession } from '@/lib/auth/session'
 import { Button } from '@/components/ui/button'
 import { ROLE_LABELS } from '@/components/features/settings/role-labels'
 import { InviteActionsClient } from './invite-actions-client'
+import { LogoutAndRetryButton } from './logout-button'
 
 interface InvitePageProps {
   params: Promise<{ token: string }>
@@ -121,11 +122,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
           icon={<AlertCircle className="h-10 w-10 text-amber-500" />}
           title="Inbjudan tillhör en annan användare"
           description={`Du är inloggad som ${sessionEmail}, men inbjudan är skickad till ${invitation.email}. Logga ut och logga in med rätt konto för att acceptera.`}
-          cta={
-            <Link href="/logout">
-              <Button variant="outline">Logga ut</Button>
-            </Link>
-          }
+          cta={<LogoutAndRetryButton returnTo={`/invite/${token}`} />}
         />
       </InviteLayout>
     )
