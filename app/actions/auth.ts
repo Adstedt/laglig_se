@@ -9,14 +9,26 @@ import {
   createSuccessResponse,
   type ValidationResult,
 } from '@/lib/validation/api-error'
+import { getAppUrl } from '@/lib/utils/app-url'
 import { z } from 'zod'
+
+export interface SignupOptions {
+  /**
+   * Story 5.3: When signup originates from a workspace invitation link,
+   * this token is used to build the Supabase `emailRedirectTo` URL so the
+   * post-verification redirect lands the user back at /invite/<token>
+   * (via /auth/verify → /login with callbackUrl).
+   */
+  inviteToken?: string
+}
 
 /**
  * Server Action for user signup with server-side Zod validation
  * Validates input before sending to Supabase Auth
  */
 export async function signupAction(
-  input: unknown
+  input: unknown,
+  options: SignupOptions = {}
 ): Promise<ValidationResult<{ userId: string; email: string }>> {
   // Server-side validation with Zod
   const result = SignupSchema.safeParse(input)
@@ -30,6 +42,13 @@ export async function signupAction(
   try {
     const supabase = await createServerSupabaseClient()
 
+    // Build emailRedirectTo so verification returns the user to the right
+    // place. For invite-bound signups, embed the invite callback as `next`
+    // which /auth/verify forwards as the login `callbackUrl`.
+    const emailRedirectTo = options.inviteToken
+      ? `${getAppUrl()}/auth/verify?next=${encodeURIComponent(`/invite/${options.inviteToken}`)}`
+      : undefined
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -37,6 +56,7 @@ export async function signupAction(
         data: {
           name,
         },
+        ...(emailRedirectTo ? { emailRedirectTo } : {}),
       },
     })
 
