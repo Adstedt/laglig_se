@@ -78,6 +78,20 @@ export interface WorkspaceFileWithLinks {
       }
     }
   }>
+  requirement_evidence_links: Array<{
+    id: string
+    requirement: {
+      id: string
+      text: string
+      list_item: {
+        id: string
+        document: {
+          title: string
+          document_number: string | null
+        } | null
+      } | null
+    }
+  }>
 }
 
 export interface FileFilters {
@@ -338,6 +352,24 @@ export async function uploadFile(
               },
             },
           },
+          requirement_evidence_links: {
+            include: {
+              requirement: {
+                select: {
+                  id: true,
+                  text: true,
+                  list_item: {
+                    select: {
+                      id: true,
+                      document: {
+                        select: { title: true, document_number: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       })
 
@@ -503,6 +535,24 @@ export async function getFileById(
               },
             },
           },
+          requirement_evidence_links: {
+            include: {
+              requirement: {
+                select: {
+                  id: true,
+                  text: true,
+                  list_item: {
+                    select: {
+                      id: true,
+                      document: {
+                        select: { title: true, document_number: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       })
 
@@ -605,6 +655,24 @@ export async function getWorkspaceFiles(
               },
             },
           },
+          requirement_evidence_links: {
+            include: {
+              requirement: {
+                select: {
+                  id: true,
+                  text: true,
+                  list_item: {
+                    select: {
+                      id: true,
+                      document: {
+                        select: { title: true, document_number: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       })
 
@@ -689,6 +757,24 @@ export async function updateFile(
                   id: true,
                   document: {
                     select: { title: true, document_number: true },
+                  },
+                },
+              },
+            },
+          },
+          requirement_evidence_links: {
+            include: {
+              requirement: {
+                select: {
+                  id: true,
+                  text: true,
+                  list_item: {
+                    select: {
+                      id: true,
+                      document: {
+                        select: { title: true, document_number: true },
+                      },
+                    },
                   },
                 },
               },
@@ -1777,6 +1863,24 @@ export async function getFolderContents(
               },
             },
           },
+          requirement_evidence_links: {
+            include: {
+              requirement: {
+                select: {
+                  id: true,
+                  text: true,
+                  list_item: {
+                    select: {
+                      id: true,
+                      document: {
+                        select: { title: true, document_number: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       })
 
@@ -2045,6 +2149,27 @@ export async function getFilesForTask(
                   },
                 },
               },
+              requirement_evidence_links: {
+                include: {
+                  requirement: {
+                    select: {
+                      id: true,
+                      text: true,
+                      list_item: {
+                        select: {
+                          id: true,
+                          document: {
+                            select: {
+                              title: true,
+                              document_number: true,
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -2108,6 +2233,27 @@ export async function getFilesForListItem(
                       id: true,
                       document: {
                         select: { title: true, document_number: true },
+                      },
+                    },
+                  },
+                },
+              },
+              requirement_evidence_links: {
+                include: {
+                  requirement: {
+                    select: {
+                      id: true,
+                      text: true,
+                      list_item: {
+                        select: {
+                          id: true,
+                          document: {
+                            select: {
+                              title: true,
+                              document_number: true,
+                            },
+                          },
+                        },
                       },
                     },
                   },

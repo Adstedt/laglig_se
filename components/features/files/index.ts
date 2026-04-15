@@ -13,7 +13,6 @@ export {
 } from './file-card'
 export { FilePreviewPanel } from './file-preview-panel'
 export { FilePickerModal } from './file-picker-modal'
-export { FileLinkModal } from './file-link-modal'
 
 // Story 6.7b: Folder components
 export { FolderTree, FolderTreeSkeleton } from './folder-tree'

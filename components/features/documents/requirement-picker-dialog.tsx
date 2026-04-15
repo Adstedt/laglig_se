@@ -15,6 +15,7 @@ import {
   FolderOpen,
   FileText,
   ChevronRight,
+  Check,
 } from 'lucide-react'
 import {
   getWorkspaceLawLists,
@@ -287,9 +288,9 @@ export function RequirementPickerDialog({
               <PickerEmpty label="Inga krav hittades" />
             </CommandEmpty>
             <CommandGroup>
-              {requirements
-                .filter((r) => !excludeSet.has(r.id))
-                .map((req) => (
+              {requirements.map((req) => {
+                const isLinked = excludeSet.has(req.id)
+                return (
                   <CommandItem
                     key={req.id}
                     value={req.text}
@@ -301,6 +302,7 @@ export function RequirementPickerDialog({
                         listItemDocumentNumber: selectedListItem.documentNumber,
                       })
                     }
+                    disabled={isLinked}
                     className="flex items-start gap-2.5 cursor-pointer py-1 text-[13px]"
                   >
                     <ListChecks className="h-4 w-4 shrink-0 text-muted-foreground mt-[2px]" />
@@ -310,8 +312,12 @@ export function RequirementPickerDialog({
                     >
                       {req.text}
                     </span>
+                    {isLinked && (
+                      <Check className="h-3.5 w-3.5 text-muted-foreground mt-[2px] shrink-0" />
+                    )}
                   </CommandItem>
-                ))}
+                )
+              })}
             </CommandGroup>
           </>
         )}

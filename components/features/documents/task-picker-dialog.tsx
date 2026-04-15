@@ -9,7 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { CheckSquare, Loader2 } from 'lucide-react'
+import { CheckSquare, Loader2, Check } from 'lucide-react'
 import { getTasksForLinking } from '@/app/actions/tasks'
 import {
   GroupedItemSections,
@@ -100,22 +100,28 @@ export function TaskPickerDialog({
   const excludeSet = new Set(excludeIds ?? [])
 
   const groupedTasks = useMemo(
-    () => groupTasks(availableTasks.filter((t) => !excludeSet.has(t.id))),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [availableTasks, excludeIds?.join(',')]
+    () => groupTasks(availableTasks),
+    [availableTasks]
   )
 
-  const renderTask = (task: TaskForPicker) => (
-    <CommandItem
-      key={task.id}
-      value={task.title}
-      onSelect={() => onSelect({ id: task.id, title: task.title })}
-      className="flex items-center gap-2.5 cursor-pointer py-1 text-[13px]"
-    >
-      <CheckSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="flex-1 truncate">{task.title}</span>
-    </CommandItem>
-  )
+  const renderTask = (task: TaskForPicker) => {
+    const isLinked = excludeSet.has(task.id)
+    return (
+      <CommandItem
+        key={task.id}
+        value={task.title}
+        onSelect={() => onSelect({ id: task.id, title: task.title })}
+        disabled={isLinked}
+        className="flex items-center gap-2.5 cursor-pointer py-1 text-[13px]"
+      >
+        <CheckSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="flex-1 truncate">{task.title}</span>
+        {isLinked && (
+          <Check className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+        )}
+      </CommandItem>
+    )
+  }
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>

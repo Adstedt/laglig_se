@@ -41,13 +41,15 @@ import {
   Download,
   Trash2,
   ExternalLink,
-  Link as LinkIcon,
   Loader2,
   X,
   Pencil,
   Save,
   Maximize2,
   Minimize2,
+  CheckSquare,
+  Scale,
+  ListChecks,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -63,9 +65,22 @@ import {
   deleteFile,
   getFileDownloadUrl,
   unlinkFile,
+  linkFileToTask,
+  linkFileToListItem,
 } from '@/app/actions/files'
 import type { WorkspaceFileWithLinks } from '@/app/actions/files'
+import {
+  linkEvidenceToRequirement,
+  unlinkEvidenceFromRequirement,
+} from '@/app/actions/law-list-item-requirements'
 import type { FileCategory } from '@prisma/client'
+import {
+  LinkTargetChooser,
+  type LinkKind,
+} from '@/components/features/documents/link-target-chooser'
+import { TaskPickerDialog } from '@/components/features/documents/task-picker-dialog'
+import { LawListItemPickerDialog } from '@/components/features/documents/law-list-item-picker-dialog'
+import { RequirementPickerDialog } from '@/components/features/documents/requirement-picker-dialog'
 
 // ============================================================================
 // Types
@@ -77,7 +92,6 @@ interface FilePreviewPanelProps {
   onOpenChange: (_open: boolean) => void
   onUpdate?: () => void
   onDelete?: () => void
-  onLinkClick?: (_file: WorkspaceFileWithLinks) => void
 }
 
 // ============================================================================
@@ -116,13 +130,15 @@ export function FilePreviewPanel({
   onOpenChange,
   onUpdate,
   onDelete,
-  onLinkClick,
 }: FilePreviewPanelProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedName, setEditedName] = useState('')
   const [editedCategory, setEditedCategory] = useState<FileCategory>('OVRIGT')
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [taskPickerOpen, setTaskPickerOpen] = useState(false)
+  const [listItemPickerOpen, setListItemPickerOpen] = useState(false)
+  const [requirementPickerOpen, setRequirementPickerOpen] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -310,6 +326,68 @@ export function FilePreviewPanel({
     } catch (error) {
       console.error('Unlink error:', error)
       toast.error('Ett fel uppstod')
+    }
+  }
+
+  const handleUnlinkRequirement = async (requirementId: string) => {
+    if (!file) return
+    try {
+      const result = await unlinkEvidenceFromRequirement(requirementId, {
+        fileId: file.id,
+      })
+      if (result.success) {
+        toast.success('Länken har tagits bort')
+        onUpdate?.()
+      } else {
+        toast.error(result.error || 'Kunde inte ta bort länken')
+      }
+    } catch (error) {
+      console.error('Unlink requirement error:', error)
+      toast.error('Ett fel uppstod')
+    }
+  }
+
+  const handlePickLinkTarget = (kind: LinkKind) => {
+    if (kind === 'task') setTaskPickerOpen(true)
+    else if (kind === 'listItem') setListItemPickerOpen(true)
+    else setRequirementPickerOpen(true)
+  }
+
+  const handleLinkTask = async (taskId: string) => {
+    if (!file) return
+    const result = await linkFileToTask(file.id, taskId)
+    if (result.success) {
+      toast.success('Uppgift länkad')
+      setTaskPickerOpen(false)
+      onUpdate?.()
+    } else {
+      toast.error(result.error || 'Kunde inte länka uppgift')
+    }
+  }
+
+  const handleLinkListItem = async (listItemId: string) => {
+    if (!file) return
+    const result = await linkFileToListItem(file.id, listItemId)
+    if (result.success) {
+      toast.success('Författningstext länkad')
+      setListItemPickerOpen(false)
+      onUpdate?.()
+    } else {
+      toast.error(result.error || 'Kunde inte länka författningstext')
+    }
+  }
+
+  const handleLinkRequirement = async (requirementId: string) => {
+    if (!file) return
+    const result = await linkEvidenceToRequirement(requirementId, {
+      fileId: file.id,
+    })
+    if (result.success) {
+      toast.success('Krav länkat')
+      setRequirementPickerOpen(false)
+      onUpdate?.()
+    } else {
+      toast.error(result.error || 'Kunde inte länka krav')
     }
   }
 
@@ -522,36 +600,31 @@ export function FilePreviewPanel({
                 {/* Linked Items */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium">Länkade objekt</h4>
-                    {onLinkClick && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onLinkClick(file)}
-                      >
-                        <LinkIcon className="h-4 w-4 mr-1" />
-                        Länka till
-                      </Button>
-                    )}
+                    <h4 className="text-sm font-medium">Länkade till</h4>
+                    <LinkTargetChooser onPick={handlePickLinkTarget} />
                   </div>
 
                   {file.task_links.length === 0 &&
-                  file.list_item_links.length === 0 ? (
+                  file.list_item_links.length === 0 &&
+                  file.requirement_evidence_links.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
-                      Filen är inte länkad till några uppgifter eller lagar.
+                      Inga länkade uppgifter, författningstexter eller krav
                     </p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {file.task_links.map((link) => (
                         <div
                           key={link.id}
-                          className="flex items-center justify-between text-sm bg-muted/50 rounded-md p-2"
+                          className="flex items-center gap-2 group text-sm"
                         >
-                          <span className="truncate">{link.task.title}</span>
+                          <CheckSquare className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="flex-1 min-w-0 truncate">
+                            {link.task.title}
+                          </span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0"
+                            className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 shrink-0"
                             onClick={() => handleUnlink('task', link.task.id)}
                           >
                             <X className="h-3 w-3" />
@@ -561,15 +634,18 @@ export function FilePreviewPanel({
                       {file.list_item_links.map((link) => (
                         <div
                           key={link.id}
-                          className="flex items-center justify-between text-sm bg-muted/50 rounded-md p-2"
+                          className="flex items-center gap-2 group text-sm"
                         >
-                          <span className="truncate">
-                            {link.list_item.document.title}
+                          <Scale className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="flex-1 min-w-0 truncate">
+                            {link.list_item.document.document_number
+                              ? `${link.list_item.document.document_number} — ${link.list_item.document.title}`
+                              : link.list_item.document.title}
                           </span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0"
+                            className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 shrink-0"
                             onClick={() =>
                               handleUnlink('list_item', link.list_item.id)
                             }
@@ -578,6 +654,45 @@ export function FilePreviewPanel({
                           </Button>
                         </div>
                       ))}
+                      {file.requirement_evidence_links.map((link) => {
+                        const parentDoc = link.requirement.list_item?.document
+                        const parent = parentDoc
+                          ? parentDoc.document_number
+                            ? `${parentDoc.document_number} — ${parentDoc.title}`
+                            : parentDoc.title
+                          : null
+                        return (
+                          <div
+                            key={link.id}
+                            className="flex items-start gap-2 group text-sm"
+                          >
+                            <ListChecks className="h-3.5 w-3.5 shrink-0 text-muted-foreground mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p
+                                className="line-clamp-2"
+                                title={link.requirement.text}
+                              >
+                                {link.requirement.text}
+                              </p>
+                              {parent && (
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {parent}
+                                </p>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 shrink-0"
+                              onClick={() =>
+                                handleUnlinkRequirement(link.requirement.id)
+                              }
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
@@ -651,6 +766,29 @@ export function FilePreviewPanel({
           slides={[{ src: fileUrl, title: file.filename }]}
         />
       )}
+
+      <TaskPickerDialog
+        open={taskPickerOpen}
+        onOpenChange={setTaskPickerOpen}
+        excludeIds={file.task_links.map((l) => l.task.id)}
+        onSelect={(t) => handleLinkTask(t.id)}
+      />
+
+      <LawListItemPickerDialog
+        open={listItemPickerOpen}
+        onOpenChange={setListItemPickerOpen}
+        excludeIds={file.list_item_links.map((l) => l.list_item.id)}
+        onSelect={(item) => handleLinkListItem(item.id)}
+      />
+
+      <RequirementPickerDialog
+        open={requirementPickerOpen}
+        onOpenChange={setRequirementPickerOpen}
+        excludeIds={file.requirement_evidence_links.map(
+          (l) => l.requirement.id
+        )}
+        onSelect={(req) => handleLinkRequirement(req.id)}
+      />
     </>
   )
 }
