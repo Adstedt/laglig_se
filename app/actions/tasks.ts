@@ -1818,6 +1818,10 @@ export interface LawListItemForLinking {
   documentNumber: string
   listId: string
   listName: string
+  requirementCount: number
+  groupId: string | null
+  groupName: string | null
+  groupPosition: number | null
 }
 
 export interface LawListForLinking {
@@ -1869,7 +1873,8 @@ export async function getWorkspaceLawLists(): Promise<
  */
 export async function getLawListItemsForLinking(
   listId: string,
-  query?: string
+  query?: string,
+  options?: { onlyWithRequirements?: boolean }
 ): Promise<ActionResult<LawListItemForLinking[]>> {
   try {
     return await withWorkspace(async ({ workspaceId }) => {
@@ -1901,6 +1906,10 @@ export async function getLawListItemsForLinking(
         ]
       }
 
+      if (options?.onlyWithRequirements) {
+        whereClause.requirements = { some: {} }
+      }
+
       const items = await prisma.lawListItem.findMany({
         where: whereClause,
         include: {
@@ -1917,8 +1926,18 @@ export async function getLawListItemsForLinking(
               name: true,
             },
           },
+          group: {
+            select: {
+              id: true,
+              name: true,
+              position: true,
+            },
+          },
+          _count: {
+            select: { requirements: true },
+          },
         },
-        orderBy: { position: 'asc' },
+        orderBy: [{ group: { position: 'asc' } }, { position: 'asc' }],
       })
 
       return {
@@ -1930,6 +1949,10 @@ export async function getLawListItemsForLinking(
           documentNumber: item.document.document_number,
           listId: item.law_list.id,
           listName: item.law_list.name,
+          requirementCount: item._count.requirements,
+          groupId: item.group?.id ?? null,
+          groupName: item.group?.name ?? null,
+          groupPosition: item.group?.position ?? null,
         })),
       }
     })
@@ -1951,9 +1974,11 @@ export interface TaskForLinking {
   title: string
   priority: TaskPriority
   column: {
+    id: string
     name: string
     color: string
     is_done: boolean
+    position: number
   }
   assignee: {
     id: string
@@ -2002,9 +2027,11 @@ export async function getTasksForLinking(
           priority: true,
           column: {
             select: {
+              id: true,
               name: true,
               color: true,
               is_done: true,
+              position: true,
             },
           },
           assignee: {
@@ -2082,6 +2109,16 @@ export async function searchLawListItemsForLinking(
               name: true,
             },
           },
+          group: {
+            select: {
+              id: true,
+              name: true,
+              position: true,
+            },
+          },
+          _count: {
+            select: { requirements: true },
+          },
         },
         orderBy: {
           document: { title: 'asc' },
@@ -2097,6 +2134,10 @@ export async function searchLawListItemsForLinking(
           documentNumber: item.document.document_number,
           listId: item.law_list.id,
           listName: item.law_list.name,
+          requirementCount: item._count.requirements,
+          groupId: item.group?.id ?? null,
+          groupName: item.group?.name ?? null,
+          groupPosition: item.group?.position ?? null,
         })),
       }
     })
