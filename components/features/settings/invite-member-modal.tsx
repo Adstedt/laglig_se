@@ -110,7 +110,7 @@ export function InviteMemberModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <DialogHeader>
             <DialogTitle>Bjud in medlem</DialogTitle>
             <DialogDescription>

@@ -63,4 +63,53 @@ describe('GET /api/cron/cleanup-invitations', () => {
     expect(res.status).toBe(500)
     expect(mockFailJobRun).toHaveBeenCalledTimes(1)
   })
+
+  it('returns 401 in production when the Bearer token is missing', async () => {
+    const originalNodeEnv = process.env.NODE_ENV
+    const originalSecret = process.env.CRON_SECRET
+    try {
+      process.env.NODE_ENV = 'production'
+      process.env.CRON_SECRET = 'expected-secret'
+
+      const res = await GET(makeRequest())
+      expect(res.status).toBe(401)
+      expect(mockUpdateMany).not.toHaveBeenCalled()
+    } finally {
+      process.env.NODE_ENV = originalNodeEnv
+      if (originalSecret === undefined) {
+        delete process.env.CRON_SECRET
+      } else {
+        process.env.CRON_SECRET = originalSecret
+      }
+    }
+  })
+
+  it('returns 200 in production when the Bearer token matches', async () => {
+    const originalNodeEnv = process.env.NODE_ENV
+    const originalSecret = process.env.CRON_SECRET
+    try {
+      process.env.NODE_ENV = 'production'
+      process.env.CRON_SECRET = 'expected-secret'
+
+      const authedRequest = new Request(
+        'http://localhost/api/cron/cleanup-invitations',
+        {
+          headers: {
+            'x-triggered-by': 'test',
+            authorization: 'Bearer expected-secret',
+          },
+        }
+      )
+      const res = await GET(authedRequest)
+      expect(res.status).toBe(200)
+      expect(mockUpdateMany).toHaveBeenCalledTimes(1)
+    } finally {
+      process.env.NODE_ENV = originalNodeEnv
+      if (originalSecret === undefined) {
+        delete process.env.CRON_SECRET
+      } else {
+        process.env.CRON_SECRET = originalSecret
+      }
+    }
+  })
 })
