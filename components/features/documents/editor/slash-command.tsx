@@ -229,6 +229,7 @@ export const SlashCommandExtension = Extension.create({
       documentId: '' as string,
       suggestion: {
         char: '/',
+        startOfLine: true,
         items: ({ query }: { query: string }) => {
           return COMMANDS.filter((item) =>
             item.title.toLowerCase().includes(query.toLowerCase())
