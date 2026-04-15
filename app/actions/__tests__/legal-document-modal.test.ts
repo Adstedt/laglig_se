@@ -18,6 +18,11 @@ vi.mock('@/lib/prisma', () => ({
     legalDocument: {
       findUnique: vi.fn(),
     },
+    // Story 17.18: getListItemDetails now resolves the latest amendment
+    // via AmendmentDocument lookup (see resolveLatestAmendment in the action).
+    amendmentDocument: {
+      findFirst: vi.fn(),
+    },
   },
 }))
 
