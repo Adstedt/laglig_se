@@ -171,10 +171,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
         roleLabel={roleLabel}
         email={invitation.email}
       />
-      <InviteActionsClient
-        invitationId={invitation.id}
-        workspaceSlug={invitation.workspace.slug}
-      />
+      <InviteActionsClient invitationId={invitation.id} />
     </InviteLayout>
   )
 }

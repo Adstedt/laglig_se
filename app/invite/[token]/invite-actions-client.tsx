@@ -14,12 +14,10 @@ import { acceptInvitation, declineInvitation } from '@/app/actions/invitations'
 
 interface InviteActionsClientProps {
   invitationId: string
-  workspaceSlug: string
 }
 
 export function InviteActionsClient({
   invitationId,
-  workspaceSlug: _workspaceSlug,
 }: InviteActionsClientProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()

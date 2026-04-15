@@ -14,18 +14,31 @@ import crypto from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { WorkspaceRole } from '@prisma/client'
+import { Ratelimit } from '@upstash/ratelimit'
 import {
   getWorkspaceContext,
   WorkspaceAccessError,
 } from '@/lib/auth/workspace-context'
 import { requirePermission } from '@/lib/api/require-permission'
 import { prisma } from '@/lib/prisma'
+import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { sendEmail } from '@/lib/email/email-service'
 import { WorkspaceInvitationEmail } from '@/emails/workspace-invitation'
 import { ROLE_LABELS } from '@/components/features/settings/role-labels'
 import { getAppUrl } from '@/lib/utils/app-url'
+import { INVITE_TTL_MS } from '@/lib/constants/invitations'
 
-const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000
+// Per-workspace rate limit: 50 invitations / hour. Bounded by the
+// members:invite permission but a compromised admin account could still
+// spam. Mirrors the pattern in app/api/chat/route.ts.
+const inviteRatelimit = isRedisConfigured()
+  ? new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(50, '1 h'),
+      analytics: true,
+      prefix: 'ratelimit:invitations:workspace',
+    })
+  : null
 
 const InviteBodySchema = z.object({
   email: z
@@ -50,6 +63,25 @@ export async function POST(request: Request) {
   if (denied) return denied
 
   const context = await getWorkspaceContext()
+
+  // Per-workspace throttle — returns 429 on exhaustion. Skipped silently
+  // when Redis isn't configured (local dev without Upstash creds).
+  if (inviteRatelimit) {
+    const { success, reset } = await inviteRatelimit.limit(context.workspaceId)
+    if (!success) {
+      const retryAfter = Math.max(1, Math.ceil((reset - Date.now()) / 1000))
+      return NextResponse.json(
+        {
+          error:
+            'Tak för inbjudningar per timme nått. Försök igen om en stund.',
+        },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(retryAfter) },
+        }
+      )
+    }
+  }
 
   let rawBody: unknown
   try {

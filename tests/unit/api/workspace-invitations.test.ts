@@ -69,6 +69,23 @@ vi.mock('@/emails/workspace-invitation', () => ({
   WorkspaceInvitationEmail: (props: Record<string, unknown>) => props,
 }))
 
+// Mock the rate limiter so tests don't hit real Upstash. Tests that need
+// a "rate limit exceeded" scenario can override mockRatelimitLimit.
+const mockRatelimitLimit = vi.fn().mockResolvedValue({
+  success: true,
+  limit: 50,
+  remaining: 49,
+  reset: Date.now() + 60 * 60 * 1000,
+})
+vi.mock('@upstash/ratelimit', () => ({
+  Ratelimit: class {
+    static slidingWindow() {
+      return {}
+    }
+    limit = mockRatelimitLimit
+  },
+}))
+
 // Import routes after mocks.
 const { POST, GET } = await import('@/app/api/workspace/invitations/route')
 const { DELETE } = await import('@/app/api/workspace/invitations/[id]/route')
@@ -110,6 +127,12 @@ beforeEach(() => {
   mockFindFirstMember.mockResolvedValue(null)
   mockFindFirstInvitation.mockResolvedValue(null)
   mockSendEmail.mockResolvedValue({ success: true })
+  mockRatelimitLimit.mockResolvedValue({
+    success: true,
+    limit: 50,
+    remaining: 49,
+    reset: Date.now() + 60 * 60 * 1000,
+  })
 })
 
 // ===========================================================================
@@ -255,6 +278,25 @@ describe('POST /api/workspace/invitations', () => {
     })
     const res = await POST(req)
     expect(res.status).toBe(400)
+  })
+
+  it('returns 429 with Retry-After when the per-workspace rate limit is exceeded', async () => {
+    mockRatelimitLimit.mockResolvedValueOnce({
+      success: false,
+      limit: 50,
+      remaining: 0,
+      reset: Date.now() + 30 * 60 * 1000, // 30 min out
+    })
+
+    const res = await POST(
+      jsonRequest({ email: 'victim@acme.se', role: 'MEMBER' })
+    )
+    expect(res.status).toBe(429)
+    const retryAfter = res.headers.get('Retry-After')
+    expect(retryAfter).not.toBeNull()
+    expect(Number(retryAfter)).toBeGreaterThan(0)
+    expect(mockCreateInvitation).not.toHaveBeenCalled()
+    expect(mockSendEmail).not.toHaveBeenCalled()
   })
 })
 
