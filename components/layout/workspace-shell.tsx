@@ -48,18 +48,40 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
 
   // Keyboard shortcuts
   useEffect(() => {
+    // Detect editable typing context robustly. The naive tagName check
+    // misses rich-text editors like Tiptap/ProseMirror where the editable
+    // region is a <div contenteditable="true">. We check both event.target
+    // and document.activeElement, and use closest('[contenteditable]') to
+    // catch any descendant of an editable region.
+    const isEditableContext = (el: unknown): boolean => {
+      if (!el || typeof el !== 'object') return false
+      const element = el as HTMLElement
+      if (!element.tagName) return false
+      if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+        return true
+      }
+      if (element.isContentEditable) return true
+      if (
+        typeof element.closest === 'function' &&
+        element.closest('[contenteditable="true"], [contenteditable=""]') !==
+          null
+      ) {
+        return true
+      }
+      return false
+    }
+
     const handleKeyDown = (event: KeyboardEvent) => {
       // Cmd/Ctrl + K — toggle right sidebar (AI chat)
       if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault()
         toggleRightSidebar()
       }
-      // Forward slash (/) when not in an input — toggle right sidebar
+      // Forward slash (/) when not typing in any editable context — toggle right sidebar
       if (
         event.key === '/' &&
-        !['INPUT', 'TEXTAREA'].includes(
-          (event.target as HTMLElement)?.tagName || ''
-        )
+        !isEditableContext(event.target) &&
+        !isEditableContext(document.activeElement)
       ) {
         event.preventDefault()
         toggleRightSidebar()

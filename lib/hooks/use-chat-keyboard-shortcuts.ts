@@ -18,12 +18,33 @@ export function useChatKeyboardShortcuts({
 }: UseChatKeyboardShortcutsOptions) {
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      // Check if user is typing in an input/textarea
-      const target = event.target as HTMLElement
+      // Detect typing context robustly. The naive `target.isContentEditable`
+      // check can fail on Tiptap/ProseMirror editors (event target may be a
+      // child node, or the HTMLElement cast can mask non-HTMLElement targets).
+      // We check both `event.target` and `document.activeElement`, and use
+      // `closest('[contenteditable]')` to catch any descendant of an editable
+      // region.
+      const isEditableContext = (el: unknown): boolean => {
+        if (!el || typeof el !== 'object') return false
+        const element = el as HTMLElement
+        if (!element.tagName) return false
+        if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+          return true
+        }
+        if (element.isContentEditable) return true
+        if (
+          typeof element.closest === 'function' &&
+          element.closest('[contenteditable="true"], [contenteditable=""]') !==
+            null
+        ) {
+          return true
+        }
+        return false
+      }
+
       const isInputFocused =
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable
+        isEditableContext(event.target) ||
+        isEditableContext(document.activeElement)
 
       // Cmd+K / Ctrl+K - toggle chat regardless of input focus
       if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
