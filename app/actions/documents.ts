@@ -1293,6 +1293,13 @@ export async function getDocumentLinks(documentId: string): Promise<
       documentNumber: string | null
       linkId: string
     }>
+    requirements: Array<{
+      id: string
+      linkId: string
+      text: string
+      listItemTitle: string
+      listItemDocumentNumber: string | null
+    }>
   }>
 > {
   try {
@@ -1305,7 +1312,7 @@ export async function getDocumentLinks(documentId: string): Promise<
         return { success: false, error: 'Dokument hittades inte' }
       }
 
-      const [taskLinks, listItemLinks] = await Promise.all([
+      const [taskLinks, listItemLinks, requirementLinks] = await Promise.all([
         prisma.workspaceDocumentTaskLink.findMany({
           where: { document_id: documentId },
           include: {
@@ -1323,6 +1330,24 @@ export async function getDocumentLinks(documentId: string): Promise<
             },
           },
         }),
+        prisma.requirementEvidenceLink.findMany({
+          where: { workspace_document_id: documentId },
+          include: {
+            requirement: {
+              select: {
+                id: true,
+                text: true,
+                list_item: {
+                  select: {
+                    document: {
+                      select: { title: true, document_number: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        }),
       ])
 
       return {
@@ -1335,9 +1360,18 @@ export async function getDocumentLinks(documentId: string): Promise<
           })),
           listItems: listItemLinks.map((l) => ({
             id: l.list_item.id,
-            title: l.list_item.document?.title ?? 'Okänt lagkrav',
+            title: l.list_item.document?.title ?? 'Okänd författningstext',
             documentNumber: l.list_item.document?.document_number ?? null,
             linkId: l.id,
+          })),
+          requirements: requirementLinks.map((l) => ({
+            id: l.requirement.id,
+            linkId: l.id,
+            text: l.requirement.text,
+            listItemTitle:
+              l.requirement.list_item?.document?.title ?? 'Okänd källa',
+            listItemDocumentNumber:
+              l.requirement.list_item?.document?.document_number ?? null,
           })),
         },
       }

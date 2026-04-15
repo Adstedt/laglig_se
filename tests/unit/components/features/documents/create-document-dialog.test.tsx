@@ -24,6 +24,24 @@ vi.mock('@/app/actions/documents', () => ({
     success: true,
     data: [],
   }),
+  linkDocumentToTask: vi.fn().mockResolvedValue({ success: true }),
+  linkDocumentToListItem: vi.fn().mockResolvedValue({ success: true }),
+}))
+
+vi.mock('@/app/actions/law-list-item-requirements', () => ({
+  linkEvidenceToRequirement: vi.fn().mockResolvedValue({ success: true }),
+  getRequirementsForListItem: vi.fn().mockResolvedValue({
+    success: true,
+    data: [],
+  }),
+}))
+
+vi.mock('@/app/actions/tasks', () => ({
+  getTasksForLinking: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  getWorkspaceLawLists: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  getLawListItemsForLinking: vi
+    .fn()
+    .mockResolvedValue({ success: true, data: [] }),
 }))
 
 // Mock sonner toast
@@ -44,7 +62,7 @@ describe('CreateDocumentDialog', () => {
     render(<CreateDocumentDialog open={true} onOpenChange={vi.fn()} />)
 
     expect(screen.getByText('Nytt dokument')).toBeDefined()
-    expect(screen.getByLabelText('Titel')).toBeDefined()
+    expect(screen.getByLabelText(/^Titel/)).toBeDefined()
     expect(screen.getByLabelText('Dokumenttyp')).toBeDefined()
     expect(screen.getByText('Skapa dokument')).toBeDefined()
     expect(screen.getByText('Avbryt')).toBeDefined()
@@ -74,7 +92,7 @@ describe('CreateDocumentDialog', () => {
     render(<CreateDocumentDialog open={true} onOpenChange={onOpenChange} />)
 
     // Fill in title
-    const titleInput = screen.getByLabelText('Titel')
+    const titleInput = screen.getByLabelText(/^Titel/)
     await userEvent.type(titleInput, 'Arbetsmiljöpolicy 2026')
 
     // Submit
