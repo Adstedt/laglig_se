@@ -86,6 +86,15 @@ vi.mock('@upstash/ratelimit', () => ({
   },
 }))
 
+// In CI the Upstash env vars are absent, so the real isRedisConfigured()
+// returns false and the route skips the rate-limit branch entirely —
+// which would make the 429 test fall through to the inviter lookup and
+// hit the 401 path. Force-configure Redis so the limiter is constructed.
+vi.mock('@/lib/cache/redis', () => ({
+  redis: {},
+  isRedisConfigured: () => true,
+}))
+
 // Import routes after mocks.
 const { POST, GET } = await import('@/app/api/workspace/invitations/route')
 const { DELETE } = await import('@/app/api/workspace/invitations/[id]/route')
