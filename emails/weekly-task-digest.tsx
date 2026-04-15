@@ -1,6 +1,15 @@
-import { Button, Hr, Section, Text } from '@react-email/components'
+import { Button, Text } from '@react-email/components'
 import * as React from 'react'
-import { LagligEmailLayout } from './components/laglig-email-layout'
+import {
+  EmailBadge,
+  EmailBody,
+  EmailDivider,
+  EmailHeading,
+  EmailIconCircle,
+  emailColors,
+  LagligEmailLayout,
+} from './components/laglig-email-layout'
+import { ICON_CALENDAR } from './components/email-icons'
 
 export interface DigestTask {
   title: string
@@ -22,106 +31,78 @@ export function WeeklyTaskDigestEmail({
   weekLabel = 'denna vecka',
   unsubscribeUrl = '',
 }: WeeklyTaskDigestEmailProps) {
+  const taskWord = tasks.length === 1 ? 'uppgift' : 'uppgifter'
   return (
     <LagligEmailLayout
       preview={`Du har ${tasks.length} uppgift${tasks.length !== 1 ? 'er' : ''} att slutföra ${weekLabel}`}
       unsubscribeUrl={unsubscribeUrl}
     >
-      <Text style={heading}>Dina uppgifter {weekLabel}</Text>
-
-      <Text style={paragraph}>
+      <EmailIconCircle src={ICON_CALENDAR} />
+      <EmailHeading>Dina uppgifter {weekLabel}</EmailHeading>
+      <EmailBody>
         Hej {userName ?? 'du'}! Du har{' '}
         <strong>
-          {tasks.length} uppgift{tasks.length !== 1 ? 'er' : ''}
+          {tasks.length} {taskWord}
         </strong>{' '}
         att slutföra {weekLabel}.
-      </Text>
+      </EmailBody>
 
       {tasks.map((task, i) => (
         <React.Fragment key={i}>
-          <Section style={card}>
-            <Text style={cardTitle}>{task.title}</Text>
-            <Text style={cardMeta}>
+          <EmailDivider />
+          <div style={itemWrap}>
+            <Text style={itemTitle}>{task.title}</Text>
+            <div style={itemMetaRow}>
               {task.priority && (
-                <span style={priorityBadge}>{task.priority}</span>
+                <EmailBadge tone="neutral">{task.priority}</EmailBadge>
               )}
-              {task.dueDate && ` Förfaller: ${task.dueDate}`}
-            </Text>
-            <Section style={ctaRow}>
-              <Button href={task.taskUrl} style={ctaButton}>
+              {task.dueDate && (
+                <span style={itemDueText}>Förfaller: {task.dueDate}</span>
+              )}
+            </div>
+            {task.taskUrl && (
+              <Button href={task.taskUrl} style={itemCta}>
                 Visa uppgift
               </Button>
-            </Section>
-          </Section>
-          {i < tasks.length - 1 && <Hr style={cardDivider} />}
+            )}
+          </div>
         </React.Fragment>
       ))}
     </LagligEmailLayout>
   )
 }
 
-const heading: React.CSSProperties = {
-  fontSize: '20px',
-  fontWeight: 600,
-  color: '#1a1a2e',
-  margin: '0 0 16px',
+const itemWrap: React.CSSProperties = {
+  padding: '20px 0 0 0',
 }
 
-const paragraph: React.CSSProperties = {
+const itemTitle: React.CSSProperties = {
   fontSize: '15px',
-  lineHeight: '24px',
-  color: '#525f7f',
-  margin: '0 0 20px',
-}
-
-const card: React.CSSProperties = {
-  backgroundColor: '#f6f9fc',
-  borderRadius: '6px',
-  padding: '16px',
-  margin: '0 0 4px',
-  borderLeft: '4px solid #2563eb',
-}
-
-const cardTitle: React.CSSProperties = {
-  fontSize: '16px',
   fontWeight: 600,
-  color: '#1a1a2e',
-  margin: '0 0 4px',
+  color: emailColors.ink,
+  margin: '0 0 8px 0',
 }
 
-const cardMeta: React.CSSProperties = {
+const itemMetaRow: React.CSSProperties = {
+  margin: '0 0 14px 0',
+}
+
+const itemDueText: React.CSSProperties = {
   fontSize: '13px',
-  color: '#525f7f',
-  margin: '0 0 4px',
+  color: emailColors.inkMuted,
+  marginLeft: '8px',
 }
 
-const priorityBadge: React.CSSProperties = {
-  display: 'inline-block',
-  backgroundColor: '#2563eb',
-  color: '#ffffff',
-  padding: '2px 8px',
-  borderRadius: '4px',
-  fontSize: '12px',
+const itemCta: React.CSSProperties = {
+  backgroundColor: emailColors.ctaBg,
+  color: emailColors.ctaText,
+  fontSize: '13px',
   fontWeight: 600,
-}
-
-const ctaRow: React.CSSProperties = {
-  margin: '12px 0 0',
-}
-
-const ctaButton: React.CSSProperties = {
-  backgroundColor: '#2563eb',
-  color: '#ffffff',
-  fontSize: '14px',
-  fontWeight: 600,
-  padding: '10px 20px',
-  borderRadius: '6px',
+  padding: '10px 22px',
+  borderRadius: '8px',
   textDecoration: 'none',
-}
-
-const cardDivider: React.CSSProperties = {
-  borderColor: '#e6ebf1',
-  margin: '12px 0',
+  letterSpacing: '0.2px',
+  display: 'inline-block',
 }
 
 export default WeeklyTaskDigestEmail
