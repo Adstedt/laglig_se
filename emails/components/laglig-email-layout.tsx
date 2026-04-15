@@ -59,8 +59,12 @@ export function LagligEmailLayout({
   return (
     <Html lang="sv">
       <Head>
+        {/* Force light scheme — defeats Outlook/Gmail dark-mode color inversion. */}
+        <meta name="color-scheme" content="light only" />
+        <meta name="supported-color-schemes" content="light only" />
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+          :root { color-scheme: light only; supported-color-schemes: light only; }
         `}</style>
       </Head>
       {preview && <Preview>{preview}</Preview>}
@@ -135,12 +139,12 @@ export function EmailIconCircle({
                 verticalAlign: 'middle',
               }}
             >
-              <Img
-                src={src}
-                width="24"
-                height="24"
-                alt=""
-                style={{ display: 'inline-block', verticalAlign: 'middle' }}
+              {/* Hide SVG data URI from Outlook desktop (Word engine) — it
+                  would render a red-X placeholder. Other clients see the icon. */}
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: `<!--[if !mso]><!--><img src="${src}" width="24" height="24" alt="" style="display:inline-block;vertical-align:middle;" /><!--<![endif]-->`,
+                }}
               />
             </td>
           </tr>
