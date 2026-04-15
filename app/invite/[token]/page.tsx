@@ -90,9 +90,43 @@ export default async function InvitePage({ params }: InvitePageProps) {
   const inviterName = invitation.inviter.name ?? invitation.inviter.email
   const roleLabel = ROLE_LABELS[invitation.role]
 
-  // Not logged in → send to login, preserving the invite URL as callback.
+  // Not logged in → branch on whether the invitee already has an account.
+  // Existing account → /login. New user → /signup with the invite token so
+  // post-verification routing brings them back here (Story 5.3 Option B).
   if (!sessionEmail) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: inviteEmail },
+      select: { id: true },
+    })
     const callbackUrl = `/invite/${token}`
+    const emailParam = encodeURIComponent(invitation.email)
+
+    if (existingUser) {
+      const href = `/login?email=${emailParam}&callbackUrl=${encodeURIComponent(callbackUrl)}`
+      return (
+        <InviteLayout>
+          <InvitationHeader
+            workspaceName={invitation.workspace.name}
+            inviterName={inviterName}
+            roleLabel={roleLabel}
+            email={invitation.email}
+          />
+          <div className="mt-6 flex flex-col gap-3">
+            <Link href={href}>
+              <Button className="w-full">Logga in för att fortsätta</Button>
+            </Link>
+            <p className="text-center text-xs text-muted-foreground">
+              Logga in med <strong>{invitation.email}</strong> för att acceptera
+              inbjudan.
+            </p>
+          </div>
+        </InviteLayout>
+      )
+    }
+
+    // No account yet → route to signup. Signup will wire emailRedirectTo so
+    // /auth/verify forwards the login callback to /invite/<token>.
+    const signupHref = `/signup?email=${emailParam}&invite=${token}`
     return (
       <InviteLayout>
         <InvitationHeader
@@ -102,12 +136,12 @@ export default async function InvitePage({ params }: InvitePageProps) {
           email={invitation.email}
         />
         <div className="mt-6 flex flex-col gap-3">
-          <Link href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
-            <Button className="w-full">Logga in för att fortsätta</Button>
+          <Link href={signupHref}>
+            <Button className="w-full">Skapa konto för att fortsätta</Button>
           </Link>
           <p className="text-center text-xs text-muted-foreground">
-            Logga in med <strong>{invitation.email}</strong> för att acceptera
-            inbjudan.
+            Du har inget konto än. Skapa ett med{' '}
+            <strong>{invitation.email}</strong> för att acceptera inbjudan.
           </p>
         </div>
       </InviteLayout>

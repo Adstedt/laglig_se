@@ -5,12 +5,16 @@
  * Server actions for workspace invitation acceptance flow.
  */
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import type { WorkspaceInvitation, WorkspaceStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { getServerSession } from '@/lib/auth/session'
 import { setActiveWorkspace } from '@/lib/auth/workspace-context'
-import { invalidateUserCache } from '@/lib/cache/workspace-cache'
+import {
+  invalidateUserCache,
+  invalidateWorkspaceCache,
+} from '@/lib/cache/workspace-cache'
 
 // ============================================================================
 // Types
@@ -209,15 +213,87 @@ export async function acceptInvitation(invitationId: string): Promise<{
     // Set active workspace cookie
     await setActiveWorkspace(invitation.workspace_id)
 
-    // Invalidate user cache
-    await invalidateUserCache(user.id, ['context'])
+    // ------------------------------------------------------------------
+    // Cache invalidation — Story 5.3 follow-up.
+    //
+    // Three separate cache layers have to be cleared or the Settings page
+    // keeps serving stale member lists after an accept:
+    //
+    //   1. Next.js `unstable_cache` tags used by app/(workspace)/settings/page.tsx
+    //      — cleared by updateTag (Next.js 16 server-action API with
+    //      read-your-own-writes). revalidatePath alone does NOT clear
+    //      tag-based caches.
+    //   2. Redis workspace-members cache (`workspace:members:{id}`) and
+    //      the per-user workspace-context cache.
+    //   3. `auth:context:{email}:{workspaceId}` keys that getWorkspaceContext
+    //      actually reads — different namespace from what invalidateUserCache
+    //      clears, so we delete them explicitly for the joining user's email.
+    // ------------------------------------------------------------------
 
+    updateTag('workspace-members')
+    updateTag(`workspace-${invitation.workspace_id}`)
+    revalidatePath('/settings')
     revalidatePath('/')
+
+    await Promise.all([
+      invalidateUserCache(user.id, ['context']),
+      invalidateWorkspaceCache(invitation.workspace_id, ['members', 'context']),
+    ])
+
+    if (isRedisConfigured()) {
+      // Upstash Redis `del` is variadic; passing both keys in a single call
+      // satisfies its "at least 2 args" type signature.
+      await redis.del(
+        `auth:context:${session.user.email}:${invitation.workspace_id}`,
+        `auth:context:${session.user.email}:default`
+      )
+    }
 
     return { success: true, workspaceId: invitation.workspace_id }
   } catch (error) {
     console.error('Error accepting invitation:', error)
     return { success: false, error: 'Något gick fel. Försök igen.' }
+  }
+}
+
+/**
+ * Story 5.3 follow-up: Lightweight, unauthenticated invitation preview for
+ * the signup form. Given a token (which is itself the auth), returns just
+ * enough metadata to render the "you're signing up to join {workspace}"
+ * badge. Returns null for missing / non-PENDING / expired / inactive-
+ * workspace tokens so the caller can silently hide the badge in those
+ * cases without leaking whether the token exists.
+ */
+export async function getInvitationPreview(token: string): Promise<{
+  workspaceName: string
+  role: string
+  email: string
+} | null> {
+  if (!token) return null
+  try {
+    const invitation = await prisma.workspaceInvitation.findUnique({
+      where: { token },
+      select: {
+        status: true,
+        expires_at: true,
+        email: true,
+        role: true,
+        workspace: { select: { name: true, status: true } },
+      },
+    })
+
+    if (!invitation) return null
+    if (invitation.status !== 'PENDING') return null
+    if (invitation.expires_at < new Date()) return null
+    if (invitation.workspace.status !== 'ACTIVE') return null
+
+    return {
+      workspaceName: invitation.workspace.name,
+      role: invitation.role,
+      email: invitation.email,
+    }
+  } catch {
+    return null
   }
 }
 
