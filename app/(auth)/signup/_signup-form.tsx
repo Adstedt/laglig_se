@@ -11,6 +11,8 @@ import { getInvitationPreview } from '@/app/actions/invitations'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { GoogleSignInButton } from '@/components/features/auth/google-signin-button'
 import {
   saveOnboardingData,
   getOnboardingData,
@@ -222,117 +224,132 @@ export function SignupForm() {
         </div>
       )}
 
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <div className="mt-8 space-y-6">
         {error && (
           <div className="rounded-md bg-destructive/10 p-4">
             <div className="text-sm text-destructive">{error}</div>
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Fullständigt namn</Label>
-            <Input
-              id="name"
-              type="text"
-              autoComplete="name"
-              placeholder="Fullständigt namn"
-              {...register('name')}
-            />
-            {(errors.name ?? fieldErrors.name?.[0]) && (
-              <p className="text-sm text-destructive">
-                {errors.name?.message ?? fieldErrors.name?.[0]}
-              </p>
-            )}
-          </div>
+        <GoogleSignInButton
+          mode="signup"
+          callbackUrl={inviteToken ? `/invite/${inviteToken}` : '/onboarding'}
+          onError={setError}
+        />
 
-          <div className="space-y-2">
-            <Label htmlFor="email">E-postadress</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="E-postadress"
-              {...register('email')}
-            />
-            {(errors.email ?? fieldErrors.email?.[0]) && (
-              <p className="text-sm text-destructive">
-                {errors.email?.message ?? fieldErrors.email?.[0]}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Lösenord</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="Minst 12 tecken"
-              {...register('password')}
-            />
-            {password && (
-              <div className="mt-1 flex items-center gap-2">
-                <div
-                  className={`h-1 flex-1 rounded ${
-                    strength === 'svag'
-                      ? 'bg-red-500'
-                      : strength === 'medel'
-                        ? 'bg-yellow-500'
-                        : 'bg-green-500'
-                  }`}
-                />
-                <span className="text-xs text-muted-foreground capitalize">
-                  {strength}
-                </span>
-              </div>
-            )}
-            {(errors.password ?? fieldErrors.password?.[0]) && (
-              <p className="text-sm text-destructive">
-                {errors.password?.message ?? fieldErrors.password?.[0]}
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Måste innehålla versal, gemen, siffra och specialtecken
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Bekräfta lösenord</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              placeholder="Bekräfta lösenord"
-              {...register('confirmPassword')}
-            />
-            {(errors.confirmPassword ?? fieldErrors.confirmPassword?.[0]) && (
-              <p className="text-sm text-destructive">
-                {errors.confirmPassword?.message ??
-                  fieldErrors.confirmPassword?.[0]}
-              </p>
-            )}
-          </div>
+        <div className="relative">
+          <Separator />
+          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs uppercase text-muted-foreground">
+            eller
+          </span>
         </div>
 
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
-        >
-          {isLoading ? 'Skapar konto...' : 'Skapa konto'}
-        </Button>
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Fullständigt namn</Label>
+              <Input
+                id="name"
+                type="text"
+                autoComplete="name"
+                placeholder="Fullständigt namn"
+                {...register('name')}
+              />
+              {(errors.name ?? fieldErrors.name?.[0]) && (
+                <p className="text-sm text-destructive">
+                  {errors.name?.message ?? fieldErrors.name?.[0]}
+                </p>
+              )}
+            </div>
 
-        {hasStoredData && (
-          <div className="flex items-center gap-2 rounded-md bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
-            <CheckCircle className="h-4 w-4 shrink-0" />
-            <span>
-              Vi har din företagsinformation redo — den fylls i automatiskt
-              efter registrering
-            </span>
+            <div className="space-y-2">
+              <Label htmlFor="email">E-postadress</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="E-postadress"
+                {...register('email')}
+              />
+              {(errors.email ?? fieldErrors.email?.[0]) && (
+                <p className="text-sm text-destructive">
+                  {errors.email?.message ?? fieldErrors.email?.[0]}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Lösenord</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Minst 12 tecken"
+                {...register('password')}
+              />
+              {password && (
+                <div className="mt-1 flex items-center gap-2">
+                  <div
+                    className={`h-1 flex-1 rounded ${
+                      strength === 'svag'
+                        ? 'bg-red-500'
+                        : strength === 'medel'
+                          ? 'bg-yellow-500'
+                          : 'bg-green-500'
+                    }`}
+                  />
+                  <span className="text-xs text-muted-foreground capitalize">
+                    {strength}
+                  </span>
+                </div>
+              )}
+              {(errors.password ?? fieldErrors.password?.[0]) && (
+                <p className="text-sm text-destructive">
+                  {errors.password?.message ?? fieldErrors.password?.[0]}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Måste innehålla versal, gemen, siffra och specialtecken
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Bekräfta lösenord</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Bekräfta lösenord"
+                {...register('confirmPassword')}
+              />
+              {(errors.confirmPassword ?? fieldErrors.confirmPassword?.[0]) && (
+                <p className="text-sm text-destructive">
+                  {errors.confirmPassword?.message ??
+                    fieldErrors.confirmPassword?.[0]}
+                </p>
+              )}
+            </div>
           </div>
-        )}
-      </form>
+
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+          >
+            {isLoading ? 'Skapar konto...' : 'Skapa konto'}
+          </Button>
+
+          {hasStoredData && (
+            <div className="flex items-center gap-2 rounded-md bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400">
+              <CheckCircle className="h-4 w-4 shrink-0" />
+              <span>
+                Vi har din företagsinformation redo — den fylls i automatiskt
+                efter registrering
+              </span>
+            </div>
+          )}
+        </form>
+      </div>
     </div>
   )
 }

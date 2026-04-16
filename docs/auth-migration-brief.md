@@ -47,6 +47,7 @@ Laglig.se currently runs a hybrid auth stack: **NextAuth owns the session (JWT c
 - **Signup:** `app/actions/auth.ts` — already calls `supabase.auth.signUp`.
 - **Admin login:** `app/actions/admin-auth.ts` — already calls Supabase directly, with its own separate `admin_session` JWT cookie. **Independent of NextAuth.**
 - **User ID alignment:** Prisma `User.id` is `uuid` and the Supabase `auth.users.id` is already written into Prisma on first login. **No schema change needed for IDs** — but see §5.1 #11: a small one-time backfill is required for Supabase users who never completed a NextAuth login (so have no `public.users` row yet).
+- **Google OAuth sign-in:** delivered by Story 4.16 via Supabase-native OAuth (`signInWithOAuth`) with a NextAuth JWT bridge in `app/auth/callback/route.ts`. See `docs/stories/4.16.google-oauth-signin.md` for the implementation reference. The split-brain architecture remains intentionally unresolved — consolidated migration still deferred per §4.1.
 
 ---
 
