@@ -10,6 +10,7 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { SquarePen, History, Download } from 'lucide-react'
 import { useChatInterface } from '@/lib/hooks/use-chat-interface'
+import { useLayoutStore } from '@/lib/stores/layout-store'
 import { ChatMessageList } from '@/components/features/ai-chat/chat-message-list'
 import { ChatInputModern } from '@/components/features/ai-chat/chat-input-modern'
 import { ChatError } from '@/components/features/ai-chat/chat-error'
@@ -18,7 +19,6 @@ import {
   type DashboardCardData,
 } from '@/components/features/dashboard/context-cards'
 import { ChangePicker } from '@/components/features/dashboard/change-picker'
-import { ConversationHistory } from '@/components/features/dashboard/conversation-history'
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
 import {
   archiveConversation,
@@ -51,8 +51,6 @@ const SUGGESTED_PROMPTS = [
   'Vad behöver jag göra denna vecka?',
 ]
 
-type ViewState = 'chat' | 'history'
-
 interface HemChatProps {
   /** 'full' for Hem page, 'panel' for right sidebar */
   mode: 'full' | 'panel'
@@ -77,7 +75,7 @@ export function HemChat({
   initialView,
 }: HemChatProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const [viewState, setViewState] = useState<ViewState>('chat')
+  const { setChatHistoryOpen } = useLayoutStore()
   const [showChangePicker, setShowChangePicker] = useState(false)
 
   // Story 8.23: Auto-open amendments picker from deep-link
@@ -99,6 +97,7 @@ export function HemChat({
     error,
     retryAfter,
     handleRetry,
+    stop,
     clearHistory,
     replaceMessages,
     loadMore,
@@ -152,7 +151,6 @@ export function HemChat({
         await clearHistory()
       }
       setUserEngaged(false)
-      setViewState('chat')
     } catch {
       toast.error('Kunde inte spara konversationen. Försök igen.')
     }
@@ -180,7 +178,6 @@ export function HemChat({
         replaceMessages(uiMessages)
       }
       setUserEngaged(true)
-      setViewState('chat')
     },
     [hasMessages, replaceMessages]
   )
@@ -250,24 +247,25 @@ export function HemChat({
 
   // Focus input on mount in full mode
   useEffect(() => {
-    if (mode === 'full' && viewState === 'chat') {
+    if (mode === 'full') {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
-  }, [mode, viewState])
+  }, [mode])
 
   const greeting = userName
     ? `Hur kan jag hjälpa dig idag, ${userName}?`
     : 'Hur kan jag hjälpa dig idag?'
 
-  // Show conversation history view
-  if (viewState === 'history') {
-    return (
-      <ConversationHistory
-        onSelectConversation={handleLoadConversation}
-        onBack={() => setViewState('chat')}
-      />
-    )
-  }
+  // Listen for conversation selection from history sidebar panel
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { conversationId } = (e as CustomEvent<{ conversationId: string }>)
+        .detail
+      handleLoadConversation(conversationId)
+    }
+    window.addEventListener('laglig:load-conversation', handler)
+    return () => window.removeEventListener('laglig:load-conversation', handler)
+  }, [handleLoadConversation])
 
   // Panel mode: always conversation layout
   if (mode === 'panel') {
@@ -317,6 +315,7 @@ export function HemChat({
         <ChatInputModern
           ref={inputRef}
           onSend={handleSend}
+          onStop={stop}
           disabled={hasError}
           isLoading={isLoading}
           showModelSelector={false}
@@ -363,7 +362,7 @@ export function HemChat({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-foreground/60 hover:text-foreground"
-                        onClick={() => setViewState('history')}
+                        onClick={() => setChatHistoryOpen(true)}
                       >
                         <History className="h-4 w-4" />
                       </Button>
@@ -417,6 +416,7 @@ export function HemChat({
               <ChatInputModern
                 ref={inputRef}
                 onSend={handleSend}
+                onStop={stop}
                 disabled={hasError}
                 isLoading={isLoading}
                 showModelSelector={false}
@@ -506,7 +506,7 @@ export function HemChat({
         {/* History button */}
         <div className="flex justify-center">
           <button
-            onClick={() => setViewState('history')}
+            onClick={() => setChatHistoryOpen(true)}
             className={cn(
               'flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm',
               'text-foreground/70 transition-colors',

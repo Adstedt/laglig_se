@@ -90,6 +90,7 @@ export function ChatPanel({
   const {
     messages,
     sendMessage,
+    stop,
     status,
     error,
     retryAfter,
@@ -277,6 +278,7 @@ export function ChatPanel({
             onLoadMore={loadMore}
             isLoadingMore={isLoadingMore}
             hasMore={hasMore}
+            contextType={contextType}
             footer={
               <>
                 {inlineAssessment}
@@ -296,6 +298,7 @@ export function ChatPanel({
       <ChatInputModern
         ref={inputRef}
         onSend={handleSendMessage}
+        onStop={stop}
         disabled={hasError}
         isLoading={isLoading}
         placeholder="Skriv din fråga..."
