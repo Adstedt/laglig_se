@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ExternalLink, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { CitationDetailData } from '@/lib/ai/chat-detail-context'
+import { getDocBrowsePath } from '@/lib/ai/citations'
 
 interface CitationDetailProps {
   data: CitationDetailData
@@ -30,7 +31,7 @@ export function CitationDetail({ data }: CitationDetailProps) {
   const isWebSource = !!data.url
   const href =
     !isWebSource && data.slug
-      ? `/lagar/${data.slug}${data.anchorId ? `#${data.anchorId}` : ''}`
+      ? `${getDocBrowsePath(data.documentNumber)}/${data.slug}${data.anchorId ? `#${data.anchorId}` : ''}`
       : null
 
   const webDomain =
