@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Separator } from '@/components/ui/separator'
+import { GoogleSignInButton } from '@/components/features/auth/google-signin-button'
 import type { z } from 'zod'
 
 type LoginFormData = z.infer<typeof LoginSchema>
@@ -22,6 +24,10 @@ const ERROR_MESSAGES: Record<string, string> = {
     'E-postverifieringen misslyckades. Försök igen eller begär en ny verifieringslänk',
   // NOTE: 'Password' key displays a success message via ?error= param (legacy from reset-password confirm flow)
   Password: 'Lösenordet har uppdaterats. Logga in med ditt nya lösenord',
+  email_exists_with_password:
+    'Den här e-postadressen är redan registrerad med ett lösenord. Logga in med ditt lösenord eller kontakta support för att länka kontona.',
+  oauth_failed:
+    'Inloggning med Google misslyckades. Försök igen eller logga in med e-post och lösenord.',
 }
 
 export function LoginForm() {
@@ -67,6 +73,11 @@ export function LoginForm() {
     }
   }, [setValue])
 
+  const callbackUrl =
+    searchParams?.get('callbackUrl') ||
+    searchParams?.get('redirect') ||
+    '/dashboard'
+
   const onSubmit = async (data: LoginFormData) => {
     try {
       setIsLoading(true)
@@ -95,10 +106,6 @@ export function LoginForm() {
 
       // Redirect to dashboard or callback URL
       // Use hard navigation to bypass Next.js Router Cache after auth state change
-      const callbackUrl =
-        searchParams?.get('callbackUrl') ||
-        searchParams?.get('redirect') ||
-        '/dashboard'
       window.location.href = callbackUrl
     } catch (err) {
       setError('Ett fel uppstod. Försök igen.')
@@ -126,7 +133,7 @@ export function LoginForm() {
         </p>
       </div>
 
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+      <div className="mt-8 space-y-6">
         {successMessage && (
           <div className="rounded-md bg-emerald-50 p-4">
             <div className="text-sm text-emerald-800">{successMessage}</div>
@@ -139,70 +146,87 @@ export function LoginForm() {
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">E-postadress</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="E-postadress"
-              {...register('email')}
-            />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
-          </div>
+        <GoogleSignInButton
+          mode="login"
+          callbackUrl={callbackUrl}
+          onError={setError}
+        />
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Lösenord</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              placeholder="Lösenord"
-              {...register('password')}
-            />
-            {errors.password && (
-              <p className="text-sm text-destructive">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+        <div className="relative">
+          <Separator />
+          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs uppercase text-muted-foreground">
+            eller
+          </span>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="remember-me"
-              checked={rememberMe}
-              onCheckedChange={(checked) => setRememberMe(checked === true)}
-            />
-            <Label
-              htmlFor="remember-me"
-              className="text-sm font-normal cursor-pointer"
-            >
-              Kom ihåg min e-post
-            </Label>
-          </div>
-          <div className="text-sm">
-            <Link
-              href="/reset-password"
-              className="font-medium text-primary hover:text-primary/80"
-            >
-              Glömt ditt lösenord?
-            </Link>
-          </div>
-        </div>
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">E-postadress</Label>
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                placeholder="E-postadress"
+                {...register('email')}
+              />
+              {errors.email && (
+                <p className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
 
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
-        >
-          {isLoading ? 'Loggar in...' : 'Logga in'}
-        </Button>
-      </form>
+            <div className="space-y-2">
+              <Label htmlFor="password">Lösenord</Label>
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Lösenord"
+                {...register('password')}
+              />
+              {errors.password && (
+                <p className="text-sm text-destructive">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="remember-me"
+                checked={rememberMe}
+                onCheckedChange={(checked) => setRememberMe(checked === true)}
+              />
+              <Label
+                htmlFor="remember-me"
+                className="text-sm font-normal cursor-pointer"
+              >
+                Kom ihåg min e-post
+              </Label>
+            </div>
+            <div className="text-sm">
+              <Link
+                href="/reset-password"
+                className="font-medium text-primary hover:text-primary/80"
+              >
+                Glömt ditt lösenord?
+              </Link>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+          >
+            {isLoading ? 'Loggar in...' : 'Logga in'}
+          </Button>
+        </form>
+      </div>
     </div>
   )
 }
