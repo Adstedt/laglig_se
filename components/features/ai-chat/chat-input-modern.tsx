@@ -15,7 +15,7 @@ import {
 } from 'react'
 import {
   Send,
-  Loader2,
+  Square,
   Paperclip,
   ChevronDown,
   FileText,
@@ -84,6 +84,7 @@ const DEFAULT_MODEL: ModelOption = MODELS[0]!
 
 interface ChatInputModernProps {
   onSend: (_message: string) => void
+  onStop?: (() => void) | undefined
   onAttach?: () => void
   disabled?: boolean
   isLoading?: boolean
@@ -101,6 +102,7 @@ export const ChatInputModern = forwardRef<
 >(function ChatInputModern(
   {
     onSend,
+    onStop,
     onAttach,
     disabled = false,
     isLoading = false,
@@ -343,32 +345,45 @@ export const ChatInputModern = forwardRef<
                 </span>
               )}
 
-              {/* Send button */}
-              <button
-                type="submit"
-                disabled={!canSend}
-                className={cn(
-                  'flex items-center justify-center rounded-lg transition-all duration-150',
-                  'active:scale-95',
-                  canSend
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
-                    : 'bg-muted text-muted-foreground/50 cursor-not-allowed',
-                  isExpanded ? 'h-10 w-10' : 'h-8 w-8'
-                )}
-                aria-label="Skicka meddelande"
-                data-testid="chat-send-button"
-              >
-                {isLoading ? (
-                  <Loader2
+              {/* Send / Stop button */}
+              {isLoading && onStop ? (
+                <button
+                  type="button"
+                  onClick={onStop}
+                  className={cn(
+                    'flex items-center justify-center rounded-lg transition-all duration-150',
+                    'active:scale-95',
+                    'bg-muted text-muted-foreground hover:bg-muted/80 border border-border',
+                    isExpanded ? 'h-10 w-10' : 'h-8 w-8'
+                  )}
+                  aria-label="Stoppa generering"
+                  data-testid="chat-stop-button"
+                >
+                  <Square
                     className={cn(
-                      'animate-spin',
-                      isExpanded ? 'h-5 w-5' : 'h-4 w-4'
+                      'fill-current',
+                      isExpanded ? 'h-4 w-4' : 'h-3.5 w-3.5'
                     )}
                   />
-                ) : (
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!canSend}
+                  className={cn(
+                    'flex items-center justify-center rounded-lg transition-all duration-150',
+                    'active:scale-95',
+                    canSend
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
+                      : 'bg-muted text-muted-foreground/50 cursor-not-allowed',
+                    isExpanded ? 'h-10 w-10' : 'h-8 w-8'
+                  )}
+                  aria-label="Skicka meddelande"
+                  data-testid="chat-send-button"
+                >
                   <Send className={isExpanded ? 'h-5 w-5' : 'h-4 w-4'} />
-                )}
-              </button>
+                </button>
+              )}
             </div>
           </div>
         </div>
