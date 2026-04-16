@@ -268,7 +268,7 @@ const citationComponents = {
 const emptyComponents = {}
 
 const PROSE_CLASSES =
-  'text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-2 prose-headings:font-semibold prose-headings:mt-4 prose-headings:mb-2 prose-ul:my-2 prose-li:my-0.5 prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-3 prose-blockquote:text-muted-foreground prose-blockquote:italic'
+  'text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-loose prose-p:my-3 prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-3 prose-ul:my-3 prose-li:my-1 prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-3 prose-blockquote:text-muted-foreground prose-blockquote:italic'
 
 // ---------------------------------------------------------------------------
 // ChatMessage
