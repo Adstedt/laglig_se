@@ -27,6 +27,7 @@ export interface SystemPromptOptions {
   title?: string | undefined
   sfsNumber?: string | undefined
   summary?: string | undefined
+  thinkingEnabled?: boolean | undefined
 }
 
 // ---------------------------------------------------------------------------
@@ -189,6 +190,29 @@ export function formatCompanyContext(
 }
 
 // ---------------------------------------------------------------------------
+// Reasoning guidance (appended when extended thinking is enabled)
+// ---------------------------------------------------------------------------
+
+const REASONING_GUIDANCE = `## Resonemangsvägledning
+
+Du har utökat resonemang tillgängligt. Använd det när:
+- Du bedömer om en lag gäller för ett specifikt företags situation
+  (storlek, bransch/SNI, antal anställda, jurisdiktion)
+- Du väger undantag, tröskelvärden eller villkor i lagen
+- Du sammanställer flera källor (lag + ändringsförfattning + myndighetsföreskrift)
+- Du gör en efterlevnadsbedömning eller riskvägd rekommendation
+- Användaren ska agera på ditt svar (spara, delegera, publicera)
+
+Hoppa över längre resonemang när:
+- Användaren ställer en ren faktafråga ("vad är SFS 2022:123?")
+- Svaret redan finns i ett dokument du hämtat via search_laws
+- Frågan gäller procedur ("hur skapar jag en uppgift?")
+- Ett direkt citat från primärkällan besvarar frågan helt
+
+När du resonerar, fokusera på beslutet. Upprepa inte fakta —
+arbeta genom de faktorer som påverkar slutsatsen.`
+
+// ---------------------------------------------------------------------------
 // buildSystemPrompt
 // ---------------------------------------------------------------------------
 
@@ -228,6 +252,13 @@ export async function buildSystemPrompt(
     const lawName = options.title ?? 'en lag'
     sections.push(
       `<task_context>\nAnvändaren tittar på ${lawName} (${options.sfsNumber}). Fokusera svaren på denna lag.\n</task_context>`
+    )
+  }
+
+  // Reasoning guidance (only when extended thinking is enabled for this context)
+  if (options?.thinkingEnabled) {
+    sections.push(
+      `<reasoning_guidance>\n${REASONING_GUIDANCE}\n</reasoning_guidance>`
     )
   }
 

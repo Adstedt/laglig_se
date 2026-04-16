@@ -12,6 +12,10 @@ interface LayoutState {
   toggleRightSidebar: () => void
   setRightSidebarFolded: (_folded: boolean) => void
 
+  // Chat history sidebar (nested panel beside left nav)
+  chatHistoryOpen: boolean
+  setChatHistoryOpen: (_open: boolean) => void
+
   // Accordion states for sidebar sections
   accordionStates: Record<string, boolean>
   setAccordionState: (_id: string, _isOpen: boolean) => void
@@ -35,6 +39,9 @@ export const useLayoutStore = create<LayoutState>()(
       setRightSidebarFolded: (folded: boolean) =>
         set({ rightSidebarFolded: folded }),
 
+      chatHistoryOpen: false,
+      setChatHistoryOpen: (open: boolean) => set({ chatHistoryOpen: open }),
+
       accordionStates: {},
       setAccordionState: (id: string, isOpen: boolean) =>
         set((state) => ({
@@ -44,6 +51,11 @@ export const useLayoutStore = create<LayoutState>()(
     }),
     {
       name: 'layout-storage',
+      partialize: (state) => ({
+        leftSidebarCollapsed: state.leftSidebarCollapsed,
+        rightSidebarFolded: state.rightSidebarFolded,
+        accordionStates: state.accordionStates,
+      }),
     }
   )
 )
