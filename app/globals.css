@@ -1074,6 +1074,11 @@ html {
   list-style-type: square;
 }
 
+/* AI chat — generous line height for readability */
+.streamdown {
+  line-height: 1.7;
+}
+
 /* AI chat — polished tables */
 .streamdown table {
   @apply overflow-hidden rounded-md border border-border w-full text-sm;
