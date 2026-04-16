@@ -30,6 +30,11 @@ import { code } from '@streamdown/code'
 import { CitationPillInline } from './citation-pill'
 import { CitationSourceProvider } from '@/lib/ai/citation-context'
 import { rehypeCitationPills } from '@/lib/ai/rehype-citation-pills'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -207,10 +212,16 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
     if (!isToolUIPart(part)) {
       flushGroup()
       // Merge adjacent text parts for markdown continuity.
+      // Stop merging when the previous item has webSources — this creates
+      // per-section pill groups instead of clustering all at the bottom.
       if (isTextUIPart(part)) {
         hasSeenText = true
         const prev = result[result.length - 1]
-        if (prev?.kind === 'part' && isTextUIPart(prev.part)) {
+        if (
+          prev?.kind === 'part' &&
+          isTextUIPart(prev.part) &&
+          !prev.webSources?.length
+        ) {
           prev.part = {
             ...prev.part,
             text: prev.part.text + (part.text as string),
@@ -245,6 +256,215 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
 // Module-level dedup set for sidebar auto-open — keyed by toolCallId so that
 // a tool call that transitions standalone → grouped mid-stream does not
 // auto-open the sidebar twice. Bounded by tool call IDs per page lifetime.
+// ---------------------------------------------------------------------------
+// Web source deduplication — collapse repeated URLs into one pill + count
+// ---------------------------------------------------------------------------
+
+type DeduplicatedSource = {
+  url: string
+  title: string | undefined
+  domain: string
+  count: number
+}
+
+function deduplicateWebSources(sources: WebSourceRef[]): DeduplicatedSource[] {
+  const seen = new Map<string, DeduplicatedSource>()
+  for (const src of sources) {
+    const existing = seen.get(src.url)
+    if (existing) {
+      existing.count++
+    } else {
+      let domain: string
+      try {
+        domain = new URL(src.url).hostname.replace(/^www\./, '')
+      } catch {
+        domain = src.url
+      }
+      seen.set(src.url, { url: src.url, title: src.title, domain, count: 1 })
+    }
+  }
+  return Array.from(seen.values())
+}
+
+// ---------------------------------------------------------------------------
+// Källor accordion — aggregates all unique sources (web + DB) for the message
+// ---------------------------------------------------------------------------
+
+type AccordionSource =
+  | { kind: 'web'; url: string; domain: string; title: string | null }
+  | {
+      kind: 'db'
+      documentNumber: string
+      title: string | null
+      slug: string
+      anchorId: string | null
+    }
+
+/** Extract document numbers actually cited in text via [Källa: ...] markers */
+function extractCitedDocNumbers(text: string): Set<string> {
+  const cited = new Set<string>()
+  const re = /\[Källa:\s*([^\]]+)\]/g
+  let match
+  while ((match = re.exec(text)) !== null) {
+    const label = match[1]!.trim()
+    // Extract document number (everything before first comma)
+    const commaIdx = label.indexOf(',')
+    cited.add(commaIdx >= 0 ? label.slice(0, commaIdx).trim() : label)
+  }
+  return cited
+}
+
+/** Check if get_document_details was called (its results should show in accordion) */
+function extractDocDetailDocNumbers(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parts: any[]
+): Set<string> {
+  const docs = new Set<string>()
+  for (const part of parts) {
+    if (
+      isToolUIPart(part) &&
+      'toolName' in part &&
+      part.toolName === 'get_document_details' &&
+      part.state === 'output-available' &&
+      'output' in part
+    ) {
+      const output = part.output as
+        | { data?: { documentNumber?: string } }
+        | undefined
+      if (output?.data?.documentNumber) {
+        docs.add(output.data.documentNumber)
+      }
+    }
+  }
+  return docs
+}
+
+function collectAccordionSources(
+  sourceMap: Map<string, import('@/lib/ai/citations').SourceInfo>,
+  fullText: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parts: any[]
+): AccordionSource[] {
+  const citedDocs = extractCitedDocNumbers(fullText)
+  const detailDocs = extractDocDetailDocNumbers(parts)
+  const includedDocs = new Set([...citedDocs, ...detailDocs])
+
+  const webSeen = new Map<string, AccordionSource>()
+  const dbSeen = new Map<string, AccordionSource>()
+
+  for (const [, info] of sourceMap) {
+    if (info.url) {
+      // Web sources — always include (they're explicitly referenced)
+      if (!webSeen.has(info.url)) {
+        let domain: string
+        try {
+          domain = new URL(info.url).hostname.replace(/^www\./, '')
+        } catch {
+          domain = info.url
+        }
+        webSeen.set(info.url, {
+          kind: 'web',
+          url: info.url,
+          domain,
+          title: info.title,
+        })
+      }
+    } else if (info.slug && includedDocs.has(info.documentNumber)) {
+      // DB sources — only include if actually cited or fetched via get_document_details
+      if (!dbSeen.has(info.documentNumber)) {
+        dbSeen.set(info.documentNumber, {
+          kind: 'db',
+          documentNumber: info.documentNumber,
+          title: info.title,
+          slug: info.slug,
+          anchorId: info.anchorId,
+        })
+      }
+    }
+  }
+
+  return [...Array.from(dbSeen.values()), ...Array.from(webSeen.values())]
+}
+
+function SourcesAccordion({
+  sourceMap,
+  fullText,
+  parts,
+}: {
+  sourceMap: Map<string, import('@/lib/ai/citations').SourceInfo>
+  fullText: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parts: any[]
+}) {
+  const chatDetail = useChatDetailSafe()
+  const sources = useMemo(
+    () => collectAccordionSources(sourceMap, fullText, parts),
+    [sourceMap, fullText, parts]
+  )
+
+  if (sources.length === 0) return null
+
+  const handleDbClick = (src: Extract<AccordionSource, { kind: 'db' }>) => {
+    if (!chatDetail) return
+    chatDetail.openDetail({
+      type: 'citation' as const,
+      id: `citation-${src.documentNumber}-doc`,
+      data: {
+        title: src.title ?? '',
+        snippet: '',
+        documentNumber: src.documentNumber,
+        slug: src.slug,
+        ...(src.anchorId ? { anchorId: src.anchorId } : {}),
+      },
+    })
+  }
+
+  return (
+    <Collapsible className="group/sources">
+      <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors py-1">
+        <ChevronRight className="h-3 w-3 transition-transform duration-200 ease-out group-data-[state=open]/sources:rotate-90" />
+        Källor ({sources.length})
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-1.5 space-y-0.5 animate-in fade-in duration-300">
+          {sources.map((src) => {
+            if (src.kind === 'web') {
+              return (
+                <a
+                  key={`web-${src.url}`}
+                  href={src.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 py-1 px-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer min-w-0"
+                >
+                  <Globe className="h-3 w-3 shrink-0" />
+                  <span className="truncate">
+                    {src.title ? `${src.domain} — ${src.title}` : src.domain}
+                  </span>
+                </a>
+              )
+            }
+            return (
+              <button
+                key={`db-${src.documentNumber}`}
+                type="button"
+                onClick={() => handleDbClick(src)}
+                className="flex items-center gap-2 py-1 px-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors cursor-pointer min-w-0 w-full text-left"
+              >
+                <FileText className="h-3 w-3 shrink-0" />
+                <span className="truncate">
+                  {src.documentNumber}
+                  {src.title ? ` — ${src.title}` : ''}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
 const autoOpenedToolCallIds = new Set<string>()
 
 /**
@@ -336,7 +556,7 @@ export function ChatMessage({
 
   return (
     <CitationSourceProvider sourceMap={sourceMap}>
-      <div className="group overflow-hidden text-left space-y-3">
+      <div className="group overflow-hidden text-left space-y-3 pt-0.5">
         {renderItems.map((item) => {
           if (item.kind === 'tool-group') {
             return (
@@ -389,20 +609,11 @@ export function ChatMessage({
                 />
                 {!isActive && webSources && webSources.length > 0 && (
                   <span className="inline-flex flex-wrap gap-1 mt-1 animate-in fade-in duration-300">
-                    {webSources.map((src, i) => {
-                      const domain = (() => {
-                        try {
-                          return new URL(src.url).hostname.replace(/^www\./, '')
-                        } catch {
-                          return src.url
-                        }
-                      })()
-                      return (
-                        <CitationPillInline key={`web-${index}-${i}`}>
-                          {src.title ?? domain}
-                        </CitationPillInline>
-                      )
-                    })}
+                    {deduplicateWebSources(webSources).map((src, i) => (
+                      <CitationPillInline key={`web-${index}-${i}`}>
+                        {src.title ?? src.domain}
+                      </CitationPillInline>
+                    ))}
                   </span>
                 )}
               </div>
@@ -411,6 +622,14 @@ export function ChatMessage({
 
           return null
         })}
+
+        {!isActive && sourceMap.size > 0 && (
+          <SourcesAccordion
+            sourceMap={sourceMap}
+            fullText={fullText}
+            parts={parts}
+          />
+        )}
 
         <div className="flex items-center gap-1 mt-2">
           {showActions && fullText.trim() && !isActive && (

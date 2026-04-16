@@ -428,3 +428,41 @@ function parseTitle(contextualHeader: string): string {
   const idx = contextualHeader.indexOf(' > ')
   return idx >= 0 ? contextualHeader.slice(0, idx) : contextualHeader
 }
+
+// ---------------------------------------------------------------------------
+// Document browse path — infer route from document number
+// ---------------------------------------------------------------------------
+
+/** Agency regulation prefixes that use /browse/foreskrifter/ */
+const AGENCY_PREFIXES = [
+  'AFS',
+  'BFS',
+  'NFS',
+  'HSLF-FS',
+  'KIFS',
+  'LVFS',
+  'MSBFS',
+  'SJVFS',
+  'SKVFS',
+  'SOSFS',
+  'TSFS',
+  'FFS',
+  'ELSÄK-FS',
+]
+
+/**
+ * Returns the browse base path for a document based on its document number.
+ * - Agency regulations (AFS, BFS, etc.) → /browse/foreskrifter
+ * - EU documents → /browse/eu
+ * - Everything else (SFS) → /browse/lagar
+ */
+export function getDocBrowsePath(documentNumber: string): string {
+  const upper = documentNumber.toUpperCase()
+  if (AGENCY_PREFIXES.some((p) => upper.startsWith(p))) {
+    return '/browse/foreskrifter'
+  }
+  if (upper.startsWith('EU ') || upper.startsWith('CELEX')) {
+    return '/browse/eu'
+  }
+  return '/browse/lagar'
+}

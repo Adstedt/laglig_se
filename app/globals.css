@@ -1087,7 +1087,7 @@ html {
 }
 
 .streamdown table th {
-  @apply bg-muted/60 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground border-b border-border;
+  @apply bg-muted/60 px-3 py-2 text-left text-sm font-semibold text-muted-foreground border-b border-border;
 }
 
 .streamdown table td {

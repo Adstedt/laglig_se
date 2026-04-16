@@ -21,6 +21,7 @@ import {
   formatChunkPath,
   parseCitationLabel,
   anchorIdFromPath,
+  getDocBrowsePath,
 } from '@/lib/ai/citations'
 import {
   InlineCitation,
@@ -116,7 +117,20 @@ export function CitationPillInline({
     chatDetail.activeDetail.id === citationId
 
   const handleClick = useCallback(() => {
-    if (!chatDetail || !source) return
+    if (!source) return
+
+    // Web sources: open URL directly in new tab (no sidebar)
+    if (isWebResolved && source.url) {
+      track('web_citation_clicked', {
+        domain: webPillDomain ?? '',
+        url: source.url,
+      })
+      window.open(source.url, '_blank', 'noopener,noreferrer')
+      return
+    }
+
+    // DB sources: open sidebar detail
+    if (!chatDetail) return
     chatDetail.openDetail(
       {
         type: 'citation' as const,
@@ -130,7 +144,6 @@ export function CitationPillInline({
           ...(resolvedPath
             ? { path: formatChunkPath(resolvedPath) ?? resolvedPath }
             : {}),
-          ...(source.url ? { url: source.url } : {}),
         },
       },
       pillRef.current ?? undefined
@@ -139,6 +152,8 @@ export function CitationPillInline({
     chatDetail,
     citationId,
     source,
+    isWebResolved,
+    webPillDomain,
     isChunkResolved,
     resolvedAnchor,
     resolvedPath,
@@ -165,7 +180,7 @@ export function CitationPillInline({
   // Build link with optional section anchor (DB sources only)
   const href =
     !isWebSource && source.slug
-      ? `/lagar/${source.slug}${source.anchorId ? `#${source.anchorId}` : ''}`
+      ? `${getDocBrowsePath(source.documentNumber)}/${source.slug}${source.anchorId ? `#${source.anchorId}` : ''}`
       : null
 
   // Domain for web sources (reuse from pill label computation)
