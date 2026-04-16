@@ -8,6 +8,7 @@
 
 import { useRef, useEffect, useCallback } from 'react'
 import type { UIMessage } from 'ai'
+import type { ChatContextType } from '@/lib/hooks/use-chat-interface'
 import { StickToBottom, useStickToBottomContext } from 'use-stick-to-bottom'
 import { ChatMessage } from './chat-message'
 import { StreamingIndicator } from './streaming-indicator'
@@ -44,6 +45,8 @@ interface ChatMessageListProps {
   hasMore?: boolean | null
   /** Callback when a message is deleted */
   onDeleteMessage?: (_messageId: string) => void
+  /** Chat context type for reasoning block default-open behavior */
+  contextType?: ChatContextType | undefined
 }
 
 export function ChatMessageList({
@@ -56,6 +59,7 @@ export function ChatMessageList({
   isLoadingMore = false,
   hasMore,
   onDeleteMessage,
+  contextType,
 }: ChatMessageListProps) {
   // Only mark the last assistant message as streaming, and only if it's
   // actually the newest message (not a previous response before a new user message)
@@ -95,6 +99,7 @@ export function ChatMessageList({
         isLastAssistantTheNewest={isLastAssistantTheNewest}
         systemMessages={systemMessages}
         contentClassName={contentClassName}
+        contextType={contextType}
       />
     </StickToBottom>
   )
@@ -113,6 +118,7 @@ interface ContentProps {
   isLastAssistantTheNewest: boolean
   systemMessages: SystemMessageItem[]
   contentClassName: string | undefined
+  contextType: ChatContextType | undefined
 }
 
 function StickToBottomContent({
@@ -128,6 +134,7 @@ function StickToBottomContent({
   isLastAssistantTheNewest,
   systemMessages,
   contentClassName,
+  contextType,
 }: ContentProps) {
   const { scrollRef, isAtBottom, scrollToBottom } = useStickToBottomContext()
 
@@ -219,6 +226,7 @@ function StickToBottomContent({
                     isLastAssistantTheNewest
                   }
                   onDelete={onDeleteMessage}
+                  contextType={contextType}
                 />
               )
             })}

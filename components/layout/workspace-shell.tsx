@@ -5,10 +5,12 @@ import { MobileSidebar } from '@/components/layout/mobile-sidebar'
 import { Header } from '@/components/layout/header'
 import { RightSidebar } from '@/components/layout/right-sidebar'
 import { ChatModal } from '@/components/features/ai-chat/chat-modal'
+import { ConversationHistory } from '@/components/features/dashboard/conversation-history'
 import { Breadcrumbs } from '@/components/layout/breadcrumbs'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { WorkspaceProvider } from '@/hooks/use-workspace'
 import { Toaster } from '@/components/ui/sonner'
+import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
@@ -29,6 +31,8 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
     toggleRightSidebar,
     setRightSidebarFolded,
     toggleLeftSidebar,
+    chatHistoryOpen,
+    setChatHistoryOpen,
   } = useLayoutStore()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -104,6 +108,28 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
       <div className="flex h-screen overflow-hidden">
         {/* Left Sidebar - full height, desktop only */}
         <LeftSidebar user={user} />
+
+        {/* Chat history panel — nested beside left nav */}
+        <aside
+          className={cn(
+            'hidden md:flex flex-col border-r bg-background transition-all duration-300 ease-in-out overflow-hidden',
+            chatHistoryOpen ? 'w-[300px]' : 'w-0'
+          )}
+        >
+          {chatHistoryOpen && (
+            <ConversationHistory
+              onSelectConversation={(id) => {
+                window.dispatchEvent(
+                  new CustomEvent('laglig:load-conversation', {
+                    detail: { conversationId: id },
+                  })
+                )
+                setChatHistoryOpen(false)
+              }}
+              onBack={() => setChatHistoryOpen(false)}
+            />
+          )}
+        </aside>
 
         {/* Right column: header + content */}
         <div className="flex flex-1 flex-col overflow-hidden">
