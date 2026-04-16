@@ -18,6 +18,7 @@ import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { getServerSession } from '@/lib/auth/session'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { createAgentTools } from '@/lib/agent/tools'
+import { createWebSearchTool } from '@/lib/agent/web-search-config'
 import {
   buildSystemPrompt,
   formatCompanyContext,
@@ -49,8 +50,15 @@ const workspaceRatelimit = isRedisConfigured()
     })
   : null
 
-// Maximum duration for streaming responses
-export const maxDuration = 60
+// Maximum duration for streaming responses (90s to accommodate thinking tokens on tool-heavy assessments)
+export const maxDuration = 90
+
+// Per-context thinking budget map (tokens). Absent key = thinking disabled.
+const THINKING_BUDGET: Record<string, number> = {
+  change: 8_000,
+  task: 3_000,
+  law: 2_000,
+}
 
 export async function POST(req: Request) {
   try {
@@ -137,6 +145,9 @@ export async function POST(req: Request) {
       )
     }
 
+    // Resolve thinking budget for this context
+    const thinkingBudget = contextType ? (THINKING_BUDGET[contextType] ?? 0) : 0
+
     // Build system prompt with company context
     const profile = await prisma.companyProfile.findFirst({
       where: { workspace_id: workspaceId },
@@ -146,18 +157,38 @@ export async function POST(req: Request) {
       companyContext,
       contextType,
       contextId,
+      thinkingEnabled: thinkingBudget > 0,
       ...initialContext,
     })
 
     // Create agent tools with workspace + user scoping
     const tools = createAgentTools(workspaceId, userId)
 
-    // Select model based on environment variable (TBD - pending testing)
+    // Select model based on environment variable
     const modelProvider = process.env.AI_CHAT_MODEL ?? 'openai'
+
+    // Anthropic web search: conditionally add to tools (Story 14.21)
+    const allTools =
+      modelProvider === 'anthropic'
+        ? { ...tools, web_search: createWebSearchTool() }
+        : tools
     const model =
       modelProvider === 'anthropic'
         ? anthropic('claude-sonnet-4-6')
         : openai('gpt-4-turbo')
+
+    // Build providerOptions for extended thinking (Anthropic only, omit entirely when disabled)
+    const providerOptions =
+      thinkingBudget > 0 && modelProvider === 'anthropic'
+        ? {
+            anthropic: {
+              thinking: {
+                type: 'enabled' as const,
+                budgetTokens: thinkingBudget,
+              },
+            },
+          }
+        : undefined
 
     // Stream the response with tool use support
     // smoothStream buffers tokens and releases at word boundaries for smooth UI
@@ -172,12 +203,13 @@ export async function POST(req: Request) {
             .map((p) => ('text' in p ? p.text : ''))
             .join('\n') ?? '',
       })),
-      tools,
+      tools: allTools,
       stopWhen: stepCountIs(10),
       experimental_transform: smoothStream({
         chunking: /[\s\S]/,
         delayInMs: 8,
       }),
+      ...(providerOptions && { providerOptions }),
     })
 
     // Accumulate citation sources from tool results, send as message metadata.
@@ -187,11 +219,38 @@ export async function POST(req: Request) {
 
     return result.toUIMessageStreamResponse({
       sendReasoning: true,
+      sendSources: true,
       messageMetadata: ({
         part,
       }: {
         part: TextStreamPart<ToolSet>
       }): ChatMessageMetadata | undefined => {
+        // Story 14.21: Capture web search source events (Anthropic web_search)
+        // TextStreamPart 'source' has top-level: sourceType, id, url, title
+        if (part.type === 'source') {
+          const src = part as {
+            sourceType: string
+            url: string
+            title?: string
+          }
+          if (src.sourceType === 'url' && src.url) {
+            const key = `web:${src.url}`
+            if (!(key in citationSources)) {
+              const domain = new URL(src.url).hostname.replace(/^www\./, '')
+              citationSources[key] = {
+                documentNumber: domain,
+                title: src.title ?? null,
+                snippet: null,
+                slug: null,
+                path: null,
+                anchorId: null,
+                url: src.url,
+              }
+            }
+            return { citationSources: { ...citationSources } }
+          }
+        }
+
         if (part.type === 'tool-result') {
           const p = part as { toolName?: string; output?: unknown }
           const toolName = p.toolName ?? ''

@@ -2,7 +2,8 @@
 
 import { useMemo } from 'react'
 import Link from 'next/link'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Globe } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { CitationDetailData } from '@/lib/ai/chat-detail-context'
 
 interface CitationDetailProps {
@@ -26,18 +27,60 @@ function stripMarkdownLinks(text: string): string {
 }
 
 export function CitationDetail({ data }: CitationDetailProps) {
-  const href = data.slug
-    ? `/lagar/${data.slug}${data.anchorId ? `#${data.anchorId}` : ''}`
-    : null
+  const isWebSource = !!data.url
+  const href =
+    !isWebSource && data.slug
+      ? `/lagar/${data.slug}${data.anchorId ? `#${data.anchorId}` : ''}`
+      : null
+
+  const webDomain =
+    isWebSource && data.url
+      ? new URL(data.url).hostname.replace(/^www\./, '')
+      : null
 
   const cleanSnippet = useMemo(
     () => (data.snippet ? stripMarkdownLinks(data.snippet) : null),
     [data.snippet]
   )
 
+  // Web source detail view
+  if (isWebSource) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
+            Webbkälla
+          </p>
+          <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+            {data.title && (
+              <p className="text-sm font-medium leading-relaxed">
+                {data.title}
+              </p>
+            )}
+            {webDomain && (
+              <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <Globe className="h-3 w-3" />
+                {webDomain}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {data.url && (
+          <Button variant="outline" size="sm" asChild>
+            <a href={data.url} target="_blank" rel="noopener noreferrer">
+              Besök källa
+              <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+            </a>
+          </Button>
+        )}
+      </div>
+    )
+  }
+
+  // DB source detail view (unchanged)
   return (
     <div className="space-y-4">
-      {/* Section text — the primary content of the detail view */}
       <div>
         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-2">
           Källa
@@ -57,7 +100,6 @@ export function CitationDetail({ data }: CitationDetailProps) {
         )}
       </div>
 
-      {/* Link to document reader */}
       {href && (
         <Link
           href={href}

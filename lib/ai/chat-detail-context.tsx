@@ -28,6 +28,8 @@ export interface CitationDetailData {
   slug: string
   anchorId?: string
   path?: string
+  /** External URL for web search sources */
+  url?: string
 }
 
 /** Subset of TaskWithRelations from app/actions/tasks.ts */

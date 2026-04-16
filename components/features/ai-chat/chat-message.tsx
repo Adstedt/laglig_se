@@ -8,9 +8,9 @@
 
 import { useState, useMemo, useEffect, useId } from 'react'
 import type { UIMessage } from 'ai'
+import type { ChatContextType } from '@/lib/hooks/use-chat-interface'
 import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
 import {
-  ChevronDown,
   ChevronRight,
   Search,
   FileText,
@@ -23,6 +23,7 @@ import {
   Brain,
   Trash2,
   Eye,
+  Globe,
 } from 'lucide-react'
 import { Streamdown } from 'streamdown'
 import { code } from '@streamdown/code'
@@ -109,6 +110,11 @@ const TOOL_CONFIG: Record<
     icon: MessageCircleQuestion,
     hidden: true,
   },
+  web_search: {
+    label: 'Söker på webben',
+    doneLabel: 'Sökte på webben',
+    icon: Globe,
+  },
 }
 
 // ---------------------------------------------------------------------------
@@ -145,9 +151,11 @@ function extractToolPartInfo(
 // errored, non-tool, and hidden-tool parts flush the current group.
 // ---------------------------------------------------------------------------
 
+type WebSourceRef = { url: string; title?: string | undefined }
+
 type RenderItem =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | { kind: 'part'; part: any; index: number }
+  | { kind: 'part'; part: any; index: number; webSources?: WebSourceRef[] }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | { kind: 'tool-group'; items: Array<{ part: any; index: number }> }
 
@@ -156,6 +164,9 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
   const result: RenderItem[] = []
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let currentGroup: Array<{ part: any; index: number }> = []
+  // Track whether we've seen any text part — source-url parts before any text
+  // are search-result metadata (not inline citations) and should be skipped.
+  let hasSeenText = false
 
   const flushGroup = () => {
     if (currentGroup.length >= 2) {
@@ -175,8 +186,40 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
     // step-start parts are structural markers between multi-step tool calls.
     // They render as null and must not break a contiguous tool-group run.
     if (part?.type === 'step-start') continue
+
+    // Story 14.21: source-url parts from web search.
+    // Store as metadata on the preceding text render item — rendered as
+    // separate pill elements outside Streamdown. This keeps DB citations
+    // (processed by rehypeCitationPills inside Streamdown) working normally.
+    if (part?.type === 'source-url') {
+      if (!hasSeenText) continue
+      const last = result[result.length - 1]
+      if (last?.kind === 'part' && isTextUIPart(last.part)) {
+        if (!last.webSources) last.webSources = []
+        last.webSources.push({
+          url: part.url as string,
+          title: part.title as string | undefined,
+        })
+      }
+      continue
+    }
+
     if (!isToolUIPart(part)) {
       flushGroup()
+      // Merge adjacent text parts for markdown continuity.
+      if (isTextUIPart(part)) {
+        hasSeenText = true
+        const prev = result[result.length - 1]
+        if (prev?.kind === 'part' && isTextUIPart(prev.part)) {
+          prev.part = {
+            ...prev.part,
+            text: prev.part.text + (part.text as string),
+          }
+          continue
+        }
+        result.push({ kind: 'part', part, index: i })
+        continue
+      }
       result.push({ kind: 'part', part, index: i })
       continue
     }
@@ -194,6 +237,8 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
     }
   }
   flushGroup()
+
+  // No trailing flush needed — source-url parts without preceding text are skipped
   return result
 }
 
@@ -234,6 +279,7 @@ interface ChatMessageProps {
   showActions?: boolean
   isStreaming?: boolean
   onDelete?: ((_messageId: string) => void) | undefined
+  contextType?: ChatContextType | undefined
 }
 
 export function ChatMessage({
@@ -241,6 +287,7 @@ export function ChatMessage({
   showActions = true,
   isStreaming = false,
   onDelete,
+  contextType,
 }: ChatMessageProps) {
   const isUser = message.role === 'user'
 
@@ -309,6 +356,7 @@ export function ChatMessage({
                 key={`reasoning-${index}`}
                 text={part.text}
                 state={part.state}
+                defaultOpen={contextType === 'change'}
               />
             )
           }
@@ -331,12 +379,33 @@ export function ChatMessage({
           }
 
           if (isTextUIPart(part)) {
+            const webSources =
+              item.kind === 'part' ? item.webSources : undefined
             return (
-              <TextBlock
-                key={`text-${index}`}
-                text={part.text}
-                isStreaming={isActive && index === parts.length - 1}
-              />
+              <div key={`text-${index}`}>
+                <TextBlock
+                  text={part.text}
+                  isStreaming={isActive && index === parts.length - 1}
+                />
+                {!isActive && webSources && webSources.length > 0 && (
+                  <span className="inline-flex flex-wrap gap-1 mt-1 animate-in fade-in duration-300">
+                    {webSources.map((src, i) => {
+                      const domain = (() => {
+                        try {
+                          return new URL(src.url).hostname.replace(/^www\./, '')
+                        } catch {
+                          return src.url
+                        }
+                      })()
+                      return (
+                        <CitationPillInline key={`web-${index}-${i}`}>
+                          {src.title ?? domain}
+                        </CitationPillInline>
+                      )
+                    })}
+                  </span>
+                )}
+              </div>
             )
           }
 
@@ -363,34 +432,37 @@ export function ChatMessage({
 function ReasoningBlock({
   text,
   state,
+  defaultOpen = false,
 }: {
   text: string
   state?: 'streaming' | 'done' | undefined
+  defaultOpen?: boolean
 }) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(defaultOpen)
   const isThinking = state === 'streaming'
 
   return (
     <div className="rounded-lg border border-border/60 bg-muted/30 overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 w-full px-3 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
-        {isOpen ? (
-          <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-        ) : (
-          <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-        )}
-
         {isThinking ? (
           <Brain className="h-3.5 w-3.5 shrink-0 text-amber-500 animate-pulse" />
         ) : (
           <Brain className="h-3.5 w-3.5 shrink-0" />
         )}
 
-        <span className="font-medium">
-          {isThinking ? 'Resonerar...' : 'Resonerade'}
+        <span className="font-medium flex-1 text-left">
+          {isThinking ? 'Tänker...' : 'Tänkte'}
         </span>
+
+        <ChevronRight
+          className={cn(
+            'h-3 w-3 shrink-0 transition-transform duration-200 ease-out',
+            isOpen && 'rotate-90'
+          )}
+        />
       </button>
 
       {isOpen && (

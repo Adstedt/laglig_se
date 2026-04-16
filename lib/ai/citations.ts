@@ -21,6 +21,8 @@ export interface SourceInfo {
   path: string | null
   /** Anchor ID for deep-linking into the law reader, e.g. "K3P2a" */
   anchorId: string | null
+  /** External URL for web search sources (null/undefined for DB sources) */
+  url?: string | null
 }
 
 /** Metadata shape attached to assistant messages via messageMetadata callback */
@@ -243,7 +245,25 @@ export function resolveSource(
   }
 
   // 3. Try full label as document number
-  return sourceMap.get(trimmed) ?? null
+  const byLabel = sourceMap.get(trimmed)
+  if (byLabel) return byLabel
+
+  // 4. Direct web-source key lookup (model may put exact URL in citation)
+  const byWebKey = sourceMap.get(`web:${trimmed}`)
+  if (byWebKey) return byWebKey
+
+  // 5. Web source fallback — match by title prefix
+  for (const [key, info] of sourceMap.entries()) {
+    if (!key.startsWith('web:') || !info.url) continue
+    if (
+      info.title &&
+      trimmed.toLowerCase().startsWith(info.title.toLowerCase().slice(0, 20))
+    ) {
+      return info
+    }
+  }
+
+  return null
 }
 
 /**
