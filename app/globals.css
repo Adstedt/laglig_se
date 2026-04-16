@@ -1073,3 +1073,22 @@ html {
 .tiptap ul ul ul {
   list-style-type: square;
 }
+
+/* AI chat — polished tables */
+.streamdown table {
+  @apply overflow-hidden rounded-md border border-border w-full text-sm;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.streamdown table th {
+  @apply bg-muted/60 px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground border-b border-border;
+}
+
+.streamdown table td {
+  @apply px-3 py-2 border-b border-border/50 bg-background;
+}
+
+.streamdown table tr:last-child td {
+  @apply border-b-0;
+}

@@ -8,7 +8,7 @@
  * Modified: Card delays tuned to 200/150ms for our UX.
  */
 
-import type { ComponentProps } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 
 import {
   HoverCard,
@@ -49,23 +49,27 @@ export const InlineCitationCard = (props: InlineCitationCardProps) => (
 
 export type InlineCitationCardTriggerProps = ComponentProps<'span'> & {
   label: string
+  icon?: ReactNode
 }
 
 export const InlineCitationCardTrigger = ({
   label,
+  icon,
   className,
   ...props
 }: InlineCitationCardTriggerProps) => (
   <HoverCardTrigger asChild>
     <span
       className={cn(
-        'inline-flex items-center mx-0.5 px-1.5 py-0.5 text-[11px] font-medium leading-none rounded-full cursor-pointer select-none',
-        'bg-primary/10 text-primary border border-primary/20',
+        'inline-flex items-center gap-0.5 ml-1.5 mr-0.5 px-1.5 py-0.5 text-[10px] font-medium leading-none rounded-full cursor-pointer select-none align-middle -translate-y-px',
+        'bg-primary/10 text-primary',
         'transition-colors hover:bg-primary/20 hover:text-primary',
+        'animate-in fade-in duration-300',
         className
       )}
       {...props}
     >
+      {icon}
       {label}
     </span>
   </HoverCardTrigger>

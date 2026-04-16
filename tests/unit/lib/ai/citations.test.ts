@@ -401,6 +401,67 @@ describe('resolveSource', () => {
   it('returns null for unknown document', () => {
     expect(resolveSource('SFS 9999:999', buildMap())).toBeNull()
   })
+
+  // Story 14.21: Web source resolution tests
+  describe('web sources', () => {
+    function buildMapWithWebSource(): Map<string, SourceInfo> {
+      return new Map([
+        ...buildMap(),
+        [
+          'web:https://arbetsdomstolen.se/sv/prejudikat/ad-2024-nr-12/',
+          {
+            documentNumber: 'arbetsdomstolen.se',
+            title: 'AD 2024 nr 12',
+            snippet: null,
+            slug: null,
+            path: null,
+            anchorId: null,
+            url: 'https://arbetsdomstolen.se/sv/prejudikat/ad-2024-nr-12/',
+          },
+        ],
+      ])
+    }
+
+    it('matches web source by title prefix', () => {
+      const source = resolveSource(
+        'AD 2024 nr 12 - Arbetsdomstolen',
+        buildMapWithWebSource()
+      )
+      expect(source).not.toBeNull()
+      expect(source?.url).toBe(
+        'https://arbetsdomstolen.se/sv/prejudikat/ad-2024-nr-12/'
+      )
+      expect(source?.documentNumber).toBe('arbetsdomstolen.se')
+    })
+
+    it('matches web source by direct web: key lookup', () => {
+      const source = resolveSource(
+        'https://arbetsdomstolen.se/sv/prejudikat/ad-2024-nr-12/',
+        buildMapWithWebSource()
+      )
+      expect(source).not.toBeNull()
+      expect(source?.url).toBe(
+        'https://arbetsdomstolen.se/sv/prejudikat/ad-2024-nr-12/'
+      )
+    })
+
+    it('returns null when label does not match any web source', () => {
+      const source = resolveSource(
+        'Completely unrelated text',
+        buildMapWithWebSource()
+      )
+      expect(source).toBeNull()
+    })
+
+    it('still resolves DB sources when web sources are in the map', () => {
+      const source = resolveSource(
+        'SFS 1977:1160, Kap 3, 2a §',
+        buildMapWithWebSource()
+      )
+      expect(source?.snippet).toBe('Chunk text about 2a §')
+      expect(source?.url).toBeUndefined()
+    })
+  })
 })
 
 describe('sourcesToMap', () => {

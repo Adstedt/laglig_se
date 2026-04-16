@@ -12,7 +12,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Globe } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import { useCitationSources } from '@/lib/ai/citation-context'
 import { useChatDetailSafe } from '@/lib/ai/chat-detail-context'
@@ -79,14 +79,27 @@ export function CitationPillInline({
   const chatDetail = useChatDetailSafe()
   const pillRef = useRef<HTMLElement | null>(null)
 
-  const displayLabel = label
-    ? label.length > 35
-      ? label.slice(0, 33) + '\u2026'
-      : label
-    : ''
-
   // Resolve source: try chunk path match first, then document number
   const source = label ? resolveSource(label, sourceMap) : null
+
+  // Web sources show domain as pill label (like ChatGPT); DB sources show the citation label
+  const isWebResolved = !!source?.url && !source.slug
+  const webPillDomain =
+    isWebResolved && source.url
+      ? (() => {
+          try {
+            return new URL(source.url).hostname.replace(/^www\./, '')
+          } catch {
+            return null
+          }
+        })()
+      : null
+
+  const displayLabel = (() => {
+    if (!label) return ''
+    const raw = webPillDomain ?? label
+    return raw.length > 35 ? raw.slice(0, 33) + '\u2026' : raw
+  })()
 
   // Parse the label to extract section info even when source falls back to document-level
   const parsed = label ? parseCitationLabel(label) : null
@@ -117,6 +130,7 @@ export function CitationPillInline({
           ...(resolvedPath
             ? { path: formatChunkPath(resolvedPath) ?? resolvedPath }
             : {}),
+          ...(source.url ? { url: source.url } : {}),
         },
       },
       pillRef.current ?? undefined
@@ -145,10 +159,17 @@ export function CitationPillInline({
     )
   }
 
-  // Build link with optional section anchor
-  const href = source.slug
-    ? `/lagar/${source.slug}${source.anchorId ? `#${source.anchorId}` : ''}`
-    : null
+  // Reuse early detection for web vs DB source
+  const isWebSource = isWebResolved
+
+  // Build link with optional section anchor (DB sources only)
+  const href =
+    !isWebSource && source.slug
+      ? `/lagar/${source.slug}${source.anchorId ? `#${source.anchorId}` : ''}`
+      : null
+
+  // Domain for web sources (reuse from pill label computation)
+  const webDomain = webPillDomain
 
   // Chunk-level source has path — show its snippet.
   const isChunkLevel = !!source.path
@@ -164,6 +185,7 @@ export function CitationPillInline({
           onMouseLeave={handleLeave}
           onClick={handleClick}
           className={isActive ? 'ring-2 ring-primary bg-primary/10' : undefined}
+          {...(isWebSource ? { icon: <Globe className="h-3 w-3" /> } : {})}
         />
         <InlineCitationCardBody
           onMouseEnter={handleEnter}
@@ -173,7 +195,10 @@ export function CitationPillInline({
             {...(source.title ? { title: source.title } : {})}
             {...(description ? { description } : {})}
           />
-          {source.documentNumber && (
+          {isWebSource && webDomain && (
+            <p className="text-[11px] text-muted-foreground">{webDomain}</p>
+          )}
+          {!isWebSource && source.documentNumber && (
             <p className="text-[11px] text-muted-foreground">
               {source.documentNumber}
             </p>
@@ -193,6 +218,23 @@ export function CitationPillInline({
               Visa i lagläsaren
               <ExternalLink className="h-3 w-3" />
             </Link>
+          )}
+          {isWebSource && source.url && (
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
+              onClick={() => {
+                track('web_citation_clicked', {
+                  domain: webDomain ?? '',
+                  url: source.url ?? '',
+                })
+              }}
+            >
+              Besök källa
+              <ExternalLink className="h-3 w-3" />
+            </a>
           )}
         </InlineCitationCardBody>
       </InlineCitationCard>
