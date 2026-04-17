@@ -16,6 +16,7 @@ import {
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
 import { CitationDetail } from './details/citation-detail'
 import { ToolResultDetail } from './details/tool-result-detail'
+import { WebSearchDetail } from './details/web-search-detail'
 import { SearchResultsDetail } from './details/search-results-detail'
 import { WritePreviewTask } from './details/write-preview-task'
 import { WritePreviewStatus } from './details/write-preview-status'
@@ -37,6 +38,9 @@ function DetailContent({ item }: { item: ChatDetailItem }) {
     case 'tool-result':
       if (item.toolName === 'search_laws') {
         return <SearchResultsDetail data={item.data} />
+      }
+      if (item.toolName === 'web_search') {
+        return <WebSearchDetail data={item.data} />
       }
       return <ToolResultDetail toolName={item.toolName} data={item.data} />
     case 'write-preview':
@@ -110,14 +114,16 @@ function getDetailHeader(item: ChatDetailItem): {
         subtitle: item.data.documentNumber || null,
       }
     }
-    case 'tool-result':
+    case 'tool-result': {
+      const toolTitles: Record<string, string> = {
+        search_laws: 'Sökresultat',
+        web_search: 'Webbsökning',
+      }
       return {
-        title:
-          item.toolName === 'search_laws'
-            ? 'Sökresultat'
-            : item.toolName.replace(/_/g, ' '),
+        title: toolTitles[item.toolName] ?? item.toolName.replace(/_/g, ' '),
         subtitle: null,
       }
+    }
     case 'write-preview': {
       const header = WRITE_PREVIEW_HEADERS[item.toolName]
       return header
