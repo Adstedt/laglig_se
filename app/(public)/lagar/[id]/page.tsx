@@ -12,31 +12,39 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CalendarDays, Building2, ExternalLink } from 'lucide-react'
+import {
+  CalendarDays,
+  Building2,
+  ExternalLink,
+  Info,
+  Link2,
+  FileText,
+} from 'lucide-react'
 import { BackToTopButton } from './toc-client'
 import { FloatingReferencesWrapper } from './floating-references-wrapper'
-import { LawSectionWithBanner } from './law-section-with-banner'
 import {
+  LawDocumentContent,
   NotYetInForceBanner,
   RelatedDocsPrefetcher,
   TimelinePrefetcher,
 } from '@/components/features/law'
 import { VersionSelector } from '@/components/features/law-versions'
-import { getDocumentTheme } from '@/lib/document-themes'
-import { cn } from '@/lib/utils'
+import {
+  DocumentHero,
+  type DocumentStatusBadge,
+} from '@/components/features/document-hero'
+import { DocumentPageLayout } from '@/components/features/document-page-layout'
+import { DocumentIntroAccordion } from '@/components/features/document-intro'
 import { RelatedDocumentsSummary } from '@/components/features/cross-references'
 import { getImplementedEuDirectives } from '@/app/actions/cross-references'
+import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
+import { getLatestAmendmentSfs } from '@/lib/sfs/latest-amendment'
 
 // ISR: Revalidate every hour
 // Static generation for top 500 laws (Story 2.19)
 export const revalidate = 3600
 export const dynamicParams = true // Allow ISR for non-pre-generated pages
 
-/**
- * Safely convert a date that might be a string (from cache) or Date object
- * to an ISO string for JSON-LD structured data
- */
 function toISOStringOrUndefined(
   date: Date | string | null | undefined
 ): string | undefined {
@@ -46,9 +54,6 @@ function toISOStringOrUndefined(
   return undefined
 }
 
-/**
- * Safely convert a date to a formatted locale string for display
- */
 function formatDateOrNull(
   date: Date | string | null | undefined,
   options: Intl.DateTimeFormatOptions
@@ -60,14 +65,8 @@ function formatDateOrNull(
 
 /**
  * Pre-generate top 50 law pages at build time for better performance
- * Sorted by effective_date (most recent) as proxy for importance
- *
- * Note: Reduced from 500 to 50 to prevent Prisma connection pool exhaustion
- * during Vercel build. The remaining pages use ISR (dynamicParams=true) and
- * will be generated on first request then cached.
  */
 export async function generateStaticParams() {
-  // Only run during production build, skip in development
   if (process.env.NODE_ENV !== 'production') {
     return []
   }
@@ -80,7 +79,7 @@ export async function generateStaticParams() {
     return topLaws.map((law) => ({ id: law.slug }))
   } catch (error) {
     console.error('[generateStaticParams] Error fetching top laws:', error)
-    return [] // Fallback to ISR for all pages
+    return []
   }
 }
 
@@ -88,7 +87,6 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// Generate metadata for SEO - uses cached query for performance
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -96,9 +94,7 @@ export async function generateMetadata({
   const law = await getCachedLawMetadata(id)
 
   if (!law) {
-    return {
-      title: 'Lag hittades inte | Laglig.se',
-    }
+    return { title: 'Lag hittades inte | Laglig.se' }
   }
 
   const description =
@@ -128,9 +124,6 @@ export async function generateMetadata({
   }
 }
 
-// Clean HTML from Riksdagen - remove metadata block, keep only law text
-import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
-
 // Extract metadata from Riksdagen HTML header
 interface LawMetadata {
   department?: string
@@ -140,68 +133,55 @@ interface LawMetadata {
   repealedBy?: string
   sfsrUrl?: string
   fulltextUrl?: string
-  effectiveDate?: string // YYYY-MM-DD format - for the WHOLE law
-  effectiveDateFormatted?: string // Formatted like "1 januari 2026"
-  isNotYetInForce?: boolean // true if effectiveDate is in the future
+  effectiveDate?: string
+  effectiveDateFormatted?: string
+  isNotYetInForce?: boolean
 }
 
 function extractLawMetadata(html: string): LawMetadata {
   const metadata: LawMetadata = {}
 
-  // Get the metadata block (before first <hr>)
   const hrIndex = html.indexOf('<hr')
   if (hrIndex === -1) return metadata
 
   const metaBlock = html.substring(0, hrIndex)
 
-  // Extract Departement/myndighet (handles <b> or <strong> tags, with whitespace)
   const deptMatch = metaBlock.match(
     /Departement\/myndighet<\/(?:b|strong)>:\s*\n?\s*([^<\n]+)/i
   )
   if (deptMatch?.[1]) metadata.department = deptMatch[1].trim()
 
-  // Extract Utfärdad date
   const issuedMatch = metaBlock.match(
     /Utfärdad<\/(?:b|strong)>:\s*\n?\s*(\d{4}-\d{2}-\d{2})/i
   )
   if (issuedMatch?.[1]) metadata.issuedDate = issuedMatch[1]
 
-  // Extract Ändrad t.o.m. (with or without dot after "m", no "SFS" prefix in some)
   const amendedMatch = metaBlock.match(
     /Ändrad<\/(?:b|strong)>:\s*\n?\s*t\.o\.m\.?\s*(?:SFS\s*)?(\d{4}:\d+)/i
   )
   if (amendedMatch?.[1]) metadata.amendedThrough = amendedMatch[1]
 
-  // Extract Upphävd date
   const repealedMatch = metaBlock.match(
     /Upphävd<\/(?:b|strong)>:\s*\n?\s*(\d{4}-\d{2}-\d{2})/i
   )
   if (repealedMatch?.[1]) metadata.repealedDate = repealedMatch[1]
 
-  // Extract "Författningen har upphävts genom" SFS number
   const repealedByMatch = metaBlock.match(
     /har upphävts genom<\/(?:b|strong)>:\s*\n?\s*(?:SFS\s*)?(\d{4}:\d+)/i
   )
   if (repealedByMatch?.[1]) metadata.repealedBy = repealedByMatch[1]
 
-  // Extract SFSR link (both http and https)
   const sfsrMatch = metaBlock.match(
     /href="(https?:\/\/rkrattsbaser\.gov\.se\/sfsr[^"]+)"/i
   )
   if (sfsrMatch?.[1]) metadata.sfsrUrl = sfsrMatch[1]
 
-  // Extract Fulltext link (both http and https)
   const fulltextMatch = metaBlock.match(
     /href="(https?:\/\/rkrattsbaser\.gov\.se\/sfst[^"]+)"/i
   )
   if (fulltextMatch?.[1]) metadata.fulltextUrl = fulltextMatch[1]
 
-  // Extract effective date for WHOLE law from header
-  // Pattern: /Träder i kraft I:YYYY-MM-DD/ appearing at the start (not per-paragraph)
-  // This is found right after the metadata block, before actual law content
   const afterHr = html.substring(hrIndex)
-  // Look for the pattern in the first section (before any paragraph anchor)
-  // Some laws have long TOC, so search up to 3000 chars or until first paragraph marker
   const firstSectionEnd = afterHr.indexOf('<a class="paragraf"')
   const altSectionEnd = afterHr.indexOf('<h3 name="K')
   const sectionEnd =
@@ -226,7 +206,6 @@ function extractLawMetadata(html: string): LawMetadata {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // Format the date in Swedish
     metadata.effectiveDateFormatted = effectiveDate.toLocaleDateString(
       'sv-SE',
       {
@@ -236,17 +215,38 @@ function extractLawMetadata(html: string): LawMetadata {
       }
     )
 
-    // Check if the law hasn't entered into force yet
     metadata.isNotYetInForce = effectiveDate > today
   }
 
   return metadata
 }
 
+/** Map DocumentStatus + not-yet-in-force flag into the DocumentHero status badge type */
+function resolveStatusBadge(
+  status: DocumentStatus,
+  isNotYetInForce: boolean,
+  effectiveDateLabel: string | undefined
+): DocumentStatusBadge | undefined {
+  if (isNotYetInForce && effectiveDateLabel) {
+    return { kind: 'not-in-force', effectiveDateLabel }
+  }
+  switch (status) {
+    case 'ACTIVE':
+      return { kind: 'active' }
+    case 'REPEALED':
+      return { kind: 'repealed' }
+    case 'DRAFT':
+      return { kind: 'draft' }
+    case 'ARCHIVED':
+      return { kind: 'archived' }
+    default:
+      return undefined
+  }
+}
+
 export default async function LawPage({ params }: PageProps) {
   const { id } = await params
 
-  // Use cached query for better performance (Story 2.19)
   const law = await getCachedLaw(id)
 
   if (!law) {
@@ -262,10 +262,8 @@ export default async function LawPage({ params }: PageProps) {
     })
   }
 
-  // Fetch cross-references
   const implementedDirectives = await getImplementedEuDirectives(law.id)
 
-  // Clean and sanitize HTML content
   const cleanedHtml = law.html_content ? cleanLawHtml(law.html_content) : null
   const sanitizedHtml = cleanedHtml
     ? sanitizeHtml(cleanedHtml, {
@@ -318,14 +316,12 @@ export default async function LawPage({ params }: PageProps) {
       })
     : null
 
-  // Use safe date formatting (dates might be strings when coming from cache)
   const formattedPublicationDate = formatDateOrNull(law.publication_date, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
 
-  // JSON-LD structured data
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Legislation',
@@ -347,14 +343,59 @@ export default async function LawPage({ params }: PageProps) {
     url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'}/lagar/${law.slug}`,
   }
 
-  // Get theme for SFS laws (amber)
-  const theme = getDocumentTheme('SFS_LAW')
-  const ThemeIcon = theme.icon
-
-  // Extract metadata from HTML
   const lawMetadata = law.html_content
     ? extractLawMetadata(law.html_content)
     : {}
+
+  // Resolve "Ändrad t.o.m." — the single most legally important metadata.
+  // Prefer tracked amendments (live data) when available; fall back to whatever
+  // the HTML extraction found (older laws ingested with `<hr>`+<b>-format HTML
+  // embed this; newer laws in `.lovhead` format don't).
+  const amendedThroughSfs =
+    getLatestAmendmentSfs(law.base_amendments) ??
+    (lawMetadata.amendedThrough ? `SFS ${lawMetadata.amendedThrough}` : null)
+
+  const statusBadge = resolveStatusBadge(
+    law.status,
+    lawMetadata.isNotYetInForce ?? false,
+    lawMetadata.effectiveDateFormatted
+  )
+
+  const breadcrumbs = (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">Hem</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/lagar">Lagar</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage className="max-w-[200px] truncate md:max-w-none">
+            {law.document_number}
+          </BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
+
+  const footer = (
+    <footer className="text-center text-sm text-muted-foreground py-4 border-t">
+      <p>
+        Källa:{' '}
+        <a
+          href={law.source_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline"
+        >
+          Riksdagen (Svensk författningssamling)
+        </a>
+      </p>
+    </footer>
+  )
 
   return (
     <>
@@ -364,265 +405,242 @@ export default async function LawPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-        <div className="container mx-auto max-w-4xl px-4 py-6">
-          {/* Breadcrumbs */}
-          <Breadcrumb className="mb-6">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/">Hem</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/lagar">Lagar</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="max-w-[200px] truncate md:max-w-none">
-                  {law.document_number}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+      <DocumentPageLayout breadcrumbs={breadcrumbs} footer={footer}>
+        {/* Banner for laws not yet in force */}
+        {lawMetadata.isNotYetInForce && lawMetadata.effectiveDateFormatted && (
+          <NotYetInForceBanner
+            effectiveDate={lawMetadata.effectiveDateFormatted}
+            title={law.title}
+          />
+        )}
 
-          {/* Banner for laws not yet in force */}
-          {lawMetadata.isNotYetInForce &&
-            lawMetadata.effectiveDateFormatted && (
-              <NotYetInForceBanner
-                effectiveDate={lawMetadata.effectiveDateFormatted}
-                title={law.title}
-              />
-            )}
+        {/* Hero Header */}
+        <DocumentHero
+          title={law.title}
+          documentNumber={law.document_number}
+          contentType="SFS_LAW"
+          status={statusBadge}
+          extraBadges={
+            amendedThroughSfs ? (
+              <span className="inline-flex items-center rounded-full bg-muted/70 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                Ändrad t.o.m. {amendedThroughSfs}
+              </span>
+            ) : undefined
+          }
+          quickInfoItems={
+            formattedPublicationDate
+              ? [
+                  {
+                    icon: CalendarDays,
+                    label: `Publicerad ${formattedPublicationDate}`,
+                  },
+                ]
+              : []
+          }
+          actionLinks={
+            law.source_url
+              ? [
+                  {
+                    href: law.source_url,
+                    label: 'Riksdagen',
+                    icon: Building2,
+                    external: true,
+                  },
+                ]
+              : []
+          }
+        />
 
-          {/* Hero Header - with theme accent */}
-          <header className="mb-8 rounded-xl bg-card p-6 shadow-sm border">
-            <div className="flex items-start gap-4">
-              <div
-                className={cn(
-                  'hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
-                  theme.accentLight
-                )}
-              >
-                <ThemeIcon className={cn('h-6 w-6', theme.accent)} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-foreground sm:text-2xl md:text-3xl leading-tight">
-                  {law.title}
-                </h1>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Badge className={cn('gap-1', theme.badge)}>
-                    <ThemeIcon className="h-3.5 w-3.5" />
-                    {theme.label}
-                  </Badge>
-                  <Badge variant="secondary" className="font-mono text-sm">
-                    {law.document_number}
-                  </Badge>
-                  <StatusBadge
-                    status={law.status}
-                    isNotYetInForce={lawMetadata.isNotYetInForce ?? false}
-                    effectiveDate={lawMetadata.effectiveDateFormatted}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Info Bar */}
-            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-t pt-4">
-              {formattedPublicationDate && (
-                <div className="flex items-center gap-1.5">
-                  <CalendarDays className="h-4 w-4" />
-                  <span>Publicerad {formattedPublicationDate}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-2 ml-auto">
-                <VersionSelector
-                  lawSlug={law.slug}
-                  lawSfs={law.document_number.replace(/^SFS\s*/, '')}
-                />
-                {law.source_url && (
-                  <a
-                    href={law.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cn(
-                      'flex items-center gap-1.5 hover:underline',
-                      theme.accent
-                    )}
-                  >
-                    <Building2 className="h-4 w-4" />
-                    <span>Riksdagen</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                )}
-              </div>
-            </div>
-          </header>
-
-          {/* Law Metadata Card */}
-          {(lawMetadata.department ||
-            lawMetadata.issuedDate ||
-            lawMetadata.amendedThrough ||
-            lawMetadata.sfsrUrl) && (
-            <Card className="mb-6">
-              <CardContent className="p-4">
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                  {lawMetadata.department && (
-                    <div className="flex gap-2">
-                      <dt className="text-muted-foreground shrink-0">
-                        Departement:
-                      </dt>
-                      <dd className="font-medium">{lawMetadata.department}</dd>
-                    </div>
-                  )}
-                  {lawMetadata.issuedDate && (
-                    <div className="flex gap-2">
-                      <dt className="text-muted-foreground shrink-0">
-                        Utfärdad:
-                      </dt>
-                      <dd className="font-medium">{lawMetadata.issuedDate}</dd>
-                    </div>
-                  )}
-                  {lawMetadata.amendedThrough && (
-                    <div className="flex gap-2">
-                      <dt className="text-muted-foreground shrink-0">
-                        Ändrad t.o.m:
-                      </dt>
-                      <dd className="font-medium">
-                        SFS {lawMetadata.amendedThrough}
-                      </dd>
-                    </div>
-                  )}
-                  {lawMetadata.repealedDate && (
-                    <div className="flex gap-2">
-                      <dt className="text-muted-foreground shrink-0">
-                        Upphävd:
-                      </dt>
-                      <dd className="font-medium text-red-600">
-                        {lawMetadata.repealedDate}
-                      </dd>
-                    </div>
-                  )}
-                  {lawMetadata.repealedBy && (
-                    <div className="flex gap-2">
-                      <dt className="text-muted-foreground shrink-0">
-                        Upphävd genom:
-                      </dt>
-                      <dd className="font-medium">
-                        SFS {lawMetadata.repealedBy}
-                      </dd>
-                    </div>
-                  )}
-                </dl>
-                {/* External links */}
-                {(lawMetadata.sfsrUrl || lawMetadata.fulltextUrl) && (
-                  <div className="mt-3 pt-3 border-t flex flex-wrap gap-4 text-sm">
-                    {lawMetadata.sfsrUrl && (
-                      <a
-                        href={lawMetadata.sfsrUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-primary hover:underline"
-                      >
-                        Ändringsregister (SFSR)
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
-                    {lawMetadata.fulltextUrl && (
-                      <a
-                        href={lawMetadata.fulltextUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-primary hover:underline"
-                      >
-                        Fulltext (Regeringskansliet)
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Related Documents Summary - Collapsible preview near top */}
-          <RelatedDocumentsSummary
-            implementedDirectives={implementedDirectives}
-            amendments={law.base_amendments.map((a) => ({
-              id: a.id,
-              title: a.amending_law_title,
-              slug: a.amending_document?.slug ?? null,
-              effectiveDate: a.effective_date
-                ? typeof a.effective_date === 'string'
-                  ? a.effective_date
-                  : a.effective_date.toISOString()
-                : null,
-            }))}
-            lawTitle={law.title}
+        {/* Version selector (client-only control — rendered below hero) */}
+        <div className="flex justify-end">
+          <VersionSelector
             lawSlug={law.slug}
+            lawSfs={law.document_number.replace(/^SFS\s*/, '')}
           />
-
-          {/* Subject Tags */}
-          {law.subjects.length > 0 && (
-            <div className="mb-6 flex flex-wrap gap-2">
-              {law.subjects.map((subject) => (
-                <Badge
-                  key={subject.subject_code}
-                  variant="outline"
-                  className="text-xs"
-                >
-                  {subject.subject_name}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          {/* Summary Card */}
-          {law.summary && (
-            <Card className="mb-8 border-l-4 border-l-primary/50">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium text-muted-foreground">
-                  Sammanfattning
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground leading-relaxed">{law.summary}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Law Content with Future Amendments Banner */}
-          <LawSectionWithBanner
-            htmlContent={sanitizedHtml || ''}
-            fallbackText={law.full_text}
-            sourceUrl={law.source_url}
-            isLawNotYetInForce={lawMetadata.isNotYetInForce ?? false}
-          />
-
-          {/* Footer */}
-          <footer className="text-center text-sm text-muted-foreground py-4 border-t">
-            <p>
-              Källa:{' '}
-              <a
-                href={law.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Riksdagen (Svensk författningssamling)
-              </a>
-            </p>
-          </footer>
         </div>
+
+        {/* Intro accordion — Sammanfattning, Detaljer, Relaterade dokument */}
+        <DocumentIntroAccordion
+          defaultValue={[]}
+          items={[
+            ...(law.summary
+              ? [
+                  {
+                    value: 'summary',
+                    label: (
+                      <>
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        Sammanfattning
+                      </>
+                    ),
+                    children: (
+                      <p className="leading-relaxed text-foreground/90">
+                        {law.summary}
+                      </p>
+                    ),
+                  },
+                ]
+              : []),
+            ...(lawMetadata.department ||
+            lawMetadata.issuedDate ||
+            lawMetadata.sfsrUrl ||
+            lawMetadata.repealedDate
+              ? [
+                  {
+                    value: 'metadata',
+                    label: (
+                      <>
+                        <Info className="h-4 w-4 text-muted-foreground" />
+                        Detaljer
+                      </>
+                    ),
+                    children: (
+                      <>
+                        <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                          {lawMetadata.department && (
+                            <div className="flex gap-2">
+                              <dt className="shrink-0 text-muted-foreground">
+                                Departement:
+                              </dt>
+                              <dd className="font-medium">
+                                {lawMetadata.department}
+                              </dd>
+                            </div>
+                          )}
+                          {lawMetadata.issuedDate && (
+                            <div className="flex gap-2">
+                              <dt className="shrink-0 text-muted-foreground">
+                                Utfärdad:
+                              </dt>
+                              <dd className="font-medium">
+                                {lawMetadata.issuedDate}
+                              </dd>
+                            </div>
+                          )}
+                          {/* Ändrad t.o.m. is now surfaced as a hero pill — dropped here to avoid duplication */}
+                          {lawMetadata.repealedDate && (
+                            <div className="flex gap-2">
+                              <dt className="shrink-0 text-muted-foreground">
+                                Upphävd:
+                              </dt>
+                              <dd className="font-medium text-red-600">
+                                {lawMetadata.repealedDate}
+                              </dd>
+                            </div>
+                          )}
+                          {lawMetadata.repealedBy && (
+                            <div className="flex gap-2">
+                              <dt className="shrink-0 text-muted-foreground">
+                                Upphävd genom:
+                              </dt>
+                              <dd className="font-medium">
+                                SFS {lawMetadata.repealedBy}
+                              </dd>
+                            </div>
+                          )}
+                        </dl>
+                        {(lawMetadata.sfsrUrl || lawMetadata.fulltextUrl) && (
+                          <div className="mt-3 flex flex-wrap gap-4 border-t border-border/60 pt-3 text-sm">
+                            {lawMetadata.sfsrUrl && (
+                              <a
+                                href={lawMetadata.sfsrUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-primary hover:underline"
+                              >
+                                Ändringsregister (SFSR)
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                            {lawMetadata.fulltextUrl && (
+                              <a
+                                href={lawMetadata.fulltextUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-primary hover:underline"
+                              >
+                                Fulltext (Regeringskansliet)
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ),
+                  },
+                ]
+              : []),
+            ...(implementedDirectives.length > 0 ||
+            law.base_amendments.length > 0
+              ? [
+                  {
+                    value: 'related',
+                    label: (
+                      <>
+                        <Link2 className="h-4 w-4 text-muted-foreground" />
+                        Relaterade dokument
+                      </>
+                    ),
+                    hint:
+                      law.base_amendments.length > 0
+                        ? `${law.base_amendments.length} ändringar`
+                        : undefined,
+                    children: (
+                      <RelatedDocumentsSummary
+                        implementedDirectives={implementedDirectives}
+                        amendments={law.base_amendments.map((a) => ({
+                          id: a.id,
+                          title: a.amending_law_title,
+                          slug: a.amending_document?.slug ?? null,
+                          effectiveDate: a.effective_date
+                            ? typeof a.effective_date === 'string'
+                              ? a.effective_date
+                              : a.effective_date.toISOString()
+                            : null,
+                        }))}
+                        lawTitle={law.title}
+                        lawSlug={law.slug}
+                        embedded
+                      />
+                    ),
+                  },
+                ]
+              : []),
+          ]}
+        />
+
+        {/* Subject tags — flat row */}
+        {law.subjects.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {law.subjects.map((subject) => (
+              <Badge
+                key={subject.subject_code}
+                variant="outline"
+                className="text-xs"
+              >
+                {subject.subject_name}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Law Content with Future Amendments Banner */}
+        <LawDocumentContent
+          htmlContent={sanitizedHtml ?? ''}
+          fallbackText={law.full_text}
+          sourceUrl={law.source_url}
+          isLawNotYetInForce={lawMetadata.isNotYetInForce ?? false}
+        />
 
         {/* Back to top button */}
         <BackToTopButton />
 
-        {/* Floating references button - appears when scrolling */}
+        {/* Floating references button */}
         <FloatingReferencesWrapper
           directiveCount={implementedDirectives.length}
         />
 
-        {/* Prefetch related documents for instant navigation */}
+        {/* Prefetch related documents */}
         <RelatedDocsPrefetcher
           implementedDirectives={implementedDirectives.map((d) => ({
             slug: d.slug,
@@ -633,48 +651,8 @@ export default async function LawPage({ params }: PageProps) {
               slug: a.amending_document?.slug ?? null,
             }))}
         />
-
-        {/* Prefetch history page and timeline for instant navigation */}
         <TimelinePrefetcher lawSfs={law.document_number} lawSlug={law.slug} />
-      </main>
+      </DocumentPageLayout>
     </>
   )
-}
-
-function StatusBadge({
-  status,
-  isNotYetInForce,
-  effectiveDate,
-}: {
-  status: DocumentStatus
-  isNotYetInForce?: boolean | undefined
-  effectiveDate?: string | undefined
-}) {
-  // If law is not yet in force, show special badge
-  if (isNotYetInForce && effectiveDate) {
-    return (
-      <Badge
-        variant="outline"
-        className="border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-400"
-      >
-        Ikraft {effectiveDate}
-      </Badge>
-    )
-  }
-
-  const statusConfig: Record<
-    DocumentStatus,
-    {
-      label: string
-      variant: 'default' | 'secondary' | 'destructive' | 'outline'
-    }
-  > = {
-    ACTIVE: { label: 'Gällande', variant: 'default' },
-    REPEALED: { label: 'Upphävd', variant: 'destructive' },
-    DRAFT: { label: 'Utkast', variant: 'secondary' },
-    ARCHIVED: { label: 'Arkiverad', variant: 'outline' },
-  }
-
-  const config = statusConfig[status]
-  return <Badge variant={config.variant}>{config.label}</Badge>
 }

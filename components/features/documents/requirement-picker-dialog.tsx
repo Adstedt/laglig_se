@@ -159,7 +159,7 @@ export function RequirementPickerDialog({
 
   const breadcrumbs: { label: string; onClick?: (() => void) | undefined }[] = [
     {
-      label: 'Lagområden',
+      label: 'Laglistor',
       onClick:
         selectedList || selectedListItem
           ? () => {
@@ -190,9 +190,9 @@ export function RequirementPickerDialog({
     })
   }
 
-  let placeholder = 'Välj lagområde...'
+  let placeholder = 'Välj laglista...'
   if (selectedListItem) placeholder = 'Sök krav...'
-  else if (selectedList) placeholder = 'Sök författningstext...'
+  else if (selectedList) placeholder = 'Sök dokument...'
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
@@ -210,7 +210,7 @@ export function RequirementPickerDialog({
         ) : !selectedList ? (
           <>
             <CommandEmpty>
-              <PickerEmpty label="Inga lagområden hittades" />
+              <PickerEmpty label="Inga laglistor hittades" />
             </CommandEmpty>
             <CommandGroup>
               {lawLists.map((list) => (
@@ -234,7 +234,7 @@ export function RequirementPickerDialog({
         ) : !selectedListItem ? (
           <>
             <CommandEmpty>
-              <PickerEmpty label="Inga författningstexter med krav" />
+              <PickerEmpty label="Inga dokument med krav" />
             </CommandEmpty>
             <GroupedItemSections
               groups={groupedItems}

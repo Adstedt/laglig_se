@@ -1,18 +1,16 @@
 'use client'
 
-import { useRef } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Building2,
-  ExternalLink,
   Plus,
   Minus,
   Edit,
   FileDown,
   CalendarDays,
   BookOpen,
+  Info,
 } from 'lucide-react'
 import { getPublicPdfUrl } from '@/lib/supabase/storage'
 import {
@@ -23,9 +21,9 @@ import {
   type DefinitionItem,
 } from '@/lib/sfs/parse-amendment-structure'
 import type { SectionChangeType } from '@prisma/client'
-import { getDocumentTheme } from '@/lib/document-themes'
-import { cn } from '@/lib/utils'
-import { StickyDocNav } from '@/components/features/paragraf-toc'
+import { DocumentContent } from '@/components/features/document-content'
+import { DocumentHero } from '@/components/features/document-hero'
+import { DocumentIntroAccordion } from '@/components/features/document-intro'
 
 interface SectionChange {
   id: string
@@ -133,9 +131,7 @@ const changeTypeConfig: Record<
   },
 }
 
-/**
- * Render text with SFS references as clickable links
- */
+/** Render text with SFS references as clickable links */
 function LinkedText({ text, basePath }: { text: string; basePath: string }) {
   const parts = extractSfsReferences(text)
 
@@ -160,9 +156,7 @@ function LinkedText({ text, basePath }: { text: string; basePath: string }) {
   )
 }
 
-/**
- * Render a list item with optional sub-items (Notisum style)
- */
+/** Render a list item with optional sub-items (Notisum style) */
 function ListItemDisplay({
   item,
   basePath,
@@ -200,9 +194,7 @@ function ListItemDisplay({
   )
 }
 
-/**
- * Render a definition list (term → section reference) like Notisum
- */
+/** Render a definition list (term → section reference) like Notisum */
 function DefinitionListDisplay({
   definitions,
   basePath,
@@ -225,24 +217,10 @@ function DefinitionListDisplay({
   )
 }
 
-/**
- * Render LLM-generated HTML content with proper styling
- * This component applies Tailwind classes to the semantic HTML structure
- */
-function HtmlContentRenderer({ html }: { html: string }) {
-  return (
-    <div
-      className="legal-document"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  )
-}
-
 export function AmendmentPageContent({
   amendment,
   isWorkspace = false,
 }: AmendmentPageContentProps) {
-  const articleRef = useRef<HTMLElement>(null)
   const details = amendment.amendmentDetails
   const baseLaw = amendment.baseLaw
 
@@ -276,122 +254,104 @@ export function AmendmentPageContent({
     return change?.change_type ?? null
   }
 
-  // Get theme for amendments
-  const theme = getDocumentTheme('SFS_AMENDMENT')
-  const ThemeIcon = theme.icon
-
   const formattedEffectiveDate = formatDate(details?.effective_date)
   const formattedPublicationDate = formatDate(amendment.publication_date)
 
+  const quickInfoItems = formattedPublicationDate
+    ? [
+        {
+          icon: CalendarDays,
+          label: `Publicerad ${formattedPublicationDate}`,
+        },
+      ]
+    : []
+
+  const actionLinks = [
+    ...(pdfUrl
+      ? [
+          {
+            href: pdfUrl,
+            label: 'PDF',
+            icon: FileDown,
+            showExternalIcon: false,
+          },
+        ]
+      : []),
+    ...(riksdagenUrl
+      ? [
+          {
+            href: riksdagenUrl,
+            label: 'Riksdagen',
+            icon: Building2,
+          },
+        ]
+      : []),
+  ]
+
+  const extraBadges = formattedEffectiveDate ? (
+    <Badge
+      variant="outline"
+      className="border-green-200 text-green-700 dark:border-green-800 dark:text-green-400 text-xs"
+    >
+      Ikraft {formattedEffectiveDate}
+    </Badge>
+  ) : null
+
   return (
-    <div className="has-hero-header mx-auto max-w-4xl space-y-6">
-      {/* Hero Header - matches law page style */}
-      <header className="rounded-xl bg-card p-6 shadow-sm border">
-        <div className="flex items-start gap-4">
-          <div
-            className={cn(
-              'hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
-              theme.accentLight
-            )}
-          >
-            <ThemeIcon className={cn('h-6 w-6', theme.accent)} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-foreground sm:text-2xl leading-tight">
-              {amendment.title}
-            </h1>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Badge className={cn('gap-1', theme.badge)}>
-                <ThemeIcon className="h-3.5 w-3.5" />
-                {theme.label}
-              </Badge>
-              <Badge variant="secondary" className="font-mono text-sm">
-                {amendment.document_number}
-              </Badge>
-              {formattedEffectiveDate && (
-                <Badge
-                  variant="outline"
-                  className="border-green-200 text-green-700 dark:border-green-800 dark:text-green-400"
-                >
-                  Ikraft {formattedEffectiveDate}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
+    <>
+      <DocumentHero
+        title={amendment.title}
+        documentNumber={amendment.document_number}
+        contentType="SFS_AMENDMENT"
+        extraBadges={extraBadges}
+        quickInfoItems={quickInfoItems}
+        actionLinks={actionLinks}
+      />
 
-        {/* Quick Info Bar - matches law page style */}
-        <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-t pt-4">
-          {formattedPublicationDate && (
-            <div className="flex items-center gap-1.5">
-              <CalendarDays className="h-4 w-4" />
-              <span>Publicerad {formattedPublicationDate}</span>
-            </div>
-          )}
-          <div className="flex items-center gap-2 ml-auto">
-            {pdfUrl && (
-              <a
-                href={pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-primary hover:underline"
-              >
-                <FileDown className="h-4 w-4" />
-                <span>PDF</span>
-              </a>
-            )}
-            {riksdagenUrl && (
-              <a
-                href={riksdagenUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  'flex items-center gap-1.5 hover:underline',
-                  theme.accent
-                )}
-              >
-                <Building2 className="h-4 w-4" />
-                <span>Riksdagen</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Metadata Card - Base law reference */}
+      {/* Base law reference — accordion item, matches modal grammar */}
       {baseLaw && (
-        <Card>
-          <CardContent className="p-4">
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-              <div className="flex gap-2">
-                <dt className="text-muted-foreground shrink-0">
-                  Grundförfattning:
-                </dt>
-                <dd className="font-medium">
-                  <Link
-                    href={`${basePath}/${baseLaw.slug}`}
-                    className="text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    <BookOpen className="h-3.5 w-3.5" />
-                    {baseLaw.title}
-                  </Link>
-                </dd>
-              </div>
-              {details?.effective_date && (
-                <div className="flex gap-2">
-                  <dt className="text-muted-foreground shrink-0">
-                    Träder i kraft:
-                  </dt>
-                  <dd className="font-medium">{formattedEffectiveDate}</dd>
-                </div>
-              )}
-            </dl>
-          </CardContent>
-        </Card>
+        <DocumentIntroAccordion
+          items={[
+            {
+              value: 'metadata',
+              label: (
+                <>
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                  Detaljer
+                </>
+              ),
+              children: (
+                <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 text-muted-foreground">
+                      Grundförfattning:
+                    </dt>
+                    <dd className="font-medium">
+                      <Link
+                        href={`${basePath}/${baseLaw.slug}`}
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                      >
+                        <BookOpen className="h-3.5 w-3.5" />
+                        {baseLaw.title}
+                      </Link>
+                    </dd>
+                  </div>
+                  {details?.effective_date && (
+                    <div className="flex gap-2">
+                      <dt className="shrink-0 text-muted-foreground">
+                        Träder i kraft:
+                      </dt>
+                      <dd className="font-medium">{formattedEffectiveDate}</dd>
+                    </div>
+                  )}
+                </dl>
+              ),
+            },
+          ]}
+        />
       )}
 
-      {/* Subject Tags - matches law page style */}
+      {/* Subject Tags */}
       {amendment.subjects.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {amendment.subjects.map((subject) => (
@@ -406,172 +366,150 @@ export function AmendmentPageContent({
         </div>
       )}
 
-      {/* Amendment Content Card - matches law page "Lagtext" section */}
-      <Card>
-        <CardHeader className="border-b bg-muted/30">
-          <CardTitle className="text-lg">Ändringstext</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <article ref={articleRef} className="legal-document p-6 md:p-8">
-            {/* PRIMARY: Render LLM-generated HTML content directly */}
-            {hasHtmlContent && (
-              <HtmlContentRenderer html={amendment.html_content!} />
-            )}
+      {/* Primary: LLM-generated HTML via shared DocumentContent (TOC + tables + styling) */}
+      {hasHtmlContent && (
+        <DocumentContent
+          htmlContent={amendment.html_content}
+          isWorkspace={isWorkspace}
+          className="rounded-lg bg-card p-6 md:p-10"
+        />
+      )}
 
-            {/* FALLBACK: Parse and render full_text if no html_content */}
-            {!hasHtmlContent && (
-              <>
-                {/* Section content */}
-                {parsedStructure?.sections &&
-                  parsedStructure.sections.length > 0 && (
-                    <div className="space-y-8">
-                      {parsedStructure.sections.map((section, idx) => {
-                        const changeType = getSectionChangeType(
+      {/* Fallback: structured rendering from parsed full_text */}
+      {!hasHtmlContent && (
+        <DocumentContent className="rounded-lg bg-card p-6 md:p-10">
+          {parsedStructure?.sections && parsedStructure.sections.length > 0 && (
+            <div className="space-y-8">
+              {parsedStructure.sections.map((section, idx) => {
+                const changeType = getSectionChangeType(section.sectionNumber)
+                const config = changeType ? changeTypeConfig[changeType] : null
+                const prevSection = parsedStructure.sections[idx - 1]
+                const showChapter =
+                  section.chapter && section.chapter !== prevSection?.chapter
+                const showGroupHeader =
+                  section.groupHeader &&
+                  section.groupHeader !== prevSection?.groupHeader
+
+                return (
+                  <div key={idx}>
+                    {showChapter && (
+                      <h2 className="font-bold text-lg mt-6 mb-4 text-foreground">
+                        {section.chapter}
+                      </h2>
+                    )}
+                    {showGroupHeader && (
+                      <h4 className="font-semibold text-sm text-muted-foreground mt-4 mb-3 uppercase tracking-wide">
+                        {section.groupHeader}
+                      </h4>
+                    )}
+                    <div className="flex items-center gap-3 mb-3">
+                      <h3 className="font-semibold text-base text-primary">
+                        {baseLaw ? (
+                          <Link
+                            href={`${basePath}/${baseLaw.slug}#${section.sectionNumber.replace(/\s+/g, '-')}`}
+                            className="hover:underline"
+                          >
+                            {section.sectionNumber}
+                          </Link>
+                        ) : (
                           section.sectionNumber
-                        )
-                        const config = changeType
-                          ? changeTypeConfig[changeType]
-                          : null
-                        const prevSection = parsedStructure.sections[idx - 1]
-                        const showChapter =
-                          section.chapter &&
-                          section.chapter !== prevSection?.chapter
-                        const showGroupHeader =
-                          section.groupHeader &&
-                          section.groupHeader !== prevSection?.groupHeader
-
-                        return (
-                          <div key={idx}>
-                            {showChapter && (
-                              <h2 className="font-bold text-lg mt-6 mb-4 text-foreground">
-                                {section.chapter}
-                              </h2>
-                            )}
-
-                            {showGroupHeader && (
-                              <h4 className="font-semibold text-sm text-muted-foreground mt-4 mb-3 uppercase tracking-wide">
-                                {section.groupHeader}
-                              </h4>
-                            )}
-
-                            <div className="flex items-center gap-3 mb-3">
-                              <h3 className="font-semibold text-base text-primary">
-                                {baseLaw ? (
-                                  <Link
-                                    href={`${basePath}/${baseLaw.slug}#${section.sectionNumber.replace(/\s+/g, '-')}`}
-                                    className="hover:underline"
-                                  >
-                                    {section.sectionNumber}
-                                  </Link>
-                                ) : (
-                                  section.sectionNumber
-                                )}
-                              </h3>
-                              {section.footnoteRefs &&
-                                section.footnoteRefs.length > 0 && (
-                                  <sup className="text-xs text-muted-foreground">
-                                    {section.footnoteRefs.join(' ')}
-                                  </sup>
-                                )}
-                              {config && (
-                                <Badge
-                                  variant="outline"
-                                  className={`text-xs font-medium ${config.badgeClass}`}
-                                >
-                                  {config.labelShort}
-                                </Badge>
-                              )}
-                            </div>
-
-                            {section.leadText && (
-                              <p className="text-foreground leading-relaxed mb-3">
-                                <LinkedText
-                                  text={section.leadText}
-                                  basePath={basePath}
-                                />
-                              </p>
-                            )}
-
-                            {section.definitions &&
-                            section.definitions.length > 0 ? (
-                              <DefinitionListDisplay
-                                definitions={section.definitions}
-                                basePath={basePath}
-                              />
-                            ) : section.items && section.items.length > 0 ? (
-                              <div className="space-y-2">
-                                {section.items.map((item, itemIdx) => (
-                                  <ListItemDisplay
-                                    key={itemIdx}
-                                    item={item}
-                                    basePath={basePath}
-                                  />
-                                ))}
-                              </div>
-                            ) : (
-                              !section.leadText && (
-                                <p className="text-foreground leading-relaxed">
-                                  <LinkedText
-                                    text={section.text}
-                                    basePath={basePath}
-                                  />
-                                </p>
-                              )
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-
-                {/* Fallback: formatted text */}
-                {(!parsedStructure?.sections ||
-                  parsedStructure.sections.length === 0) &&
-                  formattedText && (
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground bg-transparent p-0 m-0">
-                        {formattedText}
-                      </pre>
-                    </div>
-                  )}
-
-                {/* Transition provisions */}
-                {parsedStructure?.transitionProvisions &&
-                  parsedStructure.transitionProvisions.length > 0 && (
-                    <div className="mt-10 pt-6 border-t">
-                      <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-4">
-                        Ikraftträdande- och övergångsbestämmelser
-                      </h3>
-                      <div className="space-y-2">
-                        {parsedStructure.transitionProvisions.map(
-                          (provision, idx) => (
-                            <div
-                              key={idx}
-                              className="flex gap-3 text-sm text-foreground/80 leading-relaxed"
-                            >
-                              <span className="text-muted-foreground shrink-0 tabular-nums">
-                                {provision.number}
-                              </span>
-                              <span>
-                                <LinkedText
-                                  text={provision.text}
-                                  basePath={basePath}
-                                />
-                              </span>
-                            </div>
-                          )
                         )}
-                      </div>
+                      </h3>
+                      {section.footnoteRefs &&
+                        section.footnoteRefs.length > 0 && (
+                          <sup className="text-xs text-muted-foreground">
+                            {section.footnoteRefs.join(' ')}
+                          </sup>
+                        )}
+                      {config && (
+                        <Badge
+                          variant="outline"
+                          className={`text-xs font-medium ${config.badgeClass}`}
+                        >
+                          {config.labelShort}
+                        </Badge>
+                      )}
                     </div>
-                  )}
-              </>
-            )}
-          </article>
-        </CardContent>
-      </Card>
 
-      {/* Sticky sidebar nav — TOC + in-document search */}
-      <StickyDocNav containerRef={articleRef} />
+                    {section.leadText && (
+                      <p className="text-foreground leading-relaxed mb-3">
+                        <LinkedText
+                          text={section.leadText}
+                          basePath={basePath}
+                        />
+                      </p>
+                    )}
+
+                    {section.definitions && section.definitions.length > 0 ? (
+                      <DefinitionListDisplay
+                        definitions={section.definitions}
+                        basePath={basePath}
+                      />
+                    ) : section.items && section.items.length > 0 ? (
+                      <div className="space-y-2">
+                        {section.items.map((item, itemIdx) => (
+                          <ListItemDisplay
+                            key={itemIdx}
+                            item={item}
+                            basePath={basePath}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      !section.leadText && (
+                        <p className="text-foreground leading-relaxed">
+                          <LinkedText text={section.text} basePath={basePath} />
+                        </p>
+                      )
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Fallback: formatted text */}
+          {(!parsedStructure?.sections ||
+            parsedStructure.sections.length === 0) &&
+            formattedText && (
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground bg-transparent p-0 m-0">
+                  {formattedText}
+                </pre>
+              </div>
+            )}
+
+          {/* Transition provisions */}
+          {parsedStructure?.transitionProvisions &&
+            parsedStructure.transitionProvisions.length > 0 && (
+              <div className="mt-10 pt-6 border-t">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-4">
+                  Ikraftträdande- och övergångsbestämmelser
+                </h3>
+                <div className="space-y-2">
+                  {parsedStructure.transitionProvisions.map(
+                    (provision, idx) => (
+                      <div
+                        key={idx}
+                        className="flex gap-3 text-sm text-foreground/80 leading-relaxed"
+                      >
+                        <span className="text-muted-foreground shrink-0 tabular-nums">
+                          {provision.number}
+                        </span>
+                        <span>
+                          <LinkedText
+                            text={provision.text}
+                            basePath={basePath}
+                          />
+                        </span>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            )}
+        </DocumentContent>
+      )}
 
       {/* Change summary badges */}
       {sectionChanges.length > 0 && (
@@ -600,7 +538,7 @@ export function AmendmentPageContent({
         </div>
       )}
 
-      {/* Footer - matches law page style */}
+      {/* Footer */}
       <footer className="text-center text-sm text-muted-foreground py-4 border-t">
         <p>
           Källa:{' '}
@@ -614,6 +552,6 @@ export function AmendmentPageContent({
           </a>
         </p>
       </footer>
-    </div>
+    </>
   )
 }

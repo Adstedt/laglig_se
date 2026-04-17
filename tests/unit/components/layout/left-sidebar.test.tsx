@@ -66,6 +66,7 @@ describe('LeftSidebar', () => {
       // Check all sub-items are visible
       expect(screen.getByText('Bläddra alla')).toBeInTheDocument()
       expect(screen.getByText('Svenska lagar')).toBeInTheDocument()
+      expect(screen.getByText('Myndighetsföreskrifter')).toBeInTheDocument()
       expect(screen.getByText('EU-rätt')).toBeInTheDocument()
     })
 
@@ -85,6 +86,9 @@ describe('LeftSidebar', () => {
         'href',
         '/browse/lagar'
       )
+      expect(
+        screen.getByText('Myndighetsföreskrifter').closest('a')
+      ).toHaveAttribute('href', '/browse/foreskrifter')
       expect(screen.getByText('EU-rätt').closest('a')).toHaveAttribute(
         'href',
         '/browse/eu'

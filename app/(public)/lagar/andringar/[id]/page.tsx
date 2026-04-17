@@ -13,6 +13,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { AmendmentPageContent } from '@/components/features/amendment'
+import { DocumentPageLayout } from '@/components/features/document-page-layout'
 import { getDocumentTheme } from '@/lib/document-themes'
 import { cn } from '@/lib/utils'
 
@@ -22,7 +23,6 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// Generate metadata for SEO
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -65,46 +65,42 @@ export default async function AmendmentPage({ params }: PageProps) {
 
   const theme = getDocumentTheme('SFS_AMENDMENT')
   const ThemeIcon = theme.icon
-
-  // Build breadcrumb path
   const baseLawSlug = amendment.baseLaw?.slug
 
-  return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <div className="container mx-auto max-w-4xl px-4 py-6">
-        {/* Breadcrumbs */}
-        <Breadcrumb className="mb-6">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Hem</BreadcrumbLink>
-            </BreadcrumbItem>
+  const breadcrumbs = (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">Hem</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/lagar">Lagar</BreadcrumbLink>
+        </BreadcrumbItem>
+        {baseLawSlug && (
+          <>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/lagar">Lagar</BreadcrumbLink>
+              <BreadcrumbLink href={`/lagar/${baseLawSlug}`}>
+                {amendment.baseLaw?.document_number}
+              </BreadcrumbLink>
             </BreadcrumbItem>
-            {baseLawSlug && (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href={`/lagar/${baseLawSlug}`}>
-                    {amendment.baseLaw?.document_number}
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              </>
-            )}
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="flex items-center gap-1.5">
-                <ThemeIcon className={cn('h-3.5 w-3.5', theme.accent)} />
-                {amendment.document_number}
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+          </>
+        )}
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage className="flex items-center gap-1.5">
+            <ThemeIcon className={cn('h-3.5 w-3.5', theme.accent)} />
+            {amendment.document_number}
+          </BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
 
-        {/* Page Content */}
-        <AmendmentPageContent amendment={amendment} isWorkspace={false} />
-      </div>
-    </main>
+  return (
+    <DocumentPageLayout breadcrumbs={breadcrumbs}>
+      <AmendmentPageContent amendment={amendment} isWorkspace={false} />
+    </DocumentPageLayout>
   )
 }

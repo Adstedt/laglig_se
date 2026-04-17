@@ -1,5 +1,6 @@
 export { FutureAmendmentsBanner } from './future-amendments-banner'
 export { LawContentWithHighlights } from './law-content-with-highlights'
+export { LawDocumentContent } from './law-document-content'
 export { NotYetInForceBanner } from './not-yet-in-force-banner'
 export { RelatedDocsPrefetcher } from './related-docs-prefetcher'
 export { TimelinePrefetcher } from './timeline-prefetcher'

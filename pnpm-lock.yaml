@@ -335,6 +335,9 @@ importers:
       sanitize-html:
         specifier: ^2.17.0
         version: 2.17.0
+      shiki:
+        specifier: ^3.21.0
+        version: 3.21.0
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)

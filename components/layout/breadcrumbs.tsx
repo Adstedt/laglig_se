@@ -11,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { useWorkspace } from '@/hooks/use-workspace'
+import { useBreadcrumbOverrideStore } from '@/lib/stores/breadcrumb-override-store'
 
 // Route name mappings for Swedish labels
 const routeLabels: Record<string, string> = {
@@ -73,6 +74,7 @@ function getSegmentLabel(segment: string, _prevSegment?: string): string {
 export function Breadcrumbs() {
   const pathname = usePathname()
   const { workspaceName } = useWorkspace()
+  const overrideLabel = useBreadcrumbOverrideStore((s) => s.label)
 
   // Split path and filter empty segments
   const segments = pathname.split('/').filter(Boolean)
@@ -106,8 +108,9 @@ export function Breadcrumbs() {
       )
 
       if (isLast) {
-        // Last segment is current page (no link)
-        breadcrumbItems.push({ label })
+        // Last segment is current page (no link). Allow page-level override
+        // (e.g. a law detail page showing "SFS 2026:311" instead of its slug).
+        breadcrumbItems.push({ label: overrideLabel ?? label })
       } else if (showAsLink.has(segment)) {
         // Known intermediate routes get links
         breadcrumbItems.push({ label, href: currentPath })

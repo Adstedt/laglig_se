@@ -2,12 +2,16 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ExternalLink } from 'lucide-react'
-import { getDocumentTheme } from '@/lib/document-themes'
-import { cn } from '@/lib/utils'
+import { ExternalLink, FileDown } from 'lucide-react'
 import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
-import { LegalDocumentCard } from '@/components/features/legal-document-card'
-import { rewriteLinksForWorkspace } from '@/lib/linkify/rewrite-links'
+import { DocumentContent } from '@/components/features/document-content'
+import { DocumentHero } from '@/components/features/document-hero'
+import { DocumentPageLayout } from '@/components/features/document-page-layout'
+import { BreadcrumbOverride } from '@/components/layout/breadcrumb-override'
+import { AddToLawListButton } from '@/components/features/documents/add-to-law-list-button'
+import { getListsContainingDocument } from '@/app/actions/document-list'
+import { getWorkspaceContext } from '@/lib/auth/workspace-context'
+import { hasPermission } from '@/lib/auth/permissions'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,96 +47,53 @@ export default async function WorkspaceForeskriftPage({ params }: PageProps) {
 
   const isStub = doc.full_text === null
   const metadata = doc.metadata as Record<string, unknown> | null
-  const theme = getDocumentTheme('AGENCY_REGULATION')
-  const ThemeIcon = theme.icon
   const pdfUrl = metadata?.pdfUrl ? String(metadata.pdfUrl) : null
 
-  return (
-    <div className="has-hero-header mx-auto max-w-4xl space-y-6">
-      {/* Hero Header */}
-      <header className="rounded-xl bg-card p-6 shadow-sm border">
-        <div className="flex items-start gap-4">
-          <div
-            className={cn(
-              'hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
-              theme.accentLight
-            )}
-          >
-            <ThemeIcon className={cn('h-6 w-6', theme.accent)} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-foreground sm:text-2xl leading-tight">
-              {doc.title}
-            </h1>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Badge className={cn('gap-1', theme.badge)}>
-                <ThemeIcon className="h-3.5 w-3.5" />
-                {theme.label}
-              </Badge>
-              <Badge variant="secondary" className="font-mono text-sm">
-                {doc.document_number}
-              </Badge>
-              {metadata?.regulatoryBody ? (
-                <Badge variant="outline">
-                  {String(metadata.regulatoryBody)}
-                </Badge>
-              ) : null}
-              <Badge
-                variant="outline"
-                className={cn(
-                  'text-xs',
-                  doc.status === 'ACTIVE' &&
-                    'border-emerald-200 text-emerald-700 dark:border-emerald-800 dark:text-emerald-400',
-                  doc.status === 'REPEALED' &&
-                    'border-red-200 text-red-700 dark:border-red-800 dark:text-red-400'
-                )}
-              >
-                {doc.status === 'ACTIVE'
-                  ? 'Gällande'
-                  : doc.status === 'REPEALED'
-                    ? 'Upphävd'
-                    : doc.status}
-              </Badge>
-            </div>
-          </div>
-        </div>
+  const extraBadges = metadata?.regulatoryBody ? (
+    <Badge variant="outline" className="text-xs">
+      {String(metadata.regulatoryBody)}
+    </Badge>
+  ) : null
 
-        {/* Source & PDF links */}
-        {(doc.source_url || pdfUrl) && (
-          <div className="mt-6 flex items-center gap-4 text-sm text-muted-foreground border-t pt-4">
-            <div className="ml-auto flex items-center gap-4">
-              {doc.source_url && (
-                <a
-                  href={doc.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    'flex items-center gap-1.5 hover:underline',
-                    theme.accent
-                  )}
-                >
-                  <span>Källa</span>
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-              {pdfUrl && (
-                <a
-                  href={pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    'flex items-center gap-1.5 hover:underline',
-                    theme.accent
-                  )}
-                >
-                  <span>Originaldokument (PDF)</span>
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-      </header>
+  const actionLinks = [
+    ...(doc.source_url
+      ? [{ href: doc.source_url, label: 'Källa', icon: ExternalLink }]
+      : []),
+    ...(pdfUrl ? [{ href: pdfUrl, label: 'PDF', icon: FileDown }] : []),
+  ]
+
+  const ctx = await getWorkspaceContext()
+  const canAddToList = hasPermission(ctx.role, 'documents:add')
+  const listIdsContaining = canAddToList
+    ? ((await getListsContainingDocument(doc.id)).data ?? [])
+    : []
+
+  return (
+    <DocumentPageLayout isWorkspace>
+      <BreadcrumbOverride label={doc.document_number} />
+
+      <DocumentHero
+        title={doc.title}
+        documentNumber={doc.document_number}
+        contentType="AGENCY_REGULATION"
+        status={
+          doc.status === 'ACTIVE'
+            ? { kind: 'active' }
+            : doc.status === 'REPEALED'
+              ? { kind: 'repealed' }
+              : undefined
+        }
+        extraBadges={extraBadges}
+        actionLinks={actionLinks}
+        actions={
+          canAddToList ? (
+            <AddToLawListButton
+              documentId={doc.id}
+              initialListIdsContaining={listIdsContaining}
+            />
+          ) : undefined
+        }
+      />
 
       {/* External PDF stub — link directly to the source PDF */}
       {isStub &&
@@ -144,10 +105,7 @@ export default async function WorkspaceForeskriftPage({ params }: PageProps) {
                 href={String(metadata.pdfUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-medium transition-colors hover:bg-accent',
-                  theme.accent
-                )}
+                className="inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-medium transition-colors hover:bg-accent text-teal-700 dark:text-teal-400"
               >
                 <ExternalLink className="h-4 w-4" />
                 Öppna originaldokument (PDF)
@@ -173,12 +131,14 @@ export default async function WorkspaceForeskriftPage({ params }: PageProps) {
 
       {/* Full content */}
       {!isStub && doc.html_content && (
-        <LegalDocumentCard
-          htmlContent={rewriteLinksForWorkspace(doc.html_content)}
+        <DocumentContent
+          htmlContent={doc.html_content}
+          isWorkspace
+          className="rounded-lg bg-card p-6 md:p-10"
         />
       )}
 
       <BackToTopButton />
-    </div>
+    </DocumentPageLayout>
   )
 }

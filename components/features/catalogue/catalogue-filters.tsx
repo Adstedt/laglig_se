@@ -64,6 +64,10 @@ const STATUS_OPTIONS = [
   { value: 'ARCHIVED', label: 'Arkiverad' },
 ]
 
+// Målgrupp + Kategori filters are hidden until documents are classified
+// (no ingestion populates metadata.businessType or DocumentSubject today).
+const CLASSIFICATION_FILTERS_ENABLED = false
+
 const BUSINESS_TYPES = [
   { value: 'B2B', label: 'Företag (B2B)' },
   { value: 'PRIVATE', label: 'Privatperson' },
@@ -337,58 +341,66 @@ export function CatalogueFilters({
       )}
 
       {/* Business Type Filter */}
-      <FilterSection title="Målgrupp">
-        <div className="space-y-2">
-          {BUSINESS_TYPES.map((type) => (
-            <label
-              key={type.value}
-              className="flex cursor-pointer items-center gap-2"
-              onMouseEnter={() => prefetchBusinessType(type.value)}
-            >
-              <input
-                type="radio"
-                name="businessType"
-                checked={selectedBusinessType === type.value}
-                onChange={() =>
-                  updateFilters(
-                    'business',
-                    selectedBusinessType === type.value ? undefined : type.value
-                  )
-                }
-                className="h-4 w-4 border-border text-primary focus:ring-primary"
-              />
-              <span className="text-sm text-foreground">{type.label}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
+      {CLASSIFICATION_FILTERS_ENABLED && (
+        <FilterSection title="Målgrupp">
+          <div className="space-y-2">
+            {BUSINESS_TYPES.map((type) => (
+              <label
+                key={type.value}
+                className="flex cursor-pointer items-center gap-2"
+                onMouseEnter={() => prefetchBusinessType(type.value)}
+              >
+                <input
+                  type="radio"
+                  name="businessType"
+                  checked={selectedBusinessType === type.value}
+                  onChange={() =>
+                    updateFilters(
+                      'business',
+                      selectedBusinessType === type.value
+                        ? undefined
+                        : type.value
+                    )
+                  }
+                  className="h-4 w-4 border-border text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-foreground">{type.label}</span>
+              </label>
+            ))}
+          </div>
+        </FilterSection>
+      )}
 
       {/* Category Filter */}
-      <FilterSection title="Kategori">
-        <div className="space-y-2">
-          {CATEGORIES.map((category) => (
-            <label
-              key={category.value}
-              className="flex cursor-pointer items-center gap-2"
-              onMouseEnter={() => prefetchCategoryToggle(category.value)}
-            >
-              <input
-                type="checkbox"
-                checked={selectedCategories.includes(category.value)}
-                onChange={() =>
-                  toggleArrayFilter(
-                    'categories',
-                    category.value,
-                    selectedCategories
-                  )
-                }
-                className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-              />
-              <span className="text-sm text-foreground">{category.label}</span>
-            </label>
-          ))}
-        </div>
-      </FilterSection>
+      {CLASSIFICATION_FILTERS_ENABLED && (
+        <FilterSection title="Kategori">
+          <div className="space-y-2">
+            {CATEGORIES.map((category) => (
+              <label
+                key={category.value}
+                className="flex cursor-pointer items-center gap-2"
+                onMouseEnter={() => prefetchCategoryToggle(category.value)}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.includes(category.value)}
+                  onChange={() =>
+                    toggleArrayFilter(
+                      'categories',
+                      category.value,
+                      selectedCategories
+                    )
+                  }
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-foreground">
+                  {category.label}
+                </span>
+              </label>
+            ))}
+          </div>
+        </FilterSection>
+      )}
 
       {/* Status Filter */}
       <FilterSection title="Status">

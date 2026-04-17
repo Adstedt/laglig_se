@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { LawContentWrapper } from '@/app/(public)/lagar/[id]/law-content-wrapper'
+import { LawContentWrapper } from '@/components/features/law-content-wrapper'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 

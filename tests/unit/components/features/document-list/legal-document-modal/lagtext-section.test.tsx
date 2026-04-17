@@ -10,7 +10,7 @@ import { LagtextSection } from '@/components/features/document-list/legal-docume
 import { Accordion } from '@/components/ui/accordion'
 
 // Mock the LawContentWrapper component
-vi.mock('@/app/(public)/lagar/[id]/law-content-wrapper', () => ({
+vi.mock('@/components/features/law-content-wrapper', () => ({
   LawContentWrapper: ({
     htmlContent,
     fallbackText,

@@ -596,6 +596,23 @@ export async function addDocumentToList(
         return { success: false, error: 'Dokumentet finns redan i listan' }
       }
 
+      // If a group is specified, verify it belongs to this list
+      if (parsed.data.groupId) {
+        const group = await prisma.lawListGroup.findFirst({
+          where: {
+            id: parsed.data.groupId,
+            law_list_id: parsed.data.listId,
+          },
+        })
+
+        if (!group) {
+          return {
+            success: false,
+            error: 'Gruppen hittades inte i denna lista',
+          }
+        }
+      }
+
       // Get max position for new item
       const maxPositionItem = await prisma.lawListItem.findFirst({
         where: { law_list_id: parsed.data.listId },
@@ -613,6 +630,7 @@ export async function addDocumentToList(
           source: parsed.data.source ?? 'MANUAL',
           position: newPosition,
           added_by: ctx.userId,
+          group_id: parsed.data.groupId ?? null,
         },
       })
 
@@ -1579,5 +1597,30 @@ export async function reorderGroups(
   } catch (error) {
     console.error('Error reordering groups:', error)
     return { success: false, error: 'Kunde inte ändra ordning på grupper' }
+  }
+}
+
+/**
+ * Returns the IDs of law lists in the caller's workspace that already contain
+ * the given document. Used by the workspace document pages to pre-populate the
+ * "add to law list" picker with ✓ indicators on lists the document is in.
+ */
+export async function getListsContainingDocument(
+  documentId: string
+): Promise<ActionResult<string[]>> {
+  try {
+    return await withWorkspace(async (ctx) => {
+      const items = await prisma.lawListItem.findMany({
+        where: {
+          document_id: documentId,
+          law_list: { workspace_id: ctx.workspaceId },
+        },
+        select: { law_list_id: true },
+      })
+      return { success: true, data: items.map((i) => i.law_list_id) }
+    }, 'read')
+  } catch (error) {
+    console.error('Error fetching lists containing document:', error)
+    return { success: false, error: 'Kunde inte hämta listor' }
   }
 }
