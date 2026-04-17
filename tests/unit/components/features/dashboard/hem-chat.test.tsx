@@ -54,6 +54,14 @@ vi.mock('sonner', () => ({
   toast: { error: vi.fn(), success: vi.fn() },
 }))
 
+const mockSetChatHistoryOpen = vi.fn()
+
+vi.mock('@/lib/stores/layout-store', () => ({
+  useLayoutStore: () => ({
+    setChatHistoryOpen: mockSetChatHistoryOpen,
+  }),
+}))
+
 // Mock chat sub-components to isolate HemChat tests
 vi.mock('next/image', () => ({
   default: (props: Record<string, unknown>) => {
@@ -455,7 +463,7 @@ describe('HemChat', () => {
 
     await user.click(screen.getByText('Tidigare konversationer'))
 
-    expect(screen.getByTestId('conversation-history')).toBeInTheDocument()
+    expect(mockSetChatHistoryOpen).toHaveBeenCalledWith(true)
   })
 
   // --- Test 15: Panel mode renders compact layout ---
