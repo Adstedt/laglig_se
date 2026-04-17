@@ -12,8 +12,10 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BookOpen, ExternalLink } from 'lucide-react'
-import { LegalDocumentCard } from '@/components/features/legal-document-card'
+import { BookOpen, ExternalLink, FileDown } from 'lucide-react'
+import { DocumentContent } from '@/components/features/document-content'
+import { DocumentHero } from '@/components/features/document-hero'
+import { DocumentPageLayout } from '@/components/features/document-page-layout'
 
 export const dynamic = 'force-dynamic'
 
@@ -65,83 +67,71 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
 
   const isStub = doc.full_text === null
   const metadata = doc.metadata as Record<string, unknown> | null
-
   const pdfUrl = metadata?.pdfUrl ? String(metadata.pdfUrl) : null
 
-  // If full content exists (future - after Epic 9), render it
+  const breadcrumbs = (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/">Hem</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href="/rattskallor">Regelverk</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>{doc.document_number}</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
+
+  // Full content path — render via shared components
   if (!isStub && doc.html_content) {
+    const actionLinks = [
+      ...(doc.source_url
+        ? [{ href: doc.source_url, label: 'Källa', icon: ExternalLink }]
+        : []),
+      ...(pdfUrl
+        ? [
+            {
+              href: pdfUrl,
+              label: 'PDF',
+              icon: FileDown,
+            },
+          ]
+        : []),
+    ]
+
+    const extraBadges = metadata?.regulatoryBody ? (
+      <Badge variant="outline" className="text-xs">
+        {String(metadata.regulatoryBody)}
+      </Badge>
+    ) : null
+
     return (
-      <div className="mx-auto max-w-4xl px-4 py-8">
-        <Breadcrumb className="mb-6">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Hem</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/rattskallor">Regelverk</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{doc.document_number}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
-        <h1 className="mb-4 text-2xl font-bold">{doc.title}</h1>
-
-        {(doc.source_url || pdfUrl) && (
-          <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
-            {doc.source_url && (
-              <a
-                href={doc.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 hover:underline text-teal-600"
-              >
-                <span>Källa</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
-            {pdfUrl && (
-              <a
-                href={pdfUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 hover:underline text-teal-600"
-              >
-                <span>Originaldokument (PDF)</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
-          </div>
-        )}
-
-        <LegalDocumentCard htmlContent={doc.html_content} />
-      </div>
+      <DocumentPageLayout breadcrumbs={breadcrumbs}>
+        <DocumentHero
+          title={doc.title}
+          documentNumber={doc.document_number}
+          contentType="AGENCY_REGULATION"
+          status={doc.status === 'ACTIVE' ? { kind: 'active' } : undefined}
+          extraBadges={extraBadges}
+          actionLinks={actionLinks}
+        />
+        <DocumentContent
+          htmlContent={doc.html_content}
+          className="rounded-lg bg-card p-6 md:p-10"
+        />
+      </DocumentPageLayout>
     )
   }
 
-  // Stub placeholder page
+  // Stub placeholder — keep legacy layout to preserve current behavior
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <Breadcrumb className="mb-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Hem</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/rattskallor">Regelverk</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{doc.document_number}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <Card className="mt-4">
+    <DocumentPageLayout breadcrumbs={breadcrumbs}>
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
             <BookOpen className="h-6 w-6 text-teal-600" />
@@ -202,6 +192,6 @@ export default async function ForeskrifterDetailPage({ params }: PageProps) {
           )}
         </CardContent>
       </Card>
-    </div>
+    </DocumentPageLayout>
   )
 }

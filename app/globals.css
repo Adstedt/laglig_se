@@ -425,22 +425,33 @@ html {
   }
 
   /* ---------- Allmänna råd (non-binding guidance) ----------
-   * Must be instantly distinguishable from binding regulation text. */
+   * Rendered as a warm-tinted marginalia block — very subtle amber/beige
+   * paper inset against the cream article surface, with a hairline warm
+   * rule on the left (commentary convention). Echoes the SFS amber theme
+   * without becoming an AI-callout card. Typography carries the register
+   * distinction: label in near-black for presence, prose in softened
+   * foreground for comfortable reading contrast. (Story 2.30, issue #53) */
   .legal-document .allmanna-rad {
-    @apply my-5 py-4 px-5 rounded-md;
-    border-left: 3px solid hsl(var(--primary) / 0.4);
-    background: hsl(var(--muted) / 0.35);
+    @apply my-7 rounded-lg px-5 py-4;
+    background: hsl(35 55% 92% / 0.5);
+  }
+
+  .dark .legal-document .allmanna-rad {
+    background: hsl(35 25% 20% / 0.3);
   }
 
   .legal-document .allmanna-rad-heading {
-    @apply text-sm font-semibold uppercase tracking-wide mb-2;
-    color: hsl(var(--muted-foreground));
+    @apply mb-2.5 font-semibold uppercase;
+    font-size: 0.6875rem; /* 11px — restrained masthead scale */
+    letter-spacing: 0.18em;
+    color: hsl(var(--foreground) / 0.85);
   }
 
   .legal-document .allmanna-rad p {
-    @apply mb-3 text-muted-foreground;
+    @apply mb-3;
     font-size: 0.9375rem;
-    line-height: 1.65;
+    line-height: 1.7;
+    color: hsl(var(--foreground) / 0.72);
   }
 
   .legal-document .allmanna-rad p:last-child {
@@ -519,15 +530,12 @@ html {
     @apply my-0.5 ml-4;
   }
 
-  /* ---------- Tables ---------- */
+  /* ---------- Tables — polished, matches chat table styling ---------- */
   .legal-document table,
   .legal-document table.legal-table {
-    @apply w-full my-6 text-sm;
+    @apply w-full my-6 overflow-hidden rounded-md border border-border text-sm;
     border-collapse: separate;
     border-spacing: 0;
-    border-radius: 0.5rem;
-    overflow: hidden;
-    box-shadow: 0 1px 3px hsl(var(--foreground) / 0.05);
   }
 
   /* Horizontally scroll wide tables */
@@ -539,13 +547,16 @@ html {
     margin: 0;
   }
 
-  .legal-document th,
-  .legal-document td {
-    @apply border border-border px-4 py-3 text-left;
+  .legal-document th {
+    @apply bg-muted/60 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground border-b border-border;
   }
 
-  .legal-document th {
-    @apply bg-muted font-semibold text-xs uppercase tracking-wide;
+  .legal-document td {
+    @apply bg-background px-4 py-3 text-left border-b border-border/50 align-top;
+  }
+
+  .legal-document tr:last-child td {
+    @apply border-b-0;
   }
 
   .legal-document tr:hover td {
@@ -557,9 +568,9 @@ html {
     @apply font-semibold;
   }
 
-  /* ---------- Blockquotes ---------- */
+  /* ---------- Blockquotes — subtle left border + muted background ---------- */
   .legal-document blockquote {
-    @apply border-l-4 border-primary/30 pl-6 my-6 italic text-muted-foreground;
+    @apply my-6 rounded-r-md border-l-2 border-primary/30 bg-muted/20 px-4 py-2 italic text-muted-foreground;
   }
 
   /* ---------- Line breaks ---------- */

@@ -6,19 +6,23 @@ import {
   getCachedEuLegislationMetadata,
 } from '@/lib/cache/cached-queries'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { CalendarDays, ExternalLink, FileText } from 'lucide-react'
-import { getDocumentTheme } from '@/lib/document-themes'
-import { cn } from '@/lib/utils'
 import { LinkedSwedishLaws } from '@/components/features/cross-references'
 import { lookupLawBySfsNumber } from '@/app/actions/cross-references'
-import { LegalDocumentCard } from '@/components/features/legal-document-card'
+import { DocumentContent } from '@/components/features/document-content'
+import { DocumentHero } from '@/components/features/document-hero'
+import { DocumentPageLayout } from '@/components/features/document-page-layout'
+import { BreadcrumbOverride } from '@/components/layout/breadcrumb-override'
+import { DocumentIntroAccordion } from '@/components/features/document-intro'
 import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
 import { FloatingImplementationsButton } from '@/app/(public)/eu/[type]/[id]/floating-implementations-button'
 import { RelatedDocsPrefetcher } from '@/components/features/eu-legislation'
-import { rewriteLinksForWorkspace } from '@/lib/linkify/rewrite-links'
+import { AddToLawListButton } from '@/components/features/documents/add-to-law-list-button'
+import { getListsContainingDocument } from '@/app/actions/document-list'
+import { getWorkspaceContext } from '@/lib/auth/workspace-context'
+import { hasPermission } from '@/lib/auth/permissions'
 
-// EU type URL mapping
 const EU_TYPE_MAP: Record<
   string,
   { contentType: ContentType; name: string; namePlural: string }
@@ -48,7 +52,6 @@ function formatDateOrNull(
   return dateObj.toLocaleDateString('sv-SE', options)
 }
 
-// Generate metadata for SEO
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -92,10 +95,6 @@ export default async function WorkspaceEuDocumentPage({ params }: PageProps) {
 
   const euDoc = document.eu_document
 
-  // Get theme for EU documents (purple)
-  const theme = getDocumentTheme(typeInfo.contentType)
-  const ThemeIcon = theme.icon
-
   // Parse national implementation measures
   const nimData = euDoc?.national_implementation_measures as {
     sweden?: {
@@ -106,7 +105,6 @@ export default async function WorkspaceEuDocumentPage({ params }: PageProps) {
     }
   } | null
 
-  // Look up slugs for each measure in parallel
   const measuresWithSlugs = await Promise.all(
     (nimData?.sweden?.measures || []).map(async (measure) => {
       const lawInfo = await lookupLawBySfsNumber(measure.sfs_number)
@@ -124,85 +122,93 @@ export default async function WorkspaceEuDocumentPage({ params }: PageProps) {
     day: 'numeric',
   })
 
+  const extraBadges = (
+    <>
+      {euDoc?.celex_number && (
+        <Badge variant="outline" className="text-xs">
+          CELEX: {euDoc.celex_number}
+        </Badge>
+      )}
+      {euDoc?.eut_reference && (
+        <Badge variant="outline" className="text-xs">
+          EUT: {euDoc.eut_reference}
+        </Badge>
+      )}
+    </>
+  )
+
+  const quickInfoItems = [
+    { icon: FileText, label: document.document_number },
+    ...(formattedPublicationDate
+      ? [
+          {
+            icon: CalendarDays,
+            label: `Publicerad ${formattedPublicationDate}`,
+          },
+        ]
+      : []),
+  ]
+
+  const actionLinks = document.source_url
+    ? [
+        {
+          href: document.source_url,
+          label: 'EUR-Lex',
+          icon: ExternalLink,
+          showExternalIcon: false,
+        },
+      ]
+    : []
+
+  const ctx = await getWorkspaceContext()
+  const canAddToList = hasPermission(ctx.role, 'documents:add')
+  const listIdsContaining = canAddToList
+    ? ((await getListsContainingDocument(document.id)).data ?? [])
+    : []
+
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      {/* Hero Header */}
-      <header className="rounded-xl bg-card p-6 shadow-sm border">
-        <div className="flex items-start gap-4">
-          <div
-            className={cn(
-              'hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
-              theme.accentLight
-            )}
-          >
-            <ThemeIcon className={cn('h-6 w-6', theme.accent)} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-foreground sm:text-2xl leading-tight">
-              {document.title}
-            </h1>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Badge className={cn('gap-1', theme.badge)}>
-                <ThemeIcon className="h-3.5 w-3.5" />
-                {typeInfo.name}
-              </Badge>
-              {euDoc?.celex_number && (
-                <Badge variant="outline" className="font-mono text-sm">
-                  CELEX: {euDoc.celex_number}
-                </Badge>
-              )}
-              {euDoc?.eut_reference && (
-                <Badge variant="outline" className="font-mono text-sm">
-                  EUT: {euDoc.eut_reference}
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
+    <DocumentPageLayout isWorkspace>
+      <BreadcrumbOverride label={document.document_number} />
 
-        {/* Quick Info Bar */}
-        <div className="mt-6 flex flex-wrap gap-4 text-sm text-muted-foreground border-t pt-4">
-          <div className="flex items-center gap-1.5">
-            <FileText className="h-4 w-4" />
-            <span>{document.document_number}</span>
-          </div>
-          {formattedPublicationDate && (
-            <div className="flex items-center gap-1.5">
-              <CalendarDays className="h-4 w-4" />
-              <span>Publicerad {formattedPublicationDate}</span>
-            </div>
-          )}
-          {document.source_url && (
-            <a
-              href={document.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                'flex items-center gap-1.5 hover:underline ml-auto',
-                theme.accent
-              )}
-            >
-              <span>EUR-Lex</span>
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          )}
-        </div>
-      </header>
+      <DocumentHero
+        title={document.title}
+        documentNumber={document.document_number}
+        contentType={typeInfo.contentType}
+        typeLabel={typeInfo.name}
+        extraBadges={extraBadges}
+        quickInfoItems={quickInfoItems}
+        actionLinks={actionLinks}
+        actions={
+          canAddToList ? (
+            <AddToLawListButton
+              documentId={document.id}
+              initialListIdsContaining={listIdsContaining}
+            />
+          ) : undefined
+        }
+      />
 
-      {/* Summary Card */}
+      {/* Sammanfattning — accordion item, collapsed by default */}
       {document.summary && (
-        <Card className="border-l-4 border-l-purple-500/50">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium text-muted-foreground">
-              Sammanfattning
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-foreground leading-relaxed">
-              {document.summary}
-            </p>
-          </CardContent>
-        </Card>
+        <DocumentIntroAccordion
+          defaultValue={[]}
+          items={[
+            {
+              value: 'summary',
+              label: (
+                <>
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  Sammanfattning
+                </>
+              ),
+              children: (
+                <p className="leading-relaxed text-foreground/90">
+                  {document.summary}
+                </p>
+              ),
+            },
+          ]}
+        />
       )}
 
       {/* Swedish Implementation (for directives) */}
@@ -212,29 +218,30 @@ export default async function WorkspaceEuDocumentPage({ params }: PageProps) {
 
       {/* Document content */}
       {document.html_content ? (
-        <LegalDocumentCard
-          htmlContent={rewriteLinksForWorkspace(document.html_content)}
+        <DocumentContent
+          htmlContent={document.html_content}
+          isWorkspace
+          className="rounded-lg bg-card p-6 md:p-10"
+        />
+      ) : document.full_text ? (
+        <DocumentContent
+          fallbackText={document.full_text}
+          className="rounded-lg bg-card p-6 md:p-10"
         />
       ) : (
         <Card>
           <CardContent className="p-6">
-            {document.full_text ? (
-              <div className="whitespace-pre-wrap font-serif">
-                {document.full_text}
-              </div>
-            ) : (
-              <p className="italic text-muted-foreground py-8 text-center">
-                Ingen dokumenttext tillgänglig.{' '}
-                <a
-                  href={document.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Läs på EUR-Lex
-                </a>
-              </p>
-            )}
+            <p className="italic text-muted-foreground py-8 text-center">
+              Ingen dokumenttext tillgänglig.{' '}
+              <a
+                href={document.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Läs på EUR-Lex
+              </a>
+            </p>
           </CardContent>
         </Card>
       )}
@@ -254,22 +261,19 @@ export default async function WorkspaceEuDocumentPage({ params }: PageProps) {
         </p>
       </footer>
 
-      {/* Back to top button */}
       <BackToTopButton />
 
-      {/* Floating button for Swedish implementations (directives only) */}
       {type === 'direktiv' && (
         <FloatingImplementationsButton
           implementationCount={measuresWithSlugs.length}
         />
       )}
 
-      {/* Prefetch related documents */}
       <RelatedDocsPrefetcher
         swedishImplementations={measuresWithSlugs.map((m) => ({
           slug: m.slug,
         }))}
       />
-    </div>
+    </DocumentPageLayout>
   )
 }

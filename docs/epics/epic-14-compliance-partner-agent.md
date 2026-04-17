@@ -114,6 +114,13 @@ This transforms Laglig from a passive law registry into an active compliance par
 | **14.10** | Agentic Change Assessment Flow (formerly Epic 8 Story 8.3) | Draft |
 | **14.11** | Chat-First Dashboard ("Hem") | Draft |
 
+### Phase 5: Agent Approval Cards
+| # | Story | Status |
+|---|-------|--------|
+| **14.22** | AgentActionCard Foundation + Task Approval (Pilot) | Draft |
+| **14.23** | Extended Approval Types + Batch Consolidation + Sidebar Migration | Draft |
+| **14.24** | Draft Styrdokument Approval | Draft |
+
 ---
 
 ## Phase 1: Data Foundation
@@ -370,6 +377,92 @@ This transforms Laglig from a passive law registry into an active compliance par
 
 ---
 
+## Phase 5: Agent Approval Cards
+
+**Goal:** Replace the sidebar write-preview pattern with a uniform inline `AgentActionCard` primitive that renders every state-changing agent proposal — task creation, task↔document links, obligations, assignments, draft documents — with edit-before-approve, batch consolidation, persistence across chat close, and a feedback loop so the agent knows what was approved.
+
+**Context:** Phase 4 established human-in-the-loop via the two-phase tool pattern (`execute: false/true` — see [`lib/agent/tools/create-task.ts`](../../lib/agent/tools/create-task.ts)) and the sidebar `write-preview-*` cards (Story 14.15b). That works for single-action, single-session approvals but doesn't scale as the tool surface grows (Epic 17 document tools, future assignment/obligation tools). Phase 5 builds the durable, uniform primitive.
+
+**Assumptions (marked for challenge):**
+- **A1.** Story 14.17 "Agent Action Plans" coexists — scoped to the sidebar assessment flow with explicit ephemerality. Revisit consolidation after 14.22–14.24 ship and the pattern is validated.
+- **A2.** Sidebar `write-preview-task.tsx` / `write-preview-note.tsx` / `write-preview-status.tsx` are decommissioned by end of 14.23. Having two parallel approval surfaces defeats the uniformity goal.
+
+### Story 14.22: AgentActionCard Foundation + Task Approval (Pilot)
+
+**As a** user proposing a task via the compliance partner,
+**I want** the proposal to render inline in chat with editable fields and persist if I close the chat,
+**so that** I can review and approve it at my own pace without losing context.
+
+**Key deliverables:**
+- Prisma model: `PendingAgentAction`
+  - `id`, `workspaceId`, `userId`, `chatSessionId`, `chatMessageId`
+  - `actionType` enum (initial: `CREATE_TASK`; extended in 14.23/14.24)
+  - `status` enum: `PENDING`, `APPROVED`, `REJECTED`, `EXPIRED`
+  - `params` — JSON (editable snapshot of proposal parameters)
+  - `resultRef` — JSON (e.g., `{ taskId }` after approve)
+  - `createdAt`, `decidedAt`, `expiresAt` (default +7 days)
+  - Indexes: `(chatSessionId, status)`, `(userId, status)`, `(expiresAt)`
+- Server actions: `approvePendingAction`, `rejectPendingAction`, `updatePendingActionParams`, `expirePendingActions`
+- `AgentActionCard` React component — single-action layout; rendered inline in chat via new branch in `chat-message.tsx`
+- `TaskApprovalRenderer` — preview + edit form for title/description/priority/related-document
+- `create_task` tool rewired: on `execute: false` writes a `PendingAgentAction` row and returns the row ID (replacing the ephemeral proposal envelope)
+- Agent-feedback context injection in `app/api/chat/route.ts`: system message block containing `{ pending, completed_since_last_turn, rejected_since_last_turn }` for the current `chatSessionId` (caps: last 5 of each)
+- SWR cache key: `pending-actions:${chatSessionId}`
+- Feature flag `FEATURE_INLINE_AGENT_APPROVALS` — inline card ships alongside existing sidebar flow during rollout for safe rollback
+
+**AC highlights:**
+1. User proposes task → inline card with editable fields → approve → task is created → card updates to "approved" state with link to the created task
+2. User closes the chat modal mid-proposal, reopens later → proposal is still visible and editable
+3. On the agent's next turn after an approval, system context contains `completed_since_last_turn: [{ type: 'task', id, title }]`
+4. Rejected proposals remain visible in history but cannot be re-approved
+
+### Story 14.23: Extended Approval Types + Batch Consolidation + Sidebar Migration
+
+**As a** user receiving multiple related agent proposals,
+**I want** them consolidated into one card with per-action edit and "approve all",
+**so that** I can review and approve related actions as a coherent unit.
+
+**Key deliverables:**
+- Four new approval types with tools + renderers:
+  - `link_task_to_document` — link existing `Task` → `WorkspaceDocument`
+  - `link_document_to_task` — link existing `WorkspaceDocument` → `Task`
+  - `add_obligation` — create `LawListItemRequirement` (kravpunkt) on a law list item
+  - `assign_task` — set assignee on an existing task
+- Multi-action `AgentActionCard` layout: when ≥2 `PendingAgentAction` rows share the same `chatMessageId`, render as one card with per-action edit + "Approve all" / partial approve
+- Delete sidebar write-preview components (replaced by inline equivalents):
+  - `components/features/ai-chat/details/write-preview-task.tsx`
+  - `components/features/ai-chat/details/write-preview-note.tsx`
+  - `components/features/ai-chat/details/write-preview-status.tsx`
+- Remove `FEATURE_INLINE_AGENT_APPROVALS` flag — inline becomes the only approval path
+- Update tool-call render logic in `chat-message.tsx` to route write-proposal responses to the inline card
+
+**AC highlights:**
+1. Agent proposes "create task + link to document + assign to Alex" in one turn → single card with 3 rows, per-row edit, "Approve all" affordance
+2. Partial approve (e.g., 2/3) is allowed — records 2 APPROVED + 1 PENDING
+3. All approved/rejected outcomes appear in the agent's next-turn context
+4. No `write-preview-*.tsx` files remain in the codebase; no dangling references
+
+### Story 14.24: Draft Styrdokument Approval
+
+**As a** user who asked the agent for a policy draft,
+**I want** the draft rendered as a reviewable card with "open editor" and "approve" affordances,
+**so that** I can accept the draft directly or customize it in Tiptap before finalizing.
+
+**Key deliverables:**
+- New tool `draft_styrdokument` — agent generates a Tiptap-JSON draft using Epic 17's document schema (Story 17.11). Returns `PendingAgentAction` of `actionType: DRAFT_DOCUMENT` with `title`, `docType`, `contentJson` preview, `contextLinks[]` (law list items / tasks to link)
+- `DraftDocumentApprovalRenderer` — compact preview (title + type + first ~200 chars) + "Open editor" + approve/reject
+- Approve (no-edit path): creates the `WorkspaceDocument` (status `DRAFT`) via Epic 17's `createWorkspaceDocument` server action, wires `DocumentTaskLink` / `DocumentListItemLink` rows from `contextLinks[]`
+- Approve (edit path): "Open editor" routes to the document page in `DRAFT` state with a "Pending agent approval — finalize or reject" banner. Saving from the editor finalizes the approval; canceling leaves the `PendingAgentAction` in `PENDING`
+- Agent's next-turn context includes the resulting `documentId` when approved
+
+**AC highlights:**
+1. User asks "draft a policy for [law]" → agent calls `draft_styrdokument` → inline card with preview + "Open editor" + approve/reject
+2. Approve (no edit) creates the `WorkspaceDocument` and applies context links; agent confirms in next turn
+3. "Open editor" opens Tiptap with the pending-approval banner; finalize-from-editor completes the approval
+4. Rejected drafts are discarded (no `WorkspaceDocument` created)
+
+---
+
 ## Dependencies & Sequencing
 
 ```
@@ -388,6 +481,10 @@ Phase 3 (Agent Core)
 Phase 4 (Agent UX)
   14.11                      (chat-first dashboard "Hem" — NO dependencies, foundational surface)
   14.10                      (assessment flow — needs 14.7 + 14.8 + 14.9 + 14.11)
+
+Phase 5 (Agent Approval Cards)
+  14.22 → 14.23 → 14.24     (foundation pilot → extend + migrate → draft-doc variant)
+                             (14.22 needs 14.7c write-tools; 14.24 needs Epic 17 Story 17.11)
 ```
 
 **Cross-epic dependencies:**
@@ -415,6 +512,7 @@ Phase 4 (Agent UX)
 | `WorkspaceConversation` | Onboarding transcripts, check-ins, chat history | 14.5 |
 | `ChangeAssessment` | Assessment outcomes — the company compliance memory | 14.10 |
 | `ComplianceStatusLog` | Status transition audit trail for LawListItems | 14.10 |
+| `PendingAgentAction` | Persistent agent proposals awaiting user approval | 14.22 |
 
 ### Modified Tables
 
@@ -481,4 +579,6 @@ Phase 4 (Agent UX)
 - [ ] No regression in existing features (law browsing, search, law lists, templates)
 - [ ] RAG retrieval quality validated on sample queries
 - [ ] Agent behavioral guardrails verified (no fabricated citations, proper human-in-the-loop)
+- [ ] `PendingAgentAction` persistence + inline `AgentActionCard` + agent feedback loop verified end-to-end for all approval types (task, link, obligation, assign, draft-document)
+- [ ] Sidebar `write-preview-*.tsx` components removed; no references remain
 - [ ] Documentation updated (this epic file, architectural decisions)

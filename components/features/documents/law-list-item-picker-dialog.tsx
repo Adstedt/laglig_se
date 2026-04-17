@@ -120,7 +120,7 @@ export function LawListItemPickerDialog({
 
   const breadcrumbs: { label: string; onClick?: (() => void) | undefined }[] = [
     {
-      label: 'Lagområden',
+      label: 'Laglistor',
       onClick: selectedList
         ? () => {
             setSelectedList(null)
@@ -134,9 +134,7 @@ export function LawListItemPickerDialog({
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput
-        placeholder={
-          selectedList ? 'Sök författningstext...' : 'Välj lagområde...'
-        }
+        placeholder={selectedList ? 'Sök dokument...' : 'Välj laglista...'}
         value={searchQuery}
         onValueChange={setSearchQuery}
       />
@@ -149,7 +147,7 @@ export function LawListItemPickerDialog({
         ) : !selectedList ? (
           <>
             <CommandEmpty>
-              <PickerEmpty label="Inga lagområden hittades" />
+              <PickerEmpty label="Inga laglistor hittades" />
             </CommandEmpty>
             <CommandGroup>
               {lawLists.map((list) => (
@@ -173,7 +171,7 @@ export function LawListItemPickerDialog({
         ) : (
           <>
             <CommandEmpty>
-              <PickerEmpty label="Inga författningstexter hittades" />
+              <PickerEmpty label="Inga dokument hittades" />
             </CommandEmpty>
             <GroupedItemSections
               groups={groupedItems}

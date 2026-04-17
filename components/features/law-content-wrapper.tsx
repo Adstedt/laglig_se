@@ -10,6 +10,15 @@ export interface LawContentWrapperProps {
   ) => void
 }
 
+/**
+ * Renders SFS law HTML with future-amendment highlights applied via DOM
+ * post-processing (LawContentWithHighlights). Used by both:
+ *  - The full law pages (composed inside DocumentContent)
+ *  - The legal-document-modal accordion (LagtextSection)
+ *
+ * Lives in components/features/ so the modal does not depend on the public
+ * law route directory.
+ */
 export function LawContentWrapper({
   htmlContent,
   fallbackText,

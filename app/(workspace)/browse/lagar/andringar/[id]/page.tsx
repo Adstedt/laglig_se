@@ -5,12 +5,13 @@ import {
   getCachedAmendmentMetadata,
 } from '@/lib/cache/cached-queries'
 import { AmendmentPageContent } from '@/components/features/amendment'
+import { DocumentPageLayout } from '@/components/features/document-page-layout'
+import { BreadcrumbOverride } from '@/components/layout/breadcrumb-override'
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
-// Generate metadata for SEO
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -39,5 +40,10 @@ export default async function WorkspaceAmendmentPage({ params }: PageProps) {
     notFound()
   }
 
-  return <AmendmentPageContent amendment={amendment} isWorkspace />
+  return (
+    <DocumentPageLayout isWorkspace>
+      <BreadcrumbOverride label={amendment.document_number} />
+      <AmendmentPageContent amendment={amendment} isWorkspace />
+    </DocumentPageLayout>
+  )
 }

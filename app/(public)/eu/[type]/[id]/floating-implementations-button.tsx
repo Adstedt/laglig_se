@@ -1,7 +1,7 @@
 'use client'
 
 import { FileText } from 'lucide-react'
-import { FloatingRelatedButton } from '@/components/features/content'
+import { FloatingRelatedButton } from '@/components/features/floating-related-button'
 
 interface FloatingImplementationsButtonProps {
   implementationCount: number

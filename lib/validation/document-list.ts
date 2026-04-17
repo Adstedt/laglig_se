@@ -107,6 +107,7 @@ export const AddDocumentToListSchema = z.object({
     .max(1000, 'Kommentaren får vara max 1000 tecken')
     .optional(),
   source: LawListItemSourceEnum.optional(),
+  groupId: z.string().uuid('Ogiltigt grupp-ID').nullable().optional(),
 })
 
 export type AddDocumentToListInput = z.infer<typeof AddDocumentToListSchema>
