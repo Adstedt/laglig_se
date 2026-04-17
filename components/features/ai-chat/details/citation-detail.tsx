@@ -36,7 +36,13 @@ export function CitationDetail({ data }: CitationDetailProps) {
 
   const webDomain =
     isWebSource && data.url
-      ? new URL(data.url).hostname.replace(/^www\./, '')
+      ? (() => {
+          try {
+            return new URL(data.url!).hostname.replace(/^www\./, '')
+          } catch {
+            return data.url!
+          }
+        })()
       : null
 
   const cleanSnippet = useMemo(
