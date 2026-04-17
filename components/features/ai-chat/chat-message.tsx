@@ -169,9 +169,11 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
   const result: RenderItem[] = []
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let currentGroup: Array<{ part: any; index: number }> = []
-  // Track whether we've seen any text part — source-url parts before any text
-  // are search-result metadata (not inline citations) and should be skipped.
-  let hasSeenText = false
+  // Track whether we've seen text AFTER a tool call has completed.
+  // Source-url parts before tool completion are search-result metadata
+  // (not inline citations) and should be skipped.
+  let hasSeenToolResult = false
+  let hasSeenPostToolText = false
 
   const flushGroup = () => {
     if (currentGroup.length >= 2) {
@@ -197,7 +199,7 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
     // separate pill elements outside Streamdown. This keeps DB citations
     // (processed by rehypeCitationPills inside Streamdown) working normally.
     if (part?.type === 'source-url') {
-      if (!hasSeenText) continue
+      if (!hasSeenPostToolText) continue
       const last = result[result.length - 1]
       if (last?.kind === 'part' && isTextUIPart(last.part)) {
         if (!last.webSources) last.webSources = []
@@ -215,7 +217,7 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
       // Stop merging when the previous item has webSources — this creates
       // per-section pill groups instead of clustering all at the bottom.
       if (isTextUIPart(part)) {
-        hasSeenText = true
+        if (hasSeenToolResult) hasSeenPostToolText = true
         const prev = result[result.length - 1]
         if (
           prev?.kind === 'part' &&
@@ -241,6 +243,7 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
     if (TOOL_CONFIG[toolName]?.hidden) continue
 
     if (part.state === 'output-available') {
+      hasSeenToolResult = true
       currentGroup.push({ part, index: i })
     } else {
       flushGroup()
