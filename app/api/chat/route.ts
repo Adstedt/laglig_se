@@ -236,7 +236,12 @@ export async function POST(req: Request) {
           if (src.sourceType === 'url' && src.url) {
             const key = `web:${src.url}`
             if (!(key in citationSources)) {
-              const domain = new URL(src.url).hostname.replace(/^www\./, '')
+              let domain: string
+              try {
+                domain = new URL(src.url).hostname.replace(/^www\./, '')
+              } catch {
+                domain = src.url
+              }
               citationSources[key] = {
                 documentNumber: domain,
                 title: src.title ?? null,
