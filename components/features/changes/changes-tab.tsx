@@ -9,8 +9,8 @@
  * → LawListTabs → here), eliminating client-side waterfall.
  */
 
-import { useMemo, useEffect, useState, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useMemo, useEffect, useRef, useState, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
 import {
   Table,
@@ -34,20 +34,31 @@ interface ChangesTabProps {
 }
 
 export function ChangesTab({ initialChanges = [] }: ChangesTabProps) {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [statusMap, setStatusMap] = useState<Record<string, AssessmentStatus>>(
     {}
   )
   const [selectedChange, setSelectedChange] =
     useState<UnacknowledgedChange | null>(null)
+  const savedDuringSession = useRef(false)
 
   const handleSelectChange = useCallback((change: UnacknowledgedChange) => {
+    savedDuringSession.current = false
     setSelectedChange(change)
+  }, [])
+
+  const handleAssessmentSaved = useCallback(() => {
+    savedDuringSession.current = true
   }, [])
 
   const handleCloseModal = useCallback(() => {
     setSelectedChange(null)
-  }, [])
+    if (savedDuringSession.current) {
+      savedDuringSession.current = false
+      router.refresh()
+    }
+  }, [router])
 
   // Fetch assessment statuses for all change events
   useEffect(() => {
@@ -147,6 +158,7 @@ export function ChangesTab({ initialChanges = [] }: ChangesTabProps) {
       <ChangeAssessmentModal
         change={selectedChange}
         onClose={handleCloseModal}
+        onAssessmentSaved={handleAssessmentSaved}
       />
     </div>
   )

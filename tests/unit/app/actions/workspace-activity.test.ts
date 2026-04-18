@@ -5,11 +5,27 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // ---------------------------------------------------------------------------
 
 const mockActivityLogFindMany = vi.fn()
+const mockTaskFindMany = vi.fn()
+const mockListItemFindMany = vi.fn()
+const mockWorkspaceDocumentFindMany = vi.fn()
+const mockRequirementFindMany = vi.fn()
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     activityLog: {
       findMany: (...args: unknown[]) => mockActivityLogFindMany(...args),
+    },
+    task: {
+      findMany: (...args: unknown[]) => mockTaskFindMany(...args),
+    },
+    lawListItem: {
+      findMany: (...args: unknown[]) => mockListItemFindMany(...args),
+    },
+    workspaceDocument: {
+      findMany: (...args: unknown[]) => mockWorkspaceDocumentFindMany(...args),
+    },
+    lawListItemRequirement: {
+      findMany: (...args: unknown[]) => mockRequirementFindMany(...args),
     },
   },
 }))
@@ -58,9 +74,13 @@ function makeActivity(overrides: Record<string, unknown> = {}) {
 describe('getWorkspaceActivity', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockTaskFindMany.mockResolvedValue([])
+    mockListItemFindMany.mockResolvedValue([])
+    mockWorkspaceDocumentFindMany.mockResolvedValue([])
+    mockRequirementFindMany.mockResolvedValue([])
   })
 
-  it('returns activities for workspace', async () => {
+  it('returns activities for workspace, enriched with category + primary', async () => {
     const activities = [makeActivity()]
     mockActivityLogFindMany.mockResolvedValueOnce(activities)
 
@@ -69,13 +89,14 @@ describe('getWorkspaceActivity', () => {
     )
     const result = await getWorkspaceActivity()
 
-    expect(result).toEqual({
-      success: true,
-      data: {
-        activities,
-        nextCursor: null,
-      },
-    })
+    expect(result.success).toBe(true)
+    expect(result.data?.nextCursor).toBeNull()
+    expect(result.data?.activities).toHaveLength(1)
+    const row = result.data!.activities[0]!
+    expect(row.id).toBe('act-1')
+    expect(row.category).toBe('andringar') // status_changed → andringar
+    expect(row.primary).toBeDefined()
+    expect(row.primary.deleted).toBe(true) // list_item not in mock → tombstone
 
     expect(mockActivityLogFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -84,6 +105,34 @@ describe('getWorkspaceActivity', () => {
         take: 51, // limit + 1
       })
     )
+  })
+
+  it('category filter expands to the union of actions in that category', async () => {
+    mockActivityLogFindMany.mockResolvedValueOnce([])
+
+    const { getWorkspaceActivity } = await import(
+      '@/app/actions/workspace-activity'
+    )
+    await getWorkspaceActivity({ category: ['notifikationer'] })
+
+    const callArg = mockActivityLogFindMany.mock.calls[0]?.[0]
+    const whereAction = callArg?.where?.action as { in?: string[] } | undefined
+    expect(whereAction?.in).toContain('notification_sent')
+  })
+
+  it('explicit action filter wins over category filter', async () => {
+    mockActivityLogFindMany.mockResolvedValueOnce([])
+
+    const { getWorkspaceActivity } = await import(
+      '@/app/actions/workspace-activity'
+    )
+    await getWorkspaceActivity({
+      action: ['status_changed'],
+      category: ['notifikationer'],
+    })
+
+    const callArg = mockActivityLogFindMany.mock.calls[0]?.[0]
+    expect(callArg?.where?.action).toEqual({ in: ['status_changed'] })
   })
 
   it('applies user filter', async () => {

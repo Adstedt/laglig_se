@@ -2,17 +2,27 @@
 
 /**
  * AI Chat Panel for Task Modal
- * In-modal AI chat flyout panel with streaming responses
- * Uses shared ChatPanel component for consistent UX
+ *
+ * Hoists useChatInterface so <ChatPanelChrome> (header) and <ChatPanel>
+ * (body) share the same messages/clearHistory instance.
  */
 
+import { useCallback } from 'react'
 import { ChatPanel } from '@/components/features/ai-chat/chat-panel'
+import { ChatPanelChrome } from '@/components/features/ai-chat/chat-panel-chrome'
+import { useChatInterface } from '@/lib/hooks/use-chat-interface'
+import { exportConversation } from '@/lib/utils/format-conversation-export'
 
 interface AiChatPanelProps {
   taskTitle: string
-  taskId?: string
-  taskDescription?: string
-  linkedLawIds?: string[]
+  taskId?: string | undefined
+  taskDescription?: string | undefined
+  linkedLawIds?: string[] | undefined
+  /** Chat panel is in fullscreen-within-modal mode (State 3). */
+  expanded: boolean
+  /** Toggle expanded mode. */
+  onToggleExpand: () => void
+  /** Close the chat panel entirely. */
   onClose: () => void
 }
 
@@ -27,21 +37,46 @@ export function AiChatPanel({
   taskId,
   taskDescription,
   linkedLawIds,
+  expanded,
+  onToggleExpand,
   onClose,
 }: AiChatPanelProps) {
+  const chat = useChatInterface({
+    contextType: 'task',
+    contextId: taskId,
+    initialContext: {
+      title: taskTitle,
+      description: taskDescription,
+      linkedLawIds,
+    },
+  })
+
+  const handleNewChat = useCallback(() => {
+    void chat.clearHistory()
+  }, [chat])
+
+  const handleExport = useCallback(() => {
+    void exportConversation({ contextType: 'task', contextId: taskId })
+  }, [taskId])
+
   return (
     <div
-      className="flex flex-col h-full w-full bg-background border-t border-r border-b rounded-r-lg overflow-hidden"
+      className="flex flex-col h-full w-full bg-background overflow-hidden"
       data-testid="ai-chat-panel"
     >
+      <ChatPanelChrome
+        title="Fråga Lexa"
+        subtitle="uppgiften"
+        expanded={expanded}
+        onNewChat={handleNewChat}
+        onToggleExpand={onToggleExpand}
+        onClose={onClose}
+        onExport={handleExport}
+        messageCount={chat.messages.length}
+      />
       <ChatPanel
         contextType="task"
         contextId={taskId}
-        initialContext={{
-          title: taskTitle,
-          description: taskDescription,
-          linkedLawIds,
-        }}
         analyticsLocation="task_modal"
         onClose={onClose}
         title="Lexa"
@@ -50,7 +85,8 @@ export function AiChatPanel({
         emptyStateTitle="Fråga Lexa om uppgiften"
         emptyStateDescription={`Lexa kan hjälpa dig med "${taskTitle.length > 30 ? taskTitle.substring(0, 30) + '...' : taskTitle}"`}
         suggestedQuestions={TASK_SUGGESTED_QUESTIONS}
-        className="border-0"
+        className="border-0 flex-1 min-h-0"
+        chat={chat}
       />
     </div>
   )

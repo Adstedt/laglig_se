@@ -1,8 +1,8 @@
 'use client'
 
 /**
- * Story 6.10: Activity Log Filters
- * Filter bar for the workspace activity log page
+ * Story 6.10 + activity-log revamp: Filter bar for the workspace activity log page.
+ * Category filter is primary; entity type retained as a secondary narrowing.
  */
 
 import { useEffect, useState, useCallback } from 'react'
@@ -23,6 +23,8 @@ import {
   parseActivityFiltersFromUrl,
   serializeActivityFiltersToUrl,
 } from '@/lib/utils/activity-filter-params'
+import { ACTIVITY_CATEGORIES, CATEGORY_META } from '@/lib/activity/categories'
+import type { ActivityCategory } from '@/lib/activity/types'
 
 interface Member {
   id: string
@@ -37,8 +39,9 @@ interface ActivityFiltersProps {
 const ENTITY_TYPES = [
   { value: 'list_item', label: 'Lagpost' },
   { value: 'task', label: 'Uppgift' },
-  { value: 'comment', label: 'Kommentar' },
-  { value: 'evidence', label: 'Bevis' },
+  { value: 'workspace_document', label: 'Styrdokument' },
+  { value: 'requirement', label: 'Kravpunkt' },
+  { value: 'email', label: 'E-post' },
 ]
 
 export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
@@ -49,7 +52,6 @@ export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
     parseActivityFiltersFromUrl(new URLSearchParams(searchParams.toString()))
   )
 
-  // Fetch workspace members for user dropdown
   useEffect(() => {
     async function fetchMembers() {
       const result = await getWorkspaceMembers()
@@ -77,6 +79,7 @@ export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
     const empty: FilterState = {
       actionFilter: [],
       entityTypeFilter: [],
+      categoryFilter: [],
     }
     updateFilters(empty)
   }
@@ -85,6 +88,7 @@ export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
     !!filters.userFilter ||
     filters.actionFilter.length > 0 ||
     filters.entityTypeFilter.length > 0 ||
+    filters.categoryFilter.length > 0 ||
     !!filters.startDate ||
     !!filters.endDate
 
@@ -98,6 +102,36 @@ export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
+      {/* Category filter (single-select; the backend accepts multiple) */}
+      <Select
+        value={filters.categoryFilter[0] ?? '_all'}
+        onValueChange={(value) =>
+          updateFilters({
+            ...filters,
+            categoryFilter: value === '_all' ? [] : [value as ActivityCategory],
+          })
+        }
+      >
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Alla kategorier" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="_all">Alla kategorier</SelectItem>
+          {ACTIVITY_CATEGORIES.map((category) => {
+            const meta = CATEGORY_META[category]
+            const Icon = meta.icon
+            return (
+              <SelectItem key={category} value={category}>
+                <span className="inline-flex items-center gap-2">
+                  <Icon className="h-3.5 w-3.5" />
+                  {meta.label}
+                </span>
+              </SelectItem>
+            )
+          })}
+        </SelectContent>
+      </Select>
+
       {/* User filter */}
       <Select
         value={filters.userFilter ?? '_all'}
@@ -121,7 +155,7 @@ export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
         </SelectContent>
       </Select>
 
-      {/* Entity type filter */}
+      {/* Entity type filter (secondary narrowing) */}
       <Select
         value={filters.entityTypeFilter[0] ?? '_all'}
         onValueChange={(value) =>
@@ -170,7 +204,6 @@ export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
         placeholder="Till datum"
       />
 
-      {/* Clear filters */}
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={clearFilters}>
           <X className="h-4 w-4 mr-1" />
@@ -178,7 +211,6 @@ export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
         </Button>
       )}
 
-      {/* CSV Export */}
       <Button variant="outline" size="sm" onClick={handleExportCsv}>
         <Download className="h-4 w-4 mr-1" />
         Exportera CSV

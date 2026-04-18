@@ -20,7 +20,6 @@ interface RightPanelProps {
   onUpdate: () => Promise<void>
   onLinkedArtifactsClick: () => void
   onKravpunkterGapClick: () => void
-  onAiChatToggle?: (() => void) | undefined
   onOptimisticChange?:
     | ((_fields: {
         complianceStatus?: ComplianceStatus
@@ -45,7 +44,6 @@ export function RightPanel({
   onUpdate,
   onLinkedArtifactsClick,
   onKravpunkterGapClick,
-  onAiChatToggle,
   onOptimisticChange,
   onListItemChange,
   requirementProgress,
@@ -70,7 +68,6 @@ export function RightPanel({
             contentType={listItem.legalDocument.contentType}
             documentNumber={listItem.legalDocument.documentNumber}
             listItemId={listItem.id}
-            onAiChatToggle={onAiChatToggle}
           />
 
           {/* Compliance Health Box */}

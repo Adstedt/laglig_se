@@ -30,11 +30,13 @@ const AUTO_START_MESSAGE =
 interface ChangeAssessmentModalProps {
   change: UnacknowledgedChange | null
   onClose: () => void
+  onAssessmentSaved?: () => void
 }
 
 export function ChangeAssessmentModal({
   change,
   onClose,
+  onAssessmentSaved,
 }: ChangeAssessmentModalProps) {
   const isOpen = change !== null
 
@@ -104,6 +106,7 @@ export function ChangeAssessmentModal({
                 lawListItemId={change.lawListItemId}
                 analyticsLocation="law_modal"
                 onClose={onClose}
+                onAssessmentSaved={onAssessmentSaved}
                 showHeader={false}
                 initialMessage={AUTO_START_MESSAGE}
                 className="flex-1 min-h-0"

@@ -1,6 +1,6 @@
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import type { ChatMessageData } from '@/app/actions/ai-chat'
+import { getChatHistory, type ChatMessageData } from '@/app/actions/ai-chat'
 
 /**
  * Format a conversation as readable plaintext for .txt export.
@@ -37,6 +37,49 @@ export function formatConversationAsText(messages: ChatMessageData[]): string {
 export function getExportFilename(): string {
   const date = format(new Date(), 'yyyy-MM-dd')
   return `laglig-konversation-${date}.txt`
+}
+
+/**
+ * Fetch the full conversation for a context and trigger a .txt download.
+ * Pages through history if the conversation exceeds a single page.
+ */
+export async function exportConversation(params: {
+  contextType: 'global' | 'task' | 'law' | 'change'
+  contextId?: string | undefined
+}): Promise<void> {
+  const prismaContextType = params.contextType.toUpperCase() as
+    | 'GLOBAL'
+    | 'TASK'
+    | 'LAW'
+    | 'CHANGE'
+  const result = await getChatHistory({
+    contextType: prismaContextType,
+    contextId: params.contextId,
+    limit: 100,
+  })
+  if (!result.success || !result.data) return
+
+  let allMessages: ChatMessageData[] = result.data.messages
+  let cursor = result.data.nextCursor
+  while (cursor) {
+    const page = await getChatHistory({
+      contextType: prismaContextType,
+      contextId: params.contextId,
+      limit: 100,
+      cursor,
+    })
+    if (page.success && page.data) {
+      allMessages = [...page.data.messages, ...allMessages]
+      cursor = page.data.nextCursor
+    } else {
+      break
+    }
+  }
+
+  allMessages.sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  )
+  downloadTextFile(formatConversationAsText(allMessages), getExportFilename())
 }
 
 /**

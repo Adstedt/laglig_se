@@ -41,6 +41,9 @@ export default function WorkspaceActivityPage() {
           action: currentFilters.actionFilter.length
             ? currentFilters.actionFilter
             : undefined,
+          category: currentFilters.categoryFilter.length
+            ? currentFilters.categoryFilter
+            : undefined,
           startDate: currentFilters.startDate,
           endDate: currentFilters.endDate,
         },

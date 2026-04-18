@@ -28,14 +28,13 @@ import { TaskDeleteDialog } from '../task-delete-dialog'
 import { deleteTaskModal } from '@/app/actions/task-modal'
 import { toast } from 'sonner'
 import { useState } from 'react'
+import { useSplitPanelModalOptional } from '@/components/shared/split-panel-modal/context'
 
 interface ModalHeaderProps {
   taskTitle: string
   taskId: string
   onClose: () => void
   onDelete?: () => void
-  aiChatOpen: boolean
-  onAiChatToggle: () => void
 }
 
 export function ModalHeader({
@@ -43,9 +42,11 @@ export function ModalHeader({
   taskId,
   onClose,
   onDelete,
-  aiChatOpen,
-  onAiChatToggle,
 }: ModalHeaderProps) {
+  const shell = useSplitPanelModalOptional()
+  const aiChatOpen = shell?.aiChatOpen ?? false
+  const canToggleChat = shell?.hasChat ?? false
+  const onAiChatToggle = shell?.toggleChat
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -100,20 +101,22 @@ export function ModalHeader({
 
         {/* Action buttons */}
         <div className="flex items-center gap-1 shrink-0 ml-4">
-          {/* AI Chat toggle - hidden on mobile */}
-          <Button
-            variant={aiChatOpen ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={onAiChatToggle}
-            className={cn(
-              'h-8 px-2 hidden lg:flex',
-              aiChatOpen && 'bg-muted/80'
-            )}
-            title={aiChatOpen ? 'Stäng Lexa' : 'Öppna Lexa'}
-            data-testid="ai-chat-toggle"
-          >
-            <LexaIcon size={16} />
-          </Button>
+          {/* AI Chat toggle - hidden on mobile; only rendered inside a shell with chat support */}
+          {canToggleChat && onAiChatToggle && (
+            <Button
+              variant={aiChatOpen ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={onAiChatToggle}
+              className={cn(
+                'h-8 px-2 hidden lg:flex',
+                aiChatOpen && 'bg-muted/80'
+              )}
+              title={aiChatOpen ? 'Stäng Lexa' : 'Öppna Lexa'}
+              data-testid="ai-chat-toggle"
+            >
+              <LexaIcon size={16} />
+            </Button>
+          )}
 
           {/* Share button */}
           <Button

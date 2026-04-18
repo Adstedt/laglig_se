@@ -10,13 +10,13 @@ import { Button } from '@/components/ui/button'
 import { ExternalLink } from 'lucide-react'
 import { LexaIcon } from '@/components/ui/lexa-icon'
 import Link from 'next/link'
+import { useSplitPanelModalOptional } from '@/components/shared/split-panel-modal/context'
 
 interface QuickLinksBoxProps {
   slug: string
   contentType: string
   documentNumber: string
   listItemId: string
-  onAiChatToggle?: (() => void) | undefined
 }
 
 function getDocumentUrl(contentType: string, slug: string): string {
@@ -39,10 +39,11 @@ export function QuickLinksBox({
   contentType,
   documentNumber,
   listItemId: _listItemId,
-  onAiChatToggle,
 }: QuickLinksBoxProps) {
   const docUrl = getDocumentUrl(contentType, slug)
   const docLabel = getDocumentLabel(contentType)
+  const shell = useSplitPanelModalOptional()
+  const canToggleChat = shell?.hasChat ?? false
 
   return (
     <Card className="border-border/60">
@@ -65,28 +66,26 @@ export function QuickLinksBox({
           </Link>
         </Button>
 
-        {/* Ask AI about law - toggles in-modal AI chat on desktop, links to AI chat page on mobile */}
-        {onAiChatToggle ? (
+        {/* Ask AI about law - toggles in-modal AI chat when inside a shell with chat support; otherwise links to the standalone AI chat page */}
+        {canToggleChat && shell ? (
           <Button
-            variant="outline"
             size="sm"
-            className="w-full justify-start"
-            onClick={onAiChatToggle}
+            className="w-full justify-start bg-foreground text-background hover:bg-foreground/90"
+            onClick={shell.openChat}
           >
-            <LexaIcon size={16} className="mr-2" />
+            <LexaIcon size={16} className="mr-2 invert-0 dark:invert" />
             Fråga Lexa om lagen
           </Button>
         ) : (
           <Button
-            variant="outline"
             size="sm"
-            className="w-full justify-start"
+            className="w-full justify-start bg-foreground text-background hover:bg-foreground/90"
             asChild
           >
             <Link
               href={`/ai-chat?context=${encodeURIComponent(documentNumber)}`}
             >
-              <LexaIcon size={16} className="mr-2" />
+              <LexaIcon size={16} className="mr-2 invert-0 dark:invert" />
               Fråga Lexa om lagen
             </Link>
           </Button>
