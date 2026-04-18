@@ -19,9 +19,11 @@ import {
   Loader2,
   ClipboardCheck,
   AlertCircle,
+  MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
@@ -434,6 +436,14 @@ function KravpunktRow({
             )}
           </div>
 
+          {/* Comment-presence indicator */}
+          {requirement.comment && requirement.comment.trim() && (
+            <MessageSquare
+              className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0"
+              aria-label="Kommentar finns"
+            />
+          )}
+
           {/* Evidence count / gap indicator */}
           {evidenceCount > 0 ? (
             <Badge
@@ -510,6 +520,12 @@ function KravpunktRow({
             swrKey={swrKey}
             evidence={requirement.evidence}
             readOnly={readOnly}
+          />
+          <CommentSection
+            requirementId={requirement.id}
+            comment={requirement.comment}
+            readOnly={readOnly}
+            onOptimisticPatch={patchRow}
           />
         </CollapsibleContent>
       </Collapsible>
@@ -729,6 +745,126 @@ function EvidenceList({
         excludeIds={linkedDocumentIds}
         allowMultiple
       />
+    </div>
+  )
+}
+
+// ============================================================================
+// Comment section (per-krav note)
+// ============================================================================
+
+interface CommentSectionProps {
+  requirementId: string
+  comment: string | null
+  readOnly: boolean
+  onOptimisticPatch: (_patch: Partial<RequirementWithEvidence>) => void
+}
+
+function CommentSection({
+  requirementId,
+  comment,
+  readOnly,
+  onOptimisticPatch,
+}: CommentSectionProps) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [draft, setDraft] = useState(comment ?? '')
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (isEditing) {
+      textareaRef.current?.focus()
+      // Place cursor at the end rather than selecting all — comments are typically appended to.
+      const len = textareaRef.current?.value.length ?? 0
+      textareaRef.current?.setSelectionRange(len, len)
+    }
+  }, [isEditing])
+
+  useEffect(() => {
+    if (!isEditing) setDraft(comment ?? '')
+  }, [comment, isEditing])
+
+  // Radix Dialog listens for Escape on document capture, so we beat it with
+  // a window-capture listener (same pattern as KravpunktRow text edit).
+  useEffect(() => {
+    if (!isEditing) return
+    const handler = (e: KeyboardEvent) => {
+      if (
+        e.key === 'Escape' &&
+        document.activeElement === textareaRef.current
+      ) {
+        e.preventDefault()
+        e.stopImmediatePropagation()
+        setDraft(comment ?? '')
+        setIsEditing(false)
+      }
+    }
+    window.addEventListener('keydown', handler, { capture: true })
+    return () =>
+      window.removeEventListener('keydown', handler, { capture: true })
+  }, [isEditing, comment])
+
+  const handleSave = useCallback(async () => {
+    const trimmed = draft.trim()
+    const next = trimmed === '' ? null : trimmed
+    const prev = comment ?? null
+    if (next === prev) {
+      setIsEditing(false)
+      return
+    }
+    onOptimisticPatch({ comment: next })
+    setIsEditing(false)
+    const result = await updateRequirement(requirementId, { comment: next })
+    if (!result.success) {
+      onOptimisticPatch({ comment: prev })
+      setDraft(prev ?? '')
+      toast.error('Kunde inte spara kommentar', { description: result.error })
+    }
+  }, [draft, comment, requirementId, onOptimisticPatch])
+
+  const hasComment = Boolean(comment && comment.trim())
+
+  if (!hasComment && readOnly) return null
+
+  return (
+    <div className="ml-7 mr-2 mt-1 mb-2">
+      {(isEditing || hasComment) && (
+        <p className="text-xs text-muted-foreground mb-1">Kommentar</p>
+      )}
+      {isEditing ? (
+        <Textarea
+          ref={textareaRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={handleSave}
+          placeholder="Skriv en kommentar…"
+          maxLength={2000}
+          rows={3}
+          className="text-sm resize-y min-h-[64px] max-h-60"
+        />
+      ) : hasComment ? (
+        <button
+          type="button"
+          onClick={() => !readOnly && setIsEditing(true)}
+          disabled={readOnly}
+          className={cn(
+            'w-full text-left text-sm text-muted-foreground whitespace-pre-wrap rounded-md border border-transparent px-3 py-2',
+            !readOnly &&
+              'cursor-text hover:border-border hover:bg-muted/30 hover:text-foreground'
+          )}
+        >
+          {comment}
+        </button>
+      ) : (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 text-xs text-muted-foreground hover:text-foreground"
+          onClick={() => setIsEditing(true)}
+        >
+          <Plus className="h-3 w-3 mr-1" />
+          Lägg till kommentar
+        </Button>
+      )}
     </div>
   )
 }

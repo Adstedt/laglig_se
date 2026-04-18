@@ -265,10 +265,10 @@ export function ComplianceActions({
           onProgressChange={handleProgressChange}
         />
 
-        {/* Story 6.18: Kommentar (free-text rich editor, unchanged) */}
+        {/* Story 6.18: Generella kommentarer (free-text rich editor, list-item-wide) */}
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-muted-foreground">
-            Kommentar
+            Generella kommentarer
           </h4>
           {isEditing ? (
             <div className="space-y-3">

@@ -2,17 +2,27 @@
 
 /**
  * AI Chat Panel for Legal Document Modal
- * In-modal AI chat flyout panel with streaming responses
- * Uses shared ChatPanel component for consistent UX
+ *
+ * Hoists useChatInterface so <ChatPanelChrome> (header) and <ChatPanel>
+ * (body) share the same messages/clearHistory instance.
  */
 
+import { useCallback } from 'react'
 import { ChatPanel } from '@/components/features/ai-chat/chat-panel'
+import { ChatPanelChrome } from '@/components/features/ai-chat/chat-panel-chrome'
+import { useChatInterface } from '@/lib/hooks/use-chat-interface'
+import { exportConversation } from '@/lib/utils/format-conversation-export'
 
 interface AiChatPanelProps {
   documentTitle: string
   documentNumber: string
-  listItemId?: string
-  summary?: string
+  listItemId?: string | undefined
+  summary?: string | undefined
+  /** Chat panel is in fullscreen-within-modal mode (State 3). */
+  expanded: boolean
+  /** Toggle expanded mode. */
+  onToggleExpand: () => void
+  /** Close the chat panel entirely. */
   onClose: () => void
 }
 
@@ -28,18 +38,43 @@ export function AiChatPanel({
   documentNumber,
   listItemId,
   summary,
+  expanded,
+  onToggleExpand,
   onClose,
 }: AiChatPanelProps) {
+  const chat = useChatInterface({
+    contextType: 'law',
+    contextId: listItemId,
+    initialContext: {
+      title: documentTitle,
+      sfsNumber: documentNumber,
+      summary,
+    },
+  })
+
+  const handleNewChat = useCallback(() => {
+    void chat.clearHistory()
+  }, [chat])
+
+  const handleExport = useCallback(() => {
+    void exportConversation({ contextType: 'law', contextId: listItemId })
+  }, [listItemId])
+
   return (
-    <div className="flex flex-col h-full w-full bg-background border-t border-r border-b rounded-r-lg overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-background overflow-hidden">
+      <ChatPanelChrome
+        title="Fråga Lexa"
+        subtitle={documentNumber}
+        expanded={expanded}
+        onNewChat={handleNewChat}
+        onToggleExpand={onToggleExpand}
+        onClose={onClose}
+        onExport={handleExport}
+        messageCount={chat.messages.length}
+      />
       <ChatPanel
         contextType="law"
         contextId={listItemId}
-        initialContext={{
-          title: documentTitle,
-          sfsNumber: documentNumber,
-          summary,
-        }}
         analyticsLocation="law_modal"
         onClose={onClose}
         title="Lexa"
@@ -48,7 +83,8 @@ export function AiChatPanel({
         emptyStateTitle="Fråga Lexa om lagen"
         emptyStateDescription={`Lexa kan hjälpa dig förstå ${documentTitle.length > 40 ? documentTitle.substring(0, 40) + '...' : documentTitle}`}
         suggestedQuestions={LAW_SUGGESTED_QUESTIONS}
-        className="border-0"
+        className="border-0 flex-1 min-h-0"
+        chat={chat}
       />
     </div>
   )

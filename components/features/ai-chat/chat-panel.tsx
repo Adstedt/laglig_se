@@ -19,6 +19,7 @@ import {
   useChatInterface,
   type ChatContextType,
   type ChatContextInitial,
+  type UseChatInterfaceReturn,
 } from '@/lib/hooks/use-chat-interface'
 import { track } from '@vercel/analytics'
 import { cn } from '@/lib/utils'
@@ -47,25 +48,38 @@ interface ChatPanelProps {
   /** Close handler */
   onClose: () => void
   /** Optional header title override */
-  title?: string
+  title?: string | undefined
   /** Optional header subtitle override */
-  subtitle?: string
+  subtitle?: string | undefined
   /** Custom empty state content */
-  emptyStateTitle?: string
+  emptyStateTitle?: string | undefined
   /** Custom empty state description */
-  emptyStateDescription?: string
+  emptyStateDescription?: string | undefined
   /** Suggested questions to show in empty state */
-  suggestedQuestions?: string[]
+  suggestedQuestions?: string[] | undefined
   /** Additional CSS classes */
-  className?: string
+  className?: string | undefined
   /** Whether to show the header */
-  showHeader?: boolean
+  showHeader?: boolean | undefined
   /** Custom header content */
-  headerContent?: ReactNode
+  headerContent?: ReactNode | undefined
   /** LawListItem ID for change assessment resolution (only when contextType='change') */
   lawListItemId?: string | undefined
   /** Auto-send this message on first mount if no history exists */
   initialMessage?: string | undefined
+  /** Fires when the user saves an assessment (only when contextType='change') */
+  onAssessmentSaved?: (() => void) | undefined
+  /**
+   * Optional hoisted chat interface. When provided, ChatPanel reuses this
+   * instance instead of calling useChatInterface internally. This lets a
+   * parent (e.g. a modal wrapper that also renders chat chrome) share the
+   * same messages/sendMessage/clearHistory with other UI elements.
+   *
+   * When omitted, ChatPanel falls back to calling the hook itself (the
+   * original behavior — preserved for chat-sidebar, change-assessment-modal,
+   * and any other caller that does not need hoisting).
+   */
+  chat?: UseChatInterfaceReturn | undefined
 }
 
 export function ChatPanel({
@@ -84,7 +98,101 @@ export function ChatPanel({
   headerContent,
   lawListItemId,
   initialMessage,
+  onAssessmentSaved,
+  chat: hoistedChat,
 }: ChatPanelProps) {
+  // Rule-of-hooks: hoisted-vs-internal decision must be stable across the
+  // component's lifetime. If `chat` is provided on first render, we never
+  // call useChatInterface; otherwise we always do.
+  if (hoistedChat) {
+    return (
+      <ChatPanelBody
+        contextType={contextType}
+        contextId={contextId}
+        analyticsLocation={analyticsLocation}
+        onClose={onClose}
+        title={title}
+        subtitle={subtitle}
+        emptyStateTitle={emptyStateTitle}
+        emptyStateDescription={emptyStateDescription}
+        suggestedQuestions={suggestedQuestions}
+        className={className}
+        showHeader={showHeader}
+        headerContent={headerContent}
+        lawListItemId={lawListItemId}
+        onAssessmentSaved={onAssessmentSaved}
+        chat={hoistedChat}
+      />
+    )
+  }
+  return (
+    <ChatPanelStandalone
+      contextType={contextType}
+      contextId={contextId}
+      initialContext={initialContext}
+      analyticsLocation={analyticsLocation}
+      onClose={onClose}
+      title={title}
+      subtitle={subtitle}
+      emptyStateTitle={emptyStateTitle}
+      emptyStateDescription={emptyStateDescription}
+      suggestedQuestions={suggestedQuestions}
+      className={className}
+      showHeader={showHeader}
+      headerContent={headerContent}
+      lawListItemId={lawListItemId}
+      initialMessage={initialMessage}
+      onAssessmentSaved={onAssessmentSaved}
+    />
+  )
+}
+
+type StandaloneProps = Omit<ChatPanelProps, 'chat'>
+
+function ChatPanelStandalone({
+  contextType,
+  contextId,
+  initialContext,
+  initialMessage,
+  ...rest
+}: StandaloneProps) {
+  const chat = useChatInterface({
+    contextType,
+    contextId,
+    initialContext,
+    initialMessage,
+  })
+  return (
+    <ChatPanelBody
+      contextType={contextType}
+      contextId={contextId}
+      {...rest}
+      chat={chat}
+    />
+  )
+}
+
+type BodyProps = Omit<StandaloneProps, 'initialContext' | 'initialMessage'> & {
+  chat: UseChatInterfaceReturn
+}
+
+function ChatPanelBody({
+  contextType,
+  contextId,
+  analyticsLocation,
+  onClose,
+  title = 'Lexa',
+  subtitle,
+  emptyStateTitle = 'Hur kan jag hjälpa dig?',
+  emptyStateDescription,
+  suggestedQuestions = [],
+  className,
+  showHeader = true,
+  headerContent,
+  lawListItemId,
+  onAssessmentSaved,
+  chat,
+}: BodyProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const {
@@ -98,12 +206,7 @@ export function ChatPanel({
     loadMore,
     isLoadingMore,
     hasMore,
-  } = useChatInterface({
-    contextType,
-    contextId,
-    initialContext,
-    initialMessage,
-  })
+  } = chat
 
   const isStreaming = status === 'streaming'
   const isSubmitted = status === 'submitted'
@@ -193,10 +296,18 @@ export function ChatPanel({
       <AssessmentResolution
         changeEventId={contextId}
         lawListItemId={lawListItemId}
+        onComplete={onAssessmentSaved}
         onClose={onClose}
       />
     )
-  }, [hasCompletedReply, contextType, contextId, lawListItemId])
+  }, [
+    hasCompletedReply,
+    contextType,
+    contextId,
+    lawListItemId,
+    onAssessmentSaved,
+    onClose,
+  ])
 
   return (
     <div

@@ -24,7 +24,6 @@ interface RightPanelProps {
   workspaceMembers: WorkspaceMember[]
   columns: TaskColumnWithCount[]
   onUpdate: () => Promise<void>
-  onAiChatToggle: () => void
   // Optimistic update callbacks
   onOptimisticStatusChange?: ((_columnId: string) => void) | undefined
   onOptimisticPriorityChange?: ((_priority: string) => void) | undefined
@@ -41,7 +40,6 @@ export function RightPanel({
   workspaceMembers,
   columns,
   onUpdate,
-  onAiChatToggle,
   onOptimisticStatusChange,
   onOptimisticPriorityChange,
   onOptimisticAssigneeChange,
@@ -66,7 +64,7 @@ export function RightPanel({
           />
 
           {/* Quick Links Box */}
-          <QuickLinksBox onAiChatToggle={onAiChatToggle} />
+          <QuickLinksBox />
 
           {/* Linked Laws Box */}
           <LinkedLawsBox

@@ -6,6 +6,7 @@
  */
 
 import { Prisma } from '@prisma/client'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import type {
@@ -119,6 +120,8 @@ export async function createOrUpdateAssessment(
           })
         }
       }
+
+      revalidatePath('/laglistor')
 
       return {
         success: true,

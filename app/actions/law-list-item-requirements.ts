@@ -42,6 +42,7 @@ export interface RequirementEvidenceSummary {
 export interface RequirementWithEvidence {
   id: string
   text: string
+  comment: string | null
   isFulfilled: boolean
   bevisRequired: boolean
   position: number
@@ -66,12 +67,14 @@ const UpdateRequirementSchema = z
     text: z.string().min(1).max(500).optional(),
     isFulfilled: z.boolean().optional(),
     bevisRequired: z.boolean().optional(),
+    comment: z.string().max(2000).nullable().optional(),
   })
   .refine(
     (data) =>
       data.text !== undefined ||
       data.isFulfilled !== undefined ||
-      data.bevisRequired !== undefined,
+      data.bevisRequired !== undefined ||
+      data.comment !== undefined,
     { message: 'Minst ett fält måste uppdateras' }
   )
 
@@ -203,6 +206,7 @@ export async function createRequirement(
         data: {
           id: created.id,
           text: created.text,
+          comment: created.comment,
           isFulfilled: created.is_fulfilled,
           bevisRequired: created.bevis_required,
           position: created.position,
@@ -225,13 +229,19 @@ export async function createRequirement(
 
 export async function updateRequirement(
   requirementId: string,
-  updates: { text?: string; isFulfilled?: boolean; bevisRequired?: boolean }
+  updates: {
+    text?: string
+    isFulfilled?: boolean
+    bevisRequired?: boolean
+    comment?: string | null
+  }
 ): Promise<ActionResult> {
   const parsed = UpdateRequirementSchema.safeParse({
     requirementId,
     text: updates.text,
     isFulfilled: updates.isFulfilled,
     bevisRequired: updates.bevisRequired,
+    comment: updates.comment,
   })
   if (!parsed.success) {
     return {
@@ -249,7 +259,12 @@ export async function updateRequirement(
 
       const existing = await prisma.lawListItemRequirement.findUnique({
         where: { id: requirementId },
-        select: { text: true, is_fulfilled: true, bevis_required: true },
+        select: {
+          text: true,
+          is_fulfilled: true,
+          bevis_required: true,
+          comment: true,
+        },
       })
       if (!existing) {
         return { success: false, error: 'Kravpunkt hittades inte' }
@@ -259,12 +274,15 @@ export async function updateRequirement(
         text?: string
         is_fulfilled?: boolean
         bevis_required?: boolean
+        comment?: string | null
       } = {}
       if (parsed.data.text !== undefined) nextData.text = parsed.data.text
       if (parsed.data.isFulfilled !== undefined)
         nextData.is_fulfilled = parsed.data.isFulfilled
       if (parsed.data.bevisRequired !== undefined)
         nextData.bevis_required = parsed.data.bevisRequired
+      if (parsed.data.comment !== undefined)
+        nextData.comment = parsed.data.comment
 
       await prisma.lawListItemRequirement.update({
         where: { id: requirementId },
@@ -282,7 +300,10 @@ export async function updateRequirement(
             ? parsed.data.isFulfilled
               ? 'requirement_marked_fulfilled'
               : 'requirement_marked_unfulfilled'
-            : 'requirement_text_updated'
+            : parsed.data.comment !== undefined &&
+                parsed.data.comment !== existing.comment
+              ? 'requirement_comment_updated'
+              : 'requirement_text_updated'
 
       await logActivity(
         ctx.workspaceId,
@@ -294,11 +315,19 @@ export async function updateRequirement(
           text: truncate(existing.text),
           is_fulfilled: existing.is_fulfilled,
           bevis_required: existing.bevis_required,
+          comment: existing.comment ? truncate(existing.comment) : null,
         },
         {
           text: truncate(parsed.data.text ?? existing.text),
           is_fulfilled: parsed.data.isFulfilled ?? existing.is_fulfilled,
           bevis_required: parsed.data.bevisRequired ?? existing.bevis_required,
+          comment: (() => {
+            const next =
+              parsed.data.comment !== undefined
+                ? parsed.data.comment
+                : existing.comment
+            return next ? truncate(next) : null
+          })(),
         }
       )
 
@@ -468,6 +497,7 @@ export async function getRequirementsForListItem(
       const data: RequirementWithEvidence[] = rows.map((r) => ({
         id: r.id,
         text: r.text,
+        comment: r.comment,
         isFulfilled: r.is_fulfilled,
         bevisRequired: r.bevis_required,
         position: r.position,

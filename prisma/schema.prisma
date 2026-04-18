@@ -358,6 +358,7 @@ model LawListItemRequirement {
   id              String   @id @default(uuid())
   list_item_id    String
   text            String   @db.Text
+  comment         String?  @db.Text
   is_fulfilled    Boolean  @default(false)
   bevis_required  Boolean  @default(false)
   position        Float    @default(0) // Float + no unique constraint → fractional midpoint reorder (mirrors LawListItem.position)

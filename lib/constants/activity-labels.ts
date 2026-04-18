@@ -1,6 +1,11 @@
 /**
  * Story 6.10: Activity Action Labels
- * Shared Swedish labels for activity log actions and entity types
+ * Shared Swedish labels for activity log actions and entity types.
+ *
+ * The workspace activity log renders full Swedish sentences via
+ * `lib/activity/format-activity.ts` and no longer relies on this lookup.
+ * HistoryTab (task modal, legal-document-modal) still falls back here, so
+ * every known action needs a label entry.
  */
 
 /** Combined action labels for both task and list item entities */
@@ -19,6 +24,7 @@ export const ACTION_LABELS: Record<string, string> = {
   task_linked: 'länkade en uppgift',
   task_unlinked: 'tog bort en uppgiftslänk',
   created: 'skapade',
+
   // Task actions
   title_updated: 'ändrade titel',
   description_updated: 'uppdaterade beskrivning',
@@ -30,12 +36,32 @@ export const ACTION_LABELS: Record<string, string> = {
   law_linked: 'länkade en lag',
   law_unlinked: 'tog bort en lag-länk',
   deleted: 'raderade',
+
   // Document actions (Epic 17)
   document_created: 'skapade dokument',
   document_version_saved: 'sparade en ny version',
   document_version_restored: 'återställde version',
   document_status_changed: 'ändrade dokumentstatus',
   document_imported: 'importerade dokument',
+  document_linked_to_task: 'kopplade dokument till uppgift',
+  document_linked_to_list_item: 'kopplade dokument till laglistpost',
+  document_unlinked_from_task: 'tog bort dokumentkoppling från uppgift',
+  document_unlinked_from_list_item:
+    'tog bort dokumentkoppling från laglistpost',
+
+  // Requirement / kravpunkter actions (Story 17.16)
+  requirement_created: 'skapade en kravpunkt',
+  requirement_deleted: 'raderade en kravpunkt',
+  requirement_text_updated: 'ändrade text på kravpunkt',
+  requirement_marked_fulfilled: 'markerade kravpunkt som uppfylld',
+  requirement_marked_unfulfilled: 'markerade kravpunkt som ej uppfylld',
+  requirement_marked_bevis_required: 'krävde bevis på kravpunkt',
+  requirement_marked_bevis_optional: 'gjorde bevis valfritt på kravpunkt',
+  requirement_evidence_linked: 'kopplade bevis till kravpunkt',
+  requirement_evidence_unlinked: 'tog bort bevis från kravpunkt',
+
+  // Notifications
+  notification_sent: 'skickade notis',
 }
 
 export const ENTITY_TYPE_LABELS: Record<string, string> = {
@@ -44,4 +70,6 @@ export const ENTITY_TYPE_LABELS: Record<string, string> = {
   comment: 'Kommentar',
   evidence: 'Bevis',
   workspace_document: 'Styrdokument',
+  requirement: 'Kravpunkt',
+  email: 'E-post',
 }
