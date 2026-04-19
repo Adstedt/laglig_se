@@ -157,6 +157,48 @@ describe('formatActivity', () => {
     }
   })
 
+  it('renders requirement_comment_updated as "skrev kommentar" when adding', () => {
+    const parts = formatActivity({
+      action: 'requirement_comment_updated',
+      entity_type: 'requirement',
+      user: USER,
+      old_value: { comment: null },
+      new_value: { comment: 'Not from compliance review' },
+      primary: requirementRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander skrev en kommentar på kravpunkten Årlig brandskyddsutbildning'
+    )
+  })
+
+  it('renders requirement_comment_updated as "tog bort" when clearing', () => {
+    const parts = formatActivity({
+      action: 'requirement_comment_updated',
+      entity_type: 'requirement',
+      user: USER,
+      old_value: { comment: 'Old note' },
+      new_value: { comment: null },
+      primary: requirementRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander tog bort kommentaren från kravpunkten Årlig brandskyddsutbildning'
+    )
+  })
+
+  it('renders requirement_comment_updated as "redigerade" when editing', () => {
+    const parts = formatActivity({
+      action: 'requirement_comment_updated',
+      entity_type: 'requirement',
+      user: USER,
+      old_value: { comment: 'Old note' },
+      new_value: { comment: 'New note' },
+      primary: requirementRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander redigerade kommentaren på kravpunkten Årlig brandskyddsutbildning'
+    )
+  })
+
   it('falls back to a generic sentence for unknown actions', () => {
     const parts = formatActivity({
       action: 'totally_made_up_action',

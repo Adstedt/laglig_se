@@ -330,6 +330,18 @@ export function formatActivity(input: FormatInput): SentencePart[] {
     case 'requirement_evidence_unlinked':
       return [u, text(' tog bort bevis från kravpunkten '), primary]
 
+    case 'requirement_comment_updated': {
+      const oldComment = pickString(oldP, 'comment')
+      const newComment = pickString(newP, 'comment')
+      if (!oldComment && newComment) {
+        return [u, text(' skrev en kommentar på kravpunkten '), primary]
+      }
+      if (oldComment && !newComment) {
+        return [u, text(' tog bort kommentaren från kravpunkten '), primary]
+      }
+      return [u, text(' redigerade kommentaren på kravpunkten '), primary]
+    }
+
     // ----------------- Workspace documents -----------------
     case 'document_created':
       return [u, text(' skapade styrdokumentet '), primary]
