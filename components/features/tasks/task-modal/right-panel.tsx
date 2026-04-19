@@ -11,7 +11,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { DetailsBox } from './details-box'
 import { QuickLinksBox } from './quick-links-box'
 import { LinkedLawsBox } from './linked-laws-box'
-import { ModalFooter } from './modal-footer'
 import type { TaskDetails } from '@/app/actions/task-modal'
 import type { WorkspaceMember } from '../task-workspace'
 import type { TaskColumnWithCount } from '@/app/actions/tasks'
@@ -76,13 +75,6 @@ export function RightPanel({
           />
         </div>
       </ScrollArea>
-
-      {/* Footer */}
-      <ModalFooter
-        createdAt={task.created_at}
-        updatedAt={task.updated_at}
-        creator={task.creator}
-      />
     </div>
   )
 }

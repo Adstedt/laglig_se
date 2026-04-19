@@ -49,7 +49,7 @@ export function RightPanel({
   requirementProgress,
 }: RightPanelProps) {
   return (
-    <div className="border-l bg-muted/30 max-md:border-t max-md:border-l-0">
+    <div className="h-full border-l bg-muted/30 max-md:border-t max-md:border-l-0">
       <ScrollArea className="h-full max-h-[calc(90vh-60px)] max-md:max-h-none">
         <div className="p-6 space-y-6">
           {/* Details Box */}

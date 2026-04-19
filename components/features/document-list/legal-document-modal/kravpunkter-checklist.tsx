@@ -204,30 +204,43 @@ export function KravpunkterChecklist({
 
       {/* Add new — footer pattern matching TasksAccordion / LinkedArtifactsPanel */}
       {!readOnly && (
-        <div className="flex gap-2 pt-3 border-t border-border/50">
+        <div className="pt-3 border-t border-border/50">
           {isAdding ? (
-            <Input
-              ref={addInputRef}
-              value={newText}
-              onChange={(e) => setNewText(e.target.value)}
-              onBlur={handleAdd}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleAdd()
-                }
-                // Escape is handled by the window-capture listener in useEffect above —
-                // it must run before Radix Dialog's document-level handler can close the modal.
-              }}
-              placeholder="Beskriv kravpunkten…"
-              maxLength={500}
-              className="h-9 text-sm"
-            />
+            <div className="space-y-1.5">
+              <Input
+                ref={addInputRef}
+                value={newText}
+                onChange={(e) => setNewText(e.target.value)}
+                onBlur={handleAdd}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    handleAdd()
+                  }
+                  // Escape is handled by the window-capture listener in useEffect above —
+                  // it must run before Radix Dialog's document-level handler can close the modal.
+                }}
+                placeholder="Beskriv kravpunkten…"
+                maxLength={500}
+                className="h-9 text-sm"
+              />
+              <p className="px-1 text-xs text-muted-foreground">
+                Tryck{' '}
+                <kbd className="rounded border border-border/60 bg-muted px-1 py-0.5 font-mono text-[10px]">
+                  Enter
+                </kbd>{' '}
+                för att spara eller{' '}
+                <kbd className="rounded border border-border/60 bg-muted px-1 py-0.5 font-mono text-[10px]">
+                  Esc
+                </kbd>{' '}
+                för att avbryta
+              </p>
+            </div>
           ) : (
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 h-9 bg-muted/30 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              className="w-full h-9 bg-muted/30 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
               onClick={() => setIsAdding(true)}
             >
               <Plus className="h-4 w-4 mr-1.5" />
@@ -831,16 +844,35 @@ function CommentSection({
         <p className="text-xs text-muted-foreground mb-1">Kommentar</p>
       )}
       {isEditing ? (
-        <Textarea
-          ref={textareaRef}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={handleSave}
-          placeholder="Skriv en kommentar…"
-          maxLength={2000}
-          rows={3}
-          className="text-sm resize-y min-h-[64px] max-h-60"
-        />
+        <div className="space-y-1.5">
+          <Textarea
+            ref={textareaRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={(e) => {
+              if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                e.preventDefault()
+                handleSave()
+              }
+            }}
+            placeholder="Skriv en kommentar…"
+            maxLength={2000}
+            rows={3}
+            className="text-sm resize-y min-h-[64px] max-h-60"
+          />
+          <p className="px-1 text-xs text-muted-foreground">
+            Tryck{' '}
+            <kbd className="rounded border border-border/60 bg-muted px-1 py-0.5 font-mono text-[10px]">
+              ⌘/Ctrl + Enter
+            </kbd>{' '}
+            för att spara eller{' '}
+            <kbd className="rounded border border-border/60 bg-muted px-1 py-0.5 font-mono text-[10px]">
+              Esc
+            </kbd>{' '}
+            för att avbryta
+          </p>
+        </div>
       ) : hasComment ? (
         <button
           type="button"

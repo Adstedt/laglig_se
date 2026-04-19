@@ -7,6 +7,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Flag, CheckCircle2 } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import type { TaskPriority } from '@prisma/client'
 
@@ -15,6 +16,8 @@ interface StatusPriorityBadgesProps {
   statusColor: string
   priority: TaskPriority
   isDone: boolean
+  /** Optional action(s) rendered at the right edge of the badges row */
+  headerActions?: ReactNode
 }
 
 const PRIORITY_CONFIG = {
@@ -45,6 +48,7 @@ export function StatusPriorityBadges({
   statusColor,
   priority,
   isDone,
+  headerActions,
 }: StatusPriorityBadgesProps) {
   const priorityConfig = PRIORITY_CONFIG[priority]
 
@@ -77,6 +81,8 @@ export function StatusPriorityBadges({
         <Flag className={cn('h-3 w-3', priorityConfig.iconClassName)} />
         {priorityConfig.label}
       </Badge>
+
+      {headerActions && <div className="ml-auto">{headerActions}</div>}
     </div>
   )
 }

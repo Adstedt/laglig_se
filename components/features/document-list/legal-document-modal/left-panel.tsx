@@ -6,7 +6,16 @@
  * Scrollable panel with law header, lagtext, business context, tasks, and activity tabs
  */
 
+import { useState } from 'react'
+import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 import { Accordion } from '@/components/ui/accordion'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { LawHeader } from './law-header'
 import { LagtextSection } from './lagtext-section'
 import { BusinessContext } from './business-context'
@@ -53,6 +62,21 @@ interface LeftPanelProps {
     | undefined
 }
 
+const ACCORDION_ITEMS = [
+  'lagtext',
+  'business-context',
+  'compliance-actions',
+  'tasks',
+  'linked-artifacts',
+] as const
+
+const DEFAULT_OPEN: string[] = [
+  'business-context',
+  'compliance-actions',
+  'tasks',
+  'linked-artifacts',
+]
+
 export function LeftPanel({
   listItem,
   isLoadingContent,
@@ -69,6 +93,10 @@ export function LeftPanel({
   complianceReadOnly,
   onKravpunkterProgressChange,
 }: LeftPanelProps) {
+  const [openItems, setOpenItems] = useState<string[]>(DEFAULT_OPEN)
+  const allOpen = openItems.length === ACCORDION_ITEMS.length
+  const toggleAll = () => setOpenItems(allOpen ? [] : [...ACCORDION_ITEMS])
+
   return (
     <div className="p-6 space-y-4 overflow-hidden">
       {/* Law Header */}
@@ -77,17 +105,38 @@ export function LeftPanel({
         aiCommentary={listItem.aiCommentary}
         complianceStatus={listItem.complianceStatus}
         priority={listItem.priority}
+        headerActions={
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleAll}
+                  aria-label={allOpen ? 'Fäll ihop alla' : 'Expandera alla'}
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                >
+                  {allOpen ? (
+                    <ChevronsDownUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronsUpDown className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="text-xs">
+                {allOpen ? 'Fäll ihop alla' : 'Expandera alla'}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        }
       />
 
       {/* Lagtext, Business Context, and Tasks Accordions */}
       <Accordion
         type="multiple"
-        defaultValue={[
-          'business-context',
-          'compliance-actions',
-          'tasks',
-          'linked-artifacts',
-        ]}
+        value={openItems}
+        onValueChange={setOpenItems}
         className="space-y-2"
       >
         {/* Lagtext Section */}

@@ -7,6 +7,7 @@
  */
 
 import { Flag } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import type { ComplianceStatus } from '@prisma/client'
 
@@ -15,6 +16,8 @@ interface LawHeaderProps {
   aiCommentary: string | null
   complianceStatus: ComplianceStatus
   priority: 'LOW' | 'MEDIUM' | 'HIGH'
+  /** Optional action(s) rendered at the right edge of the badges row */
+  headerActions?: ReactNode
 }
 
 // Compliance status - aligned with law list column dropdowns
@@ -79,6 +82,7 @@ export function LawHeader({
   aiCommentary,
   complianceStatus,
   priority,
+  headerActions,
 }: LawHeaderProps) {
   const complianceConfig = COMPLIANCE_CONFIG[complianceStatus]
   const priorityConfig = PRIORITY_CONFIG[priority]
@@ -114,6 +118,8 @@ export function LawHeader({
           <Flag className={cn('h-3 w-3', priorityConfig.iconClassName)} />
           {priorityConfig.label}
         </span>
+
+        {headerActions && <div className="ml-auto">{headerActions}</div>}
       </div>
 
       {/* AI Commentary if present */}
