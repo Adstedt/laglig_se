@@ -237,27 +237,30 @@ export function DocumentBrowserPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <TabsList className="h-auto p-1 bg-muted/50">
-          <TabsTrigger value="aktiva" className="gap-2">
-            <FileText className="h-4 w-4" />
-            Aktiva
-          </TabsTrigger>
-          <TabsTrigger value="arkiverade" className="gap-2">
-            <Archive className="h-4 w-4" />
-            Arkiverade
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {/* Toolbar band: tabs + filters */}
+      <div className="border-b border-border/60">
+        <div className="flex items-center gap-2 py-2 flex-wrap">
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="h-auto p-1 bg-transparent">
+              <TabsTrigger value="aktiva" className="gap-2">
+                <FileText className="h-4 w-4" />
+                Aktiva
+              </TabsTrigger>
+              <TabsTrigger value="arkiverade" className="gap-2">
+                <Archive className="h-4 w-4" />
+                Arkiverade
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-      {/* Filters */}
-      <DocumentFilterControls
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        hideStatusFilter={activeTab === 'arkiverade'}
-        excludeStatuses={activeTab === 'aktiva' ? ['ARCHIVED'] : undefined}
-      />
+          <DocumentFilterControls
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            hideStatusFilter={activeTab === 'arkiverade'}
+            excludeStatuses={activeTab === 'aktiva' ? ['ARCHIVED'] : undefined}
+          />
+        </div>
+      </div>
 
       {/* Content */}
       {loading ? (

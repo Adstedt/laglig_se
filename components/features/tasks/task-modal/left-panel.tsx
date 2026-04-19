@@ -6,20 +6,35 @@
  * Description and attachments use Jira-style collapsible accordions
  */
 
+import { useState } from 'react'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { TaskTitleEditor } from './task-title-editor'
 import { StatusPriorityBadges } from './status-priority-badges'
 import { DescriptionEditor } from './description-editor'
 import { EvidenceAccordion } from './evidence-accordion'
 import { ActivityTabs } from './activity-tabs'
-import { FileText, Paperclip } from 'lucide-react'
+import {
+  FileText,
+  Paperclip,
+  ChevronsDownUp,
+  ChevronsUpDown,
+} from 'lucide-react'
 import type { TaskDetails } from '@/app/actions/task-modal'
 import type { WorkspaceMember } from '../task-workspace'
+
+const ACCORDION_ITEMS = ['description', 'attachments'] as const
 
 interface LeftPanelProps {
   task: TaskDetails
@@ -39,6 +54,9 @@ export function LeftPanel({
   onOptimisticDescriptionChange,
 }: LeftPanelProps) {
   const attachmentCount = task.evidence.length
+  const [openItems, setOpenItems] = useState<string[]>(['description'])
+  const allOpen = openItems.length === ACCORDION_ITEMS.length
+  const toggleAll = () => setOpenItems(allOpen ? [] : [...ACCORDION_ITEMS])
 
   return (
     <div className="p-6 space-y-4 border-r border-border/50">
@@ -55,13 +73,39 @@ export function LeftPanel({
           statusColor={task.column.color}
           priority={task.priority}
           isDone={task.column.is_done}
+          headerActions={
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleAll}
+                    aria-label={allOpen ? 'Fäll ihop alla' : 'Expandera alla'}
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  >
+                    {allOpen ? (
+                      <ChevronsDownUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronsUpDown className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="text-xs">
+                  {allOpen ? 'Fäll ihop alla' : 'Expandera alla'}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          }
         />
       </div>
 
       {/* Description and Attachments Accordions */}
       <Accordion
         type="multiple"
-        defaultValue={['description']}
+        value={openItems}
+        onValueChange={setOpenItems}
         className="space-y-2"
       >
         {/* Description Accordion - defaults to open */}

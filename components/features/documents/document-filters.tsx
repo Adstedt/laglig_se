@@ -97,7 +97,7 @@ export function DocumentFilterControls({
   }, [onFiltersChange])
 
   return (
-    <div className="flex items-center gap-3 flex-wrap">
+    <>
       {/* Search */}
       <div className="relative w-64">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -183,11 +183,19 @@ export function DocumentFilterControls({
 
       {/* Clear filters */}
       {hasActiveFilters && (
-        <Button variant="ghost" size="sm" onClick={clearAll} className="gap-1">
-          <X className="h-3.5 w-3.5" />
-          Rensa filter
-        </Button>
+        <>
+          <div className="flex-1" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAll}
+            className="h-7 gap-1 text-xs text-muted-foreground hover:text-destructive"
+          >
+            <X className="h-3.5 w-3.5" />
+            Rensa filter
+          </Button>
+        </>
       )}
-    </div>
+    </>
   )
 }

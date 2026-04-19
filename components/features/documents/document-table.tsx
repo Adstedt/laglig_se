@@ -114,155 +114,157 @@ export function DocumentTable({
   const router = useRouter()
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead
-            className="cursor-pointer select-none"
-            onClick={() => onSort('title')}
-          >
-            <span className="flex items-center">
-              Titel
-              <SortIcon
-                field="title"
-                currentSort={sortBy}
-                currentOrder={sortOrder}
-              />
-            </span>
-          </TableHead>
-          <TableHead>Dokumentnr</TableHead>
-          <TableHead>Typ</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Version</TableHead>
-          <TableHead>Författare</TableHead>
-          <TableHead
-            className="cursor-pointer select-none"
-            onClick={() => onSort('updated_at')}
-          >
-            <span className="flex items-center">
-              Senast uppdaterad
-              <SortIcon
-                field="updated_at"
-                currentSort={sortBy}
-                currentOrder={sortOrder}
-              />
-            </span>
-          </TableHead>
-          <TableHead
-            className="cursor-pointer select-none"
-            onClick={() => onSort('review_date')}
-          >
-            <span className="flex items-center">
-              Granskningsdatum
-              <SortIcon
-                field="review_date"
-                currentSort={sortBy}
-                currentOrder={sortOrder}
-              />
-            </span>
-          </TableHead>
-          <TableHead className="w-10" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {documents.map((doc) => (
-          <TableRow
-            key={doc.id}
-            className="cursor-pointer"
-            onClick={() =>
-              router.push(`/workspace/styrdokument/${doc.id}/edit`)
-            }
-          >
-            <TableCell className="font-medium">{doc.title}</TableCell>
-            <TableCell className="text-muted-foreground text-sm">
-              {doc.document_number ?? '—'}
-            </TableCell>
-            <TableCell>
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                {DOCUMENT_TYPE_LABELS[doc.document_type] ?? doc.document_type}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <DocumentStatusBadge status={doc.status} />
-            </TableCell>
-            <TableCell className="text-muted-foreground text-sm">
-              v{doc.current_version_number}
-            </TableCell>
-            <TableCell className="text-sm">
-              {doc.creator?.name ?? doc.creator?.email ?? '—'}
-            </TableCell>
-            <TableCell className="text-muted-foreground text-sm">
-              {formatDistanceToNow(new Date(doc.updated_at), {
-                addSuffix: true,
-                locale: sv,
-              })}
-            </TableCell>
-            <TableCell className="text-sm">
-              <ReviewDateCell date={doc.review_date} />
-            </TableCell>
-            <TableCell>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      router.push(`/workspace/styrdokument/${doc.id}/edit`)
-                    }}
-                  >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Öppna
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      window.open(
-                        `/api/workspace/documents/${doc.id}/export?format=docx`,
-                        '_blank'
-                      )
-                    }}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Exportera som Word
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      window.open(
-                        `/api/workspace/documents/${doc.id}/export?format=pdf`,
-                        '_blank'
-                      )
-                    }}
-                  >
-                    <FileDown className="mr-2 h-4 w-4" />
-                    Exportera som PDF
-                  </DropdownMenuItem>
-                  {doc.status !== 'ARCHIVED' && (
+    <div className="rounded-md border overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead
+              className="cursor-pointer select-none"
+              onClick={() => onSort('title')}
+            >
+              <span className="flex items-center">
+                Titel
+                <SortIcon
+                  field="title"
+                  currentSort={sortBy}
+                  currentOrder={sortOrder}
+                />
+              </span>
+            </TableHead>
+            <TableHead>Dokumentnr</TableHead>
+            <TableHead>Typ</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Version</TableHead>
+            <TableHead>Författare</TableHead>
+            <TableHead
+              className="cursor-pointer select-none"
+              onClick={() => onSort('updated_at')}
+            >
+              <span className="flex items-center">
+                Senast uppdaterad
+                <SortIcon
+                  field="updated_at"
+                  currentSort={sortBy}
+                  currentOrder={sortOrder}
+                />
+              </span>
+            </TableHead>
+            <TableHead
+              className="cursor-pointer select-none"
+              onClick={() => onSort('review_date')}
+            >
+              <span className="flex items-center">
+                Granskningsdatum
+                <SortIcon
+                  field="review_date"
+                  currentSort={sortBy}
+                  currentOrder={sortOrder}
+                />
+              </span>
+            </TableHead>
+            <TableHead className="w-10" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {documents.map((doc) => (
+            <TableRow
+              key={doc.id}
+              className="cursor-pointer"
+              onClick={() =>
+                router.push(`/workspace/styrdokument/${doc.id}/edit`)
+              }
+            >
+              <TableCell className="font-medium">{doc.title}</TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                {doc.document_number ?? '—'}
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  {DOCUMENT_TYPE_LABELS[doc.document_type] ?? doc.document_type}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <DocumentStatusBadge status={doc.status} />
+              </TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                v{doc.current_version_number}
+              </TableCell>
+              <TableCell className="text-sm">
+                {doc.creator?.name ?? doc.creator?.email ?? '—'}
+              </TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                {formatDistanceToNow(new Date(doc.updated_at), {
+                  addSuffix: true,
+                  locale: sv,
+                })}
+              </TableCell>
+              <TableCell className="text-sm">
+                <ReviewDateCell date={doc.review_date} />
+              </TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation()
-                        onArchive(doc.id)
+                        router.push(`/workspace/styrdokument/${doc.id}/edit`)
                       }}
                     >
-                      <Archive className="mr-2 h-4 w-4" />
-                      Arkivera
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Öppna
                     </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        window.open(
+                          `/api/workspace/documents/${doc.id}/export?format=docx`,
+                          '_blank'
+                        )
+                      }}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Exportera som Word
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        window.open(
+                          `/api/workspace/documents/${doc.id}/export?format=pdf`,
+                          '_blank'
+                        )
+                      }}
+                    >
+                      <FileDown className="mr-2 h-4 w-4" />
+                      Exportera som PDF
+                    </DropdownMenuItem>
+                    {doc.status !== 'ARCHIVED' && (
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onArchive(doc.id)
+                        }}
+                      >
+                        <Archive className="mr-2 h-4 w-4" />
+                        Arkivera
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

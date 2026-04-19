@@ -93,27 +93,29 @@ export function ActivityLogTable({ activities }: ActivityLogTableProps) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-10" aria-label="Expandera rad" />
-          <TableHead className="w-[160px]">Tidpunkt</TableHead>
-          <TableHead className="w-[180px]">Användare</TableHead>
-          <TableHead className="w-[140px]">Kategori</TableHead>
-          <TableHead>Aktivitet</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {groups.map((group) => (
-          <GroupSection
-            key={group.key}
-            group={group}
-            expandedIds={expandedIds}
-            onToggle={toggle}
-          />
-        ))}
-      </TableBody>
-    </Table>
+    <div className="rounded-md border overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10" aria-label="Expandera rad" />
+            <TableHead className="w-[160px]">Tidpunkt</TableHead>
+            <TableHead className="w-[180px]">Användare</TableHead>
+            <TableHead className="w-[140px]">Kategori</TableHead>
+            <TableHead>Aktivitet</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {groups.map((group) => (
+            <GroupSection
+              key={group.key}
+              group={group}
+              expandedIds={expandedIds}
+              onToggle={toggle}
+            />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }
 

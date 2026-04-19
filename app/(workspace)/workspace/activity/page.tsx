@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { Download, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   getWorkspaceActivity,
@@ -18,6 +18,7 @@ import { ActivityFilters } from '@/components/features/activity/activity-filters
 import {
   type ActivityFilters as FilterState,
   parseActivityFiltersFromUrl,
+  serializeActivityFiltersToUrl,
 } from '@/lib/utils/activity-filter-params'
 
 export default function WorkspaceActivityPage() {
@@ -94,13 +95,27 @@ export default function WorkspaceActivityPage() {
     setFilters(newFilters)
   }
 
+  const handleExportCsv = () => {
+    const params = serializeActivityFiltersToUrl(filters)
+    window.open(
+      `/api/workspace/activity-log/export?${params.toString()}`,
+      '_blank'
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Aktivitetslogg</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Alla ändringar och aktiviteter i din workspace.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Aktivitetslogg</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Alla ändringar och aktiviteter i din workspace.
+          </p>
+        </div>
+        <Button variant="outline" onClick={handleExportCsv}>
+          <Download className="h-4 w-4 mr-2" />
+          Exportera CSV
+        </Button>
       </div>
 
       <ActivityFilters onFiltersChange={handleFiltersChange} />

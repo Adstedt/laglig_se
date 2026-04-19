@@ -7,9 +7,16 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Download, X } from 'lucide-react'
+import { Calendar as CalendarIcon, X } from 'lucide-react'
+import { format, parseISO } from 'date-fns'
+import { sv } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -25,6 +32,7 @@ import {
 } from '@/lib/utils/activity-filter-params'
 import { ACTIVITY_CATEGORIES, CATEGORY_META } from '@/lib/activity/categories'
 import type { ActivityCategory } from '@/lib/activity/types'
+import { cn } from '@/lib/utils'
 
 interface Member {
   id: string
@@ -92,129 +100,199 @@ export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
     !!filters.startDate ||
     !!filters.endDate
 
-  const handleExportCsv = () => {
-    const params = serializeActivityFiltersToUrl(filters)
-    window.open(
-      `/api/workspace/activity-log/export?${params.toString()}`,
-      '_blank'
-    )
-  }
+  const startDate = filters.startDate ? parseISO(filters.startDate) : undefined
+  const endDate = filters.endDate ? parseISO(filters.endDate) : undefined
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      {/* Category filter (single-select; the backend accepts multiple) */}
-      <Select
-        value={filters.categoryFilter[0] ?? '_all'}
-        onValueChange={(value) =>
-          updateFilters({
-            ...filters,
-            categoryFilter: value === '_all' ? [] : [value as ActivityCategory],
-          })
-        }
-      >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Alla kategorier" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="_all">Alla kategorier</SelectItem>
-          {ACTIVITY_CATEGORIES.map((category) => {
-            const meta = CATEGORY_META[category]
-            const Icon = meta.icon
-            return (
-              <SelectItem key={category} value={category}>
-                <span className="inline-flex items-center gap-2">
-                  <Icon className="h-3.5 w-3.5" />
-                  {meta.label}
-                </span>
+    <div className="border-b border-border/60">
+      <div className="flex items-center gap-2 py-2 flex-wrap">
+        {/* Category filter (single-select; the backend accepts multiple) */}
+        <Select
+          value={filters.categoryFilter[0] ?? '_all'}
+          onValueChange={(value) =>
+            updateFilters({
+              ...filters,
+              categoryFilter:
+                value === '_all' ? [] : [value as ActivityCategory],
+            })
+          }
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Alla kategorier" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all">Alla kategorier</SelectItem>
+            {ACTIVITY_CATEGORIES.map((category) => {
+              const meta = CATEGORY_META[category]
+              const Icon = meta.icon
+              return (
+                <SelectItem key={category} value={category}>
+                  <span className="inline-flex items-center gap-2">
+                    <Icon className="h-3.5 w-3.5" />
+                    {meta.label}
+                  </span>
+                </SelectItem>
+              )
+            })}
+          </SelectContent>
+        </Select>
+
+        {/* User filter */}
+        <Select
+          value={filters.userFilter ?? '_all'}
+          onValueChange={(value) =>
+            updateFilters({
+              ...filters,
+              userFilter: value === '_all' ? undefined : value,
+            })
+          }
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Alla användare" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all">Alla användare</SelectItem>
+            {members.map((member) => (
+              <SelectItem key={member.id} value={member.id}>
+                {member.name ?? member.email}
               </SelectItem>
-            )
-          })}
-        </SelectContent>
-      </Select>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* User filter */}
-      <Select
-        value={filters.userFilter ?? '_all'}
-        onValueChange={(value) =>
-          updateFilters({
-            ...filters,
-            userFilter: value === '_all' ? undefined : value,
-          })
-        }
-      >
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Alla användare" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="_all">Alla användare</SelectItem>
-          {members.map((member) => (
-            <SelectItem key={member.id} value={member.id}>
-              {member.name ?? member.email}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Entity type filter (secondary narrowing) */}
+        <Select
+          value={filters.entityTypeFilter[0] ?? '_all'}
+          onValueChange={(value) =>
+            updateFilters({
+              ...filters,
+              entityTypeFilter: value === '_all' ? [] : [value],
+            })
+          }
+        >
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Alla typer" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_all">Alla typer</SelectItem>
+            {ENTITY_TYPES.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      {/* Entity type filter (secondary narrowing) */}
-      <Select
-        value={filters.entityTypeFilter[0] ?? '_all'}
-        onValueChange={(value) =>
-          updateFilters({
-            ...filters,
-            entityTypeFilter: value === '_all' ? [] : [value],
-          })
-        }
-      >
-        <SelectTrigger className="w-[160px]">
-          <SelectValue placeholder="Alla typer" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="_all">Alla typer</SelectItem>
-          {ENTITY_TYPES.map((type) => (
-            <SelectItem key={type.value} value={type.value}>
-              {type.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {/* Date range */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className={cn(
+                'h-9 w-[150px] justify-start text-left font-normal',
+                !startDate && 'text-muted-foreground'
+              )}
+            >
+              <CalendarIcon className="h-4 w-4 mr-2 shrink-0" />
+              {startDate ? format(startDate, 'yyyy-MM-dd') : 'Från datum'}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={startDate}
+              onSelect={(date) =>
+                updateFilters({
+                  ...filters,
+                  startDate: date ? format(date, 'yyyy-MM-dd') : undefined,
+                })
+              }
+              locale={sv}
+              initialFocus
+            />
+            {startDate && (
+              <div className="border-t p-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground hover:text-destructive"
+                  onClick={() =>
+                    updateFilters({ ...filters, startDate: undefined })
+                  }
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Rensa datum
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
-      {/* Date range */}
-      <Input
-        type="date"
-        value={filters.startDate ?? ''}
-        onChange={(e) =>
-          updateFilters({
-            ...filters,
-            startDate: e.target.value || undefined,
-          })
-        }
-        className="w-[150px]"
-        placeholder="Från datum"
-      />
-      <Input
-        type="date"
-        value={filters.endDate ?? ''}
-        onChange={(e) =>
-          updateFilters({
-            ...filters,
-            endDate: e.target.value || undefined,
-          })
-        }
-        className="w-[150px]"
-        placeholder="Till datum"
-      />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className={cn(
+                'h-9 w-[150px] justify-start text-left font-normal',
+                !endDate && 'text-muted-foreground'
+              )}
+            >
+              <CalendarIcon className="h-4 w-4 mr-2 shrink-0" />
+              {endDate ? format(endDate, 'yyyy-MM-dd') : 'Till datum'}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={endDate}
+              onSelect={(date) =>
+                updateFilters({
+                  ...filters,
+                  endDate: date ? format(date, 'yyyy-MM-dd') : undefined,
+                })
+              }
+              locale={sv}
+              initialFocus
+            />
+            {endDate && (
+              <div className="border-t p-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground hover:text-destructive"
+                  onClick={() =>
+                    updateFilters({ ...filters, endDate: undefined })
+                  }
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Rensa datum
+                </Button>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
-      {hasFilters && (
-        <Button variant="ghost" size="sm" onClick={clearFilters}>
-          <X className="h-4 w-4 mr-1" />
-          Rensa filter
-        </Button>
-      )}
-
-      <Button variant="outline" size="sm" onClick={handleExportCsv}>
-        <Download className="h-4 w-4 mr-1" />
-        Exportera CSV
-      </Button>
+        {hasFilters && (
+          <>
+            <div className="flex-1" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="h-7 gap-1 text-xs text-muted-foreground hover:text-destructive"
+            >
+              <X className="h-3.5 w-3.5" />
+              Rensa filter
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   )
 }

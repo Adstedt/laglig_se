@@ -5,7 +5,7 @@
  * Dropdown to switch between document lists
  */
 
-import { Check, ChevronDown, Plus, Star } from 'lucide-react'
+import { Bookmark, Check, ChevronDown, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -48,7 +48,7 @@ export function DocumentListSwitcher({
         >
           <span className="flex items-center gap-2 truncate">
             {activeList?.isDefault && (
-              <Star className="h-4 w-4 text-amber-500 fill-amber-500 flex-shrink-0" />
+              <Bookmark className="h-3.5 w-3.5 text-muted-foreground fill-muted-foreground flex-shrink-0" />
             )}
             <span className="truncate">{activeList?.name ?? 'Välj lista'}</span>
             {activeList && (
@@ -75,7 +75,7 @@ export function DocumentListSwitcher({
             >
               <span className="flex items-center gap-2 truncate">
                 {list.isDefault && (
-                  <Star className="h-4 w-4 text-amber-500 fill-amber-500 flex-shrink-0" />
+                  <Bookmark className="h-3.5 w-3.5 text-muted-foreground fill-muted-foreground flex-shrink-0" />
                 )}
                 <span className="truncate">{list.name}</span>
               </span>
