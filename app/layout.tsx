@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { ThemeProvider } from '@/components/providers/theme-provider'
 
 // react-pdf styles for PDF preview component
 import 'react-pdf/dist/Page/AnnotationLayer.css'
@@ -25,9 +26,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="sv">
+    <html lang="sv" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
         {/* Vercel Analytics - Cookieless, GDPR-compliant tracking */}
         <Analytics />
         {/* Speed Insights - Tracks Core Web Vitals: LCP, FID, CLS, TTFB */}

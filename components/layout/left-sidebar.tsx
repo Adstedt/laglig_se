@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from 'next-auth/react'
+import { useTheme } from 'next-themes'
 import {
   Home,
   MessageSquare,
@@ -22,6 +23,10 @@ import {
   LogOut,
   ChevronsUpDown,
   ClipboardList,
+  Sun,
+  Moon,
+  Monitor,
+  Palette,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
@@ -46,7 +51,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
@@ -245,6 +255,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
   const { toggleRightSidebar, leftSidebarCollapsed, toggleLeftSidebar } =
     useLayoutStore()
   const searchParams = useSearchParams()
+  const { theme, setTheme } = useTheme()
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>(
     {}
   )
@@ -661,6 +672,31 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                     <span>Inställningar</span>
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Palette className="mr-2 h-4 w-4" />
+                    <span>Tema</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuRadioGroup
+                      value={theme ?? 'system'}
+                      onValueChange={setTheme}
+                    >
+                      <DropdownMenuRadioItem value="light">
+                        <Sun className="mr-2 h-4 w-4" />
+                        <span>Ljust</span>
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="dark">
+                        <Moon className="mr-2 h-4 w-4" />
+                        <span>Mörkt</span>
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="system">
+                        <Monitor className="mr-2 h-4 w-4" />
+                        <span>System</span>
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => signOut({ callbackUrl: '/' })}
