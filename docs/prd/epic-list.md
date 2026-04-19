@@ -240,10 +240,28 @@
 
 ---
 
-**Total Stories Tracked:** ~200+ across 18 epics (~153 completed, ~47 backlog; Epic 18 stories TBD)
+## Epic 19: Agent Partner — Attachments, Skills, Subagents & Continuous Governance
 
-**Epic Status:** 11 Done, 4 Partial, 3 Not Started / Planned
+**Status:** Planned (0 completed — 12 stories scoped + 4 sibling stories in Epic 14)
 
-**Last updated:** 2026-04-13
+**Goal:** Evolve the Laglig compliance agent from "informs users" to "helps users complete compliance work" by adding the architectural primitives required for autonomous, context-aware assistance: chat file attachment reading, a self-hosted skills layer (domain playbooks as markdown files), subagents (isolated specialists), diagnostic gap-detection tools, role-based tool filtering, and continuous-governance loops (reminders, weekly pulse, feedback).
+
+**Delivers:** Chat attachment upload + Claude content-block wiring, 9 new agent tools (read_file, 4 entity-reads, 4 diagnostics), role-filtered tool registry + AgentDecisionLog audit trail, self-hosted Skills layer (SKILL.md loader + directory convention + context activation), 3 shipped skills (assess_change migrated, gap_analysis, draft_policy), 3 subagents (LegalReasoner, DocumentReader, ParallelAssessor), Reminder/scheduling tools, weekly pulse cron, AgentFeedback model + thumbs UI, proactive hem-chat cards, seed Swedish styrdokument template library.
+
+**Requirements covered:** FR4 (enhanced), FR5 (enhanced), FR7 (enhanced), FR25 (audit trail — agent decisions), NFR2 (accuracy), NFR3 (hallucination prevention), NFR24 (cite-first answers)
+
+**Dependencies:** Epic 14 (Agent — Done; Stories 14.22–14.24 Approved as pre-req for approval-card reuse), Epic 17 (DMS — Partial; Stories 17.8–17.11 Draft as pre-req for text extraction + RAG + document tools), Epic 11 (Admin shell — Done, for future monitoring views), Epic 6 (Kanban/Task — Done). Sibling stories 14.26–14.29 coordinated with Epic 14.
+
+**Note:** Brownfield enhancement. Self-hosted only — no Anthropic Files API, no managed Skills beta, no code execution tool. Keeps stack provider-neutral and ZDR-clean. Single composite feature flag `agent_partner_v2` per workspace gates the entire epic.
+
+**Priority:** High — largest remaining blocker for full agent usefulness once Epic 17's DMS-side tools ship. Delivers the step-change from "compliance dashboard with chat" to "compliance partner that does work."
+
+---
+
+**Total Stories Tracked:** ~215+ across 19 epics (~153 completed, ~62+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped)
+
+**Epic Status:** 11 Done, 4 Partial, 4 Not Started / Planned
+
+**Last updated:** 2026-04-19
 
 ---
