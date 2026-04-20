@@ -258,10 +258,28 @@
 
 ---
 
-**Total Stories Tracked:** ~215+ across 19 epics (~153 completed, ~62+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped)
+## Epic 20: Workspace Krav Overview & Per-Krav Assignment
 
-**Epic Status:** 11 Done, 4 Partial, 4 Not Started / Planned
+**Status:** Planned (0 completed — 3 stories scoped)
 
-**Last updated:** 2026-04-19
+**Goal:** Surface every kravpunkt across the workspace in a single filterable table so compliance managers and responsible owners can triage gaps, missing bevis, and personal assignments without drilling into 40+ law item modals — and let individual kravpunkter carry their own assignee when responsibility needs to be delegated below the law-item level.
+
+**Delivers:** Optional per-krav `responsible_user_id` with automatic inheritance from the parent `LawListItem` when unset; assignee picker in the existing kravpunkter checklist; `getWorkspaceRequirements` server action with filter presets (Alla / Luckor / Mina krav / Saknar bevis); new `/krav` route rendering a TanStack table that reuses the document-list-table design language (virtualization, inline editors, URL-param filters); new "Krav" subitem under the Efterlevnad sidebar accordion.
+
+**Requirements covered:** Extends FR of Epic 6 (Compliance Workspace) — specifically deeper gap visibility — and lays groundwork for audit export/reporting (deferred).
+
+**Dependencies:** Epic 6 (Compliance Workspace Kanban — Done; provides `LawListItem` responsible assignment, kravpunkter model, `LegalDocumentModal`, `KravpunkterChecklist`), Epic 17 (DMS — Partial; `RequirementEvidenceLink` used by the "Saknar bevis" filter).
+
+**Note:** Brownfield enhancement. Additive schema only (nullable FK). Reuses existing table, filter-bar, assignee-picker, and sidebar patterns — no new UI primitives. See `docs/prd/epic-20-workspace-krav-overview.md`.
+
+**Priority:** Medium-High — highest single-feature unlock for users with ≥10 laglistor preparing for external audits. Unblocks audit-export follow-ups.
+
+---
+
+**Total Stories Tracked:** ~218+ across 20 epics (~153 completed, ~65+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped)
+
+**Epic Status:** 11 Done, 4 Partial, 5 Not Started / Planned
+
+**Last updated:** 2026-04-20
 
 ---
