@@ -621,7 +621,7 @@ describe('getRequirementsForListItem', () => {
 import {
   pickContentActionName,
   resolveEffectiveAssignee,
-} from '../law-list-item-requirements'
+} from '@/lib/requirements/helpers'
 
 const ASSIGNEE_USER_ID = '77777777-7777-4777-8777-777777777777'
 const OTHER_ASSIGNEE_ID = '88888888-8888-4888-8888-888888888888'

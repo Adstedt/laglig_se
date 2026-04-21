@@ -44,7 +44,7 @@ import {
   getWorkspaceRequirements,
   getWorkspaceRequirementCounts,
 } from '@/app/actions/workspace-requirements'
-import { resolveEffectiveAssignee } from '@/app/actions/law-list-item-requirements'
+import { resolveEffectiveAssignee } from '@/lib/requirements/helpers'
 import * as workspaceContext from '@/lib/auth/workspace-context'
 
 // ---------------------------------------------------------------------------
