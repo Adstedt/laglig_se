@@ -1,0 +1,182 @@
+schema: 1
+story: '20.3'
+story_title: '/krav Route & Workspace Krav Table UI'
+gate: CONCERNS
+status_reason: 'Route + UI functional and visually aligned with /laglistor after the post-implementation layout fix. The two typed boundaries (URL ↔ action input, resolver re-use) are clean and type-safe. The SWR dedup invariant is locked with a dedicated test. But three non-trivial pieces of orchestration logic (virtualization, KravTable rendering, KravPageContent URL fallback + Ladda fler + inline-edit invalidation) ship without automated coverage — each is a plausible regression vector, and AC 28 (virtualization) is explicitly not implemented. Recommend closing the test gaps before flipping to Done; virtualization can be a tracked follow-up for large-workspace users.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-21T22:05:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'PERF-001'
+    severity: medium
+    finding: 'AC 28 (virtualization auto-enables above 100 rows) is NOT implemented. Dev deferred with the rationale that non-virtualized rendering is still functionally correct. True at <100 rows, but Story 20.2 ships with a default limit of 50, so two "Ladda fler" clicks push any workspace over threshold. A 500-krav workspace accumulating all rows will feel the DOM-reflow cost — exactly the scenario Epic 20 targets (compliance managers with 10+ laglistor).'
+    suggested_action: 'Copy the `useVirtualizer` + 100-row threshold pattern from `document-list-table.tsx:838` into `components/features/krav/krav-table.tsx`. ~30–50 lines of additive code; no behaviour change below threshold; fully compatible with the existing column defs.'
+    suggested_owner: dev
+  - id: 'TEST-001'
+    severity: medium
+    finding: 'KravTable (395 lines — the largest new UI component in this story) has zero RTL coverage. Story Task 15 prescribed `krav-table.test.tsx` with column rendering, sort-click dispatch, and Ladda fler visibility tests.'
+    suggested_action: 'Add `tests/unit/components/features/krav/krav-table.test.tsx`: assert each of the 7 columns renders expected content for a seed row; clicking a sortable header fires `onSortChange` with the right field; `nextCursor: null` hides the "Ladda fler" button; `isLoadingMore: true` disables the button with "Laddar…" label.'
+    suggested_owner: dev
+  - id: 'TEST-002'
+    severity: medium
+    finding: 'KravPageContent''s orchestration logic (URL hydration, graceful fallback stripping malformed params on mount, Ladda fler accumulation, cross-key SWR invalidation, modal open/close) has no automated coverage. The parser functions are pure and tested in isolation by type, but the `useEffect` that strips malformed URL params (lines 168–187) and the `extraPages` accumulation (lines 274–305) are non-trivial state transitions that would regress silently.'
+    suggested_action: 'Add `tests/unit/components/features/krav/krav-page-content.test.tsx`: mount with `?filter=banana&sort=nope&dir=hmm` and assert `router.replace` is called with a cleaned URL; assert debounced search writes to URL after 300ms; assert "Ladda fler" appends rather than replaces; assert Rensa resets to `/krav`.'
+    suggested_owner: dev
+  - id: 'MNT-001'
+    severity: low
+    finding: 'Dead `void resolveEffectiveAssignee` expression at `krav-page-content.tsx:396`. The import is retained with a comment explaining it''s "for parity with Story 20.2''s contract in case the UI later adds an optimistic-patch path." That''s a speculative future need, not a current use — classic YAGNI violation.'
+    suggested_action: 'Remove the `resolveEffectiveAssignee` import from line 33 and the `void` expression + comment from line 396. If an optimistic-patch path is added later, re-import then.'
+    suggested_owner: dev
+  - id: 'MNT-002'
+    severity: low
+    finding: 'The Ladda fler handler uses `await import(''@/app/actions/workspace-requirements'')` (dynamic import) to "bypass SWR" — but `getWorkspaceRequirements` is already reachable in the module graph via the SWR hook''s fetcher. The dynamic import adds latency for zero benefit (the module is already cached).'
+    suggested_action: 'Replace the dynamic import with a static import at the top of the file. Saves one async tick per Ladda fler click.'
+    suggested_owner: dev
+  - id: 'PERF-002'
+    severity: low
+    finding: 'Performance markers (AC 36, 37) not implemented. Dev deferred along with Playwright e2e. Means real-world latency regressions (e.g., a silent SWR config drift, a new relation include on 20.2''s server action) won''t be caught at unit-test level.'
+    suggested_action: 'Once a Playwright harness with a seeded workspace exists, add the `performance.mark` + `performance.measure` pattern from the story spec (Task 16). Warn-only P95 soft-fail is fine — this is observability, not gating.'
+    suggested_owner: dev
+  - id: 'A11Y-001'
+    severity: low
+    finding: 'AC 14 axe scan deferred. Keyboard-accessibility is covered structurally (aria-pressed on chips, aria-label on picker, role=region on table, Label on search), but a live page scan would catch things like insufficient contrast on the dimmed inherited-avatar state or missing focus rings on the Lag-cell button.'
+    suggested_action: 'Run axe against a local dev preview once the branch is deployed, or add the scan to the Playwright scenario when that lands.'
+    suggested_owner: dev
+
+quality_score: 70
+
+evidence:
+  tests_reviewed: 12
+  tests_new: 12
+  risks_identified: 7
+  files_modified: 9
+  files_created: 8
+  trace:
+    ac_covered:
+      [11, 12, 13, 14, 15, 16, 17, 38]
+    ac_partial:
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 29, 30, 31, 32, 33, 34, 35, 39, 40, 41, 42]
+    ac_gaps: [28]
+  ac_trace_details:
+    ac_1_route: 'Code present at app/(workspace)/krav/page.tsx; not tested directly (route-level tests would require Next.js test harness).'
+    ac_2_sidebar: 'Insertion verified by reading left-sidebar.tsx:101-104; no test — would need Breadcrumbs/Sidebar integration test, low-value.'
+    ac_3_active_highlight: 'Inherited from existing isActive(item.href) convention — unchanged.'
+    ac_4_no_icon: 'Correct — subItems shape does not carry an icon; visually verified in the user-provided screenshot.'
+    ac_5_header: 'Text content verified in code. Layout corrected post-implementation (see Completion Notes v1.1) to match /laglistor pattern.'
+    ac_6_layout: 'flex-wrap toolbar (chips + search in one row with ml-auto search). Layout aligned with /laglistor after post-implementation fix.'
+    ac_7_10_states: 'Empty / filtered-empty / loading / error branches present in code. No explicit test per branch — RTL tests could stub counts and primary to trigger each.'
+    ac_11_through_17_chips: 'Full automated coverage via krav-filter-chips.test.tsx (10 tests).'
+    ac_18_graceful_fallback: 'Parser functions (parseFilter / parseSortField / parseSortDirection) are deterministic and fall back to defaults; the one-shot useEffect that strips malformed params on mount is NOT tested. The graceful coercion on read IS exercised implicitly by the chip tests.'
+    ac_19_deep_linking: 'Server component hydration via initialFilter/initialSearch/initialSortField/initialSortDirection props; not tested.'
+    ac_20_router_replace_scroll_false: 'Convention followed in every router.replace call. Code-verified.'
+    ac_21_useSearchParams: 'Used in KravPageContent; server component only hydrates via awaited searchParams prop.'
+    ac_22_23_search: 'Debounced 300ms via useDebounce + useEffect comparing to urlSearch. Not tested.'
+    ac_24_columns: '7 columns defined per the AC 24 table. Column content verified by code inspection — no test.'
+    ac_25_sortable_columns: 'Columns 1 / 3 / 4 / 7 use SortableHeader; 2, 5, 6 set enableSorting: false. Not tested.'
+    ac_26_default_sort: 'Default sort {updated_at, desc} enforced at parser level + SortingState construction.'
+    ac_27_layout_tokens: 'Column widths + hover states match document-list-table conventions visually. No automated check.'
+    ac_28_virtualization: 'NOT implemented — PERF-001. Dev deferred with rationalization.'
+    ac_29_ladda_fler: 'Logic present (extraPages accumulation + cursor tracking). Not tested — TEST-002 covers.'
+    ac_30_status_toggle: 'Handler calls updateRequirement + invalidate. Toast on failure. Not tested directly — relies on the 20.1 updateRequirement test coverage.'
+    ac_31_assignee_change: 'Same pattern as status toggle. Revalidates from server rather than optimistic-patching — dev noted this as a deliberate design decision.'
+    ac_32_no_other_edits: 'Visually enforced — table row only renders interactive cells in positions 1 / 3 / 5.'
+    ac_33_34_35_modal: 'focusRequirementId prop added to LegalDocumentModal + threaded through LeftPanel → ComplianceActions → KravpunkterChecklist; scroll+highlight implemented via useEffect in KravpunktRow. Not tested.'
+    ac_36_37_performance: 'Not instrumented — PERF-002.'
+    ac_38_swr_dedup: 'Dedicated test in use-workspace-requirements.test.tsx — both hooks with identical keys fire one fetch, distinct keys fire two.'
+    ac_39_keyboard: 'Button semantics throughout (checkbox, button, input). No manual keyboard test documented.'
+    ac_40_aria: 'aria-pressed on chips, aria-label on checkbox and picker, role=region on table. Correct structurally.'
+    ac_41_color_not_only_signal: 'ShieldCheck vs ShieldAlert shapes differ — correct.'
+    ac_42_regression: 'No changes to document-list-table, compliance-detail-table, grouped-document-list-table, filter-bar, or assignee-editor. Verified via diff.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      New `/krav` route is inside the `(workspace)` route group — auth enforced
+      by the layout. All data access goes through already-QA''d server actions
+      (`getWorkspaceRequirements`, `getWorkspaceRequirementCounts`,
+      `updateRequirement`, `getWorkspaceMembers`) — no new auth surface. URL
+      params are defensively parsed with enum coercion; malformed values never
+      reach the server untyped. No raw SQL, no new write paths.
+  performance:
+    status: CONCERNS
+    notes: |
+      SWR dedup locked by test (AC 38). Payload + query budgets inherited from
+      20.2 remain enforced. BUT: AC 28 virtualization deferred (PERF-001) means
+      workspaces accumulating >100 rows via repeated "Ladda fler" clicks will
+      render them all in the DOM — measurable reflow cost at 500 rows. Real-
+      world impact moderate because (a) default limit is 50, (b) most workspaces
+      have <100 krav, (c) the slow path only hits power users who click Load
+      More many times. Mitigation: track virtualization as a follow-up;
+      monitor Story 20.3 rollout for complaints.
+  reliability:
+    status: PASS
+    notes: |
+      Never throws to user — SWR errors surface the "Försök igen" branch;
+      inline-edit failures surface Swedish toasts and revalidate server state
+      rather than leaving the optimistic patch in place. Graceful URL fallback
+      means bad bookmarks can''t break the page.
+  maintainability:
+    status: CONCERNS
+    notes: |
+      Two small smells: (1) MNT-001 — a dead `void resolveEffectiveAssignee`
+      import/expression that should just be deleted; (2) MNT-002 — an
+      unnecessary dynamic `await import()` in the Ladda fler handler. Neither
+      blocks merge but both are noise that a future reader will have to
+      understand. The 564-line krav-page-content.tsx is long but under
+      codebase precedent (document-list-table.tsx is 1400+ lines); not
+      flagging as a separate issue, but a custom `useKravPageState` hook
+      would age well.
+
+recommendations:
+  immediate:
+    - action: 'Remove dead `resolveEffectiveAssignee` import + `void` expression (MNT-001).'
+      refs: ['components/features/krav/krav-page-content.tsx:33,396']
+    - action: 'Replace `await import(...)` with static import in Ladda fler handler (MNT-002).'
+      refs: ['components/features/krav/krav-page-content.tsx:281-283']
+    - action: 'Add the two missing RTL test files (TEST-001, TEST-002) — KravTable + KravPageContent. These close the untested orchestration gaps.'
+      refs:
+        ['components/features/krav/krav-table.tsx', 'components/features/krav/krav-page-content.tsx']
+  future:
+    - action: 'Implement AC 28 virtualization by mirroring document-list-table.tsx:838 — same 100-row threshold.'
+      refs: ['components/features/krav/krav-table.tsx']
+    - action: 'Add Playwright e2e scenario + performance markers (AC 36, 37, Task 16) once a seeded-workspace harness exists.'
+      refs: ['tests/e2e/']
+    - action: 'Run axe against /krav in a running preview; add to Playwright when that lands (A11Y-001).'
+      refs: ['app/(workspace)/krav/page.tsx']
+    - action: 'Consider extracting `useKravPageState` hook (URL parsing + Ladda fler accumulation) from krav-page-content.tsx if the file grows further.'
+      refs: ['components/features/krav/krav-page-content.tsx']
+
+files_modified_during_review: [] # No refactoring performed by QA
+
+# Positive observations worth keeping in the record
+notes:
+  - |
+    The systemic guardrail added in commit 3263ea3 (`pnpm build` in pre-push)
+    caught the SECOND instance of the `'use server'` + sync-export rule at
+    dev time rather than at Vercel time (this time on
+    `buildRequirementWhere` in the 20.2 server-action file). The extraction
+    to `lib/requirements/query-builders.ts` parallels the earlier
+    `lib/requirements/helpers.ts` split. Two data points make this a
+    ratified pattern — worth formalizing in the architecture docs
+    (`docs/architecture/17-coding-standards.md` or a new rule in
+    `docs/architecture/11-backend-architecture.md`) so Story 20.4+ authors
+    don''t have to rediscover it.
+  - |
+    Dev correctly identified and responded to the user''s UI-feel feedback
+    (three targeted fixes: breadcrumb label registration, header layout
+    realignment, toolbar integration). This is documented in the Change Log
+    v1.1 entry and Completion Notes — good post-implementation hygiene.
+  - |
+    KravFilterChips test suite is thorough (10 tests covering AC 11-17
+    including edge cases like undefined counts, 0/1/2 Rensa adjustment
+    cases). Exactly the shape a reviewer wants to see on a new pure
+    component.
+  - |
+    SWR dedup test (AC 38) catches the subtle pitfall of separate React
+    roots sharing cache state — dev''s first attempt at the test failed
+    because of this, then fixed by mounting both hook consumers inside one
+    `renderHook` call. The fix + reasoning is baked into the test file''s
+    `sharedCacheWrapper()` helper comment.

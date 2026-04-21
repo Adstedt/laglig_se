@@ -37,6 +37,8 @@ interface LeftPanelProps {
   workspaceMembers?: WorkspaceMemberOption[] | undefined
   /** Story 20.1: parent law item's responsible_user_id — powers inherited-state visual */
   listItemResponsibleUserId?: string | null | undefined
+  /** Story 20.3: scroll-to + briefly-highlight the matching krav row when the modal opens */
+  focusRequirementId?: string | undefined
   isLoadingContent?: boolean
   taskProgress?: TaskProgress | null
   onTasksUpdate?: () => Promise<void>
@@ -86,6 +88,7 @@ export function LeftPanel({
   listItem,
   workspaceMembers,
   listItemResponsibleUserId,
+  focusRequirementId,
   isLoadingContent,
   taskProgress,
   onTasksUpdate,
@@ -176,6 +179,7 @@ export function LeftPanel({
           onProgressChange={onKravpunkterProgressChange}
           workspaceMembers={workspaceMembers}
           listItemResponsibleUserId={listItemResponsibleUserId ?? null}
+          focusRequirementId={focusRequirementId}
         />
 
         {/* Story 6.15: Tasks Accordion */}

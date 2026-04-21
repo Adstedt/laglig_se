@@ -82,6 +82,8 @@ interface KravpunkterChecklistProps {
   workspaceMembers?: WorkspaceMemberOption[] | undefined
   /** Story 20.1: parent law item's responsible user — null-safe fallback for inherited state display */
   listItemResponsibleUserId?: string | null | undefined
+  /** Story 20.3: scroll-to + briefly-highlight the matching krav row on mount */
+  focusRequirementId?: string | undefined
 }
 
 // ============================================================================
@@ -94,6 +96,7 @@ export function KravpunkterChecklist({
   onProgressChange,
   workspaceMembers,
   listItemResponsibleUserId,
+  focusRequirementId,
 }: KravpunkterChecklistProps) {
   const swrKey = `list-item-requirements:${listItemId}`
   const { data: requirements, isLoading } = useSWR<RequirementWithEvidence[]>(
@@ -207,6 +210,7 @@ export function KravpunkterChecklist({
               readOnly={readOnly}
               workspaceMembers={workspaceMembers}
               listItemResponsibleUserId={listItemResponsibleUserId ?? null}
+              focusThisRow={focusRequirementId === req.id}
             />
           ))}
         </ul>
@@ -276,6 +280,8 @@ interface KravpunktRowProps {
   workspaceMembers?: WorkspaceMemberOption[] | undefined
   /** Story 20.1: parent law item's responsible user id — used as the fallback target when user resets to inherited */
   listItemResponsibleUserId: string | null
+  /** Story 20.3: true when this row is the focus target for a /krav deep-link */
+  focusThisRow?: boolean | undefined
 }
 
 function KravpunktRow({
@@ -285,12 +291,37 @@ function KravpunktRow({
   readOnly,
   workspaceMembers,
   listItemResponsibleUserId,
+  focusThisRow,
 }: KravpunktRowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState(requirement.text)
   const [isExpanded, setIsExpanded] = useState(false)
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
+  // Story 20.3: briefly apply a highlight class when a /krav deep-link
+  // targets this row. Ref points to the outer <li>; one-frame delay lets
+  // the row lay out before we scroll to it.
+  const [isFocusHighlighted, setIsFocusHighlighted] = useState(false)
+  const rowRef = useRef<HTMLLIElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!focusThisRow) return
+    const frame = requestAnimationFrame(() => {
+      rowRef.current?.scrollIntoView({
+        block: 'center',
+        behavior: 'smooth',
+      })
+      setIsFocusHighlighted(true)
+    })
+    const timeout = setTimeout(() => setIsFocusHighlighted(false), 1500)
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(timeout)
+    }
+    // Re-run if the focus target flips (e.g., user opens modal for a different
+    // krav id without closing — currently not a prod code path, but cheap
+    // defensive hook behavior).
+  }, [focusThisRow])
 
   useEffect(() => {
     if (isEditing) {
@@ -456,7 +487,15 @@ function KravpunktRow({
   const missingBevis = requirement.bevisRequired && evidenceCount === 0
 
   return (
-    <li className="group">
+    <li
+      ref={rowRef}
+      id={`krav-row-${requirement.id}`}
+      className={cn(
+        'group rounded-md transition-colors',
+        isFocusHighlighted &&
+          'bg-accent/40 ring-1 ring-accent ring-offset-2 ring-offset-background'
+      )}
+    >
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
         <div
           className={cn(

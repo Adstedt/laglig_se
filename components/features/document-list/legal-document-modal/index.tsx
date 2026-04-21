@@ -55,6 +55,14 @@ interface LegalDocumentModalProps {
     | 'kravpunkter'
     | null
     | undefined
+  /**
+   * Story 20.3: scroll-to-and-briefly-highlight the named kravpunkt row
+   * inside the modal's checklist when the modal opens. Complements
+   * `focusField="kravpunkter"` — the modal consumer typically passes both.
+   * Optional — existing call sites (document-list-table, compliance view)
+   * are unaffected when it's undefined.
+   */
+  focusRequirementId?: string | undefined
   complianceReadOnly?: boolean | undefined
 }
 
@@ -68,6 +76,7 @@ export function LegalDocumentModal({
   taskColumns = [],
   onListItemChange,
   focusField,
+  focusRequirementId,
   complianceReadOnly,
 }: LegalDocumentModalProps) {
   // Optimistic overrides for status/priority (header badges + details box stay in sync)
@@ -240,6 +249,7 @@ export function LegalDocumentModal({
               listItem={listItem}
               workspaceMembers={workspaceMembers}
               listItemResponsibleUserId={listItem.responsibleUser?.id ?? null}
+              focusRequirementId={focusRequirementId}
               isLoadingContent={isLoadingContent}
               taskProgress={taskProgress}
               onTasksUpdate={handleTasksUpdate}
