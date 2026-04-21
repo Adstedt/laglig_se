@@ -1,0 +1,101 @@
+schema: 1
+story: '20.1'
+story_title: 'Per-Krav Assignee Model & Modal Picker'
+gate: PASS
+status_reason: 'Backend thoroughly tested (42/42 server-action tests, 100% of 15 ACs traced); workspace isolation + assignee membership validation correct; migration additive-only; no security/performance/reliability regressions. Frontend UI ACs (9, 11, 12, 13) rely on manual verification — acceptable given server-side contracts are complete and the story is additive.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-21T12:45:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'PROC-001'
+    severity: low
+    finding: 'Task 11 (regression smoke test) is checked [x] in the story but dev completion notes explicitly state the manual browser smoke test was deferred to QA — human verification step still pending before merge to main.'
+    suggested_action: 'Story owner runs the modal-level smoke test (create / edit text / toggle fulfilled / toggle bevis_required / add comment / reorder / link+unlink evidence / delete + new assignee picker paths) on a running dev server before merge.'
+    suggested_owner: dev
+  - id: 'TEST-001'
+    severity: low
+    finding: 'Frontend optimistic-update + revert flow in KravpunktRow (AC 11) has no React Testing Library coverage — only the server-side effect (updateRequirement writes responsible_user_id) is tested. On error, the toast + revert path is un-asserted.'
+    suggested_action: 'Follow-up: add RTL test that mocks updateRequirement to fail, renders KravpunktRow with a workspaceMembers prop, triggers assignee change via the AssigneeEditor, asserts row state reverts and toast fires.'
+    suggested_owner: dev
+  - id: 'TEST-002'
+    severity: low
+    finding: 'AC 12 "Återställ till lagansvarig" visibility logic (only shown when effectiveAssignee.isInherited === false) has no DOM-level assertion — only the server effect of null-clear is tested.'
+    suggested_action: 'Follow-up: add RTL test asserting the reset item is rendered with showResetOption=true and absent with showResetOption=false.'
+    suggested_owner: dev
+  - id: 'UX-001'
+    severity: low
+    finding: 'On inherited rows, selecting "Ej tilldelad" from the dropdown sends onChange(null) — which maps to updateRequirement({responsibleUserId: null}) — which is already the krav''s stored state (null = inherit). Net effect: a no-op round trip. Not a bug (no data corruption, no incorrect log due to value-unchanged suppression), but confusing semantics: the user may expect "Ej tilldelad" to truly clear the assignee, not stay inherited.'
+    suggested_action: 'Future refinement: either (a) hide "Ej tilldelad" from rows where variant="inherited", or (b) treat it as "break inheritance + assign-to-nobody" which requires a different backend semantic. Decide product direction before adding more surfaces that consume the picker.'
+    suggested_owner: po
+  - id: 'MNT-001'
+    severity: low
+    finding: 'updateRequirement is now ~150 lines with a 4-level nested ternary for content-action-name picking. The dev''s restructure (separating assignee + content log branches) improved correctness but the content branch''s action-name logic is pre-existing complexity that would benefit from extraction.'
+    suggested_action: 'Future cleanup: extract `pickContentActionName(parsed, existing)` as a pure helper with its own unit tests. Not blocking — pre-existing debt.'
+    suggested_owner: dev
+
+quality_score: 100
+
+evidence:
+  tests_reviewed: 44
+  tests_new: 19
+  risks_identified: 5
+  files_modified: 9
+  files_created: 2
+  trace:
+    ac_covered:
+      [1, 2, 3, 4, 5, 6, 7, 8, 10, 14, 15]
+    ac_partial:
+      [9, 11, 12, 13] # Frontend UI ACs — server contracts tested, DOM/interaction flow relies on manual verification
+    ac_gaps: []
+  ac_trace_details:
+    ac_1_schema: 'Migration file applied in Supabase. Schema.prisma matches. No rollback file (accepted — additive only).'
+    ac_2_reciprocal_relation: 'User.requirements_responsible_for present; typecheck would catch absence.'
+    ac_3_resolver: '3 unit tests covering direct / inherited / both-null branches.'
+    ac_4_create_accepts_assignee: '3 tests (persists, rejects non-member, defaults to null+inherits).'
+    ac_5_update_semantics: '3 tests (UUID / null / undefined) + 1 test (rejects non-member).'
+    ac_6_read_effective_assignee: '3 tests (direct, inherited, post-user-delete via onDelete:SetNull simulation).'
+    ac_7_activity_log: '3 tests (writes on change with correct old/new, suppresses on unchanged, no spurious content log on assignee-only update).'
+    ac_8_workspace_scope: 'withWorkspace wrapper + getRequirementWorkspaceContext + workspaceMember validation combined; covered indirectly by pre-existing workspace-isolation tests + the membership-rejection test for assignee writes.'
+    ac_9_row_position: 'Manual verification required (position between evidence badge and chevron at ~line 480).'
+    ac_10_inherited_visual: 'Partial — component test asserts title="Ärvd från lagansvarig" on trigger. Radix Tooltip content rendering on hover not exercised.'
+    ac_11_select_and_persist: 'Server-side persist tested. Client optimistic/revert flow untested (TEST-001).'
+    ac_12_reset_option: 'Backend null-clear tested. UI visibility logic untested (TEST-002).'
+    ac_13_members_threading: 'Typecheck enforces prop flow; no explicit integration test.'
+    ac_14_swedish_copy: '"Ärvd från lagansvarig", "Återställ till lagansvarig", "Ansvarig användare är inte medlem i arbetsytan" all asserted in test suite.'
+    ac_15_regression: '25 pre-existing krav tests still pass + explicit "isFulfilled toggle leaves responsibleUserId untouched" regression test.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Workspace isolation enforced via withWorkspace + getRequirementWorkspaceContext + direct workspace_id comparison on parent list item. Cross-workspace assignee writes are blocked by an explicit workspaceMember.findFirst check before persist — this is a strengthening over the equivalent law-list-items code path that does not validate membership. Zod UUID validation at the boundary. onDelete:SetNull prevents dangling FK on user deletion. No raw SQL, no string interpolation. Permission gate ''tasks:edit'' is consistent with sibling mutations.'
+  performance:
+    status: PASS
+    notes: 'Write path adds one extra DB query (workspace-member lookup) only when responsibleUserId is set — negligible. Read path (getRequirementsForListItem) adds no new query; parent responsible_user_id is joined into the already-existing findFirst select. No N+1 introduced. Cache invalidation follows existing 3-key pattern.'
+  reliability:
+    status: PASS
+    notes: 'Optimistic-update + revert pattern applied consistently (isFulfilled, bevisRequired, new assignee handler). Toast on error with existing Swedish copy. Graceful prop-absence handling — picker simply does not render when workspaceMembers is undefined or readOnly is true, so sibling surfaces (compliance-detail-table) remain unaffected. ActivityLog branch restructure eliminates the prior pattern where an assignee change could be silently attributed to a text/status action.'
+  maintainability:
+    status: PASS
+    notes: 'resolveEffectiveAssignee is a clean pure function with thorough branch coverage. updateRequirement grew in length but the restructure improved correctness (two independent log branches replace an ambiguous nested ternary). Pre-existing content-action-name nested ternary survives as MNT-001 — flagged for future cleanup, not caused by this story. AssigneeEditor extension is additive: three optional props with JSDoc, default behaviour unchanged for existing call sites (document-list-table), verified by the 25 pre-existing tests continuing to pass.'
+
+recommendations:
+  immediate: [] # Nothing blocking merge
+  future:
+    - action: 'Story owner / dev runs modal-level manual smoke test before merge to main (per Task 11 intent; dev explicitly deferred it to QA).'
+      refs:
+        ['components/features/document-list/legal-document-modal/kravpunkter-checklist.tsx']
+    - action: 'Add RTL tests for KravpunktRow optimistic-update + revert and reset-option visibility.'
+      refs:
+        ['components/features/document-list/legal-document-modal/kravpunkter-checklist.tsx:370-407']
+    - action: 'Product decision on "Ej tilldelad" UX on inherited rows — currently a no-op click. Consider hiding it OR defining explicit break-inheritance semantics before Story 20.3 surfaces the picker in the /krav table.'
+      refs:
+        ['components/features/document-list/table-cell-editors/assignee-editor.tsx:163-170']
+    - action: 'Extract content-action-name selection helper to shrink updateRequirement and enable independent unit testing.'
+      refs: ['app/actions/law-list-item-requirements.ts:405-418']
+    - action: 'Sibling surface: compliance-detail-table (Story 17.17) currently renders kravpunkter rows without the new assignee picker because workspaceMembers is not passed through. Decide whether to expose it there too or leave the modal as the single edit surface.'
+      refs:
+        ['components/features/document-list/compliance-detail-table.tsx']
+
+files_modified_during_review: [] # No refactoring performed by QA

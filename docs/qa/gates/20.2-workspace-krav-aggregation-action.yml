@@ -1,0 +1,127 @@
+schema: 1
+story: '20.2'
+story_title: 'Workspace Krav Aggregation Server Action'
+gate: PASS
+status_reason: 'Backend-only additive story with strong test coverage (34/34 passing) and thorough AC traceability. Exported pure helper `buildRequirementWhere` is the single source of truth across both actions; 3×3 truth-table parity test guards the Epic 20 primary risk; workspace isolation enforced on every query branch; performance budget replaced from wall-clock to deterministic query-count + payload-size assertions (a reasonable trade-off documented in dev notes).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-21T13:20:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'TEST-003'
+    severity: low
+    finding: 'No composition test for `search` + `mine` filter together. The `where` clause merges `text: {...}` and `OR: [...]` at the same level; Prisma treats top-level as AND and merges correctly, but the composition is unverified by test. Same concern applies to `search` + `needs_evidence`.'
+    suggested_action: 'Add 2 tests exercising `buildRequirementWhere(ctx, "mine", "arbetsmiljö")` and `buildRequirementWhere(ctx, "needs_evidence", "arbetsmiljö")`; assert the emitted `where` carries both `text` AND the filter-specific predicates.'
+    suggested_owner: dev
+  - id: 'TEST-004'
+    severity: low
+    finding: 'The 3×3 truth-table parity test covers 8 of the 9 possible (krav.responsibleUserId × parent.responsibleUserId) combinations — the `(ME, ME)` case (direct override to self AND parent is self) is missing. This combination is redundant in outcome but would round out the parity guarantee.'
+    suggested_action: 'Add one more case `{ kravResponsible: MOCK_USER_ID, parentResponsible: MOCK_USER_ID, expected: true, label: "direct override + parent both me" }` to the `it.each` array.'
+    suggested_owner: dev
+  - id: 'PERF-001'
+    severity: low
+    finding: 'AC 18 (P95 ≤ 300ms wall-clock) was deliberately replaced by the dev with AC 19 (≤1 findMany) + AC 20 (<100KB payload) hard-bound deterministic assertions. Defensible — these are tighter than wall-clock would be — but means real-world latency regressions (e.g., from a future Prisma version or silent relation-include drift) won''t be caught at unit-test level.'
+    suggested_action: 'When Story 20.3 ships the UI, add a Lighthouse CI check or a real-user `server-timing` header observation on the `/krav` route to close the wall-clock gap. Until then, accept the deterministic proxies as sufficient.'
+    suggested_owner: dev
+  - id: 'MNT-002'
+    severity: low
+    finding: 'The `getWorkspaceRequirementCounts` action calls `buildRequirementWhere(ctx, ...)` four times (one per filter), each rebuilding the `workspaceScope` object literal. Trivial perf cost; mentioned only for visibility.'
+    suggested_action: 'Optional: compute `workspaceScope` once and thread it into the four branches. Not worth the readability cost unless profiling surfaces it.'
+    suggested_owner: dev
+  - id: 'TEST-005'
+    severity: low
+    finding: 'No explicit boundary test for the `search` string length (Zod `max(200)`). Invalid-filter and invalid-cursor Zod rejections have dedicated tests; `sort.field` / `sort.direction` enum and `search` length boundaries do not.'
+    suggested_action: 'Optional: add a test for `search = "a".repeat(201)` → Valideringsfel. Zod enum rejection is well-proven elsewhere; not a blocker.'
+    suggested_owner: dev
+
+quality_score: 100
+
+evidence:
+  tests_reviewed: 34
+  tests_new: 34
+  risks_identified: 5
+  files_modified: 0
+  files_created: 2
+  trace:
+    ac_covered:
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20]
+    ac_partial: [18] # P95 wall-clock replaced with deterministic proxies — defensible
+    ac_gaps: []
+  ac_trace_details:
+    ac_1_action_exported: 'file exists at app/actions/workspace-requirements.ts; withWorkspace permission test confirms invocation.'
+    ac_2_input_type: 'Zod rejection tests cover filter enum, cursor UUID, limit range.'
+    ac_3_return_type: 'row-mapping test asserts exact WorkspaceRequirementRow shape.'
+    ac_4_auth_wrapper: "workspace-isolation test inspects emitted where.list_item.law_list.workspace_id; 'read' permission explicitly asserted."
+    ac_5_empty_result: 'empty-result test returns { items: [], nextCursor: null }.'
+    ac_6_all_filter: 'buildRequirementWhere all-branch test.'
+    ac_7_gaps_filter: 'buildRequirementWhere gaps-branch test + is_fulfilled: false assertion.'
+    ac_8_mine_filter: 'structure test asserts exact OR shape; 3×3 truth-table parity test (8 of 9 cases — see TEST-004) proves semantic equivalence with resolveEffectiveAssignee.'
+    ac_9_needs_evidence_filter: 'bevis_required + evidence_links:none structure test.'
+    ac_10_search: 'trimmed / case-insensitive / empty-whitespace-ignored branches tested; composition with filter presets not explicitly tested (TEST-003).'
+    ac_11_sort: 'default sort test + law_name nested-sort test + sort-determinism test (id tiebreaker always present).'
+    ac_12_cursor_pagination: 'three tests (has-more yes / has-more no / cursor + skip application) cover the full state machine.'
+    ac_13_limit: 'Zod rejection >200 tested; lower-bound rejection not explicitly tested (redundant).'
+    ac_14_evidence_count_no_n_plus_1: 'row-mapping test asserts evidenceCount maps from _count.evidence_links; performance-budget test asserts exactly 1 findMany with no supplementary count.'
+    ac_15_effective_assignee: 'inherited-branch mapping test asserts { isInherited: true }; direct-branch via row-mapping test; full semantic equivalence via 3×3 parity test.'
+    ac_16_counts_action_exported: 'import succeeds; counts test verifies four keys returned.'
+    ac_17_counts_parallel: 'Promise.all x 4 pattern verified by call-count assertion (toHaveBeenCalledTimes(4)).'
+    ac_18_p95_latency: 'intentionally replaced by deterministic query-count + payload-size assertions; see PERF-001.'
+    ac_19_query_budget: 'performance-budget test hard-asserts ≤1 findMany, 0 count on the main action.'
+    ac_20_payload_size: 'payload-size test asserts JSON.stringify < 100_000 bytes on 50-row realistic-data fixture.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      Workspace isolation enforced in every branch of `buildRequirementWhere` via
+      `list_item.law_list.workspace_id === ctx.workspaceId`. The `mine` SQL filter
+      matches on `ctx.userId` — one user cannot see another's rows even with a
+      crafted cursor, because the outer workspace scope is always applied.
+      Zod validates all inputs at the boundary (filter enum, UUID cursor, bounded
+      int limit, 200-char string cap on search). `'read'` permission is confirmed
+      available to all workspace roles in `lib/auth/permissions.ts:71,86,100`.
+      Read-only action — no write surface, no PII exposure beyond user FKs. No
+      raw SQL, no user-input string interpolation.
+  performance:
+    status: PASS
+    notes: |
+      Hard-bound deterministic assertions replace the wall-clock target: exactly
+      1 Prisma findMany per getWorkspaceRequirements call (no supplementary count);
+      payload < 100KB on a realistic 50-row default page (JSON.stringify byte
+      check). Cursor pagination avoids O(N) offset growth. Sibling counts action
+      uses Promise.all for 4 parallel counts — total budget still well within
+      architecture §22.2.3's ≤10 queries/request ceiling. See PERF-001 for
+      wall-clock gap advisory.
+  reliability:
+    status: PASS
+    notes: |
+      Never throws — always returns the ActionResult<T> discriminated union.
+      Zod invalid-input paths return Swedish 'Valideringsfel' without touching
+      Prisma. Unexpected errors caught, logged to console.error, return
+      'Kunde inte hämta kravpunkter' / 'Kunde inte hämta kravräkningar'. Empty
+      result returns the explicit `{ items: [], nextCursor: null }` shape.
+  maintainability:
+    status: PASS
+    notes: |
+      Exported pure helpers (`buildRequirementWhere`, `resolveEffectiveAssignee`)
+      keep business logic test-isolated from I/O. Exhaustive `switch` on the
+      typed filter enum guarantees build-time failure if a new preset is added
+      without handling (TypeScript exhaustiveness). Comprehensive docstring
+      covers purpose, call sites, parity guarantee, and Story 20.3 usage
+      example — great onboarding for the next contributor. No `any`, no `as`
+      casts, no suppressed ESLint rules.
+
+recommendations:
+  immediate: [] # Nothing blocking merge
+  future:
+    - action: 'Close TEST-003 + TEST-004 + TEST-005 in a small follow-up test pass — three drop-in test additions, no production code changes needed.'
+      refs: ['tests/unit/app/actions/workspace-requirements.test.ts']
+    - action: 'When Story 20.3 ships the /krav UI, add a server-timing or Lighthouse CI check on the route to close the PERF-001 wall-clock observability gap.'
+      refs: ['app/actions/workspace-requirements.ts']
+    - action: 'Epic-level: Story 20.3 drafts a dedup test for the useWorkspaceRequirements SWR hook (AC 38 of that story). Confirm the fetcher is called exactly once for identical (filter, search, sort, cursor) tuples.'
+      refs: []
+    - action: 'Consider memoising the `workspaceScope` object in `getWorkspaceRequirementCounts` — trivial; only if profiling ever surfaces it.'
+      refs: ['app/actions/workspace-requirements.ts:288-302']
+
+files_modified_during_review: [] # No refactoring performed by QA

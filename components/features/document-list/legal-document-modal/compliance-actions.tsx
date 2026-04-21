@@ -26,6 +26,7 @@ import {
   KravpunkterChecklist,
   type KravpunkterProgress,
 } from './kravpunkter-checklist'
+import type { WorkspaceMemberOption } from '@/app/actions/document-list'
 
 interface ComplianceActionsProps {
   listItemId: string
@@ -50,6 +51,10 @@ interface ComplianceActionsProps {
   readOnly?: boolean | undefined
   /** Story 17.16: Notify parent of kravpunkter progress for DetailsBox status suggestion */
   onProgressChange?: ((_progress: KravpunkterProgress) => void) | undefined
+  /** Story 20.1: workspace members for per-krav assignee picker in the checklist */
+  workspaceMembers?: WorkspaceMemberOption[] | undefined
+  /** Story 20.1: parent law item's responsible user — powers inherited-assignee visual */
+  listItemResponsibleUserId?: string | null | undefined
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved'
@@ -63,6 +68,8 @@ export function ComplianceActions({
   focusField,
   readOnly = false,
   onProgressChange,
+  workspaceMembers,
+  listItemResponsibleUserId,
 }: ComplianceActionsProps) {
   const [content, setContent] = useState(initialContent ?? '')
   const [editedContent, setEditedContent] = useState(initialContent ?? '')
@@ -263,6 +270,8 @@ export function ComplianceActions({
           listItemId={listItemId}
           readOnly={readOnly}
           onProgressChange={handleProgressChange}
+          workspaceMembers={workspaceMembers}
+          listItemResponsibleUserId={listItemResponsibleUserId ?? null}
         />
 
         {/* Story 6.18: Generella kommentarer (free-text rich editor, list-item-wide) */}

@@ -40,6 +40,8 @@ vi.mock('@/lib/prisma', () => ({
     },
     workspaceFile: { findFirst: vi.fn() },
     workspaceDocument: { findFirst: vi.fn() },
+    // Story 20.1: workspace-member validation for assignee writes
+    workspaceMember: { findFirst: vi.fn() },
     $transaction: vi.fn(),
   },
 }))
@@ -609,5 +611,476 @@ describe('getRequirementsForListItem', () => {
     const result = await getRequirementsForListItem(LIST_ITEM_ID)
     expect(result.success).toBe(false)
     expect(prisma.lawListItemRequirement.findMany).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// Story 20.1: Per-krav assignee (resolver + server-action extensions)
+// ============================================================================
+
+import {
+  pickContentActionName,
+  resolveEffectiveAssignee,
+} from '../law-list-item-requirements'
+
+const ASSIGNEE_USER_ID = '77777777-7777-4777-8777-777777777777'
+const OTHER_ASSIGNEE_ID = '88888888-8888-4888-8888-888888888888'
+
+describe('Story 20.1: resolveEffectiveAssignee helper', () => {
+  it('returns the direct override when krav has its own responsible user', () => {
+    const result = resolveEffectiveAssignee(
+      { responsibleUserId: ASSIGNEE_USER_ID },
+      { responsibleUserId: OTHER_ASSIGNEE_ID }
+    )
+    expect(result).toEqual({
+      userId: ASSIGNEE_USER_ID,
+      isInherited: false,
+    })
+  })
+
+  it('inherits from the parent list item when krav is unset', () => {
+    const result = resolveEffectiveAssignee(
+      { responsibleUserId: null },
+      { responsibleUserId: OTHER_ASSIGNEE_ID }
+    )
+    expect(result).toEqual({
+      userId: OTHER_ASSIGNEE_ID,
+      isInherited: true,
+    })
+  })
+
+  it('returns { userId: null, isInherited: false } when both are unset', () => {
+    const result = resolveEffectiveAssignee(
+      { responsibleUserId: null },
+      { responsibleUserId: null }
+    )
+    expect(result).toEqual({
+      userId: null,
+      isInherited: false,
+    })
+  })
+})
+
+describe('Story 20.1: createRequirement with responsibleUserId', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockWorkspaceCtx()
+  })
+
+  it('persists a direct assignee override and returns it via effectiveAssignee', async () => {
+    vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue({
+      id: LIST_ITEM_ID,
+      law_list: { workspace_id: WORKSPACE_ID },
+      responsible_user_id: null,
+    } as never)
+    vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      id: 'member-id',
+    } as never)
+    vi.mocked(prisma.lawListItemRequirement.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.lawListItemRequirement.create).mockResolvedValue({
+      id: REQUIREMENT_ID,
+      text: 'Krav text',
+      is_fulfilled: false,
+      bevis_required: false,
+      comment: null,
+      position: 1000,
+      created_at: new Date(),
+      updated_at: new Date(),
+      created_by: USER_ID,
+      responsible_user_id: ASSIGNEE_USER_ID,
+    } as never)
+
+    const result = await createRequirement(LIST_ITEM_ID, 'Krav text', {
+      responsibleUserId: ASSIGNEE_USER_ID,
+    })
+
+    expect(result.success).toBe(true)
+    expect(prisma.lawListItemRequirement.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          responsible_user_id: ASSIGNEE_USER_ID,
+        }),
+      })
+    )
+    expect(result.data?.responsibleUserId).toBe(ASSIGNEE_USER_ID)
+    expect(result.data?.effectiveAssignee).toEqual({
+      userId: ASSIGNEE_USER_ID,
+      isInherited: false,
+    })
+  })
+
+  it('rejects an assignee who is not a workspace member', async () => {
+    vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue({
+      id: LIST_ITEM_ID,
+      law_list: { workspace_id: WORKSPACE_ID },
+      responsible_user_id: null,
+    } as never)
+    vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue(null)
+
+    const result = await createRequirement(LIST_ITEM_ID, 'Krav text', {
+      responsibleUserId: OTHER_ASSIGNEE_ID,
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('medlem i arbetsytan')
+    expect(prisma.lawListItemRequirement.create).not.toHaveBeenCalled()
+  })
+
+  it('defaults to null (inherited) when responsibleUserId is omitted', async () => {
+    vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue({
+      id: LIST_ITEM_ID,
+      law_list: { workspace_id: WORKSPACE_ID },
+      responsible_user_id: OTHER_ASSIGNEE_ID,
+    } as never)
+    vi.mocked(prisma.lawListItemRequirement.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.lawListItemRequirement.create).mockResolvedValue({
+      id: REQUIREMENT_ID,
+      text: 'Krav text',
+      is_fulfilled: false,
+      bevis_required: false,
+      comment: null,
+      position: 1000,
+      created_at: new Date(),
+      updated_at: new Date(),
+      created_by: USER_ID,
+      responsible_user_id: null,
+    } as never)
+
+    const result = await createRequirement(LIST_ITEM_ID, 'Krav text')
+
+    expect(result.success).toBe(true)
+    // No workspaceMember check when no explicit assignee is passed.
+    expect(prisma.workspaceMember.findFirst).not.toHaveBeenCalled()
+    expect(result.data?.effectiveAssignee).toEqual({
+      userId: OTHER_ASSIGNEE_ID,
+      isInherited: true,
+    })
+  })
+})
+
+describe('Story 20.1: updateRequirement responsibleUserId semantics', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockWorkspaceCtx()
+    // Default scope + existing requirement for all tests in this block.
+    vi.mocked(prisma.lawListItemRequirement.findUnique).mockResolvedValue({
+      list_item_id: LIST_ITEM_ID,
+      list_item: { law_list: { workspace_id: WORKSPACE_ID } },
+      text: 'Existing text',
+      is_fulfilled: false,
+      bevis_required: false,
+      comment: null,
+      responsible_user_id: OTHER_ASSIGNEE_ID,
+    } as never)
+    vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      id: 'member-id',
+    } as never)
+  })
+
+  it('sets the override when a valid UUID is passed', async () => {
+    const result = await updateRequirement(REQUIREMENT_ID, {
+      responsibleUserId: ASSIGNEE_USER_ID,
+    })
+    expect(result.success).toBe(true)
+    expect(prisma.lawListItemRequirement.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { responsible_user_id: ASSIGNEE_USER_ID },
+      })
+    )
+  })
+
+  it('clears the override when null is passed', async () => {
+    const result = await updateRequirement(REQUIREMENT_ID, {
+      responsibleUserId: null,
+    })
+    expect(result.success).toBe(true)
+    expect(prisma.lawListItemRequirement.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { responsible_user_id: null },
+      })
+    )
+    // No membership check when clearing — null is a valid no-user state.
+    expect(prisma.workspaceMember.findFirst).not.toHaveBeenCalled()
+  })
+
+  it('leaves responsible_user_id untouched when responsibleUserId is undefined', async () => {
+    const result = await updateRequirement(REQUIREMENT_ID, {
+      isFulfilled: true,
+    })
+    expect(result.success).toBe(true)
+    const updateCall = vi.mocked(prisma.lawListItemRequirement.update).mock
+      .calls[0]?.[0] as never as { data: Record<string, unknown> }
+    expect(updateCall.data).not.toHaveProperty('responsible_user_id')
+  })
+
+  it('rejects a responsibleUserId for a user not in the workspace', async () => {
+    vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue(null)
+    const result = await updateRequirement(REQUIREMENT_ID, {
+      responsibleUserId: ASSIGNEE_USER_ID,
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('medlem i arbetsytan')
+    expect(prisma.lawListItemRequirement.update).not.toHaveBeenCalled()
+  })
+})
+
+describe('Story 20.1: updateRequirement assignee ActivityLog', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockWorkspaceCtx()
+    vi.mocked(prisma.lawListItemRequirement.findUnique).mockResolvedValue({
+      list_item_id: LIST_ITEM_ID,
+      list_item: { law_list: { workspace_id: WORKSPACE_ID } },
+      text: 'Existing',
+      is_fulfilled: false,
+      bevis_required: false,
+      comment: null,
+      responsible_user_id: OTHER_ASSIGNEE_ID,
+    } as never)
+    vi.mocked(prisma.workspaceMember.findFirst).mockResolvedValue({
+      id: 'member-id',
+    } as never)
+  })
+
+  it('writes a requirement_assignee_updated entry with old + new user ids', async () => {
+    await updateRequirement(REQUIREMENT_ID, {
+      responsibleUserId: ASSIGNEE_USER_ID,
+    })
+    const calls = vi.mocked(activityLogger.logActivity).mock.calls
+    const assigneeCall = calls.find(
+      (c) => c[4] === 'requirement_assignee_updated'
+    )
+    expect(assigneeCall).toBeDefined()
+    expect(assigneeCall?.[5]).toEqual({
+      responsible_user_id: OTHER_ASSIGNEE_ID,
+    })
+    expect(assigneeCall?.[6]).toEqual({
+      responsible_user_id: ASSIGNEE_USER_ID,
+    })
+  })
+
+  it('does NOT log an assignee change when the submitted value equals the current one', async () => {
+    await updateRequirement(REQUIREMENT_ID, {
+      responsibleUserId: OTHER_ASSIGNEE_ID, // same as existing
+    })
+    const calls = vi.mocked(activityLogger.logActivity).mock.calls
+    const assigneeCall = calls.find(
+      (c) => c[4] === 'requirement_assignee_updated'
+    )
+    expect(assigneeCall).toBeUndefined()
+  })
+
+  it('does NOT write a spurious text/status log when ONLY assignee changes', async () => {
+    await updateRequirement(REQUIREMENT_ID, {
+      responsibleUserId: ASSIGNEE_USER_ID,
+    })
+    const calls = vi.mocked(activityLogger.logActivity).mock.calls
+    // Only the assignee log, not a content-change log.
+    const contentLog = calls.find(
+      (c) =>
+        c[4] === 'requirement_text_updated' ||
+        c[4] === 'requirement_comment_updated' ||
+        c[4] === 'requirement_marked_fulfilled' ||
+        c[4] === 'requirement_marked_unfulfilled' ||
+        c[4] === 'requirement_marked_bevis_required' ||
+        c[4] === 'requirement_marked_bevis_optional'
+    )
+    expect(contentLog).toBeUndefined()
+  })
+
+  it('regression: isFulfilled toggle leaves responsible_user_id untouched and does not log an assignee change', async () => {
+    await updateRequirement(REQUIREMENT_ID, { isFulfilled: true })
+    const updateCall = vi.mocked(prisma.lawListItemRequirement.update).mock
+      .calls[0]?.[0] as never as { data: Record<string, unknown> }
+    expect(updateCall.data).not.toHaveProperty('responsible_user_id')
+    const calls = vi.mocked(activityLogger.logActivity).mock.calls
+    const assigneeCall = calls.find(
+      (c) => c[4] === 'requirement_assignee_updated'
+    )
+    expect(assigneeCall).toBeUndefined()
+  })
+})
+
+describe('Story 20.1: getRequirementsForListItem returns effectiveAssignee', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockWorkspaceCtx()
+  })
+
+  it('resolves direct override → effectiveAssignee.isInherited = false', async () => {
+    vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue({
+      id: LIST_ITEM_ID,
+      responsible_user_id: OTHER_ASSIGNEE_ID,
+      law_list: { workspace_id: WORKSPACE_ID },
+    } as never)
+    vi.mocked(prisma.lawListItemRequirement.findMany).mockResolvedValue([
+      {
+        id: REQUIREMENT_ID,
+        text: 'Krav',
+        is_fulfilled: false,
+        bevis_required: false,
+        comment: null,
+        position: 1000,
+        created_at: new Date(),
+        updated_at: new Date(),
+        created_by: USER_ID,
+        responsible_user_id: ASSIGNEE_USER_ID,
+        evidence_links: [],
+      },
+    ] as never)
+
+    const result = await getRequirementsForListItem(LIST_ITEM_ID)
+    expect(result.success).toBe(true)
+    expect(result.data?.[0]?.responsibleUserId).toBe(ASSIGNEE_USER_ID)
+    expect(result.data?.[0]?.effectiveAssignee).toEqual({
+      userId: ASSIGNEE_USER_ID,
+      isInherited: false,
+    })
+  })
+
+  it('resolves inherited → effectiveAssignee.isInherited = true + userId = parent law item ansvarig', async () => {
+    vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue({
+      id: LIST_ITEM_ID,
+      responsible_user_id: OTHER_ASSIGNEE_ID,
+      law_list: { workspace_id: WORKSPACE_ID },
+    } as never)
+    vi.mocked(prisma.lawListItemRequirement.findMany).mockResolvedValue([
+      {
+        id: REQUIREMENT_ID,
+        text: 'Krav',
+        is_fulfilled: false,
+        bevis_required: false,
+        comment: null,
+        position: 1000,
+        created_at: new Date(),
+        updated_at: new Date(),
+        created_by: USER_ID,
+        responsible_user_id: null,
+        evidence_links: [],
+      },
+    ] as never)
+
+    const result = await getRequirementsForListItem(LIST_ITEM_ID)
+    expect(result.success).toBe(true)
+    expect(result.data?.[0]?.responsibleUserId).toBeNull()
+    expect(result.data?.[0]?.effectiveAssignee).toEqual({
+      userId: OTHER_ASSIGNEE_ID,
+      isInherited: true,
+    })
+  })
+
+  it('onDelete:SetNull outcome → after a user delete clears the override, effectiveAssignee falls back to inherited', async () => {
+    // Simulates the post-delete state: responsible_user_id is now null on the
+    // requirement (schema-level SET NULL). The read-path must resolve the
+    // parent list item's ansvarig as the inherited source.
+    vi.mocked(prisma.lawListItem.findFirst).mockResolvedValue({
+      id: LIST_ITEM_ID,
+      responsible_user_id: OTHER_ASSIGNEE_ID,
+      law_list: { workspace_id: WORKSPACE_ID },
+    } as never)
+    vi.mocked(prisma.lawListItemRequirement.findMany).mockResolvedValue([
+      {
+        id: REQUIREMENT_ID,
+        text: 'Krav',
+        is_fulfilled: false,
+        bevis_required: false,
+        comment: null,
+        position: 1000,
+        created_at: new Date(),
+        updated_at: new Date(),
+        created_by: USER_ID,
+        responsible_user_id: null, // was ASSIGNEE_USER_ID before the user was deleted
+        evidence_links: [],
+      },
+    ] as never)
+
+    const result = await getRequirementsForListItem(LIST_ITEM_ID)
+    expect(result.data?.[0]?.effectiveAssignee.isInherited).toBe(true)
+    expect(result.data?.[0]?.effectiveAssignee.userId).toBe(OTHER_ASSIGNEE_ID)
+  })
+})
+
+// ============================================================================
+// MNT-001: pickContentActionName helper (extracted from updateRequirement)
+// ============================================================================
+
+describe('pickContentActionName', () => {
+  const baseExisting = { bevis_required: false, comment: null as string | null }
+
+  it('priority 1: bevisRequired flipped true → requirement_marked_bevis_required', () => {
+    expect(pickContentActionName({ bevisRequired: true }, baseExisting)).toBe(
+      'requirement_marked_bevis_required'
+    )
+  })
+
+  it('priority 1: bevisRequired flipped false → requirement_marked_bevis_optional', () => {
+    expect(
+      pickContentActionName(
+        { bevisRequired: false },
+        { ...baseExisting, bevis_required: true }
+      )
+    ).toBe('requirement_marked_bevis_optional')
+  })
+
+  it('ignores bevisRequired when it is unchanged and falls through to next priority', () => {
+    // bevisRequired=false and existing is false → unchanged; isFulfilled takes over.
+    expect(
+      pickContentActionName(
+        { bevisRequired: false, isFulfilled: true },
+        baseExisting
+      )
+    ).toBe('requirement_marked_fulfilled')
+  })
+
+  it('priority 2: isFulfilled=true → requirement_marked_fulfilled', () => {
+    expect(pickContentActionName({ isFulfilled: true }, baseExisting)).toBe(
+      'requirement_marked_fulfilled'
+    )
+  })
+
+  it('priority 2: isFulfilled=false → requirement_marked_unfulfilled', () => {
+    expect(pickContentActionName({ isFulfilled: false }, baseExisting)).toBe(
+      'requirement_marked_unfulfilled'
+    )
+  })
+
+  it('isFulfilled presence wins over comment even when both are set', () => {
+    // Presence-wins-over-change semantic preserved from Story 17.16.
+    expect(
+      pickContentActionName(
+        { isFulfilled: true, comment: 'Nytt' },
+        baseExisting
+      )
+    ).toBe('requirement_marked_fulfilled')
+  })
+
+  it('priority 3: comment changed → requirement_comment_updated', () => {
+    expect(
+      pickContentActionName(
+        { comment: 'Nytt värde' },
+        { ...baseExisting, comment: 'Gammalt värde' }
+      )
+    ).toBe('requirement_comment_updated')
+  })
+
+  it('ignores comment when it is unchanged and falls through to text_updated', () => {
+    expect(
+      pickContentActionName(
+        { comment: 'Samma' },
+        { ...baseExisting, comment: 'Samma' }
+      )
+    ).toBe('requirement_text_updated')
+  })
+
+  it('default: text-only patch → requirement_text_updated', () => {
+    expect(pickContentActionName({ text: 'Ny text' }, baseExisting)).toBe(
+      'requirement_text_updated'
+    )
+  })
+
+  it('default: empty patch → requirement_text_updated (defensive fallback)', () => {
+    expect(pickContentActionName({}, baseExisting)).toBe(
+      'requirement_text_updated'
+    )
   })
 })

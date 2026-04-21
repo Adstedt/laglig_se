@@ -39,6 +39,11 @@ export interface RequirementEvidenceSummary {
   } | null
 }
 
+export interface EffectiveAssignee {
+  userId: string | null
+  isInherited: boolean
+}
+
 export interface RequirementWithEvidence {
   id: string
   text: string
@@ -49,6 +54,8 @@ export interface RequirementWithEvidence {
   createdAt: Date
   updatedAt: Date
   createdBy: string
+  responsibleUserId: string | null
+  effectiveAssignee: EffectiveAssignee
   evidence: RequirementEvidenceSummary[]
 }
 
@@ -59,6 +66,7 @@ export interface RequirementWithEvidence {
 const CreateRequirementSchema = z.object({
   listItemId: z.string().uuid(),
   text: z.string().min(1, 'Text krävs').max(500, 'Max 500 tecken'),
+  responsibleUserId: z.string().uuid().nullable().optional(),
 })
 
 const UpdateRequirementSchema = z
@@ -68,15 +76,98 @@ const UpdateRequirementSchema = z
     isFulfilled: z.boolean().optional(),
     bevisRequired: z.boolean().optional(),
     comment: z.string().max(2000).nullable().optional(),
+    responsibleUserId: z.string().uuid().nullable().optional(),
   })
   .refine(
     (data) =>
       data.text !== undefined ||
       data.isFulfilled !== undefined ||
       data.bevisRequired !== undefined ||
-      data.comment !== undefined,
+      data.comment !== undefined ||
+      data.responsibleUserId !== undefined,
     { message: 'Minst ett fält måste uppdateras' }
   )
+
+// ============================================================================
+// Story 20.1: Effective-assignee resolver
+// ============================================================================
+
+/**
+ * Resolve the effective assignee for a kravpunkt with inheritance from the
+ * parent law item. Pure function — callers pass already-loaded objects.
+ * Single source of truth for both the modal (getRequirementsForListItem)
+ * and the workspace overview (getWorkspaceRequirements, Story 20.2).
+ */
+export function resolveEffectiveAssignee(
+  krav: { responsibleUserId: string | null },
+  listItem: { responsibleUserId: string | null }
+): EffectiveAssignee {
+  if (krav.responsibleUserId !== null) {
+    return { userId: krav.responsibleUserId, isInherited: false }
+  }
+  if (listItem.responsibleUserId !== null) {
+    return { userId: listItem.responsibleUserId, isInherited: true }
+  }
+  return { userId: null, isInherited: false }
+}
+
+// ============================================================================
+// Content-change activity-log action picker
+// ============================================================================
+
+export type ContentUpdatePatch = {
+  text?: string | undefined
+  isFulfilled?: boolean | undefined
+  bevisRequired?: boolean | undefined
+  comment?: string | null | undefined
+}
+
+export type ContentUpdateExisting = {
+  bevis_required: boolean
+  comment: string | null
+}
+
+export type RequirementContentActionName =
+  | 'requirement_marked_bevis_required'
+  | 'requirement_marked_bevis_optional'
+  | 'requirement_marked_fulfilled'
+  | 'requirement_marked_unfulfilled'
+  | 'requirement_comment_updated'
+  | 'requirement_text_updated'
+
+/**
+ * Pure action-name selector for the content-change branch of `updateRequirement`.
+ * Priority:
+ *   1. bevis_required flipped → matching bevis action
+ *   2. isFulfilled present → matching fulfilled action
+ *   3. comment present and changed → comment_updated
+ *   4. fallback → text_updated
+ * The priority order (and the presence-vs-change asymmetry on isFulfilled)
+ * matches the behaviour shipped by Story 17.16; the extraction preserves it
+ * exactly so the activity feed remains consistent with prior history.
+ */
+export function pickContentActionName(
+  patch: ContentUpdatePatch,
+  existing: ContentUpdateExisting
+): RequirementContentActionName {
+  if (
+    patch.bevisRequired !== undefined &&
+    patch.bevisRequired !== existing.bevis_required
+  ) {
+    return patch.bevisRequired
+      ? 'requirement_marked_bevis_required'
+      : 'requirement_marked_bevis_optional'
+  }
+  if (patch.isFulfilled !== undefined) {
+    return patch.isFulfilled
+      ? 'requirement_marked_fulfilled'
+      : 'requirement_marked_unfulfilled'
+  }
+  if (patch.comment !== undefined && patch.comment !== existing.comment) {
+    return 'requirement_comment_updated'
+  }
+  return 'requirement_text_updated'
+}
 
 const ReorderRequirementsSchema = z.object({
   listItemId: z.string().uuid(),
@@ -150,9 +241,14 @@ async function getRequirementWorkspaceContext(requirementId: string): Promise<{
 
 export async function createRequirement(
   listItemId: string,
-  text: string
+  text: string,
+  opts?: { responsibleUserId?: string | null }
 ): Promise<ActionResult<RequirementWithEvidence>> {
-  const parsed = CreateRequirementSchema.safeParse({ listItemId, text })
+  const parsed = CreateRequirementSchema.safeParse({
+    listItemId,
+    text,
+    responsibleUserId: opts?.responsibleUserId,
+  })
   if (!parsed.success) {
     return {
       success: false,
@@ -162,13 +258,31 @@ export async function createRequirement(
 
   try {
     return await withWorkspace(async (ctx) => {
-      // Workspace isolation: join through law_list.
+      // Workspace isolation: join through law_list. Also pull parent
+      // responsible_user_id for the effectiveAssignee computation.
       const item = await prisma.lawListItem.findFirst({
         where: { id: listItemId },
         include: { law_list: { select: { workspace_id: true } } },
       })
       if (!item || item.law_list.workspace_id !== ctx.workspaceId) {
         return { success: false, error: 'Laglistpost hittades inte' }
+      }
+
+      // Validate assignee is a member of the active workspace.
+      if (parsed.data.responsibleUserId) {
+        const member = await prisma.workspaceMember.findFirst({
+          where: {
+            workspace_id: ctx.workspaceId,
+            user_id: parsed.data.responsibleUserId,
+          },
+          select: { id: true },
+        })
+        if (!member) {
+          return {
+            success: false,
+            error: 'Ansvarig användare är inte medlem i arbetsytan',
+          }
+        }
       }
 
       // Next position = (max existing position) + 1000.
@@ -185,6 +299,7 @@ export async function createRequirement(
           text: parsed.data.text,
           position: nextPosition,
           created_by: ctx.userId,
+          responsible_user_id: parsed.data.responsibleUserId ?? null,
         },
       })
 
@@ -213,6 +328,11 @@ export async function createRequirement(
           createdAt: created.created_at,
           updatedAt: created.updated_at,
           createdBy: created.created_by,
+          responsibleUserId: created.responsible_user_id,
+          effectiveAssignee: resolveEffectiveAssignee(
+            { responsibleUserId: created.responsible_user_id },
+            { responsibleUserId: item.responsible_user_id }
+          ),
           evidence: [],
         },
       }
@@ -234,6 +354,7 @@ export async function updateRequirement(
     isFulfilled?: boolean
     bevisRequired?: boolean
     comment?: string | null
+    responsibleUserId?: string | null
   }
 ): Promise<ActionResult> {
   const parsed = UpdateRequirementSchema.safeParse({
@@ -242,6 +363,7 @@ export async function updateRequirement(
     isFulfilled: updates.isFulfilled,
     bevisRequired: updates.bevisRequired,
     comment: updates.comment,
+    responsibleUserId: updates.responsibleUserId,
   })
   if (!parsed.success) {
     return {
@@ -264,10 +386,28 @@ export async function updateRequirement(
           is_fulfilled: true,
           bevis_required: true,
           comment: true,
+          responsible_user_id: true,
         },
       })
       if (!existing) {
         return { success: false, error: 'Kravpunkt hittades inte' }
+      }
+
+      // Validate assignee is a workspace member when setting a concrete UUID.
+      if (parsed.data.responsibleUserId) {
+        const member = await prisma.workspaceMember.findFirst({
+          where: {
+            workspace_id: ctx.workspaceId,
+            user_id: parsed.data.responsibleUserId,
+          },
+          select: { id: true },
+        })
+        if (!member) {
+          return {
+            success: false,
+            error: 'Ansvarig användare är inte medlem i arbetsytan',
+          }
+        }
       }
 
       const nextData: {
@@ -275,6 +415,7 @@ export async function updateRequirement(
         is_fulfilled?: boolean
         bevis_required?: boolean
         comment?: string | null
+        responsible_user_id?: string | null
       } = {}
       if (parsed.data.text !== undefined) nextData.text = parsed.data.text
       if (parsed.data.isFulfilled !== undefined)
@@ -283,6 +424,8 @@ export async function updateRequirement(
         nextData.bevis_required = parsed.data.bevisRequired
       if (parsed.data.comment !== undefined)
         nextData.comment = parsed.data.comment
+      if (parsed.data.responsibleUserId !== undefined)
+        nextData.responsible_user_id = parsed.data.responsibleUserId
 
       await prisma.lawListItemRequirement.update({
         where: { id: requirementId },
@@ -290,46 +433,62 @@ export async function updateRequirement(
       })
 
       // Pick a descriptive action string so the activity feed can render nice labels.
-      const action =
-        parsed.data.bevisRequired !== undefined &&
-        parsed.data.bevisRequired !== existing.bevis_required
-          ? parsed.data.bevisRequired
-            ? 'requirement_marked_bevis_required'
-            : 'requirement_marked_bevis_optional'
-          : parsed.data.isFulfilled !== undefined
-            ? parsed.data.isFulfilled
-              ? 'requirement_marked_fulfilled'
-              : 'requirement_marked_unfulfilled'
-            : parsed.data.comment !== undefined &&
-                parsed.data.comment !== existing.comment
-              ? 'requirement_comment_updated'
-              : 'requirement_text_updated'
+      const assigneeChanged =
+        parsed.data.responsibleUserId !== undefined &&
+        parsed.data.responsibleUserId !== existing.responsible_user_id
 
-      await logActivity(
-        ctx.workspaceId,
-        ctx.userId,
-        'requirement',
-        requirementId,
-        action,
-        {
-          text: truncate(existing.text),
-          is_fulfilled: existing.is_fulfilled,
-          bevis_required: existing.bevis_required,
-          comment: existing.comment ? truncate(existing.comment) : null,
-        },
-        {
-          text: truncate(parsed.data.text ?? existing.text),
-          is_fulfilled: parsed.data.isFulfilled ?? existing.is_fulfilled,
-          bevis_required: parsed.data.bevisRequired ?? existing.bevis_required,
-          comment: (() => {
-            const next =
-              parsed.data.comment !== undefined
-                ? parsed.data.comment
-                : existing.comment
-            return next ? truncate(next) : null
-          })(),
-        }
-      )
+      if (assigneeChanged) {
+        // Assignee-only side-effect branch: logs its own activity so the feed
+        // doesn't conflate "assignee changed" with another simultaneous field edit.
+        await logActivity(
+          ctx.workspaceId,
+          ctx.userId,
+          'requirement',
+          requirementId,
+          'requirement_assignee_updated',
+          { responsible_user_id: existing.responsible_user_id },
+          { responsible_user_id: parsed.data.responsibleUserId ?? null }
+        )
+      }
+
+      // Only emit a content-change activity when a non-assignee field actually
+      // changed. An assignee-only update must NOT write a spurious text log.
+      const contentChanged =
+        parsed.data.text !== undefined ||
+        parsed.data.isFulfilled !== undefined ||
+        parsed.data.bevisRequired !== undefined ||
+        parsed.data.comment !== undefined
+
+      if (contentChanged) {
+        const action = pickContentActionName(parsed.data, existing)
+
+        await logActivity(
+          ctx.workspaceId,
+          ctx.userId,
+          'requirement',
+          requirementId,
+          action,
+          {
+            text: truncate(existing.text),
+            is_fulfilled: existing.is_fulfilled,
+            bevis_required: existing.bevis_required,
+            comment: existing.comment ? truncate(existing.comment) : null,
+          },
+          {
+            text: truncate(parsed.data.text ?? existing.text),
+            is_fulfilled: parsed.data.isFulfilled ?? existing.is_fulfilled,
+            bevis_required:
+              parsed.data.bevisRequired ?? existing.bevis_required,
+            comment: (() => {
+              const next =
+                parsed.data.comment !== undefined
+                  ? parsed.data.comment
+                  : existing.comment
+              return next ? truncate(next) : null
+            })(),
+          }
+        )
+      }
 
       await invalidateCaches(scope.listItemId)
       revalidatePath('/laglistor')
@@ -465,7 +624,11 @@ export async function getRequirementsForListItem(
     return await withWorkspace(async (ctx) => {
       const item = await prisma.lawListItem.findFirst({
         where: { id: listItemId },
-        include: { law_list: { select: { workspace_id: true } } },
+        select: {
+          id: true,
+          responsible_user_id: true,
+          law_list: { select: { workspace_id: true } },
+        },
       })
       if (!item || item.law_list.workspace_id !== ctx.workspaceId) {
         return { success: false, error: 'Laglistpost hittades inte' }
@@ -494,6 +657,8 @@ export async function getRequirementsForListItem(
         },
       })
 
+      const parentAssignee = { responsibleUserId: item.responsible_user_id }
+
       const data: RequirementWithEvidence[] = rows.map((r) => ({
         id: r.id,
         text: r.text,
@@ -504,6 +669,11 @@ export async function getRequirementsForListItem(
         createdAt: r.created_at,
         updatedAt: r.updated_at,
         createdBy: r.created_by,
+        responsibleUserId: r.responsible_user_id,
+        effectiveAssignee: resolveEffectiveAssignee(
+          { responsibleUserId: r.responsible_user_id },
+          parentAssignee
+        ),
         evidence: r.evidence_links.map((link) => ({
           id: link.id,
           linkedAt: link.linked_at,

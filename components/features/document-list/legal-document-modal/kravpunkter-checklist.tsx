@@ -62,6 +62,8 @@ import {
 } from '@/app/actions/law-list-item-requirements'
 import { FilePickerModal } from '@/components/features/files/file-picker-modal'
 import { DocumentPickerModal } from '@/components/features/documents/document-picker-modal'
+import { AssigneeEditor } from '@/components/features/document-list/table-cell-editors/assignee-editor'
+import type { WorkspaceMemberOption } from '@/app/actions/document-list'
 
 // ============================================================================
 // Types
@@ -76,6 +78,10 @@ interface KravpunkterChecklistProps {
   listItemId: string
   readOnly?: boolean
   onProgressChange?: (_progress: KravpunkterProgress) => void
+  /** Story 20.1: workspace members for per-krav assignee picker */
+  workspaceMembers?: WorkspaceMemberOption[] | undefined
+  /** Story 20.1: parent law item's responsible user — null-safe fallback for inherited state display */
+  listItemResponsibleUserId?: string | null | undefined
 }
 
 // ============================================================================
@@ -86,6 +92,8 @@ export function KravpunkterChecklist({
   listItemId,
   readOnly = false,
   onProgressChange,
+  workspaceMembers,
+  listItemResponsibleUserId,
 }: KravpunkterChecklistProps) {
   const swrKey = `list-item-requirements:${listItemId}`
   const { data: requirements, isLoading } = useSWR<RequirementWithEvidence[]>(
@@ -197,6 +205,8 @@ export function KravpunkterChecklist({
               listItemId={listItemId}
               swrKey={swrKey}
               readOnly={readOnly}
+              workspaceMembers={workspaceMembers}
+              listItemResponsibleUserId={listItemResponsibleUserId ?? null}
             />
           ))}
         </ul>
@@ -262,6 +272,10 @@ interface KravpunktRowProps {
   listItemId: string
   swrKey: string
   readOnly: boolean
+  /** Story 20.1 */
+  workspaceMembers?: WorkspaceMemberOption[] | undefined
+  /** Story 20.1: parent law item's responsible user id — used as the fallback target when user resets to inherited */
+  listItemResponsibleUserId: string | null
 }
 
 function KravpunktRow({
@@ -269,6 +283,8 @@ function KravpunktRow({
   listItemId,
   swrKey,
   readOnly,
+  workspaceMembers,
+  listItemResponsibleUserId,
 }: KravpunktRowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState(requirement.text)
@@ -346,6 +362,48 @@ function KravpunktRow({
     },
     [requirement.id, patchRow]
   )
+
+  // Story 20.1: per-krav assignee change. Optimistically flip to the new
+  // direct assignee; if the server rejects, revert both responsibleUserId
+  // and the derived effectiveAssignee (the inherited/direct flag matters
+  // for the visual variant).
+  const handleAssigneeChange = useCallback(
+    async (newUserId: string | null) => {
+      const prevResponsible = requirement.responsibleUserId
+      const prevEffective = requirement.effectiveAssignee
+      patchRow({
+        responsibleUserId: newUserId,
+        effectiveAssignee: {
+          userId: newUserId !== null ? newUserId : listItemResponsibleUserId,
+          isInherited: newUserId === null && listItemResponsibleUserId !== null,
+        },
+      })
+      const result = await updateRequirement(requirement.id, {
+        responsibleUserId: newUserId,
+      })
+      if (!result.success) {
+        patchRow({
+          responsibleUserId: prevResponsible,
+          effectiveAssignee: prevEffective,
+        })
+        toast.error('Kunde inte uppdatera ansvarig', {
+          description: result.error,
+        })
+      }
+    },
+    [
+      requirement.id,
+      requirement.responsibleUserId,
+      requirement.effectiveAssignee,
+      listItemResponsibleUserId,
+      patchRow,
+    ]
+  )
+
+  // Story 20.1: clear the direct override → fall back to inherited state.
+  const handleResetToInherited = useCallback(async () => {
+    await handleAssigneeChange(null)
+  }, [handleAssigneeChange])
 
   const handleSaveText = useCallback(async () => {
     const trimmed = editText.trim()
@@ -476,6 +534,26 @@ function KravpunktRow({
               Saknar bevis
             </Badge>
           ) : null}
+
+          {/* Story 20.1: per-krav assignee picker (visible when workspace
+              members are available — omitted in readOnly mode since the
+              picker's whole purpose is to edit). */}
+          {!readOnly && workspaceMembers && (
+            <div className="shrink-0">
+              <AssigneeEditor
+                value={requirement.effectiveAssignee.userId}
+                members={workspaceMembers}
+                onChange={handleAssigneeChange}
+                variant={
+                  requirement.effectiveAssignee.isInherited
+                    ? 'inherited'
+                    : 'direct'
+                }
+                showResetOption={!requirement.effectiveAssignee.isInherited}
+                onResetToInherited={handleResetToInherited}
+              />
+            </div>
+          )}
 
           {/* Expand chevron */}
           <CollapsibleTrigger asChild>
