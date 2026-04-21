@@ -1,1 +1,8 @@
-pnpm typecheck
+#!/usr/bin/env sh
+# Run fast checks first, then catch Next.js-specific build-time rules
+# that typecheck alone cannot enforce (e.g., Turbopack's rule that every
+# export from a `'use server'` file must be an async function — a class
+# of bug that otherwise only surfaces on Vercel; see the hotfix in
+# commit 49c10f5 + docs/stories/completed/20.2 Debug Log References).
+
+pnpm typecheck && pnpm build
