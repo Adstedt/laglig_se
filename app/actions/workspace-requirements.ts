@@ -37,6 +37,16 @@ import {
   resolveEffectiveAssignee,
   type EffectiveAssignee,
 } from '@/lib/requirements/helpers'
+import {
+  buildRequirementWhere,
+  REQUIREMENT_FILTER_VALUES,
+  type WorkspaceRequirementsFilter,
+} from '@/lib/requirements/query-builders'
+
+// Type-only re-export so callers that still reference the old location
+// (tests, Story 20.3 UI) don't have to change path. Type re-exports are
+// erased — legal from 'use server' files.
+export type { WorkspaceRequirementsFilter } from '@/lib/requirements/query-builders'
 
 // ============================================================================
 // Types
@@ -47,9 +57,6 @@ interface ActionResult<T = void> {
   data?: T
   error?: string
 }
-
-const FILTER_VALUES = ['all', 'gaps', 'mine', 'needs_evidence'] as const
-export type WorkspaceRequirementsFilter = (typeof FILTER_VALUES)[number]
 
 const SORT_FIELDS = [
   'updated_at',
@@ -110,7 +117,7 @@ export type GetWorkspaceRequirementCountsResult = ActionResult<{
 const DEFAULT_LIMIT = 50
 
 const GetWorkspaceRequirementsSchema = z.object({
-  filter: z.enum(FILTER_VALUES),
+  filter: z.enum(REQUIREMENT_FILTER_VALUES),
   search: z.string().max(200).optional(),
   sort: z
     .object({
@@ -121,60 +128,6 @@ const GetWorkspaceRequirementsSchema = z.object({
   cursor: z.string().uuid().optional(),
   limit: z.number().int().min(1).max(200).optional(),
 })
-
-// ============================================================================
-// Shared helpers
-// ============================================================================
-
-/**
- * Build the Prisma `where` clause for a given filter preset.
- * Exported so Story 20.3 can mirror it client-side if it ever needs to
- * (e.g., to display a filter-description string). Both actions in this
- * file consume it as the single source of truth.
- */
-export function buildRequirementWhere(
-  ctx: { workspaceId: string; userId: string },
-  filter: WorkspaceRequirementsFilter,
-  search?: string
-): Prisma.LawListItemRequirementWhereInput {
-  const workspaceScope: Prisma.LawListItemWhereInput = {
-    law_list: { workspace_id: ctx.workspaceId },
-  }
-
-  const base: Prisma.LawListItemRequirementWhereInput = {
-    list_item: workspaceScope,
-    ...(search && search.trim().length > 0
-      ? { text: { contains: search.trim(), mode: 'insensitive' as const } }
-      : {}),
-  }
-
-  switch (filter) {
-    case 'all':
-      return base
-    case 'gaps':
-      return { ...base, is_fulfilled: false }
-    case 'mine':
-      return {
-        ...base,
-        OR: [
-          { responsible_user_id: ctx.userId },
-          {
-            responsible_user_id: null,
-            list_item: {
-              ...workspaceScope,
-              responsible_user_id: ctx.userId,
-            },
-          },
-        ],
-      }
-    case 'needs_evidence':
-      return {
-        ...base,
-        bevis_required: true,
-        evidence_links: { none: {} },
-      }
-  }
-}
 
 type OrderByEntry = Prisma.LawListItemRequirementOrderByWithRelationInput
 

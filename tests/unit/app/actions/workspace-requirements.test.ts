@@ -40,10 +40,10 @@ vi.mock('@/lib/auth/workspace-context', () => ({
 // ---------------------------------------------------------------------------
 
 import {
-  buildRequirementWhere,
   getWorkspaceRequirements,
   getWorkspaceRequirementCounts,
 } from '@/app/actions/workspace-requirements'
+import { buildRequirementWhere } from '@/lib/requirements/query-builders'
 import { resolveEffectiveAssignee } from '@/lib/requirements/helpers'
 import * as workspaceContext from '@/lib/auth/workspace-context'
 

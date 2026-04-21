@@ -55,6 +55,8 @@ interface ComplianceActionsProps {
   workspaceMembers?: WorkspaceMemberOption[] | undefined
   /** Story 20.1: parent law item's responsible user — powers inherited-assignee visual */
   listItemResponsibleUserId?: string | null | undefined
+  /** Story 20.3: scroll-to-and-highlight a specific krav row when modal opens */
+  focusRequirementId?: string | undefined
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved'
@@ -70,6 +72,7 @@ export function ComplianceActions({
   onProgressChange,
   workspaceMembers,
   listItemResponsibleUserId,
+  focusRequirementId,
 }: ComplianceActionsProps) {
   const [content, setContent] = useState(initialContent ?? '')
   const [editedContent, setEditedContent] = useState(initialContent ?? '')
@@ -272,6 +275,7 @@ export function ComplianceActions({
           onProgressChange={handleProgressChange}
           workspaceMembers={workspaceMembers}
           listItemResponsibleUserId={listItemResponsibleUserId ?? null}
+          focusRequirementId={focusRequirementId}
         />
 
         {/* Story 6.18: Generella kommentarer (free-text rich editor, list-item-wide) */}
