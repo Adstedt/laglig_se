@@ -495,3 +495,145 @@ describe('KravpunkterChecklist', () => {
     expect(screen.queryByRole('switch')).not.toBeInTheDocument()
   })
 })
+
+// ============================================================================
+// TEST-001 (Story 20.1): assignee-change optimistic update + revert-on-failure
+// ============================================================================
+
+import { toast } from 'sonner'
+import type { WorkspaceMemberOption } from '@/app/actions/document-list'
+
+const OTHER_USER_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
+const PARENT_ANSVARIG_ID = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc'
+const REQ_ID = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'
+
+const MEMBERS: WorkspaceMemberOption[] = [
+  {
+    id: OTHER_USER_ID,
+    name: 'Bengt Bengtsson',
+    email: 'bengt@example.se',
+    avatarUrl: null,
+  },
+  {
+    id: PARENT_ANSVARIG_ID,
+    name: 'Cecilia Cederberg',
+    email: 'cecilia@example.se',
+    avatarUrl: null,
+  },
+]
+
+/** Seed a single inherited-from-parent requirement (krav.responsibleUserId = null). */
+function mockInheritedRequirement() {
+  ;(getRequirementsForListItem as unknown as Mock).mockResolvedValue({
+    success: true,
+    data: [
+      {
+        id: REQ_ID,
+        text: 'Krav under test',
+        comment: null,
+        isFulfilled: false,
+        bevisRequired: false,
+        position: 1000,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 'user-0',
+        responsibleUserId: null,
+        effectiveAssignee: { userId: PARENT_ANSVARIG_ID, isInherited: true },
+        evidence: [],
+      },
+    ],
+  })
+}
+
+describe('KravpunkterChecklist — assignee change (Story 20.1)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('reverts the optimistic update and surfaces a toast when updateRequirement fails', async () => {
+    mockInheritedRequirement()
+    ;(updateRequirement as unknown as Mock).mockResolvedValue({
+      success: false,
+      error: 'Simulerat fel',
+    })
+
+    const user = userEvent.setup()
+    renderFresh(
+      <KravpunkterChecklist
+        listItemId={LIST_ITEM_ID}
+        workspaceMembers={MEMBERS}
+        listItemResponsibleUserId={PARENT_ANSVARIG_ID}
+      />
+    )
+
+    // Wait for the requirement row to render.
+    await waitFor(() =>
+      expect(screen.getByText('Krav under test')).toBeInTheDocument()
+    )
+
+    // Inherited variant → trigger carries the Swedish inheritance label.
+    const inheritedTrigger = await screen.findByTitle('Ärvd från lagansvarig')
+    expect(inheritedTrigger).toBeInTheDocument()
+
+    // Open the Radix Select via the trigger (role=combobox) and pick the other user.
+    await user.click(screen.getByRole('combobox'))
+    const otherOption = await screen.findByText('Bengt Bengtsson')
+    await user.click(otherOption)
+
+    // Server call fires with the new direct override.
+    await waitFor(() => {
+      expect(updateRequirement).toHaveBeenCalledWith(REQ_ID, {
+        responsibleUserId: OTHER_USER_ID,
+      })
+    })
+
+    // After the failure resolves: toast.error is surfaced with the server message.
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        'Kunde inte uppdatera ansvarig',
+        expect.objectContaining({ description: 'Simulerat fel' })
+      )
+    })
+
+    // Revert: the trigger is back in inherited state (title reappears after revert).
+    await waitFor(() => {
+      expect(screen.getByTitle('Ärvd från lagansvarig')).toBeInTheDocument()
+    })
+  })
+
+  it('does NOT render the per-row picker when workspaceMembers is omitted', async () => {
+    mockInheritedRequirement()
+
+    renderFresh(
+      <KravpunkterChecklist
+        listItemId={LIST_ITEM_ID}
+        listItemResponsibleUserId={PARENT_ANSVARIG_ID}
+      />
+    )
+
+    await waitFor(() =>
+      expect(screen.getByText('Krav under test')).toBeInTheDocument()
+    )
+    // Inherited label only exists when the picker is rendered; absence of the
+    // title here means the picker was not mounted — AC 13 fallback behaviour.
+    expect(screen.queryByTitle('Ärvd från lagansvarig')).not.toBeInTheDocument()
+  })
+
+  it('does NOT render the per-row picker when readOnly=true even if members are provided', async () => {
+    mockInheritedRequirement()
+
+    renderFresh(
+      <KravpunkterChecklist
+        listItemId={LIST_ITEM_ID}
+        workspaceMembers={MEMBERS}
+        listItemResponsibleUserId={PARENT_ANSVARIG_ID}
+        readOnly
+      />
+    )
+
+    await waitFor(() =>
+      expect(screen.getByText('Krav under test')).toBeInTheDocument()
+    )
+    expect(screen.queryByTitle('Ärvd från lagansvarig')).not.toBeInTheDocument()
+  })
+})

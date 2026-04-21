@@ -238,6 +238,8 @@ export function LegalDocumentModal({
           <ScrollArea className="h-full min-w-0 [&>div>div]:!block [&>div>div]:!min-w-0">
             <LeftPanel
               listItem={listItem}
+              workspaceMembers={workspaceMembers}
+              listItemResponsibleUserId={listItem.responsibleUser?.id ?? null}
               isLoadingContent={isLoadingContent}
               taskProgress={taskProgress}
               onTasksUpdate={handleTasksUpdate}

@@ -29,9 +29,14 @@ import type {
   TaskProgress,
 } from '@/app/actions/legal-document-modal'
 import type { TaskColumnWithCount } from '@/app/actions/tasks'
+import type { WorkspaceMemberOption } from '@/app/actions/document-list'
 
 interface LeftPanelProps {
   listItem: ListItemDetails
+  /** Story 20.1: threaded to KravpunkterChecklist for per-krav assignee picker */
+  workspaceMembers?: WorkspaceMemberOption[] | undefined
+  /** Story 20.1: parent law item's responsible_user_id — powers inherited-state visual */
+  listItemResponsibleUserId?: string | null | undefined
   isLoadingContent?: boolean
   taskProgress?: TaskProgress | null
   onTasksUpdate?: () => Promise<void>
@@ -79,6 +84,8 @@ const DEFAULT_OPEN: string[] = [
 
 export function LeftPanel({
   listItem,
+  workspaceMembers,
+  listItemResponsibleUserId,
   isLoadingContent,
   taskProgress,
   onTasksUpdate,
@@ -167,6 +174,8 @@ export function LeftPanel({
           focusField={focusField}
           readOnly={complianceReadOnly}
           onProgressChange={onKravpunkterProgressChange}
+          workspaceMembers={workspaceMembers}
+          listItemResponsibleUserId={listItemResponsibleUserId ?? null}
         />
 
         {/* Story 6.15: Tasks Accordion */}

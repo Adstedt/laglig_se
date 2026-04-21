@@ -69,6 +69,9 @@ model User {
   created_requirements         LawListItemRequirement[]  @relation("RequirementCreator")
   requirement_evidence_links   RequirementEvidenceLink[] @relation("RequirementEvidenceLinkUser")
 
+  // Story 20.1: Per-krav assignee
+  requirements_responsible_for LawListItemRequirement[]  @relation("RequirementResponsible")
+
   @@index([email])
   @@map("users")
 }
@@ -355,23 +358,26 @@ model LawListItem {
 // ============================================================================
 
 model LawListItemRequirement {
-  id              String   @id @default(uuid())
-  list_item_id    String
-  text            String   @db.Text
-  comment         String?  @db.Text
-  is_fulfilled    Boolean  @default(false)
-  bevis_required  Boolean  @default(false)
-  position        Float    @default(0) // Float + no unique constraint → fractional midpoint reorder (mirrors LawListItem.position)
-  created_by      String
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id                  String   @id @default(uuid())
+  list_item_id        String
+  text                String   @db.Text
+  comment             String?  @db.Text
+  is_fulfilled        Boolean  @default(false)
+  bevis_required      Boolean  @default(false)
+  position            Float    @default(0) // Float + no unique constraint → fractional midpoint reorder (mirrors LawListItem.position)
+  created_by          String
+  responsible_user_id String? // Story 20.1: per-krav assignee override; null → inherit from parent list item's responsible_user_id
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
 
-  list_item      LawListItem               @relation(fields: [list_item_id], references: [id], onDelete: Cascade)
-  creator        User                      @relation("RequirementCreator", fields: [created_by], references: [id])
-  evidence_links RequirementEvidenceLink[]
+  list_item        LawListItem               @relation(fields: [list_item_id], references: [id], onDelete: Cascade)
+  creator          User                      @relation("RequirementCreator", fields: [created_by], references: [id])
+  responsible_user User?                     @relation("RequirementResponsible", fields: [responsible_user_id], references: [id], onDelete: SetNull)
+  evidence_links   RequirementEvidenceLink[]
 
   @@index([list_item_id, position])
   @@index([created_by])
+  @@index([responsible_user_id])
   @@map("law_list_item_requirements")
 }
 
