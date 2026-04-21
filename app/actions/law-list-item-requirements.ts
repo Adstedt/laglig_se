@@ -18,12 +18,6 @@ import {
   type EffectiveAssignee,
 } from '@/lib/requirements/helpers'
 
-// Type-only re-export so existing `import type { EffectiveAssignee } from
-// '@/app/actions/law-list-item-requirements'` sites keep compiling.
-// Type re-exports are compile-time only — no runtime binding — so they're
-// permitted in `'use server'` files.
-export type { EffectiveAssignee } from '@/lib/requirements/helpers'
-
 // ============================================================================
 // Types
 // ============================================================================
