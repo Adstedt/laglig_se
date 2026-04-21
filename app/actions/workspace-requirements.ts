@@ -36,7 +36,7 @@ import { withWorkspace } from '@/lib/auth/workspace-context'
 import {
   resolveEffectiveAssignee,
   type EffectiveAssignee,
-} from '@/app/actions/law-list-item-requirements'
+} from '@/lib/requirements/helpers'
 
 // ============================================================================
 // Types

@@ -12,6 +12,17 @@ import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { redis } from '@/lib/cache/redis'
 import { logActivity } from '@/lib/services/activity-logger'
+import {
+  pickContentActionName,
+  resolveEffectiveAssignee,
+  type EffectiveAssignee,
+} from '@/lib/requirements/helpers'
+
+// Type-only re-export so existing `import type { EffectiveAssignee } from
+// '@/app/actions/law-list-item-requirements'` sites keep compiling.
+// Type re-exports are compile-time only — no runtime binding — so they're
+// permitted in `'use server'` files.
+export type { EffectiveAssignee } from '@/lib/requirements/helpers'
 
 // ============================================================================
 // Types
@@ -37,11 +48,6 @@ export interface RequirementEvidenceSummary {
     documentType: string
     status: string
   } | null
-}
-
-export interface EffectiveAssignee {
-  userId: string | null
-  isInherited: boolean
 }
 
 export interface RequirementWithEvidence {
@@ -87,87 +93,6 @@ const UpdateRequirementSchema = z
       data.responsibleUserId !== undefined,
     { message: 'Minst ett fält måste uppdateras' }
   )
-
-// ============================================================================
-// Story 20.1: Effective-assignee resolver
-// ============================================================================
-
-/**
- * Resolve the effective assignee for a kravpunkt with inheritance from the
- * parent law item. Pure function — callers pass already-loaded objects.
- * Single source of truth for both the modal (getRequirementsForListItem)
- * and the workspace overview (getWorkspaceRequirements, Story 20.2).
- */
-export function resolveEffectiveAssignee(
-  krav: { responsibleUserId: string | null },
-  listItem: { responsibleUserId: string | null }
-): EffectiveAssignee {
-  if (krav.responsibleUserId !== null) {
-    return { userId: krav.responsibleUserId, isInherited: false }
-  }
-  if (listItem.responsibleUserId !== null) {
-    return { userId: listItem.responsibleUserId, isInherited: true }
-  }
-  return { userId: null, isInherited: false }
-}
-
-// ============================================================================
-// Content-change activity-log action picker
-// ============================================================================
-
-export type ContentUpdatePatch = {
-  text?: string | undefined
-  isFulfilled?: boolean | undefined
-  bevisRequired?: boolean | undefined
-  comment?: string | null | undefined
-}
-
-export type ContentUpdateExisting = {
-  bevis_required: boolean
-  comment: string | null
-}
-
-export type RequirementContentActionName =
-  | 'requirement_marked_bevis_required'
-  | 'requirement_marked_bevis_optional'
-  | 'requirement_marked_fulfilled'
-  | 'requirement_marked_unfulfilled'
-  | 'requirement_comment_updated'
-  | 'requirement_text_updated'
-
-/**
- * Pure action-name selector for the content-change branch of `updateRequirement`.
- * Priority:
- *   1. bevis_required flipped → matching bevis action
- *   2. isFulfilled present → matching fulfilled action
- *   3. comment present and changed → comment_updated
- *   4. fallback → text_updated
- * The priority order (and the presence-vs-change asymmetry on isFulfilled)
- * matches the behaviour shipped by Story 17.16; the extraction preserves it
- * exactly so the activity feed remains consistent with prior history.
- */
-export function pickContentActionName(
-  patch: ContentUpdatePatch,
-  existing: ContentUpdateExisting
-): RequirementContentActionName {
-  if (
-    patch.bevisRequired !== undefined &&
-    patch.bevisRequired !== existing.bevis_required
-  ) {
-    return patch.bevisRequired
-      ? 'requirement_marked_bevis_required'
-      : 'requirement_marked_bevis_optional'
-  }
-  if (patch.isFulfilled !== undefined) {
-    return patch.isFulfilled
-      ? 'requirement_marked_fulfilled'
-      : 'requirement_marked_unfulfilled'
-  }
-  if (patch.comment !== undefined && patch.comment !== existing.comment) {
-    return 'requirement_comment_updated'
-  }
-  return 'requirement_text_updated'
-}
 
 const ReorderRequirementsSchema = z.object({
   listItemId: z.string().uuid(),
