@@ -1,25 +1,28 @@
 'use client'
 
 /**
- * AI Chat Sidebar - Main app chat panel
- * 480px width (960px expanded), integrates with layout store for toggle state.
- * Story 14.11: Uses HemChat in panel mode for shared conversation state with Hem page.
+ * AI Chat Sidebar — desktop right-rail.
+ * Story 14.25: reuses ChatPanelChrome for consistent header UX across chat
+ * surfaces (sidebar + modal chats). Hoists useChatInterface so the Chrome's
+ * message-count-aware buttons stay in sync with the ChatPanel body.
+ *
+ * History opens as a LOCAL slide-over inside the sidebar (distinct from
+ * Hem's global left-side panel) — keeps the history browsing visually
+ * scoped to the chat surface the user is in.
  */
 
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { X, Maximize2, Minimize2 } from 'lucide-react'
+import { toast } from 'sonner'
+import type { UIMessage } from 'ai'
 import { LexaIcon } from '@/components/ui/lexa-icon'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { HemChat } from '@/components/features/dashboard/hem-chat'
-import { track } from '@vercel/analytics'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { ChatPanel } from '@/components/features/ai-chat/chat-panel'
+import { ChatPanelChrome } from '@/components/features/ai-chat/chat-panel-chrome'
+import { ConversationHistory } from '@/components/features/dashboard/conversation-history'
+import { useChatInterface } from '@/lib/hooks/use-chat-interface'
+import { archiveConversation, loadConversation } from '@/app/actions/ai-chat'
+import { exportConversation } from '@/lib/utils/format-conversation-export'
 
 interface RightSidebarProps {
   isOpen: boolean
@@ -30,18 +33,79 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
   const pathname = usePathname()
   const isHemPage = pathname === '/dashboard'
   const [isExpanded, setIsExpanded] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
 
-  // Track sidebar open
+  const chat = useChatInterface({ contextType: 'global' })
+  const hasMessages = chat.messages.length > 0
+
+  // Reset the local history overlay whenever the sidebar itself is folded.
   useEffect(() => {
-    if (isOpen) {
-      track('ai_chat_opened', { location: 'sidebar', expanded: isExpanded })
-    }
-  }, [isOpen, isExpanded])
+    if (!isOpen) setHistoryOpen(false)
+  }, [isOpen])
 
-  const toggleExpanded = () => {
+  const toggleExpanded = useCallback(() => {
     setIsExpanded((prev) => !prev)
-    track('ai_chat_expanded', { expanded: !isExpanded })
-  }
+  }, [])
+
+  const handleNewChat = useCallback(async () => {
+    try {
+      if (hasMessages) {
+        await archiveConversation()
+        await chat.clearHistory()
+      }
+    } catch {
+      toast.error('Kunde inte spara konversationen. Försök igen.')
+    }
+  }, [hasMessages, chat])
+
+  const handleHistoryClick = useCallback(() => {
+    setHistoryOpen(true)
+  }, [])
+
+  const handleExport = useCallback(() => {
+    void exportConversation({ contextType: 'global' })
+  }, [])
+
+  const handleLoadConversation = useCallback(
+    async (conversationId: string) => {
+      if (hasMessages) {
+        await archiveConversation()
+      }
+      const result = await loadConversation(conversationId)
+      if (result.success && result.data) {
+        const uiMessages: UIMessage[] = result.data.map((msg) => ({
+          id: msg.id,
+          role: msg.role === 'USER' ? 'user' : 'assistant',
+          parts: [{ type: 'text' as const, text: msg.content }],
+          createdAt: msg.createdAt,
+          ...(msg.metadata ? { metadata: msg.metadata } : {}),
+        }))
+        chat.replaceMessages(uiMessages)
+      }
+    },
+    [hasMessages, chat]
+  )
+
+  const handleSelectConversation = useCallback(
+    (conversationId: string) => {
+      setHistoryOpen(false)
+      void handleLoadConversation(conversationId)
+    },
+    [handleLoadConversation]
+  )
+
+  // Keep responding to Hem's left-panel selections too — cross-surface sync
+  // when a user navigates between /hem and a sidebar-enabled route with a
+  // conversation tee'd up.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { conversationId } = (e as CustomEvent<{ conversationId: string }>)
+        .detail
+      handleLoadConversation(conversationId)
+    }
+    window.addEventListener('laglig:load-conversation', handler)
+    return () => window.removeEventListener('laglig:load-conversation', handler)
+  }, [handleLoadConversation])
 
   return (
     <>
@@ -67,65 +131,45 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
             : 'w-0 overflow-hidden'
         )}
       >
-        {/* Header */}
-        <div className="flex h-[60px] items-center justify-between border-b px-4 shrink-0 bg-card">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted border border-border">
-              <LexaIcon size={16} />
-            </div>
-            <div>
-              <h2 className="text-sm font-semibold">Lexa</h2>
-              <p className="text-xs text-muted-foreground">
-                Fråga om regler och efterlevnad
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {/* Expand/Collapse button */}
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleExpanded}
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  >
-                    {isExpanded ? (
-                      <Minimize2 className="h-4 w-4" />
-                    ) : (
-                      <Maximize2 className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">
-                      {isExpanded ? 'Förminska' : 'Expandera'}
-                    </span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>
-                    {isExpanded ? 'Förminska panel' : 'Expandera för fokusläge'}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+        {isOpen && (
+          <>
+            <ChatPanelChrome
+              title="Lexa"
+              subtitle="Fråga om regler och efterlevnad"
+              expanded={isExpanded}
+              onNewChat={handleNewChat}
+              onHistoryClick={handleHistoryClick}
+              onToggleExpand={toggleExpanded}
+              onClose={onToggle}
+              onExport={handleExport}
+              messageCount={chat.messages.length}
+            />
 
-            {/* Close button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggle}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Stäng assistent</span>
-            </Button>
-          </div>
-        </div>
+            {/* Relative wrapper so the history slide-over can overlay just the
+                chat body (below the chrome) without breaking modal focus. */}
+            <div className="relative flex-1 flex flex-col min-h-0 bg-background/50">
+              <ChatPanel
+                contextType="global"
+                analyticsLocation="sidebar"
+                onClose={onToggle}
+                showHeader={false}
+                chat={chat}
+              />
 
-        {/* Chat content — shared state with Hem via useChatInterface({ contextType: 'global' }) */}
-        <div className="flex-1 flex flex-col min-h-0 bg-background/50">
-          <HemChat mode="panel" />
-        </div>
+              {historyOpen && (
+                <div
+                  className="absolute inset-0 z-10 flex flex-col bg-background animate-in slide-in-from-right duration-200"
+                  data-testid="sidebar-history-overlay"
+                >
+                  <ConversationHistory
+                    onSelectConversation={handleSelectConversation}
+                    onBack={() => setHistoryOpen(false)}
+                  />
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </aside>
     </>
   )
