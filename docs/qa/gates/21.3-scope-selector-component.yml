@@ -1,0 +1,83 @@
+schema: 1
+story: '21.3'
+story_title: 'Scope selection component (ScopeSelector)'
+gate: PASS
+status_reason: 'All 10 ACs fully traced to passing tests (50/50 new + 33/33 regression + 4216/4216 full unit suite). NFRs PASS across security, performance, reliability, maintainability. One low-severity fieldset-disabled regression vs Task 7.5 was caught by QA and fixed in-review (chevron now stays interactive when disabled). No blocking concerns.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-22T14:00:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-05-06T00:00:00Z'
+
+evidence:
+  tests_reviewed: 50
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Client-only component, no mutations. Reads via server actions that are already
+      `withWorkspace(..., 'read')`-gated (verified at `app/actions/document-list.ts:372,1385`).
+      User input (item titles, group names) auto-escaped via React JSX rendering — no dangerouslySetInnerHTML.
+      No PII or secrets handled. No new external deps introduced.
+  performance:
+    status: PASS
+    notes: >-
+      500-item mount: 560ms (jsdom isolated), ~1600ms (jsdom under full-suite concurrency),
+      real-browser target <500ms. Well under Epic 21 NFR5 budget (no /laglistor degradation — this
+      component lives on a separate route). useMemo caches grouped data; deriveScope is O(n) per
+      render but n≤500 bounded. Virtualisation deliberately deferred per story — lightweight rows
+      did not warrant it.
+  reliability:
+    status: PASS
+    notes: >-
+      Controlled-mode feedback-loop guard (userDrivenRef) explicitly prevents onChange emissions
+      on value-prop changes — verified by 2 dedicated tests. Empty-selection guard prevents invalid
+      {kind:'items', itemIds:[]} / {kind:'groups', groupIds:[]} emissions (rejected by 21.2 Zod schema
+      at `app/actions/compliance-audit-cycle.ts:87,91`). Error state has explicit "Försök igen" retry
+      button that calls SWR mutate(). Loading state uses Skeleton primitives.
+  maintainability:
+    status: PASS
+    notes: >-
+      Pure helpers (getItemState/getGroupState/getMasterState/deriveScope/formatScopeSummary/
+      resolveInitialSelection/buildGroupedData) exposed via `__private` export for direct unit testing
+      without mounting — each is ≤30 lines and has 2+ dedicated test cases. JSDoc on every helper and
+      the component explains the "why". Design language reuses app modal tokens (`rounded-lg border
+      bg-card p-4 shadow-sm`). Barrel re-export + type-only import of `ScopeDefinition` from Story 21.2
+      prevents type duplication — respects the PO's Critical fix from story v0.2.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        When Story 21.4 wizard embeds this component, decide controlled (`value`) vs
+        uncontrolled (`defaultValue` + `onChange`-only) mode — the component supports both.
+        Recommend controlled for the wizard since the wizard needs to persist scope across
+        step navigation.
+      refs:
+        - 'components/features/compliance-audit/scope-selector/ScopeSelector.tsx:237-244'
+    - action: >-
+        Post-MVP: the 500-item soft cap surfaces a Swedish warning banner when exceeded. If
+        customers routinely work with >500-item laglistor, add a dedicated server-paginated
+        variant of the selector (follow-up story). Current banner references "kontakta support"
+        which is an acceptable MVP workaround.
+      refs:
+        - 'components/features/compliance-audit/scope-selector/ScopeSelector.tsx:468-476'
+    - action: >-
+        When Story 21.9 (seal) / 21.10 (immutability guard) land, audit any cycle re-rendering
+        that passes sealed-cycle scope to `ScopeSelector` — disabled mode must be used
+        consistently. Not a 21.3 concern today.
+      refs: []
+
+history:
+  - at: '2026-04-22T14:00:00Z'
+    gate: PASS
+    note: 'Initial review — PASS, quality 100. One in-review refactor (fieldset-disabled chevron fix) applied and tested.'

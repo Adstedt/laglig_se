@@ -6,6 +6,8 @@
 
 import { Suspense } from 'react'
 import { Metadata } from 'next'
+import Link from 'next/link'
+import { ClipboardCheck } from 'lucide-react'
 import {
   getDocumentLists,
   getOrCreateDefaultList,
@@ -19,6 +21,7 @@ import { DocumentListPageContent } from '@/components/features/document-list/doc
 import { DocumentListPageSkeleton } from '@/components/features/document-list/document-list-skeleton'
 import { LawListTabs } from '@/components/features/changes/law-list-tabs'
 import { RegenerateLawListButton } from '@/components/features/document-list/regenerate-law-list-button'
+import { Button } from '@/components/ui/button'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { hasPermission } from '@/lib/auth/permissions'
 
@@ -61,6 +64,11 @@ export default async function DocumentListsPage() {
   // AUDITORs lack this — they should see read-only UI instead of clicking buttons that 500.
   const complianceReadOnly = !hasPermission(ctx.role, 'tasks:edit')
 
+  // Story 21.4: show "Skapa kontroll" CTA for users who can create cycles
+  // AND have at least one laglista to scope the cycle against.
+  const canCreateCycle =
+    hasPermission(ctx.role, 'tasks:edit') && lists.length > 0
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between">
@@ -70,7 +78,17 @@ export default async function DocumentListsPage() {
             Hantera dina listor och håll koll på relevanta rättsliga krav.
           </p>
         </div>
-        <RegenerateLawListButton />
+        <div className="flex items-center gap-2">
+          {canCreateCycle ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/laglistor/kontroller/skapa">
+                <ClipboardCheck className="mr-1.5 h-4 w-4" aria-hidden />
+                Skapa kontroll
+              </Link>
+            </Button>
+          ) : null}
+          <RegenerateLawListButton />
+        </div>
       </div>
 
       <LawListTabs

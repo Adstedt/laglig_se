@@ -1,0 +1,157 @@
+schema: 1
+story: '21.2'
+story_title: 'Cycle CRUD server actions'
+gate: PASS
+status_reason: 'All 11 ACs fully covered by 40 unit tests (40/40 green, ~30ms). Full regression suite 4166/4166 pass with zero new lint/type errors. Implementation mirrors app/actions/law-list-item-requirements.ts pattern closely — workspace-scoped Prisma queries everywhere, Zod at every entry, permission OR-check on reads, TODO(21.10) markers placed for Story 21.10 guard wiring. Three low-severity technical-debt items noted (read-side JsonValue cast, non-transactional create+logActivity, generic catch masking) — all are consistent with existing project patterns, not story-specific regressions.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-22T13:00:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'DEBT-001'
+    severity: low
+    finding: '`getCycleById` casts `row.scope_definition as unknown as ScopeDefinition` — the Prisma JsonValue is trusted on read without runtime validation. Low risk today because Zod gates all writes (no way to persist a malformed shape), but becomes material in Story 21.9 where `scope_definition` is part of the canonical-JSON seal-hash input. A corrupted/legacy Json cell would silently propagate into the hash.'
+    suggested_action: 'In Story 21.9, add a read-side `ScopeDefinitionSchema.safeParse(row.scope_definition)` — either globally on the getCycleById read path or at the entry of canonicalize(). If safeParse fails, surface a loud error (cannot seal corrupted data). Not a 21.2 change.'
+    suggested_owner: dev
+  - id: 'DEBT-002'
+    severity: low
+    finding: '`createCycle` + `logActivity` execute as two separate Prisma calls, not inside a `$transaction`. If `logActivity` fails, the cycle row is persisted but no audit trail exists. Same applies to `updateCycleMetadata` and `softDeleteCycle`. This is the **existing project-wide pattern** (law-list-item-requirements.ts, legal-document-modal.ts, task-modal.ts all follow the same shape) — not a 21.2 regression.'
+    suggested_action: 'Future consistency sweep: either wrap mutation + log in a single `prisma.$transaction` across all server actions, OR accept the trade-off and make it explicit in `docs/architecture/17-coding-standards.md`. Do NOT fix in isolation in 21.2 — it would drift from the rest of `app/actions/`.'
+    suggested_owner: sm
+  - id: 'DEBT-003'
+    severity: low
+    finding: 'Outer try/catch in each action swallows real errors (including `WorkspaceAccessError`) into a generic Swedish message like "Kunde inte skapa kontrollen". Makes distinguishing permission-denied vs. DB connection failure difficult in production logs. `console.error(error)` is called but in Vercel serverless that goes to stdout only. Consistent with existing pattern.'
+    suggested_action: 'Future: route through a shared error handler that writes structured Sentry breadcrumbs with error code + ctx before returning the user-facing generic message. Applies across all server actions, not just this story.'
+    suggested_owner: dev
+
+quality_score: 100
+
+evidence:
+  tests_reviewed: 40
+  tests_new: 40
+  tests_passing: 40 # 40/40 new + 4126/4126 prior = 4166 total
+  risks_identified: 3 # all low-severity tech debt
+  files_created: 2 # compliance-audit-cycle.ts + compliance-audit-cycle.test.ts
+  files_modified: 0 # zero existing files touched
+  files_modified_during_review: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_partial: []
+    ac_gaps: []
+  ac_trace_details:
+    ac_1_exports: 'Full coverage — 5 named exports (createCycle, listCyclesForWorkspace, getCycleById, updateCycleMetadata, softDeleteCycle) verified by import in test file + happy-path tests per action. "use server" at file top verified by `grep -n "^''use server''"` → line 1.'
+    ac_2_permissions: 'Full coverage — `permission denied` test (AUDITOR blocked from createCycle); OR-check tests for listCyclesForWorkspace verify all 5 roles (OWNER/ADMIN/HR_MANAGER/MEMBER pass via tasks:edit; AUDITOR passes via activity:view; synthetic `["read"]`-only role blocked).'
+    ac_3_zod: 'Full coverage — 5 validation-error tests on createCycle (missing name, non-uuid, scheduledEnd<Start, invalid scope kind, empty groupIds) all assert zero Prisma call. Empty-update rejected on updateCycleMetadata. Invalid cycleId rejected on getCycleById + softDeleteCycle.'
+    ac_4_createCycle_planerad: 'Full coverage — happy path asserts `expect.objectContaining({ status: PLANERAD, workspace_id, created_by_user_id, scope_definition })`. Zero `complianceAuditItem.create` call anywhere in createCycle (verified by mock — the mock does not include that method). `it.each` for 3 scope shapes confirms scope_definition persists verbatim.'
+    ac_5_updateCycleMetadata: 'Full coverage — happy path (name only), empty-update rejection, non-member lead auditor rejection, date-refine against stored value. Explicit assertion that update data object contains ONLY the mutated field (name, not all six). logActivity old/new snapshots limited to mutated fields.'
+    ac_6_softDeleteCycle: 'Full coverage — PLANERAD allowed; 4 non-PLANERAD statuses blocked via `it.each`; already-deleted idempotency; not-found generic error; invalid cycleId Zod reject. Every blocked case asserts zero update + zero logActivity.'
+    ac_7_activityLog: 'Full coverage — three happy-path tests assert `logActivity` called with exact arguments: workspaceId, userId, entityType "compliance_audit_cycle", cycleId, action ("cycle_created"|"cycle_metadata_updated"|"cycle_soft_deleted"), and appropriate old/new value shapes.'
+    ac_8_revalidatePath: 'Full coverage — every mutation happy-path test asserts `revalidatePath` called exactly once with "/laglistor/kontroller". Create test explicitly checks `toHaveBeenCalledTimes(1)`.'
+    ac_9_listCyclesForWorkspace: 'Full coverage — happy path (default deleted filter), single status filter, array status filter (mapped to { in: [...] }), includeDeleted true (deleted_at property omitted from where), pagination (take:2 + 3 rows returned → nextCursor set to second-to-last id). Uses `_count: { select: { items: true }}` — no N+1.'
+    ac_10_getCycleById: 'Full coverage — happy path, not-found generic error, cross-workspace (null result → same generic error), invalid cycleId Zod reject. Tenant-isolation assertion: findFirst called with `workspace_id: ctx.workspaceId` in where clause.'
+    ac_11_unitTests: '40 tests implemented per AC 11 enumeration, plus it.each parametric expansion (4 extra status tests for softDelete, 3 extra shape tests for createCycle). All green in ~30ms.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      Every Prisma query is workspace-scoped via `ctx.workspaceId`
+      (verified by code inspection + cross-workspace test for getCycleById).
+      Zod validation at entry on all 5 actions — no Prisma call on
+      invalid input (verified by 5+ tests). Permission gate on every
+      action: `tasks:edit` for mutations; explicit OR-check inside
+      read callbacks for `activity:view || tasks:edit`. Cross-tenant
+      lead-auditor path validated against workspaceMember before any
+      write. Not-found and cross-workspace errors collapse to the same
+      Swedish string — no existence leakage. No secrets, no new
+      dependencies, no new env vars.
+  performance:
+    status: PASS
+    notes: |
+      Cursor pagination uses `take + 1` technique (arch §11.7.1 pattern).
+      `_count` on items relation avoids N+1. Indexes from Story 21.1
+      cover all filter paths: `(workspace_id, status)` for list filter,
+      `(law_list_id)` for law-list filter, `(lead_auditor_user_id)` for
+      lead-auditor filter. p95 microtest soft-guard on createCycle
+      (<500ms threshold, observed <1ms under mocked Prisma). NFR5 (no
+      /laglistor regression) verified by IV2 grep — zero consumer of
+      the new module on `/laglistor` page load.
+  reliability:
+    status: PASS
+    notes: |
+      Structured `{ success, data?, error? }` result shape on every
+      action. Outer try/catch on every action returns generic Swedish
+      error + console.error on unexpected failures. logActivity +
+      revalidatePath called exactly once per successful mutation,
+      after the DB write. Non-transactional mutation + log is noted
+      as DEBT-002 but matches existing project pattern across all
+      `app/actions/*.ts` — not a 21.2 regression. Test coverage
+      exhaustively exercises failure branches: permission denied,
+      cross-tenant, not-found, already-deleted, status-gate violations.
+  maintainability:
+    status: PASS
+    notes: |
+      Implementation follows `law-list-item-requirements.ts` pattern
+      verbatim — low cognitive load for next dev. Module-private
+      helpers (`assertIsWorkspaceMember`, `loadCycleScopedToWorkspace`)
+      extracted during Task 8 refactor-after-green pass (story
+      design). JSDoc module header explains scope + in/out-of-scope
+      guardrails. TODO(21.10) markers placed at 2 mutation-action
+      entries for Story 21.10's assertCycleEditable guard pickup
+      (grep target: `TODO(21.10)` → 2 hits). Zero existing files
+      modified (additive-only per IV1/IV2). Tests are self-documenting
+      with Swedish error strings asserted verbatim (makes drift
+      immediately visible in CI).
+
+recommendations:
+  immediate: [] # no must-fix items
+  future:
+    - action: 'Story 21.9: add read-side `ScopeDefinitionSchema.safeParse` validation on cycle reads before canonicalize() consumes `scope_definition` — prevents corrupted JsonValue from silently propagating into the seal-hash. (DEBT-001)'
+      refs: ['app/actions/compliance-audit-cycle.ts', 'lib/compliance-audit/canonicalize.ts']
+    - action: 'Architecture-level consistency sweep: decide whether mutation + logActivity should be wrapped in a single `prisma.$transaction` across all server actions. If yes, document in `docs/architecture/17-coding-standards.md`. If no, document the trade-off explicitly. (DEBT-002)'
+      refs: ['docs/architecture/17-coding-standards.md']
+    - action: 'Future: route server-action outer catches through a shared error handler that writes structured Sentry breadcrumbs (error code + ctx + action name) before returning the generic user-facing message. Applies broadly, not just Epic 21. (DEBT-003)'
+      refs: ['app/actions/']
+    - action: 'Story 21.10: wire `assertCycleEditable(tx, cycleId)` into updateCycleMetadata + softDeleteCycle at the two `TODO(21.10)` markers. Verify via integration test that mutations on SEALED/ARKIVERAD cycles are rejected.'
+      refs: ['app/actions/compliance-audit-cycle.ts']
+
+files_modified_during_review: [] # no refactoring performed — implementation clean
+
+# Positive observations worth recording
+notes:
+  - |
+    The Task 8 "refactor-after-green" sequencing in the story design was
+    executed as intended — dev implemented Tasks 1-7 with inline patterns,
+    wrote tests (Task 9), confirmed 40/40 green, THEN extracted shared
+    helpers (Task 8), re-ran tests, confirmed still green. This is the
+    ideal refactor workflow and the story design pays off: zero risk of
+    a refactor breaking untested behavior. Other stories should consider
+    this pattern when extraction is valuable but the path isn't obvious
+    upfront.
+  - |
+    The permission OR-check pattern (`withWorkspace(cb, 'read')` + explicit
+    `hasPermission('activity:view') || hasPermission('tasks:edit')` inside)
+    is well-tested with all 5 roles + a synthetic `['read']`-only role.
+    The synthetic-role test is the defensive coverage — it confirms
+    future roles won't accidentally leak read access just by having
+    'read'. This is the kind of "what if the permission model grows"
+    test that pays off over years.
+  - |
+    Zero existing files modified. IV2 grep confirmed the new module has
+    no consumers outside itself. This is the cleanest possible brownfield
+    delivery — the feature lives entirely in its own namespace and can be
+    reverted with a single `git rm` with zero blast radius. Exactly what
+    CR1-CR4 from the PRD asked for.
+  - |
+    Swedish error strings are asserted verbatim in tests (e.g., "Kontrollen
+    kan bara tas bort i status Planerad"). This means any accidental copy
+    drift (typo, rephrase, locale mistake) fails CI immediately — a strong
+    guarantee for Swedish-first UX across the whole Epic 21 surface.
+  - |
+    The p95 microtest is a nice touch: soft guard against accidental N+1s
+    or heavy synchronous work in createCycle. 500ms threshold is
+    CI-generous; observed locally ~30ms total for 40 tests including
+    the 20-sample microtest. Low risk of flakiness.
+
+expires: '2026-05-06T13:00:00Z' # 14-day freshness window
