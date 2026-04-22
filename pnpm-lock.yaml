@@ -221,6 +221,9 @@ importers:
       ai:
         specifier: ^6.0.50
         version: 6.0.50(zod@4.1.12)
+      canonicalize:
+        specifier: 3.0.0
+        version: 3.0.0
       cheerio:
         specifier: ^1.1.2
         version: 1.1.2
@@ -3974,6 +3977,11 @@ packages:
 
   caniuse-lite@1.0.30001757:
     resolution: {integrity: sha512-r0nnL/I28Zi/yjk1el6ilj27tKcdjLsNqAOZr0yVjWPrSQyHgKI2INaEWw21bAQSv2LXRt1XuCS/GomNpWOxsQ==}
+
+  canonicalize@3.0.0:
+    resolution: {integrity: sha512-yYLfHyDMIXRyRqsKBRLX023riFLpXY2YOfdtqKXZRZy9qsfOJ9U+4F9YZL7MEzL5+ziN2x2nlBvY/Voi3EBljA==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
@@ -11681,6 +11689,8 @@ snapshots:
   caniuse-lite@1.0.30001754: {}
 
   caniuse-lite@1.0.30001757: {}
+
+  canonicalize@3.0.0: {}
 
   ccount@2.0.1: {}
 

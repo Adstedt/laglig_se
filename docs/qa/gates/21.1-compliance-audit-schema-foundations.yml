@@ -1,0 +1,176 @@
+schema: 1
+story: '21.1'
+story_title: 'Compliance-audit schema foundations'
+gate: CONCERNS
+status_reason: 'Schema is clean, migration applied to Supabase production successfully, unit tests green (17/17 new + 4126/4126 full suite). BUT: integration tests were written with 5 schema-mismatch errors against the real LegalDocument model that would have broken on first run — fixed during QA review but still never executed. The XOR CHECK constraint, cascade delete, and FK restrict behaviors are trusted via clean DDL apply + code inspection, not verified at runtime. Two small design-level watchpoints (bidirectional Task↔Finding FK, missing unique constraint on cycle+law_list_item_id) to carry into Story 21.8 + future hardening.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-22T12:30:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'TEST-001'
+    severity: medium
+    finding: 'Integration tests (tests/integration/compliance-audit/schema.test.ts) contained 5 schema-mismatch errors against the real LegalDocument model: wrong enum value `LAGAR` (actual: `SFS_LAW`), wrong field `document_status` (actual: `status`), wrong enum value `CURRENT` (actual: `ACTIVE`), wrong field `sfs_number` (actual: `document_number`), missing required `slug` + `source_url`. The tests could never have executed without these fixes. Shows the integration tests were not even attempted locally before being handed off.'
+    suggested_action: 'Already fixed during QA review — LegalDocument seed now uses valid fields + enum values. Dev (James): please run these tests once a local dev DB is available to verify the runtime behavior they assert (XOR CHECK, cascade delete, FK restrict).'
+    suggested_owner: dev
+  - id: 'TEST-002'
+    severity: medium
+    finding: 'Integration tests verifying the three critical DB-level behaviors (XOR CHECK constraint, cascade delete from cycle, restrict delete of LawListItem referenced by cycle item) have never been executed — no local dev DB was configured. These behaviors are currently trusted based on (a) Postgres accepting the CHECK constraint syntax at apply time, and (b) code inspection. Not a blocker because a CHECK syntax error would have prevented Supabase apply; but the XOR logic (symmetric OR over NULL/NOT NULL) could theoretically be wrong in a way Postgres would still accept (e.g., AND instead of OR would still be valid SQL).'
+    suggested_action: 'Once Story 21.2 kicks off and a local dev DB is configured (or integration tests are run against a test Supabase project), execute `pnpm vitest run tests/integration/compliance-audit/schema.test.ts` and confirm all 4 test cases pass. If any fail, treat as blocking for Story 21.2.'
+    suggested_owner: dev
+  - id: 'SCHEMA-001'
+    severity: medium
+    finding: 'Task ↔ ComplianceFinding has two separate FKs (Task.compliance_finding_id + ComplianceFinding.corrective_action_task_id), creating a bidirectional-FK pattern that can diverge. Finding A may set corrective_action_task_id=TaskX while TaskX.compliance_finding_id points at Finding B (or null). The architect explicitly asked for both FKs for query convenience, but it is structurally redundant and introduces a data-integrity risk.'
+    suggested_action: 'Story 21.8 (auto-spawn task on AVVIKELSE) MUST set both FKs within a single Prisma transaction. Add an explicit AC to Story 21.8 + an assertion test. Consider a database trigger if app-layer enforcement proves fragile. Alternatively, revisit the architecture decision — most ORMs model this as one FK with a reverse relation array, which is simpler.'
+    suggested_owner: dev
+  - id: 'SCHEMA-002'
+    severity: low
+    finding: 'No `@@unique([cycle_id, law_list_item_id])` constraint on ComplianceAuditItem. The materialization logic in Story 21.4 is expected to prevent duplicates at the app layer, but nothing at the DB layer enforces this. A concurrent materialization call, a future refactor bug, or a direct DB write could create two items for the same law in the same cycle.'
+    suggested_action: 'Add `@@unique([cycle_id, law_list_item_id])` as a follow-up schema hardening. Low priority because app-layer enforcement is primary.'
+    suggested_owner: dev
+  - id: 'RISK-001'
+    severity: low
+    finding: 'Migration was applied to Supabase PRODUCTION before any integration test could run. Mitigated because (a) user did the apply manually with a visible success response, (b) production contains zero cycle data so there is no rollback blast radius, (c) Story 21.2 implementation will exercise the schema via real server actions. But pre-production test runs are a strong cheap safeguard that did not happen here.'
+    suggested_action: 'For Story 21.2+ schema changes, recommend: (a) ensure dev has a local or shared test DB with the same migration applied before PR review, (b) run integration tests as part of PR approval, (c) user applies to production only after tests verify runtime behavior. This matches the "user-applied-migration" workflow flagged by Sarah in the v0.2 PRD update.'
+    suggested_owner: sm
+  - id: 'CLEAN-001'
+    severity: low
+    finding: 'components/providers/theme-provider.tsx shows as modified in git status but is unrelated to Story 21.1 scope — dev correctly left it alone but this pollutes the PR diff if the story ships as-is. Appears to be a pre-existing working-tree modification that drifted into the session.'
+    suggested_action: 'Either include as a small separate commit with a clear message (if the changes are intentional) or revert before PR. Does not block this story but creates noise.'
+    suggested_owner: dev
+
+quality_score: 75
+
+evidence:
+  tests_reviewed: 21 # 17 unit + 4 integration
+  tests_new: 21
+  tests_passing: 17 # unit only; integration not executed
+  risks_identified: 6
+  files_modified: 5 # schema, package.json, lockfile + 2 migration dirs
+  files_created: 6 # migration.sql, 21.1.migration.sql, 21.1.rollback.sql, fixture, unit test, integration test
+  files_modified_during_review: 1
+  trace:
+    ac_covered: [1, 2, 3, 5, 6, 7, 10, 11, 12]
+    ac_partial: [4, 8, 9] # XOR verified at DDL-apply time but not runtime; indexes verified in migration but not in live DB; migration correctness depends on visual diff
+    ac_gaps: [] # No ACs completely uncovered
+  ac_trace_details:
+    ac_1_cycle_model: 'Full coverage — ComplianceAuditCycleScalarFieldEnum test (all 18 fields asserted); migration SQL creates all columns with correct types.'
+    ac_2_item_model: 'Full coverage — ComplianceAuditItemScalarFieldEnum test (11 fields); migration correct.'
+    ac_3_finding_model: 'Full coverage — ComplianceFindingScalarFieldEnum test (14 fields); migration correct.'
+    ac_4_snapshot_model_plus_xor: 'Schema shape covered by ComplianceEvidenceSnapshotScalarFieldEnum test. XOR CHECK constraint present in migration SQL, validated syntactically by Supabase at apply time (user-confirmed). Runtime behavior NOT verified — integration test exists (both-populated rejection + neither-populated rejection) but never executed.'
+    ac_5_report_model: 'Full coverage — ComplianceAuditReportScalarFieldEnum test (7 fields); migration correct.'
+    ac_6_task_extension: 'Full coverage — TaskScalarFieldEnum test asserts compliance_finding_id; migration ALTER TABLE clean; @@index added.'
+    ac_7_conventions: 'Visible in schema — TEXT IDs, @@map snake_case, @updatedAt pattern. Not tested per se (style check).'
+    ac_8_indexes: 'Indexes present in migration SQL (6 indexes across 5 new tables + 1 on tasks). Not automatically verified to exist on production — recommended follow-up is a one-off `pg_indexes` query in Supabase Studio.'
+    ac_9_migrate_dev_clean: 'Migration generated via prisma migrate diff (safer alternative to migrate dev --create-only — see Debug Log). Visual diff of SQL confirms zero DROP / ALTER COLUMN / RENAME. prisma generate succeeds. tsc + build pass.'
+    ac_10_canonicalize: 'Installed at exact version 3.0.0 (erdtman/canonicalize, RFC 8785 JCS). License is Apache-2.0 (not MIT as story text stated) — both are allowed per tech-stack §3.6. Documented in Completion Notes.'
+    ac_11_fixture: 'createTestCycle + cleanupTestCycles implemented in tests/fixtures/compliance-audit.ts. Signatures match story spec.'
+    ac_12_delivery_artifacts: 'docs/stories/21.1.migration.sql + 21.1.rollback.sql delivered. Migration applied to Supabase by user with "Success. No rows returned" response. Dev did NOT touch production — verified by the workflow choice to use prisma migrate diff (offline) + user manual apply.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      No new auth surface — audit:seal permission is deferred to Story 21.14.
+      All new models workspace-scoped (ComplianceAuditCycle has workspace_id;
+      children inherit transitively). FK onDelete semantics correctly
+      preserve audit trail (SetNull on optional actor refs; Restrict on
+      source-integrity refs). SHA-256 evidence hash approach is sound.
+      canonicalize dep (Apache-2.0, ~4KB, zero transitive deps) is the
+      reputable erdtman/canonicalize RFC 8785 reference implementation.
+      XOR CHECK on evidence snapshots is stricter than existing
+      RequirementEvidenceLink (app-layer only) — acceptable one-way
+      improvement. No PII concerns at schema level.
+  performance:
+    status: PASS
+    notes: |
+      All 6 indexes from architecture addendum §4.3 present in migration.
+      No query-plan impact on /laglistor (new tables entirely separate;
+      no changes to existing hot paths). Build confirms 105 static pages
+      generate in ~21s (unchanged from baseline). Task model gains one
+      nullable column + index — trivial. Cascade delete is bounded by
+      cycle scope (4 child tables × typical-cycle-size rows).
+  reliability:
+    status: CONCERNS
+    notes: |
+      Integration tests verifying the three critical DB-level behaviors
+      (XOR CHECK, cascade, restrict) have never been executed. The
+      behaviors are currently trusted via (a) clean Supabase apply,
+      (b) code inspection of symmetric CHECK constraint, (c) standard
+      Prisma-generated cascade/restrict DDL. All three are low-probability
+      failure modes, but the exact class of bug that integration tests
+      catch is "the syntax was valid but the semantics were wrong" —
+      e.g., an accidental AND-vs-OR in the CHECK predicate. Running the
+      tests locally once a dev DB is available is the cheap cheap way
+      to close this gap.
+  maintainability:
+    status: CONCERNS
+    notes: |
+      Two design-level watchpoints: (1) SCHEMA-001 — bidirectional Task ↔
+      Finding FK is structurally redundant and can diverge; enforcement
+      lands in Story 21.8 app-layer. Worth flagging so that story does
+      not silently implement one-direction sync and leave the reverse
+      FK free-floating. (2) SCHEMA-002 — missing unique constraint on
+      (cycle_id, law_list_item_id) for ComplianceAuditItem; app-layer
+      enforcement is primary but a DB constraint would make this a hard
+      guarantee. Neither is a bug in Story 21.1; both are hardening
+      opportunities for future stories. Apart from that: schema is
+      clean, well-commented, conventions-compliant, migration SQL is
+      readable. Test fixture is usable (after QA refactor).
+
+recommendations:
+  immediate: # Must verify before Story 21.2 kicks off
+    - action: 'Run `pnpm vitest run tests/integration/compliance-audit/schema.test.ts` against a local dev DB (or a test Supabase project) to verify the XOR CHECK constraint, cascade delete, and restrict delete all work at runtime. All 4 test cases should pass. (TEST-002)'
+      refs: ['tests/integration/compliance-audit/schema.test.ts']
+    - action: 'One-off verification query in Supabase Studio to confirm the XOR CHECK constraint landed on production: `SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = ''compliance_evidence_snapshots_xor_check'';` — expect one row showing the CHECK definition.'
+      refs: ['docs/stories/21.1.migration.sql']
+  future: # Can be addressed later
+    - action: 'Add an explicit AC to Story 21.8 requiring Finding auto-spawn to set both Task.compliance_finding_id AND Finding.corrective_action_task_id inside a single Prisma transaction. Ideally an assertion test that creates a finding and asserts both FKs are set + mutually consistent. (SCHEMA-001)'
+      refs: ['docs/prd/lagefterlevnadskontroll/6-epic-21-lagefterlevnadskontroll-mvp.md']
+    - action: 'Add `@@unique([cycle_id, law_list_item_id])` on ComplianceAuditItem as a follow-up schema hardening — low priority, belongs to Story 21.4 (materialisation). (SCHEMA-002)'
+      refs: ['prisma/schema.prisma']
+    - action: 'Revert or properly commit the unrelated change to components/providers/theme-provider.tsx before PR. (CLEAN-001)'
+      refs: ['components/providers/theme-provider.tsx']
+    - action: 'For future schema stories: require integration test runs against a local/test DB as part of PR review, BEFORE user applies to production. (RISK-001)'
+      refs: ['docs/architecture/epic-21-lagefterlevnadskontroll.md']
+
+files_modified_during_review:
+  - 'tests/integration/compliance-audit/schema.test.ts' # fixed LegalDocument seed
+
+# Positive observations worth recording
+notes:
+  - |
+    Dev's choice to use `prisma migrate diff --from-schema-datamodel` instead
+    of the story-prescribed `prisma migrate dev --create-only` is a genuine
+    improvement for the user-applied-migration workflow. `--create-only`
+    still connects to a shadow DB; `migrate diff` with two schema files is
+    100% offline. Zero production-contact risk. Well-documented in Debug
+    Log References. This is exactly the kind of pragmatic deviation you
+    want to see from a dev agent — identified a safer path, documented it,
+    verified the output is identical.
+  - |
+    The Apache-2.0 license clarification on `canonicalize` was caught and
+    documented by dev at install time. Both the story and architecture
+    addendum said MIT; the actual package is Apache-2.0. Both are on the
+    tech-stack §3.6 allowed list, so no policy violation, but it shows dev
+    verified rather than trusted. The exact-version pin (3.0.0 — no caret)
+    is correctly implemented, which is essential for seal-hash determinism
+    in Story 21.9.
+  - |
+    The reverse-relation arrays added to the 8 existing models are
+    minimally invasive (one or two lines each) and follow the existing
+    Story 17.16 kravpunkter pattern exactly. No new relations were added
+    where they weren't strictly needed. Task model extension is the
+    lightest-touch possible — one nullable column, one index, two relation
+    lines. Brownfield compatibility CR1-CR4 from the PRD are fully honoured.
+  - |
+    Migration SQL is 236 lines of readable, commented DDL with the XOR
+    CHECK constraint appended as documented in the story. Dev included
+    both forward (21.1.migration.sql) and reverse (21.1.rollback.sql)
+    delivery artifacts, mirrored the SQL into Completion Notes for user
+    convenience, and the rollback SQL is wrapped in a transaction with
+    helpful post-rollback verification queries commented inline. Top-tier
+    delivery hygiene.
+
+expires: '2026-05-06T12:30:00Z' # 14-day freshness window
