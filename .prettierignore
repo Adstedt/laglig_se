@@ -13,6 +13,9 @@ data/
 # documentation (markdown, fonts, HTML)
 docs/
 
+# design prototypes / sketches (not production code)
+_prototypes/
+
 # generated
 prisma/migrations/
 
