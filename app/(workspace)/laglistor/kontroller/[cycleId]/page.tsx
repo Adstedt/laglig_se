@@ -64,32 +64,31 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
     // Fail-open with an empty items array — the UI renders the empty state and
     // the user can retry via page reload. Keeps the page navigable if the
     // items read fails transiently while the cycle itself loaded.
+    //
+    // No outer padding wrapper — WorkspaceShell's <main> already has p-4/md:p-6.
+    // Matches /laglistor's convention (also unwrapped).
     return (
-      <div className="p-6">
-        <CycleDetailPage
-          cycle={cycleResult.data.cycle}
-          items={[]}
-          cyclePartial={{
-            id: cycleResult.data.cycle.id,
-            status: cycleResult.data.cycle.status,
-            name: cycleResult.data.cycle.name,
-            sealHash: cycleResult.data.cycle.sealHash,
-          }}
-          readOnly={isReadOnly(cycleResult.data.cycle.status)}
-        />
-      </div>
+      <CycleDetailPage
+        cycle={cycleResult.data.cycle}
+        items={[]}
+        cyclePartial={{
+          id: cycleResult.data.cycle.id,
+          status: cycleResult.data.cycle.status,
+          name: cycleResult.data.cycle.name,
+          sealHash: cycleResult.data.cycle.sealHash,
+        }}
+        readOnly={isReadOnly(cycleResult.data.cycle.status)}
+      />
     )
   }
 
   return (
-    <div className="p-6">
-      <CycleDetailPage
-        cycle={cycleResult.data.cycle}
-        items={itemsResult.data.items}
-        cyclePartial={itemsResult.data.cycle}
-        readOnly={isReadOnly(itemsResult.data.cycle.status)}
-      />
-    </div>
+    <CycleDetailPage
+      cycle={cycleResult.data.cycle}
+      items={itemsResult.data.items}
+      cyclePartial={itemsResult.data.cycle}
+      readOnly={isReadOnly(itemsResult.data.cycle.status)}
+    />
   )
 }
 
