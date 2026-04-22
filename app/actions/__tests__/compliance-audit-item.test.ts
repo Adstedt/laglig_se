@@ -575,3 +575,94 @@ describe.each([
     })
   }
 )
+
+// ============================================================================
+// Story 21.14 — AUDITOR read-access regression pin (AC 14)
+// ============================================================================
+
+describe('Story 21.14 — AUDITOR read-access', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockWorkspaceCtx({ role: 'AUDITOR' })
+  })
+
+  it('getCycleItemsForCycle returns data for AUDITOR (activity:view || tasks:edit OR-check)', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(
+      makeCycleRow() as never
+    )
+    vi.mocked(prisma.complianceAuditItem.findMany).mockResolvedValue([
+      makeItemRow(),
+    ] as never)
+
+    const result = await getCycleItemsForCycle(CYCLE_ID)
+
+    expect(result.success).toBe(true)
+    expect(result.data?.items.length).toBe(1)
+    expect(result.data?.cycle.status).toBe(ComplianceCycleStatus.PAGAENDE)
+  })
+})
+
+// ============================================================================
+// Story 21.14 — mutation permission-denied regression pins (AC 14)
+// Defensive: breaks only if someone weakens `withWorkspace(cb, 'tasks:edit')`
+// on a cycle-item-mutation action. AUDITOR lacks 'tasks:edit' → the inline
+// mockWorkspaceCtx helper throws 'Permission denied: tasks:edit' → outer
+// try/catch in each action returns its per-action error string.
+// ============================================================================
+
+describe('Story 21.14 — mutation permission-denied regression pins', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockWorkspaceCtx({ role: 'AUDITOR' })
+  })
+
+  it('updateItemBedomning rejects AUDITOR with outer-catch error string', async () => {
+    const result = await updateItemBedomning({
+      itemId: ITEM_ID,
+      efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+    })
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte uppdatera bedömning',
+    })
+    expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('updateItemMotivering rejects AUDITOR with outer-catch error string', async () => {
+    const result = await updateItemMotivering({
+      itemId: ITEM_ID,
+      motivering: 'test',
+    })
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte uppdatera motivering',
+    })
+    expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('signOffItem rejects AUDITOR with outer-catch error string', async () => {
+    const result = await signOffItem(ITEM_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte signera kontrollposten',
+    })
+    expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('unsignOffItem rejects AUDITOR with outer-catch error string', async () => {
+    const result = await unsignOffItem(ITEM_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte ångra signering',
+    })
+    expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+})

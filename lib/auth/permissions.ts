@@ -20,7 +20,17 @@
  * │ Use AI chat                     │  ✓    │  ✓    │     ✓      │   ✓    │    ✓    │
  * │ View lists/documents/kanban     │  ✓    │  ✓    │     ✓      │   ✓    │    ✓    │
  * │ View activity log               │  ✓    │  ✓    │            │        │    ✓    │
+ * │ Seal compliance audit cycle     │  ✓    │  ✓    │            │        │         │
  * └─────────────────────────────────┴───────┴───────┴────────────┴────────┴─────────┘
+ *
+ * Note: `audit:seal` grants role-based authority; in addition, the cycle's
+ * `lead_auditor_user_id` is treated as an authorised signer at runtime.
+ * The runtime lead-auditor override lives in `lib/compliance-audit/authorization.ts`
+ * (see `canSealCycle`) — keeping `permissions.ts` DB-free.
+ *
+ * Story 21.14: `audit:seal` scope added for Epic 21's Lagefterlevnadskontroll module.
+ * See also: lib/compliance-audit/authorization.ts for the runtime lead-auditor
+ * override check (sealCycle in Story 21.9 will compose both via canSealCycle()).
  *
  * See: docs/stories/in-progress/5.2.user-roles-permissions.md
  */
@@ -43,6 +53,7 @@ export type Permission =
   | 'employees:view'
   | 'employees:manage'
   | 'activity:view'
+  | 'audit:seal'
   | 'ai:chat'
   | 'read'
 
@@ -67,6 +78,7 @@ const ROLE_PERMISSIONS: Record<WorkspaceRole, Permission[]> = {
     'employees:view',
     'employees:manage',
     'activity:view',
+    'audit:seal',
     'ai:chat',
     'read',
   ],
@@ -82,6 +94,7 @@ const ROLE_PERMISSIONS: Record<WorkspaceRole, Permission[]> = {
     'tasks:edit',
     'changes:acknowledge',
     'activity:view',
+    'audit:seal',
     'ai:chat',
     'read',
   ],
@@ -168,6 +181,15 @@ export const canManageSettings = (role: WorkspaceRole) =>
 
 export const canViewActivity = (role: WorkspaceRole) =>
   hasPermission(role, 'activity:view')
+
+/**
+ * Story 21.14: role-based authority to seal a compliance audit cycle.
+ * Does NOT account for the runtime lead-auditor override (that lives in
+ * `lib/compliance-audit/authorization.ts#canSealCycle`). Use this convenience
+ * only where a pure role check suffices (e.g., the `usePermissions` hook).
+ */
+export const canSealAuditCycle = (role: WorkspaceRole) =>
+  hasPermission(role, 'audit:seal')
 
 export const canUseAiChat = (role: WorkspaceRole) =>
   hasPermission(role, 'ai:chat')
