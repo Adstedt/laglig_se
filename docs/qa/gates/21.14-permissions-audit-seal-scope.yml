@@ -1,0 +1,70 @@
+schema: 1
+story: '21.14'
+story_title: 'Permissions — audit:seal scope + AUDITOR read-access threading'
+gate: PASS
+status_reason: 'Scaffolding story delivered at textbook quality — tight split between pure role-check (permissions.ts) and DB-backed runtime override (lib/compliance-audit/authorization.ts) matches architecture §5.1 exactly. 14/14 ACs verified via tests or structural verification (tsc + build clean). +30 net-new tests, zero regressions across 4352 unit tests. Security surface reviewed across four defence layers (default-deny, tenant isolation, soft-delete guard, no cache staleness) — all PASS. Three low-severity items captured for future stories or optional dev polish; none block readiness.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-22T21:05:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'TEST-001'
+    severity: low
+    finding: 'Wrong-workspace + wrong-user cases in authorization.test.ts (lines 61-88) simulate the behaviour by mocking `findFirst.mockResolvedValue(null)` with standard fixture IDs. Effectively contract tests (does null → false?) rather than real tenant-isolation tests. The `deleted_at` + `select` tests properly assert on the `where` clause contents — full coverage of the query shape is achieved, but by mixing strategies rather than consistently. The `OTHER_USER_ID` / `OTHER_WORKSPACE_ID` / `OTHER_CYCLE_ID` fixtures at the file head are unused; a `void FOO` lint-suppression hack at the file tail (lines 289-291) silences the warning rather than removing them.'
+    suggested_action: 'Optional hardening. Extend the wrong-workspace / wrong-user tests to (a) pass `OTHER_WORKSPACE_ID` or `OTHER_USER_ID` as the arg, (b) assert the Prisma findFirst call received `where.workspace_id === OTHER_WORKSPACE_ID` (or lead_auditor_user_id === OTHER_USER_ID). This would let the story use the `OTHER_*` fixtures legitimately and remove the `void FOO` hack. ~10 min; non-blocking.'
+    suggested_owner: dev
+
+  - id: 'TEST-DEBT-001'
+    severity: low
+    finding: 'Test-local `ROLE_PERMISSIONS` maps in `app/actions/__tests__/compliance-audit-cycle.test.ts:79-130` and `app/actions/__tests__/compliance-audit-item.test.ts:68-74` hard-code OWNER + ADMIN without `audit:seal`. Intentional per Dev Debug Log (AUDITOR-focused tests in this story never need the scope). Will drift further from the real ROLE_PERMISSIONS each time `lib/auth/permissions.ts` changes.'
+    suggested_action: 'Story 21.9 PR must sync OWNER + ADMIN entries in both test-local maps with `lib/auth/permissions.ts` before adding `sealCycle` happy-path tests (otherwise OWNER/ADMIN seal tests will require a custom `permissions` override on every call). Consider extracting `ROLE_PERMISSIONS` into a shared test helper at that point to prevent further drift.'
+    suggested_owner: dev
+
+  - id: 'SEC-NOTE-001'
+    severity: low
+    finding: 'AUDITOR-who-is-lead-auditor CAN seal via `canSealCycle`. Mechanical consequence of the OR-logic (canSealAuditCycle(role) || isLeadAuditor(...)). Product-deferred per the story''s "Not-in-scope" section with two available fixes (creation-time validation rejecting AUDITOR as lead_auditor_user_id, OR inline `role !== ''AUDITOR''` clause in canSealCycle). Documented; not a defect.'
+    suggested_action: 'Story 21.9 reviewer may want to revisit the AUDITOR-as-lead-auditor policy. If Product decides AUDITOR should never seal regardless of lead-auditor status, the fix is 1-2 lines in `canSealCycle` OR a validation in `createCycle` / `updateCycleMetadata`. No action required for 21.14; surfaced for future-review visibility.'
+    suggested_owner: po
+
+quality_score: 100
+
+evidence:
+  tests_reviewed: 156
+  tests_new: 30
+  tests_new_breakdown: '6 permissions + 14 authorization (new file) + 0 use-permissions (existing tests extended with assertions) + 5 cycle-action + 5 item-action'
+  total_regression: 4352
+  total_regression_baseline: 4322
+  regression_delta: 30
+  risks_identified: 3
+  files_created: 2
+  files_modified: 6
+  files_modified_during_review: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    ac_partial: []
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Four defence layers verified — (1) default-deny via role matrix, (2) tenant isolation via `workspace_id` in the Prisma where-clause, (3) soft-delete guard via `deleted_at: null` filter (test-pinned via toMatchObject assertion), (4) no cache staleness (IV3 pin at authorization.test.ts:258-284 validates two sequential DB hits on lead-auditor demotion). Client-side cannot spoof — runtime override is server-authoritative; the client hook only surfaces the role-based bit. No new attack surface, no hardcoded secrets.'
+  performance:
+    status: PASS
+    notes: 'Single indexed findFirst with `select: { id: true }`. OWNER/ADMIN short-circuit — zero DB cost for the 90%+ majority case. TransactionClient support allows Story 21.9 to call canSealCycle inside the seal transaction without acquiring a separate connection. No caching introduced.'
+  reliability:
+    status: PASS
+    notes: 'Pure functions with explicit Promise<boolean> contract; no throws (Prisma errors propagate to caller). 14/14 authorization test branches exercised. Fail-closed client-hook behaviour preserved automatically via the existing checkPermission helper. Zero-dependency additions.'
+  maintainability:
+    status: PASS
+    notes: 'TODO(21.9) breadcrumb orients future grep. Matrix row + override-note JSDoc self-describe the split of concerns. canSealAuditCycle convenience fn has inline JSDoc calling out the role-only-vs-runtime-composed separation. Test files cross-reference real source files via comments. File header JSDocs document Story 21.14 provenance.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Optional test hardening: extend wrong-workspace / wrong-user tests in authorization.test.ts to pass OTHER_* fixtures AND assert where-clause contents — lets the story legitimately use the unused UUID constants and remove the `void FOO` hack (TEST-001).'
+      refs: ['tests/unit/lib/compliance-audit/authorization.test.ts:61-88', 'tests/unit/lib/compliance-audit/authorization.test.ts:289-291']
+    - action: 'Story 21.9 PR must sync OWNER + ADMIN entries in the test-local ROLE_PERMISSIONS maps with `lib/auth/permissions.ts` before adding sealCycle happy-path tests; consider extracting to a shared test helper (TEST-DEBT-001).'
+      refs: ['app/actions/__tests__/compliance-audit-cycle.test.ts:79-130', 'app/actions/__tests__/compliance-audit-item.test.ts:68-74', 'lib/auth/permissions.ts:64-117']
+    - action: 'PO decision: revisit AUDITOR-as-lead-auditor policy during Story 21.9 review. Options: (a) block at createCycle/updateCycleMetadata validation, OR (b) add `role !== "AUDITOR"` clause inside canSealCycle. 1-2 line change either way (SEC-NOTE-001).'
+      refs: ['lib/compliance-audit/authorization.ts:51-66', 'app/actions/compliance-audit-cycle.ts:createCycle+updateCycleMetadata']

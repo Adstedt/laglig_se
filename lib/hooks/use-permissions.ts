@@ -33,6 +33,11 @@ interface PermissionHelpers {
   editTasks: boolean
   acknowledgeChanges: boolean
 
+  // Compliance-audit management
+  // Role-based scope only — runtime lead-auditor override not modelled
+  // client-side (requires DB lookup; authoritative only in server code).
+  sealAuditCycle: boolean
+
   // Employee management
   viewEmployees: boolean
   manageEmployees: boolean
@@ -120,6 +125,9 @@ export function usePermissions(): UsePermissionsResult {
       // Task management
       editTasks: checkPermission('tasks:edit'),
       acknowledgeChanges: checkPermission('changes:acknowledge'),
+
+      // Compliance-audit management
+      sealAuditCycle: checkPermission('audit:seal'),
 
       // Employee management
       viewEmployees: checkPermission('employees:view'),

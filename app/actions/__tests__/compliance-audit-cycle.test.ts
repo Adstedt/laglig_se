@@ -1257,3 +1257,87 @@ describe('materialiseCycleItems', () => {
     expect(p95).toBeLessThan(3000)
   })
 })
+
+// ============================================================================
+// Story 21.14 — AUDITOR read-access regression pins (AC 14)
+// ============================================================================
+
+describe('Story 21.14 — AUDITOR read-access', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockWorkspaceCtx({ role: 'AUDITOR' })
+  })
+
+  it('listCyclesForWorkspace returns data for AUDITOR (activity:view || tasks:edit OR-check)', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findMany).mockResolvedValue([
+      makeCycleRowWithIncludes(),
+    ] as unknown as never)
+
+    const result = await listCyclesForWorkspace()
+
+    expect(result.success).toBe(true)
+    expect(result.data?.cycles[0]?.id).toBe(CYCLE_ID)
+  })
+
+  it('getCycleById returns data for AUDITOR (activity:view || tasks:edit OR-check)', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(
+      makeCycleRowWithIncludes() as unknown as never
+    )
+
+    const result = await getCycleById(CYCLE_ID)
+
+    expect(result.success).toBe(true)
+    expect(result.data?.cycle.id).toBe(CYCLE_ID)
+  })
+})
+
+// ============================================================================
+// Story 21.14 — mutation permission-denied regression pins (AC 14)
+// Defensive: breaks only if someone weakens `withWorkspace(cb, 'tasks:edit')`
+// on a cycle-mutation action. The inline `mockWorkspaceCtx` helper's built-in
+// requiredPermission check already throws 'Permission denied: tasks:edit'
+// when called with { role: 'AUDITOR' }; we pin the outer-catch error-string
+// contract so a future weakening (e.g., dropping the second argument) is
+// caught at this test boundary.
+// ============================================================================
+
+describe('Story 21.14 — mutation permission-denied regression pins', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    // AUDITOR lacks 'tasks:edit' → withWorkspace(cb, 'tasks:edit') throws.
+    mockWorkspaceCtx({ role: 'AUDITOR' })
+  })
+
+  it('createCycle rejects AUDITOR with outer-catch error string', async () => {
+    const result = await createCycle(VALID_CREATE_INPUT)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte skapa kontrollen',
+    })
+    expect(prisma.complianceAuditCycle.create).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('updateCycleMetadata rejects AUDITOR with outer-catch error string', async () => {
+    const result = await updateCycleMetadata(CYCLE_ID, { name: 'Renamed' })
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte uppdatera kontrollen',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('softDeleteCycle rejects AUDITOR with outer-catch error string', async () => {
+    const result = await softDeleteCycle(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte ta bort kontrollen',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+})
