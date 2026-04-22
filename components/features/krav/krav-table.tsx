@@ -36,7 +36,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { formatDistanceToNow, format } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import { ShieldAlert, ShieldCheck } from 'lucide-react'
-import { Checkbox } from '@/components/ui/checkbox'
+import { FulfilledToggle } from '@/components/ui/fulfilled-toggle'
 import {
   Tooltip,
   TooltipContent,
@@ -99,9 +99,11 @@ export function KravTable({
     () => [
       {
         id: 'is_fulfilled',
-        header: ({ column }) => <SortableHeader column={column} label="" />,
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Uppfylld" />
+        ),
         cell: ({ row }) => (
-          <Checkbox
+          <FulfilledToggle
             checked={row.original.isFulfilled}
             onCheckedChange={() => onToggleFulfilled(row.original)}
             aria-label={
@@ -348,7 +350,10 @@ export function KravTable({
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="px-3 py-2 text-left text-xs font-medium text-muted-foreground"
+                    className={cn(
+                      'px-3 py-2 text-left text-xs font-medium text-muted-foreground',
+                      header.column.id === 'is_fulfilled' && 'pl-6'
+                    )}
                     style={{ width: header.getSize() }}
                   >
                     {header.isPlaceholder
@@ -396,7 +401,10 @@ export function KravTable({
                       {row.getVisibleCells().map((cell) => (
                         <td
                           key={cell.id}
-                          className="px-3 py-2 align-middle"
+                          className={cn(
+                            'px-3 py-2 align-middle',
+                            cell.column.id === 'is_fulfilled' && 'pl-6'
+                          )}
                           style={{ width: cell.column.getSize() }}
                         >
                           {flexRender(
@@ -416,7 +424,10 @@ export function KravTable({
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className="px-3 py-2 align-middle"
+                        className={cn(
+                          'px-3 py-2 align-middle',
+                          cell.column.id === 'is_fulfilled' && 'pl-6'
+                        )}
                         style={{ width: cell.column.getSize() }}
                       >
                         {flexRender(
