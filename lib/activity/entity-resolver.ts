@@ -103,6 +103,9 @@ export async function resolveEntityNames(
   const listItemIds = new Set<string>()
   const docIds = new Set<string>()
   const requirementIds = new Set<string>()
+  const cycleIds = new Set<string>()
+  const auditItemIds = new Set<string>()
+  const findingIds = new Set<string>()
 
   const pushById = (entityType: string, id: string) => {
     if (!id) return
@@ -110,6 +113,9 @@ export async function resolveEntityNames(
     else if (entityType === 'list_item') listItemIds.add(id)
     else if (entityType === 'workspace_document') docIds.add(id)
     else if (entityType === 'requirement') requirementIds.add(id)
+    else if (entityType === 'compliance_audit_cycle') cycleIds.add(id)
+    else if (entityType === 'compliance_audit_item') auditItemIds.add(id)
+    else if (entityType === 'compliance_finding') findingIds.add(id)
   }
 
   const secondaryByRow = new Map<string, SecondaryRef | null>()
@@ -120,41 +126,75 @@ export async function resolveEntityNames(
     if (secondary) pushById(secondary.entity_type, secondary.id)
   }
 
-  const [tasks, listItems, docs, requirements] = await Promise.all([
-    taskIds.size
-      ? prisma.task.findMany({
-          where: { id: { in: [...taskIds] }, workspace_id: workspaceId },
-          select: { id: true, title: true },
-        })
-      : Promise.resolve([]),
-    listItemIds.size
-      ? prisma.lawListItem.findMany({
-          where: {
-            id: { in: [...listItemIds] },
-            law_list: { workspace_id: workspaceId },
-          },
-          select: {
-            id: true,
-            document: { select: { title: true, document_number: true } },
-          },
-        })
-      : Promise.resolve([]),
-    docIds.size
-      ? prisma.workspaceDocument.findMany({
-          where: { id: { in: [...docIds] }, workspace_id: workspaceId },
-          select: { id: true, title: true },
-        })
-      : Promise.resolve([]),
-    requirementIds.size
-      ? prisma.lawListItemRequirement.findMany({
-          where: {
-            id: { in: [...requirementIds] },
-            list_item: { law_list: { workspace_id: workspaceId } },
-          },
-          select: { id: true, text: true, list_item_id: true },
-        })
-      : Promise.resolve([]),
-  ])
+  const [tasks, listItems, docs, requirements, cycles, auditItems, findings] =
+    await Promise.all([
+      taskIds.size
+        ? prisma.task.findMany({
+            where: { id: { in: [...taskIds] }, workspace_id: workspaceId },
+            select: { id: true, title: true },
+          })
+        : Promise.resolve([]),
+      listItemIds.size
+        ? prisma.lawListItem.findMany({
+            where: {
+              id: { in: [...listItemIds] },
+              law_list: { workspace_id: workspaceId },
+            },
+            select: {
+              id: true,
+              document: { select: { title: true, document_number: true } },
+            },
+          })
+        : Promise.resolve([]),
+      docIds.size
+        ? prisma.workspaceDocument.findMany({
+            where: { id: { in: [...docIds] }, workspace_id: workspaceId },
+            select: { id: true, title: true },
+          })
+        : Promise.resolve([]),
+      requirementIds.size
+        ? prisma.lawListItemRequirement.findMany({
+            where: {
+              id: { in: [...requirementIds] },
+              list_item: { law_list: { workspace_id: workspaceId } },
+            },
+            select: { id: true, text: true, list_item_id: true },
+          })
+        : Promise.resolve([]),
+      // Story 21.13: compliance-audit entities.
+      cycleIds.size
+        ? prisma.complianceAuditCycle.findMany({
+            where: { id: { in: [...cycleIds] }, workspace_id: workspaceId },
+            select: { id: true, name: true },
+          })
+        : Promise.resolve([]),
+      auditItemIds.size
+        ? prisma.complianceAuditItem.findMany({
+            where: {
+              id: { in: [...auditItemIds] },
+              cycle: { workspace_id: workspaceId },
+            },
+            select: {
+              id: true,
+              cycle_id: true,
+              law_list_item: {
+                select: {
+                  document: { select: { title: true, document_number: true } },
+                },
+              },
+            },
+          })
+        : Promise.resolve([]),
+      findingIds.size
+        ? prisma.complianceFinding.findMany({
+            where: {
+              id: { in: [...findingIds] },
+              cycle: { workspace_id: workspaceId },
+            },
+            select: { id: true, cycle_id: true, title: true },
+          })
+        : Promise.resolve([]),
+    ])
 
   const refFor = (
     entityType: string,
@@ -200,6 +240,49 @@ export async function resolveEntityNames(
         id,
         label: truncate(hit.text),
         href: `/laglistor?document=${hit.list_item_id}`,
+        deleted: false,
+      }
+    }
+    // Story 21.13: compliance-audit entities.
+    if (entityType === 'compliance_audit_cycle') {
+      const hit = cycles.find((c) => c.id === id)
+      if (!hit) return tombstone(entityType, id, fallback)
+      return {
+        id,
+        label: hit.name,
+        href: `/laglistor/kontroller/${id}`,
+        deleted: false,
+      }
+    }
+    if (entityType === 'compliance_audit_item') {
+      const hit = auditItems.find((i) => i.id === id)
+      if (!hit) return tombstone(entityType, id, fallback)
+      const doc = hit.law_list_item?.document
+      if (doc) {
+        const number = doc.document_number ? ` (${doc.document_number})` : ''
+        return {
+          id,
+          label: `${doc.title}${number}`,
+          href: `/laglistor/kontroller/${hit.cycle_id}#items`,
+          deleted: false,
+        }
+      }
+      // Defensive: schema should guarantee law_list_item.document is present,
+      // but if seed drift leaves it null, fall back to a generic label.
+      return {
+        id,
+        label: 'Kontrollpost',
+        href: `/laglistor/kontroller/${hit.cycle_id}`,
+        deleted: false,
+      }
+    }
+    if (entityType === 'compliance_finding') {
+      const hit = findings.find((f) => f.id === id)
+      if (!hit) return tombstone(entityType, id, fallback)
+      return {
+        id,
+        label: truncate(hit.title),
+        href: `/laglistor/kontroller/${hit.cycle_id}#findings`,
         deleted: false,
       }
     }

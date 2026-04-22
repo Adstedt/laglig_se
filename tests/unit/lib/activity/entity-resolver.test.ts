@@ -4,6 +4,10 @@ const mockTaskFindMany = vi.fn()
 const mockListItemFindMany = vi.fn()
 const mockWorkspaceDocumentFindMany = vi.fn()
 const mockRequirementFindMany = vi.fn()
+// Story 21.13 — compliance-audit entities.
+const mockComplianceAuditCycleFindMany = vi.fn()
+const mockComplianceAuditItemFindMany = vi.fn()
+const mockComplianceFindingFindMany = vi.fn()
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -19,6 +23,17 @@ vi.mock('@/lib/prisma', () => ({
     lawListItemRequirement: {
       findMany: (...args: unknown[]) => mockRequirementFindMany(...args),
     },
+    complianceAuditCycle: {
+      findMany: (...args: unknown[]) =>
+        mockComplianceAuditCycleFindMany(...args),
+    },
+    complianceAuditItem: {
+      findMany: (...args: unknown[]) =>
+        mockComplianceAuditItemFindMany(...args),
+    },
+    complianceFinding: {
+      findMany: (...args: unknown[]) => mockComplianceFindingFindMany(...args),
+    },
   },
 }))
 
@@ -29,6 +44,9 @@ describe('resolveEntityNames', () => {
     mockListItemFindMany.mockResolvedValue([])
     mockWorkspaceDocumentFindMany.mockResolvedValue([])
     mockRequirementFindMany.mockResolvedValue([])
+    mockComplianceAuditCycleFindMany.mockResolvedValue([])
+    mockComplianceAuditItemFindMany.mockResolvedValue([])
+    mockComplianceFindingFindMany.mockResolvedValue([])
   })
 
   it('resolves primary task entity with deep link', async () => {
@@ -152,5 +170,255 @@ describe('resolveEntityNames', () => {
     // (no rows requested them in this test, so findMany shouldn't run)
     expect(mockListItemFindMany).not.toHaveBeenCalled()
     expect(mockRequirementFindMany).not.toHaveBeenCalled()
+  })
+
+  // ==========================================================================
+  // Story 21.13: Compliance-audit entities (Epic 21)
+  // ==========================================================================
+
+  it('resolves primary compliance_audit_cycle with deep link to cycle detail page', async () => {
+    mockComplianceAuditCycleFindMany.mockResolvedValue([
+      { id: 'cycle-1', name: 'Q2 compliance review' },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'cycle_created',
+          entity_type: 'compliance_audit_cycle',
+          entity_id: 'cycle-1',
+          old_value: null,
+          new_value: { name: 'Q2 compliance review' },
+        },
+      ],
+      'ws-1'
+    )
+    const ref = result.get('row-1')?.primary
+    expect(ref?.label).toBe('Q2 compliance review')
+    expect(ref?.href).toBe('/laglistor/kontroller/cycle-1')
+    expect(ref?.deleted).toBe(false)
+  })
+
+  it('returns tombstone when compliance_audit_cycle is soft-deleted or cross-workspace', async () => {
+    // Simulates: the cycle either has deleted_at != null OR is in a different
+    // workspace. findMany filters workspace_id + (implicitly) the resolver
+    // trusts the DB to surface only rows it should display, so an empty
+    // findMany result == "not available" == tombstone.
+    mockComplianceAuditCycleFindMany.mockResolvedValue([])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'cycle_soft_deleted',
+          entity_type: 'compliance_audit_cycle',
+          entity_id: 'cycle-gone',
+          old_value: { status: 'PLANERAD', name: 'Forgotten cycle' },
+          new_value: null,
+        },
+      ],
+      'ws-1'
+    )
+    const ref = result.get('row-1')?.primary
+    expect(ref?.deleted).toBe(true)
+    expect(ref?.href).toBeNull()
+    // Fallback label pulled from old_value.name via fallbackLabelFromPayload
+    expect(ref?.label).toContain('Forgotten cycle')
+  })
+
+  it('resolves primary compliance_audit_item with cycle-scoped #items hash deep link', async () => {
+    mockComplianceAuditItemFindMany.mockResolvedValue([
+      {
+        id: 'item-1',
+        cycle_id: 'cycle-1',
+        law_list_item: {
+          document: {
+            title: 'Miljöbalken',
+            document_number: 'SFS 1998:808',
+          },
+        },
+      },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'cycle_item_signed_off',
+          entity_type: 'compliance_audit_item',
+          entity_id: 'item-1',
+          old_value: null,
+          new_value: { signedAt: '2026-04-22T12:00:00Z' },
+        },
+      ],
+      'ws-1'
+    )
+    const ref = result.get('row-1')?.primary
+    expect(ref?.label).toBe('Miljöbalken (SFS 1998:808)')
+    expect(ref?.href).toBe('/laglistor/kontroller/cycle-1#items')
+    expect(ref?.deleted).toBe(false)
+  })
+
+  it('compliance_audit_item falls back gracefully when law_list_item.document is missing', async () => {
+    // Defensive: schema makes this unlikely in production, but resolver
+    // must not crash if seed drift leaves law_list_item.document null.
+    mockComplianceAuditItemFindMany.mockResolvedValue([
+      {
+        id: 'item-1',
+        cycle_id: 'cycle-1',
+        law_list_item: { document: null },
+      },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'cycle_item_signed_off',
+          entity_type: 'compliance_audit_item',
+          entity_id: 'item-1',
+          old_value: null,
+          new_value: null,
+        },
+      ],
+      'ws-1'
+    )
+    const ref = result.get('row-1')?.primary
+    expect(ref?.label).toBe('Kontrollpost')
+    // Hash is omitted when document is missing — falls back to cycle root.
+    expect(ref?.href).toBe('/laglistor/kontroller/cycle-1')
+    expect(ref?.deleted).toBe(false)
+  })
+
+  it('resolves primary compliance_finding with cycle-scoped #findings hash deep link', async () => {
+    mockComplianceFindingFindMany.mockResolvedValue([
+      {
+        id: 'finding-1',
+        cycle_id: 'cycle-1',
+        title: 'Saknad utbildningsplan',
+      },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'finding_created', // future Story 21.7 action; resolver works today regardless
+          entity_type: 'compliance_finding',
+          entity_id: 'finding-1',
+          old_value: null,
+          new_value: { title: 'Saknad utbildningsplan' },
+        },
+      ],
+      'ws-1'
+    )
+    const ref = result.get('row-1')?.primary
+    expect(ref?.label).toBe('Saknad utbildningsplan')
+    expect(ref?.href).toBe('/laglistor/kontroller/cycle-1#findings')
+    expect(ref?.deleted).toBe(false)
+  })
+
+  it('batches findMany per model — one query per model type, regardless of row count', async () => {
+    mockComplianceAuditCycleFindMany.mockResolvedValue([
+      { id: 'cycle-1', name: 'C1' },
+      { id: 'cycle-2', name: 'C2' },
+    ])
+    mockComplianceAuditItemFindMany.mockResolvedValue([
+      {
+        id: 'item-1',
+        cycle_id: 'cycle-1',
+        law_list_item: {
+          document: { title: 'T1', document_number: 'D1' },
+        },
+      },
+      {
+        id: 'item-2',
+        cycle_id: 'cycle-1',
+        law_list_item: {
+          document: { title: 'T2', document_number: 'D2' },
+        },
+      },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+
+    // 2 cycle rows + 2 item rows + 1 finding row (but finding mock is empty
+    // → still counts as 1 findMany call because the ID-set has 1 id).
+    mockComplianceFindingFindMany.mockResolvedValue([])
+    await resolveEntityNames(
+      [
+        {
+          id: 'r1',
+          action: 'cycle_created',
+          entity_type: 'compliance_audit_cycle',
+          entity_id: 'cycle-1',
+          old_value: null,
+          new_value: null,
+        },
+        {
+          id: 'r2',
+          action: 'cycle_metadata_updated',
+          entity_type: 'compliance_audit_cycle',
+          entity_id: 'cycle-2',
+          old_value: null,
+          new_value: null,
+        },
+        {
+          id: 'r3',
+          action: 'cycle_item_signed_off',
+          entity_type: 'compliance_audit_item',
+          entity_id: 'item-1',
+          old_value: null,
+          new_value: null,
+        },
+        {
+          id: 'r4',
+          action: 'cycle_item_signed_off',
+          entity_type: 'compliance_audit_item',
+          entity_id: 'item-2',
+          old_value: null,
+          new_value: null,
+        },
+        {
+          id: 'r5',
+          action: 'finding_created',
+          entity_type: 'compliance_finding',
+          entity_id: 'finding-1',
+          old_value: null,
+          new_value: null,
+        },
+      ],
+      'ws-1'
+    )
+
+    // N+1 prevention contract: exactly one findMany per touched model.
+    expect(mockComplianceAuditCycleFindMany).toHaveBeenCalledTimes(1)
+    expect(mockComplianceAuditItemFindMany).toHaveBeenCalledTimes(1)
+    expect(mockComplianceFindingFindMany).toHaveBeenCalledTimes(1)
+
+    // And workspace-scoped — cycles directly, items + findings via cycle relation.
+    expect(
+      mockComplianceAuditCycleFindMany.mock.calls[0]?.[0]?.where?.workspace_id
+    ).toBe('ws-1')
+    expect(
+      mockComplianceAuditItemFindMany.mock.calls[0]?.[0]?.where?.cycle
+        ?.workspace_id
+    ).toBe('ws-1')
+    expect(
+      mockComplianceFindingFindMany.mock.calls[0]?.[0]?.where?.cycle
+        ?.workspace_id
+    ).toBe('ws-1')
   })
 })

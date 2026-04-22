@@ -50,6 +50,13 @@ const ENTITY_TYPES = [
   { value: 'workspace_document', label: 'Styrdokument' },
   { value: 'requirement', label: 'Kravpunkt' },
   { value: 'email', label: 'E-post' },
+  // Story 21.13: compliance-audit entities.
+  { value: 'compliance_audit_cycle', label: 'Lagefterlevnadskontroll' },
+  { value: 'compliance_audit_item', label: 'Kontrollpost' },
+  {
+    value: 'compliance_finding',
+    label: 'Avvikelse / Observation / Förbättring',
+  },
 ]
 
 export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
@@ -170,7 +177,10 @@ export function ActivityFilters({ onFiltersChange }: ActivityFiltersProps) {
             })
           }
         >
-          <SelectTrigger className="w-[160px]">
+          {/* Story 21.13: widened from w-[160px] to w-[220px] to accommodate
+              the longest compliance-audit label ("Avvikelse / Observation /
+              Förbättring", 36 chars) without truncation. */}
+          <SelectTrigger className="w-[220px]">
             <SelectValue placeholder="Alla typer" />
           </SelectTrigger>
           <SelectContent>

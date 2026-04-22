@@ -53,6 +53,16 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
 
   // notifikationer
   notification_sent: 'notifikationer',
+
+  // compliance-audit cycle (Epic 21)
+  cycle_created: 'livscykel',
+  cycle_metadata_updated: 'andringar',
+  cycle_soft_deleted: 'livscykel',
+  cycle_materialised: 'livscykel',
+  cycle_item_bedomning_updated: 'andringar',
+  cycle_item_motivering_updated: 'andringar',
+  cycle_item_signed_off: 'andringar',
+  cycle_item_unsigned: 'andringar',
 }
 
 export const CATEGORY_META: Record<
