@@ -77,18 +77,18 @@ describe('KravTable', () => {
     // from date-fns/locale and isn't worth pinning.
   })
 
-  it('renders the status checkbox reflecting isFulfilled (AC 24 col 1)', () => {
+  it('renders the fulfilled toggle reflecting isFulfilled (AC 24 col 1)', () => {
     const fulfilled = makeRow({ id: 'a', isFulfilled: true })
     const unfulfilled = makeRow({ id: 'b', isFulfilled: false })
     render(<KravTable rows={[fulfilled, unfulfilled]} {...noopProps()} />)
 
-    const checkboxes = screen.getAllByRole('checkbox')
-    expect(checkboxes).toHaveLength(2)
-    expect(checkboxes[0]).toHaveAttribute('data-state', 'checked')
-    expect(checkboxes[1]).toHaveAttribute('data-state', 'unchecked')
+    const toggles = screen.getAllByRole('button', { name: /^markera/i })
+    expect(toggles).toHaveLength(2)
+    expect(toggles[0]).toHaveAttribute('aria-pressed', 'true')
+    expect(toggles[1]).toHaveAttribute('aria-pressed', 'false')
   })
 
-  it('clicking the status checkbox fires onToggleFulfilled with the row (AC 30)', async () => {
+  it('clicking the fulfilled toggle fires onToggleFulfilled with the row (AC 30)', async () => {
     const user = userEvent.setup()
     const row = makeRow({ id: 'req-x' })
     const onToggleFulfilled = vi.fn()
@@ -99,7 +99,9 @@ describe('KravTable', () => {
         onToggleFulfilled={onToggleFulfilled}
       />
     )
-    await user.click(screen.getByRole('checkbox'))
+    await user.click(
+      screen.getByRole('button', { name: /markera som uppfylld/i })
+    )
     expect(onToggleFulfilled).toHaveBeenCalledWith(row)
   })
 

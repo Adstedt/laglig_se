@@ -109,10 +109,10 @@ describe('KravpunkterChecklist', () => {
     )
     expect(screen.getByText('Utbildning genomförd')).toBeInTheDocument()
 
-    const checkboxes = screen.getAllByRole('checkbox')
-    expect(checkboxes).toHaveLength(2)
-    expect(checkboxes[0]).toHaveAttribute('data-state', 'checked')
-    expect(checkboxes[1]).toHaveAttribute('data-state', 'unchecked')
+    const toggles = screen.getAllByRole('button', { name: /^markera/i })
+    expect(toggles).toHaveLength(2)
+    expect(toggles[0]).toHaveAttribute('aria-pressed', 'true')
+    expect(toggles[1]).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('shows empty state when no requirements exist', async () => {
@@ -182,8 +182,8 @@ describe('KravpunkterChecklist', () => {
       expect(screen.getByText('Gör något')).toBeInTheDocument()
     )
 
-    const checkbox = screen.getByRole('checkbox')
-    await user.click(checkbox)
+    const toggle = screen.getByRole('button', { name: /^markera/i })
+    await user.click(toggle)
 
     await waitFor(() =>
       expect(updateRequirement).toHaveBeenCalledWith('req-1', {
@@ -215,7 +215,7 @@ describe('KravpunkterChecklist', () => {
     )
   })
 
-  it('read-only mode hides add button and disables checkboxes', async () => {
+  it('read-only mode hides add button and disables fulfilled toggles', async () => {
     mockRequirements([
       { id: 'req-1', text: 'Rutinen finns', isFulfilled: false },
     ])
@@ -230,8 +230,8 @@ describe('KravpunkterChecklist', () => {
       screen.queryByRole('button', { name: /Lägg till kravpunkt/i })
     ).not.toBeInTheDocument()
 
-    const checkbox = screen.getByRole('checkbox')
-    expect(checkbox).toBeDisabled()
+    const toggle = screen.getByRole('button', { name: /^markera/i })
+    expect(toggle).toBeDisabled()
   })
 
   it('expands evidence list on chevron click', async () => {

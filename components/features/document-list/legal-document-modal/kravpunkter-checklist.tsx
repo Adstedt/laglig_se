@@ -24,7 +24,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
+import { FulfilledToggle } from '@/components/ui/fulfilled-toggle'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -503,13 +503,17 @@ function KravpunktRow({
             'hover:bg-muted/50'
           )}
         >
-          {/* Checkbox */}
-          <Checkbox
+          {/* Fulfilled status toggle */}
+          <FulfilledToggle
             checked={requirement.isFulfilled}
-            onCheckedChange={(next) => handleToggleFulfilled(Boolean(next))}
+            onCheckedChange={(next) => handleToggleFulfilled(next)}
             disabled={readOnly}
             className="shrink-0"
-            aria-label="Markera som uppfylld"
+            aria-label={
+              requirement.isFulfilled
+                ? 'Markerad som uppfylld — klicka för att återställa'
+                : 'Markera som uppfylld'
+            }
           />
 
           {/* Text / inline edit */}
