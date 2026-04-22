@@ -3,10 +3,9 @@
 /** Story 21.5 — Header for /laglistor/kontroller/[cycleId]. */
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { ChevronRight, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -15,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { BreadcrumbOverride } from '@/components/layout/breadcrumb-override'
 import { CycleStatusBadge } from './cycle-status-badge'
 import { useCycleItems } from './cycle-items-context'
 import type { CycleDetail } from '@/app/actions/compliance-audit-cycle'
@@ -37,7 +37,11 @@ function initialsFromName(name: string | null): string {
 export function CycleDetailHeader({ cycle, readOnly }: CycleDetailHeaderProps) {
   return (
     <div className="space-y-4">
-      <Breadcrumb cycleName={cycle.name} />
+      {/* The global workspace breadcrumb (components/layout/breadcrumbs.tsx)
+          already renders a trail from the URL. Override the final segment so
+          the raw cycle UUID is replaced with the cycle name. */}
+      <BreadcrumbOverride label={cycle.name} />
+
       {readOnly ? <ReadOnlyBanner cycle={cycle} /> : null}
 
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -57,40 +61,6 @@ export function CycleDetailHeader({ cycle, readOnly }: CycleDetailHeaderProps) {
         </div>
       </div>
     </div>
-  )
-}
-
-function Breadcrumb({ cycleName }: { cycleName: string }) {
-  return (
-    <nav aria-label="Brödsmulor" className="text-sm text-muted-foreground">
-      <ol className="flex items-center gap-1">
-        <li>
-          <Link
-            href="/laglistor"
-            className="hover:text-foreground hover:underline"
-          >
-            Laglistor
-          </Link>
-        </li>
-        <li aria-hidden="true">
-          <ChevronRight className="h-3.5 w-3.5" />
-        </li>
-        <li>
-          <Link
-            href="/laglistor/kontroller/skapa"
-            className="hover:text-foreground hover:underline"
-          >
-            Kontroller
-          </Link>
-        </li>
-        <li aria-hidden="true">
-          <ChevronRight className="h-3.5 w-3.5" />
-        </li>
-        <li aria-current="page" className="truncate text-foreground">
-          {cycleName}
-        </li>
-      </ol>
-    </nav>
   )
 }
 
