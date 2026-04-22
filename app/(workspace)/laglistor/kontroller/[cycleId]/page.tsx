@@ -65,7 +65,7 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
     // the user can retry via page reload. Keeps the page navigable if the
     // items read fails transiently while the cycle itself loaded.
     return (
-      <div className="mx-auto max-w-7xl p-6">
+      <div className="p-6">
         <CycleDetailPage
           cycle={cycleResult.data.cycle}
           items={[]}
@@ -82,7 +82,7 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
   }
 
   return (
-    <div className="mx-auto max-w-7xl p-6">
+    <div className="p-6">
       <CycleDetailPage
         cycle={cycleResult.data.cycle}
         items={itemsResult.data.items}
