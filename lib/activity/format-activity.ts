@@ -33,6 +33,20 @@ const DOC_STATUS_LABELS: Record<string, string> = {
   ARCHIVED: 'arkiverad',
 }
 
+/**
+ * Story 21.13: Swedish labels for cycle-item efterlevnadsbedomning values.
+ * MUST match the canonical labels in `components/features/compliance-audit/bedomning-copy.ts`
+ * — users see the same string on the cycle detail page and in the activity feed.
+ */
+const EFTERLEVNADS_BEDOMNING_LABELS: Record<string, string> = {
+  UPPFYLLD: 'Uppfylld',
+  DELVIS: 'Delvis',
+  EJ_UPPFYLLD: 'Ej uppfylld',
+  EJ_TILLAMPLIG: 'Ej tillämplig',
+}
+
+const BEDOMNING_NULL_LABEL = '—'
+
 function payloadOf(v: unknown): Record<string, unknown> | null {
   return v && typeof v === 'object' ? (v as Record<string, unknown>) : null
 }
@@ -430,6 +444,84 @@ export function formatActivity(input: FormatInput): SentencePart[] {
       if (recipient) parts.push(text(' till '), emphasis(recipient))
       return parts
     }
+
+    // ----------------- Compliance-audit cycle / items (Epic 21) -----------------
+    case 'cycle_created':
+      return [u, text(' skapade kontrollen '), primary]
+
+    case 'cycle_metadata_updated': {
+      const oldName = pickString(oldP, 'name')
+      const newName = pickString(newP, 'name')
+      const parts: SentencePart[] = [
+        u,
+        text(' uppdaterade metadata på kontrollen '),
+        primary,
+      ]
+      // Name-change tail mirrors the `title_updated` formatter precedent
+      // (lines 128-137): surface the rename inline for users who don't
+      // expand the row. The expanded-row diff view still shows all fields.
+      if (oldName && newName && oldName !== newName) {
+        parts.push(
+          text(': namnet ändrades från '),
+          emphasis(oldName),
+          text(' till '),
+          emphasis(newName)
+        )
+      }
+      return parts
+    }
+
+    case 'cycle_soft_deleted':
+      return [u, text(' tog bort kontrollen '), primary]
+
+    case 'cycle_materialised': {
+      const itemCount = newP?.itemCount
+      if (typeof itemCount === 'number') {
+        return [
+          u,
+          text(' startade kontrollen '),
+          primary,
+          text(` (${itemCount} poster)`),
+        ]
+      }
+      return [u, text(' startade kontrollen '), primary]
+    }
+
+    case 'cycle_item_bedomning_updated':
+      return [
+        u,
+        text(' ändrade bedömning på '),
+        primary,
+        text(' från '),
+        emphasis(
+          mapEnum(
+            oldP?.efterlevnadsbedomning,
+            EFTERLEVNADS_BEDOMNING_LABELS,
+            BEDOMNING_NULL_LABEL
+          )
+        ),
+        text(' till '),
+        emphasis(
+          mapEnum(
+            newP?.efterlevnadsbedomning,
+            EFTERLEVNADS_BEDOMNING_LABELS,
+            BEDOMNING_NULL_LABEL
+          )
+        ),
+      ]
+
+    // Privacy contract: Story 21.5's logActivity payload for motivering edits
+    // stores `{old_length, new_length}` only — the raw motivering text is
+    // NEVER in the log. This sentence is intentionally generic; the
+    // expanded-row view shows the length diff.
+    case 'cycle_item_motivering_updated':
+      return [u, text(' uppdaterade motiveringen på '), primary]
+
+    case 'cycle_item_signed_off':
+      return [u, text(' signerade '), primary]
+
+    case 'cycle_item_unsigned':
+      return [u, text(' ångrade signeringen på '), primary]
 
     // ----------------- Fallback -----------------
     default:

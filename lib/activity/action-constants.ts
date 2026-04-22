@@ -62,6 +62,16 @@ export const KNOWN_ACTIONS = [
 
   // Email / notifications
   'notification_sent',
+
+  // Compliance-audit cycle (Epic 21 — Stories 21.2 + 21.5)
+  'cycle_created',
+  'cycle_metadata_updated',
+  'cycle_soft_deleted',
+  'cycle_materialised',
+  'cycle_item_bedomning_updated',
+  'cycle_item_motivering_updated',
+  'cycle_item_signed_off',
+  'cycle_item_unsigned',
 ] as const
 
 export type KnownAction = (typeof KNOWN_ACTIONS)[number]

@@ -1,0 +1,70 @@
+schema: 1
+story: '21.13'
+story_title: 'ActivityLog integration + /workspace/activity surface'
+gate: PASS
+status_reason: 'Model read-side integration — zero new writers, zero schema touches, zero route edits. 14/14 ACs verified via tests or structural verification. Four defense layers verified on security (workspace isolation, tombstone, motivering privacy pin, no new attack surface). +21 net-new tests, zero regressions across 4373 unit tests. Motivering privacy pin is test-locked at the formatter level; the matching logger-level pin in Story 21.5 remains a future nice-to-have. Three low-severity polish items captured; none block readiness.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-22T21:58:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'POLISH-001'
+    severity: low
+    finding: 'Swedish pluralization on the `cycle_materialised` sentence suffix. Formatter renders `(N poster)` for all N, which is grammatically wrong for N=1 (correct Swedish: "1 post", "2+ poster"). Single-item cycles are rare but valid — a cycle scoped to one law produces "1 poster" in the feed.'
+    suggested_action: 'One-line fix in `lib/activity/format-activity.ts:484`: replace `text(` (${itemCount} poster)`)` with `text(` (${itemCount} ${itemCount === 1 ? ''post'' : ''poster''})`)`. Add one format-activity.test.ts case for itemCount=1. ~2 min.'
+    suggested_owner: dev
+
+  - id: 'POLISH-002'
+    severity: low
+    finding: 'No truncation on `cycle.name` or item `doc.title` in the resolver. Other resolver branches (requirement.text, finding.title) use the `truncate()` helper. The existing `list_item` branch also does not truncate doc titles, so this is consistent with precedent — not a new inconsistency. But a pathologically-long cycle name (users can enter up to 200 chars per Story 21.2 Zod validation) would produce an ugly single-line sentence.'
+    suggested_action: 'Defer. Apply `truncate(hit.name)` and `truncate(...doc.title...)` only if pathologically-long labels surface in production UX. Not blocking; follow-up consideration for a future polish story alongside the existing list_item branch (if ever addressed).'
+    suggested_owner: dev
+
+  - id: 'PRIVACY-SPLIT-001'
+    severity: low
+    finding: 'Motivering privacy pin is split across Stories 21.5 (logger payload) and 21.13 (formatter). Story 21.13 test-locks the formatter contract (raw motivering text NEVER rendered in the sentence). But the Story 21.5 logger contract (that `new_value` never contains `motivering: string`) is NOT explicitly test-pinned at the logger level. If a future refactor accidentally logs the raw text in `new_value`, the expanded-row view (`activity-expanded-row.tsx`, which renders raw JSON diff) would leak it — the 21.13 formatter pin would not catch this because the expanded row does not go through the formatter.'
+    suggested_action: 'Future: add a regression test to `app/actions/__tests__/compliance-audit-item.test.ts` asserting that `updateItemMotivering`''s `logActivity` call receives a `new_value` object containing ONLY `{new_length: number}` — no `motivering` key, no raw text. One test; three lines. Land when touching that file next.'
+    suggested_owner: dev
+
+quality_score: 100
+
+evidence:
+  tests_reviewed: 50
+  tests_new: 21
+  tests_new_breakdown: '12 format-activity + 6 entity-resolver + 1 workspace-activity + 2 activity-filters'
+  total_regression: 4373
+  total_regression_baseline: 4352
+  regression_delta: 21
+  risks_identified: 3
+  files_created: 2 # story doc + test file
+  files_modified: 8 # 5 production + 3 test
+  files_modified_during_review: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    ac_partial: []
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Four defense layers verified — (1) workspace-scope on every new Prisma query (direct on cycle, via `cycle: { workspace_id }` relation filter on item + finding; test-pinned via explicit where-clause assertions), (2) tombstone on missing rows prevents cross-workspace information leakage, (3) motivering privacy pin at the formatter level (test explicitly passes raw text in payload, asserts it does not appear in output), (4) zero new attack surface — no new writers, server actions, or routes. See PRIVACY-SPLIT-001 for the 21.5 logger-level counterpart opportunity.'
+  performance:
+    status: PASS
+    notes: 'Batched findMany: 1 query per new model regardless of row count — test-pinned. Minimal `select` clauses on all three new Prisma queries. Promise.all parallelisation with existing 4 queries — net 7 concurrent, each indexed. Zero added latency for page loads that include no compliance-audit rows (empty ID sets short-circuit to Promise.resolve([])).'
+  reliability:
+    status: PASS
+    notes: 'Defensive fallbacks: missing `law_list_item.document` on cycle item (returns "Kontrollpost" + root cycle link); `typeof itemCount === ''number''` guard on `cycle_materialised` (handles null/undefined/non-numeric); name-change tail gracefully skipped when either old or new name missing; tombstone exercised on cycle + item + finding. Fail-closed for unknown entity_type values (falls through to existing synthetic-no-link branch).'
+  maintainability:
+    status: PASS
+    notes: 'Section-comment blocks tag every Story 21.13 addition. EFTERLEVNADS_BEDOMNING_LABELS JSDoc cross-references canonical source (`components/features/compliance-audit/bedomning-copy.ts`). Inline comments document defensive-fallback rationale, privacy-pin rationale, name-tail precedent reference. No new helpers introduced. Tests follow existing file conventions.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'One-line Swedish pluralization fix on `cycle_materialised` itemCount suffix — "post" / "poster" inflection (POLISH-001).'
+      refs: ['lib/activity/format-activity.ts:484']
+    - action: 'Logger-level motivering privacy pin in Story 21.5''s test file — assert `new_value` contains only `new_length`, never raw motivering text (PRIVACY-SPLIT-001).'
+      refs: ['app/actions/compliance-audit-item.ts:421-425', 'app/actions/__tests__/compliance-audit-item.test.ts']
+    - action: 'Consider label truncation for cycle.name + item doc.title if pathologically-long labels surface in production (POLISH-002).'
+      refs: ['lib/activity/entity-resolver.ts:252', 'lib/activity/entity-resolver.ts:265']

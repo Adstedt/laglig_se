@@ -9,6 +9,10 @@ const mockTaskFindMany = vi.fn()
 const mockListItemFindMany = vi.fn()
 const mockWorkspaceDocumentFindMany = vi.fn()
 const mockRequirementFindMany = vi.fn()
+// Story 21.13 — compliance-audit entities reachable via the resolver.
+const mockComplianceAuditCycleFindMany = vi.fn()
+const mockComplianceAuditItemFindMany = vi.fn()
+const mockComplianceFindingFindMany = vi.fn()
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -26,6 +30,17 @@ vi.mock('@/lib/prisma', () => ({
     },
     lawListItemRequirement: {
       findMany: (...args: unknown[]) => mockRequirementFindMany(...args),
+    },
+    complianceAuditCycle: {
+      findMany: (...args: unknown[]) =>
+        mockComplianceAuditCycleFindMany(...args),
+    },
+    complianceAuditItem: {
+      findMany: (...args: unknown[]) =>
+        mockComplianceAuditItemFindMany(...args),
+    },
+    complianceFinding: {
+      findMany: (...args: unknown[]) => mockComplianceFindingFindMany(...args),
     },
   },
 }))
@@ -78,6 +93,9 @@ describe('getWorkspaceActivity', () => {
     mockListItemFindMany.mockResolvedValue([])
     mockWorkspaceDocumentFindMany.mockResolvedValue([])
     mockRequirementFindMany.mockResolvedValue([])
+    mockComplianceAuditCycleFindMany.mockResolvedValue([])
+    mockComplianceAuditItemFindMany.mockResolvedValue([])
+    mockComplianceFindingFindMany.mockResolvedValue([])
   })
 
   it('returns activities for workspace, enriched with category + primary', async () => {
@@ -256,6 +274,57 @@ describe('getWorkspaceActivity', () => {
         cursor: { id: 'cursor-id-123' },
         skip: 1,
       })
+    )
+  })
+
+  // ==========================================================================
+  // Story 21.13: entity-type filter returns cycle rows with deep links
+  // ==========================================================================
+
+  it('filters by compliance_audit_cycle entity_type and enriches with cycle deep link', async () => {
+    // Mixed feed: one cycle row + one task row. The filter narrows findMany's
+    // where-clause to `entity_type: { in: ['compliance_audit_cycle'] }`, so
+    // Prisma would return only the cycle row in production. We mock that.
+    mockActivityLogFindMany.mockResolvedValueOnce([
+      makeActivity({
+        id: 'act-cycle-1',
+        action: 'cycle_created',
+        entity_type: 'compliance_audit_cycle',
+        entity_id: 'cycle-1',
+        new_value: { name: 'Q2 compliance review' },
+      }),
+    ])
+    mockComplianceAuditCycleFindMany.mockResolvedValueOnce([
+      { id: 'cycle-1', name: 'Q2 compliance review' },
+    ])
+
+    const { getWorkspaceActivity } = await import(
+      '@/app/actions/workspace-activity'
+    )
+    const result = await getWorkspaceActivity({
+      entityType: ['compliance_audit_cycle'],
+    })
+
+    // Prisma was called with the entity_type filter forwarded verbatim.
+    expect(mockActivityLogFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          workspace_id: MOCK_WORKSPACE_ID,
+          entity_type: { in: ['compliance_audit_cycle'] },
+        }),
+      })
+    )
+
+    // Result contains the cycle row with the resolved deep link.
+    expect(result.data!.activities).toHaveLength(1)
+    expect(result.data!.activities[0]!.entity_type).toBe(
+      'compliance_audit_cycle'
+    )
+    expect(result.data!.activities[0]!.primary.href).toBe(
+      '/laglistor/kontroller/cycle-1'
+    )
+    expect(result.data!.activities[0]!.primary.label).toBe(
+      'Q2 compliance review'
     )
   })
 })
