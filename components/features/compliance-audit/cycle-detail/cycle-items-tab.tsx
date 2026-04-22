@@ -198,7 +198,7 @@ function RowContent({
       data-testid={`cycle-item-row-${row.id}`}
       className={cn('transition-colors', highlighted && 'ring-2 ring-primary')}
     >
-      <div className="flex items-start hover:bg-muted/30">
+      <div className="flex items-center hover:bg-muted/30">
         <div className={COLUMN_CLASS.lag}>
           <Link
             href="/laglistor"
