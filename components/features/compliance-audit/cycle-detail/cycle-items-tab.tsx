@@ -83,14 +83,14 @@ export function CycleItemsTab({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-md border p-8 text-center text-sm italic text-muted-foreground">
+      <div className="border-t p-8 text-center text-sm italic text-muted-foreground">
         Kontrollen har inga poster.
       </div>
     )
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="w-full">
       <TableHeader />
       {shouldVirtualise ? (
         <VirtualisedBody
@@ -127,21 +127,27 @@ export function CycleItemsTab({
 // Presentation
 // ---------------------------------------------------------------------------
 
+// Column sizing — cell padding matches shadcn <TableHead>/<TableCell> default
+// (px-4, align-middle). Header gets h-12 per shadcn convention; body rows size
+// to their content with py-3 vertical breathing room.
 const COLUMN_CLASS = {
-  lag: 'min-w-[240px] flex-[2_0_0%] px-4 py-3',
-  nuvarande: 'w-36 px-4 py-3',
-  bedomning: 'w-40 px-4 py-3',
-  motivering: 'min-w-[200px] flex-[3_0_0%] px-4 py-3',
-  ansvarig: 'w-40 px-4 py-3',
-  signerad: 'w-48 px-4 py-3',
-  chevron: 'w-10 px-2 py-3',
+  lag: 'min-w-[240px] flex-[2_0_0%] px-4',
+  nuvarande: 'w-36 px-4',
+  bedomning: 'w-40 px-4',
+  motivering: 'min-w-[200px] flex-[3_0_0%] px-4',
+  ansvarig: 'w-40 px-4',
+  signerad: 'w-48 px-4',
+  chevron: 'w-10 px-2',
 } as const
 
 function TableHeader() {
+  // Matches shadcn <TableHeader> + <TableHead> styling used across
+  // /laglistor, /uppgifter, /styrdokument: no background tint, h-12,
+  // font-medium muted-foreground, sentence case, border-b separator.
   return (
     <div
       role="rowheader"
-      className="flex items-center border-b bg-muted/50 text-xs font-medium uppercase tracking-wider text-muted-foreground"
+      className="flex h-12 items-center border-b text-sm font-medium text-muted-foreground"
     >
       <div className={COLUMN_CLASS.lag}>Lag</div>
       <div className={COLUMN_CLASS.nuvarande}>Nuvarande status</div>
@@ -198,7 +204,7 @@ function RowContent({
       data-testid={`cycle-item-row-${row.id}`}
       className={cn('transition-colors', highlighted && 'ring-2 ring-primary')}
     >
-      <div className="flex items-center hover:bg-muted/30">
+      <div className="flex items-center border-b py-3 transition-colors hover:bg-muted/50">
         <div className={COLUMN_CLASS.lag}>
           <Link
             href="/laglistor"
