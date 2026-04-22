@@ -83,14 +83,17 @@ export function CycleItemsTab({
 
   if (items.length === 0) {
     return (
-      <div className="border-t p-8 text-center text-sm italic text-muted-foreground">
+      <div className="rounded-md border p-8 text-center text-sm italic text-muted-foreground">
         Kontrollen har inga poster.
       </div>
     )
   }
 
   return (
-    <div className="w-full">
+    // Brand wrapper — matches /tasks, /workspace/styrdokument, and
+    // Mina listor's compliance-detail-table. overflow-x-auto for
+    // responsive horizontal scroll on narrow viewports.
+    <div className="rounded-md border overflow-x-auto">
       <TableHeader />
       {shouldVirtualise ? (
         <VirtualisedBody

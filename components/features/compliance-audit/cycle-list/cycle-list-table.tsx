@@ -45,10 +45,7 @@ const FILTERS: FilterDef[] = [
   {
     key: 'aktiva',
     label: 'Aktiva',
-    statuses: [
-      ComplianceCycleStatus.PLANERAD,
-      ComplianceCycleStatus.PAGAENDE,
-    ],
+    statuses: [ComplianceCycleStatus.PLANERAD, ComplianceCycleStatus.PAGAENDE],
   },
   {
     key: 'slutforda',
@@ -168,34 +165,38 @@ export function CycleListTable({ cycles, canCreate }: CycleListTableProps) {
         })}
       </div>
 
-      {/* Table */}
+      {/* Table — brand wrapper: rounded-md border overflow-x-auto.
+          Matches /tasks list-tab, /workspace/styrdokument document-table,
+          and Mina listor's compliance-detail-table. */}
       {filtered.length === 0 ? (
         <EmptyState filter={activeFilter.key} canCreate={canCreate} />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Namn</TableHead>
-              <TableHead className="w-36">Status</TableHead>
-              <TableHead>Laglista</TableHead>
-              <TableHead className="w-48">Period</TableHead>
-              <TableHead>Ansvarig revisor</TableHead>
-              <TableHead className="w-20 text-right">Poster</TableHead>
-              <TableHead className="w-32">Skapad</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((cycle) => (
-              <CycleRow
-                key={cycle.id}
-                cycle={cycle}
-                onNavigate={() =>
-                  router.push(`/laglistor/kontroller/${cycle.id}`)
-                }
-              />
-            ))}
-          </TableBody>
-        </Table>
+        <div className="rounded-md border overflow-x-auto">
+          <Table className="table-fixed">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Namn</TableHead>
+                <TableHead className="w-36">Status</TableHead>
+                <TableHead>Laglista</TableHead>
+                <TableHead className="w-48">Period</TableHead>
+                <TableHead>Ansvarig revisor</TableHead>
+                <TableHead className="w-20 text-right">Poster</TableHead>
+                <TableHead className="w-32">Skapad</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((cycle) => (
+                <CycleRow
+                  key={cycle.id}
+                  cycle={cycle}
+                  onNavigate={() =>
+                    router.push(`/laglistor/kontroller/${cycle.id}`)
+                  }
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   )
@@ -215,8 +216,7 @@ function CycleRow({ cycle, onNavigate }: CycleRowProps) {
     format(cycle.scheduledStart, 'd MMM yyyy', { locale: sv }) +
     '–' +
     format(cycle.scheduledEnd, 'd MMM yyyy', { locale: sv })
-  const auditLabel =
-    cycle.auditType === AuditType.INTERN ? 'Intern' : 'Extern'
+  const auditLabel = cycle.auditType === AuditType.INTERN ? 'Intern' : 'Extern'
   const href = `/laglistor/kontroller/${cycle.id}`
 
   return (
@@ -256,9 +256,7 @@ function CycleRow({ cycle, onNavigate }: CycleRowProps) {
               {initials(cycle.leadAuditor.name)}
             </AvatarFallback>
           </Avatar>
-          <span className="truncate">
-            {cycle.leadAuditor.name ?? 'Okänd'}
-          </span>
+          <span className="truncate">{cycle.leadAuditor.name ?? 'Okänd'}</span>
         </span>
       </TableCell>
       <TableCell className="text-right tabular-nums">
