@@ -57,7 +57,9 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
   ])
 
   if (!cycleResult.success || !cycleResult.data) {
-    redirect('/laglistor/kontroller/skapa')
+    // Story 21.5.2: redirect to the list hub (was /skapa pre-21.5.2 because
+    // the list route didn't exist yet). Resolves 21.5 QA gate item DEV-002.
+    redirect('/laglistor/kontroller')
   }
 
   if (!itemsResult.success || !itemsResult.data) {

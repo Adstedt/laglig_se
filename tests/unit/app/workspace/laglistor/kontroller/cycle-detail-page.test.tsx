@@ -142,7 +142,7 @@ describe('CycleDetailRoute — RSC gating', () => {
     expect(redirectMock).toHaveBeenCalledWith('/laglistor')
   })
 
-  it('redirects when cycle is not found to /laglistor/kontroller/skapa', async () => {
+  it('redirects when cycle is not found to /laglistor/kontroller (list hub)', async () => {
     getCycleByIdMock.mockResolvedValue({
       success: false,
       error: 'Kontrollen hittades inte',
@@ -153,7 +153,7 @@ describe('CycleDetailRoute — RSC gating', () => {
         params: Promise.resolve({ cycleId: CYCLE_ID }),
       })
     ).rejects.toThrow(/NEXT_REDIRECT/)
-    expect(redirectMock).toHaveBeenCalledWith('/laglistor/kontroller/skapa')
+    expect(redirectMock).toHaveBeenCalledWith('/laglistor/kontroller')
   })
 
   it('renders with readOnly=true when cycle is SEALED', async () => {
