@@ -5,6 +5,7 @@
 import { Check, Circle } from 'lucide-react'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
+import { Accordion } from '@/components/ui/accordion'
 import { LinkedArtifactsPanel } from '@/components/features/document-list/legal-document-modal/linked-artifacts-panel'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 
@@ -79,8 +80,17 @@ export function CycleItemRowDrawer({ row }: CycleItemRowDrawerProps) {
           </p>
         </header>
         {/* Panel owns its own SWR fetch + error UI; do NOT wrap in a parent
-            error boundary — a panel failure must not collapse the drawer. */}
-        <LinkedArtifactsPanel listItemId={row.lawListItemId} readOnly />
+            error boundary — a panel failure must not collapse the drawer.
+            LinkedArtifactsPanel's root is a Radix <AccordionItem> and needs
+            an <Accordion> ancestor to mount — defaultValue keeps it expanded
+            so the auditor sees the contents immediately. */}
+        <Accordion
+          type="multiple"
+          defaultValue={['linked-artifacts']}
+          className="w-full"
+        >
+          <LinkedArtifactsPanel listItemId={row.lawListItemId} readOnly />
+        </Accordion>
       </section>
 
       <section>
