@@ -77,12 +77,27 @@ const ACCORDION_ITEMS = [
   'linked-artifacts',
 ] as const
 
-const DEFAULT_OPEN: string[] = [
-  'business-context',
-  'compliance-actions',
-  'tasks',
-  'linked-artifacts',
-]
+/**
+ * Quiet default: the modal lands with only "Hur påverkar detta oss?"
+ * (business-context) expanded. Users can toggle-all via the header chevron
+ * or expand individual accordions as needed. Overridden per focusField below.
+ */
+const DEFAULT_OPEN: string[] = ['business-context']
+
+/**
+ * When the modal is opened from the /krav page (focusField === 'kravpunkter'),
+ * land with only the compliance-actions accordion (which houses Kravpunkter)
+ * expanded.
+ */
+const KRAVPUNKTER_FOCUS_OPEN: string[] = ['compliance-actions']
+
+/**
+ * Session-scoped last-used accordion state. Survives modal close/reopen
+ * within the same tab (so "I'm in bevis-checking mode across several laws"
+ * sticks), dies on page refresh. `focusField` always wins over this — entry-
+ * point intent takes precedence. Module-scoped ref, no storage.
+ */
+let lastSessionOpen: string[] | null = null
 
 export function LeftPanel({
   listItem,
@@ -103,7 +118,17 @@ export function LeftPanel({
   complianceReadOnly,
   onKravpunkterProgressChange,
 }: LeftPanelProps) {
-  const [openItems, setOpenItems] = useState<string[]>(DEFAULT_OPEN)
+  const [openItems, setOpenItemsState] = useState<string[]>(() => {
+    // focusField wins — entry-point intent overrides any remembered state.
+    if (focusField === 'kravpunkter') return KRAVPUNKTER_FOCUS_OPEN
+    // Otherwise: last-used this session, falling back to the quiet default.
+    return lastSessionOpen ?? DEFAULT_OPEN
+  })
+  // Wrap the setter so every accordion change updates the session memo too.
+  const setOpenItems = (next: string[]) => {
+    lastSessionOpen = next
+    setOpenItemsState(next)
+  }
   const allOpen = openItems.length === ACCORDION_ITEMS.length
   const toggleAll = () => setOpenItems(allOpen ? [] : [...ACCORDION_ITEMS])
 

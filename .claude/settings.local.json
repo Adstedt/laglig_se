@@ -291,7 +291,16 @@
       "WebFetch(domain:rinfo.transportstyrelsen.se)",
       "WebFetch(domain:rinfo.riksarkivet.se)",
       "WebFetch(domain:rinfo.av.se)",
-      "WebFetch(domain:supabase.com)"
+      "WebFetch(domain:supabase.com)",
+      "Bash(rm components/features/legal-document-card.tsx)",
+      "Bash(rm -rf components/features/content)",
+      "Bash(gh repo *)",
+      "Bash(ls /c/Users/audri/Desktop/dev/laglig_se/components/features/document-list/legal-document-modal/)",
+      "Bash(echo \"\")",
+      "Bash(echo \"TASK-MODAL FILES:\")",
+      "Bash(ls /c/Users/audri/Desktop/dev/laglig_se/components/features/tasks/task-modal/)",
+      "Read(//tmp/**)",
+      "WebFetch(domain:docs.claude.com)"
     ],
     "deny": [],
     "ask": []
