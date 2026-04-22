@@ -30,6 +30,13 @@ const routeLabels: Record<string, string> = {
   laglistor: 'Mina listor',
   krav: 'Krav',
   mallar: 'Mallar',
+  // Story 21.4: lagefterlevnadskontroll module.
+  // `kontroller` is intentionally absent from `showAsLink` — the list route
+  // ships in Story 21.5. Until then it's skipped from the breadcrumb trail,
+  // collapsing "Mina listor > Kontroller > Skapa kontroll" to
+  // "Mina listor > Skapa kontroll" (avoids a 404-linking intermediate).
+  kontroller: 'Kontroller',
+  skapa: 'Skapa kontroll',
   browse: 'Regelverk',
   lagar: 'Lagar',
   rattskallor: 'Bläddra',

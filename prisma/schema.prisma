@@ -1909,6 +1909,7 @@ model ComplianceAuditItem {
   reviewed_by   User?                @relation("CycleItemReviewedBy", fields: [reviewed_by_user_id], references: [id], onDelete: SetNull)
   signed_off_by User?                @relation("CycleItemSignedOffBy", fields: [signed_off_by_user_id], references: [id], onDelete: SetNull)
 
+  @@unique([cycle_id, law_list_item_id], map: "compliance_audit_items_cycle_id_law_list_item_id_key")
   @@index([cycle_id, signed_off_at])
   @@index([law_list_item_id])
   @@map("compliance_audit_items")

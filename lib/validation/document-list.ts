@@ -238,7 +238,10 @@ export type GetDocumentListsInput = z.infer<typeof GetDocumentListsSchema>
 export const GetDocumentListItemsSchema = z.object({
   listId: z.string().uuid('Ogiltigt list-ID'),
   page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(50),
+  // Story 21.3 ScopeSelector + Story 21.4 wizard read the laglista with limit=500
+  // (the Epic 21 NFR1 ceiling). Raised max from 100 → 500 during 21.4 QA review
+  // after live UX surfaced "Kunde inte hämta lagar" on the ScopeSelector mount.
+  limit: z.number().int().min(1).max(500).default(50),
   contentTypeFilter: z.array(ContentTypeEnum).optional(),
 })
 

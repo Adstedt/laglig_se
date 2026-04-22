@@ -1,0 +1,45 @@
+/** Story 21.5 — CycleStatusBadge unit tests. */
+
+import { describe, it, expect } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { ComplianceCycleStatus } from '@prisma/client'
+import { CycleStatusBadge } from '@/components/features/compliance-audit/cycle-detail/cycle-status-badge'
+
+describe('CycleStatusBadge', () => {
+  it.each([
+    {
+      status: ComplianceCycleStatus.PLANERAD,
+      label: 'Planerad',
+      colorClass: 'bg-gray-100',
+    },
+    {
+      status: ComplianceCycleStatus.PAGAENDE,
+      label: 'Pågående',
+      colorClass: 'bg-blue-100',
+    },
+    {
+      status: ComplianceCycleStatus.AVSLUTAD,
+      label: 'Avslutad',
+      colorClass: 'bg-amber-100',
+    },
+    {
+      status: ComplianceCycleStatus.SEALED,
+      label: 'Förseglad',
+      colorClass: 'bg-emerald-100',
+    },
+    {
+      status: ComplianceCycleStatus.ARKIVERAD,
+      label: 'Arkiverad',
+      colorClass: 'bg-slate-200',
+    },
+  ])(
+    'renders $label with $colorClass for $status',
+    ({ status, label, colorClass }) => {
+      render(<CycleStatusBadge status={status} />)
+      const badge = screen.getByText(label)
+      expect(badge).toBeInTheDocument()
+      expect(badge.className).toContain(colorClass)
+      expect(badge.getAttribute('data-status')).toBe(status)
+    }
+  )
+})

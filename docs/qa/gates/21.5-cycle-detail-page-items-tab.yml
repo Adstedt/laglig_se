@@ -1,0 +1,75 @@
+schema: 1
+story: '21.5'
+story_title: 'Cycle detail page — items list + inline bedömning editor'
+gate: PASS
+status_reason: 'QA-fix pass 0.5 resolved all four dev-owned gate items from the CONCERNS review: GAP-001 (500-item performance microtest added, measures 61ms vs 1500ms ceiling), GAP-002 (Escape-collapses-drawer handler + 3 keyboard test cases added), DEBT-001 (4 mutation actions collapsed from 3 Prisma calls to 2 via `update({ include })`, dropping a round-trip each), DEBT-002 (`getCycleById` wrapped in `React.cache` at the route page for metadata/handler dedupe). Full regression 4322/4322 pass across 312 files with zero new failures; typecheck clean; build succeeds. Three low-severity items remain open but are SM/PO-owned decisions (DEBT-003 project-wide transaction sweep; DEV-001 deep-link URL shape; DEV-002 redirect destination) — not dev defects. No blocking issues; flipping to PASS.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-22T19:45:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'DEBT-003'
+    severity: low
+    finding: 'Mutation action + logActivity execute as two separate Prisma calls, not inside `$transaction`. If `logActivity` fails (Postgres connection hiccup, etc.), the cycle-item row is updated but the audit trail is missing. Identical to Story 21.2 DEBT-002. Project-wide pattern across `app/actions/*.ts`; NOT a 21.5 regression.'
+    suggested_action: 'Future consistency sweep across all server-actions: wrap mutation + log in a single `prisma.$transaction`, OR make the trade-off explicit in `docs/architecture/17-coding-standards.md`. Do NOT fix in isolation for 21.5 — would drift from the rest of `app/actions/` (law-list-item-requirements.ts, compliance-audit-cycle.ts, tasks.ts all follow the same shape).'
+    suggested_owner: sm
+
+  - id: 'DEV-001'
+    severity: low
+    finding: 'AC 5 column 1 specifies that clicking a row''s law title opens the source law in a new tab at `/laglistor?law=${lawListItemId}` via an existing query-param modal-opening contract. That pattern does not exist in the codebase — `/laglistor` uses internal state (not URL params) for modal opening. Dev pragmatically linked to `/laglistor` (main page, new tab) and documented the deviation. Functional, but the user lands on the main laglistor page and has to find the item manually rather than opening the modal directly.'
+    suggested_action: 'Either (a) accept the current fallback and mark AC 5 col 1 as intentionally relaxed in Story 21.5''s completion notes (already done), or (b) spin a follow-up story to wire a proper `?law=...` (or `?listItem=...`) query-param handler on `/laglistor` that opens `LegalDocumentModal` directly. The modal infrastructure exists; only the URL-param entry point is missing. If (b), also update Story 21.5''s row title link to use the new URL shape. Not urgent — user has a navigable path today.'
+    suggested_owner: po
+
+  - id: 'DEV-002'
+    severity: low
+    finding: 'AC 1 specifies that not-found cycles redirect to `/laglistor/kontroller`. The implementation redirects to `/laglistor/kontroller/skapa` instead, because `/laglistor/kontroller` (the list page) does not exist yet per the story''s explicit "not-in-scope" guardrail. Deviation from AC 1''s literal wording, but matches the real route tree — the alternative would be redirecting to a 404.'
+    suggested_action: 'Accept the current fallback. When a cycle-list page eventually ships (no current backlog story), update this redirect target. Until then, `/skapa` is the closest valid destination — users who navigate to a stale cycle ID get pushed into cycle-creation, which is a reasonable recovery action.'
+    suggested_owner: po
+
+# Resolved in 0.5 QA-fix pass (kept for audit trail):
+#  - GAP-001 (medium) — Perf microtest added (cycle-items-tab.test.tsx line 547). RESOLVED.
+#  - GAP-002 (low) — Keyboard tests added (cycle-items-tab.test.tsx lines 406/425/445) + Escape handler on grid root (cycle-items-tab.tsx line 70). RESOLVED.
+#  - DEBT-001 (low) — Mutation actions collapsed to update({ include }). 4 "DEBT-001 fix" comments in compliance-audit-item.ts. RESOLVED.
+#  - DEBT-002 (low) — getCycleById wrapped in React.cache at page module scope. RESOLVED.
+
+quality_score: 100
+
+evidence:
+  tests_reviewed: 71
+  tests_new: 71 # 27 server-action + 20 cycle-items-tab + 13 isolated-editor + 5 status-badge + 6 RSC-gating
+  tests_added_in_0_5: 4 # GAP-001 perf + 3 keyboard
+  tests_passing: 71
+  total_regression: 4322 # full CI unit suite, zero regressions after 0.5 fixes
+  risks_identified: 3 # all low, all non-dev-owned
+  files_created: 19
+  files_modified_in_0_5: 5 # compliance-audit-item.ts, cycle-detail page.tsx, cycle-items-tab.tsx + 2 test files
+  files_modified_during_review: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    ac_partial: []
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Unchanged from 0.4 review. withWorkspace + OR-permission check on reads, tasks:edit on mutations. Tenant isolation via cycle.workspace_id join in every Prisma query. Cross-workspace leakage tested. Zod validates all inputs. SEALED/ARKIVERAD writes rejected at server layer (three-layer defence: UI prop, server guard, future lib). No security issues.'
+  performance:
+    status: PASS
+    notes: '0.5 upgraded this from CONCERNS → PASS. DEBT-001 dropped mutation path from 3 → 2 Prisma calls. DEBT-002 dedupes the metadata/handler double-fetch of getCycleById via React.cache. GAP-001 perf microtest now measures 61ms for 500-item mount (well under the 1500ms jsdom ceiling). Virtualisation threshold + estimateSize unchanged (matches established compliance-detail-table conventions).'
+  reliability:
+    status: PASS
+    notes: 'Unchanged from 0.4 review. Optimistic UI + toast-on-error + reloadOnFailure. Fail-open on items fetch in RSC. All 4 mutations idempotent (no-op on unchanged value, already-signed, already-unsigned). Generic Swedish error on catch (inherited pattern, not a 21.5-specific debt).'
+  maintainability:
+    status: PASS
+    notes: 'Unchanged from 0.4 review. Clear separation: server actions / context / pure-presentation / orchestrator. Shared constants module (bedomning-copy.ts) matches NH-3 pattern from 21.4. TODO(21.10) markers consistent. Type casts minimal and consistent with project patterns.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'SM-owned consistency sweep: mutation + logActivity inside $transaction across all server actions, OR make the trade-off explicit in coding standards (DEBT-003)'
+      refs: ['app/actions/compliance-audit-item.ts', 'app/actions/compliance-audit-cycle.ts', 'app/actions/law-list-item-requirements.ts', 'app/actions/tasks.ts', 'docs/architecture/17-coding-standards.md']
+    - action: 'PO decision: wire /laglistor ?law= query-param to open LegalDocumentModal directly, or accept current /laglistor fallback (DEV-001)'
+      refs: ['components/features/compliance-audit/cycle-detail/cycle-items-tab.tsx', 'components/features/document-list/legal-document-modal/index.tsx']
+    - action: 'PO decision: not-found-cycle redirect target — current behaviour redirects to /skapa; revisit when a cycle-list page ships (DEV-002)'
+      refs: ['app/(workspace)/laglistor/kontroller/[cycleId]/page.tsx']

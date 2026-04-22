@@ -1,0 +1,57 @@
+schema: 1
+story: '21.4'
+story_title: 'Cycle creation wizard + materialisation'
+gate: PASS
+status_reason: 'All 13 ACs functionally met with full test traceability (117/117 tests green, 4251/4251 regression). QA review caught and fixed three real issues: (1) N+1 query pattern in materialisation (perf refactor — batched to 1 findMany for kravpunkter snapshots), (2) latent Zod cap mismatch that broke the live wizard UX ("Kunde inte hämta lagar") — raised `GetDocumentListItemsSchema.limit` max from 100 → 500 to match the 21.3/21.4 contract, (3) wizard layout polish (max-w-3xl + scroll-capped scope selector + sticky action row).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-22T15:05:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-05-06T00:00:00Z'
+
+evidence:
+  tests_reviewed: 117
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'withWorkspace(cb, "tasks:edit") at materialiseCycleItems entry + action route shell; workspace-scoped Prisma queries throughout; Zod `.safeParse` on cycleId UUID input with no Prisma call on invalid input; cross-tenant returns generic "Kontrollen hittades inte" (no existence leakage); `TODO(21.10)` marker placed for assertCycleEditable defence-in-depth; no new secrets/env vars.'
+  performance:
+    status: PASS
+    notes: 'Post-refactor: materialisation now issues 2 tx queries + 1 createMany + 1 cycle update regardless of item count (was N+1 via per-id buildKravpunkterSnapshot; would have exceeded NFR1 <3s ceiling at production DB latency). Explicit 10s tx timeout protects against pathological inputs. p95 microtest (500-item mock) passes < 3000ms.'
+  reliability:
+    status: PASS
+    notes: 'Three-layer defence against duplicate materialisation (client submit lock + server PLANERAD guard + DB @@unique index). EMPTY_SCOPE sentinel error pattern; outer try/catch returns generic Swedish on unexpected errors. tx rollback correctly leaves cycle in PLANERAD (tested). SF-1 stale-scope escape hatch tested in both success and softDeleteCycle-failure branches.'
+  maintainability:
+    status: PASS
+    notes: 'NH-3 applied: shared scope-summary copy constants module consumed by both Story 21.3 ScopeSelector and Story 21.4 CycleConfirmStep — drift-detection via the existing 50 scope-selector tests. Server action appended to existing compliance-audit-cycle.ts per file-colocation decision (total ~960 lines, within project norms). Module-private helpers (mapComplianceStatusToBedomning, resolveScopeToItemIds, buildKravpunkterSnapshotsById, summariseResolvedScope) are small + single-purpose + pure-or-tx-scoped.'
+
+history:
+  - at: '2026-04-22T15:05:00Z'
+    gate: PASS
+    note: 'First review after Dev flipped to Ready for Review. Three QA-performed fixes (N+1 refactor, Zod limit bump, UI polish) + minor copy fix ("1 vald lag" singular) + dead-code removal.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider adding a real-DB integration test suite to CI (currently integration tests are delivery-only, which is why the GetDocumentListItemsSchema max=100 vs ScopeSelector limit=500 Zod mismatch went undetected by the existing mocked unit suites across Stories 21.3 + 21.4). A single smoke-test harness that boots a test DB and exercises the wizard end-to-end would have caught this latent defect at story 21.3 time.'
+      refs:
+        - 'tests/integration/compliance-audit/materialisation.test.ts (not run in CI)'
+        - 'lib/validation/document-list.ts:238-244 (caller contract drift)'
+    - action: 'Story 21.5 should wire in the /laglistor/kontroller/[cycleId] detail route so the post-submit router.push lands on a real page instead of 404. Document the cycle state transitions visible to the user post-materialisation.'
+      refs:
+        - 'components/features/compliance-audit/cycle-creation-wizard/CycleCreationWizard.tsx:237'
+    - action: 'Story 21.10 must wire assertCycleEditable(tx, cycleId) at the TODO(21.10) marker in materialiseCycleItems (currently ~line 795). Defence-in-depth for SEALED/ARKIVERAD cycles.'
+      refs:
+        - 'app/actions/compliance-audit-cycle.ts:795'
+    - action: 'Post-MVP UX: if the 500-item soft cap continues to meet user needs, leave ScopeSelector as-is. If customers request larger lists, add server-side pagination to ScopeSelector (Story 21.3 Dev Notes "Post-MVP: pagination" already tracks this).'
+      refs:
+        - 'components/features/compliance-audit/scope-selector/ScopeSelector.tsx'
