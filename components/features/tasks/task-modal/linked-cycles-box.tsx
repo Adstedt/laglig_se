@@ -28,7 +28,7 @@ const CYCLE_STATUS_LABELS: Record<string, string> = {
   PLANERAD: 'Planerad',
   PAGAENDE: 'Pågående',
   AVSLUTAD: 'Avslutad',
-  SEALED: 'Förseglad',
+  SEALED: 'Fastställd',
   ARKIVERAD: 'Arkiverad',
 }
 

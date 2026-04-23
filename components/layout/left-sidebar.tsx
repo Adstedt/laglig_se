@@ -101,6 +101,8 @@ const platformItems: NavItem[] = [
       { title: 'Mina listor', href: '/laglistor' },
       // Story 20.3: cross-list kravpunkter overview — adjacent to Mina listor.
       { title: 'Krav', href: '/krav' },
+      // Epic 21: audit cycles (lagefterlevnadskontroller) over a laglista.
+      { title: 'Kontroller', href: '/laglistor/kontroller' },
       { title: 'Ändringar', href: '/laglistor?tab=changes' },
       { title: 'Mallar', href: '/laglistor/mallar' },
     ],

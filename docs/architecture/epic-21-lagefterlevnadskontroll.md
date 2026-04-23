@@ -489,7 +489,7 @@ This is the section the PM asked for explicitly. Each decision is grounded in ac
 
 - Aligns with PRD NFR10 and brief-level assumption. Preserves the tamper-evidence claim — if a seal can be undone, it has no legal weight.
 - If a material error is discovered post-seal, the remedy is: create a new cycle with scope covering the same lagar, re-run the affected items, seal. The old sealed cycle remains untouched (read-only evidence of the error + correction).
-- UI copy in the seal confirmation dialog must be unambiguous: *"Denna åtgärd kan inte ångras. Om du upptäcker fel efter försegling måste du skapa en ny kontroll."*
+- UI copy in the seal confirmation dialog must be unambiguous: *"Denna åtgärd kan inte ångras. Om du upptäcker fel efter fastställande måste du skapa en ny kontroll."*
 - Database-level recovery (DBA intervention) is an operational concern, explicitly out of feature scope. Document the DBA runbook separately.
 
 ### 6.5 PDF storage location — **RESOLVED: Supabase Storage, new path prefix**

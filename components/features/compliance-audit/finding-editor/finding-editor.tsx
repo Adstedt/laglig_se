@@ -301,7 +301,7 @@ export function FindingEditor({
 
   const dialogTitle =
     mode === 'create'
-      ? 'Ny finding'
+      ? 'Ny anmärkning'
       : `Redigera ${FINDING_TYPE_LABELS[state.type].toLowerCase()}`
 
   async function handleSubmit(e: React.FormEvent) {
@@ -372,12 +372,12 @@ export function FindingEditor({
           ...(taskOverrides ? { taskOverrides } : {}),
         })
         if (!result.success || !result.data) {
-          toast.error('Kunde inte skapa finding', {
+          toast.error('Kunde inte skapa anmärkning', {
             description: result.error,
           })
           return
         }
-        toast.success('Finding skapad')
+        toast.success('Anmärkning skapad')
         onSuccess(result.data.finding)
         onOpenChange(false)
       } else if (finding) {
@@ -393,12 +393,12 @@ export function FindingEditor({
           requirementId: state.requirementId,
         })
         if (!result.success || !result.data) {
-          toast.error('Kunde inte uppdatera finding', {
+          toast.error('Kunde inte uppdatera anmärkning', {
             description: result.error,
           })
           return
         }
-        toast.success('Finding uppdaterad')
+        toast.success('Anmärkning uppdaterad')
         onSuccess(result.data.finding)
         onOpenChange(false)
       }
@@ -444,7 +444,7 @@ export function FindingEditor({
                 <Label>Typ</Label>
                 <div
                   role="radiogroup"
-                  aria-label="Typ av finding"
+                  aria-label="Typ av anmärkning"
                   className="grid grid-cols-3 gap-2"
                 >
                   {FINDING_TYPE_OPTIONS.map((opt) => {
@@ -755,7 +755,7 @@ export function FindingEditor({
                     aria-invalid={taskTitleTooLong || taskTitleEmpty}
                   />
                   <div className="flex justify-between text-[10px] text-muted-foreground">
-                    <span>Förvalt från findingens titel</span>
+                    <span>Förvalt från anmärkningens titel</span>
                     <span>{(state.taskTitle ?? '').length}/200</span>
                   </div>
                 </div>
@@ -783,7 +783,7 @@ export function FindingEditor({
                   />
                   <div className="flex justify-between text-[10px] text-muted-foreground">
                     <span>
-                      Förvalt från findingens beskrivning med åtgärdsprefix
+                      Förvalt från anmärkningens beskrivning med åtgärdsprefix
                     </span>
                     <span>{(state.taskDescription ?? '').length}/5000</span>
                   </div>
@@ -814,7 +814,7 @@ export function FindingEditor({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__default__">
-                        Förvalt (lagpostens ansvarige / ledrevisor)
+                        Förvalt (dokumentets ansvarige / ledrevisor)
                       </SelectItem>
                       {members.map((m) => (
                         <SelectItem key={m.id} value={m.id}>
@@ -941,7 +941,7 @@ export function FindingEditor({
                   {submitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    'Skapa finding och uppgift'
+                    'Skapa anmärkning och uppgift'
                   )}
                 </Button>
               </>
@@ -969,7 +969,7 @@ export function FindingEditor({
                   ) : state.spawnTask ? (
                     'Nästa: uppgiftens detaljer'
                   ) : (
-                    'Skapa finding'
+                    'Skapa anmärkning'
                   )}
                 </Button>
               </>

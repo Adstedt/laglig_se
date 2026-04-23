@@ -108,12 +108,12 @@ export function CycleFindingsTab({
       // anledning" path (future enhancement — for 21.7 we surface the error).
       const result = await closeFinding({ findingId: f.id })
       if (!result.success || !result.data) {
-        toast.error('Kunde inte stänga finding', {
+        toast.error('Kunde inte stänga anmärkning', {
           description: result.error,
         })
         return
       }
-      toast.success('Finding stängd')
+      toast.success('Anmärkning stängd')
       onFindingMutation(result.data.finding)
     },
     [onFindingMutation]
@@ -123,12 +123,12 @@ export function CycleFindingsTab({
     async (f: FindingRow) => {
       const result = await reopenFinding(f.id)
       if (!result.success || !result.data) {
-        toast.error('Kunde inte återöppna finding', {
+        toast.error('Kunde inte återöppna anmärkning', {
           description: result.error,
         })
         return
       }
-      toast.success('Finding återöppnad')
+      toast.success('Anmärkning återöppnad')
       onFindingMutation(result.data.finding)
     },
     [onFindingMutation]
@@ -163,12 +163,12 @@ export function CycleFindingsTab({
         ...(verificationNote !== null ? { verificationNote } : {}),
       })
       if (!result.success || !result.data) {
-        toast.error('Kunde inte verifiera finding', {
+        toast.error('Kunde inte verifiera anmärkning', {
           description: result.error,
         })
         return
       }
-      toast.success('Finding verifierad och stängd')
+      toast.success('Anmärkning verifierad och stängd')
       onFindingMutation(result.data.finding)
       setVerifyFinding(null)
     },
@@ -192,7 +192,7 @@ export function CycleFindingsTab({
           role="status"
           className="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900"
         >
-          Denna kontroll är förseglad. Findings kan endast visas.
+          Denna kontroll är fastställd. Anmärkningar kan endast visas.
         </div>
       ) : null}
 
@@ -212,7 +212,7 @@ export function CycleFindingsTab({
             data-testid="cycle-findings-add-button"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Lägg till finding
+            Lägg till anmärkning
           </Button>
         ) : null}
       </div>
@@ -220,8 +220,8 @@ export function CycleFindingsTab({
       {filtered.length === 0 ? (
         <div className="rounded-md border p-8 text-center text-sm italic text-muted-foreground">
           {findings.length === 0
-            ? 'Inga findings registrerade ännu.'
-            : 'Inga findings matchar filtret.'}
+            ? 'Inga anmärkningar registrerade ännu.'
+            : 'Inga anmärkningar matchar filtret.'}
         </div>
       ) : shouldVirtualise ? (
         <VirtualisedBody
@@ -600,7 +600,7 @@ function FindingActions({
           size="sm"
           variant="ghost"
           onClick={onSpawnTask}
-          title="Skapa en åtgärdsuppgift kopplad till denna finding"
+          title="Skapa en åtgärdsuppgift kopplad till denna anmärkning"
           data-testid={`cycle-finding-spawn-task-${finding.id}`}
         >
           <Plus className="mr-1 h-3 w-3" />

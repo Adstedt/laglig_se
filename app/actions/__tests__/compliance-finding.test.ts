@@ -315,7 +315,7 @@ describe('createFinding', () => {
       description: 'Body',
     })
     expect(result.success).toBe(false)
-    expect(result.error).toMatch(/förseglad|arkiverad/)
+    expect(result.error).toMatch(/fastställd|arkiverad/)
     expect(prisma.complianceFinding.create).not.toHaveBeenCalled()
   })
 

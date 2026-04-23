@@ -561,7 +561,7 @@ describe('unsignOffItem', () => {
 // ============================================================================
 
 const SEALED_ERROR =
-  'Kontrollen är förseglad eller arkiverad — ändringar är inte tillåtna.'
+  'Kontrollen är fastställd eller arkiverad — ändringar är inte tillåtna.'
 
 describe.each([
   { status: ComplianceCycleStatus.SEALED, label: 'SEALED' },

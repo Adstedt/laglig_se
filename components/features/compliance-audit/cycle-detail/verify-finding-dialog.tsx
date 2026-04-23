@@ -95,7 +95,7 @@ export function VerifyFindingDialog({
             data-testid="verify-finding-context"
           >
             <p>
-              <span className="font-medium">Finding:</span> {finding.title}
+              <span className="font-medium">Anmärkning:</span> {finding.title}
             </p>
             {task ? (
               <p>

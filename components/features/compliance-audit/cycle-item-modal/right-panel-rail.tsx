@@ -93,10 +93,10 @@ export function CycleItemRightPanelRail({
         <RailIcon
           label={
             openCount === 0
-              ? 'Inga öppna findings'
+              ? 'Inga öppna anmärkningar'
               : majorCount > 0
-                ? `${openCount} öppna findings (${majorCount} MAJOR)`
-                : `${openCount} öppna findings`
+                ? `${openCount} öppna anmärkningar (${majorCount} MAJOR)`
+                : `${openCount} öppna anmärkningar`
           }
         >
           <span

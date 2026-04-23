@@ -132,7 +132,7 @@ export function CycleItemModalLeftPanel({
             <div className="flex flex-1 items-center justify-between gap-2 pr-2">
               <div className="flex items-center gap-2 text-base font-semibold text-foreground">
                 <AlertTriangle className="h-4 w-4" />
-                <span>Findings</span>
+                <span>Anmärkningar</span>
                 <span className="text-xs font-normal text-muted-foreground">
                   {openFindings.length} öppna · {closedFindings.length} stängda
                 </span>
@@ -151,7 +151,7 @@ export function CycleItemModalLeftPanel({
                   data-testid="modal-add-finding"
                 >
                   <Plus className="mr-1 h-3 w-3" />
-                  Lägg till finding
+                  Lägg till anmärkning
                 </Button>
               ) : null}
             </div>
@@ -160,7 +160,7 @@ export function CycleItemModalLeftPanel({
             <div ref={focusedRef}>
               {openFindings.length === 0 && closedFindings.length === 0 ? (
                 <p className="rounded-md border border-dashed p-4 text-center text-sm italic text-muted-foreground">
-                  Inga findings för denna post ännu.
+                  Inga anmärkningar för detta dokument ännu.
                 </p>
               ) : null}
 
@@ -258,8 +258,8 @@ export function CycleItemModalLeftPanel({
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
             <p className="mb-3 text-xs text-muted-foreground">
-              Visar nuvarande kopplingar till källagen — den försseglade
-              bevismängden hanteras separat vid försegling.
+              Visar nuvarande kopplingar till källagen — den fastställda
+              bevismängden hanteras separat vid fastställande.
             </p>
             {/* Nested accordion panel from legal-document-modal is itself an
                 AccordionItem, so it needs its own Accordion ancestor. Keep

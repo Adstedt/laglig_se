@@ -495,7 +495,7 @@ export function formatActivity(input: FormatInput): SentencePart[] {
           u,
           text(' startade kontrollen '),
           primary,
-          text(` (${itemCount} poster)`),
+          text(` (${itemCount} dokument)`),
         ]
       }
       return [u, text(' startade kontrollen '), primary]
@@ -541,8 +541,8 @@ export function formatActivity(input: FormatInput): SentencePart[] {
     case 'finding_created': {
       const typeLabel =
         typeof newP?.type === 'string'
-          ? (FINDING_TYPE_LABELS_DEFINITE[newP.type] ?? 'en finding')
-          : 'en finding'
+          ? (FINDING_TYPE_LABELS_DEFINITE[newP.type] ?? 'en anmärkning')
+          : 'en anmärkning'
       return [u, text(' skapade '), text(typeLabel), text(' '), primary]
     }
 

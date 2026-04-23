@@ -472,7 +472,7 @@ so that **an external certifieringsorgan can verify months later that the presen
 
 **Acceptance Criteria**
 
-1. "Försegla kontroll" button visible on cycle header when status is `AVSLUTAD`; destructive-style button with mandatory confirmation dialog ("Denna åtgärd kan inte ångras — skapa en ny kontroll om du upptäcker fel efter försegling").
+1. "Fastställ kontroll" button visible on cycle header when status is `AVSLUTAD`; destructive-style button with mandatory confirmation dialog ("Denna åtgärd kan inte ångras — skapa en ny kontroll om du upptäcker fel efter fastställande").
 2. `sealCycle(cycleId)` server action executes in a single Prisma transaction:
    - Validates cycle is `AVSLUTAD`.
    - Builds canonical-JSON via `canonicalize()` from `lib/compliance-audit/canonicalize.ts` covering cycle metadata + all items + all findings + evidence manifest (evidence_id + current sha256 of file/document content).
@@ -507,7 +507,7 @@ so that **no code path — UI, direct action call, or future refactor — can vi
 3. Task mutations are NOT blocked on sealed cycles — a corrective-action task remains editable/closable after its originating cycle is sealed (this is correct business behaviour).
 4. Finding closure and edit actions reject writes on sealed cycles via the same guard.
 5. Integration test: attempt to update an item bedömning on a sealed cycle via direct server action — action returns structured error; no DB write occurs.
-6. UI respects the guard preemptively: sealed cycles show all editors as read-only with a clear banner "Denna kontroll är förseglad ([seal_hash]). Läsbehörighet endast."
+6. UI respects the guard preemptively: sealed cycles show all editors as read-only with a clear banner "Denna kontroll är fastställd ([seal_hash]). Läsbehörighet endast."
 
 **Integration Verification**
 
