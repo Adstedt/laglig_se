@@ -1,0 +1,1882 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UI Alignment — Prototype &amp; Decisions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              border: '#27272a',
+              input: '#3f3f46',
+              ring: '#a1a1aa',
+              background: '#09090b',
+              foreground: '#fafafa',
+              primary: { DEFAULT: '#fafafa', foreground: '#18181b' },
+              secondary: { DEFAULT: '#27272a', foreground: '#fafafa' },
+              muted: { DEFAULT: '#27272a', foreground: '#a1a1aa' },
+              accent: { DEFAULT: '#27272a', foreground: '#fafafa' },
+              card: { DEFAULT: '#0a0a0a', foreground: '#fafafa' },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial;
+      }
+      .surface {
+        background: #0a0a0a;
+        border: 1px solid #27272a;
+        border-radius: 12px;
+      }
+      .panel {
+        background: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 8px;
+      }
+      .label-tag {
+        display: inline-flex;
+        align-items: center;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .label-current {
+        background: rgba(244, 63, 94, 0.15);
+        color: #fda4af;
+      }
+      .label-proposed {
+        background: rgba(34, 197, 94, 0.15);
+        color: #86efac;
+      }
+      .label-option {
+        background: rgba(59, 130, 246, 0.15);
+        color: #93c5fd;
+      }
+      .anno {
+        font-size: 11px;
+        color: #71717a;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .pill-current::after {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border: 1px dashed rgba(244, 63, 94, 0.4);
+        border-radius: 9999px;
+        pointer-events: none;
+      }
+      .swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        display: inline-block;
+        vertical-align: middle;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      details > summary {
+        list-style: none;
+        cursor: pointer;
+      }
+      details > summary::-webkit-details-marker {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="bg-zinc-950 text-zinc-100">
+    <div class="mx-auto max-w-7xl px-6 py-10">
+      <!-- ───────────────── HEADER ───────────────── -->
+      <header class="mb-12">
+        <p class="text-xs uppercase tracking-wider text-zinc-500">
+          UI Consistency · Alignment Pass
+        </p>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight">
+          Prototype &amp; Decisions
+        </h1>
+        <p class="mt-3 max-w-3xl text-zinc-400 leading-relaxed">
+          Side-by-side comparison of the four primitives proposed in
+          <code class="text-zinc-300">docs/ui-alignment-audit-2026-04-23.md</code
+          >. Each section shows
+          <span class="label-tag label-current">current</span> alongside
+          <span class="label-tag label-proposed">proposed</span> — and where a
+          decision is needed, multiple
+          <span class="label-tag label-option">options</span> are presented.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-2 text-xs">
+          <a
+            href="#pills"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >1 · Pill primitive</a
+          >
+          <a
+            href="#priority"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >2 · Priority alignment</a
+          >
+          <a
+            href="#chips"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >3 · Filter chip</a
+          >
+          <a
+            href="#toolbar"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >4 · Page header + Toolbar</a
+          >
+          <a
+            href="#decisions"
+            class="rounded-full border border-emerald-700 bg-emerald-900/30 px-3 py-1 text-emerald-300 hover:bg-emerald-900/50"
+            >→ Decision summary</a
+          >
+        </div>
+      </header>
+
+      <!-- ═════════════════ §1 PILL PRIMITIVE ═════════════════ -->
+      <section id="pills" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§1</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Pill primitive consolidation
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Today: pills are hand-rolled inline classes on 4 of 6 surfaces.
+            Even within Styrdokument, three different Badge variants appear in
+            the same Status column.
+          </p>
+        </div>
+
+        <!-- CURRENT STATE -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Five distinct pill implementations in production
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- A -->
+            <div class="panel p-4">
+              <div class="anno mb-2">A · Laglistor (status)</div>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-blue-100 text-blue-700"
+                  >Delvis uppfylld</span
+                >
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-700"
+                  >Ej påbörjad</span
+                >
+              </div>
+              <p class="anno">
+                hand-rolled · <code>font-medium</code> · text-700 · no border ·
+                has <code>whitespace-nowrap</code>
+              </p>
+            </div>
+
+            <!-- B -->
+            <div class="panel p-4">
+              <div class="anno mb-2">B · Cycle (status)</div>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700"
+                  >Pågående</span
+                >
+              </div>
+              <p class="anno">
+                hand-rolled · same colour as A but class order differs · no
+                <code>whitespace-nowrap</code>
+              </p>
+            </div>
+
+            <!-- C -->
+            <div class="panel p-4">
+              <div class="anno mb-2">C · Styrdokument (status)</div>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span
+                  class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800 border-green-200"
+                  >Godkänd</span
+                >
+                <span
+                  class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-zinc-50 text-zinc-900"
+                  >Under granskning</span
+                >
+                <span
+                  class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold border-transparent bg-zinc-700 text-zinc-100"
+                  >Utkast</span
+                >
+              </div>
+              <p class="anno">
+                shadcn Badge · <code>font-semibold</code> · text-800 · 1px
+                border · <span class="text-rose-400">three variants used</span>
+              </p>
+            </div>
+
+            <!-- D -->
+            <div class="panel p-4">
+              <div class="anno mb-2">D · Findings (severity, state)</div>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span
+                  class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-red-100 text-red-800 border-red-300"
+                  >Större</span
+                >
+                <span
+                  class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border-emerald-200"
+                  >Öppen</span
+                >
+              </div>
+              <p class="anno">
+                shadcn Badge · same primitive as C, different bg-50 vs bg-100
+                tinting
+              </p>
+            </div>
+
+            <!-- E -->
+            <div class="panel p-4">
+              <div class="anno mb-2">E · Laglistor (priority)</div>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700"
+                  >Hög</span
+                >
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700"
+                  >Medel</span
+                >
+              </div>
+              <p class="anno">
+                hand-rolled · <code>px-2</code> (vs A/B's <code>px-2.5</code>)
+              </p>
+            </div>
+
+            <!-- F -->
+            <div class="panel p-4">
+              <div class="anno mb-2">F · Styrdokument (type)</div>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span
+                  class="inline-flex items-center rounded-full border font-semibold text-zinc-100 text-[10px] px-1.5 py-0"
+                  >Övrigt</span
+                >
+                <span
+                  class="inline-flex items-center rounded-full border font-semibold text-zinc-100 text-[10px] px-1.5 py-0"
+                  >Policy</span
+                >
+              </div>
+              <p class="anno">
+                shadcn Badge outline variant · shrunk to text-[10px]
+              </p>
+            </div>
+          </div>
+
+          <p class="mt-4 text-sm text-zinc-400">
+            <strong class="text-rose-300">Pain points:</strong> three different
+            font-weights (medium/semibold), two padding scales (px-2 vs
+            px-2.5), inconsistent borders, two opacity scales (bg-50 vs
+            bg-100), and no shared "what does this colour mean" semantics.
+          </p>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-proposed">proposed</span>
+            <h3 class="text-base font-semibold">
+              Single <code>&lt;Badge&gt;</code> with semantic colour scales
+            </h3>
+          </div>
+
+          <p class="text-sm text-zinc-400 mb-5">
+            Extend <code>components/ui/badge.tsx</code> with a
+            <code>tone</code> prop (semantic colour) that maps to the four
+            states the app actually uses. <code>variant</code> is reserved for
+            visual treatment (soft / solid / outline). One file, one source of
+            truth.
+          </p>
+
+          <!-- Tone × variant matrix -->
+          <div class="panel p-5 mb-5">
+            <p class="anno mb-3">
+              tone × variant matrix —
+              <code>&lt;Badge tone="warning" variant="soft"&gt;</code>
+            </p>
+            <div class="overflow-x-auto">
+              <table class="text-xs w-full">
+                <thead class="text-zinc-500 text-left">
+                  <tr>
+                    <th class="px-2 py-2 font-medium">tone</th>
+                    <th class="px-2 py-2 font-medium">soft (default)</th>
+                    <th class="px-2 py-2 font-medium">solid</th>
+                    <th class="px-2 py-2 font-medium">outline</th>
+                    <th class="px-2 py-2 font-medium">use cases</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-800">
+                  <tr>
+                    <td class="px-2 py-3 align-middle">
+                      <span class="anno">neutral</span>
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-zinc-800 text-zinc-300"
+                        >Ej påbörjad</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-zinc-200 text-zinc-900"
+                        >Utkast</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full border border-zinc-700 px-2.5 py-0.5 text-xs font-medium text-zinc-300"
+                        >Övrigt</span
+                      >
+                    </td>
+                    <td class="px-2 py-3 text-zinc-400">
+                      not started · draft · uncategorised · type tags
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-2 py-3 align-middle">
+                      <span class="anno">info</span>
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-500/15 text-blue-300"
+                        >Pågående</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-500 text-white"
+                        >Under granskning</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full border border-blue-700 px-2.5 py-0.5 text-xs font-medium text-blue-300"
+                        >Info</span
+                      >
+                    </td>
+                    <td class="px-2 py-3 text-zinc-400">
+                      in progress · partial · review
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-2 py-3 align-middle">
+                      <span class="anno">success</span>
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-500/15 text-emerald-300"
+                        >Godkänd</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-500 text-white"
+                        >Uppfylld</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full border border-emerald-700 px-2.5 py-0.5 text-xs font-medium text-emerald-300"
+                        >Stängd</span
+                      >
+                    </td>
+                    <td class="px-2 py-3 text-zinc-400">
+                      complete · approved · resolved
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-2 py-3 align-middle">
+                      <span class="anno">warning</span>
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-500/15 text-amber-300"
+                        >Saknar bevis</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-500 text-amber-950"
+                        >Försenad</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full border border-amber-700 px-2.5 py-0.5 text-xs font-medium text-amber-300"
+                        >Observation</span
+                      >
+                    </td>
+                    <td class="px-2 py-3 text-zinc-400">
+                      partial · attention · observation
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="px-2 py-3 align-middle">
+                      <span class="anno">danger</span>
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-rose-500/15 text-rose-300"
+                        >Ej uppfylld</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-rose-500 text-white"
+                        >Avvikelse</span
+                      >
+                    </td>
+                    <td class="px-2 py-3">
+                      <span
+                        class="inline-flex items-center rounded-full border border-rose-700 px-2.5 py-0.5 text-xs font-medium text-rose-300"
+                        >Större</span
+                      >
+                    </td>
+                    <td class="px-2 py-3 text-zinc-400">
+                      blocking · failure · finding
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="anno mt-3">
+              All cells share: <code>rounded-full</code> ·
+              <code>px-2.5 py-0.5</code> · <code>text-xs</code> ·
+              <code>font-medium</code>. Only colour tokens differ.
+            </p>
+          </div>
+
+          <!-- Domain mapping example -->
+          <div class="panel p-5">
+            <p class="anno mb-3">
+              proposed semantic mapping (single source of truth in
+              <code>lib/ui/badge-tones.ts</code>)
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-xs">
+              <div>
+                <p class="text-zinc-300 font-medium mb-1">
+                  Compliance status
+                </p>
+                <ul class="text-zinc-400 space-y-1">
+                  <li>EJ_PABORJAD → <code>tone="neutral"</code></li>
+                  <li>PAGAENDE / DELVIS_UPPFYLLD → <code>tone="info"</code></li>
+                  <li>UPPFYLLD → <code>tone="success"</code></li>
+                  <li>EJ_UPPFYLLD → <code>tone="danger"</code></li>
+                  <li>EJ_TILLAMPLIG → <code>tone="neutral"</code> + outline</li>
+                </ul>
+              </div>
+              <div>
+                <p class="text-zinc-300 font-medium mb-1">Cycle status</p>
+                <ul class="text-zinc-400 space-y-1">
+                  <li>PLANERAD → <code>tone="neutral"</code></li>
+                  <li>PAGAENDE → <code>tone="info"</code></li>
+                  <li>AVSLUTAD → <code>tone="success"</code></li>
+                  <li>SEALED → <code>tone="success" variant="solid"</code></li>
+                  <li>ARKIVERAD → <code>tone="neutral"</code> + outline</li>
+                </ul>
+              </div>
+              <div>
+                <p class="text-zinc-300 font-medium mb-1">Document status</p>
+                <ul class="text-zinc-400 space-y-1">
+                  <li>DRAFT → <code>tone="neutral"</code></li>
+                  <li>IN_REVIEW → <code>tone="info"</code></li>
+                  <li>APPROVED → <code>tone="success"</code></li>
+                  <li>SUPERSEDED / ARCHIVED → <code>tone="neutral"</code></li>
+                </ul>
+              </div>
+              <div>
+                <p class="text-zinc-300 font-medium mb-1">
+                  Finding type / severity
+                </p>
+                <ul class="text-zinc-400 space-y-1">
+                  <li>AVVIKELSE → <code>tone="danger"</code></li>
+                  <li>OBSERVATION → <code>tone="warning"</code></li>
+                  <li>FORBATTRING → <code>tone="info"</code></li>
+                  <li>KRITISK → <code>tone="danger" variant="solid"</code></li>
+                  <li>STORRE → <code>tone="danger"</code></li>
+                  <li>MINDRE → <code>tone="warning"</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <details
+          class="surface p-5 mb-6 [&amp;[open]]:bg-zinc-900/50"
+        >
+          <summary class="flex items-center gap-3">
+            <span class="label-tag label-option">option</span>
+            <span class="text-sm font-medium"
+              >Alternative: stick with shadcn defaults
+              (default/secondary/destructive/outline)</span
+            >
+            <span class="ml-auto anno">click to expand</span>
+          </summary>
+          <div class="mt-4 text-sm text-zinc-400 space-y-2">
+            <p>
+              Shadcn ships with 4 generic Badge variants. We could just rename
+              them to map onto the domain, but they don't cover
+              <strong>warning</strong> (amber) which we need for partial
+              compliance and observations, and they collapse "draft / not
+              started" and "secondary information" into the same secondary
+              colour.
+            </p>
+            <p>
+              <strong>Verdict:</strong> the semantic
+              <code>tone</code> approach above is closer to how the team
+              already thinks about these states.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- ═════════════════ §2 PRIORITY ALIGNMENT ═════════════════ -->
+      <section id="priority" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§2</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Priority enum alignment
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Same domain value renders differently on Laglistor vs Uppgifter —
+            both label and colour drift. A user looking at the same task in
+            two surfaces sees two different things.
+          </p>
+        </div>
+
+        <!-- CURRENT -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Same priority, two renderings
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="panel p-4">
+              <div class="anno mb-3">Mina laglistor</div>
+              <table class="text-sm w-full">
+                <tbody>
+                  <tr>
+                    <td class="py-1.5 text-zinc-400 w-20">High</td>
+                    <td>
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700"
+                        >Hög</span
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-1.5 text-zinc-400">Medium</td>
+                    <td>
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700"
+                        >Medel</span
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-1.5 text-zinc-400">Low</td>
+                    <td>
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700"
+                        >Låg</span
+                      >
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="panel p-4">
+              <div class="anno mb-3">Uppgifter</div>
+              <table class="text-sm w-full">
+                <tbody>
+                  <tr>
+                    <td class="py-1.5 text-zinc-400 w-20">High</td>
+                    <td>
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700"
+                        >Hög</span
+                      >
+                      <span class="anno ml-2">(orange, not rose)</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-1.5 text-zinc-400">Medium</td>
+                    <td>
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
+                        >Medium</span
+                      >
+                      <span class="anno ml-2"
+                        >(English label, blue — collides with status info)</span
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-1.5 text-zinc-400">Low</td>
+                    <td>
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700"
+                        >Låg</span
+                      >
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p
+            class="mt-4 text-sm text-rose-300 bg-rose-950/30 border border-rose-900/50 rounded-md p-3"
+          >
+            ⚠ "Medium" priority on Uppgifter is the same blue as "Pågående"
+            status on Cycle/Laglistor. A user can't visually distinguish
+            <em>medium-priority task</em> from <em>cycle-in-progress</em> at a
+            glance.
+          </p>
+        </div>
+
+        <!-- OPTION A -->
+        <div class="surface p-6 mb-4">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-option">option A — recommended</span>
+            <h3 class="text-base font-semibold">
+              Swedish labels · semantic ramp (rose / amber / slate)
+            </h3>
+          </div>
+          <table class="text-sm w-full md:w-1/2">
+            <tbody>
+              <tr>
+                <td class="py-1.5 text-zinc-400 w-20">High</td>
+                <td>
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-rose-500/15 text-rose-300"
+                    >Hög</span
+                  >
+                </td>
+                <td class="anno pl-3">tone="danger" variant="soft"</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-zinc-400">Medium</td>
+                <td>
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-500/15 text-amber-300"
+                    >Medel</span
+                  >
+                </td>
+                <td class="anno pl-3">tone="warning" variant="soft"</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-zinc-400">Low</td>
+                <td>
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-zinc-800 text-zinc-300"
+                    >Låg</span
+                  >
+                </td>
+                <td class="anno pl-3">tone="neutral" variant="soft"</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="mt-3 text-sm text-zinc-400">
+            ✓ Reuses Laglistor's existing convention · ✓ Reuses the same
+            tone tokens as the proposed Badge ramp · ✓ Keeps "Medel" Swedish
+            (matches the rest of the app's UI copy).
+          </p>
+        </div>
+
+        <!-- OPTION B -->
+        <div class="surface p-6 mb-4">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-option">option B</span>
+            <h3 class="text-base font-semibold">
+              Swedish labels · severity ramp (red / amber / emerald)
+            </h3>
+          </div>
+          <table class="text-sm w-full md:w-1/2">
+            <tbody>
+              <tr>
+                <td class="py-1.5 text-zinc-400 w-20">High</td>
+                <td>
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-rose-500/15 text-rose-300"
+                    >Hög</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-zinc-400">Medium</td>
+                <td>
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-500/15 text-amber-300"
+                    >Medel</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-zinc-400">Low</td>
+                <td>
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-500/15 text-emerald-300"
+                    >Låg</span
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="mt-3 text-sm text-zinc-400">
+            ✗ "Low priority" in green can read as "this is fine / good", which
+            it isn't — it's still work to be done. Reserve emerald for
+            success states only.
+          </p>
+        </div>
+
+        <!-- OPTION C -->
+        <div class="surface p-6">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-option">option C</span>
+            <h3 class="text-base font-semibold">
+              Numeric P1/P2/P3 (engineering convention)
+            </h3>
+          </div>
+          <table class="text-sm w-full md:w-1/2">
+            <tbody>
+              <tr>
+                <td class="py-1.5 text-zinc-400 w-20">High</td>
+                <td>
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-rose-500/15 text-rose-300"
+                    >P1</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-zinc-400">Medium</td>
+                <td>
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-500/15 text-amber-300"
+                    >P2</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-zinc-400">Low</td>
+                <td>
+                  <span
+                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-zinc-800 text-zinc-300"
+                    >P3</span
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="mt-3 text-sm text-zinc-400">
+            ✗ Compact but unfamiliar to compliance officers (target persona).
+            Reserve for an internal admin view if ever needed.
+          </p>
+        </div>
+      </section>
+
+      <!-- ═════════════════ §3 FILTER CHIP ═════════════════ -->
+      <section id="chips" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§3</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Filter chip primitive
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Three different chip patterns are in use, all rendering as
+            <code>role="tab"</code>. Two reinvent the same idea (filter the
+            current view) with different active styles and sizes.
+          </p>
+        </div>
+
+        <!-- CURRENT -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">Three patterns in production</h3>
+          </div>
+
+          <!-- Pattern A: Kontroller list -->
+          <div class="panel p-5 mb-4">
+            <div class="anno mb-3">
+              A · <code>cycle-list-table.tsx</code> · dark-fill chips with
+              count badges
+            </div>
+            <div role="tablist" class="flex flex-wrap gap-2">
+              <button
+                role="tab"
+                class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors border-zinc-100 bg-zinc-100 text-zinc-900"
+              >
+                Aktiva
+                <span
+                  class="rounded-full px-1.5 text-xs bg-zinc-900/20 text-zinc-900"
+                  >3</span
+                >
+              </button>
+              <button
+                role="tab"
+                class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
+              >
+                Slutförda
+                <span
+                  class="rounded-full px-1.5 text-xs bg-zinc-800 text-zinc-400"
+                  >0</span
+                >
+              </button>
+              <button
+                role="tab"
+                class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
+              >
+                Förseglade
+                <span
+                  class="rounded-full px-1.5 text-xs bg-zinc-800 text-zinc-400"
+                  >0</span
+                >
+              </button>
+              <button
+                role="tab"
+                class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
+              >
+                Alla
+                <span
+                  class="rounded-full px-1.5 text-xs bg-zinc-800 text-zinc-400"
+                  >3</span
+                >
+              </button>
+            </div>
+            <p class="anno mt-3">
+              text-sm · active = high-contrast inverted · count badge inline
+            </p>
+          </div>
+
+          <!-- Pattern B: Findings -->
+          <div class="panel p-5 mb-4">
+            <div class="anno mb-3">
+              B · <code>cycle-findings-tab.tsx</code> · tinted-primary, no
+              counts, smaller
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                class="rounded-full border px-3 py-1 text-xs transition-colors border-zinc-100 bg-zinc-100/10 text-zinc-100"
+              >
+                Alla
+              </button>
+              <button
+                class="rounded-full border px-3 py-1 text-xs transition-colors border-zinc-700 text-zinc-400 hover:bg-zinc-800"
+              >
+                Avvikelse
+              </button>
+              <button
+                class="rounded-full border px-3 py-1 text-xs transition-colors border-zinc-700 text-zinc-400 hover:bg-zinc-800"
+              >
+                Observation
+              </button>
+              <button
+                class="rounded-full border px-3 py-1 text-xs transition-colors border-zinc-700 text-zinc-400 hover:bg-zinc-800"
+              >
+                Förbättringsförslag
+              </button>
+            </div>
+            <p class="anno mt-3">
+              text-xs · active = tinted overlay · no counts · no aria semantics
+            </p>
+          </div>
+
+          <!-- Pattern C: shadcn Tabs -->
+          <div class="panel p-5">
+            <div class="anno mb-3">
+              C · shadcn <code>TabsTrigger</code> (used by Laglistor / Tasks /
+              Styrdokument / Cycle Detail)
+            </div>
+            <div
+              role="tablist"
+              class="inline-flex h-9 items-center rounded-md bg-zinc-900 p-1 text-zinc-400"
+            >
+              <button
+                role="tab"
+                aria-selected="true"
+                class="inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium bg-zinc-700 text-zinc-100"
+              >
+                Mina listor
+              </button>
+              <button
+                role="tab"
+                class="inline-flex items-center justify-center rounded-sm px-3 py-1.5 text-sm font-medium"
+              >
+                Ändringar
+              </button>
+            </div>
+            <p class="anno mt-3">
+              shadcn segmented control · text-sm · active = filled tile · used
+              for primary view-switch tabs (not subset filters)
+            </p>
+          </div>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-proposed">proposed</span>
+            <h3 class="text-base font-semibold">
+              Split semantics: Tabs vs FilterChip
+            </h3>
+          </div>
+          <p class="text-sm text-zinc-400 mb-5">
+            Tabs are for switching <em>views</em> (Laglistor / Ändringar,
+            Items / Findings / Rapport). Filter chips are for narrowing
+            <em>data within a view</em>. Today both are rendered as
+            <code>role="tab"</code> and that conflates them. The proposal
+            keeps shadcn Tabs for view-switching and introduces a single
+            <code>&lt;FilterChip&gt;</code> for everything else.
+          </p>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- View switcher -->
+            <div class="panel p-5">
+              <div class="anno mb-3">
+                View switcher — keep shadcn <code>Tabs</code>
+              </div>
+              <div
+                role="tablist"
+                class="inline-flex h-9 items-center rounded-md bg-zinc-900 p-1 text-zinc-400"
+              >
+                <button
+                  role="tab"
+                  aria-selected="true"
+                  class="inline-flex items-center gap-1.5 justify-center rounded-sm px-3 py-1.5 text-sm font-medium bg-zinc-700 text-zinc-100"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                  </svg>
+                  Items
+                </button>
+                <button
+                  role="tab"
+                  class="inline-flex items-center gap-1.5 justify-center rounded-sm px-3 py-1.5 text-sm font-medium"
+                >
+                  Findings
+                </button>
+                <button
+                  role="tab"
+                  class="inline-flex items-center gap-1.5 justify-center rounded-sm px-3 py-1.5 text-sm font-medium"
+                >
+                  Rapport
+                </button>
+              </div>
+              <p class="anno mt-3">
+                semantic <code>&lt;Tabs&gt;</code> · radio group of mutually
+                exclusive views
+              </p>
+            </div>
+
+            <!-- Filter chip group -->
+            <div class="panel p-5">
+              <div class="anno mb-3">
+                Filter — new <code>&lt;FilterChip&gt;</code>
+              </div>
+              <div role="group" class="flex flex-wrap gap-2">
+                <button
+                  aria-pressed="true"
+                  class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors border-zinc-100 bg-zinc-100 text-zinc-900"
+                >
+                  Alla
+                  <span
+                    class="rounded-full px-1.5 py-0 text-[10px] font-semibold bg-zinc-900/20 text-zinc-900 tabular-nums"
+                    >12</span
+                  >
+                </button>
+                <button
+                  aria-pressed="false"
+                  class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
+                >
+                  Avvikelse
+                  <span
+                    class="rounded-full px-1.5 py-0 text-[10px] font-semibold bg-zinc-800 text-zinc-400 tabular-nums"
+                    >3</span
+                  >
+                </button>
+                <button
+                  aria-pressed="false"
+                  class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
+                >
+                  Observation
+                  <span
+                    class="rounded-full px-1.5 py-0 text-[10px] font-semibold bg-zinc-800 text-zinc-400 tabular-nums"
+                    >7</span
+                  >
+                </button>
+                <button
+                  aria-pressed="false"
+                  class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
+                >
+                  Förbättring
+                  <span
+                    class="rounded-full px-1.5 py-0 text-[10px] font-semibold bg-zinc-800 text-zinc-400 tabular-nums"
+                    >2</span
+                  >
+                </button>
+              </div>
+              <p class="anno mt-3">
+                <code>&lt;FilterChip pressed count icon&gt;</code> · semantic
+                toggle group · count badge optional · text-xs by default
+              </p>
+              <p class="anno mt-1">
+                hovering an inactive chip lifts to text-100 — no jarring colour
+                change
+              </p>
+            </div>
+          </div>
+
+          <p class="mt-4 text-sm text-zinc-400">
+            <strong class="text-emerald-300">Why the split:</strong> a
+            screen-reader user landing on Findings tab today hears
+            <em>"tab Avvikelse"</em>, then activating it doesn't navigate —
+            confusing. With the split, view tabs stay as tabs, filter chips
+            announce as toggle buttons.
+          </p>
+        </div>
+      </section>
+
+      <!-- ═════════════════ §4 PAGE HEADER + TOOLBAR ═════════════════ -->
+      <section id="toolbar" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§4</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Page header + Table toolbar primitives
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Five different header arrangements; primary actions land in three
+            different places. A
+            <code>&lt;PageHeader&gt;</code> +
+            <code>&lt;TableToolbar&gt;</code> pair would normalise this.
+          </p>
+        </div>
+
+        <!-- CURRENT -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Same-purpose page, four different layouts
+            </h3>
+          </div>
+
+          <!-- Mina laglistor -->
+          <div class="panel p-4 mb-3">
+            <div class="anno mb-2">Mina laglistor</div>
+            <div class="rounded bg-zinc-950 border border-zinc-800 p-4">
+              <div class="text-xs text-zinc-500 mb-2">
+                Almåsa Havshotell AB › Mina listor
+              </div>
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="text-xl font-semibold">Mina listor</h4>
+                  <p class="text-sm text-zinc-500">
+                    Hantera dina listor och håll koll på relevanta rättsfall.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-zinc-200 hover:bg-zinc-800"
+                  >
+                    Skapa kontroll
+                  </button>
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-zinc-200 hover:bg-zinc-800"
+                  >
+                    Generera om laglista
+                  </button>
+                </div>
+              </div>
+              <div class="mt-3 flex items-center gap-2">
+                <button
+                  role="tab"
+                  aria-selected="true"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium bg-zinc-800 text-zinc-100"
+                >
+                  Mina listor
+                </button>
+                <button
+                  role="tab"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                >
+                  Ändringar
+                </button>
+              </div>
+              <div
+                class="mt-3 flex flex-wrap items-center gap-2 justify-between"
+              >
+                <div class="flex flex-wrap items-center gap-2">
+                  <span
+                    class="inline-flex items-center gap-1 rounded-md border border-zinc-700 px-2 py-1 text-xs text-zinc-300"
+                    >📋 Er laglista (68)</span
+                  >
+                  <input
+                    placeholder="Sök dokument..."
+                    class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1 text-xs text-zinc-200"
+                  />
+                  <button
+                    class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-200"
+                  >
+                    Filter
+                  </button>
+                  <button
+                    class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-200"
+                  >
+                    Efterlevnad ▾
+                  </button>
+                </div>
+                <button
+                  class="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs text-zinc-100"
+                >
+                  + Lägg till dokument
+                </button>
+              </div>
+            </div>
+            <p class="anno mt-2">
+              ✗ Two header buttons + one inside the toolbar (3rd button placed
+              with filters) · subtitle present
+            </p>
+          </div>
+
+          <!-- Cycle detail -->
+          <div class="panel p-4 mb-3">
+            <div class="anno mb-2">Cycle detail (Test S11)</div>
+            <div class="rounded bg-zinc-950 border border-zinc-800 p-4">
+              <div class="text-xs text-zinc-500 mb-2">
+                … › Mina listor › Kontroller › Test S11
+              </div>
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-xl font-semibold">Test S11</h4>
+                    <span
+                      class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-700"
+                      >Pågående</span
+                    >
+                  </div>
+                  <p class="text-sm text-zinc-500">
+                    Er laglista · Intern revision · 22 apr–25 apr 2026 · AA
+                    Alexander Adstedt · Findings: 1 öppna · 3 stängda
+                  </p>
+                </div>
+                <div class="flex items-start gap-6 text-sm">
+                  <div class="text-right">
+                    <div class="anno">Bedömda</div>
+                    <div class="text-zinc-200 font-medium">1 av 20</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="anno">Signerade</div>
+                    <div class="text-zinc-200 font-medium">0 av 20</div>
+                  </div>
+                  <button
+                    class="inline-flex items-center rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-200"
+                  >
+                    Åtgärder ▾
+                  </button>
+                </div>
+              </div>
+              <div class="mt-3 flex items-center gap-2">
+                <button
+                  role="tab"
+                  aria-selected="true"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium bg-zinc-800 text-zinc-100"
+                >
+                  Items
+                </button>
+                <button
+                  role="tab"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                >
+                  Findings
+                </button>
+                <button
+                  role="tab"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                >
+                  Rapport
+                </button>
+                <button
+                  role="tab"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                >
+                  Aktivitet
+                </button>
+              </div>
+            </div>
+            <p class="anno mt-2">
+              ✗ Inline status pill in title · meta crammed into one
+              <code>·</code>-separated line · stats rendered as bare text · no
+              search · no filter · primary action is a generic dropdown
+            </p>
+          </div>
+
+          <!-- Tasks -->
+          <div class="panel p-4 mb-3">
+            <div class="anno mb-2">Uppgifter (Lista)</div>
+            <div class="rounded bg-zinc-950 border border-zinc-800 p-4">
+              <div class="text-xs text-zinc-500 mb-2">
+                Almåsa Havshotell AB › Uppgifter
+              </div>
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="text-xl font-semibold">Uppgifter</h4>
+                  <p class="text-sm text-zinc-500">
+                    Hantera och spåra efterlevnadsuppgifter för din
+                    organisation.
+                  </p>
+                </div>
+                <button
+                  class="inline-flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-sm text-zinc-200"
+                >
+                  + Ny uppgift
+                </button>
+              </div>
+              <div class="mt-3 flex items-center gap-2">
+                <button
+                  role="tab"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                >
+                  Sammanfattning
+                </button>
+                <button
+                  role="tab"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                >
+                  Aktiva
+                </button>
+                <button
+                  role="tab"
+                  aria-selected="true"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium bg-zinc-800 text-zinc-100"
+                >
+                  Lista
+                </button>
+                <button
+                  role="tab"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                >
+                  Kalender
+                </button>
+              </div>
+              <div
+                class="mt-3 flex flex-wrap items-center justify-between gap-2"
+              >
+                <span class="anno">5 uppgifter</span>
+                <div class="flex flex-wrap items-center gap-2">
+                  <input
+                    placeholder="Sök uppgifter..."
+                    class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1 text-xs text-zinc-200"
+                  />
+                  <button
+                    class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-200"
+                  >
+                    Status ▾
+                  </button>
+                  <button
+                    class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-200"
+                  >
+                    Prioritet ▾
+                  </button>
+                  <button
+                    class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-200"
+                  >
+                    Förfallodatum ▾
+                  </button>
+                  <button
+                    class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-200"
+                  >
+                    Kolumner ▾
+                  </button>
+                </div>
+              </div>
+            </div>
+            <p class="anno mt-2">
+              ✗ Filter row right-aligned · stats left-aligned · search inline ·
+              4+ filter dropdowns
+            </p>
+          </div>
+
+          <!-- Styrdokument -->
+          <div class="panel p-4">
+            <div class="anno mb-2">Styrdokument</div>
+            <div class="rounded bg-zinc-950 border border-zinc-800 p-4">
+              <div class="text-xs text-zinc-500 mb-2">
+                Almåsa Havshotell AB › Styrdokument
+              </div>
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <h4 class="text-xl font-semibold">Styrdokument</h4>
+                  <p class="text-sm text-zinc-500">
+                    Policyer, rutiner och instruktioner med versionshistorik.
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-zinc-200"
+                  >
+                    Importera
+                  </button>
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-zinc-200"
+                  >
+                    + Nytt dokument
+                  </button>
+                </div>
+              </div>
+              <div
+                class="mt-3 flex flex-wrap items-center gap-2"
+              >
+                <button
+                  role="tab"
+                  aria-selected="true"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium bg-zinc-800 text-zinc-100"
+                >
+                  Aktiva
+                </button>
+                <button
+                  role="tab"
+                  class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                >
+                  Arkiverade
+                </button>
+                <input
+                  placeholder="Sök dokument..."
+                  class="ml-2 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1 text-xs text-zinc-200"
+                />
+                <button
+                  class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-200 bg-zinc-800"
+                >
+                  ▼ Dokumenttyp
+                </button>
+                <button
+                  class="rounded-md border border-zinc-700 px-3 py-1 text-xs text-zinc-200 bg-zinc-800"
+                >
+                  ▼ Status
+                </button>
+              </div>
+            </div>
+            <p class="anno mt-2">
+              ✗ Tabs share the toolbar row with search + filter dropdowns ·
+              filter dropdowns get a darker bg when "active" (different idiom)
+            </p>
+          </div>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-proposed">proposed</span>
+            <h3 class="text-base font-semibold">
+              <code>&lt;PageHeader&gt;</code> +
+              <code>&lt;TableToolbar&gt;</code>
+            </h3>
+          </div>
+
+          <p class="text-sm text-zinc-400 mb-5">
+            Two thin compositional primitives, both with named slots.
+            <code>PageHeader</code> owns title + subtitle + meta + primary
+            action. <code>TableToolbar</code> owns view tabs (when present),
+            search, filter chips/dropdowns, and a right-side affordance like
+            "stats" or a secondary action.
+          </p>
+
+          <!-- API -->
+          <div class="panel p-5 mb-5">
+            <div class="anno mb-3">API</div>
+            <pre
+              class="text-xs text-zinc-300 overflow-x-auto leading-relaxed"
+            ><code>&lt;PageHeader
+  breadcrumbs={[...]}
+  title="Test S11"
+  badge={&lt;Badge tone="info"&gt;Pågående&lt;/Badge&gt;}
+  meta={&lt;PageHeader.Meta items={[
+    "Er laglista",
+    "Intern revision",
+    "22 apr — 25 apr 2026",
+    {icon: &lt;Avatar/&gt;, label: "Alexander Adstedt"},
+  ]}/&gt;}
+  stats={[
+    {label: "Bedömda", value: "1 av 20"},
+    {label: "Signerade", value: "0 av 20"},
+  ]}
+  primaryAction={&lt;Button&gt;Åtgärder ▾&lt;/Button&gt;}
+/&gt;
+
+&lt;TableToolbar
+  views={&lt;Tabs value={view} onChange={setView}&gt;...&lt;/Tabs&gt;}
+  search={&lt;SearchInput placeholder="Sök items..."/&gt;}
+  filters={&lt;&gt;
+    &lt;FilterChip pressed={status==='oppen'} count={3}&gt;Öppna&lt;/FilterChip&gt;
+    &lt;FilterChip pressed={status==='stangd'} count={1}&gt;Stängda&lt;/FilterChip&gt;
+  &lt;/&gt;}
+  rightSlot={&lt;Button size="sm"&gt;+ Lägg till finding&lt;/Button&gt;}
+/&gt;</code></pre>
+          </div>
+
+          <!-- Reference layout -->
+          <div class="panel p-5 mb-5">
+            <div class="anno mb-3">
+              Reference layout — slot positions
+            </div>
+            <div class="rounded bg-zinc-950 border border-zinc-800 p-5">
+              <!-- breadcrumb -->
+              <div class="text-xs text-zinc-500 mb-2">
+                Almåsa Havshotell AB › Mina listor › Kontroller ›
+                <span class="text-zinc-300">Test S11</span>
+              </div>
+              <!-- title row -->
+              <div class="flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-2xl font-semibold tracking-tight">
+                      Test S11
+                    </h4>
+                    <span
+                      class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-500/15 text-blue-300"
+                      >Pågående</span
+                    >
+                  </div>
+                  <!-- meta -->
+                  <div
+                    class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-400"
+                  >
+                    <span>Er laglista</span>
+                    <span class="text-zinc-700">·</span>
+                    <span>Intern revision</span>
+                    <span class="text-zinc-700">·</span>
+                    <span>22 apr — 25 apr 2026</span>
+                    <span class="text-zinc-700">·</span>
+                    <span class="flex items-center gap-1.5"
+                      ><span
+                        class="inline-flex h-4 w-4 items-center justify-center rounded-full bg-zinc-700 text-[9px] font-semibold text-zinc-200"
+                        >AA</span
+                      >Alexander Adstedt</span
+                    >
+                  </div>
+                </div>
+                <!-- stats + primary -->
+                <div class="flex items-center gap-5">
+                  <div class="text-right">
+                    <div class="anno">Bedömda</div>
+                    <div class="text-sm font-medium text-zinc-100">1 av 20</div>
+                  </div>
+                  <div class="text-right">
+                    <div class="anno">Signerade</div>
+                    <div class="text-sm font-medium text-zinc-100">0 av 20</div>
+                  </div>
+                  <div class="h-8 w-px bg-zinc-800"></div>
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100"
+                  >
+                    Åtgärder ▾
+                  </button>
+                </div>
+              </div>
+              <!-- divider -->
+              <div class="mt-5 mb-3 h-px bg-zinc-800"></div>
+              <!-- toolbar: views + filters/search/right -->
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div
+                  role="tablist"
+                  class="inline-flex items-center rounded-md bg-zinc-900 p-1"
+                >
+                  <button
+                    role="tab"
+                    aria-selected="true"
+                    class="rounded-sm px-3 py-1.5 text-sm font-medium bg-zinc-700 text-zinc-100"
+                  >
+                    Items
+                  </button>
+                  <button
+                    role="tab"
+                    class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                  >
+                    Findings
+                  </button>
+                  <button
+                    role="tab"
+                    class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                  >
+                    Rapport
+                  </button>
+                  <button
+                    role="tab"
+                    class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                  >
+                    Aktivitet
+                  </button>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <div class="relative">
+                    <span
+                      class="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500"
+                      >🔍</span
+                    >
+                    <input
+                      placeholder="Sök items..."
+                      class="rounded-md border border-zinc-700 bg-zinc-950 pl-8 pr-3 py-1.5 text-xs text-zinc-200 w-44"
+                    />
+                  </div>
+                  <button
+                    aria-pressed="true"
+                    class="inline-flex items-center gap-1.5 rounded-full border border-zinc-100 bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-900"
+                  >
+                    Alla
+                    <span
+                      class="rounded-full bg-zinc-900/20 px-1.5 text-[10px] font-semibold text-zinc-900 tabular-nums"
+                      >20</span
+                    >
+                  </button>
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-3 py-1 text-xs font-medium text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
+                  >
+                    Ej bedömda
+                    <span
+                      class="rounded-full bg-zinc-800 px-1.5 text-[10px] font-semibold text-zinc-400 tabular-nums"
+                      >19</span
+                    >
+                  </button>
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-3 py-1 text-xs font-medium text-zinc-400 hover:border-zinc-500 hover:text-zinc-100"
+                  >
+                    Ej signerade
+                    <span
+                      class="rounded-full bg-zinc-800 px-1.5 text-[10px] font-semibold text-zinc-400 tabular-nums"
+                      >20</span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+            <p class="anno mt-3">
+              fixed slot order: breadcrumbs → title+badge → meta → (stats |
+              primary) → divider → views | (search + filters + right)
+            </p>
+          </div>
+
+          <!-- Surface comparison post-migration -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="panel p-5">
+              <div class="anno mb-3">
+                Mina laglistor — after
+              </div>
+              <div class="rounded bg-zinc-950 border border-zinc-800 p-4">
+                <div class="text-xs text-zinc-500 mb-2">
+                  Almåsa Havshotell AB › Mina listor
+                </div>
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h4 class="text-xl font-semibold">Mina listor</h4>
+                    <p class="text-sm text-zinc-500">
+                      Hantera dina listor och håll koll på relevanta rättsfall.
+                    </p>
+                  </div>
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100"
+                  >
+                    + Lägg till dokument
+                  </button>
+                </div>
+                <div class="mt-4 mb-3 h-px bg-zinc-800"></div>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <div
+                    role="tablist"
+                    class="inline-flex items-center rounded-md bg-zinc-900 p-1"
+                  >
+                    <button
+                      role="tab"
+                      aria-selected="true"
+                      class="rounded-sm px-3 py-1.5 text-sm font-medium bg-zinc-700 text-zinc-100"
+                    >
+                      Mina listor
+                    </button>
+                    <button
+                      role="tab"
+                      class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                    >
+                      Ändringar
+                    </button>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input
+                      placeholder="Sök dokument..."
+                      class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1 text-xs text-zinc-200 w-44"
+                    />
+                    <button
+                      class="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300"
+                    >
+                      Filter
+                    </button>
+                    <button
+                      class="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300"
+                    >
+                      Efterlevnad ▾
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p class="anno mt-2">
+                ✓ Single primary action (Lägg till) top-right · ✓ Skapa
+                kontroll / Generera moves to overflow menu · ✓ Filter chips
+                use FilterChip
+              </p>
+            </div>
+
+            <div class="panel p-5">
+              <div class="anno mb-3">Uppgifter — after</div>
+              <div class="rounded bg-zinc-950 border border-zinc-800 p-4">
+                <div class="text-xs text-zinc-500 mb-2">
+                  Almåsa Havshotell AB › Uppgifter
+                </div>
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h4 class="text-xl font-semibold">Uppgifter</h4>
+                    <p class="text-sm text-zinc-500">
+                      Hantera och spåra efterlevnadsuppgifter.
+                    </p>
+                  </div>
+                  <button
+                    class="inline-flex items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm text-zinc-100"
+                  >
+                    + Ny uppgift
+                  </button>
+                </div>
+                <div class="mt-4 mb-3 h-px bg-zinc-800"></div>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <div
+                    role="tablist"
+                    class="inline-flex items-center rounded-md bg-zinc-900 p-1"
+                  >
+                    <button
+                      role="tab"
+                      class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                    >
+                      Sammanfattning
+                    </button>
+                    <button
+                      role="tab"
+                      aria-selected="true"
+                      class="rounded-sm px-3 py-1.5 text-sm font-medium bg-zinc-700 text-zinc-100"
+                    >
+                      Lista
+                    </button>
+                    <button
+                      role="tab"
+                      class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                    >
+                      Kanban
+                    </button>
+                    <button
+                      role="tab"
+                      class="rounded-sm px-3 py-1.5 text-sm font-medium text-zinc-400"
+                    >
+                      Kalender
+                    </button>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input
+                      placeholder="Sök uppgifter..."
+                      class="rounded-md border border-zinc-700 bg-zinc-950 px-3 py-1 text-xs text-zinc-200 w-44"
+                    />
+                    <button
+                      class="rounded-md border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300"
+                    >
+                      ⚙ Filter (3)
+                    </button>
+                    <button
+                      class="rounded-md border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300"
+                    >
+                      Kolumner ▾
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p class="anno mt-2">
+                ✓ Same slot order as Laglistor · ✓ Filter dropdowns collapse
+                into a single "Filter (3)" popover · ✓ Search left of filters
+                (matches reading flow)
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════════════ DECISION SUMMARY ═════════════════ -->
+      <section id="decisions" class="mb-12">
+        <div class="surface p-6 border-emerald-900/50">
+          <div class="mb-4 flex items-center gap-3">
+            <span class="label-tag label-proposed">decisions needed</span>
+            <h2 class="text-xl font-semibold">Decision summary</h2>
+          </div>
+          <ol class="space-y-4 text-sm text-zinc-300">
+            <li class="flex items-start gap-3">
+              <span
+                class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold"
+                >1</span
+              >
+              <div>
+                <p class="font-medium">
+                  Adopt the <code>tone</code>-based Badge primitive?
+                </p>
+                <p class="text-zinc-400 mt-0.5">
+                  Adds neutral / info / success / warning / danger as semantic
+                  tones with soft / solid / outline variants. Migrates 4 hand-rolled
+                  pill implementations to the shared
+                  <code>components/ui/badge.tsx</code>.
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span
+                class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold"
+                >2</span
+              >
+              <div>
+                <p class="font-medium">
+                  Priority labels &amp; colours: option
+                  <span class="text-emerald-300">A</span> (Hög·Medel·Låg in
+                  rose / amber / slate)?
+                </p>
+                <p class="text-zinc-400 mt-0.5">
+                  Recommended. Decide between A and B (B uses emerald for Låg,
+                  which conflicts with success states). Verify whether
+                  <code>priority-editor.tsx</code> is actually shared between
+                  Laglistor and Uppgifter — the divergence suggests it isn't.
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span
+                class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold"
+                >3</span
+              >
+              <div>
+                <p class="font-medium">
+                  Split semantics: keep shadcn <code>Tabs</code> for views,
+                  introduce <code>FilterChip</code> for in-view filters?
+                </p>
+                <p class="text-zinc-400 mt-0.5">
+                  Replaces the two reinvented chip implementations with one.
+                  Tabs stay as <code>role="tab"</code>; filter chips become
+                  toggle buttons (<code>aria-pressed</code>).
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <span
+                class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold"
+                >4</span
+              >
+              <div>
+                <p class="font-medium">
+                  Adopt <code>&lt;PageHeader&gt;</code> +
+                  <code>&lt;TableToolbar&gt;</code> as the canonical pair?
+                </p>
+                <p class="text-zinc-400 mt-0.5">
+                  Forces a single slot order across Laglistor / Cycle detail /
+                  Tasks / Styrdokument. Cycle detail keeps its meta + stats
+                  via dedicated PageHeader props rather than ad-hoc
+                  <code>·</code>-separated text.
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3 opacity-70">
+              <span
+                class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold"
+                >5</span
+              >
+              <div>
+                <p class="font-medium">
+                  Defer: migrate Cycle Items + Styrdokument to shadcn
+                  <code>&lt;Table&gt;</code>?
+                </p>
+                <p class="text-zinc-400 mt-0.5">
+                  Larger refactor — would unlock sort, drag, selection,
+                  accessibility uniformly. Plan as separate stories once 1–4
+                  land.
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3 opacity-70">
+              <span
+                class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold"
+                >6</span
+              >
+              <div>
+                <p class="font-medium">Defer: per-surface empty-state pass.</p>
+                <p class="text-zinc-400 mt-0.5">
+                  Out of scope for this audit; flagged as a follow-up after
+                  primitives land.
+                </p>
+              </div>
+            </li>
+          </ol>
+
+          <div class="mt-6 rounded-lg bg-zinc-900/50 border border-zinc-800 p-4">
+            <p class="text-xs uppercase tracking-wider text-zinc-500 mb-2">
+              Suggested rollout order
+            </p>
+            <ol class="text-sm text-zinc-300 space-y-1 list-decimal pl-5">
+              <li>
+                Land §1 (Badge primitive) and §2 (Priority alignment) together
+                — shared colour tokens, low blast radius, immediate visual
+                payoff.
+              </li>
+              <li>
+                Land §3 (FilterChip) — touches two files
+                (<code>cycle-list-table</code>,
+                <code>cycle-findings-tab</code>) plus any future filter chips.
+              </li>
+              <li>
+                Land §4 (PageHeader + TableToolbar) — biggest refactor; touches
+                all six surfaces. Do incrementally, surface-by-surface.
+              </li>
+              <li>
+                Revisit §5 once §4 settles — easier once the toolbar is no
+                longer competing for layout decisions.
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <footer class="mt-12 text-center text-xs text-zinc-600">
+        Prototype generated 2026-04-23 · companion to
+        <code>docs/ui-alignment-audit-2026-04-23.md</code>
+      </footer>
+    </div>
+  </body>
+</html>

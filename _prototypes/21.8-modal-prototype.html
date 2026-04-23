@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="sv" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kontroll — split-panel modal prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        background: #0a0a0a;
+        color: #e8e8e8;
+        font-family:
+          'Google Sans Flex',
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        font-feature-settings:
+          'cv11',
+          'ss01',
+          'ss03';
+        letter-spacing: -0.005em;
+      }
+
+      /* Row states */
+      .row-interactive {
+        cursor: pointer;
+        transition:
+          background 0.14s ease,
+          box-shadow 0.14s ease;
+      }
+      .row-interactive:hover {
+        background: #111;
+      }
+      .row-active {
+        background: #141414;
+        box-shadow: inset 2px 0 0 0 #60a5fa;
+      }
+
+      /* Modal entrance */
+      .modal-content {
+        animation: modalEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .modal-backdrop {
+        animation: fadeIn 0.2s ease;
+      }
+      @keyframes modalEnter {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -48%) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Panel transitions (State 1 ↔ State 2) */
+      .panel-transition {
+        transition:
+          flex-grow 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+          flex-basis 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+          opacity 0.28s ease,
+          border-color 0.28s ease,
+          width 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+
+      /* Scrollbar */
+      .scrollbar-subtle {
+        scrollbar-width: thin;
+        scrollbar-color: #2a2a2a transparent;
+      }
+      .scrollbar-subtle::-webkit-scrollbar {
+        width: 8px;
+      }
+      .scrollbar-subtle::-webkit-scrollbar-thumb {
+        background: #262626;
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+      }
+      .scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+        background: #3a3a3a;
+        background-clip: padding-box;
+      }
+
+      /* Priority rails on finding cards */
+      .finding-card {
+        position: relative;
+      }
+      .finding-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 10px;
+        bottom: 10px;
+        width: 2px;
+        border-radius: 2px;
+      }
+      .finding-card.major::before {
+        background: #dc2626;
+      }
+      .finding-card.minor::before {
+        background: #ea580c;
+      }
+      .finding-card.obs::before {
+        background: #d97706;
+      }
+      .finding-card.forb::before {
+        background: #3b82f6;
+      }
+      .finding-card.closed::before {
+        background: #2a2a2a;
+      }
+
+      /* Focus ring */
+      button:focus-visible {
+        outline: 2px solid #60a5fa;
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+
+      .finding-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        display: inline-block;
+      }
+
+      .tab-underline {
+        position: relative;
+      }
+      .tab-underline.active::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 1.5px;
+        background: #ededed;
+      }
+
+      /* Chat bubble rising-dot animation */
+      .typing-dot {
+        animation: bounce-dot 1.4s infinite ease-in-out both;
+      }
+      .typing-dot:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+      .typing-dot:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+      @keyframes bounce-dot {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.35;
+        }
+        40% {
+          transform: translateY(-3px);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen antialiased">
+    <!-- =============================================================== -->
+    <!-- PROTOTYPE BANNER                                                  -->
+    <!-- =============================================================== -->
+    <div
+      class="border-b border-emerald-500/20 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent px-8 py-2.5 text-xs text-emerald-200 flex items-center gap-3"
+    >
+      <span
+        class="rounded bg-emerald-400 text-[#0a0a0a] px-1.5 py-0.5 font-semibold text-[10px] tracking-wide"
+        >PROTOTYPE · MODAL</span
+      >
+      <span class="text-emerald-200/90"
+        >Centered split-panel modal (same shell as law-list-item modal). Click
+        any row · <kbd class="px-1 font-mono text-emerald-200/70">Esc</kbd> to
+        close. Try the
+        <span class="text-emerald-300 font-medium">"Fråga Lexa"</span>
+        button inside the right panel to see the AI-chat state.</span
+      >
+      <span class="ml-auto text-emerald-400/50 font-mono"
+        >21.8 UX-follow-up · modal variant</span
+      >
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- PAGE CHROME (same as drawer prototype for continuity)            -->
+    <!-- =============================================================== -->
+    <div class="border-b border-[#1a1a1a] bg-[#0c0c0c]">
+      <div class="max-w-[1400px] mx-auto px-8 pt-5">
+        <nav
+          class="text-[11px] text-[#6a6a6a] flex items-center gap-1.5 font-normal"
+        >
+          <span>Almåsa Havshotell AB</span>
+          <svg
+            class="h-3 w-3 text-[#444]"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>Mina listor</span>
+          <svg
+            class="h-3 w-3 text-[#444]"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>Kontroller</span>
+          <svg
+            class="h-3 w-3 text-[#444]"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span class="text-[#d8d8d8]">Test 511</span>
+        </nav>
+
+        <div class="mt-4 flex items-start justify-between gap-8">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h1
+                class="text-[28px] leading-none font-medium text-[#f4f4f4] tracking-tight"
+              >
+                Test 511
+              </h1>
+              <span
+                class="rounded px-2 py-[3px] text-[11px] font-medium bg-blue-500/10 text-blue-300 border border-blue-500/20"
+                >Pågående</span
+              >
+            </div>
+            <div class="mt-2.5 flex items-center gap-2 text-xs text-[#6d6d6d]">
+              <span>Er laglista</span>
+              <span class="text-[#333]">·</span>
+              <span>Intern revision</span>
+              <span class="text-[#333]">·</span>
+              <span>22 apr. 2026 – 25 apr. 2026</span>
+              <span class="text-[#333]">·</span>
+              <span class="inline-flex items-center gap-1.5">
+                <span
+                  class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-gradient-to-br from-[#3b3b3b] to-[#1a1a1a] text-[9px] text-[#b8b8b8] font-medium"
+                  >A</span
+                >
+                Alexander Adstedt
+              </span>
+              <span class="text-[#333]">·</span>
+              <span>Findings: 3 öppna · 3 stängda</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-5 shrink-0">
+            <div class="text-right">
+              <p
+                class="text-[10px] uppercase tracking-[0.1em] text-[#5a5a5a] font-medium"
+              >
+                Bedömda
+              </p>
+              <p class="text-[13px] font-medium text-[#e0e0e0] mt-0.5">
+                1 <span class="text-[#6a6a6a] font-normal">av 20</span>
+              </p>
+            </div>
+            <div class="h-8 w-px bg-[#1a1a1a]"></div>
+            <div class="text-right">
+              <p
+                class="text-[10px] uppercase tracking-[0.1em] text-[#5a5a5a] font-medium"
+              >
+                Signerade
+              </p>
+              <p class="text-[13px] font-medium text-[#e0e0e0] mt-0.5">
+                0 <span class="text-[#6a6a6a] font-normal">av 20</span>
+              </p>
+            </div>
+            <button
+              class="ml-2 rounded-md border border-[#2a2a2a] px-3 py-1.5 text-xs text-[#d8d8d8] hover:bg-[#1a1a1a] transition inline-flex items-center gap-1.5"
+            >
+              Åtgärder
+              <svg
+                class="h-3 w-3 text-[#7a7a7a]"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <nav class="mt-6 flex items-center gap-1 -mb-[1px]">
+          <button
+            class="tab-underline active px-3 py-2.5 text-[13px] font-medium text-[#ededed]"
+          >
+            Items
+          </button>
+          <button
+            class="tab-underline px-3 py-2.5 text-[13px] text-[#8a8a8a] hover:text-[#d8d8d8] transition"
+          >
+            Findings
+          </button>
+          <button
+            class="tab-underline px-3 py-2.5 text-[13px] text-[#8a8a8a] hover:text-[#d8d8d8] transition"
+          >
+            Rapport
+          </button>
+          <button
+            class="tab-underline px-3 py-2.5 text-[13px] text-[#8a8a8a] hover:text-[#d8d8d8] transition"
+          >
+            Aktivitet
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- TABLE                                                             -->
+    <!-- =============================================================== -->
+    <div class="max-w-[1400px] mx-auto">
+      <div class="px-8 py-6">
+        <!-- Filter bar -->
+        <div class="flex items-center gap-2 mb-4">
+          <div
+            class="flex items-center gap-2 rounded-md border border-[#1f1f1f] bg-[#0f0f0f] px-3 py-1.5 text-xs text-[#7a7a7a] w-64"
+          >
+            <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fill-rule="evenodd"
+                d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <span>Sök lag…</span>
+          </div>
+          <button
+            class="rounded-md border border-[#1f1f1f] bg-[#0f0f0f] px-3 py-1.5 text-xs text-[#9a9a9a] hover:border-[#2a2a2a] hover:text-[#d8d8d8] transition inline-flex items-center gap-1.5"
+          >
+            Bedömning
+            <svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fill-rule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+          <button
+            class="rounded-md border border-[#1f1f1f] bg-[#0f0f0f] px-3 py-1.5 text-xs text-[#9a9a9a] hover:border-[#2a2a2a] hover:text-[#d8d8d8] transition inline-flex items-center gap-1.5"
+          >
+            Ansvarig
+            <svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+              <path
+                fill-rule="evenodd"
+                d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+          <button
+            class="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-1.5 text-xs text-amber-200 hover:bg-amber-500/10 transition inline-flex items-center gap-1.5"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+            Med öppna findings
+          </button>
+          <div class="ml-auto text-xs text-[#5a5a5a]">
+            <span class="text-[#9a9a9a]">20</span> lagar ·
+            <span class="text-[#9a9a9a]">1</span> bedömd
+          </div>
+        </div>
+
+        <!-- Column header -->
+        <div
+          class="grid grid-cols-[1.4fr_130px_130px_1fr_140px_90px] gap-4 px-4 pb-2.5 text-[10px] uppercase tracking-[0.09em] text-[#5a5a5a] font-medium border-b border-[#161616]"
+        >
+          <div>Lag</div>
+          <div>Status</div>
+          <div>Bedömning</div>
+          <div>Motivering</div>
+          <div>Ansvarig</div>
+          <div class="text-right">Signerad</div>
+        </div>
+
+        <!-- Rows -->
+        <div id="rows" class="divide-y divide-[#111]">
+          <div
+            class="row-interactive row-active grid grid-cols-[1.4fr_130px_130px_1fr_140px_90px] gap-4 px-4 py-3.5 items-center"
+            data-row-id="1"
+          >
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <p class="text-[13px] text-[#ededed] truncate">
+                  Arbetsmiljölag
+                </p>
+                <span class="text-[11px] text-[#666]">(1977:1160)</span>
+              </div>
+              <div class="mt-0.5 flex items-center gap-2 text-[11px]">
+                <span class="text-[#5a5a5a] font-mono">SFS 1977:1160</span>
+                <span class="text-[#333]">·</span>
+                <span class="inline-flex items-center gap-1">
+                  <span class="finding-dot bg-red-500"></span>
+                  <span class="finding-dot bg-amber-500"></span>
+                  <span class="finding-dot bg-amber-500"></span>
+                  <span class="text-[#8a8a8a] ml-0.5">3 öppna</span>
+                </span>
+                <span class="text-[#333]">·</span>
+                <span class="text-[#5a5a5a]">1 kravpunkt</span>
+              </div>
+            </div>
+            <div>
+              <span
+                class="text-[11px] text-[#8a8a8a] bg-[#171717] px-2 py-1 rounded-[4px] border border-[#222]"
+                >Ej påbörjad</span
+              >
+            </div>
+            <div>
+              <div
+                class="inline-flex items-center gap-1.5 rounded-[4px] bg-blue-500/10 border border-blue-500/25 px-2 py-1 text-[11px] text-blue-200"
+              >
+                <span class="h-1.5 w-1.5 rounded-full bg-blue-400"></span>
+                Delvis
+              </div>
+            </div>
+            <div class="text-[12px] text-[#8a8a8a] truncate">
+              Hanteras genom skyddsrond och årlig riskbedömning. Snart klar.
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span
+                class="inline-flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-br from-[#3b3b3b] to-[#1a1a1a] text-[9px] text-[#b8b8b8] font-medium"
+                >A</span
+              >
+              <span class="text-[12px] text-[#d0d0d0]">Alexander A.</span>
+            </div>
+            <div class="flex justify-end">
+              <button
+                class="text-[11px] rounded-[4px] bg-[#f4f4f4] text-[#0a0a0a] px-3 py-1 font-medium hover:bg-white transition"
+              >
+                Signera
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="row-interactive grid grid-cols-[1.4fr_130px_130px_1fr_140px_90px] gap-4 px-4 py-3.5 items-center"
+            data-row-id="2"
+          >
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <p class="text-[13px] text-[#ededed] truncate">
+                  Arbetsmiljöförordning
+                </p>
+                <span class="text-[11px] text-[#666]">(1977:1166)</span>
+              </div>
+              <div class="mt-0.5 text-[11px]">
+                <span class="text-[#5a5a5a] font-mono">SFS 1977:1166</span>
+              </div>
+            </div>
+            <div>
+              <span
+                class="text-[11px] text-[#8a8a8a] bg-[#171717] px-2 py-1 rounded-[4px] border border-[#222]"
+                >Ej påbörjad</span
+              >
+            </div>
+            <div>
+              <span
+                class="inline-flex items-center gap-1 rounded-[4px] border border-[#222] px-2 py-1 text-[11px] text-[#6a6a6a] hover:border-[#333] transition cursor-pointer"
+              >
+                — Bedöm
+                <svg
+                  class="h-2.5 w-2.5 text-[#555]"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </span>
+            </div>
+            <div class="text-[12px] text-[#4a4a4a] italic">
+              Lägg till motivering…
+            </div>
+            <div class="text-[12px] text-[#4a4a4a]">—</div>
+            <div class="flex justify-end">
+              <button
+                class="text-[11px] rounded-[4px] bg-[#1a1a1a] border border-[#242424] text-[#555] px-3 py-1"
+                disabled
+              >
+                Signera
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="row-interactive grid grid-cols-[1.4fr_130px_130px_1fr_140px_90px] gap-4 px-4 py-3.5 items-center"
+            data-row-id="3"
+          >
+            <div class="min-w-0">
+              <p class="text-[13px] text-[#ededed] truncate">
+                Systematiskt arbetsmiljöarbete
+              </p>
+              <div class="mt-0.5 flex items-center gap-2 text-[11px]">
+                <span class="text-[#5a5a5a] font-mono">AFS 2023:1</span>
+                <span class="text-[#333]">·</span>
+                <span class="inline-flex items-center gap-1">
+                  <span class="finding-dot bg-amber-500"></span>
+                  <span class="text-[#8a8a8a] ml-0.5">1 öppen</span>
+                </span>
+                <span class="text-[#333]">·</span>
+                <span class="text-[#5a5a5a]">3 artefakter</span>
+              </div>
+            </div>
+            <div>
+              <span
+                class="text-[11px] text-[#8a8a8a] bg-[#171717] px-2 py-1 rounded-[4px] border border-[#222]"
+                >Ej påbörjad</span
+              >
+            </div>
+            <div>
+              <span
+                class="inline-flex items-center gap-1 rounded-[4px] border border-[#222] px-2 py-1 text-[11px] text-[#6a6a6a] hover:border-[#333] transition cursor-pointer"
+              >
+                — Bedöm
+              </span>
+            </div>
+            <div class="text-[12px] text-[#4a4a4a] italic">
+              Lägg till motivering…
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span
+                class="inline-flex items-center justify-center h-5 w-5 rounded-full text-[9px] font-medium"
+                style="
+                  background: linear-gradient(135deg, #3a5c45, #1c2a22);
+                  color: #c9ddcd;
+                "
+                >M</span
+              >
+              <span class="text-[12px] text-[#d0d0d0]">Maria L.</span>
+            </div>
+            <div class="flex justify-end">
+              <button
+                class="text-[11px] rounded-[4px] bg-[#1a1a1a] border border-[#242424] text-[#555] px-3 py-1"
+                disabled
+              >
+                Signera
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="row-interactive grid grid-cols-[1.4fr_130px_130px_1fr_140px_90px] gap-4 px-4 py-3.5 items-center"
+            data-row-id="4"
+          >
+            <div class="min-w-0">
+              <p class="text-[13px] text-[#ededed] truncate">
+                Planering och organisering — kap. 2
+              </p>
+              <div class="mt-0.5 text-[11px]">
+                <span class="text-[#5a5a5a] font-mono">AFS 2023:2 kap. 2</span>
+              </div>
+            </div>
+            <div>
+              <span
+                class="text-[11px] text-[#8a8a8a] bg-[#171717] px-2 py-1 rounded-[4px] border border-[#222]"
+                >Ej påbörjad</span
+              >
+            </div>
+            <div>
+              <span
+                class="inline-flex items-center gap-1 rounded-[4px] border border-[#222] px-2 py-1 text-[11px] text-[#6a6a6a]"
+              >
+                — Bedöm
+              </span>
+            </div>
+            <div class="text-[12px] text-[#4a4a4a] italic">
+              Lägg till motivering…
+            </div>
+            <div class="text-[12px] text-[#4a4a4a]">—</div>
+            <div class="flex justify-end">
+              <button
+                class="text-[11px] rounded-[4px] bg-[#1a1a1a] border border-[#242424] text-[#555] px-3 py-1"
+                disabled
+              >
+                Signera
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="row-interactive grid grid-cols-[1.4fr_130px_130px_1fr_140px_90px] gap-4 px-4 py-3.5 items-center opacity-70"
+            data-row-id="5"
+          >
+            <div class="min-w-0">
+              <p class="text-[13px] text-[#ededed] truncate">
+                Risker i arbetsmiljön — kap. 6
+              </p>
+              <div class="mt-0.5 text-[11px]">
+                <span class="text-[#5a5a5a] font-mono">AFS 2023:10 kap. 6</span>
+              </div>
+            </div>
+            <div>
+              <span
+                class="text-[11px] text-[#8a8a8a] bg-[#171717] px-2 py-1 rounded-[4px] border border-[#222]"
+                >Ej påbörjad</span
+              >
+            </div>
+            <div>
+              <span
+                class="inline-flex items-center gap-1 rounded-[4px] border border-[#222] px-2 py-1 text-[11px] text-[#6a6a6a]"
+              >
+                — Bedöm
+              </span>
+            </div>
+            <div class="text-[12px] text-[#4a4a4a] italic">
+              Lägg till motivering…
+            </div>
+            <div class="text-[12px] text-[#4a4a4a]">—</div>
+            <div class="flex justify-end">
+              <button
+                class="text-[11px] rounded-[4px] bg-[#1a1a1a] border border-[#242424] text-[#555] px-3 py-1"
+                disabled
+              >
+                Signera
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-[#444] mt-4 text-center">
+          Visar 1–5 av 20 · rulla för fler
+        </p>
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- MODAL                                                             -->
+    <!-- =============================================================== -->
+    <div id="modal-root" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+      <!-- Backdrop -->
+      <div
+        id="modal-backdrop"
+        class="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-[3px]"
+      ></div>
+
+      <!-- Modal content — centered, 80vw max 1280px, 90vh -->
+      <div
+        id="modal-panel"
+        class="modal-content fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[min(82vw,1280px)] max-h-[90vh] bg-[#0c0c0c] border border-[#1c1c1c] rounded-xl shadow-2xl shadow-black/50 flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Lagdetaljer"
+      >
+        <!-- HEADER -->
+        <header
+          class="border-b border-[#161616] px-6 py-3.5 flex items-center gap-4 shrink-0"
+        >
+          <!-- Breadcrumb trail inside modal (context preservation) -->
+          <nav class="flex items-center gap-1.5 text-[11px] text-[#6a6a6a]">
+            <span>Test 511</span>
+            <svg class="h-3 w-3 text-[#444]" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+            </svg>
+            <span class="font-mono" id="modal-sfs">SFS 1977:1160</span>
+            <svg class="h-3 w-3 text-[#444]" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-[#c8c8c8]" id="modal-title-crumb">Arbetsmiljölag</span>
+          </nav>
+
+          <!-- Open-in-new link -->
+          <a
+            href="#"
+            class="text-[11px] text-blue-400 hover:text-blue-300 hover:underline inline-flex items-center gap-1 transition"
+          >
+            Öppna i lagbok
+            <svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69L5.22 13.72a.75.75 0 000 1.06z"/>
+            </svg>
+          </a>
+
+          <!-- Actions -->
+          <div class="ml-auto flex items-center gap-2">
+            <button
+              class="rounded-md border border-[#2a2a2a] bg-[#141414] px-2.5 py-1.5 text-[11px] text-[#b8b8b8] hover:border-[#3a3a3a] hover:bg-[#1a1a1a] transition inline-flex items-center gap-1.5"
+            >
+              <svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9.25 2.75a.75.75 0 011.5 0V10l3.72-3.72a.75.75 0 111.06 1.06l-5 5a.75.75 0 01-1.06 0l-5-5a.75.75 0 111.06-1.06L9.25 10V2.75z"/>
+                <path d="M3.5 14.5a.75.75 0 000 1.5h13a.75.75 0 000-1.5h-13z"/>
+              </svg>
+              Exportera
+            </button>
+            <button
+              id="modal-close"
+              class="rounded-md p-1.5 text-[#8a8a8a] hover:bg-[#1a1a1a] hover:text-[#e8e8e8] transition"
+              aria-label="Stäng"
+            >
+              <svg
+                class="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  d="M6 6l8 8M14 6l-8 8"
+                />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- BODY — flex row with transitioning panels -->
+        <div
+          id="modal-body"
+          class="flex-1 flex min-h-0 overflow-hidden"
+        >
+          <!-- =========== LEFT PANEL (3fr) =========== -->
+          <div
+            id="left-panel"
+            class="panel-transition min-w-0 basis-0 grow-[3] overflow-hidden flex flex-col border-r border-[#161616]"
+          >
+            <!-- Law title strip (mini-header within left panel) -->
+            <div class="px-7 py-4 border-b border-[#161616] shrink-0">
+              <h2
+                class="text-[22px] font-medium text-[#f4f4f4] tracking-tight leading-tight"
+                id="modal-title"
+              >
+                Arbetsmiljölag
+              </h2>
+              <p class="mt-1 text-[12px] text-[#7a7a7a]">
+                Hanterar arbetsgivares ansvar för arbetsmiljön. Full SFS-text
+                via <a href="#" class="text-blue-400 hover:underline">lagbok ↗</a>.
+              </p>
+            </div>
+
+            <!-- Scrollable content -->
+            <div class="flex-1 overflow-y-auto scrollbar-subtle">
+              <!-- =============== FINDINGS =============== -->
+              <section class="px-7 py-5 border-b border-[#161616]">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-2.5">
+                    <h3
+                      class="text-[11px] uppercase tracking-[0.11em] text-[#ededed] font-medium"
+                    >
+                      Findings
+                    </h3>
+                    <span
+                      class="text-[11px] text-[#7a7a7a] bg-[#161616] px-2 py-0.5 rounded"
+                    >
+                      3 öppna · 3 stängda
+                    </span>
+                  </div>
+                  <button
+                    class="text-[11px] rounded-md border border-[#2a2a2a] bg-[#141414] px-2.5 py-1 text-[#d8d8d8] hover:border-[#3a3a3a] hover:bg-[#1a1a1a] transition inline-flex items-center gap-1.5"
+                  >
+                    <svg
+                      class="h-3 w-3"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"
+                      />
+                    </svg>
+                    Lägg till
+                  </button>
+                </div>
+
+                <!-- ÖPPNA — severity-first -->
+                <div class="mb-5">
+                  <div class="flex items-center gap-2 mb-2.5">
+                    <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                    <span
+                      class="text-[10px] uppercase tracking-[0.11em] text-[#9a9a9a] font-medium"
+                      >Öppna · sorterade efter allvarlighet</span
+                    >
+                  </div>
+
+                  <div class="space-y-2">
+                    <!-- MAJOR Avvikelse -->
+                    <article
+                      class="finding-card major rounded-md border border-[#1c1c1c] bg-[#101010] hover:bg-[#131313] hover:border-[#2a2a2a] transition pl-4 pr-3 py-3 cursor-pointer"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                            <span
+                              class="text-[10px] font-medium text-red-300 uppercase tracking-wide bg-red-500/10 border border-red-500/25 px-1.5 py-0.5 rounded"
+                              >Avvikelse</span
+                            >
+                            <span
+                              class="text-[10px] font-semibold text-red-200 bg-red-500/15 px-1.5 py-0.5 rounded"
+                              >MAJOR</span
+                            >
+                            <span
+                              class="text-[10px] text-amber-300/80 bg-amber-500/5 border border-amber-500/20 px-1.5 py-0.5 rounded inline-flex items-center gap-1"
+                            >
+                              <svg class="h-2.5 w-2.5" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 3.5a.75.75 0 01.75.75v4.25l2.75 1.65a.75.75 0 11-.77 1.29l-3.12-1.87a.75.75 0 01-.36-.64V6.25A.75.75 0 0110 5.5z"/>
+                              </svg>
+                              Åtgärd 3 dagar kvar
+                            </span>
+                          </div>
+                          <p class="text-[13px] text-[#ededed] font-normal leading-snug">
+                            Test 22222
+                          </p>
+                          <p class="text-[11.5px] text-[#7a7a7a] mt-1 leading-relaxed">
+                            Kemikaliehantering saknar dokumenterad riskbedömning
+                            enligt AFS 2011:19 §4.
+                          </p>
+                          <div class="mt-2 flex items-center gap-3 text-[10.5px] text-[#6a6a6a]">
+                            <span class="inline-flex items-center gap-1">
+                              <span
+                                class="inline-flex items-center justify-center h-3.5 w-3.5 rounded-full bg-gradient-to-br from-[#3b3b3b] to-[#1a1a1a] text-[8px] text-[#b8b8b8] font-medium"
+                                >A</span
+                              >
+                              Alexander A.
+                            </span>
+                            <span class="text-[#333]">·</span>
+                            <span>förfaller 28 apr.</span>
+                            <span class="text-[#333]">·</span>
+                            <span class="inline-flex items-center gap-1 text-blue-400">
+                              <svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"/>
+                              </svg>
+                              Åtgärdsuppgift
+                            </span>
+                          </div>
+                        </div>
+                        <svg
+                          class="h-4 w-4 text-[#4a4a4a] shrink-0 mt-1"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </article>
+
+                    <!-- MINOR Avvikelse -->
+                    <article
+                      class="finding-card minor rounded-md border border-[#1c1c1c] bg-[#101010] hover:bg-[#131313] hover:border-[#2a2a2a] transition pl-4 pr-3 py-3 cursor-pointer"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                            <span
+                              class="text-[10px] font-medium text-red-300 uppercase tracking-wide bg-red-500/10 border border-red-500/25 px-1.5 py-0.5 rounded"
+                              >Avvikelse</span
+                            >
+                            <span
+                              class="text-[10px] font-semibold text-orange-200 bg-orange-500/15 px-1.5 py-0.5 rounded"
+                              >MINOR</span
+                            >
+                          </div>
+                          <p class="text-[13px] text-[#ededed] font-normal leading-snug">
+                            Saknas utbildningsplan 2
+                          </p>
+                          <p class="text-[11.5px] text-[#7a7a7a] mt-1 leading-relaxed">
+                            Utbildning för skyddsombud är inte schemalagd för
+                            2026.
+                          </p>
+                          <div class="mt-2 flex items-center gap-3 text-[10.5px] text-[#6a6a6a]">
+                            <span class="inline-flex items-center gap-1">
+                              <span
+                                class="inline-flex items-center justify-center h-3.5 w-3.5 rounded-full text-[8px] font-medium"
+                                style="background: linear-gradient(135deg,#3a5c45,#1c2a22); color:#c9ddcd;"
+                                >M</span
+                              >
+                              Maria L.
+                            </span>
+                            <span class="text-[#333]">·</span>
+                            <span>ingen deadline</span>
+                          </div>
+                        </div>
+                        <svg
+                          class="h-4 w-4 text-[#4a4a4a] shrink-0 mt-1"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </article>
+
+                    <!-- Observation -->
+                    <article
+                      class="finding-card obs rounded-md border border-[#1c1c1c] bg-[#0f0f0f] hover:bg-[#121212] hover:border-[#262626] transition pl-4 pr-3 py-2.5 cursor-pointer"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                          <div class="flex items-center gap-1.5 flex-wrap mb-0.5">
+                            <span
+                              class="text-[10px] font-medium text-amber-300 uppercase tracking-wide border border-amber-500/20 px-1.5 py-0.5 rounded"
+                              >Observation</span
+                            >
+                          </div>
+                          <p class="text-[12.5px] text-[#d8d8d8] font-normal leading-snug">
+                            Saknas utbildningsplan 2 22
+                          </p>
+                          <div class="mt-1.5 flex items-center gap-3 text-[10.5px] text-[#6a6a6a]">
+                            <span>oförfallen</span>
+                            <span class="text-[#333]">·</span>
+                            <span>skapad 22 apr.</span>
+                          </div>
+                        </div>
+                        <svg
+                          class="h-4 w-4 text-[#4a4a4a] shrink-0 mt-1"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </article>
+                  </div>
+                </div>
+
+                <!-- STÄNGDA -->
+                <details class="group">
+                  <summary
+                    class="list-none cursor-pointer flex items-center gap-2 text-[10px] uppercase tracking-[0.11em] text-[#5a5a5a] hover:text-[#8a8a8a] transition select-none"
+                  >
+                    <svg
+                      class="h-3 w-3 transition-transform group-open:rotate-90"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    Stängda · 3
+                  </summary>
+                  <div class="mt-3 space-y-1.5">
+                    <article
+                      class="finding-card closed rounded-md border border-[#141414] bg-[#0c0c0c] pl-4 pr-3 py-2 cursor-pointer opacity-70 hover:opacity-100 transition"
+                    >
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1 flex items-center gap-2.5">
+                          <span
+                            class="text-[9px] font-medium text-[#7a7a7a] uppercase tracking-wide border border-[#1f1f1f] px-1.5 py-0.5 rounded"
+                            >Observation</span
+                          >
+                          <p
+                            class="text-[12px] text-[#9a9a9a] leading-snug truncate line-through decoration-[#333]"
+                          >
+                            Saknas utbildningsplan 2
+                          </p>
+                        </div>
+                        <span class="text-[10px] text-[#5a5a5a] shrink-0"
+                          >stängd 19 apr.</span
+                        >
+                      </div>
+                    </article>
+                    <article
+                      class="finding-card closed rounded-md border border-[#141414] bg-[#0c0c0c] pl-4 pr-3 py-2 cursor-pointer opacity-70 hover:opacity-100 transition"
+                    >
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1 flex items-center gap-2.5">
+                          <span
+                            class="text-[9px] font-medium text-[#7a7a7a] uppercase tracking-wide border border-[#1f1f1f] px-1.5 py-0.5 rounded"
+                            >Observation</span
+                          >
+                          <p
+                            class="text-[12px] text-[#9a9a9a] leading-snug truncate line-through decoration-[#333]"
+                          >
+                            Saknas utbildningsplan
+                          </p>
+                        </div>
+                        <span class="text-[10px] text-[#5a5a5a] shrink-0"
+                          >stängd 18 apr.</span
+                        >
+                      </div>
+                    </article>
+                    <article
+                      class="finding-card closed rounded-md border border-[#141414] bg-[#0c0c0c] pl-4 pr-3 py-2 cursor-pointer opacity-70 hover:opacity-100 transition"
+                    >
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1 flex items-center gap-2.5">
+                          <span
+                            class="text-[9px] font-medium text-[#7a7a7a] uppercase tracking-wide border border-[#1f1f1f] px-1.5 py-0.5 rounded"
+                            >Förbättring</span
+                          >
+                          <p
+                            class="text-[12px] text-[#9a9a9a] leading-snug truncate line-through decoration-[#333]"
+                          >
+                            Fundera på hur vi kan integrera detta bättre
+                          </p>
+                        </div>
+                        <span class="text-[10px] text-[#5a5a5a] shrink-0"
+                          >stängd 17 apr.</span
+                        >
+                      </div>
+                    </article>
+                  </div>
+                </details>
+              </section>
+
+              <!-- =============== KRAVPUNKTER =============== -->
+              <section class="px-7 py-5 border-b border-[#161616]">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2.5">
+                    <h3
+                      class="text-[11px] uppercase tracking-[0.11em] text-[#ededed] font-medium"
+                    >
+                      Kravpunkter
+                    </h3>
+                    <span
+                      class="text-[10px] text-[#7a7a7a] bg-[#161616] px-1.5 py-0.5 rounded font-mono"
+                    >
+                      snapshot
+                    </span>
+                  </div>
+                  <span class="text-[10px] text-[#5a5a5a]"
+                    >Fryst 22 apr. 2026 · 19:55</span
+                  >
+                </div>
+
+                <ul class="space-y-1.5">
+                  <li
+                    class="flex items-start gap-2.5 rounded-md border border-[#171717] bg-[#0f0f0f] px-3 py-2"
+                  >
+                    <div
+                      class="mt-[3px] h-3.5 w-3.5 rounded-[3px] border-2 border-[#333] shrink-0"
+                    ></div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-[12.5px] text-[#d8d8d8] leading-snug">Test</p>
+                      <p class="text-[10.5px] text-[#6a6a6a] mt-0.5">
+                        Inget bevis kopplat
+                      </p>
+                    </div>
+                    <span class="text-[10px] text-[#5a5a5a] shrink-0 pt-1"
+                      >0/3 bevis</span
+                    >
+                  </li>
+                </ul>
+
+                <button
+                  class="mt-3 w-full rounded-md border border-dashed border-[#1f1f1f] bg-transparent px-3 py-2 text-[11px] text-[#6a6a6a] hover:border-[#2a2a2a] hover:text-[#9a9a9a] hover:bg-[#0e0e0e] transition"
+                >
+                  + Lägg till kravpunkt
+                </button>
+              </section>
+
+              <!-- =============== LÄNKADE ARTEFAKTER =============== -->
+              <section class="px-7 py-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2.5">
+                    <h3
+                      class="text-[11px] uppercase tracking-[0.11em] text-[#ededed] font-medium"
+                    >
+                      Länkade artefakter
+                    </h3>
+                    <span
+                      class="text-[10px] text-[#7a7a7a] bg-[#161616] px-1.5 py-0.5 rounded font-mono"
+                    >
+                      live
+                    </span>
+                  </div>
+                  <button
+                    class="text-[11px] text-[#8a8a8a] hover:text-[#d8d8d8] transition inline-flex items-center gap-1"
+                  >
+                    <svg
+                      class="h-3 w-3"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"
+                      />
+                    </svg>
+                    Länka
+                  </button>
+                </div>
+
+                <div
+                  class="rounded-md border border-dashed border-[#1c1c1c] bg-[#0c0c0c] px-5 py-8 text-center"
+                >
+                  <div
+                    class="mx-auto h-9 w-9 rounded-full bg-[#141414] flex items-center justify-center text-[#4a4a4a] mb-2"
+                  >
+                    <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M7.5 4a3.5 3.5 0 100 7h5a3.5 3.5 0 100-7h-5zM0 7.5A7.5 7.5 0 017.5 0h5a7.5 7.5 0 010 15h-5A7.5 7.5 0 010 7.5z"/>
+                    </svg>
+                  </div>
+                  <p class="text-[12px] text-[#8a8a8a]">
+                    Inga länkade filer eller dokument
+                  </p>
+                  <p class="text-[11px] text-[#5a5a5a] mt-1">
+                    Ladda upp eller länka något för att komma igång
+                  </p>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <!-- =========== RIGHT PANEL (2fr) =========== -->
+          <aside
+            id="right-panel"
+            class="panel-transition min-w-0 basis-0 grow-[2] overflow-y-auto scrollbar-subtle bg-[#0a0a0a]"
+          >
+            <!-- DETAILS BOX -->
+            <section class="px-5 py-5 border-b border-[#161616]">
+              <h3
+                class="text-[10px] uppercase tracking-[0.11em] text-[#6a6a6a] font-medium mb-3"
+              >
+                Detaljer
+              </h3>
+              <dl class="space-y-3">
+                <div class="flex items-start justify-between gap-3">
+                  <dt class="text-[11px] text-[#7a7a7a] pt-1">Bedömning</dt>
+                  <dd>
+                    <button
+                      class="inline-flex items-center gap-1.5 rounded-[4px] bg-blue-500/10 border border-blue-500/25 px-2.5 py-1 text-[11px] text-blue-200 hover:bg-blue-500/15 transition"
+                    >
+                      <span class="h-1.5 w-1.5 rounded-full bg-blue-400"></span>
+                      Delvis
+                      <svg class="h-2.5 w-2.5 text-blue-300/70" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.39a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+                      </svg>
+                    </button>
+                  </dd>
+                </div>
+                <div class="flex items-start justify-between gap-3">
+                  <dt class="text-[11px] text-[#7a7a7a] pt-1">Status</dt>
+                  <dd>
+                    <span
+                      class="text-[11px] text-[#8a8a8a] bg-[#171717] px-2 py-1 rounded-[4px] border border-[#222]"
+                    >
+                      Ej påbörjad
+                    </span>
+                  </dd>
+                </div>
+                <div class="flex items-start justify-between gap-3">
+                  <dt class="text-[11px] text-[#7a7a7a] pt-1">Ansvarig</dt>
+                  <dd class="inline-flex items-center gap-1.5">
+                    <span
+                      class="inline-flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-br from-[#3b3b3b] to-[#1a1a1a] text-[9px] text-[#b8b8b8] font-medium"
+                      >A</span
+                    >
+                    <span class="text-[12px] text-[#d0d0d0]">Alexander A.</span>
+                  </dd>
+                </div>
+                <div class="flex items-start justify-between gap-3">
+                  <dt class="text-[11px] text-[#7a7a7a] pt-1">Uppdaterad</dt>
+                  <dd class="text-[12px] text-[#8a8a8a]">22 apr. 2026 19:55</dd>
+                </div>
+              </dl>
+
+              <button
+                class="mt-4 w-full rounded-md bg-[#f4f4f4] text-[#0a0a0a] px-3 py-2 text-[12px] font-medium hover:bg-white transition inline-flex items-center justify-center gap-2"
+              >
+                <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+                </svg>
+                Signera nu
+              </button>
+            </section>
+
+            <!-- MOTIVERING -->
+            <section class="px-5 py-5 border-b border-[#161616]">
+              <div class="flex items-center justify-between mb-2">
+                <h3
+                  class="text-[10px] uppercase tracking-[0.11em] text-[#6a6a6a] font-medium"
+                >
+                  Motivering
+                </h3>
+                <button class="text-[10px] text-[#5a5a5a] hover:text-[#9a9a9a] transition">
+                  Redigera
+                </button>
+              </div>
+              <p class="text-[12.5px] text-[#c8c8c8] leading-relaxed">
+                Hanteras genom skyddsrond och årlig riskbedömning. Snart klar —
+                saknar uppdaterad utbildningsplan för kemikaliehantering.
+              </p>
+            </section>
+
+            <!-- SNABBLÄNKAR — includes the AI chat launcher -->
+            <section class="px-5 py-5 border-b border-[#161616]">
+              <h3
+                class="text-[10px] uppercase tracking-[0.11em] text-[#6a6a6a] font-medium mb-3"
+              >
+                Snabblänkar
+              </h3>
+              <div class="space-y-2">
+                <!-- Ask Lexa button — gateway to State 2 -->
+                <button
+                  id="open-chat"
+                  class="w-full rounded-md bg-gradient-to-br from-[#1a1a1a] to-[#141414] border border-[#2a2a2a] hover:border-[#3a3a3a] hover:from-[#1f1f1f] hover:to-[#181818] px-3 py-2.5 text-[12px] text-[#ededed] font-medium transition inline-flex items-center gap-2.5"
+                >
+                  <span
+                    class="relative h-5 w-5 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center"
+                  >
+                    <svg
+                      class="h-2.5 w-2.5 text-white"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M11.983 1.364a.75.75 0 00-1.5-.128l-.333 3.912a.75.75 0 01-.674.674l-3.912.333a.75.75 0 000 1.5l3.912.333a.75.75 0 01.674.674l.333 3.912a.75.75 0 001.5 0l.333-3.912a.75.75 0 01.674-.674l3.912-.333a.75.75 0 000-1.5l-3.912-.333a.75.75 0 01-.674-.674L11.983 1.364z"/>
+                      <path d="M5 13a.75.75 0 00-1.5 0v1.5H2a.75.75 0 000 1.5h1.5V17.5a.75.75 0 001.5 0V16h1.5a.75.75 0 000-1.5H5V13z"/>
+                    </svg>
+                  </span>
+                  Fråga Lexa om denna lag
+                  <svg
+                    class="ml-auto h-3 w-3 text-[#7a7a7a]"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/>
+                  </svg>
+                </button>
+
+                <a
+                  href="#"
+                  class="block w-full rounded-md border border-[#1c1c1c] hover:border-[#2a2a2a] hover:bg-[#0f0f0f] px-3 py-2 text-[12px] text-[#c8c8c8] transition inline-flex items-center gap-2"
+                >
+                  <svg
+                    class="h-3.5 w-3.5 text-[#8a8a8a]"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M10 3a7 7 0 100 14 7 7 0 000-14zM1.5 10a8.5 8.5 0 1117 0 8.5 8.5 0 01-17 0zm8.75-4.25a.75.75 0 00-1.5 0v4.5c0 .2.08.39.22.53l2.75 2.75a.75.75 0 101.06-1.06L10.75 9.94V5.75z"/>
+                  </svg>
+                  Visa aktivitet (23 händelser)
+                </a>
+
+                <a
+                  href="#"
+                  class="block w-full rounded-md border border-[#1c1c1c] hover:border-[#2a2a2a] hover:bg-[#0f0f0f] px-3 py-2 text-[12px] text-[#c8c8c8] transition inline-flex items-center gap-2"
+                >
+                  <svg
+                    class="h-3.5 w-3.5 text-[#8a8a8a]"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M5.22 14.78a.75.75 0 001.06 0l7.22-7.22v5.69a.75.75 0 001.5 0v-7.5a.75.75 0 00-.75-.75h-7.5a.75.75 0 000 1.5h5.69L5.22 13.72a.75.75 0 000 1.06z"/>
+                  </svg>
+                  Öppna i lagbok
+                </a>
+              </div>
+            </section>
+
+            <!-- HÄLSA / health summary -->
+            <section class="px-5 py-5">
+              <h3
+                class="text-[10px] uppercase tracking-[0.11em] text-[#6a6a6a] font-medium mb-3"
+              >
+                Hälsa
+              </h3>
+              <div class="space-y-2">
+                <div
+                  class="flex items-center justify-between rounded-md border border-amber-500/20 bg-amber-500/5 px-3 py-2"
+                >
+                  <div class="flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                    <span class="text-[11.5px] text-amber-200">3 öppna findings</span>
+                  </div>
+                  <span class="text-[10px] text-amber-300/60">1 MAJOR</span>
+                </div>
+                <div
+                  class="flex items-center justify-between rounded-md border border-[#1c1c1c] bg-[#0f0f0f] px-3 py-2"
+                >
+                  <div class="flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#3a3a3a]"></span>
+                    <span class="text-[11.5px] text-[#9a9a9a]">1 kravpunkt</span>
+                  </div>
+                  <span class="text-[10px] text-[#5a5a5a]">0/3 bevis</span>
+                </div>
+                <div
+                  class="flex items-center justify-between rounded-md border border-[#1c1c1c] bg-[#0f0f0f] px-3 py-2"
+                >
+                  <div class="flex items-center gap-2">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#3a3a3a]"></span>
+                    <span class="text-[11.5px] text-[#9a9a9a]">Inga artefakter</span>
+                  </div>
+                  <span class="text-[10px] text-[#5a5a5a]">länka en</span>
+                </div>
+              </div>
+            </section>
+          </aside>
+
+          <!-- =========== CHAT PANEL (3fr, State 2) — initially hidden =========== -->
+          <div
+            id="chat-panel"
+            class="panel-transition min-w-0 basis-0 grow-0 opacity-0 pointer-events-none overflow-hidden border-l border-transparent flex flex-col"
+            aria-hidden="true"
+          >
+            <!-- Chat header -->
+            <div
+              class="px-5 py-3.5 border-b border-[#161616] flex items-center gap-3 shrink-0"
+            >
+              <span
+                class="h-6 w-6 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shrink-0"
+              >
+                <svg class="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M11.983 1.364a.75.75 0 00-1.5-.128l-.333 3.912a.75.75 0 01-.674.674l-3.912.333a.75.75 0 000 1.5l3.912.333a.75.75 0 01.674.674l.333 3.912a.75.75 0 001.5 0l.333-3.912a.75.75 0 01.674-.674l3.912-.333a.75.75 0 000-1.5l-3.912-.333a.75.75 0 01-.674-.674L11.983 1.364z"/>
+                </svg>
+              </span>
+              <div class="min-w-0">
+                <p class="text-[12.5px] font-medium text-[#ededed] truncate">Lexa · Arbetsmiljölag</p>
+                <p class="text-[10.5px] text-[#7a7a7a]">Kontext: kravpunkter + 3 öppna findings</p>
+              </div>
+              <div class="ml-auto flex items-center gap-1">
+                <button
+                  id="expand-chat"
+                  class="rounded p-1.5 text-[#8a8a8a] hover:text-[#e8e8e8] hover:bg-[#161616] transition"
+                  aria-label="Expandera"
+                >
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" d="M4 8V4h4M16 8V4h-4M4 12v4h4M16 12v4h-4"/>
+                  </svg>
+                </button>
+                <button
+                  id="close-chat"
+                  class="rounded p-1.5 text-[#8a8a8a] hover:text-[#e8e8e8] hover:bg-[#161616] transition"
+                  aria-label="Stäng chat"
+                >
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" d="M6 6l8 8M14 6l-8 8"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Chat body -->
+            <div class="flex-1 overflow-y-auto scrollbar-subtle px-5 py-5 space-y-4">
+              <!-- Lexa intro -->
+              <div class="flex items-start gap-2.5">
+                <span
+                  class="h-6 w-6 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shrink-0 mt-0.5"
+                >
+                  <svg class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M11.983 1.364a.75.75 0 00-1.5-.128l-.333 3.912a.75.75 0 01-.674.674l-3.912.333a.75.75 0 000 1.5l3.912.333a.75.75 0 01.674.674l.333 3.912a.75.75 0 001.5 0l.333-3.912a.75.75 0 01.674-.674l3.912-.333a.75.75 0 000-1.5l-3.912-.333a.75.75 0 01-.674-.674L11.983 1.364z"/>
+                  </svg>
+                </span>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[12.5px] text-[#e0e0e0] leading-relaxed">
+                    Hej! Jag har laddat kontexten för <strong>Arbetsmiljölag (1977:1160)</strong> i kontrollen
+                    <strong>Test 511</strong>, inklusive 1 kravpunkt (snapshot) och 3 öppna findings (1 MAJOR
+                    avvikelse, 1 MINOR, 1 observation). Vad vill du veta?
+                  </p>
+                  <div class="mt-2.5 flex flex-wrap gap-1.5">
+                    <button class="text-[10.5px] rounded-full border border-[#252525] bg-[#0f0f0f] px-2.5 py-1 text-[#b8b8b8] hover:border-[#3a3a3a] hover:bg-[#161616] transition">
+                      Sammanfatta §4 om riskbedömning
+                    </button>
+                    <button class="text-[10.5px] rounded-full border border-[#252525] bg-[#0f0f0f] px-2.5 py-1 text-[#b8b8b8] hover:border-[#3a3a3a] hover:bg-[#161616] transition">
+                      Vilka bevis saknas?
+                    </button>
+                    <button class="text-[10.5px] rounded-full border border-[#252525] bg-[#0f0f0f] px-2.5 py-1 text-[#b8b8b8] hover:border-[#3a3a3a] hover:bg-[#161616] transition">
+                      Förslag på motivering
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- User message -->
+              <div class="flex items-start gap-2.5 justify-end">
+                <div class="max-w-[80%] rounded-md bg-[#1a1a1a] border border-[#262626] px-3 py-2">
+                  <p class="text-[12.5px] text-[#e0e0e0]">
+                    Vad är skillnaden mellan §3 och §4 gällande riskbedömning?
+                  </p>
+                </div>
+              </div>
+
+              <!-- Lexa typing -->
+              <div class="flex items-start gap-2.5">
+                <span
+                  class="h-6 w-6 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shrink-0 mt-0.5"
+                >
+                  <svg class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M11.983 1.364a.75.75 0 00-1.5-.128l-.333 3.912a.75.75 0 01-.674.674l-3.912.333a.75.75 0 000 1.5l3.912.333a.75.75 0 01.674.674l.333 3.912a.75.75 0 001.5 0l.333-3.912a.75.75 0 01.674-.674l3.912-.333a.75.75 0 000-1.5l-3.912-.333a.75.75 0 01-.674-.674L11.983 1.364z"/>
+                  </svg>
+                </span>
+                <div
+                  class="inline-flex items-center gap-1.5 rounded-md border border-[#1c1c1c] bg-[#0f0f0f] px-3 py-2.5"
+                >
+                  <span class="typing-dot h-1.5 w-1.5 rounded-full bg-[#7a7a7a]"></span>
+                  <span class="typing-dot h-1.5 w-1.5 rounded-full bg-[#7a7a7a]"></span>
+                  <span class="typing-dot h-1.5 w-1.5 rounded-full bg-[#7a7a7a]"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat input -->
+            <div class="border-t border-[#161616] p-4 shrink-0">
+              <div
+                class="rounded-lg border border-[#1f1f1f] bg-[#0f0f0f] focus-within:border-[#2f2f2f] transition"
+              >
+                <textarea
+                  class="block w-full bg-transparent text-[12.5px] text-[#e0e0e0] placeholder:text-[#555] px-3 py-2.5 outline-none resize-none"
+                  rows="1"
+                  placeholder="Fråga Lexa om denna lag…"
+                ></textarea>
+                <div class="flex items-center justify-between px-3 pb-2.5 pt-0.5">
+                  <div class="flex items-center gap-1.5 text-[10px] text-[#5a5a5a]">
+                    <span class="rounded border border-[#252525] px-1.5 py-0.5 font-mono text-[#7a7a7a]">↵</span>
+                    att skicka
+                    <span class="text-[#333]">·</span>
+                    <span class="rounded border border-[#252525] px-1.5 py-0.5 font-mono text-[#7a7a7a]">⇧↵</span>
+                    ny rad
+                  </div>
+                  <button
+                    class="rounded-md bg-[#ededed] text-[#0a0a0a] px-3 py-1 text-[11px] font-medium hover:bg-white transition inline-flex items-center gap-1.5"
+                  >
+                    Skicka
+                    <svg class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M3.105 2.289a.75.75 0 00-.826.95l1.414 4.925A1.5 1.5 0 005.135 9.25h6.115a.75.75 0 010 1.5H5.135a1.5 1.5 0 00-1.442 1.086l-1.414 4.926a.75.75 0 00.826.95 28.896 28.896 0 0015.293-7.154.75.75 0 000-1.115A28.897 28.897 0 003.105 2.289z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- =========== RAIL (44px, State 2 only) =========== -->
+          <div
+            id="rail"
+            class="panel-transition shrink-0 w-0 border-l border-transparent overflow-hidden flex flex-col items-center py-4"
+            aria-hidden="true"
+          >
+            <button
+              id="rail-expand"
+              class="rounded-md p-2 text-[#8a8a8a] hover:text-[#e8e8e8] hover:bg-[#161616] transition mb-2"
+              title="Visa detaljer"
+            >
+              <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+            <div class="h-px w-6 bg-[#1a1a1a] my-2"></div>
+            <div
+              class="inline-flex items-center justify-center h-6 w-6 rounded-md bg-blue-500/10 border border-blue-500/25 text-[9px] text-blue-300 font-medium mb-1.5"
+              title="Bedömning: Delvis"
+            >
+              D
+            </div>
+            <div
+              class="inline-flex items-center justify-center h-6 w-6 rounded-full bg-gradient-to-br from-[#3b3b3b] to-[#1a1a1a] text-[9px] text-[#b8b8b8] font-medium mb-1.5"
+              title="Ansvarig: Alexander A."
+            >
+              A
+            </div>
+            <div
+              class="relative inline-flex items-center justify-center h-6 w-6 rounded-md bg-amber-500/10 border border-amber-500/25 text-[9px] text-amber-300 font-medium"
+              title="3 öppna findings, 1 MAJOR"
+            >
+              3
+              <span class="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-red-500 ring-2 ring-[#0c0c0c]"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- DESIGN NOTES                                                      -->
+    <!-- =============================================================== -->
+    <aside
+      class="max-w-[1400px] mx-auto px-8 pb-16 mt-10 border-t border-[#151515] pt-8"
+    >
+      <div class="grid md:grid-cols-3 gap-6 text-[12px]">
+        <div>
+          <p
+            class="text-[10px] uppercase tracking-[0.12em] text-[#5a5a5a] font-medium mb-2"
+          >
+            Why modal, not drawer
+          </p>
+          <p class="text-[#a8a8a8] leading-relaxed">
+            Drawer occupies the right edge — collision course with future AI-chat
+            surface. Modal sits centered, leaving the whole viewport behind it
+            undisturbed. Also reuses the existing <code class="text-[#c8c8c8] bg-[#1a1a1a] px-1 rounded">SplitPanelModal</code>
+            shell already powering the law-list-item modal — zero new pattern.
+          </p>
+        </div>
+        <div>
+          <p
+            class="text-[10px] uppercase tracking-[0.12em] text-[#5a5a5a] font-medium mb-2"
+          >
+            AI chat lives inside the modal
+          </p>
+          <p class="text-[#a8a8a8] leading-relaxed">
+            Click <strong class="text-[#ededed]">Fråga Lexa</strong> in the right
+            panel. The right panel collapses, chat slides in at 3fr, rail shows
+            the essentials (bedömning, ansvarig, finding count) at 44 px on the
+            far right. Kravpunkter + findings stay visible in the left panel —
+            Lexa has their context without stealing their real-estate.
+          </p>
+        </div>
+        <div>
+          <p
+            class="text-[10px] uppercase tracking-[0.12em] text-[#5a5a5a] font-medium mb-2"
+          >
+            Layout rhythm
+          </p>
+          <p class="text-[#a8a8a8] leading-relaxed">
+            State 1: left 3fr (findings + kravpunkter + artefakter) · right 2fr
+            (details, motivering, snabblänkar, hälsa).<br />
+            State 2: left 3fr · chat 3fr · rail 44 px. Right panel is always
+            mounted — just hidden via CSS, so SWR caches and optimistic state
+            survive the transition.
+          </p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- =============================================================== -->
+    <!-- JS                                                                -->
+    <!-- =============================================================== -->
+    <script>
+      const modalRoot = document.getElementById('modal-root')
+      const modalBackdrop = document.getElementById('modal-backdrop')
+      const modalClose = document.getElementById('modal-close')
+      const modalTitle = document.getElementById('modal-title')
+      const modalTitleCrumb = document.getElementById('modal-title-crumb')
+      const modalSfs = document.getElementById('modal-sfs')
+      const rows = document.querySelectorAll('[data-row-id]')
+
+      const leftPanel = document.getElementById('left-panel')
+      const rightPanel = document.getElementById('right-panel')
+      const chatPanel = document.getElementById('chat-panel')
+      const rail = document.getElementById('rail')
+
+      const openChatBtn = document.getElementById('open-chat')
+      const closeChatBtn = document.getElementById('close-chat')
+      const railExpandBtn = document.getElementById('rail-expand')
+
+      const rowData = {
+        1: { title: 'Arbetsmiljölag', sfs: 'SFS 1977:1160' },
+        2: { title: 'Arbetsmiljöförordning', sfs: 'SFS 1977:1166' },
+        3: { title: 'Systematiskt arbetsmiljöarbete', sfs: 'AFS 2023:1' },
+        4: { title: 'Planering och organisering — kap. 2', sfs: 'AFS 2023:2 kap. 2' },
+        5: { title: 'Risker i arbetsmiljön — kap. 6', sfs: 'AFS 2023:10 kap. 6' },
+      }
+
+      function openModal(rowId) {
+        const data = rowData[rowId]
+        if (data) {
+          modalTitle.textContent = data.title
+          modalTitleCrumb.textContent = data.title
+          modalSfs.textContent = data.sfs
+        }
+        modalRoot.classList.remove('hidden')
+        modalRoot.setAttribute('aria-hidden', 'false')
+        rows.forEach((r) => r.classList.remove('row-active'))
+        const activeRow = document.querySelector(`[data-row-id="${rowId}"]`)
+        if (activeRow) activeRow.classList.add('row-active')
+        document.body.style.overflow = 'hidden'
+        // Reset to State 1 whenever we open a fresh row
+        setState1()
+      }
+
+      function closeModal() {
+        modalRoot.classList.add('hidden')
+        modalRoot.setAttribute('aria-hidden', 'true')
+        document.body.style.overflow = ''
+      }
+
+      // State 1 — default split
+      function setState1() {
+        leftPanel.style.flexGrow = '3'
+        leftPanel.classList.remove('border-r-0')
+        rightPanel.style.flexGrow = '2'
+        rightPanel.style.opacity = '1'
+        rightPanel.style.pointerEvents = 'auto'
+        rightPanel.setAttribute('aria-hidden', 'false')
+        chatPanel.style.flexGrow = '0'
+        chatPanel.style.opacity = '0'
+        chatPanel.style.pointerEvents = 'none'
+        chatPanel.classList.remove('border-[#161616]')
+        chatPanel.classList.add('border-transparent')
+        chatPanel.setAttribute('aria-hidden', 'true')
+        rail.style.width = '0'
+        rail.classList.remove('border-[#161616]')
+        rail.classList.add('border-transparent')
+        rail.setAttribute('aria-hidden', 'true')
+      }
+
+      // State 2 — chat open + rail
+      function setState2() {
+        leftPanel.style.flexGrow = '3'
+        rightPanel.style.flexGrow = '0'
+        rightPanel.style.opacity = '0'
+        rightPanel.style.pointerEvents = 'none'
+        rightPanel.setAttribute('aria-hidden', 'true')
+        chatPanel.style.flexGrow = '3'
+        chatPanel.style.opacity = '1'
+        chatPanel.style.pointerEvents = 'auto'
+        chatPanel.classList.remove('border-transparent')
+        chatPanel.classList.add('border-[#161616]')
+        chatPanel.setAttribute('aria-hidden', 'false')
+        rail.style.width = '44px'
+        rail.classList.remove('border-transparent')
+        rail.classList.add('border-[#161616]')
+        rail.setAttribute('aria-hidden', 'false')
+      }
+
+      rows.forEach((row) => {
+        row.addEventListener('click', (e) => {
+          if (
+            e.target.closest('button') ||
+            e.target.closest('a') ||
+            e.target.closest('[role="combobox"]')
+          )
+            return
+          openModal(row.dataset.rowId)
+        })
+      })
+
+      modalClose.addEventListener('click', closeModal)
+      modalBackdrop.addEventListener('click', closeModal)
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modalRoot.classList.contains('hidden')) {
+          // Esc closes chat first if it's open, else closes modal
+          if (chatPanel.getAttribute('aria-hidden') === 'false') {
+            setState1()
+          } else {
+            closeModal()
+          }
+        }
+      })
+
+      openChatBtn.addEventListener('click', setState2)
+      closeChatBtn.addEventListener('click', setState1)
+      railExpandBtn.addEventListener('click', setState1)
+
+      // Open on load with row 1
+      openModal(1)
+    </script>
+  </body>
+</html>

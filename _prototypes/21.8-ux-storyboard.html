@@ -1,0 +1,1119 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Story 21.8 — UX Storyboard (v0.5)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial;
+      }
+      .scene-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+      }
+      .branch-arrow {
+        position: relative;
+      }
+      .branch-arrow::before {
+        content: '';
+        position: absolute;
+        left: -24px;
+        top: 50%;
+        width: 20px;
+        height: 1px;
+        background: #cbd5e1;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div class="mx-auto max-w-6xl px-6 py-10">
+      <!-- Header -->
+      <header class="mb-10">
+        <div class="flex items-baseline gap-3">
+          <p class="text-xs uppercase tracking-wider text-slate-500">
+            Epic 21 · Lagefterlevnadskontroll
+          </p>
+          <span
+            class="text-[10px] uppercase tracking-wider rounded bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-medium"
+            >v0.5 · right-rail card + M:N cycle linkage</span
+          >
+        </div>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight">
+          Story 21.8 — Auto-spawn corrective-action Task on AVVIKELSE
+        </h1>
+        <p class="mt-3 text-slate-600 max-w-3xl leading-relaxed">
+          v0.5 aligns with the real task-modal UI: the "Från kontroll"
+          affordance moves from a badges-row chip (hypothetical in v0.4) to a
+          <strong>right-rail card</strong> — same pattern as the existing
+          <code>Länkade författningar</code>. A new
+          <code>ComplianceCycleTaskLink</code> M:N join table makes kontroll ↔
+          task linkage first-class, replacing the derived-via-FK approach.
+          Manual linking UI + cycle-detail "Uppgifter" tab are deferred to
+          follow-up Story 21.15.
+        </p>
+
+        <!-- Scene timeline -->
+        <ol class="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+          <li class="flex items-center gap-2">
+            <span class="scene-dot bg-amber-500"></span>
+            <span class="text-slate-700">1. Create finding</span>
+          </li>
+          <span class="text-slate-400">→</span>
+          <li class="flex items-center gap-2">
+            <span class="text-slate-500 text-xs">(checkbox ON or OFF)</span>
+          </li>
+          <span class="text-slate-400">→</span>
+          <li class="flex items-center gap-2">
+            <span class="scene-dot bg-sky-500"></span>
+            <span class="text-slate-700">2. Task in /tasks (if spawned)</span>
+          </li>
+          <span class="text-slate-400">→</span>
+          <li class="flex items-center gap-2">
+            <span class="scene-dot bg-emerald-500"></span>
+            <span class="text-slate-700">3. Task completed → notify</span>
+          </li>
+          <span class="text-slate-400">→</span>
+          <li class="flex items-center gap-2">
+            <span class="scene-dot bg-violet-500"></span>
+            <span class="text-slate-700">4. Finding closes</span>
+          </li>
+          <span class="text-slate-400">·</span>
+          <li class="flex items-center gap-2">
+            <span class="scene-dot bg-slate-400"></span>
+            <span class="text-slate-700">+ late-addition path</span>
+          </li>
+        </ol>
+      </header>
+
+      <!-- SCENE 1 (full width, showing both checkbox states) -->
+      <article
+        class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-6"
+      >
+        <div
+          class="border-b border-slate-200 bg-amber-50 px-5 py-3 flex items-center gap-3"
+        >
+          <span class="scene-dot bg-amber-500"></span>
+          <h2 class="font-medium text-amber-900">
+            Scene 1 — Finding editor, v0.4: checkbox controls spawn decision
+          </h2>
+        </div>
+        <div class="p-5">
+          <p class="text-sm text-slate-600 mb-5 max-w-3xl">
+            The finding editor now has a "Skapa åtgärdsuppgift" checkbox. Its
+            default state is <strong>derived from the finding type</strong>. When
+            checked, an inline task-editor section reveals below — same
+            progressive-disclosure pattern that Story 21.7 established for the
+            severity field.
+          </p>
+
+          <div class="grid md:grid-cols-2 gap-5">
+            <!-- Variant A: checkbox ON (default for AVVIKELSE) -->
+            <div>
+              <div
+                class="mb-2 inline-flex items-center gap-2 text-xs font-medium text-emerald-700"
+              >
+                <span class="rounded bg-emerald-100 px-2 py-0.5"
+                  >VARIANT A · default</span
+                >
+                Avvikelse · checkbox ON (spawns task)
+              </div>
+              <div
+                class="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3"
+              >
+                <div class="flex items-center justify-between">
+                  <p class="text-xs font-medium text-slate-500">
+                    DIALOG · Lägg till finding
+                  </p>
+                  <span class="text-xs text-slate-400"
+                    >Q2 2026 Internrevision</span
+                  >
+                </div>
+
+                <!-- type radio -->
+                <div class="flex gap-2 text-xs" role="radiogroup">
+                  <span
+                    class="rounded-md border-2 border-amber-500 bg-amber-50 px-2 py-1 text-amber-800 font-medium"
+                    >● Avvikelse</span
+                  >
+                  <span
+                    class="rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-500"
+                    >○ Obs</span
+                  >
+                  <span
+                    class="rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-500"
+                    >○ Förbätt.</span
+                  >
+                </div>
+
+                <!-- severity (revealed because type=Avvikelse) -->
+                <div class="flex gap-2 text-xs items-center">
+                  <span class="text-slate-500">Allvarlighetsgrad:</span>
+                  <span
+                    class="rounded-md border border-slate-300 bg-white px-2 py-1 font-medium"
+                    >Större ▼</span
+                  >
+                </div>
+
+                <!-- title -->
+                <div
+                  class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm"
+                >
+                  Saknad utbildningsplan för kemikaliehantering
+                </div>
+
+                <!-- description -->
+                <div
+                  class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-500 leading-relaxed"
+                >
+                  Skyddsombuden har inte fått dokumenterad utbildning enligt AFS
+                  2011:19 §37…
+                </div>
+
+                <!-- due date -->
+                <div class="flex gap-2 text-xs items-center">
+                  <span class="text-slate-500">Datum för åtgärd:</span>
+                  <span
+                    class="rounded-md border border-slate-300 bg-white px-2 py-1"
+                    >2026-06-15</span
+                  >
+                </div>
+
+                <!-- checkbox + reveal -->
+                <div
+                  class="mt-2 rounded-md border-2 border-emerald-300 bg-emerald-50 p-3 space-y-3"
+                >
+                  <label
+                    class="flex items-start gap-2 cursor-pointer"
+                    aria-label="Skapa åtgärdsuppgift"
+                  >
+                    <input
+                      type="checkbox"
+                      checked
+                      class="mt-0.5 h-4 w-4 rounded border-slate-400 text-emerald-600 accent-emerald-600"
+                    />
+                    <div>
+                      <p class="text-sm font-medium text-emerald-900">
+                        Skapa åtgärdsuppgift
+                      </p>
+                      <p class="text-xs text-emerald-700 mt-0.5 leading-relaxed">
+                        En uppgift i arbetsytans uppgiftssystem som spårar den
+                        korrigerande åtgärden.
+                      </p>
+                    </div>
+                  </label>
+
+                  <!-- inline task editor reveal -->
+                  <div
+                    class="rounded-md bg-white border border-emerald-200 p-3 space-y-2"
+                  >
+                    <p
+                      class="text-[10px] uppercase tracking-wider text-emerald-700 font-medium"
+                    >
+                      Uppgift
+                    </p>
+                    <div class="grid grid-cols-1 gap-2 text-xs">
+                      <!-- Assignee -->
+                      <div class="flex items-center justify-between gap-2">
+                        <label class="text-slate-500 shrink-0 w-28"
+                          >Ansvarig</label
+                        >
+                        <div
+                          class="flex-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 flex items-center gap-2"
+                        >
+                          <span
+                            class="h-5 w-5 rounded-full bg-sky-100 text-sky-700 text-[9px] font-semibold flex items-center justify-center"
+                            >ES</span
+                          >
+                          <span>Erik Sundström</span>
+                          <span class="ml-auto text-slate-400">▼</span>
+                        </div>
+                      </div>
+                      <p class="text-[10px] text-slate-400 -mt-1 ml-28">
+                        Förvalt från lagpostens ansvarige
+                      </p>
+
+                      <!-- Due date -->
+                      <div class="flex items-center justify-between gap-2">
+                        <label class="text-slate-500 shrink-0 w-28"
+                          >Förfallodatum</label
+                        >
+                        <div
+                          class="flex-1 rounded-md border border-slate-300 bg-white px-2 py-1.5"
+                        >
+                          2026-06-15
+                        </div>
+                      </div>
+                      <p class="text-[10px] text-slate-400 -mt-1 ml-28">
+                        Förvalt från "Datum för åtgärd" ovan
+                      </p>
+
+                      <!-- Priority -->
+                      <div class="flex items-center justify-between gap-2">
+                        <label class="text-slate-500 shrink-0 w-28"
+                          >Prioritet</label
+                        >
+                        <div
+                          class="flex-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 flex items-center gap-2"
+                        >
+                          <span
+                            class="rounded bg-rose-100 text-rose-700 px-1.5 py-0.5 text-[10px] font-medium"
+                            >HÖG</span
+                          >
+                          <span class="ml-auto text-slate-400">▼</span>
+                        </div>
+                      </div>
+                      <p class="text-[10px] text-slate-400 -mt-1 ml-28">
+                        Förvalt till Hög för avvikelser
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  class="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white mt-2"
+                >
+                  Spara finding
+                </button>
+                <p class="text-[10px] text-slate-400 text-center">
+                  → 1 atomic tx: finding + task + activity logs
+                </p>
+              </div>
+            </div>
+
+            <!-- Variant B: checkbox OFF (just a note) -->
+            <div>
+              <div
+                class="mb-2 inline-flex items-center gap-2 text-xs font-medium text-slate-600"
+              >
+                <span class="rounded bg-slate-200 px-2 py-0.5"
+                  >VARIANT B · user unchecks</span
+                >
+                Avvikelse · checkbox OFF (just documented)
+              </div>
+              <div
+                class="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3"
+              >
+                <div class="flex items-center justify-between">
+                  <p class="text-xs font-medium text-slate-500">
+                    DIALOG · Lägg till finding
+                  </p>
+                  <span class="text-xs text-slate-400"
+                    >Q2 2026 Internrevision</span
+                  >
+                </div>
+
+                <div class="flex gap-2 text-xs" role="radiogroup">
+                  <span
+                    class="rounded-md border-2 border-amber-500 bg-amber-50 px-2 py-1 text-amber-800 font-medium"
+                    >● Avvikelse</span
+                  >
+                  <span
+                    class="rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-500"
+                    >○ Obs</span
+                  >
+                  <span
+                    class="rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-500"
+                    >○ Förbätt.</span
+                  >
+                </div>
+
+                <div class="flex gap-2 text-xs items-center">
+                  <span class="text-slate-500">Allvarlighetsgrad:</span>
+                  <span
+                    class="rounded-md border border-slate-300 bg-white px-2 py-1 font-medium"
+                    >Mindre ▼</span
+                  >
+                </div>
+
+                <div
+                  class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm"
+                >
+                  Saknat datumstämpel på mötesprotokoll 2026-03-14
+                </div>
+                <div
+                  class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-500 leading-relaxed"
+                >
+                  Åtgärdat direkt vid revisionstillfället — korrigerad
+                  protokollfil bifogas. Noteras för rapportens fullständighet.
+                </div>
+
+                <!-- checkbox unchecked -->
+                <div
+                  class="mt-2 rounded-md border border-slate-200 bg-white p-3"
+                >
+                  <label class="flex items-start gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      class="mt-0.5 h-4 w-4 rounded border-slate-400"
+                    />
+                    <div>
+                      <p class="text-sm font-medium text-slate-600">
+                        Skapa åtgärdsuppgift
+                      </p>
+                      <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                        En uppgift i arbetsytans uppgiftssystem som spårar den
+                        korrigerande åtgärden.
+                      </p>
+                    </div>
+                  </label>
+                  <p
+                    class="text-[10px] text-slate-400 italic mt-2 pl-6"
+                  >
+                    ↑ User explicitly opts out — no task, no notification loop,
+                    just a finding on record for the rapport.
+                  </p>
+                </div>
+
+                <button
+                  class="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white mt-2"
+                >
+                  Spara finding
+                </button>
+                <p class="text-[10px] text-slate-400 text-center">
+                  → 1 atomic tx: finding only · activity log: finding_created
+                </p>
+              </div>
+
+              <!-- Use cases callout -->
+              <div
+                class="mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900 leading-relaxed"
+              >
+                <p class="font-medium mb-1">When auditors uncheck:</p>
+                <ul class="space-y-0.5 list-disc ml-4">
+                  <li>Deviation corrected on-the-spot during walkthrough</li>
+                  <li>Accepted with documented rationale (risk-based)</li>
+                  <li>Consolidated under one task spawned on a sibling finding</li>
+                  <li>Historical/imported finding whose action is elsewhere</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- SCENE 1b (late addition) -->
+      <article
+        class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden mb-6"
+      >
+        <div
+          class="border-b border-slate-200 bg-slate-100 px-5 py-3 flex items-center gap-3"
+        >
+          <span class="scene-dot bg-slate-400"></span>
+          <h2 class="font-medium text-slate-900">
+            Scene 1b — Late addition: "+ Skapa åtgärdsuppgift" on existing finding row
+          </h2>
+        </div>
+        <div class="p-5">
+          <div class="grid md:grid-cols-2 gap-5">
+            <div>
+              <p class="text-sm text-slate-600 mb-3">
+                A finding logged without a task still has the option to spawn
+                one later. Use case: auditor logs 8 sibling findings first,
+                then realizes one root-cause task covers them all — spawns
+                only on the parent finding.
+              </p>
+
+              <div
+                class="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2"
+              >
+                <p class="text-xs font-medium text-slate-500">
+                  FINDINGS TAB · row expanded
+                </p>
+                <div
+                  class="rounded-md border border-slate-200 bg-white p-3 space-y-2"
+                >
+                  <div class="flex items-center gap-2 text-xs">
+                    <span
+                      class="rounded bg-amber-100 text-amber-700 px-1.5 py-0.5 font-medium"
+                      >AVVIKELSE</span
+                    >
+                    <span
+                      class="rounded bg-slate-100 text-slate-700 px-1.5 py-0.5 font-medium"
+                      >MINDRE</span
+                    >
+                    <span class="text-slate-400">·</span>
+                    <span
+                      class="rounded bg-slate-100 text-slate-500 px-1.5 py-0.5 italic"
+                      >Ingen åtgärdsuppgift</span
+                    >
+                  </div>
+                  <p class="text-sm font-medium">
+                    Dokumenterad riskbedömning saknas för lagerlokaler
+                  </p>
+                  <p class="text-xs text-slate-500 leading-relaxed">
+                    Skapad 2026-04-22 · ingen kopplad uppgift ännu
+                  </p>
+                  <div class="flex gap-2 pt-1">
+                    <button
+                      class="rounded-md bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white inline-flex items-center gap-1.5"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M5 12h14M12 5v14" />
+                      </svg>
+                      Skapa åtgärdsuppgift
+                    </button>
+                    <button
+                      class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600"
+                    >
+                      Stäng
+                    </button>
+                    <button
+                      class="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600"
+                    >
+                      Redigera
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-sm text-slate-600 mb-3">
+                Clicking the button opens a compact popover — same three
+                fields (Ansvarig, Förfallodatum, Prioritet), same Zod
+                schema, same <code>spawnCorrectiveActionTask</code> helper as
+                the primary flow.
+              </p>
+
+              <div
+                class="rounded-lg border-2 border-emerald-300 bg-white shadow-lg p-4 space-y-3"
+              >
+                <div class="flex items-center justify-between">
+                  <p class="text-xs font-medium text-emerald-900">
+                    POPOVER · Skapa åtgärdsuppgift
+                  </p>
+                  <button
+                    class="text-slate-400 hover:text-slate-600 text-xs"
+                    aria-label="Stäng"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div class="space-y-2">
+                  <!-- Assignee -->
+                  <div>
+                    <label
+                      class="text-[10px] uppercase tracking-wider text-slate-500 font-medium"
+                      >Ansvarig</label
+                    >
+                    <div
+                      class="mt-0.5 rounded-md border border-slate-300 bg-white px-2 py-1.5 flex items-center gap-2 text-xs"
+                    >
+                      <span
+                        class="h-5 w-5 rounded-full bg-violet-100 text-violet-700 text-[9px] font-semibold flex items-center justify-center"
+                        >AH</span
+                      >
+                      <span>Anna Hellström (lead auditor)</span>
+                      <span class="ml-auto text-slate-400">▼</span>
+                    </div>
+                  </div>
+
+                  <!-- Due date -->
+                  <div>
+                    <label
+                      class="text-[10px] uppercase tracking-wider text-slate-500 font-medium"
+                      >Förfallodatum</label
+                    >
+                    <div
+                      class="mt-0.5 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+                    >
+                      2026-07-01
+                    </div>
+                  </div>
+
+                  <!-- Priority -->
+                  <div>
+                    <label
+                      class="text-[10px] uppercase tracking-wider text-slate-500 font-medium"
+                      >Prioritet</label
+                    >
+                    <div
+                      class="mt-0.5 rounded-md border border-slate-300 bg-white px-2 py-1.5 flex items-center gap-2 text-xs"
+                    >
+                      <span
+                        class="rounded bg-rose-100 text-rose-700 px-1.5 py-0.5 text-[10px] font-medium"
+                        >HÖG</span
+                      >
+                      <span class="ml-auto text-slate-400">▼</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex gap-2 pt-1">
+                  <button
+                    class="flex-1 rounded-md bg-emerald-600 hover:bg-emerald-700 px-3 py-2 text-xs font-medium text-white"
+                  >
+                    Spara uppgift
+                  </button>
+                  <button
+                    class="rounded-md border border-slate-300 bg-white px-3 py-2 text-xs text-slate-600"
+                  >
+                    Avbryt
+                  </button>
+                </div>
+              </div>
+
+              <p class="text-[10px] text-slate-500 italic mt-3">
+                Under the hood: <code>spawnTaskForExistingFinding(findingId, overrides)</code>
+                — same helper, same activity log (<code>finding_task_spawned</code>
+                with payload <code>spawn_trigger: 'manual_late'</code>).
+              </p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- SCENES 2 + 3 (grid) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- SCENE 2 -->
+        <article
+          class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+        >
+          <div
+            class="border-b border-slate-200 bg-sky-50 px-5 py-3 flex items-center gap-3"
+          >
+            <span class="scene-dot bg-sky-500"></span>
+            <h2 class="font-medium text-sky-900">
+              Scene 2 — Spawned task appears in /tasks
+            </h2>
+          </div>
+          <div class="p-5 space-y-4">
+            <p class="text-sm text-slate-600">
+              The assignee (from the inline editor or derived fallback) opens
+              the task system. Card stays visually identical to manual tasks;
+              the modal reveals the "Från kontroll" chip.
+            </p>
+
+            <!-- Kanban column -->
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p class="text-xs font-medium text-slate-500 mb-2">
+                COLUMN · Att göra
+              </p>
+              <div class="space-y-2">
+                <div class="rounded-md border border-slate-200 bg-white p-3 text-sm">
+                  <p class="font-medium">Uppdatera riskbedömning Q3</p>
+                  <p class="text-xs text-slate-500 mt-1">
+                    <span
+                      class="rounded bg-amber-100 text-amber-700 px-1.5 py-0.5 text-[10px]"
+                      >MEDIUM</span
+                    >
+                    · Anna L.
+                  </p>
+                </div>
+                <div
+                  class="rounded-md border-2 border-sky-400 bg-sky-50 p-3 text-sm ring-2 ring-sky-100"
+                >
+                  <p class="font-medium">
+                    Saknad utbildningsplan för kemikaliehantering
+                  </p>
+                  <p class="text-xs text-slate-500 mt-1">
+                    <span
+                      class="rounded bg-rose-100 text-rose-700 px-1.5 py-0.5 text-[10px] font-medium"
+                      >HIGH</span
+                    >
+                    · Erik S. · förfaller 15 jun
+                  </p>
+                  <p class="text-[10px] text-sky-700 mt-1.5 italic">
+                    ↑ Spawned by 21.8 — no visual differentiator on card
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- modal (left panel + right rail card) -->
+            <div class="rounded-lg border border-slate-200 bg-slate-900 p-4 text-slate-100">
+              <p class="text-xs font-medium text-slate-400 mb-3">
+                MODAL · task-modal · left panel + right rail
+              </p>
+              <div class="grid grid-cols-5 gap-3">
+                <!-- Left panel -->
+                <div class="col-span-3 space-y-3">
+                  <p class="text-[10px] text-slate-500 uppercase tracking-wider">
+                    Uppgifter ▸ Saknad utbildningsplan…
+                  </p>
+                  <h3 class="text-base font-semibold">
+                    Saknad utbildningsplan för kemikaliehantering
+                  </h3>
+                  <!-- minimal badges row (NO chip here anymore) -->
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="rounded-md bg-slate-700 text-slate-300 px-2 py-0.5 text-[10px] font-medium"
+                      >● Att göra</span
+                    >
+                    <span
+                      class="rounded-md bg-rose-900/50 text-rose-300 px-2 py-0.5 text-[10px] font-medium"
+                      >HÖG</span
+                    >
+                  </div>
+                  <div class="rounded-md border border-slate-700 bg-slate-800 p-2">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">
+                      Beskrivning
+                    </p>
+                    <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                      Korrigerande åtgärd för avvikelse: Skyddsombuden har
+                      inte fått dokumenterad utbildning enligt AFS 2011:19 §37…
+                    </p>
+                  </div>
+                </div>
+                <!-- Right rail with the NEW card -->
+                <div class="col-span-2 space-y-2">
+                  <div class="rounded-md bg-slate-800 border border-slate-700 p-2">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">
+                      Detaljer
+                    </p>
+                    <div class="mt-1 space-y-0.5 text-[10px]">
+                      <p class="flex justify-between">
+                        <span class="text-slate-500">Ansvarig</span>
+                        <span>Erik S.</span>
+                      </p>
+                      <p class="flex justify-between">
+                        <span class="text-slate-500">Förfaller</span>
+                        <span>15 jun</span>
+                      </p>
+                      <p class="flex justify-between">
+                        <span class="text-slate-500">Prioritet</span>
+                        <span class="text-rose-300">HÖG</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- THE NEW CARD -->
+                  <div
+                    class="rounded-md bg-violet-950/50 border-2 border-violet-700 p-2 ring-2 ring-violet-500/20"
+                  >
+                    <p
+                      class="text-[10px] text-violet-300 uppercase tracking-wider font-medium flex items-center gap-1.5"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M16 16h6l-3-8-3 8z" />
+                        <path d="M2 16h6l-3-8-3 8z" />
+                        <path d="M7 21h10" />
+                        <path d="M12 3v18" />
+                        <path d="M3 8h18" />
+                      </svg>
+                      Länkade kontroller
+                    </p>
+                    <a
+                      href="#"
+                      class="mt-1.5 block rounded bg-slate-800/50 hover:bg-slate-800 border border-violet-800 p-1.5 transition-colors"
+                    >
+                      <p class="text-xs font-medium text-violet-100">
+                        Q2 2026 Internrevision
+                      </p>
+                      <p class="text-[9px] text-violet-400 mt-0.5">
+                        ● PÅGÅENDE · 23 av 45 bedömda
+                      </p>
+                      <div
+                        class="mt-1.5 rounded border border-amber-800/60 bg-amber-950/30 p-1"
+                      >
+                        <p
+                          class="text-[8px] uppercase tracking-wider text-amber-400 font-medium"
+                        >
+                          Från avvikelse
+                        </p>
+                        <p class="text-[10px] text-amber-200 mt-0.5 truncate">
+                          Saknad utbildningsplan för…
+                        </p>
+                      </div>
+                    </a>
+                  </div>
+
+                  <div class="rounded-md bg-slate-800 border border-slate-700 p-2 opacity-50">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider">
+                      Länkade författningar
+                    </p>
+                    <p class="text-[10px] text-slate-600 italic mt-1">
+                      (existing pattern — mirrors the new card)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-lg bg-slate-100 border border-slate-200 p-3 text-xs text-slate-700 leading-relaxed">
+              <p class="font-medium text-slate-900 mb-1">Why a card, not a chip:</p>
+              <ul class="space-y-0.5 list-disc ml-4 text-slate-600">
+                <li>
+                  Matches the existing <code>Länkade författningar</code> right-rail card
+                </li>
+                <li>
+                  Leaves room for finding context ("Från avvikelse: ...") as a nested element
+                </li>
+                <li>
+                  Carries a clear surface for the deferred manual-link
+                  affordance ("+ Lägg till länk") when Story 21.15 lands
+                </li>
+                <li>
+                  Badges row stays minimal — just Status + Priority, as in the real app
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- SCENE 3 -->
+        <article
+          class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+        >
+          <div
+            class="border-b border-slate-200 bg-emerald-50 px-5 py-3 flex items-center gap-3"
+          >
+            <span class="scene-dot bg-emerald-500"></span>
+            <h2 class="font-medium text-emerald-900">
+              Scene 3 — Task completed → lead auditor notified
+            </h2>
+          </div>
+          <div class="p-5 space-y-4">
+            <p class="text-sm text-slate-600">
+              Erik does the work, drags to "Klar". The hook fires (all three
+              task-status mutation paths), 24h activity-log dedup prevents
+              double-notify.
+            </p>
+
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div class="grid grid-cols-3 gap-2 text-xs">
+                <div
+                  class="rounded-md border border-slate-200 bg-white p-2 opacity-60"
+                >
+                  <p class="font-medium text-slate-500">Att göra</p>
+                </div>
+                <div
+                  class="rounded-md border border-slate-200 bg-white p-2 opacity-60"
+                >
+                  <p class="font-medium text-slate-500">Pågående</p>
+                </div>
+                <div
+                  class="rounded-md border-2 border-emerald-400 bg-emerald-50 p-2 ring-2 ring-emerald-100"
+                >
+                  <p class="font-medium text-emerald-800">Klar ✓</p>
+                  <p
+                    class="mt-1 rounded bg-white border border-emerald-200 p-1.5 text-[10px] text-slate-700"
+                  >
+                    Saknad utbildningsplan…
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="rounded-lg border border-violet-200 bg-violet-50 p-4"
+            >
+              <p
+                class="text-xs font-medium text-violet-700 mb-2 flex items-center gap-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                </svg>
+                NOTIFICATION BELL · Lead auditor
+              </p>
+              <div class="rounded-md border border-violet-200 bg-white p-3">
+                <p class="font-medium text-sm text-slate-900">
+                  Uppgift slutförd för avvikelse
+                </p>
+                <p class="text-sm text-slate-600 mt-1 leading-relaxed">
+                  Uppgiften "Saknad utbildningsplan för kemikaliehantering"
+                  är slutförd. Avvikelsen kan nu stängas i kontrollen
+                  "Q2 2026 Internrevision".
+                </p>
+                <p class="text-[10px] text-slate-400 mt-2">
+                  Klick → /laglistor/kontroller/[cycleId]#findings
+                </p>
+              </div>
+              <p class="text-[10px] text-violet-600 mt-2 italic">
+                In-app only · deep-link via entity_type=compliance_finding (21.13)
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- SCENES 4 + 4' (grid with variant spanning) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- SCENE 4 -->
+        <article
+          class="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+        >
+          <div
+            class="border-b border-slate-200 bg-violet-50 px-5 py-3 flex items-center gap-3"
+          >
+            <span class="scene-dot bg-violet-500"></span>
+            <h2 class="font-medium text-violet-900">
+              Scene 4 — Lead auditor closes finding (happy path)
+            </h2>
+          </div>
+          <div class="p-5 space-y-4">
+            <p class="text-sm text-slate-600">
+              Lead auditor follows the notification, verifies the corrective
+              action, hits "Stäng". Task already in "Klar" → closeFinding is
+              idempotent on the task side. <strong>If no task was ever spawned</strong>
+              (Variant B from Scene 1), closeFinding simply closes the finding —
+              no task branch triggers.
+            </p>
+
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs font-medium text-slate-500 mb-3">
+                FINDINGS TAB · cycle-findings-tab.tsx
+              </p>
+              <div
+                class="rounded-md border border-slate-200 bg-white p-3 space-y-2"
+              >
+                <div class="flex items-center gap-2 text-xs">
+                  <span
+                    class="rounded bg-amber-100 text-amber-700 px-1.5 py-0.5 font-medium"
+                    >AVVIKELSE</span
+                  >
+                  <span
+                    class="rounded bg-rose-100 text-rose-700 px-1.5 py-0.5 font-medium"
+                    >STÖRRE</span
+                  >
+                  <span class="text-slate-400">·</span>
+                  <span
+                    class="rounded bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-medium"
+                    >Åtgärdsuppgift: Klar ✓</span
+                  >
+                </div>
+                <p class="text-sm font-medium">
+                  Saknad utbildningsplan för kemikaliehantering
+                </p>
+                <div class="flex gap-2 pt-1">
+                  <button
+                    class="rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white"
+                  >
+                    Stäng
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="rounded-lg bg-slate-900 text-slate-100 p-4 text-xs font-mono leading-relaxed"
+            >
+              <p class="text-violet-400 mb-2">// closeFinding — atomic tx:</p>
+              <p>✓ finding.closed_at = now()</p>
+              <p class="mt-2 text-slate-400">
+                // Task branch guards (PO v0.3 + v0.4):
+              </p>
+              <p class="text-slate-400">// parsed.data.closeReason == null ✓</p>
+              <p class="text-slate-400">
+                // finding.corrective_action_task_id != null
+                <span class="text-emerald-400">(if task exists)</span>
+              </p>
+              <p class="text-slate-400">
+                // linkedTask.completed_at != null ← already done
+              </p>
+              <p class="text-slate-400">// → no task update (idempotent)</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- SCENE 4' -->
+        <article
+          class="rounded-xl border border-rose-200 bg-white shadow-sm overflow-hidden"
+        >
+          <div
+            class="border-b border-rose-200 bg-rose-50 px-5 py-3 flex items-center gap-3"
+          >
+            <span class="scene-dot bg-rose-500"></span>
+            <h2 class="font-medium text-rose-900">
+              Scene 4' — Close with override · task stays
+            </h2>
+          </div>
+          <div class="p-5 space-y-4">
+            <p class="text-sm text-slate-600">
+              Lead auditor closes <em>before</em> the task is done, supplying a
+              <code>close_reason</code>. The v0.3 guard skips the
+              task-auto-complete branch so the user's explicit intent is
+              preserved.
+            </p>
+
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs font-medium text-slate-500 mb-2">
+                MODAL · manual-override
+              </p>
+              <div
+                class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-600 leading-relaxed"
+              >
+                Åtgärden hanteras i samband med ny kemikalieplan under Q3.
+                Separat spårning behövs inte längre.
+              </div>
+              <button
+                class="mt-2 rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white"
+              >
+                Stäng med anledning
+              </button>
+            </div>
+
+            <div
+              class="rounded-lg bg-slate-900 text-slate-100 p-4 text-xs font-mono leading-relaxed"
+            >
+              <p class="text-rose-400 mb-2">// Manual-override path:</p>
+              <p>✓ finding.closed_at = now()</p>
+              <p>✓ activity_log.new_value = { manual_override: true, ... }</p>
+              <p class="mt-2 text-rose-400">// v0.3 guard:</p>
+              <p>parsed.data.closeReason != null ✗</p>
+              <p class="text-slate-400">
+                // → task-auto-complete branch SKIPPED
+              </p>
+              <p class="text-slate-400">// → task stays in its current column</p>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Decision tree -->
+      <section
+        class="rounded-xl border border-slate-200 bg-white p-6 mb-6"
+      >
+        <h2 class="font-medium text-slate-900 mb-4">
+          Decision tree — does this finding get a task?
+        </h2>
+        <div class="grid md:grid-cols-2 gap-5 text-sm">
+          <div class="space-y-3">
+            <div
+              class="rounded-md border border-emerald-200 bg-emerald-50 p-3"
+            >
+              <p class="font-medium text-emerald-900">
+                ✓ Task spawned (1 atomic tx)
+              </p>
+              <ul class="mt-1 text-xs text-emerald-800 space-y-0.5 list-disc ml-4">
+                <li>Type = AVVIKELSE + checkbox left at default (ON)</li>
+                <li>Type = OBSERVATION, user explicitly checks the box</li>
+                <li>Type = FÖRBÄTTRING, user explicitly checks the box</li>
+                <li>Any existing finding, "+ Skapa åtgärdsuppgift" clicked</li>
+              </ul>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="rounded-md border border-slate-200 bg-slate-50 p-3">
+              <p class="font-medium text-slate-700">– Finding only, no task</p>
+              <ul class="mt-1 text-xs text-slate-600 space-y-0.5 list-disc ml-4">
+                <li>Type = AVVIKELSE, user unchecks (spot-fix, accepted, etc.)</li>
+                <li>Type = OBSERVATION, default OFF</li>
+                <li>Type = FÖRBÄTTRING, default OFF</li>
+                <li>Late addition still available via row button</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- What's NOT in 21.8 -->
+      <footer class="rounded-xl border border-slate-200 bg-white p-6">
+        <h2 class="font-medium text-slate-900">
+          What's intentionally NOT in 21.8
+        </h2>
+        <ul class="mt-3 space-y-2 text-sm text-slate-600">
+          <li class="flex gap-2">
+            <span class="text-slate-400 shrink-0">·</span>
+            <span>
+              <strong>No task-list-card chip or filter.</strong> Epic AC 2
+              "optional" deferred to post-MVP.
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-slate-400 shrink-0">·</span>
+            <span>
+              <strong>No email.</strong>
+              <code>FINDING_READY_TO_CLOSE</code> is in-app only for MVP.
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-slate-400 shrink-0">·</span>
+            <span>
+              <strong>No <code>deleteFinding</code> action.</strong> FK
+              <code>onDelete: SetNull</code> covers data integrity.
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-slate-400 shrink-0">·</span>
+            <span>
+              <strong>No retroactive spawn on type change.</strong> If a
+              finding type is edited from OBSERVATION → AVVIKELSE later, no
+              auto-spawn. User can click "+ Skapa åtgärdsuppgift" on the row.
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-slate-400 shrink-0">·</span>
+            <span>
+              <strong>No task-type enum (deferred).</strong> Current design
+              uses <code>compliance_finding_id</code> as the de-facto type
+              discriminator. A dedicated "Task Types" story lands when a second
+              origin appears (see prior discussion).
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-slate-400 shrink-0">·</span>
+            <span>
+              <strong>No task consolidation (many findings → one task).</strong>
+              Current design is 1:1 finding:task. Consolidation is handled
+              manually today by unchecking siblings and spawning only on the
+              root-cause finding.
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-slate-400 shrink-0">·</span>
+            <span>
+              <strong>No manual kontroll ↔ task linking UI (deferred to Story 21.15).</strong>
+              The <code>ComplianceCycleTaskLink</code> M:N join table lands in
+              21.8 so the data model is future-proof, but the "+ Lägg till länk"
+              affordance on the new card + cycle picker are deferred. In 21.8
+              the card only renders when the spawner populated it (via
+              AVVIKELSE or late-addition).
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-slate-400 shrink-0">·</span>
+            <span>
+              <strong>No cycle-detail "Uppgifter" tab (deferred to Story 21.15).</strong>
+              The reciprocal surface — showing all tasks linked to a kontroll
+              on the cycle detail page — is the natural pair to manual linking.
+              Both ship together as the follow-up.
+            </span>
+          </li>
+        </ul>
+      </footer>
+
+      <div class="mt-6 text-xs text-slate-400">
+        Prototype for mental-model only · Laglig.se · Story 21.8 v0.5 ·
+        Generated 2026-04-23
+      </div>
+    </div>
+  </body>
+</html>
