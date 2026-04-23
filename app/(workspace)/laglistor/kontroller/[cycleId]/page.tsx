@@ -11,6 +11,7 @@ import {
 } from '@prisma/client'
 import { getCycleById } from '@/app/actions/compliance-audit-cycle'
 import { getCycleItemsForCycle } from '@/app/actions/compliance-audit-item'
+import { listFindingsForCycle } from '@/app/actions/compliance-finding'
 import { CycleDetailPage } from '@/components/features/compliance-audit/cycle-detail'
 
 export const dynamic = 'force-dynamic'
@@ -51,9 +52,10 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
     redirect('/laglistor')
   }
 
-  const [cycleResult, itemsResult] = await Promise.all([
+  const [cycleResult, itemsResult, findingsResult] = await Promise.all([
     getCachedCycleById(cycleId),
     getCycleItemsForCycle(cycleId),
+    listFindingsForCycle({ cycleId }),
   ])
 
   if (!cycleResult.success || !cycleResult.data) {
@@ -62,17 +64,23 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
     redirect('/laglistor/kontroller')
   }
 
+  // Story 21.7: fail-open for findings read. If it fails, the cycle detail
+  // still loads; the Findings tab shows an empty state + the page-level SWR
+  // will retry on revalidation. Mirrors the items fail-open pattern below.
+  const initialFindings =
+    findingsResult.success && findingsResult.data
+      ? findingsResult.data.findings
+      : []
+
   if (!itemsResult.success || !itemsResult.data) {
     // Fail-open with an empty items array — the UI renders the empty state and
     // the user can retry via page reload. Keeps the page navigable if the
     // items read fails transiently while the cycle itself loaded.
-    //
-    // No outer padding wrapper — WorkspaceShell's <main> already has p-4/md:p-6.
-    // Matches /laglistor's convention (also unwrapped).
     return (
       <CycleDetailPage
         cycle={cycleResult.data.cycle}
         items={[]}
+        initialFindings={initialFindings}
         cyclePartial={{
           id: cycleResult.data.cycle.id,
           status: cycleResult.data.cycle.status,
@@ -88,6 +96,7 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
     <CycleDetailPage
       cycle={cycleResult.data.cycle}
       items={itemsResult.data.items}
+      initialFindings={initialFindings}
       cyclePartial={itemsResult.data.cycle}
       readOnly={isReadOnly(itemsResult.data.cycle.status)}
     />

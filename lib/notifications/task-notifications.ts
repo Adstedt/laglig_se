@@ -85,6 +85,16 @@ function buildNotificationText(
         title: 'Veckans uppgifter',
         body: `Du har ${ctx.count ?? 0} uppgifter att slutföra denna vecka`,
       }
+    // Story 21.8: pre-positioned hook for a future email story. The in-app
+    // Notification row is created by `lib/compliance-audit/notify-finding-task-completed.ts`;
+    // no current caller invokes this arm but the copy is defined here so that
+    // whenever the email-dispatch switch gets a FINDING_READY_TO_CLOSE arm,
+    // the notification text is already consistent.
+    case NotificationType.FINDING_READY_TO_CLOSE:
+      return {
+        title: 'Uppgift slutförd för avvikelse',
+        body: `Uppgiften "${ctx.taskTitle}" är slutförd. Avvikelsen kan nu stängas.`,
+      }
     default:
       return { title: 'Notifikation', body: '' }
   }

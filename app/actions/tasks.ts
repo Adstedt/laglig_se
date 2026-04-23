@@ -17,6 +17,7 @@ import {
   invalidateListItemTasksCache,
 } from './legal-document-modal'
 import { createTaskNotification } from '@/lib/notifications/task-notifications'
+import { notifyIfFindingTaskCompleted } from '@/lib/compliance-audit/notify-finding-task-completed'
 import { NotificationType } from '@prisma/client'
 
 // ============================================================================
@@ -642,7 +643,7 @@ export async function updateTaskStatus(
   position: number
 ): Promise<ActionResult> {
   try {
-    return await withWorkspace(async ({ workspaceId }) => {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
       // Verify task belongs to workspace
       const task = await prisma.task.findFirst({
         where: { id: taskId, workspace_id: workspaceId },
@@ -661,6 +662,9 @@ export async function updateTaskStatus(
         return { success: false, error: 'Kolumnen hittades inte' }
       }
 
+      // Story 21.8: capture completion-transition signal before update.
+      const wasCompleted = task.completed_at !== null
+
       // Update task
       await prisma.task.update({
         where: { id: taskId },
@@ -675,6 +679,19 @@ export async function updateTaskStatus(
       await invalidateTaskLinkedListItemsCache(taskId)
 
       revalidatePath('/tasks')
+
+      // Story 21.8: notify lead auditor when a corrective-action task is
+      // completed (genuine transition: was NOT completed AND target is done).
+      if (!wasCompleted && column.is_done) {
+        notifyIfFindingTaskCompleted({
+          taskId,
+          workspaceId,
+          actorUserId: userId,
+        }).catch((error) => {
+          console.error('notifyIfFindingTaskCompleted error:', error)
+        })
+      }
+
       return { success: true }
     })
   } catch (error) {
@@ -712,7 +729,7 @@ export async function updateTasksBulk(
       return { success: false, error: 'Inga uppgifter valda' }
     }
 
-    return await withWorkspace(async ({ workspaceId }) => {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
       // Verify all tasks belong to workspace
       const tasks = await prisma.task.findMany({
         where: {
@@ -730,6 +747,8 @@ export async function updateTasksBulk(
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data: any = {}
+      // Story 21.8: track whether this bulk move is a completion transition.
+      let targetColumnIsDone = false
 
       if (updates.columnId) {
         // Verify column belongs to workspace
@@ -741,6 +760,7 @@ export async function updateTasksBulk(
         }
         data.column_id = updates.columnId
         data.completed_at = column.is_done ? new Date() : null
+        targetColumnIsDone = column.is_done
       }
 
       if (updates.assigneeId !== undefined) {
@@ -762,6 +782,25 @@ export async function updateTasksBulk(
       )
 
       revalidatePath('/tasks')
+
+      // Story 21.8: fire the FINDING_READY_TO_CLOSE hook for each task that
+      // genuinely transitioned to completed (was NOT completed AND target
+      // column is_done). Per-task .catch so one failure doesn't cascade.
+      if (updates.columnId && targetColumnIsDone) {
+        const transitioning = tasks.filter((t) => t.completed_at === null)
+        await Promise.all(
+          transitioning.map((t) =>
+            notifyIfFindingTaskCompleted({
+              taskId: t.id,
+              workspaceId,
+              actorUserId: userId,
+            }).catch((error) => {
+              console.error('notifyIfFindingTaskCompleted error:', error)
+            })
+          )
+        )
+      }
+
       return { success: true }
     })
   } catch (error) {

@@ -408,4 +408,214 @@ describe('formatActivity', () => {
       'Alexander ångrade signeringen på Miljöbalken (SFS 1998:808)'
     )
   })
+
+  // ==========================================================================
+  // Story 21.7 — Finding activity-log sentences
+  // ==========================================================================
+
+  const findingRef: ResolvedEntityRef = {
+    id: 'finding-1',
+    label: 'Saknad utbildningsplan',
+    href: '/laglistor/kontroller/c-1#findings',
+    deleted: false,
+  }
+
+  it('renders finding_created with definite-form type label (AVVIKELSE)', () => {
+    const parts = formatActivity({
+      action: 'finding_created',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: {
+        type: 'AVVIKELSE',
+        severity: 'MAJOR',
+        title: 'Saknad utbildningsplan',
+      },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander skapade avvikelsen Saknad utbildningsplan'
+    )
+  })
+
+  it('renders finding_created for OBSERVATION (definite form)', () => {
+    const parts = formatActivity({
+      action: 'finding_created',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: { type: 'OBSERVATION', title: 'Observation' },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander skapade observationen Saknad utbildningsplan'
+    )
+  })
+
+  it('renders finding_created for FORBATTRING (definite form)', () => {
+    const parts = formatActivity({
+      action: 'finding_created',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: { type: 'FORBATTRING', title: 'Idé' },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander skapade förbättringsförslaget Saknad utbildningsplan'
+    )
+  })
+
+  it('renders finding_updated (generic; diff rendered in expanded row)', () => {
+    const parts = formatActivity({
+      action: 'finding_updated',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: { title: 'Old' },
+      new_value: { title: 'New' },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander uppdaterade Saknad utbildningsplan'
+    )
+  })
+
+  it('renders finding_closed — short form without manual override', () => {
+    const parts = formatActivity({
+      action: 'finding_closed',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: {
+        closed_at: '2026-04-22T12:00:00Z',
+        closed_by_user_id: 'u1',
+      },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander stängde Saknad utbildningsplan'
+    )
+  })
+
+  it('renders finding_closed with manual-override close_reason appended', () => {
+    const parts = formatActivity({
+      action: 'finding_closed',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: {
+        closed_at: '2026-04-22T12:00:00Z',
+        closed_by_user_id: 'u1',
+        manual_override: true,
+        close_reason: 'Task cancelled — no longer applicable',
+      },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander stängde Saknad utbildningsplan: anledning — Task cancelled — no longer applicable'
+    )
+  })
+
+  it('truncates close_reason > 80 chars to 80 + ellipsis', () => {
+    const reason81 = 'x'.repeat(81)
+    const parts = formatActivity({
+      action: 'finding_closed',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: {
+        closed_at: '2026-04-22T12:00:00Z',
+        closed_by_user_id: 'u1',
+        manual_override: true,
+        close_reason: reason81,
+      },
+      primary: findingRef,
+    })
+    const flat = sentencePartsToText(parts)
+    expect(flat.endsWith('…')).toBe(true)
+    expect(flat).toContain('x'.repeat(80) + '…')
+    expect(flat).not.toContain('x'.repeat(81))
+  })
+
+  it('renders finding_reopened', () => {
+    const parts = formatActivity({
+      action: 'finding_reopened',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: {
+        closed_at: '2026-04-22T12:00:00Z',
+        closed_by_user_id: 'u1',
+      },
+      new_value: null,
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander återöppnade Saknad utbildningsplan'
+    )
+  })
+
+  // ----- Story 21.8: corrective-action task loop -----
+  it('renders finding_task_spawned with task_title', () => {
+    const parts = formatActivity({
+      action: 'finding_task_spawned',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: {
+        task_id: 'task-new',
+        task_title: 'Test avvikelse',
+        cycle_id: 'cycle-1',
+      },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander skapade åtgärdsuppgift Test avvikelse kopplad till Saknad utbildningsplan'
+    )
+  })
+
+  it('renders finding_task_spawned with fallback copy when task_title missing', () => {
+    const parts = formatActivity({
+      action: 'finding_task_spawned',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: { task_id: 'task-new' },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander skapade åtgärdsuppgift en åtgärdsuppgift kopplad till Saknad utbildningsplan'
+    )
+  })
+
+  it('renders finding_task_completed (generic sentence)', () => {
+    const parts = formatActivity({
+      action: 'finding_task_completed',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: { task_id: 'task-1', new_column_id: 'col-done' },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander markerade åtgärdsuppgiften för Saknad utbildningsplan som klar'
+    )
+  })
+
+  it('renders finding_task_completion_notified as system-origin (no user)', () => {
+    const parts = formatActivity({
+      action: 'finding_task_completion_notified',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: {
+        recipient_user_id: 'lead-1',
+        task_id: 'task-1',
+        cycle_id: 'cycle-1',
+      },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Systemet skickade en notis: åtgärdsuppgiften för Saknad utbildningsplan är klar'
+    )
+  })
 })

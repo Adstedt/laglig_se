@@ -1,0 +1,116 @@
+schema: 1
+story: '21.7'
+story_title: 'Findings — create, edit, close (type + severity + root cause)'
+gate: PASS
+status_reason: 'Story ships clean at the scaffolding tier — 24/24 ACs + 4/4 IVs satisfied; 76 net-new tests; full regression 4449/4449 across 318 files with zero failures; tsc + build clean. Server-action module is a textbook sibling of Story 21.5''s compliance-audit-item.ts (same ActionResult shape, same TODO(21.10) markers, same FINDING_INCLUDE consolidation, same privacy pin). SF-1 hoist of the findings SWR cache to CycleDetailPage lands cleanly; tab + per-item drawer share the same array via prop-threading with onFindingMutation as the reconciler. Security surface verified across four defence layers (auth gate, tenant isolation, cross-laglista validation, generic not-found errors). One notable engineering judgment: AC 9''s literal spec would have tombstoned every row (resolver queries by ComplianceAuditItem.id but payload carries LawListItem.id) — dev correctly substituted `list_item` for the secondary-ref entity type. Five low-severity items captured: three test-coverage gaps (AC 13 drawer filtering, AC 14 chip text, AC 10 status filter), two dev-optional polish items (DEV-001 redundant cross-link check on no-op updates, DEV-002 severity not auto-cleared when type changes off AVVIKELSE), plus two PO-owned follow-ups (PROD-001 manual-override close-reason UI, PROD-002 AC 9 resolver entity-type deviation). None block PASS.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-23T09:25:00Z'
+story_status: 'Done' # flipped by owner after PASS review
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'TEST-001'
+    severity: low
+    finding: 'AC 13 (per-item drawer findings affordance) is only test-pinned via the empty-state assertion ("Inga findings för denna post ännu.") that replaced the old "Hanteras i Story 21.7" placeholder. Three sub-acceptances are NOT asserted: (a) row-scoped filtering via `findings.filter((f) => f.lawListItemId === row.lawListItemId)` — a fixture with two findings pointing at different `lawListItemId` values would verify the drawer shows only the matching one; (b) the "+ Lägg till finding" button''s `prefillLawListItemId` pass-through to the editor; (c) the button being hidden when `readOnly=true`. Implementation is straightforward and manifestly correct by inspection, but the tests do not pin the contracts.'
+    suggested_action: 'Extend the existing `cycle-items-tab.test.tsx` with three fixture-driven cases for the AC 13 contract. Mock surface was already extended with `createFinding`/`updateFinding`/`closeFinding`/`reopenFinding` stubs, so no additional scaffolding needed. ~15 min.'
+    suggested_owner: dev
+
+  - id: 'TEST-002'
+    severity: low
+    finding: 'AC 14 header findings count chip renders but its Swedish text is never asserted. Component sets `data-testid="cycle-header-findings-chip"` and renders `Findings: {open} öppna · {closed} stängda` (or `Findings: inga` when both counts are 0), but no test reads the chip''s textContent. A label-copy change or a `findingCounts` prop-threading regression would slip past CI.'
+    suggested_action: 'Add two assertions to `cycle-items-tab.test.tsx` (which already mounts CycleDetailPage → CycleDetailHeader): (a) with `initialFindings=[]`, chip text = "Findings: inga"; (b) with `initialFindings=[openFixture, closedFixture]`, chip text = "Findings: 1 öppna · 1 stängda". ~5 min.'
+    suggested_owner: dev
+
+  - id: 'TEST-003'
+    severity: low
+    finding: 'AC 10 status filter (All / Öppna / Stängda) is not exercised in `cycle-findings-tab.test.tsx`. Type filter + severity-visibility are tested; status toggle is not. The button group renders via `data-testid="finding-filter-status-{open|closed|all}"` but no test asserts the useMemo filter actually narrows the list on click.'
+    suggested_action: 'Add one fixture-driven test: findings=[openFixture, closedFixture], click "Stängda" chip, assert only closed finding title is visible. Mirror the existing type-filter test at `cycle-findings-tab.test.tsx:~140`. ~5 min.'
+    suggested_owner: dev
+
+  - id: 'DEV-001'
+    severity: low
+    finding: '`updateFinding` runs the cross-link tenant-validation Prisma call (`lawListItem.findFirst`) even when `parsed.data.lawListItemId === existing.law_list_item_id` (a no-op caller passing the current value through). The idempotent-diff shortcut fires AFTER the cross-link check, so the redundant round-trip is paid. Cost: 1 extra findFirst per no-op save that includes the cross-link field. Not performance-critical at current scale but a Story 21.5-style DEBT-001 opportunity.'
+    suggested_action: 'Gate the cross-link `findFirst` on the "value actually changed" predicate: only run it when `parsed.data.lawListItemId !== existing.law_list_item_id` (same shape for the requirement check). Dropping this eliminates one round-trip per no-op save of cross-linked findings. ~5 min.'
+    suggested_owner: dev
+
+  - id: 'DEV-002'
+    severity: low
+    finding: '`updateFinding` does not auto-clear `severity` when `type` changes away from AVVIKELSE. The editor dialog handles this client-side (clears severity on type-switch), but a direct API call could leave a stale `severity=MAJOR` on an OBSERVATION or FORBATTRING row. Formatter falls back gracefully (severity badge only renders when `type === AVVIKELSE && severity != null`), so no runtime break, but the row''s DB state is semantically inconsistent.'
+    suggested_action: 'In the `type !== existing.type` branch of the diff builder, when `parsed.data.type !== AVVIKELSE` AND `existing.severity !== null`, also set `data.severity = null` and record the implicit clear in `oldValue.severity` / `newValue.severity`. Keeps server state self-consistent regardless of caller. ~5 min.'
+    suggested_owner: dev
+
+  - id: 'PROD-001'
+    severity: low
+    finding: 'The manual-override close-reason UI is minimal for 21.7. The row''s "Stäng" button sends `closeFinding({findingId})` with no reason; if the AVVIKELSE+incomplete-task gate rejects, the user sees the `FINDING_REQUIRES_TASK_CLOSURE:`-prefixed error toast but has no inline UI to supply the override reason. Server path is fully wired + tested (the close_reason activity-log crumb with manual_override=true is covered by a dedicated test), but the user has to mentally parse the error + retry via… the existing UI, which offers no reason input. Completion Note 5 flags this as intentional deferred scope.'
+    suggested_action: 'Follow-up story (minimal 1-hour scope): add a reason-prompt modal that pops on the gate rejection, captures a textarea input, and re-submits `closeFinding({findingId, closeReason})`. Alternatively, a secondary "Stäng med anledning" action. Either lands atop the fully-tested server path without additional backend work.'
+    suggested_owner: po
+
+  - id: 'PROD-002'
+    severity: low
+    finding: 'AC 9 literally specified `{entity_type: "compliance_audit_item", entity_id: lawListItemId}` for `getSecondaryRef`, but the existing `compliance_audit_item` resolver branch (from Story 21.13) looks up by `ComplianceAuditItem.id` — not `LawListItem.id`. Dev correctly substituted `list_item` so the resolver actually finds the entity (documented in Completion Note 1 + in `entity-resolver.ts` inline comment). Net UX effect: activity-feed secondary link for finding rows goes to `/laglistor?document=X` instead of the cycle-scoped `/laglistor/kontroller/<cycleId>#items`. Primary ref is unaffected — finding rows still deep-link into the cycle. The right engineering call; flagged for PO visibility.'
+    suggested_action: 'Accept as-is (recommended), OR in a Story 21.13 follow-up extend the resolver to batch-fetch ComplianceAuditItem by `law_list_item_id` + cycle context (de-dup required because one LawListItem can be in many cycles). The secondary-link URL change is cosmetic — users land on the law page with context, just not the specific cycle.'
+    suggested_owner: po
+
+# Informational (not tracked as top-issue — inherited project pattern):
+#  - DEBT-NOTE-001 (info): mutation + logActivity execute as two separate Prisma calls (not `$transaction`).
+#    Identical to Story 21.5 DEBT-003 (SM-owned project-wide sweep candidate). NOT a 21.7 regression.
+#    Reference: docs/qa/gates/21.5-cycle-detail-page-items-tab.yml DEBT-003.
+
+quality_score: 100
+
+evidence:
+  tests_reviewed: 129 # 34 server-action + 10 cycle-findings-tab + 9 finding-editor + 20 cycle-items-tab (updated) + 31 format-activity + 13 entity-resolver + 4 categories + 8 RSC-gating
+  tests_new: 76 # net-new vs Story 21.14 baseline of 4373
+  tests_passing: 129
+  total_regression: 4449 # full CI unit suite
+  total_regression_baseline: 4373 # post-21.14 baseline
+  regression_delta: 76
+  risks_identified: 7 # all low
+  files_created: 9
+  files_modified: 13
+  files_modified_during_review: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15, 16, 17, 18, 23, 24]
+    ac_partial: [10, 13, 14, 19, 20, 21, 22] # implemented, test-pinning gaps captured in TEST-001/002/003
+    ac_gaps: []
+    iv_covered: [1, 2, 3, 4]
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Four defence layers verified. (1) Authorisation: withWorkspace + tasks:edit for mutations; OR-gate (activity:view || tasks:edit) for the read action preserves the Story 21.14 AUDITOR regression pin. (2) Tenant isolation: every Prisma query joins through `cycle.workspace_id`; cross-link validation rejects items/requirements in other workspaces (`Den valda lagen tillhör inte arbetsytan` — NH-3 tenant pin, tested) and items/requirements in the same workspace but a different laglista (`Lagposten tillhör inte kontrollens laglista` — tested). (3) Write-suppression on SEALED/ARKIVERAD via `assertCycleEditableUi` on all four mutations, tested per mutation. (4) Generic `Kontrollen hittades inte` on cross-workspace cycle reads prevents existence leak. No hardcoded secrets, no new env vars, no new external APIs. Zod validates every action; `CloseFindingSchema.closeReason` transform-to-null (SF-2) pushes whitespace rejection to the business layer without the generic Zod "Too small" leak. Privacy pin: description + root_cause logged as length only, never raw text — enforced via test that asserts the secret string does NOT appear in logActivity mock call args.'
+  performance:
+    status: PASS
+    notes: 'Page-level SWR hoist (SF-1 fix) materialises the findings cache once on mount via fallbackData, shared by tab + drawer via prop-threading — no second useSWR subscription in the drawer. Client-side filtering via useMemo (no refetch on chip click). Server-side sort (created_at desc, id desc), zero client sort. Virtualisation threshold 50 (tab) vs. 100 (items) — intentional since finding rows carry more vertical content. 150-finding jsdom microtest (IV3) completes well under the 1500ms ceiling. Activity-row resolver reuses the existing list_item batch for secondary refs — no additional findMany for finding → item lookups. DEV-001 notes a redundant cross-link findFirst on no-op updates (one extra round-trip per save that includes an unchanged cross-link field); minor, not perf-critical at current scale.'
+  reliability:
+    status: PASS
+    notes: 'All 4 mutations idempotent: unchanged update → no DB write + no log row; already-closed close → no-op return; already-open reopen → no-op. Closed findings cannot be edited (forces the explicit reopen affordance for audit-trail clarity — tested). Fail-open for the RSC findings read: if `listFindingsForCycle` errors, initialFindings defaults to [] and the page still renders (mirrors the items-read fail-open). Toast-on-error pattern consistent with Story 21.5. Mutation + logActivity outside `$transaction` is inherited project-wide debt (not a 21.7 regression — same as Story 21.5 DEBT-003).'
+  maintainability:
+    status: PASS
+    notes: 'File-header JSDoc on the new server-action module matches 21.5 convention verbatim. TODO(21.10) markers on every mutation for future grep by the Story 21.10 dev. Single `FINDING_INCLUDE` constant drives every read + mutation-return shape (no drift risk). `FINDING_TYPE_LABELS` / `FINDING_SEVERITY_LABELS` centralised in `finding-copy.ts` (mirrors `bedomning-copy.ts`). `FINDING_TYPE_LABELS_DEFINITE` for activity sentences lives in `format-activity.ts` alongside existing label maps. Centralised SWR keys module (`lib/swr-keys/compliance-audit.ts`) — new file as called for in architecture §8.1; Story 21.5''s items key was refactored into it at the same time (the optional refactor called out in Task 3.2). `getSecondaryRef` deviation documented inline in `entity-resolver.ts` with rationale. No `any` types; `as unknown as LoadedFinding` casts match the 21.5 idiom.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Dev-optional: close the three test-pinning gaps on AC 13 (drawer filtering + prefill + readOnly), AC 14 (chip text), AC 10 (status filter). ~25 min total; all three live in existing test files with already-extended mock surfaces (TEST-001, TEST-002, TEST-003).'
+      refs:
+        - 'tests/unit/components/features/compliance-audit/cycle-detail/cycle-items-tab.test.tsx'
+        - 'tests/unit/components/features/compliance-audit/cycle-detail/cycle-findings-tab.test.tsx'
+    - action: 'Dev-optional polish: gate the cross-link `findFirst` in updateFinding behind the "value actually changed" predicate; auto-clear severity when type changes off AVVIKELSE (DEV-001, DEV-002). ~10 min total; both preserve the established idempotency contract.'
+      refs:
+        - 'app/actions/compliance-finding.ts'
+    - action: 'PO decision: build the manual-override close-reason UI (PROD-001). Server path is fully wired + tested; a modal prompt or secondary "Stäng med anledning" action closes the loop. Recommended: follow-up story (~1 hour scope).'
+      refs:
+        - 'components/features/compliance-audit/cycle-detail/cycle-findings-tab.tsx'
+        - 'app/actions/compliance-finding.ts'
+    - action: 'PO decision: accept AC 9 resolver entity-type deviation as-is (recommended — the engineering substitution is correct) OR, in a Story 21.13 follow-up, extend the resolver to batch-fetch ComplianceAuditItem by `law_list_item_id` + cycle context for cycle-scoped secondary-ref links (PROD-002).'
+      refs:
+        - 'lib/activity/entity-resolver.ts'
+    - action: 'SM-owned: logActivity + mutation inside `$transaction` sweep across app/actions/* (DEBT-NOTE-001 — same as Story 21.5 DEBT-003). Not a 21.7 regression.'
+      refs:
+        - 'app/actions/compliance-finding.ts'
+        - 'app/actions/compliance-audit-item.ts'
+        - 'app/actions/compliance-audit-cycle.ts'
+        - 'app/actions/law-list-item-requirements.ts'
+        - 'docs/architecture/17-coding-standards.md'

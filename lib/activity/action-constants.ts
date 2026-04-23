@@ -72,6 +72,17 @@ export const KNOWN_ACTIONS = [
   'cycle_item_motivering_updated',
   'cycle_item_signed_off',
   'cycle_item_unsigned',
+
+  // Compliance-audit findings (Epic 21 — Story 21.7)
+  'finding_created',
+  'finding_updated',
+  'finding_closed',
+  'finding_reopened',
+
+  // Compliance-audit findings — corrective-action task loop (Epic 21 — Story 21.8)
+  'finding_task_spawned',
+  'finding_task_completed',
+  'finding_task_completion_notified',
 ] as const
 
 export type KnownAction = (typeof KNOWN_ACTIONS)[number]

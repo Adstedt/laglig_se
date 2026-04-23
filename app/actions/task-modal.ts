@@ -9,10 +9,15 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { z } from 'zod'
-import type { TaskPriority } from '@prisma/client'
+import type {
+  TaskPriority,
+  ComplianceCycleStatus,
+  FindingType,
+} from '@prisma/client'
 import { invalidateListItemTasksCache } from './legal-document-modal'
 import { logActivity } from '@/lib/services/activity-logger'
 import { createTaskNotification } from '@/lib/notifications/task-notifications'
+import { notifyIfFindingTaskCompleted } from '@/lib/compliance-audit/notify-finding-task-completed'
 import { NotificationType } from '@prisma/client'
 
 // ============================================================================
@@ -84,6 +89,26 @@ export interface TaskDetails {
     comments: number
     evidence: number // Story 6.7a: Now counts file_links
   }
+  // Story 21.8: 1:1 ref to the finding that spawned this task (null for
+  // non-spawned tasks). Kept for the "Från avvikelse" sub-badge on the
+  // linked-cycles card.
+  complianceFinding: {
+    id: string
+    title: string
+    type: FindingType
+    closedAt: Date | null
+    cycle: { id: string; name: string }
+  } | null
+  // Story 21.8: M:N — every cycle this task is linked to via the
+  // ComplianceCycleTaskLink join table. In 21.8's write paths always 0 or 1
+  // entries; UI handles length >= 2 gracefully so Story 21.15's manual
+  // linking doesn't require a refactor.
+  linkedCycles: Array<{
+    id: string
+    name: string
+    status: ComplianceCycleStatus
+    itemCount?: number
+  }>
 }
 
 export interface TaskComment {
@@ -322,6 +347,35 @@ export async function getTaskDetails(
               },
             },
           },
+          // Story 21.8: 1:1 finding ref + M:N cycle links.
+          compliance_finding: {
+            select: {
+              id: true,
+              title: true,
+              // Epic 21 follow-up: non-AVVIKELSE findings can now spawn
+              // tasks via the opt-in checkbox, so the card's sub-badge copy
+              // must derive from the actual type (not assume AVVIKELSE).
+              type: true,
+              closed_at: true,
+              cycle: { select: { id: true, name: true } },
+            },
+          },
+          cycle_links: {
+            // PO v0.6 SF-2: deterministic multi-cycle order — keeps AC 18
+            // ordering assertions stable and pins the render order for
+            // Story 21.15's manual-linking flow.
+            orderBy: { created_at: 'asc' },
+            select: {
+              cycle: {
+                select: {
+                  id: true,
+                  name: true,
+                  status: true,
+                  _count: { select: { items: true } },
+                },
+              },
+            },
+          },
           _count: {
             select: {
               comments: true,
@@ -351,6 +405,29 @@ export async function getTaskDetails(
         uploader: link.file.uploader,
       }))
 
+      // Story 21.8: map snake → camel + flatten the join-table wrapper.
+      const complianceFinding = task.compliance_finding
+        ? {
+            id: task.compliance_finding.id,
+            title: task.compliance_finding.title,
+            type: task.compliance_finding.type,
+            closedAt: task.compliance_finding.closed_at,
+            cycle: {
+              id: task.compliance_finding.cycle.id,
+              name: task.compliance_finding.cycle.name,
+            },
+          }
+        : null
+
+      const linkedCycles: TaskDetails['linkedCycles'] = task.cycle_links.map(
+        (link) => ({
+          id: link.cycle.id,
+          name: link.cycle.name,
+          status: link.cycle.status,
+          itemCount: link.cycle._count.items,
+        })
+      )
+
       const taskDetails: TaskDetails = {
         ...task,
         labels: [], // TODO: Add labels field to Task model if needed
@@ -360,6 +437,8 @@ export async function getTaskDetails(
           comments: task._count.comments,
           evidence: task._count.file_links,
         },
+        complianceFinding,
+        linkedCycles,
       }
 
       return { success: true, data: taskDetails }
@@ -505,6 +584,10 @@ export async function updateTaskStatusColumn(
         return { success: false, error: 'Kolumnen hittades inte' }
       }
 
+      // Story 21.8: capture pre-update completed_at to decide whether the
+      // move is a completion transition (null → is_done).
+      const wasCompleted = task.completed_at !== null
+
       // Get max position in target column
       const maxPosition = await prisma.task.aggregate({
         where: { column_id: validated.columnId },
@@ -550,6 +633,19 @@ export async function updateTaskStatusColumn(
       ).catch((error) => {
         console.error('updateTaskStatusColumn notification error:', error)
       })
+
+      // Story 21.8: fire the FINDING_READY_TO_CLOSE hook iff the task was
+      // NOT completed before AND the target column is_done — a genuine
+      // completion transition, not a move within done columns or a reopen.
+      if (!wasCompleted && column.is_done) {
+        notifyIfFindingTaskCompleted({
+          taskId: validated.taskId,
+          workspaceId,
+          actorUserId: userId,
+        }).catch((error) => {
+          console.error('notifyIfFindingTaskCompleted error:', error)
+        })
+      }
 
       return { success: true }
     })

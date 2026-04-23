@@ -421,4 +421,92 @@ describe('resolveEntityNames', () => {
         ?.workspace_id
     ).toBe('ws-1')
   })
+
+  // Story 21.7 — finding → item secondary ref.
+  it('resolves secondary list_item when finding_created payload carries lawListItemId', async () => {
+    mockComplianceFindingFindMany.mockResolvedValue([
+      { id: 'f-1', cycle_id: 'c-1', title: 'Saknad utbildning' },
+    ])
+    mockListItemFindMany.mockResolvedValue([
+      {
+        id: 'li-1',
+        document: { title: 'Miljöbalken', document_number: 'SFS 1998:808' },
+      },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'finding_created',
+          entity_type: 'compliance_finding',
+          entity_id: 'f-1',
+          old_value: null,
+          new_value: {
+            type: 'AVVIKELSE',
+            title: 'Saknad utbildning',
+            lawListItemId: 'li-1',
+          },
+        },
+      ],
+      'ws-1'
+    )
+    const secondary = result.get('row-1')?.secondary
+    expect(secondary).toBeDefined()
+    expect(secondary?.label).toContain('Miljöbalken')
+  })
+
+  it('has no secondary ref when finding_created payload is cycle-level (no lawListItemId)', async () => {
+    mockComplianceFindingFindMany.mockResolvedValue([
+      { id: 'f-1', cycle_id: 'c-1', title: 'Cycle-level' },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'finding_created',
+          entity_type: 'compliance_finding',
+          entity_id: 'f-1',
+          old_value: null,
+          new_value: {
+            type: 'OBSERVATION',
+            title: 'Cycle-level',
+          },
+        },
+      ],
+      'ws-1'
+    )
+    expect(result.get('row-1')?.secondary).toBeUndefined()
+  })
+
+  it('finding_closed payloads render primary-only (no lawListItemId carried)', async () => {
+    mockComplianceFindingFindMany.mockResolvedValue([
+      { id: 'f-1', cycle_id: 'c-1', title: 'Closed one' },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'finding_closed',
+          entity_type: 'compliance_finding',
+          entity_id: 'f-1',
+          old_value: null,
+          new_value: {
+            closed_at: '2026-04-22T12:00:00Z',
+            closed_by_user_id: 'u1',
+          },
+        },
+      ],
+      'ws-1'
+    )
+    expect(result.get('row-1')?.secondary).toBeUndefined()
+  })
 })

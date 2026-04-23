@@ -4,6 +4,10 @@
  * Story 21.5 — Orchestrator client component for /laglistor/kontroller/[cycleId].
  * Owns SWR data + mutation callbacks + the progress-cluster context so the
  * header and the items table share a single source of truth.
+ *
+ * Story 21.7 — Extended to host the Findings tab + the per-item row drawer's
+ * findings affordance. Findings SWR cache is hoisted here (SF-1) so both the
+ * tab and the drawer consume the same array.
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -12,6 +16,7 @@ import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CycleDetailHeader } from './cycle-detail-header'
 import { CycleItemsTab } from './cycle-items-tab'
+import { CycleFindingsTab } from './cycle-findings-tab'
 import {
   CycleItemsProvider,
   type CycleItemsContextValue,
@@ -26,7 +31,16 @@ import {
   type CyclePartial,
   type GetCycleItemsResult,
 } from '@/app/actions/compliance-audit-item'
+import {
+  listFindingsForCycle,
+  type FindingRow,
+  type ListFindingsResult,
+} from '@/app/actions/compliance-finding'
 import type { CycleDetail } from '@/app/actions/compliance-audit-cycle'
+import {
+  complianceAuditItemsKey,
+  complianceFindingsKey,
+} from '@/lib/swr-keys/compliance-audit'
 import type { EfterlevnadsBedomning } from '@prisma/client'
 
 const TABS = ['items', 'findings', 'rapport', 'aktivitet'] as const
@@ -41,6 +55,7 @@ function isValidTab(value: string): value is TabValue {
 interface CycleDetailPageProps {
   cycle: CycleDetail
   items: CycleItemRow[]
+  initialFindings: FindingRow[]
   cyclePartial: CyclePartial
   readOnly: boolean
 }
@@ -48,14 +63,16 @@ interface CycleDetailPageProps {
 export function CycleDetailPage({
   cycle,
   items: initialItems,
+  initialFindings,
   cyclePartial,
   readOnly,
 }: CycleDetailPageProps) {
-  const swrKey = `compliance-audit-items:${cycle.id}`
+  const itemsKey = complianceAuditItemsKey(cycle.id)
+  const findingsKey = complianceFindingsKey(cycle.id)
   const { mutate: globalMutate } = useSWRConfig()
 
-  const { data } = useSWR<GetCycleItemsResult>(
-    swrKey,
+  const { data: itemsData } = useSWR<GetCycleItemsResult>(
+    itemsKey,
     async () => {
       const result = await getCycleItemsForCycle(cycle.id)
       if (!result.success || !result.data) {
@@ -70,7 +87,25 @@ export function CycleDetailPage({
     }
   )
 
-  const items = data?.items ?? initialItems
+  const { data: findingsData } = useSWR<ListFindingsResult>(
+    findingsKey,
+    async () => {
+      const result = await listFindingsForCycle({ cycleId: cycle.id })
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? 'Kunde inte hämta findings')
+      }
+      return result.data
+    },
+    {
+      fallbackData: { findings: initialFindings },
+      revalidateOnFocus: false,
+      dedupingInterval: 30_000,
+    }
+  )
+
+  const items = itemsData?.items ?? initialItems
+  const findings = findingsData?.findings ?? initialFindings
+
   const [tab, setTab] = useState<TabValue>(DEFAULT_TAB)
   const [highlightedRowId, setHighlightedRowId] = useState<string | null>(null)
 
@@ -101,7 +136,7 @@ export function CycleDetailPage({
   const replaceRow = useCallback(
     (updated: CycleItemRow) => {
       void globalMutate<GetCycleItemsResult>(
-        swrKey,
+        itemsKey,
         (prev) => {
           if (!prev) return prev
           return {
@@ -112,12 +147,12 @@ export function CycleDetailPage({
         { revalidate: false }
       )
     },
-    [globalMutate, swrKey]
+    [globalMutate, itemsKey]
   )
 
   const reloadOnFailure = useCallback(() => {
-    void globalMutate<GetCycleItemsResult>(swrKey)
-  }, [globalMutate, swrKey])
+    void globalMutate<GetCycleItemsResult>(itemsKey)
+  }, [globalMutate, itemsKey])
 
   const handleBedomningChange = useCallback(
     async (row: CycleItemRow, next: EfterlevnadsBedomning | null) => {
@@ -181,6 +216,32 @@ export function CycleDetailPage({
     [replaceRow, reloadOnFailure]
   )
 
+  // Story 21.7 — finding mutation reconciler. Mirrors replaceRow.
+  // Replace-in-place when the finding exists; prepend when it's a new create
+  // (listFindingsForCycle sorts created_at desc + id desc, so newest → top).
+  const handleFindingMutation = useCallback(
+    (updated: FindingRow) => {
+      void globalMutate<ListFindingsResult>(
+        findingsKey,
+        (prev) => {
+          if (!prev) return { findings: [updated] }
+          const existing = prev.findings.some((f) => f.id === updated.id)
+          if (existing) {
+            return {
+              ...prev,
+              findings: prev.findings.map((f) =>
+                f.id === updated.id ? updated : f
+              ),
+            }
+          }
+          return { ...prev, findings: [updated, ...prev.findings] }
+        },
+        { revalidate: false }
+      )
+    },
+    [globalMutate, findingsKey]
+  )
+
   // ---- Progress context + jump handlers ---------------------------------
 
   const jumpTo = useCallback((id: string) => {
@@ -214,6 +275,14 @@ export function CycleDetailPage({
     [items]
   )
 
+  const findingCounts = useMemo(
+    () => ({
+      open: findings.filter((f) => f.closedAt === null).length,
+      closed: findings.filter((f) => f.closedAt !== null).length,
+    }),
+    [findings]
+  )
+
   const contextValue: CycleItemsContextValue = useMemo(
     () => ({
       bedomdaCount,
@@ -235,7 +304,11 @@ export function CycleDetailPage({
   return (
     <CycleItemsProvider value={contextValue}>
       <div className="space-y-6">
-        <CycleDetailHeader cycle={cycle} readOnly={readOnly} />
+        <CycleDetailHeader
+          cycle={cycle}
+          readOnly={readOnly}
+          findingCounts={findingCounts}
+        />
 
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList>
@@ -254,12 +327,19 @@ export function CycleDetailPage({
               onMotiveringChange={handleMotiveringChange}
               onSign={handleSign}
               onUnsign={handleUnsign}
+              cycleId={cycle.id}
+              findings={findings}
+              onFindingMutation={handleFindingMutation}
             />
           </TabsContent>
           <TabsContent value="findings">
-            <div className="p-6 text-sm italic text-muted-foreground">
-              Hanteras i Story 21.7
-            </div>
+            <CycleFindingsTab
+              cycleId={cycle.id}
+              findings={findings}
+              readOnly={readOnly}
+              items={items}
+              onFindingMutation={handleFindingMutation}
+            />
           </TabsContent>
           <TabsContent value="rapport">
             <div className="p-6 text-sm italic text-muted-foreground">

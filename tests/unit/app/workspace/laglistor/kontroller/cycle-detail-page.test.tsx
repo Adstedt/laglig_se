@@ -53,6 +53,14 @@ vi.mock('@/app/actions/compliance-audit-item', () => ({
     getCycleItemsForCycleMock(...args),
 }))
 
+// Story 21.7: the RSC page also pre-fetches findings for the header chip +
+// initialFindings prop.
+const listFindingsForCycleMock = vi.fn()
+vi.mock('@/app/actions/compliance-finding', () => ({
+  listFindingsForCycle: (...args: unknown[]) =>
+    listFindingsForCycleMock(...args),
+}))
+
 // Stub the client component so we don't try to render its internals.
 vi.mock('@/components/features/compliance-audit/cycle-detail', async () => {
   const React = await import('react')
@@ -123,6 +131,10 @@ beforeEach(() => {
         sealHash: null,
       },
     },
+  })
+  listFindingsForCycleMock.mockResolvedValue({
+    success: true,
+    data: { findings: [] },
   })
 })
 
@@ -226,6 +238,59 @@ describe('CycleDetailRoute — RSC gating', () => {
       params: Promise.resolve({ cycleId: CYCLE_ID }),
     })
     // The CycleDetailPage mock is still rendered (not redirected away).
+    expect(element).toBeTruthy()
+    expect(redirectMock).not.toHaveBeenCalled()
+  })
+
+  // Story 21.7: findings pre-fetch (AC 14 + Task 7.1 + Task 8.6).
+  it('pre-fetches findings via listFindingsForCycle and forwards them as initialFindings', async () => {
+    listFindingsForCycleMock.mockResolvedValue({
+      success: true,
+      data: {
+        findings: [
+          {
+            id: 'f-1',
+            cycleId: CYCLE_ID,
+            type: 'AVVIKELSE',
+            severity: 'MAJOR',
+            title: 'Sample',
+            description: 'body',
+            rootCause: null,
+            dueDate: null,
+            closedAt: null,
+            closedBy: null,
+            lawListItemId: null,
+            lawListItem: null,
+            requirementId: null,
+            requirement: null,
+            correctiveActionTaskId: null,
+            correctiveActionTask: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ],
+      },
+    })
+
+    await CycleDetailRoute({
+      params: Promise.resolve({ cycleId: CYCLE_ID }),
+    })
+
+    expect(listFindingsForCycleMock).toHaveBeenCalledWith({
+      cycleId: CYCLE_ID,
+    })
+  })
+
+  it('fails open (initialFindings=[]) when findings fetch fails', async () => {
+    listFindingsForCycleMock.mockResolvedValue({
+      success: false,
+      error: 'timeout',
+    })
+
+    const element = await CycleDetailRoute({
+      params: Promise.resolve({ cycleId: CYCLE_ID }),
+    })
+    // Page still renders — fail-open pattern matches the existing items path.
     expect(element).toBeTruthy()
     expect(redirectMock).not.toHaveBeenCalled()
   })

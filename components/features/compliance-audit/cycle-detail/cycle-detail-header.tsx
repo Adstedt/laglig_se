@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils'
 interface CycleDetailHeaderProps {
   cycle: CycleDetail
   readOnly: boolean
+  findingCounts: { open: number; closed: number }
 }
 
 function initialsFromName(name: string | null): string {
@@ -34,7 +35,11 @@ function initialsFromName(name: string | null): string {
   return (first + last).toUpperCase() || '?'
 }
 
-export function CycleDetailHeader({ cycle, readOnly }: CycleDetailHeaderProps) {
+export function CycleDetailHeader({
+  cycle,
+  readOnly,
+  findingCounts,
+}: CycleDetailHeaderProps) {
   return (
     <div className="space-y-4">
       {/* The global workspace breadcrumb (components/layout/breadcrumbs.tsx)
@@ -50,7 +55,7 @@ export function CycleDetailHeader({ cycle, readOnly }: CycleDetailHeaderProps) {
             <h1 className="text-2xl font-semibold">{cycle.name}</h1>
             <CycleStatusBadge status={cycle.status} />
           </div>
-          <MetadataChips cycle={cycle} />
+          <MetadataChips cycle={cycle} findingCounts={findingCounts} />
         </div>
 
         <div className="flex items-center gap-4">
@@ -64,7 +69,13 @@ export function CycleDetailHeader({ cycle, readOnly }: CycleDetailHeaderProps) {
   )
 }
 
-function MetadataChips({ cycle }: { cycle: CycleDetail }) {
+function MetadataChips({
+  cycle,
+  findingCounts,
+}: {
+  cycle: CycleDetail
+  findingCounts: { open: number; closed: number }
+}) {
   const auditLabel =
     cycle.auditType === AuditType.INTERN ? 'Intern revision' : 'Extern revision'
   const scheduled =
@@ -90,7 +101,26 @@ function MetadataChips({ cycle }: { cycle: CycleDetail }) {
         </Avatar>
         <span className="truncate">{leadName}</span>
       </span>
+      <span aria-hidden="true">·</span>
+      <FindingsCountChip counts={findingCounts} />
     </div>
+  )
+}
+
+function FindingsCountChip({
+  counts,
+}: {
+  counts: { open: number; closed: number }
+}) {
+  const { open, closed } = counts
+  const label =
+    open === 0 && closed === 0
+      ? 'Findings: inga'
+      : `Findings: ${open} öppna · ${closed} stängda`
+  return (
+    <span data-testid="cycle-header-findings-chip" className="truncate">
+      {label}
+    </span>
   )
 }
 

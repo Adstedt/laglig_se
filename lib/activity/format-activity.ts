@@ -45,6 +45,20 @@ const EFTERLEVNADS_BEDOMNING_LABELS: Record<string, string> = {
   EJ_TILLAMPLIG: 'Ej tillämplig',
 }
 
+/**
+ * Story 21.7: Definite-form Swedish labels for FindingType values used in the
+ * `finding_created` sentence ("… skapade avvikelsen Saknad utbildningsplan").
+ * The form used in the editor dialog is the indefinite form (Avvikelse /
+ * Observation / Förbättringsförslag) — see `components/features/compliance-audit/finding-copy.ts`.
+ */
+const FINDING_TYPE_LABELS_DEFINITE: Record<string, string> = {
+  AVVIKELSE: 'avvikelsen',
+  OBSERVATION: 'observationen',
+  FORBATTRING: 'förbättringsförslaget',
+}
+
+const CLOSE_REASON_MAX_CHARS = 80
+
 const BEDOMNING_NULL_LABEL = '—'
 
 function payloadOf(v: unknown): Record<string, unknown> | null {
@@ -522,6 +536,62 @@ export function formatActivity(input: FormatInput): SentencePart[] {
 
     case 'cycle_item_unsigned':
       return [u, text(' ångrade signeringen på '), primary]
+
+    // ----------------- Compliance-audit findings (Epic 21) -----------------
+    case 'finding_created': {
+      const typeLabel =
+        typeof newP?.type === 'string'
+          ? (FINDING_TYPE_LABELS_DEFINITE[newP.type] ?? 'en finding')
+          : 'en finding'
+      return [u, text(' skapade '), text(typeLabel), text(' '), primary]
+    }
+
+    case 'finding_updated':
+      return [u, text(' uppdaterade '), primary]
+
+    case 'finding_closed': {
+      const manualOverride = newP?.manual_override === true
+      const reason = pickString(newP, 'close_reason')
+      const parts: SentencePart[] = [u, text(' stängde '), primary]
+      if (manualOverride && reason) {
+        const truncated =
+          reason.length > CLOSE_REASON_MAX_CHARS
+            ? reason.slice(0, CLOSE_REASON_MAX_CHARS) + '…'
+            : reason
+        parts.push(text(': anledning — '), emphasis(truncated))
+      }
+      return parts
+    }
+
+    case 'finding_reopened':
+      return [u, text(' återöppnade '), primary]
+
+    // ----------------- Compliance-audit findings — task loop (Epic 21 — Story 21.8) -----------------
+    case 'finding_task_spawned': {
+      const taskTitle = pickString(newP, 'task_title') ?? 'en åtgärdsuppgift'
+      return [
+        u,
+        text(' skapade åtgärdsuppgift '),
+        emphasis(taskTitle),
+        text(' kopplad till '),
+        primary,
+      ]
+    }
+
+    case 'finding_task_completed':
+      return [
+        u,
+        text(' markerade åtgärdsuppgiften för '),
+        primary,
+        text(' som klar'),
+      ]
+
+    case 'finding_task_completion_notified':
+      return [
+        text('Systemet skickade en notis: åtgärdsuppgiften för '),
+        primary,
+        text(' är klar'),
+      ]
 
     // ----------------- Fallback -----------------
     default:

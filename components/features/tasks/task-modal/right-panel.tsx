@@ -10,6 +10,7 @@
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { DetailsBox } from './details-box'
 import { QuickLinksBox } from './quick-links-box'
+import { LinkedCyclesBox } from './linked-cycles-box'
 import { LinkedLawsBox } from './linked-laws-box'
 import type { TaskDetails } from '@/app/actions/task-modal'
 import type { WorkspaceMember } from '../task-workspace'
@@ -64,6 +65,14 @@ export function RightPanel({
 
           {/* Quick Links Box */}
           <QuickLinksBox />
+
+          {/* Story 21.8: Linked Cycles Box — renders only when the task has
+              at least one linked compliance-audit cycle (spawned from an
+              AVVIKELSE finding or manually linked via Story 21.15). */}
+          <LinkedCyclesBox
+            cycles={task.linkedCycles}
+            correctiveActionFinding={task.complianceFinding}
+          />
 
           {/* Linked Laws Box */}
           <LinkedLawsBox

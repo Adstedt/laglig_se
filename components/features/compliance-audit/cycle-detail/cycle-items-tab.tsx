@@ -21,6 +21,7 @@ import {
 import { COMPLIANCE_STATUS_OPTIONS } from '@/components/features/document-list/table-cell-editors/compliance-status-editor'
 import { CycleItemRowDrawer } from './cycle-item-row-drawer'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
+import type { FindingRow } from '@/app/actions/compliance-finding'
 import type { EfterlevnadsBedomning } from '@prisma/client'
 
 // Mirror compliance-detail-table.tsx conventions so behaviour is predictable.
@@ -42,6 +43,13 @@ interface CycleItemsTabProps {
   ) => Promise<void>
   onSign: (_row: CycleItemRow) => Promise<void>
   onUnsign: (_row: CycleItemRow) => Promise<void>
+  // Story 21.7: threaded through to the row drawer for the per-item findings
+  // affordance (AC 13). The drawer reads from this shared `findings` array
+  // and forwards any edits back to `onFindingMutation` so the page-level SWR
+  // cache stays the single source of truth.
+  cycleId: string
+  findings: FindingRow[]
+  onFindingMutation: (_finding: FindingRow) => void
 }
 
 export function CycleItemsTab({
@@ -52,6 +60,9 @@ export function CycleItemsTab({
   onMotiveringChange,
   onSign,
   onUnsign,
+  cycleId,
+  findings,
+  onFindingMutation,
 }: CycleItemsTabProps) {
   const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -108,6 +119,9 @@ export function CycleItemsTab({
           onMotiveringChange={onMotiveringChange}
           onSign={onSign}
           onUnsign={onUnsign}
+          cycleId={cycleId}
+          findings={findings}
+          onFindingMutation={onFindingMutation}
         />
       ) : (
         <PlainBody
@@ -120,6 +134,9 @@ export function CycleItemsTab({
           onMotiveringChange={onMotiveringChange}
           onSign={onSign}
           onUnsign={onUnsign}
+          cycleId={cycleId}
+          findings={findings}
+          onFindingMutation={onFindingMutation}
         />
       )}
     </div>
@@ -173,6 +190,10 @@ interface RowRenderProps {
   onMotiveringChange: (_next: string | null) => Promise<void>
   onSign: () => Promise<void>
   onUnsign: () => Promise<void>
+  cycleId: string
+  findings: FindingRow[]
+  allItems: CycleItemRow[]
+  onFindingMutation: (_finding: FindingRow) => void
 }
 
 function RowContent({
@@ -185,6 +206,10 @@ function RowContent({
   onMotiveringChange,
   onSign,
   onUnsign,
+  cycleId,
+  findings,
+  allItems,
+  onFindingMutation,
 }: RowRenderProps) {
   const statusOption = COMPLIANCE_STATUS_OPTIONS.find(
     (o) => o.value === row.sourceComplianceStatus
@@ -301,7 +326,16 @@ function RowContent({
           </button>
         </div>
       </div>
-      {expanded ? <CycleItemRowDrawer row={row} /> : null}
+      {expanded ? (
+        <CycleItemRowDrawer
+          row={row}
+          cycleId={cycleId}
+          readOnly={readOnly}
+          findings={findings}
+          items={allItems}
+          onFindingMutation={onFindingMutation}
+        />
+      ) : null}
     </div>
   )
 }
@@ -326,6 +360,9 @@ interface BodyProps {
   ) => Promise<void>
   onSign: (_row: CycleItemRow) => Promise<void>
   onUnsign: (_row: CycleItemRow) => Promise<void>
+  cycleId: string
+  findings: FindingRow[]
+  onFindingMutation: (_finding: FindingRow) => void
 }
 
 function PlainBody({
@@ -338,6 +375,9 @@ function PlainBody({
   onMotiveringChange,
   onSign,
   onUnsign,
+  cycleId,
+  findings,
+  onFindingMutation,
 }: BodyProps) {
   return (
     <div
@@ -359,6 +399,10 @@ function PlainBody({
             onMotiveringChange={(next) => onMotiveringChange(row, next)}
             onSign={() => onSign(row)}
             onUnsign={() => onUnsign(row)}
+            cycleId={cycleId}
+            findings={findings}
+            allItems={items}
+            onFindingMutation={onFindingMutation}
           />
         )
       })}
@@ -387,6 +431,9 @@ function VirtualisedBody({
   onMotiveringChange,
   onSign,
   onUnsign,
+  cycleId,
+  findings,
+  onFindingMutation,
 }: VirtualisedBodyProps) {
   // Recompute measurements when the expanded row changes — the drawer changes
   // a row's height from ~72px to several hundred px.
@@ -440,6 +487,10 @@ function VirtualisedBody({
                 onMotiveringChange={(next) => onMotiveringChange(row, next)}
                 onSign={() => onSign(row)}
                 onUnsign={() => onUnsign(row)}
+                cycleId={cycleId}
+                findings={findings}
+                allItems={items}
+                onFindingMutation={onFindingMutation}
               />
             </div>
           )

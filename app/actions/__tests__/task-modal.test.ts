@@ -59,6 +59,19 @@ vi.mock('@/lib/auth/workspace-context', () => ({
   withWorkspace: vi.fn(),
 }))
 
+// Story 21.8: mock the notification-side helpers so the error-swallowed
+// fire-and-forget calls don't depend on a full Prisma mock.
+vi.mock('@/lib/notifications/task-notifications', () => ({
+  createTaskNotification: vi.fn().mockResolvedValue({
+    created: 0,
+    skippedByPreference: 0,
+    skippedByDedup: 0,
+  }),
+}))
+vi.mock('@/lib/compliance-audit/notify-finding-task-completed', () => ({
+  notifyIfFindingTaskCompleted: vi.fn().mockResolvedValue(undefined),
+}))
+
 // Import after mocking
 import {
   getTaskDetails,
@@ -128,6 +141,10 @@ describe('Task Modal Server Actions', () => {
         comments: [],
         evidence: [],
         file_links: [],
+        // Story 21.8: include the new relations in the mock (null + empty
+        // for a regular manually-created task).
+        compliance_finding: null,
+        cycle_links: [],
         _count: { comments: 0, evidence: 0 },
       }
 
@@ -137,6 +154,9 @@ describe('Task Modal Server Actions', () => {
 
       expect(result.success).toBe(true)
       expect(result.data?.title).toBe('Test Task')
+      // Story 21.8: regular tasks return null / empty for the new fields.
+      expect(result.data?.complianceFinding).toBeNull()
+      expect(result.data?.linkedCycles).toEqual([])
     })
 
     it('should return error when task not found', async () => {
@@ -146,6 +166,178 @@ describe('Task Modal Server Actions', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Uppgiften hittades inte')
+    })
+
+    // Story 21.8: spawned task carries both complianceFinding + 1-element linkedCycles.
+    it('Story 21.8: spawned task returns populated complianceFinding + linkedCycles', async () => {
+      const FINDING_ID = 'finding-1'
+      const CYCLE_ID = 'cycle-1'
+      const mockTask = {
+        id: mockTaskId,
+        title: 'Åtgärd',
+        description: null,
+        column_id: 'col-1',
+        priority: 'HIGH',
+        column: {
+          id: 'd4e5f6a7-b8c9-4d0e-8f2a-3b4c5d6e7f8a',
+          name: 'To Do',
+          color: '#ccc',
+          is_done: false,
+        },
+        assignee: null,
+        creator: {
+          id: mockUserId,
+          name: 'U',
+          email: 'u@test.com',
+          avatar_url: null,
+        },
+        list_item_links: [],
+        comments: [],
+        evidence: [],
+        file_links: [],
+        compliance_finding: {
+          id: FINDING_ID,
+          title: 'Saknad utbildning',
+          closed_at: null,
+          cycle: { id: CYCLE_ID, name: 'Q2 Intern' },
+        },
+        cycle_links: [
+          {
+            cycle: {
+              id: CYCLE_ID,
+              name: 'Q2 Intern',
+              status: 'PAGAENDE',
+              _count: { items: 15 },
+            },
+          },
+        ],
+        _count: { comments: 0, evidence: 0 },
+      }
+
+      vi.mocked(prisma.task.findFirst).mockResolvedValue(mockTask as never)
+      const result = await getTaskDetails(mockTaskId)
+      expect(result.success).toBe(true)
+      expect(result.data?.complianceFinding).toEqual({
+        id: FINDING_ID,
+        title: 'Saknad utbildning',
+        closedAt: null,
+        cycle: { id: CYCLE_ID, name: 'Q2 Intern' },
+      })
+      expect(result.data?.linkedCycles).toEqual([
+        {
+          id: CYCLE_ID,
+          name: 'Q2 Intern',
+          status: 'PAGAENDE',
+          itemCount: 15,
+        },
+      ])
+    })
+
+    // Story 21.8 / PO v0.5: manual-link-only scenario (anticipating Story 21.15).
+    it('Story 21.8: manually-linked-only task returns null complianceFinding + 1-cycle linkedCycles', async () => {
+      const mockTask = {
+        id: mockTaskId,
+        title: 'Manual task',
+        description: null,
+        column_id: 'col-1',
+        priority: 'MEDIUM',
+        column: {
+          id: 'd4e5f6a7-b8c9-4d0e-8f2a-3b4c5d6e7f8a',
+          name: 'To Do',
+          color: '#ccc',
+          is_done: false,
+        },
+        assignee: null,
+        creator: {
+          id: mockUserId,
+          name: 'U',
+          email: 'u@test.com',
+          avatar_url: null,
+        },
+        list_item_links: [],
+        comments: [],
+        evidence: [],
+        file_links: [],
+        compliance_finding: null,
+        cycle_links: [
+          {
+            cycle: {
+              id: 'cycle-m',
+              name: 'Extern audit',
+              status: 'PLANERAD',
+              _count: { items: 0 },
+            },
+          },
+        ],
+        _count: { comments: 0, evidence: 0 },
+      }
+      vi.mocked(prisma.task.findFirst).mockResolvedValue(mockTask as never)
+      const result = await getTaskDetails(mockTaskId)
+      expect(result.success).toBe(true)
+      expect(result.data?.complianceFinding).toBeNull()
+      expect(result.data?.linkedCycles).toHaveLength(1)
+    })
+
+    // Story 21.8 / PO v0.5: multi-cycle scenario (anticipating Story 21.15).
+    it('Story 21.8: multi-cycle task returns deterministic ordering (created_at asc)', async () => {
+      const mockTask = {
+        id: mockTaskId,
+        title: 'Task',
+        description: null,
+        column_id: 'col-1',
+        priority: 'MEDIUM',
+        column: {
+          id: 'd4e5f6a7-b8c9-4d0e-8f2a-3b4c5d6e7f8a',
+          name: 'To Do',
+          color: '#ccc',
+          is_done: false,
+        },
+        assignee: null,
+        creator: {
+          id: mockUserId,
+          name: 'U',
+          email: 'u@test.com',
+          avatar_url: null,
+        },
+        list_item_links: [],
+        comments: [],
+        evidence: [],
+        file_links: [],
+        compliance_finding: null,
+        // Mock returns the cycles in the order the Prisma `orderBy` would
+        // — we only verify the array is passed through in the same order.
+        cycle_links: [
+          {
+            cycle: {
+              id: 'cycle-a',
+              name: 'Alpha',
+              status: 'PAGAENDE',
+              _count: { items: 5 },
+            },
+          },
+          {
+            cycle: {
+              id: 'cycle-b',
+              name: 'Beta',
+              status: 'PLANERAD',
+              _count: { items: 8 },
+            },
+          },
+        ],
+        _count: { comments: 0, evidence: 0 },
+      }
+      vi.mocked(prisma.task.findFirst).mockResolvedValue(mockTask as never)
+      const result = await getTaskDetails(mockTaskId)
+      expect(result.data?.linkedCycles).toHaveLength(2)
+      expect(result.data?.linkedCycles[0]?.id).toBe('cycle-a')
+      expect(result.data?.linkedCycles[1]?.id).toBe('cycle-b')
+
+      // Verify the include contained the explicit orderBy (PO v0.6 SF-2).
+      const findFirstCall = vi.mocked(prisma.task.findFirst).mock.calls[0]?.[0]
+      // @ts-expect-error — deep include path, runtime-present
+      expect(findFirstCall?.include?.cycle_links?.orderBy).toEqual({
+        created_at: 'asc',
+      })
     })
   })
 
@@ -205,6 +397,8 @@ describe('Task Modal Server Actions', () => {
       const columnId = 'e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8a9b'
       vi.mocked(prisma.task.findFirst).mockResolvedValue({
         column: { name: 'To Do' },
+        completed_at: null,
+        title: 'T',
       } as never)
       vi.mocked(prisma.taskColumn.findFirst).mockResolvedValue({
         id: columnId,
@@ -228,6 +422,93 @@ describe('Task Modal Server Actions', () => {
           }),
         })
       )
+    })
+
+    // Story 21.8 — transition guard: fires hook when was-NOT-completed + target is_done.
+    it('Story 21.8: fires notifyIfFindingTaskCompleted when moving open task to done column', async () => {
+      const { notifyIfFindingTaskCompleted } = await import(
+        '@/lib/compliance-audit/notify-finding-task-completed'
+      )
+      const columnId = 'e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8a9b'
+      vi.mocked(prisma.task.findFirst).mockResolvedValue({
+        column: { name: 'To Do' },
+        completed_at: null,
+        title: 'T',
+      } as never)
+      vi.mocked(prisma.taskColumn.findFirst).mockResolvedValue({
+        id: columnId,
+        name: 'Done',
+        is_done: true,
+      } as never)
+      vi.mocked(prisma.task.aggregate).mockResolvedValue({
+        _max: { position: 0 },
+      } as never)
+      vi.mocked(prisma.task.update).mockResolvedValue({} as never)
+      vi.mocked(prisma.activityLog.create).mockResolvedValue({} as never)
+
+      await updateTaskStatusColumn(mockTaskId, columnId)
+
+      expect(notifyIfFindingTaskCompleted).toHaveBeenCalledWith({
+        taskId: mockTaskId,
+        workspaceId: mockWorkspaceId,
+        actorUserId: mockUserId,
+      })
+    })
+
+    // Transition guard: already-completed task re-moved within done columns → no notify.
+    it('Story 21.8: does NOT fire hook when task was already completed (re-completion)', async () => {
+      const { notifyIfFindingTaskCompleted } = await import(
+        '@/lib/compliance-audit/notify-finding-task-completed'
+      )
+      vi.mocked(notifyIfFindingTaskCompleted).mockClear()
+      const columnId = 'e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8a9b'
+      vi.mocked(prisma.task.findFirst).mockResolvedValue({
+        column: { name: 'Done' },
+        completed_at: new Date('2026-04-22T10:00:00Z'),
+        title: 'T',
+      } as never)
+      vi.mocked(prisma.taskColumn.findFirst).mockResolvedValue({
+        id: columnId,
+        name: 'Archived',
+        is_done: true,
+      } as never)
+      vi.mocked(prisma.task.aggregate).mockResolvedValue({
+        _max: { position: 0 },
+      } as never)
+      vi.mocked(prisma.task.update).mockResolvedValue({} as never)
+      vi.mocked(prisma.activityLog.create).mockResolvedValue({} as never)
+
+      await updateTaskStatusColumn(mockTaskId, columnId)
+
+      expect(notifyIfFindingTaskCompleted).not.toHaveBeenCalled()
+    })
+
+    // Transition guard: target column is NOT is_done → no notify (reopen).
+    it('Story 21.8: does NOT fire hook when target column is not is_done (reopen)', async () => {
+      const { notifyIfFindingTaskCompleted } = await import(
+        '@/lib/compliance-audit/notify-finding-task-completed'
+      )
+      vi.mocked(notifyIfFindingTaskCompleted).mockClear()
+      const columnId = 'e5f6a7b8-c9d0-4e1f-8a3b-4c5d6e7f8a9b'
+      vi.mocked(prisma.task.findFirst).mockResolvedValue({
+        column: { name: 'Done' },
+        completed_at: new Date(),
+        title: 'T',
+      } as never)
+      vi.mocked(prisma.taskColumn.findFirst).mockResolvedValue({
+        id: columnId,
+        name: 'Pågående',
+        is_done: false,
+      } as never)
+      vi.mocked(prisma.task.aggregate).mockResolvedValue({
+        _max: { position: 0 },
+      } as never)
+      vi.mocked(prisma.task.update).mockResolvedValue({} as never)
+      vi.mocked(prisma.activityLog.create).mockResolvedValue({} as never)
+
+      await updateTaskStatusColumn(mockTaskId, columnId)
+
+      expect(notifyIfFindingTaskCompleted).not.toHaveBeenCalled()
     })
   })
 

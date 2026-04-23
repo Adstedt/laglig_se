@@ -720,6 +720,9 @@ enum NotificationType {
   LAW_REPEALED
   RULING_CITED
   AMENDMENT_REMINDER
+
+  // Epic 21: Lagefterlevnadskontroll — corrective-action task loop (Story 21.8)
+  FINDING_READY_TO_CLOSE
 }
 
 // ============================================================================
@@ -1105,6 +1108,11 @@ model Task {
   compliance_finding ComplianceFinding?  @relation("TaskOriginFinding", fields: [compliance_finding_id], references: [id], onDelete: SetNull)
   spawned_findings   ComplianceFinding[] @relation("FindingCorrectiveTask")
 
+  // Epic 21 Story 21.8: M:N link to ComplianceAuditCycle via join table.
+  // Drives the "Länkade kontroller" right-rail card (AC 9). Story 21.15 will
+  // add manual linking UX + a cycle-detail "Uppgifter" tab reading from here.
+  cycle_links ComplianceCycleTaskLink[]
+
   @@index([workspace_id])
   @@index([column_id])
   @@index([assignee_id])
@@ -1129,6 +1137,26 @@ model TaskListItemLink {
   @@index([task_id])
   @@index([law_list_item_id])
   @@map("task_list_item_links")
+}
+
+// Epic 21 Story 21.8: M:N join table between Task and ComplianceAuditCycle.
+// Mirrors the TaskListItemLink pattern used for "Länkade författningar".
+// Written by `spawnCorrectiveActionTask` on AVVIKELSE-driven task spawns;
+// Story 21.15 will add manual link / unlink actions and a cycle-detail
+// "Uppgifter" tab consuming `ComplianceAuditCycle.task_links`.
+model ComplianceCycleTaskLink {
+  id         String   @id @default(uuid())
+  task_id    String
+  cycle_id   String
+  created_at DateTime @default(now())
+
+  task  Task                 @relation(fields: [task_id], references: [id], onDelete: Cascade)
+  cycle ComplianceAuditCycle @relation(fields: [cycle_id], references: [id], onDelete: Cascade)
+
+  @@unique([task_id, cycle_id])
+  @@index([task_id])
+  @@index([cycle_id])
+  @@map("compliance_cycle_task_links")
 }
 
 // Threaded comments supporting 3-level nesting and @mentions
@@ -1883,6 +1911,9 @@ model ComplianceAuditCycle {
   findings           ComplianceFinding[]
   evidence_snapshots ComplianceEvidenceSnapshot[]
   reports            ComplianceAuditReport[]
+
+  // Epic 21 Story 21.8: reverse of ComplianceCycleTaskLink — cycle's linked tasks.
+  task_links ComplianceCycleTaskLink[]
 
   @@index([workspace_id, status])
   @@index([law_list_id])
