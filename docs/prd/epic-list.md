@@ -276,10 +276,28 @@
 
 ---
 
-**Total Stories Tracked:** ~218+ across 20 epics (~153 completed, ~65+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped)
+## Epic 22: UI Primitives Alignment
 
-**Epic Status:** 11 Done, 4 Partial, 5 Not Started / Planned
+**Status:** Planned (0 completed — 4 stories scoped)
 
-**Last updated:** 2026-04-20
+**Goal:** Eliminate cross-surface drift in the workspace's six tabular surfaces by consolidating four primitives — Badge, FilterChip, PageHeader/TableToolbar, and the table primitive itself — so the same domain value (priority, status, severity, finding type) renders identically everywhere and new features cannot reintroduce variants.
+
+**Delivers:** Extended `components/ui/badge.tsx` with semantic `tone × variant` matrix backed by `lib/ui/badge-tones.ts`; aligned Priority enum (`Hög`/`Medel`/`Låg` in rose/amber/slate, single shared editor); new `components/ui/filter-chip.tsx` with `aria-pressed` semantics replacing two reinvented chip implementations; new `components/ui/page-header.tsx` + `components/ui/table-toolbar.tsx` with named slots, migration of all six surface page files; migration of `cycle-items-tab.tsx` and `document-table.tsx` from custom div-grids to shadcn `<Table>`.
+
+**Requirements covered:** Cross-cutting UX consistency. Reduces tech debt accumulated across Epic 6 (Compliance Workspace), Epic 17 (Document Management), and Epic 21 (Lagefterlevnadskontroll).
+
+**Dependencies:** Epic 6 (Done — source of `compliance-detail-table.tsx`, `PriorityEditor`, `ComplianceStatusEditor`), Epic 17 (Done — source of `document-table.tsx`, `DocumentStatusBadge`), Epic 21 (Active — source of `cycle-list-table.tsx`, `cycle-items-tab.tsx`, `cycle-findings-tab.tsx`, `cycle-status-badge.tsx`; coordination required so in-flight 21.x stories target the new primitives).
+
+**Note:** Brownfield refactor. Zero behaviour change. No new APIs or schema. Source artefacts: `docs/ui-consistency-audit-2026-04-23.md` (current-state class strings), `_prototypes/ui-alignment-prototype.html` (target-state visual reference + JSX API stubs). See `docs/prd/epic-22-ui-primitives-alignment.md`.
+
+**Priority:** Medium — no new user-facing features, but fixes concrete inconsistencies (priority colour collisions, screen-reader confusion on chip-tabs, inconsistent action button placement) that compound in cost as the workspace gains more surfaces.
+
+---
+
+**Total Stories Tracked:** ~222+ across 21 epics (~153 completed, ~69+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped, Epic 22 4 stories scoped)
+
+**Epic Status:** 11 Done, 4 Partial, 6 Not Started / Planned
+
+**Last updated:** 2026-04-23
 
 ---
