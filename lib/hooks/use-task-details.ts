@@ -178,6 +178,10 @@ function initialDataToTaskDetails(
       comments: initial._count?.comments ?? 0,
       evidence: extraData?._count?.evidence ?? 0,
     },
+    // Story 21.8: default to null / empty for initial Kanban-view data.
+    // The full-detail fetch populates these via SWR.
+    complianceFinding: extraData?.complianceFinding ?? null,
+    linkedCycles: extraData?.linkedCycles ?? [],
   }
 }
 

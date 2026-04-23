@@ -53,6 +53,24 @@ export function getSecondaryRef(row: ActivityRowLike): SecondaryRef | null {
       const docId = readId('workspace_document_id', 'workspaceDocumentId')
       return docId ? { entity_type: 'workspace_document', id: docId } : null
     }
+    // Story 21.7: finding → item chain. Payload carries `lawListItemId` on
+    // `finding_created` (always if the finding is item-linked) and
+    // `finding_updated` (when the item FK changed). `finding_closed` and
+    // `finding_reopened` payloads intentionally do NOT carry `lawListItemId`
+    // (audit-crumb payloads are closure metadata only), so those rows render
+    // primary-only. No DB fallback — resolver must stay synchronous-ish.
+    //
+    // NOTE: AC 9 specified `compliance_audit_item` but that resolver branch
+    // looks up by `ComplianceAuditItem.id`, not `LawListItem.id`. The payload
+    // carries `LawListItem.id`, so we use `list_item` here — it resolves the
+    // same doc-title + doc-number label against the correct primary key.
+    case 'finding_created':
+    case 'finding_updated': {
+      const lawListItemId = readId('law_list_item_id', 'lawListItemId')
+      return lawListItemId
+        ? { entity_type: 'list_item', id: lawListItemId }
+        : null
+    }
     default:
       return null
   }

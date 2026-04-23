@@ -63,6 +63,17 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
   cycle_item_motivering_updated: 'andringar',
   cycle_item_signed_off: 'andringar',
   cycle_item_unsigned: 'andringar',
+
+  // compliance-audit findings (Epic 21)
+  finding_created: 'livscykel',
+  finding_updated: 'andringar',
+  finding_closed: 'livscykel',
+  finding_reopened: 'livscykel',
+
+  // compliance-audit findings — corrective-action task loop (Epic 21 — Story 21.8)
+  finding_task_spawned: 'kopplingar',
+  finding_task_completed: 'livscykel',
+  finding_task_completion_notified: 'notifikationer',
 }
 
 export const CATEGORY_META: Record<

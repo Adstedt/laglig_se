@@ -1,0 +1,105 @@
+schema: 1
+story: '21.8'
+story_title: 'Auto-spawn corrective-action Task on AVVIKELSE'
+gate: PASS
+status_reason: 'Re-gate after dev v1.1 applied the four dev-optional items from the initial PASS review (DEV-001 spawner return shape, TEST-001 right-panel DOM-order integration, TEST-002 AC 11 type-change contracts, TEST-003 closeFinding type-agnostic auto-complete). Full regression holds: 322 test files / 4505 tests pass (net +5 from v1.0), tsc + lint clean on all changed files. Independent verification confirmed each fix landed as specified: `spawnCorrectiveActionTask` returns `{ taskId, columnId, assigneeId }` and the caller uses the returned value (single source of truth); `tests/unit/components/features/tasks/task-modal/right-panel.test.tsx` scaffolded with 2 order-pinning tests; three new Story 21.8 cases appended to `compliance-finding.test.ts`. Quality score holds at 100. PROD-001 (manual smoke test) remains the only open item — PO-owned, gate-compatible.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-23T11:25:00Z'
+story_status: 'Done' # flipped by owner 2026-04-23
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'PROD-001'
+    severity: low
+    finding: 'Task 10.7 manual smoke test remains deferred. End-to-end flow (create cycle → add AVVIKELSE → verify task in /tasks → move task to Klar → verify lead-auditor notification → close finding → verify auto-complete) has not been exercised against a live workspace. Server paths are fully unit-test-pinned so the residual risk is an integration-env regression (migration applied, RLS policies, SWR cache invalidation, notification bell surface), not a correctness regression.'
+    suggested_action: 'Run the 5-step smoke test against a live dev/staging workspace before declaring Done. Particular attention: (a) migration applied successfully (new table + enum value); (b) notification surfaces in the bell dropdown with correct Swedish copy; (c) LinkedCyclesBox card renders in the task modal right rail on a spawned task; (d) /tasks reflects the auto-completed task after closing the finding. ~5 min in-app.'
+    suggested_owner: po
+
+# Items closed in v1.1 (preserved here for audit trail):
+#  - DEV-001 (low) CLOSED 2026-04-23 — spawner now returns `assigneeId`; caller uses the
+#    returned value directly. Verified: `grep assigneeId lib/compliance-audit/task-spawner.ts`
+#    shows 4 occurrences (interface + JSDoc + return statement + return value). Two spawner
+#    tests now assert the returned `assigneeId` matches the Task row's `assignee_id`.
+#  - TEST-001 (low) CLOSED 2026-04-23 — `tests/unit/components/features/tasks/task-modal/right-panel.test.tsx`
+#    scaffolded with 2 tests: (a) populated linkedCycles → DOM order DetailsBox → QuickLinksBox →
+#    LinkedCyclesBox → LinkedLawsBox; (b) empty linkedCycles → LinkedCyclesBox returns null,
+#    remaining three cards preserved in order with no gap. Child components mocked to DOM markers
+#    so the test is purely about order.
+#  - TEST-002 (low) CLOSED 2026-04-23 — Two fixture tests appended to `updateFinding` describe
+#    block in compliance-finding.test.ts at lines 775 + 804. (a) OBSERVATION → AVVIKELSE type
+#    change does NOT call `spawnCorrectiveActionTask` (no retroactive spawn); (b) AVVIKELSE →
+#    OBSERVATION does NOT include `corrective_action_task_id` in the update payload (task stays
+#    linked per AC 11 carry-forward).
+#  - TEST-003 (low) CLOSED 2026-04-23 — One fixture test appended to `closeFinding` describe
+#    block at line 1171. Type-changed OBSERVATION with stale `corrective_action_task_id` + open
+#    linked task + no closeReason → `task.update` fires + `finding_task_completed` log emitted.
+#    Pins the AC 5 "no type guard" contract.
+#
+# Informational (not tracked as top-issue — inherited project pattern):
+#  - DEBT-NOTE-001 (info): logActivity + revalidatePath execute as separate calls AFTER the
+#    `$transaction` commits. Same pattern as Story 21.5 DEBT-003 + Story 21.7 DEBT-NOTE-001 —
+#    project-wide inherited debt (SM-owned sweep candidate). NOT a 21.8 regression.
+#  - DEBT-NOTE-002 (info): Prisma `migrate dev` shadow-database fails on this repo due to a
+#    pre-existing migration-chain FK type mismatch in `20260113_add_document_visits`. Project
+#    convention is to hand-author additive SQL under `prisma/migrations/misc/`. 21.8 followed
+#    the convention correctly (`21.8.migration.sql` + `21.8.rollback.sql`). NOT a 21.8 regression;
+#    flagged for future repo-health cleanup.
+
+quality_score: 100
+
+evidence:
+  tests_reviewed: 89 # 47 compliance-finding + 11 spawner + 8 notify + 7 linked-cycles-box + 2 right-panel (NEW in v1.1) + 14 task-modal (existing regression pins via getTaskDetails extensions)
+  tests_new: 56 # v1.0 delivered 51 net-new; v1.1 added 5 more (+2 right-panel, +2 updateFinding contracts, +1 closeFinding type-agnostic); two spawner tests extended assertions but are not new
+  tests_passing: 89
+  total_regression: 4505 # full CI unit suite post-fixes
+  total_regression_baseline: 4449 # post-21.7 baseline
+  regression_delta: 56
+  risks_identified: 1 # PROD-001, low severity, PO-owned
+  files_created: 9 # v1.0: 8 + v1.1: right-panel.test.tsx
+  files_modified: 15 # v1.0: 14 + v1.1: task-spawner.ts (return shape), task-spawner.test.ts (assertions), compliance-finding.ts (caller), compliance-finding.test.ts (3 new cases + default spawner mock)
+  files_modified_during_review: 0
+  trace:
+    ac_covered: [1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 12.5] # v1.1 closed the AC 11 coverage gap via TEST-002
+    ac_partial: [4, 13] # 4: by-construction no-test (acceptable); 13: revalidatePath asserted, cross-cache invalidation partial
+    ac_gaps: []
+    iv_covered: [1, 2, 4, 5, 6] # v1.1 closed IV5 via TEST-001 right-panel integration test
+    iv_partial: [3] # 3: perf regression not explicitly tested — story explicitly defers; acceptable per story AC
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Unchanged from v1.0. Four defence layers preserved — authorisation (withWorkspace gating on all mutation + hook paths), tenant isolation (workspace_id scoping on every Prisma query), privacy pin on activity log payloads (IDs + names only, no raw text), additive-only migration. v1.1 fixes touch only the spawner return shape + test files — no security surface changes.'
+  performance:
+    status: PASS
+    notes: 'Unchanged from v1.0. Spawner query count unchanged (3-5 per AVVIKELSE create); getTaskDetails projection unchanged; notify-hook fan-out bounded by BULK_OPERATION_LIMIT=50. v1.1 DEV-001 fix is purely a caller-side data-flow improvement — zero query impact.'
+  reliability:
+    status: PASS
+    notes: 'Unchanged from v1.0 — actually strengthened. DEV-001 fix eliminates the parallel-bookkeeping drift risk on `assignee_id` activity-log payloads (single source of truth now lives in the spawner). TEST-002/003 pin previously-implicit AC 11 + AC 5 contracts so future refactors can''t silently invert them. TEST-001 pins the right-panel DOM-order invariant so a future rail refactor can''t move LinkedCyclesBox unnoticed.'
+  maintainability:
+    status: PASS
+    notes: 'Improved from v1.0. DEV-001 resolved the one flagged debt item — the caller in createFinding no longer duplicates the spawner''s fallback chain. The three new test pins (TEST-001/002/003) make previously-implicit contracts discoverable via grep. No new debt introduced. No parallel bookkeeping remaining.'
+
+history:
+  - at: '2026-04-23T11:10:00Z'
+    gate: PASS
+    note: 'Initial PASS review. 5 low-severity top_issues: DEV-001 (spawner parallel bookkeeping), TEST-001 (right-panel DOM-order), TEST-002 (AC 11 type-change), TEST-003 (AC 5 type-agnostic auto-complete), PROD-001 (manual smoke). Quality score 100. 51 net-new tests.'
+  - at: '2026-04-23T11:25:00Z'
+    gate: PASS
+    note: 'Re-gate after dev v1.1 fixes. Closed DEV-001 + TEST-001 + TEST-002 + TEST-003. Only PROD-001 remains (PO-owned). Quality score holds at 100. Regression delta: +5 (4500 → 4505). Status flip recommended: Ready for Review → Ready for Done.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'PO/QA decision: run Task 10.7 manual smoke test against a live dev/staging workspace before declaring Done (PROD-001). Only outstanding item. Server paths fully unit-test-pinned; pending check is integration-env surface.'
+      refs:
+        - 'docs/stories/21.8.auto-spawn-corrective-action-task.md'
+    - action: 'SM-owned (inherited — NOT a 21.8 regression): logActivity + revalidatePath outside `$transaction` sweep across app/actions/*. Same pattern as Story 21.5 DEBT-003 + Story 21.7 DEBT-NOTE-001.'
+      refs:
+        - 'app/actions/compliance-finding.ts'
+        - 'app/actions/compliance-audit-item.ts'
+        - 'app/actions/compliance-audit-cycle.ts'
+        - 'app/actions/law-list-item-requirements.ts'
+    - action: 'SM/infra-owned (inherited — NOT a 21.8 regression): Prisma `migrate dev` shadow-database fails due to pre-existing FK type mismatch in `20260113_add_document_visits`. Project-convention hand-authored SQL under `prisma/migrations/misc/` is working but worth a future repo-health fix so future stories can use the standard flow.'
+      refs:
+        - 'prisma/migrations/20260113_add_document_visits/'

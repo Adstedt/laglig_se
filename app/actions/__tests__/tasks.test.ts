@@ -6,8 +6,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   getWorkspaceTasksPaginated,
+  updateTaskStatus,
+  updateTasksBulk,
   type TaskPaginationOptions,
 } from '../tasks'
+import { notifyIfFindingTaskCompleted } from '@/lib/compliance-audit/notify-finding-task-completed'
 import { prisma } from '@/lib/prisma'
 import * as workspaceContext from '@/lib/auth/workspace-context'
 
@@ -16,9 +19,13 @@ vi.mock('@/lib/prisma', () => ({
   prisma: {
     task: {
       count: vi.fn(),
+      findFirst: vi.fn(),
       findMany: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
     },
     taskColumn: {
+      findFirst: vi.fn(),
       findMany: vi.fn(),
     },
     taskListItemLink: {
@@ -29,6 +36,26 @@ vi.mock('@/lib/prisma', () => ({
 
 vi.mock('@/lib/auth/workspace-context', () => ({
   withWorkspace: vi.fn(),
+}))
+
+// Story 21.8: mock cache-invalidation + notification helpers.
+vi.mock('../legal-document-modal', () => ({
+  invalidateTaskLinkedListItemsCache: vi.fn().mockResolvedValue(undefined),
+  invalidateListItemTasksCache: vi.fn().mockResolvedValue(undefined),
+}))
+vi.mock('@/lib/notifications/task-notifications', () => ({
+  createTaskNotification: vi.fn().mockResolvedValue({
+    created: 0,
+    skippedByPreference: 0,
+    skippedByDedup: 0,
+  }),
+}))
+vi.mock('@/lib/compliance-audit/notify-finding-task-completed', () => ({
+  notifyIfFindingTaskCompleted: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
 }))
 
 describe('tasks actions', () => {
@@ -428,6 +455,127 @@ describe('tasks actions', () => {
         hasNext: false, // No next page
         hasPrev: true, // Has previous page
       })
+    })
+  })
+
+  // ==========================================================================
+  // Story 21.8 — notification hook wiring in updateTaskStatus + updateTasksBulk
+  // ==========================================================================
+
+  describe('Story 21.8 — notifyIfFindingTaskCompleted hook', () => {
+    const WS_ID = 'workspace-001'
+    const USER_ID_21 = 'user-001'
+    const TASK_ID_21 = 'task-001'
+    const DONE_COL_ID = 'col-done'
+    const OPEN_COL_ID = 'col-open'
+
+    beforeEach(() => {
+      vi.mocked(workspaceContext.withWorkspace).mockImplementation(async (fn) =>
+        fn({
+          workspaceId: WS_ID,
+          userId: USER_ID_21,
+          workspaceName: 'Test',
+          workspaceSlug: 'test',
+          workspaceStatus: 'ACTIVE' as const,
+          role: 'OWNER' as const,
+          hasPermission: () => true,
+        })
+      )
+    })
+
+    it('updateTaskStatus fires hook when moving open task to done column', async () => {
+      vi.mocked(prisma.task.findFirst).mockResolvedValue({
+        id: TASK_ID_21,
+        completed_at: null,
+      } as never)
+      vi.mocked(prisma.taskColumn.findFirst).mockResolvedValue({
+        id: DONE_COL_ID,
+        is_done: true,
+      } as never)
+      vi.mocked(prisma.task.update).mockResolvedValue({} as never)
+
+      await updateTaskStatus(TASK_ID_21, DONE_COL_ID, 5)
+
+      expect(notifyIfFindingTaskCompleted).toHaveBeenCalledWith({
+        taskId: TASK_ID_21,
+        workspaceId: WS_ID,
+        actorUserId: USER_ID_21,
+      })
+    })
+
+    it('updateTaskStatus does NOT fire when target is not is_done', async () => {
+      vi.mocked(notifyIfFindingTaskCompleted).mockClear()
+      vi.mocked(prisma.task.findFirst).mockResolvedValue({
+        id: TASK_ID_21,
+        completed_at: null,
+      } as never)
+      vi.mocked(prisma.taskColumn.findFirst).mockResolvedValue({
+        id: OPEN_COL_ID,
+        is_done: false,
+      } as never)
+      vi.mocked(prisma.task.update).mockResolvedValue({} as never)
+
+      await updateTaskStatus(TASK_ID_21, OPEN_COL_ID, 1)
+
+      expect(notifyIfFindingTaskCompleted).not.toHaveBeenCalled()
+    })
+
+    it('updateTaskStatus does NOT fire when task was already completed', async () => {
+      vi.mocked(notifyIfFindingTaskCompleted).mockClear()
+      vi.mocked(prisma.task.findFirst).mockResolvedValue({
+        id: TASK_ID_21,
+        completed_at: new Date(),
+      } as never)
+      vi.mocked(prisma.taskColumn.findFirst).mockResolvedValue({
+        id: DONE_COL_ID,
+        is_done: true,
+      } as never)
+      vi.mocked(prisma.task.update).mockResolvedValue({} as never)
+
+      await updateTaskStatus(TASK_ID_21, DONE_COL_ID, 1)
+
+      expect(notifyIfFindingTaskCompleted).not.toHaveBeenCalled()
+    })
+
+    it('updateTasksBulk fires hook only for tasks that were NOT already completed', async () => {
+      vi.mocked(notifyIfFindingTaskCompleted).mockClear()
+      const TASK_A = 'task-a'
+      const TASK_B = 'task-b'
+      vi.mocked(prisma.task.findMany).mockResolvedValue([
+        { id: TASK_A, completed_at: null } as never,
+        { id: TASK_B, completed_at: new Date() } as never,
+      ])
+      vi.mocked(prisma.taskColumn.findFirst).mockResolvedValue({
+        id: DONE_COL_ID,
+        is_done: true,
+      } as never)
+      vi.mocked(prisma.task.updateMany).mockResolvedValue({
+        count: 2,
+      } as never)
+
+      await updateTasksBulk([TASK_A, TASK_B], { columnId: DONE_COL_ID })
+
+      expect(notifyIfFindingTaskCompleted).toHaveBeenCalledTimes(1)
+      expect(notifyIfFindingTaskCompleted).toHaveBeenCalledWith({
+        taskId: TASK_A,
+        workspaceId: WS_ID,
+        actorUserId: USER_ID_21,
+      })
+    })
+
+    it('updateTasksBulk does NOT fire when update does not move to is_done column', async () => {
+      vi.mocked(notifyIfFindingTaskCompleted).mockClear()
+      vi.mocked(prisma.task.findMany).mockResolvedValue([
+        { id: 'task-a', completed_at: null } as never,
+      ])
+      vi.mocked(prisma.task.updateMany).mockResolvedValue({
+        count: 1,
+      } as never)
+
+      // No columnId in updates → hook never fires.
+      await updateTasksBulk(['task-a'], { priority: 'HIGH' })
+
+      expect(notifyIfFindingTaskCompleted).not.toHaveBeenCalled()
     })
   })
 })

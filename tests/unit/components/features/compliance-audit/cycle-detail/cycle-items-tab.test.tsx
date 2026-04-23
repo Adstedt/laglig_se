@@ -30,6 +30,12 @@ const updateItemMotiveringMock = vi.fn()
 const signOffItemMock = vi.fn()
 const unsignOffItemMock = vi.fn()
 const getCycleItemsForCycleMock = vi.fn()
+// Story 21.7: page-level hoist of the findings SWR fetch requires a mock here.
+const listFindingsForCycleMock = vi.fn()
+const closeFindingMock = vi.fn()
+const reopenFindingMock = vi.fn()
+const createFindingMock = vi.fn()
+const updateFindingMock = vi.fn()
 
 vi.mock('@/app/actions/compliance-audit-item', () => ({
   getCycleItemsForCycle: (...args: unknown[]) =>
@@ -39,6 +45,15 @@ vi.mock('@/app/actions/compliance-audit-item', () => ({
     updateItemMotiveringMock(...args),
   signOffItem: (...args: unknown[]) => signOffItemMock(...args),
   unsignOffItem: (...args: unknown[]) => unsignOffItemMock(...args),
+}))
+
+vi.mock('@/app/actions/compliance-finding', () => ({
+  listFindingsForCycle: (...args: unknown[]) =>
+    listFindingsForCycleMock(...args),
+  closeFinding: (...args: unknown[]) => closeFindingMock(...args),
+  reopenFinding: (...args: unknown[]) => reopenFindingMock(...args),
+  createFinding: (...args: unknown[]) => createFindingMock(...args),
+  updateFinding: (...args: unknown[]) => updateFindingMock(...args),
 }))
 
 // Stub LinkedArtifactsPanel — we test composition, not that panel's internals.
@@ -173,6 +188,7 @@ function renderPage(
             }),
           ]
         }
+        initialFindings={[]}
         cyclePartial={
           overrides.cyclePartial ??
           makeCyclePartial({ status: cycle.status, sealHash: cycle.sealHash })
@@ -192,6 +208,10 @@ beforeEach(() => {
   getCycleItemsForCycleMock.mockResolvedValue({
     success: true,
     data: { items: [], cycle: makeCyclePartial() },
+  })
+  listFindingsForCycleMock.mockResolvedValue({
+    success: true,
+    data: { findings: [] },
   })
 })
 
@@ -363,8 +383,11 @@ describe('CycleDetailPage — items tab', () => {
     expect(panel.getAttribute('data-read-only')).toBe('true')
     expect(panel.getAttribute('data-list-item-id')).toBe('law-list-item-a')
 
-    // Findings placeholder.
-    expect(screen.getByText('Hanteras i Story 21.7')).toBeInTheDocument()
+    // Story 21.7: placeholder replaced with per-item findings affordance.
+    // With no findings fixture, the drawer shows the empty-state copy.
+    expect(
+      screen.getByText('Inga findings för denna post ännu.')
+    ).toBeInTheDocument()
   })
 
   it('expanding row B auto-collapses row A (single-expand accordion)', () => {
