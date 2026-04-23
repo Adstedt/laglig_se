@@ -11,8 +11,11 @@ import {
   getCycleById,
   updateCycleMetadata,
   softDeleteCycle,
+  completeCycle,
+  revertCycleToPagaende,
   type ScopeDefinition,
 } from '../compliance-audit-cycle'
+import * as authorization from '@/lib/compliance-audit/authorization'
 import { prisma } from '@/lib/prisma'
 import * as workspaceContext from '@/lib/auth/workspace-context'
 import * as activityLogger from '@/lib/services/activity-logger'
@@ -39,6 +42,11 @@ vi.mock('@/lib/prisma', () => ({
     complianceAuditItem: {
       createMany: vi.fn(),
       findMany: vi.fn(),
+      // Story 21.6 — added for completeCycle's items-signed guard + the
+      // "items untouched" regression test on revertCycleToPagaende.
+      count: vi.fn(),
+      update: vi.fn(),
+      updateMany: vi.fn(),
     },
     lawList: { findFirst: vi.fn() },
     lawListItem: { findMany: vi.fn() },
@@ -49,6 +57,13 @@ vi.mock('@/lib/prisma', () => ({
     // through the same module-level mocks as a direct `prisma.<model>.<method>`.
     $transaction: vi.fn(),
   },
+}))
+
+// Story 21.6 — canCompleteOrRevertCycle is mocked so tests can control the
+// runtime-auth branch (lead-auditor vs denied) without asserting on the
+// underlying Prisma lookup (that's covered by authorization.test.ts).
+vi.mock('@/lib/compliance-audit/authorization', () => ({
+  canCompleteOrRevertCycle: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/workspace-context', () => ({
@@ -1339,5 +1354,395 @@ describe('Story 21.14 — mutation permission-denied regression pins', () => {
     })
     expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
     expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// completeCycle — Story 21.6 AC 12
+// ============================================================================
+
+describe('completeCycle', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockWorkspaceCtx({ role: 'OWNER' })
+  })
+
+  function mockPagaendeCycle(overrides: Partial<Record<string, unknown>> = {}) {
+    // First findFirst = loadCycleScopedToWorkspace; second findFirst =
+    // loadCycleDetailInline (post-update refresh).
+    vi.mocked(prisma.complianceAuditCycle.findFirst)
+      .mockResolvedValueOnce(
+        makeCycleRow({
+          status: ComplianceCycleStatus.PAGAENDE,
+          ...overrides,
+        }) as never
+      )
+      .mockResolvedValueOnce(
+        makeCycleRowWithIncludes({
+          status: ComplianceCycleStatus.AVSLUTAD,
+          ...overrides,
+        }) as never
+      )
+  }
+
+  it('happy path — PAGAENDE with all items signed transitions to AVSLUTAD', async () => {
+    mockPagaendeCycle()
+    vi.mocked(prisma.complianceAuditItem.count)
+      .mockResolvedValueOnce(3) // total
+      .mockResolvedValueOnce(0) // unsigned
+
+    vi.mocked(prisma.complianceAuditCycle.update).mockResolvedValue(
+      makeCycleRow({ status: ComplianceCycleStatus.AVSLUTAD }) as never
+    )
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result.success).toBe(true)
+    expect(result.data?.cycle.status).toBe(ComplianceCycleStatus.AVSLUTAD)
+
+    // Update called once with the transition payload.
+    expect(prisma.complianceAuditCycle.update).toHaveBeenCalledTimes(1)
+    expect(prisma.complianceAuditCycle.update).toHaveBeenCalledWith({
+      where: { id: CYCLE_ID },
+      data: { status: ComplianceCycleStatus.AVSLUTAD },
+    })
+
+    // Activity log: exactly one row with the correct payload.
+    expect(activityLogger.logActivity).toHaveBeenCalledTimes(1)
+    expect(activityLogger.logActivity).toHaveBeenCalledWith(
+      WORKSPACE_ID,
+      USER_ID,
+      'compliance_audit_cycle',
+      CYCLE_ID,
+      'cycle_completed',
+      { status: ComplianceCycleStatus.PAGAENDE },
+      expect.objectContaining({
+        status: ComplianceCycleStatus.AVSLUTAD,
+        completedAt: expect.stringMatching(
+          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+        ),
+      })
+    )
+
+    // Both revalidations fire.
+    expect(revalidatePath).toHaveBeenCalledWith('/laglistor/kontroller')
+    expect(revalidatePath).toHaveBeenCalledWith(
+      `/laglistor/kontroller/${CYCLE_ID}`
+    )
+  })
+
+  it('rejects PLANERAD — status guard blocks non-PAGAENDE', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({ status: ComplianceCycleStatus.PLANERAD }) as never
+    )
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kontrollen kan bara slutföras från status Pågående',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+    expect(prisma.complianceAuditItem.count).not.toHaveBeenCalled()
+  })
+
+  it('rejects AVSLUTAD — already completed is user error, not no-op', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({ status: ComplianceCycleStatus.AVSLUTAD }) as never
+    )
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe(
+      'Kontrollen kan bara slutföras från status Pågående'
+    )
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+  })
+
+  it('rejects SEALED', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({ status: ComplianceCycleStatus.SEALED }) as never
+    )
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result.success).toBe(false)
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+  })
+
+  it('rejects when some items are unsigned — error reports both counts', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({ status: ComplianceCycleStatus.PAGAENDE }) as never
+    )
+    vi.mocked(prisma.complianceAuditItem.count)
+      .mockResolvedValueOnce(3) // total
+      .mockResolvedValueOnce(2) // unsigned
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: '2 av 3 dokument är inte signerade',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('rejects zero-items cycle with dedicated error message', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({ status: ComplianceCycleStatus.PAGAENDE }) as never
+    )
+    vi.mocked(prisma.complianceAuditItem.count)
+      .mockResolvedValueOnce(0) // total
+      .mockResolvedValueOnce(0) // unsigned
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kontrollen innehåller inga dokument att slutföra',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+  })
+
+  it('cross-workspace cycle returns generic not-found', async () => {
+    // loadCycleScopedToWorkspace returns null for a cycle in a different
+    // workspace (the findFirst where-clause filters workspace_id).
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(null)
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kontrollen hittades inte',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+  })
+
+  it('MEMBER permission is sufficient (tasks:edit gate)', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    mockPagaendeCycle()
+    vi.mocked(prisma.complianceAuditItem.count)
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(0)
+    vi.mocked(prisma.complianceAuditCycle.update).mockResolvedValue(
+      makeCycleRow({ status: ComplianceCycleStatus.AVSLUTAD }) as never
+    )
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result.success).toBe(true)
+  })
+
+  it('AUDITOR is rejected — no tasks:edit permission', async () => {
+    mockWorkspaceCtx({ role: 'AUDITOR' })
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte slutföra kontrollen',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('Zod rejects non-UUID cycleId before any prisma call', async () => {
+    const result = await completeCycle('not-a-uuid')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBeTruthy()
+    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
+    expect(prisma.complianceAuditItem.count).not.toHaveBeenCalled()
+  })
+
+  it('outer catch returns generic error on unexpected Prisma failure', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockRejectedValue(
+      new Error('DB crash')
+    )
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte slutföra kontrollen',
+    })
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('IV3 — update scoped narrowly to cycleId (concurrent cycles unaffected)', async () => {
+    mockPagaendeCycle()
+    vi.mocked(prisma.complianceAuditItem.count)
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(0)
+    vi.mocked(prisma.complianceAuditCycle.update).mockResolvedValue(
+      makeCycleRow({ status: ComplianceCycleStatus.AVSLUTAD }) as never
+    )
+
+    await completeCycle(CYCLE_ID)
+
+    // The update was called exactly once with `where: { id: CYCLE_ID }` —
+    // proves the mutation is scoped to the single cycle and won't ripple
+    // to any other cycle in the workspace.
+    expect(prisma.complianceAuditCycle.update).toHaveBeenCalledTimes(1)
+    const updateCall = vi.mocked(prisma.complianceAuditCycle.update).mock
+      .calls[0]![0]
+    expect(updateCall.where).toEqual({ id: CYCLE_ID })
+  })
+})
+
+// ============================================================================
+// revertCycleToPagaende — Story 21.6 AC 13
+// ============================================================================
+
+describe('revertCycleToPagaende', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  function mockAvslutadCycle(overrides: Partial<Record<string, unknown>> = {}) {
+    vi.mocked(prisma.complianceAuditCycle.findFirst)
+      .mockResolvedValueOnce(
+        makeCycleRow({
+          status: ComplianceCycleStatus.AVSLUTAD,
+          ...overrides,
+        }) as never
+      )
+      .mockResolvedValueOnce(
+        makeCycleRowWithIncludes({
+          status: ComplianceCycleStatus.PAGAENDE,
+          ...overrides,
+        }) as never
+      )
+  }
+
+  it('happy path — OWNER reverts AVSLUTAD → PAGAENDE', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    mockAvslutadCycle()
+    vi.mocked(authorization.canCompleteOrRevertCycle).mockResolvedValue(true)
+    vi.mocked(prisma.complianceAuditCycle.update).mockResolvedValue(
+      makeCycleRow({ status: ComplianceCycleStatus.PAGAENDE }) as never
+    )
+
+    const result = await revertCycleToPagaende(CYCLE_ID)
+
+    expect(result.success).toBe(true)
+    expect(result.data?.cycle.status).toBe(ComplianceCycleStatus.PAGAENDE)
+
+    expect(prisma.complianceAuditCycle.update).toHaveBeenCalledWith({
+      where: { id: CYCLE_ID },
+      data: { status: ComplianceCycleStatus.PAGAENDE },
+    })
+
+    expect(activityLogger.logActivity).toHaveBeenCalledTimes(1)
+    expect(activityLogger.logActivity).toHaveBeenCalledWith(
+      WORKSPACE_ID,
+      USER_ID,
+      'compliance_audit_cycle',
+      CYCLE_ID,
+      'cycle_reverted_to_pagaende',
+      { status: ComplianceCycleStatus.AVSLUTAD },
+      { status: ComplianceCycleStatus.PAGAENDE }
+    )
+
+    expect(revalidatePath).toHaveBeenCalledWith('/laglistor/kontroller')
+    expect(revalidatePath).toHaveBeenCalledWith(
+      `/laglistor/kontroller/${CYCLE_ID}`
+    )
+  })
+
+  it('happy path — MEMBER who is lead auditor reverts', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    mockAvslutadCycle()
+    // Mocked canCompleteOrRevertCycle returns true (lead-auditor branch).
+    vi.mocked(authorization.canCompleteOrRevertCycle).mockResolvedValue(true)
+    vi.mocked(prisma.complianceAuditCycle.update).mockResolvedValue(
+      makeCycleRow({ status: ComplianceCycleStatus.PAGAENDE }) as never
+    )
+
+    const result = await revertCycleToPagaende(CYCLE_ID)
+
+    expect(result.success).toBe(true)
+    expect(authorization.canCompleteOrRevertCycle).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejects MEMBER who is NOT lead auditor with dedicated error', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({ status: ComplianceCycleStatus.AVSLUTAD }) as never
+    )
+    vi.mocked(authorization.canCompleteOrRevertCycle).mockResolvedValue(false)
+
+    const result = await revertCycleToPagaende(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error:
+        'Endast revisionsledaren eller administratörer kan återställa kontrollen',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('rejects PAGAENDE cycle (status guard)', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({ status: ComplianceCycleStatus.PAGAENDE }) as never
+    )
+    vi.mocked(authorization.canCompleteOrRevertCycle).mockResolvedValue(true)
+
+    const result = await revertCycleToPagaende(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Endast avslutade kontroller kan återställas till Pågående',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+  })
+
+  it('rejects SEALED cycle', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({
+        status: ComplianceCycleStatus.SEALED,
+        sealed_at: new Date(),
+      }) as never
+    )
+    vi.mocked(authorization.canCompleteOrRevertCycle).mockResolvedValue(true)
+
+    const result = await revertCycleToPagaende(CYCLE_ID)
+
+    expect(result.success).toBe(false)
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+  })
+
+  it('items untouched — revert never calls complianceAuditItem.update or updateMany (AC 13)', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    mockAvslutadCycle()
+    vi.mocked(authorization.canCompleteOrRevertCycle).mockResolvedValue(true)
+    vi.mocked(prisma.complianceAuditCycle.update).mockResolvedValue(
+      makeCycleRow({ status: ComplianceCycleStatus.PAGAENDE }) as never
+    )
+
+    await revertCycleToPagaende(CYCLE_ID)
+
+    // Epic AC 6: "soft revert: status update only, keeps item state".
+    expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
+    expect(prisma.complianceAuditItem.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('cross-workspace cycle returns generic not-found', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(null)
+
+    const result = await revertCycleToPagaende(CYCLE_ID)
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kontrollen hittades inte',
+    })
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
   })
 })

@@ -21,6 +21,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { logActivity } from '@/lib/services/activity-logger'
+import { canCompleteOrRevertCycle } from '@/lib/compliance-audit/authorization'
 import {
   AuditType,
   ComplianceCycleStatus,
@@ -160,6 +161,15 @@ const SoftDeleteSchema = z.object({
   cycleId: z.string().uuid(),
 })
 
+// Story 21.6 — cycle lifecycle transitions (PAGAENDE ↔ AVSLUTAD).
+const CompleteCycleSchema = z.object({
+  cycleId: z.string().uuid(),
+})
+
+const RevertCycleSchema = z.object({
+  cycleId: z.string().uuid(),
+})
+
 // ============================================================================
 // Module-private helpers
 // ============================================================================
@@ -182,6 +192,75 @@ async function loadCycleScopedToWorkspace(
   return prisma.complianceAuditCycle.findFirst({
     where: { id: cycleId, workspace_id: workspaceId },
   })
+}
+
+// Story 21.6 — shared CycleDetail include shape. Hoisted so `getCycleById`
+// and `loadCycleDetailInline` (the post-transition refresh helper used by
+// completeCycle + revertCycleToPagaende) load the same relation set.
+const CYCLE_DETAIL_INCLUDE = {
+  lead_auditor: { select: { id: true, name: true } },
+  law_list: { select: { id: true, name: true } },
+  created_by: { select: { id: true, name: true } },
+  sealed_by: { select: { id: true, name: true } },
+  _count: { select: { items: true } },
+} as const
+
+type CycleDetailRow = Prisma.ComplianceAuditCycleGetPayload<{
+  include: typeof CYCLE_DETAIL_INCLUDE
+}>
+
+function mapCycleRowToDetail(row: CycleDetailRow): CycleDetail {
+  return {
+    id: row.id,
+    name: row.name,
+    status: row.status,
+    auditType: row.audit_type,
+    scheduledStart: row.scheduled_start,
+    scheduledEnd: row.scheduled_end,
+    lawChangeCutoffDate: row.law_change_cutoff_date,
+    leadAuditor: {
+      id: row.lead_auditor.id,
+      name: row.lead_auditor.name,
+    },
+    lawList: { id: row.law_list.id, name: row.law_list.name },
+    itemCount: row._count.items,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    lawListId: row.law_list_id,
+    scopeDefinition: row.scope_definition as unknown as ScopeDefinition,
+    sealHash: row.seal_hash,
+    sealedAt: row.sealed_at,
+    sealedBy: row.sealed_by
+      ? { id: row.sealed_by.id, name: row.sealed_by.name }
+      : null,
+    createdBy: {
+      id: row.created_by.id,
+      name: row.created_by.name,
+    },
+    deletedAt: row.deleted_at,
+  }
+}
+
+/**
+ * Story 21.6 — post-transition refresh helper used by `completeCycle` and
+ * `revertCycleToPagaende`. Re-reads the cycle with the full CycleDetail
+ * include shape and maps it, all WITHOUT re-entering `withWorkspace` (avoids
+ * the redundant session + permission re-check of a nested `getCycleById`
+ * call). One DB round-trip; no permission re-evaluation.
+ *
+ * SF-4 fix from PO v0.2 validation: the original draft suggested calling
+ * `getCycleById(cycleId)` inline, which is re-entrant but wasteful.
+ */
+async function loadCycleDetailInline(
+  cycleId: string,
+  workspaceId: string
+): Promise<CycleDetail | null> {
+  const row = await prisma.complianceAuditCycle.findFirst({
+    where: { id: cycleId, workspace_id: workspaceId },
+    include: CYCLE_DETAIL_INCLUDE,
+  })
+  if (!row) return null
+  return mapCycleRowToDetail(row)
 }
 
 // ============================================================================
@@ -374,52 +453,16 @@ export async function getCycleById(
         return { success: false, error: 'Behörighet saknas' }
       }
 
-      const row = await prisma.complianceAuditCycle.findFirst({
-        where: {
-          id: parsed.data.cycleId,
-          workspace_id: ctx.workspaceId,
-        },
-        include: {
-          lead_auditor: { select: { id: true, name: true } },
-          law_list: { select: { id: true, name: true } },
-          created_by: { select: { id: true, name: true } },
-          sealed_by: { select: { id: true, name: true } },
-          _count: { select: { items: true } },
-        },
-      })
+      // Story 21.6 — delegated to the shared `loadCycleDetailInline` +
+      // `mapCycleRowToDetail` helpers so `getCycleById` + post-transition
+      // refresh paths share one include shape + one mapper.
+      const cycle = await loadCycleDetailInline(
+        parsed.data.cycleId,
+        ctx.workspaceId
+      )
 
-      if (!row) {
+      if (!cycle) {
         return { success: false, error: 'Kontrollen hittades inte' }
-      }
-
-      const cycle: CycleDetail = {
-        id: row.id,
-        name: row.name,
-        status: row.status,
-        auditType: row.audit_type,
-        scheduledStart: row.scheduled_start,
-        scheduledEnd: row.scheduled_end,
-        lawChangeCutoffDate: row.law_change_cutoff_date,
-        leadAuditor: {
-          id: row.lead_auditor.id,
-          name: row.lead_auditor.name,
-        },
-        lawList: { id: row.law_list.id, name: row.law_list.name },
-        itemCount: row._count.items,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        lawListId: row.law_list_id,
-        scopeDefinition: row.scope_definition as unknown as ScopeDefinition,
-        sealHash: row.seal_hash,
-        sealedAt: row.sealed_at,
-        sealedBy: row.sealed_by
-          ? { id: row.sealed_by.id, name: row.sealed_by.name }
-          : null,
-        createdBy: {
-          id: row.created_by.id,
-          name: row.created_by.name,
-        },
-        deletedAt: row.deleted_at,
       }
 
       return { success: true, data: { cycle } }
@@ -617,6 +660,223 @@ export async function softDeleteCycle(cycleId: string): Promise<ActionResult> {
   } catch (error) {
     console.error('softDeleteCycle error:', error)
     return { success: false, error: 'Kunde inte ta bort kontrollen' }
+  }
+}
+
+// ============================================================================
+// completeCycle (Story 21.6 AC 1, 3, 12, 15-IV1, 15-IV3, 16)
+// ============================================================================
+
+/**
+ * Story 21.6 — transition cycle from PAGAENDE → AVSLUTAD.
+ *
+ * Gate: `tasks:edit` permission + every item has `signed_off_at != null` +
+ * `items.length > 0`. The transition is reversible via `revertCycleToPagaende`
+ * until sealing (Story 21.9). Items, findings, and motivering all remain
+ * editable post-complete; read-only only kicks in on SEALED/ARKIVERAD.
+ */
+export async function completeCycle(
+  cycleId: string
+): Promise<ActionResult<{ cycle: CycleDetail }>> {
+  const parsed = CompleteCycleSchema.safeParse({ cycleId })
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+    }
+  }
+
+  try {
+    return await withWorkspace(async (ctx) => {
+      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on SEALED/ARKIVERAD.
+
+      const existing = await loadCycleScopedToWorkspace(
+        parsed.data.cycleId,
+        ctx.workspaceId
+      )
+      if (!existing) {
+        return { success: false, error: 'Kontrollen hittades inte' }
+      }
+
+      if (existing.status !== ComplianceCycleStatus.PAGAENDE) {
+        return {
+          success: false,
+          error: 'Kontrollen kan bara slutföras från status Pågående',
+        }
+      }
+
+      // Items-signed guard: parallel counts for total + unsigned so the error
+      // can reference both numbers. Runs outside a transaction — AC 3 notes
+      // that the subsequent `update { status: AVSLUTAD }` is safe even under
+      // a racing sign-off because the only consequence of a stale count is a
+      // benign false-block here (user retries).
+      const [totalCount, unsignedCount] = await Promise.all([
+        prisma.complianceAuditItem.count({
+          where: { cycle_id: parsed.data.cycleId },
+        }),
+        prisma.complianceAuditItem.count({
+          where: { cycle_id: parsed.data.cycleId, signed_off_at: null },
+        }),
+      ])
+
+      if (totalCount === 0) {
+        return {
+          success: false,
+          error: 'Kontrollen innehåller inga dokument att slutföra',
+        }
+      }
+
+      if (unsignedCount > 0) {
+        return {
+          success: false,
+          error: `${unsignedCount} av ${totalCount} dokument är inte signerade`,
+        }
+      }
+
+      const completedAt = new Date()
+      await prisma.complianceAuditCycle.update({
+        where: { id: parsed.data.cycleId },
+        data: { status: ComplianceCycleStatus.AVSLUTAD },
+      })
+
+      await logActivity(
+        ctx.workspaceId,
+        ctx.userId,
+        'compliance_audit_cycle',
+        parsed.data.cycleId,
+        'cycle_completed',
+        { status: ComplianceCycleStatus.PAGAENDE },
+        {
+          status: ComplianceCycleStatus.AVSLUTAD,
+          completedAt: completedAt.toISOString(),
+        }
+      )
+
+      revalidatePath('/laglistor/kontroller')
+      revalidatePath(`/laglistor/kontroller/${parsed.data.cycleId}`)
+
+      // SF-4: refresh via the inline helper (no nested withWorkspace).
+      const cycle = await loadCycleDetailInline(
+        parsed.data.cycleId,
+        ctx.workspaceId
+      )
+      if (!cycle) {
+        // Should be unreachable — the update succeeded so the row exists.
+        return {
+          success: false,
+          error: 'Kontrollen kunde inte hämtas efter uppdatering',
+        }
+      }
+
+      return { success: true, data: { cycle } }
+    }, 'tasks:edit')
+  } catch (error) {
+    console.error('completeCycle error:', error)
+    return { success: false, error: 'Kunde inte slutföra kontrollen' }
+  }
+}
+
+// ============================================================================
+// revertCycleToPagaende (Story 21.6 AC 6, 13, 15-IV3)
+// ============================================================================
+
+/**
+ * Story 21.6 — revert cycle from AVSLUTAD → PAGAENDE.
+ *
+ * Gate: `tasks:edit` permission + runtime `canCompleteOrRevertCycle`
+ * (OWNER/ADMIN via audit:seal OR the cycle's lead auditor). Soft revert —
+ * item signatures + bedömningar are preserved; only the cycle status flips.
+ * This is the pre-seal escape hatch per epic AC 6.
+ */
+export async function revertCycleToPagaende(
+  cycleId: string
+): Promise<ActionResult<{ cycle: CycleDetail }>> {
+  const parsed = RevertCycleSchema.safeParse({ cycleId })
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
+    }
+  }
+
+  try {
+    return await withWorkspace(async (ctx) => {
+      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on SEALED/ARKIVERAD.
+
+      const existing = await loadCycleScopedToWorkspace(
+        parsed.data.cycleId,
+        ctx.workspaceId
+      )
+      if (!existing) {
+        return { success: false, error: 'Kontrollen hittades inte' }
+      }
+
+      // Runtime authorization: lead auditor OR OWNER/ADMIN.
+      const allowed = await canCompleteOrRevertCycle({
+        role: ctx.role,
+        userId: ctx.userId,
+        cycleId: parsed.data.cycleId,
+        workspaceId: ctx.workspaceId,
+      })
+      if (!allowed) {
+        return {
+          success: false,
+          error:
+            'Endast revisionsledaren eller administratörer kan återställa kontrollen',
+        }
+      }
+
+      if (existing.status !== ComplianceCycleStatus.AVSLUTAD) {
+        return {
+          success: false,
+          error: 'Endast avslutade kontroller kan återställas till Pågående',
+        }
+      }
+
+      // Defensive: sealed cycles are already blocked by the status guard
+      // (SEALED !== AVSLUTAD), but an explicit sealed-hash check gives future
+      // logic a belt-and-braces barrier.
+      if (existing.sealed_at !== null) {
+        return {
+          success: false,
+          error: 'Förseglade kontroller kan inte återställas',
+        }
+      }
+
+      await prisma.complianceAuditCycle.update({
+        where: { id: parsed.data.cycleId },
+        data: { status: ComplianceCycleStatus.PAGAENDE },
+      })
+
+      await logActivity(
+        ctx.workspaceId,
+        ctx.userId,
+        'compliance_audit_cycle',
+        parsed.data.cycleId,
+        'cycle_reverted_to_pagaende',
+        { status: ComplianceCycleStatus.AVSLUTAD },
+        { status: ComplianceCycleStatus.PAGAENDE }
+      )
+
+      revalidatePath('/laglistor/kontroller')
+      revalidatePath(`/laglistor/kontroller/${parsed.data.cycleId}`)
+
+      const cycle = await loadCycleDetailInline(
+        parsed.data.cycleId,
+        ctx.workspaceId
+      )
+      if (!cycle) {
+        return {
+          success: false,
+          error: 'Kontrollen kunde inte hämtas efter uppdatering',
+        }
+      }
+
+      return { success: true, data: { cycle } }
+    }, 'tasks:edit')
+  } catch (error) {
+    console.error('revertCycleToPagaende error:', error)
+    return { success: false, error: 'Kunde inte återställa kontrollen' }
   }
 }
 

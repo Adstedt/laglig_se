@@ -1,0 +1,194 @@
+{
+  "cycle": {
+    "id": "44444444-4444-4444-8444-444444444444",
+    "name": "Årskontroll 2026 — AB Testbolaget",
+    "status": "SEALED",
+    "auditType": "EXTERN",
+    "scheduledStart": "2026-01-15T00:00:00.000Z",
+    "scheduledEnd": "2026-03-31T00:00:00.000Z",
+    "lawChangeCutoffDate": "2026-01-01T00:00:00.000Z",
+    "leadAuditor": {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "name": "Anna Andersson"
+    },
+    "lawList": {
+      "id": "55555555-5555-4555-8555-555555555555",
+      "name": "ISO 14001 laglista — verksamhet Uppsala"
+    },
+    "itemCount": 3,
+    "createdAt": "2026-01-10T10:00:00.000Z",
+    "updatedAt": "2026-04-01T12:00:00.000Z",
+    "lawListId": "55555555-5555-4555-8555-555555555555",
+    "scopeDefinition": {
+      "kind": "all"
+    },
+    "sealHash": "abc123def456abc123def456abc123def456abc123def456abc123def456abcd",
+    "sealedAt": "2026-04-01T14:30:00.000Z",
+    "sealedBy": {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "name": "Anna Andersson"
+    },
+    "createdBy": {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "name": "Anna Andersson"
+    },
+    "deletedAt": null
+  },
+  "items": [
+    {
+      "groupId": "gggg1111-1111-4111-8111-111111111111",
+      "groupName": "Miljörätt",
+      "sourceComplianceStatus": "UPPFYLLD",
+      "sourceResponsibleUser": {
+        "id": "uuuu1111-1111-4111-8111-111111111111",
+        "name": "Erik Eriksson"
+      },
+      "efterlevnadsbedomning": "UPPFYLLD",
+      "motivering": "Organisationen har rutiner på plats.",
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "signedOffAt": "2026-03-15T09:00:00.000Z",
+      "signedOffBy": {
+        "id": "uuuu1111-1111-4111-8111-111111111111",
+        "name": "Erik Eriksson"
+      },
+      "kravpunkterSnapshot": null,
+      "businessContext": null,
+      "id": "aaaa1111-1111-4111-8111-111111111111",
+      "lawListItemId": "bbbb1111-1111-4111-8111-111111111111",
+      "lawTitle": "Miljöbalken",
+      "lawDocumentNumber": "SFS 1998:808"
+    },
+    {
+      "groupId": "gggg2222-2222-4222-8222-222222222222",
+      "groupName": "Arbetsmiljö",
+      "sourceComplianceStatus": "UPPFYLLD",
+      "sourceResponsibleUser": null,
+      "efterlevnadsbedomning": "EJ_UPPFYLLD",
+      "motivering": "Systematiskt arbetsmiljöarbete saknas dokumentation.",
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "signedOffAt": "2026-03-20T11:30:00.000Z",
+      "signedOffBy": {
+        "id": "uuuu2222-2222-4222-8222-222222222222",
+        "name": "Maria Svensson"
+      },
+      "kravpunkterSnapshot": null,
+      "businessContext": null,
+      "id": "aaaa2222-2222-4222-8222-222222222222",
+      "lawListItemId": "bbbb2222-2222-4222-8222-222222222222",
+      "lawTitle": "Arbetsmiljölagen",
+      "lawDocumentNumber": "SFS 1977:1160"
+    },
+    {
+      "groupId": null,
+      "groupName": null,
+      "sourceComplianceStatus": "UPPFYLLD",
+      "sourceResponsibleUser": null,
+      "efterlevnadsbedomning": "EJ_TILLAMPLIG",
+      "motivering": "Organisationen bedriver ingen kontantförsäljning.",
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "signedOffAt": "2026-03-10T14:00:00.000Z",
+      "signedOffBy": {
+        "id": "uuuu1111-1111-4111-8111-111111111111",
+        "name": "Erik Eriksson"
+      },
+      "kravpunkterSnapshot": null,
+      "businessContext": null,
+      "id": "aaaa3333-3333-4333-8333-333333333333",
+      "lawListItemId": "bbbb3333-3333-4333-8333-333333333333",
+      "lawTitle": "Lag om kassaregister",
+      "lawDocumentNumber": "SFS 2007:592"
+    }
+  ],
+  "findings": [
+    {
+      "type": "AVVIKELSE",
+      "severity": "MAJOR",
+      "description": "Organisationens systematiska arbetsmiljöarbete saknar skriftlig riskbedömning enligt AFS 2001:1.",
+      "rootCause": "Otydligt ansvar för SAM-processen.",
+      "dueDate": "2026-05-31T00:00:00.000Z",
+      "closedAt": null,
+      "closedBy": null,
+      "lawListItemId": "bbbb2222-2222-4222-8222-222222222222",
+      "lawListItem": {
+        "id": "bbbb2222-2222-4222-8222-222222222222",
+        "title": "Arbetsmiljölagen",
+        "documentNumber": "SFS 1977:1160"
+      },
+      "requirementId": null,
+      "requirement": null,
+      "correctiveActionTaskId": "tttt1111-1111-4111-8111-111111111111",
+      "correctiveActionTask": {
+        "id": "tttt1111-1111-4111-8111-111111111111",
+        "title": "Upprätta skriftlig riskbedömning",
+        "completedAt": null
+      },
+      "createdAt": "2026-03-20T12:00:00.000Z",
+      "updatedAt": "2026-02-01T10:00:00.000Z",
+      "id": "ffff1111-1111-4111-8111-111111111111",
+      "cycleId": "44444444-4444-4444-8444-444444444444",
+      "title": "Saknar skriftlig riskbedömning"
+    },
+    {
+      "type": "OBSERVATION",
+      "severity": null,
+      "description": "Rutinen refererar till upphävd AFS.",
+      "rootCause": null,
+      "dueDate": null,
+      "closedAt": null,
+      "closedBy": null,
+      "lawListItemId": null,
+      "lawListItem": null,
+      "requirementId": null,
+      "requirement": null,
+      "correctiveActionTaskId": null,
+      "correctiveActionTask": null,
+      "createdAt": "2026-03-18T10:00:00.000Z",
+      "updatedAt": "2026-02-01T10:00:00.000Z",
+      "id": "ffff2222-2222-4222-8222-222222222222",
+      "cycleId": "44444444-4444-4444-8444-444444444444",
+      "title": "Rutinen för kemikaliehantering är utdaterad"
+    },
+    {
+      "type": "FORBATTRING",
+      "severity": null,
+      "description": "Pappersbaserat idag — kan flyttas till systemstöd.",
+      "rootCause": null,
+      "dueDate": null,
+      "closedAt": "2026-04-01T10:00:00.000Z",
+      "closedBy": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "name": "Anna Andersson"
+      },
+      "lawListItemId": null,
+      "lawListItem": null,
+      "requirementId": null,
+      "requirement": null,
+      "correctiveActionTaskId": null,
+      "correctiveActionTask": null,
+      "createdAt": "2026-03-25T14:00:00.000Z",
+      "updatedAt": "2026-02-01T10:00:00.000Z",
+      "id": "ffff3333-3333-4333-8333-333333333333",
+      "cycleId": "44444444-4444-4444-8444-444444444444",
+      "title": "Möjlighet att digitalisera SAM-dokumentation"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "ssss1111-1111-4111-8111-111111111111",
+      "lawListItemId": "bbbb1111-1111-4111-8111-111111111111",
+      "requirementId": null,
+      "evidenceKind": "FILE",
+      "evidenceSha256": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+      "capturedAt": "2026-04-01T14:30:00.000Z",
+      "displayName": "Miljöutredning-2026.pdf"
+    }
+  ],
+  "workspace": {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "name": "AB Testbolaget"
+  },
+  "generatedAt": "2026-04-23T08:00:00.000Z"
+}

@@ -61,6 +61,14 @@ vi.mock('@/app/actions/compliance-finding', () => ({
     listFindingsForCycleMock(...args),
 }))
 
+// Story 21.6: canRevert prop is resolved server-side only when cycle is
+// AVSLUTAD. Mock the authorization helper so we can assert call counts.
+const canCompleteOrRevertCycleMock = vi.fn()
+vi.mock('@/lib/compliance-audit/authorization', () => ({
+  canCompleteOrRevertCycle: (...args: unknown[]) =>
+    canCompleteOrRevertCycleMock(...args),
+}))
+
 // Stub the client component so we don't try to render its internals.
 vi.mock('@/components/features/compliance-audit/cycle-detail', async () => {
   const React = await import('react')
@@ -136,6 +144,7 @@ beforeEach(() => {
     success: true,
     data: { findings: [] },
   })
+  canCompleteOrRevertCycleMock.mockResolvedValue(true)
 })
 
 // ============================================================================
@@ -293,5 +302,46 @@ describe('CycleDetailRoute — RSC gating', () => {
     // Page still renders — fail-open pattern matches the existing items path.
     expect(element).toBeTruthy()
     expect(redirectMock).not.toHaveBeenCalled()
+  })
+
+  // Story 21.6 — canRevert prop resolution (AC 11).
+  it('canRevert=false + canCompleteOrRevertCycle NOT called when cycle is PAGAENDE', async () => {
+    await CycleDetailRoute({
+      params: Promise.resolve({ cycleId: CYCLE_ID }),
+    })
+    // DB lookup must be skipped for non-AVSLUTAD cycles to avoid wasted RTT.
+    expect(canCompleteOrRevertCycleMock).not.toHaveBeenCalled()
+  })
+
+  it('canRevert resolved via canCompleteOrRevertCycle when cycle is AVSLUTAD', async () => {
+    getCycleByIdMock.mockResolvedValue({
+      success: true,
+      data: { cycle: makeCycle(ComplianceCycleStatus.AVSLUTAD) },
+    })
+    getCycleItemsForCycleMock.mockResolvedValue({
+      success: true,
+      data: {
+        items: [],
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.AVSLUTAD,
+          name: 'Q2',
+          sealHash: null,
+        },
+      },
+    })
+    canCompleteOrRevertCycleMock.mockResolvedValue(true)
+
+    await CycleDetailRoute({
+      params: Promise.resolve({ cycleId: CYCLE_ID }),
+    })
+
+    expect(canCompleteOrRevertCycleMock).toHaveBeenCalledTimes(1)
+    expect(canCompleteOrRevertCycleMock).toHaveBeenCalledWith({
+      role: 'OWNER',
+      userId: 'u1',
+      cycleId: CYCLE_ID,
+      workspaceId: 'w1',
+    })
   })
 })

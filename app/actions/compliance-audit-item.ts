@@ -299,7 +299,7 @@ export async function getCycleItemsForCycle(
     }, 'read')
   } catch (error) {
     console.error('getCycleItemsForCycle error:', error)
-    return { success: false, error: 'Kunde inte hämta kontrollposter' }
+    return { success: false, error: 'Kunde inte hämta kontrolldokument' }
   }
 }
 

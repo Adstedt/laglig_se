@@ -537,6 +537,18 @@ export function formatActivity(input: FormatInput): SentencePart[] {
     case 'cycle_item_unsigned':
       return [u, text(' ångrade signeringen på '), primary]
 
+    // Story 21.6 — cycle lifecycle transitions
+    case 'cycle_completed':
+      return [u, text(' slutförde kontrollen '), primary]
+
+    case 'cycle_reverted_to_pagaende':
+      return [
+        u,
+        text(' återställde kontrollen '),
+        primary,
+        text(' till pågående'),
+      ]
+
     // ----------------- Compliance-audit findings (Epic 21) -----------------
     case 'finding_created': {
       const typeLabel =
