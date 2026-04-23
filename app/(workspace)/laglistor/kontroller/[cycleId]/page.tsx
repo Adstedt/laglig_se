@@ -12,6 +12,7 @@ import {
 import { getCycleById } from '@/app/actions/compliance-audit-cycle'
 import { getCycleItemsForCycle } from '@/app/actions/compliance-audit-item'
 import { listFindingsForCycle } from '@/app/actions/compliance-finding'
+import { canCompleteOrRevertCycle } from '@/lib/compliance-audit/authorization'
 import { CycleDetailPage } from '@/components/features/compliance-audit/cycle-detail'
 
 export const dynamic = 'force-dynamic'
@@ -72,6 +73,20 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
       ? findingsResult.data.findings
       : []
 
+  // Story 21.6 — resolve Revert permission server-side. Only meaningful when
+  // the cycle is AVSLUTAD (the UI hides the Revert menu item otherwise) so
+  // we skip the DB lookup for every other state.
+  const cycleStatus = cycleResult.data.cycle.status
+  const canRevert =
+    cycleStatus === ComplianceCycleStatus.AVSLUTAD
+      ? await canCompleteOrRevertCycle({
+          role: ctx.role,
+          userId: ctx.userId,
+          cycleId,
+          workspaceId: ctx.workspaceId,
+        })
+      : false
+
   if (!itemsResult.success || !itemsResult.data) {
     // Fail-open with an empty items array — the UI renders the empty state and
     // the user can retry via page reload. Keeps the page navigable if the
@@ -88,6 +103,7 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
           sealHash: cycleResult.data.cycle.sealHash,
         }}
         readOnly={isReadOnly(cycleResult.data.cycle.status)}
+        canRevert={canRevert}
       />
     )
   }
@@ -99,6 +115,7 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
       initialFindings={initialFindings}
       cyclePartial={itemsResult.data.cycle}
       readOnly={isReadOnly(itemsResult.data.cycle.status)}
+      canRevert={canRevert}
     />
   )
 }

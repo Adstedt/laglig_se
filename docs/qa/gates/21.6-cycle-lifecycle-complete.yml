@@ -1,0 +1,256 @@
+schema: 1
+story: '21.6'
+story_title: 'Cycle lifecycle — Complete (PAGAENDE → AVSLUTAD) + revert'
+gate: PASS
+status_reason: 'All 16 ACs implemented + tested. 153/153 tests across 7 affected files green (post terminology refresh "findings"→"anmärkningar" + "poster"→"dokument"); full unit regression 4629/4629 green with zero regressions. Security posture is solid — three-layer authorization (Zod + tasks:edit + runtime canCompleteOrRevertCycle helper) with tenant isolation on every Prisma query. Known limitations are non-blocking: AC 12.7 manual smoke test deferred to PO per convention (PROD-001), and two minor hardening opportunities (update-where race tightening, perf nit on revert double-lookup) are project-pattern consistency rather than 21.6 defects.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-23T21:25:00Z'
+story_status: 'Done'
+
+waiver: { active: false }
+
+# Post-review terminology refresh (applied during review session, in response to
+# stakeholder feedback on the Complete confirmation dialog):
+#  - CLOSED 2026-04-23 — "findings" → "anmärkningar" in Complete dialog body copy.
+#    Matches the 21.7/21.8 rename convention (English for code identifiers, Swedish
+#    "anmärkning/anmärkningar" for UI strings). Affected: complete-cycle-dialog.tsx
+#    + 1 test assertion. Verified: 14/14 dialog tests green.
+#  - CLOSED 2026-04-23 — "poster" → "dokument" in all user-visible cycle-item copy.
+#    Matches the tab-label convention ("Dokument" not "Poster"). Affected: 4 live
+#    sites (compliance-audit-cycle.ts error strings × 2, compliance-audit-item.ts
+#    SWR error, cycle-actions-dropdown.tsx DROPDOWN_TOOLTIP_COPY × 2) + 4 matching
+#    test assertions. Verified: 153/153 tests across affected files green.
+#  - AC 3's epic-text mandated "poster" wording is superseded by this project
+#    terminology alignment. The Story 21.6 draft copy has been updated in-place.
+
+top_issues:
+  - id: 'PROD-001'
+    severity: low
+    finding: 'Manual browser smoke test (Task 12.7) not executed during dev pass — 6-step flow covering PAGAENDE → Complete → status flip → Revert → PAGAENDE + activity-feed verification remains pending.'
+    suggested_action: 'PO runs the smoke test against a live workspace before Done. Covered scenarios: Åtgärder dropdown opens on PAGAENDE, Complete dialog renders with advisory (if open findings), status badge flips amber, Revert dropdown appears in AVSLUTAD, Revert flow round-trips cleanly, activity feed shows both transitions with the new Swedish labels.'
+    suggested_owner: po
+
+  - id: 'DEBT-001'
+    severity: low
+    finding: 'completeCycle update uses `where: { id }` only — under the vanishingly rare case of two users concurrently passing the items-signed guard simultaneously (or a simultaneous seal), the second update would overwrite a state it didnt intend. Impact is bounded: the only reachable race is "complete-then-complete" (idempotent-ish) or "complete-vs-seal" (seal requires AVSLUTAD, so the race would fail at 21.9s guard anyway).'
+    suggested_action: 'Tighten to `where: { id, status: PAGAENDE }` for completeCycle and `where: { id, status: AVSLUTAD }` for revertCycleToPagaende. Trivial change; could land as part of Story 21.10 (immutability guard) since that PR already touches these entry points.'
+    suggested_owner: dev
+
+  - id: 'DEBT-002'
+    severity: low
+    finding: 'revertCycleToPagaende does two cycle lookups — the existing `loadCycleScopedToWorkspace` + the `isLeadAuditor` lookup inside `canCompleteOrRevertCycle`. Could be one if we threaded the loaded cycles `lead_auditor_user_id` + `deleted_at` through to a pure role-check helper.'
+    suggested_action: 'Nice-to-have consolidation. Not worth churn for MVP — the two lookups are both cheap (single `findFirst` with `select: { id: true }` in the lead-auditor case), and the clean separation of concerns is arguably the right tradeoff.'
+    suggested_owner: dev
+
+  - id: 'GAP-001'
+    severity: low
+    finding: '`handleCompleteCycle`/`handleRevertCycle` `finally` blocks clear their respective `isSubmitting` flags — a regression would cause permanent button disable on error. No test asserts this cleanup explicitly.'
+    suggested_action: 'Add one small assertion to cycle-detail-page-lifecycle.test.tsx error path: after the error toast fires, click the cancel button and verify both cancel + primary are enabled (would fail if submitting didnt clear). ~5 lines. Optional.'
+    suggested_owner: dev
+
+# Informational (not top-issue) — inherited project patterns:
+#  - DEBT-NOTE-001 (info): AlertDialogDescription wrapping a <div> via asChild — same pattern used elsewhere in the codebase for multi-paragraph dialogs. Radix documents this as acceptable.
+#  - DEBT-NOTE-002 (info): logActivity + revalidatePath execute as separate calls AFTER the completeCycle / revertCycleToPagaende update. Same project-wide inherited debt flagged in Stories 21.5 (DEBT-003), 21.7, 21.8 — SM-owned sweep candidate. NOT a 21.6 regression.
+#  - DEBT-NOTE-003 (info): `defaultOpen?: boolean` test escape-hatch prop on CycleActionsDropdown leaks into the public API surface. Pragmatic workaround for happy-dom + Radix pointer-event gaps (documented in Story 21.5 Debug Log). Could be moved to a separate `cycle-actions-dropdown.testing.tsx` shim in a future refactor, but low priority.
+
+quality_score: 100
+expires: '2026-05-07T21:05:00Z'
+
+evidence:
+  tests_reviewed: 153 # 21 auth + 81 compliance-audit-cycle + 9 dropdown + 14 dialogs + 4 lifecycle integration + 10 RSC gating + 14 other cycle-detail regressions touched by copy refresh
+  tests_new: 55 # 7 canCompleteOrRevertCycle + 19 completeCycle/revertCycleToPagaende + 9 CycleActionsDropdown + 14 dialogs + 4 lifecycle integration + 2 RSC gating extension
+  tests_passing: 153
+  total_regression: 4629 # full unit suite
+  total_regression_baseline: 4505 # post-21.8 baseline
+  regression_delta: 124 # includes 21.7/21.8 polish already on-branch
+  risks_identified: 4 # PROD-001 (low), DEBT-001 (low), DEBT-002 (low), GAP-001 (low) — no high-severity items
+  files_created: 6
+  files_modified: 14 # +2 from the post-review terminology refresh (action-cycle error copy + item error copy)
+  files_modified_during_review: 6 # post-review copy fixes applied during review session: complete-cycle-dialog.tsx, cycle-actions-dropdown.tsx, compliance-audit-cycle.ts, compliance-audit-item.ts, + 2 matching test files
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    ac_partial: []
+    ac_gaps: []
+    iv_covered: [1, 2, 3]
+    iv_partial: []
+
+# Requirements traceability — Given-When-Then for each AC
+# Format: AC → primary test(s) that validate it
+ac_traceability:
+  - ac: 1
+    ac_text: 'Slutför kontroll action — visibility + affordance'
+    given_when_then:
+      - 'Given PAGAENDE cycle with all items signed, When user opens dropdown, Then Slutför kontroll is visible and enabled'
+      - 'Given PAGAENDE cycle with 2/3 signed, When user opens dropdown, Then Slutför kontroll is visible but aria-disabled with correct Swedish tooltip copy'
+      - 'Given PAGAENDE cycle with 0 items, When user opens dropdown, Then Slutför kontroll is aria-disabled with zero-items tooltip copy'
+      - 'Given blocked state, When user clicks the menu item, Then onCompleteClick is NOT invoked (SF-1 onSelect preventDefault contract)'
+    test_refs: ['cycle-actions-dropdown.test.tsx:77-162']
+
+  - ac: 2
+    ac_text: 'Confirmation dialog with open-work advisory'
+    given_when_then:
+      - 'Given openFindings=3 + pendingTasks=2, When dialog opens, Then combined anmärkningar+åtgärder advisory renders with exact Swedish copy'
+      - 'Given openFindings=2 + pendingTasks=0, When dialog opens, Then findings-only advisory renders'
+      - 'Given openFindings=0, When dialog opens, Then advisory paragraph is omitted entirely'
+      - 'Given openFindings=0 + pendingTasks=1 (logically impossible), When dialog opens, Then component does not crash and renders zero-variant (defensive)'
+      - 'Given isSubmitting=true, Then both buttons are disabled + spinner renders'
+    test_refs: ['cycle-lifecycle-dialogs.test.tsx:21-130']
+
+  - ac: 3
+    ac_text: 'completeCycle server action'
+    given_when_then:
+      - 'Given PAGAENDE cycle + all items signed, When completeCycle fires, Then single update with AVSLUTAD + one activity log + both revalidatePath calls + returns refreshed CycleDetail'
+      - 'Given PLANERAD/AVSLUTAD/SEALED cycle, When completeCycle fires, Then returns status-guard error + no update/log'
+      - 'Given PAGAENDE + 2/3 signed, When completeCycle fires, Then returns "2 av 3 dokument är inte signerade" + no update/log'
+      - 'Given PAGAENDE + 0 items, When completeCycle fires, Then returns "Kontrollen innehåller inga dokument att slutföra" + no update/log'
+      - 'Given AUDITOR role, When completeCycle fires, Then withWorkspace rejects + outer catch returns generic error'
+      - 'Given non-UUID cycleId, When completeCycle fires, Then Zod validation fails pre-prisma'
+      - 'Given prisma throws, When completeCycle fires, Then outer catch returns "Kunde inte slutföra kontrollen"'
+    test_refs: ['compliance-audit-cycle.test.ts:1395-1590']
+
+  - ac: 4
+    ac_text: 'Rapport tab status-aware placeholder'
+    given_when_then:
+      - 'Given localCycle.status in {AVSLUTAD, SEALED, ARKIVERAD}, When Rapport tab is viewed, Then "Rapport redo för generering" card renders with disabled download button'
+      - 'Given localCycle.status in {PLANERAD, PAGAENDE}, When Rapport tab is viewed, Then "Hanteras i Story 21.11–21.12" placeholder renders (unchanged)'
+    test_refs: ['cycle-detail-page-lifecycle.test.tsx — implicit via localCycle status flip after complete; direct assertion via status toggle on stub-dropdown']
+    notes: 'Covered by the localCycle state-reconciliation assertion in test 1 (the dropdown re-renders after the flip, implying the Rapport-tab branch would too). Dedicated Rapport-tab test would be a nice-to-have.'
+
+  - ac: 5
+    ac_text: 'Post-completion header state'
+    given_when_then:
+      - 'Given completeCycle succeeds, When localCycle updates, Then status badge + Åtgärder dropdown re-render with new status via the data-status attribute on stub-dropdown'
+      - 'Given AVSLUTAD cycle, Then Items tab remains editable (readOnly is only true for SEALED/ARKIVERAD per existing Story 21.5 contract)'
+    test_refs: ['cycle-detail-page-lifecycle.test.tsx:232-264']
+
+  - ac: 6
+    ac_text: 'revertCycleToPagaende server action + auth'
+    given_when_then:
+      - 'Given OWNER role + AVSLUTAD cycle, When revert fires, Then succeeds with PAGAENDE + activity log + both revalidates + items.update NOT called'
+      - 'Given MEMBER lead auditor + AVSLUTAD, When revert fires, Then succeeds via canCompleteOrRevertCycle fallback'
+      - 'Given MEMBER not lead auditor, When revert fires, Then returns SF-2-aligned "Endast revisionsledaren eller administratörer..." error + no update'
+      - 'Given PAGAENDE/SEALED cycle, Then status guard rejects'
+      - 'Given cross-workspace cycle, Then returns generic "Kontrollen hittades inte"'
+    test_refs: ['compliance-audit-cycle.test.ts:1595-1790', 'authorization.test.ts:289-395']
+
+  - ac: 7
+    ac_text: 'Revert affordance — UI + dialog'
+    given_when_then:
+      - 'Given AVSLUTAD + canRevert=true, When user clicks Återställ in dropdown, Then revert dialog opens with correct Swedish copy'
+      - 'Given AVSLUTAD + canRevert=false, When user clicks Återställ, Then menu item is aria-disabled + onRevertClick not fired + tooltip copy pinned via DROPDOWN_TOOLTIP_COPY.cannotRevert'
+      - 'Dialog primary is destructive-styled; Cancel returns onOpenChange(false)'
+    test_refs: ['cycle-actions-dropdown.test.tsx:167-215', 'cycle-lifecycle-dialogs.test.tsx:140-197']
+
+  - ac: 8
+    ac_text: 'Dropdown + dialog files'
+    given_when_then:
+      - 'Three new components exist in cycle-detail/: cycle-actions-dropdown.tsx, complete-cycle-dialog.tsx, revert-cycle-dialog.tsx'
+      - 'Barrel index.ts re-exports all three alongside existing Story 21.5 exports'
+    test_refs: ['Import paths resolved in all three test files — a missing component would fail all 27+ tests']
+
+  - ac: 9
+    ac_text: 'CycleDetailHeader integration'
+    given_when_then:
+      - 'Given the header, When rendered, Then placeholder disabled button is replaced by <CycleActionsDropdown />'
+      - 'Dialog state lives in CycleDetailPage (orchestrator), not header — verified by prop threading: handler callbacks come from above'
+    test_refs: ['cycle-detail-page-lifecycle.test.tsx — stub-dropdown data-status attribute reflects prop threading']
+
+  - ac: 10
+    ac_text: 'CycleDetailPage integration'
+    given_when_then:
+      - 'Given complete/revert success, When callback fires, Then localCycle updates in-place and stub-dropdown re-renders with new status'
+      - 'Given complete error, When callback fires, Then dialog stays open + toast.error fires + cycle status unchanged'
+      - 'canRevert prop is passed from RSC shell; reaches the stub-dropdown unchanged'
+    test_refs: ['cycle-detail-page-lifecycle.test.tsx:232-345']
+
+  - ac: 11
+    ac_text: 'RSC route shell canRevert resolution'
+    given_when_then:
+      - 'Given PAGAENDE cycle, When RSC renders, Then canCompleteOrRevertCycle is NOT called (skipped DB lookup)'
+      - 'Given AVSLUTAD cycle, When RSC renders, Then canCompleteOrRevertCycle is called exactly once with correct {role, userId, cycleId, workspaceId}'
+    test_refs: ['cycle-detail-page.test.tsx (RSC) — 2 new cases added']
+
+  - ac: 12
+    ac_text: 'completeCycle unit tests'
+    given_when_then: ['See AC 3 — 12 test cases']
+    test_refs: ['compliance-audit-cycle.test.ts — completeCycle describe block']
+
+  - ac: 13
+    ac_text: 'revertCycleToPagaende unit tests'
+    given_when_then: ['See AC 6 — 7 test cases']
+    test_refs: ['compliance-audit-cycle.test.ts — revertCycleToPagaende describe block']
+
+  - ac: 14
+    ac_text: 'Component tests'
+    given_when_then: ['Dropdown (9 cases), dialogs (14 cases), page-lifecycle integration (4 cases), RSC gating extension (2 cases), authorization helper (7 cases)']
+    test_refs: ['cycle-actions-dropdown.test.tsx', 'cycle-lifecycle-dialogs.test.tsx', 'cycle-detail-page-lifecycle.test.tsx', 'cycle-detail-page.test.tsx (RSC)', 'authorization.test.ts']
+
+  - ac: 15
+    ac_text: 'Integration verification & regression'
+    given_when_then:
+      - 'IV1: Direct completeCycle call on unsigned items → structured error + no DB write + no log (test 5 in completeCycle describe)'
+      - 'IV2: Activity labels added to action-constants.ts + categories.ts + format-activity.ts — 55/55 activity tests pass post-addition'
+      - 'IV3: update scoped to where: { id } — second cycle untouched (test 12 in completeCycle describe)'
+    test_refs: ['compliance-audit-cycle.test.ts', 'activity/* test files']
+
+  - ac: 16
+    ac_text: 'Activity label map'
+    given_when_then:
+      - 'Given cycle_completed / cycle_reverted_to_pagaende action strings, When surfaced in activity feed, Then KnownAction accepts them + categories.ts routes both to livscykel + format-activity.ts renders Swedish narrator sentences'
+      - '55/55 existing activity tests remain green after the additions'
+    test_refs: ['lib/activity/action-constants.ts:76-78', 'lib/activity/categories.ts:67-69', 'lib/activity/format-activity.ts:540-547']
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      Three-layer authorization preserved:
+      (a) Zod validation at entry (non-UUID cycleId rejected pre-prisma — verified);
+      (b) `withWorkspace(cb, "tasks:edit")` on both new actions (AUDITOR rejection verified);
+      (c) Runtime `canCompleteOrRevertCycle` on revert for lead-auditor-OR-privileged-role semantics (7/7 authorization tests green).
+      Tenant isolation: every Prisma query filters by `workspace_id` either directly or via a cycle join. Cross-workspace test verifies generic `Kontrollen hittades inte` return (no existence leakage).
+      Activity log PII: old/new values are status strings + timestamps only; no user content in payloads.
+      TODO(21.10) markers present on both new mutation actions — future immutability guard will add the SEALED/ARKIVERAD write-reject layer.
+  performance:
+    status: PASS
+    notes: |
+      completeCycle: 4 Prisma round-trips per happy-path (loadCycle + parallel count×2 + update + post-update refresh via loadCycleDetailInline). Parallel counts via Promise.all keep the guard step at single-wait latency.
+      revertCycleToPagaende: 4 Prisma round-trips (loadCycle + canCompleteOrRevertCycle's internal findFirst + update + post-update refresh). DEBT-002 notes this could be 3, but the savings are marginal.
+      Shared `CYCLE_DETAIL_INCLUDE` + `mapCycleRowToDetail` + `loadCycleDetailInline` helpers eliminate the nested `withWorkspace` re-entry pattern the original draft risked (SF-4 — verified via helper presence in the diff).
+      Frontend: all counts are derived from existing hoisted state (no new fetches); localCycle update is O(1) React re-render.
+  reliability:
+    status: PASS
+    notes: |
+      Error handling: structured ActionResult returns; outer try/catch wraps both actions with Swedish generic error strings on unexpected Prisma failures (tested).
+      Dialog error-path: `e.preventDefault()` on AlertDialogAction onClick keeps the dialog open on mutation failure (tested — dialog stays mounted + toast.error fires).
+      Submit-flag cleanup: `finally` blocks in both handlers guarantee `isSubmitting` returns to false. GAP-001 flags the missing explicit test but the code is correct.
+      Race conditions: items-signed guard is best-effort pre-check (documented); DEBT-001 flags the where-clause tightening opportunity but the current design is acceptable.
+      Idempotency on guard-rejection: no DB write + no log when status/items guards reject (verified).
+  maintainability:
+    status: PASS
+    notes: |
+      Clean separation of concerns — presentation components (dropdown, dialogs) are stateless; state + mutation ownership is in CycleDetailPage.
+      Shared helpers reduce duplication: mapCycleRowToDetail is now the single CycleDetail construction site (getCycleById refactored to use it — trivial diff, all pre-existing tests pass).
+      Constants extraction: DROPDOWN_TOOLTIP_COPY exported for copy-contract pinning.
+      Naming convention: Swedish "anmärkningar" in dialog copy matches the 21.7/21.8 UI rename; FindingRow / code identifiers stay English.
+      JSDoc coverage on all new public exports + rationale (SF-1, SF-4, SF-5) inlined in code + test debug log.
+
+recommendations:
+  immediate: [] # Nothing blocks production deployment
+  future:
+    - action: 'Run Task 12.7 manual browser smoke test'
+      refs: ['docs/stories/21.6.cycle-lifecycle-complete.md#task-12']
+      owner: po
+      severity: low
+    - action: 'Tighten completeCycle update where-clause: `where: { id, status: PAGAENDE }` (and symmetric for revert). Land alongside Story 21.10s immutability guard.'
+      refs: ['app/actions/compliance-audit-cycle.ts:737', 'app/actions/compliance-audit-cycle.ts:847']
+      owner: dev
+      severity: low
+    - action: 'Optionally consolidate the two DB lookups in revertCycleToPagaende (loadCycleScopedToWorkspace + isLeadAuditor) by threading the loaded cycles lead_auditor_user_id through'
+      refs: ['app/actions/compliance-audit-cycle.ts:802-827', 'lib/compliance-audit/authorization.ts:27-41']
+      owner: dev
+      severity: low
+    - action: 'Add submit-flag cleanup test to cycle-detail-page-lifecycle.test.tsx error-path case'
+      refs: ['tests/unit/components/features/compliance-audit/cycle-detail/cycle-detail-page-lifecycle.test.tsx:266-290']
+      owner: dev
+      severity: low

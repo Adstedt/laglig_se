@@ -64,6 +64,10 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
   cycle_item_signed_off: 'andringar',
   cycle_item_unsigned: 'andringar',
 
+  // Story 21.6 — cycle lifecycle transitions
+  cycle_completed: 'livscykel',
+  cycle_reverted_to_pagaende: 'livscykel',
+
   // compliance-audit findings (Epic 21)
   finding_created: 'livscykel',
   finding_updated: 'andringar',

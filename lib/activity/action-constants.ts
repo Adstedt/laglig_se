@@ -73,6 +73,10 @@ export const KNOWN_ACTIONS = [
   'cycle_item_signed_off',
   'cycle_item_unsigned',
 
+  // Story 21.6 — cycle lifecycle transitions
+  'cycle_completed',
+  'cycle_reverted_to_pagaende',
+
   // Compliance-audit findings (Epic 21 — Story 21.7)
   'finding_created',
   'finding_updated',

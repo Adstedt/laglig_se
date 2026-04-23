@@ -13,6 +13,7 @@
  */
 
 import type { Prisma, PrismaClient, WorkspaceRole } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { canSealAuditCycle } from '@/lib/auth/permissions'
 
 type PrismaLike = PrismaClient | Prisma.TransactionClient
@@ -56,6 +57,37 @@ export async function canSealCycle(
     cycleId: string
     workspaceId: string
   }
+): Promise<boolean> {
+  if (canSealAuditCycle(args.role)) return true
+  return isLeadAuditor(prismaClient, {
+    userId: args.userId,
+    cycleId: args.cycleId,
+    workspaceId: args.workspaceId,
+  })
+}
+
+/**
+ * Story 21.6 — runtime authorization for cycle-lifecycle `revertCycleToPagaende`.
+ *
+ * The epic scopes revert to "the lead auditor". This helper extends that to
+ * OWNER/ADMIN as an escape hatch, consistent with the seal authorization split
+ * (21.14): role-based scope (`audit:seal` — OWNER + ADMIN) OR the cycle's own
+ * lead auditor. Rejecting a fresh `audit:manage-lifecycle` scope keeps the
+ * permission matrix minimal — the runtime helper is the correct place to
+ * express "lead auditor OR privileged role".
+ *
+ * `completeCycle` itself stays on the basic `tasks:edit` gate (anyone who can
+ * sign off items can complete); only the protective direction (revert) uses
+ * this helper. See story 21.6 AC 3 vs AC 6.
+ */
+export async function canCompleteOrRevertCycle(
+  args: {
+    role: WorkspaceRole
+    userId: string
+    cycleId: string
+    workspaceId: string
+  },
+  prismaClient: PrismaLike = prisma
 ): Promise<boolean> {
   if (canSealAuditCycle(args.role)) return true
   return isLeadAuditor(prismaClient, {

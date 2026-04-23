@@ -1,0 +1,119 @@
+schema: 1
+story: '21.11'
+story_title: 'Revisionsrapport HTML renderer'
+gate: PASS
+status_reason: 'All 17 functional ACs implemented with 45 passing tests (27 renderer / 11 server action / 7 component), clean build + typecheck + lint, full FR18 label-sweep verified, tenant isolation asserted, determinism enforced via golden fixture. Two minor quality items flagged as non-blocking follow-ups.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-23T22:00:00Z'
+
+top_issues:
+  - id: 'R1'
+    severity: low
+    category: maintainability
+    summary: '`cycleName` prop declared + passed but never consumed inside CycleRapportTab.'
+    refs:
+      - 'components/features/compliance-audit/cycle-detail/cycle-rapport-tab.tsx:41'
+      - 'components/features/compliance-audit/cycle-detail/cycle-rapport-tab.tsx:47'
+      - 'components/features/compliance-audit/cycle-detail/cycle-detail-page.tsx:509'
+    suggested_owner: dev
+    suggested_action: >-
+      Either consume the prop (e.g., `title={`Revisionsrapport — ${cycleName}`}`
+      on the iframe for better screen-reader announcement) or remove it from
+      the interface + pass-down. Current state is dead weight.
+  - id: 'R2'
+    severity: low
+    category: test-maintenance
+    summary: 'Input JSON fixture is written only if missing — silent drift risk if buildFixtureInput() changes.'
+    refs:
+      - 'tests/unit/lib/compliance-audit/revisionsrapport-renderer.test.ts:261-272'
+    suggested_owner: dev
+    suggested_action: >-
+      Unconditionally overwrite `revisionsrapport-input.json` on every test
+      run so diffs surface in PRs, or remove the JSON write entirely (the HTML
+      snapshot is the authoritative determinism anchor — the JSON is documentation
+      only). The current write-once-then-stale behaviour is the worst-of-both.
+  - id: 'R3'
+    severity: low
+    category: coverage-gap
+    summary: 'No manual UI walkthrough possible yet — Story 21.6 UI is uncommitted in the working tree.'
+    refs:
+      - 'docs/stories/21.11.revisionsrapport-html-renderer.md (Dev Agent Record, note 5-6)'
+    suggested_owner: dev
+    suggested_action: >-
+      Once Story 21.6 merges to `feat/epic-21-lagefterlevnadskontroll`, run a
+      local-dev walkthrough across all five cycle states (PLANERAD | PAGAENDE |
+      AVSLUTAD | SEALED | ARKIVERAD) to confirm the tab renders correctly in
+      the browser. Test coverage is strong; this is belt-and-braces.
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-05-07T22:00:00Z'
+
+evidence:
+  tests_reviewed: 45
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      XSS: every user-supplied string routed through `escapeHtml` /
+      `escapeNullable` / `escapeHtmlMultiline`. Iframe sandbox=""
+      (strictest — no scripts, no same-origin, no forms) keeps the
+      report HTML's own `<style>` isolated from the app. Tenant
+      isolation verified by dedicated test asserting the evidence-
+      snapshot query uses nested `cycle: { workspace_id }` filter.
+      AUDITOR role access (FR16) verified by test. Zod UUID input
+      validation. Full 64-char seal hash visibly rendered (FR13) —
+      hashes are public integrity markers, not secrets.
+  performance:
+    status: PASS
+    notes: >-
+      Pure renderer — no DB / fetch / RNG. 200-item × 50-finding
+      performance test asserts <2s render time (IV2). Single
+      Promise.all in the server action clumps 4 reads; no waterfalls.
+      Iframe height cap at 2000px prevents runaway DOM with a
+      scrollbar fallback. Counts pre-aggregated in one pass
+      (`computeCounts` at line 277), reused across sections.
+  reliability:
+    status: PASS
+    notes: >-
+      Deterministic output enforced via golden-fixture file-snapshot
+      (`toMatchFileSnapshot`). Defensive null-severity AVVIKELSE
+      branch covered + documented as defence-vs-schema-drift.
+      Empty states handled for every finding type + zero-items
+      cycle. Swedish locale fixed via `{ locale: sv }` rather than
+      relying on Node ICU default. Error propagation from all three
+      upstream actions is explicit + individually tested.
+  maintainability:
+    status: PASS
+    notes: >-
+      Clean module boundaries — renderer is pure; server action
+      composes; tab component is stateless-ish with SWR. Section
+      renderers are independent functions (easy to touch in isolation).
+      `SECTION_LABELS` + `bedomningLabel` + `cycleStatusLabel` live
+      next to each other (grep-friendly). JSDoc on non-obvious
+      choices (escapeHtml inline rationale, tenant-isolation filter
+      explanation, iframe sandbox rationale). Two minor polish items
+      flagged in top_issues R1/R2 as unchecked follow-ups.
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consume or remove the `cycleName` prop on CycleRapportTab.'
+      refs:
+        - 'components/features/compliance-audit/cycle-detail/cycle-rapport-tab.tsx'
+    - action: 'Decide on the input-JSON fixture strategy (overwrite-always or drop).'
+      refs:
+        - 'tests/unit/lib/compliance-audit/revisionsrapport-renderer.test.ts'
+    - action: 'Browser walkthrough once Story 21.6 UI merges.'
+      refs:
+        - 'components/features/compliance-audit/cycle-detail/cycle-rapport-tab.tsx'
+    - action: 'Story 21.12 handoff: extract the Puppeteer launch from tiptap-to-pdf.ts into lib/pdf/render-html-to-pdf.ts (architecture §6.1 implementation note) — 21.12 will wrap this renderer.'
+      refs:
+        - 'lib/documents/tiptap-to-pdf.ts'
+        - 'lib/compliance-audit/revisionsrapport-renderer.ts'

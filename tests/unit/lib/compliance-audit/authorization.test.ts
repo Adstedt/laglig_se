@@ -8,6 +8,7 @@ import type { Prisma } from '@prisma/client'
 import {
   isLeadAuditor,
   canSealCycle,
+  canCompleteOrRevertCycle,
 } from '@/lib/compliance-audit/authorization'
 import { prisma } from '@/lib/prisma'
 
@@ -281,6 +282,121 @@ describe('canSealCycle', () => {
 
     // Proves the helper did NOT cache the first result.
     expect(prisma.complianceAuditCycle.findFirst).toHaveBeenCalledTimes(2)
+  })
+})
+
+// ============================================================================
+// canCompleteOrRevertCycle — Story 21.6
+// ============================================================================
+
+describe('canCompleteOrRevertCycle', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('OWNER returns true without DB hit (role short-circuit)', async () => {
+    const result = await canCompleteOrRevertCycle({
+      role: 'OWNER',
+      userId: USER_ID,
+      cycleId: CYCLE_ID,
+      workspaceId: WORKSPACE_ID,
+    })
+
+    expect(result).toBe(true)
+    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
+  })
+
+  it('ADMIN returns true without DB hit', async () => {
+    const result = await canCompleteOrRevertCycle({
+      role: 'ADMIN',
+      userId: USER_ID,
+      cycleId: CYCLE_ID,
+      workspaceId: WORKSPACE_ID,
+    })
+
+    expect(result).toBe(true)
+    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
+  })
+
+  it('MEMBER who is lead_auditor returns true via isLeadAuditor fallback', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
+      id: CYCLE_ID,
+    } as never)
+
+    const result = await canCompleteOrRevertCycle({
+      role: 'MEMBER',
+      userId: USER_ID,
+      cycleId: CYCLE_ID,
+      workspaceId: WORKSPACE_ID,
+    })
+
+    expect(result).toBe(true)
+    expect(prisma.complianceAuditCycle.findFirst).toHaveBeenCalledTimes(1)
+  })
+
+  it('MEMBER who is NOT lead_auditor returns false', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(null)
+
+    const result = await canCompleteOrRevertCycle({
+      role: 'MEMBER',
+      userId: USER_ID,
+      cycleId: CYCLE_ID,
+      workspaceId: WORKSPACE_ID,
+    })
+
+    expect(result).toBe(false)
+  })
+
+  it('soft-deleted cycle lead auditor returns false via the deleted_at filter', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(null)
+
+    const result = await canCompleteOrRevertCycle({
+      role: 'MEMBER',
+      userId: USER_ID,
+      cycleId: CYCLE_ID,
+      workspaceId: WORKSPACE_ID,
+    })
+
+    expect(result).toBe(false)
+    const call = vi.mocked(prisma.complianceAuditCycle.findFirst).mock.calls[0]!
+    expect(call[0]?.where).toMatchObject({ deleted_at: null })
+  })
+
+  it('accepts a Prisma.TransactionClient as the optional second arg', async () => {
+    const txStub = {
+      complianceAuditCycle: {
+        findFirst: vi.fn().mockResolvedValue({ id: CYCLE_ID }),
+      },
+    } as unknown as Prisma.TransactionClient
+
+    const result = await canCompleteOrRevertCycle(
+      {
+        role: 'MEMBER',
+        userId: USER_ID,
+        cycleId: CYCLE_ID,
+        workspaceId: WORKSPACE_ID,
+      },
+      txStub
+    )
+
+    expect(result).toBe(true)
+    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
+  })
+
+  it('defaults to the module-level prisma client when no client arg provided', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
+      id: CYCLE_ID,
+    } as never)
+
+    const result = await canCompleteOrRevertCycle({
+      role: 'MEMBER',
+      userId: USER_ID,
+      cycleId: CYCLE_ID,
+      workspaceId: WORKSPACE_ID,
+    })
+
+    expect(result).toBe(true)
+    expect(prisma.complianceAuditCycle.findFirst).toHaveBeenCalledTimes(1)
   })
 })
 

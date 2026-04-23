@@ -17,6 +17,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CycleDetailHeader } from './cycle-detail-header'
 import { CycleItemsTab } from './cycle-items-tab'
 import { CycleFindingsTab } from './cycle-findings-tab'
+import { CompleteCycleDialog } from './complete-cycle-dialog'
+import { RevertCycleDialog } from './revert-cycle-dialog'
+import { CycleRapportTab } from './cycle-rapport-tab'
 import { CycleItemModal } from '@/components/features/compliance-audit/cycle-item-modal'
 import {
   CycleItemsProvider,
@@ -37,7 +40,11 @@ import {
   type FindingRow,
   type ListFindingsResult,
 } from '@/app/actions/compliance-finding'
-import type { CycleDetail } from '@/app/actions/compliance-audit-cycle'
+import {
+  completeCycle,
+  revertCycleToPagaende,
+  type CycleDetail,
+} from '@/app/actions/compliance-audit-cycle'
 import {
   complianceAuditItemsKey,
   complianceFindingsKey,
@@ -59,6 +66,12 @@ interface CycleDetailPageProps {
   initialFindings: FindingRow[]
   cyclePartial: CyclePartial
   readOnly: boolean
+  // Story 21.6 — runtime flag for the Revert affordance. Server-resolved
+  // via `canCompleteOrRevertCycle` in the RSC route shell so the dropdown
+  // can render a disabled-with-tooltip state for MEMBER-not-lead-auditor
+  // without a client-side DB lookup. Always `false` when cycle.status is
+  // not AVSLUTAD (RSC skips the lookup for other states).
+  canRevert: boolean
 }
 
 export function CycleDetailPage({
@@ -67,10 +80,31 @@ export function CycleDetailPage({
   initialFindings,
   cyclePartial,
   readOnly,
+  canRevert,
 }: CycleDetailPageProps) {
   const itemsKey = complianceAuditItemsKey(cycle.id)
   const findingsKey = complianceFindingsKey(cycle.id)
   const { mutate: globalMutate } = useSWRConfig()
+
+  // Story 21.6 — local cycle state seeded from the RSC prop. Post-transition
+  // updates write here in-place (mirrors the items replaceRow pattern below)
+  // so the header badge, Rapport-tab branch, and Åtgärder dropdown all
+  // reflect the new status without a router.refresh round-trip.
+  //
+  // SF-5: re-sync the effect on `cycle.updatedAt` (not `cycle.id`) so cross-
+  // user mutations propagating through `revalidatePath` land in local state.
+  // `updatedAt` bumps on every UPDATE so this key is reliably unique per
+  // server-side cycle mutation.
+  const [localCycle, setLocalCycle] = useState<CycleDetail>(cycle)
+  useEffect(() => {
+    setLocalCycle(cycle)
+  }, [cycle, cycle.updatedAt])
+
+  // Story 21.6 — lifecycle dialog state.
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false)
+  const [completeSubmitting, setCompleteSubmitting] = useState(false)
+  const [revertDialogOpen, setRevertDialogOpen] = useState(false)
+  const [revertSubmitting, setRevertSubmitting] = useState(false)
 
   const { data: itemsData } = useSWR<GetCycleItemsResult>(
     itemsKey,
@@ -283,6 +317,47 @@ export function CycleDetailPage({
     [replaceRow, reloadOnFailure]
   )
 
+  // Story 21.6 — cycle lifecycle handlers. Reuse the `replaceRow` pattern
+  // at the cycle level: the server action returns the authoritative
+  // CycleDetail, we write it into local state, and every consumer (header
+  // badge, Rapport tab branch, Åtgärder dropdown) re-renders from the new
+  // status without router.refresh.
+  const handleCompleteCycle = useCallback(async () => {
+    setCompleteSubmitting(true)
+    try {
+      const result = await completeCycle(localCycle.id)
+      if (!result.success || !result.data) {
+        toast.error('Kunde inte slutföra kontrollen', {
+          description: result.error,
+        })
+        return
+      }
+      setLocalCycle(result.data.cycle)
+      setCompleteDialogOpen(false)
+      toast.success('Kontrollen är avslutad')
+    } finally {
+      setCompleteSubmitting(false)
+    }
+  }, [localCycle.id])
+
+  const handleRevertCycle = useCallback(async () => {
+    setRevertSubmitting(true)
+    try {
+      const result = await revertCycleToPagaende(localCycle.id)
+      if (!result.success || !result.data) {
+        toast.error('Kunde inte återställa kontrollen', {
+          description: result.error,
+        })
+        return
+      }
+      setLocalCycle(result.data.cycle)
+      setRevertDialogOpen(false)
+      toast.success('Kontrollen är återställd till Pågående')
+    } finally {
+      setRevertSubmitting(false)
+    }
+  }, [localCycle.id])
+
   // Story 21.7 — finding mutation reconciler. Mirrors replaceRow.
   // Replace-in-place when the finding exists; prepend when it's a new create
   // (listFindingsForCycle sorts created_at desc + id desc, so newest → top).
@@ -350,6 +425,19 @@ export function CycleDetailPage({
     [findings]
   )
 
+  // Story 21.6 — pendingTasks approximation for the Complete dialog advisory.
+  // Derived inline from findings: openFindings with a linked corrective-action
+  // task. The `closedAt === null` check is implicit via `f` being from the
+  // open-findings set, but we keep both conditions explicit for clarity.
+  // See CompleteCycleDialog JSDoc for the approximation contract.
+  const pendingTasks = useMemo(
+    () =>
+      findings.filter(
+        (f) => f.correctiveActionTaskId !== null && f.closedAt === null
+      ).length,
+    [findings]
+  )
+
   const contextValue: CycleItemsContextValue = useMemo(
     () => ({
       bedomdaCount,
@@ -372,9 +460,14 @@ export function CycleDetailPage({
     <CycleItemsProvider value={contextValue}>
       <div className="space-y-6">
         <CycleDetailHeader
-          cycle={cycle}
+          cycle={localCycle}
           readOnly={readOnly}
           findingCounts={findingCounts}
+          totalCount={items.length}
+          signeradeCount={signeradeCount}
+          canRevert={canRevert}
+          onCompleteClick={() => setCompleteDialogOpen(true)}
+          onRevertClick={() => setRevertDialogOpen(true)}
         />
 
         <Tabs value={tab} onValueChange={handleTabChange}>
@@ -401,7 +494,7 @@ export function CycleDetailPage({
           </TabsContent>
           <TabsContent value="findings">
             <CycleFindingsTab
-              cycleId={cycle.id}
+              cycleId={localCycle.id}
               findings={findings}
               readOnly={readOnly}
               items={items}
@@ -410,9 +503,11 @@ export function CycleDetailPage({
             />
           </TabsContent>
           <TabsContent value="rapport">
-            <div className="p-6 text-sm italic text-muted-foreground">
-              Hanteras i Story 21.11–21.12
-            </div>
+            <CycleRapportTab
+              cycleId={localCycle.id}
+              cycleStatus={localCycle.status}
+              cycleName={localCycle.name}
+            />
           </TabsContent>
           <TabsContent value="aktivitet">
             <div className="p-6 text-sm italic text-muted-foreground">
@@ -420,6 +515,23 @@ export function CycleDetailPage({
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Story 21.6 — cycle lifecycle dialogs (siblings of Tabs, above the
+            item modal so their z-order is above the read-only/edit surfaces). */}
+        <CompleteCycleDialog
+          open={completeDialogOpen}
+          onOpenChange={setCompleteDialogOpen}
+          onConfirm={handleCompleteCycle}
+          isSubmitting={completeSubmitting}
+          openFindings={findingCounts.open}
+          pendingTasks={pendingTasks}
+        />
+        <RevertCycleDialog
+          open={revertDialogOpen}
+          onOpenChange={setRevertDialogOpen}
+          onConfirm={handleRevertCycle}
+          isSubmitting={revertSubmitting}
+        />
 
         {/* Story 21.16 — cycle-item modal. `selectedItemId === null` → closed. */}
         <CycleItemModal
@@ -430,8 +542,8 @@ export function CycleDetailPage({
           }
           findings={findings}
           items={items}
-          cycleId={cycle.id}
-          cycleName={cycle.name}
+          cycleId={localCycle.id}
+          cycleName={localCycle.name}
           readOnly={readOnly}
           focusFindingId={focusFindingId}
           onClose={handleCloseModal}

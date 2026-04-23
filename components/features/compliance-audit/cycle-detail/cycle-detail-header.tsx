@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import { X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Tooltip,
@@ -16,6 +15,7 @@ import {
 } from '@/components/ui/tooltip'
 import { BreadcrumbOverride } from '@/components/layout/breadcrumb-override'
 import { CycleStatusBadge } from './cycle-status-badge'
+import { CycleActionsDropdown } from './cycle-actions-dropdown'
 import { useCycleItems } from './cycle-items-context'
 import type { CycleDetail } from '@/app/actions/compliance-audit-cycle'
 import { ComplianceCycleStatus, AuditType } from '@prisma/client'
@@ -25,6 +25,13 @@ interface CycleDetailHeaderProps {
   cycle: CycleDetail
   readOnly: boolean
   findingCounts: { open: number; closed: number }
+  // Story 21.6 — cycle-lifecycle affordances. Counts are plumbed as props
+  // (not consumed via useCycleItems()) for symmetry with findingCounts.
+  totalCount: number
+  signeradeCount: number
+  canRevert: boolean
+  onCompleteClick: () => void
+  onRevertClick: () => void
 }
 
 function initialsFromName(name: string | null): string {
@@ -39,6 +46,11 @@ export function CycleDetailHeader({
   cycle,
   readOnly,
   findingCounts,
+  totalCount,
+  signeradeCount,
+  canRevert,
+  onCompleteClick,
+  onRevertClick,
 }: CycleDetailHeaderProps) {
   return (
     <div className="space-y-4">
@@ -60,9 +72,16 @@ export function CycleDetailHeader({
 
         <div className="flex items-center gap-4">
           <ProgressCluster />
-          <Button variant="outline" disabled>
-            Åtgärder
-          </Button>
+          {/* Story 21.6 — Åtgärder dropdown (Complete / Revert). Replaces
+              the Story 21.5 disabled-button placeholder. */}
+          <CycleActionsDropdown
+            cycle={cycle}
+            totalCount={totalCount}
+            signeradeCount={signeradeCount}
+            canRevert={canRevert}
+            onCompleteClick={onCompleteClick}
+            onRevertClick={onRevertClick}
+          />
         </div>
       </div>
     </div>

@@ -5,3 +5,7 @@ export { CycleFindingsTab } from './cycle-findings-tab'
 export { CycleStatusBadge } from './cycle-status-badge'
 export { CycleItemsProvider, useCycleItems } from './cycle-items-context'
 export type { CycleItemsContextValue } from './cycle-items-context'
+// Story 21.6 — cycle lifecycle transitions (Complete / Revert)
+export { CycleActionsDropdown } from './cycle-actions-dropdown'
+export { CompleteCycleDialog } from './complete-cycle-dialog'
+export { RevertCycleDialog } from './revert-cycle-dialog'
