@@ -64,6 +64,14 @@ export interface CycleItemRow {
   signedOffAt: Date | null
   signedOffBy: { id: string; name: string | null } | null
   kravpunkterSnapshot: KravpunkterSnapshot | null
+  /**
+   * Story 21.16 follow-up: live business-context from the source LawListItem
+   * ("Hur påverkar detta oss?"). Surfaced read-only in the cycle-item modal
+   * as audit context; edits continue to happen via the law-list-item modal
+   * on /laglistor. Intentionally LIVE (not snapshot) so org-level context
+   * updates reach the auditor mid-cycle.
+   */
+  businessContext: string | null
 }
 
 export interface GetCycleItemsResult {
@@ -99,7 +107,15 @@ const UpdateItemMotiveringSchema = z.object({
  */
 const CYCLE_ITEM_INCLUDE = {
   law_list_item: {
-    include: {
+    // Story 21.16 follow-up: shift from `include` to `include + select` hybrid
+    // by adding the `business_context` scalar. Prisma requires an explicit
+    // select tree when we want scalars alongside relations; keep `include` on
+    // the nested relations so their shapes stay identical to before.
+    select: {
+      id: true,
+      compliance_status: true,
+      group_id: true,
+      business_context: true,
       document: { select: { title: true, document_number: true } },
       group: { select: { id: true, name: true, position: true } },
       responsible_user: { select: { id: true, name: true } },
@@ -124,6 +140,7 @@ type LoadedItem = {
     id: string
     compliance_status: ComplianceStatus
     group_id: string | null
+    business_context: string | null
     document: { title: string; document_number: string }
     group: { id: string; name: string; position: number } | null
     responsible_user: { id: string; name: string | null } | null
@@ -159,6 +176,7 @@ function mapRowToCycleItemRow(row: LoadedItem): CycleItemRow {
       : null,
     kravpunkterSnapshot:
       (row.kravpunkter_snapshot as KravpunkterSnapshot | null) ?? null,
+    businessContext: row.law_list_item.business_context,
   }
 }
 

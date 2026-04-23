@@ -173,6 +173,19 @@ const CloseFindingSchema = z.object({
     .nullable()
     .optional()
     .transform((s) => (s && s.trim().length > 0 ? s.trim() : null)),
+  // Epic 21 follow-up (verify step): optional verification note supplied
+  // when closing via the verify flow (ready-to-verify → closed). Persisted
+  // in the activity log as audit evidence. Distinct from `closeReason`:
+  //  - `closeReason` is the manual-override rationale when the task isn't
+  //    done yet (FINDING_REQUIRES_TASK_CLOSURE gate).
+  //  - `verificationNote` is the positive verification evidence when the
+  //    task IS done — the auditor's defensible record of what was reviewed.
+  verificationNote: z
+    .string()
+    .max(1000, 'Max 1000 tecken')
+    .nullable()
+    .optional()
+    .transform((s) => (s && s.trim().length > 0 ? s.trim() : null)),
 })
 
 const ReopenFindingSchema = FindingIdOnlySchema
@@ -429,13 +442,13 @@ export async function createFinding(input: {
         if (!itemInWorkspace) {
           return {
             success: false,
-            error: 'Den valda lagen tillhör inte arbetsytan',
+            error: 'Det valda dokumentet tillhör inte arbetsytan',
           }
         }
         if (itemInWorkspace.law_list_id !== cycle.law_list_id) {
           return {
             success: false,
-            error: 'Lagposten tillhör inte kontrollens laglista',
+            error: 'Dokumentet tillhör inte kontrollens laglista',
           }
         }
       }
@@ -800,13 +813,13 @@ export async function updateFinding(input: {
         if (!itemInWorkspace) {
           return {
             success: false,
-            error: 'Den valda lagen tillhör inte arbetsytan',
+            error: 'Det valda dokumentet tillhör inte arbetsytan',
           }
         }
         if (itemInWorkspace.law_list_id !== existing.cycle.law_list_id) {
           return {
             success: false,
-            error: 'Lagposten tillhör inte kontrollens laglista',
+            error: 'Dokumentet tillhör inte kontrollens laglista',
           }
         }
       }
@@ -948,6 +961,11 @@ export async function updateFinding(input: {
 export async function closeFinding(input: {
   findingId: string
   closeReason?: string | null
+  // Epic 21 follow-up (verify step): optional verification note when closing
+  // via the "ready-to-verify" flow. Null = plain close (no verify emission);
+  // non-null = emit `finding_verified` activity log entry with the note
+  // as audit evidence, alongside the existing `finding_closed` emission.
+  verificationNote?: string | null
 }): Promise<ActionResult<{ finding: FindingRow }>> {
   const parsed = CloseFindingSchema.safeParse(input)
   if (!parsed.success) {
@@ -1089,6 +1107,27 @@ export async function closeFinding(input: {
       if (closeReason) {
         newValue.manual_override = true
         newValue.close_reason = closeReason
+      }
+
+      // Epic 21 follow-up (verify step): emit `finding_verified` BEFORE the
+      // close entry when the auditor came in via the verify flow. The note
+      // becomes permanent audit evidence — rapport/seal surfaces read from
+      // the activity log (additive-only principle, no schema column).
+      const verificationNote = parsed.data.verificationNote
+      if (verificationNote !== null && verificationNote !== undefined) {
+        await logActivity(
+          ctx.workspaceId,
+          ctx.userId,
+          'compliance_finding',
+          parsed.data.findingId,
+          'finding_verified',
+          null,
+          {
+            verification_note: verificationNote,
+            task_id: existing.corrective_action_task_id,
+            task_title: existing.corrective_action_task?.title ?? null,
+          }
+        )
       }
 
       await logActivity(

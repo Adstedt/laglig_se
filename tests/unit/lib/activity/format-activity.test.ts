@@ -554,6 +554,55 @@ describe('formatActivity', () => {
     )
   })
 
+  // ----- Epic 21 follow-up: verify step -----
+  it('renders finding_verified with short note as emphasis tail', () => {
+    const parts = formatActivity({
+      action: 'finding_verified',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: {
+        verification_note: 'Granskade brandövningsplan 2026-05-15',
+        task_id: 'task-1',
+        task_title: 'Fix',
+      },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander verifierade Saknad utbildningsplan: Granskade brandövningsplan 2026-05-15'
+    )
+  })
+
+  it('truncates finding_verified note > 80 chars with ellipsis', () => {
+    const note = 'x'.repeat(81)
+    const parts = formatActivity({
+      action: 'finding_verified',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: { verification_note: note },
+      primary: findingRef,
+    })
+    const flat = sentencePartsToText(parts)
+    expect(flat.endsWith('…')).toBe(true)
+    expect(flat).toContain('x'.repeat(80) + '…')
+    expect(flat).not.toContain('x'.repeat(81))
+  })
+
+  it('renders finding_verified without tail when verification_note is absent', () => {
+    const parts = formatActivity({
+      action: 'finding_verified',
+      entity_type: 'compliance_finding',
+      user: USER,
+      old_value: null,
+      new_value: { task_id: 'task-1', task_title: 'Fix' },
+      primary: findingRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander verifierade Saknad utbildningsplan'
+    )
+  })
+
   // ----- Story 21.8: corrective-action task loop -----
   it('renders finding_task_spawned with task_title', () => {
     const parts = formatActivity({

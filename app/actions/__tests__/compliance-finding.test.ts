@@ -363,7 +363,7 @@ describe('createFinding', () => {
       description: 'Body',
       lawListItemId: LAW_LIST_ITEM_ID,
     })
-    expect(result.error).toBe('Lagposten tillhör inte kontrollens laglista')
+    expect(result.error).toBe('Dokumentet tillhör inte kontrollens laglista')
     expect(prisma.complianceFinding.create).not.toHaveBeenCalled()
   })
 
@@ -381,7 +381,7 @@ describe('createFinding', () => {
       description: 'Body',
       lawListItemId: LAW_LIST_ITEM_ID,
     })
-    expect(result.error).toBe('Den valda lagen tillhör inte arbetsytan')
+    expect(result.error).toBe('Det valda dokumentet tillhör inte arbetsytan')
     expect(prisma.complianceFinding.create).not.toHaveBeenCalled()
     expect(activityLogger.logActivity).not.toHaveBeenCalled()
   })
@@ -1613,6 +1613,116 @@ describe('closeFinding', () => {
     expect(logActions).not.toContain('finding_task_completed')
     expect(warnSpy).toHaveBeenCalled()
     warnSpy.mockRestore()
+  })
+
+  // ==========================================================================
+  // Epic 21 follow-up (verify step): verificationNote emission
+  // ==========================================================================
+
+  it('closeFinding with verificationNote emits finding_verified log (with note) before finding_closed', async () => {
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding({
+        type: FindingType.AVVIKELSE,
+        severity: FindingSeverity.MAJOR,
+        corrective_action_task_id: TASK_ID,
+        corrective_action_task: {
+          id: TASK_ID,
+          title: 'Fix the thing',
+          completed_at: new Date('2026-05-15T10:00:00Z'),
+        },
+      }) as never
+    )
+    vi.mocked(prisma.task.findFirst).mockResolvedValue({
+      id: TASK_ID,
+      completed_at: new Date('2026-05-15T10:00:00Z'),
+    } as never)
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({
+        closed_at: new Date(),
+        closed_by_user_id: USER_ID,
+      }) as never
+    )
+
+    const result = await closeFinding({
+      findingId: FINDING_ID,
+      verificationNote:
+        'Granskade nya brandövningsplan 2026-05-15, närvarolista bifogad',
+    })
+
+    expect(result.success).toBe(true)
+    const logActions = vi
+      .mocked(activityLogger.logActivity)
+      .mock.calls.map((c) => c[4])
+    // Verify emission appears BEFORE close (order matters for feed rendering).
+    const verifiedIdx = logActions.indexOf('finding_verified')
+    const closedIdx = logActions.indexOf('finding_closed')
+    expect(verifiedIdx).toBeGreaterThanOrEqual(0)
+    expect(closedIdx).toBeGreaterThanOrEqual(0)
+    expect(verifiedIdx).toBeLessThan(closedIdx)
+
+    // Payload carries the verification note + task context.
+    const verifiedCall = vi
+      .mocked(activityLogger.logActivity)
+      .mock.calls.find((c) => c[4] === 'finding_verified')!
+    const payload = verifiedCall[6] as Record<string, unknown>
+    expect(payload.verification_note).toBe(
+      'Granskade nya brandövningsplan 2026-05-15, närvarolista bifogad'
+    )
+    expect(payload.task_id).toBe(TASK_ID)
+    expect(payload.task_title).toBe('Fix the thing')
+  })
+
+  it('closeFinding WITHOUT verificationNote does NOT emit finding_verified (backward compat)', async () => {
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding() as never
+    )
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({
+        closed_at: new Date(),
+        closed_by_user_id: USER_ID,
+      }) as never
+    )
+
+    const result = await closeFinding({ findingId: FINDING_ID })
+
+    expect(result.success).toBe(true)
+    const logActions = vi
+      .mocked(activityLogger.logActivity)
+      .mock.calls.map((c) => c[4])
+    expect(logActions).toContain('finding_closed')
+    expect(logActions).not.toContain('finding_verified')
+  })
+
+  it('closeFinding rejects verificationNote longer than 1000 chars', async () => {
+    const result = await closeFinding({
+      findingId: FINDING_ID,
+      verificationNote: 'x'.repeat(1001),
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Max 1000 tecken')
+  })
+
+  it('empty/whitespace verificationNote coerces to null — no spurious finding_verified log', async () => {
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding() as never
+    )
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({
+        closed_at: new Date(),
+        closed_by_user_id: USER_ID,
+      }) as never
+    )
+
+    const result = await closeFinding({
+      findingId: FINDING_ID,
+      verificationNote: '   ',
+    })
+
+    expect(result.success).toBe(true)
+    const logActions = vi
+      .mocked(activityLogger.logActivity)
+      .mock.calls.map((c) => c[4])
+    expect(logActions).not.toContain('finding_verified')
   })
 })
 

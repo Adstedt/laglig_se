@@ -113,6 +113,10 @@ function makeItemRow(overrides: Partial<Record<string, unknown>> = {}) {
       position: 1,
       compliance_status: ComplianceStatus.EJ_PABORJAD,
       group_id: GROUP_ID,
+      // Story 21.16 follow-up: businessContext is now projected from
+      // LawListItem. Default to null in fixtures; tests overriding this
+      // verify the non-null path.
+      business_context: null,
       document: {
         title: 'Miljöbalken',
         document_number: 'SFS 1998:808',
@@ -205,6 +209,39 @@ describe('getCycleItemsForCycle', () => {
     const result = await getCycleItemsForCycle('not-a-uuid')
     expect(result.success).toBe(false)
     expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
+  })
+
+  // Story 21.16 follow-up: businessContext projection.
+  it('Story 21.16 — projects LawListItem.business_context onto CycleItemRow.businessContext', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(
+      makeCycleRow() as never
+    )
+    const rowWithContext = makeItemRow({
+      law_list_item: {
+        ...makeItemRow().law_list_item,
+        business_context:
+          'Vi hanterar kemikalier dagligen — riskbedömning krävs kvartalsvis.',
+      },
+    })
+    const rowWithNullContext = makeItemRow({
+      id: ITEM_ID_2,
+      law_list_item: {
+        ...makeItemRow().law_list_item,
+        position: 2,
+        business_context: null,
+      },
+    })
+    vi.mocked(prisma.complianceAuditItem.findMany).mockResolvedValue([
+      rowWithContext,
+      rowWithNullContext,
+    ] as never)
+
+    const result = await getCycleItemsForCycle(CYCLE_ID)
+    expect(result.success).toBe(true)
+    expect(result.data?.items[0]?.businessContext).toBe(
+      'Vi hanterar kemikalier dagligen — riskbedömning krävs kvartalsvis.'
+    )
+    expect(result.data?.items[1]?.businessContext).toBeNull()
   })
 })
 

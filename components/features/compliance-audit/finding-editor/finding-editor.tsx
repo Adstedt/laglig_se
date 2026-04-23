@@ -48,6 +48,7 @@ import {
   FINDING_SEVERITY_OPTIONS,
   FINDING_TYPE_LABELS,
   FINDING_TYPE_OPTIONS,
+  getFindingTypeCopy,
 } from '@/components/features/compliance-audit/finding-copy'
 import { FindingSeverity, FindingType, TaskPriority } from '@prisma/client'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
@@ -176,7 +177,6 @@ export function FindingEditor({
     buildInitialState(mode, finding, prefillLawListItemId)
   )
   const [submitting, setSubmitting] = useState(false)
-  const [dueDatePickerOpen, setDueDatePickerOpen] = useState(false)
   const [taskDueDatePickerOpen, setTaskDueDatePickerOpen] = useState(false)
   // Epic 21 follow-up: track whether the user has manually toggled the
   // spawn-task checkbox. If untouched, we re-derive from type on type switch.
@@ -256,6 +256,11 @@ export function FindingEditor({
   }, [selectedItem])
 
   const showSeverity = state.type === FindingType.AVVIKELSE
+  // Epic 21 follow-up: type-specific copy. AVVIKELSE uses "what happened?"
+  // framing; OBSERVATION uses "what was noted?"; FÖRBÄTTRING uses
+  // "what's proposed?". Grundorsak becomes "Motivering" for FÖRBÄTTRING
+  // because improvement suggestions have rationales, not root causes.
+  const typeCopy = useMemo(() => getFindingTypeCopy(state.type), [state.type])
   const titleTooLong = state.title.length > 200
   const descriptionTooLong = state.description.length > 5000
   const rootCauseTooLong = state.rootCause.length > 5000
@@ -531,7 +536,7 @@ export function FindingEditor({
                   onChange={(e) =>
                     setState((s) => ({ ...s, title: e.target.value }))
                   }
-                  placeholder="T.ex. Saknad utbildningsplan för kemikaliehantering"
+                  placeholder={typeCopy.titlePlaceholder}
                   maxLength={200}
                   aria-invalid={titleTooLong}
                   required
@@ -542,7 +547,8 @@ export function FindingEditor({
                 </div>
               </div>
 
-              {/* Description */}
+              {/* Description — the "what happened?" field. Helper text
+                  differentiates it from Grundorsak below. */}
               <div className="space-y-2">
                 <Label htmlFor="finding-description">Beskrivning</Label>
                 <Textarea
@@ -557,16 +563,23 @@ export function FindingEditor({
                   aria-invalid={descriptionTooLong}
                   required
                 />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{descriptionTooLong ? 'Max 5000 tecken' : ''}</span>
-                  <span>{state.description.length}/5000</span>
+                <div className="flex justify-between gap-3 text-xs text-muted-foreground">
+                  <span>{typeCopy.descriptionHelper}</span>
+                  <span className="shrink-0">
+                    {state.description.length}/5000
+                  </span>
                 </div>
+                {descriptionTooLong ? (
+                  <p className="text-xs text-destructive">Max 5000 tecken</p>
+                ) : null}
               </div>
 
-              {/* Root cause */}
+              {/* Root cause — renamed "Motivering" for FÖRBÄTTRING per
+                  type-specific copy (improvement suggestions have
+                  rationales, not root causes). Always optional. */}
               <div className="space-y-2">
                 <Label htmlFor="finding-root-cause">
-                  Grundorsak (frivilligt)
+                  {typeCopy.rootCauseLabel}
                 </Label>
                 <Textarea
                   id="finding-root-cause"
@@ -579,65 +592,26 @@ export function FindingEditor({
                   maxLength={5000}
                   aria-invalid={rootCauseTooLong}
                 />
-                <div className="flex justify-end text-xs text-muted-foreground">
-                  <span>{state.rootCause.length}/5000</span>
+                <div className="flex justify-between gap-3 text-xs text-muted-foreground">
+                  <span>{typeCopy.rootCauseHelper}</span>
+                  <span className="shrink-0">
+                    {state.rootCause.length}/5000
+                  </span>
                 </div>
               </div>
 
-              {/* Due date */}
-              <div className="space-y-2">
-                <Label>Förfallodatum (frivilligt)</Label>
-                <div className="flex items-center gap-2">
-                  <Popover
-                    open={dueDatePickerOpen}
-                    onOpenChange={setDueDatePickerOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        data-testid="finding-due-date-trigger"
-                        className={cn(
-                          'justify-start text-left font-normal',
-                          !state.dueDate && 'text-muted-foreground'
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {state.dueDate
-                          ? format(state.dueDate, 'PPP', { locale: sv })
-                          : 'Välj datum'}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={state.dueDate ?? undefined}
-                        onSelect={(d) => {
-                          setState((s) => ({ ...s, dueDate: d ?? null }))
-                          setDueDatePickerOpen(false)
-                        }}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {state.dueDate ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setState((s) => ({ ...s, dueDate: null }))}
-                      aria-label="Rensa datum"
-                    >
-                      <XIcon className="h-4 w-4" />
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
+              {/* Förfallodatum on the finding is REMOVED from the UI —
+                  task-level due date lives on step 2 when a task is spawned
+                  (see Epic 21 follow-up plan, §Option 3). state.dueDate
+                  stays in FormState so edit-mode of existing findings that
+                  have a dueDate row in the DB doesn't silently drop the
+                  value on save. */}
 
-              {/* Item link */}
+              {/* Item link — generic "Dokument" framing so the copy works
+                  for laws, föreskrifter, EU regulations alike. */}
               <div className="space-y-2">
                 <Label htmlFor="finding-item">
-                  Koppla till lag (frivilligt)
+                  Koppla till dokument (frivilligt)
                 </Label>
                 <Select
                   value={state.lawListItemId ?? '__none__'}
@@ -654,7 +628,7 @@ export function FindingEditor({
                     id="finding-item"
                     data-testid="finding-item-trigger"
                   >
-                    <SelectValue placeholder="Välj lag" />
+                    <SelectValue placeholder="Välj dokument" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__none__">Ingen koppling</SelectItem>

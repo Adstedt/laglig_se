@@ -79,6 +79,47 @@ vi.mock(
   }
 )
 
+// Story 21.16: stub SplitPanelModal — Radix Dialog internals are flaky in
+// happy-dom. We assert on modal presence via the children we render into it;
+// the conditional `open` gating lets us verify the modal-open/close contract
+// without engaging Radix's portal/focus machinery.
+vi.mock('@/components/shared/split-panel-modal', async () => {
+  const React = await import('react')
+  return {
+    SplitPanelModal: (props: {
+      open: boolean
+      leftPanel?: React.ReactNode
+      rightPanel?: React.ReactNode
+      header?: React.ReactNode
+    }) => {
+      if (!props.open) return null
+      return React.createElement(
+        'div',
+        { 'data-testid': 'split-panel-modal' },
+        props.header,
+        props.leftPanel,
+        props.rightPanel
+      )
+    },
+  }
+})
+
+// Story 21.16: stub AiChatPanel — not relevant to these tests.
+vi.mock(
+  '@/components/features/document-list/legal-document-modal/ai-chat-panel',
+  async () => {
+    const React = await import('react')
+    return {
+      AiChatPanel: () =>
+        React.createElement(
+          'div',
+          { 'data-testid': 'ai-chat-panel' },
+          'mocked-ai-chat'
+        ),
+    }
+  }
+)
+
 // Sonner toast — capture error invocations.
 const toastErrorMock = vi.fn()
 vi.mock('sonner', () => ({
@@ -152,6 +193,8 @@ function makeItem(
     signedOffAt: null,
     signedOffBy: null,
     kravpunkterSnapshot: null,
+    // Story 21.16 follow-up: businessContext field on CycleItemRow.
+    businessContext: null,
     ...overrides,
   }
 }
@@ -219,6 +262,12 @@ afterEach(() => {
   cleanup()
   vi.useRealTimers()
   Element.prototype.scrollIntoView = originalScrollIntoView
+  // Story 21.16: cycle-detail-page's URL sync writes `?item=X&finding=Y` to
+  // window.location via history.replaceState. Reset the URL between tests so
+  // the next test's mount doesn't resurrect a previously-clicked selection.
+  if (typeof window !== 'undefined') {
+    window.history.replaceState(null, '', window.location.pathname)
+  }
 })
 
 // ============================================================================
@@ -347,7 +396,17 @@ describe('CycleDetailPage — items tab', () => {
     expect(banner.textContent).not.toContain('förseglad')
   })
 
-  it('expanding a row renders the drawer + LinkedArtifactsPanel with readOnly=true', () => {
+  // --- Story 21.16 — row-click-opens-modal (replaces drawer expand) ---------
+
+  it('Story 21.16 — no chevron column; rows are simple one-liners', () => {
+    renderPage()
+    // Chevron buttons were removed along with the drawer. "Visa detaljer"
+    // and "Dölj detaljer" aria-labels no longer exist.
+    expect(screen.queryByRole('button', { name: 'Visa detaljer' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Dölj detaljer' })).toBeNull()
+  })
+
+  it('Story 21.16 — clicking a row opens the modal on that item', () => {
     renderPage({
       items: [
         makeItem('a', {
@@ -370,98 +429,82 @@ describe('CycleDetailPage — items tab', () => {
       ],
     })
 
-    const expandBtn = screen.getByRole('button', { name: 'Visa detaljer' })
-    fireEvent.click(expandBtn)
+    // Modal is closed initially (no selectedItemId).
+    expect(screen.queryByTestId('split-panel-modal')).toBeNull()
 
-    // Kravpunkter snapshot renders the requirement text.
+    // Clicking the row body opens the modal.
+    const row = screen.getByTestId('cycle-item-row-a')
+    // The row itself has the click handler (inner wrapper div).
+    const clickable = row.querySelector('[role="button"]')
+    expect(clickable).not.toBeNull()
+    fireEvent.click(clickable as Element)
+
+    // Modal appears.
+    expect(screen.getByTestId('split-panel-modal')).toBeInTheDocument()
+    // Kravpunkter snapshot renders inside the modal.
     expect(
       screen.getByText('Systematiskt arbetsmiljöarbete')
     ).toBeInTheDocument()
-
-    // LinkedArtifactsPanel mounted with readOnly=true.
+    // LinkedArtifactsPanel mounted with readOnly=true via the left panel.
     const panel = screen.getByTestId('linked-artifacts-panel')
     expect(panel.getAttribute('data-read-only')).toBe('true')
     expect(panel.getAttribute('data-list-item-id')).toBe('law-list-item-a')
+  })
 
-    // Story 21.7: placeholder replaced with per-item findings affordance.
-    // With no findings fixture, the drawer shows the empty-state copy.
+  it('Story 21.16 follow-up — clicking a row renders "Hur påverkar detta oss?" section with businessContext content', () => {
+    renderPage({
+      items: [
+        makeItem('a', {
+          businessContext:
+            'Vi hanterar kemikalier dagligen — riskbedömning krävs kvartalsvis.',
+        }),
+      ],
+    })
+    // Modal initially closed.
+    expect(screen.queryByTestId('split-panel-modal')).toBeNull()
+
+    // Click the row.
+    const row = screen.getByTestId('cycle-item-row-a')
+    const clickable = row.querySelector('[role="button"]')
+    expect(clickable).not.toBeNull()
+    fireEvent.click(clickable as Element)
+
+    // Business context section renders inside the modal.
+    expect(screen.getByText('Hur påverkar detta oss?')).toBeInTheDocument()
+    expect(screen.getByTestId('business-context-content')).toBeInTheDocument()
+    // Edit deep-link points to the correct /laglistor?document= URL.
+    const editLink = screen.getByTestId('business-context-edit-link')
+    expect(editLink).toHaveAttribute(
+      'href',
+      '/laglistor?document=law-list-item-a'
+    )
+    expect(editLink).toHaveAttribute('target', '_blank')
+  })
+
+  it('Story 21.16 follow-up — empty businessContext shows empty state in modal', () => {
+    renderPage({
+      items: [makeItem('a', { businessContext: null })],
+    })
+    const row = screen.getByTestId('cycle-item-row-a')
+    fireEvent.click(row.querySelector('[role="button"]') as Element)
     expect(
-      screen.getByText('Inga findings för denna post ännu.')
+      screen.getByTestId('business-context-empty-state')
     ).toBeInTheDocument()
+    // Edit link still works from empty state.
+    expect(screen.getByTestId('business-context-edit-link')).toBeInTheDocument()
   })
 
-  it('expanding row B auto-collapses row A (single-expand accordion)', () => {
+  it('Story 21.16 — inline-control stop-propagation wrappers carry role="presentation"', () => {
     renderPage()
-
-    const expandButtons = screen.getAllByRole('button', {
-      name: 'Visa detaljer',
-    })
-    fireEvent.click(expandButtons[0]!)
-    // Row A is now expanded → its expand button flips aria-label.
-    expect(
-      screen.getAllByRole('button', { name: 'Dölj detaljer' }).length
-    ).toBe(1)
-
-    // Click row B's expand.
-    const remainingExpands = screen.getAllByRole('button', {
-      name: 'Visa detaljer',
-    })
-    fireEvent.click(remainingExpands[0]!)
-
-    // Still only ONE row expanded (the new one).
-    expect(
-      screen.getAllByRole('button', { name: 'Dölj detaljer' }).length
-    ).toBe(1)
-  })
-
-  // --- AC 9 keyboard (GAP-002) ---------------------------------------------
-
-  it('AC 9 keyboard — Enter on the chevron button toggles the drawer', () => {
-    renderPage()
-    const expandButtons = screen.getAllByRole('button', {
-      name: 'Visa detaljer',
-    })
-    // Native <button> reacts to Enter by firing click — RTL fireEvent.keyDown
-    // + keyUp on a button does NOT trigger click in jsdom/happy-dom automatically
-    // (the browser dispatches a synthesised click; test harnesses don't).
-    // So we simulate the contract two ways: (1) the button is a standard <button>
-    // (native Enter→click semantics), and (2) firing click directly (as Enter
-    // would) toggles the drawer. Both are captured here.
-    expect(expandButtons[0]!.tagName).toBe('BUTTON')
-    expect(expandButtons[0]!.getAttribute('type')).toBe('button')
-    fireEvent.click(expandButtons[0]!)
-    expect(
-      screen.getAllByRole('button', { name: 'Dölj detaljer' }).length
-    ).toBe(1)
-  })
-
-  it('AC 9 keyboard — Escape on the items grid collapses the expanded drawer', () => {
-    renderPage()
-    const expandButtons = screen.getAllByRole('button', {
-      name: 'Visa detaljer',
-    })
-    fireEvent.click(expandButtons[0]!)
-    expect(
-      screen.getAllByRole('button', { name: 'Dölj detaljer' }).length
-    ).toBe(1)
-
-    // The Escape handler is attached at document level (via useEffect, gated on
-    // expandedRowId !== null) — fire keydown on document to trigger it.
-    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })
-
-    // Drawer should collapse back; no "Dölj detaljer" button should remain.
-    expect(screen.queryByRole('button', { name: 'Dölj detaljer' })).toBeNull()
-  })
-
-  it('AC 9 keyboard — Escape is a no-op when no drawer is expanded', () => {
-    renderPage()
-    // No drawer expanded yet; fire Escape on document — the handler effect is
-    // not attached (its guard is expandedRowId !== null), so this is a no-op.
-    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' })
-    // All 3 expand buttons still labelled "Visa detaljer" (none expanded).
-    expect(
-      screen.getAllByRole('button', { name: 'Visa detaljer' }).length
-    ).toBe(3)
+    // Structural test: the inline-control wrapper cells (bedomning / motivering /
+    // signerad) carry `role="presentation"` + onClick stopPropagation so clicks
+    // on the controls don't bubble to the row-level click-to-open-modal handler.
+    // Full event-propagation assertion is brittle in happy-dom (Radix Select
+    // intercepts pointer events); this structural pin is the production-safe
+    // proxy.
+    const presentations = document.querySelectorAll('[role="presentation"]')
+    // 3 wrappers × 3 rows = 9 presentation zones on the items table.
+    expect(presentations.length).toBeGreaterThanOrEqual(9)
   })
 
   it('progress cluster — shows counts + disables buttons when all complete', () => {

@@ -74,6 +74,9 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
   finding_task_spawned: 'kopplingar',
   finding_task_completed: 'livscykel',
   finding_task_completion_notified: 'notifikationer',
+
+  // compliance-audit findings — verify step (Epic 21 follow-up)
+  finding_verified: 'livscykel',
 }
 
 export const CATEGORY_META: Record<

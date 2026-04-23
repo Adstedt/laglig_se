@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CycleDetailHeader } from './cycle-detail-header'
 import { CycleItemsTab } from './cycle-items-tab'
 import { CycleFindingsTab } from './cycle-findings-tab'
+import { CycleItemModal } from '@/components/features/compliance-audit/cycle-item-modal'
 import {
   CycleItemsProvider,
   type CycleItemsContextValue,
@@ -108,14 +109,24 @@ export function CycleDetailPage({
 
   const [tab, setTab] = useState<TabValue>(DEFAULT_TAB)
   const [highlightedRowId, setHighlightedRowId] = useState<string | null>(null)
+  // Story 21.16 — modal state. `selectedItemId` opens the CycleItemModal on
+  // the matching row; `focusFindingId` scrolls + highlights a finding card
+  // inside the modal (used by Findings-tab drill-in + shareable URLs).
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
+  const [focusFindingId, setFocusFindingId] = useState<string | null>(null)
 
-  // Sync tab from URL hash on mount.
+  // Sync tab from URL hash + item/finding from query params on mount.
   useEffect(() => {
     if (typeof window === 'undefined') return
     const hash = window.location.hash.slice(1)
     if (isValidTab(hash)) {
       setTab(hash)
     }
+    const params = new URLSearchParams(window.location.search)
+    const itemParam = params.get('item')
+    const findingParam = params.get('finding')
+    if (itemParam) setSelectedItemId(itemParam)
+    if (findingParam) setFocusFindingId(findingParam)
   }, [])
 
   // Push tab selection into the URL hash (replace-state, no navigation).
@@ -127,9 +138,65 @@ export function CycleDetailPage({
     }
   }, [tab])
 
+  // Story 21.16 — sync selectedItemId + focusFindingId to URL query params.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (selectedItemId) {
+      params.set('item', selectedItemId)
+    } else {
+      params.delete('item')
+    }
+    if (focusFindingId) {
+      params.set('finding', focusFindingId)
+    } else {
+      params.delete('finding')
+    }
+    const search = params.toString()
+    const nextUrl = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`
+    if (
+      nextUrl !==
+      `${window.location.pathname}${window.location.search}${window.location.hash}`
+    ) {
+      window.history.replaceState(null, '', nextUrl)
+    }
+  }, [selectedItemId, focusFindingId])
+
   const handleTabChange = (next: string) => {
     if (isValidTab(next)) setTab(next)
   }
+
+  const handleSelectItem = useCallback((itemId: string) => {
+    setSelectedItemId(itemId)
+    setFocusFindingId(null)
+  }, [])
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedItemId(null)
+    setFocusFindingId(null)
+  }, [])
+
+  // Story 21.16 — Findings-tab drill-in. Clicking a finding card body opens
+  // the Items-tab modal on the finding's parent law with the finding focused.
+  const handleFindingClick = useCallback(
+    (finding: FindingRow) => {
+      if (!finding.lawListItemId) {
+        // Cycle-level findings (no parent item) — navigate logically is not
+        // possible. Could open the editor here in a future iteration.
+        return
+      }
+      // Find the CycleItemRow whose lawListItemId matches the finding's.
+      // The items array is small enough that a linear scan is fine.
+      const matchingItem = items.find(
+        (i) => i.lawListItemId === finding.lawListItemId
+      )
+      if (!matchingItem) return
+      setSelectedItemId(matchingItem.id)
+      setFocusFindingId(finding.id)
+      setTab('items')
+    },
+    [items]
+  )
 
   // ---- Mutation handlers with optimistic UI + toast recovery -----------
 
@@ -323,13 +390,13 @@ export function CycleDetailPage({
               items={items}
               readOnly={readOnly}
               highlightedRowId={highlightedRowId}
+              selectedItemId={selectedItemId}
+              onSelectItem={handleSelectItem}
               onBedomningChange={handleBedomningChange}
               onMotiveringChange={handleMotiveringChange}
               onSign={handleSign}
               onUnsign={handleUnsign}
-              cycleId={cycle.id}
               findings={findings}
-              onFindingMutation={handleFindingMutation}
             />
           </TabsContent>
           <TabsContent value="findings">
@@ -339,6 +406,7 @@ export function CycleDetailPage({
               readOnly={readOnly}
               items={items}
               onFindingMutation={handleFindingMutation}
+              onFindingClick={handleFindingClick}
             />
           </TabsContent>
           <TabsContent value="rapport">
@@ -352,6 +420,27 @@ export function CycleDetailPage({
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Story 21.16 — cycle-item modal. `selectedItemId === null` → closed. */}
+        <CycleItemModal
+          item={
+            selectedItemId
+              ? (items.find((i) => i.id === selectedItemId) ?? null)
+              : null
+          }
+          findings={findings}
+          items={items}
+          cycleId={cycle.id}
+          cycleName={cycle.name}
+          readOnly={readOnly}
+          focusFindingId={focusFindingId}
+          onClose={handleCloseModal}
+          onBedomningChange={handleBedomningChange}
+          onMotiveringChange={handleMotiveringChange}
+          onSign={handleSign}
+          onUnsign={handleUnsign}
+          onFindingMutation={handleFindingMutation}
+        />
       </div>
     </CycleItemsProvider>
   )

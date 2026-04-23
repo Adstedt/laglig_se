@@ -90,10 +90,14 @@ function buildNotificationText(
     // no current caller invokes this arm but the copy is defined here so that
     // whenever the email-dispatch switch gets a FINDING_READY_TO_CLOSE arm,
     // the notification text is already consistent.
+    // Epic 21 follow-up (verify step): copy shifted from "stäng" framing to
+    // "verifiera" framing — auditor's explicit verification is the defensible
+    // audit moment, not just "you can close it now". Enum value kept as
+    // FINDING_READY_TO_CLOSE (internal name) to avoid migration cost.
     case NotificationType.FINDING_READY_TO_CLOSE:
       return {
-        title: 'Uppgift slutförd för avvikelse',
-        body: `Uppgiften "${ctx.taskTitle}" är slutförd. Avvikelsen kan nu stängas.`,
+        title: 'Åtgärd redo att verifieras',
+        body: `Åtgärdsuppgiften "${ctx.taskTitle}" är slutförd. Öppna avvikelsen för att verifiera att åtgärden är effektiv.`,
       }
     default:
       return { title: 'Notifikation', body: '' }

@@ -16,21 +16,11 @@ import {
   useState,
   type RefObject,
 } from 'react'
-import { format } from 'date-fns'
-import { sv } from 'date-fns/locale'
-import {
-  AlertTriangle,
-  ChevronDown,
-  ChevronRight,
-  Lightbulb,
-  Plus,
-  Eye,
-} from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useVirtualizer, type Virtualizer } from '@tanstack/react-virtual'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   closeFinding,
   reopenFinding,
@@ -40,8 +30,11 @@ import {
 import {
   FINDING_SEVERITY_LABELS,
   FINDING_TYPE_LABELS,
+  getFindingStatus,
 } from '@/components/features/compliance-audit/finding-copy'
 import { FindingEditor } from '@/components/features/compliance-audit/finding-editor'
+import { FindingCard } from '@/components/features/compliance-audit/finding-card'
+import { VerifyFindingDialog } from './verify-finding-dialog'
 import { FindingSeverity, FindingType } from '@prisma/client'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 
@@ -59,6 +52,9 @@ interface CycleFindingsTabProps {
   readOnly: boolean
   items: CycleItemRow[]
   onFindingMutation: (_finding: FindingRow) => void
+  /** Story 21.16 — drill into the Items-tab modal on the finding's parent law
+   *  with the finding scrolled into view + highlighted. Parent writes state. */
+  onFindingClick?: ((_finding: FindingRow) => void) | undefined
 }
 
 export function CycleFindingsTab({
@@ -67,13 +63,15 @@ export function CycleFindingsTab({
   readOnly,
   items,
   onFindingMutation,
+  onFindingClick,
 }: CycleFindingsTabProps) {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL')
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>('ALL')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [expandedId, setExpandedId] = useState<string | null>(null)
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingFinding, setEditingFinding] = useState<FindingRow | null>(null)
+  // Epic 21 follow-up: explicit verify-step dialog state. null = closed.
+  const [verifyFinding, setVerifyFinding] = useState<FindingRow | null>(null)
 
   // Hide severity filter when type filter is not AVVIKELSE.
   useEffect(() => {
@@ -81,16 +79,6 @@ export function CycleFindingsTab({
       setSeverityFilter('ALL')
     }
   }, [typeFilter, severityFilter])
-
-  // Escape collapses expanded row.
-  useEffect(() => {
-    if (expandedId === null) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setExpandedId(null)
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [expandedId])
 
   const filtered = useMemo(() => {
     return findings.filter((f) => {
@@ -164,6 +152,29 @@ export function CycleFindingsTab({
     [onFindingMutation]
   )
 
+  // Epic 21 follow-up (verify step): confirm the verify dialog. Hits the
+  // same closeFinding action as a plain "Stäng" but with an optional
+  // verificationNote that becomes audit evidence via the finding_verified
+  // activity log entry.
+  const handleVerifyConfirm = useCallback(
+    async (findingId: string, verificationNote: string | null) => {
+      const result = await closeFinding({
+        findingId,
+        ...(verificationNote !== null ? { verificationNote } : {}),
+      })
+      if (!result.success || !result.data) {
+        toast.error('Kunde inte verifiera finding', {
+          description: result.error,
+        })
+        return
+      }
+      toast.success('Finding verifierad och stängd')
+      onFindingMutation(result.data.finding)
+      setVerifyFinding(null)
+    },
+    [onFindingMutation]
+  )
+
   const shouldVirtualise = filtered.length > VIRTUALIZATION_THRESHOLD
   const scrollRef = useRef<HTMLDivElement>(null)
   const virtualizer = useVirtualizer({
@@ -217,24 +228,24 @@ export function CycleFindingsTab({
           findings={filtered}
           virtualizer={virtualizer}
           scrollRef={scrollRef}
-          expandedId={expandedId}
-          setExpandedId={setExpandedId}
           readOnly={readOnly}
           onEdit={openEditorForEdit}
           onClose={handleClose}
           onReopen={handleReopen}
           onSpawnTask={handleSpawnTask}
+          onVerify={setVerifyFinding}
+          onFindingClick={onFindingClick}
         />
       ) : (
         <PlainBody
           findings={filtered}
-          expandedId={expandedId}
-          setExpandedId={setExpandedId}
           readOnly={readOnly}
           onEdit={openEditorForEdit}
           onClose={handleClose}
           onReopen={handleReopen}
           onSpawnTask={handleSpawnTask}
+          onVerify={setVerifyFinding}
+          onFindingClick={onFindingClick}
         />
       )}
 
@@ -246,6 +257,15 @@ export function CycleFindingsTab({
         {...(editingFinding ? { finding: editingFinding } : {})}
         items={items}
         onSuccess={onFindingMutation}
+      />
+
+      <VerifyFindingDialog
+        open={verifyFinding !== null}
+        onOpenChange={(open) => {
+          if (!open) setVerifyFinding(null)
+        }}
+        finding={verifyFinding}
+        onConfirm={handleVerifyConfirm}
       />
     </div>
   )
@@ -368,52 +388,60 @@ function FilterChips({
 }
 
 // ---------------------------------------------------------------------------
-// Rows
+// Rows (Story 21.16 — delegates to shared FindingCard)
 // ---------------------------------------------------------------------------
 
 interface BodyProps {
   findings: FindingRow[]
-  expandedId: string | null
-  setExpandedId: (_id: string | null) => void
   readOnly: boolean
   onEdit: (_f: FindingRow) => void
   onClose: (_f: FindingRow) => Promise<void>
   onReopen: (_f: FindingRow) => Promise<void>
   onSpawnTask: (_f: FindingRow) => Promise<void>
+  onVerify: (_f: FindingRow) => void
+  onFindingClick?: ((_f: FindingRow) => void) | undefined
 }
 
 function PlainBody({
   findings,
-  expandedId,
-  setExpandedId,
   readOnly,
   onEdit,
   onClose,
   onReopen,
   onSpawnTask,
+  onVerify,
+  onFindingClick,
 }: BodyProps) {
   return (
     <div
       role="list"
-      className="rounded-md border"
+      className="flex flex-col gap-2"
       data-testid="cycle-findings-list"
     >
-      {findings.map((f) => {
-        const expanded = expandedId === f.id
-        return (
-          <FindingRowContent
-            key={f.id}
+      {findings.map((f) => (
+        <div
+          key={f.id}
+          role="listitem"
+          data-testid={`cycle-finding-row-${f.id}`}
+        >
+          <FindingCard
             finding={f}
-            expanded={expanded}
-            onToggleExpand={() => setExpandedId(expanded ? null : f.id)}
-            readOnly={readOnly}
-            onEdit={() => onEdit(f)}
-            onClose={() => onClose(f)}
-            onReopen={() => onReopen(f)}
-            onSpawnTask={() => onSpawnTask(f)}
+            onClick={onFindingClick ? () => onFindingClick(f) : undefined}
+            showLawContext
+            actions={
+              <FindingActions
+                finding={f}
+                readOnly={readOnly}
+                onEdit={() => onEdit(f)}
+                onClose={() => onClose(f)}
+                onReopen={() => onReopen(f)}
+                onSpawnTask={() => onSpawnTask(f)}
+                onVerify={() => onVerify(f)}
+              />
+            }
           />
-        )
-      })}
+        </div>
+      ))}
     </div>
   )
 }
@@ -427,22 +455,18 @@ function VirtualisedBody({
   findings,
   virtualizer,
   scrollRef,
-  expandedId,
-  setExpandedId,
   readOnly,
   onEdit,
   onClose,
   onReopen,
   onSpawnTask,
+  onVerify,
+  onFindingClick,
 }: VirtualisedBodyProps) {
-  useEffect(() => {
-    virtualizer.measure()
-  }, [expandedId, virtualizer])
-
   return (
     <div
       ref={scrollRef}
-      className="max-h-[calc(100vh-22rem)] overflow-auto rounded-md border"
+      className="max-h-[calc(100vh-22rem)] overflow-auto rounded-md"
       role="list"
       data-testid="virtualized-findings-list"
     >
@@ -456,7 +480,6 @@ function VirtualisedBody({
         {virtualizer.getVirtualItems().map((vr) => {
           const f = findings[vr.index]
           if (!f) return null
-          const expanded = expandedId === f.id
           return (
             <div
               key={f.id}
@@ -464,23 +487,32 @@ function VirtualisedBody({
               ref={(node) => {
                 if (node) virtualizer.measureElement(node)
               }}
+              role="listitem"
+              data-testid={`cycle-finding-row-${f.id}`}
               style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
                 width: '100%',
                 transform: `translateY(${vr.start}px)`,
+                padding: '4px 0',
               }}
             >
-              <FindingRowContent
+              <FindingCard
                 finding={f}
-                expanded={expanded}
-                onToggleExpand={() => setExpandedId(expanded ? null : f.id)}
-                readOnly={readOnly}
-                onEdit={() => onEdit(f)}
-                onClose={() => onClose(f)}
-                onReopen={() => onReopen(f)}
-                onSpawnTask={() => onSpawnTask(f)}
+                onClick={onFindingClick ? () => onFindingClick(f) : undefined}
+                showLawContext
+                actions={
+                  <FindingActions
+                    finding={f}
+                    readOnly={readOnly}
+                    onEdit={() => onEdit(f)}
+                    onClose={() => onClose(f)}
+                    onReopen={() => onReopen(f)}
+                    onSpawnTask={() => onSpawnTask(f)}
+                    onVerify={() => onVerify(f)}
+                  />
+                }
               />
             </div>
           )
@@ -490,247 +522,109 @@ function VirtualisedBody({
   )
 }
 
-interface FindingRowContentProps {
+// ---------------------------------------------------------------------------
+// Inline action buttons — rendered in FindingCard's `actions` slot.
+// ---------------------------------------------------------------------------
+
+interface FindingActionsProps {
   finding: FindingRow
-  expanded: boolean
-  onToggleExpand: () => void
   readOnly: boolean
   onEdit: () => void
   onClose: () => Promise<void>
   onReopen: () => Promise<void>
   onSpawnTask: () => Promise<void>
+  onVerify: () => void
 }
 
-function FindingRowContent({
+function FindingActions({
   finding,
-  expanded,
-  onToggleExpand,
   readOnly,
   onEdit,
   onClose,
   onReopen,
   onSpawnTask,
-}: FindingRowContentProps) {
-  const isClosed = finding.closedAt !== null
+  onVerify,
+}: FindingActionsProps) {
+  if (readOnly) return null
 
-  return (
-    <div
-      role="listitem"
-      data-testid={`cycle-finding-row-${finding.id}`}
-      className="border-b last:border-b-0"
-    >
-      <div className="flex items-start gap-3 p-3 transition-colors hover:bg-muted/50">
-        <button
+  // Epic 21 follow-up: three-state action switch driven by getFindingStatus.
+  const status = getFindingStatus(finding)
+
+  if (status === 'closed') {
+    return (
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={onReopen}
+        data-testid={`cycle-finding-reopen-${finding.id}`}
+      >
+        Återöppna
+      </Button>
+    )
+  }
+
+  if (status === 'ready-to-verify') {
+    // Linked task is done — auditor's explicit verify moment replaces the
+    // plain Stäng. "Redigera" stays available; "+ Skapa åtgärdsuppgift"
+    // hides because the task already exists.
+    return (
+      <>
+        <Button
           type="button"
-          onClick={onToggleExpand}
-          aria-expanded={expanded}
-          aria-label={expanded ? 'Dölj detaljer' : 'Visa detaljer'}
-          className="mt-1 rounded p-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          size="sm"
+          variant="ghost"
+          onClick={onEdit}
+          data-testid={`cycle-finding-edit-${finding.id}`}
         >
-          {expanded ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
-        </button>
-
-        <div className="min-w-0 flex-1 space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <TypeBadge type={finding.type} />
-            {finding.type === FindingType.AVVIKELSE && finding.severity ? (
-              <SeverityBadge severity={finding.severity} />
-            ) : null}
-            <span className="truncate font-medium">{finding.title}</span>
-            <StatusBadge closed={isClosed} />
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span>
-              {format(finding.createdAt, 'd MMM yyyy', { locale: sv })}
-            </span>
-            {finding.lawListItem ? (
-              <>
-                <span aria-hidden="true">·</span>
-                <span className="truncate">
-                  {finding.lawListItem.title} (
-                  {finding.lawListItem.documentNumber})
-                </span>
-              </>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-1">
-          {!readOnly && !isClosed && finding.correctiveActionTaskId === null ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={onSpawnTask}
-              title="Skapa en åtgärdsuppgift kopplad till denna finding"
-              data-testid={`cycle-finding-spawn-task-${finding.id}`}
-            >
-              <Plus className="mr-1 h-3 w-3" />
-              Skapa åtgärdsuppgift
-            </Button>
-          ) : null}
-          {!readOnly && !isClosed ? (
-            <>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={onEdit}
-                data-testid={`cycle-finding-edit-${finding.id}`}
-              >
-                Redigera
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={onClose}
-                data-testid={`cycle-finding-close-${finding.id}`}
-              >
-                Stäng
-              </Button>
-            </>
-          ) : null}
-          {!readOnly && isClosed ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={onReopen}
-              data-testid={`cycle-finding-reopen-${finding.id}`}
-            >
-              Återöppna
-            </Button>
-          ) : null}
-        </div>
-      </div>
-
-      {expanded ? <FindingRowDetails finding={finding} /> : null}
-    </div>
-  )
-}
-
-function FindingRowDetails({ finding }: { finding: FindingRow }) {
-  return (
-    <div className="space-y-3 border-t bg-muted/30 p-4 text-sm">
-      <div>
-        <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-          Beskrivning
-        </p>
-        <p className="whitespace-pre-wrap">{finding.description}</p>
-      </div>
-      {finding.rootCause ? (
-        <div>
-          <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-            Grundorsak
-          </p>
-          <p className="whitespace-pre-wrap">{finding.rootCause}</p>
-        </div>
-      ) : null}
-      {finding.dueDate ? (
-        <div>
-          <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-            Förfallodatum
-          </p>
-          <p>{format(finding.dueDate, 'PPP', { locale: sv })}</p>
-        </div>
-      ) : null}
-      {finding.requirement ? (
-        <div>
-          <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-            Kravpunkt
-          </p>
-          <p className="whitespace-pre-wrap">{finding.requirement.text}</p>
-        </div>
-      ) : null}
-      {finding.closedAt ? (
-        <div>
-          <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
-            Stängd
-          </p>
-          <p>
-            {format(finding.closedAt, 'PPPp', { locale: sv })}
-            {finding.closedBy ? (
-              <>
-                {' '}
-                av{' '}
-                <span className="font-medium">
-                  {finding.closedBy.name ?? '—'}
-                </span>
-              </>
-            ) : null}
-          </p>
-        </div>
-      ) : null}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Badges
-// ---------------------------------------------------------------------------
-
-function TypeBadge({ type }: { type: FindingType }) {
-  if (type === FindingType.AVVIKELSE) {
-    return (
-      <Badge
-        variant="outline"
-        className="border-red-200 bg-red-50 text-red-700"
-      >
-        <AlertTriangle className="mr-1 h-3 w-3" />
-        {FINDING_TYPE_LABELS.AVVIKELSE}
-      </Badge>
+          Redigera
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          onClick={onVerify}
+          data-testid={`cycle-finding-verify-${finding.id}`}
+        >
+          Verifiera
+        </Button>
+      </>
     )
   }
-  if (type === FindingType.OBSERVATION) {
-    return (
-      <Badge
-        variant="outline"
-        className="border-amber-200 bg-amber-50 text-amber-800"
+
+  // status === 'open' — no task OR task not yet completed.
+  return (
+    <>
+      {finding.correctiveActionTaskId === null ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={onSpawnTask}
+          title="Skapa en åtgärdsuppgift kopplad till denna finding"
+          data-testid={`cycle-finding-spawn-task-${finding.id}`}
+        >
+          <Plus className="mr-1 h-3 w-3" />
+          Skapa åtgärdsuppgift
+        </Button>
+      ) : null}
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        onClick={onEdit}
+        data-testid={`cycle-finding-edit-${finding.id}`}
       >
-        <Eye className="mr-1 h-3 w-3" />
-        {FINDING_TYPE_LABELS.OBSERVATION}
-      </Badge>
-    )
-  }
-  return (
-    <Badge
-      variant="outline"
-      className="border-blue-200 bg-blue-50 text-blue-700"
-    >
-      <Lightbulb className="mr-1 h-3 w-3" />
-      {FINDING_TYPE_LABELS.FORBATTRING}
-    </Badge>
-  )
-}
-
-function SeverityBadge({ severity }: { severity: FindingSeverity }) {
-  return (
-    <Badge
-      variant="outline"
-      className={cn(
-        'border-red-300 text-red-800',
-        severity === FindingSeverity.MAJOR ? 'bg-red-100' : 'bg-red-50'
-      )}
-    >
-      {FINDING_SEVERITY_LABELS[severity]}
-    </Badge>
-  )
-}
-
-function StatusBadge({ closed }: { closed: boolean }) {
-  return closed ? (
-    <Badge variant="secondary">Stängd</Badge>
-  ) : (
-    <Badge
-      variant="outline"
-      className="border-emerald-200 bg-emerald-50 text-emerald-700"
-    >
-      Öppen
-    </Badge>
+        Redigera
+      </Button>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={onClose}
+        data-testid={`cycle-finding-close-${finding.id}`}
+      >
+        Stäng
+      </Button>
+    </>
   )
 }

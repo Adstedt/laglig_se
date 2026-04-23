@@ -1,16 +1,18 @@
 'use client'
 
 /**
- * Story 21.5 — Items tab content for /laglistor/kontroller/[cycleId].
- * Pure presentation + local interaction. The parent (CycleDetailPage)
- * owns SWR state + mutation callbacks; this component consumes rows +
- * handlers via props so the header (also rendered by the parent) can
- * share the same data without going through the SWR cache again.
+ * Story 21.5 + Story 21.16 — Items tab content for /laglistor/kontroller/[cycleId].
+ *
+ * Pure presentation + local interaction. The parent (CycleDetailPage) owns
+ * SWR state, mutation callbacks, AND the selected-item state that drives the
+ * CycleItemModal. Clicking a row calls `onSelectItem(row.id)` which opens the
+ * modal; chevron + expanded-row-drawer pattern was removed in Story 21.16 per
+ * UX redesign (replaced by the modal).
  */
 
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useRef, type RefObject } from 'react'
 import Link from 'next/link'
-import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { useVirtualizer, type Virtualizer } from '@tanstack/react-virtual'
 import { cn } from '@/lib/utils'
 import {
@@ -19,20 +21,33 @@ import {
   ItemSignOffButton,
 } from '@/components/features/compliance-audit/item-bedomning-editor'
 import { COMPLIANCE_STATUS_OPTIONS } from '@/components/features/document-list/table-cell-editors/compliance-status-editor'
-import { CycleItemRowDrawer } from './cycle-item-row-drawer'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 import type { FindingRow } from '@/app/actions/compliance-finding'
-import type { EfterlevnadsBedomning } from '@prisma/client'
+import {
+  EfterlevnadsBedomning,
+  FindingSeverity,
+  FindingType,
+} from '@prisma/client'
 
 // Mirror compliance-detail-table.tsx conventions so behaviour is predictable.
 const VIRTUALIZATION_THRESHOLD = 100
 const ESTIMATED_ROW_HEIGHT = 72
 const OVERSCAN_COUNT = 5
 
+// Story 21.16: max number of finding dots rendered inline per row. Beyond
+// this we truncate to "+N" to keep the row compact at high finding counts.
+const MAX_INLINE_FINDING_DOTS = 6
+
 interface CycleItemsTabProps {
   items: CycleItemRow[]
   readOnly: boolean
   highlightedRowId: string | null
+  /** Story 21.16 — row currently open in the modal. Paints a subtle bar on
+   *  the left edge so users remember where they are when the modal closes. */
+  selectedItemId: string | null
+  /** Story 21.16 — open the CycleItemModal on this row. Parent writes to
+   *  state + URL; this component is purely presentational. */
+  onSelectItem: (_itemId: string) => void
   onBedomningChange: (
     _row: CycleItemRow,
     _next: EfterlevnadsBedomning | null
@@ -43,30 +58,24 @@ interface CycleItemsTabProps {
   ) => Promise<void>
   onSign: (_row: CycleItemRow) => Promise<void>
   onUnsign: (_row: CycleItemRow) => Promise<void>
-  // Story 21.7: threaded through to the row drawer for the per-item findings
-  // affordance (AC 13). The drawer reads from this shared `findings` array
-  // and forwards any edits back to `onFindingMutation` so the page-level SWR
-  // cache stays the single source of truth.
-  cycleId: string
+  /** Story 21.7 — findings array (hoisted at the page level). Used for the
+   *  inline finding-dot signals under each law row. */
   findings: FindingRow[]
-  onFindingMutation: (_finding: FindingRow) => void
 }
 
 export function CycleItemsTab({
   items,
   readOnly,
   highlightedRowId,
+  selectedItemId,
+  onSelectItem,
   onBedomningChange,
   onMotiveringChange,
   onSign,
   onUnsign,
-  cycleId,
   findings,
-  onFindingMutation,
 }: CycleItemsTabProps) {
-  const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
-
   const shouldVirtualise = items.length > VIRTUALIZATION_THRESHOLD
 
   const virtualizer = useVirtualizer({
@@ -77,21 +86,6 @@ export function CycleItemsTab({
     measureElement: (el) => el.getBoundingClientRect().height,
   })
 
-  // AC 9 keyboard: Escape collapses the currently-expanded drawer. Enter/Space
-  // on the chevron button works natively via <button>'s default handling.
-  // Attached at document level so the root wrapper can remain a plain <div>
-  // (no static-element-interactions a11y violation).
-  useEffect(() => {
-    if (expandedRowId === null) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setExpandedRowId(null)
-      }
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [expandedRowId])
-
   if (items.length === 0) {
     return (
       <div className="rounded-md border p-8 text-center text-sm italic text-muted-foreground">
@@ -101,9 +95,6 @@ export function CycleItemsTab({
   }
 
   return (
-    // Brand wrapper — matches /tasks, /workspace/styrdokument, and
-    // Mina listor's compliance-detail-table. overflow-x-auto for
-    // responsive horizontal scroll on narrow viewports.
     <div className="rounded-md border overflow-x-auto">
       <TableHeader />
       {shouldVirtualise ? (
@@ -111,32 +102,28 @@ export function CycleItemsTab({
           items={items}
           virtualizer={virtualizer}
           scrollRef={scrollRef}
-          expandedRowId={expandedRowId}
-          setExpandedRowId={setExpandedRowId}
           highlightedRowId={highlightedRowId}
+          selectedItemId={selectedItemId}
+          onSelectItem={onSelectItem}
           readOnly={readOnly}
           onBedomningChange={onBedomningChange}
           onMotiveringChange={onMotiveringChange}
           onSign={onSign}
           onUnsign={onUnsign}
-          cycleId={cycleId}
           findings={findings}
-          onFindingMutation={onFindingMutation}
         />
       ) : (
         <PlainBody
           items={items}
-          expandedRowId={expandedRowId}
-          setExpandedRowId={setExpandedRowId}
           highlightedRowId={highlightedRowId}
+          selectedItemId={selectedItemId}
+          onSelectItem={onSelectItem}
           readOnly={readOnly}
           onBedomningChange={onBedomningChange}
           onMotiveringChange={onMotiveringChange}
           onSign={onSign}
           onUnsign={onUnsign}
-          cycleId={cycleId}
           findings={findings}
-          onFindingMutation={onFindingMutation}
         />
       )}
     </div>
@@ -147,9 +134,8 @@ export function CycleItemsTab({
 // Presentation
 // ---------------------------------------------------------------------------
 
-// Column sizing — cell padding matches shadcn <TableHead>/<TableCell> default
-// (px-4, align-middle). Header gets h-12 per shadcn convention; body rows size
-// to their content with py-3 vertical breathing room.
+// Story 21.16: chevron column removed. Row becomes pure navigation — clicking
+// anywhere outside the inline controls opens the modal.
 const COLUMN_CLASS = {
   lag: 'min-w-[240px] flex-[2_0_0%] px-4',
   nuvarande: 'w-36 px-4',
@@ -157,59 +143,48 @@ const COLUMN_CLASS = {
   motivering: 'min-w-[200px] flex-[3_0_0%] px-4',
   ansvarig: 'w-40 px-4',
   signerad: 'w-48 px-4',
-  chevron: 'w-10 px-2',
 } as const
 
 function TableHeader() {
-  // Matches shadcn <TableHeader> + <TableHead> styling used across
-  // /laglistor, /uppgifter, /styrdokument: no background tint, h-12,
-  // font-medium muted-foreground, sentence case, border-b separator.
   return (
     <div
       role="rowheader"
       className="flex h-12 items-center border-b text-sm font-medium text-muted-foreground"
     >
-      <div className={COLUMN_CLASS.lag}>Lag</div>
+      <div className={COLUMN_CLASS.lag}>Dokument</div>
       <div className={COLUMN_CLASS.nuvarande}>Nuvarande status</div>
       <div className={COLUMN_CLASS.bedomning}>Bedömning</div>
       <div className={COLUMN_CLASS.motivering}>Motivering</div>
       <div className={COLUMN_CLASS.ansvarig}>Ansvarig</div>
       <div className={COLUMN_CLASS.signerad}>Signerad</div>
-      <div className={COLUMN_CLASS.chevron} aria-hidden="true" />
     </div>
   )
 }
 
 interface RowRenderProps {
   row: CycleItemRow
-  expanded: boolean
   highlighted: boolean
-  onToggleExpand: () => void
+  selected: boolean
+  onSelect: () => void
   readOnly: boolean
   onBedomningChange: (_next: EfterlevnadsBedomning | null) => Promise<void>
   onMotiveringChange: (_next: string | null) => Promise<void>
   onSign: () => Promise<void>
   onUnsign: () => Promise<void>
-  cycleId: string
-  findings: FindingRow[]
-  allItems: CycleItemRow[]
-  onFindingMutation: (_finding: FindingRow) => void
+  itemFindings: FindingRow[]
 }
 
 function RowContent({
   row,
-  expanded,
   highlighted,
-  onToggleExpand,
+  selected,
+  onSelect,
   readOnly,
   onBedomningChange,
   onMotiveringChange,
   onSign,
   onUnsign,
-  cycleId,
-  findings,
-  allItems,
-  onFindingMutation,
+  itemFindings,
 }: RowRenderProps) {
   const statusOption = COMPLIANCE_STATUS_OPTIONS.find(
     (o) => o.value === row.sourceComplianceStatus
@@ -230,28 +205,53 @@ function RowContent({
       role="row"
       data-cycle-item-id={row.id}
       data-testid={`cycle-item-row-${row.id}`}
-      className={cn('transition-colors', highlighted && 'ring-2 ring-primary')}
+      aria-selected={selected}
+      className={cn(
+        'transition-colors',
+        highlighted && 'ring-2 ring-primary',
+        selected && 'bg-muted/40 shadow-[inset_2px_0_0_hsl(var(--primary))]'
+      )}
     >
-      <div className="flex items-center border-b py-3 transition-colors hover:bg-muted/50">
+      <div
+        className="flex items-center border-b py-3 transition-colors hover:bg-muted/50 cursor-pointer"
+        onClick={onSelect}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            // Prevent scrolling on Space
+            if (e.target === e.currentTarget) {
+              e.preventDefault()
+              onSelect()
+            }
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`Öppna ${row.lawTitle}`}
+      >
         <div className={COLUMN_CLASS.lag}>
-          <Link
-            href="/laglistor"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-start gap-1 hover:text-primary"
-            title={row.lawTitle}
-          >
-            <span className="flex-1">
-              <span className="font-medium">{row.lawTitle}</span>
-              <span className="block text-xs text-muted-foreground">
-                {row.lawDocumentNumber}
-              </span>
-            </span>
-            <ExternalLink
-              className="mt-0.5 h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100"
-              aria-hidden="true"
-            />
-          </Link>
+          <div className="flex items-start gap-1">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1 min-w-0">
+                <span className="font-medium truncate" title={row.lawTitle}>
+                  {row.lawTitle}
+                </span>
+                <Link
+                  href="/laglistor"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="shrink-0 opacity-0 transition-opacity hover:text-primary group-hover:opacity-100"
+                  aria-label="Öppna i laglistan (ny flik)"
+                >
+                  <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                </Link>
+              </div>
+              <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                <span>{row.lawDocumentNumber}</span>
+                <FindingDots findings={itemFindings} />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className={COLUMN_CLASS.nuvarande}>
@@ -270,7 +270,17 @@ function RowContent({
           )}
         </div>
 
-        <div className={COLUMN_CLASS.bedomning}>
+        {/* Inline controls — stopPropagation so clicking them doesn't also
+            open the modal. */}
+        {/* Stop-propagation zone: clicking the inline Bedömning control
+            shouldn't bubble to the row-level click-to-open-modal handler. */}
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+        <div
+          className={COLUMN_CLASS.bedomning}
+          role="presentation"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
           <ItemBedomningSelect
             value={row.efterlevnadsbedomning}
             onChange={onBedomningChange}
@@ -278,7 +288,13 @@ function RowContent({
           />
         </div>
 
-        <div className={COLUMN_CLASS.motivering}>
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+        <div
+          className={COLUMN_CLASS.motivering}
+          role="presentation"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
           <ItemMotiveringEditor
             value={row.motivering}
             onChange={onMotiveringChange}
@@ -292,9 +308,13 @@ function RowContent({
           </span>
         </div>
 
-        <div className={COLUMN_CLASS.signerad}>
-          {/* AC 8: in read-only mode, hide the button entirely for unsigned
-              items; for signed items, show metadata (no unsign X). */}
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+        <div
+          className={COLUMN_CLASS.signerad}
+          role="presentation"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
           {readOnly && row.signedOffAt === null ? (
             <span className="text-xs text-muted-foreground">—</span>
           ) : (
@@ -309,35 +329,52 @@ function RowContent({
             />
           )}
         </div>
-
-        <div className={COLUMN_CLASS.chevron}>
-          <button
-            type="button"
-            onClick={onToggleExpand}
-            aria-expanded={expanded}
-            aria-label={expanded ? 'Dölj detaljer' : 'Visa detaljer'}
-            className="rounded p-1 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {expanded ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </button>
-        </div>
       </div>
-      {expanded ? (
-        <CycleItemRowDrawer
-          row={row}
-          cycleId={cycleId}
-          readOnly={readOnly}
-          findings={findings}
-          items={allItems}
-          onFindingMutation={onFindingMutation}
-        />
-      ) : null}
     </div>
   )
+}
+
+/**
+ * Story 21.16: inline row signal for open findings. One dot per open finding
+ * (up to MAX_INLINE_FINDING_DOTS), colored by severity:
+ *   - red    = AVVIKELSE + MAJOR
+ *   - orange = AVVIKELSE + MINOR
+ *   - amber  = OBSERVATION
+ *   - blue   = FORBATTRING
+ * Followed by a count tail. When no open findings exist, renders nothing
+ * (keeps the row clean).
+ */
+function FindingDots({ findings }: { findings: FindingRow[] }) {
+  const openFindings = findings.filter((f) => f.closedAt === null)
+  if (openFindings.length === 0) return null
+
+  const visible = openFindings.slice(0, MAX_INLINE_FINDING_DOTS)
+  const overflow = openFindings.length - visible.length
+
+  return (
+    <span className="inline-flex items-center gap-0.5" aria-hidden="true">
+      {visible.map((f) => (
+        <span
+          key={f.id}
+          className={cn('h-1.5 w-1.5 rounded-full', findingDotColor(f))}
+        />
+      ))}
+      {overflow > 0 ? (
+        <span className="ml-1 text-[10px]">+{overflow}</span>
+      ) : null}
+      <span className="ml-1.5">
+        {openFindings.length} {openFindings.length === 1 ? 'öppen' : 'öppna'}
+      </span>
+    </span>
+  )
+}
+
+function findingDotColor(f: FindingRow): string {
+  if (f.type === FindingType.AVVIKELSE) {
+    return f.severity === FindingSeverity.MAJOR ? 'bg-red-500' : 'bg-orange-500'
+  }
+  if (f.type === FindingType.OBSERVATION) return 'bg-amber-500'
+  return 'bg-blue-500'
 }
 
 // ---------------------------------------------------------------------------
@@ -346,9 +383,9 @@ function RowContent({
 
 interface BodyProps {
   items: CycleItemRow[]
-  expandedRowId: string | null
-  setExpandedRowId: (_id: string | null) => void
   highlightedRowId: string | null
+  selectedItemId: string | null
+  onSelectItem: (_itemId: string) => void
   readOnly: boolean
   onBedomningChange: (
     _row: CycleItemRow,
@@ -360,24 +397,20 @@ interface BodyProps {
   ) => Promise<void>
   onSign: (_row: CycleItemRow) => Promise<void>
   onUnsign: (_row: CycleItemRow) => Promise<void>
-  cycleId: string
   findings: FindingRow[]
-  onFindingMutation: (_finding: FindingRow) => void
 }
 
 function PlainBody({
   items,
-  expandedRowId,
-  setExpandedRowId,
   highlightedRowId,
+  selectedItemId,
+  onSelectItem,
   readOnly,
   onBedomningChange,
   onMotiveringChange,
   onSign,
   onUnsign,
-  cycleId,
   findings,
-  onFindingMutation,
 }: BodyProps) {
   return (
     <div
@@ -386,23 +419,22 @@ function PlainBody({
       data-testid="cycle-items-list"
     >
       {items.map((row) => {
-        const expanded = expandedRowId === row.id
+        const itemFindings = findings.filter(
+          (f) => f.lawListItemId === row.lawListItemId
+        )
         return (
           <RowContent
             key={row.id}
             row={row}
-            expanded={expanded}
             highlighted={highlightedRowId === row.id}
-            onToggleExpand={() => setExpandedRowId(expanded ? null : row.id)}
+            selected={selectedItemId === row.id}
+            onSelect={() => onSelectItem(row.id)}
             readOnly={readOnly}
             onBedomningChange={(next) => onBedomningChange(row, next)}
             onMotiveringChange={(next) => onMotiveringChange(row, next)}
             onSign={() => onSign(row)}
             onUnsign={() => onUnsign(row)}
-            cycleId={cycleId}
-            findings={findings}
-            allItems={items}
-            onFindingMutation={onFindingMutation}
+            itemFindings={itemFindings}
           />
         )
       })}
@@ -423,24 +455,16 @@ function VirtualisedBody({
   items,
   virtualizer,
   scrollRef,
-  expandedRowId,
-  setExpandedRowId,
   highlightedRowId,
+  selectedItemId,
+  onSelectItem,
   readOnly,
   onBedomningChange,
   onMotiveringChange,
   onSign,
   onUnsign,
-  cycleId,
   findings,
-  onFindingMutation,
 }: VirtualisedBodyProps) {
-  // Recompute measurements when the expanded row changes — the drawer changes
-  // a row's height from ~72px to several hundred px.
-  useEffect(() => {
-    virtualizer.measure()
-  }, [expandedRowId, virtualizer])
-
   return (
     <div
       ref={scrollRef}
@@ -459,7 +483,9 @@ function VirtualisedBody({
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const row = items[virtualRow.index]
           if (!row) return null
-          const expanded = expandedRowId === row.id
+          const itemFindings = findings.filter(
+            (f) => f.lawListItemId === row.lawListItemId
+          )
           return (
             <div
               key={row.id}
@@ -477,20 +503,15 @@ function VirtualisedBody({
             >
               <RowContent
                 row={row}
-                expanded={expanded}
                 highlighted={highlightedRowId === row.id}
-                onToggleExpand={() =>
-                  setExpandedRowId(expanded ? null : row.id)
-                }
+                selected={selectedItemId === row.id}
+                onSelect={() => onSelectItem(row.id)}
                 readOnly={readOnly}
                 onBedomningChange={(next) => onBedomningChange(row, next)}
                 onMotiveringChange={(next) => onMotiveringChange(row, next)}
                 onSign={() => onSign(row)}
                 onUnsign={() => onUnsign(row)}
-                cycleId={cycleId}
-                findings={findings}
-                allItems={items}
-                onFindingMutation={onFindingMutation}
+                itemFindings={itemFindings}
               />
             </div>
           )
