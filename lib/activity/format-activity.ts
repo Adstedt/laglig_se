@@ -566,6 +566,22 @@ export function formatActivity(input: FormatInput): SentencePart[] {
     case 'finding_reopened':
       return [u, text(' återöppnade '), primary]
 
+    // Epic 21 follow-up — verify step. Emitted alongside finding_closed when
+    // the auditor uses the explicit "Verifiera" action. Optional verification
+    // note is the audit evidence; truncated to 80 chars like close_reason.
+    case 'finding_verified': {
+      const note = pickString(newP, 'verification_note')
+      const parts: SentencePart[] = [u, text(' verifierade '), primary]
+      if (note) {
+        const truncated =
+          note.length > CLOSE_REASON_MAX_CHARS
+            ? note.slice(0, CLOSE_REASON_MAX_CHARS) + '…'
+            : note
+        parts.push(text(': '), emphasis(truncated))
+      }
+      return parts
+    }
+
     // ----------------- Compliance-audit findings — task loop (Epic 21 — Story 21.8) -----------------
     case 'finding_task_spawned': {
       const taskTitle = pickString(newP, 'task_title') ?? 'en åtgärdsuppgift'

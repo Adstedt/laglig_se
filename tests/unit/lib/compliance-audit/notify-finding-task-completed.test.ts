@@ -73,7 +73,10 @@ describe('notifyIfFindingTaskCompleted', () => {
         workspace_id: WORKSPACE_ID,
         user_id: LEAD_AUDITOR_ID,
         type: NotificationType.FINDING_READY_TO_CLOSE,
-        title: 'Uppgift slutförd för avvikelse',
+        // Epic 21 follow-up (verify step): title/body reframed from
+        // "kan stängas" to "verifiera" to cue the auditor's explicit
+        // verification act rather than a passive close.
+        title: 'Åtgärd redo att verifieras',
         body: expect.stringContaining('Q2 Internrevision'),
         entity_type: 'compliance_finding',
         entity_id: FINDING_ID,

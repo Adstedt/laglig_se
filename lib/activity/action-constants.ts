@@ -83,6 +83,9 @@ export const KNOWN_ACTIONS = [
   'finding_task_spawned',
   'finding_task_completed',
   'finding_task_completion_notified',
+
+  // Compliance-audit findings — verify step (Epic 21 follow-up)
+  'finding_verified',
 ] as const
 
 export type KnownAction = (typeof KNOWN_ACTIONS)[number]

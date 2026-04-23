@@ -130,8 +130,14 @@ describe('CycleFindingsTab', () => {
     expect(screen.getByText('Saknad utbildningsplan')).toBeInTheDocument()
     expect(screen.getByText('Observation 2')).toBeInTheDocument()
     expect(screen.getByText('Förbättring 3')).toBeInTheDocument()
-    // Every open finding shows the "Öppen" status badge.
-    expect(screen.getAllByText('Öppen').length).toBe(3)
+    // Story 21.16 — FindingCard renders type pills; open findings don't carry
+    // an explicit "Öppen" badge (closed is the exception). Assert type pills
+    // instead.
+    expect(screen.getAllByText('Avvikelse').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Observation').length).toBeGreaterThanOrEqual(1)
+    expect(
+      screen.getAllByText('Förbättringsförslag').length
+    ).toBeGreaterThanOrEqual(1)
   })
 
   it('empty state when findings is empty', () => {
@@ -216,7 +222,8 @@ describe('CycleFindingsTab', () => {
     expect(screen.getByText(/Denna kontroll är förseglad/)).toBeInTheDocument()
   })
 
-  it('single-open accordion: expanding row B collapses row A', () => {
+  it('Story 21.16 — clicking a finding card body fires onFindingClick with the finding', () => {
+    const onFindingClick = vi.fn()
     const findings = [
       makeFinding({ id: 'f-1', title: 'First' }),
       makeFinding({ id: 'f-2', title: 'Second' }),
@@ -228,23 +235,39 @@ describe('CycleFindingsTab', () => {
         readOnly={false}
         items={[]}
         onFindingMutation={vi.fn()}
+        onFindingClick={onFindingClick}
       />
     )
-    const buttons = screen.getAllByRole('button', { name: 'Visa detaljer' })
-    fireEvent.click(buttons[0]!)
-    // After expanding row 1, its chevron flips.
-    let hiddenButtons = screen.getAllByRole('button', {
-      name: 'Dölj detaljer',
-    })
-    expect(hiddenButtons.length).toBe(1)
+    // Click the first card body via its data-testid.
+    const firstCard = screen.getByTestId('finding-card-f-1')
+    fireEvent.click(firstCard)
+    expect(onFindingClick).toHaveBeenCalledTimes(1)
+    expect(onFindingClick).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'f-1', title: 'First' })
+    )
+  })
 
-    // Expand row 2: row 1 collapses.
-    const nextButtons = screen.getAllByRole('button', {
-      name: 'Visa detaljer',
+  it('Story 21.16 — inline action buttons do NOT trigger onFindingClick', () => {
+    const onFindingClick = vi.fn()
+    closeFindingMock.mockResolvedValue({
+      success: true,
+      data: { finding: makeFinding({ id: 'f-1', closedAt: new Date() }) },
     })
-    fireEvent.click(nextButtons[0]!)
-    hiddenButtons = screen.getAllByRole('button', { name: 'Dölj detaljer' })
-    expect(hiddenButtons.length).toBe(1)
+    const findings = [makeFinding({ id: 'f-1', title: 'First' })]
+    render(
+      <CycleFindingsTab
+        cycleId={CYCLE_ID}
+        findings={findings}
+        readOnly={false}
+        items={[]}
+        onFindingMutation={vi.fn()}
+        onFindingClick={onFindingClick}
+      />
+    )
+    // Clicking the close button (inline action) should NOT bubble to
+    // onFindingClick.
+    fireEvent.click(screen.getByTestId('cycle-finding-close-f-1'))
+    expect(onFindingClick).not.toHaveBeenCalled()
   })
 
   it('virtualisation kicks in when findings.length > 50', () => {
@@ -431,6 +454,133 @@ describe('CycleFindingsTab — spawn-task late-add (Epic 21 follow-up)', () => {
     await vi.waitFor(() => {
       expect(spawnTaskForFindingMock).toHaveBeenCalledWith({
         findingId: finding.id,
+      })
+      expect(onFindingMutation).toHaveBeenCalled()
+    })
+  })
+})
+
+describe('CycleFindingsTab — verify step (Epic 21 follow-up)', () => {
+  it('ready-to-verify finding renders amber "Redo att verifiera" badge', () => {
+    const finding = makeFinding({
+      id: 'frtv',
+      type: FindingType.AVVIKELSE,
+      severity: FindingSeverity.MAJOR,
+      correctiveActionTaskId: 'task-1',
+      correctiveActionTask: {
+        id: 'task-1',
+        title: 'Fix',
+        completedAt: new Date('2026-05-15T10:00:00Z'),
+      },
+    })
+    render(
+      <CycleFindingsTab
+        cycleId={CYCLE_ID}
+        findings={[finding]}
+        readOnly={false}
+        items={[]}
+        onFindingMutation={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Redo att verifiera')).toBeInTheDocument()
+    // No "Öppen" or "Stängd" badge.
+    expect(screen.queryByText('Stängd')).not.toBeInTheDocument()
+  })
+
+  it('ready-to-verify row shows "Verifiera" button instead of "Stäng"', () => {
+    const finding = makeFinding({
+      id: 'frtv',
+      type: FindingType.AVVIKELSE,
+      severity: FindingSeverity.MAJOR,
+      correctiveActionTaskId: 'task-1',
+      correctiveActionTask: {
+        id: 'task-1',
+        title: 'Fix',
+        completedAt: new Date('2026-05-15T10:00:00Z'),
+      },
+    })
+    render(
+      <CycleFindingsTab
+        cycleId={CYCLE_ID}
+        findings={[finding]}
+        readOnly={false}
+        items={[]}
+        onFindingMutation={vi.fn()}
+      />
+    )
+    expect(
+      screen.getByTestId(`cycle-finding-verify-${finding.id}`)
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByTestId(`cycle-finding-close-${finding.id}`)
+    ).not.toBeInTheDocument()
+  })
+
+  it('clicking Verifiera opens dialog with finding + task context', () => {
+    const finding = makeFinding({
+      id: 'frtv',
+      title: 'Saknar utbildningsplan',
+      type: FindingType.AVVIKELSE,
+      severity: FindingSeverity.MAJOR,
+      correctiveActionTaskId: 'task-1',
+      correctiveActionTask: {
+        id: 'task-1',
+        title: 'Skriv utbildningsplan',
+        completedAt: new Date('2026-05-15T10:00:00Z'),
+      },
+    })
+    render(
+      <CycleFindingsTab
+        cycleId={CYCLE_ID}
+        findings={[finding]}
+        readOnly={false}
+        items={[]}
+        onFindingMutation={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByTestId(`cycle-finding-verify-${finding.id}`))
+    const context = screen.getByTestId('verify-finding-context')
+    expect(context.textContent).toContain('Saknar utbildningsplan')
+    expect(context.textContent).toContain('Skriv utbildningsplan')
+  })
+
+  it('confirming verify calls closeFinding with verificationNote when set', async () => {
+    const onFindingMutation = vi.fn()
+    const finding = makeFinding({
+      id: 'frtv',
+      type: FindingType.AVVIKELSE,
+      severity: FindingSeverity.MAJOR,
+      correctiveActionTaskId: 'task-1',
+      correctiveActionTask: {
+        id: 'task-1',
+        title: 'Fix',
+        completedAt: new Date('2026-05-15T10:00:00Z'),
+      },
+    })
+    closeFindingMock.mockResolvedValue({
+      success: true,
+      data: { finding: { ...finding, closedAt: new Date() } },
+    })
+
+    render(
+      <CycleFindingsTab
+        cycleId={CYCLE_ID}
+        findings={[finding]}
+        readOnly={false}
+        items={[]}
+        onFindingMutation={onFindingMutation}
+      />
+    )
+    fireEvent.click(screen.getByTestId(`cycle-finding-verify-${finding.id}`))
+    fireEvent.change(screen.getByTestId('verify-finding-note'), {
+      target: { value: 'Granskade brandövningsplan' },
+    })
+    fireEvent.click(screen.getByTestId('verify-finding-submit'))
+
+    await vi.waitFor(() => {
+      expect(closeFindingMock).toHaveBeenCalledWith({
+        findingId: finding.id,
+        verificationNote: 'Granskade brandövningsplan',
       })
       expect(onFindingMutation).toHaveBeenCalled()
     })

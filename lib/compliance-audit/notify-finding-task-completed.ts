@@ -81,13 +81,18 @@ export async function notifyIfFindingTaskCompleted(
     if (recentNotification) return
 
     // Create the in-app Notification row.
+    // Epic 21 follow-up (verify step): copy shifted from "kan stängas" to
+    // "verifiera" framing. The auditor's explicit verification moment is
+    // what produces defensible audit evidence — the notification cues that
+    // act, not a passive close. Enum value `FINDING_READY_TO_CLOSE` kept
+    // (internal name) to avoid migration.
     await prisma.notification.create({
       data: {
         workspace_id: args.workspaceId,
         user_id: cycle.lead_auditor_user_id,
         type: NotificationType.FINDING_READY_TO_CLOSE,
-        title: 'Uppgift slutförd för avvikelse',
-        body: `Uppgiften "${task.title}" är slutförd. Avvikelsen kan nu stängas i kontrollen "${cycle.name}".`,
+        title: 'Åtgärd redo att verifieras',
+        body: `Åtgärdsuppgiften "${task.title}" är slutförd i kontrollen "${cycle.name}". Verifiera att åtgärden är effektiv.`,
         entity_type: 'compliance_finding',
         entity_id: finding.id,
       },
