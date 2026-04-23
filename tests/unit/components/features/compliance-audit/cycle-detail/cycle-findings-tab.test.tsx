@@ -151,7 +151,7 @@ describe('CycleFindingsTab', () => {
       />
     )
     expect(
-      screen.getByText('Inga findings registrerade ännu.')
+      screen.getByText('Inga anmärkningar registrerade ännu.')
     ).toBeInTheDocument()
   })
 
@@ -219,7 +219,7 @@ describe('CycleFindingsTab', () => {
     expect(
       screen.queryByTestId('cycle-findings-add-button')
     ).not.toBeInTheDocument()
-    expect(screen.getByText(/Denna kontroll är förseglad/)).toBeInTheDocument()
+    expect(screen.getByText(/Denna kontroll är fastställd/)).toBeInTheDocument()
   })
 
   it('Story 21.16 — clicking a finding card body fires onFindingClick with the finding', () => {

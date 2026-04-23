@@ -115,8 +115,8 @@ function FindingsCountChip({
   const { open, closed } = counts
   const label =
     open === 0 && closed === 0
-      ? 'Findings: inga'
-      : `Findings: ${open} öppna · ${closed} stängda`
+      ? 'Anmärkningar: inga'
+      : `Anmärkningar: ${open} öppna · ${closed} stängda`
   return (
     <span data-testid="cycle-header-findings-chip" className="truncate">
       {label}
@@ -147,7 +147,7 @@ function ProgressCluster() {
       type="button"
       onClick={jumpToFirstUnbedomd}
       disabled={bedomdaDisabled}
-      aria-label="Hoppa till första obedömda posten"
+      aria-label="Hoppa till första obedömda dokumentet"
       className={cn(
         'flex flex-col items-start rounded-md px-2 py-1 text-left text-sm transition-colors',
         !bedomdaDisabled &&
@@ -167,7 +167,7 @@ function ProgressCluster() {
       type="button"
       onClick={jumpToFirstUnsigned}
       disabled={signeradeDisabled}
-      aria-label="Hoppa till första osignerade posten"
+      aria-label="Hoppa till första osignerade dokumentet"
       className={cn(
         'flex flex-col items-start rounded-md px-2 py-1 text-left text-sm transition-colors',
         !signeradeDisabled &&
@@ -190,7 +190,7 @@ function ProgressCluster() {
             <TooltipTrigger asChild>
               <span>{bedomdaBtn}</span>
             </TooltipTrigger>
-            <TooltipContent>Alla poster bedömda</TooltipContent>
+            <TooltipContent>Alla dokument bedömda</TooltipContent>
           </Tooltip>
         ) : (
           bedomdaBtn
@@ -200,7 +200,7 @@ function ProgressCluster() {
             <TooltipTrigger asChild>
               <span>{signeradeBtn}</span>
             </TooltipTrigger>
-            <TooltipContent>Alla poster signerade</TooltipContent>
+            <TooltipContent>Alla dokument signerade</TooltipContent>
           </Tooltip>
         ) : (
           signeradeBtn
@@ -231,7 +231,7 @@ function ReadOnlyBanner({ cycle }: { cycle: CycleDetail }) {
 
   const isSealed = cycle.status === ComplianceCycleStatus.SEALED
   const message = isSealed
-    ? `Denna kontroll är förseglad (${cycle.sealHash ? cycle.sealHash.slice(0, 12) + '…' : 'okänd hash'}). Läsbehörighet endast.`
+    ? `Denna kontroll är fastställd (${cycle.sealHash ? cycle.sealHash.slice(0, 12) + '…' : 'okänd hash'}). Läsbehörighet endast.`
     : 'Denna kontroll är arkiverad. Läsbehörighet endast.'
 
   return (

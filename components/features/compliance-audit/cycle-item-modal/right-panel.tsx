@@ -69,7 +69,7 @@ export function CycleItemModalRightPanel({
     item.efterlevnadsbedomning !== null
   const canUnsign = !readOnly && item.signedOffAt !== null
   const signDisabledReason = readOnly
-    ? 'Kontrollen är förseglad'
+    ? 'Kontrollen är fastställd'
     : item.efterlevnadsbedomning === null
       ? 'Ange bedömning innan signering'
       : undefined
@@ -229,7 +229,11 @@ export function CycleItemModalRightPanel({
                       ? 'warning'
                       : 'neutral'
                 }
-                label={`${openCount} öppna finding${openCount === 1 ? '' : 's'}`}
+                label={
+                  openCount === 1
+                    ? '1 öppen anmärkning'
+                    : `${openCount} öppna anmärkningar`
+                }
                 accent={majorCount > 0 ? `${majorCount} MAJOR` : undefined}
               />
               <HealthRow

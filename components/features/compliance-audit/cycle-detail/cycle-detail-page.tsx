@@ -77,7 +77,7 @@ export function CycleDetailPage({
     async () => {
       const result = await getCycleItemsForCycle(cycle.id)
       if (!result.success || !result.data) {
-        throw new Error(result.error ?? 'Kunde inte hämta kontrollposter')
+        throw new Error(result.error ?? 'Kunde inte hämta kontrollens dokument')
       }
       return result.data
     },
@@ -93,7 +93,7 @@ export function CycleDetailPage({
     async () => {
       const result = await listFindingsForCycle({ cycleId: cycle.id })
       if (!result.success || !result.data) {
-        throw new Error(result.error ?? 'Kunde inte hämta findings')
+        throw new Error(result.error ?? 'Kunde inte hämta anmärkningar')
       }
       return result.data
     },
@@ -379,8 +379,8 @@ export function CycleDetailPage({
 
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList>
-            <TabsTrigger value="items">Items</TabsTrigger>
-            <TabsTrigger value="findings">Findings</TabsTrigger>
+            <TabsTrigger value="items">Dokument</TabsTrigger>
+            <TabsTrigger value="findings">Anmärkningar</TabsTrigger>
             <TabsTrigger value="rapport">Rapport</TabsTrigger>
             <TabsTrigger value="aktivitet">Aktivitet</TabsTrigger>
           </TabsList>

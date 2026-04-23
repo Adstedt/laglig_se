@@ -169,7 +169,7 @@ Empty-state alignment was out of scope for this pass but is a likely follow-up a
 | Where | Primitive | Active style |
 |-------|-----------|--------------|
 | `/laglistor` (Mina listor / Ändringar) | shadcn `TabsTrigger` | shadcn primitive |
-| `/laglistor/kontroller` (Aktiva / Slutförda / Förseglade / Arkiverade / Alla) | hand-rolled `role="tab"` chip with `rounded-full border` and **count badges** | dark filled (`border-foreground bg-foreground text-background`) |
+| `/laglistor/kontroller` (Aktiva / Slutförda / Fastställda / Arkiverade / Alla) | hand-rolled `role="tab"` chip with `rounded-full border` and **count badges** | dark filled (`border-foreground bg-foreground text-background`) |
 | `/laglistor/kontroller/[cycleId]` (Items / Findings / Rapport / Aktivitet) | shadcn `TabsTrigger` | shadcn primitive |
 | Findings tab inner filter row | hand-rolled chip with `rounded-full border` and **no count badges**, **smaller text** | tinted (`border-primary bg-primary/10 text-primary`) |
 | `/tasks` (Sammanfattning / Aktiva / Lista / Kalender / Alla uppgifter) | shadcn `TabsTrigger` with leading icons | shadcn primitive |

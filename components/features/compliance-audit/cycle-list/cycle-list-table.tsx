@@ -54,7 +54,7 @@ const FILTERS: FilterDef[] = [
   },
   {
     key: 'forseglade',
-    label: 'Förseglade',
+    label: 'Fastställda',
     statuses: [ComplianceCycleStatus.SEALED],
   },
   {
@@ -180,7 +180,7 @@ export function CycleListTable({ cycles, canCreate }: CycleListTableProps) {
                 <TableHead>Laglista</TableHead>
                 <TableHead className="w-48">Period</TableHead>
                 <TableHead>Ansvarig revisor</TableHead>
-                <TableHead className="w-20 text-right">Poster</TableHead>
+                <TableHead className="w-20 text-right">Dokument</TableHead>
                 <TableHead className="w-32">Skapad</TableHead>
               </TableRow>
             </TableHeader>

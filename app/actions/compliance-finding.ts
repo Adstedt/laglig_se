@@ -316,7 +316,7 @@ function assertCycleEditableUi(status: ComplianceCycleStatus): EditableCheck {
     return {
       ok: false,
       error:
-        'Kontrollen är förseglad eller arkiverad — ändringar är inte tillåtna.',
+        'Kontrollen är fastställd eller arkiverad — ändringar är inte tillåtna.',
     }
   }
   return { ok: true }

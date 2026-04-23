@@ -297,7 +297,7 @@ describe('formatActivity', () => {
       primary: cycleRef,
     })
     expect(sentencePartsToText(parts)).toBe(
-      'Alexander startade kontrollen Q2 compliance review (23 poster)'
+      'Alexander startade kontrollen Q2 compliance review (23 dokument)'
     )
   })
 

@@ -89,7 +89,7 @@ export function CycleItemsTab({
   if (items.length === 0) {
     return (
       <div className="rounded-md border p-8 text-center text-sm italic text-muted-foreground">
-        Kontrollen har inga poster.
+        Kontrollen har inga dokument.
       </div>
     )
   }
@@ -195,7 +195,7 @@ function RowContent({
   const canUnsign = !readOnly && row.signedOffAt !== null
 
   const signDisabledReason = readOnly
-    ? 'Kontrollen är förseglad'
+    ? 'Kontrollen är fastställd'
     : row.efterlevnadsbedomning === null
       ? 'Ange bedömning innan signering'
       : undefined

@@ -24,7 +24,7 @@ describe('CycleStatusBadge', () => {
     },
     {
       status: ComplianceCycleStatus.SEALED,
-      label: 'Förseglad',
+      label: 'Fastställd',
       colorClass: 'bg-emerald-100',
     },
     {

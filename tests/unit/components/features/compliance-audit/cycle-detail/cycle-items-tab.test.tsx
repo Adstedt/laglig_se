@@ -367,9 +367,9 @@ describe('CycleDetailPage — items tab', () => {
       readOnly: true,
     })
 
-    // Read-only banner present with truncated hash + "förseglad" copy.
+    // Read-only banner present with truncated hash + "fastställd" copy.
     const banner = screen.getByRole('status')
-    expect(banner.textContent).toContain('förseglad')
+    expect(banner.textContent).toContain('fastställd')
     expect(banner.textContent).toContain('abc123def456')
 
     // No sign-off buttons rendered in read-only mode (AC 8 — hidden, not disabled).
@@ -393,7 +393,7 @@ describe('CycleDetailPage — items tab', () => {
 
     const banner = screen.getByRole('status')
     expect(banner.textContent).toContain('arkiverad')
-    expect(banner.textContent).not.toContain('förseglad')
+    expect(banner.textContent).not.toContain('fastställd')
   })
 
   // --- Story 21.16 — row-click-opens-modal (replaces drawer expand) ---------
@@ -525,10 +525,10 @@ describe('CycleDetailPage — items tab', () => {
 
     // All 2 bedömda + signerade.
     const bedomdaBtn = screen.getByLabelText(
-      'Hoppa till första obedömda posten'
+      'Hoppa till första obedömda dokumentet'
     )
     const signeradeBtn = screen.getByLabelText(
-      'Hoppa till första osignerade posten'
+      'Hoppa till första osignerade dokumentet'
     )
     expect(bedomdaBtn).toBeDisabled()
     expect(signeradeBtn).toBeDisabled()
@@ -553,7 +553,9 @@ describe('CycleDetailPage — items tab', () => {
       ],
     })
 
-    const jumpBtn = screen.getByLabelText('Hoppa till första obedömda posten')
+    const jumpBtn = screen.getByLabelText(
+      'Hoppa till första obedömda dokumentet'
+    )
     fireEvent.click(jumpBtn)
 
     expect(scrollIntoViewMock).toHaveBeenCalledWith(
@@ -571,9 +573,11 @@ describe('CycleDetailPage — items tab', () => {
     expect(rowC).not.toBeNull()
   })
 
-  it('empty state — "Kontrollen har inga poster."', () => {
+  it('empty state — "Kontrollen har inga dokument."', () => {
     renderPage({ items: [] })
-    expect(screen.getByText('Kontrollen har inga poster.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Kontrollen har inga dokument.')
+    ).toBeInTheDocument()
   })
 
   it('virtualisation path used when items.length > 100', () => {

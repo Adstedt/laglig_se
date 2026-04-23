@@ -1,7 +1,13 @@
 /** Story 21.5.2 — CycleListTable component tests. */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, cleanup, within } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  cleanup,
+  within,
+} from '@testing-library/react'
 import { ComplianceCycleStatus, AuditType } from '@prisma/client'
 import type { CycleSummary } from '@/app/actions/compliance-audit-cycle'
 
@@ -22,7 +28,10 @@ import { CycleListTable } from '@/components/features/compliance-audit/cycle-lis
 // ============================================================================
 
 function makeCycle(
-  overrides: Partial<CycleSummary> & { id: string; status: ComplianceCycleStatus }
+  overrides: Partial<CycleSummary> & {
+    id: string
+    status: ComplianceCycleStatus
+  }
 ): CycleSummary {
   return {
     name: `Cycle ${overrides.id}`,
@@ -40,10 +49,26 @@ function makeCycle(
 }
 
 const FIXTURE_CYCLES: CycleSummary[] = [
-  makeCycle({ id: 'a', status: ComplianceCycleStatus.PLANERAD, name: 'Planerad A' }),
-  makeCycle({ id: 'b', status: ComplianceCycleStatus.PAGAENDE, name: 'Pågående B' }),
-  makeCycle({ id: 'c', status: ComplianceCycleStatus.AVSLUTAD, name: 'Avslutad C' }),
-  makeCycle({ id: 'd', status: ComplianceCycleStatus.SEALED, name: 'Förseglad D' }),
+  makeCycle({
+    id: 'a',
+    status: ComplianceCycleStatus.PLANERAD,
+    name: 'Planerad A',
+  }),
+  makeCycle({
+    id: 'b',
+    status: ComplianceCycleStatus.PAGAENDE,
+    name: 'Pågående B',
+  }),
+  makeCycle({
+    id: 'c',
+    status: ComplianceCycleStatus.AVSLUTAD,
+    name: 'Avslutad C',
+  }),
+  makeCycle({
+    id: 'd',
+    status: ComplianceCycleStatus.SEALED,
+    name: 'Fastställd D',
+  }),
 ]
 
 beforeEach(() => {
@@ -65,7 +90,7 @@ describe('CycleListTable', () => {
     expect(screen.getByText('Planerad A')).toBeInTheDocument()
     expect(screen.getByText('Pågående B')).toBeInTheDocument()
     expect(screen.queryByText('Avslutad C')).toBeNull()
-    expect(screen.queryByText('Förseglad D')).toBeNull()
+    expect(screen.queryByText('Fastställd D')).toBeNull()
   })
 
   it('clicking "Slutförda" chip filters to AVSLUTAD only', () => {
@@ -76,7 +101,7 @@ describe('CycleListTable', () => {
     expect(screen.queryByText('Planerad A')).toBeNull()
     expect(screen.queryByText('Pågående B')).toBeNull()
     expect(screen.getByText('Avslutad C')).toBeInTheDocument()
-    expect(screen.queryByText('Förseglad D')).toBeNull()
+    expect(screen.queryByText('Fastställd D')).toBeNull()
   })
 
   it('clicking "Alla" chip shows every cycle regardless of status', () => {
@@ -87,13 +112,13 @@ describe('CycleListTable', () => {
     expect(screen.getByText('Planerad A')).toBeInTheDocument()
     expect(screen.getByText('Pågående B')).toBeInTheDocument()
     expect(screen.getByText('Avslutad C')).toBeInTheDocument()
-    expect(screen.getByText('Förseglad D')).toBeInTheDocument()
+    expect(screen.getByText('Fastställd D')).toBeInTheDocument()
   })
 
   it('chip count badges reflect totals across all cycles (not the current filter)', () => {
     render(<CycleListTable cycles={FIXTURE_CYCLES} canCreate />)
 
-    // Aktiva = 2 (PLANERAD + PAGAENDE); Slutförda = 1; Förseglade = 1;
+    // Aktiva = 2 (PLANERAD + PAGAENDE); Slutförda = 1; Fastställda = 1;
     // Arkiverade = 0; Alla = 4. Assert on each chip's count badge.
     const aktivaTab = screen.getByRole('tab', { name: /Aktiva/ })
     expect(within(aktivaTab).getByText('2')).toBeInTheDocument()
@@ -101,8 +126,8 @@ describe('CycleListTable', () => {
     const slutfordaTab = screen.getByRole('tab', { name: /Slutförda/ })
     expect(within(slutfordaTab).getByText('1')).toBeInTheDocument()
 
-    const forsegladeTab = screen.getByRole('tab', { name: /Förseglade/ })
-    expect(within(forsegladeTab).getByText('1')).toBeInTheDocument()
+    const fastställdaTab = screen.getByRole('tab', { name: /Fastställda/ })
+    expect(within(fastställdaTab).getByText('1')).toBeInTheDocument()
 
     const arkiveradeTab = screen.getByRole('tab', { name: /Arkiverade/ })
     expect(within(arkiveradeTab).getByText('0')).toBeInTheDocument()
