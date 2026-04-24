@@ -18,7 +18,7 @@
 
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { ExternalLink, History } from 'lucide-react'
+import { Check, Circle, ExternalLink, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -63,16 +63,21 @@ export function CycleItemModalRightPanel({
     (o) => o.value === item.sourceComplianceStatus
   )
 
+  const hasMotivering =
+    item.motivering !== null && item.motivering.trim().length > 0
   const canSign =
     !readOnly &&
     item.signedOffAt === null &&
-    item.efterlevnadsbedomning !== null
+    item.efterlevnadsbedomning !== null &&
+    hasMotivering
   const canUnsign = !readOnly && item.signedOffAt !== null
   const signDisabledReason = readOnly
     ? 'Kontrollen är fastställd'
     : item.efterlevnadsbedomning === null
       ? 'Ange bedömning innan signering'
-      : undefined
+      : !hasMotivering
+        ? 'Skriv en motivering innan signering'
+        : undefined
 
   const openCount = findings.filter((f) => f.closedAt === null).length
   const majorCount = findings.filter(
@@ -87,7 +92,90 @@ export function CycleItemModalRightPanel({
     <div className="h-full border-l bg-muted/30 max-md:border-t max-md:border-l-0">
       <ScrollArea className="h-full max-h-[calc(90vh-60px)] max-md:max-h-none">
         <div className="space-y-6 p-6">
-          {/* --------------------------- Detaljer --------------------------- */}
+          {/* ---------------------- Signera (action card) ---------------------
+           *  Top-positioned action card: bedömning + motivering + signera
+           *  live together because all three are prerequisites for a signed
+           *  audit record. Detaljer below is pure reference info (källstatus,
+           *  ansvarig, granskad) that doesn't change during sign-off.
+           *
+           *  Matches the standard card chrome used across this modal — the
+           *  prereq pills + required asterisks are the attention signal, no
+           *  tinted border needed (kept visually on-brand with Laglig's
+           *  minimal palette). */}
+          <Card className="border-border/60">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-base font-semibold text-foreground">
+                <span>Signera bedömning</span>
+                {!readOnly && item.signedOffAt === null ? (
+                  <SignPrereqChecklist
+                    hasBedomning={item.efterlevnadsbedomning !== null}
+                    hasMotivering={hasMotivering}
+                  />
+                ) : null}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Bedömning — the audit verdict for this document. */}
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="cycle-item-bedomning"
+                  required={
+                    !readOnly &&
+                    item.signedOffAt === null &&
+                    item.efterlevnadsbedomning === null
+                  }
+                >
+                  Bedömning
+                </Label>
+                <ItemBedomningSelect
+                  value={item.efterlevnadsbedomning}
+                  onChange={onBedomningChange}
+                  readOnly={readOnly}
+                />
+              </div>
+
+              {/* Motivering — the why behind the verdict. Required for sign-off
+               *  both client + server side (app/actions/compliance-audit-item.ts). */}
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="cycle-item-motivering"
+                  required={
+                    !readOnly && item.signedOffAt === null && !hasMotivering
+                  }
+                >
+                  Motivering
+                </Label>
+                <ItemMotiveringEditor
+                  value={item.motivering}
+                  onChange={onMotiveringChange}
+                  readOnly={readOnly}
+                />
+              </div>
+
+              {/* Action */}
+              {readOnly && item.signedOffAt === null ? (
+                <p className="rounded-md border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+                  Kontrollen är fastställd — signering är låst.
+                </p>
+              ) : (
+                <ItemSignOffButton
+                  signedOffAt={item.signedOffAt}
+                  signedOffBy={item.signedOffBy}
+                  canSign={canSign}
+                  canUnsign={canUnsign}
+                  onSign={onSign}
+                  onUnsign={onUnsign}
+                  disabledReason={signDisabledReason}
+                  className="w-full"
+                  signedVariant="banner"
+                />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* --------------------------- Detaljer ---------------------------
+           *  Reference info that doesn't change during sign-off. Bedömning +
+           *  motivering moved to the action card above. */}
           <Card className="border-border/60">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold text-foreground">
@@ -96,14 +184,6 @@ export function CycleItemModalRightPanel({
             </CardHeader>
             <CardContent>
               <div className="space-y-0">
-                <DetailRow label="Bedömning">
-                  <ItemBedomningSelect
-                    value={item.efterlevnadsbedomning}
-                    onChange={onBedomningChange}
-                    readOnly={readOnly}
-                  />
-                </DetailRow>
-
                 <DetailRow label="Källstatus">
                   {statusOption ? (
                     <span
@@ -136,37 +216,6 @@ export function CycleItemModalRightPanel({
                   </span>
                 </DetailRow>
               </div>
-
-              {/* Signera — primary action at the bottom of Detaljer */}
-              {readOnly && item.signedOffAt === null ? null : (
-                <div className="mt-4">
-                  <ItemSignOffButton
-                    signedOffAt={item.signedOffAt}
-                    signedOffBy={item.signedOffBy}
-                    canSign={canSign}
-                    canUnsign={canUnsign}
-                    onSign={onSign}
-                    onUnsign={onUnsign}
-                    disabledReason={signDisabledReason}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* -------------------------- Motivering -------------------------- */}
-          <Card className="border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold text-foreground">
-                Motivering
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ItemMotiveringEditor
-                value={item.motivering}
-                onChange={onMotiveringChange}
-                readOnly={readOnly}
-              />
             </CardContent>
           </Card>
 
@@ -252,6 +301,74 @@ export function CycleItemModalRightPanel({
 // ---------------------------------------------------------------------------
 // Sub-pieces
 // ---------------------------------------------------------------------------
+
+// Form-style label for the sign-action card. `required=true` adds an asterisk
+// in the brand accent color to draw attention to blocking prerequisites.
+function Label({
+  htmlFor,
+  required = false,
+  children,
+}: {
+  htmlFor?: string
+  required?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      className="flex items-center gap-1 text-xs font-medium text-muted-foreground"
+      id={htmlFor}
+    >
+      <span>{children}</span>
+      {required ? (
+        <span
+          aria-label="obligatoriskt"
+          className="text-primary"
+          title="Obligatoriskt innan signering"
+        >
+          *
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
+// Two-step prerequisite checklist shown next to the card title. Gives auditors
+// a glanceable signal of what's still blocking sign-off without having to
+// hover the button tooltip.
+function SignPrereqChecklist({
+  hasBedomning,
+  hasMotivering,
+}: {
+  hasBedomning: boolean
+  hasMotivering: boolean
+}) {
+  return (
+    <div className="flex items-center gap-2 text-[11px] font-normal">
+      <PrereqPill done={hasBedomning} label="Bedömning" />
+      <PrereqPill done={hasMotivering} label="Motivering" />
+    </div>
+  )
+}
+
+function PrereqPill({ done, label }: { done: boolean; label: string }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5',
+        done
+          ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300'
+          : 'border-muted-foreground/30 bg-muted/30 text-muted-foreground'
+      )}
+    >
+      {done ? (
+        <Check className="h-2.5 w-2.5" />
+      ) : (
+        <Circle className="h-2.5 w-2.5" />
+      )}
+      {label}
+    </span>
+  )
+}
 
 // Mirrors `DetailRow` in legal-document-modal/details-box.tsx for visual
 // consistency across both modals.
