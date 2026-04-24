@@ -190,11 +190,33 @@ export async function POST(req: Request) {
           }
         : undefined
 
+    // Story 14.26: Anthropic prompt caching v1.
+    // On the Anthropic path, wrap the system prompt in a SystemModelMessage so we can
+    // attach `cacheControl: { type: 'ephemeral' }` (5-min TTL). The Anthropic provider
+    // reads cache_control from message-level providerOptions, not top-level streamText
+    // providerOptions — so this has to live on the system message itself.
+    // Sonnet 4.6 requires ≥1024 tokens in the cached prefix; the joined system string is
+    // ~5,000+ tokens (Swedish, ~3.3 chars/token on a 16k-char system-prompt.md), well above.
+    // v1 scope: single breakpoint = within-workspace caching only. Cross-workspace sharing
+    // requires structured-parts refactor of buildSystemPrompt (v2, deferred).
+    const systemMessage =
+      modelProvider === 'anthropic'
+        ? {
+            role: 'system' as const,
+            content: systemPrompt,
+            providerOptions: {
+              anthropic: {
+                cacheControl: { type: 'ephemeral' as const },
+              },
+            },
+          }
+        : systemPrompt
+
     // Stream the response with tool use support
     // smoothStream buffers tokens and releases at word boundaries for smooth UI
     const result = streamText({
       model,
-      system: systemPrompt,
+      system: systemMessage,
       messages: messages.map((m) => ({
         role: m.role as 'user' | 'assistant' | 'system',
         content:
@@ -209,6 +231,13 @@ export async function POST(req: Request) {
         chunking: /[\s\S]/,
         delayInMs: 8,
       }),
+      // Story 14.26 verification scaffold: log per-turn token usage so we can manually
+      // confirm cache_read_input_tokens > 0 on turn 2+. Story 14.27 will convert this
+      // into a persistent ChatUsageEvent write — leave in place until then.
+      onFinish: ({ totalUsage }) => {
+        // eslint-disable-next-line no-console -- temporary scaffolding; replaced by Story 14.27
+        console.log('[CACHE]', totalUsage)
+      },
       ...(providerOptions && { providerOptions }),
     })
 
