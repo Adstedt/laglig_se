@@ -173,6 +173,7 @@ export async function getChatHistory(
           where: {
             id: validated.cursor,
             workspace_id: ctx.workspaceId,
+            user_id: ctx.userId,
           },
           select: { created_at: true },
         })
@@ -184,6 +185,7 @@ export async function getChatHistory(
       const messages = await prisma.chatMessage.findMany({
         where: {
           workspace_id: ctx.workspaceId,
+          user_id: ctx.userId,
           context_type: validated.contextType,
           context_id: validated.contextId ?? null,
           // Only fetch active (non-archived) messages for GLOBAL context
@@ -253,6 +255,7 @@ export async function clearChatHistory(
       const result = await prisma.chatMessage.deleteMany({
         where: {
           workspace_id: ctx.workspaceId,
+          user_id: ctx.userId,
           context_type: validated.contextType,
           context_id: validated.contextId ?? null,
           // For GLOBAL context, only delete active (non-archived) messages
@@ -301,6 +304,7 @@ export async function archiveConversation(): Promise<
       const result = await prisma.chatMessage.updateMany({
         where: {
           workspace_id: ctx.workspaceId,
+          user_id: ctx.userId,
           context_type: 'GLOBAL',
           conversation_id: null,
         },
@@ -348,6 +352,7 @@ export async function getConversationHistory(): Promise<
           (
             SELECT content FROM chat_messages cm2
             WHERE cm2.conversation_id = cm.conversation_id
+              AND cm2.user_id = ${ctx.userId}
               AND cm2.role = 'USER'
             ORDER BY cm2.created_at ASC
             LIMIT 1
@@ -356,6 +361,7 @@ export async function getConversationHistory(): Promise<
           COUNT(*) as message_count
         FROM chat_messages cm
         WHERE cm.workspace_id = ${ctx.workspaceId}
+          AND cm.user_id = ${ctx.userId}
           AND cm.context_type = 'GLOBAL'
           AND cm.conversation_id IS NOT NULL
         GROUP BY cm.conversation_id
@@ -393,11 +399,12 @@ export async function deleteChatMessage(
     const validated = z.string().uuid().parse(messageId)
 
     return await withWorkspace(async (ctx) => {
-      // Verify message belongs to this workspace
+      // Verify message belongs to this workspace AND the calling user
       const message = await prisma.chatMessage.findFirst({
         where: {
           id: validated,
           workspace_id: ctx.workspaceId,
+          user_id: ctx.userId,
         },
         select: { id: true },
       })
@@ -443,6 +450,7 @@ export async function searchConversations(query: string): Promise<
       const matchingMessages = await prisma.chatMessage.findMany({
         where: {
           workspace_id: ctx.workspaceId,
+          user_id: ctx.userId,
           context_type: 'GLOBAL',
           content: {
             contains: validated,
@@ -484,6 +492,7 @@ export async function searchConversations(query: string): Promise<
           const count = await prisma.chatMessage.count({
             where: {
               workspace_id: ctx.workspaceId,
+              user_id: ctx.userId,
               context_type: 'GLOBAL',
               ...(key === '__active__'
                 ? { conversation_id: null }
@@ -560,6 +569,7 @@ export async function loadConversation(
       const messages = await prisma.chatMessage.findMany({
         where: {
           workspace_id: ctx.workspaceId,
+          user_id: ctx.userId,
           conversation_id: validated,
         },
         orderBy: { created_at: 'asc' },

@@ -124,8 +124,8 @@ This transforms Laglig from a passive law registry into an active compliance par
 ### Phase 6: Agent Infrastructure & Cost Optimization
 | # | Story | Status |
 |---|-------|--------|
-| **14.26** | Anthropic Prompt Caching v1 — Chat Route | Draft |
-| **14.27** | Chat Usage Telemetry (`ChatUsageEvent`) | Planned |
+| **14.26** | Anthropic Prompt Caching v1 — Chat Route | Done |
+| **14.27** | Chat Usage Telemetry (`ChatUsageEvent`) | Done |
 
 ---
 

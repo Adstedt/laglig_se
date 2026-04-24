@@ -39,6 +39,12 @@ vi.mock('@/lib/prisma', () => ({
       findMany: vi.fn(),
       deleteMany: vi.fn(),
     },
+    // Story 21.9 — deleteFile + deleteFilesBulk now check evidence snapshot
+    // references via `findActiveSnapshotReferences`. Mock returns an empty
+    // array by default so existing tests proceed to the delete branch.
+    complianceEvidenceSnapshot: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }))
 

@@ -12,3 +12,12 @@ export function complianceFindingsKey(cycleId: string): string {
 export function complianceAuditItemsKey(cycleId: string): string {
   return `compliance-audit-items:${cycleId}`
 }
+
+/**
+ * Story 21.9 v0.5 — DRAFT-status styrdokument linked as evidence to any
+ * item in the cycle's scope. Surfaced in `SealCycleDialog` to support the
+ * snapshot-and-accept-with-override pattern.
+ */
+export function complianceDraftEvidenceDocsKey(cycleId: string): string {
+  return `compliance-draft-evidence-docs:${cycleId}`
+}

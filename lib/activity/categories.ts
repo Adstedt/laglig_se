@@ -68,6 +68,12 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
   cycle_completed: 'livscykel',
   cycle_reverted_to_pagaende: 'livscykel',
 
+  // Story 21.9 — seal
+  cycle_sealed: 'livscykel',
+
+  // Story 21.12 — revisionsrapport PDF generation
+  cycle_report_generated: 'livscykel',
+
   // compliance-audit findings (Epic 21)
   finding_created: 'livscykel',
   finding_updated: 'andringar',

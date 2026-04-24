@@ -48,6 +48,9 @@ export const DROPDOWN_TOOLTIP_COPY = {
     `Slutför kontroll: ${unsigned} av ${total} dokument behöver signeras.`,
   cannotRevert:
     'Endast revisionsledaren eller administratörer kan återställa kontrollen.',
+  // Story 21.9 — seal permission denial (matches the server-action error verbatim).
+  cannotSeal:
+    "Endast revisionsledaren eller administratörer med behörighet 'audit:seal' kan fastställa kontrollen.",
 } as const
 
 interface CycleActionsDropdownProps {
@@ -55,8 +58,11 @@ interface CycleActionsDropdownProps {
   totalCount: number
   signeradeCount: number
   canRevert: boolean
+  // Story 21.9 — runtime flag for the Seal affordance.
+  canSeal: boolean
   onCompleteClick: () => void
   onRevertClick: () => void
+  onSealClick: () => void
   /**
    * Test-only escape hatch. Radix DropdownMenu's pointer-event-based open
    * semantics are unreliable in happy-dom; tests pass `defaultOpen` to force
@@ -71,17 +77,20 @@ export function CycleActionsDropdown({
   totalCount,
   signeradeCount,
   canRevert,
+  canSeal,
   onCompleteClick,
   onRevertClick,
+  onSealClick,
   defaultOpen,
 }: CycleActionsDropdownProps) {
   const showComplete = cycle.status === ComplianceCycleStatus.PAGAENDE
   const showRevert = cycle.status === ComplianceCycleStatus.AVSLUTAD
+  const showSeal = cycle.status === ComplianceCycleStatus.AVSLUTAD
 
-  // Dropdown renders in PAGAENDE + AVSLUTAD only (AC 6.6). Other states
+  // Dropdown renders in PAGAENDE + AVSLUTAD only. Other states
   // (PLANERAD / SEALED / ARKIVERAD) return null — the read-only banner or
   // empty-cycle UX covers the messaging.
-  if (!showComplete && !showRevert) {
+  if (!showComplete && !showRevert && !showSeal) {
     return null
   }
 
@@ -104,6 +113,9 @@ export function CycleActionsDropdown({
           ) : null}
           {showRevert ? (
             <RevertMenuItem canRevert={canRevert} onClick={onRevertClick} />
+          ) : null}
+          {showSeal ? (
+            <SealMenuItem canSeal={canSeal} onClick={onSealClick} />
           ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -172,13 +184,50 @@ interface RevertMenuItemProps {
 }
 
 function RevertMenuItem({ canRevert, onClick }: RevertMenuItemProps) {
+  // Revert is REVERSIBLE (soft revert — status flip only, signatures preserved)
+  // → neutral styling. Keeps dark-mode contrast readable and gives Seal
+  // (irreversible) its own uncontested destructive-red slot in the menu.
   if (canRevert) {
+    return (
+      <DropdownMenuItem onSelect={onClick}>
+        Återställ till Pågående
+      </DropdownMenuItem>
+    )
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <DropdownMenuItem
+          onSelect={(e) => e.preventDefault()}
+          aria-disabled={true}
+          className={cn('cursor-not-allowed opacity-60')}
+        >
+          Återställ till Pågående
+        </DropdownMenuItem>
+      </TooltipTrigger>
+      <TooltipContent>{DROPDOWN_TOOLTIP_COPY.cannotRevert}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Fastställ kontroll — AVSLUTAD only (Story 21.9)
+// ---------------------------------------------------------------------------
+
+interface SealMenuItemProps {
+  canSeal: boolean
+  onClick: () => void
+}
+
+function SealMenuItem({ canSeal, onClick }: SealMenuItemProps) {
+  if (canSeal) {
     return (
       <DropdownMenuItem
         onSelect={onClick}
         className="text-destructive focus:text-destructive"
       >
-        Återställ till Pågående
+        Fastställ kontroll
       </DropdownMenuItem>
     )
   }
@@ -193,10 +242,10 @@ function RevertMenuItem({ canRevert, onClick }: RevertMenuItemProps) {
             'cursor-not-allowed text-destructive opacity-60 focus:text-destructive'
           )}
         >
-          Återställ till Pågående
+          Fastställ kontroll
         </DropdownMenuItem>
       </TooltipTrigger>
-      <TooltipContent>{DROPDOWN_TOOLTIP_COPY.cannotRevert}</TooltipContent>
+      <TooltipContent>{DROPDOWN_TOOLTIP_COPY.cannotSeal}</TooltipContent>
     </Tooltip>
   )
 }

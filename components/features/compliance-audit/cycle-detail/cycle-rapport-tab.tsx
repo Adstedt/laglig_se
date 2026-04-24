@@ -18,12 +18,6 @@ import useSWR from 'swr'
 import type { ComplianceCycleStatus } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import {
   getRevisionsrapportInput,
   type GetRevisionsrapportInputResult,
 } from '@/app/actions/compliance-audit-report'
@@ -137,6 +131,7 @@ export function CycleRapportTab({
   }
 
   const isSealed = cycleStatus === 'SEALED' || cycleStatus === 'ARKIVERAD'
+  const resolvedKind = isSealed ? 'sealed' : 'complete'
 
   return (
     <div className="space-y-4 p-6">
@@ -150,29 +145,27 @@ export function CycleRapportTab({
       ) : null}
 
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">
-          Revisionsrapport (förhandsvisning)
-        </h3>
-        <TooltipProvider delayDuration={100}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled
-                  aria-disabled={true}
-                >
-                  Ladda ner PDF
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              PDF-generering hanteras i Story 21.12.
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">
+            Revisionsrapport (förhandsvisning)
+          </h3>
+          {cycleStatus === 'AVSLUTAD' ? (
+            <p className="text-xs text-muted-foreground">
+              Första nedladdningen kan ta upp till 60 sekunder för större
+              kontroller.
+            </p>
+          ) : null}
+        </div>
+        <Button type="button" variant="outline" size="sm" asChild>
+          <a
+            href={`/laglistor/kontroller/${cycleId}/rapport/pdf?kind=${resolvedKind}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            download
+          >
+            Ladda ner PDF
+          </a>
+        </Button>
       </div>
 
       <iframe

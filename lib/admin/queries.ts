@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import type {
   CronJobRun,
-  Prisma,
   SubscriptionTier,
   WorkspaceStatus,
 } from '@prisma/client'
@@ -547,4 +547,187 @@ export async function getFailedRuns(
   ])
 
   return { data, total, page, pageSize }
+}
+
+// ============================================================================
+// Story 14.27: Chat usage telemetry aggregation queries
+// ============================================================================
+
+export interface WorkspaceUsageRow {
+  workspaceId: string
+  workspaceName: string
+  tier: SubscriptionTier
+  totalCostUsd: string // Decimal stringified from PostgreSQL
+  totalInputTokens: bigint
+  totalOutputTokens: bigint
+  totalCacheReadTokens: bigint
+  turnCount: bigint
+}
+
+export interface UserUsageRow {
+  userId: string
+  userName: string | null
+  userEmail: string
+  workspaceId: string
+  workspaceName: string
+  totalCostUsd: string
+  totalInputTokens: bigint
+  totalOutputTokens: bigint
+  turnCount: bigint
+}
+
+export interface UsageTimeSeriesPoint {
+  bucketStart: Date
+  totalCostUsd: string
+  turnCount: bigint
+}
+
+/**
+ * Clamp + coerce a rangeDays parameter. Used for safe SQL parameterization.
+ * Prisma's $queryRaw tagged-template parameterizes interpolated values, but
+ * the explicit `::int` cast at the SQL boundary + integer clamping here
+ * defence-in-depths against any future refactor accidentally interpolating
+ * into a string literal.
+ */
+function clampRangeDays(rangeDays: number): number {
+  return Math.floor(Math.max(1, Math.min(365, rangeDays)))
+}
+
+function clampLimit(limit: number): number {
+  return Math.floor(Math.max(1, Math.min(100, limit)))
+}
+
+function clampOffset(offset: number): number {
+  return Math.floor(Math.max(0, offset))
+}
+
+/**
+ * Aggregates chat usage per workspace for the last `rangeDays` days.
+ * Sorted by totalCostUsd DESC. Paginated via `limit` + `offset`.
+ */
+export async function getUsageByWorkspace(params: {
+  rangeDays: number
+  limit: number
+  offset: number
+}): Promise<WorkspaceUsageRow[]> {
+  const rangeDaysInt = clampRangeDays(params.rangeDays)
+  const limitInt = clampLimit(params.limit)
+  const offsetInt = clampOffset(params.offset)
+
+  return await prisma.$queryRaw<WorkspaceUsageRow[]>`
+    SELECT
+      e.workspace_id AS "workspaceId",
+      w.name AS "workspaceName",
+      w.subscription_tier AS tier,
+      SUM(e.cost_usd_estimate)::text AS "totalCostUsd",
+      SUM(e.input_tokens)::bigint AS "totalInputTokens",
+      SUM(e.output_tokens)::bigint AS "totalOutputTokens",
+      SUM(e.cache_read_input_tokens)::bigint AS "totalCacheReadTokens",
+      COUNT(*)::bigint AS "turnCount"
+    FROM chat_usage_events e
+    INNER JOIN workspaces w ON w.id = e.workspace_id
+    WHERE e.created_at >= NOW() - (INTERVAL '1 day' * ${rangeDaysInt}::int)
+    GROUP BY e.workspace_id, w.name, w.subscription_tier
+    ORDER BY SUM(e.cost_usd_estimate) DESC
+    LIMIT ${limitInt} OFFSET ${offsetInt}
+  `
+}
+
+/**
+ * Aggregates chat usage per user for the last `rangeDays` days.
+ * Optionally scoped to a single workspace. Sorted by totalCostUsd DESC.
+ */
+export async function getUsageByUser(params: {
+  workspaceId?: string
+  rangeDays: number
+  limit: number
+  offset: number
+}): Promise<UserUsageRow[]> {
+  const rangeDaysInt = clampRangeDays(params.rangeDays)
+  const limitInt = clampLimit(params.limit)
+  const offsetInt = clampOffset(params.offset)
+
+  if (params.workspaceId) {
+    return await prisma.$queryRaw<UserUsageRow[]>`
+      SELECT
+        e.user_id AS "userId",
+        u.name AS "userName",
+        u.email AS "userEmail",
+        e.workspace_id AS "workspaceId",
+        w.name AS "workspaceName",
+        SUM(e.cost_usd_estimate)::text AS "totalCostUsd",
+        SUM(e.input_tokens)::bigint AS "totalInputTokens",
+        SUM(e.output_tokens)::bigint AS "totalOutputTokens",
+        COUNT(*)::bigint AS "turnCount"
+      FROM chat_usage_events e
+      INNER JOIN users u ON u.id = e.user_id
+      INNER JOIN workspaces w ON w.id = e.workspace_id
+      WHERE e.created_at >= NOW() - (INTERVAL '1 day' * ${rangeDaysInt}::int)
+        AND e.workspace_id = ${params.workspaceId}
+      GROUP BY e.user_id, u.name, u.email, e.workspace_id, w.name
+      ORDER BY SUM(e.cost_usd_estimate) DESC
+      LIMIT ${limitInt} OFFSET ${offsetInt}
+    `
+  }
+
+  return await prisma.$queryRaw<UserUsageRow[]>`
+    SELECT
+      e.user_id AS "userId",
+      u.name AS "userName",
+      u.email AS "userEmail",
+      e.workspace_id AS "workspaceId",
+      w.name AS "workspaceName",
+      SUM(e.cost_usd_estimate)::text AS "totalCostUsd",
+      SUM(e.input_tokens)::bigint AS "totalInputTokens",
+      SUM(e.output_tokens)::bigint AS "totalOutputTokens",
+      COUNT(*)::bigint AS "turnCount"
+    FROM chat_usage_events e
+    INNER JOIN users u ON u.id = e.user_id
+    INNER JOIN workspaces w ON w.id = e.workspace_id
+    WHERE e.created_at >= NOW() - (INTERVAL '1 day' * ${rangeDaysInt}::int)
+    GROUP BY e.user_id, u.name, u.email, e.workspace_id, w.name
+    ORDER BY SUM(e.cost_usd_estimate) DESC
+    LIMIT ${limitInt} OFFSET ${offsetInt}
+  `
+}
+
+/**
+ * Time-bucketed usage series for trend plotting.
+ * Default bucket is 24 hours. Optionally scoped to a single workspace or user.
+ * Uses PostgreSQL 14+ `date_bin` for deterministic bucketing.
+ */
+export async function getUsageTimeSeries(params: {
+  workspaceId?: string
+  userId?: string
+  rangeDays: number
+  bucketHours?: number
+}): Promise<UsageTimeSeriesPoint[]> {
+  const rangeDaysInt = clampRangeDays(params.rangeDays)
+  const bucketHoursInt = Math.floor(
+    Math.max(1, Math.min(168, params.bucketHours ?? 24))
+  )
+
+  const workspaceFilter = params.workspaceId
+    ? Prisma.sql`AND e.workspace_id = ${params.workspaceId}`
+    : Prisma.empty
+  const userFilter = params.userId
+    ? Prisma.sql`AND e.user_id = ${params.userId}`
+    : Prisma.empty
+
+  return await prisma.$queryRaw<UsageTimeSeriesPoint[]>`
+    SELECT
+      date_bin(
+        (INTERVAL '1 hour' * ${bucketHoursInt}::int),
+        e.created_at,
+        TIMESTAMP '2000-01-01'
+      ) AS "bucketStart",
+      SUM(e.cost_usd_estimate)::text AS "totalCostUsd",
+      COUNT(*)::bigint AS "turnCount"
+    FROM chat_usage_events e
+    WHERE e.created_at >= NOW() - (INTERVAL '1 day' * ${rangeDaysInt}::int)
+      ${workspaceFilter}
+      ${userFilter}
+    GROUP BY "bucketStart"
+    ORDER BY "bucketStart" ASC
+  `
 }

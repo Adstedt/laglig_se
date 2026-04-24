@@ -44,6 +44,7 @@ interface RenderOpts {
   totalCount?: number
   signeradeCount?: number
   canRevert?: boolean
+  canSeal?: boolean
   // Radix DropdownMenu's pointer-event opening is unreliable in happy-dom, so
   // tests pass `defaultOpen=true` to assert on menu items directly. See the
   // component's `defaultOpen` prop JSDoc.
@@ -53,18 +54,21 @@ interface RenderOpts {
 function renderDropdown(opts: RenderOpts = {}) {
   const onCompleteClick = vi.fn()
   const onRevertClick = vi.fn()
+  const onSealClick = vi.fn()
   const result = render(
     <CycleActionsDropdown
       cycle={makeCycle(opts.status ?? ComplianceCycleStatus.PAGAENDE)}
       totalCount={opts.totalCount ?? 3}
       signeradeCount={opts.signeradeCount ?? 3}
       canRevert={opts.canRevert ?? false}
+      canSeal={opts.canSeal ?? false}
       onCompleteClick={onCompleteClick}
       onRevertClick={onRevertClick}
+      onSealClick={onSealClick}
       defaultOpen={opts.defaultOpen ?? true}
     />
   )
-  return { ...result, onCompleteClick, onRevertClick }
+  return { ...result, onCompleteClick, onRevertClick, onSealClick }
 }
 
 beforeEach(() => {
@@ -188,6 +192,66 @@ describe('CycleActionsDropdown', () => {
 
     fireEvent.click(screen.getByText('Återställ till Pågående'))
     expect(onRevertClick).not.toHaveBeenCalled()
+  })
+
+  // -------------------------------------------------------------------------
+  // AVSLUTAD — Fastställ kontroll (Story 21.9)
+  // -------------------------------------------------------------------------
+
+  it('AVSLUTAD + canSeal=true → seal item enabled, calls onSealClick', () => {
+    const { onSealClick } = renderDropdown({
+      status: ComplianceCycleStatus.AVSLUTAD,
+      canSeal: true,
+    })
+
+    const seal = screen.getByText('Fastställ kontroll')
+    expect(seal).toBeInTheDocument()
+    const sealItem = seal.closest('[role="menuitem"]')
+    expect(sealItem).not.toHaveAttribute('aria-disabled', 'true')
+    // Destructive styling pin
+    expect(sealItem?.className).toMatch(/text-destructive/)
+
+    fireEvent.click(seal)
+    expect(onSealClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('AVSLUTAD + canSeal=false → seal item blocked with permission tooltip copy', () => {
+    const { onSealClick } = renderDropdown({
+      status: ComplianceCycleStatus.AVSLUTAD,
+      canSeal: false,
+    })
+
+    const sealItem = screen
+      .getByText('Fastställ kontroll')
+      .closest('[role="menuitem"]')
+    expect(sealItem).toHaveAttribute('aria-disabled', 'true')
+    expect(DROPDOWN_TOOLTIP_COPY.cannotSeal).toBe(
+      "Endast revisionsledaren eller administratörer med behörighet 'audit:seal' kan fastställa kontrollen."
+    )
+
+    fireEvent.click(screen.getByText('Fastställ kontroll'))
+    expect(onSealClick).not.toHaveBeenCalled()
+  })
+
+  it('AVSLUTAD → BOTH revert + seal items rendered; complete hidden', () => {
+    renderDropdown({
+      status: ComplianceCycleStatus.AVSLUTAD,
+      canRevert: true,
+      canSeal: true,
+    })
+    expect(screen.getByText('Återställ till Pågående')).toBeInTheDocument()
+    expect(screen.getByText('Fastställ kontroll')).toBeInTheDocument()
+    expect(screen.queryByText('Slutför kontroll')).not.toBeInTheDocument()
+  })
+
+  it('PAGAENDE → seal item hidden (only shown in AVSLUTAD)', () => {
+    renderDropdown({
+      status: ComplianceCycleStatus.PAGAENDE,
+      totalCount: 3,
+      signeradeCount: 3,
+      canSeal: true, // even if true, must stay hidden
+    })
+    expect(screen.queryByText('Fastställ kontroll')).not.toBeInTheDocument()
   })
 
   // -------------------------------------------------------------------------

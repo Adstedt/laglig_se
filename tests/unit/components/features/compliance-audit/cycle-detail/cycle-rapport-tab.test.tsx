@@ -88,7 +88,7 @@ describe('CycleRapportTab — pre-complete statuses', () => {
 // ============================================================================
 
 describe('CycleRapportTab — AVSLUTAD', () => {
-  it('renders the iframe with the returned HTML and a disabled PDF button', async () => {
+  it('renders the iframe with the returned HTML and a functional PDF download link (Story 21.12)', async () => {
     getInputMock.mockResolvedValueOnce(makeSuccessResult())
 
     renderTab(ComplianceCycleStatus.AVSLUTAD)
@@ -105,13 +105,25 @@ describe('CycleRapportTab — AVSLUTAD', () => {
     )
     expect(iframe).toHaveAttribute('sandbox', '')
 
-    const pdfButton = screen.getByRole('button', { name: 'Ladda ner PDF' })
-    expect(pdfButton).toBeDisabled()
+    // Story 21.12: functional download link with kind=complete for AVSLUTAD.
+    const pdfLink = screen.getByRole('link', { name: 'Ladda ner PDF' })
+    expect(pdfLink).toBeInTheDocument()
+    expect(pdfLink).toHaveAttribute(
+      'href',
+      `/laglistor/kontroller/${CYCLE_ID}/rapport/pdf?kind=complete`
+    )
+    expect(pdfLink).toHaveAttribute('target', '_blank')
+    expect(pdfLink).toHaveAttribute('rel', 'noopener noreferrer')
+
+    // "Upp till 60 sekunder"-hint visible for AVSLUTAD only.
+    expect(
+      screen.getByText(/Första nedladdningen kan ta upp till 60 sekunder/)
+    ).toBeInTheDocument()
   })
 })
 
 describe('CycleRapportTab — SEALED', () => {
-  it('renders the info row above the iframe', async () => {
+  it('renders the info row above the iframe + PDF link uses kind=sealed (Story 21.12)', async () => {
     getInputMock.mockResolvedValueOnce(makeSuccessResult())
 
     renderTab(ComplianceCycleStatus.SEALED)
@@ -122,11 +134,22 @@ describe('CycleRapportTab — SEALED', () => {
         'Fastställd kontroll — seal-hash visas på titelsidan och i sidfoten.'
       )
     ).toBeInTheDocument()
+
+    const pdfLink = screen.getByRole('link', { name: 'Ladda ner PDF' })
+    expect(pdfLink).toHaveAttribute(
+      'href',
+      `/laglistor/kontroller/${CYCLE_ID}/rapport/pdf?kind=sealed`
+    )
+
+    // "60 sekunder" hint is AVSLUTAD-only — not rendered for SEALED.
+    expect(
+      screen.queryByText(/Första nedladdningen kan ta upp till 60 sekunder/)
+    ).not.toBeInTheDocument()
   })
 })
 
 describe('CycleRapportTab — ARKIVERAD', () => {
-  it('renders the SEALED-equivalent info row', async () => {
+  it('renders the SEALED-equivalent info row + PDF link uses kind=sealed', async () => {
     getInputMock.mockResolvedValueOnce(makeSuccessResult())
 
     renderTab(ComplianceCycleStatus.ARKIVERAD)
@@ -137,6 +160,12 @@ describe('CycleRapportTab — ARKIVERAD', () => {
         'Fastställd kontroll — seal-hash visas på titelsidan och i sidfoten.'
       )
     ).toBeInTheDocument()
+
+    const pdfLink = screen.getByRole('link', { name: 'Ladda ner PDF' })
+    expect(pdfLink).toHaveAttribute(
+      'href',
+      `/laglistor/kontroller/${CYCLE_ID}/rapport/pdf?kind=sealed`
+    )
   })
 })
 

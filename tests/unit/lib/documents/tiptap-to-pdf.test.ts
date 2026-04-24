@@ -24,6 +24,9 @@ vi.mock('@sparticuz/chromium', () => ({
   },
 }))
 
+// Story 21.12: force the @sparticuz path in tests regardless of host OS.
+delete process.env.PUPPETEER_EXECUTABLE_PATH
+
 describe('generatePdf', () => {
   it('renders HTML and returns a PDF buffer', async () => {
     const { generatePdf } = await import('@/lib/documents/tiptap-to-pdf')

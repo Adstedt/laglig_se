@@ -61,12 +61,19 @@ vi.mock('@/app/actions/compliance-finding', () => ({
     listFindingsForCycleMock(...args),
 }))
 
-// Story 21.6: canRevert prop is resolved server-side only when cycle is
-// AVSLUTAD. Mock the authorization helper so we can assert call counts.
+// Story 21.6 + 21.9: canRevert + canSeal props resolved server-side only
+// when cycle is AVSLUTAD. Mock both helpers so we can assert call counts.
 const canCompleteOrRevertCycleMock = vi.fn()
+const canSealCycleMock = vi.fn()
 vi.mock('@/lib/compliance-audit/authorization', () => ({
   canCompleteOrRevertCycle: (...args: unknown[]) =>
     canCompleteOrRevertCycleMock(...args),
+  canSealCycle: (...args: unknown[]) => canSealCycleMock(...args),
+}))
+
+// Story 21.9: the RSC page now imports prisma to pass through to canSealCycle.
+vi.mock('@/lib/prisma', () => ({
+  prisma: {} as unknown,
 }))
 
 // Stub the client component so we don't try to render its internals.
@@ -145,6 +152,7 @@ beforeEach(() => {
     data: { findings: [] },
   })
   canCompleteOrRevertCycleMock.mockResolvedValue(true)
+  canSealCycleMock.mockResolvedValue(true)
 })
 
 // ============================================================================
@@ -343,5 +351,48 @@ describe('CycleDetailRoute — RSC gating', () => {
       cycleId: CYCLE_ID,
       workspaceId: 'w1',
     })
+  })
+
+  // Story 21.9 — canSeal prop resolution (AC 11 + 14).
+  it('canSeal: canSealCycle NOT called when cycle is PAGAENDE', async () => {
+    await CycleDetailRoute({
+      params: Promise.resolve({ cycleId: CYCLE_ID }),
+    })
+    expect(canSealCycleMock).not.toHaveBeenCalled()
+  })
+
+  it('canSeal: canSealCycle called exactly once with correct args when cycle is AVSLUTAD', async () => {
+    getCycleByIdMock.mockResolvedValue({
+      success: true,
+      data: { cycle: makeCycle(ComplianceCycleStatus.AVSLUTAD) },
+    })
+    getCycleItemsForCycleMock.mockResolvedValue({
+      success: true,
+      data: {
+        items: [],
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.AVSLUTAD,
+          name: 'Q2',
+          sealHash: null,
+        },
+      },
+    })
+
+    await CycleDetailRoute({
+      params: Promise.resolve({ cycleId: CYCLE_ID }),
+    })
+
+    expect(canSealCycleMock).toHaveBeenCalledTimes(1)
+    expect(canSealCycleMock).toHaveBeenCalledWith(
+      // prismaClient is the first positional arg (SF-1).
+      expect.anything(),
+      {
+        role: 'OWNER',
+        userId: 'u1',
+        cycleId: CYCLE_ID,
+        workspaceId: 'w1',
+      }
+    )
   })
 })

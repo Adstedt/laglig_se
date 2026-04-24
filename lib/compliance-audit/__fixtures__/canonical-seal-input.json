@@ -1,0 +1,100 @@
+{
+  "cycleId": "11111111-1111-1111-1111-111111111111",
+  "workspaceId": "22222222-2222-2222-2222-222222222222",
+  "lawListId": "33333333-3333-3333-3333-333333333333",
+  "name": "Q1 arbetsmiljörevision 2026",
+  "auditType": "INTERN",
+  "scheduledStart": "2026-01-15T00:00:00.000Z",
+  "scheduledEnd": "2026-03-31T23:59:59.000Z",
+  "lawChangeCutoffDate": "2026-01-01T00:00:00.000Z",
+  "leadAuditorUserId": "44444444-4444-4444-4444-444444444444",
+  "createdByUserId": "44444444-4444-4444-4444-444444444444",
+  "createdAt": "2026-01-10T09:00:00.000Z",
+  "sealedAt": "2026-04-24T14:30:00.000Z",
+  "sealedByUserId": "44444444-4444-4444-4444-444444444444",
+  "scopeDefinition": {
+    "kind": "all"
+  },
+  "overrideReason": "AVVIKELSE A1 har åtgärdsplan som sträcker sig till Q2 — fastställs för att inte blockera Q2-cykeln.",
+  "draftDocumentsAtSeal": [
+    {
+      "id": "ddddddd9-9999-9999-9999-999999999999",
+      "title": "Brandskyddsrutin v3 (utkast)"
+    }
+  ],
+  "items": [
+    {
+      "id": "aaaaaaa1-1111-1111-1111-111111111111",
+      "lawListItemId": "bbbbbbb1-1111-1111-1111-111111111111",
+      "efterlevnadsbedomning": "UPPFYLLD",
+      "motiveringSha256": "d4a8f1ebf9f2a1e79fbc54d7c9e2a0b6c3d5e8f1a2b4c6d8e0f1a3b5c7d9e1f2",
+      "reviewedAt": "2026-03-20T10:00:00.000Z",
+      "reviewedByUserId": "44444444-4444-4444-4444-444444444444",
+      "signedOffAt": "2026-03-25T12:00:00.000Z",
+      "signedOffByUserId": "44444444-4444-4444-4444-444444444444"
+    },
+    {
+      "id": "aaaaaaa2-2222-2222-2222-222222222222",
+      "lawListItemId": "bbbbbbb2-2222-2222-2222-222222222222",
+      "efterlevnadsbedomning": "DELVIS",
+      "motiveringSha256": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+      "reviewedAt": "2026-03-22T14:00:00.000Z",
+      "reviewedByUserId": "44444444-4444-4444-4444-444444444444",
+      "signedOffAt": "2026-03-28T09:00:00.000Z",
+      "signedOffByUserId": "44444444-4444-4444-4444-444444444444"
+    }
+  ],
+  "findings": [
+    {
+      "id": "ccccccc1-1111-1111-1111-111111111111",
+      "type": "AVVIKELSE",
+      "severity": "MINOR",
+      "title": "Saknar dokumentation för rutin A",
+      "descriptionSha256": "f1e2d3c4b5a697887766554433221100ffeeddccbbaa99887766554433221100",
+      "rootCauseSha256": null,
+      "lawListItemId": "bbbbbbb1-1111-1111-1111-111111111111",
+      "requirementId": null,
+      "correctiveActionTaskId": "ddddddd1-1111-1111-1111-111111111111",
+      "dueDate": "2026-06-01T00:00:00.000Z",
+      "closedAt": null,
+      "closedByUserId": null
+    },
+    {
+      "id": "ccccccc2-2222-2222-2222-222222222222",
+      "type": "OBSERVATION",
+      "severity": null,
+      "title": "Förbättringsmöjlighet vid riskbedömning",
+      "descriptionSha256": "1100221133445566778899aabbccddeeff00112233445566778899aabbccddee",
+      "rootCauseSha256": null,
+      "lawListItemId": "bbbbbbb2-2222-2222-2222-222222222222",
+      "requirementId": null,
+      "correctiveActionTaskId": null,
+      "dueDate": null,
+      "closedAt": "2026-04-10T10:00:00.000Z",
+      "closedByUserId": "44444444-4444-4444-4444-444444444444"
+    }
+  ],
+  "evidence": [
+    {
+      "lawListItemId": "bbbbbbb1-1111-1111-1111-111111111111",
+      "requirementId": null,
+      "kind": "FILE",
+      "evidenceId": "eeeeeee1-1111-1111-1111-111111111111",
+      "sha256": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899"
+    },
+    {
+      "lawListItemId": "bbbbbbb1-1111-1111-1111-111111111111",
+      "requirementId": null,
+      "kind": "DOCUMENT",
+      "evidenceId": "fffffff1-1111-1111-1111-111111111111",
+      "sha256": "112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00"
+    },
+    {
+      "lawListItemId": "bbbbbbb2-2222-2222-2222-222222222222",
+      "requirementId": null,
+      "kind": "FILE",
+      "evidenceId": "eeeeeee2-2222-2222-2222-222222222222",
+      "sha256": "99887766554433221100ffeeddccbbaa99887766554433221100ffeeddccbbaa"
+    }
+  ]
+}

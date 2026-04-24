@@ -29,6 +29,7 @@ import {
   type SourceInfo,
   type ChatMessageMetadata,
 } from '@/lib/ai/citations'
+import { estimateCostUsd } from '@/lib/usage/cost-estimator'
 
 // Rate limiting configuration
 // 10 requests per minute per user, 50 per workspace
@@ -231,12 +232,68 @@ export async function POST(req: Request) {
         chunking: /[\s\S]/,
         delayInMs: 8,
       }),
-      // Story 14.26 verification scaffold: log per-turn token usage so we can manually
-      // confirm cache_read_input_tokens > 0 on turn 2+. Story 14.27 will convert this
-      // into a persistent ChatUsageEvent write — leave in place until then.
-      onFinish: ({ totalUsage }) => {
-        // eslint-disable-next-line no-console -- temporary scaffolding; replaced by Story 14.27
-        console.log('[CACHE]', totalUsage)
+      // Story 14.27: persistent usage telemetry. Writes one ChatUsageEvent row per
+      // successful chat turn. Fail-safe — telemetry write errors are logged but
+      // never propagated to the stream response.
+      onFinish: async ({ totalUsage, steps }) => {
+        try {
+          const inputTokens = totalUsage.inputTokens ?? 0
+          const outputTokens = totalUsage.outputTokens ?? 0
+          const cacheReadInputTokens = totalUsage.cachedInputTokens ?? 0
+
+          // AI SDK v6 cache-write field location varies by provider/version.
+          // Runtime evidence from Story 14.26 showed it nested under
+          // inputTokenDetails.cacheWriteTokens on the Anthropic path. Also check
+          // top-level cacheCreationInputTokens as fallback per Anthropic docs.
+          const usageAsRecord = totalUsage as unknown as {
+            cacheCreationInputTokens?: number
+            inputTokenDetails?: { cacheWriteTokens?: number }
+          }
+          const cacheWriteInputTokens =
+            usageAsRecord.cacheCreationInputTokens ??
+            usageAsRecord.inputTokenDetails?.cacheWriteTokens ??
+            0
+
+          const reasoningTokens = totalUsage.reasoningTokens ?? 0
+
+          const modelName =
+            modelProvider === 'anthropic' ? 'claude-sonnet-4-6' : 'gpt-4-turbo'
+
+          const costUsdEstimate = estimateCostUsd({
+            model: modelName,
+            inputTokens,
+            outputTokens,
+            cacheReadInputTokens,
+            cacheWriteInputTokens,
+            reasoningTokens,
+          })
+
+          const contextTypeUpper = (contextType ?? 'global').toUpperCase() as
+            | 'GLOBAL'
+            | 'TASK'
+            | 'LAW'
+            | 'CHANGE'
+
+          await prisma.chatUsageEvent.create({
+            data: {
+              workspace_id: workspaceId,
+              user_id: userId,
+              model: modelName,
+              context_type: contextTypeUpper,
+              input_tokens: inputTokens,
+              output_tokens: outputTokens,
+              cache_read_input_tokens: cacheReadInputTokens,
+              cache_write_input_tokens: cacheWriteInputTokens,
+              reasoning_tokens: reasoningTokens,
+              step_count: steps?.length ?? 1,
+              cost_usd_estimate: costUsdEstimate,
+            },
+          })
+        } catch (err) {
+          // Fail-safe: log but never re-throw. A failed telemetry write must not
+          // affect the user-facing chat response.
+          console.error('[CHAT_USAGE_EVENT_WRITE_FAIL]', err)
+        }
       },
       ...(providerOptions && { providerOptions }),
     })

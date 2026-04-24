@@ -1,0 +1,133 @@
+schema: 1
+story: '14.27'
+story_title: 'Chat Usage Telemetry (ChatUsageEvent)'
+gate: PASS
+status_reason: 'All 19 ACs verified (14 static + 5 with strong runtime evidence). 37 new tests + 117 regression tests pass. Cost math reconciles to 6-decimal precision against real Anthropic billing on 3 live chat turns. No security, performance, reliability, or maintainability concerns. Ready for Done.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-24T14:20:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+
+expires: '2026-05-08T14:20:00Z'
+
+evidence:
+  tests_reviewed: 154 # 37 new + 117 regression
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    ac_gaps: []
+    runtime_evidence:
+      - check: migration_applied
+        status: PASS
+        note: 'pnpm prisma migrate status returns "Database schema is up to date!" after user-applied SQL + migrate resolve --applied'
+      - check: row_write_happy_path
+        status: PASS
+        note: '3 live chat turns produced 3 rows in chat_usage_events with correct token values (Turn 1: 11,131 in / 56 out, Turn 2: 22,856 in / 588 out, Turn 3: 46,162 in / 1,443 out)'
+      - check: cost_math_reconciliation
+        status: PASS
+        note: 'Hand-computed cost for Turn 1 = $0.005575 matches stored cost to 6 decimals (fresh 517 × $3/M + cacheRead 10,614 × $0.30/M + output 56 × $15/M = $0.005575)'
+      - check: cache_write_dual_path_accessor
+        status: PASS
+        note: 'Runtime rows show cache_write_input_tokens populating correctly from nested inputTokenDetails.cacheWriteTokens field on Anthropic path (188, 662 on turns 2-3)'
+      - check: agentic_loop_aggregation
+        status: PASS
+        note: 'step_count correctly reflects agentic loop depth (1/2/3 across turns, tracking the escalation from no-tools to 2-tool-call turns)'
+      - check: cache_effectiveness_captured
+        status: PASS
+        note: 'Session aggregate 82% cache hit rate demonstrates Story 14.26 caching is fully visible in telemetry — validates both stories simultaneously'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      SQL parameterization uses Prisma tagged templates + INTERVAL '1 day' * ${n}::int pattern
+      + clampRangeDays/clampLimit/clampOffset helpers (defense-in-depth).
+      Admin page inherits Epic 11 middleware auth (no new auth surface).
+      No PII in telemetry schema (token counts + IDs only; user email joined at read time).
+      Fail-safe error logging does not leak sensitive data.
+  performance:
+    status: PASS
+    notes: |
+      One async Prisma INSERT per chat turn (fire-and-forget, non-blocking).
+      Admin queries use indexed columns ((workspace_id, created_at), (user_id, created_at),
+      (workspace_id, user_id, created_at), (context_type, created_at)).
+      Promise.all parallelization on admin page for both tab queries.
+      date_bin (Postgres 14+) for O(n) time-series bucketing.
+  reliability:
+    status: PASS
+    notes: |
+      Fail-safe write path verified by integration test + runtime operation.
+      Rollback is data-preserving (leave table, remove code — no FK cascades).
+      No new failure modes introduced.
+      onFinish only fires on successful stream completion (structural guarantee from AI SDK).
+  maintainability:
+    status: PASS
+    notes: |
+      Well-commented code (cost estimator, admin queries, route.ts).
+      MEMORY.md updated with architectural decisions + SQL safety pattern.
+      Clamping helpers factored out to avoid duplication across the 3 query functions.
+      Cost estimator is pure function (no side effects, trivial to extend).
+      Schema names follow repo convention (snake_case + @@map).
+
+code_quality_notes:
+  strengths:
+    - 'Fail-safe write pattern verified both by integration test AND by live operation — the try/catch swallow correctly protects the user-facing stream response from telemetry failures'
+    - 'SQL parameterization is belt-and-suspenders — tagged-template auto-parameterization + explicit ::int casts + input clamping helpers. Resilient against future refactors that might accidentally interpolate into string literals.'
+    - 'Dual-path cache-write accessor handles AI SDK version drift gracefully. Runtime evidence confirms the nested path resolves correctly.'
+    - 'Cost estimator is a pure function with sentinel tests — trivial to extend when new models ship.'
+    - 'Runtime verification reconciles hand-computed cost to 6 decimals against stored cost — strong signal that the estimator is correctly wired.'
+    - 'Admin UI follows the existing server-component + client-component split pattern from Epic 11. Pre-fetches both tabs via Promise.all for instant tab switching.'
+  refactoring_performed: []
+
+compliance:
+  coding_standards: PASS
+  project_structure: PASS
+  testing_strategy: PASS
+  all_acs_met: PASS
+
+deferred_subtasks:
+  - description: 'Pagination UI on admin page — API supports limit/offset; only the UI controls are deferred. v1 shows top 25.'
+    owner: dev
+    trigger: 'If workspace count grows beyond ~25 active consumers OR admin needs deeper pagination'
+    severity: low
+  - description: 'Workspace-filter drilldown link from /admin/workspaces/[id] → /admin/usage?workspaceId=... — small plumbing refinement'
+    owner: dev
+    trigger: 'If admin workflow of "click into a specific workspace then see its usage" becomes a regular path'
+    severity: low
+
+recommendations:
+  immediate: [] # None — story is Ready for Done as-is
+
+  future:
+    - action: 'Let chat_usage_events soak for 2-4 weeks across real workspace traffic before locking Story 5.5b tier numbers — the telemetry is now the source of truth for tier calibration'
+      refs: ['docs/stories/14.27.chat-usage-telemetry.md', 'docs/stories/5.5.usage-limits-per-tier.md']
+
+    - action: 'Update PRICING table in lib/usage/cost-estimator.ts whenever Anthropic or OpenAI change published rates — the sentinel test will catch new models but not rate changes'
+      refs: ['lib/usage/cost-estimator.ts']
+
+    - action: 'Define retention policy for chat_usage_events — at ~10k turns/day the table grows ~0.7 GB/year. Consider monthly rollup table + event archival at 12+ months'
+      refs: ['prisma/schema.prisma']
+
+    - action: 'Add pagination UI to /admin/usage page when workspace count crosses ~25 active consumers. Query API already supports it — purely a UI addition.'
+      refs: ['app/admin/(dashboard)/usage/page.tsx', 'components/admin/usage-tables.tsx']
+
+    - action: 'Workspace-filter drilldown link: plumb workspaceId URL param into the UsagePage + adjust getUsageByUser call + UI filter badge showing "Filtered to: {workspace name}"'
+      refs: ['app/admin/(dashboard)/usage/page.tsx']
+
+    - action: 'Consider promoting scripts/check-usage-events.ts to a permanent admin tool (e.g., scripts/admin/analyze-chat-usage.ts) or delete after soak period ends. Currently useful diagnostic.'
+      refs: ['scripts/check-usage-events.ts']
+
+    - action: 'Story 5.5b: tier pricing logic will consume this telemetry. Design tier allowances based on p50/p90/p99 cost-per-user-per-month from real soak data, not modeled estimates.'
+      refs: ['docs/stories/5.5.usage-limits-per-tier.md']
+
+    - action: 'Consider v1.5 caching (rolling breakpoint on conversation history) when telemetry shows conversation-history re-billing is a significant cost contributor. Current observed pattern (Turn 3 at 72% cache hit, down from 95% on Turn 1) suggests this is already the dominant cost factor.'
+      refs: ['app/api/chat/route.ts', 'docs/stories/14.26.anthropic-prompt-caching-v1.md']
+
+history:
+  - at: '2026-04-24T14:20:00Z'
+    gate: PASS
+    note: 'Initial review — all 19 ACs met with strong runtime evidence from 3 live chat turns. Cost math reconciles to 6 decimals. 154/154 total tests pass. No defects found. Two deferred subtasks (pagination UI, workspace drilldown link) are scope trims, not gaps. Ready for Done.'
