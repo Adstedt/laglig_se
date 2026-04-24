@@ -442,12 +442,14 @@ describe('signOffItem', () => {
     vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValueOnce(
       makeItemRow({
         efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+        motivering: 'Policy implementerad, årlig intern revision genomförd.',
         signed_off_at: null,
       }) as never
     )
     vi.mocked(prisma.complianceAuditItem.update).mockResolvedValue(
       makeItemRow({
         efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+        motivering: 'Policy implementerad, årlig intern revision genomförd.',
         signed_off_at: new Date(),
         signed_off_by_user_id: USER_ID,
         signed_off_by: { id: USER_ID, name: 'Alice' },
@@ -497,6 +499,7 @@ describe('signOffItem', () => {
     vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
       makeItemRow({
         efterlevnadsbedomning: null,
+        motivering: 'Har en motivering men ingen bedömning.',
         signed_off_at: null,
       }) as never
     )
@@ -508,6 +511,57 @@ describe('signOffItem', () => {
     })
     expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
     expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  // Audit-rigor gate: every signed bedömning must carry a written
+  // motivering. Feeds both the audit record + future AI cross-cycle
+  // reasoning.
+  it('blocked when motivering is null — exact Swedish error', async () => {
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+        motivering: null,
+        signed_off_at: null,
+      }) as never
+    )
+
+    const result = await signOffItem(ITEM_ID)
+    expect(result).toEqual({
+      success: false,
+      error: 'Skriv en motivering innan signering',
+    })
+    expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('blocked when motivering is whitespace-only', async () => {
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+        motivering: '   \n\t  ',
+        signed_off_at: null,
+      }) as never
+    )
+
+    const result = await signOffItem(ITEM_ID)
+    expect(result).toEqual({
+      success: false,
+      error: 'Skriv en motivering innan signering',
+    })
+    expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
+  })
+
+  it('bedömning-null check runs before motivering-null — ordering invariant', async () => {
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        efterlevnadsbedomning: null,
+        motivering: null,
+        signed_off_at: null,
+      }) as never
+    )
+
+    const result = await signOffItem(ITEM_ID)
+    expect(result.error).toBe('Ange bedömning innan signering')
   })
 })
 

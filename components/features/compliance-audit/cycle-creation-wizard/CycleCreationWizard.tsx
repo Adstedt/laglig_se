@@ -293,7 +293,7 @@ export function CycleCreationWizard({
           errorMessage: emptyScope
             ? res.error!
             : (res.error ??
-              'Kontrollen skapades men materialiseringen misslyckades. Försök igen.'),
+              'Kontrollen skapades men dokumenten kunde inte förberedas. Försök igen.'),
           emptyScope,
         })
         return

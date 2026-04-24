@@ -31,6 +31,15 @@ import {
 import type { FindingRow } from '@/app/actions/compliance-finding'
 
 // ---------------------------------------------------------------------------
+// Truncation helper — kravpunkt text can be long; meta row stays one line.
+// ---------------------------------------------------------------------------
+
+function truncate(text: string, max: number): string {
+  if (text.length <= max) return text
+  return text.slice(0, max).trimEnd() + '…'
+}
+
+// ---------------------------------------------------------------------------
 // Severity ordering (severity-first sort) — exported for consumers.
 // ---------------------------------------------------------------------------
 
@@ -196,6 +205,17 @@ export function FindingCard({
               <span className="truncate">
                 {finding.lawListItem.title} (
                 {finding.lawListItem.documentNumber})
+              </span>
+            </>
+          ) : null}
+          {finding.requirement ? (
+            <>
+              <span aria-hidden="true">·</span>
+              <span
+                className="truncate italic"
+                title={finding.requirement.text}
+              >
+                Kravpunkt: {truncate(finding.requirement.text, 80)}
               </span>
             </>
           ) : null}

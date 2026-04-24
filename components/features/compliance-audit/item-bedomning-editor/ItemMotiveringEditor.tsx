@@ -134,13 +134,20 @@ export function ItemMotiveringEditor({
       disabled={disabled}
       aria-label="Redigera motivering"
       className={cn(
-        'block w-full cursor-text rounded-sm px-2 py-1 text-left text-sm hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        !value && 'italic text-muted-foreground',
+        // Dashed border when empty so the placeholder reads as a clickable
+        // input field (not floating text). Solid border when filled so the
+        // content sits in a visible container consistent with other fields
+        // in the parent card.
+        'block w-full cursor-text rounded-md border px-3 py-2 text-left text-sm transition-colors',
+        'hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        !value
+          ? 'border-dashed border-border/60 italic text-muted-foreground'
+          : 'border-border/60',
         disabled && 'cursor-not-allowed opacity-50',
         className
       )}
     >
-      <span className="line-clamp-2 whitespace-pre-wrap">
+      <span className="line-clamp-3 whitespace-pre-wrap">
         {value || 'Lägg till motivering…'}
       </span>
     </button>

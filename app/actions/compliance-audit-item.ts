@@ -503,6 +503,20 @@ export async function signOffItem(
         }
       }
 
+      // Business rule: motivering required before sign-off. Every signed
+      // bedömning must carry a written rationale — feeds both the audit
+      // record (why/why-not compliant) and the AI payload for future
+      // cross-cycle reasoning. Trim to reject pure-whitespace motiveringar.
+      if (
+        existing.motivering === null ||
+        existing.motivering.trim().length === 0
+      ) {
+        return {
+          success: false,
+          error: 'Skriv en motivering innan signering',
+        }
+      }
+
       // DEBT-001 fix: single-call update+include.
       const now = new Date()
       const refreshed = (await prisma.complianceAuditItem.update({
