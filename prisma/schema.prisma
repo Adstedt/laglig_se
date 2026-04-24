@@ -129,7 +129,7 @@ model Workspace {
   change_assessments ChangeAssessment[]
 
   // Story 16.4: Law list generation
-  law_list_generation_status   String?
+  law_list_generation_status   String? @default("pending")
   law_list_generation_error    String?
   law_list_generation_progress Json?
 
