@@ -1,7 +1,8 @@
 # Epic 21 — Lagefterlevnadskontroll Brownfield Enhancement Architecture
 
-**Status:** Draft v1 — awaiting PO review
+**Status:** Active — 11 of 14 stories shipped as of 2026-04-23. Architecture choices validated against shipped code. See §1.3 for the landed-vs-deferred snapshot.
 **Author:** Winston (Architect) — 2026-04-22
+**Last reviewed:** 2026-04-23 (Sarah, PO — catch-up validation pass)
 **Supersedes/supplements:** `docs/architecture/` (sharded, existing)
 **Inputs:**
 - `docs/lagefterlevnadskontroll-brief.md` (strategic brief)
@@ -48,6 +49,50 @@ This document is the architectural blueprint for **Epic 21 — Lagefterlevnadsko
 | Change | Date | Version | Description | Author |
 |---|---|---|---|---|
 | Initial draft | 2026-04-22 | 0.1 | Brownfield architecture addendum for Epic 21 | Winston |
+| Active-status pass | 2026-04-23 | 0.2 | Flipped status banner from "Draft v1" to "Active — 11 of 14 stories shipped". Added §1.3 "What's landed vs deferred" snapshot. No architectural decisions revised — the original v0.1 design has been validated by 11 shipped stories and continues to apply. Captured one notable copy/UX change: Förseglad → Fastställd verb rename (commit `c225c46`) — verb-only, no enum or schema change. | Sarah (PO) |
+
+---
+
+### 1.3 What's Landed vs Deferred (snapshot 2026-04-23)
+
+This section is a status overlay on top of the v0.1 architecture below — it does NOT replace any architectural decision, only marks each story's implementation state so future readers can tell at a glance which sections describe shipped vs planned work.
+
+**✅ Shipped (11 stories):**
+
+| Story | Title | Notes |
+|---|---|---|
+| 21.1 | Compliance-audit schema foundations | Additive Prisma migration: 5 tables, 4 enums, 1 nullable FK on `Task`. |
+| 21.2 | Cycle CRUD server actions | `app/actions/compliance-audit-cycle.ts` with `withWorkspace + tasks:edit` convention. |
+| 21.3 | Scope selector component | Reuses `compliance-detail-table` grouped layout as scope-selector substrate. |
+| 21.4 | Cycle creation wizard + materialisation | `/laglistor/kontroller/skapa`. Idempotent materialisation. |
+| 21.5 | Cycle detail page — Items tab | Tabs: Items / Findings / Rapport / Aktivitet. Read-only gate for SEALED/ARKIVERAD. |
+| 21.5.2 | Cycle list hub at `/laglistor/kontroller` | Filter chips Aktiva/Slutförda/Förseglade/Arkiverade/Alla. |
+| 21.6 | Cycle lifecycle Complete + Revert | `completeCycle` + `revertCycleToPagaende` server actions; dialogs + dropdown components. |
+| 21.7 | Findings CRUD | Type/severity/state model. Inline action buttons per finding row. |
+| 21.8 | Auto-spawn corrective-action Task on AVVIKELSE | `lib/compliance-audit/task-spawner.ts` + new `ComplianceCycleTaskLink` M:N join. |
+| 21.11 | Revisionsrapport HTML renderer | `lib/compliance-audit/revisionsrapport-renderer.ts` + `cycle-rapport-tab.tsx`. PDF generation NOT included. |
+| 21.13 | Activity-log integration | New entity types + action constants under `lib/activity/*.ts`. |
+| 21.14 | Permissions — `audit:seal` scope + `AUDITOR` role | `lib/compliance-audit/authorization.ts` with `canSealAuditCycle`, `isLeadAuditor`, `canCompleteOrRevertCycle`. |
+
+**📝 In draft / not yet shipped:**
+
+| Story | Title | Status |
+|---|---|---|
+| 21.15 | Manual kontroll ↔ task linkage + cycle-detail Uppgifter tab | Approved, awaits dev pickup. |
+
+**⏸️ Deferred (post-MVP for this epic):**
+
+| Story | Title | Reason for deferral |
+|---|---|---|
+| 21.9 | Seal cycle (irreversible immutability + canonical-JSON hash) | Lifecycle currently stops at AVSLUTAD. Seal becomes meaningful once a customer is ready to declare a cycle final and produce a tamper-evident report; not blocked, just not pulled. |
+| 21.10 | `assertCycleEditable(tx, cycleId)` runtime guard | TODO markers placed in shipped code (e.g. `compliance-audit-cycle.ts:458, 578`). Implementation depends on 21.9 since the guard's primary purpose is to enforce SEALED-immutability inside transactions. |
+| 21.12 | Background PDF generation | Story 21.11 ships HTML renderer; PDF is a separate Vercel-cron job using existing `puppeteer-core` + `@sparticuz/chromium` infra. Deferred until customer-facing demand justifies the cron + storage overhead. |
+
+**📌 Notable post-architecture changes that landed:**
+
+- **`Förseglad` → `Fastställd` verb rename** (commit `c225c46`): all UI copy + activity-log strings flipped. `SEALED` enum value in DB unchanged. Future contributors should use "Fastställd" / "fastställning" / "fastställa" — not "Förseglad". Architecture sections below referring to "seal" remain accurate at the database / state-machine level; only the user-facing wording changed.
+- **Cycle UI brand polish** (commits `bc872ad`, `7f57bc7`, `8d3967d`, `5be9672`): tables wrapped in `rounded-md border`, full-viewport-width layout (NOT `max-w-7xl`), vertically-centered cycle-item row cells, breadcrumb deduplication.
+- **PriorityEditor / Badge consistency drift** flagged by the Epic 22 audit (`docs/ui-consistency-audit-2026-04-23.md`) — Epic 22 will consolidate the cycle module's pills + filter chips against shared primitives. No architectural change required from Epic 21 side; just coordination on which surfaces 22.x touches.
 
 ---
 

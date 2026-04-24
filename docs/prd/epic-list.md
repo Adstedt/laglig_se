@@ -276,6 +276,33 @@
 
 ---
 
+## Epic 21: Lagefterlevnadskontroll (Compliance Audit Cycle Module)
+
+**Status:** Active — 11 stories completed (21.1, 21.2, 21.3, 21.4, 21.5, 21.5.2, 21.6, 21.7, 21.8, 21.11, 21.13, 21.14); Story 21.15 in draft; Stories 21.9 (Seal), 21.10 (assertCycleEditable runtime guard), 21.12 (background PDF generation) deferred.
+
+**Goal:** Replace the Excel-based Swedish compliance-audit cycle (ISO 14001 §9.1.2 / ISO 45001 §9.1.2 / AFS 2001:1 / SFS 1998:901) with a structured, auditable, AI-assisted workflow inside Laglig.se. Primary user is the KMA-samordnare / miljösamordnare / HSE-ansvarig running internal audits 1–2 times per year. Key value: traceability by construction — every bedömning, bevis, and change automatically logged, hashed, and exportable as a tamper-evident revisionsrapport.
+
+**Delivers:**
+- New aggregate `ComplianceAuditCycle` + child entities (`ComplianceAuditItem`, `ComplianceFinding`, `EvidenceSnapshot`, `ComplianceAuditReport`) — additive Prisma schema, no existing column dropped (Story 21.1).
+- New route tree under `/laglistor/kontroller` — list hub (Story 21.5.2), cycle creation wizard with scope selector (Stories 21.3, 21.4), cycle detail page with Items / Findings / Rapport / Aktivitet tabs (Story 21.5).
+- Cycle CRUD server actions in `app/actions/compliance-audit-cycle.ts` (Story 21.2) with `withWorkspace()` + `tasks:edit` guard convention; lifecycle transitions PLANERAD → PAGAENDE → AVSLUTAD → SEALED → ARKIVERAD with revert-to-PAGAENDE escape hatch (Story 21.6).
+- Findings CRUD with type/severity/state model (Avvikelse / Observation / Förbättringsförslag × Kritisk / Större / Mindre × Öppen / Stängd / Verifierad) — Story 21.7.
+- Auto-spawn corrective-action `Task` on `AVVIKELSE` finding via `lib/compliance-audit/task-spawner.ts`; M:N `ComplianceCycleTaskLink` join surfaces task in the right-rail "Länkade kontroller" card; finding ↔ task lifecycle stays in sync (Story 21.8).
+- HTML revisionsrapport renderer at `lib/compliance-audit/revisionsrapport-renderer.ts` + `cycle-rapport-tab.tsx` consumer (Story 21.11; PDF generation deferred to 21.12).
+- Activity-log integration for every cycle / item / finding / report mutation via the existing `lib/services/activity-logger.ts` with new entity-type label maps under `lib/activity/` (Story 21.13).
+- New permission scope `audit:seal` (OWNER / ADMIN), new `AUDITOR` role (read-mostly across activity / cycles / findings), and `lib/compliance-audit/authorization.ts` with `canSealAuditCycle`, `isLeadAuditor`, `canCompleteOrRevertCycle` helpers (Story 21.14).
+- Recent UX polish: Förseglad → **Fastställd** verb rename across UI + activity-log strings; cycle tables wrapped in `rounded-md border` per app brand pattern; cycle-detail uses full viewport width; vertically-centered cycle-item row cells.
+
+**Requirements covered:** New FRs introduced by this epic (compliance-audit cycle lifecycle, immutable seal, evidence snapshot, revisionsrapport generation). Closes deficiency cited in Time2act Swedish-audit benchmarking — "lagefterlevnadsbedömning is the #4 most common avvikelse at external audits" — by making review continuous rather than annual.
+
+**Dependencies:** Epic 1 (auth + workspace multi-tenancy), Epic 5 (workspace + roles), Epic 6 (Compliance Workspace — provides `LawList`, `LawListItem`, `LawListItemRequirement` substrate the cycle scopes against; Kanban / Task model the spawner targets), Epic 17 (DMS — `RequirementEvidenceLink` snapshot semantics referenced for evidence freeze at seal time), Epic 20 (per-krav assignee — drives `itemResponsibleUserId` fallback in the task spawner).
+
+**Note:** Brownfield enhancement (significant new feature surface, minimal modification of existing code). All new code isolated under `app/actions/compliance-audit-*.ts`, `components/features/compliance-audit/`, and `lib/compliance-audit/`. Touches existing files only at: `prisma/schema.prisma` (additive), `lib/auth/permissions.ts` (one new scope), `lib/activity/*.ts` (additive label-map keys), `Task` model (one nullable `compliance_finding_id` FK column). Source artefacts: `docs/lagefterlevnadskontroll-brief.md` (strategic brief, Mary), `docs/prd-lagefterlevnadskontroll.md` (PRD with 14 stories), `docs/architecture/epic-21-lagefterlevnadskontroll.md` (architecture addendum, Winston).
+
+**Priority:** High — flagship initiative for the 2026-Q2 release. Differentiates Laglig.se from Notisum / JP Infonet / Ramboll Lagbevakning (none of which surface a structured audit-cycle module today).
+
+---
+
 ## Epic 22: UI Primitives Alignment
 
 **Status:** Planned (0 completed — 4 stories scoped)
@@ -294,9 +321,9 @@
 
 ---
 
-**Total Stories Tracked:** ~222+ across 21 epics (~153 completed, ~69+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped, Epic 22 4 stories scoped)
+**Total Stories Tracked:** ~237+ across 22 epics (~164 completed, ~73+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — 11 completed, Epic 22 4 stories scoped)
 
-**Epic Status:** 11 Done, 4 Partial, 6 Not Started / Planned
+**Epic Status:** 11 Done, 5 Partial / Active (incl. Epic 21), 6 Not Started / Planned
 
 **Last updated:** 2026-04-23
 
