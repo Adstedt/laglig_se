@@ -166,11 +166,11 @@
 
 ## Epic 14: Compliance Agent
 
-**Status:** Done (18 completed, 3 backlog — exceeded original 14-story estimate)
+**Status:** Done (18 completed, 5 backlog — exceeded original 14-story estimate; Phase 6 added 2026-04-24 for prompt-caching + usage telemetry as 5.5 prereqs)
 
 **Goal:** Build an AI compliance partner that provides contextual, cited legal guidance through conversational interaction with company-aware tooling.
 
-**Delivers:** Agent system prompt, tool suite (search_laws, get_company_context, etc.), streaming chat UI, change assessment flow, conversational onboarding
+**Delivers:** Agent system prompt, tool suite (search_laws, get_company_context, etc.), streaming chat UI, change assessment flow, conversational onboarding, prompt-caching + usage telemetry (Phase 6, Stories 14.26 / 14.27)
 
 **Requirements covered:** FR4, FR5, FR6, NFR2, NFR3, NFR9, NFR24
 

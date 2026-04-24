@@ -121,6 +121,12 @@ This transforms Laglig from a passive law registry into an active compliance par
 | **14.23** | Extended Approval Types + Batch Consolidation + Sidebar Migration | Draft |
 | **14.24** | Draft Styrdokument Approval | Draft |
 
+### Phase 6: Agent Infrastructure & Cost Optimization
+| # | Story | Status |
+|---|-------|--------|
+| **14.26** | Anthropic Prompt Caching v1 — Chat Route | Draft |
+| **14.27** | Chat Usage Telemetry (`ChatUsageEvent`) | Planned |
+
 ---
 
 ## Phase 1: Data Foundation
@@ -460,6 +466,71 @@ This transforms Laglig from a passive law registry into an active compliance par
 2. Approve (no edit) creates the `WorkspaceDocument` and applies context links; agent confirms in next turn
 3. "Open editor" opens Tiptap with the pending-approval banner; finalize-from-editor completes the approval
 4. Rejected drafts are discarded (no `WorkspaceDocument` created)
+
+---
+
+## Phase 6: Agent Infrastructure & Cost Optimization
+
+**Goal:** Bring the chat route's unit economics in line with what tier pricing (Story 5.5) will require. Enable Anthropic prompt caching to cut per-query COGS ~40% on multi-turn sessions, and add per-turn token telemetry so tier allowances and metered-overage reporting can be calibrated on measured data rather than modeled estimates.
+
+**Context:** Grounded cost analysis on 2026-04-24 (Sarah/PO + Bob/SM) identified two gaps in the current chat stack that distort the economics needed to price tiers correctly:
+
+1. **Prompt caching is not wired.** Every turn re-pays full input cost on the ~9k-token system prompt + tool defs. Anthropic's ephemeral cache is supported by the installed `@ai-sdk/anthropic` version but isn't being used.
+2. **Token usage is not logged.** `streamText` exposes `result.usage` with `inputTokens`, `outputTokens`, `cachedInputTokens`, `cacheCreationInputTokens`, but nothing reads it. There is no `ChatUsageEvent` table, no `onFinish` hook, no telemetry.
+
+Fixing these in sequence — cache first, telemetry second — gives tier pricing (Story 5.5b, Epic 5) a real COGS baseline to calibrate against before tiers go live.
+
+**Assumptions (marked for challenge):**
+- **A1.** v1 caching (single breakpoint on the joined system string) captures enough savings to be worth shipping on its own. v2 (structured parts for cross-workspace cache sharing) is a future story (14.28+, TBD), not a blocker for tier pricing.
+- **A2.** Telemetry is a pure write story — no enforcement logic. Enforcement / soft-cap / Stripe metered overage reporting all live in Story 5.5b, consuming the telemetry table. This separation keeps 14.27 shippable ahead of 5.5b's pricing decisions.
+
+### Story 14.26: Anthropic Prompt Caching v1 — Chat Route
+
+**As** the Laglig.se platform,
+**I want** Anthropic prompt caching enabled on the chat API's system message on the Anthropic model path,
+**so that** multi-turn chat sessions re-use the ~5k-token system prompt from cache at 10% of input cost instead of re-paying full input rate every turn.
+
+**Key deliverables:**
+- Add `providerOptions.anthropic.cacheControl = { type: 'ephemeral' }` to `streamText` in `app/api/chat/route.ts`, gated on `modelProvider === 'anthropic'` so the OpenAI path is untouched
+- Merge correctly with existing `providerOptions.anthropic.thinking` (Story 14.20) — both keys coexist via conditional spread
+- Keep `buildSystemPrompt` returning a joined string (structured-parts refactor for cross-workspace cache sharing is explicitly v2, deferred)
+- Temporary `onFinish` console.log of `result.usage` as manual verification of `cache_read_input_tokens > 0` across all four context types (`global` / `law` / `task` / `change`) — left in place as scaffolding for Story 14.27
+- `MEMORY.md` updated with v1 caching scope and deferred v2 work
+
+**AC highlights:**
+1. `cache_read_input_tokens > 0` on turn 2 of a multi-turn session across all four context types (Anthropic path)
+2. OpenAI path unchanged — no Anthropic-specific fields leak, response behavior byte-for-byte identical to today
+3. Extended thinking (14.20) and web search (14.21) continue to work unmodified
+4. Rollback is a one-line edit (remove `cacheControl` field). No schema changes. No data migration.
+
+**Full AC + Tasks:** see `docs/stories/14.26.anthropic-prompt-caching-v1.md`
+
+### Story 14.27: Chat Usage Telemetry (`ChatUsageEvent`)
+
+**As** the Laglig.se platform,
+**I want** per-turn AI usage (input / output / cached / thinking tokens, model, contextType, workspaceId, userId) persisted to a `ChatUsageEvent` event log,
+**so that** Story 5.5b can compute current-period usage per workspace for soft-cap warnings and Stripe metered overage reporting, and Story 14.26's cache effectiveness can be measured beyond the temporary console.log.
+
+**Key deliverables (planned — draft to be written after 14.26 validation):**
+- Prisma model: `ChatUsageEvent` (event log — writes only, no aggregation)
+  - `id`, `workspaceId`, `userId`, `chatSessionId` (nullable), `createdAt`
+  - `model` (string, e.g., `claude-sonnet-4-6`)
+  - `contextType` enum: `global | law | task | change`
+  - Token dimensions: `inputTokens`, `outputTokens`, `cacheReadInputTokens`, `cacheCreationInputTokens`, `thinkingTokens`
+  - Indexes: `(workspaceId, createdAt)`, `(chatSessionId)`
+- `onFinish` hook in `streamText` (or `toUIMessageStreamResponse`) writes a `ChatUsageEvent` row per turn
+- Cost estimation helper `lib/usage/cost-estimator.ts` — computes `costUsdEstimate` per row from model + token breakdown (pure function, no schema column — computed on read)
+- Sentry breadcrumb for cache hit rate sampling (consumes `trackTechnicalMetrics.cacheHitRate` from section 19.2 of architecture)
+- **Out of scope:** enforcement, soft-cap UI, Stripe overage reporting — all deferred to Story 5.5b
+
+**AC highlights (draft):**
+1. Every successful chat turn writes one `ChatUsageEvent` row with all six token dimensions populated
+2. Anthropic path writes `cacheReadInputTokens` and `cacheCreationInputTokens` correctly (non-zero on multi-turn sessions after 14.26 ships)
+3. OpenAI path writes zeros for Anthropic-specific fields (no errors, no NULLs)
+4. Failed or rate-limited turns do NOT write rows (fail-safe: missing data is better than misleading data)
+5. No backfill — 14.27 captures forward only
+
+**Full AC + Tasks:** to be drafted once 14.26 is Approved
 
 ---
 
