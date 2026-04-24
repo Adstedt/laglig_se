@@ -19,6 +19,7 @@ import { CycleItemsTab } from './cycle-items-tab'
 import { CycleFindingsTab } from './cycle-findings-tab'
 import { CompleteCycleDialog } from './complete-cycle-dialog'
 import { RevertCycleDialog } from './revert-cycle-dialog'
+import { SealCycleDialog } from './seal-cycle-dialog'
 import { CycleRapportTab } from './cycle-rapport-tab'
 import { CycleItemModal } from '@/components/features/compliance-audit/cycle-item-modal'
 import {
@@ -43,11 +44,15 @@ import {
 import {
   completeCycle,
   revertCycleToPagaende,
+  sealCycle,
+  getDraftEvidenceDocuments,
   type CycleDetail,
+  type DraftDocumentSummary,
 } from '@/app/actions/compliance-audit-cycle'
 import {
   complianceAuditItemsKey,
   complianceFindingsKey,
+  complianceDraftEvidenceDocsKey,
 } from '@/lib/swr-keys/compliance-audit'
 import type { EfterlevnadsBedomning } from '@prisma/client'
 
@@ -72,6 +77,11 @@ interface CycleDetailPageProps {
   // without a client-side DB lookup. Always `false` when cycle.status is
   // not AVSLUTAD (RSC skips the lookup for other states).
   canRevert: boolean
+  // Story 21.9 — runtime flag for the Seal affordance. Server-resolved via
+  // `canSealCycle` in the RSC route shell (OWNER/ADMIN with `audit:seal`
+  // scope OR the cycle's lead auditor). Always `false` when cycle.status
+  // is not AVSLUTAD.
+  canSeal: boolean
 }
 
 export function CycleDetailPage({
@@ -81,9 +91,11 @@ export function CycleDetailPage({
   cyclePartial,
   readOnly,
   canRevert,
+  canSeal,
 }: CycleDetailPageProps) {
   const itemsKey = complianceAuditItemsKey(cycle.id)
   const findingsKey = complianceFindingsKey(cycle.id)
+  const draftDocsKey = complianceDraftEvidenceDocsKey(cycle.id)
   const { mutate: globalMutate } = useSWRConfig()
 
   // Story 21.6 — local cycle state seeded from the RSC prop. Post-transition
@@ -105,6 +117,9 @@ export function CycleDetailPage({
   const [completeSubmitting, setCompleteSubmitting] = useState(false)
   const [revertDialogOpen, setRevertDialogOpen] = useState(false)
   const [revertSubmitting, setRevertSubmitting] = useState(false)
+  // Story 21.9 — seal dialog state.
+  const [sealDialogOpen, setSealDialogOpen] = useState(false)
+  const [sealSubmitting, setSealSubmitting] = useState(false)
 
   const { data: itemsData } = useSWR<GetCycleItemsResult>(
     itemsKey,
@@ -138,7 +153,29 @@ export function CycleDetailPage({
     }
   )
 
+  // v0.5 — DRAFT-status styrdokument in scope, surfaced in SealCycleDialog.
+  // No fallbackData: data isn't required at first paint; the dialog only
+  // mounts on user click, by which time SWR has resolved. If still pending
+  // when dialog opens, draftDocuments renders as [] (override gate idle).
+  const { data: draftDocsData } = useSWR<{
+    draftDocuments: DraftDocumentSummary[]
+  }>(
+    draftDocsKey,
+    async () => {
+      const result = await getDraftEvidenceDocuments(cycle.id)
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? 'Kunde inte hämta utkast-styrdokument')
+      }
+      return result.data
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30_000,
+    }
+  )
+
   const items = itemsData?.items ?? initialItems
+  const draftDocuments = draftDocsData?.draftDocuments ?? []
   const findings = findingsData?.findings ?? initialFindings
 
   const [tab, setTab] = useState<TabValue>(DEFAULT_TAB)
@@ -358,6 +395,33 @@ export function CycleDetailPage({
     }
   }, [localCycle.id])
 
+  // Story 21.9 — seal handler. Calls sealCycle with optional overrideReason;
+  // on success, flips localCycle status to SEALED which ripples to the header
+  // banner, the dropdown, and the Rapport tab.
+  const handleSealCycle = useCallback(
+    async (overrideReason?: string) => {
+      setSealSubmitting(true)
+      try {
+        const result = await sealCycle({
+          cycleId: localCycle.id,
+          ...(overrideReason !== undefined ? { overrideReason } : {}),
+        })
+        if (!result.success || !result.data) {
+          toast.error('Kunde inte fastställa kontrollen', {
+            description: result.error,
+          })
+          return
+        }
+        setLocalCycle(result.data.cycle)
+        setSealDialogOpen(false)
+        toast.success('Kontrollen är fastställd')
+      } finally {
+        setSealSubmitting(false)
+      }
+    },
+    [localCycle.id]
+  )
+
   // Story 21.7 — finding mutation reconciler. Mirrors replaceRow.
   // Replace-in-place when the finding exists; prepend when it's a new create
   // (listFindingsForCycle sorts created_at desc + id desc, so newest → top).
@@ -438,6 +502,27 @@ export function CycleDetailPage({
     [findings]
   )
 
+  // Story 21.9 — open AVVIKELSE projection for the SealCycleDialog override
+  // gate. AVVIKELSE is the only finding type that gates seal; OBSERVATION
+  // and FORBATTRING are non-blocking per the PO-approved Gate-with-override
+  // policy. Project to a minimal summary shape so the dialog can SURFACE
+  // each open avvikelse (per UX feedback 2026-04-24 — count alone forces
+  // users to context-switch to the Anmärkningar tab).
+  const openAvvikelser = useMemo(
+    () =>
+      findings
+        .filter((f) => f.type === 'AVVIKELSE' && f.closedAt === null)
+        .map((f) => ({
+          id: f.id,
+          title: f.title,
+          severity: f.severity,
+          contextLabel: f.lawListItem
+            ? `${f.lawListItem.documentNumber} ${f.lawListItem.title}`
+            : null,
+        })),
+    [findings]
+  )
+
   const contextValue: CycleItemsContextValue = useMemo(
     () => ({
       bedomdaCount,
@@ -466,8 +551,10 @@ export function CycleDetailPage({
           totalCount={items.length}
           signeradeCount={signeradeCount}
           canRevert={canRevert}
+          canSeal={canSeal}
           onCompleteClick={() => setCompleteDialogOpen(true)}
           onRevertClick={() => setRevertDialogOpen(true)}
+          onSealClick={() => setSealDialogOpen(true)}
         />
 
         <Tabs value={tab} onValueChange={handleTabChange}>
@@ -531,6 +618,16 @@ export function CycleDetailPage({
           onOpenChange={setRevertDialogOpen}
           onConfirm={handleRevertCycle}
           isSubmitting={revertSubmitting}
+        />
+        {/* Story 21.9 — seal dialog with conditional override gate. */}
+        <SealCycleDialog
+          open={sealDialogOpen}
+          onOpenChange={setSealDialogOpen}
+          onConfirm={handleSealCycle}
+          isSubmitting={sealSubmitting}
+          openAvvikelser={openAvvikelser}
+          draftDocuments={draftDocuments}
+          pendingTasks={pendingTasks}
         />
 
         {/* Story 21.16 — cycle-item modal. `selectedItemId === null` → closed. */}

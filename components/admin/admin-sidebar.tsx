@@ -10,6 +10,7 @@ import {
   FileText,
   Clock,
   AlertTriangle,
+  Gauge,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +19,7 @@ const navItems = [
   { href: '/admin/workspaces', label: 'Workspaces', icon: Building2 },
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/templates', label: 'Templates', icon: FileText },
+  { href: '/admin/usage', label: 'AI-användning', icon: Gauge },
   { href: '/admin/cron-jobs', label: 'Cron Jobs', icon: Clock },
   { href: '/admin/cron-jobs/errors', label: 'Felloggar', icon: AlertTriangle },
 ] as const

@@ -26,11 +26,11 @@
 
 ## Epic 3: RAG-Powered AI Chat Interface
 
-**Status:** Partial (5 completed, 4 backlog — drag-and-drop context building deferred; core chat superseded by Epic 14)
+**Status:** Partial (6 completed incl. Story 3.15 per-user chat-history scoping, 4 backlog — drag-and-drop context building deferred; core chat superseded by Epic 14)
 
 **Goal:** Implement zero-hallucination AI chatbot with drag-and-drop context building and citation-first responses.
 
-**Delivers:** Vector database, AI chat UI, drag-and-drop, RAG responses, streaming, citations
+**Delivers:** Vector database, AI chat UI, drag-and-drop, RAG responses, streaming, citations, per-user chat-history scoping (Story 3.15)
 
 **Requirements covered:** FR4, FR5, FR6, NFR2, NFR3, NFR9, NFR20, NFR24
 
@@ -278,7 +278,7 @@
 
 ## Epic 21: Lagefterlevnadskontroll (Compliance Audit Cycle Module)
 
-**Status:** Active — 11 stories completed (21.1, 21.2, 21.3, 21.4, 21.5, 21.5.2, 21.6, 21.7, 21.8, 21.11, 21.13, 21.14); Story 21.15 in draft; Stories 21.9 (Seal), 21.10 (assertCycleEditable runtime guard), 21.12 (background PDF generation) deferred.
+**Status:** Active — 11 stories completed (21.1, 21.2, 21.3, 21.4, 21.5, 21.5.2, 21.6, 21.7, 21.8, 21.11, 21.13, 21.14); Stories 21.9 (Seal), 21.10 (assertCycleEditable runtime guard), 21.12 (background PDF generation) deferred; Story 21.15 (manual kontroll↔task linkage + Uppgifter tab) moved to frontend backlog 2026-04-24 behind 21.9/21.12.
 
 **Goal:** Replace the Excel-based Swedish compliance-audit cycle (ISO 14001 §9.1.2 / ISO 45001 §9.1.2 / AFS 2001:1 / SFS 1998:901) with a structured, auditable, AI-assisted workflow inside Laglig.se. Primary user is the KMA-samordnare / miljösamordnare / HSE-ansvarig running internal audits 1–2 times per year. Key value: traceability by construction — every bedömning, bevis, and change automatically logged, hashed, and exportable as a tamper-evident revisionsrapport.
 

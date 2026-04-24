@@ -549,6 +549,22 @@ export function formatActivity(input: FormatInput): SentencePart[] {
         text(' till pågående'),
       ]
 
+    // Story 21.9 — seal
+    case 'cycle_sealed':
+      return [u, text(' fastställde kontrollen '), primary]
+
+    // Story 21.12 — revisionsrapport PDF generation
+    case 'cycle_report_generated': {
+      const kind = pickString(newP, 'kind')
+      const kindLabel =
+        kind === 'SEALED' ? 'fastställd' : kind === 'COMPLETE' ? 'slutförd' : ''
+      return [
+        u,
+        text(' genererade revisionsrapport'),
+        text(kindLabel ? ` (${kindLabel})` : ''),
+      ]
+    }
+
     // ----------------- Compliance-audit findings (Epic 21) -----------------
     case 'finding_created': {
       const typeLabel =

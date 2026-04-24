@@ -1,5 +1,4 @@
-import chromium from '@sparticuz/chromium'
-import puppeteer from 'puppeteer-core'
+import { renderHtmlToPdf } from '@/lib/pdf/render-html-to-pdf'
 import type { DocumentExportMetadata } from './tiptap-to-docx'
 
 /**
@@ -95,29 +94,15 @@ function escapeHtml(text: string): string {
 /**
  * Generate a PDF buffer from HTML content using Puppeteer + @sparticuz/chromium.
  * Designed for Vercel serverless deployment.
+ *
+ * Story 21.12: delegates to `@/lib/pdf/render-html-to-pdf` so the Puppeteer
+ * launch path is shared with the revisionsrapport PDF pipeline. Behaviour
+ * preserved byte-for-byte (same A4 + 2cm margins + printBackground defaults).
  */
 export async function generatePdf(
   contentHtml: string,
   metadata: DocumentExportMetadata
 ): Promise<Buffer> {
   const html = buildHtmlDocument(contentHtml, metadata)
-
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(),
-    headless: true,
-  })
-
-  try {
-    const page = await browser.newPage()
-    await page.setContent(html, { waitUntil: 'networkidle0' })
-    const pdf = await page.pdf({
-      format: 'A4',
-      margin: { top: '2cm', bottom: '2cm', left: '2cm', right: '2cm' },
-      printBackground: true,
-    })
-    return Buffer.from(pdf)
-  } finally {
-    await browser.close()
-  }
+  return renderHtmlToPdf(html)
 }

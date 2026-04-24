@@ -367,10 +367,13 @@ describe('CycleDetailPage — items tab', () => {
       readOnly: true,
     })
 
-    // Read-only banner present with truncated hash + "fastställd" copy.
+    // Story 21.9 — SEALED cycles render the richer SealedCycleBanner (replaces
+    // the old ReadOnlyBanner for SEALED state). Banner copy is "Fastställd"
+    // (capitalised) with a truncated hash chip.
     const banner = screen.getByRole('status')
-    expect(banner.textContent).toContain('fastställd')
-    expect(banner.textContent).toContain('abc123def456')
+    expect(banner.textContent).toContain('Fastställd')
+    // Truncated hash format: first 8 + "…" + last 4
+    expect(banner.textContent).toContain('abc123de')
 
     // No sign-off buttons rendered in read-only mode (AC 8 — hidden, not disabled).
     expect(screen.queryByRole('button', { name: 'Signera' })).toBeNull()

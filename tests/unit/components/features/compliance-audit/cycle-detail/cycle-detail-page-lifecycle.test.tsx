@@ -99,18 +99,25 @@ vi.mock(
     CycleActionsDropdown: ({
       cycle,
       canRevert,
+      canSeal,
       onCompleteClick,
       onRevertClick,
+      onSealClick,
     }: {
       cycle: { status: ComplianceCycleStatus }
       canRevert: boolean
+      canSeal: boolean
       onCompleteClick: () => void
       onRevertClick: () => void
+      onSealClick: () => void
     }) => (
       <div data-testid="stub-dropdown" data-status={cycle.status}>
         <button onClick={onCompleteClick}>stub-complete</button>
         <button onClick={onRevertClick} disabled={!canRevert}>
           stub-revert
+        </button>
+        <button onClick={onSealClick} disabled={!canSeal}>
+          stub-seal
         </button>
       </div>
     ),
@@ -213,6 +220,7 @@ function renderPage(
           status === ComplianceCycleStatus.ARKIVERAD
         }
         canRevert={opts.canRevert ?? false}
+        canSeal={false}
       />
     </SWRConfig>
   )

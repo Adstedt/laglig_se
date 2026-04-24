@@ -1,5 +1,11 @@
 /** Story 21.5 — /laglistor/kontroller/[cycleId] detail page (items + findings + rapport + aktivitet tabs). */
 
+// Story 21.12: extended function ceiling so the eager-sealed-PDF `after()`
+// continuation fired from `sealCycle` (Server Action invoked from this
+// page's subtree) has room to complete a Puppeteer render (~30-60s for a
+// 200-item cycle). Default 10s would kill the continuation mid-render.
+export const maxDuration = 300
+
 import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -12,7 +18,11 @@ import {
 import { getCycleById } from '@/app/actions/compliance-audit-cycle'
 import { getCycleItemsForCycle } from '@/app/actions/compliance-audit-item'
 import { listFindingsForCycle } from '@/app/actions/compliance-finding'
-import { canCompleteOrRevertCycle } from '@/lib/compliance-audit/authorization'
+import {
+  canCompleteOrRevertCycle,
+  canSealCycle,
+} from '@/lib/compliance-audit/authorization'
+import { prisma } from '@/lib/prisma'
 import { CycleDetailPage } from '@/components/features/compliance-audit/cycle-detail'
 
 export const dynamic = 'force-dynamic'
@@ -73,19 +83,28 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
       ? findingsResult.data.findings
       : []
 
-  // Story 21.6 — resolve Revert permission server-side. Only meaningful when
-  // the cycle is AVSLUTAD (the UI hides the Revert menu item otherwise) so
-  // we skip the DB lookup for every other state.
+  // Story 21.6 + 21.9 — resolve Revert AND Seal permissions server-side. Both
+  // are only meaningful when the cycle is AVSLUTAD (UI hides each menu item
+  // otherwise) so we skip the DB lookup for every other state. Run the two
+  // cheap findFirst lookups in parallel when applicable.
   const cycleStatus = cycleResult.data.cycle.status
-  const canRevert =
+  const [canRevert, canSeal] =
     cycleStatus === ComplianceCycleStatus.AVSLUTAD
-      ? await canCompleteOrRevertCycle({
-          role: ctx.role,
-          userId: ctx.userId,
-          cycleId,
-          workspaceId: ctx.workspaceId,
-        })
-      : false
+      ? await Promise.all([
+          canCompleteOrRevertCycle({
+            role: ctx.role,
+            userId: ctx.userId,
+            cycleId,
+            workspaceId: ctx.workspaceId,
+          }),
+          canSealCycle(prisma, {
+            role: ctx.role,
+            userId: ctx.userId,
+            cycleId,
+            workspaceId: ctx.workspaceId,
+          }),
+        ])
+      : [false, false]
 
   if (!itemsResult.success || !itemsResult.data) {
     // Fail-open with an empty items array — the UI renders the empty state and
@@ -104,6 +123,7 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
         }}
         readOnly={isReadOnly(cycleResult.data.cycle.status)}
         canRevert={canRevert}
+        canSeal={canSeal}
       />
     )
   }
@@ -116,6 +136,7 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
       cyclePartial={itemsResult.data.cycle}
       readOnly={isReadOnly(itemsResult.data.cycle.status)}
       canRevert={canRevert}
+      canSeal={canSeal}
     />
   )
 }

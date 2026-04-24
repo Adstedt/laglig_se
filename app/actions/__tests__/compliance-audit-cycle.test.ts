@@ -13,9 +13,16 @@ import {
   softDeleteCycle,
   completeCycle,
   revertCycleToPagaende,
+  sealCycle,
   type ScopeDefinition,
 } from '../compliance-audit-cycle'
 import * as authorization from '@/lib/compliance-audit/authorization'
+import { gatherSealEvidenceForCycle } from '@/lib/compliance-audit/gather-seal-evidence'
+import {
+  hashFileEvidence,
+  hashDocumentEvidence,
+} from '@/lib/compliance-audit/evidence-hash'
+import { computeSealHash } from '@/lib/compliance-audit/seal-hash'
 import { prisma } from '@/lib/prisma'
 import * as workspaceContext from '@/lib/auth/workspace-context'
 import * as activityLogger from '@/lib/services/activity-logger'
@@ -38,6 +45,8 @@ vi.mock('@/lib/prisma', () => ({
       findMany: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      // Story 21.9 — SF-2 race-safe seal uses updateMany + count check.
+      updateMany: vi.fn(),
     },
     complianceAuditItem: {
       createMany: vi.fn(),
@@ -47,6 +56,37 @@ vi.mock('@/lib/prisma', () => ({
       count: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
+    },
+    // Story 21.9 — sealCycle reads findings + counts open avvikelser.
+    complianceFinding: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+    },
+    // Story 21.9 — seal writes snapshot + report rows.
+    complianceEvidenceSnapshot: {
+      createMany: vi.fn(),
+    },
+    complianceAuditReport: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      // Story 21.9 QA fix CONSTRAINT-001: sealCycle now upserts the report
+      // row via the new @@unique([cycle_id, report_kind]) constraint.
+      upsert: vi.fn(),
+      // Story 21.12 SF-3: completeCycle nulls out COMPLETE-kind PDF pointer
+      // on transition back to AVSLUTAD to force regeneration post-revert.
+      updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+    },
+    // Story 21.9 QA fix INTEGRITY-001: pre-seal gate rejects DRAFT-state
+    // styrdokument evidence. Default mock returns `[]` (no drafts).
+    workspaceDocument: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    // Story 21.9 QA fix CONSIST-001: activity log is now written inside
+    // the seal transaction via `tx.activityLog.create(...)` (not the
+    // standalone `logActivity` helper).
+    activityLog: {
+      create: vi.fn(),
     },
     lawList: { findFirst: vi.fn() },
     lawListItem: { findMany: vi.fn() },
@@ -62,8 +102,25 @@ vi.mock('@/lib/prisma', () => ({
 // Story 21.6 — canCompleteOrRevertCycle is mocked so tests can control the
 // runtime-auth branch (lead-auditor vs denied) without asserting on the
 // underlying Prisma lookup (that's covered by authorization.test.ts).
+// Story 21.9 — canSealCycle is mocked for the same reason.
 vi.mock('@/lib/compliance-audit/authorization', () => ({
   canCompleteOrRevertCycle: vi.fn(),
+  canSealCycle: vi.fn(),
+}))
+
+// Story 21.9 — mock gather-seal-evidence + evidence-hash + seal-hash so each
+// layer can be controlled in isolation per the test architecture in AC 12.
+vi.mock('@/lib/compliance-audit/gather-seal-evidence', () => ({
+  gatherSealEvidenceForCycle: vi.fn(),
+}))
+
+vi.mock('@/lib/compliance-audit/evidence-hash', () => ({
+  hashFileEvidence: vi.fn(),
+  hashDocumentEvidence: vi.fn(),
+}))
+
+vi.mock('@/lib/compliance-audit/seal-hash', () => ({
+  computeSealHash: vi.fn(),
 }))
 
 vi.mock('@/lib/auth/workspace-context', () => ({
@@ -76,6 +133,17 @@ vi.mock('@/lib/services/activity-logger', () => ({
 
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
+}))
+
+// Story 21.12: sealCycle schedules PDF generation via next/server's `after()`.
+// Mock as a no-op so tests don't accidentally trigger the dynamic import to
+// compliance-audit-report.ts. Individual tests can override to capture the
+// callback and assert its behaviour.
+vi.mock('next/server', () => ({
+  after: vi.fn((_cb: () => unknown) => {
+    // Default: swallow the callback. Tests that need to exercise eager-gen
+    // can re-mock with `after.mockImplementationOnce(async (cb) => cb())`.
+  }),
 }))
 
 // ============================================================================
@@ -1591,6 +1659,31 @@ describe('completeCycle', () => {
       .calls[0]![0]
     expect(updateCall.where).toEqual({ id: CYCLE_ID })
   })
+
+  // Story 21.12 SF-3 — revert-and-recomplete edge case.
+  it('nulls out the COMPLETE-kind report PDF pointer on transition to AVSLUTAD', async () => {
+    mockPagaendeCycle()
+    vi.mocked(prisma.complianceAuditItem.count)
+      .mockResolvedValueOnce(3)
+      .mockResolvedValueOnce(0)
+    vi.mocked(prisma.complianceAuditCycle.update).mockResolvedValue(
+      makeCycleRow({ status: ComplianceCycleStatus.AVSLUTAD }) as never
+    )
+
+    const result = await completeCycle(CYCLE_ID)
+
+    expect(result.success).toBe(true)
+    expect(prisma.complianceAuditReport.updateMany).toHaveBeenCalledWith({
+      where: {
+        cycle_id: CYCLE_ID,
+        report_kind: 'COMPLETE',
+      },
+      data: {
+        pdf_storage_path: null,
+        html_storage_path: null,
+      },
+    })
+  })
 })
 
 // ============================================================================
@@ -1744,5 +1837,631 @@ describe('revertCycleToPagaende', () => {
       error: 'Kontrollen hittades inte',
     })
     expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// sealCycle (Story 21.9)
+// ============================================================================
+
+describe('sealCycle (Story 21.9)', () => {
+  const SEAL_HASH =
+    'deadbeefcafe00112233445566778899aabbccddeeff00112233445566778899'
+  const CANONICAL_JSON = '{"mock":"canonical"}'
+  const VALID_OVERRIDE =
+    'Avvikelse A1 har åtgärdsplan som sträcker sig till Q2 — fastställs för att inte blockera Q2-cykeln.'
+
+  function armHappyPathMocks(
+    overrides: { status?: ComplianceCycleStatus; openAvvikelser?: number } = {}
+  ) {
+    // Reset the findFirst mock — `clearAllMocks` in the outer beforeEach does
+    // not clear `mockResolvedValueOnce` queue residue from prior tests, so we
+    // reset here explicitly to prevent cross-test pollution of the queue.
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockReset()
+
+    vi.mocked(authorization.canSealCycle).mockResolvedValue(true)
+    // $transaction runs its callback with the prisma-like tx.
+    // Type-cast through `unknown` is required because vitest's mock<type>
+    // inference on Prisma's overloaded $transaction is too narrow for us
+    // to return a plain value from the function form.
+    ;(
+      vi.mocked(prisma.$transaction) as unknown as {
+        mockImplementation: (_fn: (_input: unknown) => unknown) => void
+      }
+    ).mockImplementation((fnOrOps: unknown) => {
+      if (typeof fnOrOps === 'function') {
+        return (fnOrOps as (_tx: typeof prisma) => unknown)(prisma)
+      }
+      return fnOrOps
+    })
+    vi.mocked(gatherSealEvidenceForCycle).mockResolvedValue([])
+    vi.mocked(prisma.complianceAuditItem.findMany).mockResolvedValue([])
+    // Step-3 findings list is now the single source of truth for the
+    // openAvvikelses gate (QA RACE-001). Seed it to match the desired count.
+    const seededFindings = Array.from(
+      { length: overrides.openAvvikelser ?? 0 },
+      (_, i) => ({
+        id: `avv-${i}`,
+        type: 'AVVIKELSE',
+        severity: 'MINOR',
+        title: `Avvikelse ${i}`,
+        description: `desc ${i}`,
+        root_cause: null,
+        law_list_item_id: null,
+        requirement_id: null,
+        corrective_action_task_id: null,
+        due_date: null,
+        closed_at: null,
+        closed_by_user_id: null,
+      })
+    )
+    vi.mocked(prisma.complianceFinding.findMany).mockResolvedValue(
+      seededFindings as unknown as Awaited<
+        ReturnType<typeof prisma.complianceFinding.findMany>
+      >
+    )
+    vi.mocked(hashFileEvidence).mockResolvedValue(
+      'fakefilehash'.padEnd(64, '0')
+    )
+    vi.mocked(hashDocumentEvidence).mockResolvedValue(
+      'fakedochash'.padEnd(64, '0')
+    )
+    vi.mocked(computeSealHash).mockReturnValue({
+      canonicalJson: CANONICAL_JSON,
+      hash: SEAL_HASH,
+    })
+    vi.mocked(prisma.complianceAuditCycle.updateMany).mockResolvedValue({
+      count: 1,
+    })
+    vi.mocked(prisma.complianceEvidenceSnapshot.createMany).mockResolvedValue({
+      count: 0,
+    })
+    // CONSTRAINT-001: upsert replaces findFirst+create/update.
+    vi.mocked(prisma.complianceAuditReport.upsert).mockResolvedValue(
+      {} as unknown as Awaited<
+        ReturnType<typeof prisma.complianceAuditReport.upsert>
+      >
+    )
+    // CONSIST-001: activityLog.create is now the tx-participating call site.
+    vi.mocked(prisma.activityLog.create).mockResolvedValue(
+      {} as unknown as Awaited<ReturnType<typeof prisma.activityLog.create>>
+    )
+    // INTEGRITY-001: pre-seal draft-state gate. Default returns no DRAFT rows.
+    vi.mocked(prisma.workspaceDocument.findMany).mockResolvedValue([])
+    // Two findFirst calls: loadCycleScopedToWorkspace (1st) + loadCycleDetailInline (2nd).
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({
+        status: overrides.status ?? ComplianceCycleStatus.AVSLUTAD,
+      }) as unknown as Awaited<
+        ReturnType<typeof prisma.complianceAuditCycle.findFirst>
+      >
+    )
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce({
+      ...makeCycleRow({ status: ComplianceCycleStatus.SEALED }),
+      seal_hash: SEAL_HASH,
+      sealed_at: new Date(),
+      sealed_by_user_id: USER_ID,
+      lead_auditor: { id: LEAD_AUDITOR_ID, name: 'Lead' },
+      law_list: { id: LAW_LIST_ID, name: 'Laglistan' },
+      created_by: { id: USER_ID, name: 'Creator' },
+      sealed_by: { id: USER_ID, name: 'Sealer' },
+      _count: { items: 2 },
+    } as unknown as Awaited<
+      ReturnType<typeof prisma.complianceAuditCycle.findFirst>
+    >)
+  }
+
+  // Happy path — OWNER, no open avvikelser
+  it('seals an AVSLUTAD cycle and writes all required artifacts', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks()
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result.success).toBe(true)
+    if (!result.success || !result.data) throw new Error('expected success')
+    expect(result.data.cycle.status).toBe(ComplianceCycleStatus.SEALED)
+    expect(result.data.cycle.sealHash).toBe(SEAL_HASH)
+
+    // SF-2: status-scoped updateMany
+    expect(prisma.complianceAuditCycle.updateMany).toHaveBeenCalledWith({
+      where: { id: CYCLE_ID, status: ComplianceCycleStatus.AVSLUTAD },
+      data: expect.objectContaining({
+        status: ComplianceCycleStatus.SEALED,
+        seal_hash: SEAL_HASH,
+      }),
+    })
+
+    // ActivityLog payload — CONSIST-001: written inside the seal transaction
+    // via tx.activityLog.create(...), NOT the standalone logActivity helper.
+    expect(prisma.activityLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        workspace_id: WORKSPACE_ID,
+        user_id: USER_ID,
+        entity_type: 'compliance_audit_cycle',
+        entity_id: CYCLE_ID,
+        action: 'cycle_sealed',
+        old_value: { status: ComplianceCycleStatus.AVSLUTAD },
+        new_value: expect.objectContaining({
+          status: ComplianceCycleStatus.SEALED,
+          sealHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+          sealedAt: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T/),
+        }),
+      }),
+    })
+    // logActivity helper must NOT have been called (atomic tx write instead).
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+    expect(revalidatePath).toHaveBeenCalledWith('/laglistor/kontroller')
+    expect(revalidatePath).toHaveBeenCalledWith(
+      `/laglistor/kontroller/${CYCLE_ID}`
+    )
+  })
+
+  // Happy path — MEMBER lead auditor
+  it('allows MEMBER lead auditor to seal via runtime canSealCycle override', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    armHappyPathMocks()
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result.success).toBe(true)
+    expect(authorization.canSealCycle).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        role: 'MEMBER',
+        userId: USER_ID,
+        cycleId: CYCLE_ID,
+        workspaceId: WORKSPACE_ID,
+      })
+    )
+  })
+
+  // Status guard — each non-AVSLUTAD state
+  it.each([
+    ['PLANERAD', ComplianceCycleStatus.PLANERAD],
+    ['PAGAENDE', ComplianceCycleStatus.PAGAENDE],
+    ['SEALED', ComplianceCycleStatus.SEALED],
+    ['ARKIVERAD', ComplianceCycleStatus.ARKIVERAD],
+  ])('rejects seal when cycle status is %s', async (_name, status) => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    vi.mocked(authorization.canSealCycle).mockResolvedValue(true)
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({ status }) as unknown as Awaited<
+        ReturnType<typeof prisma.complianceAuditCycle.findFirst>
+      >
+    )
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result).toEqual({
+      success: false,
+      error: 'Kontrollen kan bara fastställas från status Avslutad',
+    })
+    expect(prisma.complianceAuditCycle.updateMany).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('returns Kontrollen hittades inte for a cross-workspace cycle', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    vi.mocked(authorization.canSealCycle).mockResolvedValue(true)
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(null)
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result).toEqual({
+      success: false,
+      error: 'Kontrollen hittades inte',
+    })
+    expect(prisma.complianceAuditCycle.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('rejects MEMBER who is NOT the lead auditor with the exact dialog-tooltip string', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    vi.mocked(authorization.canSealCycle).mockResolvedValue(false)
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({
+        status: ComplianceCycleStatus.AVSLUTAD,
+      }) as unknown as Awaited<
+        ReturnType<typeof prisma.complianceAuditCycle.findFirst>
+      >
+    )
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result).toEqual({
+      success: false,
+      error:
+        "Endast revisionsledaren eller administratörer med behörighet 'audit:seal' kan fastställa kontrollen",
+    })
+    expect(prisma.complianceAuditCycle.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('rejects AUDITOR at the outer tasks:edit gate (no canSealCycle lookup)', async () => {
+    mockWorkspaceCtx({ role: 'AUDITOR' })
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result.success).toBe(false)
+    expect(authorization.canSealCycle).not.toHaveBeenCalled()
+    expect(prisma.complianceAuditCycle.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('blocks seal when open AVVIKELSE exists and no overrideReason is provided', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks({ openAvvikelser: 2 })
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result).toEqual({
+      success: false,
+      error:
+        'Fastställande blockeras: 2 öppna avvikelser. Ange en motivering för att fastställa trots öppna avvikelser.',
+    })
+    expect(prisma.complianceAuditCycle.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('allows seal with open AVVIKELSE when a valid overrideReason is provided', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks({ openAvvikelser: 2 })
+
+    const result = await sealCycle({
+      cycleId: CYCLE_ID,
+      overrideReason: VALID_OVERRIDE,
+    })
+    expect(result.success).toBe(true)
+    // CONSIST-001: override reason flows into the tx-participating activity log.
+    expect(prisma.activityLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: 'cycle_sealed',
+        new_value: expect.objectContaining({
+          overrideReason: VALID_OVERRIDE,
+          openAvvikelsesAtSeal: 2,
+        }),
+      }),
+    })
+  })
+
+  it('rejects overrideReason shorter than 20 chars at the Zod layer (no DB calls)', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+
+    const result = await sealCycle({
+      cycleId: CYCLE_ID,
+      overrideReason: 'För kort',
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/minst 20 tecken/)
+    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
+  })
+
+  // SF-3 regression pin — whitespace-only override
+  it('rejects whitespace-only overrideReason (SF-3 regression pin)', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+
+    const result = await sealCycle({
+      cycleId: CYCLE_ID,
+      overrideReason: ' '.repeat(24),
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/minst 20 tecken/)
+    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
+  })
+
+  // SF-2 race — concurrent seal
+  it('surfaces SF-2 race error when updateMany returns count 0', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks()
+    vi.mocked(prisma.complianceAuditCycle.updateMany).mockResolvedValueOnce({
+      count: 0,
+    })
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result).toEqual({
+      success: false,
+      error: 'Kontrollens status ändrades under fastställandet. Försök igen.',
+    })
+    expect(prisma.complianceAuditCycle.updateMany).toHaveBeenCalledWith({
+      where: { id: CYCLE_ID, status: ComplianceCycleStatus.AVSLUTAD },
+      data: expect.objectContaining({
+        status: ComplianceCycleStatus.SEALED,
+      }),
+    })
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('surfaces the evidence-hash failure message when an evidence artifact is gone', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks()
+    vi.mocked(gatherSealEvidenceForCycle).mockResolvedValueOnce([
+      {
+        lawListItemId: 'll-1',
+        requirementId: null,
+        kind: 'FILE',
+        fileId: 'f-1',
+        documentId: null,
+      },
+    ])
+    vi.mocked(hashFileEvidence).mockRejectedValueOnce(
+      new Error('Bevisfil f-1 kunde inte hämtas från lagring')
+    )
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result).toEqual({
+      success: false,
+      error: 'Bevis har tagits bort under fastställandet. Försök igen.',
+    })
+    expect(prisma.complianceAuditCycle.updateMany).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('seals a cycle with zero evidence (createMany skipped on empty list)', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks()
+    // Gather already returns [] via armHappyPathMocks default.
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result.success).toBe(true)
+    // createMany should NOT have been called — empty evidence list.
+    expect(prisma.complianceEvidenceSnapshot.createMany).not.toHaveBeenCalled()
+  })
+
+  // NH-3 XOR CHECK regression — simulate a bad gather producing both ids + DB rejects
+  it('NH-3 — XOR CHECK violation in createMany aborts the seal transaction', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks()
+    vi.mocked(gatherSealEvidenceForCycle).mockResolvedValueOnce([
+      {
+        lawListItemId: 'll-1',
+        requirementId: null,
+        kind: 'FILE',
+        fileId: 'f-1',
+        documentId: null,
+      },
+    ])
+    vi.mocked(
+      prisma.complianceEvidenceSnapshot.createMany
+    ).mockRejectedValueOnce(
+      Object.assign(new Error('CHECK constraint failed'), { code: 'P2004' })
+    )
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte fastställa kontrollen',
+    })
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('rejects a non-UUID cycleId at the Zod layer (no DB calls)', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    const result = await sealCycle({ cycleId: 'not-a-uuid' })
+    expect(result.success).toBe(false)
+    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
+  })
+
+  it('maps unexpected Prisma errors to the generic outer message', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    vi.mocked(authorization.canSealCycle).mockRejectedValue(
+      new Error('Connection lost')
+    )
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(
+      makeCycleRow({
+        status: ComplianceCycleStatus.AVSLUTAD,
+      }) as unknown as Awaited<
+        ReturnType<typeof prisma.complianceAuditCycle.findFirst>
+      >
+    )
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result).toEqual({
+      success: false,
+      error: 'Kunde inte fastställa kontrollen',
+    })
+  })
+
+  // QA follow-up fix (CONSIST-001): activityLog write is now atomic with the
+  // seal transaction. Previously it ran outside the tx, so a post-commit
+  // throw would leave a SEALED cycle with no audit-log row and no retry path.
+  it('CONSIST-001 — activityLog.create is called on the tx-participating prisma client, NOT via the standalone logActivity helper', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks()
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result.success).toBe(true)
+    // The tx-participating create is called exactly once.
+    expect(prisma.activityLog.create).toHaveBeenCalledTimes(1)
+    // The standalone helper is NEVER called from sealCycle (it would be an
+    // outside-tx write, exactly what CONSIST-001 removed).
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  // INTEGRITY-001 (v0.5 — softened from v0.4 hard-block to gate-with-override).
+  // DRAFT styrdokument as evidence no longer hard-blocks. Instead, when no
+  // override is provided → reject with new error copy citing # of drafts.
+  // With override → proceed; drafts are acknowledged and locked into the
+  // activity log + manifest.
+  it('INTEGRITY-001 — blocks seal with new error copy when DRAFT exists AND no override provided', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks()
+
+    // Gather returns one DOCUMENT-kind evidence ref pointing at a DRAFT doc.
+    vi.mocked(gatherSealEvidenceForCycle).mockResolvedValueOnce([
+      {
+        lawListItemId: 'll-1',
+        requirementId: null,
+        kind: 'DOCUMENT',
+        fileId: null,
+        documentId: 'doc-draft-1',
+      },
+    ])
+    vi.mocked(prisma.workspaceDocument.findMany).mockResolvedValueOnce([
+      { id: 'doc-draft-1', title: 'Nya rutinen (utkast)' },
+    ] as unknown as Awaited<
+      ReturnType<typeof prisma.workspaceDocument.findMany>
+    >)
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result.success).toBe(false)
+    expect(result.error).toBe(
+      'Fastställande blockeras: 1 styrdokument i utkast-status (Nya rutinen (utkast)). Ange en motivering för att fastställa trots utkast-styrdokument.'
+    )
+    // No writes executed on any downstream path.
+    expect(hashDocumentEvidence).not.toHaveBeenCalled()
+    expect(prisma.complianceAuditCycle.updateMany).not.toHaveBeenCalled()
+    expect(prisma.complianceEvidenceSnapshot.createMany).not.toHaveBeenCalled()
+    expect(prisma.activityLog.create).not.toHaveBeenCalled()
+  })
+
+  // v0.5: DRAFT + valid override → seal succeeds; activity log new_value
+  // includes draftDocumentsAtSeal (parallel to openAvvikelsesAtSeal).
+  it('INTEGRITY-001 v0.5 — DRAFT + valid override → seal proceeds + draftDocumentsAtSeal in activity log', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks()
+
+    vi.mocked(gatherSealEvidenceForCycle).mockResolvedValueOnce([
+      {
+        lawListItemId: 'll-1',
+        requirementId: null,
+        kind: 'DOCUMENT',
+        fileId: null,
+        documentId: 'doc-draft-1',
+      },
+    ])
+    vi.mocked(prisma.workspaceDocument.findMany).mockResolvedValueOnce([
+      { id: 'doc-draft-1', title: 'Nya rutinen (utkast)' },
+    ] as unknown as Awaited<
+      ReturnType<typeof prisma.workspaceDocument.findMany>
+    >)
+
+    const result = await sealCycle({
+      cycleId: CYCLE_ID,
+      overrideReason:
+        'Utkast accepteras inför Q1-handover; godkänns formellt v.18.',
+    })
+    expect(result.success).toBe(true)
+    // Activity log carries the acknowledged drafts.
+    expect(prisma.activityLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: 'cycle_sealed',
+        new_value: expect.objectContaining({
+          overrideReason: expect.stringContaining('Utkast accepteras'),
+          draftDocumentsAtSeal: [
+            { id: 'doc-draft-1', title: 'Nya rutinen (utkast)' },
+          ],
+        }),
+      }),
+    })
+  })
+
+  // v0.5: combined blockers — DRAFT + open AVVIKELSE → single override
+  // covers both. Activity log carries BOTH openAvvikelsesAtSeal AND
+  // draftDocumentsAtSeal.
+  it('INTEGRITY-001 v0.5 — combined blockers (DRAFT + open AVVIKELSE) → single override + both logged', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks({ openAvvikelser: 1 })
+
+    vi.mocked(gatherSealEvidenceForCycle).mockResolvedValueOnce([
+      {
+        lawListItemId: 'll-1',
+        requirementId: null,
+        kind: 'DOCUMENT',
+        fileId: null,
+        documentId: 'doc-draft-1',
+      },
+    ])
+    vi.mocked(prisma.workspaceDocument.findMany).mockResolvedValueOnce([
+      { id: 'doc-draft-1', title: 'Brandskyddsrutin v3' },
+    ] as unknown as Awaited<
+      ReturnType<typeof prisma.workspaceDocument.findMany>
+    >)
+
+    const result = await sealCycle({
+      cycleId: CYCLE_ID,
+      overrideReason:
+        'Q2 cykel — avvikelser samt utkast accepteras enligt KMA-beslut.',
+    })
+    expect(result.success).toBe(true)
+    expect(prisma.activityLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        new_value: expect.objectContaining({
+          openAvvikelsesAtSeal: 1,
+          draftDocumentsAtSeal: [
+            { id: 'doc-draft-1', title: 'Brandskyddsrutin v3' },
+          ],
+        }),
+      }),
+    })
+  })
+
+  it('INTEGRITY-001 — proceeds when all linked styrdokument are APPROVED (no DRAFT rows returned)', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    armHappyPathMocks()
+
+    vi.mocked(gatherSealEvidenceForCycle).mockResolvedValueOnce([
+      {
+        lawListItemId: 'll-1',
+        requirementId: null,
+        kind: 'DOCUMENT',
+        fileId: null,
+        documentId: 'doc-approved-1',
+      },
+    ])
+    // findMany filter { status: 'DRAFT' } returns empty → seal proceeds.
+    vi.mocked(prisma.workspaceDocument.findMany).mockResolvedValueOnce([])
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+    expect(result.success).toBe(true)
+    // The DRAFT check queried only the unique document ids with a DRAFT filter.
+    expect(prisma.workspaceDocument.findMany).toHaveBeenCalledWith({
+      where: {
+        id: { in: ['doc-approved-1'] },
+        status: 'DRAFT',
+      },
+      select: { id: true, title: true },
+    })
+    // Approved-only path → activity log does NOT include draftDocumentsAtSeal.
+    expect(prisma.activityLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        new_value: expect.not.objectContaining({
+          draftDocumentsAtSeal: expect.anything(),
+        }),
+      }),
+    })
+  })
+
+  // Story 21.12 — eager sealed-PDF continuation via next/server's `after()`.
+  it('schedules eager sealed-PDF generation via after() after successful seal', async () => {
+    const { after } = await import('next/server')
+    const afterSpy = vi.mocked(after)
+    afterSpy.mockClear()
+
+    armHappyPathMocks()
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+
+    expect(result.success).toBe(true)
+    // The after() callback is scheduled exactly once; actual PDF generation
+    // is the callback's concern — contract here is just that it was enqueued.
+    expect(afterSpy).toHaveBeenCalledTimes(1)
+    expect(afterSpy).toHaveBeenCalledWith(expect.any(Function))
+  })
+
+  it('after() callback failures do not propagate to the seal result', async () => {
+    const { after } = await import('next/server')
+    const afterSpy = vi.mocked(after)
+    afterSpy.mockClear()
+
+    // Simulate the eager-gen callback throwing: the after() implementation
+    // should catch + log internally (console.error) rather than re-throw.
+    // We invoke the callback synchronously in the mock to exercise its
+    // try/catch.
+    afterSpy.mockImplementationOnce((cb: unknown) => {
+      // Fire the callback but swallow rejections — mirrors production
+      // `after()` which runs off-request.
+      Promise.resolve()
+        .then(() => (cb as () => Promise<unknown>)())
+        .catch(() => {
+          /* swallow — matches production behaviour */
+        })
+    })
+
+    armHappyPathMocks()
+
+    const result = await sealCycle({ cycleId: CYCLE_ID })
+
+    // Seal transaction is already committed by the time after() is invoked;
+    // eager-gen failure must not unseal the cycle.
+    expect(result.success).toBe(true)
   })
 })

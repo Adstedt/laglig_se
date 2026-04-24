@@ -287,6 +287,25 @@ describe('formatActivity', () => {
     )
   })
 
+  it('renders cycle_sealed (Story 21.9)', () => {
+    const parts = formatActivity({
+      action: 'cycle_sealed',
+      entity_type: 'compliance_audit_cycle',
+      user: USER,
+      old_value: { status: 'AVSLUTAD' },
+      new_value: {
+        status: 'SEALED',
+        sealHash:
+          'abc123def4560000111122223333444455556666777788889999aaaabbbbcccc',
+        sealedAt: '2026-04-24T14:30:00.000Z',
+      },
+      primary: cycleRef,
+    })
+    expect(sentencePartsToText(parts)).toBe(
+      'Alexander fastställde kontrollen Q2 compliance review'
+    )
+  })
+
   it('cycle_materialised with itemCount appends count suffix', () => {
     const parts = formatActivity({
       action: 'cycle_materialised',

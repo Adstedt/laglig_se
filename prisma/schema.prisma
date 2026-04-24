@@ -51,6 +51,9 @@ model User {
   // Epic 3: AI Chat
   chat_messages ChatMessage[]
 
+  // Story 14.27: Chat usage telemetry
+  chat_usage_events ChatUsageEvent[]
+
   // Epic 12: Template relations
   created_templates LawListTemplate[] @relation("TemplateCreator")
   reviewed_items    TemplateItem[]    @relation("TemplateItemReviewer")
@@ -124,6 +127,9 @@ model Workspace {
 
   // Epic 3: AI Chat
   chat_messages ChatMessage[]
+
+  // Story 14.27: Chat usage telemetry
+  chat_usage_events ChatUsageEvent[]
 
   // Story 14.10: Change assessments
   change_assessments ChangeAssessment[]
@@ -1376,9 +1382,8 @@ model ChatMessage {
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@index([workspace_id, context_type, context_id])
-  @@index([workspace_id, created_at])
-  @@index([user_id])
+  @@index([workspace_id, user_id, context_type, context_id])
+  @@index([workspace_id, user_id, created_at])
   @@index([conversation_id])
   @@map("chat_messages")
 }
@@ -1393,6 +1398,43 @@ enum ChatContextType {
   TASK
   LAW
   CHANGE
+}
+
+// Story 14.27: Per-turn chat usage telemetry. One row per successful chat turn.
+// Fail-safe write — errors in onFinish callback are logged but never re-thrown.
+// Failed/rate-limited turns do NOT produce rows (missing data preferred over misleading data).
+model ChatUsageEvent {
+  id           String          @id @default(uuid())
+  workspace_id String
+  user_id      String
+  model        String // e.g., "claude-sonnet-4-6", "gpt-4-turbo"
+  context_type ChatContextType
+
+  // Token dimensions — all non-negative; default 0 for model-path-absent fields
+  input_tokens             Int @default(0)
+  output_tokens            Int @default(0)
+  cache_read_input_tokens  Int @default(0) // Anthropic-only when > 0
+  cache_write_input_tokens Int @default(0) // Anthropic-only when > 0
+  reasoning_tokens         Int @default(0) // Story 14.20 thinking output; Anthropic-only
+
+  // Agentic loop depth — 1 for single-call turns, 2+ for tool-using turns
+  step_count Int @default(1)
+
+  // USD cost estimate computed at write time. Stored (not computed on read) for
+  // fast aggregation. Recomputable from tokens + model via lib/usage/cost-estimator.
+  cost_usd_estimate Decimal @db.Decimal(10, 6)
+
+  created_at DateTime @default(now())
+
+  // Relations
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, created_at])
+  @@index([user_id, created_at])
+  @@index([workspace_id, user_id, created_at])
+  @@index([context_type, created_at])
+  @@map("chat_usage_events")
 }
 
 // Story 14.10: Assessment status for change acknowledgement
@@ -2018,6 +2060,10 @@ model ComplianceAuditReport {
 
   cycle ComplianceAuditCycle @relation(fields: [cycle_id], references: [id], onDelete: Cascade)
 
+  // Story 21.9 CONSTRAINT-001 (QA follow-up): one row per (cycle, kind) —
+  // defense-in-depth against future multi-write paths (21.12 PDF regen).
+  // sealCycle's findFirst+create is now also protected by DB-level uniqueness.
+  @@unique([cycle_id, report_kind])
   @@index([cycle_id, report_kind])
   @@map("compliance_audit_reports")
 }

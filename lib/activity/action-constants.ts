@@ -77,6 +77,12 @@ export const KNOWN_ACTIONS = [
   'cycle_completed',
   'cycle_reverted_to_pagaende',
 
+  // Story 21.9 — seal
+  'cycle_sealed',
+
+  // Story 21.12 — revisionsrapport PDF generation
+  'cycle_report_generated',
+
   // Compliance-audit findings (Epic 21 — Story 21.7)
   'finding_created',
   'finding_updated',
