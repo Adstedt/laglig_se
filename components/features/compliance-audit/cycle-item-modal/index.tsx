@@ -77,6 +77,12 @@ export function CycleItemModal({
 }: CycleItemModalProps) {
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingFinding, setEditingFinding] = useState<FindingRow | null>(null)
+  // Set when the auditor clicks the "Saknar bevis" pill on a kravpunkt row.
+  // Reset on close + on the regular "Lägg till anmärkning" path so that
+  // entry point gets the existing item-only prefill behaviour.
+  const [suggestForRequirementId, setSuggestForRequirementId] = useState<
+    string | null
+  >(null)
 
   const isOpen = item !== null
 
@@ -86,12 +92,30 @@ export function CycleItemModal({
 
   const handleEditFinding = (finding: FindingRow) => {
     setEditingFinding(finding)
+    setSuggestForRequirementId(null)
     setEditorOpen(true)
   }
 
   const handleAddFinding = () => {
     setEditingFinding(null)
+    setSuggestForRequirementId(null)
     setEditorOpen(true)
+  }
+
+  // Quick-win affordance: the "Saknar bevis" pill on a kravpunkt row opens
+  // the FindingEditor pre-filled with both the item AND the kravpunkt
+  // (item-only is the default when entered via "+ Lägg till anmärkning").
+  const handleSuggestFindingForRequirement = (requirementId: string) => {
+    setEditingFinding(null)
+    setSuggestForRequirementId(requirementId)
+    setEditorOpen(true)
+  }
+
+  // Reset the requirement pre-fill whenever the editor closes so the next
+  // open of "+ Lägg till anmärkning" doesn't accidentally inherit a stale id.
+  const handleEditorOpenChange = (next: boolean) => {
+    setEditorOpen(next)
+    if (!next) setSuggestForRequirementId(null)
   }
 
   return (
@@ -119,6 +143,12 @@ export function CycleItemModal({
               readOnly={readOnly}
               onEditFinding={handleEditFinding}
               onAddFinding={handleAddFinding}
+              {...(readOnly
+                ? {}
+                : {
+                    onSuggestFindingForRequirement:
+                      handleSuggestFindingForRequirement,
+                  })}
             />
           ) : null
         }
@@ -166,14 +196,19 @@ export function CycleItemModal({
       {item ? (
         <FindingEditor
           open={editorOpen}
-          onOpenChange={setEditorOpen}
+          onOpenChange={handleEditorOpenChange}
           cycleId={cycleId}
           mode={editingFinding ? 'edit' : 'create'}
           {...(editingFinding ? { finding: editingFinding } : {})}
           items={items}
           {...(editingFinding
             ? {}
-            : { prefillLawListItemId: item.lawListItemId })}
+            : {
+                prefillLawListItemId: item.lawListItemId,
+                ...(suggestForRequirementId
+                  ? { prefillRequirementId: suggestForRequirementId }
+                  : {}),
+              })}
           onSuccess={onFindingMutation}
         />
       ) : null}

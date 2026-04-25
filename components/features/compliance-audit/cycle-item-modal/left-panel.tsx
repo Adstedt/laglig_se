@@ -53,13 +53,24 @@ interface CycleItemModalLeftPanelProps {
   readOnly: boolean
   onEditFinding: (_finding: FindingRow) => void
   onAddFinding: () => void
+  /**
+   * Quick-win affordance: when set, the "Saknar bevis" pill on a kravpunkt
+   * row becomes a button that opens the FindingEditor pre-filled with the
+   * clicked kravpunkt. Parent passes `undefined` in readOnly mode to keep
+   * the pill inert.
+   */
+  onSuggestFindingForRequirement?: (_requirementId: string) => void
 }
 
+// Audit-flow order: context → requirements → evidence → findings.
+// Matches the auditor's mental loop: understand the law, review what we
+// must comply with, check evidence, then record findings as the OUTPUT
+// of review (not the entry point). v2 reorder, 2026-04-25.
 const ACCORDION_ITEMS = [
-  'findings',
-  'kravpunkter',
-  'business-context',
-  'linked-artifacts',
+  'business-context', // Hur påverkar detta oss?
+  'kravpunkter', // What we must comply with
+  'linked-artifacts', // Underlag — evidence we have
+  'findings', // Anmärkningar — output of review
 ] as const
 
 export function CycleItemModalLeftPanel({
@@ -69,6 +80,7 @@ export function CycleItemModalLeftPanel({
   readOnly,
   onEditFinding,
   onAddFinding,
+  onSuggestFindingForRequirement,
 }: CycleItemModalLeftPanelProps) {
   const { openFindings, closedFindings } = useMemo(() => {
     const open = findings
@@ -141,7 +153,122 @@ export function CycleItemModalLeftPanel({
           defaultValue={[...ACCORDION_ITEMS]}
           className="space-y-2"
         >
-          {/* ------- Findings ------- */}
+          {/* ------- Hur påverkar detta oss? ------- */}
+          {/* v2 reorder: context FIRST so the auditor understands the law
+           *  before reviewing requirements / evidence / findings. */}
+          <AccordionItem
+            value="business-context"
+            className="rounded-lg border border-border/60"
+          >
+            <AccordionTrigger className="rounded-t-lg px-4 py-3 hover:bg-muted/50 hover:no-underline data-[state=closed]:rounded-lg">
+              <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                <HelpCircle className="h-4 w-4" />
+                <span>Hur påverkar detta oss?</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  Live
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <BusinessContextReadOnly
+                content={item.businessContext}
+                lawListItemId={item.lawListItemId}
+              />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ------- Kravpunkter ------- */}
+          <AccordionItem
+            value="kravpunkter"
+            className="rounded-lg border border-border/60"
+          >
+            <AccordionTrigger className="rounded-t-lg px-4 py-3 hover:bg-muted/50 hover:no-underline data-[state=closed]:rounded-lg">
+              <div className="flex flex-1 items-center gap-2 text-base font-semibold text-foreground">
+                <ClipboardCheck className="h-4 w-4" />
+                <span>Kravpunkter</span>
+                {kravpunkterProgress.total > 0 ? (
+                  <div className="ml-auto mr-2 flex items-center gap-2 font-normal">
+                    <span className="text-xs tabular-nums text-muted-foreground">
+                      {kravpunkterProgress.fulfilled}/
+                      {kravpunkterProgress.total} uppfyllda
+                    </span>
+                    <div className="h-1 w-12 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-green-500 transition-all duration-300"
+                        style={{
+                          width: `${
+                            kravpunkterProgress.total > 0
+                              ? Math.round(
+                                  (kravpunkterProgress.fulfilled /
+                                    kravpunkterProgress.total) *
+                                    100
+                                )
+                              : 0
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <KravpunkterSnapshotList
+                snapshot={item.kravpunkterSnapshot}
+                listItemId={item.lawListItemId}
+                itemResponsibleUserId={item.sourceResponsibleUser?.id ?? null}
+                {...(onSuggestFindingForRequirement
+                  ? {
+                      onSuggestFindingForRequirement,
+                    }
+                  : {})}
+              />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ------- Underlag ------- */}
+          {/* Swedish audit vocab: "underlag" = supporting documentation.
+           *  Sits next to Kravpunkter so the auditor can cross-reference
+           *  "what we must comply with" against "what evidence we have"
+           *  without scrolling. */}
+          <AccordionItem
+            value="linked-artifacts"
+            className="rounded-lg border border-border/60"
+          >
+            <AccordionTrigger className="rounded-t-lg px-4 py-3 hover:bg-muted/50 hover:no-underline data-[state=closed]:rounded-lg">
+              <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                <Paperclip className="h-4 w-4" />
+                <span>Underlag</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  Live
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <p className="mb-3 text-xs text-muted-foreground">
+                Aktuella kopplingar — låses när kontrollen fastställs.
+              </p>
+              {/* Nested accordion panel from legal-document-modal is itself an
+                AccordionItem, so it needs its own Accordion ancestor. Keep
+                it mounted open by default so users see artefakter without a
+                second click. */}
+              <Accordion
+                type="multiple"
+                defaultValue={['linked-artifacts']}
+                className="w-full"
+              >
+                <LinkedArtifactsPanel
+                  listItemId={item.lawListItemId}
+                  readOnly
+                />
+              </Accordion>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ------- Anmärkningar ------- */}
+          {/* v2 reorder: findings move LAST — they're the OUTPUT of the
+           *  audit review (the auditor records them while reviewing the
+           *  three sections above), not the entry point. */}
           <AccordionItem
             value="findings"
             className="rounded-lg border border-border/60"
@@ -216,110 +343,6 @@ export function CycleItemModalLeftPanel({
                   Lägg till anmärkning
                 </Button>
               ) : null}
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* ------- Kravpunkter ------- */}
-          <AccordionItem
-            value="kravpunkter"
-            className="rounded-lg border border-border/60"
-          >
-            <AccordionTrigger className="rounded-t-lg px-4 py-3 hover:bg-muted/50 hover:no-underline data-[state=closed]:rounded-lg">
-              <div className="flex flex-1 items-center gap-2 text-base font-semibold text-foreground">
-                <ClipboardCheck className="h-4 w-4" />
-                <span>Kravpunkter</span>
-                {kravpunkterProgress.total > 0 ? (
-                  <div className="ml-auto mr-2 flex items-center gap-2 font-normal">
-                    <span className="text-xs tabular-nums text-muted-foreground">
-                      {kravpunkterProgress.fulfilled}/
-                      {kravpunkterProgress.total} uppfyllda
-                    </span>
-                    <div className="h-1 w-12 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-green-500 transition-all duration-300"
-                        style={{
-                          width: `${
-                            kravpunkterProgress.total > 0
-                              ? Math.round(
-                                  (kravpunkterProgress.fulfilled /
-                                    kravpunkterProgress.total) *
-                                    100
-                                )
-                              : 0
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4">
-              <KravpunkterSnapshotList
-                snapshot={item.kravpunkterSnapshot}
-                listItemId={item.lawListItemId}
-                itemResponsibleUserId={item.sourceResponsibleUser?.id ?? null}
-              />
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* ------- Hur påverkar detta oss? ------- */}
-          <AccordionItem
-            value="business-context"
-            className="rounded-lg border border-border/60"
-          >
-            <AccordionTrigger className="rounded-t-lg px-4 py-3 hover:bg-muted/50 hover:no-underline data-[state=closed]:rounded-lg">
-              <div className="flex items-center gap-2 text-base font-semibold text-foreground">
-                <HelpCircle className="h-4 w-4" />
-                <span>Hur påverkar detta oss?</span>
-                <span className="text-xs font-normal text-muted-foreground">
-                  Live
-                </span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4">
-              <BusinessContextReadOnly
-                content={item.businessContext}
-                lawListItemId={item.lawListItemId}
-              />
-            </AccordionContent>
-          </AccordionItem>
-
-          {/* ------- Underlag ------- */}
-          {/* Swedish audit vocab: "underlag" = supporting documentation. Naturally
-           *  distinguishes from Kravpunkter's frozen snapshot via the "Live" label
-           *  and the explanatory caption below. */}
-          <AccordionItem
-            value="linked-artifacts"
-            className="rounded-lg border border-border/60"
-          >
-            <AccordionTrigger className="rounded-t-lg px-4 py-3 hover:bg-muted/50 hover:no-underline data-[state=closed]:rounded-lg">
-              <div className="flex items-center gap-2 text-base font-semibold text-foreground">
-                <Paperclip className="h-4 w-4" />
-                <span>Underlag</span>
-                <span className="text-xs font-normal text-muted-foreground">
-                  Live
-                </span>
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4">
-              <p className="mb-3 text-xs text-muted-foreground">
-                Aktuella kopplingar — låses när kontrollen fastställs.
-              </p>
-              {/* Nested accordion panel from legal-document-modal is itself an
-                AccordionItem, so it needs its own Accordion ancestor. Keep
-                it mounted open by default so users see artefakter without a
-                second click. */}
-              <Accordion
-                type="multiple"
-                defaultValue={['linked-artifacts']}
-                className="w-full"
-              >
-                <LinkedArtifactsPanel
-                  listItemId={item.lawListItemId}
-                  readOnly
-                />
-              </Accordion>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
