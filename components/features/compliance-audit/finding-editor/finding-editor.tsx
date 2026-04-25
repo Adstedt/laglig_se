@@ -80,6 +80,13 @@ interface FindingEditorProps {
   finding?: FindingRow
   items: CycleItemRow[]
   prefillLawListItemId?: string | null
+  /**
+   * Optional: pre-fill the kravpunkt dropdown (in addition to the law list item).
+   * Used by the "Saknar bevis"-pill click affordance on the cycle-item modal so
+   * the auditor lands in the editor with both the item AND the specific
+   * requirement already selected. Ignored in `mode === 'edit'`.
+   */
+  prefillRequirementId?: string | null
   onSuccess: (_finding: FindingRow) => void
 }
 
@@ -115,7 +122,8 @@ interface FormState {
 function buildInitialState(
   mode: Mode,
   finding: FindingRow | undefined,
-  prefillLawListItemId: string | null | undefined
+  prefillLawListItemId: string | null | undefined,
+  prefillRequirementId: string | null | undefined
 ): FormState {
   if (mode === 'edit' && finding) {
     return {
@@ -150,7 +158,13 @@ function buildInitialState(
     rootCause: '',
     dueDate: null,
     lawListItemId: prefillLawListItemId ?? null,
-    requirementId: null,
+    // Pre-fill the kravpunkt only when the law-list-item context is also
+    // pre-filled — a requirement without its parent item would never resolve
+    // in the per-item kravpunkter dropdown.
+    requirementId:
+      prefillLawListItemId && prefillRequirementId
+        ? prefillRequirementId
+        : null,
     spawnTask: false,
     // null = "use spawner defaults from finding context"; user overrides
     // get picked up when the inline editor is revealed.
@@ -171,10 +185,11 @@ export function FindingEditor({
   finding,
   items,
   prefillLawListItemId,
+  prefillRequirementId,
   onSuccess,
 }: FindingEditorProps) {
   const [state, setState] = useState<FormState>(() =>
-    buildInitialState(mode, finding, prefillLawListItemId)
+    buildInitialState(mode, finding, prefillLawListItemId, prefillRequirementId)
   )
   const [submitting, setSubmitting] = useState(false)
   const [taskDueDatePickerOpen, setTaskDueDatePickerOpen] = useState(false)
@@ -195,14 +210,21 @@ export function FindingEditor({
   const [members, setMembers] = useState<WorkspaceMemberOption[]>([])
   const [membersLoading, setMembersLoading] = useState(false)
 
-  // Reset form whenever the dialog opens (or switches finding/mode).
+  // Reset form whenever the dialog opens (or switches finding/mode/prefill).
   useEffect(() => {
     if (open) {
-      setState(buildInitialState(mode, finding, prefillLawListItemId))
+      setState(
+        buildInitialState(
+          mode,
+          finding,
+          prefillLawListItemId,
+          prefillRequirementId
+        )
+      )
       setSpawnTaskTouched(false)
       setStep(1)
     }
-  }, [open, mode, finding, prefillLawListItemId])
+  }, [open, mode, finding, prefillLawListItemId, prefillRequirementId])
 
   // Lazy-fetch workspace members on first reveal. Keeps the picker silent
   // for OBSERVATION/FÖRBÄTTRING users who don't opt in.

@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="sv" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cycle item modal — audit-flow rework prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              border: 'hsl(0 0% 18%)',
+              background: 'hsl(0 0% 9%)',
+              foreground: 'hsl(0 0% 95%)',
+              card: 'hsl(0 0% 11%)',
+              'muted': 'hsl(0 0% 16%)',
+              'muted-foreground': 'hsl(0 0% 60%)',
+              primary: 'hsl(0 0% 90%)',
+              'primary-foreground': 'hsl(0 0% 9%)',
+              destructive: 'hsl(0 84% 60%)',
+              accent: 'hsl(0 0% 16%)',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+      .annotation {
+        position: relative;
+      }
+      .annotation::before {
+        content: attr(data-note);
+        position: absolute;
+        right: 100%;
+        top: 0.5rem;
+        margin-right: 0.75rem;
+        background: hsl(45 93% 47%);
+        color: hsl(0 0% 9%);
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        white-space: nowrap;
+        z-index: 10;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+      }
+      .annotation-after::after {
+        content: attr(data-note);
+        position: absolute;
+        left: 100%;
+        top: 0.5rem;
+        margin-left: 0.75rem;
+        background: hsl(142 71% 45%);
+        color: white;
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        white-space: nowrap;
+        z-index: 10;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+      }
+    </style>
+  </head>
+  <body class="bg-background text-foreground">
+    <div class="mx-auto max-w-[1400px] p-6">
+      <header class="mb-8">
+        <h1 class="text-2xl font-bold">Cycle item modal — audit-flow rework</h1>
+        <p class="mt-2 text-sm text-muted-foreground">
+          Showing changes #1 (section reorder), #2 (lagansvarig collapsed),
+          #3 (Hälsa → audit progress). Yellow chips = current placement.
+          Green chips = proposed placement.
+        </p>
+      </header>
+
+      <div class="grid grid-cols-2 gap-12">
+        <!-- ====================================================== -->
+        <!-- BEFORE -->
+        <!-- ====================================================== -->
+        <section>
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Current
+          </h2>
+          <div class="grid grid-cols-[1fr_280px] gap-4">
+            <!-- LEFT (current order) -->
+            <div class="space-y-3">
+              <header>
+                <h3 class="text-base font-semibold">Aktiebolagslag (2005:551)</h3>
+                <p class="text-[11px] text-muted-foreground">SFS 2005:551 · Öppna i laglista</p>
+              </header>
+
+              <div class="rounded-lg border border-border bg-card p-3">
+                <div class="flex items-center gap-1.5 text-sm font-semibold">
+                  <span>⚠</span><span>Anmärkningar</span>
+                  <span class="text-[10px] font-normal text-muted-foreground">1 öppna</span>
+                </div>
+                <div class="mt-2 rounded-md border border-l-4 border-destructive/50 border-l-destructive bg-card p-2 text-[10px]">
+                  <div class="flex gap-1">
+                    <span class="rounded bg-red-950/40 px-1 text-red-400">AVVIKELSE</span>
+                    <span class="rounded bg-red-950/40 px-1 text-red-400">STÖRRE</span>
+                  </div>
+                  <p class="mt-1 font-medium">Vi har inte haft årsstämma</p>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-border bg-card p-3">
+                <div class="flex items-center gap-1.5 text-sm font-semibold">
+                  <span>📋</span><span>Kravpunkter</span>
+                  <span class="ml-auto text-[10px] font-normal text-muted-foreground">5/7 uppfyllda</span>
+                </div>
+                <ul class="mt-2 space-y-1 text-[11px]">
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-green-500">✓</span>
+                    <span class="flex-1 truncate">Vi måste bokföra/se över rutiner</span>
+                    <span class="h-5 w-5 rounded-full bg-primary/10 text-center text-[8px] leading-5 text-primary">AA</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-green-500">✓</span>
+                    <span class="flex-1 truncate">Vi måste ha årsstämmor</span>
+                    <span class="rounded bg-muted px-1 text-[9px]">📎 3</span>
+                    <span class="h-5 w-5 rounded-full bg-primary/10 text-center text-[8px] leading-5 text-primary">AA</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-green-500">✓</span>
+                    <span class="flex-1 truncate">Test</span>
+                    <span class="h-5 w-5 rounded-full bg-primary/10 text-center text-[8px] leading-5 text-primary">AA</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-green-500">✓</span>
+                    <span class="flex-1 truncate">Skyddsutrustning på lagret måste finnas</span>
+                    <span class="h-5 w-5 rounded-full bg-primary/10 text-center text-[8px] leading-5 text-primary">AA</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-muted-foreground">○</span>
+                    <span class="flex-1 truncate">Test6</span>
+                    <span class="rounded border border-amber-500/40 px-1 text-[9px] text-amber-500">⚠ Saknar bevis</span>
+                    <span class="h-5 w-5 rounded-full bg-primary/10 text-center text-[8px] leading-5 text-primary">AA</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-muted-foreground">○</span>
+                    <span class="flex-1 truncate">UAT note test</span>
+                    <span class="h-5 w-5 rounded-full bg-primary/10 text-center text-[8px] leading-5 text-primary">AA</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="rounded-lg border border-border bg-card p-3">
+                <div class="flex items-center gap-1.5 text-sm font-semibold">
+                  <span>?</span><span>Hur påverkar detta oss?</span>
+                </div>
+                <p class="mt-2 text-[11px] text-muted-foreground line-clamp-2">
+                  Aktiebolagslagen reglerar bolagets organisation, styrelseansvar...
+                </p>
+              </div>
+
+              <div class="rounded-lg border border-border bg-card p-3 opacity-70">
+                <div class="flex items-center gap-1.5 text-sm font-semibold">
+                  <span>📎</span><span>Underlag</span>
+                  <span class="text-[10px] font-normal text-muted-foreground">Live</span>
+                  <span class="ml-auto text-[10px] text-muted-foreground">▾ collapsed</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT (current) -->
+            <div class="space-y-3">
+              <div class="rounded-lg border border-border bg-card p-3">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-sm font-semibold">Signera bedömning</h4>
+                  <div class="flex gap-1 text-[9px]">
+                    <span class="rounded-full border border-muted-foreground/30 px-1.5 py-0.5">○ Bedömning</span>
+                    <span class="rounded-full border border-emerald-700 bg-emerald-950 px-1.5 py-0.5 text-emerald-300">✓ Motivering</span>
+                  </div>
+                </div>
+                <p class="mt-2 text-[11px] text-muted-foreground">Bedömning *</p>
+                <div class="mt-1 rounded-md border bg-muted px-2 py-1 text-[11px]">— ▾</div>
+                <p class="mt-2 text-[11px] text-muted-foreground">Motivering</p>
+                <div class="mt-1 rounded-md border bg-muted px-2 py-1 text-[11px]">Test</div>
+                <button class="mt-3 w-full rounded-md bg-muted py-1.5 text-[11px] text-muted-foreground">Signera</button>
+              </div>
+
+              <div class="rounded-lg border border-border bg-card p-3">
+                <h4 class="mb-2 text-sm font-semibold">Detaljer</h4>
+                <div class="space-y-1 text-[11px]">
+                  <div class="flex justify-between"><span class="text-muted-foreground">Nuvarande status</span><span class="rounded-full bg-blue-950/40 px-2 py-0.5 text-blue-300">Delvis uppfylld</span></div>
+                  <div class="flex justify-between"><span class="text-muted-foreground">Ansvarig</span><span>Alexander Adstedt</span></div>
+                  <div class="flex justify-between"><span class="text-muted-foreground">Granskad</span><span>24 apr 22:37</span></div>
+                </div>
+              </div>
+
+              <div class="rounded-lg border border-border bg-card p-3">
+                <h4 class="mb-2 text-sm font-semibold">Snabblänkar</h4>
+                <button class="block w-full rounded-md bg-foreground p-1.5 text-[11px] text-background">Fråga Lexa</button>
+                <button class="mt-1 block w-full rounded-md border p-1.5 text-[11px]">Öppna i laglista</button>
+              </div>
+
+              <div class="rounded-lg border border-border bg-card p-3">
+                <h4 class="mb-2 text-sm font-semibold">Hälsa</h4>
+                <div class="rounded-md border border-red-900 bg-red-950/40 px-2 py-1 text-[11px] text-red-300">● 1 öppen anmärkning</div>
+                <div class="mt-1 rounded-md border px-2 py-1 text-[11px] text-muted-foreground">○ 7 kravpunkter</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ====================================================== -->
+        <!-- AFTER -->
+        <!-- ====================================================== -->
+        <section>
+          <h2 class="mb-4 text-sm font-semibold uppercase tracking-wide text-emerald-400">
+            Proposed (changes 1–3)
+          </h2>
+          <div class="grid grid-cols-[1fr_280px] gap-4">
+            <!-- LEFT (reordered) -->
+            <div class="space-y-3">
+              <header>
+                <h3 class="text-base font-semibold">Aktiebolagslag (2005:551)</h3>
+                <p class="text-[11px] text-muted-foreground">SFS 2005:551 · Öppna i laglista</p>
+              </header>
+
+              <!-- 1. Hur påverkar detta oss? — moved to TOP -->
+              <div class="annotation-after rounded-lg border border-emerald-700/40 bg-card p-3" data-note="① Context first">
+                <div class="flex items-center gap-1.5 text-sm font-semibold">
+                  <span>?</span><span>Hur påverkar detta oss?</span>
+                  <span class="text-[10px] font-normal text-muted-foreground">Live</span>
+                </div>
+                <p class="mt-2 text-[11px] text-muted-foreground line-clamp-2">
+                  Aktiebolagslagen reglerar bolagets organisation, styrelseansvar...
+                </p>
+              </div>
+
+              <!-- 2. Kravpunkter — moved up, lagansvarig in header, no row avatars -->
+              <div class="annotation-after rounded-lg border border-emerald-700/40 bg-card p-3" data-note="② Lagansvarig in header">
+                <div class="flex items-center gap-1.5 text-sm font-semibold">
+                  <span>📋</span><span>Kravpunkter</span>
+                  <span class="ml-auto text-[10px] font-normal text-muted-foreground">5/7 uppfyllda</span>
+                </div>
+                <!-- New: lagansvarig stripe -->
+                <div class="mt-2 flex items-center gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-[10px] text-muted-foreground">
+                  <span>Lagansvarig:</span>
+                  <span class="h-5 w-5 rounded-full bg-primary/10 text-center text-[8px] leading-5 text-primary">AA</span>
+                  <span class="text-foreground">Alexander Adstedt</span>
+                  <span class="ml-auto text-[9px]">(ärvs av samtliga kravpunkter)</span>
+                </div>
+                <ul class="mt-2 space-y-1 text-[11px]">
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-green-500">✓</span>
+                    <span class="flex-1 truncate">Vi måste bokföra/se över rutiner</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-green-500">✓</span>
+                    <span class="flex-1 truncate">Vi måste ha årsstämmor</span>
+                    <span class="rounded bg-muted px-1 text-[9px]">📎 3</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-green-500">✓</span>
+                    <span class="flex-1 truncate">Test</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-green-500">✓</span>
+                    <span class="flex-1 truncate">Skyddsutrustning på lagret måste finnas</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-muted-foreground">○</span>
+                    <span class="flex-1 truncate">Test6</span>
+                    <span class="rounded border border-amber-500/40 px-1 text-[9px] text-amber-500">⚠ Saknar bevis</span>
+                    <!-- Override avatar — only shown if ≠ lagansvarig -->
+                    <span class="h-5 w-5 rounded-full bg-orange-900/50 text-center text-[8px] leading-5 text-orange-300" title="Anna Bergström (avviker från lagansvarig)">AB</span>
+                  </li>
+                  <li class="flex items-center gap-2 px-1 py-0.5">
+                    <span class="text-muted-foreground">○</span>
+                    <span class="flex-1 truncate">UAT note test</span>
+                  </li>
+                </ul>
+                <p class="mt-2 text-[10px] text-muted-foreground/70">
+                  Avatar visas endast vid avvikande tilldelning per kravpunkt.
+                </p>
+              </div>
+
+              <!-- 3. Underlag — moved up, expanded by default -->
+              <div class="annotation-after rounded-lg border border-emerald-700/40 bg-card p-3" data-note="① Evidence next to requirements">
+                <div class="flex items-center gap-1.5 text-sm font-semibold">
+                  <span>📎</span><span>Underlag</span>
+                  <span class="text-[10px] font-normal text-muted-foreground">Live</span>
+                  <span class="ml-auto text-[10px] text-emerald-400">▾ expanded</span>
+                </div>
+                <p class="mt-1 text-[10px] text-muted-foreground">Aktuella kopplingar — låses när kontrollen fastställs.</p>
+                <ul class="mt-2 space-y-1 text-[11px]">
+                  <li class="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/30">
+                    <span>📎</span><span class="flex-1 truncate">Change history report (1).csv.xlsx</span>
+                  </li>
+                  <li class="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/30">
+                    <span>📄</span><span class="flex-1 truncate">Policy för mobiltelefoner v1</span>
+                  </li>
+                  <li class="flex items-center gap-2 rounded px-2 py-1 hover:bg-muted/30">
+                    <span>📄</span><span class="flex-1 truncate">Årsstämmoprotokoll 2025.pdf</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 4. Anmärkningar — moved to BOTTOM (output of review) -->
+              <div class="annotation-after rounded-lg border border-emerald-700/40 bg-card p-3" data-note="① Findings as output">
+                <div class="flex items-center gap-1.5 text-sm font-semibold">
+                  <span>⚠</span><span>Anmärkningar</span>
+                  <span class="text-[10px] font-normal text-muted-foreground">1 öppna</span>
+                </div>
+                <div class="mt-2 rounded-md border border-l-4 border-destructive/50 border-l-destructive bg-card p-2 text-[10px]">
+                  <div class="flex gap-1">
+                    <span class="rounded bg-red-950/40 px-1 text-red-400">AVVIKELSE</span>
+                    <span class="rounded bg-red-950/40 px-1 text-red-400">STÖRRE</span>
+                  </div>
+                  <p class="mt-1 font-medium">Vi har inte haft årsstämma</p>
+                </div>
+                <button class="mt-2 w-full rounded-md bg-muted/30 py-1 text-[11px] text-muted-foreground hover:bg-muted/60">
+                  + Lägg till anmärkning
+                </button>
+              </div>
+            </div>
+
+            <!-- RIGHT (agree-or-dispute Signera + honest "att uppmärksamma") -->
+            <div class="space-y-3">
+              <!-- Signera card — agree-or-dispute primary pattern -->
+              <div class="annotation-after rounded-lg border border-emerald-700/40 bg-card p-3" data-note="③ Agree-or-dispute primitive">
+                <div class="mb-3 flex items-center justify-between">
+                  <h4 class="text-sm font-semibold">Signera bedömning</h4>
+                </div>
+
+                <!-- Nuvarande status + suggested verdict -->
+                <div class="mb-3 rounded-md border border-blue-900/40 bg-blue-950/20 p-2.5">
+                  <div class="flex items-center gap-2 text-[10px] text-muted-foreground">
+                    <span>Nuvarande status i laglistan:</span>
+                    <span class="rounded-full bg-blue-950 px-2 py-0.5 text-[10px] text-blue-300">Delvis uppfylld</span>
+                  </div>
+                  <p class="mt-1.5 text-[11px] text-foreground">
+                    Stämmer detta för denna kontroll?
+                  </p>
+                  <div class="mt-2 grid grid-cols-2 gap-1.5">
+                    <button class="rounded-md border border-emerald-700 bg-emerald-950/30 px-2 py-1.5 text-[11px] font-medium text-emerald-300 hover:bg-emerald-950/60">
+                      ✓ Bekräfta källstatus
+                    </button>
+                    <button class="rounded-md border border-amber-700 bg-amber-950/20 px-2 py-1.5 text-[11px] font-medium text-amber-300 hover:bg-amber-950/40">
+                      Avvik från källstatus
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Manual fields (collapsed under "Avvik" or remain as escape hatch) -->
+                <details class="text-[11px]">
+                  <summary class="cursor-pointer text-[10px] text-muted-foreground hover:text-foreground">
+                    Eller välj manuellt ▾
+                  </summary>
+                  <div class="mt-2 space-y-2">
+                    <div>
+                      <p class="mb-1 text-[10px] text-muted-foreground">Bedömning</p>
+                      <div class="rounded-md border bg-muted px-2 py-1">— ▾</div>
+                    </div>
+                    <div>
+                      <p class="mb-1 text-[10px] text-muted-foreground">Motivering</p>
+                      <div class="rounded-md border bg-muted px-2 py-1">Test</div>
+                    </div>
+                  </div>
+                </details>
+
+                <button class="mt-3 w-full rounded-md bg-muted py-1.5 text-[11px] text-muted-foreground">Signera</button>
+              </div>
+
+              <div class="rounded-lg border border-border bg-card p-3">
+                <h4 class="mb-2 text-sm font-semibold">Detaljer</h4>
+                <div class="space-y-1 text-[11px]">
+                  <div class="flex justify-between"><span class="text-muted-foreground">Ansvarig</span><span>Alexander Adstedt</span></div>
+                  <div class="flex justify-between"><span class="text-muted-foreground">Granskad</span><span>24 apr 22:37</span></div>
+                </div>
+                <p class="mt-2 text-[10px] text-muted-foreground/70">
+                  Nuvarande status visas i Signera-kortet ovan.
+                </p>
+              </div>
+
+              <div class="rounded-lg border border-border bg-card p-3">
+                <h4 class="mb-2 text-sm font-semibold">Snabblänkar</h4>
+                <button class="block w-full rounded-md bg-foreground p-1.5 text-[11px] text-background">Fråga Lexa</button>
+                <button class="mt-1 block w-full rounded-md border p-1.5 text-[11px]">Öppna i laglista</button>
+              </div>
+
+              <!-- 3. Hälsa → "Att uppmärksamma" — honest, no fake progress -->
+              <div class="annotation-after rounded-lg border border-emerald-700/40 bg-card p-3" data-note="③ Att uppmärksamma — honest signals only">
+                <div class="mb-2 flex items-center justify-between">
+                  <h4 class="text-sm font-semibold">Att uppmärksamma</h4>
+                </div>
+                <p class="mb-2 text-[10px] text-muted-foreground/70">
+                  Saker som kan behöva åtgärdas innan signering.
+                </p>
+                <div class="space-y-1 text-[11px]">
+                  <div class="flex items-center gap-2 rounded-md border border-amber-900 bg-amber-950/30 px-2 py-1 text-amber-300">
+                    <span>⚠</span>
+                    <span class="flex-1">Bevis saknas för 1 kravpunkt</span>
+                  </div>
+                  <div class="flex items-center gap-2 rounded-md border border-red-900/40 bg-red-950/20 px-2 py-1 text-red-400">
+                    <span>!</span>
+                    <span class="flex-1">1 öppen anmärkning</span>
+                  </div>
+                  <div class="flex items-center gap-2 rounded-md px-2 py-1 text-muted-foreground">
+                    <span>🕐</span>
+                    <span class="flex-1">Senast granskad: 24 apr 22:37</span>
+                  </div>
+                </div>
+                <p class="mt-2 text-[10px] italic text-muted-foreground/60">
+                  Inga fejk-procentsatser — systemet spårar inte per-kravpunkt-granskning.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Diff legend -->
+      <div class="mt-12 rounded-lg border border-border bg-card p-4">
+        <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          What changes (numbered)
+        </h3>
+        <div class="grid grid-cols-3 gap-4 text-xs">
+          <div class="rounded-md border border-emerald-700/40 bg-emerald-950/20 p-3">
+            <div class="mb-1 font-semibold text-emerald-400">① Section reorder (left panel)</div>
+            <p class="text-muted-foreground">
+              <span class="line-through">Anmärkningar → Kravpunkter → Hur påverkar → Underlag</span><br />
+              <strong class="text-foreground">Hur påverkar → Kravpunkter → Underlag → Anmärkningar</strong>
+            </p>
+            <p class="mt-2 text-[11px] text-muted-foreground/80">
+              Matches the auditor's mental flow: understand → review → check → record. Findings emerge from the review, not as the entry point.
+            </p>
+          </div>
+          <div class="rounded-md border border-emerald-700/40 bg-emerald-950/20 p-3">
+            <div class="mb-1 font-semibold text-emerald-400">② Lagansvarig in header</div>
+            <p class="text-muted-foreground">
+              <span class="line-through">7 identical "AA" avatars (one per kravpunkt row)</span><br />
+              <strong class="text-foreground">Single "Lagansvarig: Alexander Adstedt" stripe at the top.</strong>
+            </p>
+            <p class="mt-2 text-[11px] text-muted-foreground/80">
+              Per-row avatar only when the kravpunkt has an explicit assignee that differs from the lagansvarig (orange "AB" in the mockup). Cuts noise; surfaces actual delegation.
+            </p>
+          </div>
+          <div class="rounded-md border border-emerald-700/40 bg-emerald-950/20 p-3">
+            <div class="mb-1 font-semibold text-emerald-400">③ Agree-or-dispute primitive + honest "Att uppmärksamma"</div>
+            <p class="text-muted-foreground">
+              <span class="line-through">"Granskningsstatus" with fake "X av Y kravpunkter granskade" — system doesn't track per-krav review</span><br />
+              <strong class="text-foreground">Signera card leads with "Nuvarande status i laglistan: X — stämmer det?" + Bekräfta/Avvik buttons. "Att uppmärksamma" box surfaces only honest signals (bevis gaps, open findings, last-reviewed timestamp).</strong>
+            </p>
+            <p class="mt-2 text-[11px] text-muted-foreground/80">
+              The actual audit primitive is <strong>agree or dispute the team's claim</strong>, not per-kravpunkt review. Bekräfta = 2-click happy path (auto-fills bedömning + motivering). Avvik = forces real explanation.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Out of scope but adjacent -->
+      <div class="mt-6 rounded-lg border border-amber-700/30 bg-amber-950/10 p-4 text-sm text-amber-100/80">
+        <strong class="text-amber-300">Not in this prototype</strong> — the larger items (#4 audit-flow stepper, "Anmärkning vs Motivering" copy hint, structured auditor checklist). Those need design conversations before implementation; the three above are mechanical and high-payoff.
+      </div>
+    </div>
+  </body>
+</html>

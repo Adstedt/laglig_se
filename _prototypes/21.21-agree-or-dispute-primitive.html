@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="sv" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Story 21.21 — Agree-or-dispute primitive on Signera card</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              border: 'hsl(0 0% 18%)',
+              background: 'hsl(0 0% 9%)',
+              foreground: 'hsl(0 0% 95%)',
+              card: 'hsl(0 0% 11%)',
+              muted: 'hsl(0 0% 16%)',
+              'muted-foreground': 'hsl(0 0% 60%)',
+              primary: 'hsl(0 0% 90%)',
+              'primary-foreground': 'hsl(0 0% 9%)',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      }
+      .state-label {
+        background: hsl(45 93% 47%);
+        color: hsl(0 0% 9%);
+        padding: 0.25rem 0.625rem;
+        border-radius: 0.25rem;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        display: inline-block;
+      }
+      .arrow {
+        color: hsl(0 0% 50%);
+        font-size: 1.5rem;
+      }
+    </style>
+  </head>
+  <body class="bg-background text-foreground">
+    <div class="mx-auto max-w-[1400px] p-6">
+      <header class="mb-8">
+        <h1 class="text-2xl font-bold">
+          Story 21.21 — Agree-or-dispute primitive
+        </h1>
+        <p class="mt-2 text-sm text-muted-foreground">
+          Surfaces the audit's actual primitive: ratify the team's claim or
+          challenge it. Replaces the current "pick a bedömning from a dropdown
+          and write a motivering" pattern.
+        </p>
+        <p class="mt-1 text-xs text-muted-foreground/70">
+          Four states shown below. The auditor moves through 1 → either 2a or
+          2b based on their judgment. State 4 is the edge case where there's
+          nothing meaningful to "agree" with.
+        </p>
+      </header>
+
+      <!-- ====================================================== -->
+      <!-- State 1: Initial — the agree-or-dispute prompt -->
+      <!-- ====================================================== -->
+      <section class="mb-12">
+        <div class="mb-3 flex items-center gap-3">
+          <span class="state-label">State 1 — Initial</span>
+          <span class="text-sm text-muted-foreground"
+            >Auditor opens the modal. Bedömning + motivering both empty.</span
+          >
+        </div>
+        <div class="grid grid-cols-2 gap-8">
+          <!-- Card -->
+          <div class="rounded-lg border border-border bg-card p-4">
+            <h3 class="mb-3 text-base font-semibold">Signera bedömning</h3>
+
+            <!-- The agree-or-dispute prompt -->
+            <div class="rounded-md border border-blue-900/50 bg-blue-950/30 p-3">
+              <div class="mb-2 flex items-center gap-2">
+                <span class="text-xs text-muted-foreground"
+                  >Nuvarande status i laglistan:</span
+                >
+                <span
+                  class="rounded-full bg-blue-950 px-2 py-0.5 text-xs text-blue-300"
+                  >Delvis uppfylld</span
+                >
+              </div>
+              <p class="mb-3 text-sm font-medium text-foreground">
+                Stämmer detta för denna kontroll?
+              </p>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  class="rounded-md border border-emerald-700 bg-emerald-950/30 px-3 py-2 text-sm font-medium text-emerald-300 hover:bg-emerald-950/60"
+                >
+                  ✓ Bekräfta nuvarande status
+                </button>
+                <button
+                  class="rounded-md border border-amber-700 bg-amber-950/20 px-3 py-2 text-sm font-medium text-amber-300 hover:bg-amber-950/40"
+                >
+                  ⚠ Avvik från status
+                </button>
+              </div>
+            </div>
+
+            <!-- Manual escape hatch -->
+            <details class="mt-3 text-xs">
+              <summary
+                class="cursor-pointer text-muted-foreground hover:text-foreground"
+              >
+                ▾ Eller välj bedömning manuellt
+              </summary>
+              <div class="mt-2 space-y-2">
+                <div class="rounded-md border bg-muted px-2 py-1 text-xs">
+                  Välj bedömning... ▾
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Annotations -->
+          <div class="space-y-3 text-sm text-muted-foreground">
+            <div class="rounded-md border border-emerald-700/40 bg-emerald-950/20 p-3">
+              <div class="mb-1 font-semibold text-emerald-400">
+                What changed
+              </div>
+              The bedömning + motivering inputs are <em>replaced</em> by the
+              agree-or-dispute question. Two big buttons present the two
+              meaningful choices the auditor has to make.
+            </div>
+            <div class="rounded-md border border-border bg-card p-3">
+              <div class="mb-1 font-semibold text-foreground">Why</div>
+              The actual audit primitive is "ratify the team's claim or
+              challenge it" — not "pick from a generic dropdown." Explicit
+              question, two actionable buttons, source-of-truth state visible
+              right above them.
+            </div>
+            <div class="rounded-md border border-border bg-card p-3">
+              <div class="mb-1 font-semibold text-foreground">
+                Manual escape hatch
+              </div>
+              Advanced auditors who want to skip the agree/dispute UI can use
+              the collapsed <code>&lt;details&gt;</code> at the bottom to
+              manual-pick. Power user respect without confusing first-timers.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- State 2a: Bekräfta clicked — confirmed -->
+      <!-- ====================================================== -->
+      <section class="mb-12">
+        <div class="mb-3 flex items-center gap-3">
+          <span class="state-label">State 2a — Bekräfta clicked</span>
+          <span class="text-sm text-muted-foreground"
+            >Happy path: auditor agrees with the team's status. Most common
+            case.</span
+          >
+        </div>
+        <div class="grid grid-cols-2 gap-8">
+          <div class="rounded-lg border border-border bg-card p-4">
+            <h3 class="mb-3 text-base font-semibold">Signera bedömning</h3>
+
+            <!-- Confirmed banner -->
+            <div
+              class="mb-3 rounded-md border border-emerald-700 bg-emerald-950/30 p-3"
+            >
+              <div class="flex items-center gap-2 text-sm font-medium text-emerald-300">
+                ✓ Bekräftar nuvarande status:
+                <span
+                  class="rounded-full bg-emerald-950 px-2 py-0.5 text-xs text-emerald-300"
+                  >Delvis uppfylld</span
+                >
+              </div>
+              <button
+                class="mt-2 text-xs text-emerald-400/70 underline hover:text-emerald-300"
+              >
+                ↺ Ångra
+              </button>
+            </div>
+
+            <!-- Motivering with prefilled text -->
+            <div class="mb-3">
+              <label class="mb-1 block text-xs text-muted-foreground"
+                >Motivering <span class="text-emerald-400">*</span></label
+              >
+              <div
+                class="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm"
+              >
+                Bekräftar nuvarande status från laglistan. Inga ändringar
+                sedan föregående granskning.
+              </div>
+              <p class="mt-1 text-[10px] italic text-muted-foreground/70">
+                Förifyllt — du kan redigera innan signering.
+              </p>
+            </div>
+
+            <button
+              class="w-full rounded-md bg-foreground py-2 text-sm font-medium text-background hover:bg-foreground/90"
+            >
+              Signera
+            </button>
+          </div>
+
+          <div class="space-y-3 text-sm text-muted-foreground">
+            <div class="rounded-md border border-emerald-700/40 bg-emerald-950/20 p-3">
+              <div class="mb-1 font-semibold text-emerald-400">
+                Two clicks to ship
+              </div>
+              State 1 → click "Bekräfta" → State 2a. Bedömning is auto-set to
+              match källstatus. Motivering is pre-filled with a sensible
+              default the auditor can edit. Click Signera = done. Most audits
+              should hit this path.
+            </div>
+            <div class="rounded-md border border-border bg-card p-3">
+              <div class="mb-1 font-semibold text-foreground">Pre-fill copy</div>
+              <em
+                >"Bekräftar nuvarande status från laglistan. Inga ändringar
+                sedan föregående granskning."</em
+              >
+              — neutral, audit-grade. Auditor can edit (e.g., add specifics).
+              Empty motivering is still blocked by Story 21.12's server-side
+              gate, so the pre-fill ensures the happy path doesn't trip the
+              required-motivering check.
+            </div>
+            <div class="rounded-md border border-border bg-card p-3">
+              <div class="mb-1 font-semibold text-foreground">
+                Ångra escape hatch
+              </div>
+              "↺ Ångra" reverts to State 1. Auditor can re-decide if they
+              clicked Bekräfta by accident.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- State 2b: Avvik clicked — manual select -->
+      <!-- ====================================================== -->
+      <section class="mb-12">
+        <div class="mb-3 flex items-center gap-3">
+          <span class="state-label">State 2b — Avvik clicked</span>
+          <span class="text-sm text-muted-foreground"
+            >Auditor disagrees with the team's status. Forced to explain.</span
+          >
+        </div>
+        <div class="grid grid-cols-2 gap-8">
+          <div class="rounded-lg border border-border bg-card p-4">
+            <h3 class="mb-3 text-base font-semibold">Signera bedömning</h3>
+
+            <!-- Avvik banner -->
+            <div
+              class="mb-3 rounded-md border border-amber-700 bg-amber-950/20 p-3"
+            >
+              <div class="flex items-center gap-2 text-sm font-medium text-amber-300">
+                ⚠ Avviker från nuvarande status
+              </div>
+              <p class="mt-1 text-xs text-amber-300/70">
+                Laglistan säger
+                <span
+                  class="rounded-full bg-amber-950 px-1.5 py-0.5 text-amber-200"
+                  >Delvis uppfylld</span
+                >
+                — välj din bedömning nedan.
+              </p>
+              <button
+                class="mt-2 text-xs text-amber-400/70 underline hover:text-amber-300"
+              >
+                ↺ Ångra
+              </button>
+            </div>
+
+            <!-- Manual bedömning -->
+            <div class="mb-3">
+              <label class="mb-1 block text-xs text-muted-foreground"
+                >Min bedömning <span class="text-amber-400">*</span></label
+              >
+              <div class="grid grid-cols-2 gap-1.5">
+                <button
+                  class="rounded-md border border-emerald-700 bg-emerald-950/20 px-2 py-1.5 text-xs text-emerald-300 hover:bg-emerald-950/40"
+                >
+                  Uppfylld
+                </button>
+                <button
+                  class="rounded-md border border-amber-700 bg-amber-950/20 px-2 py-1.5 text-xs text-amber-300 hover:bg-amber-950/40"
+                >
+                  Delvis
+                </button>
+                <button
+                  class="rounded-md border border-red-700 bg-red-950/20 px-2 py-1.5 text-xs text-red-300 hover:bg-red-950/40"
+                >
+                  Ej uppfylld
+                </button>
+                <button
+                  class="rounded-md border border-border bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted/60"
+                >
+                  Ej tillämplig
+                </button>
+              </div>
+            </div>
+
+            <!-- Motivering REQUIRED, empty -->
+            <div class="mb-3">
+              <label class="mb-1 block text-xs text-muted-foreground"
+                >Motivering <span class="text-amber-400">*</span>
+                <span class="text-[10px] italic"
+                  >(förklara varför du avviker)</span
+                ></label
+              >
+              <div
+                class="rounded-md border border-dashed border-border/60 bg-muted/20 px-3 py-2 text-sm italic text-muted-foreground"
+              >
+                Skriv varför du avviker från nuvarande status...
+              </div>
+            </div>
+
+            <button
+              class="w-full rounded-md bg-muted py-2 text-sm font-medium text-muted-foreground"
+              disabled
+            >
+              Signera
+            </button>
+          </div>
+
+          <div class="space-y-3 text-sm text-muted-foreground">
+            <div class="rounded-md border border-amber-700/40 bg-amber-950/20 p-3">
+              <div class="mb-1 font-semibold text-amber-400">
+                Forces a real explanation
+              </div>
+              When auditor disagrees with the team, the audit needs WHY in
+              writing. Motivering is empty + required, button disabled until
+              filled in. No accidental "click Signera with placeholder text."
+            </div>
+            <div class="rounded-md border border-border bg-card p-3">
+              <div class="mb-1 font-semibold text-foreground">
+                Inline pill bedömning
+              </div>
+              Replaces the dropdown — 4 colored buttons show the choices
+              upfront (one less click + the colors are educational about what
+              each value means in compliance terms).
+            </div>
+            <div class="rounded-md border border-border bg-card p-3">
+              <div class="mb-1 font-semibold text-foreground">
+                Subtle policy enforcement
+              </div>
+              The motivering placeholder explicitly nudges
+              <em>"explain why you disagree"</em>, not generic. Auditors
+              writing "—" or "no comment" become obvious.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- State 3: Edge case — källstatus has no clear "agree target" -->
+      <!-- ====================================================== -->
+      <section class="mb-12">
+        <div class="mb-3 flex items-center gap-3">
+          <span class="state-label">State 3 — Edge: källstatus is EJ_PABORJAD</span>
+          <span class="text-sm text-muted-foreground"
+            >When the team hasn't formed an opinion yet, there's nothing to
+            ratify.</span
+          >
+        </div>
+        <div class="grid grid-cols-2 gap-8">
+          <div class="rounded-lg border border-border bg-card p-4">
+            <h3 class="mb-3 text-base font-semibold">Signera bedömning</h3>
+
+            <div class="mb-3 rounded-md border border-border bg-muted/30 p-3">
+              <div class="mb-1 flex items-center gap-2">
+                <span class="text-xs text-muted-foreground"
+                  >Nuvarande status i laglistan:</span
+                >
+                <span
+                  class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                  >Ej påbörjad</span
+                >
+              </div>
+              <p class="mt-1 text-xs italic text-muted-foreground/70">
+                Laglistan saknar bedömning. Välj själv vad som gäller för
+                kontrollen.
+              </p>
+            </div>
+
+            <div class="mb-3">
+              <label class="mb-1 block text-xs text-muted-foreground"
+                >Bedömning <span class="text-emerald-400">*</span></label
+              >
+              <div class="grid grid-cols-2 gap-1.5">
+                <button
+                  class="rounded-md border border-emerald-700 bg-emerald-950/20 px-2 py-1.5 text-xs text-emerald-300 hover:bg-emerald-950/40"
+                >
+                  Uppfylld
+                </button>
+                <button
+                  class="rounded-md border border-amber-700 bg-amber-950/20 px-2 py-1.5 text-xs text-amber-300 hover:bg-amber-950/40"
+                >
+                  Delvis
+                </button>
+                <button
+                  class="rounded-md border border-red-700 bg-red-950/20 px-2 py-1.5 text-xs text-red-300 hover:bg-red-950/40"
+                >
+                  Ej uppfylld
+                </button>
+                <button
+                  class="rounded-md border border-border bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted/60"
+                >
+                  Ej tillämplig
+                </button>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="mb-1 block text-xs text-muted-foreground"
+                >Motivering <span class="text-emerald-400">*</span></label
+              >
+              <div
+                class="rounded-md border border-dashed border-border/60 bg-muted/20 px-3 py-2 text-sm italic text-muted-foreground"
+              >
+                Förklara din bedömning...
+              </div>
+            </div>
+
+            <button
+              class="w-full rounded-md bg-muted py-2 text-sm font-medium text-muted-foreground"
+              disabled
+            >
+              Signera
+            </button>
+          </div>
+
+          <div class="space-y-3 text-sm text-muted-foreground">
+            <div class="rounded-md border border-amber-700/40 bg-amber-950/20 p-3">
+              <div class="mb-1 font-semibold text-amber-400">Edge case handling</div>
+              When källstatus is EJ_PABORJAD or PAGAENDE, "Bekräfta" doesn't
+              make sense — there's nothing meaningful to agree with. UI
+              collapses to direct manual entry, with a copy hint explaining
+              why.
+            </div>
+            <div class="rounded-md border border-border bg-card p-3">
+              <div class="mb-1 font-semibold text-foreground">
+                Trigger conditions
+              </div>
+              <code>källstatus IN (EJ_PABORJAD, PAGAENDE)</code> →
+              skip-the-prompt mode. Auditor still has to do all the work, but
+              we don't pretend a meaningless "Bekräfta" button exists.
+            </div>
+            <div class="rounded-md border border-border bg-card p-3">
+              <div class="mb-1 font-semibold text-foreground">
+                Why the inline pills
+              </div>
+              No "agree target" → manual entry IS the path. Same inline pills
+              as State 2b (no dropdown). Consistency.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================== -->
+      <!-- Decision log — open product questions for PO sign-off -->
+      <!-- ====================================================== -->
+      <section class="mb-8 rounded-lg border border-amber-700/30 bg-amber-950/10 p-6">
+        <h2 class="mb-4 text-lg font-bold text-amber-300">
+          Decisions needed before dev (PO sign-off)
+        </h2>
+        <ol class="space-y-3 text-sm">
+          <li class="rounded-md border border-border/60 bg-card/50 p-3">
+            <strong class="text-foreground"
+              >Q1. Pre-filled motivering on Bekräfta — what exactly?</strong
+            >
+            <p class="mt-1 text-muted-foreground">
+              Options:
+              <em>"Bekräftar nuvarande status från laglistan"</em> (neutral) ·
+              <em
+                >"Bekräftar nuvarande status. Inga ändringar sedan föregående
+                granskning."</em
+              >
+              (assumes prior cycle existed) ·
+              <em>"Bekräftar källstatus utan ytterligare anmärkningar"</em>
+              (auditor's confirmation, simpler).
+            </p>
+            <p class="mt-1 text-xs italic text-muted-foreground/70">
+              Recommendation: option 2, edited to "Inga ändringar sedan senaste
+              översyn" so it works for first-time and recurring cycles.
+            </p>
+          </li>
+
+          <li class="rounded-md border border-border/60 bg-card/50 p-3">
+            <strong class="text-foreground"
+              >Q2. What does "Avvik" do for bedömning?</strong
+            >
+            <p class="mt-1 text-muted-foreground">
+              Two interpretations: (a) reset bedömning to null (force pick)
+              vs. (b) prefill with a "guess" (e.g. one step worse than
+              källstatus). Option (a) is honest; (b) is opinionated.
+            </p>
+            <p class="mt-1 text-xs italic text-muted-foreground/70">
+              Recommendation: option (a) — null + force pick. Don't pre-bias
+              the auditor's choice when they've explicitly said they
+              disagree.
+            </p>
+          </li>
+
+          <li class="rounded-md border border-border/60 bg-card/50 p-3">
+            <strong class="text-foreground"
+              >Q3. Should manual escape hatch always be visible?</strong
+            >
+            <p class="mt-1 text-muted-foreground">
+              State 1 has a collapsed "▾ Eller välj bedömning manuellt"
+              <code>&lt;details&gt;</code>. Should it be (a) collapsed by
+              default (current prototype) or (b) expanded for power users?
+            </p>
+            <p class="mt-1 text-xs italic text-muted-foreground/70">
+              Recommendation: collapsed. Default is the agree/dispute UI;
+              power users learn the escape hatch on second use.
+            </p>
+          </li>
+
+          <li class="rounded-md border border-border/60 bg-card/50 p-3">
+            <strong class="text-foreground"
+              >Q4. Inline pill bedömning vs current dropdown?</strong
+            >
+            <p class="mt-1 text-muted-foreground">
+              Item #5 in the rework list (small polish). The Avvik path uses
+              pills; should the manual-mode escape hatch (in State 1) and the
+              EJ_PABORJAD edge case (State 3) also use pills? Or keep dropdown
+              there?
+            </p>
+            <p class="mt-1 text-xs italic text-muted-foreground/70">
+              Recommendation: pills everywhere. They're more discoverable and
+              the colors carry meaning. Dropdown is a worse pattern at 4
+              options anyway.
+            </p>
+          </li>
+
+          <li class="rounded-md border border-border/60 bg-card/50 p-3">
+            <strong class="text-foreground"
+              >Q5. How do prereq pills (✓ Bedömning / ✓ Motivering) fit
+              now?</strong
+            >
+            <p class="mt-1 text-muted-foreground">
+              Currently the Signera card header shows two prereq pills. With
+              the agree/dispute UI, the bedömning pill is essentially "have
+              you clicked Bekräfta or Avvik+pick?" The motivering pill stays
+              meaningful.
+            </p>
+            <p class="mt-1 text-xs italic text-muted-foreground/70">
+              Recommendation: keep both pills, drop them when in States 2a/2b
+              (the state itself is now the indicator — pills become
+              redundant).
+            </p>
+          </li>
+
+          <li class="rounded-md border border-border/60 bg-card/50 p-3">
+            <strong class="text-foreground"
+              >Q6. EJ_TILLAMPLIG handling on Bekräfta?</strong
+            >
+            <p class="mt-1 text-muted-foreground">
+              If källstatus is "Ej tillämplig" and auditor clicks Bekräfta,
+              that's still a valid audit verdict. Should pre-filled motivering
+              differ for this case? ("Bekräftar att kravet inte är
+              tillämpligt på denna verksamhet").
+            </p>
+            <p class="mt-1 text-xs italic text-muted-foreground/70">
+              Recommendation: yes, EJ_TILLAMPLIG gets a tailored pre-fill
+              since the rationale category differs from compliance.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <!-- Migration impact -->
+      <section class="rounded-lg border border-border bg-card p-6">
+        <h2 class="mb-3 text-lg font-bold">Migration impact / scope</h2>
+        <div class="grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <h3 class="mb-1 font-semibold text-foreground">No data model</h3>
+            <p class="text-muted-foreground">
+              Bedömning + motivering still use existing
+              <code>efterlevnadsbedomning</code> + <code>motivering</code>
+              fields on <code>ComplianceAuditItem</code>. No Prisma migration.
+            </p>
+          </div>
+          <div>
+            <h3 class="mb-1 font-semibold text-foreground">No server actions</h3>
+            <p class="text-muted-foreground">
+              Same <code>updateItemBedomning</code>,
+              <code>updateItemMotivering</code>, <code>signOffItem</code>
+              actions. The agree/dispute pattern is purely UI orchestration on
+              top.
+            </p>
+          </div>
+          <div>
+            <h3 class="mb-1 font-semibold text-foreground">UI scope</h3>
+            <p class="text-muted-foreground">
+              Single file:
+              <code>cycle-item-modal/right-panel.tsx</code>. Replaces the
+              current Bedömning + Motivering + prereq-pills layout with the
+              state machine above.
+            </p>
+          </div>
+        </div>
+        <p class="mt-4 text-sm text-muted-foreground">
+          <strong class="text-foreground">Estimated effort:</strong> 1.5–2
+          dev-days from approved AC. Story-worthy because of the UX decision
+          set above (Q1–Q6) and because this is the
+          <em>primary action surface every audit goes through</em> — worth
+          getting AC + PO validation before building.
+        </p>
+      </section>
+    </div>
+  </body>
+</html>

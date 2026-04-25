@@ -10,15 +10,18 @@
  * the details-box / quick-links-box / compliance-health-box precedents.
  *
  * Stack order (top to bottom):
- *   1. Detaljer — bedömning, källstatus, ansvarig, granskad + Signera button
- *   2. Motivering — inline editor
+ *   1. Signera bedömning — bedömning + motivering + Signera (post-21.16 promote)
+ *   2. Detaljer — källstatus + ansvarig (reference info)
  *   3. Snabblänkar — Fråga Lexa + lagbok + historik
- *   4. Hälsa — compact health chips (findings, kravpunkter)
+ *   4. Att uppmärksamma — actionable signals only (bevis gaps, open
+ *      findings, last-reviewed timestamp). Replaced the old "Hälsa" box
+ *      that duplicated left-panel info. v2 audit-flow alignment 2026-04-25.
  */
 
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { Check, Circle, ExternalLink, History } from 'lucide-react'
+import useSWR from 'swr'
+import { Check, Circle, Clock, ExternalLink, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -31,6 +34,7 @@ import {
   ItemSignOffButton,
 } from '@/components/features/compliance-audit/item-bedomning-editor'
 import { COMPLIANCE_STATUS_OPTIONS } from '@/components/features/document-list/table-cell-editors/compliance-status-editor'
+import { getLinkedArtifactsForListItem } from '@/app/actions/linked-artifacts'
 import { FindingSeverity, FindingType } from '@prisma/client'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 import type { FindingRow } from '@/app/actions/compliance-finding'
@@ -86,7 +90,34 @@ export function CycleItemModalRightPanel({
       f.type === FindingType.AVVIKELSE &&
       f.severity === FindingSeverity.MAJOR
   ).length
-  const kravpunkterCount = item.kravpunkterSnapshot?.requirements.length ?? 0
+
+  // v2 (2026-04-25): Bevis-gap count for the "Att uppmärksamma" card.
+  // Reuses the SAME SWR key + return shape as `KravpunkterSnapshotList` +
+  // `LinkedArtifactsPanel` so all three components share one cache + one
+  // network round-trip. The return shape MUST be the full
+  // `LinkedArtifactsResult` (not just `.artifacts`) — anything narrower
+  // corrupts the shared cache and leaves the LinkedArtifactsPanel stuck
+  // in loading.
+  const { data: linkedArtifactsResult } = useSWR(
+    item.lawListItemId ? `linked-artifacts:${item.lawListItemId}` : null,
+    async () => {
+      const result = await getLinkedArtifactsForListItem(item.lawListItemId)
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? 'Kunde inte hämta bevis')
+      }
+      return result.data
+    },
+    { revalidateOnFocus: false, dedupingInterval: 30_000 }
+  )
+  const linkedArtifacts = linkedArtifactsResult?.artifacts
+  const bevisGapCount = (item.kravpunkterSnapshot?.requirements ?? []).filter(
+    (req) => {
+      if (!req.bevis_required) return false
+      return !linkedArtifacts?.some((a) =>
+        a.requirements.some((r) => r.id === req.id)
+      )
+    }
+  ).length
 
   return (
     <div className="h-full border-l bg-muted/30 max-md:border-t max-md:border-l-0">
@@ -184,7 +215,7 @@ export function CycleItemModalRightPanel({
             </CardHeader>
             <CardContent>
               <div className="space-y-0">
-                <DetailRow label="Källstatus">
+                <DetailRow label="Nuvarande status">
                   {statusOption ? (
                     <span
                       className={cn(
@@ -205,16 +236,9 @@ export function CycleItemModalRightPanel({
                     {item.sourceResponsibleUser?.name ?? '—'}
                   </span>
                 </DetailRow>
-
-                <DetailRow label="Granskad">
-                  <span className="text-xs text-muted-foreground">
-                    {item.reviewedAt
-                      ? format(item.reviewedAt, 'd MMM yyyy HH:mm', {
-                          locale: sv,
-                        })
-                      : '—'}
-                  </span>
-                </DetailRow>
+                {/* v2 (2026-04-25): "Granskad" timestamp moved to the
+                 *  "Att uppmärksamma" card below — it's an audit-progress
+                 *  signal, not a static reference field. */}
               </div>
             </CardContent>
           </Card>
@@ -262,36 +286,54 @@ export function CycleItemModalRightPanel({
             </CardContent>
           </Card>
 
-          {/* ---------------------------- Hälsa ---------------------------- */}
-          <Card className="border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold text-foreground">
-                Hälsa
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <HealthRow
-                tone={
-                  majorCount > 0
-                    ? 'critical'
-                    : openCount > 0
-                      ? 'warning'
-                      : 'neutral'
-                }
-                label={
-                  openCount === 1
-                    ? '1 öppen anmärkning'
-                    : `${openCount} öppna anmärkningar`
-                }
-                accent={majorCount > 0 ? `${majorCount} MAJOR` : undefined}
-              />
-              <HealthRow
-                tone="neutral"
-                label={`${kravpunkterCount} kravpunkt${kravpunkterCount === 1 ? '' : 'er'}`}
-                accent="snapshot"
-              />
-            </CardContent>
-          </Card>
+          {/* -------------------- Att uppmärksamma --------------------------
+           *  v2 (2026-04-25): replaces the old "Hälsa" card which duplicated
+           *  the left panel's "N öppna anmärkningar · M kravpunkter" info.
+           *  Surfaces ONLY actionable audit signals — hides the entire card
+           *  when nothing genuinely needs attention. */}
+          {bevisGapCount > 0 || openCount > 0 || item.reviewedAt ? (
+            <Card className="border-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-foreground">
+                  Att uppmärksamma
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {bevisGapCount > 0 ? (
+                  <HealthRow
+                    tone="warning"
+                    label={
+                      bevisGapCount === 1
+                        ? 'Bevis saknas för 1 kravpunkt'
+                        : `Bevis saknas för ${bevisGapCount} kravpunkter`
+                    }
+                  />
+                ) : null}
+                {openCount > 0 ? (
+                  <HealthRow
+                    tone={majorCount > 0 ? 'critical' : 'warning'}
+                    label={
+                      openCount === 1
+                        ? '1 öppen anmärkning'
+                        : `${openCount} öppna anmärkningar`
+                    }
+                    accent={majorCount > 0 ? `${majorCount} MAJOR` : undefined}
+                  />
+                ) : null}
+                {item.reviewedAt ? (
+                  <div className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm text-muted-foreground">
+                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <span className="text-[12.5px]">
+                      Senast granskad{' '}
+                      {format(item.reviewedAt, 'd MMM yyyy HH:mm', {
+                        locale: sv,
+                      })}
+                    </span>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
       </ScrollArea>
     </div>

@@ -29,6 +29,7 @@ import {
   FileText,
   MessageSquare,
   Paperclip,
+  Plus,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import {
@@ -67,24 +68,36 @@ interface KravpunkterSnapshotListProps {
    *  no explicit `responsible_user_id` — mirrors the `effectiveAssignee`
    *  pattern on `legal-document-modal/kravpunkter-checklist.tsx`. */
   itemResponsibleUserId?: string | null
+  /** Quick-win affordance: when set, the "Saknar bevis" pill becomes a
+   *  clickable button that opens the FindingEditor pre-filled for the
+   *  clicked kravpunkt. Pass `undefined` (default) in readOnly contexts so
+   *  the pill stays a passive indicator. */
+  onSuggestFindingForRequirement?: (_requirementId: string) => void
 }
 
 export function KravpunkterSnapshotList({
   snapshot,
   listItemId,
   itemResponsibleUserId,
+  onSuggestFindingForRequirement,
 }: KravpunkterSnapshotListProps) {
-  const { data: linkedArtifacts } = useSWR(
+  // SWR key MUST match `LinkedArtifactsPanel`'s key + return shape so all
+  // three consumers (this list, the right-panel "Att uppmärksamma" card,
+  // and the LinkedArtifactsPanel itself) share one cache. Returning a
+  // narrower shape here would corrupt the cache and leave the panel
+  // stuck in loading state.
+  const { data: linkedArtifactsResult } = useSWR(
     listItemId ? `linked-artifacts:${listItemId}` : null,
     async () => {
       const result = await getLinkedArtifactsForListItem(listItemId)
       if (!result.success || !result.data) {
         throw new Error(result.error ?? 'Kunde inte hämta bevis')
       }
-      return result.data.artifacts
+      return result.data
     },
     { revalidateOnFocus: false, dedupingInterval: 30_000 }
   )
+  const linkedArtifacts = linkedArtifactsResult?.artifacts
 
   // Workspace members lookup — used to resolve each kravpunkt's
   // `responsible_user_id` (frozen at materialise time) to a name + avatar
@@ -128,6 +141,25 @@ export function KravpunkterSnapshotList({
     )
   }
 
+  // v2 (2026-04-25): when ALL kravpunkter resolve to the same effective
+  // assignee, surface them once as a "Ansvarig" stripe at the top and
+  // suppress per-row avatars. Cuts the visual noise of 7 identical AA
+  // avatars in the common case (everything inherits from the lagansvarig).
+  // When any kravpunkt has a different effective assignee → no stripe,
+  // per-row avatars show on every row so the differences are visible.
+  const effectiveAssigneeIds = snapshot.requirements.map(
+    (r) => r.responsible_user_id ?? itemResponsibleUserId ?? null
+  )
+  const uniqueAssigneeIds = new Set(
+    effectiveAssigneeIds.filter((id): id is string => id !== null)
+  )
+  const dominantAssigneeId =
+    uniqueAssigneeIds.size === 1 ? [...uniqueAssigneeIds][0]! : null
+  const dominantAssignee = dominantAssigneeId
+    ? (membersById.get(dominantAssigneeId) ?? null)
+    : null
+  const hideRowAvatars = dominantAssignee !== null
+
   return (
     <div className="space-y-2">
       {frozenAt ? (
@@ -136,6 +168,11 @@ export function KravpunkterSnapshotList({
           <span className="font-medium text-foreground">{frozenAt}</span>
         </p>
       ) : null}
+
+      {dominantAssignee ? (
+        <DominantAssigneeStripe assignee={dominantAssignee} />
+      ) : null}
+
       <ul className="space-y-1" data-testid="kravpunkter-snapshot-list">
         {snapshot.requirements.map((req) => {
           const effectiveAssigneeId =
@@ -153,15 +190,48 @@ export function KravpunkterSnapshotList({
                 req.id
               )}
               assignee={
-                effectiveAssigneeId
-                  ? (membersById.get(effectiveAssigneeId) ?? null)
-                  : null
+                hideRowAvatars
+                  ? null
+                  : effectiveAssigneeId
+                    ? (membersById.get(effectiveAssigneeId) ?? null)
+                    : null
               }
-              assigneeInherited={isInherited}
+              assigneeInherited={hideRowAvatars ? false : isInherited}
+              {...(onSuggestFindingForRequirement
+                ? { onSuggestFinding: onSuggestFindingForRequirement }
+                : {})}
             />
           )
         })}
       </ul>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Dominant-assignee stripe (item ② of v2 audit-flow alignment)
+// ---------------------------------------------------------------------------
+
+function DominantAssigneeStripe({
+  assignee,
+}: {
+  assignee: WorkspaceMemberOption
+}) {
+  const display = assignee.name?.trim() || assignee.email
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-xs">
+      <Avatar className="h-7 w-7">
+        <AvatarImage src={assignee.avatarUrl ?? undefined} />
+        <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
+          {getInitials(assignee.name, assignee.email)}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+          Ansvarig för alla kravpunkter
+        </div>
+        <div className="truncate text-sm text-foreground">{display}</div>
+      </div>
     </div>
   )
 }
@@ -175,11 +245,13 @@ function KravpunktRow({
   bevisForReq,
   assignee,
   assigneeInherited,
+  onSuggestFinding,
 }: {
   req: KravpunkterSnapshotRequirement
   bevisForReq: LinkedArtifact[]
   assignee: WorkspaceMemberOption | null
   assigneeInherited: boolean
+  onSuggestFinding?: (_requirementId: string) => void
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const missingRequiredBevis = req.bevis_required && bevisForReq.length === 0
@@ -253,14 +325,82 @@ function KravpunktRow({
                 {bevisForReq.length} bevis
               </Badge>
             ) : missingRequiredBevis ? (
-              <Badge
-                variant="outline"
-                className="h-5 shrink-0 border-amber-500/60 text-xs font-normal text-amber-700 dark:text-amber-400"
-                title="Denna kravpunkt kräver bevis men saknar bifogade filer eller dokument"
-              >
-                <AlertCircle className="mr-1 h-3 w-3" />
-                Saknar bevis
-              </Badge>
+              onSuggestFinding ? (
+                // Clickable affordance: opens the FindingEditor pre-filled
+                // with this kravpunkt so the auditor can document the gap
+                // without re-picking item + krav from dropdowns. Stops
+                // propagation so the parent CollapsibleTrigger doesn't also
+                // toggle the row's expand state.
+                //
+                // Hover treatment: morphs from "Saknar bevis" (status) to
+                // "Skapa anmärkning" (action) so the click affordance reads
+                // instantly. Layered with absolute positioning to keep width
+                // stable — the wider hover state determines the pill width.
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onSuggestFinding(req.id)
+                        }}
+                        onKeyDown={(e) => {
+                          // Don't let Enter/Space bubble — the parent row
+                          // already handles those for expand. Swallow at the
+                          // button level so only its own click handler fires.
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.stopPropagation()
+                          }
+                        }}
+                        className={cn(
+                          'group relative inline-flex h-5 shrink-0 items-center justify-center overflow-hidden rounded-full border text-xs font-normal transition-all duration-150',
+                          // Default: amber outline, transparent fill (status look)
+                          'border-amber-500/60 text-amber-700 dark:text-amber-400',
+                          // Hover: filled amber background + brighter border (action look)
+                          'cursor-pointer hover:border-amber-500 hover:bg-amber-100 hover:text-amber-900 dark:hover:bg-amber-900/40 dark:hover:text-amber-100',
+                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                        )}
+                      >
+                        {/* Width sentinel — invisible, sets the pill's width
+                         *  to whichever state's text is wider so the morph
+                         *  doesn't shift layout. */}
+                        <span className="invisible inline-flex items-center px-2.5">
+                          <Plus className="mr-1 h-3 w-3" />
+                          Skapa anmärkning
+                        </span>
+
+                        {/* Default state — visible until hover */}
+                        <span className="absolute inset-0 inline-flex items-center justify-center px-2.5 transition-opacity duration-150 group-hover:opacity-0">
+                          <AlertCircle className="mr-1 h-3 w-3" />
+                          Saknar bevis
+                        </span>
+
+                        {/* Hover state — fades in on hover */}
+                        <span className="absolute inset-0 inline-flex items-center justify-center px-2.5 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+                          <Plus className="mr-1 h-3 w-3" />
+                          Skapa anmärkning
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      <div className="font-medium">Saknar bevis</div>
+                      <div className="text-muted-foreground">
+                        Klicka för att skapa anmärkning kopplad till kravpunkten
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : (
+                <Badge
+                  variant="outline"
+                  className="h-5 shrink-0 border-amber-500/60 text-xs font-normal text-amber-700 dark:text-amber-400"
+                  title="Denna kravpunkt kräver bevis men saknar bifogade filer eller dokument"
+                >
+                  <AlertCircle className="mr-1 h-3 w-3" />
+                  Saknar bevis
+                </Badge>
+              )
             ) : null}
 
             {/* 5. Assignee avatar — readonly equivalent of the ref's
