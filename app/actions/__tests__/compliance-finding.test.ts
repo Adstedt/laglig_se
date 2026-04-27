@@ -304,6 +304,21 @@ describe('createFinding', () => {
     expect(activityLogger.logActivity).not.toHaveBeenCalled()
   })
 
+  it('AVSLUTAD cycle is blocked', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(
+      makeCycle({ status: ComplianceCycleStatus.AVSLUTAD }) as never
+    )
+    const result = await createFinding({
+      cycleId: CYCLE_ID,
+      type: FindingType.OBSERVATION,
+      title: 'Obs',
+      description: 'Body',
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/avslutad/)
+    expect(prisma.complianceFinding.create).not.toHaveBeenCalled()
+  })
+
   it('SEALED cycle is blocked', async () => {
     vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(
       makeCycle({ status: ComplianceCycleStatus.SEALED }) as never
@@ -999,6 +1014,30 @@ describe('spawnTaskForFinding', () => {
     expect(spawnCorrectiveActionTask).not.toHaveBeenCalled()
   })
 
+  it('rejects AVSLUTAD cycle', async () => {
+    const { spawnTaskForFinding } = await import('../compliance-finding')
+
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding({
+        type: FindingType.AVVIKELSE,
+        corrective_action_task_id: null,
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.AVSLUTAD,
+          law_list_id: LAW_LIST_ID,
+          name: 'Avslutad',
+          lead_auditor_user_id: USER_ID,
+        },
+      }) as never
+    )
+
+    const result = await spawnTaskForFinding({ findingId: FINDING_ID })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/avslutad/)
+    expect(spawnCorrectiveActionTask).not.toHaveBeenCalled()
+  })
+
   it('cross-workspace findingId returns generic not-found error', async () => {
     const { spawnTaskForFinding } = await import('../compliance-finding')
 
@@ -1119,6 +1158,26 @@ describe('updateFinding', () => {
       title: 'Try',
     })
     expect(result.success).toBe(false)
+    expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
+  })
+
+  it('AVSLUTAD cycle blocks update', async () => {
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding({
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.AVSLUTAD,
+          law_list_id: LAW_LIST_ID,
+        },
+      }) as never
+    )
+
+    const result = await updateFinding({
+      findingId: FINDING_ID,
+      title: 'Try',
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/avslutad/)
     expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
   })
 
@@ -1340,6 +1399,22 @@ describe('closeFinding', () => {
     )
     const result = await closeFinding({ findingId: FINDING_ID })
     expect(result.success).toBe(false)
+    expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
+  })
+
+  it('AVSLUTAD cycle blocks close', async () => {
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding({
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.AVSLUTAD,
+          law_list_id: LAW_LIST_ID,
+        },
+      }) as never
+    )
+    const result = await closeFinding({ findingId: FINDING_ID })
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/avslutad/)
     expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
   })
 
@@ -1785,6 +1860,24 @@ describe('reopenFinding', () => {
     )
     const result = await reopenFinding(FINDING_ID)
     expect(result.success).toBe(false)
+    expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
+  })
+
+  it('AVSLUTAD cycle blocks reopen', async () => {
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding({
+        closed_at: new Date('2026-04-20T10:00:00Z'),
+        closed_by_user_id: USER_ID,
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.AVSLUTAD,
+          law_list_id: LAW_LIST_ID,
+        },
+      }) as never
+    )
+    const result = await reopenFinding(FINDING_ID)
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/avslutad/)
     expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
   })
 })

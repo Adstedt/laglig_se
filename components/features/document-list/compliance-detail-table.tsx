@@ -158,6 +158,12 @@ interface ComplianceDetailTableProps {
       complianceStatus?: ComplianceStatus
       priority?: LawListItemPriority
       responsibleUserId?: string | null
+      _resolvedResponsibleUser?: {
+        id: string
+        name: string | null
+        email: string
+        avatarUrl: string | null
+      } | null
     }
   ) => Promise<boolean>
   onBulkUpdate: (
@@ -189,7 +195,7 @@ interface ComplianceDetailTableProps {
   onAddContent?:
     | ((
         _listItemId: string,
-        _field: 'businessContext' | 'complianceActions' | 'kravpunkter'
+        _field: 'businessContext' | 'complianceNarrative' | 'kravpunkter'
       ) => void)
     | undefined
   /** For nested usage in grouped accordion tables */
@@ -306,15 +312,12 @@ interface ExpandedRowContentProps {
 }
 
 /**
- * Story 17.17 + 17.18: Expanded row content.
+ * Story 17.17 + 17.18 + 21.22: Expanded row content.
  *
- * Design direction (v1.3 "centered detail panel" + 17.18 kravpunkter-forward):
- * centered card with two sections — "Hur påverkar denna lag oss?" (business
- * context + Kommentar subsection) on the left, "Kravpunkter" (checklist +
- * progress tracker in the header) on the right. Sentence-case section labels
- * match the modal's accordion vocabulary. The legacy `compliance_actions` free
- * text is now surfaced as a first-class "Kommentar" subsection rather than a
- * dismissable banner.
+ * Three sections, top-down audit-flow order:
+ *  1. Hur påverkar detta oss? (business context)
+ *  2. Hur efterlever vi kraven? (compliance narrative — Story 21.22)
+ *  3. Kravpunkter (checklist with inline progress)
  */
 function ExpandedRowContent({
   row,
@@ -323,8 +326,8 @@ function ExpandedRowContent({
 }: ExpandedRowContentProps) {
   const item = row.original
   const businessContextText = stripHtml(item.businessContext)
-  const hasComplianceActions =
-    !!item.complianceActions && stripHtml(item.complianceActions).length > 0
+  const hasComplianceNarrative =
+    !!item.complianceNarrative && stripHtml(item.complianceNarrative).length > 0
   const isNotApplicable = item.complianceStatus === 'EJ_TILLAMPLIG'
 
   const businessContextUpdatedByName = item.businessContextUpdatedBy
@@ -332,8 +335,8 @@ function ExpandedRowContent({
         ?.name ?? null)
     : null
 
-  const complianceActionsUpdatedByName = item.complianceActionsUpdatedBy
-    ? (workspaceMembers.find((m) => m.id === item.complianceActionsUpdatedBy)
+  const complianceNarrativeUpdatedByName = item.complianceNarrativeUpdatedBy
+    ? (workspaceMembers.find((m) => m.id === item.complianceNarrativeUpdatedBy)
         ?.name ?? null)
     : null
 
@@ -407,26 +410,26 @@ function ExpandedRowContent({
 
               <div>
                 <h4 className={sectionLabelClass}>
-                  <span>Kommentar</span>
+                  <span>Hur efterlever vi kraven?</span>
                 </h4>
-                {hasComplianceActions ? (
+                {hasComplianceNarrative ? (
                   <div className="space-y-2">
                     <RichTextDisplay
-                      content={item.complianceActions ?? ''}
+                      content={item.complianceNarrative ?? ''}
                       className="text-sm text-foreground"
                     />
-                    {item.complianceActionsUpdatedAt && (
+                    {item.complianceNarrativeUpdatedAt && (
                       <p className="text-[11px] text-muted-foreground/80">
                         Senast uppdaterad{' '}
-                        {formatSwedishDate(item.complianceActionsUpdatedAt)}
-                        {complianceActionsUpdatedByName &&
-                          ` av ${complianceActionsUpdatedByName}`}
+                        {formatSwedishDate(item.complianceNarrativeUpdatedAt)}
+                        {complianceNarrativeUpdatedByName &&
+                          ` av ${complianceNarrativeUpdatedByName}`}
                       </p>
                     )}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground italic">
-                    Ingen kommentar tillagd.
+                    Ingen beskrivning tillagd.
                   </p>
                 )}
               </div>
@@ -829,9 +832,11 @@ export function ComplianceDetailTable({
         maxSize: 500,
         enableResizing: true,
       },
-      // Kravpunkter (Story 17.18: renamed from "Hur efterlever vi kraven?")
+      // Kravpunkter (Story 17.18: renamed from "Hur efterlever vi kraven?";
+      //  Story 21.22: column id renamed from `complianceActions` → `kravpunkter`
+      //  to free the old slug for the new compliance-narrative field.)
       {
-        id: 'complianceActions',
+        id: 'kravpunkter',
         header: () => (
           <HeaderWithTooltip
             label="Kravpunkter"
@@ -907,8 +912,19 @@ export function ComplianceDetailTable({
               value={row.original.responsibleUser?.id ?? null}
               members={workspaceMembers}
               onChange={async (newUserId) => {
+                const member = newUserId
+                  ? workspaceMembers.find((m) => m.id === newUserId)
+                  : null
                 await onUpdateItem(row.original.id, {
                   responsibleUserId: newUserId,
+                  _resolvedResponsibleUser: member
+                    ? {
+                        id: member.id,
+                        name: member.name,
+                        email: member.email,
+                        avatarUrl: member.avatarUrl,
+                      }
+                    : null,
                 })
               }}
             />

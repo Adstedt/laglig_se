@@ -14,7 +14,7 @@ export const ACTION_LABELS: Record<string, string> = {
   status_changed: 'ändrade efterlevnadsstatus',
   responsible_changed: 'ändrade ansvarig',
   business_context_updated: 'uppdaterade affärskontext',
-  compliance_actions_updated: 'uppdaterade efterlevnadsåtgärder',
+  compliance_narrative_updated: 'uppdaterade efterlevnadsbeskrivning',
   priority_changed: 'ändrade prioritet',
   comment_added: 'lade till en kommentar',
   comment_updated: 'redigerade en kommentar',

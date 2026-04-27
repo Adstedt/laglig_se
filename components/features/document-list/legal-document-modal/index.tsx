@@ -45,13 +45,13 @@ interface LegalDocumentModalProps {
           priority?: 'LOW' | 'MEDIUM' | 'HIGH'
           responsibleUserId?: string | null
           businessContext?: string | null
-          complianceActions?: string | null
+          complianceNarrative?: string | null
         }
       ) => void)
     | undefined
   focusField?:
     | 'businessContext'
-    | 'complianceActions'
+    | 'complianceNarrative'
     | 'kravpunkter'
     | null
     | undefined
@@ -121,16 +121,16 @@ export function LegalDocumentModal({
     }
   }, [rawListItem, overrides])
 
-  // Story 6.18: Resolve compliance actions updated by user name
-  const complianceActionsUpdatedByName = useMemo(() => {
-    if (!rawListItem?.complianceActionsUpdatedBy || !workspaceMembers) {
+  // Story 21.22: Resolve compliance narrative updated-by user name
+  const complianceNarrativeUpdatedByName = useMemo(() => {
+    if (!rawListItem?.complianceNarrativeUpdatedBy || !workspaceMembers) {
       return null
     }
     const user = workspaceMembers.find(
-      (m) => m.id === rawListItem.complianceActionsUpdatedBy
+      (m) => m.id === rawListItem.complianceNarrativeUpdatedBy
     )
     return user?.name ?? user?.email ?? null
-  }, [rawListItem?.complianceActionsUpdatedBy, workspaceMembers])
+  }, [rawListItem?.complianceNarrativeUpdatedBy, workspaceMembers])
 
   const handleOptimisticChange = useCallback(
     (fields: {
@@ -164,10 +164,10 @@ export function LegalDocumentModal({
     [listItemId, onListItemChange]
   )
 
-  const handleComplianceActionsChange = useCallback(
+  const handleComplianceNarrativeChange = useCallback(
     (content: string | null) => {
       if (listItemId && onListItemChange) {
-        onListItemChange(listItemId, { complianceActions: content })
+        onListItemChange(listItemId, { complianceNarrative: content })
       }
     },
     [listItemId, onListItemChange]
@@ -257,9 +257,11 @@ export function LegalDocumentModal({
               currentUserId={currentUserId}
               onOptimisticTaskUpdate={handleOptimisticTaskUpdate}
               taskColumns={taskColumns}
-              complianceActionsUpdatedByName={complianceActionsUpdatedByName}
+              complianceNarrativeUpdatedByName={
+                complianceNarrativeUpdatedByName
+              }
               onBusinessContextChange={handleBusinessContextChange}
-              onComplianceActionsChange={handleComplianceActionsChange}
+              onComplianceNarrativeChange={handleComplianceNarrativeChange}
               focusField={focusField}
               complianceReadOnly={complianceReadOnly}
               onKravpunkterProgressChange={setRequirementProgress}

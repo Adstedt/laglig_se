@@ -26,7 +26,7 @@ test.describe('Document List Management', () => {
       await page.goto('/laglistor')
 
       // Check page title
-      await expect(page.locator('h1')).toContainText('Mina listor')
+      await expect(page.locator('h1')).toContainText('Laglistor')
 
       // Check description text
       await expect(page.getByText('Hantera dina laglistor')).toBeVisible()
@@ -268,7 +268,7 @@ test.describe('Document List Management', () => {
       await page.goto('/laglistor')
 
       // Check page loads correctly
-      await expect(page.locator('h1')).toContainText('Mina listor')
+      await expect(page.locator('h1')).toContainText('Laglistor')
 
       // Check buttons are visible
       await expect(
@@ -283,7 +283,7 @@ test.describe('Document List Management', () => {
       await page.goto('/laglistor')
 
       // Check page loads correctly
-      await expect(page.locator('h1')).toContainText('Mina listor')
+      await expect(page.locator('h1')).toContainText('Laglistor')
     })
   })
 

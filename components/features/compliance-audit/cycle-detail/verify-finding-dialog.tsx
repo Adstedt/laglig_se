@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import { Loader2 } from 'lucide-react'
@@ -100,7 +101,15 @@ export function VerifyFindingDialog({
             {task ? (
               <p>
                 <span className="font-medium">Åtgärdsuppgift:</span>{' '}
-                {task.title}
+                <Link
+                  href={`/tasks?task=${task.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline-offset-2 hover:underline"
+                  data-testid="verify-finding-task-link"
+                >
+                  {task.title}
+                </Link>
                 {taskCompletedLabel ? (
                   <span className="text-muted-foreground">
                     {' '}
@@ -154,7 +163,7 @@ export function VerifyFindingDialog({
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              'Verifiera och stäng'
+              'Bekräfta åtgärd'
             )}
           </Button>
         </DialogFooter>

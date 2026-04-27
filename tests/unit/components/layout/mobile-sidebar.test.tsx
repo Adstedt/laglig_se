@@ -112,16 +112,41 @@ describe('MobileSidebar', () => {
   })
 
   describe('Efterlevnad accordion', () => {
-    it('renders Efterlevnad with Mina listor and Mallar subItems', async () => {
+    it('renders Efterlevnad with Laglistor, Krav, Ändringar and Mallar subItems', async () => {
       const user = userEvent.setup()
       render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
 
       // Expand Efterlevnad accordion
       await user.click(screen.getByText('Efterlevnad'))
 
-      // Should have both sub-items
-      expect(screen.getByText('Mina listor')).toBeInTheDocument()
+      // Mobile parity with desktop sub-items
+      expect(screen.getByText('Laglistor')).toBeInTheDocument()
+      expect(screen.getByText('Krav')).toBeInTheDocument()
+      expect(screen.getByText('Ändringar')).toBeInTheDocument()
       expect(screen.getByText('Mallar')).toBeInTheDocument()
+    })
+  })
+
+  describe('Top-level workspace items synced from desktop', () => {
+    it('renders Kontroller as a top-level link', () => {
+      render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
+
+      const kontrollerLink = screen.getByText('Kontroller').closest('a')
+      expect(kontrollerLink).toHaveAttribute('href', '/laglistor/kontroller')
+    })
+
+    it('renders Styrdokument and Aktivitetslogg under Arbetsyta', () => {
+      render(<MobileSidebar open={true} onOpenChange={mockOnOpenChange} />)
+
+      expect(screen.getByText('Arbetsyta')).toBeInTheDocument()
+      expect(screen.getByText('Styrdokument').closest('a')).toHaveAttribute(
+        'href',
+        '/workspace/styrdokument'
+      )
+      expect(screen.getByText('Aktivitetslogg').closest('a')).toHaveAttribute(
+        'href',
+        '/workspace/activity'
+      )
     })
   })
 

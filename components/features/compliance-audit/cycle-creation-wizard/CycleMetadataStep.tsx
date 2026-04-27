@@ -8,6 +8,7 @@ import { AuditType } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -47,6 +48,7 @@ export function CycleMetadataStep({
 }: CycleMetadataStepProps) {
   const firstFieldRef = useRef<HTMLInputElement>(null)
   const nameId = useId()
+  const descriptionId = useId()
   const listId = useId()
   const typeId = useId()
   const startId = useId()
@@ -101,6 +103,47 @@ export function CycleMetadataStep({
             className="text-xs text-destructive"
           >
             {errors.name}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={descriptionId}>
+          Bakgrund{' '}
+          <span className="font-normal text-muted-foreground">
+            (frivilligt)
+          </span>
+        </Label>
+        <Textarea
+          id={descriptionId}
+          rows={3}
+          maxLength={2000}
+          value={value.description ?? ''}
+          placeholder="T.ex. Triggad av Q1 miljötillbud, eller årlig ISO 14001-kontroll per ledningsbeslut 2026-02-12."
+          aria-invalid={Boolean(errors.description)}
+          aria-describedby={
+            errors.description
+              ? `${descriptionId}-error`
+              : `${descriptionId}-help`
+          }
+          onChange={(e) => onChange({ description: e.target.value })}
+        />
+        <div
+          id={`${descriptionId}-help`}
+          className="flex items-center justify-between text-xs text-muted-foreground"
+        >
+          <span>Visas i revisionsrapportens inledning.</span>
+          {value.description && value.description.length > 0 ? (
+            <span>{value.description.length}/2000</span>
+          ) : null}
+        </div>
+        {errors.description ? (
+          <p
+            id={`${descriptionId}-error`}
+            role="alert"
+            className="text-xs text-destructive"
+          >
+            {errors.description}
           </p>
         ) : null}
       </div>

@@ -10,6 +10,9 @@ import {
   Scale,
   BookOpen,
   CheckSquare,
+  ClipboardCheck,
+  ClipboardList,
+  FileText,
   FolderOpen,
   Users,
   Bell,
@@ -60,10 +63,16 @@ const platformItems = [
     href: '#',
     isAccordion: true,
     subItems: [
-      { title: 'Mina listor', href: '/laglistor' },
+      { title: 'Laglistor', href: '/laglistor' },
+      { title: 'Krav', href: '/krav' },
       { title: 'Ändringar', href: '/laglistor?tab=changes' },
       { title: 'Mallar', href: '/laglistor/mallar' },
     ],
+  },
+  {
+    title: 'Kontroller',
+    icon: ClipboardCheck,
+    href: '/laglistor/kontroller',
   },
   {
     title: 'Regelverk',
@@ -86,21 +95,33 @@ const workItems = [
     href: '/tasks',
   },
   {
+    title: 'Styrdokument',
+    icon: FileText,
+    href: '/workspace/styrdokument',
+  },
+  {
     title: 'Filer',
     icon: FolderOpen,
     href: '/filer',
+  },
+  {
+    title: 'Aktivitetslogg',
+    icon: ClipboardList,
+    href: '/workspace/activity',
   },
   {
     title: 'HR',
     icon: Users,
     href: '#',
     disabled: true,
+    badge: 'snart',
   },
   {
     title: 'Ändringsbevakning',
     icon: Bell,
     href: '#',
     disabled: true,
+    badge: 'snart',
   },
 ]
 
@@ -173,6 +194,7 @@ export function MobileSidebar({
       isToggle?: boolean
       isAccordion?: boolean
       disabled?: boolean
+      badge?: string
       subItems?: { title: string; href: string }[]
     }
   ) => {
@@ -261,7 +283,12 @@ export function MobileSidebar({
           )}
         >
           <Icon className="h-5 w-5" />
-          <span>{item.title}</span>
+          <span className="flex-1">{item.title}</span>
+          {item.badge && (
+            <span className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+              {item.badge}
+            </span>
+          )}
         </span>
       )
     }
@@ -318,7 +345,7 @@ export function MobileSidebar({
             {/* Work Section */}
             <div className="mt-6">
               <h3 className="mb-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Arbete
+                Arbetsyta
               </h3>
               <div className="space-y-1">{workItems.map(renderNavItem)}</div>
             </div>

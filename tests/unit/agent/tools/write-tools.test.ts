@@ -174,7 +174,7 @@ describe('update_compliance_status tool', () => {
     mockFindFirst.mockResolvedValue({
       id: 'lli-1',
       compliance_status: 'EJ_PABORJAD',
-      compliance_actions: null,
+      compliance_narrative: null,
       business_context: null,
       document: { title: 'Arbetsmiljölagen', document_number: 'SFS 1977:1160' },
     } as never)
@@ -197,46 +197,15 @@ describe('update_compliance_status tool', () => {
     expect(preview).toContain('Arbete påbörjat')
   })
 
-  it('appends to existing compliance_actions text', async () => {
-    mockFindFirst.mockResolvedValue({
-      id: 'lli-1',
-      compliance_status: 'PAGAENDE',
-      compliance_actions:
-        '[2026-03-01T10:00:00.000Z] Ej påbörjad → Pågående: Första ändringen',
-      business_context: null,
-      document: { title: 'Arbetsmiljölagen', document_number: 'SFS 1977:1160' },
-    } as never)
-
-    mockUpdate.mockResolvedValue({} as never)
-
-    await tool.execute(
-      {
-        lawListItemId: 'lli-1',
-        newStatus: 'UPPFYLLD',
-        reason: 'Klar nu',
-        execute: true,
-      },
-      toolOpts
-    )
-
-    const updateCall = mockUpdate.mock.calls[0]![0] as {
-      data: { compliance_actions: string }
-    }
-    const actions = updateCall.data.compliance_actions
-    // Should contain both the old entry and the new one separated by newline
-    expect(actions).toContain('Första ändringen')
-    expect(actions).toContain('Klar nu')
-    expect(actions).toContain('Delvis uppfylld → Uppfylld')
-    expect(actions.indexOf('Första ändringen')).toBeLessThan(
-      actions.indexOf('Klar nu')
-    )
-  })
-
-  it('updates via Prisma on execute: true', async () => {
+  it('updates only compliance_status on execute: true (Story 21.22 — no longer appends to narrative)', async () => {
+    // Story 21.22 removed the legacy behavior of appending status-change log
+    // entries to the compliance_actions text. Status changes are now recorded
+    // exclusively via the activity log; the human-authored compliance
+    // narrative stays clean.
     mockFindFirst.mockResolvedValue({
       id: 'lli-1',
       compliance_status: 'EJ_PABORJAD',
-      compliance_actions: null,
+      compliance_narrative: null,
       business_context: null,
       document: { title: 'Arbetsmiljölagen', document_number: 'SFS 1977:1160' },
     } as never)
@@ -257,8 +226,6 @@ describe('update_compliance_status tool', () => {
       where: { id: 'lli-1' },
       data: {
         compliance_status: 'UPPFYLLD',
-        compliance_actions: expect.stringContaining('Alla krav uppfyllda'),
-        compliance_actions_updated_at: expect.any(Date),
       },
     })
 

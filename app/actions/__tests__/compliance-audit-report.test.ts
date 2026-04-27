@@ -54,6 +54,7 @@ vi.mock('@/lib/prisma', () => ({
     complianceAuditReport: {
       findUnique: vi.fn(),
       upsert: vi.fn(),
+      update: vi.fn(),
     },
   },
 }))
@@ -169,6 +170,7 @@ function makeCycle(overrides: Partial<CycleDetail> = {}): CycleDetail {
     sealedBy: null,
     createdBy: { id: USER_ID, name: 'Creator' },
     deletedAt: null,
+    description: null,
     ...overrides,
   }
 }
@@ -523,6 +525,10 @@ describe('generateCycleReport', () => {
       id: 'rrr11111-1111-4111-8111-111111111111',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any)
+    vi.mocked(prisma.complianceAuditReport.update).mockResolvedValue({
+      id: 'rrr11111-1111-4111-8111-111111111111',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
     vi.mocked(renderRevisionsrapportPdf).mockResolvedValue(
       Buffer.from('pdf-bytes')
     )
@@ -671,7 +677,7 @@ describe('generateCycleReport', () => {
     }
   })
 
-  it('happy path SEALED — manifest omitted from update branch (invariant)', async () => {
+  it('happy path SEALED — uses pure update (no manifest field anywhere)', async () => {
     // Cycle is SEALED for this test.
     vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
       id: CYCLE_ID,
@@ -703,14 +709,66 @@ describe('generateCycleReport', () => {
 
     expect(result.success).toBe(true)
 
-    // CRITICAL INVARIANT: update branch for SEALED has NO `manifest` key.
-    const upsertCall = vi.mocked(prisma.complianceAuditReport.upsert).mock
+    // CRITICAL INVARIANT (QA gate INVARIANT-001): SEALED uses pure `update`,
+    // not `upsert`. No `manifest` field is written anywhere in the SEALED
+    // path — the canonical manifest from sealCycle is sacrosanct.
+    expect(
+      vi.mocked(prisma.complianceAuditReport.upsert)
+    ).not.toHaveBeenCalled()
+    const updateCall = vi.mocked(prisma.complianceAuditReport.update).mock
       .calls[0]?.[0]
-    expect(upsertCall?.update).toBeDefined()
-    expect(upsertCall?.update).not.toHaveProperty('manifest')
-    expect(upsertCall?.update).toHaveProperty('pdf_storage_path')
-    expect(upsertCall?.update).toHaveProperty('html_storage_path')
-    expect(upsertCall?.update).toHaveProperty('generated_at')
+    expect(updateCall?.data).toBeDefined()
+    expect(updateCall?.data).not.toHaveProperty('manifest')
+    expect(updateCall?.data).toHaveProperty('pdf_storage_path')
+    expect(updateCall?.data).toHaveProperty('html_storage_path')
+    expect(updateCall?.data).toHaveProperty('generated_at')
+  })
+
+  // QA gate TEST-001 / INVARIANT-001 regression: SEALED kind requires the
+  // seal-row to pre-exist. If it does not, generateCycleReport must refuse
+  // rather than fall back to a non-canonical manifest. Pairs with the
+  // INVARIANT-001 fix that removed the `manifest ?? buildComplianceReportManifest(...)`
+  // create-branch fallback.
+  it('SEALED kind with missing seal-row → refuses with Swedish error, no manifest written', async () => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
+      id: CYCLE_ID,
+      status: 'SEALED',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+    vi.mocked(getCycleById).mockResolvedValue({
+      success: true,
+      data: {
+        cycle: makeCycle({
+          status: 'SEALED',
+          sealHash: 'abc'.padEnd(64, '0'),
+          sealedAt: new Date('2026-04-01T14:30:00.000Z'),
+          sealedBy: { id: USER_ID, name: 'Sealer' },
+        }),
+      },
+    })
+    // The anomaly: cycle is SEALED but no report row exists. (sealCycle
+    // should always create one; this guards against a data backfill / manual
+    // cleanup state that would otherwise let us silently corrupt the
+    // canonical manifest.)
+    vi.mocked(prisma.complianceAuditReport.findUnique).mockResolvedValue(null)
+
+    const result = await generateCycleReport({
+      cycleId: CYCLE_ID,
+      kind: 'SEALED',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('seal-transaktion')
+
+    // Critical: NO manifest write of any form.
+    expect(
+      vi.mocked(prisma.complianceAuditReport.upsert)
+    ).not.toHaveBeenCalled()
+    expect(
+      vi.mocked(prisma.complianceAuditReport.update)
+    ).not.toHaveBeenCalled()
+    // No activity log either — this is a guard, not a workflow event.
+    expect(vi.mocked(logActivity)).not.toHaveBeenCalled()
   })
 
   it('storage upload failure — returns Swedish error, no DB write', async () => {

@@ -59,7 +59,7 @@ const LIST_ITEM = {
   priority: 'MEDIUM',
   responsible_user_id: null,
   business_context: null,
-  compliance_actions: null,
+  compliance_narrative: null,
   law_list: { workspace_id: MOCK_WORKSPACE_ID },
 }
 
@@ -181,16 +181,16 @@ describe('Story 6.10: List Item Mutation Activity Logging', () => {
     })
   })
 
-  describe('updateListItemComplianceActions', () => {
-    it('calls logActivity with action compliance_actions_updated', async () => {
+  describe('updateListItemComplianceNarrative', () => {
+    it('calls logActivity with action compliance_narrative_updated', async () => {
       mockListItemFindFirst.mockResolvedValueOnce(LIST_ITEM)
       mockListItemUpdate.mockResolvedValueOnce({})
       mockLogActivity.mockResolvedValueOnce(undefined)
 
-      const { updateListItemComplianceActions } = await import(
+      const { updateListItemComplianceNarrative } = await import(
         '@/app/actions/legal-document-modal'
       )
-      const result = await updateListItemComplianceActions(
+      const result = await updateListItemComplianceNarrative(
         LLI_ID,
         'We comply by doing X and Y'
       )
@@ -202,7 +202,7 @@ describe('Story 6.10: List Item Mutation Activity Logging', () => {
         MOCK_USER_ID,
         'list_item',
         LLI_ID,
-        'compliance_actions_updated',
+        'compliance_narrative_updated',
         { changed: true },
         { changed: true }
       )

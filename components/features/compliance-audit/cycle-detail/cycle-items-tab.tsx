@@ -27,7 +27,11 @@ import {
   EfterlevnadsBedomning,
   FindingSeverity,
   FindingType,
+  type ComplianceCycleStatus,
+  type WorkspaceRole,
 } from '@prisma/client'
+import { canSignOffItem } from '@/lib/compliance-audit/authorization-shared'
+import { getCycleReadOnlyReason } from '@/components/features/compliance-audit/cycle-copy'
 
 // Mirror compliance-detail-table.tsx conventions so behaviour is predictable.
 const VIRTUALIZATION_THRESHOLD = 100
@@ -41,6 +45,7 @@ const MAX_INLINE_FINDING_DOTS = 6
 interface CycleItemsTabProps {
   items: CycleItemRow[]
   readOnly: boolean
+  cycleStatus: ComplianceCycleStatus
   highlightedRowId: string | null
   /** Story 21.16 — row currently open in the modal. Paints a subtle bar on
    *  the left edge so users remember where they are when the modal closes. */
@@ -61,11 +66,18 @@ interface CycleItemsTabProps {
   /** Story 21.7 — findings array (hoisted at the page level). Used for the
    *  inline finding-dot signals under each law row. */
   findings: FindingRow[]
+  /** Per-row sign-off authorization input. Allows the Signera button to
+   *  render disabled+tooltip for users who aren't lead auditor / responsible
+   *  user / OWNER+ADMIN. Mirrored server-side in `signOffItem`. */
+  currentUserId: string
+  currentUserRole: WorkspaceRole
+  leadAuditorUserId: string
 }
 
 export function CycleItemsTab({
   items,
   readOnly,
+  cycleStatus,
   highlightedRowId,
   selectedItemId,
   onSelectItem,
@@ -74,6 +86,9 @@ export function CycleItemsTab({
   onSign,
   onUnsign,
   findings,
+  currentUserId,
+  currentUserRole,
+  leadAuditorUserId,
 }: CycleItemsTabProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const shouldVirtualise = items.length > VIRTUALIZATION_THRESHOLD
@@ -106,11 +121,15 @@ export function CycleItemsTab({
           selectedItemId={selectedItemId}
           onSelectItem={onSelectItem}
           readOnly={readOnly}
+          cycleStatus={cycleStatus}
           onBedomningChange={onBedomningChange}
           onMotiveringChange={onMotiveringChange}
           onSign={onSign}
           onUnsign={onUnsign}
           findings={findings}
+          currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
+          leadAuditorUserId={leadAuditorUserId}
         />
       ) : (
         <PlainBody
@@ -119,11 +138,15 @@ export function CycleItemsTab({
           selectedItemId={selectedItemId}
           onSelectItem={onSelectItem}
           readOnly={readOnly}
+          cycleStatus={cycleStatus}
           onBedomningChange={onBedomningChange}
           onMotiveringChange={onMotiveringChange}
           onSign={onSign}
           onUnsign={onUnsign}
           findings={findings}
+          currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
+          leadAuditorUserId={leadAuditorUserId}
         />
       )}
     </div>
@@ -167,11 +190,15 @@ interface RowRenderProps {
   selected: boolean
   onSelect: () => void
   readOnly: boolean
+  cycleStatus: ComplianceCycleStatus
   onBedomningChange: (_next: EfterlevnadsBedomning | null) => Promise<void>
   onMotiveringChange: (_next: string | null) => Promise<void>
   onSign: () => Promise<void>
   onUnsign: () => Promise<void>
   itemFindings: FindingRow[]
+  currentUserId: string
+  currentUserRole: WorkspaceRole
+  leadAuditorUserId: string
 }
 
 function RowContent({
@@ -180,25 +207,46 @@ function RowContent({
   selected,
   onSelect,
   readOnly,
+  cycleStatus,
   onBedomningChange,
   onMotiveringChange,
   onSign,
   onUnsign,
   itemFindings,
+  currentUserId,
+  currentUserRole,
+  leadAuditorUserId,
 }: RowRenderProps) {
   const statusOption = COMPLIANCE_STATUS_OPTIONS.find(
     (o) => o.value === row.sourceComplianceStatus
   )
 
+  const itemReadOnly = readOnly || row.signedOffAt !== null
+  const hasMotivering =
+    row.motivering !== null && row.motivering.trim().length > 0
+  const userCanSignOff = canSignOffItem({
+    role: currentUserRole,
+    userId: currentUserId,
+    leadAuditorUserId,
+    responsibleUserId: row.sourceResponsibleUser?.id ?? null,
+  })
   const canSign =
-    !readOnly && row.signedOffAt === null && row.efterlevnadsbedomning !== null
-  const canUnsign = !readOnly && row.signedOffAt !== null
+    !readOnly &&
+    row.signedOffAt === null &&
+    row.efterlevnadsbedomning !== null &&
+    hasMotivering &&
+    userCanSignOff
+  const canUnsign = !readOnly && row.signedOffAt !== null && userCanSignOff
 
   const signDisabledReason = readOnly
-    ? 'Kontrollen är fastställd'
+    ? (getCycleReadOnlyReason(cycleStatus) ?? 'Kontrollen kan inte redigeras')
     : row.efterlevnadsbedomning === null
       ? 'Ange bedömning innan signering'
-      : undefined
+      : !hasMotivering
+        ? 'Skriv en motivering innan signering'
+        : !userCanSignOff
+          ? 'Endast ansvarig revisor, dokumentets ansvarige eller administratörer kan signera'
+          : undefined
 
   return (
     <div
@@ -284,7 +332,7 @@ function RowContent({
           <ItemBedomningSelect
             value={row.efterlevnadsbedomning}
             onChange={onBedomningChange}
-            readOnly={readOnly}
+            readOnly={itemReadOnly}
           />
         </div>
 
@@ -298,7 +346,7 @@ function RowContent({
           <ItemMotiveringEditor
             value={row.motivering}
             onChange={onMotiveringChange}
-            readOnly={readOnly}
+            readOnly={itemReadOnly}
           />
         </div>
 
@@ -387,6 +435,7 @@ interface BodyProps {
   selectedItemId: string | null
   onSelectItem: (_itemId: string) => void
   readOnly: boolean
+  cycleStatus: ComplianceCycleStatus
   onBedomningChange: (
     _row: CycleItemRow,
     _next: EfterlevnadsBedomning | null
@@ -398,6 +447,9 @@ interface BodyProps {
   onSign: (_row: CycleItemRow) => Promise<void>
   onUnsign: (_row: CycleItemRow) => Promise<void>
   findings: FindingRow[]
+  currentUserId: string
+  currentUserRole: WorkspaceRole
+  leadAuditorUserId: string
 }
 
 function PlainBody({
@@ -406,11 +458,15 @@ function PlainBody({
   selectedItemId,
   onSelectItem,
   readOnly,
+  cycleStatus,
   onBedomningChange,
   onMotiveringChange,
   onSign,
   onUnsign,
   findings,
+  currentUserId,
+  currentUserRole,
+  leadAuditorUserId,
 }: BodyProps) {
   return (
     <div
@@ -430,11 +486,15 @@ function PlainBody({
             selected={selectedItemId === row.id}
             onSelect={() => onSelectItem(row.id)}
             readOnly={readOnly}
+            cycleStatus={cycleStatus}
             onBedomningChange={(next) => onBedomningChange(row, next)}
             onMotiveringChange={(next) => onMotiveringChange(row, next)}
             onSign={() => onSign(row)}
             onUnsign={() => onUnsign(row)}
             itemFindings={itemFindings}
+            currentUserId={currentUserId}
+            currentUserRole={currentUserRole}
+            leadAuditorUserId={leadAuditorUserId}
           />
         )
       })}
@@ -459,11 +519,15 @@ function VirtualisedBody({
   selectedItemId,
   onSelectItem,
   readOnly,
+  cycleStatus,
   onBedomningChange,
   onMotiveringChange,
   onSign,
   onUnsign,
   findings,
+  currentUserId,
+  currentUserRole,
+  leadAuditorUserId,
 }: VirtualisedBodyProps) {
   return (
     <div
@@ -507,11 +571,15 @@ function VirtualisedBody({
                 selected={selectedItemId === row.id}
                 onSelect={() => onSelectItem(row.id)}
                 readOnly={readOnly}
+                cycleStatus={cycleStatus}
                 onBedomningChange={(next) => onBedomningChange(row, next)}
                 onMotiveringChange={(next) => onMotiveringChange(row, next)}
                 onSign={() => onSign(row)}
                 onUnsign={() => onUnsign(row)}
                 itemFindings={itemFindings}
+                currentUserId={currentUserId}
+                currentUserRole={currentUserRole}
+                leadAuditorUserId={leadAuditorUserId}
               />
             </div>
           )

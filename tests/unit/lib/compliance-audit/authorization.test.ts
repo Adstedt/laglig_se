@@ -9,7 +9,9 @@ import {
   isLeadAuditor,
   canSealCycle,
   canCompleteOrRevertCycle,
+  canSignOffItem,
 } from '@/lib/compliance-audit/authorization'
+import type { WorkspaceRole } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
 // ============================================================================
@@ -397,6 +399,66 @@ describe('canCompleteOrRevertCycle', () => {
 
     expect(result).toBe(true)
     expect(prisma.complianceAuditCycle.findFirst).toHaveBeenCalledTimes(1)
+  })
+})
+
+// ============================================================================
+// canSignOffItem — pure synchronous helper, no DB
+// ============================================================================
+
+describe('canSignOffItem', () => {
+  const LEAD = 'lead-auditor-id'
+  const RESPONSIBLE = 'responsible-id'
+  const RANDOM = 'random-user-id'
+
+  function buildArgs(
+    role: WorkspaceRole,
+    userId: string,
+    responsibleUserId: string | null
+  ) {
+    return {
+      role,
+      userId,
+      leadAuditorUserId: LEAD,
+      responsibleUserId,
+    }
+  }
+
+  it('OWNER passes regardless of lead auditor / responsible user (escape hatch)', () => {
+    expect(canSignOffItem(buildArgs('OWNER', RANDOM, null))).toBe(true)
+    expect(canSignOffItem(buildArgs('OWNER', RANDOM, RESPONSIBLE))).toBe(true)
+  })
+
+  it('ADMIN passes regardless of lead auditor / responsible user (escape hatch)', () => {
+    expect(canSignOffItem(buildArgs('ADMIN', RANDOM, null))).toBe(true)
+  })
+
+  it('user matching leadAuditorUserId passes regardless of role', () => {
+    expect(canSignOffItem(buildArgs('MEMBER', LEAD, null))).toBe(true)
+    expect(canSignOffItem(buildArgs('HR_MANAGER', LEAD, RESPONSIBLE))).toBe(
+      true
+    )
+  })
+
+  it('user matching responsibleUserId passes', () => {
+    expect(canSignOffItem(buildArgs('MEMBER', RESPONSIBLE, RESPONSIBLE))).toBe(
+      true
+    )
+    expect(
+      canSignOffItem(buildArgs('HR_MANAGER', RESPONSIBLE, RESPONSIBLE))
+    ).toBe(true)
+  })
+
+  it('null responsibleUserId blocks the responsible-user path', () => {
+    expect(canSignOffItem(buildArgs('MEMBER', RESPONSIBLE, null))).toBe(false)
+    expect(canSignOffItem(buildArgs('HR_MANAGER', RANDOM, null))).toBe(false)
+  })
+
+  it('non-admin / non-lead / non-responsible is blocked', () => {
+    expect(canSignOffItem(buildArgs('MEMBER', RANDOM, RESPONSIBLE))).toBe(false)
+    expect(canSignOffItem(buildArgs('HR_MANAGER', RANDOM, RESPONSIBLE))).toBe(
+      false
+    )
   })
 })
 

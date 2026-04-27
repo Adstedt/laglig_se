@@ -54,7 +54,7 @@ import {
   complianceFindingsKey,
   complianceDraftEvidenceDocsKey,
 } from '@/lib/swr-keys/compliance-audit'
-import type { EfterlevnadsBedomning } from '@prisma/client'
+import type { EfterlevnadsBedomning, WorkspaceRole } from '@prisma/client'
 
 const TABS = ['items', 'findings', 'rapport', 'aktivitet'] as const
 type TabValue = (typeof TABS)[number]
@@ -82,6 +82,11 @@ interface CycleDetailPageProps {
   // scope OR the cycle's lead auditor). Always `false` when cycle.status
   // is not AVSLUTAD.
   canSeal: boolean
+  // Per-row sign-off authorization input. Threaded down to CycleItemsTab
+  // and CycleItemModal so the Signera button can render disabled+tooltip
+  // for users who aren't the lead auditor / responsible user / admin.
+  currentUserId: string
+  currentUserRole: WorkspaceRole
 }
 
 export function CycleDetailPage({
@@ -92,6 +97,8 @@ export function CycleDetailPage({
   readOnly,
   canRevert,
   canSeal,
+  currentUserId,
+  currentUserRole,
 }: CycleDetailPageProps) {
   const itemsKey = complianceAuditItemsKey(cycle.id)
   const findingsKey = complianceFindingsKey(cycle.id)
@@ -557,6 +564,17 @@ export function CycleDetailPage({
           onSealClick={() => setSealDialogOpen(true)}
         />
 
+        {localCycle.status === 'AVSLUTAD' ? (
+          <div
+            role="status"
+            data-testid="cycle-avslutad-advisory"
+            className="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900"
+          >
+            Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas upp
+            — fastställandet bygger på dagens snapshot.
+          </div>
+        ) : null}
+
         <Tabs value={tab} onValueChange={handleTabChange}>
           <TabsList>
             <TabsTrigger value="items">Dokument</TabsTrigger>
@@ -569,6 +587,7 @@ export function CycleDetailPage({
             <CycleItemsTab
               items={items}
               readOnly={readOnly}
+              cycleStatus={localCycle.status}
               highlightedRowId={highlightedRowId}
               selectedItemId={selectedItemId}
               onSelectItem={handleSelectItem}
@@ -577,6 +596,9 @@ export function CycleDetailPage({
               onSign={handleSign}
               onUnsign={handleUnsign}
               findings={findings}
+              currentUserId={currentUserId}
+              currentUserRole={currentUserRole}
+              leadAuditorUserId={localCycle.leadAuditor.id}
             />
           </TabsContent>
           <TabsContent value="findings">
@@ -584,6 +606,7 @@ export function CycleDetailPage({
               cycleId={localCycle.id}
               findings={findings}
               readOnly={readOnly}
+              cycleStatus={localCycle.status}
               items={items}
               onFindingMutation={handleFindingMutation}
               onFindingClick={handleFindingClick}
@@ -641,6 +664,7 @@ export function CycleDetailPage({
           items={items}
           cycleId={localCycle.id}
           cycleName={localCycle.name}
+          cycleStatus={localCycle.status}
           readOnly={readOnly}
           focusFindingId={focusFindingId}
           onClose={handleCloseModal}
@@ -649,6 +673,9 @@ export function CycleDetailPage({
           onSign={handleSign}
           onUnsign={handleUnsign}
           onFindingMutation={handleFindingMutation}
+          currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
+          leadAuditorUserId={localCycle.leadAuditor.id}
         />
       </div>
     </CycleItemsProvider>

@@ -527,9 +527,9 @@ export const useDocumentListStore = create<DocumentListState>()(
           // Story 17.18: Business context update attribution
           businessContextUpdatedAt: null,
           businessContextUpdatedBy: null,
-          complianceActions: null,
-          complianceActionsUpdatedAt: null,
-          complianceActionsUpdatedBy: null,
+          complianceNarrative: null,
+          complianceNarrativeUpdatedAt: null,
+          complianceNarrativeUpdatedBy: null,
           updatedAt: new Date(),
           // Story 8.1: New items have no pending changes
           pendingChangeCount: 0,
@@ -773,7 +773,7 @@ export const useDocumentListStore = create<DocumentListState>()(
           } | null
           // Story 6.18: Compliance content fields (optimistic update from modal)
           businessContext?: string | null
-          complianceActions?: string | null
+          complianceNarrative?: string | null
         }
       ) => {
         const { listItems, activeListId, groups } = get()
@@ -830,10 +830,10 @@ export const useDocumentListStore = create<DocumentListState>()(
                     updates.businessContext !== undefined
                       ? updates.businessContext
                       : item.businessContext,
-                  complianceActions:
-                    updates.complianceActions !== undefined
-                      ? updates.complianceActions
-                      : item.complianceActions,
+                  complianceNarrative:
+                    updates.complianceNarrative !== undefined
+                      ? updates.complianceNarrative
+                      : item.complianceNarrative,
                   // Update timestamp when content changes
                   updatedAt:
                     updates.businessContext !== undefined
@@ -844,10 +844,10 @@ export const useDocumentListStore = create<DocumentListState>()(
                     updates.businessContext !== undefined
                       ? new Date()
                       : item.businessContextUpdatedAt,
-                  complianceActionsUpdatedAt:
-                    updates.complianceActions !== undefined
+                  complianceNarrativeUpdatedAt:
+                    updates.complianceNarrative !== undefined
                       ? new Date()
-                      : item.complianceActionsUpdatedAt,
+                      : item.complianceNarrativeUpdatedAt,
                 }
               : item
           ),

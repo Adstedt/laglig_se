@@ -46,7 +46,7 @@ const ALWAYS_SUPPRESSED_KEYS = new Set<string>([
   // Long-text sentinels — the logger already collapses these to `{changed:true}`
   'description',
   'business_context',
-  'compliance_actions',
+  'compliance_narrative',
   // Foreign keys resolved by the entity resolver
   'list_item_id',
   'task_id',
@@ -166,7 +166,7 @@ export function ActivityExpandedRow({ activity }: ActivityExpandedRowProps) {
               if (
                 key === 'description' ||
                 key === 'business_context' ||
-                key === 'compliance_actions'
+                key === 'compliance_narrative'
               ) {
                 return (
                   <FragmentPair

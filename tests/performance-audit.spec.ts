@@ -156,12 +156,12 @@ test.describe('Laglig.se Performance Audit', () => {
 
     await page.screenshot({ path: 'screenshots/03-laglistor-expanded.png' })
 
-    // Navigate to Mina listor
+    // Navigate to Laglistor
     await tracker.measureNavigation(
       page,
-      '3.2 Navigate to Mina listor',
+      '3.2 Navigate to Laglistor',
       async () => {
-        await page.click('a:has-text("Mina listor")')
+        await page.click('a:has-text("Laglistor")')
         await page.waitForURL('**/laglistor')
       }
     )

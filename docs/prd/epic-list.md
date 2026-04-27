@@ -278,7 +278,7 @@
 
 ## Epic 21: Lagefterlevnadskontroll (Compliance Audit Cycle Module)
 
-**Status:** Active — 11 stories completed (21.1, 21.2, 21.3, 21.4, 21.5, 21.5.2, 21.6, 21.7, 21.8, 21.11, 21.13, 21.14); Stories 21.9 (Seal), 21.10 (assertCycleEditable runtime guard), 21.12 (background PDF generation) deferred; Story 21.15 (manual kontroll↔task linkage + Uppgifter tab) moved to frontend backlog 2026-04-24 behind 21.9/21.12.
+**Status:** Substantially Done (UAT-ready) — **13 of 14 stories shipped** (21.1, 21.2, 21.3, 21.4, 21.5, 21.5.2, 21.6, 21.7, 21.8, 21.9, 21.11, 21.12, 21.13, 21.14). Story 21.9 (Seal — INTEGRITY-001 v0.5 softening) and 21.12 (background PDF generation) shipped after the 2026-04-23 catch-up snapshot. **Story 21.10** (`assertCycleEditable` runtime guard) is the single deferred story — defence-in-depth hardening only; the inline `assertCycleEditableUi` guards in `app/actions/compliance-audit-{cycle,item}.ts` already enforce SEALED/ARKIVERAD read-only correctly, so 21.10 is tech-debt cleanup rather than a UAT blocker. Tracked via `TODO(21.10)` markers grep-able from the codebase. **Story 21.15** (manual kontroll↔task linkage + Uppgifter tab) remains in `docs/stories/backlog/frontend/`, deprioritised behind post-21.9/21.12 customer-validated demand. **Out-of-band UX work** (Bakgrund description field, sign-off authorization tightening, cycle-item modal v2 audit-flow alignment, Saknar-bevis quick-win, Förseglad → Fastställd verb rename, full-viewport detail page, vertically-centered cycle-item rows, BreadcrumbOverride, table border wrapper, LinkedArtifactsPanel accordion) is documented as post-shipping addenda on Stories 21.4, 21.5, 21.9, 21.11, 21.14 — see those stories' Change Logs and Completion Notes for full traceability.
 
 **Goal:** Replace the Excel-based Swedish compliance-audit cycle (ISO 14001 §9.1.2 / ISO 45001 §9.1.2 / AFS 2001:1 / SFS 1998:901) with a structured, auditable, AI-assisted workflow inside Laglig.se. Primary user is the KMA-samordnare / miljösamordnare / HSE-ansvarig running internal audits 1–2 times per year. Key value: traceability by construction — every bedömning, bevis, and change automatically logged, hashed, and exportable as a tamper-evident revisionsrapport.
 
@@ -292,6 +292,8 @@
 - Activity-log integration for every cycle / item / finding / report mutation via the existing `lib/services/activity-logger.ts` with new entity-type label maps under `lib/activity/` (Story 21.13).
 - New permission scope `audit:seal` (OWNER / ADMIN), new `AUDITOR` role (read-mostly across activity / cycles / findings), and `lib/compliance-audit/authorization.ts` with `canSealAuditCycle`, `isLeadAuditor`, `canCompleteOrRevertCycle` helpers (Story 21.14).
 - Recent UX polish: Förseglad → **Fastställd** verb rename across UI + activity-log strings; cycle tables wrapped in `rounded-md border` per app brand pattern; cycle-detail uses full viewport width; vertically-centered cycle-item row cells.
+- Optional **Bakgrund** (description) free-text field on `ComplianceAuditCycle` captured in cycle creation wizard, surfaced in cycle-detail header and as a "Bakgrund och syfte" section in the revisionsrapport between titelsida and TOC (post-shipping addendum, 2026-04-27).
+- Sign-off authorization tightened on `ComplianceAuditItem` — sign + unsign restricted to cycle's lead auditor, item's responsible user, or workspace OWNER/ADMIN escape hatch (was previously open to any `tasks:edit` member). Pure helper `canSignOffItem` in client-safe `lib/compliance-audit/authorization-shared.ts` (post-shipping addendum, 2026-04-27).
 
 **Requirements covered:** New FRs introduced by this epic (compliance-audit cycle lifecycle, immutable seal, evidence snapshot, revisionsrapport generation). Closes deficiency cited in Time2act Swedish-audit benchmarking — "lagefterlevnadsbedömning is the #4 most common avvikelse at external audits" — by making review continuous rather than annual.
 
@@ -321,9 +323,9 @@
 
 ---
 
-**Total Stories Tracked:** ~237+ across 22 epics (~164 completed, ~73+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — 11 completed, Epic 22 4 stories scoped)
+**Total Stories Tracked:** ~239+ across 22 epics (~166 completed, ~71+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped)
 
-**Epic Status:** 11 Done, 5 Partial / Active (incl. Epic 21), 6 Not Started / Planned
+**Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 6 Not Started / Planned
 
 **Last updated:** 2026-04-23
 

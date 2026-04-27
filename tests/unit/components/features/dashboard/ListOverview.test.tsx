@@ -113,7 +113,7 @@ describe('ListOverview', () => {
     it('displays the correct title', () => {
       render(<ListOverview lists={[]} />)
 
-      expect(screen.getByText('Mina listor')).toBeInTheDocument()
+      expect(screen.getByText('Laglistor')).toBeInTheDocument()
     })
   })
 })

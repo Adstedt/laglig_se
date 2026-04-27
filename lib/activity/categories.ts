@@ -28,7 +28,7 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
   description_updated: 'andringar',
   labels_updated: 'andringar',
   business_context_updated: 'andringar',
-  compliance_actions_updated: 'andringar',
+  compliance_narrative_updated: 'andringar',
   document_status_changed: 'andringar',
   document_version_saved: 'andringar',
   document_version_restored: 'andringar',

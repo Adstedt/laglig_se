@@ -60,7 +60,7 @@ test.describe('Dashboard', () => {
   })
 
   test('should display list overview section', async ({ page }) => {
-    await expect(page.locator('text=/Mina listor/i')).toBeVisible()
+    await expect(page.locator('text=/Laglistor/i')).toBeVisible()
   })
 
   test('quick action "Fråga AI" navigates to AI chat', async ({ page }) => {

@@ -63,10 +63,12 @@ type SectionVariant = 'internal' | 'external'
 
 type SectionId =
   | 'titelsida'
+  | 'bakgrund'
   | 'omfattning'
   | 'revisionskriterier'
   | 'metodik'
   | 'sammanfattning'
+  | 'efterlevnadsbeskrivningar'
   | 'avvikelser'
   | 'observationer'
   | 'forbattringsforslag'
@@ -77,10 +79,12 @@ type SectionId =
 const SECTION_LABELS: Record<SectionVariant, Record<SectionId, string>> = {
   internal: {
     titelsida: '',
+    bakgrund: 'Bakgrund och syfte',
     omfattning: 'Omfattning',
     revisionskriterier: 'Kriterier',
     metodik: 'Metod',
     sammanfattning: 'Sammanfattning',
+    efterlevnadsbeskrivningar: 'Efterlevnadsbeskrivningar',
     avvikelser: 'Avvikelser',
     observationer: 'Observationer',
     forbattringsforslag: 'Förbättringsförslag',
@@ -90,10 +94,12 @@ const SECTION_LABELS: Record<SectionVariant, Record<SectionId, string>> = {
   },
   external: {
     titelsida: '',
+    bakgrund: 'Bakgrund och syfte',
     omfattning: 'Omfattning',
     revisionskriterier: 'Revisionskriterier',
     metodik: 'Metodik',
     sammanfattning: 'Sammanfattning',
+    efterlevnadsbeskrivningar: 'Efterlevnadsbeskrivningar',
     avvikelser: 'Avvikelser',
     observationer: 'Observationer',
     forbattringsforslag: 'Förbättringsförslag',
@@ -104,10 +110,12 @@ const SECTION_LABELS: Record<SectionVariant, Record<SectionId, string>> = {
 }
 
 const TOC_ORDER: SectionId[] = [
+  'bakgrund',
   'omfattning',
   'revisionskriterier',
   'metodik',
   'sammanfattning',
+  'efterlevnadsbeskrivningar',
   'avvikelser',
   'observationer',
   'forbattringsforslag',
@@ -396,20 +404,36 @@ function renderTOC(
   variant: SectionVariant,
   counts: RenderCounts
 ): string {
-  const entries = TOC_ORDER.map((id) => {
-    const label = SECTION_LABELS[variant][id]
-    let sub = ''
-    if (id === 'sammanfattning') {
-      sub = `<span class="toc-sub">${counts.total} dokument, ${input.findings.length} findings</span>`
-    }
-    return `      <li><a href="#${id}">${escapeHtml(label)}</a>${sub}</li>`
-  }).join('\n')
+  const hasDescription = Boolean(input.cycle.description?.trim())
+  const entries = TOC_ORDER.filter((id) => id !== 'bakgrund' || hasDescription)
+    .map((id) => {
+      const label = SECTION_LABELS[variant][id]
+      let sub = ''
+      if (id === 'sammanfattning') {
+        sub = `<span class="toc-sub">${counts.total} dokument, ${input.findings.length} findings</span>`
+      }
+      return `      <li><a href="#${id}">${escapeHtml(label)}</a>${sub}</li>`
+    })
+    .join('\n')
   return `  <nav class="toc">
     <h2>Innehåll</h2>
     <ol>
 ${entries}
     </ol>
   </nav>`
+}
+
+function renderBakgrund(
+  input: RevisionsrapportInput,
+  variant: SectionVariant
+): string {
+  const description = input.cycle.description?.trim()
+  if (!description) return ''
+  const heading = SECTION_LABELS[variant].bakgrund
+  return `  <section id="bakgrund">
+    <h2>${escapeHtml(heading)}</h2>
+    <p>${escapeHtmlMultiline(description)}</p>
+  </section>`
 }
 
 function renderOmfattning(
@@ -677,6 +701,58 @@ ${articles}
   </section>`
 }
 
+/**
+ * Story 21.22: per-item compliance narratives. The field accepts rich text
+ * (from RichTextEditor on the law-list-item modal). For determinism + PDF
+ * safety we strip the HTML tags down to plain text and re-escape — preserves
+ * paragraph structure via line breaks but drops link styling, fonts, etc.
+ */
+function stripRichTextToPlain(html: string): string {
+  return html
+    .replace(/<\/(p|div|h[1-6]|li)>/gi, '\n')
+    .replace(/<br\s*\/?\s*>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function renderEfterlevnadsbeskrivningar(
+  input: RevisionsrapportInput,
+  variant: SectionVariant
+): string {
+  const itemsWithNarrative = input.items.filter((i) => {
+    const narrative = i.complianceNarrative
+    return (
+      narrative !== null &&
+      narrative !== undefined &&
+      narrative.trim().length > 0
+    )
+  })
+
+  if (itemsWithNarrative.length === 0) {
+    return `  <section id="efterlevnadsbeskrivningar">
+    <h2>${SECTION_LABELS[variant].efterlevnadsbeskrivningar}</h2>
+    <p class="empty-state">Ingen efterlevnadsbeskrivning har dokumenterats för granskade dokument.</p>
+  </section>`
+  }
+
+  const articles = itemsWithNarrative
+    .map((item) => {
+      const plain = stripRichTextToPlain(item.complianceNarrative ?? '')
+      return `    <article class="finding">
+      <h3>${escapeHtml(item.lawTitle)}</h3>
+      <div class="finding-meta">${escapeHtml(item.lawDocumentNumber)} · Bedömning: ${escapeHtml(bedomningLabel(item.efterlevnadsbedomning))}</div>
+      <p class="description">${escapeHtmlMultiline(plain)}</p>
+    </article>`
+    })
+    .join('\n')
+
+  return `  <section id="efterlevnadsbeskrivningar">
+    <h2>${SECTION_LABELS[variant].efterlevnadsbeskrivningar}</h2>
+${articles}
+  </section>`
+}
+
 function renderStyrkor(variant: SectionVariant): string {
   return `  <section id="styrkor">
     <h2>${SECTION_LABELS[variant].styrkor}</h2>
@@ -778,6 +854,7 @@ export function renderRevisionsrapport(input: RevisionsrapportInput): string {
     input.cycle.auditType === 'EXTERN' ? 'external' : 'internal'
   const counts = computeCounts(input.items, input.findings)
   const title = escapeHtml(input.cycle.name)
+  const bakgrund = renderBakgrund(input, variant)
 
   return `<!DOCTYPE html>
 <html lang="sv">
@@ -788,11 +865,12 @@ export function renderRevisionsrapport(input: RevisionsrapportInput): string {
 </head>
 <body>
 ${renderTitelsida(input, variant)}
-${renderTOC(input, variant, counts)}
+${renderTOC(input, variant, counts)}${bakgrund ? `\n${bakgrund}` : ''}
 ${renderOmfattning(input, variant)}
 ${renderRevisionskriterier(input, variant)}
 ${renderMetodik(input, variant)}
 ${renderSammanfattning(variant, counts)}
+${renderEfterlevnadsbeskrivningar(input, variant)}
 ${renderAvvikelser(input, variant)}
 ${renderFindingGroup(input, variant, 'observationer', 'OBSERVATION', 'Inga observationer identifierade.')}
 ${renderFindingGroup(input, variant, 'forbattringsforslag', 'FORBATTRING', 'Inga förbättringsförslag identifierade.')}

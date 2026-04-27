@@ -9,9 +9,13 @@ const PUBLIC_ROUTE_PREFIXES = [
   '/eu',
   '/foreskrifter',
   '/lagar',
+  '/login',
   '/rattskallor',
+  '/reset-password',
+  '/signup',
   '/sok',
   '/unsubscribe',
+  '/verify-email',
 ]
 
 function isPublicRoute(pathname: string | null): boolean {

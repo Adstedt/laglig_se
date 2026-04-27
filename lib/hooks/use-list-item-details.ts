@@ -85,10 +85,10 @@ function initialDataToListItem(
   extraData?: {
     businessContext?: string | null
     aiCommentary?: string | null
-    // Story 6.18: Compliance actions fields
-    complianceActions?: string | null
-    complianceActionsUpdatedAt?: Date | null
-    complianceActionsUpdatedBy?: string | null
+    // Story 21.22: Compliance narrative fields
+    complianceNarrative?: string | null
+    complianceNarrativeUpdatedAt?: Date | null
+    complianceNarrativeUpdatedBy?: string | null
     // Story 17.18: latest tracked change
     latestAmendment?: ListItemDetails['latestAmendment']
     lastChangeAcknowledgedAt?: Date | null
@@ -106,10 +106,12 @@ function initialDataToListItem(
     addedAt: initial.addedAt,
     updatedAt: initial.addedAt, // Use addedAt as fallback
     dueDate: initial.dueDate,
-    // Story 6.18: Compliance actions fields
-    complianceActions: extraData?.complianceActions ?? null,
-    complianceActionsUpdatedAt: extraData?.complianceActionsUpdatedAt ?? null,
-    complianceActionsUpdatedBy: extraData?.complianceActionsUpdatedBy ?? null,
+    // Story 21.22: Compliance narrative fields
+    complianceNarrative: extraData?.complianceNarrative ?? null,
+    complianceNarrativeUpdatedAt:
+      extraData?.complianceNarrativeUpdatedAt ?? null,
+    complianceNarrativeUpdatedBy:
+      extraData?.complianceNarrativeUpdatedBy ?? null,
     legalDocument: {
       id: initial.document.id,
       title: initial.document.title,
@@ -185,7 +187,7 @@ export function useListItemDetails(
     }
   )
 
-  // Fetch extra fields not in list (businessContext, aiCommentary, complianceActions)
+  // Fetch extra fields not in list (businessContext, aiCommentary, complianceNarrative)
   // Only if we have initialData (otherwise fullData has everything)
   const { data: extraFields } = useSWR(
     listItemId && initialData ? `list-item-extra:${listItemId}` : null,
@@ -195,9 +197,9 @@ export function useListItemDetails(
         return {
           businessContext: null,
           aiCommentary: null,
-          complianceActions: null,
-          complianceActionsUpdatedAt: null,
-          complianceActionsUpdatedBy: null,
+          complianceNarrative: null,
+          complianceNarrativeUpdatedAt: null,
+          complianceNarrativeUpdatedBy: null,
           latestAmendment: null,
           lastChangeAcknowledgedAt: null,
         }
@@ -205,10 +207,10 @@ export function useListItemDetails(
       return {
         businessContext: result.data.businessContext,
         aiCommentary: result.data.aiCommentary,
-        // Story 6.18: Compliance actions fields
-        complianceActions: result.data.complianceActions,
-        complianceActionsUpdatedAt: result.data.complianceActionsUpdatedAt,
-        complianceActionsUpdatedBy: result.data.complianceActionsUpdatedBy,
+        // Story 21.22: Compliance narrative fields
+        complianceNarrative: result.data.complianceNarrative,
+        complianceNarrativeUpdatedAt: result.data.complianceNarrativeUpdatedAt,
+        complianceNarrativeUpdatedBy: result.data.complianceNarrativeUpdatedBy,
         // Story 17.18: latest tracked change + acknowledgement floor
         latestAmendment: result.data.latestAmendment,
         lastChangeAcknowledgedAt: result.data.lastChangeAcknowledgedAt,

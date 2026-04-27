@@ -1,8 +1,8 @@
 # Epic 21 — Lagefterlevnadskontroll Brownfield Enhancement Architecture
 
-**Status:** Active — 11 of 14 stories shipped as of 2026-04-23. Architecture choices validated against shipped code. See §1.3 for the landed-vs-deferred snapshot.
+**Status:** Substantially Done (UAT-ready) — **13 of 14 stories shipped** as of 2026-04-27. Stories 21.9 (Seal — INTEGRITY-001 v0.5 softening) and 21.12 (background PDF generation) shipped after the 2026-04-23 catch-up snapshot. **Story 21.10** (`assertCycleEditable` runtime guard) remains deferred — defence-in-depth hardening only; the inline `assertCycleEditableUi` already enforces SEALED/ARKIVERAD read-only correctly. **Story 21.15** (manual kontroll↔task linkage) remains in `docs/stories/backlog/frontend/`. Architecture choices validated against shipped code. See §1.3 for the landed-vs-deferred snapshot.
 **Author:** Winston (Architect) — 2026-04-22
-**Last reviewed:** 2026-04-23 (Sarah, PO — catch-up validation pass)
+**Last reviewed:** 2026-04-27 (Sarah, PO — Epic 21 UAT-readiness pass; 21.9 + 21.12 reconciled to shipped, post-shipping UX addenda noted on Stories 21.4 / 21.5 / 21.9 / 21.11 / 21.14)
 **Supersedes/supplements:** `docs/architecture/` (sharded, existing)
 **Inputs:**
 - `docs/lagefterlevnadskontroll-brief.md` (strategic brief)

@@ -223,6 +223,9 @@ function validateMetadata(m: Partial<CycleMetadata>): CycleMetadataErrors {
   } else if (m.name.length > 200) {
     errors.name = 'Max 200 tecken'
   }
+  if (m.description && m.description.length > 2000) {
+    errors.description = 'Max 2000 tecken'
+  }
   if (m.scheduledStart && m.scheduledEnd) {
     if (new Date(m.scheduledEnd) < new Date(m.scheduledStart)) {
       errors.scheduledEnd =
@@ -317,6 +320,7 @@ export function CycleCreationWizard({
       lawChangeCutoffDate: state.metadata.lawChangeCutoffDate,
       leadAuditorUserId: state.metadata.leadAuditorUserId,
       scopeDefinition: state.scope,
+      description: state.metadata.description?.trim() || null,
     })
 
     if (!createResult.success || !createResult.data) {

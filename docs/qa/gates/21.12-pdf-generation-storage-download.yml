@@ -1,0 +1,130 @@
+schema: 1
+story: '21.12'
+story_title: 'Revisionsrapport PDF — generation, Supabase Storage persistence, download route'
+gate: PASS
+status_reason: >-
+  Re-review after dev fix pass v0.4. All four immediate-quality items from the
+  original gate are correctly addressed: INVARIANT-001 (SEALED is now a pure
+  `update`, no manifest field on either branch, refuses with Swedish error if
+  seal-row is missing), TEST-001 (regression test asserts no upsert/update/log
+  on SEALED-missing-row), AUTH-001 (greppable success + error telemetry on
+  the after()-eager-gen path), FILENAME-001 (RFC 6266 dual-form Content-
+  Disposition). 215/215 tests still passing across 10 files; lint clean. The
+  three remaining items (NFR-001, STORAGE-001, PERF-001) are deferred with
+  written rationale in the story's Completion Notes — they are infrastructure-
+  scoped or marked-defer-by-reviewer follow-ups, not blocking quality issues.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-26T22:45:00Z'
+
+top_issues: []
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-05-10T22:45:00Z'
+
+evidence:
+  tests_reviewed: 167
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 18]
+    ac_gaps: [11, 17]
+  trace_notes: >-
+    AC 11 (IV3 PDF size budget <10MB): mocked Puppeteer returns a few bytes;
+    no integration test against real Puppeteer on a 200-item fixture. Deferred
+    as NFR-001 in future_recommendations. AC 17 (Playwright E2E extension):
+    explicitly deferred per Task 7 — no existing
+    `tests/e2e/compliance-audit-cycle.spec.ts` to extend, awaits Story 21.1
+    fixture-helper landing.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Unchanged from initial review. Tenant isolation via workspace-scoped
+      `findFirst` on cycle row blocks cross-workspace cycleId paths at the DB
+      layer (404). Storage path includes `${workspaceId}` so Supabase RLS
+      provides defence-in-depth. AUDITOR read-access via `activity:view OR
+      tasks:edit` matches the report-read pattern. Zod validates UUID + enum
+      kind on the route handler entry. HTML escape on every template
+      placeholder. Cache-Control: private, no-store. New: dual-form Content-
+      Disposition (FILENAME-001) preserves Swedish characters across all
+      modern browsers without exposing additional attack surface — both forms
+      are properly encoded (ASCII transliterated, UTF-8 percent-encoded).
+  performance:
+    status: CONCERNS
+    notes: >-
+      Unchanged. Puppeteer cold-start ~3-5s + warm render ~500ms-30s. PDF
+      size budget (IV3 <10MB) reasoned-about but not asserted by automated
+      test (NFR-001, deferred — requires real-Puppeteer integration test
+      infra). Acknowledged as accepted technical debt with production-
+      telemetry-on-byteLength as the practical mitigation. Two redundant
+      `withWorkspace` calls per generation (PERF-001, deferred — wasteful
+      but benign because the second call hits the request-scoped
+      `cache()`).
+  reliability:
+    status: PASS
+    notes: >-
+      Upgraded from CONCERNS after the v0.4 fix pass. INVARIANT-001 closed:
+      the SEALED defensive fallback that could have written a non-canonical
+      manifest is now eliminated — SEALED writes are pure `update` with no
+      `manifest` field anywhere, and a missing seal-row is explicitly
+      refused. AUTH-001 closed: greppable telemetry on after()-eager-gen
+      success + failure provides the operational signal that
+      workspace-context propagation works on Vercel. Remaining: STORAGE-001
+      (deferred — orphan accumulation on partial-failure paths and
+      concurrent first-downloads) is real but low-frequency and addressable
+      via Supabase lifecycle rules + a future advisory-lock pass; the new
+      INVARIANT-001 guard introduces a minor sub-case where SEALED-with-
+      missing-row uploads orphan files before refusing (since the existence
+      check is post-upload), but this is part of the same STORAGE-001
+      tracking and the underlying anomaly is rare. SF-3 revert-and-
+      recomplete asserted by test. after() failure isolation asserted by
+      test. SEALED manifest immutability asserted by test (now via the
+      stronger pure-update shape).
+  maintainability:
+    status: PASS
+    notes: >-
+      Unchanged. Clean module boundaries; pure staleness logic in its own
+      module; revisionsrapport-specific PDF wrapper is thin; tiptap-to-pdf
+      delegation kept the Puppeteer extraction zero-risk. New JSDoc on the
+      INVARIANT-001 fix explains why SEALED is split from COMPLETE and why
+      the defensive fallback was removed — load-bearing comment for future
+      maintainers. AUTH-001 telemetry has a justification comment + targeted
+      eslint-disable rather than blanket lint suppression. FILENAME-001
+      adds two trivial helper expressions (asciiFilename + utf8Filename)
+      with an inline comment citing RFC 6266 / 5987 — readers can find the
+      spec without grep-spelunking.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        NFR-001: Add a real-Puppeteer integration test asserting <10MB PDF
+        size against a 200-item synthetic fixture, OR add production
+        telemetry on PDF byteLength after each generation as the practical
+        guard. Track post-MVP.
+      refs:
+        - 'tests/integration/'
+    - action: >-
+        STORAGE-001: Best-effort cleanup on upsert failure + advisory lock
+        for concurrent first-downloads. Sub-case introduced by INVARIANT-001
+        fix: SEALED-with-missing-row anomaly uploads orphan files before
+        refusing (the existence check is post-upload). Either hoist the
+        `findUnique` to before the upload step (saves work + prevents the
+        orphan) or rely on Supabase lifecycle rules. Track post-MVP with the
+        broader STORAGE-001 design pass.
+      refs:
+        - 'app/actions/compliance-audit-report.ts:343-409'
+    - action: >-
+        PERF-001: Optionally extract `getRevisionsrapportInputForContext(ctx)`
+        helper that takes the already-resolved context and skips the second
+        `withWorkspace`. Defer until cold-start latency is a measurable
+        pain point.
+      refs:
+        - 'app/actions/compliance-audit-report.ts:291,325'
+    - action: >-
+        Story 21.12 follow-up: Playwright E2E extension once the cycle spec
+        lands (Task 7 deferred, AC 17 gap).
+      refs:
+        - 'tests/e2e/compliance-audit-cycle.spec.ts'

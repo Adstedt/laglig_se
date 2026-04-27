@@ -117,6 +117,13 @@ export function CycleConfirmStep({
 
           <dt className="text-muted-foreground">Ansvarig revisor</dt>
           <dd>{leadAuditor?.name ?? leadAuditor?.email ?? '—'}</dd>
+
+          {metadata.description?.trim() ? (
+            <>
+              <dt className="text-muted-foreground">Bakgrund</dt>
+              <dd className="whitespace-pre-wrap">{metadata.description}</dd>
+            </>
+          ) : null}
         </dl>
       </section>
 

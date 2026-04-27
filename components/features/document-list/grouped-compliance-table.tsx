@@ -79,7 +79,7 @@ interface GroupedComplianceTableProps {
   onRowClick?: ((_itemId: string) => void) | undefined
   onAddContent?: (
     _listItemId: string,
-    _field: 'businessContext' | 'complianceActions' | 'kravpunkter'
+    _field: 'businessContext' | 'complianceNarrative' | 'kravpunkter'
   ) => void
   workspaceMembers: WorkspaceMemberOption[]
   emptyMessage?: string | undefined

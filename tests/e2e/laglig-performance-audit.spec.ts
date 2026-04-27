@@ -259,10 +259,10 @@ test.describe('Laglig.se Performance Audit', () => {
       }
     }
 
-    // Navigate to "Mina listor" or similar
+    // Navigate to "Laglistor" or similar
     const myListsLink = page
       .locator(
-        'a:has-text("Mina listor"), a:has-text("My Lists"), a[href*="laglistor"]'
+        'a:has-text("Laglistor"), a:has-text("My Lists"), a[href*="laglistor"]'
       )
       .first()
 

@@ -308,7 +308,9 @@ describe('CycleDetailPage — seal integration (Story 21.9)', () => {
     fireEvent.click(screen.getByTestId('stub-seal'))
 
     // Override textarea is rendered (openAvvikelser non-empty)
-    const textarea = screen.getByLabelText(/Motivering för fastställande/)
+    const textarea = screen.getByLabelText(
+      /Motivera varför kontrollen fastställs/
+    )
     const override = 'Åtgärdsplan pågår och hanteras i Q2-cykeln.'
     fireEvent.change(textarea, { target: { value: override } })
     // Type-to-confirm gate also required on the override path.
@@ -378,7 +380,7 @@ describe('CycleDetailPage — seal integration (Story 21.9)', () => {
     // Override textarea is rendered (draftDocuments non-empty) and its label
     // calls out utkast-styrdokument specifically.
     const textarea = screen.getByLabelText(
-      /Motivering för fastställande trots ett utkast-styrdokument/
+      /Motivera varför kontrollen fastställs trots ett utkast-styrdokument/
     )
     const override = 'Utkastet är referensmaterial utanför auditomfattningen.'
     fireEvent.change(textarea, { target: { value: override } })

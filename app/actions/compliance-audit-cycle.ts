@@ -119,6 +119,7 @@ export interface CycleDetail extends CycleSummary {
   sealedBy: { id: string; name: string | null } | null
   createdBy: { id: string; name: string | null }
   deletedAt: Date | null
+  description: string | null
 }
 
 export interface ListCyclesResult {
@@ -152,6 +153,7 @@ const CreateCycleSchema = z
     lawChangeCutoffDate: z.coerce.date(),
     leadAuditorUserId: z.string().uuid(),
     scopeDefinition: ScopeDefinitionSchema,
+    description: z.string().max(2000, 'Max 2000 tecken').nullable().optional(),
   })
   .refine((data) => data.scheduledEnd >= data.scheduledStart, {
     message: 'Slutdatum måste vara lika med eller efter startdatum',
@@ -167,6 +169,7 @@ const UpdateCycleMetadataSchema = z
     scheduledEnd: z.coerce.date().optional(),
     lawChangeCutoffDate: z.coerce.date().optional(),
     leadAuditorUserId: z.string().uuid().optional(),
+    description: z.string().max(2000).nullable().optional(),
   })
   .refine(
     (data) =>
@@ -175,7 +178,8 @@ const UpdateCycleMetadataSchema = z
       data.scheduledStart !== undefined ||
       data.scheduledEnd !== undefined ||
       data.lawChangeCutoffDate !== undefined ||
-      data.leadAuditorUserId !== undefined,
+      data.leadAuditorUserId !== undefined ||
+      data.description !== undefined,
     { message: 'Minst ett fält måste uppdateras' }
   )
 
@@ -293,6 +297,7 @@ function mapCycleRowToDetail(row: CycleDetailRow): CycleDetail {
       name: row.created_by.name,
     },
     deletedAt: row.deleted_at,
+    description: row.description,
   }
 }
 
@@ -331,6 +336,7 @@ export async function createCycle(input: {
   lawChangeCutoffDate: Date | string
   leadAuditorUserId: string
   scopeDefinition: ScopeDefinition
+  description?: string | null
 }): Promise<ActionResult<{ cycle: ComplianceAuditCycle }>> {
   const parsed = CreateCycleSchema.safeParse(input)
   if (!parsed.success) {
@@ -375,6 +381,7 @@ export async function createCycle(input: {
           status: ComplianceCycleStatus.PLANERAD,
           workspace_id: ctx.workspaceId,
           created_by_user_id: ctx.userId,
+          description: parsed.data.description ?? null,
         },
       })
 
@@ -390,6 +397,7 @@ export async function createCycle(input: {
           auditType: parsed.data.auditType,
           lawListId: parsed.data.lawListId,
           leadAuditorUserId: parsed.data.leadAuditorUserId,
+          description: parsed.data.description ?? null,
         }
       )
 
@@ -698,6 +706,7 @@ export async function updateCycleMetadata(
     scheduledEnd?: Date | string
     lawChangeCutoffDate?: Date | string
     leadAuditorUserId?: string
+    description?: string | null
   }
 ): Promise<ActionResult> {
   const parsed = UpdateCycleMetadataSchema.safeParse({ cycleId, ...updates })
@@ -710,14 +719,25 @@ export async function updateCycleMetadata(
 
   try {
     return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on SEALED/ARKIVERAD.
-
+      // TODO(21.10): replace with assertCycleEditable(tx, cycleId) once shared.
       const existing = await loadCycleScopedToWorkspace(
         parsed.data.cycleId,
         ctx.workspaceId
       )
       if (!existing) {
         return { success: false, error: 'Kontrollen hittades inte' }
+      }
+
+      if (
+        existing.status === ComplianceCycleStatus.AVSLUTAD ||
+        existing.status === ComplianceCycleStatus.SEALED ||
+        existing.status === ComplianceCycleStatus.ARKIVERAD
+      ) {
+        return {
+          success: false,
+          error:
+            'Kontrollen är avslutad, fastställd eller arkiverad — ändringar är inte tillåtna. Återställ till pågående för att redigera.',
+        }
       }
 
       if (
@@ -762,6 +782,8 @@ export async function updateCycleMetadata(
         data.law_change_cutoff_date = parsed.data.lawChangeCutoffDate
       if (parsed.data.leadAuditorUserId !== undefined)
         data.lead_auditor_user_id = parsed.data.leadAuditorUserId
+      if (parsed.data.description !== undefined)
+        data.description = parsed.data.description
 
       await prisma.complianceAuditCycle.update({
         where: { id: parsed.data.cycleId },
@@ -794,6 +816,10 @@ export async function updateCycleMetadata(
       if (parsed.data.leadAuditorUserId !== undefined) {
         oldValue.leadAuditorUserId = existing.lead_auditor_user_id
         newValue.leadAuditorUserId = parsed.data.leadAuditorUserId
+      }
+      if (parsed.data.description !== undefined) {
+        oldValue.description = existing.description
+        newValue.description = parsed.data.description
       }
 
       await logActivity(
@@ -1517,14 +1543,38 @@ export async function sealCycle(input: {
       // imports from this file (createCycle/getCycleById), so a static import
       // here would create a cycle at module-load time.
       after(async () => {
+        // Story 21.12 AUTH-001 hardening: log on BOTH success and failure so
+        // production-log grep can confirm `after()`-callback workspace-context
+        // propagation is working. If the success log never appears despite
+        // seals succeeding, the after() context is broken and a Vercel cron
+        // sweeper (architect's original §9.1 plan) needs to be reinstated.
+        const eagerStart = Date.now()
         try {
           const { generateCycleReport } = await import(
             '@/app/actions/compliance-audit-report'
           )
-          await generateCycleReport({ cycleId, kind: 'SEALED' })
+          const result = await generateCycleReport({
+            cycleId,
+            kind: 'SEALED',
+          })
+          const eagerDurationMs = Date.now() - eagerStart
+          if (result.success) {
+            // Intentional production telemetry — see AUTH-001 hardening note
+            // above. Searching for this exact prefix in production logs is
+            // the operational signal that after()-context propagation works.
+            // eslint-disable-next-line no-console
+            console.log(
+              `[sealCycle after] Eager PDF generated for cycle ${cycleId} in ${eagerDurationMs}ms (path: ${result.data?.pdfStoragePath})`
+            )
+          } else {
+            console.error(
+              `[sealCycle after] Eager PDF generation returned error for cycle ${cycleId} after ${eagerDurationMs}ms — lazy fallback armed:`,
+              result.error
+            )
+          }
         } catch (err) {
           console.error(
-            '[sealCycle after] Eager PDF generation failed — lazy fallback armed:',
+            `[sealCycle after] Eager PDF generation threw for cycle ${cycleId} after ${Date.now() - eagerStart}ms — lazy fallback armed:`,
             err
           )
         }

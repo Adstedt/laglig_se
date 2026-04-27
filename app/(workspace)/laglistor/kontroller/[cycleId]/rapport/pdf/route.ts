@@ -159,11 +159,22 @@ export async function GET(
     const dateStamp = format(new Date(), 'yyyy-MM-dd')
     const filename = `kontrollrapport-${sanitizedName}-${dateStamp}.pdf`
 
+    // QA gate FILENAME-001: emit BOTH `filename="..."` (ASCII fallback for
+    // legacy clients) and `filename*=UTF-8''...` (RFC 6266 / RFC 5987 form
+    // for modern browsers) so Swedish characters render correctly across
+    // Chrome, Firefox, Safari, and curl. The ASCII fallback transliterates
+    // åäö → aao to keep the legacy header valid 7-bit ASCII.
+    const asciiFilename = filename
+      .replace(/å/g, 'a')
+      .replace(/ä/g, 'a')
+      .replace(/ö/g, 'o')
+    const utf8Filename = encodeURIComponent(filename)
+
     return new NextResponse(pdfBuffer as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': `attachment; filename="${asciiFilename}"; filename*=UTF-8''${utf8Filename}`,
         'Cache-Control': 'private, no-store',
       },
     })

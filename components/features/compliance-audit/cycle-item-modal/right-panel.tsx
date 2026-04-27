@@ -38,26 +38,41 @@ import { getLinkedArtifactsForListItem } from '@/app/actions/linked-artifacts'
 import { FindingSeverity, FindingType } from '@prisma/client'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 import type { FindingRow } from '@/app/actions/compliance-finding'
-import type { EfterlevnadsBedomning } from '@prisma/client'
+import type {
+  ComplianceCycleStatus,
+  EfterlevnadsBedomning,
+  WorkspaceRole,
+} from '@prisma/client'
+import { canSignOffItem } from '@/lib/compliance-audit/authorization-shared'
+import { getCycleReadOnlyReason } from '@/components/features/compliance-audit/cycle-copy'
 
 interface CycleItemModalRightPanelProps {
   item: CycleItemRow
   findings: FindingRow[]
   readOnly: boolean
+  cycleStatus: ComplianceCycleStatus
   onBedomningChange: (_next: EfterlevnadsBedomning | null) => Promise<void>
   onMotiveringChange: (_next: string | null) => Promise<void>
   onSign: () => Promise<void>
   onUnsign: () => Promise<void>
+  /** Per-row sign-off authorization input. Mirrors cycle-items-tab. */
+  currentUserId: string
+  currentUserRole: WorkspaceRole
+  leadAuditorUserId: string
 }
 
 export function CycleItemModalRightPanel({
   item,
   findings,
   readOnly,
+  cycleStatus,
   onBedomningChange,
   onMotiveringChange,
   onSign,
   onUnsign,
+  currentUserId,
+  currentUserRole,
+  leadAuditorUserId,
 }: CycleItemModalRightPanelProps) {
   const shell = useSplitPanelModalOptional()
   const canToggleChat = shell?.hasChat ?? false
@@ -69,19 +84,29 @@ export function CycleItemModalRightPanel({
 
   const hasMotivering =
     item.motivering !== null && item.motivering.trim().length > 0
+  const itemReadOnly = readOnly || item.signedOffAt !== null
+  const userCanSignOff = canSignOffItem({
+    role: currentUserRole,
+    userId: currentUserId,
+    leadAuditorUserId,
+    responsibleUserId: item.sourceResponsibleUser?.id ?? null,
+  })
   const canSign =
     !readOnly &&
     item.signedOffAt === null &&
     item.efterlevnadsbedomning !== null &&
-    hasMotivering
-  const canUnsign = !readOnly && item.signedOffAt !== null
+    hasMotivering &&
+    userCanSignOff
+  const canUnsign = !readOnly && item.signedOffAt !== null && userCanSignOff
   const signDisabledReason = readOnly
-    ? 'Kontrollen är fastställd'
+    ? (getCycleReadOnlyReason(cycleStatus) ?? 'Kontrollen kan inte redigeras')
     : item.efterlevnadsbedomning === null
       ? 'Ange bedömning innan signering'
       : !hasMotivering
         ? 'Skriv en motivering innan signering'
-        : undefined
+        : !userCanSignOff
+          ? 'Endast ansvarig revisor, dokumentets ansvarige eller administratörer kan signera'
+          : undefined
 
   const openCount = findings.filter((f) => f.closedAt === null).length
   const majorCount = findings.filter(
@@ -161,7 +186,7 @@ export function CycleItemModalRightPanel({
                 <ItemBedomningSelect
                   value={item.efterlevnadsbedomning}
                   onChange={onBedomningChange}
-                  readOnly={readOnly}
+                  readOnly={itemReadOnly}
                 />
               </div>
 
@@ -179,14 +204,16 @@ export function CycleItemModalRightPanel({
                 <ItemMotiveringEditor
                   value={item.motivering}
                   onChange={onMotiveringChange}
-                  readOnly={readOnly}
+                  readOnly={itemReadOnly}
                 />
               </div>
 
               {/* Action */}
               {readOnly && item.signedOffAt === null ? (
                 <p className="rounded-md border bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                  Kontrollen är fastställd — signering är låst.
+                  {getCycleReadOnlyReason(cycleStatus) ??
+                    'Kontrollen kan inte redigeras.'}{' '}
+                  Signering är låst.
                 </p>
               ) : (
                 <ItemSignOffButton

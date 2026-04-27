@@ -310,13 +310,14 @@ type EditableCheck = { ok: true } | { ok: false; error: string }
  */
 function assertCycleEditableUi(status: ComplianceCycleStatus): EditableCheck {
   if (
+    status === ComplianceCycleStatus.AVSLUTAD ||
     status === ComplianceCycleStatus.SEALED ||
     status === ComplianceCycleStatus.ARKIVERAD
   ) {
     return {
       ok: false,
       error:
-        'Kontrollen är fastställd eller arkiverad — ändringar är inte tillåtna.',
+        'Kontrollen är avslutad, fastställd eller arkiverad — ändringar är inte tillåtna. Återställ till pågående för att redigera.',
     }
   }
   return { ok: true }

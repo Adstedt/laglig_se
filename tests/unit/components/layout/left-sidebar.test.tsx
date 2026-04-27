@@ -110,7 +110,7 @@ describe('LeftSidebar', () => {
   })
 
   describe('Efterlevnad accordion', () => {
-    it('renders Efterlevnad with Mina listor and Mallar subItems', async () => {
+    it('renders Efterlevnad with Laglistor and Mallar subItems', async () => {
       const user = userEvent.setup()
       render(<LeftSidebar />)
 
@@ -118,20 +118,53 @@ describe('LeftSidebar', () => {
       await user.click(screen.getByText('Efterlevnad'))
 
       // Should have both sub-items
-      expect(screen.getByText('Mina listor')).toBeInTheDocument()
+      expect(screen.getByText('Laglistor')).toBeInTheDocument()
       expect(screen.getByText('Mallar')).toBeInTheDocument()
     })
 
-    it('has correct href for Mina listor', async () => {
+    it('has correct href for Laglistor', async () => {
       const user = userEvent.setup()
       render(<LeftSidebar />)
 
       await user.click(screen.getByText('Efterlevnad'))
 
-      expect(screen.getByText('Mina listor').closest('a')).toHaveAttribute(
+      expect(screen.getByText('Laglistor').closest('a')).toHaveAttribute(
         'href',
         '/laglistor'
       )
+    })
+
+    it('does not render Kontroller as a sub-item of Efterlevnad', async () => {
+      // Kontroller was promoted to a top-level entry — must no longer
+      // appear inside the Efterlevnad accordion.
+      const user = userEvent.setup()
+      render(<LeftSidebar />)
+
+      await user.click(screen.getByText('Efterlevnad'))
+
+      const kontrollerLink = screen.getByText('Kontroller').closest('a')
+      // Kontroller's link exists at top level (not inside the accordion's
+      // border-l container that holds sub-items).
+      expect(
+        kontrollerLink?.parentElement?.classList.contains('border-l')
+      ).toBe(false)
+    })
+  })
+
+  describe('Kontroller top-level entry', () => {
+    it('renders Kontroller as a top-level link with the cycle list href', () => {
+      render(<LeftSidebar />)
+
+      const kontrollerLink = screen.getByText('Kontroller').closest('a')
+      expect(kontrollerLink).toHaveAttribute('href', '/laglistor/kontroller')
+    })
+  })
+
+  describe('Arbetsyta section', () => {
+    it('renders the Arbetsyta section header (renamed from Arbete)', () => {
+      render(<LeftSidebar />)
+
+      expect(screen.getByText('Arbetsyta')).toBeInTheDocument()
     })
   })
 
@@ -162,7 +195,7 @@ describe('LeftSidebar', () => {
       await user.click(screen.getByText('Regelverk'))
 
       // Both should be open
-      expect(screen.getByText('Mina listor')).toBeInTheDocument()
+      expect(screen.getByText('Laglistor')).toBeInTheDocument()
       expect(screen.getByText('Bläddra alla')).toBeInTheDocument()
     })
   })

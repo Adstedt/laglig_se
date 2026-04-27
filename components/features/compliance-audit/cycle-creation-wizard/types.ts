@@ -13,6 +13,7 @@ export interface CycleMetadata {
   scheduledEnd: string
   lawChangeCutoffDate: string
   leadAuditorUserId: string
+  description?: string
 }
 
 export type CycleMetadataErrors = Partial<Record<keyof CycleMetadata, string>>

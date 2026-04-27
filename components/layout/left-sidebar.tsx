@@ -11,6 +11,7 @@ import {
   Scale,
   BookOpen,
   CheckSquare,
+  ClipboardCheck,
   FileText,
   FolderOpen,
   Users,
@@ -76,6 +77,7 @@ interface NavItem {
   isAccordion?: boolean
   disabled?: boolean
   lockedReason?: string
+  badge?: string
   subItems?: { title: string; href: string }[]
 }
 
@@ -98,14 +100,19 @@ const platformItems: NavItem[] = [
     href: '#',
     isAccordion: true,
     subItems: [
-      { title: 'Mina listor', href: '/laglistor' },
-      // Story 20.3: cross-list kravpunkter overview — adjacent to Mina listor.
+      { title: 'Laglistor', href: '/laglistor' },
+      // Story 20.3: cross-list kravpunkter overview.
       { title: 'Krav', href: '/krav' },
-      // Epic 21: audit cycles (lagefterlevnadskontroller) over a laglista.
-      { title: 'Kontroller', href: '/laglistor/kontroller' },
       { title: 'Ändringar', href: '/laglistor?tab=changes' },
       { title: 'Mallar', href: '/laglistor/mallar' },
     ],
+  },
+  // Epic 21: audit cycles (lagefterlevnadskontroller) — promoted to top-level
+  // as the headline workflow above Regelverk reference material.
+  {
+    title: 'Kontroller',
+    icon: ClipboardCheck,
+    href: '/laglistor/kontroller',
   },
   {
     title: 'Regelverk',
@@ -147,12 +154,14 @@ const workItems: NavItem[] = [
     icon: Users,
     href: '#',
     disabled: true,
+    badge: 'snart',
   },
   {
     title: 'Ändringsbevakning',
     icon: Bell,
     href: '#',
     disabled: true,
+    badge: 'snart',
   },
 ]
 
@@ -438,6 +447,11 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
               {!collapsed && (
                 <>
                   <span className="flex-1 truncate">{item.title}</span>
+                  {item.badge && (
+                    <span className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      {item.badge}
+                    </span>
+                  )}
                   {item.lockedReason && <Lock className="h-3 w-3 shrink-0" />}
                 </>
               )}
@@ -450,6 +464,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
               className="px-2.5 py-1 text-xs font-medium"
             >
               {item.title}
+              {item.badge && ` — ${item.badge}`}
               {item.lockedReason && ` — ${item.lockedReason}`}
             </TooltipContent>
           )}
@@ -552,7 +567,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                 <Separator />
               ) : (
                 <span className="text-xs font-medium text-muted-foreground">
-                  Arbete
+                  Arbetsyta
                 </span>
               )}
             </div>

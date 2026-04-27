@@ -30,7 +30,11 @@ import { CycleItemRightPanelRail } from './right-panel-rail'
 import { CompactItemStrip } from './compact-item-strip'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 import type { FindingRow } from '@/app/actions/compliance-finding'
-import type { EfterlevnadsBedomning } from '@prisma/client'
+import type {
+  ComplianceCycleStatus,
+  EfterlevnadsBedomning,
+  WorkspaceRole,
+} from '@prisma/client'
 
 interface CycleItemModalProps {
   /** The item to render. When null, modal is closed. */
@@ -42,6 +46,7 @@ interface CycleItemModalProps {
   items: CycleItemRow[]
   cycleId: string
   cycleName: string
+  cycleStatus: ComplianceCycleStatus
   readOnly: boolean
   /** Scroll + briefly highlight the matching finding card on open. */
   focusFindingId: string | null
@@ -58,6 +63,10 @@ interface CycleItemModalProps {
   onSign: (_row: CycleItemRow) => Promise<void>
   onUnsign: (_row: CycleItemRow) => Promise<void>
   onFindingMutation: (_finding: FindingRow) => void
+  /** Per-row sign-off authorization input. See cycle-items-tab for details. */
+  currentUserId: string
+  currentUserRole: WorkspaceRole
+  leadAuditorUserId: string
 }
 
 export function CycleItemModal({
@@ -66,6 +75,7 @@ export function CycleItemModal({
   items,
   cycleId,
   cycleName,
+  cycleStatus,
   readOnly,
   focusFindingId,
   onClose,
@@ -74,6 +84,9 @@ export function CycleItemModal({
   onSign,
   onUnsign,
   onFindingMutation,
+  currentUserId,
+  currentUserRole,
+  leadAuditorUserId,
 }: CycleItemModalProps) {
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingFinding, setEditingFinding] = useState<FindingRow | null>(null)
@@ -158,10 +171,14 @@ export function CycleItemModal({
               item={item}
               findings={itemFindings}
               readOnly={readOnly}
+              cycleStatus={cycleStatus}
               onBedomningChange={(next) => onBedomningChange(item, next)}
               onMotiveringChange={(next) => onMotiveringChange(item, next)}
               onSign={() => onSign(item)}
               onUnsign={() => onUnsign(item)}
+              currentUserId={currentUserId}
+              currentUserRole={currentUserRole}
+              leadAuditorUserId={leadAuditorUserId}
             />
           ) : null
         }

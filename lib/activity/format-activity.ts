@@ -269,8 +269,8 @@ export function formatActivity(input: FormatInput): SentencePart[] {
     case 'business_context_updated':
       return [u, text(' uppdaterade affärskontexten på '), primary]
 
-    case 'compliance_actions_updated':
-      return [u, text(' uppdaterade efterlevnadsåtgärderna på '), primary]
+    case 'compliance_narrative_updated':
+      return [u, text(' uppdaterade efterlevnadsbeskrivningen på '), primary]
 
     // ----------------- Comments -----------------
     case 'comment_added':

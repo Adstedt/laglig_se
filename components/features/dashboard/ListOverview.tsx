@@ -21,7 +21,7 @@ export function ListOverview({ lists }: ListOverviewProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Mina listor</CardTitle>
+          <CardTitle className="text-base">Laglistor</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-8 text-muted-foreground">
           <FolderOpen className="h-8 w-8 mb-2" />
@@ -40,7 +40,7 @@ export function ListOverview({ lists }: ListOverviewProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Mina listor</CardTitle>
+        <CardTitle className="text-base">Laglistor</CardTitle>
         <Button variant="ghost" size="sm" asChild>
           <Link href="/lists">Visa alla</Link>
         </Button>

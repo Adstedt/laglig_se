@@ -167,7 +167,7 @@ export function CycleListTable({ cycles, canCreate }: CycleListTableProps) {
 
       {/* Table — brand wrapper: rounded-md border overflow-x-auto.
           Matches /tasks list-tab, /workspace/styrdokument document-table,
-          and Mina listor's compliance-detail-table. */}
+          and Laglistor's compliance-detail-table. */}
       {filtered.length === 0 ? (
         <EmptyState filter={activeFilter.key} canCreate={canCreate} />
       ) : (

@@ -174,9 +174,9 @@ function createMockItem(
     responsibleUser: null,
     category: null,
     businessContext: '<p>Lagen kräver att vi utbildar personal.</p>',
-    complianceActions: '<p>Vi har rutiner på plats.</p>',
-    complianceActionsUpdatedAt: new Date('2026-01-20'),
-    complianceActionsUpdatedBy: 'user-1',
+    complianceNarrative: '<p>Vi har rutiner på plats.</p>',
+    complianceNarrativeUpdatedAt: new Date('2026-01-20'),
+    complianceNarrativeUpdatedBy: 'user-1',
     updatedAt: new Date('2026-01-20'),
     document: {
       id: 'doc-1',
@@ -279,9 +279,9 @@ describe('ComplianceDetailTable', () => {
       ).toBeInTheDocument()
     })
 
-    // Story 17.18: complianceActions no longer shown in the Kravpunkter column
-    // cell (the column now shows a KravpunkterCountCell). The text is surfaced
-    // as "Kommentar" in the expansion (tested under expansion tests).
+    // Story 17.18 + 21.22: complianceNarrative no longer shown in the
+    // Kravpunkter column cell. It is surfaced as "Hur efterlever vi kraven?"
+    // in the row expansion (tested under expansion tests).
   })
 
   describe('Empty field states (AC 7)', () => {
@@ -289,7 +289,7 @@ describe('ComplianceDetailTable', () => {
       const item = createMockItem({
         complianceStatus: 'EJ_TILLAMPLIG',
         businessContext: '<p>Some text</p>',
-        complianceActions: '<p>Some text</p>',
+        complianceNarrative: '<p>Some text</p>',
       })
       render(
         <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
@@ -303,7 +303,7 @@ describe('ComplianceDetailTable', () => {
     it('shows "Lägg till" button for empty business context', () => {
       const item = createMockItem({
         businessContext: null,
-        complianceActions: '<p>Has content</p>',
+        complianceNarrative: '<p>Has content</p>',
       })
       render(
         <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
@@ -332,7 +332,7 @@ describe('ComplianceDetailTable', () => {
       const onAddContent = vi.fn()
       const item = createMockItem({
         businessContext: null,
-        complianceActions: '<p>Has content</p>',
+        complianceNarrative: '<p>Has content</p>',
       })
       render(
         <ComplianceDetailTable
@@ -365,7 +365,7 @@ describe('ComplianceDetailTable', () => {
       const user = userEvent.setup()
       const item = createMockItem({
         businessContext: '<p>Full business context text</p>',
-        complianceActions: '<p>Full compliance actions text</p>',
+        complianceNarrative: '<p>Full compliance narrative text</p>',
       })
       render(
         <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
@@ -374,19 +374,20 @@ describe('ComplianceDetailTable', () => {
       const expandButton = screen.getByLabelText('Expandera')
       await user.click(expandButton)
 
-      // Story 17.18: "Hur påverkar detta oss?" appears in BOTH the column
-      // header and the expansion's business-context subsection. "Kravpunkter"
-      // appears in BOTH the column header and the expansion's right section.
+      // Story 17.18 + 21.22: "Hur påverkar detta oss?" appears in BOTH the
+      // column header and the expansion's business-context subsection.
+      // "Kravpunkter" appears in BOTH the column header and the expansion's
+      // right section. "Hur efterlever vi kraven?" appears in the expansion's
+      // narrative subsection (Story 21.22 restored it as a first-class field).
       expect(
         screen.getAllByText('Hur påverkar detta oss?').length
       ).toBeGreaterThanOrEqual(2)
       expect(screen.getAllByText('Kravpunkter').length).toBeGreaterThanOrEqual(
         2
       )
-      // The "Hur efterlever vi kraven?" label is retired in Story 17.18.
       expect(
-        screen.queryByText('Hur efterlever vi kraven?')
-      ).not.toBeInTheDocument()
+        screen.getAllByText('Hur efterlever vi kraven?').length
+      ).toBeGreaterThanOrEqual(1)
       // Business context text appears in the expansion.
       expect(
         screen.getAllByText('Full business context text').length
@@ -592,7 +593,7 @@ describe('ComplianceDetailTable', () => {
 
     it('renders <KravpunkterChecklist> with correct listItemId when row is expanded', async () => {
       const user = userEvent.setup()
-      const item = createMockItem({ id: 'li-42', complianceActions: null })
+      const item = createMockItem({ id: 'li-42', complianceNarrative: null })
       render(
         <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
       )
@@ -607,7 +608,7 @@ describe('ComplianceDetailTable', () => {
 
     it('passes readOnly=true to KravpunkterChecklist when complianceReadOnly is set', async () => {
       const user = userEvent.setup()
-      const item = createMockItem({ complianceActions: null })
+      const item = createMockItem({ complianceNarrative: null })
       render(
         <ComplianceDetailTable
           {...defaultProps}
@@ -626,12 +627,12 @@ describe('ComplianceDetailTable', () => {
     })
   })
 
-  // Story 17.18: Kommentar subsection replaces the legacy dismissable banner
-  describe('Kommentar subsection (Story 17.18)', () => {
-    it('renders Kommentar subsection with RichTextDisplay when compliance_actions is set', async () => {
+  // Story 21.22: Hur efterlever vi kraven? subsection (renamed from Kommentar)
+  describe('Hur efterlever vi kraven? subsection (Story 21.22)', () => {
+    it('renders narrative subsection with RichTextDisplay when complianceNarrative is set', async () => {
       const user = userEvent.setup()
       const item = createMockItem({
-        complianceActions: '<p>Vi har rutiner på plats.</p>',
+        complianceNarrative: '<p>Vi har rutiner på plats.</p>',
       })
       render(
         <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
@@ -639,23 +640,29 @@ describe('ComplianceDetailTable', () => {
 
       await user.click(screen.getByLabelText('Expandera'))
 
-      expect(screen.getByText('Kommentar')).toBeInTheDocument()
+      expect(
+        screen.getAllByText('Hur efterlever vi kraven?').length
+      ).toBeGreaterThan(0)
       const display = screen.getByTestId('rich-text-display')
       expect(display).toBeInTheDocument()
       expect(display.textContent).toContain('Vi har rutiner på plats.')
     })
 
-    it('shows "Ingen kommentar tillagd." when compliance_actions is empty', async () => {
+    it('shows "Ingen beskrivning tillagd." when complianceNarrative is empty', async () => {
       const user = userEvent.setup()
-      const item = createMockItem({ complianceActions: null })
+      const item = createMockItem({ complianceNarrative: null })
       render(
         <ComplianceDetailTable {...defaultProps} items={[item]} total={1} />
       )
 
       await user.click(screen.getByLabelText('Expandera'))
 
-      expect(screen.getByText('Kommentar')).toBeInTheDocument()
-      expect(screen.getByText('Ingen kommentar tillagd.')).toBeInTheDocument()
+      expect(
+        screen.getAllByText('Hur efterlever vi kraven?').length
+      ).toBeGreaterThan(0)
+      expect(
+        screen.getAllByText('Ingen beskrivning tillagd.').length
+      ).toBeGreaterThan(0)
       expect(screen.queryByTestId('rich-text-display')).not.toBeInTheDocument()
     })
   })
