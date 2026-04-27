@@ -207,12 +207,12 @@ test.describe('Laglig.se Performance Audit - LIVE', () => {
       await page.screenshot({ path: 'screenshots/03-laglistor-expanded.png' })
     }
 
-    // Navigate to Mina listor
-    const minaEfterlevnad = page.locator('a:has-text("Mina listor")').first()
+    // Navigate to Laglistor
+    const minaEfterlevnad = page.locator('a:has-text("Laglistor")').first()
     if (await minaEfterlevnad.isVisible()) {
       await tracker.measureNavigation(
         page,
-        '3.2 Navigate to Mina listor',
+        '3.2 Navigate to Laglistor',
         async () => {
           await minaEfterlevnad.click()
           await page.waitForURL('**/laglistor', { timeout: 10000 })

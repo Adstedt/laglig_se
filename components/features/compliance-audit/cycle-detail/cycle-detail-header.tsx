@@ -81,6 +81,11 @@ export function CycleDetailHeader({
             <CycleStatusBadge status={cycle.status} />
           </div>
           <MetadataChips cycle={cycle} findingCounts={findingCounts} />
+          {cycle.description?.trim() ? (
+            <p className="max-w-3xl whitespace-pre-wrap text-sm text-muted-foreground">
+              {cycle.description}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-4">

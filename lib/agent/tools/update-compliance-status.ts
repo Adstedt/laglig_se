@@ -29,7 +29,7 @@ const updateComplianceStatusSchema = z.object({
     .describe('New compliance status'),
   reason: z
     .string()
-    .describe('Reason for the status change — logged in compliance_actions'),
+    .describe('Reason for the status change — recorded in the activity log'),
   execute: z
     .boolean()
     .optional()
@@ -100,19 +100,13 @@ Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbet
       }
 
       try {
-        // Append status change reason to compliance_actions text field
-        const logEntry = `[${new Date().toISOString()}] ${oldStatusLabel} → ${newStatusLabel}: ${reason}`
-        const existingActions = item.compliance_actions ?? ''
-        const updatedActions = existingActions
-          ? `${existingActions}\n${logEntry}`
-          : logEntry
-
+        // Story 21.22: status changes are logged via the activity log only
+        // (the previous behavior of appending to compliance_actions polluted
+        // the human-authored compliance narrative with timestamped log entries).
         await prisma.lawListItem.update({
           where: { id: lawListItemId },
           data: {
             compliance_status: newStatus,
-            compliance_actions: updatedActions,
-            compliance_actions_updated_at: new Date(),
           },
         })
 

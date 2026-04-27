@@ -382,13 +382,14 @@ export async function generateCycleReport(input: {
       }
 
       // 4. Upsert ComplianceAuditReport row.
-      // For SEALED kind: `manifest` omitted from update branch so the seal
-      // transaction's canonical manifest (Story 21.9) is never overwritten.
-      const manifest =
-        kind === 'COMPLETE'
-          ? buildComplianceReportManifest(rendererInput)
-          : undefined
-
+      // INVARIANT (Story 21.12 + 21.9): sealCycle is the sole authority for
+      // the canonical SEALED manifest. generateCycleReport must NEVER author
+      // a manifest for SEALED-kind rows — neither on update nor on create.
+      // QA gate INVARIANT-001 hardening: split SEALED (pure update, no
+      // manifest field) from COMPLETE (upsert with freshly-built manifest).
+      // The earlier defensive fallback `manifest ?? buildComplianceReportManifest(...)`
+      // was removed because it could silently write a non-canonical manifest
+      // if the seal-row was ever absent.
       const existing = await prisma.complianceAuditReport.findUnique({
         where: {
           cycle_id_report_kind: { cycle_id: cycleId, report_kind: kind },
@@ -397,41 +398,65 @@ export async function generateCycleReport(input: {
       })
       const previousPdfPath = existing?.pdf_storage_path ?? null
 
+      // SEALED requires the seal-row to pre-exist. If sealCycle has not
+      // populated the canonical manifest yet, refuse rather than fall back.
+      if (kind === 'SEALED' && !existing) {
+        return {
+          success: false,
+          error:
+            'SEALED-rapport saknar seal-transaktion — manifest måste skrivas av sealCycle först',
+        }
+      }
+
       const generatedAtDate = new Date()
-      const report = await prisma.complianceAuditReport.upsert({
-        where: {
-          cycle_id_report_kind: { cycle_id: cycleId, report_kind: kind },
-        },
-        create: {
-          cycle_id: cycleId,
-          report_kind: kind,
-          generated_at: generatedAtDate,
-          pdf_storage_path: pdfPath,
-          html_storage_path: htmlPath,
-          manifest:
-            kind === 'SEALED'
-              ? // On first-time SEALED generation after seal, seal txn has
-                // already populated manifest. Defensive fallback: use the
-                // plain-JSON form if the row somehow doesn't exist yet.
-                (manifest ?? buildComplianceReportManifest(rendererInput))
-              : (manifest as Prisma.InputJsonValue),
-        },
-        update:
-          kind === 'COMPLETE'
-            ? {
-                generated_at: generatedAtDate,
-                pdf_storage_path: pdfPath,
-                html_storage_path: htmlPath,
-                manifest: manifest as Prisma.InputJsonValue,
-              }
-            : {
-                // SEALED: DO NOT touch manifest.
-                generated_at: generatedAtDate,
-                pdf_storage_path: pdfPath,
-                html_storage_path: htmlPath,
-              },
-        select: { id: true },
-      })
+      let report: { id: string }
+      if (kind === 'SEALED') {
+        // Pure update — `existing` is non-null per the guard above, so no
+        // create branch is needed. The canonical manifest from sealCycle is
+        // never touched.
+        report = await prisma.complianceAuditReport.update({
+          where: {
+            cycle_id_report_kind: {
+              cycle_id: cycleId,
+              report_kind: 'SEALED',
+            },
+          },
+          data: {
+            generated_at: generatedAtDate,
+            pdf_storage_path: pdfPath,
+            html_storage_path: htmlPath,
+          },
+          select: { id: true },
+        })
+      } else {
+        // COMPLETE: upsert with freshly-built operational manifest. The
+        // create branch fires on first generation; the update branch fires
+        // on regen after a content edit (SF-3 covers revert-and-recomplete).
+        const manifest = buildComplianceReportManifest(rendererInput)
+        report = await prisma.complianceAuditReport.upsert({
+          where: {
+            cycle_id_report_kind: {
+              cycle_id: cycleId,
+              report_kind: 'COMPLETE',
+            },
+          },
+          create: {
+            cycle_id: cycleId,
+            report_kind: 'COMPLETE',
+            generated_at: generatedAtDate,
+            pdf_storage_path: pdfPath,
+            html_storage_path: htmlPath,
+            manifest,
+          },
+          update: {
+            generated_at: generatedAtDate,
+            pdf_storage_path: pdfPath,
+            html_storage_path: htmlPath,
+            manifest,
+          },
+          select: { id: true },
+        })
+      }
 
       const durationMs = Date.now() - startedAt
 

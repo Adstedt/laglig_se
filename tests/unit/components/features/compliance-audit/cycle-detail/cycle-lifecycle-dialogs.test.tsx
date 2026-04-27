@@ -51,11 +51,11 @@ describe('CompleteCycleDialog', () => {
     expect(screen.getByText('Slutför kontrollen?')).toBeInTheDocument()
     expect(
       screen.getByText(
-        /Kontrollen går från Pågående till Avslutad\. Rapportmallen fryses/
+        /Granskningen är klar\. Resultatet kan användas som det är för att dokumentera nuläget/
       )
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/Dokument och anmärkningar förblir redigerbara/)
+      screen.getByText(/Kontrollen blir låst när den slutförs/)
     ).toBeInTheDocument()
   })
 
@@ -88,30 +88,50 @@ describe('CompleteCycleDialog', () => {
     renderDialog({ openFindings: 3, pendingTasks: 2 })
     expect(
       screen.getByText(
-        /Du har 3 öppna anmärkningar med 2 pågående åtgärdsuppgifter\. Dessa kvarstår oförändrade och kan stängas när åtgärderna är klara — kontrollen behöver inte fastställas förrän allt är avslutat\./
+        /Följs upp efter avslutad kontroll: 3 öppna anmärkningar med 2 pågående åtgärdsuppgifter\./
       )
     ).toBeInTheDocument()
   })
 
-  it('advisory — only openFindings > 0 renders findings-only copy', () => {
+  it('advisory — singular forms render when both counts === 1', () => {
+    renderDialog({ openFindings: 1, pendingTasks: 1 })
+    expect(
+      screen.getByText(
+        /Följs upp efter avslutad kontroll: 1 öppen anmärkning med 1 pågående åtgärdsuppgift\./
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('advisory — only openFindings > 0 (plural) renders findings-only copy', () => {
     renderDialog({ openFindings: 2, pendingTasks: 0 })
     expect(
       screen.getByText(
-        /Du har 2 öppna anmärkningar utan aktiva åtgärder\. Dessa kvarstår öppna och kan stängas när du är klar\./
+        /Följs upp efter avslutad kontroll: 2 öppna anmärkningar utan aktiva åtgärder\./
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('advisory — only openFindings > 0 (singular) renders findings-only copy', () => {
+    renderDialog({ openFindings: 1, pendingTasks: 0 })
+    expect(
+      screen.getByText(
+        /Följs upp efter avslutad kontroll: 1 öppen anmärkning utan aktiv åtgärd\./
       )
     ).toBeInTheDocument()
   })
 
   it('advisory — both counts === 0 omits advisory paragraph entirely', () => {
     renderDialog({ openFindings: 0, pendingTasks: 0 })
-    expect(screen.queryByText(/Du har .+ öppna anmärkningar/)).toBeNull()
+    expect(screen.queryByText(/Följs upp efter avslutad kontroll:/)).toBeNull()
+    // Legacy phrasing must NOT regress.
+    expect(screen.queryByText(/Just nu:/)).toBeNull()
   })
 
   it('advisory — openFindings=0 + pendingTasks=1 edge case falls to zero-variant (defensive)', () => {
     // Logically impossible (pendingTasks derives from openFindings), but the
     // guard ensures we don't crash if a caller passes inconsistent counts.
     renderDialog({ openFindings: 0, pendingTasks: 1 })
-    expect(screen.queryByText(/Du har .+ öppna anmärkningar/)).toBeNull()
+    expect(screen.queryByText(/Följs upp efter avslutad kontroll:/)).toBeNull()
     // Title still rendered — component did not crash.
     expect(screen.getByText('Slutför kontrollen?')).toBeInTheDocument()
   })

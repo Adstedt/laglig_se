@@ -19,7 +19,8 @@ import {
 import { LawHeader } from './law-header'
 import { LagtextSection } from './lagtext-section'
 import { BusinessContext } from './business-context'
-import { ComplianceActions } from './compliance-actions'
+import { ComplianceNarrative } from './compliance-narrative'
+import { KravpunkterAccordion } from './kravpunkter-accordion'
 import type { KravpunkterProgress } from './kravpunkter-checklist'
 import { TasksAccordion } from './tasks-accordion'
 import { LinkedArtifactsPanel } from './linked-artifacts-panel'
@@ -48,16 +49,16 @@ interface LeftPanelProps {
   onOptimisticTaskUpdate?: ((_tasks: TaskProgress['tasks']) => void) | undefined
   /** Task columns for inline status change in TasksAccordion */
   taskColumns?: TaskColumnWithCount[]
-  /** Story 6.18: Name of user who last updated compliance actions */
-  complianceActionsUpdatedByName?: string | null
-  /** Story 6.18: Callback when business context changes (for optimistic list update) */
+  /** Story 21.22: Name of user who last updated compliance narrative */
+  complianceNarrativeUpdatedByName?: string | null
+  /** Callback when business context changes (for optimistic list update) */
   onBusinessContextChange?: ((_content: string | null) => void) | undefined
-  /** Story 6.18: Callback when compliance actions changes (for optimistic list update) */
-  onComplianceActionsChange?: ((_content: string | null) => void) | undefined
-  /** Story 6.18 + 17.18: Field to focus/edit when modal opens (from "Lägg till" click) */
+  /** Story 21.22: Callback when compliance narrative changes */
+  onComplianceNarrativeChange?: ((_content: string | null) => void) | undefined
+  /** Field to focus/edit when modal opens (from "Lägg till" click) */
   focusField?:
     | 'businessContext'
-    | 'complianceActions'
+    | 'complianceNarrative'
     | 'kravpunkter'
     | null
     | undefined
@@ -69,10 +70,14 @@ interface LeftPanelProps {
     | undefined
 }
 
+// Story 21.22: top-down compliance authoring flow:
+// lagtext (the law) → business-context (how it affects us) → compliance-narrative
+// (how we comply) → kravpunkter (specific requirements) → tasks → underlag.
 const ACCORDION_ITEMS = [
   'lagtext',
   'business-context',
-  'compliance-actions',
+  'compliance-narrative',
+  'kravpunkter',
   'tasks',
   'linked-artifacts',
 ] as const
@@ -86,10 +91,9 @@ const DEFAULT_OPEN: string[] = ['business-context']
 
 /**
  * When the modal is opened from the /krav page (focusField === 'kravpunkter'),
- * land with only the compliance-actions accordion (which houses Kravpunkter)
- * expanded.
+ * land with only the kravpunkter accordion expanded.
  */
-const KRAVPUNKTER_FOCUS_OPEN: string[] = ['compliance-actions']
+const KRAVPUNKTER_FOCUS_OPEN: string[] = ['kravpunkter']
 
 /**
  * Session-scoped last-used accordion state. Survives modal close/reopen
@@ -111,9 +115,9 @@ export function LeftPanel({
   currentUserId,
   onOptimisticTaskUpdate,
   taskColumns = [],
-  complianceActionsUpdatedByName,
+  complianceNarrativeUpdatedByName,
   onBusinessContextChange,
-  onComplianceActionsChange,
+  onComplianceNarrativeChange,
   focusField,
   complianceReadOnly,
   onKravpunkterProgressChange,
@@ -192,13 +196,20 @@ export function LeftPanel({
           autoEdit={focusField === 'businessContext'}
         />
 
-        {/* Story 6.18 + 17.16 + 17.18: Compliance accordion (Kravpunkter + Kommentar) */}
-        <ComplianceActions
+        {/* Story 21.22: Hur efterlever vi kraven? — first-class compliance narrative */}
+        <ComplianceNarrative
           listItemId={listItem.id}
-          initialContent={listItem.complianceActions}
-          updatedAt={listItem.complianceActionsUpdatedAt}
-          updatedByName={complianceActionsUpdatedByName}
-          onContentChange={onComplianceActionsChange}
+          initialContent={listItem.complianceNarrative}
+          updatedAt={listItem.complianceNarrativeUpdatedAt}
+          updatedByName={complianceNarrativeUpdatedByName}
+          onContentChange={onComplianceNarrativeChange}
+          focusField={focusField}
+          readOnly={complianceReadOnly}
+        />
+
+        {/* Story 17.16 + 21.22: Kravpunkter checklist (no longer bundles a free-text field) */}
+        <KravpunkterAccordion
+          listItemId={listItem.id}
           focusField={focusField}
           readOnly={complianceReadOnly}
           onProgressChange={onKravpunkterProgressChange}

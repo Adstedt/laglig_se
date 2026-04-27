@@ -21,6 +21,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import {
   AlertTriangle,
+  BookText,
   ChevronDown,
   ClipboardCheck,
   ExternalLink,
@@ -43,6 +44,7 @@ import {
 } from '@/components/features/compliance-audit/finding-card'
 import { KravpunkterSnapshotList } from '@/components/features/compliance-audit/kravpunkter-snapshot-list'
 import { BusinessContextReadOnly } from './business-context-readonly'
+import { ComplianceNarrativeReadOnly } from './compliance-narrative-readonly'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 import type { FindingRow } from '@/app/actions/compliance-finding'
 
@@ -62,12 +64,14 @@ interface CycleItemModalLeftPanelProps {
   onSuggestFindingForRequirement?: (_requirementId: string) => void
 }
 
-// Audit-flow order: context → requirements → evidence → findings.
-// Matches the auditor's mental loop: understand the law, review what we
-// must comply with, check evidence, then record findings as the OUTPUT
-// of review (not the entry point). v2 reorder, 2026-04-25.
+// Audit-flow order: context → claim → requirements → evidence → findings.
+// Matches the auditor's mental loop: understand the law, read the team's
+// compliance claim, review what they must comply with, check evidence, then
+// record findings as the OUTPUT of review. Story 21.22 inserts the narrative
+// between business-context and kravpunkter.
 const ACCORDION_ITEMS = [
   'business-context', // Hur påverkar detta oss?
+  'compliance-narrative', // Hur efterlever vi kraven? (Story 21.22)
   'kravpunkter', // What we must comply with
   'linked-artifacts', // Underlag — evidence we have
   'findings', // Anmärkningar — output of review
@@ -172,6 +176,31 @@ export function CycleItemModalLeftPanel({
             <AccordionContent className="px-4 pb-4">
               <BusinessContextReadOnly
                 content={item.businessContext}
+                lawListItemId={item.lawListItemId}
+              />
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* ------- Hur efterlever vi kraven? (Story 21.22) ------- */}
+          {/* The team's written compliance claim. Sits between context and
+           *  requirements so the auditor can ratify or challenge the claim
+           *  ("you say X — let's verify against the kravpunkter + bevis"). */}
+          <AccordionItem
+            value="compliance-narrative"
+            className="rounded-lg border border-border/60"
+          >
+            <AccordionTrigger className="rounded-t-lg px-4 py-3 hover:bg-muted/50 hover:no-underline data-[state=closed]:rounded-lg">
+              <div className="flex items-center gap-2 text-base font-semibold text-foreground">
+                <BookText className="h-4 w-4" />
+                <span>Hur efterlever vi kraven?</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  Live
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <ComplianceNarrativeReadOnly
+                content={item.complianceNarrative}
                 lawListItemId={item.lawListItemId}
               />
             </AccordionContent>

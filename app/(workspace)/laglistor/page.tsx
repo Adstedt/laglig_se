@@ -29,7 +29,7 @@ import { hasPermission } from '@/lib/auth/permissions'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Mina listor | Laglig',
+  title: 'Laglistor | Laglig',
   description: 'Hantera dina listor och håll koll på relevanta rättsliga krav.',
 }
 
@@ -73,7 +73,7 @@ export default async function DocumentListsPage() {
     <div className="space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Mina listor</h1>
+          <h1 className="text-2xl font-semibold">Laglistor</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Hantera dina listor och håll koll på relevanta rättsliga krav.
           </p>

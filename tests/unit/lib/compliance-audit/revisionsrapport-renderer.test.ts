@@ -358,9 +358,10 @@ describe('renderRevisionsrapport — section structure', () => {
   it('emits a table-of-contents with one entry per content section', () => {
     const html = renderRevisionsrapport(buildFixtureInput())
     expect(html).toContain('<nav class="toc">')
-    // 10 TOC entries (every section except titelsida).
+    // 11 TOC entries (every section except titelsida — Story 21.22 added
+    // efterlevnadsbeskrivningar).
     const tocEntries = html.match(/<li><a href="#/g) ?? []
-    expect(tocEntries.length).toBe(10)
+    expect(tocEntries.length).toBe(11)
   })
 })
 
@@ -462,6 +463,64 @@ describe('renderRevisionsrapport — seal block (FR13)', () => {
     expect(html).not.toContain('class="seal-block"')
     expect(html).not.toContain('Fastställd kontroll')
     expect(html).not.toContain(' · Seal: ')
+  })
+})
+
+// ============================================================================
+// Bakgrund (description) section
+// ============================================================================
+
+describe('renderRevisionsrapport — bakgrund section', () => {
+  it('omits the section + TOC entry entirely when description is null', () => {
+    const html = renderRevisionsrapport(buildFixtureInput())
+    expect(html).not.toContain('id="bakgrund"')
+    expect(html).not.toContain('Bakgrund och syfte')
+  })
+
+  it('renders the section heading + body and adds a TOC entry when description is set', () => {
+    const base = buildFixtureInput()
+    const withDescription: RevisionsrapportInput = {
+      ...base,
+      cycle: {
+        ...base.cycle,
+        description:
+          'Triggad av Q1 miljötillbud.\nÅrlig ISO 14001-kontroll per ledningsbeslut 2026-02-12.',
+      },
+    }
+    const html = renderRevisionsrapport(withDescription)
+    expect(html).toContain('<section id="bakgrund">')
+    expect(html).toContain('Bakgrund och syfte')
+    expect(html).toContain('Triggad av Q1 miljötillbud.')
+    expect(html).toContain('ledningsbeslut 2026-02-12.')
+    // Multiline description preserves newlines as <br/>
+    expect(html).toContain('miljötillbud.<br/>Årlig')
+    // TOC entry present
+    expect(html).toContain('<a href="#bakgrund">Bakgrund och syfte</a>')
+  })
+
+  it('escapes HTML in the description body', () => {
+    const base = buildFixtureInput()
+    const withDescription: RevisionsrapportInput = {
+      ...base,
+      cycle: {
+        ...base.cycle,
+        description: 'Bakgrund <script>alert(1)</script>',
+      },
+    }
+    const html = renderRevisionsrapport(withDescription)
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
+    expect(html).not.toContain('<script>alert(1)</script>')
+  })
+
+  it('treats whitespace-only description as empty (omits section)', () => {
+    const base = buildFixtureInput()
+    const withWhitespace: RevisionsrapportInput = {
+      ...base,
+      cycle: { ...base.cycle, description: '   \n  \t  ' },
+    }
+    const html = renderRevisionsrapport(withWhitespace)
+    expect(html).not.toContain('id="bakgrund"')
+    expect(html).not.toContain('Bakgrund och syfte')
   })
 })
 

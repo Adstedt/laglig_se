@@ -35,7 +35,10 @@ import {
 import { FindingEditor } from '@/components/features/compliance-audit/finding-editor'
 import { FindingCard } from '@/components/features/compliance-audit/finding-card'
 import { VerifyFindingDialog } from './verify-finding-dialog'
+import { ManualCloseFindingDialog } from './manual-close-finding-dialog'
 import { FindingSeverity, FindingType } from '@prisma/client'
+import type { ComplianceCycleStatus } from '@prisma/client'
+import { getCycleReadOnlyReason } from '@/components/features/compliance-audit/cycle-copy'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 
 const VIRTUALIZATION_THRESHOLD = 50
@@ -50,6 +53,7 @@ interface CycleFindingsTabProps {
   cycleId: string
   findings: FindingRow[]
   readOnly: boolean
+  cycleStatus: ComplianceCycleStatus
   items: CycleItemRow[]
   onFindingMutation: (_finding: FindingRow) => void
   /** Story 21.16 — drill into the Items-tab modal on the finding's parent law
@@ -61,6 +65,7 @@ export function CycleFindingsTab({
   cycleId,
   findings,
   readOnly,
+  cycleStatus,
   items,
   onFindingMutation,
   onFindingClick,
@@ -72,6 +77,8 @@ export function CycleFindingsTab({
   const [editingFinding, setEditingFinding] = useState<FindingRow | null>(null)
   // Epic 21 follow-up: explicit verify-step dialog state. null = closed.
   const [verifyFinding, setVerifyFinding] = useState<FindingRow | null>(null)
+  const [manualCloseFinding, setManualCloseFinding] =
+    useState<FindingRow | null>(null)
 
   // Hide severity filter when type filter is not AVVIKELSE.
   useEffect(() => {
@@ -103,18 +110,35 @@ export function CycleFindingsTab({
 
   const handleClose = useCallback(
     async (f: FindingRow) => {
-      // No close_reason prompt in this surface — if the gate rejects, the user
-      // sees a toast and can still close from the expanded-row "manuell
-      // anledning" path (future enhancement — for 21.7 we surface the error).
       const result = await closeFinding({ findingId: f.id })
+      if (!result.success || !result.data) {
+        if (result.error?.startsWith('FINDING_REQUIRES_TASK_CLOSURE')) {
+          setManualCloseFinding(f)
+          return
+        }
+        toast.error('Kunde inte stänga anmärkning', {
+          description: result.error,
+        })
+        return
+      }
+      toast.success('Anmärkning markerad som åtgärdad')
+      onFindingMutation(result.data.finding)
+    },
+    [onFindingMutation]
+  )
+
+  const handleManualCloseConfirm = useCallback(
+    async (findingId: string, closeReason: string) => {
+      const result = await closeFinding({ findingId, closeReason })
       if (!result.success || !result.data) {
         toast.error('Kunde inte stänga anmärkning', {
           description: result.error,
         })
         return
       }
-      toast.success('Anmärkning stängd')
+      toast.success('Anmärkning markerad som åtgärdad med manuell anledning')
       onFindingMutation(result.data.finding)
+      setManualCloseFinding(null)
     },
     [onFindingMutation]
   )
@@ -192,7 +216,9 @@ export function CycleFindingsTab({
           role="status"
           className="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900"
         >
-          Denna kontroll är fastställd. Anmärkningar kan endast visas.
+          {getCycleReadOnlyReason(cycleStatus) ??
+            'Kontrollen kan inte redigeras.'}{' '}
+          Anmärkningar kan endast visas.
         </div>
       ) : null}
 
@@ -266,6 +292,15 @@ export function CycleFindingsTab({
         }}
         finding={verifyFinding}
         onConfirm={handleVerifyConfirm}
+      />
+
+      <ManualCloseFindingDialog
+        open={manualCloseFinding !== null}
+        onOpenChange={(open) => {
+          if (!open) setManualCloseFinding(null)
+        }}
+        finding={manualCloseFinding}
+        onConfirm={handleManualCloseConfirm}
       />
     </div>
   )
@@ -623,7 +658,7 @@ function FindingActions({
         onClick={onClose}
         data-testid={`cycle-finding-close-${finding.id}`}
       >
-        Stäng
+        Markera som åtgärdat
       </Button>
     </>
   )

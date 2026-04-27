@@ -520,7 +520,7 @@ function EmptyWorkspaceState() {
         href="/laglistor"
         className="text-sm text-primary underline-offset-2 hover:underline"
       >
-        Öppna Mina listor
+        Öppna Laglistor
       </Link>
     </div>
   )

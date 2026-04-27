@@ -30,10 +30,10 @@ export interface ListItemDetails {
   addedAt: Date
   updatedAt: Date
   dueDate: Date | null
-  // Story 6.18: Compliance actions fields
-  complianceActions: string | null
-  complianceActionsUpdatedAt: Date | null
-  complianceActionsUpdatedBy: string | null
+  // Story 21.22: Compliance narrative ("Hur efterlever vi kraven?")
+  complianceNarrative: string | null
+  complianceNarrativeUpdatedAt: Date | null
+  complianceNarrativeUpdatedBy: string | null
   legalDocument: {
     id: string
     title: string
@@ -155,8 +155,8 @@ const UpdateBusinessContextSchema = z.object({
   content: z.string().max(10000),
 })
 
-// Story 6.18: Schema for compliance actions
-const UpdateComplianceActionsSchema = z.object({
+// Story 21.22: Schema for compliance narrative
+const UpdateComplianceNarrativeSchema = z.object({
   listItemId: z.string().uuid(),
   content: z.string().max(10000),
 })
@@ -263,13 +263,13 @@ async function fetchListItemDetailsInternal(
           addedAt: new Date(parsed.added_at),
           updatedAt: new Date(parsed.updated_at),
           dueDate: parsed.due_date ? new Date(parsed.due_date) : null,
-          // Story 6.18: Compliance actions
-          complianceActions: parsed.compliance_actions ?? null,
-          complianceActionsUpdatedAt: parsed.compliance_actions_updated_at
-            ? new Date(parsed.compliance_actions_updated_at)
+          // Story 21.22: Compliance narrative
+          complianceNarrative: parsed.compliance_narrative ?? null,
+          complianceNarrativeUpdatedAt: parsed.compliance_narrative_updated_at
+            ? new Date(parsed.compliance_narrative_updated_at)
             : null,
-          complianceActionsUpdatedBy:
-            parsed.compliance_actions_updated_by ?? null,
+          complianceNarrativeUpdatedBy:
+            parsed.compliance_narrative_updated_by ?? null,
           legalDocument: {
             id: parsed.document.id,
             title: parsed.document.title,
@@ -392,10 +392,10 @@ async function fetchListItemDetailsInternal(
     addedAt: item.added_at,
     updatedAt: item.updated_at,
     dueDate: item.due_date,
-    // Story 6.18: Compliance actions
-    complianceActions: item.compliance_actions,
-    complianceActionsUpdatedAt: item.compliance_actions_updated_at,
-    complianceActionsUpdatedBy: item.compliance_actions_updated_by,
+    // Story 21.22: Compliance narrative
+    complianceNarrative: item.compliance_narrative,
+    complianceNarrativeUpdatedAt: item.compliance_narrative_updated_at,
+    complianceNarrativeUpdatedBy: item.compliance_narrative_updated_by,
     legalDocument: {
       id: item.document.id,
       title: item.document.title,
@@ -531,18 +531,18 @@ export async function updateListItemBusinessContext(
 }
 
 // ============================================================================
-// Story 6.18: Update Compliance Actions
+// Story 21.22: Update Compliance Narrative
 // ============================================================================
 
 /**
- * Update the compliance actions ("Hur efterlever vi kraven?") for a list item
+ * Update the compliance narrative ("Hur efterlever vi kraven?") for a list item
  */
-export async function updateListItemComplianceActions(
+export async function updateListItemComplianceNarrative(
   listItemId: string,
   content: string
 ): Promise<ActionResult> {
   try {
-    const parsed = UpdateComplianceActionsSchema.safeParse({
+    const parsed = UpdateComplianceNarrativeSchema.safeParse({
       listItemId,
       content,
     })
@@ -554,7 +554,6 @@ export async function updateListItemComplianceActions(
     }
 
     return await withWorkspace(async (ctx) => {
-      // Verify item belongs to workspace
       const item = await prisma.lawListItem.findFirst({
         where: { id: listItemId },
         include: { law_list: { select: { workspace_id: true } } },
@@ -567,9 +566,9 @@ export async function updateListItemComplianceActions(
       await prisma.lawListItem.update({
         where: { id: listItemId },
         data: {
-          compliance_actions: content || null,
-          compliance_actions_updated_at: new Date(),
-          compliance_actions_updated_by: ctx.userId,
+          compliance_narrative: content || null,
+          compliance_narrative_updated_at: new Date(),
+          compliance_narrative_updated_by: ctx.userId,
         },
       })
 
@@ -578,12 +577,11 @@ export async function updateListItemComplianceActions(
         ctx.userId,
         'list_item',
         listItemId,
-        'compliance_actions_updated',
+        'compliance_narrative_updated',
         { changed: true },
         { changed: true }
       )
 
-      // Invalidate Redis cache for this list item
       try {
         await redis.del(`list-item-details:v3:${listItemId}`)
       } catch {
@@ -594,7 +592,7 @@ export async function updateListItemComplianceActions(
       return { success: true }
     }, 'tasks:edit')
   } catch (error) {
-    console.error('Error updating compliance actions:', error)
+    console.error('Error updating compliance narrative:', error)
     return { success: false, error: 'Kunde inte spara' }
   }
 }

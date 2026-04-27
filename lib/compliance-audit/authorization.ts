@@ -96,3 +96,9 @@ export async function canCompleteOrRevertCycle(
     workspaceId: args.workspaceId,
   })
 }
+
+// Pure (client-safe) helper lives in `authorization-shared.ts` so client
+// components can import it without dragging `@/lib/prisma` into the browser
+// bundle. Re-exported here so server-side callers keep using a single
+// `@/lib/compliance-audit/authorization` import surface.
+export { canSignOffItem } from './authorization-shared'

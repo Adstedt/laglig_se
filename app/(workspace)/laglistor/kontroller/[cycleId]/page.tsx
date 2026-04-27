@@ -124,6 +124,8 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
         readOnly={isReadOnly(cycleResult.data.cycle.status)}
         canRevert={canRevert}
         canSeal={canSeal}
+        currentUserId={ctx.userId}
+        currentUserRole={ctx.role}
       />
     )
   }
@@ -137,12 +139,15 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
       readOnly={isReadOnly(itemsResult.data.cycle.status)}
       canRevert={canRevert}
       canSeal={canSeal}
+      currentUserId={ctx.userId}
+      currentUserRole={ctx.role}
     />
   )
 }
 
 function isReadOnly(status: CycleStatusType): boolean {
   return (
+    status === ComplianceCycleStatus.AVSLUTAD ||
     status === ComplianceCycleStatus.SEALED ||
     status === ComplianceCycleStatus.ARKIVERAD
   )

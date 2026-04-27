@@ -223,9 +223,13 @@ function renderPage(
             makeItem('a'),
             makeItem('b', {
               efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+              // Story 21.22: motivering is now required for sign-off, so
+              // every "ready to sign" fixture row needs a non-empty value.
+              motivering: 'Rutiner finns och följs.',
             }),
             makeItem('c', {
               efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+              motivering: 'Signerad rad — innehåll bevarat.',
               signedOffAt: new Date('2026-04-22T10:00:00Z'),
               signedOffBy: { id: 'u1', name: 'Alice Auditor' },
             }),
@@ -237,6 +241,10 @@ function renderPage(
           makeCyclePartial({ status: cycle.status, sealHash: cycle.sealHash })
         }
         readOnly={overrides.readOnly ?? false}
+        canRevert={false}
+        canSeal={false}
+        currentUserId="u1"
+        currentUserRole="OWNER"
       />
     </SWRConfig>
   )
@@ -284,19 +292,19 @@ describe('CycleDetailPage — items tab', () => {
     expect(screen.getByTestId('cycle-items-list')).toBeInTheDocument()
   })
 
-  it('bedömning triggers render with correct values + aria-label', () => {
+  it('bedömning triggers render only on unsigned rows', () => {
     // Note: full Radix Select popover interaction is brittle in happy-dom
-    // (pointer-event emulation gaps). Cover the contract instead: each row
-    // has an accessible "Bedömning" combobox trigger, and its visible text
-    // reflects the row's current value.
+    // (pointer-event emulation gaps). Cover the contract instead: each
+    // *unsigned* row exposes an accessible "Bedömning" combobox trigger.
+    // Signed-off rows render the bedömning as read-only text instead of a
+    // trigger (itemReadOnly = readOnly || row.signedOffAt !== null).
     renderPage()
+    // Default fixture: row 'a' (unsigned, null), row 'b' (unsigned, UPPFYLLD),
+    // row 'c' (signed, UPPFYLLD → read-only, no trigger).
     const triggers = screen.getAllByLabelText('Bedömning')
-    expect(triggers.length).toBe(3)
-    // Row a: null → "—"
+    expect(triggers.length).toBe(2)
     expect(triggers[0]!.textContent).toContain('—')
-    // Row b, c: UPPFYLLD → "Uppfylld"
     expect(triggers[1]!.textContent).toContain('Uppfylld')
-    expect(triggers[2]!.textContent).toContain('Uppfylld')
   })
 
   it('sign-off button disabled when bedömning is null + tooltip reason', async () => {
@@ -632,17 +640,19 @@ describe('CycleDetailPage — items tab', () => {
     ).toBeInTheDocument()
   })
 
-  it('motivering trigger renders editable button when not readOnly', () => {
+  it('motivering trigger renders editable button on unsigned rows only', () => {
     // Note: full userEvent.type + save-on-blur interaction is covered by
     // ItemMotiveringEditor's isolated unit test (happy-dom has known
     // issues with controlled-textarea typing). Here we verify the
-    // contract: each row exposes a "Redigera motivering" button, and its
-    // click-to-edit affordance is wired.
+    // contract: unsigned rows expose a "Redigera motivering" button.
+    // Signed-off rows render the motivering as a read-only paragraph
+    // (itemReadOnly = readOnly || row.signedOffAt !== null).
     renderPage()
     const triggers = screen.getAllByRole('button', {
       name: 'Redigera motivering',
     })
-    expect(triggers.length).toBe(3)
+    // Default fixture: 3 rows total, 1 signed → 2 editable triggers.
+    expect(triggers.length).toBe(2)
     triggers.forEach((trigger) => {
       expect(trigger).toBeEnabled()
     })

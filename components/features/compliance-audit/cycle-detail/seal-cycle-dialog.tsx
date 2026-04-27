@@ -163,21 +163,17 @@ export function SealCycleDialog({
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>
-                Denna åtgärd kan inte ångras. Kontrollen får en unik
-                kontrollsumma som visas på revisionsrapporten och gör det
-                möjligt för revisor eller certifieringsorgan att senare
-                verifiera att innehållet är oförändrat.
+                När du fastställer låses kontrollens resultat. Samtidigt skapas
+                en unik kontrollsumma som visas på revisionsrapporten — med den
+                kan revisor eller certifieringsorgan i efterhand bekräfta att
+                inget har ändrats.
               </p>
               <p>
-                Efter fastställande är alla dokument, motiveringar och
-                anmärkningar låsta mot redigering. För att rätta ett fel måste
-                en ny kontroll skapas med samma omfattning.
+                Dokument, motiveringar och anmärkningar låses. Bevisfilerna
+                skyddas mot oavsiktlig radering. Behöver något rättas i
+                efterhand skapar du en ny kontroll med samma omfattning.
               </p>
-              <p>
-                Bevisfiler som används i denna kontroll skyddas mot oavsiktlig
-                radering — du får ett varningsmeddelande om någon försöker ta
-                bort dem.
-              </p>
+              <p>Fastställandet går inte att ångra.</p>
               {hasAvvikelser ? (
                 <OpenAvvikelserOverridePanel
                   openAvvikelser={openAvvikelser}
@@ -346,9 +342,9 @@ function DraftDocumentsOverridePanel({
       </ul>
 
       <p className="text-xs text-amber-800/90 dark:text-amber-200/80">
-        Utkast-styrdokument hashas vid fastställande, men deras innehåll kan
-        ändras senare via autospar — vilket gör efterföljande verifiering
-        opålitlig. Genom att fastställa intygar du att detta är acceptabelt.
+        Ett utkast kan fortfarande ändras automatiskt när det redigeras senare.
+        Då matchar dokumentet inte längre den fastställda kontrollsumman vid en
+        senare granskning. Genom att fastställa godkänner du detta.
       </p>
     </div>
   )
@@ -406,10 +402,10 @@ function OverrideMotiveringTextarea({
     draftsCount === 1 ? 'ett utkast-styrdokument' : 'utkast-styrdokument'
   const label =
     hasAvvikelser && hasDrafts
-      ? `Gemensam motivering för fastställande trots ${avvPart} och ${draftPart} (obligatoriskt)`
+      ? `Motivera varför kontrollen fastställs trots ${avvPart} och ${draftPart} (obligatoriskt)`
       : hasAvvikelser
-        ? `Motivering för fastställande trots ${avvPart} (obligatoriskt)`
-        : `Motivering för fastställande trots ${draftPart} (obligatoriskt)`
+        ? `Motivera varför kontrollen fastställs trots ${avvPart} (obligatoriskt)`
+        : `Motivera varför kontrollen fastställs trots ${draftPart} (obligatoriskt)`
 
   return (
     <div className="space-y-1.5">

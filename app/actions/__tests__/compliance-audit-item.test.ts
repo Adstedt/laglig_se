@@ -64,6 +64,8 @@ const ITEM_ID = '44444444-4444-4444-8444-444444444444'
 const ITEM_ID_2 = '55555555-5555-4555-8555-555555555555'
 const LAW_LIST_ITEM_ID = '66666666-6666-4666-8666-666666666666'
 const GROUP_ID = '88888888-8888-4888-8888-888888888888'
+const OTHER_USER_ID = '99999999-9999-4999-8999-999999999999'
+const LEAD_AUDITOR_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 
 const ROLE_PERMISSIONS: Record<WorkspaceRole, readonly Permission[]> = {
   OWNER: ['tasks:edit', 'activity:view', 'read'],
@@ -126,7 +128,11 @@ function makeItemRow(overrides: Partial<Record<string, unknown>> = {}) {
     },
     reviewed_by: null,
     signed_off_by: null,
-    cycle: { id: CYCLE_ID, status: ComplianceCycleStatus.PAGAENDE },
+    cycle: {
+      id: CYCLE_ID,
+      status: ComplianceCycleStatus.PAGAENDE,
+      lead_auditor_user_id: USER_ID,
+    },
     ...overrides,
   }
 }
@@ -611,13 +617,237 @@ describe('unsignOffItem', () => {
 })
 
 // ============================================================================
-// SEALED/ARKIVERAD guard — cross-action via describe.each
+// Sign-off authorization — lead auditor + responsible user + admin escape hatch
 // ============================================================================
 
-const SEALED_ERROR =
-  'Kontrollen är fastställd eller arkiverad — ändringar är inte tillåtna.'
+const AUTHZ_SIGN_ERROR =
+  'Endast ansvarig revisor, dokumentets ansvarige eller administratörer kan signera.'
+const AUTHZ_UNSIGN_ERROR =
+  'Endast ansvarig revisor, dokumentets ansvarige eller administratörer kan ångra signering.'
+
+describe('signOffItem — authorization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('blocks MEMBER who is neither lead auditor nor responsible user', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.PAGAENDE,
+          lead_auditor_user_id: LEAD_AUDITOR_ID,
+        },
+        law_list_item: {
+          id: LAW_LIST_ITEM_ID,
+          position: 1,
+          compliance_status: ComplianceStatus.EJ_PABORJAD,
+          group_id: GROUP_ID,
+          business_context: null,
+          document: { title: 'Miljöbalken', document_number: 'SFS 1998:808' },
+          group: { id: GROUP_ID, name: 'Miljö', position: 1 },
+          responsible_user: { id: OTHER_USER_ID, name: 'Bob' },
+        },
+      }) as never
+    )
+
+    const result = await signOffItem(ITEM_ID)
+
+    expect(result).toEqual({ success: false, error: AUTHZ_SIGN_ERROR })
+    expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
+    expect(activityLogger.logActivity).not.toHaveBeenCalled()
+  })
+
+  it('allows MEMBER who IS the responsible user', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+        motivering: 'Kraven uppfylls.',
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.PAGAENDE,
+          lead_auditor_user_id: LEAD_AUDITOR_ID,
+        },
+        // makeItemRow's default fixture has responsible_user.id = USER_ID,
+        // and the actor is USER_ID — so the responsible-user path hits.
+      }) as never
+    )
+    vi.mocked(prisma.complianceAuditItem.update).mockResolvedValue(
+      makeItemRow({
+        efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+        motivering: 'Kraven uppfylls.',
+        signed_off_at: new Date(),
+        signed_off_by_user_id: USER_ID,
+      }) as never
+    )
+
+    const result = await signOffItem(ITEM_ID)
+
+    expect(result.success).toBe(true)
+    expect(prisma.complianceAuditItem.update).toHaveBeenCalledOnce()
+  })
+
+  it('allows OWNER who is neither lead auditor nor responsible user (escape hatch)', async () => {
+    mockWorkspaceCtx({ role: 'OWNER' })
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+        motivering: 'Kraven uppfylls.',
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.PAGAENDE,
+          lead_auditor_user_id: LEAD_AUDITOR_ID,
+        },
+        law_list_item: {
+          id: LAW_LIST_ITEM_ID,
+          position: 1,
+          compliance_status: ComplianceStatus.EJ_PABORJAD,
+          group_id: GROUP_ID,
+          business_context: null,
+          document: { title: 'Miljöbalken', document_number: 'SFS 1998:808' },
+          group: { id: GROUP_ID, name: 'Miljö', position: 1 },
+          responsible_user: { id: OTHER_USER_ID, name: 'Bob' },
+        },
+      }) as never
+    )
+    vi.mocked(prisma.complianceAuditItem.update).mockResolvedValue(
+      makeItemRow({ signed_off_at: new Date() }) as never
+    )
+
+    const result = await signOffItem(ITEM_ID)
+
+    expect(result.success).toBe(true)
+  })
+
+  it('blocks MEMBER on item with null responsible_user (only lead auditor + admin remain)', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.PAGAENDE,
+          lead_auditor_user_id: LEAD_AUDITOR_ID,
+        },
+        law_list_item: {
+          id: LAW_LIST_ITEM_ID,
+          position: 1,
+          compliance_status: ComplianceStatus.EJ_PABORJAD,
+          group_id: GROUP_ID,
+          business_context: null,
+          document: { title: 'Miljöbalken', document_number: 'SFS 1998:808' },
+          group: { id: GROUP_ID, name: 'Miljö', position: 1 },
+          responsible_user: null,
+        },
+      }) as never
+    )
+
+    const result = await signOffItem(ITEM_ID)
+
+    expect(result).toEqual({ success: false, error: AUTHZ_SIGN_ERROR })
+  })
+
+  it('allows lead auditor on item with null responsible_user', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
+        motivering: 'Kraven uppfylls.',
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.PAGAENDE,
+          lead_auditor_user_id: USER_ID, // actor IS the lead auditor
+        },
+        law_list_item: {
+          id: LAW_LIST_ITEM_ID,
+          position: 1,
+          compliance_status: ComplianceStatus.EJ_PABORJAD,
+          group_id: GROUP_ID,
+          business_context: null,
+          document: { title: 'Miljöbalken', document_number: 'SFS 1998:808' },
+          group: { id: GROUP_ID, name: 'Miljö', position: 1 },
+          responsible_user: null,
+        },
+      }) as never
+    )
+    vi.mocked(prisma.complianceAuditItem.update).mockResolvedValue(
+      makeItemRow({ signed_off_at: new Date() }) as never
+    )
+
+    const result = await signOffItem(ITEM_ID)
+
+    expect(result.success).toBe(true)
+  })
+})
+
+describe('unsignOffItem — authorization (symmetric with sign)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('blocks MEMBER who is neither lead auditor nor responsible user', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        signed_off_at: new Date(),
+        signed_off_by_user_id: OTHER_USER_ID,
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.PAGAENDE,
+          lead_auditor_user_id: LEAD_AUDITOR_ID,
+        },
+        law_list_item: {
+          id: LAW_LIST_ITEM_ID,
+          position: 1,
+          compliance_status: ComplianceStatus.EJ_PABORJAD,
+          group_id: GROUP_ID,
+          business_context: null,
+          document: { title: 'Miljöbalken', document_number: 'SFS 1998:808' },
+          group: { id: GROUP_ID, name: 'Miljö', position: 1 },
+          responsible_user: { id: OTHER_USER_ID, name: 'Bob' },
+        },
+      }) as never
+    )
+
+    const result = await unsignOffItem(ITEM_ID)
+
+    expect(result).toEqual({ success: false, error: AUTHZ_UNSIGN_ERROR })
+    expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
+  })
+
+  it('allows lead auditor to unsign even if someone else signed', async () => {
+    mockWorkspaceCtx({ role: 'MEMBER' })
+    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(
+      makeItemRow({
+        signed_off_at: new Date(),
+        signed_off_by_user_id: OTHER_USER_ID,
+        cycle: {
+          id: CYCLE_ID,
+          status: ComplianceCycleStatus.PAGAENDE,
+          lead_auditor_user_id: USER_ID, // actor IS lead auditor
+        },
+      }) as never
+    )
+    vi.mocked(prisma.complianceAuditItem.update).mockResolvedValue(
+      makeItemRow({ signed_off_at: null, signed_off_by_user_id: null }) as never
+    )
+
+    const result = await unsignOffItem(ITEM_ID)
+
+    expect(result.success).toBe(true)
+  })
+})
+
+// ============================================================================
+// AVSLUTAD/SEALED/ARKIVERAD guard — cross-action via describe.each
+// ============================================================================
+
+const READONLY_ERROR =
+  'Kontrollen är avslutad, fastställd eller arkiverad — ändringar är inte tillåtna. Återställ till pågående för att redigera.'
 
 describe.each([
+  { status: ComplianceCycleStatus.AVSLUTAD, label: 'AVSLUTAD' },
   { status: ComplianceCycleStatus.SEALED, label: 'SEALED' },
   { status: ComplianceCycleStatus.ARKIVERAD, label: 'ARKIVERAD' },
 ])(
@@ -636,7 +866,7 @@ describe.each([
         itemId: ITEM_ID,
         efterlevnadsbedomning: EfterlevnadsBedomning.UPPFYLLD,
       })
-      expect(result).toEqual({ success: false, error: SEALED_ERROR })
+      expect(result).toEqual({ success: false, error: READONLY_ERROR })
       expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
       expect(activityLogger.logActivity).not.toHaveBeenCalled()
     })
@@ -646,21 +876,21 @@ describe.each([
         itemId: ITEM_ID,
         motivering: 'Some text',
       })
-      expect(result).toEqual({ success: false, error: SEALED_ERROR })
+      expect(result).toEqual({ success: false, error: READONLY_ERROR })
       expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
       expect(activityLogger.logActivity).not.toHaveBeenCalled()
     })
 
     it('signOffItem blocked', async () => {
       const result = await signOffItem(ITEM_ID)
-      expect(result).toEqual({ success: false, error: SEALED_ERROR })
+      expect(result).toEqual({ success: false, error: READONLY_ERROR })
       expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
       expect(activityLogger.logActivity).not.toHaveBeenCalled()
     })
 
     it('unsignOffItem blocked', async () => {
       const result = await unsignOffItem(ITEM_ID)
-      expect(result).toEqual({ success: false, error: SEALED_ERROR })
+      expect(result).toEqual({ success: false, error: READONLY_ERROR })
       expect(prisma.complianceAuditItem.update).not.toHaveBeenCalled()
       expect(activityLogger.logActivity).not.toHaveBeenCalled()
     })

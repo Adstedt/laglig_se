@@ -27,7 +27,7 @@ const routeLabels: Record<string, string> = {
   hr: 'HR',
   employees: 'Anställda',
   compliance: 'Efterlevnad',
-  laglistor: 'Mina listor',
+  laglistor: 'Laglistor',
   krav: 'Krav',
   mallar: 'Mallar',
   // Story 21.4 + 21.5.2: lagefterlevnadskontroll module.

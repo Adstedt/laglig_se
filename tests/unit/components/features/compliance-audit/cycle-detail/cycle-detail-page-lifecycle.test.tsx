@@ -360,3 +360,36 @@ describe('CycleDetailPage — lifecycle integration', () => {
     expect(revertCycleToPagaendeMock).not.toHaveBeenCalled()
   })
 })
+
+// ============================================================================
+// Reframing pass — AVSLUTAD post-audit advisory banner
+// ============================================================================
+// The banner reframes "audit complete" as "snapshot taken; findings continue
+// to be followed up" — appears between the header and the tab strip when
+// `localCycle.status === 'AVSLUTAD'`. Hidden in PAGAENDE / SEALED / ARKIVERAD.
+
+describe('CycleDetailPage — AVSLUTAD reassurance banner', () => {
+  it('renders banner when status is AVSLUTAD', () => {
+    renderPage({ status: ComplianceCycleStatus.AVSLUTAD })
+    const banner = screen.getByTestId('cycle-avslutad-advisory')
+    expect(banner).toBeInTheDocument()
+    expect(banner.textContent).toContain('Kontrollen är slutförd')
+    expect(banner.textContent).toContain('följas upp')
+    expect(banner.textContent).toContain('snapshot')
+  })
+
+  it('does NOT render banner in PAGAENDE', () => {
+    renderPage({ status: ComplianceCycleStatus.PAGAENDE })
+    expect(screen.queryByTestId('cycle-avslutad-advisory')).toBeNull()
+  })
+
+  it('does NOT render banner in SEALED (read-only banner inside Findings tab takes over)', () => {
+    renderPage({ status: ComplianceCycleStatus.SEALED })
+    expect(screen.queryByTestId('cycle-avslutad-advisory')).toBeNull()
+  })
+
+  it('does NOT render banner in ARKIVERAD', () => {
+    renderPage({ status: ComplianceCycleStatus.ARKIVERAD })
+    expect(screen.queryByTestId('cycle-avslutad-advisory')).toBeNull()
+  })
+})

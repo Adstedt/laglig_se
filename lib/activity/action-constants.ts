@@ -23,7 +23,7 @@ export const KNOWN_ACTIONS = [
   'responsible_changed',
   'priority_changed',
   'business_context_updated',
-  'compliance_actions_updated',
+  'compliance_narrative_updated',
 
   // Comments (shared across task and list_item)
   'comment_added',

@@ -318,14 +318,15 @@ model LawListItem {
   ai_commentary       String?          @db.Text // AI-generated analysis
   category            String? // Custom categorization
 
-  // Story 17.18: Business context update attribution (mirrors compliance_actions pattern)
+  // Business context update attribution (mirrors compliance_narrative pattern)
   business_context_updated_at DateTime? // Last update timestamp
   business_context_updated_by String? // User ID who last updated
 
-  // Story 6.18: Compliance actions - how we comply with requirements
-  compliance_actions            String?   @db.Text // "Hur efterlever vi kraven?" content
-  compliance_actions_updated_at DateTime? // Last update timestamp
-  compliance_actions_updated_by String? // User ID who last updated
+  // Story 21.22: Compliance narrative — "Hur efterlever vi kraven?" first-class
+  // top-level field on the law-list-item modal (renamed from compliance_actions).
+  compliance_narrative            String?   @db.Text
+  compliance_narrative_updated_at DateTime?
+  compliance_narrative_updated_by String?
 
   // Metadata
   source     LawListItemSource @default(MANUAL)
@@ -1938,6 +1939,7 @@ model ComplianceAuditCycle {
   sealed_at              DateTime?
   sealed_by_user_id      String?
   seal_hash              String? // SHA-256 hex over canonical JSON (64 chars)
+  description            String?               @db.Text
   created_at             DateTime              @default(now())
   updated_at             DateTime              @updatedAt
   deleted_at             DateTime?

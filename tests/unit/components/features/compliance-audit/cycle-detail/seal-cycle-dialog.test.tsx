@@ -80,20 +80,24 @@ describe('SealCycleDialog', () => {
     expect(screen.getByText('Fastställ kontrollen?')).toBeInTheDocument()
     expect(
       screen.getByText(
-        /Denna åtgärd kan inte ångras\. Kontrollen får en unik kontrollsumma/
+        /När du fastställer låses kontrollens resultat\. Samtidigt skapas en unik kontrollsumma/
       )
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/Efter fastställande är alla dokument/)
+      screen.getByText(
+        /Dokument, motiveringar och anmärkningar låses\. Bevisfilerna skyddas mot oavsiktlig radering/
+      )
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/Bevisfiler som används i denna kontroll/)
+      screen.getByText('Fastställandet går inte att ångra.')
     ).toBeInTheDocument()
   })
 
   it('no open avvikelser → advisory panel NOT rendered; primary enabled after typing FASTSTÄLL', () => {
     renderDialog({ openAvvikelser: [], pendingTasks: 0 })
-    expect(screen.queryByLabelText(/Motivering för fastställande/)).toBeNull()
+    expect(
+      screen.queryByLabelText(/Motivera varför kontrollen fastställs/)
+    ).toBeNull()
     expect(screen.queryByRole('alert')).toBeNull()
     const primary = screen.getByRole('button', { name: /Fastställ kontroll/ })
     // Primary stays disabled until the type-to-confirm phrase is typed —
@@ -132,7 +136,7 @@ describe('SealCycleDialog', () => {
     // Single-avvikelse label variant in the shared textarea:
     expect(
       screen.getByLabelText(
-        /Motivering för fastställande trots öppen avvikelse/
+        /Motivera varför kontrollen fastställs trots öppen avvikelse/
       )
     ).toBeInTheDocument()
   })
@@ -169,7 +173,7 @@ describe('SealCycleDialog', () => {
     // extracted the textarea + label out of the panel into a shared component).
     expect(
       screen.getByLabelText(
-        /Motivering för fastställande trots öppna avvikelser/
+        /Motivera varför kontrollen fastställs trots öppna avvikelser/
       )
     ).toBeInTheDocument()
   })
@@ -233,7 +237,7 @@ describe('SealCycleDialog', () => {
     // Shared override textarea is rendered with singular Swedish.
     expect(
       screen.getByLabelText(
-        /Motivering för fastställande trots ett utkast-styrdokument/
+        /Motivera varför kontrollen fastställs trots ett utkast-styrdokument/
       )
     ).toBeInTheDocument()
   })
@@ -255,7 +259,7 @@ describe('SealCycleDialog', () => {
     // Plural label.
     expect(
       screen.getByLabelText(
-        /Motivering för fastställande trots utkast-styrdokument/
+        /Motivera varför kontrollen fastställs trots utkast-styrdokument/
       )
     ).toBeInTheDocument()
   })
@@ -271,7 +275,7 @@ describe('SealCycleDialog', () => {
     // Shared label uses "Gemensam" + cites BOTH categories.
     expect(
       screen.getByLabelText(
-        /Gemensam motivering för fastställande trots öppen avvikelse och ett utkast-styrdokument/
+        /Motivera varför kontrollen fastställs trots öppen avvikelse och ett utkast-styrdokument/
       )
     ).toBeInTheDocument()
     // Single override textarea — by id (the dialog has only one
@@ -285,7 +289,9 @@ describe('SealCycleDialog', () => {
     const { onConfirm } = renderDialog({
       draftDocuments: [makeDraftDoc()],
     })
-    const textarea = screen.getByLabelText(/Motivering för fastställande/)
+    const textarea = screen.getByLabelText(
+      /Motivera varför kontrollen fastställs/
+    )
     const confirmInput = screen.getByLabelText(/Skriv .* för att bekräfta/)
     const primary = screen.getByRole('button', { name: /Fastställ kontroll/ })
 
@@ -308,7 +314,9 @@ describe('SealCycleDialog', () => {
 
   it('override case: textarea threshold AND confirm-phrase both gate primary', () => {
     renderDialog({ openAvvikelser: [makeAvvikelse()] })
-    const textarea = screen.getByLabelText(/Motivering för fastställande/)
+    const textarea = screen.getByLabelText(
+      /Motivera varför kontrollen fastställs/
+    )
     const confirmInput = screen.getByLabelText(/Skriv .* för att bekräfta/)
     const primary = screen.getByRole('button', { name: /Fastställ kontroll/ })
 
@@ -338,7 +346,9 @@ describe('SealCycleDialog', () => {
 
   it('counter copy: below threshold shows countdown, at/above shows confirmation', () => {
     renderDialog({ openAvvikelser: [makeAvvikelse()] })
-    const textarea = screen.getByLabelText(/Motivering för fastställande/)
+    const textarea = screen.getByLabelText(
+      /Motivera varför kontrollen fastställs/
+    )
     // Radix Dialog renders into a portal — query against document.body, not the
     // React-rendered container.
     const allText = () => document.body.textContent ?? ''
@@ -473,7 +483,7 @@ describe('SealCycleDialog', () => {
   it('aria-invalid is false when textarea is empty (not yet a real error state)', () => {
     renderDialog({ openAvvikelser: [makeAvvikelse()] })
     const textarea = screen.getByLabelText(
-      /Motivering för fastställande/
+      /Motivera varför kontrollen fastställs/
     ) as HTMLTextAreaElement
     // Empty input shouldn't render as invalid — that's noisy on first paint.
     expect(textarea).not.toHaveAttribute('aria-invalid', 'true')
@@ -487,7 +497,9 @@ describe('SealCycleDialog', () => {
     const { onConfirm } = renderDialog({
       openAvvikelser: [makeAvvikelse()],
     })
-    const textarea = screen.getByLabelText(/Motivering för fastställande/)
+    const textarea = screen.getByLabelText(
+      /Motivera varför kontrollen fastställs/
+    )
     const confirmInput = screen.getByLabelText(/Skriv .* för att bekräfta/)
     const primary = screen.getByRole('button', { name: /Fastställ kontroll/ })
     const padded = '   ' + 'a'.repeat(25) + '   '
@@ -537,7 +549,7 @@ describe('SealCycleDialog', () => {
       />
     )
     const textarea = screen.getByLabelText(
-      /Motivering för fastställande/
+      /Motivera varför kontrollen fastställs/
     ) as HTMLTextAreaElement
     fireEvent.change(textarea, {
       target: { value: 'some initial text value ok' },
@@ -567,7 +579,7 @@ describe('SealCycleDialog', () => {
       />
     )
     const reopened = screen.getByLabelText(
-      /Motivering för fastställande/
+      /Motivera varför kontrollen fastställs/
     ) as HTMLTextAreaElement
     expect(reopened.value).toBe('')
   })

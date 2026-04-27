@@ -262,6 +262,7 @@ function makeCycleRow(overrides: Partial<Record<string, unknown>> = {}) {
     sealed_at: null,
     sealed_by_user_id: null,
     seal_hash: null,
+    description: null,
     created_at: new Date('2026-04-22T10:00:00Z'),
     updated_at: new Date('2026-04-22T10:00:00Z'),
     deleted_at: null,
@@ -801,6 +802,22 @@ describe('updateCycleMetadata', () => {
       success: false,
       error: 'Kontrollen hittades inte',
     })
+  })
+
+  it.each([
+    { status: ComplianceCycleStatus.AVSLUTAD, label: 'AVSLUTAD' },
+    { status: ComplianceCycleStatus.SEALED, label: 'SEALED' },
+    { status: ComplianceCycleStatus.ARKIVERAD, label: 'ARKIVERAD' },
+  ])('rejects metadata edits on $label cycles', async ({ status }) => {
+    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(
+      makeCycleRow({ status })
+    )
+
+    const result = await updateCycleMetadata(CYCLE_ID, { name: 'Renamed' })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/avslutad|fastställd|arkiverad/)
+    expect(prisma.complianceAuditCycle.update).not.toHaveBeenCalled()
   })
 })
 

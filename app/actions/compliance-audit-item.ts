@@ -18,6 +18,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { logActivity } from '@/lib/services/activity-logger'
+import { canSignOffItem } from '@/lib/compliance-audit/authorization'
 import {
   ComplianceCycleStatus,
   ComplianceStatus,
@@ -72,6 +73,12 @@ export interface CycleItemRow {
    * updates reach the auditor mid-cycle.
    */
   businessContext: string | null
+  /**
+   * Story 21.22: live compliance narrative ("Hur efterlever vi kraven?"). Same
+   * live-vs-snapshot rationale as businessContext — auditors should read the
+   * team's current claim, not a frozen copy from materialisation time.
+   */
+  complianceNarrative: string | null
 }
 
 export interface GetCycleItemsResult {
@@ -116,6 +123,7 @@ const CYCLE_ITEM_INCLUDE = {
       compliance_status: true,
       group_id: true,
       business_context: true,
+      compliance_narrative: true,
       document: { select: { title: true, document_number: true } },
       group: { select: { id: true, name: true, position: true } },
       responsible_user: { select: { id: true, name: true } },
@@ -141,6 +149,7 @@ type LoadedItem = {
     compliance_status: ComplianceStatus
     group_id: string | null
     business_context: string | null
+    compliance_narrative: string | null
     document: { title: string; document_number: string }
     group: { id: string; name: string; position: number } | null
     responsible_user: { id: string; name: string | null } | null
@@ -177,6 +186,7 @@ function mapRowToCycleItemRow(row: LoadedItem): CycleItemRow {
     kravpunkterSnapshot:
       (row.kravpunkter_snapshot as KravpunkterSnapshot | null) ?? null,
     businessContext: row.law_list_item.business_context,
+    complianceNarrative: row.law_list_item.compliance_narrative,
   }
 }
 
@@ -190,16 +200,31 @@ async function loadItemScopedToWorkspace(
   itemId: string,
   workspaceId: string
 ): Promise<
-  (LoadedItem & { cycle: { id: string; status: ComplianceCycleStatus } }) | null
+  | (LoadedItem & {
+      cycle: {
+        id: string
+        status: ComplianceCycleStatus
+        lead_auditor_user_id: string
+      }
+    })
+  | null
 > {
   return prisma.complianceAuditItem.findFirst({
     where: { id: itemId, cycle: { workspace_id: workspaceId } },
     include: {
       ...CYCLE_ITEM_INCLUDE,
-      cycle: { select: { id: true, status: true } },
+      cycle: {
+        select: { id: true, status: true, lead_auditor_user_id: true },
+      },
     },
   }) as Promise<
-    | (LoadedItem & { cycle: { id: string; status: ComplianceCycleStatus } })
+    | (LoadedItem & {
+        cycle: {
+          id: string
+          status: ComplianceCycleStatus
+          lead_auditor_user_id: string
+        }
+      })
     | null
   >
 }
@@ -213,13 +238,26 @@ type EditableCheck = { ok: true } | { ok: false; error: string }
  */
 function assertCycleEditableUi(status: ComplianceCycleStatus): EditableCheck {
   if (
+    status === ComplianceCycleStatus.AVSLUTAD ||
     status === ComplianceCycleStatus.SEALED ||
     status === ComplianceCycleStatus.ARKIVERAD
   ) {
     return {
       ok: false,
       error:
-        'Kontrollen är fastställd eller arkiverad — ändringar är inte tillåtna.',
+        'Kontrollen är avslutad, fastställd eller arkiverad — ändringar är inte tillåtna. Återställ till pågående för att redigera.',
+    }
+  }
+  return { ok: true }
+}
+
+function assertItemUnsigned(item: {
+  signed_off_at: Date | null
+}): EditableCheck {
+  if (item.signed_off_at !== null) {
+    return {
+      ok: false,
+      error: 'Posten är signerad — ångra signeringen för att redigera.',
     }
   }
   return { ok: true }
@@ -336,6 +374,11 @@ export async function updateItemBedomning(input: {
         return { success: false, error: guard.error }
       }
 
+      const signedGuard = assertItemUnsigned(existing)
+      if (!signedGuard.ok) {
+        return { success: false, error: signedGuard.error }
+      }
+
       const previous = existing.efterlevnadsbedomning
       const next = parsed.data.efterlevnadsbedomning
 
@@ -411,6 +454,11 @@ export async function updateItemMotivering(input: {
       const guard = assertCycleEditableUi(existing.cycle.status)
       if (!guard.ok) {
         return { success: false, error: guard.error }
+      }
+
+      const signedGuard = assertItemUnsigned(existing)
+      if (!signedGuard.ok) {
+        return { success: false, error: signedGuard.error }
       }
 
       const previousLength = existing.motivering?.length ?? 0
@@ -492,6 +540,25 @@ export async function signOffItem(
         return {
           success: true,
           data: { item: mapRowToCycleItemRow(existing) },
+        }
+      }
+
+      // Sign-off authorization: cycle lead auditor, the item's responsible
+      // user, or workspace OWNER/ADMIN escape hatch. Outer `tasks:edit` gate
+      // already keeps AUDITOR out; this narrows the inner ring.
+      if (
+        !canSignOffItem({
+          role: ctx.role,
+          userId: ctx.userId,
+          leadAuditorUserId: existing.cycle.lead_auditor_user_id,
+          responsibleUserId:
+            existing.law_list_item.responsible_user?.id ?? null,
+        })
+      ) {
+        return {
+          success: false,
+          error:
+            'Endast ansvarig revisor, dokumentets ansvarige eller administratörer kan signera.',
         }
       }
 
@@ -584,6 +651,23 @@ export async function unsignOffItem(
         return {
           success: true,
           data: { item: mapRowToCycleItemRow(existing) },
+        }
+      }
+
+      // Symmetric authorization: same gate as sign-off.
+      if (
+        !canSignOffItem({
+          role: ctx.role,
+          userId: ctx.userId,
+          leadAuditorUserId: existing.cycle.lead_auditor_user_id,
+          responsibleUserId:
+            existing.law_list_item.responsible_user?.id ?? null,
+        })
+      ) {
+        return {
+          success: false,
+          error:
+            'Endast ansvarig revisor, dokumentets ansvarige eller administratörer kan ångra signering.',
         }
       }
 

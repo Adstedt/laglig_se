@@ -2,7 +2,7 @@
 
 /**
  * Story 8.1 Task 1: Law List Tabs
- * Tab wrapper rendering "Mina listor" (existing content) and "Ändringar" tab.
+ * Tab wrapper rendering "Laglistor" (existing content) and "Ändringar" tab.
  * Uses the same toggle pattern as the Mallar page for design consistency.
  * Active tab is stored in URL search params (?tab=changes) for deep linking.
  *
@@ -59,7 +59,7 @@ export function LawListTabs({
               : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          Mina listor
+          Laglistor
         </button>
         <button
           onClick={() => handleTabChange('changes')}

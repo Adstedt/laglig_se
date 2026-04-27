@@ -54,13 +54,14 @@ export function CompleteCycleDialog({
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               <p>
-                Kontrollen går från Pågående till Avslutad. Rapportmallen fryses
-                och du kan generera en första revisionsrapport.
+                Granskningen är klar. Resultatet kan användas som det är för att
+                dokumentera nuläget — revisionsrapporten kan genereras direkt.
               </p>
               <p>
-                Dokument och anmärkningar förblir redigerbara — du kan
-                fortfarande justera motiveringar eller lägga till anmärkningar.
-                Fastställande är ett separat, senare steg som inte kan ångras.
+                Kontrollen blir låst när den slutförs. För att göra ytterligare
+                ändringar i bedömningar, motiveringar eller anmärkningar måste
+                du återställa kontrollen till pågående via Åtgärder-menyn.
+                Fastställandet är ett separat, oåterkalleligt steg.
               </p>
               {openFindings > 0 ? (
                 <OpenWorkAdvisory
@@ -105,21 +106,28 @@ function OpenWorkAdvisory({
   openFindings,
   pendingTasks,
 }: OpenWorkAdvisoryProps) {
+  const findingsLabel =
+    openFindings === 1 ? 'öppen anmärkning' : 'öppna anmärkningar'
+
   if (pendingTasks > 0) {
+    const tasksLabel =
+      pendingTasks === 1
+        ? 'pågående åtgärdsuppgift'
+        : 'pågående åtgärdsuppgifter'
     return (
       <p className="text-sm text-muted-foreground">
-        Du har {openFindings} öppna anmärkningar med {pendingTasks} pågående
-        åtgärdsuppgifter. Dessa kvarstår oförändrade och kan stängas när
-        åtgärderna är klara — kontrollen behöver inte fastställas förrän allt är
-        avslutat.
+        Följs upp efter avslutad kontroll: {openFindings} {findingsLabel} med{' '}
+        {pendingTasks} {tasksLabel}.
       </p>
     )
   }
 
+  const noActionsLabel =
+    openFindings === 1 ? 'utan aktiv åtgärd' : 'utan aktiva åtgärder'
   return (
     <p className="text-sm text-muted-foreground">
-      Du har {openFindings} öppna anmärkningar utan aktiva åtgärder. Dessa
-      kvarstår öppna och kan stängas när du är klar.
+      Följs upp efter avslutad kontroll: {openFindings} {findingsLabel}{' '}
+      {noActionsLabel}.
     </p>
   )
 }

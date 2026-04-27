@@ -92,14 +92,13 @@ export interface DocumentListItem {
     avatarUrl: string | null
   } | null
   category: string | null
-  // Story 6.18: Business context and compliance actions for Efterlevnad view
+  // Business context + compliance narrative for Efterlevnad view (Story 21.22)
   businessContext: string | null
-  // Story 17.18: Business context update attribution
   businessContextUpdatedAt: Date | null
   businessContextUpdatedBy: string | null
-  complianceActions: string | null
-  complianceActionsUpdatedAt: Date | null
-  complianceActionsUpdatedBy: string | null
+  complianceNarrative: string | null
+  complianceNarrativeUpdatedAt: Date | null
+  complianceNarrativeUpdatedBy: string | null
   updatedAt: Date
   // Story 8.1: Pending change count for visual indicators
   pendingChangeCount: number
@@ -511,14 +510,13 @@ export async function getDocumentListItems(
                 }
               : null,
             category: item.category,
-            // Story 6.18: Business context and compliance actions for Efterlevnad view
+            // Business context + compliance narrative for Efterlevnad view
             businessContext: item.business_context,
-            // Story 17.18: Business context update attribution
             businessContextUpdatedAt: item.business_context_updated_at,
             businessContextUpdatedBy: item.business_context_updated_by,
-            complianceActions: item.compliance_actions,
-            complianceActionsUpdatedAt: item.compliance_actions_updated_at,
-            complianceActionsUpdatedBy: item.compliance_actions_updated_by,
+            complianceNarrative: item.compliance_narrative,
+            complianceNarrativeUpdatedAt: item.compliance_narrative_updated_at,
+            complianceNarrativeUpdatedBy: item.compliance_narrative_updated_by,
             updatedAt: item.updated_at,
             // Story 8.1: Pending change count for visual indicators
             pendingChangeCount: changeCountMap.get(item.document_id) ?? 0,

@@ -24,8 +24,8 @@ export const COMPLIANCE_COLUMN_OPTIONS: ColumnOption[] = [
     mandatory: true,
   },
   {
-    id: 'complianceActions',
-    label: 'Hur efterlever vi kraven?',
+    id: 'kravpunkter',
+    label: 'Kravpunkter',
     defaultVisible: true,
     mandatory: true,
   },

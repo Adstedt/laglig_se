@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sidebar nav — restructure prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              border: '#27272a',
+              input: '#3f3f46',
+              ring: '#a1a1aa',
+              background: '#09090b',
+              foreground: '#fafafa',
+              primary: { DEFAULT: '#fafafa', foreground: '#18181b' },
+              secondary: { DEFAULT: '#27272a', foreground: '#fafafa' },
+              muted: { DEFAULT: '#27272a', foreground: '#a1a1aa' },
+              accent: { DEFAULT: '#27272a', foreground: '#fafafa' },
+              card: { DEFAULT: '#0a0a0a', foreground: '#fafafa' },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial;
+      }
+      .sidebar {
+        width: 248px;
+        background: #0a0a0a;
+        border-right: 1px solid #1f1f22;
+        height: 100vh;
+        padding: 14px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #d4d4d8;
+        cursor: pointer;
+        user-select: none;
+        transition: background 120ms ease;
+      }
+      .nav-item:hover {
+        background: #18181b;
+      }
+      .nav-item.active {
+        background: #27272a;
+        color: #fafafa;
+      }
+      .nav-item.disabled {
+        color: #52525b;
+        cursor: not-allowed;
+      }
+      .nav-item.disabled:hover {
+        background: transparent;
+      }
+      .nav-item .chev {
+        margin-left: auto;
+        opacity: 0.55;
+        transition: transform 160ms ease;
+      }
+      .nav-item.expanded .chev {
+        transform: rotate(180deg);
+      }
+      .nav-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        opacity: 0.85;
+      }
+      .nav-sub {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        padding-left: 26px;
+        margin: 2px 0 4px;
+      }
+      .nav-sub .nav-item {
+        padding: 6px 10px;
+        font-size: 12.5px;
+        color: #a1a1aa;
+      }
+      .nav-sub .nav-item:hover {
+        color: #e4e4e7;
+      }
+      .nav-sub .nav-item.active {
+        color: #fafafa;
+        background: #27272a;
+      }
+      .section-label {
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #52525b;
+        font-weight: 600;
+        padding: 14px 12px 6px;
+      }
+      .divider {
+        height: 1px;
+        background: #1f1f22;
+        margin: 8px 4px;
+      }
+      .badge-soon {
+        margin-left: auto;
+        font-size: 10px;
+        color: #71717a;
+        background: #18181b;
+        border: 1px solid #27272a;
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      .badge-tier {
+        margin-left: auto;
+        font-size: 9.5px;
+        color: #c4b5fd;
+        background: rgba(139, 92, 246, 0.12);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        padding: 1px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+      }
+      .badge-new {
+        margin-left: auto;
+        font-size: 9.5px;
+        color: #86efac;
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        padding: 1px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+      }
+      .canvas {
+        background: #09090b;
+        min-height: 100vh;
+        color: #fafafa;
+      }
+      .col-card {
+        background: #0a0a0a;
+        border: 1px solid #27272a;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .col-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        border-bottom: 1px solid #1f1f22;
+        background: #0c0c0e;
+      }
+      .col-header .tag {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+      .tag-current {
+        background: rgba(244, 63, 94, 0.12);
+        color: #fda4af;
+        border: 1px solid rgba(244, 63, 94, 0.3);
+      }
+      .tag-proposed {
+        background: rgba(34, 197, 94, 0.12);
+        color: #86efac;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+      .change-row {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 12px;
+        padding: 10px 14px;
+        font-size: 12.5px;
+        border-bottom: 1px solid #18181b;
+      }
+      .change-row:last-child {
+        border-bottom: none;
+      }
+      .change-key {
+        color: #a1a1aa;
+        font-weight: 600;
+      }
+      .change-val {
+        color: #d4d4d8;
+      }
+      .strike {
+        color: #71717a;
+        text-decoration: line-through;
+      }
+      .arrow {
+        color: #52525b;
+        margin: 0 6px;
+      }
+      .legend {
+        display: flex;
+        gap: 14px;
+        font-size: 11px;
+        color: #a1a1aa;
+        flex-wrap: wrap;
+      }
+      .legend-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        margin-right: 5px;
+        vertical-align: middle;
+      }
+      kbd {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 10.5px;
+        background: #18181b;
+        border: 1px solid #27272a;
+        padding: 1px 5px;
+        border-radius: 3px;
+        color: #d4d4d8;
+      }
+      .header-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 24px;
+        border-bottom: 1px solid #1f1f22;
+        background: #0a0a0a;
+      }
+      .search-stub {
+        background: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 12px;
+        color: #71717a;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 280px;
+      }
+    </style>
+  </head>
+  <body class="canvas">
+    <div class="header-row">
+      <div class="font-semibold text-sm">Sidebar restructure — prototype</div>
+      <div class="ml-auto flex items-center gap-3">
+        <span class="text-xs text-zinc-500">Click section headers to expand/collapse</span>
+      </div>
+    </div>
+
+    <div class="px-6 py-6 space-y-6">
+      <!-- Side-by-side comparison -->
+      <div class="grid grid-cols-2 gap-6">
+        <!-- CURRENT -->
+        <div class="col-card">
+          <div class="col-header">
+            <div class="text-sm font-semibold">Current</div>
+            <span class="tag tag-current">Today</span>
+          </div>
+          <div class="flex">
+            <nav class="sidebar">
+              <div class="nav-item">
+                <i data-lucide="home" class="nav-icon"></i>Hem
+              </div>
+              <div class="nav-item">
+                <i data-lucide="message-square" class="nav-icon"></i>Assistent
+              </div>
+
+              <div class="nav-item expanded" onclick="toggleGroup(this)">
+                <i data-lucide="scale" class="nav-icon"></i>Efterlevnad
+                <i data-lucide="chevron-down" class="chev w-3.5 h-3.5"></i>
+              </div>
+              <div class="nav-sub">
+                <div class="nav-item">Mina listor</div>
+                <div class="nav-item">Krav</div>
+                <div class="nav-item active">Kontroller</div>
+                <div class="nav-item">Ändringar</div>
+                <div class="nav-item">Mallar</div>
+              </div>
+
+              <div class="nav-item expanded" onclick="toggleGroup(this)">
+                <i data-lucide="book-open" class="nav-icon"></i>Regelverk
+                <i data-lucide="chevron-down" class="chev w-3.5 h-3.5"></i>
+              </div>
+              <div class="nav-sub">
+                <div class="nav-item">Bläddra alla</div>
+                <div class="nav-item">Svenska lagar</div>
+                <div class="nav-item">Myndighetsföreskrifter</div>
+                <div class="nav-item">EU-rätt</div>
+              </div>
+
+              <div class="section-label">Arbete</div>
+              <div class="nav-item">
+                <i data-lucide="check-square" class="nav-icon"></i>Uppgifter
+              </div>
+              <div class="nav-item">
+                <i data-lucide="file-text" class="nav-icon"></i>Styrdokument
+              </div>
+              <div class="nav-item">
+                <i data-lucide="folder" class="nav-icon"></i>Filer
+              </div>
+              <div class="nav-item">
+                <i data-lucide="clipboard-list" class="nav-icon"></i>Aktivitetslogg
+              </div>
+              <div class="nav-item disabled">
+                <i data-lucide="users" class="nav-icon"></i>HR
+              </div>
+              <div class="nav-item disabled">
+                <i data-lucide="bell" class="nav-icon"></i>Ändringsbevakning
+              </div>
+            </nav>
+
+            <div class="flex-1 p-4 text-xs text-zinc-500 space-y-3">
+              <div class="font-semibold text-zinc-400 text-[11px] uppercase tracking-wider">Issues</div>
+              <ul class="space-y-2 list-disc list-inside leading-relaxed">
+                <li>"Ändringar" sits with user work but is regelverk-side data</li>
+                <li>"Ändringsbevakning" + "Ändringar" = two change concepts in two places</li>
+                <li>"Mallar" undefined at top level (actually scoped to laglistor)</li>
+                <li>"Bläddra alla" redundant with typed sub-items</li>
+                <li>"Mina listor" implies user-scope; lists are workspace-scoped</li>
+                <li>Kontroller buried under Efterlevnad despite being a tier-gated product</li>
+                <li>No global search slot</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="col-card">
+          <div class="col-header">
+            <div class="text-sm font-semibold">Proposed</div>
+            <span class="tag tag-proposed">After</span>
+          </div>
+          <div class="flex">
+            <nav class="sidebar">
+              <div class="nav-item">
+                <i data-lucide="home" class="nav-icon"></i>Hem
+              </div>
+              <div class="nav-item">
+                <i data-lucide="message-square" class="nav-icon"></i>Assistent
+              </div>
+
+              <!-- Global search slot -->
+              <div class="nav-item" style="background:#0e0e10;border:1px dashed #27272a;">
+                <i data-lucide="search" class="nav-icon"></i>
+                <span class="text-zinc-500">Sök allt</span>
+                <kbd class="ml-auto">⌘K</kbd>
+              </div>
+
+              <div class="nav-item expanded" onclick="toggleGroup(this)">
+                <i data-lucide="clipboard-check" class="nav-icon"></i>Efterlevnad
+                <i data-lucide="chevron-down" class="chev w-3.5 h-3.5"></i>
+              </div>
+              <div class="nav-sub">
+                <div class="nav-item">Laglistor</div>
+                <div class="nav-item">Krav</div>
+                <div class="nav-item active">
+                  Kontroller
+                  <span class="badge-tier">PRO</span>
+                </div>
+              </div>
+
+              <div class="nav-item expanded" onclick="toggleGroup(this)">
+                <i data-lucide="scale" class="nav-icon"></i>Regelverk
+                <i data-lucide="chevron-down" class="chev w-3.5 h-3.5"></i>
+              </div>
+              <div class="nav-sub">
+                <div class="nav-item">Bläddra alla</div>
+                <div class="nav-item">
+                  Ändringar
+                  <span class="badge-new">Flyttad</span>
+                </div>
+              </div>
+
+              <div class="section-label">Arbetsyta</div>
+              <div class="nav-item">
+                <i data-lucide="check-square" class="nav-icon"></i>Uppgifter
+              </div>
+              <div class="nav-item">
+                <i data-lucide="file-text" class="nav-icon"></i>Styrdokument
+              </div>
+              <div class="nav-item">
+                <i data-lucide="folder" class="nav-icon"></i>Filer
+              </div>
+              <div class="nav-item">
+                <i data-lucide="clipboard-list" class="nav-icon"></i>Aktivitetslogg
+              </div>
+              <div class="nav-item disabled">
+                <i data-lucide="bell" class="nav-icon"></i>Ändringsbevakning
+                <span class="badge-soon">snart</span>
+              </div>
+              <div class="nav-item disabled">
+                <i data-lucide="users" class="nav-icon"></i>HR
+                <span class="badge-soon">snart</span>
+              </div>
+            </nav>
+
+            <div class="flex-1 p-4 text-xs text-zinc-400 space-y-3">
+              <div class="font-semibold text-zinc-300 text-[11px] uppercase tracking-wider">What changed</div>
+              <ul class="space-y-2 leading-relaxed">
+                <li><span class="text-emerald-400">+</span> Sök allt (⌘K) — global search</li>
+                <li><span class="text-emerald-400">+</span> Laglistor (renamed from Mina listor)</li>
+                <li><span class="text-emerald-400">+</span> Kontroller marked PRO (tier-gating)</li>
+                <li><span class="text-emerald-400">→</span> Ändringar moved Efterlevnad → Regelverk</li>
+                <li><span class="text-emerald-400">→</span> Arbete renamed Arbetsyta</li>
+                <li><span class="text-rose-400">−</span> Mallar removed (now under Laglistor)</li>
+                <li><span class="text-rose-400">−</span> Svenska lagar / Föreskrifter / EU-rätt removed (filters of Bläddra alla)</li>
+                <li><span class="text-zinc-500">↺</span> Disabled items pushed to bottom</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Change table -->
+      <div class="col-card">
+        <div class="col-header">
+          <div class="text-sm font-semibold">Change log</div>
+          <div class="legend">
+            <span><span class="legend-dot" style="background:#86efac;"></span>added</span>
+            <span><span class="legend-dot" style="background:#fda4af;"></span>removed</span>
+            <span><span class="legend-dot" style="background:#93c5fd;"></span>moved/renamed</span>
+            <span><span class="legend-dot" style="background:#c4b5fd;"></span>tiered</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="change-row">
+            <div class="change-key">Hem</div>
+            <div class="change-val text-zinc-500">unchanged</div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">Assistent</div>
+            <div class="change-val text-zinc-500">unchanged</div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">Sök allt</div>
+            <div class="change-val">
+              <span class="text-emerald-400">new</span> — global Cmd-K palette across laws, kravpunkter, tasks, cycles. Header or sidebar slot.
+            </div>
+          </div>
+
+          <div class="change-row">
+            <div class="change-key">Efterlevnad</div>
+            <div class="change-val">
+              Children pruned to <b>Laglistor / Krav / Kontroller</b>. Tighter, all directly tied to compliance work.
+            </div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">└ Mina listor</div>
+            <div class="change-val">
+              <span class="strike">Mina listor</span><span class="arrow">→</span><b>Laglistor</b> (workspace-scoped, not user)
+            </div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">└ Krav</div>
+            <div class="change-val text-zinc-500">unchanged — chip-filtered table works as-is</div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">└ Kontroller</div>
+            <div class="change-val">
+              Promoted to first-class. URL: <code class="text-[11.5px] text-zinc-400">/laglistor/kontroller/*</code> <span class="arrow">→</span> <code class="text-[11.5px] text-zinc-400">/kontroller/*</code>. Add <span class="badge-tier" style="margin:0;">PRO</span> tier-gate on render + route.
+            </div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">└ Ändringar</div>
+            <div class="change-val">
+              <span class="text-rose-400">moved out</span> to Regelverk (it's regelverk-side data, not user work)
+            </div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">└ Mallar</div>
+            <div class="change-val">
+              <span class="text-rose-400">removed from sidebar</span>. Surfaces inside Laglistor as "Skapa från mall" CTA. URL <code class="text-[11.5px] text-zinc-400">/laglistor/mallar</code> kept reachable.
+            </div>
+          </div>
+
+          <div class="change-row">
+            <div class="change-key">Regelverk</div>
+            <div class="change-val">
+              Reduced to two children: a single <b>Bläddra alla</b> + <b>Ändringar</b>. Typed views become filter chips.
+            </div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">└ Bläddra alla</div>
+            <div class="change-val">
+              Becomes the canonical index at <code class="text-[11.5px] text-zinc-400">/browse/rattskallor</code>. Filter chips: Svenska lagar / Föreskrifter / EU-rätt. Old typed routes → 301 to <code class="text-[11.5px] text-zinc-400">/browse/rattskallor?source=…</code>.
+            </div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">└ Ändringar</div>
+            <div class="change-val">
+              <span class="text-emerald-400">new home</span> — moved from Efterlevnad. Cf. distinct from Ändringsbevakning (subscription/notification settings).
+            </div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">└ typed routes</div>
+            <div class="change-val">
+              <span class="strike">Svenska lagar / Myndighetsföreskrifter / EU-rätt</span> as siblings — collapsed into filters. Detail routes <code class="text-[11.5px] text-zinc-400">/browse/lagar/[id]</code> etc. unchanged.
+            </div>
+          </div>
+
+          <div class="change-row">
+            <div class="change-key">Arbetsyta</div>
+            <div class="change-val">
+              <span class="strike">Arbete</span><span class="arrow">→</span><b>Arbetsyta</b>. Signals "shared workspace primitives" rather than implying compliance is *not* work.
+            </div>
+          </div>
+          <div class="change-row">
+            <div class="change-key">└ children</div>
+            <div class="change-val text-zinc-500">Uppgifter / Styrdokument / Filer / Aktivitetslogg unchanged. Disabled items (Ändringsbevakning, HR) ordered last with "snart" badge.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Implementation cost -->
+      <div class="col-card">
+        <div class="col-header">
+          <div class="text-sm font-semibold">Implementation cost</div>
+          <span class="text-xs text-zinc-500">rough estimates</span>
+        </div>
+        <div class="p-5 grid grid-cols-3 gap-4 text-sm">
+          <div class="panel p-4 rounded-lg" style="background:#0e0e10;border:1px solid #27272a;border-radius:8px;">
+            <div class="font-semibold text-emerald-300 mb-1.5">Cheap (~½ day)</div>
+            <ul class="text-xs text-zinc-400 leading-relaxed space-y-1.5 list-disc list-inside">
+              <li>Sidebar JSX restructure</li>
+              <li>Rename Mina listor → Laglistor</li>
+              <li>Rename Arbete → Arbetsyta</li>
+              <li>Drop Mallar from sidebar (route stays)</li>
+              <li>Reorder disabled items + add "snart" badge</li>
+            </ul>
+          </div>
+          <div class="panel p-4 rounded-lg" style="background:#0e0e10;border:1px solid #27272a;border-radius:8px;">
+            <div class="font-semibold text-blue-300 mb-1.5">Moderate (~1 day each)</div>
+            <ul class="text-xs text-zinc-400 leading-relaxed space-y-1.5 list-disc list-inside">
+              <li>/browse/rattskallor unify + redirect typed routes</li>
+              <li>Move Ändringar from Efterlevnad → Regelverk (link + route check)</li>
+              <li>Tier-gate Kontroller (sidebar + route handler)</li>
+            </ul>
+          </div>
+          <div class="panel p-4 rounded-lg" style="background:#0e0e10;border:1px solid #27272a;border-radius:8px;">
+            <div class="font-semibold text-purple-300 mb-1.5">Bigger (~1–2 days)</div>
+            <ul class="text-xs text-zinc-400 leading-relaxed space-y-1.5 list-disc list-inside">
+              <li>Flatten URLs <code class="text-[11px]">/laglistor/kontroller/*</code> → <code class="text-[11px]">/kontroller/*</code> + redirects</li>
+              <li>Global search palette (⌘K) — separate epic</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Open questions -->
+      <div class="col-card">
+        <div class="col-header">
+          <div class="text-sm font-semibold">Open questions</div>
+        </div>
+        <div class="p-5 space-y-3 text-sm text-zinc-300">
+          <div class="flex gap-3">
+            <span class="text-zinc-600 font-mono">Q1</span>
+            <div>
+              Is <b>Krav</b> tier-gated too, or free? If Kontroller is PRO, Krav probably is too — they share the kravpunkter substrate.
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <span class="text-zinc-600 font-mono">Q2</span>
+            <div>
+              Should <b>Ändringsbevakning</b> stay in Arbetsyta or live closer to <b>Ändringar</b> in Regelverk? The latter groups "law-change feed + my subs" semantically.
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <span class="text-zinc-600 font-mono">Q3</span>
+            <div>
+              <b>AUDITOR role</b> sees reduced surface — does the sidebar adapt per role, or do disabled items show with a lock icon? (Story 21.14 implication)
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <span class="text-zinc-600 font-mono">Q4</span>
+            <div>
+              When tier is below PRO, does <b>Kontroller</b> hide entirely, show with an upsell badge, or stay clickable into a paywall page? Last option doubles as marketing surface.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      lucide.createIcons();
+
+      function toggleGroup(el) {
+        const sub = el.nextElementSibling;
+        if (!sub || !sub.classList.contains('nav-sub')) return;
+        const expanded = el.classList.toggle('expanded');
+        sub.style.display = expanded ? 'flex' : 'none';
+      }
+    </script>
+  </body>
+</html>

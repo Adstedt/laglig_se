@@ -98,9 +98,9 @@ export function DocumentListPageContent({
   )
   // Story 6.15: Task modal for bidirectional linking
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
-  // Story 6.18 + 17.18: Field to focus when opening modal from "Lägg till" click
+  // Story 6.18 + 17.18 + 21.22: Field to focus when opening modal from "Lägg till" click
   const [focusField, setFocusField] = useState<
-    'businessContext' | 'complianceActions' | 'kravpunkter' | null
+    'businessContext' | 'complianceNarrative' | 'kravpunkter' | null
   >(null)
 
   // Toolbar redesign: filter bar visibility
@@ -140,7 +140,7 @@ export function DocumentListPageContent({
   const handleAddContent = useCallback(
     (
       listItemId: string,
-      field: 'businessContext' | 'complianceActions' | 'kravpunkter'
+      field: 'businessContext' | 'complianceNarrative' | 'kravpunkter'
     ) => {
       setSelectedListItemId(listItemId)
       setFocusField(field) // Set focus field to trigger edit mode / scroll
@@ -332,9 +332,9 @@ export function DocumentListPageContent({
         complianceStatus?: ComplianceStatus
         priority?: 'LOW' | 'MEDIUM' | 'HIGH'
         responsibleUserId?: string | null
-        // Story 6.18: Compliance content fields (optimistic update from modal)
+        // Compliance content fields (optimistic update from modal)
         businessContext?: string | null
-        complianceActions?: string | null
+        complianceNarrative?: string | null
       }
     ) => {
       // Use the store's updateItem for optimistic update (no await needed for UI)

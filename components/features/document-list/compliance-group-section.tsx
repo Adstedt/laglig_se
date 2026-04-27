@@ -55,7 +55,7 @@ interface ComplianceGroupSectionProps {
   onAddContent?:
     | ((
         _listItemId: string,
-        _field: 'businessContext' | 'complianceActions' | 'kravpunkter'
+        _field: 'businessContext' | 'complianceNarrative' | 'kravpunkter'
       ) => void)
     | undefined
   workspaceMembers: WorkspaceMemberOption[]
