@@ -1,0 +1,172 @@
+schema: 1
+story: '21.27'
+story_title: 'Collapse ARKIVERAD into AVSLUTAD (3-state lifecycle)'
+gate: CONCERNS
+status_reason: >-
+  Implementation is functionally complete and well-executed (737/737 scoped
+  tests pass, typecheck + lint clean, migration applied to Supabase). All 22
+  ACs traceable to code or tests. Gate is CONCERNS only because of low-severity
+  hygiene drift: 1 stale test-prop pass that compiles because tsconfig
+  excludes tests/ (TEST-001), 5 doc lines in UAT plan + architecture doc that
+  weren't swept post-21.27 (DOC-001..005), 1 story-status flip outstanding
+  (STORY-001), and 1 carryover CSS-rename future-rec from the 21.26 gate that
+  21.27 made more stale (CSS-001). Zero functional, security, or data-integrity
+  issues. A 30-min fix-pass closes everything and flips to PASS.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-28T11:35:00+00:00'
+
+quality_score: 85
+expires: '2026-05-12T11:35:00+00:00'
+
+evidence:
+  tests_reviewed: 737
+  tests_passing: 737
+  tests_failing: 0
+  risks_identified: 1  # TEST-001 stale-prop drift
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 21, 22]
+    ac_partial: [18, 20]  # AC 18 has TEST-001 drift; AC 20 has DOC-003/004/005 drift
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      No security primitives touched. The deleted
+      `compliance-finding.ts#assertCycleEditableUi` was a UX/business-rule
+      guard, not an authorization boundary. Tenant isolation, permission
+      scopes (`tasks:edit`, `activity:view`), and the route-level workspace
+      check are unchanged. Findings-have-no-cycle-status-readonly is a
+      deliberate design choice with documented rationale (activity log + DB
+      write history as audit-trail defensibility).
+  performance:
+    status: PASS
+    notes: >-
+      Net deletion of code reduces bundle/payload. No new queries, no N+1
+      patterns. Route shell drops one helper invocation per request
+      (`findingsReadOnly()` deleted) — trivially faster RSC render.
+  reliability:
+    status: PASS
+    notes: >-
+      Migration is well-engineered: transactional, idempotent on zero-row
+      workspaces, mirrors the proven 21.26 pattern. Fold-step preserves
+      `sealed_at` + `sealed_by_user_id` on any pre-existing ARKIVERAD rows
+      so no metadata loss. User confirmed migration applied to Supabase
+      successfully.
+  maintainability:
+    status: CONCERNS
+    notes: >-
+      Low-severity hygiene drift: TEST-001 (1 stale prop in test) +
+      DOC-001..005 (5 doc lines) + STORY-001 (status flip) + CSS-001 (carry-
+      over rename from 21.26 gate, more stale post-21.27). All fixable in a
+      30-min sweep. The drift exists because tsconfig.json excludes `tests/`
+      so dangling JSX props don't fail typecheck — worth being aware of for
+      future reviews.
+
+top_issues:
+  - id: TEST-001
+    severity: low
+    category: test_hygiene
+    description: >-
+      `tests/unit/components/features/compliance-audit/cycle-detail/cycle-items-tab.test.tsx:241`
+      passes `findingsReadOnly={overrides.readOnly ?? false}` to
+      `<CycleDetailPage>`. The prop was dropped from `CycleDetailPageProps`
+      in this story. Test runs green because tsconfig.json excludes
+      `tests/` so `tsc --noEmit` doesn't typecheck this file, and React
+      silently ignores extra JSX props at runtime. Dead weight that will
+      confuse future contributors.
+    refs: ['tests/unit/components/features/compliance-audit/cycle-detail/cycle-items-tab.test.tsx:241']
+    suggested_owner: dev
+    fix: 'Delete the line.'
+  - id: DOC-001
+    severity: low
+    category: doc_hygiene
+    description: >-
+      `docs/uat/epic-21-uat-plan.md:5` scope blurb describes lifecycle as
+      5-state `PLANERAD → PAGAENDE → AVSLUTAD → SEALED → ARKIVERAD`. Should
+      be 3-state.
+    refs: ['docs/uat/epic-21-uat-plan.md:5']
+    suggested_owner: dev
+  - id: DOC-002
+    severity: low
+    category: doc_hygiene
+    description: >-
+      `docs/uat/epic-21-uat-plan.md:98` row 4.2a says "SEALED + ARKIVERAD
+      show their status-specific banners (and findingsReadOnly flips true
+      so the findings tab also locks)". Both states are gone; findingsReadOnly
+      is gone.
+    refs: ['docs/uat/epic-21-uat-plan.md:98']
+    suggested_owner: dev
+  - id: DOC-003
+    severity: low
+    category: doc_hygiene
+    description: >-
+      `docs/architecture/epic-21-lagefterlevnadskontroll.md:5` says "the
+      inline `assertCycleEditableUi` already enforces AVSLUTAD/ARKIVERAD
+      read-only correctly". Partially stale — findings's editable guard
+      was deleted entirely in 21.27; only items lock at AVSLUTAD.
+    refs: ['docs/architecture/epic-21-lagefterlevnadskontroll.md:5']
+    suggested_owner: dev
+  - id: DOC-004
+    severity: low
+    category: doc_hygiene
+    description: >-
+      `docs/architecture/epic-21-lagefterlevnadskontroll.md:70` table row
+      reads "Read-only gate for SEALED/ARKIVERAD" — both states are gone.
+    refs: ['docs/architecture/epic-21-lagefterlevnadskontroll.md:70']
+    suggested_owner: dev
+  - id: DOC-005
+    severity: low
+    category: doc_hygiene
+    description: >-
+      Architecture doc §6.4 says "ARKIVERAD remains the only truly read-only
+      terminal state, locking findings as well as items." Wrong post-21.27
+      — findings have NO cycle-status read-only mode any more. AVSLUTAD
+      locks items only.
+    refs: ['docs/architecture/epic-21-lagefterlevnadskontroll.md']
+    suggested_owner: dev
+  - id: STORY-001
+    severity: low
+    category: story_hygiene
+    description: >-
+      Story status is "In Progress" but implementation is complete +
+      committed (a078dfe) + pushed + migration applied. Tasks list checkbox
+      "Apply migration to Supabase manually" still unchecked.
+    refs: ['docs/stories/21.27.collapse-arkiverad-into-avslutad.md:5,63']
+    suggested_owner: dev
+    fix: 'Flip status to "Ready for Review"; check the migration task.'
+  - id: CSS-001
+    severity: low
+    category: tech_debt
+    description: >-
+      `.seal-block` CSS class still wraps the "Avslutad kontroll" block in
+      `revisionsrapport-renderer.ts:217-224, 376`; `.seal-hash` rule at
+      225-231 is dead code (no hash in output any more). The 21.26 gate
+      flagged this as a "future" rename; 21.27 has made it more stale
+      (the wrapper is now used for AVSLUTAD-only completion, not seal).
+    refs: ['lib/compliance-audit/revisionsrapport-renderer.ts:217-231', 'lib/compliance-audit/revisionsrapport-renderer.ts:376']
+    suggested_owner: dev
+    fix: 'Rename `.seal-block` → `.completion-block`; drop `.seal-hash` rule. Update __fixtures__/revisionsrapport-output.html accordingly.'
+
+waiver:
+  active: false
+
+recommendations:
+  immediate: []  # None block ship — CONCERNS but no high-severity items
+  future:
+    - action: 'Run a 30-min fix-pass: drop the dangling test prop (TEST-001), sweep the 5 doc lines (DOC-001..005), flip story status (STORY-001), and optionally rename the CSS class (CSS-001). Re-run typecheck + scoped vitest. Gate flips CONCERNS → PASS.'
+      refs:
+        - 'tests/unit/components/features/compliance-audit/cycle-detail/cycle-items-tab.test.tsx:241'
+        - 'docs/uat/epic-21-uat-plan.md:5,98'
+        - 'docs/architecture/epic-21-lagefterlevnadskontroll.md:5,70'
+    - action: 'Carryover from 21.26 gate: rename `sealed_at` / `sealed_by_user_id` columns to `completed_at` / `completed_by_user_id` in a follow-up migration. Both 21.26 and 21.27 keep the names for migration safety; semantic mismatch will compound over time.'
+      refs: ['prisma/schema.prisma']
+    - action: 'Consider adding `tests/` to a separate test-tsconfig that DOES typecheck them. The current setup means JSX prop drift in tests goes undetected (TEST-001 is the second instance — the 21.26 gate noted three RSC test prop assertions also drifted). Vitest supports `--typecheck` flag.'
+      refs: ['tsconfig.json:50-56', 'vitest.config.mts']
+
+# History — preserved for audit trail
+history:
+  - timestamp: '2026-04-28T11:35:00+00:00'
+    gate: CONCERNS
+    quality_score: 85
+    reason: '1 stale test-prop drift (TEST-001) + 5 doc-drift lines (DOC-001..005) + story-status flip outstanding (STORY-001) + CSS-001 carryover from 21.26 gate, all low-severity. Zero functional or security issues. 30-min fix-pass closes everything.'

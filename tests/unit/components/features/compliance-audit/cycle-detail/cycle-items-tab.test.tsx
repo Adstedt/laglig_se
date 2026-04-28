@@ -238,7 +238,6 @@ function renderPage(
           overrides.cyclePartial ?? makeCyclePartial({ status: cycle.status })
         }
         itemsReadOnly={overrides.readOnly ?? false}
-        findingsReadOnly={overrides.readOnly ?? false}
         canRevert={false}
         currentUserId="u1"
         currentUserRole="OWNER"
