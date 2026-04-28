@@ -275,7 +275,7 @@ export function CycleItemModalLeftPanel({
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
               <p className="mb-3 text-xs text-muted-foreground">
-                Aktuella kopplingar — låses när kontrollen fastställs.
+                Aktuella kopplingar — låses när kontrollen slutförs.
               </p>
               {/* Nested accordion panel from legal-document-modal is itself an
                 AccordionItem, so it needs its own Accordion ancestor. Keep
