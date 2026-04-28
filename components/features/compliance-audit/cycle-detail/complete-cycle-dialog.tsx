@@ -58,10 +58,11 @@ export function CompleteCycleDialog({
                 dokumentera nuläget — revisionsrapporten kan genereras direkt.
               </p>
               <p>
-                Kontrollen blir låst när den slutförs. För att göra ytterligare
-                ändringar i bedömningar, motiveringar eller anmärkningar måste
-                du återställa kontrollen till pågående via Åtgärder-menyn.
-                Fastställandet är ett separat, oåterkalleligt steg.
+                Bedömningarna och motiveringarna låses när kontrollen slutförs.
+                Anmärkningar fortsätter att vara redigerbara — de följs upp
+                efter avslutad kontroll. För att ändra på en bedömning eller
+                motivering kan du återställa kontrollen till pågående via
+                Åtgärder-menyn.
               </p>
               {openFindings > 0 ? (
                 <OpenWorkAdvisory
