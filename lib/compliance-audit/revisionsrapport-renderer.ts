@@ -214,21 +214,15 @@ const STYLE_BLOCK = `<style>
   table { border-collapse: collapse; width: 100%; margin: 8px 0; }
   th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; font-size: 10pt; vertical-align: top; }
   th { background: #f5f5f5; font-weight: 600; }
-  .seal-block {
+  /* Story 21.27 — renamed from .seal-block; no hash content remains. */
+  .completion-block {
     background: #ecfdf5;
     border: 1px solid #10b981;
     padding: 16px;
     border-radius: 4px;
     margin: 16px 0;
   }
-  .seal-block h3 { margin-top: 0; }
-  .seal-hash {
-    font-family: 'Courier New', monospace;
-    font-size: 10pt;
-    word-break: break-all;
-    display: block;
-    margin-top: 8px;
-  }
+  .completion-block h3 { margin-top: 0; }
   .badge {
     display: inline-block;
     font-size: 9pt;
@@ -366,14 +360,15 @@ function renderTitelsida(
   const periodEnd = formatDate(cycle.scheduledEnd)
   const generatedLabel = formatDate(generatedAt, 'd MMM yyyy HH:mm')
 
-  // Story 21.26 — sealHash dropped from CycleDetail. Completion-block now
-  // shows just the timestamp + signer when AVSLUTAD/ARKIVERAD; no hash.
-  let sealBlock = ''
+  // Story 21.26 — sealHash dropped from CycleDetail.
+  // Story 21.27 — ARKIVERAD removed; the block now renders for AVSLUTAD only,
+  // showing completion timestamp + signer. CSS class renamed to .completion-block.
+  let completionBlock = ''
   if (cycle.sealedAt !== null) {
     const sealedAt = formatDate(cycle.sealedAt, 'd MMM yyyy HH:mm')
     const sealedBy = cycle.sealedBy?.name ?? '—'
-    sealBlock = `
-    <div class="seal-block">
+    completionBlock = `
+    <div class="completion-block">
       <h3>Avslutad kontroll</h3>
       <p class="meta">Avslutad: ${escapeHtml(sealedAt)}</p>
       <p class="meta">Avslutad av: ${escapeHtml(sealedBy)}</p>
@@ -390,7 +385,7 @@ function renderTitelsida(
       <p class="meta">Status: ${escapeHtml(cycleStatusLabel(cycle.status))}</p>
       <p class="meta">Workspace: ${escapeHtml(workspace.name)}</p>
       <p class="meta">Rapport genererad: ${escapeHtml(generatedLabel)}</p>
-    </div>${sealBlock}
+    </div>${completionBlock}
   </section>`
 }
 

@@ -2,7 +2,7 @@
 
 > **Story 21.26 + 21.27 (2026-04-27/28) collapsed SEAL + ARKIVERAD into AVSLUTAD.** The lifecycle is now `PLANERAD → PAGAENDE → AVSLUTAD` (3 states). 21.26 dropped the cryptographic seal ceremony — `seal_hash` column, `ComplianceEvidenceSnapshot` table, `audit:seal` permission scope, `sealCycle` server action, manifest builder, evidence-deletion gate. 21.27 then dropped the phantom ARKIVERAD state — its `findingsReadOnly` plumbing (route helper, prop on `CycleDetailPage` and `CycleFindingsTab`), the `ReadOnlyBanner` component, and the "Arkiverade" filter chip on the cycle list. `completeCycle` now records `sealed_at` + `sealed_by_user_id` and triggers eager PDF via `after()`. Items still freeze at AVSLUTAD; findings stay editable forever; revert-to-PAGAENDE remains the escape hatch. **Sections 4.1 (Data Models), 6.3 (evidence-deletion), 6.4 (seal-reversal) below are partially superseded** — read them as historical record and refer to `docs/stories/21.26.collapse-seal-into-avslutad.md` + `docs/stories/21.27.collapse-arkiverad-into-avslutad.md` for the current shape.
 
-**Status:** Substantially Done (UAT-ready) — **14 of 14 stories shipped** as of 2026-04-28 (Story 21.26 closed the residual sweep). **Story 21.10** (`assertCycleEditable` runtime guard) remains deferred — defence-in-depth hardening only; the inline `assertCycleEditableUi` already enforces AVSLUTAD/ARKIVERAD read-only correctly. **Story 21.15** (manual kontroll↔task linkage) remains in `docs/stories/backlog/frontend/`. Architecture choices validated against shipped code. See §1.3 for the landed-vs-deferred snapshot.
+**Status:** Substantially Done (UAT-ready) — **14 of 14 stories shipped** as of 2026-04-28 (Stories 21.26 + 21.27 closed the residual sweep). **Story 21.10** (`assertCycleEditable` runtime guard) remains deferred — defence-in-depth hardening only; post-21.27 only items lock at AVSLUTAD (findings stay editable forever), and the inline `assertCycleEditableUi` in `compliance-audit-item.ts` already enforces that correctly. **Story 21.15** (manual kontroll↔task linkage) remains in `docs/stories/backlog/frontend/`. Architecture choices validated against shipped code. See §1.3 for the landed-vs-deferred snapshot.
 **Author:** Winston (Architect) — 2026-04-22
 **Last reviewed:** 2026-04-27 (Sarah, PO — Epic 21 UAT-readiness pass; 21.9 + 21.12 reconciled to shipped, post-shipping UX addenda noted on Stories 21.4 / 21.5 / 21.9 / 21.11 / 21.14)
 **Supersedes/supplements:** `docs/architecture/` (sharded, existing)
@@ -67,8 +67,8 @@ This section is a status overlay on top of the v0.1 architecture below — it do
 | 21.2 | Cycle CRUD server actions | `app/actions/compliance-audit-cycle.ts` with `withWorkspace + tasks:edit` convention. |
 | 21.3 | Scope selector component | Reuses `compliance-detail-table` grouped layout as scope-selector substrate. |
 | 21.4 | Cycle creation wizard + materialisation | `/laglistor/kontroller/skapa`. Idempotent materialisation. |
-| 21.5 | Cycle detail page — Items tab | Tabs: Items / Findings / Rapport / Aktivitet. Read-only gate for SEALED/ARKIVERAD. |
-| 21.5.2 | Cycle list hub at `/laglistor/kontroller` | Filter chips Aktiva/Slutförda/Förseglade/Arkiverade/Alla. |
+| 21.5 | Cycle detail page — Items tab | Tabs: Items / Findings / Rapport / Aktivitet. Read-only items gate at AVSLUTAD (Stories 21.26 + 21.27 collapsed SEALED + ARKIVERAD into AVSLUTAD). |
+| 21.5.2 | Cycle list hub at `/laglistor/kontroller` | Filter chips Aktiva/Slutförda/Alla (Stories 21.26 + 21.27 dropped Förseglade + Arkiverade chips). |
 | 21.6 | Cycle lifecycle Complete + Revert | `completeCycle` + `revertCycleToPagaende` server actions; dialogs + dropdown components. |
 | 21.7 | Findings CRUD | Type/severity/state model. Inline action buttons per finding row. |
 | 21.8 | Auto-spawn corrective-action Task on AVVIKELSE | `lib/compliance-audit/task-spawner.ts` + new `ComplianceCycleTaskLink` M:N join. |
@@ -530,17 +530,18 @@ This is the section the PM asked for explicitly. Each decision is grounded in ac
 - Does NOT require modifying the existing `WorkspaceFile` or `WorkspaceDocument` Prisma models — the guard lives at the Server Action layer. (A database-level FK constraint would be stricter but would also break soft-delete semantics of existing file workflows. Server-layer enforcement is the right trade-off.)
 - Document this in the Story 21.9 acceptance criteria as a test case.
 
-### 6.4 Seal reversal policy — **REWRITTEN by Story 21.26: AVSLUTAD finality with revert escape hatch**
+### 6.4 Seal reversal policy — **REWRITTEN by Stories 21.26 + 21.27: AVSLUTAD finality with revert escape hatch; no archived state**
 
-**Current decision (post Story 21.26):** AVSLUTAD is the terminal active state. `completeCycle` is *reversible* via `revertCycleToPagaende` for the lead auditor, OWNER, or ADMIN — there is no separate "irreversible" SEAL stage anymore. Items still freeze at AVSLUTAD (Phase 2 lock); findings continue editable through AVSLUTAD; revert simply unfreezes both. ARKIVERAD remains the only truly read-only terminal state, locking findings as well as items.
+**Current decision (post Stories 21.26 + 21.27):** AVSLUTAD is the *only* terminal active state. `completeCycle` is *reversible* via `revertCycleToPagaende` for the lead auditor, OWNER, or ADMIN — there is no separate "irreversible" SEAL stage and no separate ARKIVERAD lock-everything stage anymore. Items still freeze at AVSLUTAD (Phase 2 lock); findings have no cycle-status read-only mode at all (the `compliance-finding.ts#assertCycleEditableUi` helper was deleted in 21.27); revert simply unfreezes items.
 
 **Rationale:**
 
 - The two-step SEAL ceremony was bureaucracy without payoff for SMB self-audit (see Story 21.26 Context). Nordic regulators want documented audit records, named auditor, dated review, retention — none require cryptographic tamper-evidence.
+- ARKIVERAD had no UI transition (only direct DB writes could land a cycle there) and the only behavioral difference vs AVSLUTAD was locking findings — a phantom state for SMB self-audit (see Story 21.27 Context).
 - A single completion moment with a reversible escape hatch matches Laglig's customer reality. The audit-trail defensibility downgrades to: activity log entries (`cycle_completed`, `cycle_reverted_to_pagaende`), DB write history, and signed PDF metadata.
-- The complete-cycle dialog keeps its Phase-1 forward-looking advisory copy ("Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas upp — fastställandet bygger på dagens snapshot.") — no override panels, no type-to-confirm friction.
+- The complete-cycle dialog keeps its Phase-1 forward-looking advisory copy ("Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas upp — bedömningarna bygger på dagens snapshot.") — no override panels, no type-to-confirm friction.
 
-**Original decision (superseded):** `sealCycle` was a one-way transition. No `unsealCycle` Server Action existed. The `assertCycleEditable` guard rejected every mutation on sealed cycles. Aligned with PRD NFR10 and brief-level assumption. Story 21.26 reversed this on the grounds that NFR10's tamper-evidence claim outpaced the actual customer need.
+**Original decision (superseded):** `sealCycle` was a one-way transition. No `unsealCycle` Server Action existed. The `assertCycleEditable` guard rejected every mutation on sealed cycles. Aligned with PRD NFR10 and brief-level assumption. Story 21.26 reversed this on the grounds that NFR10's tamper-evidence claim outpaced the actual customer need; Story 21.27 then dropped ARKIVERAD on the same grounds.
 
 ### 6.5 PDF storage location — **RESOLVED: Supabase Storage, new path prefix**
 
